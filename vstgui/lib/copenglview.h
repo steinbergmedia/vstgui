@@ -63,7 +63,7 @@ protected:
 	/** will be called whenever the platform opengl view size has changed */
 	virtual void platformOpenGLViewSizeChanged () {}
 	/** subclasses should return a pixelformat here if they don't want to use the default one */
-	virtual PixelFormat* getPixelFormat () { return 0; }
+	virtual PixelFormat* getPixelFormat () { return nullptr; }
 	IPlatformOpenGLView* getPlatformOpenGLView () const { return platformOpenGLView; }
 	//@}
 

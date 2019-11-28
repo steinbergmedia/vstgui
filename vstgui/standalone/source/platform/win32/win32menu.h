@@ -40,6 +40,7 @@ struct Win32MenuItem
 	void enable () { flags &= ~Flags::disabled; }
 
 	virtual Win32Menu* asMenu () { return nullptr; } 
+	virtual ~Win32MenuItem () = default;
 };
 
 //------------------------------------------------------------------------
@@ -50,7 +51,7 @@ struct Win32Menu : Win32MenuItem
 	using Items = std::vector<ItemPtr>;
 
 	Win32Menu (UTF8StringView name);
-	~Win32Menu () noexcept;
+	~Win32Menu () noexcept override;
 
 	size_t addSeparator ();
 	size_t addItem (ItemPtr&& item);

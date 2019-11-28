@@ -59,6 +59,7 @@ public:
 	virtual CMouseEventResult viewOnMouseCancel (CView* view) = 0;
 	virtual void viewOnMouseEntered (CView* view) = 0;
 	virtual void viewOnMouseExited (CView* view) = 0;
+	virtual void viewOnMouseEnabled (CView* view, bool state) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -113,6 +114,7 @@ public:
 	CMouseEventResult viewOnMouseCancel (CView* view) override { return kMouseEventNotImplemented; }
 	void viewOnMouseEntered (CView* view) override {}
 	void viewOnMouseExited (CView* view) override {}
+	void viewOnMouseEnabled (CView* view, bool state) override {}
 };
 
 } // VSTGUI

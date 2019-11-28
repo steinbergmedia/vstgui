@@ -13,7 +13,7 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  8
+#define VSTGUI_VERSION_MINOR  9
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -75,6 +75,9 @@
 			#pragma clang diagnostic ignored "-Wreorder"
 		#else
 			#pragma clang diagnostic warning "-Wunreachable-code"
+			#if __clang_major__ > 7
+				#pragma clang diagnostic warning "-Wshadow"
+			#endif
 		#endif
 	#endif
 
@@ -105,7 +108,6 @@
 	#if (defined(_M_ARM64) || defined(_M_ARM))
 		#define VSTGUI_OPENGL_SUPPORT 0	
 	#endif
-	#define VSTGUI_DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#ifdef _MSC_VER
 		#pragma warning(3 : 4189) // local variable is initialized but not referenced
 		#pragma warning(3 : 4702) // unreachable code
@@ -117,12 +119,15 @@
 	#endif
 
 	#if defined (__clang__) && __clang__
+		#define VSTGUI_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
 			#pragma clang diagnostic warning "-Wconversion"
 			#pragma clang diagnostic ignored "-Wreorder"
 		#else
 			#pragma clang diagnostic warning "-Wunreachable-code"
 		#endif
+	#else
+		#define VSTGUI_DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#endif
 
 	#include <algorithm>
@@ -302,7 +307,7 @@ public:
 	//@}
 
 	/// @cond ignore
-	virtual CBaseObject* newCopy () const { return 0; }
+	virtual CBaseObject* newCopy () const { return nullptr; }
 	/// @endcond
 };
 

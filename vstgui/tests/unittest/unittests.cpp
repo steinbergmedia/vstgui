@@ -72,9 +72,9 @@ TestCase& TestCase::operator=(TestCase &&tc) noexcept
 }
 
 //----------------------------------------------------------------------------------------------------
-void TestCase::registerTest (std::string&& name, TestFunction&& function)
+void TestCase::registerTest (std::string&& testName, TestFunction&& testFunction)
 {
-	tests.emplace_back (std::move (name), std::move (function));
+	tests.emplace_back (std::move (testName), std::move (testFunction));
 }
 
 //----------------------------------------------------------------------------------------------------

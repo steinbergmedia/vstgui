@@ -50,8 +50,13 @@ enum class ConfigKey : uint64_t
 struct ConfigValue
 {
 	ConfigValue () = delete;
+#if defined(_MSC_VER) && _MSC_VER < 1910 // Can be removed when dropping VS 2015 Support
 	ConfigValue (int64_t v) : type (Type::Integer) { value.integer = v; }
 	ConfigValue (const char* s) : type (Type::String) { value.string = s; }
+#else
+	constexpr ConfigValue (int64_t v) : type (Type::Integer) { value.integer = v; }
+	constexpr ConfigValue (const char* s) : type (Type::String) { value.string = s; }
+#endif
 
 	enum class Type
 	{

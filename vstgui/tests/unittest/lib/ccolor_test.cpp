@@ -124,6 +124,41 @@ TESTCASE(CColorTest,
 		c.fromString ("#0000FF00");
 		EXPECT(c == CColor (0, 0, 255, 0));
 	);
+	
+	TEST(setNormalized,
+		CColor c (0, 0, 0, 0);
+		c.setNormRed (1.);
+		c.setNormGreen (1.);
+		c.setNormBlue (1.);
+		c.setNormAlpha (1.);
+		EXPECT(c.red == 255);
+		EXPECT(c.green == 255);
+		EXPECT(c.blue == 255);
+		EXPECT(c.alpha == 255);
+		c.setNormRed (0.5);
+		c.setNormGreen (0.5);
+		c.setNormBlue (0.5);
+		c.setNormAlpha (0.5);
+		EXPECT(c.red == 128);
+		EXPECT(c.green == 128);
+		EXPECT(c.blue == 128);
+		EXPECT(c.alpha == 128);
+	);
+
+	TEST(getNormalized,
+		CColor r (kRedCColor);
+		EXPECT(r.normRed<double> () == 1.);
+		EXPECT(r.normGreen<double> () == 0.);
+		EXPECT(r.normBlue<double> () == 0.);
+		EXPECT(r.normAlpha<double> () == 1.);
+		r.green = 127;
+		EXPECT(r.normGreen<double> () == 127. / 255.);
+		r.blue = 33;
+		EXPECT(r.normBlue<double> () == 33. / 255.);
+		r.alpha = 250;
+		EXPECT(r.normAlpha<double> () == 250. / 255.);
+	);
+
 );
 
 } // VSTGUI

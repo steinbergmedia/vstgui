@@ -15,7 +15,7 @@
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "compileCommands": "build/compile_commands.json",
+            "compileCommands": "${config:cmake.buildDirectory}/compile_commands.json",
             "intelliSenseMode": "clang-x64",
             "configurationProvider": "vector-of-bool.cmake-tools"
         },

@@ -154,9 +154,9 @@ public:
 				controls[tag] = control;
 			if (tag >= kRowTag && tag <= kColTag)
 			{
-				for (const auto& view : *selection)
+				for (const auto& selView : *selection)
 				{
-					if (view->asViewContainer () == nullptr)
+					if (selView->asViewContainer () == nullptr)
 					{
 						controls[tag]->setVisible (false);
 						break;
@@ -450,7 +450,7 @@ public:
 			menu->unregisterOptionMenuListener (this);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*) override
 	{
 		if (menu == nullptr)
 		{
@@ -483,17 +483,17 @@ public:
 		TextController::setValue (value);
 	}
 
-	void onOptionMenuPrePopup (COptionMenu* menu) override
+	void onOptionMenuPrePopup (COptionMenu* optMenu) override
 	{
-		menu->removeAllEntry ();
+		optMenu->removeAllEntry ();
 		if (addNoneItem)
-			menu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{"None", 100, this}));
+			optMenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{"None", 100, this}));
 		StringPtrList names;
 		collectMenuItemNames (names);
 		if (sortItems)
 			names.sort (UIEditController::std__stringCompare);
 		if (addNoneItem && !names.empty ())
-			menu->addSeparator ();
+			optMenu->addSeparator ();
 		for (const auto& name : names)
 			addMenuEntry (name);
 	}
@@ -811,10 +811,9 @@ void UIAttributesController::valueChanged (CControl* control)
 	{
 		case kSearchFieldTag:
 		{
-			auto searchField = dynamic_cast<CSearchTextEdit*> (control);
-			if (searchField)
+			if (auto sf = dynamic_cast<CSearchTextEdit*> (control))
 			{
-				filterString = searchField->getText ();
+				filterString = sf->getText ();
 				rebuildAttributesView ();
 				auto attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
 				if (attributes)
@@ -844,10 +843,10 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 		if (textEdit && textEdit->getTag () == kSearchFieldTag)
 		{
 			searchField = textEdit;
-			auto attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
-			if (attributes)
+			auto attrs = editDescription->getCustomAttributes ("UIAttributesController", true);
+			if (attrs)
 			{
-				const std::string* searchText = attributes->getAttributeValue ("SearchString");
+				const std::string* searchText = attrs->getAttributeValue ("SearchString");
 				if (searchText)
 				{
 					searchField->setText (searchText->c_str ());
@@ -960,7 +959,7 @@ void UIAttributesController::onUIDescGradientChanged (UIDescription* desc)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::selectionDidChange (UISelection* selection)
+void UIAttributesController::selectionDidChange (UISelection*)
 {
 	if (!rebuildRequested && attributeView)
 	{
@@ -981,7 +980,7 @@ void UIAttributesController::selectionDidChange (UISelection* selection)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::selectionViewsDidChange (UISelection* selection)
+void UIAttributesController::selectionViewsDidChange (UISelection*)
 {
 	validateAttributeViews ();
 }

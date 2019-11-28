@@ -319,12 +319,12 @@ CGLayerRef CGBitmap::createCGLayer (CGContextRef context)
 {
 	if (layer && !dirty)
 		return layer;
-	CGImageRef image = getCGImage ();
-	layer = image ? CGLayerCreateWithContext (context, CGSizeFromCPoint (size), nullptr) : nullptr;
+	CGImageRef cgImage = getCGImage ();
+	layer = cgImage ? CGLayerCreateWithContext (context, CGSizeFromCPoint (size), nullptr) : nullptr;
 	if (layer)
 	{
 		CGContextRef layerContext = CGLayerGetContext (layer);
-		CGContextDrawImage (layerContext, CGRectMake (0, 0, static_cast<CGFloat> (size.x), static_cast<CGFloat> (size.y)), image);
+		CGContextDrawImage (layerContext, CGRectMake (0, 0, static_cast<CGFloat> (size.x), static_cast<CGFloat> (size.y)), cgImage);
 	}
 	return layer;
 }
@@ -341,7 +341,7 @@ void CGBitmap::allocBits ()
 		bits = calloc (1, bitmapByteCount);
 		bitsDataProvider = CGDataProviderCreateWithData (
 		    nullptr, bits, bitmapByteCount,
-		    [] (void* __nullable info, const void* data, size_t size) {
+		    [] (void* __nullable info, const void* data, size_t) {
 			    std::free (const_cast<void*> (data));
 		    });
 	}

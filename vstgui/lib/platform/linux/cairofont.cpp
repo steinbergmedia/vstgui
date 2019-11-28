@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -6,6 +6,7 @@
 #include "../../../lib/cstring.h"
 #include "cairocontext.h"
 #include "linuxstring.h"
+#include "x11frame.h"
 #include <cairo/cairo-ft.h>
 #include <fontconfig/fontconfig.h>
 #include <freetype2/ft2build.h>
@@ -141,6 +142,12 @@ private:
 	{
 		FcInit ();
 		auto config = FcInitLoadConfigAndFonts ();
+		if (!X11::Frame::resourcePath.empty ())
+		{
+			auto fontDir = X11::Frame::resourcePath + "Fonts/";
+			FcConfigAppFontAddDir (config, reinterpret_cast<const FcChar8*> (fontDir.data ()));
+		}
+
 		auto pattern = FcPatternCreate ();
 		auto objectSet = FcObjectSetBuild (FC_FAMILY, FC_FILE, FC_STYLE, nullptr);
 		auto fontList = FcFontList (config, pattern, objectSet);
@@ -260,6 +267,8 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 		}
 		if (styleIt == it->second.styles.end ())
 			styleIt = it->second.styles.find ("Regular");
+		if (styleIt == it->second.styles.end ())
+			styleIt = it->second.styles.begin ();
 		if (styleIt != it->second.styles.end ())
 		{
 			impl->font = ScaledFontHandle (
@@ -333,9 +342,9 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 			{
 				auto color = cairoContext->getFontColor ();
 				const auto& cr = cairoContext->getCairo ();
-				auto alpha = color.alpha * cairoContext->getGlobalAlpha ();
-				cairo_set_source_rgba (cr, color.red / 255., color.green / 255., color.blue / 255.,
-									   alpha);
+				auto alpha = color.normAlpha<double> () * cairoContext->getGlobalAlpha ();
+				cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
+				                       color.normBlue<double> (), alpha);
 				cairo_move_to (cr, p.x, p.y);
 				cairo_set_scaled_font (cr, impl->font);
 				cairo_show_text (cr, linuxString->get ().data ());

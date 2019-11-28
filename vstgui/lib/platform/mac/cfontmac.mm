@@ -18,6 +18,62 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+struct RegisterBundleFonts
+{
+	static void init ()
+	{
+		static RegisterBundleFonts instance;
+	}
+private:
+	static void ErrorApplierFunction (const void *value, void *context)
+	{
+		auto error = CFErrorRef (value);
+		CFShow (error);
+	}
+
+	RegisterBundleFonts ()
+	{
+		fontUrls = CFArrayCreateMutable (kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+		auto fontTypes = {CFSTR ("ttf"), CFSTR ("ttc"), CFSTR ("otf")};
+		for (auto& t : fontTypes)
+			getUrlsForType (t, fontUrls);
+		if (CFArrayGetCount (fontUrls) == 0)
+			return;
+		CFArrayRef errors;
+		if (!CTFontManagerRegisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
+		{
+			CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
+			                      ErrorApplierFunction, nullptr);
+			CFRelease (errors);
+		}
+	}
+	~RegisterBundleFonts ()
+	{
+		if (CFArrayGetCount (fontUrls) == 0)
+			return;
+		CFArrayRef errors;
+		if (!CTFontManagerUnregisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
+		{
+			CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
+			                      ErrorApplierFunction, nullptr);
+			CFRelease (errors);
+		}
+	}
+
+	void getUrlsForType (CFStringRef fontType, CFMutableArrayRef& array)
+	{
+		if (auto a = CFBundleCopyResourceURLsOfType (static_cast<CFBundleRef> (gBundleRef),
+		                                             fontType, CFSTR ("Fonts")))
+		{
+			CFArrayAppendArray (array, a, CFRangeMake (0, CFArrayGetCount (a)));
+			CFRelease (a);
+		}
+	}
+
+	CFMutableArrayRef fontUrls;
+};
+
+//-----------------------------------------------------------------------------
 struct CTVersionCheck
 {
 	CTVersionCheck ()
@@ -46,6 +102,7 @@ SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, cons
 //-----------------------------------------------------------------------------
 bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
+	RegisterBundleFonts::init ();
 #if TARGET_OS_IPHONE
 	NSArray* fonts = [UIFont familyNames];
 #else
@@ -93,6 +150,7 @@ CoreTextFont::CoreTextFont (const UTF8String& name, const CCoord& size, const in
 , leading (0.)
 , capHeight (0.)
 {
+	RegisterBundleFonts::init ();
 	CFStringRef fontNameRef = fromUTF8String<CFStringRef> (name);
 	if (fontNameRef)
 	{

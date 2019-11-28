@@ -29,11 +29,15 @@ void CLayeredViewContainer::setZIndex (uint32_t _zIndex)
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::updateLayerSize ()
 {
+	if (!layer)
+		return;
+
 	CRect newSize = getViewSize ();
 	getTransform ().transform (newSize);
+	auto frame = getFrame ();
 
-	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
-	while (parent && parent != getFrame ())
+	auto* parent = static_cast<CViewContainer*> (getParentView ());
+	while (parent && parent != frame)
 	{
 		CRect parentSize = parent->getViewSize ();
 		parent->getTransform ().transform (newSize);
@@ -41,6 +45,8 @@ void CLayeredViewContainer::updateLayerSize ()
 		newSize.bound (parentSize);
 		parent = static_cast<CViewContainer*> (parent->getParentView ());
 	}
+
+	frame->getTransform ().transform (newSize);
 
 	if (parentLayerView)
 	{
@@ -75,7 +81,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 
 	setParentView (parent);
 	setParentFrame (parent->getFrame ());
-	if (getFrame ())
+	if (auto frame = getFrame ())
 	{
 		while (parent && dynamic_cast<CFrame*>(parent) == nullptr)
 		{
@@ -86,13 +92,13 @@ bool CLayeredViewContainer::attached (CView* parent)
 			}
 			parent = parent->getParentView ();
 		}
-		layer = getFrame ()->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : nullptr);
+		layer = frame->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : nullptr);
 		if (layer)
 		{
 			layer->setZIndex (zIndex);
 			layer->setAlpha (getAlphaValue ());
 			updateLayerSize ();
-			getFrame ()->registerScaleFactorChangedListeneer (this);
+			frame->registerScaleFactorChangedListeneer (this);
 		}
 	}
 	parent = getParentView ();
@@ -108,7 +114,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::registerListeners (bool state)
 {
-	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
+	auto* parent = static_cast<CViewContainer*> (getParentView ());
 	while (parent)
 	{
 		if (state)
@@ -122,8 +128,7 @@ void CLayeredViewContainer::registerListeners (bool state)
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::viewContainerTransformChanged (CViewContainer* container)
 {
-	if (layer)
-		updateLayerSize ();
+	updateLayerSize ();
 }
 
 //-----------------------------------------------------------------------------
@@ -164,10 +169,7 @@ void CLayeredViewContainer::parentSizeChanged ()
 void CLayeredViewContainer::setViewSize (const CRect& rect, bool invalid)
 {
 	CViewContainer::setViewSize (rect, invalid);
-	if (layer)
-	{
-		updateLayerSize ();
-	}
+	updateLayerSize ();
 }
 
 //-----------------------------------------------------------------------------
@@ -213,19 +215,24 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 
 	CGraphicsTransform transform;
 	ParentViews parents;
-
-	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
-	while (parent && parent != getFrame ())
+	auto frame = getFrame ();
+	
+	auto* parent = static_cast<CViewContainer*> (getParentView ());
+	while (parent && parent != frame)
 	{
 		parents.push_front (parent);
 		parent = static_cast<CViewContainer*> (parent->getParentView ());
 	}
-	for (const auto& parent : parents)
-		transform = parent->getTransform () * transform;
+	for (const auto& p : parents)
+		transform = p->getTransform () * transform;
 	
-	const CViewContainer* This = static_cast<const CViewContainer*> (this);
-	if (This)
-		transform = This->getTransform () * transform;
+	auto self = static_cast<const CViewContainer*> (this);
+	if (self)
+		transform = self->getTransform () * transform;
+
+	if (frame)
+		transform = frame->getTransform () * transform;
+
 	return transform;
 }
 

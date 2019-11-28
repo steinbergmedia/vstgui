@@ -349,7 +349,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 	}
 	else if (cmdCategory == "Selection")
 	{
-		if (cmdName == "Select SubViews Of Type")
+		if (cmdName == "Select Children Of Type")
 		{
 			auto submenu = makeOwned<COptionMenu> ();
 			item.setSubmenu (submenu);
@@ -361,7 +361,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			for (auto& entry : viewAndDisplayNames)
 			{
 				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
-				    entry.second.data (), this, "Select SubViews Of Type", entry.first->data ()}));
+				    entry.second.data (), this, "Select Children Of Type", entry.first->data ()}));
 			}
 			return true;
 		}
@@ -501,7 +501,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		undoManager->endGroupAction ();
 		return true;
 	}
-	else if (cmdCategory == "Select SubViews Of Type")
+	else if (cmdCategory == "Select Children Of Type")
 	{
 		auto viewFactory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 		if (!viewFactory)
@@ -510,14 +510,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		for (auto& entry : *selection)
 		{
 			if (auto viewContainer = entry->asViewContainer ())
-			{
-				viewContainer->forEachChild ([&] (auto view) {
-					if (cmdName == viewFactory->getViewName (view))
-					{
-						newSelection.emplace_back (view);
-					}
-				});
-			}
+				getChildrenOfType (viewContainer, cmdName, newSelection);
 		}
 		selection->clear ();
 		for (auto& view : newSelection)
@@ -604,7 +597,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*)
 {
 	COptionMenu* menu = dynamic_cast<COptionMenu*>(view);
 	if (menu)
@@ -722,6 +715,21 @@ void UIEditMenuController::controlEndEdit (CControl* pControl)
 		label->setTransparency (true);
 }
 
+//------------------------------------------------------------------------
+void UIEditMenuController::getChildrenOfType (CViewContainer* container, UTF8StringView type, std::vector<CView*>& result) const
+{
+	auto viewFactory = static_cast<const UIViewFactory*> (description->getViewFactory ());
+	container->forEachChild ([&] (auto view) {
+		if (type == viewFactory->getViewName (view))
+			result.emplace_back (view);
+		if (auto c = view->asViewContainer ())
+		{
+			getChildrenOfType (c, type, result);
+		}
+	});
+}
+
+//------------------------------------------------------------------------
 } // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

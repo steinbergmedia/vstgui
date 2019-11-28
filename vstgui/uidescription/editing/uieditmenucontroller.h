@@ -20,12 +20,12 @@ namespace UIEditing {
 
 //----------------------------------------------------------------------------------------------------
 struct MenuEntry {
-	UTF8StringPtr category;
-	UTF8StringPtr name;
-	UTF8StringPtr key;
-	int32_t modifier;
-	int32_t virtualKey;
-	int32_t menuFlags;
+	UTF8StringPtr category {nullptr};
+	UTF8StringPtr name {nullptr};
+	UTF8StringPtr key {nullptr};
+	int32_t modifier {0};
+	int32_t virtualKey {0};
+	int32_t menuFlags {0};
 	
 	enum {
 		kSubMenu			= (1 << 0),
@@ -33,6 +33,14 @@ struct MenuEntry {
 		kSubMenuCheckStyle	= (1 << 2),
 		kMenuItemIsTitle	= (1 << 3)
 	};
+
+#if defined(_MSC_VER) && _MSC_VER < 1910 // Can be removed when dropping VS 2015 Support
+	MenuEntry (UTF8StringPtr s1 = nullptr, UTF8StringPtr s2 = nullptr, UTF8StringPtr s3 = nullptr,
+	           int32_t i1 = 0, int32_t i2 = 0, int32_t i3 = 0)
+	: category (s1), name (s2), key (s3), modifier (i1), virtualKey (i2), menuFlags (i3)
+	{
+	}
+#endif
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -88,10 +96,13 @@ static const MenuEntry editMenu[] = {
 	{ "SelectionZOrder", "Raise" , 0, kAlt, VKEY_DOWN },
 	kSubMenuEnd,
 	kMenuSeparator,
-	{ "Selection", "Select SubViews Of Type" , 0, 0, 0 },
+	{ "Selection", "Select Children Of Type" , 0, 0, 0 },
 	kMenuSeparator,
+	{ "Selection", "Select Parent(s)" , 0, 0, 0 },
 	{ "Selection", "Select All Children" , 0, 0, 0 },
-	
+	kMenuSeparator,
+	{ "Selection", "Select View in Hierarchy Browser" , 0, 0, 0 },
+
 	kSubMenuEnd,
 	kMenuSeparator,
 	{ "Zoom", "Zoom" , 0, 0, 0, MenuEntry::kSubMenu},
@@ -161,6 +172,8 @@ protected:
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
 
+	void getChildrenOfType (CViewContainer* container, UTF8StringView type, std::vector<CView*>& result) const;
+	
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> description;

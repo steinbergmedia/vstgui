@@ -17,7 +17,9 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIFocusSettingsController : public NonAtomicReferenceCounted, public IDialogController
+class UIFocusSettingsController : public NonAtomicReferenceCounted,
+                                  public IDialogController,
+                                  public IController
 {
 public:
 	UIFocusSettingsController (UIDescription* description, IActionPerformer* actionPerformer);

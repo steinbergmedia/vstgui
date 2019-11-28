@@ -31,9 +31,9 @@ All digit have the same size and are stacked in height in the bitmap.
  * @param background bitmap
  */
 //------------------------------------------------------------------------
-CSpecialDigit::CSpecialDigit (const CRect& size, IControlListener* listener, int32_t tag, int32_t dwPos, int32_t iNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height, CBitmap* background)
+CSpecialDigit::CSpecialDigit (const CRect& size, IControlListener* listener, int32_t tag, int32_t dwPos, int32_t inNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height, CBitmap* background)
 : CControl (size, listener, tag, background)
-, iNumbers (iNumbers)
+, iNumbers (inNumbers)
 , width (width)
 , height (height)
 {
@@ -47,7 +47,7 @@ CSpecialDigit::CSpecialDigit (const CRect& size, IControlListener* listener, int
 		// automatically init xpos/ypos if not provided by caller
 		const int32_t numw = (const int32_t)background->getWidth();
 		int32_t x = (int32_t)size.left;
-		for (int32_t i = 0; i < iNumbers; i++)
+		for (int32_t i = 0; i < inNumbers; i++)
 		{
 			this->xpos[i] = x; 
 			this->ypos[i] = (int32_t)size.top;
@@ -57,14 +57,14 @@ CSpecialDigit::CSpecialDigit (const CRect& size, IControlListener* listener, int
 	else if (xpos && ypos)
 	{
 		// store coordinates of x/y pos of each digit
-		for (int32_t i = 0; i < iNumbers; i++)
+		for (int32_t i = 0; i < inNumbers; i++)
 		{
 			this->xpos[i] = xpos[i];
 			this->ypos[i] = ypos[i];
 		}
 	}
 
-	setMax ((float)pow (10.f, (float)iNumbers) - 1.0f);
+	setMax ((float)pow (10.f, (float)inNumbers) - 1.0f);
 	setMin (0.0f);
 }
 

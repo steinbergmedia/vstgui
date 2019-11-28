@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __vst3groupcontroller__
-#define __vst3groupcontroller__
+#pragma once
 
 #include "../lib/controls/ccontrol.h"
 #include "../uidescription/uidescriptionfwd.h"
@@ -36,10 +35,8 @@ protected:
 	Steinberg::Vst::Parameter* parameter;
 	Steinberg::Vst::EditController* editController;
 	
-	typedef std::vector<CControl*> ControlList;
+	using ControlList = std::vector<CControl*>;
 	ControlList controls;
 };
 
 } // namespace
-
-#endif // __vst3groupcontroller__

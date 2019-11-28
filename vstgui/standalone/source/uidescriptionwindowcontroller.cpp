@@ -2,16 +2,19 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "../../lib/algorithm.h"
 #include "../../lib/cfileselector.h"
 #include "../../lib/cframe.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
+#include "../../lib/controls/cstringlist.h"
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/crect.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/iviewlistener.h"
 #include "../../uidescription/compresseduidescription.h"
 #include "../../uidescription/cstream.h"
+#include "../../uidescription/xmlparser.h"
 #include "../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../uidescription/editing/uieditcontroller.h"
 #include "../../uidescription/editing/uieditmenucontroller.h"
@@ -91,7 +94,7 @@ public:
 
 	const UTF8String& getID () const { return value->getID (); }
 
-	void onBeginEdit (IValue& value) override
+	void onBeginEdit (IValue&) override
 	{
 		for (auto& c : controls)
 		{
@@ -100,7 +103,7 @@ public:
 		}
 	}
 
-	void onEndEdit (IValue& value) override
+	void onEndEdit (IValue&) override
 	{
 		for (auto& c : controls)
 		{
@@ -109,7 +112,7 @@ public:
 		}
 	}
 
-	void onPerformEdit (IValue& value, IValue::Type newValue) override
+	void onPerformEdit (IValue&, IValue::Type newValue) override
 	{
 		auto newControlValue = static_cast<float> (newValue);
 		for (auto& c : controls)
@@ -124,10 +127,18 @@ public:
 
 	void updateControlOnStateChange (CControl* control) const
 	{
+		control->setMouseEnabled (value->isActive ());
+
+		auto listcontrol = dynamic_cast<CListControl*>(control);
+		auto stepValue = dynamicPtrCast<const IStepValue> (value);
+		if (listcontrol && stepValue)
+		{
+			control->setMin (0.f);
+			control->setMax (static_cast<float> (stepValue->getSteps () - 1));
+			return;
+		}
 		control->setMin (0.f);
 		control->setMax (1.f);
-		control->setMouseEnabled (value->isActive ());
-		auto stepValue = dynamicPtrCast<const IStepValue> (value);
 		if (!stepValue)
 			return;
 		const auto& valueConverter = value->getConverter ();
@@ -140,7 +151,7 @@ public:
 				menu->addEntry (title);
 			}
 		}
-		if (auto segmentButton = dynamic_cast<CSegmentButton*> (control))
+		else if (auto segmentButton = dynamic_cast<CSegmentButton*> (control))
 		{
 			segmentButton->removeAllSegments ();
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
@@ -153,7 +164,7 @@ public:
 		}
 	}
 
-	void onStateChange (IValue& value) override
+	void onStateChange (IValue&) override
 	{
 		for (auto& c : controls)
 		{
@@ -179,8 +190,8 @@ public:
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
 			paramDisplay->setValueToStringFunction2 (
-			    [this] (float value, std::string& utf8String, CParamDisplay* display) {
-				    utf8String = this->value->getConverter ().valueAsString (value);
+			    [this] (float val, std::string& utf8String, CParamDisplay* display) {
+				    utf8String = this->value->getConverter ().valueAsString (val);
 				    return true;
 			    });
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
@@ -193,6 +204,19 @@ public:
 					    result = static_cast<float> (v);
 					    return true;
 				    });
+			}
+		}
+		else if (auto listControl = dynamic_cast<CListControl*> (control))
+		{
+			if (auto stringListDrawer =
+			        dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
+			{
+				stringListDrawer->setStringProvider ([this] (int32_t row) {
+					auto min = this->value->getConverter ().normalizedToPlain (0.);
+					auto norm = this->value->getConverter ().plainToNormalized (row + min);
+					auto string = this->value->getConverter ().valueAsString (norm);
+					return shared (string.getPlatformString ());
+				});
 			}
 		}
 		updateControlOnStateChange (control);
@@ -226,6 +250,14 @@ protected:
 			paramDisplay->setValueToStringFunction (nullptr);
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
 				textEdit->setStringToValueFunction (nullptr);
+		}
+		else if (auto listControl = dynamic_cast<CListControl*> (control))
+		{
+			if (auto stringListDrawer =
+			        dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
+			{
+				stringListDrawer->setStringProvider (nullptr);
+			}
 		}
 		control->unregisterViewListener (this);
 		control->unregisterControlListener (this);
@@ -266,14 +298,14 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		}
 	}
 
-	virtual bool init (WindowPtr& inWindow, const char* fileName, const char* templateName)
+	virtual bool init (WindowPtr& inWindow, const char* inFileName, const char* inTemplateName)
 	{
 		window = inWindow.get ();
-		if (!initUIDesc (fileName))
+		if (!initUIDesc (inFileName))
 			return false;
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
-		this->templateName = templateName;
+		templateName = inTemplateName;
 
 		showView ();
 
@@ -281,10 +313,11 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		return true;
 	}
 
-	bool initStatic (WindowPtr& inWindow, UTF8String xml, const char* templateName)
+	bool initStatic (WindowPtr& inWindow, UTF8String inXml, const char* inTemplateName)
 	{
 		window = inWindow.get ();
-		Xml::MemoryContentProvider xmlContentProvider (xml, static_cast<uint32_t> (xml.length ()));
+		Xml::MemoryContentProvider xmlContentProvider (inXml,
+		                                               static_cast<uint32_t> (inXml.length ()));
 		uiDesc = makeOwned<UIDescription> (&xmlContentProvider);
 		if (!uiDesc->parse ())
 			return false;
@@ -293,7 +326,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
-		this->templateName = templateName;
+		templateName = inTemplateName;
 
 		showView ();
 
@@ -587,10 +620,10 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
 	{
-		auto it = std::find_if (valueWrappers.begin (), valueWrappers.end (),
-		                        [&] (const ValueWrapperPtr& v) { return v->getID () == name; });
-		if (it != valueWrappers.end ())
-			return static_cast<int32_t> (std::distance (valueWrappers.begin (), it));
+		if (auto index =
+		        indexOfTest (valueWrappers.begin (), valueWrappers.end (),
+		                     [&] (const ValueWrapperPtr& v) { return v->getID () == name; }))
+			return *index;
 		return registeredTag;
 	}
 
@@ -605,6 +638,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		auto* control = dynamic_cast<CControl*> (view);
 		if (control)
 		{
+			if (control->getListener () == nullptr)
+				control->setListener (this);
 			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
 			if (index < valueWrappers.size ())
 			{

@@ -6,6 +6,7 @@
 
 #include "vstguibase.h"
 #include "vstguifwd.h"
+#include <cmath>
 
 namespace VSTGUI {
 
@@ -87,9 +88,35 @@ struct CColor
 	void fromHSL (double hue, double saturation, double lightness);
 	
 	/** get the luma of the color */
-	constexpr uint8_t getLuma () const { return (uint8_t)((float)red * 0.3f + (float)green * 0.59f + (float)blue * 0.11f); }
+	inline constexpr uint8_t getLuma () const;
 	/** get the lightness of the color */
 	uint8_t getLightness () const;
+
+	/** get the normalized red value */
+	template<typename T>
+	constexpr T normRed () const;
+	/** get the normalized green value */
+	template<typename T>
+	constexpr T normGreen () const;
+	/** get the normalized blue value */
+	template<typename T>
+	constexpr T normBlue () const;
+	/** get the normalized alpha value */
+	template<typename T>
+	constexpr T normAlpha () const;
+
+	/** set the red value normalized */
+	template<typename T>
+	void setNormRed (T v);
+	/** set the green value normalized */
+	template<typename T>
+	void setNormGreen (T v);
+	/** set the blue value normalized */
+	template<typename T>
+	void setNormBlue (T v);
+	/** set the alpha value normalized */
+	template<typename T>
+	void setNormAlpha (T v);
 	//@}
 	
 	bool fromString (UTF8StringPtr str);
@@ -106,11 +133,14 @@ struct CColor
 	uint8_t alpha {255};
 };
 
-inline constexpr CColor MakeCColor (uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0, uint8_t alpha = 255)
+//-----------------------------------------------------------------------------
+inline constexpr CColor MakeCColor (uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0,
+                                    uint8_t alpha = 255)
 {
 	return CColor (red, green, blue, alpha);
 }
 
+//-----------------------------------------------------------------------------
 // define some basic colors
 constexpr const CColor kTransparentCColor	= CColor (255, 255, 255,   0);
 constexpr const CColor kBlackCColor			= CColor (  0,   0,   0, 255);
@@ -122,5 +152,73 @@ constexpr const CColor kBlueCColor			= CColor (  0,   0, 255, 255);
 constexpr const CColor kYellowCColor		= CColor (255, 255,   0, 255);
 constexpr const CColor kMagentaCColor		= CColor (255,   0, 255, 255);
 constexpr const CColor kCyanCColor			= CColor (  0, 255, 255, 255);
+
+//-----------------------------------------------------------------------------
+inline constexpr uint8_t CColor::getLuma () const
+{
+	return static_cast<uint8_t> (static_cast<float> (red) * 0.3f +
+	                             static_cast<float> (green) * 0.59f +
+	                             static_cast<float> (blue) * 0.11f);
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+constexpr T CColor::normRed () const
+{
+	return static_cast<T> (red) / static_cast<T> (255.);
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+constexpr T CColor::normGreen () const
+{
+	return static_cast<T> (green) / static_cast<T> (255.);
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+constexpr T CColor::normBlue () const
+{
+	return static_cast<T> (blue) / static_cast<T> (255.);
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+constexpr T CColor::normAlpha () const
+{
+	return static_cast<T> (alpha) / static_cast<T> (255.);
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+void CColor::setNormRed (T v)
+{
+	vstgui_assert (v >= 0. && v <= 1.);
+	red = static_cast<uint8_t> (std::round (v * 255.));
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+void CColor::setNormGreen (T v)
+{
+	vstgui_assert (v >= 0. && v <= 1.);
+	green = static_cast<uint8_t> (std::round (v * 255.));
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+void CColor::setNormBlue (T v)
+{
+	vstgui_assert (v >= 0. && v <= 1.);
+	blue = static_cast<uint8_t> (std::round (v * 255.));
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+void CColor::setNormAlpha (T v)
+{
+	vstgui_assert (v >= 0. && v <= 1.);
+	alpha = static_cast<uint8_t> (std::round (v * 255.));
+}
 
 } // VSTGUI

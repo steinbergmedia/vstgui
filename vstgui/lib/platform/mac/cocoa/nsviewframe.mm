@@ -17,6 +17,8 @@
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
+#import "../../common/genericoptionmenu.h"
+#import "../../../cframe.h"
 
 #if MAC_CARBON
 	#import "../carbon/hiviewframe.h"
@@ -101,6 +103,7 @@ static BOOL VSTGUI_NSView_acceptsFirstResponder (id self, SEL _cmd) { return YES
 static BOOL VSTGUI_NSView_canBecomeKeyView (id self, SEL _cmd) { return YES; }
 static BOOL VSTGUI_NSView_wantsDefaultClipping (id self, SEL _cmd) { return NO; }
 static NSFocusRingType VSTGUI_NSView_focusRingType (id self) { return NSFocusRingTypeNone; }
+static BOOL VSTGUI_NSView_shouldBeTreatedAsInkEvent (id self, SEL _cmd, NSEvent *event) { return NO; }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_makeSubViewFirstResponder (id self, SEL _cmd, NSResponder* newFirstResponder)
@@ -618,11 +621,11 @@ static void VSTGUI_NSView_draggingSessionWillBeginAtPoint (id self, SEL _cmd, NS
 	NSViewFrame* frame = getNSViewFrame (self);
 	if (!frame)
 		return;
-	if (auto session = frame->getDraggingSession ())
+	if (auto dragSession = frame->getDraggingSession ())
 	{
 		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
 		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
-		session->dragWillBegin (pos);
+		dragSession->dragWillBegin (pos);
 	}
 }
 
@@ -632,11 +635,11 @@ static void VSTGUI_NSView_draggingSessionMovedToPoint (id self, SEL _cmd, NSDrag
 	NSViewFrame* frame = getNSViewFrame (self);
 	if (!frame)
 		return;
-	if (auto session = frame->getDraggingSession ())
+	if (auto dragSession = frame->getDraggingSession ())
 	{
 		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
 		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
-		session->dragMoved (pos);
+		dragSession->dragMoved (pos);
 	}
 }
 
@@ -646,7 +649,7 @@ static void VSTGUI_NSView_draggingSessionEndedAtPoint (id self, SEL _cmd, NSDrag
 	NSViewFrame* frame = getNSViewFrame (self);
 	if (!frame)
 		return;
-	if (auto session = frame->getDraggingSession ())
+	if (auto dragSession = frame->getDraggingSession ())
 	{
 		DragOperation result;
 		switch (operation)
@@ -657,7 +660,7 @@ static void VSTGUI_NSView_draggingSessionEndedAtPoint (id self, SEL _cmd, NSDrag
 		}
 		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
 		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
-		session->dragEnded (pos, result);
+		dragSession->dragEnded (pos, result);
 		frame->clearDraggingSession ();
 	}
 }
@@ -747,6 +750,7 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(isOpaque), IMP (VSTGUI_NSView_isOpaque), "B@:@:"))
 		sprintf (funcSig, "v@:@:%s:", nsRectEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), funcSig))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(shouldBeTreatedAsInkEvent:), IMP(VSTGUI_NSView_shouldBeTreatedAsInkEvent), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseDown:), IMP (VSTGUI_NSView_onMouseDown), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseUp:), IMP (VSTGUI_NSView_onMouseUp), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseMoved:), IMP (VSTGUI_NSView_onMouseMoved), "B@:@:^:"))
@@ -1118,6 +1122,23 @@ Optional<UTF8String> NSViewFrame::convertCurrentKeyEventToText ()
 }
 
 //-----------------------------------------------------------------------------
+bool NSViewFrame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
+{
+	if (!use)
+	{
+		genericOptionMenuTheme = nullptr;
+	}
+	else
+	{
+		if (theme)
+			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+		else
+			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme);
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
 	return makeOwned<CocoaTextEdit> (nsView, textEdit);
@@ -1126,6 +1147,13 @@ SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformT
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 {
+	if (genericOptionMenuTheme)
+	{
+		CButtonState buttons;
+		getCurrentMouseButtons (buttons);
+		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttons,
+		                                     *genericOptionMenuTheme.get ());
+	}
 	return makeOwned<NSViewOptionMenu> ();
 }
 
@@ -1369,7 +1397,7 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 		[textfield setDrawsBackground:NO];
 		[window.contentView addSubview:textfield];
 	}
-	auto paragrapheStyle = [NSMutableParagraphStyle new];
+	auto paragrapheStyle = [[NSMutableParagraphStyle new] autorelease];
 	[paragrapheStyle setParagraphStyle:[NSParagraphStyle defaultParagraphStyle]];
 	paragrapheStyle.alignment = NSTextAlignmentCenter;
 	auto string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];

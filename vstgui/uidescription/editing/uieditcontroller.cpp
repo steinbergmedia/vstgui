@@ -23,7 +23,9 @@
 #include "uidialogcontroller.h"
 #include "uitemplatesettingscontroller.h"
 #include "uifocussettingscontroller.h"
+#include "../cstream.h"
 #include "../uiattributes.h"
+#include "../xmlparser.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
 #include "../../lib/controls/csearchtextedit.h"
@@ -352,7 +354,7 @@ public:
 				appendContextMenuItems (*menu, zoomValueControl, CPoint ());
 				menu->popup (zoomValueControl->getFrame (),
 				             zoomValueControl->translateToGlobal (
-				                 zoomValueControl->getViewSize ().getTopLeft ()));
+				                 zoomValueControl->getViewSize ().getTopLeft (), true));
 			}, 250);
 		}
 		return kMouseEventNotHandled;
@@ -403,11 +405,14 @@ UIEditController::UIEditController (UIDescription* description)
 //----------------------------------------------------------------------------------------------------
 UIEditController::~UIEditController ()
 {
+	selection->clear ();
 	if (templateController)
 		templateController->unregisterListener (this);
 	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
 	editorDesc = nullptr;
+	templateController = nullptr;
+	undoManager->clear ();
 	gUIDescription.tryFree ();
 }
 
@@ -445,7 +450,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 			editView = new UIEditView (CRect (0, 0, 0, 0), editDescription);
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
-			editView->setGrid (gridController);
+			editView->setGridProcessor (gridController);
 			editView->setupColors (description);
 			return editView;
 		}
@@ -931,16 +936,17 @@ void UIEditController::showTemplateSettings ()
 	{
 		updateTemplate (editTemplateName.c_str ());
 	}
-	auto* dc = new UIDialogController (this, editView->getFrame ());
-	auto* tsController = new UITemplateSettingsController (editTemplateName, editDescription, this);
+	auto dc = new UIDialogController (this, editView->getFrame ());
+	auto tsController =
+	    makeOwned<UITemplateSettingsController> (editTemplateName, editDescription, this);
 	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::showFocusSettings ()
 {
-	auto* dc = new UIDialogController (this, editView->getFrame ());
-	auto* fsController = new UIFocusSettingsController (editDescription, this);
+	auto dc = new UIDialogController (this, editView->getFrame ());
+	auto fsController = makeOwned<UIFocusSettingsController> (editDescription, this);
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 
@@ -1034,6 +1040,16 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 		if (cmdName == "Select All Children")
 		{
 			doSelectAllChildren ();
+			return kMessageNotified;
+		}
+		if (cmdName == "Select Parent(s)")
+		{
+			doSelectParents ();
+			return kMessageNotified;
+		}
+		if (cmdName == "Select View in Hierarchy Browser")
+		{
+			doSelectViewInHierarchyBrowser (selection->first ());
 			return kMessageNotified;
 		}
 	}
@@ -1161,8 +1177,22 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 	{
 		if (cmdName == "Select All Children")
 		{
-			bool enable = selection->total () == 1 && selection->first () && selection->first ()->asViewContainer ();
+			bool enable = selection->total () == 1 && selection->first () &&
+			              selection->first ()->asViewContainer ();
 			item->setEnabled (enable);
+			return kMessageNotified;
+		}
+		if (cmdName == "Select Parent(s)")
+		{
+			bool enable =
+			    selection->total () > 0 && selection->first () != editView->getEditView ();
+			item->setEnabled (enable);
+			item->setTitle (selection->total () > 1 ? "Select Parents" : "Select Parent");
+			return kMessageNotified;
+		}
+		if (cmdName == "Select View in Hierarchy Browser")
+		{
+			item->setEnabled (selection->total () == 1);
 			return kMessageNotified;
 		}
 	}
@@ -1215,7 +1245,8 @@ bool UIEditController::doZOrderAction (bool lower)
 	if (selection->total () == 1)
 	{
 		CView* view = selection->first ();
-		undoManager->pushAndPerform (new HierarchyMoveViewOperation (view, selection, lower));
+		undoManager->pushAndPerform (
+		    new HierarchyMoveViewOperation (view, selection, lower ? -1 : 1));
 		return true;
 	}
 	return false;
@@ -1232,6 +1263,35 @@ void UIEditController::doSelectAllChildren ()
 		if (factory->getViewName (view))
 			selection->add (view);
 	});
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::doSelectParents ()
+{
+	UISelection::DeferChange dc (*selection);
+	std::vector<CView*> parents;
+	auto factory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	for (auto& view : *selection)
+	{
+		if (auto parent = view->getParentView ())
+		{
+			while (factory->getViewName (parent) == nullptr)
+			{
+				parent = parent->getParentView ();
+			}
+			if (parent && std::find (parents.begin (), parents.end (), parent) == parents.end ())
+				parents.emplace_back (parent);
+		}
+	}
+	selection->clear ();
+	for (auto& parent : parents)
+		selection->add (parent);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::doSelectViewInHierarchyBrowser (CView* view)
+{
+	templateController->navigateTo (view);
 }
 
 //----------------------------------------------------------------------------------------------------

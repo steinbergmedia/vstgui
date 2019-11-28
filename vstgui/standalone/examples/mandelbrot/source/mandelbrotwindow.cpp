@@ -44,9 +44,9 @@ inline CColor calculateColor (uint32_t iteration, double maxIterationInv)
 {
 	CColor color;
 	const auto t = static_cast<double> (iteration) * maxIterationInv;
-	color.red = static_cast<uint8_t> (9. * (1. - t) * t * t * t * 255.);
-	color.green = static_cast<uint8_t> (15. * (1. - t) * (1. - t) * t * t * 255.);
-	color.blue = static_cast<uint8_t> (8.5 * (1. - t) * (1. - t) * (1. - t) * t * 255.);
+	color.setNormRed (9. * (1. - t) * t * t * t);
+	color.setNormGreen (15. * (1. - t) * (1. - t) * t * t);
+	color.setNormBlue (8.5 * (1. - t) * (1. - t) * (1. - t) * t);
 	return color;
 }
 
@@ -259,7 +259,7 @@ struct ViewController : DelegationController,
 		}
 	}
 
-	void modelChanged (const Model& model) override { updateMandelbrot (); }
+	void modelChanged (const Model&) override { updateMandelbrot (); }
 
 	void updateMandelbrot ()
 	{

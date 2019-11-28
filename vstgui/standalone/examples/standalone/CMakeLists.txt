@@ -3,7 +3,7 @@
 ##########################################################################################
 set(target standalone)
 
-set(${target}_sources
+set(standalone_sources
   "source/AlertBoxDesign.cpp"
   "source/AlertBoxDesign.h"
   "source/testabout.cpp"
@@ -15,18 +15,23 @@ set(${target}_sources
 )
 
 set(standalone_resources
-"resource/about.uidesc"
-"resource/alertbox.uidesc"
-"resource/resources.uidesc"
-"resource/test.uidesc"
-"resource/testpopup.uidesc"
+  "resource/about.uidesc"
+  "resource/alertbox.uidesc"
+  "resource/resources.uidesc"
+  "resource/test.uidesc"
+  "resource/testpopup.uidesc"
+)
+
+set(standalone_font
+  "resource/font/EffectsEighty.ttf"
 )
 
 ##########################################################################################
-vstgui_add_executable(${target} "${${target}_sources}" "${standalone_resources}")
+vstgui_add_executable(${target} "${standalone_sources}")
+vstgui_add_resources(${target} "${standalone_resources}")
+vstgui_add_resources(${target} "${standalone_font}" "Fonts")
 vstgui_set_target_infoplist(${target} "resource/Info.plist")
 vstgui_set_target_rcfile(${target} "resource/standalone.rc")
 vstgui_set_cxx_version(${target} 14)
 target_include_directories(${target} PRIVATE ../../../../)
 set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES_FOLDER})
-

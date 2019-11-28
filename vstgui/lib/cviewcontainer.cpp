@@ -472,7 +472,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView)
 	{
-		CView* view = dynamic_cast<CView*> (sender);
+		auto* view = dynamic_cast<CView*> (sender);
 		if (view && isChild (view, false) && getFrame ()->focusDrawingEnabled ())
 		{
 			CCoord width = getFrame ()->getFocusWidth ();
@@ -688,12 +688,15 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 		{
 			if (newIndex == oldIndex)
 				return true;
+			if (newIndex > oldIndex)
+				++newIndex;
+
 			auto dest = pImpl->children.begin ();
 			std::advance (dest, newIndex);
-			if (newIndex > oldIndex)
-				pImpl->children.splice (src, pImpl->children, dest);
-			else
-				pImpl->children.splice (dest, pImpl->children, src);
+
+			pImpl->children.insert (dest, view);
+			pImpl->children.erase (src);
+
 			pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
 				listener->viewContainerViewZOrderChanged (this, view);
 			});
@@ -994,17 +997,24 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 						return kMouseEventHandled;
 				}
 			}
-
-			if (pV->wantsFocus ())
-				getFrame ()->setFocusView (pV);
-
+			auto frame = getFrame ();
+			auto previousFocusView = frame ? frame->getFocusView () : nullptr;
 			auto result = pV->callMouseListener (MouseListenerCall::MouseDown, where2, buttons);
 			if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
 				result = pV->onMouseDown (where2, buttons);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
-				if (pV->getNbReference () > 1 && result == kMouseEventHandled)
-					setMouseDownView (pV);
+				if (pV->getNbReference () >1)
+				{
+					if (pV->wantsFocus () && frame && frame->getFocusView () == previousFocusView &&
+					    dynamic_cast<CControl*> (pV.get ()))
+					{
+						getFrame ()->setFocusView (pV);
+					}
+
+					if (result == kMouseEventHandled)
+						setMouseDownView (pV);
+				}
 				return result;
 			}
 			if (!pV->getTransparency ())
@@ -1063,7 +1073,9 @@ CMouseEventResult CViewContainer::onMouseCancel ()
 	{
 		CBaseObjectGuard crg (mouseDownView);
 		mouseDownView->callMouseListener (MouseListenerCall::MouseCancel, {}, 0);
-		return mouseDownView->onMouseCancel ();
+		auto result = mouseDownView->onMouseCancel ();
+		clearMouseDownView ();
+		return result;
 	}
 	return kMouseEventHandled;
 }
@@ -1086,12 +1098,6 @@ bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, 
 		}
 	}
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool CViewContainer::onWheel (const CPoint &where, const float &distance, const CButtonState &buttons)
-{
-	return onWheel (where, kMouseWheelAxisY, distance, buttons);
 }
 
 //-----------------------------------------------------------------------------

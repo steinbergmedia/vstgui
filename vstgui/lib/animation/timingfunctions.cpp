@@ -104,7 +104,7 @@ CubicBezierTimingFunction::CubicBezierTimingFunction (uint32_t milliseconds, CPo
 }
 
 //-----------------------------------------------------------------------------
-CPoint CubicBezierTimingFunction::lerp (CPoint p1, CPoint p2, float pos) const
+CPoint CubicBezierTimingFunction::lerp (CPoint p1, CPoint p2, float pos)
 {
 	return p1 * (1.f - pos) + p2 * pos;
 }

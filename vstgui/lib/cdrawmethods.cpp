@@ -9,6 +9,7 @@
 #include "platform/iplatformfont.h"
 
 namespace VSTGUI {
+
 namespace CDrawMethods {
 
 //------------------------------------------------------------------------

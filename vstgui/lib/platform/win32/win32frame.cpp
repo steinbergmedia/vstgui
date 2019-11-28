@@ -17,6 +17,7 @@
 #include "win32support.h"
 #include "win32datapackage.h"
 #include "win32dragging.h"
+#include "../common/genericoptionmenu.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
 
@@ -458,6 +459,13 @@ SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTe
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 {
+	if (genericOptionMenuTheme)
+	{
+		CButtonState buttons;
+		getCurrentMouseButtons (buttons);
+		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttons,
+		                                     *genericOptionMenuTheme.get ());
+	}
 	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
 }
 
@@ -539,6 +547,23 @@ SharedPointer<IDataPackage> Win32Frame::getClipboard ()
 void Win32Frame::onFrameClosed ()
 {
 	frame = nullptr;
+}
+
+//-----------------------------------------------------------------------------
+bool Win32Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
+{
+	if (!use)
+	{
+		genericOptionMenuTheme = nullptr;
+	}
+	else
+	{
+		if (theme)
+			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+		else
+			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme);
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -725,7 +750,8 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
 			ScreenToClient (windowHandle, &p);
 			CPoint where (p.x, p.y);
-			pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, ((float)zDelta / WHEEL_DELTA), buttons);
+			if (pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, ((float)zDelta / WHEEL_DELTA), buttons))
+				return 0;
 			break;
 		}
 		case WM_MOUSEHWHEEL:	// new since vista
@@ -741,7 +767,8 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
 			ScreenToClient (windowHandle, &p);
 			CPoint where (p.x, p.y);
-			pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, ((float)-zDelta / WHEEL_DELTA), buttons);
+			if (pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, ((float)-zDelta / WHEEL_DELTA), buttons))
+				return 0;
 			break;
 		}
 		case WM_CTLCOLOREDIT:

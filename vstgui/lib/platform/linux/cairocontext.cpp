@@ -158,9 +158,10 @@ void Context::restoreGlobalState ()
 //-----------------------------------------------------------------------------
 void Context::setSourceColor (CColor color)
 {
-	auto alpha = color.alpha / 255.;
+	auto alpha = color.normAlpha<double> ();
 	alpha *= getGlobalAlpha ();
-	cairo_set_source_rgba (cr, color.red / 255., color.green / 255., color.blue / 255., alpha);
+	cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
+	                       color.normBlue<double> (), alpha);
 	checkCairoStatus (cr);
 }
 

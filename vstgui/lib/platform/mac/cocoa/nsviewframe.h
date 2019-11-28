@@ -82,6 +82,7 @@ public:
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
 	void onFrameClosed () override {}
 	Optional<UTF8String> convertCurrentKeyEventToText () override;
+	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override;
 
 	// IPlatformFrameTouchBarExtension
 	void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) override;
@@ -96,7 +97,8 @@ protected:
 	SharedPointer<IDataPackage> dragDataPackage;
 	SharedPointer<ITouchBarCreator> touchBarCreator;
 	SharedPointer<NSViewDraggingSession> draggingSession;
-
+	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
+	
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult lastDragOperationResult;
 #endif

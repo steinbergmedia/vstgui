@@ -117,7 +117,7 @@ class ResourceStream : public IStream
 {
 public:
 	ResourceStream ();
-	~ResourceStream () noexcept = default;
+	virtual ~ResourceStream () noexcept = default;
 
 	bool open (const CResourceDescription& resourceDesc, const char* type);
 

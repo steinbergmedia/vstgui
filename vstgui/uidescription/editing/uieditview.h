@@ -19,7 +19,7 @@ class UIDescription;
 class IUIDescription;
 class UICrossLines;
 class ViewSizeChangeOperation;
-class UIGrid;
+class IGridProcessor;
 namespace UIEditViewInternal {
 	class UIHighlightView;
 } // UIEditViewInternal
@@ -47,7 +47,7 @@ public:
 	void setSelection (UISelection* selection);
 	UISelection* getSelection ();
 	
-	void setGrid (UIGrid* grid);
+	void setGridProcessor (IGridProcessor* grid);
 
 	void setupColors (const IUIDescription* description);
 	
@@ -57,7 +57,10 @@ protected:
 	enum class MouseEditMode {
 		NoEditing,
 		DragEditing,
-		SizeEditing
+		SizeEditing,
+		LassoSelection,
+		WaitDrag,
+		WaitLasso,
 	};
 
 	enum class MouseSizeMode {
@@ -72,6 +75,7 @@ protected:
 		Bottom
 	};
 
+	void updateSize ();
 	void invalidSelection ();
 	MouseSizeMode selectionHitTest (const CPoint& where, CView** resultView);
 	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
@@ -81,6 +85,8 @@ protected:
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
+
+	std::vector<CView*> findChildsInArea (CViewContainer* view, CRect r) const;
 
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);
@@ -118,16 +124,19 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UISelection> dragSelection;
 	UIDescription* description {nullptr};
-	SharedPointer<UIGrid> grid;
+	SharedPointer<IGridProcessor> gridProcessor;
 	
 	UIEditViewInternal::UIHighlightView* highlightView {nullptr};
 	CLayeredViewContainer* overlayView {nullptr};
 	UICrossLines* lines {nullptr};
 	ViewSizeChangeOperation* moveSizeOperation {nullptr};
 	SharedPointer<CVSTGUITimer> editTimer;
+	DragStartMouseObserver dragStartMouseObserver;
 	
 	CColor crosslineForegroundColor;
 	CColor crosslineBackgroundColor;
+	CColor lassoFillColor;
+	CColor lassoFrameColor;
 	CColor viewHighlightColor;
 	CColor viewSelectionColor;
 };

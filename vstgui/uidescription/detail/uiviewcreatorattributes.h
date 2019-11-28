@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiviewcreatorattributes__
-#define __uiviewcreatorattributes__
+#pragma once
 
 #include "../iuidescription.h"
 #include <cstring>
@@ -47,6 +46,7 @@ static const IdStringPtr kCSlider = "CSlider";
 static const IdStringPtr kCVuMeter = "CVuMeter";
 static const IdStringPtr kCAnimationSplashScreen = "CAnimationSplashScreen";
 static const IdStringPtr kCGradientView = "CGradientView";
+static const IdStringPtr kCStringListControl = "CStringListControl";
 
 //-----------------------------------------------------------------------------
 // attributes used in more than one view creator
@@ -81,6 +81,7 @@ static const std::string kAttrAutosize = "autosize";
 static const std::string kAttrTooltip = "tooltip";
 static const std::string kAttrCustomViewName = IUIDescription::kCustomViewName;
 static const std::string kAttrSubController = "sub-controller";
+static const std::string kAttrUIDescLabel = "uidesc-label";
 static const std::string kAttrOpacity = "opacity";
 
 //-----------------------------------------------------------------------------
@@ -304,8 +305,34 @@ static const std::string kAttrDrawAntialiased = "draw-antialiased";
 static const std::string kAttrRadialCenter = "radial-center";
 static const std::string kAttrRadialRadius = "radial-radius";
 
+//------------------------------------------------------------------------
+// StringListControlCreator attributes
+//------------------------------------------------------------------------
+static const std::string kAttrSelectedFontColor = "font-color-selected";
+static const std::string kAttrSelectedBackColor = "back-color-selected";
+static const std::string kAttrLineColor = "line-color";
+static const std::string kAttrLineWidth = "line-width";
+static const std::string kAttrHoverColor = "hover-color";
+static const std::string kAttrRowHeight = "row-height";
+static const std::string kAttrStyleHover = "style-hover";
+
+//------------------------------------------------------------------------
+// Some globally used strings
+//------------------------------------------------------------------------
+static constexpr auto strTrue = "true";
+static constexpr auto strFalse = "false";
+static constexpr auto strHorizontal = "horizontal";
+static constexpr auto strVertical = "vertical";
+static constexpr auto strHorizontalInverse = "horizontal-inverse";
+static constexpr auto strVerticalInverse = "vertical-inverse";
+
+static constexpr auto strNone = "none";
+static constexpr auto strHead = "head";
+static constexpr auto strTail = "tail";
+
+static constexpr auto strLeft = "left";
+static constexpr auto strRight = "right";
+static constexpr auto strCenter = "center";
 
 } // UIViewCreator
 } // VSTGUI
-
-#endif /* __uiviewcreatorattributes__ */

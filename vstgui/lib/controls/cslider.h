@@ -1,20 +1,16 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #pragma once
 
-#include "ccontrol.h"
 #include "../ccolor.h"
+#include "ccontrol.h"
 
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
-// CSlider Declaration
-//! @brief a slider control
-/// @ingroup controls
-//-----------------------------------------------------------------------------
-class CSlider : public CControl, protected CMouseWheelEditingSupport
+//------------------------------------------------------------------------
+class CSliderBase : public CControl, protected CMouseWheelEditingSupport
 {
 private:
 	enum StyleEnum
@@ -26,39 +22,8 @@ private:
 		StyleTop,
 		StyleBottom,
 	};
+
 public:
-	CSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
-	CSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
-	CSlider (const CSlider& slider);
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	enum Mode {
-		kTouchMode,
-		kRelativeTouchMode,
-		kFreeClickMode,
-		kRampMode
-	};
-#endif
-	//-----------------------------------------------------------------------------
-	/// @name CSlider Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	VSTGUI_DEPRECATED (virtual void setDrawTransparentHandle (bool val) {})
-	VSTGUI_DEPRECATED (virtual bool getDrawTransparentHandle () const { return true; })
-	VSTGUI_DEPRECATED (virtual void setMode (Mode newMode);)
-	VSTGUI_DEPRECATED (virtual Mode getMode () const;)
-	virtual void setOffsetHandle (const CPoint& val);
-	virtual CPoint getOffsetHandle () const;
-	virtual void setOffset (const CPoint& val);
-	virtual CPoint getOffset () const;
-
-	virtual void setSliderMode (CSliderMode mode);
-	CSliderMode getSliderMode () const;
-	CSliderMode getEffectiveSliderMode () const;
-
-	static void setGlobalMode (CSliderMode mode);
-	static CSliderMode getGlobalMode ();
-
 	enum Style
 	{
 		kHorizontal = 1 << StyleHorizontal,
@@ -69,26 +34,113 @@ public:
 		kBottom = 1 << StyleBottom,
 	};
 
-	virtual void setStyle (int32_t style);
-	virtual int32_t getStyle () const;
+	CSliderBase (const CRect& size, IControlListener* listener, int32_t tag);
+	CSliderBase (const CSliderBase& slider);
 
-	virtual void     setHandle (CBitmap* pHandle);
+	void setOffsetHandle (const CPoint& val);
+	CPoint getOffsetHandle () const;
+
+	void setStyle (int32_t style);
+	int32_t getStyle () const;
+	bool isStyleHorizontal () const;
+	bool isStyleRight () const;
+	bool isStyleBottom () const;
+	bool isInverseStyle () const;
+
+	void setZoomFactor (float val);
+	float getZoomFactor () const;
+
+	void setSliderMode (CSliderMode mode);
+	CSliderMode getSliderMode () const;
+	CSliderMode getEffectiveSliderMode () const;
+
+	static void setGlobalMode (CSliderMode mode);
+	static CSliderMode getGlobalMode ();
+
+	// overrides
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance,
+	              const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+
+	void setViewSize (const CRect& rect, bool invalid) override;
+
+	static bool kAlwaysUseZoomFactor;
+
+protected:
+	~CSliderBase () noexcept;
+
+	CRect calculateHandleRect (float normValue) const;
+
+	// for sub-classes to access private variables:
+	void setHandleSizePrivate (CCoord width, CCoord height);
+	CPoint getHandleSizePrivate () const;
+	CPoint getControlSizePrivate () const;
+	void setHandleRangePrivate (CCoord range);
+	void setHandleMinPosPrivate (CCoord pos);
+	CCoord getHandleMinPosPrivate () const;
+
+private:
+	void updateInternalHandleValues ();
+	float calculateDelta (const CPoint& where, CRect* handleRect = nullptr) const;
+	void doRamping ();
+
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+};
+
+//------------------------------------------------------------------------
+// CSlider Declaration
+//! @brief a slider control
+/// @ingroup controls
+//------------------------------------------------------------------------
+class CSlider : public CSliderBase
+{
+private:
+public:
+	CSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
+	         int32_t iMaxPos, CBitmap* handle, CBitmap* background,
+	         const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft | kHorizontal);
+	CSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle,
+	         int32_t rangeHandle, CBitmap* handle, CBitmap* background,
+	         const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft | kHorizontal);
+	CSlider (const CSlider& slider);
+
+//------------------------------------------------------------------------
+	/// @name CSlider Methods
+//------------------------------------------------------------------------
+	//@{
+	VSTGUI_DEPRECATED (
+	    /** \deprecated use setBackgroundOffset */
+	    virtual void setOffset (const CPoint& val);)
+	VSTGUI_DEPRECATED (
+	    /** \deprecated use getBackgroundOffset*/
+	    virtual CPoint getOffset () const;)
+
+	/** set background draw offset */
+	void setBackgroundOffset (const CPoint& offset);
+	/** get background draw offset */
+	CPoint getBackgroundOffset () const;
+
+	virtual void setHandle (CBitmap* pHandle);
 	virtual CBitmap* getHandle () const;
-
-	virtual void  setZoomFactor (float val);
-	virtual float getZoomFactor () const;
 	//@}
 
-	//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 	/// @name Draw Style Methods
-	//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 	//@{
-	enum DrawStyle {
-		kDrawFrame				= 1 << 0,
-		kDrawBack				= 1 << 1,
-		kDrawValue				= 1 << 2,
-		kDrawValueFromCenter	= 1 << 3,
-		kDrawInverted			= 1 << 4
+	enum DrawStyle
+	{
+		kDrawFrame = 1 << 0,
+		kDrawBack = 1 << 1,
+		kDrawValue = 1 << 2,
+		kDrawValueFromCenter = 1 << 3,
+		kDrawInverted = 1 << 4
 	};
 
 	virtual void setDrawStyle (int32_t style);
@@ -106,63 +158,49 @@ public:
 
 	// overrides
 	void draw (CDrawContext*) override;
-
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseCancel () override;
-
-	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
-
 	bool sizeToFit () override;
 
-	static bool kAlwaysUseZoomFactor;
-
-	CLASS_METHODS(CSlider, CControl)
+	CLASS_METHODS (CSlider, CControl)
 protected:
 	~CSlider () noexcept override;
-	void setViewSize (const CRect& rect, bool invalid) override;
-	
-	float calculateDelta (const CPoint& where, CRect* handleRect = nullptr) const;
-	
-	CRect calculateHandleRect (float normValue) const;
-	void doRamping ();
-
-	// for sub-classes to access private variables:
-	void setSliderSize (CCoord width, CCoord height);
-	CPoint getSliderSize () const;
-	CPoint getControlSize () const;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;
-
-	static CSliderMode globalMode;
 };
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 // CVerticalSlider Declaration
 //! @brief a vertical slider control
 /// @ingroup controls
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 class CVerticalSlider : public CSlider
 {
 public:
-	CVerticalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
-	CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
+	CVerticalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
+	                 int32_t iMaxPos, CBitmap* handle, CBitmap* background,
+	                 const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
+	CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
+	                 const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle,
+	                 CBitmap* background, const CPoint& offset = CPoint (0, 0),
+	                 const int32_t style = kBottom);
 	CVerticalSlider (const CVerticalSlider& slider) = default;
 };
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 // CHorizontalSlider Declaration
 //! @brief a horizontal slider control
 /// @ingroup controls
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 class CHorizontalSlider : public CSlider
 {
 public:
-	CHorizontalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
-	CHorizontalSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
+	CHorizontalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
+	                   int32_t iMaxPos, CBitmap* handle, CBitmap* background,
+	                   const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
+	CHorizontalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
+	                   const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle,
+	                   CBitmap* background, const CPoint& offset = CPoint (0, 0),
+	                   const int32_t style = kRight);
 	CHorizontalSlider (const CHorizontalSlider& slider) = default;
 };
 

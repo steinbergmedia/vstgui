@@ -3,7 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "application.h"
-#include "../../lib/cview.h"
+#include "../../lib/cframe.h"
 #include "../include/appinit.h"
 #include "../include/iapplication.h"
 #include "../include/icommand.h"
@@ -40,12 +40,13 @@ public:
 	AlertResult showAlertBox (const AlertBoxConfig& config) override;
 	void showAlertBoxForWindow (const AlertBoxForWindowConfig& config) override;
 	void registerCommand (const Command& command, char16_t defaultCommandKey = 0) override;
+	void enableTooltips (bool state) override;
 	void quit () override;
 
 	// IWindowListener
 	void onSizeChanged (const IWindow& window, const CPoint& newSize) override {};
 	void onPositionChanged (const IWindow& window, const CPoint& newPosition) override {};
-	void onShow (const IWindow& window) override {};
+	void onShow (const IWindow& window) override;
 	void onHide (const IWindow& window) override {};
 	void onClosed (const IWindow& window) override;
 	void onActivated (const IWindow& window) override;
@@ -78,12 +79,13 @@ private:
 	CommandList commandList;
 	CommandLineArguments commandLineArguments;
 	Configuration config;
-	uint64_t flags {0};
+	uint64_t flags {flagTooltipsEnabled};
 	uint16_t commandIDCounter {0};
 
 	enum Flags
 	{
 		flagInQuit = 1 << 0,
+		flagTooltipsEnabled = 1 << 1,
 	};
 };
 
@@ -186,10 +188,10 @@ const ICommonDirectories& Application::getCommonDirectories () const
 }
 
 //------------------------------------------------------------------------
-WindowPtr Application::createWindow (const WindowConfiguration& config,
+WindowPtr Application::createWindow (const WindowConfiguration& inConfig,
                                      const WindowControllerPtr& controller)
 {
-	auto window = makeWindow (config, controller);
+	auto window = makeWindow (inConfig, controller);
 	if (window)
 	{
 		windows.emplace_back (window);
@@ -199,19 +201,30 @@ WindowPtr Application::createWindow (const WindowConfiguration& config,
 }
 
 //------------------------------------------------------------------------
-AlertResult Application::showAlertBox (const AlertBoxConfig& config)
+AlertResult Application::showAlertBox (const AlertBoxConfig& inConfig)
 {
 	if (platform.showAlert)
-		return platform.showAlert (config);
+		return platform.showAlert (inConfig);
 	return AlertResult::Error;
 }
 
 //------------------------------------------------------------------------
-void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& config)
+void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& inConfig)
 {
-	vstgui_assert (config.window);
+	vstgui_assert (inConfig.window);
 	if (platform.showAlertForWindow)
-		platform.showAlertForWindow (config);
+		platform.showAlertForWindow (inConfig);
+}
+
+//------------------------------------------------------------------------
+void Application::enableTooltips (bool state)
+{
+	setBit (flags, flagTooltipsEnabled, state);
+	for (auto& window : windows)
+	{
+		if (auto frame = staticPtrCast<IPlatformWindowAccess> (window)->getFrame ())
+			frame->enableTooltips (state);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -418,13 +431,24 @@ bool Application::doCommandHandling (const Command& command, bool checkOnly)
 }
 
 //------------------------------------------------------------------------
+void Application::onShow (const IWindow& window)
+{
+	if (auto frame = static_cast<const IPlatformWindowAccess&> (window).getFrame ())
+		frame->enableTooltips (hasBit (flags, flagTooltipsEnabled));
+}
+
+//------------------------------------------------------------------------
+template <typename Cont>
+typename Cont::const_iterator findWindow (const Cont& c, const IWindow& window)
+{
+	return std::find_if (c.begin (), c.end (),
+	                     [&] (const WindowPtr& w) { return &window == w.get (); });
+}
+
+//------------------------------------------------------------------------
 void Application::onClosed (const IWindow& window)
 {
-	auto it = std::find_if (windows.begin (), windows.end (), [&] (const WindowPtr& w) {
-		if (&window == w.get ())
-			return true;
-		return false;
-	});
+	auto it = findWindow (windows, window);
 	if (it != windows.end ())
 		windows.erase (it);
 }
@@ -433,16 +457,12 @@ void Application::onClosed (const IWindow& window)
 void Application::onActivated (const IWindow& window)
 {
 	// move the window in the window list to the first position
-	auto it = std::find_if (windows.begin (), windows.end (), [&] (const WindowPtr& w) {
-		if (&window == w.get ())
-			return true;
-		return false;
-	});
+	auto it = findWindow (windows, window);
 	if (it != windows.begin ())
 	{
-		auto window = *it;
+		auto windowPtr = *it;
 		windows.erase (it);
-		windows.insert (windows.begin (), window);
+		windows.insert (windows.begin (), windowPtr);
 	}
 }
 

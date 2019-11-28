@@ -95,7 +95,8 @@ int main (int argv, char* argc[])
 			return 0;
 
 		flags |= CompressedUIDescription::kNoPlainXmlFileBackup |
-		         CompressedUIDescription::kForceWriteCompressedDesc;
+		         CompressedUIDescription::kForceWriteCompressedDesc |
+		         CompressedUIDescription::kDoNotVerifyImageXMLData;
 		uiDesc.setCompressionLevel (compressionLevel);
 		if (!uiDesc.save (outputPath.data (), flags))
 		{

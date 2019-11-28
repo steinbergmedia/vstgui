@@ -12,9 +12,10 @@
 #include "../../cgraphicspath.h"
 #include "../../clayeredviewcontainer.h"
 #include "../../coffscreencontext.h"
-#include "../../idatabrowserdelegate.h"
 #include "../../controls/coptionmenu.h"
 #include "../../controls/cscrollbar.h"
+#include "../../cvstguitimer.h"
+#include "../../idatabrowserdelegate.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -178,7 +179,7 @@ private:
 				case VKEY_ENTER:
 				{
 					if (clickCallback)
-						clickCallback (menu,browser->getSelectedRow ());
+						clickCallback (menu, browser->getSelectedRow ());
 					return 1;
 				}
 				case VKEY_LEFT:
@@ -267,7 +268,7 @@ private:
 				view->addAnimation (
 				    "AlphaAnimation", new AlphaValueAnimation (0.f, true),
 				    new CubicBezierTimingFunction (
-				        CubicBezierTimingFunction::easyIn (theme.menuAnimationTime)),
+				        CubicBezierTimingFunction::easyOut (theme.menuAnimationTime)),
 				    [view] (CView*, const IdStringPtr, IAnimationTarget*) {
 					    if (view->isAttached ())
 						    view->getParentView ()->asViewContainer ()->removeView (view);
@@ -286,9 +287,9 @@ private:
 		closeSubMenu ();
 		if (auto subMenu = item->getSubmenu ())
 		{
-			auto callback = [this] (COptionMenu* menu, int32_t index) {
+			auto callback = [this] (COptionMenu* m, int32_t index) {
 				if (index != ViewRemoved)
-					clickCallback (menu, index);
+					clickCallback (m, index);
 			};
 			db->translateToGlobal (cellRect, true);
 			subMenuView =
@@ -344,8 +345,6 @@ private:
 			context->setDrawMode (kAntiAliasing);
 			if (item->isSeparator ())
 			{
-				context->setFillColor (theme.backgroundColor);
-				context->drawRect (size, kDrawFilled);
 				context->setFillColor (theme.separatorColor);
 				auto r = size;
 				r.inset (0, r.getHeight () / 2);
@@ -501,7 +500,6 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	viewRect.inset (-1, -1);
 	viewRect.offset (1, 1);
 	auto decorView = new CViewContainer (viewRect);
-	decorView->setAlphaValue (0.f);
 	decorView->setBackgroundColor (
 	    GenericOptionMenuDetail::makeDarkerColor (theme.backgroundColor));
 	decorView->setBackgroundColorDrawStyle (kDrawStroked);
@@ -522,15 +520,18 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	decorView->addView (browser);
 
 	container->addView (decorView);
-	using namespace Animation;
-	decorView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f, true),
-	                         new CubicBezierTimingFunction (
-	                             CubicBezierTimingFunction::easyIn (theme.menuAnimationTime)));
+
 	if (frame)
 		frame->setFocusView (browser);
+
+	using namespace Animation;
+	decorView->setAlphaValue (0.f);
+	decorView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f, true),
+	                         new CubicBezierTimingFunction (
+	                             CubicBezierTimingFunction::easyIn (theme.menuAnimationTime / 2)));
 	if (!parentDataSource && optionMenu->isCheckStyle ())
 	{
-		browser->makeRowVisible (optionMenu->getValue ());
+		browser->makeRowVisible (static_cast<int32_t> (optionMenu->getValue ()));
 	}
 	return decorView;
 }
@@ -541,10 +542,12 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 //------------------------------------------------------------------------
 struct GenericOptionMenu::Impl
 {
+	using ContainerT = CLayeredViewContainer;
 	SharedPointer<CFrame> frame;
 	SharedPointer<COptionMenu> menu;
-	SharedPointer<CLayeredViewContainer> container;
-	ModalViewSession* modalViewSession {nullptr};
+	SharedPointer<ContainerT> container;
+	SharedPointer<CVSTGUITimer> mouseUpTimer;
+	Optional<ModalViewSessionID> modalViewSession;
 	IGenericOptionMenuListener* listener {nullptr};
 	GenericOptionMenuTheme theme;
 	Callback callback;
@@ -564,7 +567,7 @@ GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons
 	impl->frame = frame;
 	impl->initialButtons = initialButtons;
 	impl->theme = theme;
-	impl->container = new CLayeredViewContainer (frameSize);
+	impl->container = new Impl::ContainerT (frameSize);
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
 	impl->container->registerViewMouseListener (this);
@@ -598,15 +601,20 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 		impl->container->addAnimation (
 		    "OptionMenuDone", new AlphaValueAnimation (0.f, true),
 		    new CubicBezierTimingFunction (
-		        CubicBezierTimingFunction::easyIn (impl->theme.menuAnimationTime)),
+		        CubicBezierTimingFunction::easyOut (impl->theme.menuAnimationTime)),
 		    [self, result] (CView*, const IdStringPtr, IAnimationTarget*) {
-				if (!self->impl->container)
-					return;
+			    if (!self->impl->container)
+				    return;
 			    auto callback = std::move (self->impl->callback);
 			    self->impl->callback = nullptr;
 			    self->impl->container->unregisterViewMouseListener (self);
-			    self->impl->frame->endModalViewSession (self->impl->modalViewSession);
+			    if (self->impl->modalViewSession)
+			    {
+					self->impl->frame->endModalViewSession (*self->impl->modalViewSession);
+					self->impl->modalViewSession = {};
+				}
 			    callback (self->impl->menu, result);
+			    self->impl->frame->setFocusView (self->impl->menu);
 			    self->impl->container = nullptr;
 		    });
 	}
@@ -618,13 +626,37 @@ CMouseEventResult GenericOptionMenu::viewOnMouseDown (CView* view, CPoint pos, C
 	if (auto container = view->asViewContainer ())
 	{
 		CViewContainer::ViewList views;
-		if (container->getViewsAt (pos, views))
+		if (container->getViewsAt (pos, views, GetViewOptions ().deep ().includeInvisible ()))
 		{
 			return kMouseEventNotHandled;
 		}
 		auto self = shared (this);
 		self->removeModalView ({nullptr, -1});
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult GenericOptionMenu::viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons)
+{
+	if (impl->initialButtons.isLeftButton () && buttons.isLeftButton ())
+	{
+		if (auto container = view->asViewContainer ())
+		{
+			CViewContainer::ViewList views;
+			if (container->getViewsAt (pos, views, GetViewOptions ().deep ().includeInvisible ()))
+			{
+				if (view->onMouseDown (pos, buttons) == kMouseEventHandled)
+					view->onMouseUp (pos, buttons);
+			}
+			else
+			{
+				auto self = shared (this);
+				self->removeModalView ({nullptr, -1});
+				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+			}
+		}
 	}
 	return kMouseEventNotHandled;
 }
@@ -637,6 +669,7 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 
 	auto self = shared (this);
 	auto clickCallback = [self] (COptionMenu* menu, int32_t index) {
+		self->impl->container->unregisterViewMouseListener (self);
 		self->removeModalView ({menu, index});
 	};
 
@@ -648,8 +681,24 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 
 	if (auto view = impl->frame->getViewAt (where, GetViewOptions ().deep ().includeInvisible ()))
 	{
-		view->translateToLocal (where);
-		view->onMouseMoved (where, impl->initialButtons);
+		if (impl->initialButtons.getButtonState () != 0)
+		{
+			impl->frame->getCurrentMouseLocation (where);
+			view->translateToLocal (where);
+			view->onMouseMoved (where, impl->initialButtons);
+			impl->mouseUpTimer = makeOwned<CVSTGUITimer> (
+			    [this, where, view] (CVSTGUITimer* timer) {
+				    timer->stop ();
+				    if (!impl->container ||
+				        impl->frame->getCurrentMouseButtons ().getButtonState () == 0)
+					    return;
+				    impl->container->registerViewMouseListener (this);
+				    CPoint p (where);
+				    view->translateToGlobal (p);
+				    impl->frame->onMouseDown (p, impl->initialButtons);
+			    },
+			    200);
+		}
 	}
 	if (impl->listener)
 		impl->listener->optionMenuPopupStarted ();

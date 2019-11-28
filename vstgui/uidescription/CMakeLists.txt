@@ -31,6 +31,7 @@ set(${target}_sources
     xmlparser.h
     editing/doc.h
     editing/iaction.h
+    editing/igridprocessor.h
     editing/uiactions.cpp
     editing/uiactions.h
     editing/uiattributescontroller.cpp
@@ -66,6 +67,8 @@ set(${target}_sources
     editing/uigrid.h
     editing/uigridcontroller.cpp
     editing/uigridcontroller.h
+    editing/uioverlayview.cpp
+    editing/uioverlayview.h
     editing/uiselection.cpp
     editing/uiselection.h
     editing/uitagscontroller.cpp
@@ -78,6 +81,73 @@ set(${target}_sources
     editing/uiundomanager.h
     editing/uiviewcreatecontroller.cpp
     editing/uiviewcreatecontroller.h
+    detail/uiviewcreatorattributes.h
+    viewcreator/animationsplashscreencreator.cpp
+    viewcreator/animationsplashscreencreator.h
+    viewcreator/animknobcreator.cpp
+    viewcreator/animknobcreator.h
+    viewcreator/checkboxcreator.cpp
+    viewcreator/checkboxcreator.h
+    viewcreator/controlcreator.cpp
+    viewcreator/controlcreator.h
+    viewcreator/gradientviewcreator.cpp
+    viewcreator/gradientviewcreator.h
+    viewcreator/kickbuttoncreator.cpp
+    viewcreator/kickbuttoncreator.h
+    viewcreator/knobcreator.cpp
+    viewcreator/knobcreator.h
+    viewcreator/layeredviewcontainercreator.cpp
+    viewcreator/layeredviewcontainercreator.h
+    viewcreator/moviebitmapcreator.cpp
+    viewcreator/moviebitmapcreator.h
+    viewcreator/moviebuttoncreator.cpp
+    viewcreator/moviebuttoncreator.h
+    viewcreator/multibitmapcontrolcreator.cpp
+    viewcreator/multibitmapcontrolcreator.h
+    viewcreator/multilinetextlabelcreator.cpp
+    viewcreator/multilinetextlabelcreator.h
+    viewcreator/onoffbuttoncreator.cpp
+    viewcreator/onoffbuttoncreator.h
+    viewcreator/optionmenucreator.cpp
+    viewcreator/optionmenucreator.h
+    viewcreator/paramdisplaycreator.cpp
+    viewcreator/paramdisplaycreator.h
+    viewcreator/rockerswitchcreator.cpp
+    viewcreator/rockerswitchcreator.h
+    viewcreator/rowcolumnviewcreator.cpp
+    viewcreator/rowcolumnviewcreator.h
+    viewcreator/scrollviewcreator.cpp
+    viewcreator/scrollviewcreator.h
+    viewcreator/searchtexteditcreator.cpp
+    viewcreator/searchtexteditcreator.h
+    viewcreator/segmentbuttoncreator.cpp
+    viewcreator/segmentbuttoncreator.h
+    viewcreator/shadowviewcontainercreator.cpp
+    viewcreator/shadowviewcontainercreator.h
+    viewcreator/sliderviewcreator.cpp
+    viewcreator/sliderviewcreator.h
+    viewcreator/splitviewcreator.cpp
+    viewcreator/splitviewcreator.h
+    viewcreator/stringlistcontrolcreator.cpp
+    viewcreator/stringlistcontrolcreator.h
+    viewcreator/switchcreators.cpp
+    viewcreator/switchcreators.h
+    viewcreator/textbuttoncreator.cpp
+    viewcreator/textbuttoncreator.h
+    viewcreator/texteditcreator.cpp
+    viewcreator/texteditcreator.h
+    viewcreator/textlabelcreator.cpp
+    viewcreator/textlabelcreator.h
+    viewcreator/uiviewswitchcontainercreator.cpp
+    viewcreator/uiviewswitchcontainercreator.h
+    viewcreator/viewcontainercreator.cpp
+    viewcreator/viewcontainercreator.h
+    viewcreator/viewcreator.cpp
+    viewcreator/viewcreator.h
+    viewcreator/vumetercreator.cpp
+    viewcreator/vumetercreator.h
+    viewcreator/xypadcreator.cpp
+    viewcreator/xypadcreator.h
 )
 
 ##########################################################################################

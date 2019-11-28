@@ -134,19 +134,18 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	CPoint diff ((int32_t)(newOffset.x - offset.x), (int32_t)(offset.y - newOffset.y));
 	if (diff.x == 0 && diff.y == 0)
 		return;
+	offset = newOffset;
 	inScrolling = true;
 	for (const auto& pV : getChildren ())
 	{
 		CRect r = pV->getViewSize ();
-		CRect mr;
-		pV->getMouseableArea (mr);
+		CRect mr = pV->getMouseableArea ();
 		r.offset (diff.x , diff.y);
 		pV->setViewSize (r, false);
 		mr.offset (diff.x , diff.y);
 		pV->setMouseableArea (mr);
 	}
 	inScrolling = false;
-	offset = newOffset;
 	if (!isAttached ())
 		return;
 
@@ -239,10 +238,10 @@ void CScrollContainer::onDragMove (CPoint where)
 	float x, y;
 	if (getScrollValue (where, x, y))
 	{
-		CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
-		if (scrollView)
+		if (auto* scrollView = static_cast<CScrollView*> (getParentView ()))
 		{
 			CRect r (getViewSize ());
+			r.originize ();
 			r.offset (x, y);
 			scrollView->makeRectVisible (r);
 		}
@@ -255,17 +254,17 @@ bool CScrollContainer::attached (CView* parent)
 	bool result = CViewContainer::attached (parent);
 	if (getNbViews () == 1)
 	{
-		CView* view = getView (0);
-		if (view)
+		if (CView* view = getView (0))
 		{
-			CRect r (view->getViewSize ());
+			const CRect& r (view->getViewSize ());
 			CRect newContainerSize (containerSize);
 			newContainerSize.setWidth (r.getWidth ());
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
-				scrollView->setContainerSize (newContainerSize);
+				auto* scrollView = static_cast<CScrollView*> (getParentView ());
+				if (scrollView)
+					scrollView->setContainerSize (newContainerSize);
 			}
 		}
 	}
@@ -278,17 +277,18 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 	if (message == kMsgViewSizeChanged && !inScrolling)
 	{
 		uint32_t numSubViews = getNbViews ();
-		CView* view = static_cast<CView*> (sender);
+		auto* view = static_cast<CView*> (sender);
 		if (numSubViews == 1 && view && isChild (view))
 		{
-			CRect r (view->getViewSize ());
+			const CRect& r (view->getViewSize ());
 			CRect newContainerSize (containerSize);
 			newContainerSize.setWidth (r.getWidth ());
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
-				scrollView->setContainerSize (newContainerSize);
+				auto* scrollView = static_cast<CScrollView*> (getParentView ());
+				if (scrollView)
+					scrollView->setContainerSize (newContainerSize);
 			}
 		}
 	}
@@ -451,15 +451,13 @@ void CScrollView::recalculateSubViews ()
 	{
 		sc = new CScrollContainer (scsize, containerSize);
 		sc->setAutosizeFlags (kAutosizeAll);
-		CViewContainer::addView (sc, nullptr);
+		CViewContainer::addView (sc, CViewContainer::getView (0));
 	}
 	else
 	{
 		sc->setViewSize (scsize, true);
 		sc->setMouseableArea (scsize);
 	}
-	if (style & kOverlayScrollbars)
-		CViewContainer::changeViewZOrder (sc, 0);
 	sc->setAutoDragScroll ((style & kAutoDragScrolling) ? true : false);
 	recalculateSubViewsRecursionGard = false;
 }
@@ -660,7 +658,7 @@ bool CScrollView::removeView (CView *pView, bool withForget)
 //-----------------------------------------------------------------------------
 bool CScrollView::removeAll (bool withForget)
 {
-	return sc->removeAll ();
+	return sc->removeAll (withForget);
 }
 
 //-----------------------------------------------------------------------------
@@ -766,7 +764,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView && getStyle () & kFollowFocusView)
 	{
-		CView* focusView = static_cast<CView*> (sender);
+		auto* focusView = static_cast<CView*> (sender);
 		if (sc->isChild (focusView, true))
 		{
 			CRect r = focusView->getViewSize ();

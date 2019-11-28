@@ -377,7 +377,6 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->onMouseUp (p, kLButton) == kMouseEventNotHandled);
 		EXPECT(container->onMouseCancel () == kMouseEventHandled);
 		EXPECT(container->onWheel (p, kMouseWheelAxisX, 1.f, 0) == false);
-		EXPECT(container->onWheel (p, 1.f, 0) == false);
 	);
 
 	TEST(mouseEvents,
@@ -404,7 +403,7 @@ TESTCASE(CViewContainerTest,
 		EXPECT(v2->mouseUpCalled == false);
 		
 		p (60, 10);
-		EXPECT(container->onWheel (p, 0.5f, 0));
+		EXPECT(container->onWheel (p, kMouseWheelAxisX, 0.5f, 0));
 		EXPECT(v1->onWheelCalled == false);
 		EXPECT(v2->onWheelCalled);
 	);

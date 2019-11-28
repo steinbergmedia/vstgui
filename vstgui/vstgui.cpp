@@ -39,6 +39,7 @@
 #include "lib/controls/ccontrol.cpp"
 #include "lib/controls/cfontchooser.cpp"
 #include "lib/controls/cknob.cpp"
+#include "lib/controls/clistcontrol.cpp"
 #include "lib/controls/cmoviebitmap.cpp"
 #include "lib/controls/cmoviebutton.cpp"
 #include "lib/controls/coptionmenu.cpp"
@@ -49,6 +50,7 @@
 #include "lib/controls/cslider.cpp"
 #include "lib/controls/cspecialdigit.cpp"
 #include "lib/controls/csplashscreen.cpp"
+#include "lib/controls/cstringlist.cpp"
 #include "lib/controls/cswitch.cpp"
 #include "lib/controls/ctextedit.cpp"
 #include "lib/controls/ctextlabel.cpp"
@@ -60,3 +62,4 @@
 #include "lib/animation/timingfunctions.cpp"
 
 #include "lib/platform/common/fileresourceinputstream.cpp"
+#include "lib/platform/common/genericoptionmenu.cpp"

@@ -8,7 +8,7 @@
 			"name": "Windows Standalone",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/Debug/standalone.exe",
+			"program": "${config:cmake.buildDirectory}/Debug/standalone.exe",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
@@ -19,10 +19,10 @@
 			"name": "Linux standalone",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/Debug/standalone/standalone",
+			"program": "${config:cmake.buildDirectory}/Debug/standalone/standalone",
 			"args": [],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/build/Debug/",
+			"cwd": "${workspaceFolder}",
 			"environment": [
 				{
 					"name": "LD_LIBRARY_PATH",
@@ -33,8 +33,8 @@
 				// 	"value": ":9"
 				// }
 			],
-			"externalConsole": true,
-			"MIMode": "gdb",
+			"externalConsole": false,
+			"MIMode": "lldb",
 			"setupCommands": [
 				{
 					"description": "Enable pretty-printing for gdb",
@@ -47,10 +47,10 @@
 			"name": "macOS standalone",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/Debug/standalone.app/Contents/MacOS/standalone",
+			"program": "${config:cmake.buildDirectory}/Debug/standalone.app/Contents/MacOS/standalone",
 			"args": [],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/build/Debug/",
+			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "lldb",

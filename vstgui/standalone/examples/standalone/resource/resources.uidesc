@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
 	<fonts>
-		<font alternative-font-names="Segoe UI, Avenir" font-name="Segoe UI" name="New" size="18"/>
+		<font font-name="EffectsEighty" name="EffectsEighty" size="32"/>
+		<font font-name="Arial" name="View Label" size="8"/>
 	</fonts>
 	<colors>
 		<color name="Black Alpha 140" rgba="#0000008c"/>
@@ -9,7 +10,7 @@
 		<color name="TextShadow" rgba="#0000002f"/>
 	</colors>
 	<custom>
-		<attributes name="UIDescFilePath" path="/Users/scheffle/git/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"/>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"/>
 	</custom>
 	<gradients>
 		<gradient name="About Background">
@@ -44,9 +45,9 @@
 			<color-stop rgba="#c7c7c7ff" start="1"/>
 		</gradient>
 		<gradient name="Vertical Segment Button Highlighted">
-			<color-stop rgba="#4d4d4dff" start="0"/>
-			<color-stop rgba="#161616ff" start="0.5116673519736841813099204046011436730623"/>
-			<color-stop rgba="#4d4d4dff" start="1"/>
+			<color-stop rgba="#141414ff" start="0"/>
+			<color-stop rgba="#4d4d4dff" start="0.5116673519736841813099204046011436730623"/>
+			<color-stop rgba="#141414ff" start="1"/>
 		</gradient>
 	</gradients>
 	<bitmaps/>

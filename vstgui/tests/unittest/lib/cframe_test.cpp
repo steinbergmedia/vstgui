@@ -316,16 +316,16 @@ TESTCASE(CFrameTest,
 		auto view = shared (new View ());
 		EXPECT (frame->getModalView () == nullptr);
 		auto session = frame->beginModalViewSession (view);
-		EXPECT (session != nullptr);
+		EXPECT (session);
 		EXPECT (frame->getModalView () == view);
 		auto container = shared (new CViewContainer (CRect (0, 0, 0, 0)));
 		auto session2 = frame->beginModalViewSession (container);
-		EXPECT (session2 != nullptr)
+		EXPECT (session2)
 		EXPECT (frame->getModalView () == container);
-		EXPECT (frame->endModalViewSession (session) == false);
-		EXPECT (frame->endModalViewSession (session2) == true);
+		EXPECT (frame->endModalViewSession (*session) == false);
+		EXPECT (frame->endModalViewSession (*session2) == true);
 		EXPECT (frame->getModalView () == view);
-		EXPECT (frame->endModalViewSession (session) == true);
+		EXPECT (frame->endModalViewSession (*session) == true);
 		EXPECT (frame->getModalView () == nullptr);
 	);
 	
@@ -358,7 +358,7 @@ TESTCASE(CFrameTest,
 		auto modalSession = frame->beginModalViewSession (view3);
 		EXPECT (frame->onKeyDown (key) == 1);
 		EXPECT (view3->onKeyDownCalled);
-		frame->endModalViewSession (modalSession);
+		frame->endModalViewSession (*modalSession);
 	);
 
 	TEST(onKeyUp,
@@ -384,7 +384,7 @@ TESTCASE(CFrameTest,
 		auto modalSession = frame->beginModalViewSession (view3);
 		EXPECT (frame->onKeyUp (key) == 1);
 		EXPECT (view3->onKeyUpCalled);
-		frame->endModalViewSession (modalSession);
+		frame->endModalViewSession (*modalSession);
 	);
 	
 	TEST(advanceNextFocusView,
@@ -447,7 +447,7 @@ TESTCASE(CFrameTest,
 		view->setWantsFocus (true);
 		frame->advanceNextFocusView (frame->getFocusView ());
 		EXPECT (frame->getFocusView () == view);
-		frame->endModalViewSession (modalSession);
+		frame->endModalViewSession (*modalSession);
 		auto container = shared (new Container ());
 		auto view2 = new View ();
 		container->addView (view2);
@@ -478,7 +478,7 @@ TESTCASE(CFrameTest,
 		frame->advanceNextFocusView (frame->getFocusView ());
 		EXPECT (frame->getFocusView () == view5);
 
-		frame->endModalViewSession (modalSession);
+		frame->endModalViewSession (*modalSession);
 	);
 
 	TEST(getViewAtModalView,
@@ -491,7 +491,7 @@ TESTCASE(CFrameTest,
 		EXPECT (frame->getViewAt (CPoint (1, 1)) == container);
 		EXPECT (frame->getViewAt (CPoint (1, 1), GetViewOptions (GetViewOptions::kDeep)) == view);
 		EXPECT (frame->getViewAt (CPoint (90, 90)) == nullptr);
-		frame->endModalViewSession (modalSession);
+		frame->endModalViewSession (*modalSession);
 	);
 	
 	TEST(getContainerAtModalView,
@@ -509,7 +509,7 @@ TESTCASE(CFrameTest,
 		EXPECT (frame->getContainerAt (CPoint (1, 1), GetViewOptions (GetViewOptions::kDeep)) == container2);
 		EXPECT (frame->getContainerAt (CPoint (80, 80), GetViewOptions (GetViewOptions::kDeep)) == nullptr);
 		
-		frame->endModalViewSession (modalSession);
+		frame->endModalViewSession (*modalSession);
 	);
 	
 	TEST(mouseDownModalView,
@@ -527,7 +527,7 @@ TESTCASE(CFrameTest,
 		EXPECT (frame->onMouseDown (p, 0) == kMouseEventHandled);
 		EXPECT (view1->onMouseDownCalled);
 
-		frame->endModalViewSession (modalSession);
+		frame->endModalViewSession (*modalSession);
 	);
 	
 	TEST(activate,

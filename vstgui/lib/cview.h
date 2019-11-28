@@ -38,10 +38,9 @@ extern IdStringPtr kMsgViewSizeChanged;
 //-----------------------------------------------------------------------------
 // Attributes
 //		all attributes where the first letter is lowercase are reserved for the vstgui lib
-
-extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
-extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
-extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr'
+static constexpr CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
+static constexpr CViewAttributeID kCViewTooltipAttribute = 'cvtt';
+static constexpr CViewAttributeID kCViewControllerAttribute = 'ictr';
 
 //-----------------------------------------------------------------------------
 // CView Declaration
@@ -104,8 +103,9 @@ public:
 	/** check if where hits this view */
 	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
 
-	/** called if a mouse wheel event is happening over this view */
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
+	VSTGUI_DEPRECATED(
+	/** \deprecated never called anymore, please override the method below for wheel handling */
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) final { return false; })
 	/** called if a mouse wheel event is happening over this view */
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
 
@@ -115,11 +115,12 @@ public:
 	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }
 
 	/** set the area in which the view reacts to the mouse */
-	virtual void setMouseableArea (const CRect& rect);
+	void setMouseableArea (const CRect& rect);
+	VSTGUI_DEPRECATED(
 	/** get the area in which the view reacts to the mouse */
-	CRect& getMouseableArea (CRect& rect) const;
-	/** read only access to the mouseable area */
-	const CRect& getMouseableArea () const;
+	CRect& getMouseableArea (CRect& rect) const;)
+	/** get the area in which the view reacts to the mouse */
+	CRect getMouseableArea () const;
 	//@}
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
@@ -384,7 +385,11 @@ protected:
 		kDirty					= 1 << 5,
 		kWantsIdle				= 1 << 6,
 		kIsSubview				= 1 << 7,
-		kLastCViewFlag			= 7
+		kHasAlpha				= 1 << 8,
+		kHasBackground			= 1 << 9,
+		kHasDisabledBackground	= 1 << 10,
+		kHasMouseableArea		= 1 << 11,
+		kLastCViewFlag			= 11
 	};
 
 	~CView () noexcept override;

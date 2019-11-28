@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../include/helpers/value.h"
+#include "../../../lib/algorithm.h"
 #include "../../../lib/dispatchlist.h"
 #include "../../include/ivaluelistener.h"
 #include <algorithm>
@@ -136,6 +137,8 @@ public:
 
 	UTF8String valueAsString (IValue::Type value) const override
 	{
+		if (strings.empty ())
+			return "";
 		auto index =
 		    convertValueToStep (value, static_cast<IStepValue::StepType> (strings.size () - 1));
 		return strings[index];
@@ -143,11 +146,11 @@ public:
 
 	IValue::Type stringAsValue (const UTF8String& string) const override
 	{
-		auto it = std::find (strings.begin (), strings.end (), string);
-		if (it != strings.end ())
-			return convertStepToValue (
-			    static_cast<IStepValue::StepType> (std::distance (strings.begin (), it)),
-			    static_cast<IStepValue::StepType> (strings.size () - 1));
+		if (auto index = indexOf (strings.begin (), strings.end (), string))
+		{
+			return convertStepToValue (static_cast<IStepValue::StepType> (*index),
+			                           static_cast<IStepValue::StepType> (strings.size () - 1));
+		}
 		return IValue::InvalidValue;
 	}
 
@@ -209,7 +212,6 @@ public:
 	bool isEditing () const override { return false; }
 	
 	const IValueConverter& getConverter () const override { return *this; }
-	
 
 	UTF8String valueAsString (IValue::Type) const override { return value; }
 	IValue::Type stringAsValue (const UTF8String&) const override { return 0.; }
@@ -247,6 +249,47 @@ private:
 	bool active {true};
 	uint32_t editCount {0};
 	ValueConverterPtr valueConverter;
+};
+
+//------------------------------------------------------------------------
+class StringValue : public Value, public IValueConverter, public IStringValue
+{
+public:
+	StringValue (const UTF8String& id, const UTF8String& value)
+	: Value (id, 0, nullptr), str (value)
+	{
+	}
+
+	StringValue (const UTF8String& id, UTF8String&& value)
+	: Value (id, 0, nullptr), str (std::move (value))
+	{
+	}
+
+	const IValueConverter& getConverter () const override { return *this; }
+
+	UTF8String valueAsString (IValue::Type) const override { return str; }
+	IValue::Type stringAsValue (const UTF8String& s) const override
+	{
+		if (isEditing ())
+			str = s;
+		return 0.;
+	}
+	IValue::Type plainToNormalized (IValue::Type) const override { return 0.; }
+	IValue::Type normalizedToPlain (IValue::Type) const override { return 0.; }
+	
+	void setString (const UTF8String& s) override
+	{
+		str = s;
+		if (isEditing ())
+			performEdit (0.);
+	}
+	const UTF8String& getString () const override
+	{
+		return str;
+	}
+
+private:
+	mutable UTF8String str;
 };
 
 //------------------------------------------------------------------------
@@ -531,6 +574,18 @@ ValuePtr makeStaticStringValue (const UTF8String& id, const UTF8String& value)
 ValuePtr makeStaticStringValue (const UTF8String& id, UTF8String&& value)
 {
 	return std::make_shared<Detail::StaticStringValue> (id, std::move (value));
+}
+
+//------------------------------------------------------------------------
+ValuePtr makeStringValue (const UTF8String& id, const UTF8String& initialString)
+{
+	return std::make_shared<Detail::StringValue> (id, initialString);
+}
+
+//------------------------------------------------------------------------
+ValuePtr makeStringValue (const UTF8String& id, UTF8String&& initialString)
+{
+	return std::make_shared<Detail::StringValue> (id, std::move (initialString));
 }
 
 //------------------------------------------------------------------------

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __vst3editor__
-#define __vst3editor__
+#pragma once
 
 #include "public.sdk/source/vst/vstguieditor.h"
 #include "pluginterfaces/vst/ivstplugview.h"
@@ -165,5 +164,3 @@ protected:
 };
 
 } // namespace
-
-#endif

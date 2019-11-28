@@ -55,11 +55,11 @@ void CRowColumnView::setMargin (const CRect& newMargin)
 }
 
 //--------------------------------------------------------------------------------
-void CRowColumnView::setLayoutStyle (LayoutStyle style)
+void CRowColumnView::setLayoutStyle (LayoutStyle inLayoutStyle)
 {
-	if (style != layoutStyle)
+	if (inLayoutStyle != layoutStyle)
 	{
-		layoutStyle = style;
+		layoutStyle = inLayoutStyle;
 		if (isAttached ())
 			layoutViews ();
 	}
@@ -100,8 +100,8 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 		}
 		else
 		{
-			view->setMouseableArea (newSize);
 			view->setViewSize (newSize);
+			view->setMouseableArea (newSize);
 		}
 	}
 }
@@ -110,7 +110,7 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 void CRowColumnView::getMaxChildViewSize (CPoint& maxSize)
 {
 	forEachChild ([&] (CView* view) {
-		CRect viewSize = view->getViewSize ();
+		const CRect& viewSize = view->getViewSize ();
 		if (viewSize.getWidth () > maxSize.x)
 			maxSize.x = viewSize.getWidth ();
 		if (viewSize.getHeight () > maxSize.y)
@@ -201,7 +201,7 @@ bool CRowColumnView::sizeToFit ()
 		if (style == kRowStyle)
 		{
 			forEachChild ([&] (CView* view) {
-				CRect size = view->getViewSize ();
+				const CRect& size = view->getViewSize ();
 				if (size.getWidth () > maxSize.x)
 					maxSize.x = size.getWidth ();
 				maxSize.y += size.getHeight () + spacing;

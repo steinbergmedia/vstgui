@@ -65,13 +65,13 @@ CocoaFileSelector::CocoaFileSelector (CFrame* frame, Style style)
 }
 
 //-----------------------------------------------------------------------------
-void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, NSInteger res)
+void CocoaFileSelector::openPanelDidEnd (NSSavePanel* panel, NSInteger res)
 {
 	if (res == NSModalResponseOK)
 	{
 		if (style == kSelectSaveFile)
 		{
-			NSURL* url = [savePanel URL];
+			NSURL* url = [panel URL];
 			const char* utf8Path = url ? [[url path] UTF8String] : nullptr;
 			if (utf8Path)
 			{
@@ -80,7 +80,7 @@ void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, NSInteger res)
 		}
 		else
 		{
-			NSOpenPanel* openPanel = (NSOpenPanel*)savePanel;
+			NSOpenPanel* openPanel = (NSOpenPanel*)panel;
 			NSArray* urls = [openPanel URLs];
 			for (NSUInteger i = 0; i < [urls count]; i++)
 			{

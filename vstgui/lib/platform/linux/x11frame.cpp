@@ -266,6 +266,7 @@ struct Frame::Impl : IFrameEventHandler
 	DrawHandler drawHandler;
 	DoubleClickDetector doubleClickDetector;
 	IPlatformFrameCallback* frame;
+	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
 	SharedPointer<RedrawTimerHandler> redrawTimer;
 	RectList dirtyRects;
 	CCursorType currentCursor{kCursorDefault};
@@ -690,7 +691,11 @@ SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEdi
 //------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 {
-	auto optionMenu = makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), 0);
+	auto cFrame = dynamic_cast<CFrame*> (frame);
+	GenericOptionMenuTheme theme;
+	if (impl->genericOptionMenuTheme)
+		theme = *impl->genericOptionMenuTheme.get ();
+	auto optionMenu = makeOwned<GenericOptionMenu> (cFrame, 0, theme);
 	optionMenu->setListener (this);
 	return optionMenu;
 }
@@ -767,6 +772,17 @@ Optional<UTF8String> Frame::convertCurrentKeyEventToText ()
 }
 
 //------------------------------------------------------------------------
+bool Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
+{
+	if (theme)
+		impl->genericOptionMenuTheme =
+		    std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+	else
+		impl->genericOptionMenuTheme = nullptr;
+	return true;
+}
+
+//------------------------------------------------------------------------
 Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
 	[](const CResourceDescription& desc) -> IPlatformResourceInputStream::Ptr {
 	if (desc.type != CResourceDescription::kStringType)
@@ -776,6 +792,9 @@ Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
 	path += desc.u.name;
 	return FileResourceInputStream::create (path);
 };
+
+//------------------------------------------------------------------------
+UTF8String Frame::resourcePath = Platform::getInstance ().getPath () + "/Contents/Resources/";
 
 //------------------------------------------------------------------------
 } // X11

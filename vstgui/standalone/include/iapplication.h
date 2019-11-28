@@ -72,6 +72,11 @@ public:
 	 *	@param defaultCommandKey default command key
 	 */
 	virtual void registerCommand (const Command& command, char16_t defaultCommandKey) = 0;
+	/** Enable or disable tooltips in all windows
+	 *
+	 *	@param state true to enable tooltips, false for disabling them
+	 */
+	virtual void enableTooltips (bool state) = 0;
 	/** Quit the application */
 	virtual void quit () = 0;
 };

@@ -20,7 +20,7 @@ namespace VSTGUI {
 class UIDialogController;
 
 //------------------------------------------------------------------------
-class IDialogController : public IController, public virtual IReference
+class IDialogController : public virtual IReference
 {
 public:
 	virtual void onDialogButton1Clicked (UIDialogController*) = 0;
@@ -58,7 +58,7 @@ protected:
 	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
 
 	CFrame* frame;
-	ModalViewSession* modalSession {nullptr};
+	Optional<ModalViewSessionID> modalSession;
 	SharedPointer<IDialogController> dialogController;
 	UIDescription* dialogDescription;
 	SharedPointer<CControl> button1;

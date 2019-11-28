@@ -22,7 +22,7 @@ class Win32DragBitmapWindow;
 class Win32MouseObserverWhileDragging;
 
 //-----------------------------------------------------------------------------
-class Win32DraggingSession : public IDraggingSession
+class Win32DraggingSession final : public IDraggingSession
 {
 public:
 	Win32DraggingSession (Win32Frame* frame);
@@ -38,8 +38,8 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class CDropTarget : public ::IDropTarget
-{	
+class CDropTarget final : public ::IDropTarget
+{
 public:
 	CDropTarget (Win32Frame* pFrame);
 	~CDropTarget () noexcept;
@@ -61,7 +61,9 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class Win32DropSource : public AtomicReferenceCounted, public ::IDropSource
+class Win32DropSource final
+: public AtomicReferenceCounted
+, public ::IDropSource
 {
 public:
 	// IUnknown
@@ -75,7 +77,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class Win32DataObject : public AtomicReferenceCounted, public ::IDataObject
+class Win32DataObject final
+: public AtomicReferenceCounted
+, public ::IDataObject
 {
 public:
 	Win32DataObject (IDataPackage* dataPackage);

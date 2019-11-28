@@ -14,6 +14,8 @@
 
 namespace VSTGUI {
 
+struct GenericOptionMenuTheme;
+
 //-----------------------------------------------------------------------------
 class IPlatformFrame : public AtomicReferenceCounted
 {
@@ -87,6 +89,10 @@ public:
 
 	/** when called from a key down/up event converts the event to the actual text. */
 	virtual Optional<UTF8String> convertCurrentKeyEventToText () = 0;
+	
+	/** setup to use (or not) the generic option menu and optionally set the theme to use */
+	virtual bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) = 0;
+
 //-----------------------------------------------------------------------------
 protected:
 	explicit IPlatformFrame (IPlatformFrameCallback* frame) : frame (frame) {}

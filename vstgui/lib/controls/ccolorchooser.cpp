@@ -25,9 +25,9 @@ public:
 	: CSlider (size, listener, tag, 0, 0, nullptr, nullptr)
 	{
 		if (size.getWidth () > size.getHeight ())
-			setSliderSize (size.getHeight (), size.getHeight ());
+			setHandleSizePrivate (size.getHeight (), size.getHeight ());
 		else
-			setSliderSize (size.getWidth (), size.getWidth ());
+			setHandleSizePrivate (size.getWidth (), size.getWidth ());
 		const CRect& r (size);
 		setViewSize (r, false);
 		setWheelInc (10.f/255.f);
@@ -44,8 +44,8 @@ public:
 		CCoord backgroundFrameWidth = 1;
 		CCoord handleFrameWidth = 1;
 
-		auto controlSize = getControlSize ();
-		auto sliderSize = getSliderSize ();
+		auto controlSize = getControlSizePrivate ();
+		auto sliderSize = getHandleSizePrivate ();
 
 		CRect backgroundRect;
 		backgroundRect.setSize (controlSize);
@@ -189,10 +189,10 @@ public:
 
 	bool onDrop (DragEventData data) override
 	{
-		CColor color;
-		if (dragContainerHasColor (data.drag, &color))
+		CColor dragColor;
+		if (dragContainerHasColor (data.drag, &dragColor))
 		{
-			setColor (color);
+			setColor (dragColor);
 			valueChanged ();
 			return true;
 		}
@@ -483,22 +483,22 @@ void CColorChooser::valueChanged (CControl* control)
 	{
 		case kRedTag:
 		{
-			color.red = (uint8_t) (control->getValue () * 255.f);
+			color.setNormRed (control->getValue ());
 			break;
 		}
 		case kGreenTag:
 		{
-			color.green = (uint8_t) (control->getValue () * 255.f);
+			color.setNormGreen (control->getValue ());
 			break;
 		}
 		case kBlueTag:
 		{
-			color.blue = (uint8_t) (control->getValue () * 255.f);
+			color.setNormBlue (control->getValue ());
 			break;
 		}
 		case kAlphaTag:
 		{
-			color.alpha = (uint8_t) (control->getValue () * 255.f);
+			color.setNormAlpha (control->getValue ());
 			break;
 		}
 		case kHueTag:
@@ -561,10 +561,10 @@ void CColorChooser::updateState ()
 {
 	double hue, saturation, value;
 	color.toHSV (hue, saturation, value);
-	redSlider->setValue (color.red / 255.f);
-	greenSlider->setValue (color.green / 255.f);
-	blueSlider->setValue (color.blue / 255.f);
-	alphaSlider->setValue (color.alpha / 255.f);
+	redSlider->setValue (color.normRed<float> ());
+	greenSlider->setValue (color.normGreen<float> ());
+	blueSlider->setValue (color.normBlue<float> ());
+	alphaSlider->setValue (color.normAlpha<float> ());
 	hueSlider->setValue ((float)(hue / 359.));
 	saturationSlider->setValue ((float)saturation);
 	brightnessSlider->setValue ((float)value);

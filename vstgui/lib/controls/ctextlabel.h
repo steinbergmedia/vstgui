@@ -65,7 +65,6 @@ protected:
 	void freeText ();
 	void calculateTruncatedText ();
 
-	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override { return false; }
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override { return false; }
 
 	TextTruncateMode textTruncateMode;

@@ -511,10 +511,10 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 				exchangeSubViews (container, dst);
 			}
 		});
-		for (auto& view : temp)
+		for (auto& viewToMove : temp)
 		{
-			src->removeView (view, false);
-			dst->addView (view);
+			src->removeView (viewToMove, false);
+			dst->addView (viewToMove);
 		}
 	}
 }
@@ -1233,11 +1233,11 @@ void AlternateFontChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up)
+HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view, UISelection* selection, int32_t dir)
 : view (view)
 , parent (nullptr)
 , selection (selection)
-, up (up)
+, dir (dir)
 {
 	parent = view->getParentView ()->asViewContainer ();
 }
@@ -1261,7 +1261,7 @@ void HierarchyMoveViewOperation::perform ()
 		currentIndex++;
 	}
 	selection->willChange ();
-	parent->changeViewZOrder (view, up ? currentIndex - 1 : currentIndex + 1);
+	parent->changeViewZOrder (view, currentIndex + dir);
 	selection->didChange ();
 	parent->invalid ();
 }
@@ -1269,9 +1269,9 @@ void HierarchyMoveViewOperation::perform ()
 //----------------------------------------------------------------------------------------------------
 void HierarchyMoveViewOperation::undo ()
 {
-	up = !up;
+	dir = -dir;
 	perform ();
-	up = !up;
+	dir = -dir;
 }
 
 //----------------------------------------------------------------------------------------------------

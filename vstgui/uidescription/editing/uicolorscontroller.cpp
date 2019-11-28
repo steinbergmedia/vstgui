@@ -58,6 +58,8 @@ protected:
 	bool editing;
 	Optional<CColor> dragColor;
 	int32_t dragRow;
+	DragStartMouseObserver dragStartMouseObserver;
+	bool allowDrag {false};
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -182,10 +184,10 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 	CRect r (size);
 	r.right -= getColorIconWith ();
 	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
-	CColor color;
-	if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
+	CColor cellColor;
+	if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor))
 	{
-		context->setFillColor (color);
+		context->setFillColor (cellColor);
 		context->setFrameColor (dragRow == row ? kRedCColor : kBlackCColor);
 		context->setLineWidth (context->getHairlineSize ());
 		context->setLineStyle (kLineSolid);
@@ -211,6 +213,14 @@ CMouseEventResult UIColorsDataSource::dbOnMouseDown (const CPoint& where,
                                                      const CButtonState& buttons, int32_t row,
                                                      int32_t column, CDataBrowser* browser)
 {
+	auto r = browser->getCellBounds ({row, column});
+	r.left = r.right - getColorIconWith ();
+	r.inset (2, 2);
+	if (r.pointInside (where))
+	{
+		allowDrag = true;
+		dragStartMouseObserver.init (where);
+	}
 	UIBaseDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 	return kMouseEventHandled;
 }
@@ -223,39 +233,41 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 	auto r = browser->getCellBounds ({row, column});
 	r.left = r.right - getColorIconWith ();
 	r.inset (2, 2);
-	if (r.pointInside (where))
+	if (allowDrag)
 	{
 		if (buttons.isLeftButton ())
 		{
-			CColor color;
-			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
+			if (dragStartMouseObserver.shouldStartDrag (where))
 			{
-				auto colorStr = color.toString ();
-				auto dropSource = CDropSource::create (
-				    colorStr.data (), static_cast<uint32_t> (colorStr.length () + 1),
-				    CDropSource::kText);
-				SharedPointer<CBitmap> dragBitmap;
-				if (auto offscreen = COffscreenContext::create (browser->getFrame (), r.getWidth (), r.getHeight ()))
+				CColor cellColor;
+				if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor))
 				{
-					offscreen->beginDraw ();
-					offscreen->setFillColor (color);
-					offscreen->drawRect (CRect (0, 0, r.getWidth(), r.getHeight()), kDrawFilled);
-					offscreen->endDraw();
-					dragBitmap = offscreen->getBitmap ();
+					auto colorStr = cellColor.toString ();
+					auto dropSource = CDropSource::create (
+						colorStr.data (), static_cast<uint32_t> (colorStr.length () + 1),
+						CDropSource::kText);
+					SharedPointer<CBitmap> dragBitmap;
+					if (auto offscreen = COffscreenContext::create (browser->getFrame (), r.getWidth (), r.getHeight ()))
+					{
+						offscreen->beginDraw ();
+						offscreen->setFillColor (cellColor);
+						offscreen->drawRect (CRect (0, 0, r.getWidth(), r.getHeight()), kDrawFilled);
+						offscreen->endDraw();
+						dragBitmap = offscreen->getBitmap ();
+					}
+					
+					auto df = makeOwned<DragCallbackFunctions> ();
+					df->endedFunc = [browser] (IDraggingSession*, CPoint, DragOperation) {
+						browser->getFrame ()->setCursor (kCursorDefault);
+					};
+					browser->doDrag (DragDescription (dropSource, -r.getSize () / 2., dragBitmap), df);
 				}
-				
-				auto df = makeOwned<DragCallbackFunctions> ();
-				df->endedFunc = [browser] (IDraggingSession*, CPoint, DragOperation) {
-					browser->getFrame ()->setCursor (kCursorDefault);
-				};
-				browser->doDrag (DragDescription (dropSource, -r.getSize () / 2., dragBitmap), df);
 			}
-		}
-		else
-		{
-			browser->getFrame ()->setCursor (kCursorHand);
+			return kMouseEventHandled;
 		}
 	}
+	if (r.pointInside (where))
+		browser->getFrame ()->setCursor (kCursorHand);
 	else
 		browser->getFrame ()->setCursor (kCursorDefault);
 	return UIBaseDataSource::dbOnMouseMoved (where, buttons, row, column, browser);
@@ -296,9 +308,9 @@ DragOperation UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column
 {
 	if (dragColor && row >= 0)
 	{
-		CColor color;
-		if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color) &&
-		    color != *dragColor)
+		CColor cellColor;
+		if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor) &&
+		    cellColor != *dragColor)
 		{
 			dragRow = row;
 			browser->invalidateRow (dragRow);
@@ -334,10 +346,10 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 	{
 		if (row >= 0)
 		{
-			CColor color;
-			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
+			CColor cellColor;
+			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor))
 			{
-				if (color != *dragColor)
+				if (cellColor != *dragColor)
 				{
 					actionPerformer->performColorChange (names[static_cast<uint32_t> (row)].data (), *dragColor);
 					selectName (names[static_cast<uint32_t> (row)].data ());

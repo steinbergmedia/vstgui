@@ -7,11 +7,13 @@ if(LINUX)
 endif(LINUX)
 
 ###########################################################################################
-function(vstgui_add_executable target sources resources)
+function(vstgui_add_executable target sources)
 
   if(MSVC)
     add_executable(${target} WIN32 ${sources})
     set_target_properties(${target} PROPERTIES LINK_FLAGS "/INCLUDE:wWinMain")
+    get_target_property(OUTPUTDIR ${target} RUNTIME_OUTPUT_DIRECTORY)
+    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUTDIR}/${target}")
   endif(MSVC)
 
   if(LINUX)
@@ -19,35 +21,13 @@ function(vstgui_add_executable target sources resources)
     get_target_property(OUTPUTDIR ${target} RUNTIME_OUTPUT_DIRECTORY)
     set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUTDIR}/${target}")
     set(PLATFORM_LIBRARIES ${GTKMM3_LIBRARIES})
-
-    set(resource_folder "${OUTPUTDIR}/${target}/Resources")
-        if(NOT EXISTS ${resource_folder})
-          add_custom_command(TARGET ${target} PRE_LINK
-              COMMAND ${CMAKE_COMMAND} -E make_directory
-              "${resource_folder}"
-          )
-        endif()
-
-    foreach(resource ${resources})
-      message(${resource})
-      add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_LIST_DIR}/${resource}"
-        "${resource_folder}"
-      )
-    endforeach(resource ${resources})
-    
   endif(LINUX)
 
   if(CMAKE_HOST_APPLE)
-    set_source_files_properties(${resources} PROPERTIES
-      MACOSX_PACKAGE_LOCATION "Resources"
-    )
     set_source_files_properties(${PkgInfoResource} PROPERTIES
       MACOSX_PACKAGE_LOCATION "."
     )
-    set(resources ${resources} ${PkgInfoResource})
-    add_executable(${target} ${sources} ${resources})
+    add_executable(${target} ${sources} ${PkgInfoResource})
     set(PLATFORM_LIBRARIES
       "-framework Cocoa"
       "-framework OpenGL"
@@ -69,6 +49,42 @@ function(vstgui_add_executable target sources resources)
     ${PLATFORM_LIBRARIES}
   )
   target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
+
+  if(ARGC GREATER 2)
+    vstgui_add_resources(${target} "${ARGV2}")
+    message(DEPRECATION "Please use vstgui_add_resources to add resources to an executable now.")
+  endif()
+
+endfunction()
+
+###########################################################################################
+function(vstgui_add_resources target resources)
+  set(destination "Resources")
+  if(ARGC GREATER 2)
+    set(destination "${destination}/${ARGV2}")
+  endif()
+  if(CMAKE_HOST_APPLE)
+    set_source_files_properties(${resources} PROPERTIES
+      MACOSX_PACKAGE_LOCATION "${destination}"
+    )
+    target_sources(${target} PRIVATE ${resources})
+  else()
+    get_target_property(OUTPUTDIR ${target} RUNTIME_OUTPUT_DIRECTORY)
+    set(destination "${OUTPUTDIR}/${destination}")
+    if(NOT EXISTS ${destination})
+      add_custom_command(TARGET ${target} PRE_BUILD
+          COMMAND ${CMAKE_COMMAND} -E make_directory
+          "${destination}"
+      )
+    endif()
+    foreach(resource ${resources})
+      add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_LIST_DIR}/${resource}"
+        "${destination}"
+      )
+    endforeach(resource ${resources})
+  endif()  
 endfunction()
 
 ###########################################################################################

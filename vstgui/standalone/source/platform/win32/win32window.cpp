@@ -57,6 +57,7 @@ public:
 	void setPosition (const CPoint& newPosition) override;
 	void setTitle (const UTF8String& newTitle) override;
 	void setRepresentedPath (const UTF8String& path) override {}
+	WindowStyle changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove) override;
 
 	void show () override;
 	void hide () override;
@@ -112,11 +113,8 @@ private:
 	DWORD exStyle {};
 	DWORD dwStyle {};
 	bool hasMenu {false};
-	bool hasBorder {false};
-	bool isTransparent {false};
+	WindowStyle style;
 	bool isPopup {false};
-	bool movableByWindowBackground {false};
-	bool sizable {false};
 	std::function<LRESULT (HWND, UINT, WPARAM, LPARAM)> frameWindowProc;
 };
 
@@ -169,37 +167,30 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 {
 	registerWindowClasses ();
 
-	if (config.style.hasBorder ())
-		hasBorder = true;
-	if (config.style.isTransparent ())
-		isTransparent = true;
-	if (config.style.isMovableByWindowBackground ())
-		movableByWindowBackground = true;
-	if (config.style.canSize ())
-		sizable = true;
+	style = config.style;
 
 	if (config.type == WindowType::Popup)
 	{
 		isPopup = true;
 		exStyle = WS_EX_COMPOSITED;
 		dwStyle = WS_POPUP | WS_CLIPCHILDREN;
-		if (config.style.hasBorder ())
+		if (style.hasBorder ())
 		{
-			if (config.style.canSize ())
+			if (style.canSize ())
 				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-			if (config.style.canClose ())
+			if (style.canClose ())
 				dwStyle |= WS_CAPTION | WS_SYSMENU;
 		}
 	}
 	else
 	{
 		exStyle = WS_EX_APPWINDOW;
-		dwStyle = 0;
-		if (config.style.hasBorder ())
+		dwStyle = WS_CLIPSIBLINGS;
+		if (style.hasBorder ())
 		{
-			if (config.style.canSize ())
+			if (style.canSize ())
 				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX; // TODO: WS_MINIMIZEBOX
-			if (config.style.canClose ())
+			if (style.canClose ())
 				dwStyle |= WS_CAPTION | WS_SYSMENU;
 			exStyle |= WS_EX_COMPOSITED;
 			dwStyle |= WS_CLIPCHILDREN;
@@ -210,7 +201,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 			exStyle = WS_EX_COMPOSITED;
 		}
 	}
-	if (isTransparent)
+	if (style.isTransparent ())
 		exStyle |= WS_EX_LAYERED;
 	initialSize = config.size;
 	auto winStr = dynamic_cast<WinString*> (config.title.getPlatformString ());
@@ -221,10 +212,11 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 	delegate = &inDelegate;
 	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR)this);
-	if (hasBorder)
+	if (style.hasBorder ())
 		hasMenu = true;
-	if (isTransparent)
+	if (style.isTransparent ())
 		makeTransparent ();
+	dwStyle = GetWindowStyle (hwnd);
 	return true;
 }
 
@@ -444,7 +436,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				size.x = std::ceil (size.x * dpiScale);
 				size.y = std::ceil (size.y * dpiScale);
 				frame->setSize (size.x, size.y);
-				if (isTransparent)
+				if (style.isTransparent ())
 				{
 					HRGN region =
 					    CreateRectRgn (0, 0, static_cast<int> (size.x), static_cast<int> (size.y));
@@ -573,7 +565,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_NCCALCSIZE:
 		{
-			if (!hasBorder)
+			if (!style.hasBorder ())
 			{
 				return 0;
 			}
@@ -700,7 +692,7 @@ LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM
 //------------------------------------------------------------------------
 bool Window::nonClientHitTest (LPARAM& lParam, LRESULT& result)
 {
-	if (movableByWindowBackground)
+	if (style.isMovableByWindowBackground ())
 	{
 		LONG x = GET_X_LPARAM (lParam);
 		LONG y = GET_Y_LPARAM (lParam);
@@ -709,7 +701,7 @@ bool Window::nonClientHitTest (LPARAM& lParam, LRESULT& result)
 		frame->getTransform ().transform (size);
 		if (ScreenToClient (hwnd, &p) && p.y > 0 && p.x > 0 && p.y < size.y && p.x < size.x)
 		{
-			if (sizable && !hasBorder)
+			if (style.canSize () && !style.hasBorder ())
 			{
 				const auto edgeSizeWidth = 5 * dpiScale;
 				if (p.x > size.x - edgeSizeWidth)
@@ -794,7 +786,7 @@ void Window::setSize (const CPoint& newSize)
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
 	              SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE);
 
-	if (isTransparent)
+	if (style.isTransparent ())
 	{
 		HRGN region = CreateRectRgn (0, 0, width, height);
 		SetWindowRgn (hwnd, region, FALSE);
@@ -820,6 +812,30 @@ void Window::setTitle (const UTF8String& newTitle)
 {
 	if (auto winStr = dynamic_cast<WinString*> (newTitle.getPlatformString ()))
 		SetWindowText (hwnd, winStr->getWideString ());
+}
+
+//------------------------------------------------------------------------
+WindowStyle Window::changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove)
+{
+	dwStyle = GetWindowStyle (hwnd);
+	if (stylesToAdd.canSize ())
+	{
+		if (style.hasBorder ())
+		{
+			dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
+		}
+		style += WindowStyle ().size ();
+	}
+	else if (stylesToRemove.canSize ())
+	{
+		if (style.hasBorder ())
+		{
+			dwStyle &= ~(WS_SIZEBOX | WS_MAXIMIZEBOX);
+		}
+		style -= WindowStyle ().size ();
+	}
+	SetWindowLong (hwnd, GWL_STYLE, dwStyle);
+	return style;
 }
 
 //------------------------------------------------------------------------
@@ -859,7 +875,7 @@ void Window::show ()
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
 	              SWP_NOMOVE | SWP_NOCOPYBITS | SWP_SHOWWINDOW);
 
-	if (isTransparent)
+	if (style.isTransparent ())
 	{
 		HRGN region = CreateRectRgn (0, 0, width, height);
 		SetWindowRgn (hwnd, region, FALSE);

@@ -86,8 +86,7 @@ void CSplitView::setSeparatorWidth (CCoord width)
 		ReverseViewIterator it (this);
 		while (*it)
 		{
-			CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (*it);
-			if (separatorView)
+			if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (*it))
 			{
 				CRect r (separatorView->getViewSize ());
 				if (style == kHorizontal)
@@ -121,8 +120,7 @@ void CSplitView::resizeFirstView (CPoint diff)
 	while (*it)
 	{
 		CView* view = *it;
-		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
-		if (separatorView)
+		if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view))
 			separators.emplace_back (separatorView);
 		r = view->getViewSize ();
 		if (style == kHorizontal)
@@ -141,7 +139,7 @@ void CSplitView::resizeFirstView (CPoint diff)
 	}
 	for (auto& seperatorView : separators)
 	{
-		CRect r (seperatorView->getViewSize ());
+		r = seperatorView->getViewSize ();
 		requestNewSeparatorSize (seperatorView, r);
 	}
 }
@@ -156,7 +154,7 @@ void CSplitView::resizeSecondView (CPoint diff)
 	while (*it)
 	{
 		CView* view = *it;
-		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
+		auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
 		if (separatorView)
 			separators.emplace_back (separatorView);
 		else
@@ -197,7 +195,7 @@ void CSplitView::resizeSecondView (CPoint diff)
 	}
 	for (auto& seperatorView : separators)
 	{
-		CRect r (seperatorView->getViewSize ());
+		r = seperatorView->getViewSize ();
 		requestNewSeparatorSize (seperatorView, r);
 	}
 }
@@ -221,8 +219,7 @@ void CSplitView::resizeLastView (CPoint diff)
 	while (*it)
 	{
 		CView* view = *it;
-		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
-		if (separatorView)
+		if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view))
 			separators.emplace_back (separatorView);
 		r = view->getViewSize ();
 		if (style == kHorizontal)
@@ -239,7 +236,7 @@ void CSplitView::resizeLastView (CPoint diff)
 	}
 	for (auto& seperatorView : separators)
 	{
-		CRect r (seperatorView->getViewSize ());
+		r = seperatorView->getViewSize ();
 		requestNewSeparatorSize (seperatorView, r);
 	}
 }
@@ -271,8 +268,7 @@ void CSplitView::resizeViewsEqual (CPoint diff)
 	std::list<CSplitViewSeparatorView*> separators;
 	while (*it)
 	{
-		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (*it);
-		if (separatorView)
+		if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (*it))
 		{
 			separators.emplace_back (separatorView);
 			CRect r2 = separatorView->getViewSize ();
@@ -312,10 +308,10 @@ void CSplitView::resizeViewsEqual (CPoint diff)
 		}
 		++it;
 	}
-	for (auto& seperatorView : separators)
+	for (auto& separatorView : separators)
 	{
-		CRect r (seperatorView->getViewSize ());
-		requestNewSeparatorSize (seperatorView, r);
+		r = separatorView->getViewSize ();
+		requestNewSeparatorSize (separatorView, r);
 	}
 }
 
@@ -380,7 +376,7 @@ bool CSplitView::addView (CView* pView, CView* pBefore)
 			r.bottom += getSeparatorWidth ();
 			viewSize.offset (0, r.bottom);
 		}
-		CSplitViewSeparatorView* separator = new CSplitViewSeparatorView (r, getStyle (), (getNbViews () - 1) / 2);
+		auto* separator = new CSplitViewSeparatorView (r, getStyle (), (getNbViews () - 1) / 2);
 		CViewContainer::addView (separator, nullptr);
 	}
 	pView->setViewSize (viewSize);
@@ -399,16 +395,14 @@ bool CSplitView::removeView (CView* pView, bool withForget)
 			++it;
 			if (*it)
 			{
-				CSplitViewSeparatorView* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it);
-				if (sepView)
+				if (auto* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it))
 				{
 					CViewContainer::removeView (sepView, true);
 				}
 			}
 			else
 			{
-				CSplitViewSeparatorView* sepView = dynamic_cast<CSplitViewSeparatorView*> (getView (1));
-				if (sepView)
+				if (auto* sepView = dynamic_cast<CSplitViewSeparatorView*> (getView (1)))
 				{
 					CViewContainer::removeView (sepView, true);
 				}
@@ -442,7 +436,7 @@ void CSplitView::storeViewSizes ()
 		ViewIterator it (this);
 		while (*it)
 		{
-			CSplitViewSeparatorView* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it);
+			auto* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it);
 			if (sepView == nullptr)
 			{
 				CRect r ((*it)->getViewSize ());
@@ -474,8 +468,7 @@ bool CSplitView::attached (CView* parent)
 		ViewIterator it (this);
 		while (*it)
 		{
-			CSplitViewSeparatorView* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it);
-			if (sepView)
+			if (auto* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it))
 			{
 				r = sepView->getViewSize ();
 				r.offset (offset.x, offset.y);
@@ -720,8 +713,7 @@ bool CSplitView::addViewToSeparator (int32_t sepIndex, CView* view)
 	ViewIterator it (this);
 	while (*it)
 	{
-		CSplitViewSeparatorView* sepView = dynamic_cast<CSplitViewSeparatorView*>(*it);
-		if (sepView)
+		if (auto* sepView = dynamic_cast<CSplitViewSeparatorView*>(*it))
 		{
 			if (sepIndex == 0)
 			{
@@ -750,7 +742,7 @@ CSplitViewSeparatorView::CSplitViewSeparatorView (const CRect& size, CSplitView:
 //-----------------------------------------------------------------------------
 void CSplitViewSeparatorView::drawRect (CDrawContext *pContext, const CRect& r)
 {
-	CSplitView* splitView = static_cast<CSplitView*> (getParentView ());
+	auto* splitView = static_cast<CSplitView*> (getParentView ());
 	ISplitViewSeparatorDrawer* drawer = splitView ? splitView->getDrawer () : nullptr;
 	if (drawer)
 	{
@@ -811,8 +803,9 @@ CMouseEventResult CSplitViewSeparatorView::onMouseMoved (CPoint& where, const CB
 				newSize.offset (where.x - lastMousePos.x, 0);
 			else
 				newSize.offset (0, where.y - lastMousePos.y);
-			CSplitView* splitView = static_cast<CSplitView*> (getParentView ());
-			splitView->requestNewSeparatorSize (this, newSize);
+			auto* splitView = static_cast<CSplitView*> (getParentView ());
+			if (splitView)
+				splitView->requestNewSeparatorSize (this, newSize);
 		}
 	}
 	else if (!hasBit (flags, ISplitViewSeparatorDrawer::kMouseOver))

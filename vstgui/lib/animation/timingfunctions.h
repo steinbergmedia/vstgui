@@ -103,7 +103,7 @@ public:
 	static CubicBezierTimingFunction easyInOut (uint32_t time);
 
 private:
-	CPoint lerp (CPoint p1, CPoint p2, float pos) const;
+	static CPoint lerp (CPoint p1, CPoint p2, float pos);
 
 	CPoint p1;
 	CPoint p2;

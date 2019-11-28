@@ -123,13 +123,13 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const CButtonState&
 	if (buttons & kLButton)
 	{
 		value = (value == getMax ()) ? getMin () : getMax ();
-		if (value == getMax () && !modalViewSession && modalView)
+		if (value == getMax () && !modalViewSessionID && modalView)
 		{
 			if (auto frame = getFrame ())
 			{
 				if (modalView)
 				{
-					if ((modalViewSession = frame->beginModalViewSession (modalView)))
+					if ((modalViewSessionID = frame->beginModalViewSession (modalView)))
 					{
 						modalView->remember ();
 						CControl::valueChanged ();
@@ -159,12 +159,12 @@ void CSplashScreen::unSplash ()
 
 	if (auto frame = getFrame ())
 	{
-		if (modalViewSession)
+		if (modalViewSessionID)
 		{
 			if (modalView)
 				modalView->invalid ();
-			frame->endModalViewSession (modalViewSession);
-			modalViewSession = nullptr;
+			frame->endModalViewSession (*modalViewSessionID);
+			modalViewSessionID = {};
 		}
 	}
 }
@@ -237,9 +237,11 @@ void CAnimationSplashScreen::unSplash ()
 			{
 				if (modalView)
 					modalView->invalid ();
-				
-				frame->endModalViewSession (modalViewSession);
-				modalViewSession = nullptr;
+				if (modalViewSessionID)
+				{
+					frame->endModalViewSession (*modalViewSessionID);
+					modalViewSessionID = {};
+				}
 				setMouseEnabled (true);
 			}
 		}
@@ -280,12 +282,12 @@ bool CAnimationSplashScreen::sizeToFit ()
 }
 
 //------------------------------------------------------------------------
-bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t animationTime,
+bool CAnimationSplashScreen::createAnimation (uint32_t animIndex, uint32_t animTime,
                                               CView* splashView, bool removeViewAnimation)
 {
 	if (!isAttached ())
 		return false;
-	switch (animationIndex)
+	switch (animIndex)
 	{
 		case 0:
 		{
@@ -294,16 +296,19 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t 
 				splashView->setMouseEnabled (false);
 				splashView->addAnimation (
 				    "AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f),
-				    new Animation::PowerTimingFunction (animationTime, 2),
+				    new Animation::PowerTimingFunction (animTime, 2),
 				    [this] (CView*, const IdStringPtr, Animation::IAnimationTarget*) {
 					    if (modalView)
 					    {
 						    modalView->invalid ();
 						    modalView->setMouseEnabled (true);
 					    }
-					    if (auto frame = getFrame ())
-						    frame->endModalViewSession (modalViewSession);
-					    modalViewSession = nullptr;
+					    if (modalViewSessionID)
+					    {
+						    if (auto frame = getFrame ())
+							    frame->endModalViewSession (*modalViewSessionID);
+						    modalViewSessionID = {};
+					    }
 					    setMouseEnabled (true);
 				    });
 			}
@@ -311,7 +316,7 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t 
 			{
 				setMouseEnabled (false);
 				splashView->setAlphaValue (0.f);
-				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::PowerTimingFunction (animationTime, 2));
+				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::PowerTimingFunction (animTime, 2));
 			}
 			return true;
 		}

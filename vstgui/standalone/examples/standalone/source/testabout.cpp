@@ -49,7 +49,7 @@ void About::show ()
 }
 
 //------------------------------------------------------------------------
-void About::onClosed (const IWindow& window) { gInstance = nullptr; }
+void About::onClosed (const IWindow&) { gInstance = nullptr; }
 
 //------------------------------------------------------------------------
 } // MyApp

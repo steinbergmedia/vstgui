@@ -34,6 +34,8 @@ public:
 
 	static CreateIResourceInputStreamFunc createResourceInputStreamFunc;
 
+	static UTF8String resourcePath;
+
 private:
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;
@@ -68,6 +70,7 @@ private:
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}
 	Optional<UTF8String> convertCurrentKeyEventToText () override;
+	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override;
 
 	uint32_t getX11WindowID () const override;
 

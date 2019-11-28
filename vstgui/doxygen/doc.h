@@ -29,9 +29,9 @@ Currently VSTGUI compiles on
 - 8 (32 and 64 bit)
 - 10 (32 and 64 bit)
 \par Apple macOS (with Xcode 7.3 or newer)
-- 10.9 - 10.14 (32 and 64 bit)
+- 10.9 - 10.15 (32 and 64 bit)
 \par Apple iOS
-- 7.0 - 12.0 (32 and 64 bit)
+- 8.0 - 13.0 (32 and 64 bit)
 \par Linux (with gcc >= 5.4 or clang >= 3.8)
 - Ubuntu 2016.04 or newer
 

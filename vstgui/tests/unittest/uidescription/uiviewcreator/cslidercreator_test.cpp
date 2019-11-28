@@ -53,7 +53,7 @@ TESTCASE(CSliderCreatorTest,
 		DummyUIDescription uidesc;
 		CPoint p (20, 20);
 		testAttribute<CSlider>(kCSlider, kAttrBitmapOffset, p, &uidesc, [&] (CSlider* v) {
-			return v->getOffset () == p;
+			return v->getBackgroundOffset () == p;
 		});
 	);
 

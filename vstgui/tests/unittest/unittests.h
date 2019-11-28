@@ -12,6 +12,7 @@
 #include <functional>
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
 
 /* 
 	How-to write tests:

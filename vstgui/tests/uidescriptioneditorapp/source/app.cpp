@@ -1,21 +1,25 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "vstgui/lib/cbitmap.h"
+#include "vstgui/lib/ccolor.h"
+#include "vstgui/lib/cframe.h"
+#include "vstgui/lib/platform/iplatformframe.h"
+#include "vstgui/lib/platform/common/genericoptionmenu.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
+#include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/standalone/include/helpers/windowcontroller.h"
-#include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/ialertbox.h"
+#include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/icommand.h"
 #include "vstgui/uidescription/cstream.h"
-#include "vstgui/uidescription/uidescription.h"
 #include "vstgui/uidescription/editing/uieditcontroller.h"
+#include "vstgui/uidescription/editing/uieditmenucontroller.h"
 #include "vstgui/uidescription/editing/uiundomanager.h"
-#include "vstgui/lib/cframe.h"
-#include "vstgui/lib/cbitmap.h"
-#include "vstgui/lib/ccolor.h"
+#include "vstgui/uidescription/uidescription.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -24,6 +28,9 @@ namespace Standalone {
 using namespace Application;
 
 #if VSTGUI_LIVE_EDITING
+//------------------------------------------------------------------------
+static void makeAndOpenWindow ();
+
 //------------------------------------------------------------------------
 class Controller : public WindowControllerAdapter, public ICommandHandler
 {
@@ -42,7 +49,7 @@ public:
 	bool init ()
 	{
 		uidesc = makeOwned<UIDescription> (descPath.data ());
-		if (!uidesc->parse())
+		if (!uidesc->parse ())
 		{
 			// TODO: show alert about error
 			IApplication::instance ().quit ();
@@ -52,19 +59,18 @@ public:
 		editController = makeOwned<UIEditController> (uidesc);
 
 		IApplication::instance ().registerCommand (Commands::SaveDocument, 's');
+		IApplication::instance ().registerCommand (Commands::RevertDocument, 0);
 
 		return true;
 	}
 
-	bool save ()
-	{
-		return uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoXMLFile);
-	}
+	bool save () { return uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoXMLFile); }
 
 	void beforeShow (IWindow& window) override
 	{
+		win = &window;
 		CRect r;
-		r.setSize (window.getSize());
+		r.setSize (window.getSize ());
 		auto frame = makeOwned<CFrame> (r, nullptr);
 		frame->enableTooltips (true);
 		if (auto view = editController->createEditView ())
@@ -73,13 +79,13 @@ public:
 			frame->setViewSize (view->getViewSize ());
 			frame->addView (view);
 			window.setContentView (frame);
-			
+
 			auto focusDrawingSettings = uidesc->getFocusDrawingSettings ();
 			if (focusDrawingSettings.enabled)
 			{
 				CColor focusColor;
-				if (uidesc->getColor(focusDrawingSettings.colorName, focusColor))
-					frame->setFocusColor(focusColor);
+				if (uidesc->getColor (focusDrawingSettings.colorName, focusColor))
+					frame->setFocusColor (focusColor);
 				frame->setFocusWidth (focusDrawingSettings.width);
 				frame->setFocusDrawingEnabled (true);
 			}
@@ -88,7 +94,7 @@ public:
 
 	bool canClose (const IWindow& window) override
 	{
-		if (!editController->getUndoManager()->isSavePosition ())
+		if (win && !editController->getUndoManager ()->isSavePosition ())
 		{
 			AlertBoxConfig config;
 			config.headline = "There are unsaved changes.";
@@ -96,7 +102,7 @@ public:
 			config.defaultButton = "Save";
 			config.secondButton = "Cancel";
 			config.thirdButton = "Don't Save";
-			auto result = IApplication::instance().showAlertBox (config);
+			auto result = IApplication::instance ().showAlertBox (config);
 			switch (result)
 			{
 				case AlertResult::DefaultButton:
@@ -104,71 +110,128 @@ public:
 					save ();
 					return true;
 				}
-				case AlertResult::SecondButton:
-				{
-					return false;
-				}
-				default:
-				{
-					return true;
-				}
+				case AlertResult::SecondButton: return false;
+				default: return true;
 			}
 		}
 		return true;
 	}
-	
+
 	void onClosed (const IWindow& window) override
 	{
-		IApplication::instance ().quit ();
+		if (IApplication::instance ().getWindows ().empty ())
+			IApplication::instance ().quit ();
 	}
-	
+
 	bool canHandleCommand (const Command& command) override
 	{
 		if (command == Commands::SaveDocument)
 			return true;
+		if (command == Commands::Undo)
+			return editController->getUndoManager ()->canUndo ();
+		if (command == Commands::Redo)
+			return editController->getUndoManager ()->canRedo ();
+		if (command == Commands::RevertDocument)
+			return !editController->getUndoManager ()->isSavePosition ();
 		return false;
 	}
+
 	bool handleCommand (const Command& command) override
 	{
 		if (command == Commands::SaveDocument)
 			return save ();
+		if (command == Commands::Undo)
+			return editController->getMenuController ()->handleCommand ("Edit", "Undo");
+		if (command == Commands::Redo)
+			return editController->getMenuController ()->handleCommand ("Edit", "Redo");
+		if (command == Commands::RevertDocument)
+		{
+			makeAndOpenWindow ();
+			if (auto window = win)
+			{
+				win = nullptr;
+				window->close ();
+			}
+		}
 		return false;
+	}
+
+	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override
+	{
+		if (auto platformFrame = contentView->getPlatformFrame ())
+		{
+			platformFrame->setupGenericOptionMenu (true);
+		}
 	}
 
 	std::string descPath;
 	SharedPointer<UIDescription> uidesc;
 	SharedPointer<UIEditController> editController;
+	IWindow* win {nullptr};
 };
+
+//------------------------------------------------------------------------
+void makeAndOpenWindow ()
+{
+	auto controller = std::make_shared<Controller> ();
+	if (controller->init ())
+	{
+		WindowConfiguration config;
+		config.style.border ().size ().close ().centered ();
+		config.title = "UIDescriptionEditor";
+		config.autoSaveFrameName = "UIDescriptionEditorWindowFrame";
+		config.size = {500, 500};
+		if (auto window = IApplication::instance ().createWindow (config, controller))
+			window->show ();
+		else
+			IApplication::instance ().quit ();
+	}
+}
 #endif
 
 //------------------------------------------------------------------------
-class UIDescriptionEditorApp : public DelegateAdapter
+class UIDescriptionEditorApp : public DelegateAdapter, public MenuBuilderAdapter
 {
 public:
-	UIDescriptionEditorApp () : DelegateAdapter ({"UIDescriptionEditorApp", "1.0.0", "vstgui.uidescriptioneditorapp"})
-	{}
+	UIDescriptionEditorApp ()
+	: DelegateAdapter ({"UIDescriptionEditorApp", "1.0.0", "vstgui.uidescriptioneditorapp"})
+	{
+	}
+
+	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override
+	{
+		if (cmd == Commands::CloseWindow)
+			return true;
+		return false;
+	}
+
+	SortFunction getCommandGroupSortFunction (const Interface& context,
+	                                          const UTF8String& group) const override
+	{
+		if (group == CommandGroup::File)
+		{
+			return [] (const UTF8String& lhs, const UTF8String& rhs) {
+				static const auto order = {
+				    Commands::NewDocument.name,    Commands::OpenDocument.name,
+				    Commands::SaveDocument.name,   Commands::SaveDocumentAs.name,
+				    Commands::RevertDocument.name, Commands::CloseWindow.name};
+				auto leftIndex = std::find (order.begin (), order.end (), lhs);
+				auto rightIndex = std::find (order.begin (), order.end (), rhs);
+				return std::distance (leftIndex, rightIndex) > 0;
+			};
+		}
+		return {};
+	}
 
 	void finishLaunching () override
 	{
 #if VSTGUI_LIVE_EDITING
-		auto controller = std::make_shared<Controller> ();
-		if (controller->init ())
-		{
-			WindowConfiguration config;
-			config.style.border().size().close().centered();
-			config.title = "UIDescriptionEditor";
-			config.autoSaveFrameName = "UIDescriptionEditorWindowFrame";
-			config.size = {500, 500};
-			if (auto window = IApplication::instance().createWindow (config, controller))
-				window->show ();
-			else
-				IApplication::instance ().quit ();
-		}
+		makeAndOpenWindow ();
 #else
 		IApplication::instance ().quit ();
 		AlertBoxConfig config;
 		config.headline = "UIDescriptionEditorApp only works in Debug mode";
-		IApplication::instance().showAlertBox (config);
+		IApplication::instance ().showAlertBox (config);
 #endif
 	}
 

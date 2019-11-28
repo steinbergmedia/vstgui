@@ -264,7 +264,7 @@ bool ZLibOutputStream::close ()
 	bool result = true;
 	if (zstream)
 	{
-		zstream->next_in = 0;
+		zstream->next_in = nullptr;
 		zstream->avail_in = 0;
 		while (true)
 		{

@@ -152,7 +152,7 @@ public:
 		window->close ();
 	}
 
-	void onClosed (const IWindow& window) override
+	void onClosed (const IWindow&) override
 	{
 		for (auto button : buttons)
 		{
@@ -166,7 +166,7 @@ public:
 		}
 	}
 
-	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override
+	void onSetContentView (IWindow& inWindow, const SharedPointer<CFrame>& contentView) override
 	{
 		std::vector<CMultiLineTextLabel*> views;
 		if (contentView->getChildViewsOfType<CMultiLineTextLabel> (views, true) == 0)
@@ -191,9 +191,9 @@ public:
 		}
 		if (diffY == 0.)
 			return;
-		auto windowSize = window.getSize ();
+		auto windowSize = inWindow.getSize ();
 		windowSize.y += diffY;
-		window.setSize (windowSize);
+		inWindow.setSize (windowSize);
 		contentView->setSize (windowSize.x, windowSize.y);
 	}
 

@@ -11,6 +11,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 using CViewAttributeID = size_t;
+using ModalViewSessionID = uint32_t;
 
 //-----------------------------------------------------------------------------
 static constexpr uint32_t kStreamIOError = std::numeric_limits<uint32_t>::max ();
@@ -130,6 +131,7 @@ struct CGraphicsTransform;
 struct DragDescription;
 struct DragEventData;
 struct ModalViewSession;
+struct CListControlRowDesc;
 
 // interfaces
 class IViewListener;
@@ -154,6 +156,8 @@ class IDropTarget;
 class ICommandMenuItemTarget;
 class IOptionMenuListener;
 class ITextLabelListener;
+class IListControlDrawer;
+class IListControlConfigurator;
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 class ITouchEvent;
@@ -180,6 +184,10 @@ class CVSTGUITimer;
 class CMenuItem;
 class CCommandMenuItem;
 class GenericStringListDataBrowserSource;
+class StaticListControlConfigurator;
+class StringListControlDrawer;
+
+using CFontRef = CFontDesc*;
 
 // views
 class CFrame;
@@ -230,6 +238,7 @@ class CTextLabel;
 class CMultiLineTextLabel;
 class CVuMeter;
 class CXYPad;
+class CListControl;
 
 // animation
 namespace Animation {

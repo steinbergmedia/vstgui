@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -25,8 +25,13 @@ TestModel::TestModel ()
 	addValue (Value::make ("ShowAlert"));
 	addValue (Value::make ("ShowAlert2"));
 	addValue (Value::make ("ShowAlert3"));
-	addValue (Value::makeStringListValue ("StringList", {"one","two","three","four","five"}));
+	addValue (Value::makeStringListValue ("StringList", {"one", "two", "three", "four", "five"}));
 	addValue (Value::make ("ShowPopup"));
+	addValue (Value::makeStringValue ("MutableString", "This is a string value"));
+	addValue (
+	    Value::makeStringListValue ("Weekdays", {"Weekdays", "Monday", "Tuesday", "Wednesday",
+	                                             "Thirsday", "Friday", "Saturday", "Sunday"}));
+	Value::performSingleStepEdit (*values.back (), 3);
 }
 
 //------------------------------------------------------------------------
@@ -39,49 +44,65 @@ void TestModel::addValue (ValuePtr&& value)
 //------------------------------------------------------------------------
 void TestModel::onEndEdit (IValue& value)
 {
+	auto v = value.getValue ();
+
 	auto activeValue = values[0];
 	if (&value == activeValue.get ())
 	{
-		for (auto& v : values)
+		for (auto& val : values)
 		{
-			if (v != values[0])
-				v->setActive (activeValue->getValue () == 1.);
+			if (val != values[0])
+				val->setActive (activeValue->getValue () == 1.);
 		}
 	}
 	else if (value.getID () == "ShowAlert")
 	{
-		AlertBoxForWindowConfig config;
-		config.headline = "Test Alert";
-		config.description = "This is an example alert box.\nWith more than one line.\nIt even has more than two lines.";
-		config.secondButton = "Cancel";
-		config.thirdButton = "Do Quit";
-		config.window = IApplication::instance ().getWindows ().front ();
-		config.callback = [] (AlertResult res) {
-			if (res == AlertResult::ThirdButton)
-				IApplication::instance ().quit ();
-		};
-		if (config.window)
-			IApplication::instance ().showAlertBoxForWindow (config);
-		else
-			IApplication::instance ().showAlertBox (config);
+		value.performEdit (0.);
+		if (v > 0.5)
+		{
+			AlertBoxForWindowConfig config;
+			config.headline = "Test Alert";
+			config.description =
+			    "This is an example alert box.\nWith more than one line.\nIt even has more than two lines.";
+			config.secondButton = "Cancel";
+			config.thirdButton = "Do Quit";
+			config.window = IApplication::instance ().getWindows ().front ();
+			config.callback = [] (AlertResult res) {
+				if (res == AlertResult::ThirdButton)
+					IApplication::instance ().quit ();
+			};
+			if (config.window)
+				IApplication::instance ().showAlertBoxForWindow (config);
+			else
+				IApplication::instance ().showAlertBox (config);
+		}
 	}
 	else if (value.getID () == "ShowAlert2")
 	{
-		AlertBoxForWindowConfig config;
-		config.headline = "Test Alert 2";
-		config.description = "This is an example alert box.\nWith more than one line.\nIt even has more than two lines.";
-		config.defaultButton = "Close";
-		config.secondButton = "Cancel";
-		config.window = IApplication::instance ().getWindows ().front ();
-		IApplication::instance ().showAlertBox (config);
+		value.performEdit (0.);
+		if (v > 0.5)
+		{
+			AlertBoxForWindowConfig config;
+			config.headline = "Test Alert 2";
+			config.description =
+			    "This is an example alert box.\nWith more than one line.\nIt even has more than two lines.";
+			config.defaultButton = "Close";
+			config.secondButton = "Cancel";
+			config.window = IApplication::instance ().getWindows ().front ();
+			IApplication::instance ().showAlertBox (config);
+		}
 	}
 	else if (value.getID () == "ShowAlert3")
 	{
-		AlertBoxForWindowConfig config;
-		config.headline = "Test Alert 2";
-		config.defaultButton = "YES";
-		config.window = IApplication::instance ().getWindows ().front ();
-		IApplication::instance ().showAlertBox (config);
+		value.performEdit (0.);
+		if (v > 0.5)
+		{
+			AlertBoxForWindowConfig config;
+			config.headline = "Test Alert 2";
+			config.defaultButton = "YES";
+			config.window = IApplication::instance ().getWindows ().front ();
+			IApplication::instance ().showAlertBox (config);
+		}
 	}
 	else if (value.getID () == "ShowPopup" && value.getValue () > 0.5)
 	{
@@ -106,7 +127,6 @@ void TestModel::onEndEdit (IValue& value)
 			popup->setPosition (r.getTopLeft ());
 			popup->show ();
 		}
-		
 	}
 }
 

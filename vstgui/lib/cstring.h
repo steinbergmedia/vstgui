@@ -28,8 +28,8 @@ public:
 	using reference = char32_t&;
 
 	using CodePoint = value_type;
-	
-	UTF8CodePointIterator () noexcept = default;
+
+	UTF8CodePointIterator () = default;
 	UTF8CodePointIterator (const UTF8CodePointIterator& o) noexcept : it (o.it) {}
 	explicit UTF8CodePointIterator (const BaseIterator& iterator) noexcept : it (iterator) {}
 	
@@ -159,10 +159,10 @@ UTF8String trim (const UTF8String& str, TrimOptions options = TrimOptions ().lef
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 namespace String {
-	/** @deprecated Allocates a new UTF8StringBuffer with enough size for string and copy the string into it. Returns nullptr if string is a nullptr. */
-	UTF8StringBuffer newWithString (UTF8StringPtr string);
-	/** @deprecated Frees an UTF8StringBuffer. If buffer is a nullptr it does nothing. */
-	void free (UTF8StringBuffer buffer);
+	VSTGUI_DEPRECATED(/** @deprecated Allocates a new UTF8StringBuffer with enough size for string and copy the string into it. Returns nullptr if string is a nullptr. */
+	UTF8StringBuffer newWithString (UTF8StringPtr string);)
+	VSTGUI_DEPRECATED(/** @deprecated Frees an UTF8StringBuffer. If buffer is a nullptr it does nothing. */
+	void free (UTF8StringBuffer buffer);)
 }
 #endif
 
@@ -231,7 +231,7 @@ class UTF8CharacterIterator
 public:
 	UTF8CharacterIterator (const UTF8StringPtr utf8Str)
 	: startPos ((uint8_t*)utf8Str)
-	, currentPos (0)
+	, currentPos (nullptr)
 	, strLen (std::strlen (utf8Str))
 	{
 		begin ();
@@ -239,7 +239,7 @@ public:
 
 	UTF8CharacterIterator (const UTF8StringPtr utf8Str, size_t strLen)
 	: startPos ((uint8_t*)utf8Str)
-	, currentPos (0)
+	, currentPos (nullptr)
 	, strLen (strLen)
 	{
 		begin ();
@@ -247,7 +247,7 @@ public:
 	
 	UTF8CharacterIterator (const std::string& stdStr)
 	: startPos ((uint8_t*)stdStr.c_str ())
-	, currentPos (0)
+	, currentPos (nullptr)
 	, strLen (stdStr.size ())
 	{
 		begin ();
@@ -354,7 +354,7 @@ inline UTF8StringView& UTF8StringView::operator= (const UTF8StringView& other) n
 inline size_t UTF8StringView::calculateCharacterCount () const
 {
 	size_t count = 0;
-	if (str == 0)
+	if (str == nullptr)
 		return count;
 	
 	UTF8CharacterIterator it (str);

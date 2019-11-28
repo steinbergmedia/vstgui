@@ -57,6 +57,7 @@ public:
 	PlatformType getPlatformType () const override { return PlatformType::kUIView; }
 	void onFrameClosed () override {}
 	Optional<UTF8String> convertCurrentKeyEventToText () override { return {}; }
+	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override { return false; }
 
 //-----------------------------------------------------------------------------
 protected:

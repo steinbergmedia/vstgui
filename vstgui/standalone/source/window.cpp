@@ -92,6 +92,7 @@ public:
 	}
 	void setContentView (const SharedPointer<CFrame>& newFrame) override;
 	void setRepresentedPath (const UTF8String& path) override;
+	WindowStyle changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove) override;
 	void show () override;
 	void hide () override { platformWindow->hide (); }
 	void close () override { platformWindow->close (); }
@@ -101,6 +102,7 @@ public:
 
 	// IPlatformWindowAccess
 	InterfacePtr getPlatformWindow () const override { return platformWindow; }
+	CFrame* getFrame () const override { return frame; }
 
 	// Platform::IWindowDelegate
 	CPoint constraintSize (const CPoint& newSize) override;
@@ -117,10 +119,9 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	// IMouseObserver
-	void onMouseEntered (CView* view, CFrame* frame) override {};
-	void onMouseExited (CView* view, CFrame* frame) override {};
-	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where,
-	                                const CButtonState& buttons) override
+	void onMouseEntered (CView*, CFrame* ) override {};
+	void onMouseExited (CView*, CFrame* ) override {};
+	CMouseEventResult onMouseMoved (CFrame*, const CPoint&, const CButtonState&) override
 	{
 		return kMouseEventNotHandled;
 	}
@@ -221,6 +222,14 @@ void Window::setRepresentedPath (const UTF8String& path)
 {
 	platformWindow->setRepresentedPath (path);
 }
+
+//------------------------------------------------------------------------
+WindowStyle Window::changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove)
+{
+	windowStyle = platformWindow->changeStyle (stylesToAdd, stylesToRemove);
+	return windowStyle;
+}
+
 
 //------------------------------------------------------------------------
 CRect Window::getFocusViewRect () const
@@ -362,17 +371,17 @@ bool Window::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
+CMouseEventResult Window::onMouseDown (CFrame* inFrame, const CPoint& _where,
                                        const CButtonState& buttons)
 {
 	if (!buttons.isRightButton ())
 		return kMouseEventNotHandled;
 
 	CPoint where (_where);
-	frame->getTransform ().transform (where);
+	inFrame->getTransform ().transform (where);
 
 	CViewContainer::ViewList views;
-	if (frame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
+	if (inFrame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
 	{
 		auto contextMenu = makeOwned<COptionMenu> ();
 		for (const auto& view : views)
@@ -395,8 +404,8 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
 		{
 			contextMenu->cleanupSeparators (true);
 			contextMenu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
-			contextMenu->popup (frame, _where);
-			return kMouseEventHandled;
+			contextMenu->popup (inFrame, _where);
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 	}
 	return kMouseEventNotHandled;

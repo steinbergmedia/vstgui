@@ -6,6 +6,7 @@
 
 #include "ccontrol.h"
 #include "icontrollistener.h"
+#include "../optional.h"
 
 namespace VSTGUI {
 
@@ -48,7 +49,7 @@ protected:
 	CRect keepSize;
 	CPoint offset;
 	CView* modalView{nullptr};
-	ModalViewSession* modalViewSession{nullptr};
+	Optional<ModalViewSessionID> modalViewSessionID;
 };
 
 //-----------------------------------------------------------------------------

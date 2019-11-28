@@ -7,7 +7,6 @@
 #include "../lib/idependency.h"
 #include "iuidescription.h"
 #include "uidescriptionfwd.h"
-#include "xmlparser.h"
 #include <list>
 #include <string>
 #include <memory>
@@ -20,8 +19,16 @@ class UINode;
 /// @brief XML description parser and view creator
 /// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class UIDescription : public NonAtomicReferenceCounted, public IUIDescription, public Xml::IHandler
+class UIDescription : public NonAtomicReferenceCounted, public IUIDescription
 {
+protected:
+	enum SaveFlagBits
+	{
+		WriteWindowsResourceFileBit = 0,
+		WriteImagesIntoXMLFileBit,
+		DoNotVerifyImageXMLDataBit,
+		LastSaveFlagBit,
+	};
 public:
 	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
 	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = nullptr);
@@ -30,8 +37,9 @@ public:
 	virtual bool parse ();
 
 	enum SaveFlags {
-		kWriteWindowsResourceFile	= 1 << 0,
-		kWriteImagesIntoXMLFile		= 1 << 1
+		kWriteWindowsResourceFile	= 1 << WriteWindowsResourceFileBit,
+		kWriteImagesIntoXMLFile		= 1 << WriteImagesIntoXMLFileBit,
+		kDoNotVerifyImageXMLData	= 1 << DoNotVerifyImageXMLDataBit,
 	};
 
 	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile);
@@ -145,12 +153,6 @@ protected:
 
 	const CResourceDescription& getXmlFile () const;
 private:
-	// Xml::IHandler
-	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
-	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
-	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
-	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
-	
 	CView* createViewFromNode (UINode* node) const;
 	UINode* getBaseNode (UTF8StringPtr name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;

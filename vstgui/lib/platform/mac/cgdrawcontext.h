@@ -76,8 +76,9 @@ public:
 protected:
 	void init () override;
 	void drawCGImageRef (CGContextRef context, CGImageRef image, CGLayerRef layer, double imageScaleFactor, const CRect& inRect, const CPoint& inOffset, float alpha, CBitmap* bitmap);
-
 	void setCGDrawContextQuality (CGContextRef context);
+	void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, CGFloat start_angle,
+	                    CGFloat end_angle) const;
 
 	CGContextRef cgContext;
 

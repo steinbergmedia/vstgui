@@ -74,6 +74,18 @@ private:
 public:
 	WindowStyle () = default;
 
+	WindowStyle& operator+= (WindowStyle toAdd)
+	{
+		flags |= toAdd.flags;
+		return *this;
+	}
+
+	WindowStyle& operator-= (WindowStyle toRemove)
+	{
+		flags &= ~(toRemove.flags);
+		return *this;
+	}
+
 	WindowStyle& border ()
 	{
 		flags |= Style::Border;
@@ -183,6 +195,11 @@ public:
 	virtual void setContentView (const SharedPointer<CFrame>& frame) = 0;
 	/** Set the path the contents of this window represents. */
 	virtual void setRepresentedPath (const UTF8String& path) = 0;
+	/** Change window style.
+	 *	May not change every style. Depends on the platform.
+	 *	Returns effective style.
+	 */
+	virtual WindowStyle changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove) = 0;
 
 	/** Show the window. */
 	virtual void show () = 0;

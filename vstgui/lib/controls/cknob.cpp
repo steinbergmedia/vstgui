@@ -77,11 +77,10 @@ bool CKnobBase::sizeToFit ()
 auto CKnobBase::getMouseEditingState () -> MouseEditingState&
 {
 	MouseEditingState* state = nullptr;
-	uint32_t size;
-	if (!getAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state, size))
+	if (!getAttribute (kCKnobMouseStateAttribute, state))
 	{
 		state = new MouseEditingState;
-		setAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state);
+		setAttribute (kCKnobMouseStateAttribute, state);
 	}
 	return *state;
 }
@@ -90,8 +89,7 @@ auto CKnobBase::getMouseEditingState () -> MouseEditingState&
 void CKnobBase::clearMouseEditingState ()
 {
 	MouseEditingState* state = nullptr;
-	uint32_t size;
-	if (!getAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state, size))
+	if (!getAttribute (kCKnobMouseStateAttribute, state))
 		return;
 	delete state;
 	removeAttribute (kCKnobMouseStateAttribute);
@@ -234,7 +232,7 @@ CMouseEventResult CKnobBase::onMouseMoved (CPoint& where, const CButtonState& bu
 }
 
 //------------------------------------------------------------------------
-bool CKnobBase::onWheel (const CPoint& where, const float &distance, const CButtonState &buttons)
+bool CKnobBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float &distance, const CButtonState &buttons)
 {
 	if (!getMouseEnabled ())
 		return false;

@@ -249,7 +249,7 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 
 	if (style & kShadowText)
 	{
-		CDrawContext::Transform t (*pContext, CGraphicsTransform ().translate (shadowTextOffset));
+		CDrawContext::Transform t2 (*pContext, CGraphicsTransform ().translate (shadowTextOffset));
 		pContext->setFontColor (getShadowColor ());
 		for (const auto& line : lines)
 		{

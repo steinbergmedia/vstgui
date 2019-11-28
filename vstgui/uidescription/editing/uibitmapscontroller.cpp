@@ -10,6 +10,7 @@
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
 #include "uiviewcreatecontroller.h"
+#include "../cstream.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../../lib/cbitmap.h"
 #include "../../lib/cbitmapfilter.h"
@@ -53,31 +54,31 @@ public:
 
 				const CNinePartTiledDescription& offsets = nptBitmap->getPartOffsets ();
 
-				CRect r;
-				r.setWidth (nptBitmap->getWidth());
-				r.setHeight (nptBitmap->getHeight());
+				CRect r2;
+				r2.setWidth (nptBitmap->getWidth());
+				r2.setHeight (nptBitmap->getHeight());
 				CPoint p = getViewSize ().getTopLeft ();
 				matrix.inverse ().transform (p);
-				r.offset (p.x, p.y);
+				r2.offset (p.x, p.y);
 
 				context->setDrawMode (kAntiAliasing);
 				context->setFrameColor (kBlueCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineSolid);
 				
-				context->drawLine (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top));
-				context->drawLine (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom));
-				context->drawLine (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom));
-				context->drawLine (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom));
+				context->drawLine (CPoint (r2.left, r2.top + offsets.top), CPoint (r2.right, r2.top + offsets.top));
+				context->drawLine (CPoint (r2.left, r2.bottom - offsets.bottom), CPoint (r2.right, r2.bottom - offsets.bottom));
+				context->drawLine (CPoint (r2.left + offsets.left, r2.top), CPoint (r2.left + offsets.left, r2.bottom));
+				context->drawLine (CPoint (r2.right - offsets.right, r2.top), CPoint (r2.right - offsets.right, r2.bottom));
 
 				context->setFrameColor (kRedCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineOnOffDash2);
 
-				context->drawLine (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top));
-				context->drawLine (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom));
-				context->drawLine (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom));
-				context->drawLine (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom));
+				context->drawLine (CPoint (r2.left, r2.top + offsets.top), CPoint (r2.right, r2.top + offsets.top));
+				context->drawLine (CPoint (r2.left, r2.bottom - offsets.bottom), CPoint (r2.right, r2.bottom - offsets.bottom));
+				context->drawLine (CPoint (r2.left + offsets.left, r2.top), CPoint (r2.left + offsets.left, r2.bottom));
+				context->drawLine (CPoint (r2.right - offsets.right, r2.top), CPoint (r2.right - offsets.right, r2.bottom));
 			}
 		}
 	}
@@ -155,6 +156,7 @@ protected:
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
 	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
@@ -165,6 +167,7 @@ protected:
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 
 	SharedPointer<CColorChooser> colorChooser;
+	DragStartMouseObserver dragStartMouseObserver;
 	bool dragContainsBitmaps;
 };
 
@@ -206,8 +209,30 @@ void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, 
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser)
+{
+	UIBaseDataSource::dbCellSetupTextEdit (row, column, control, browser);
+	CRect r (control->getViewSize ());
+	auto drawWidth = r.getHeight ();
+	r.right -= drawWidth;
+	control->setViewSize (r);
+}
+
+//----------------------------------------------------------------------------------------------------
 CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
+	if (buttons.isDoubleClick () && row >= 0 && row < static_cast<int32_t> (names.size ()))
+	{
+		auto r = browser->getCellBounds ({row, column});
+		auto drawWidth = r.getHeight ();
+		r.left = r.right - drawWidth;
+		if (r.pointInside (where))
+		{
+			delegate->dbRowDoubleClick (row, this);
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
+	}
+	dragStartMouseObserver.init (where);
 	UIBaseDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 	return kMouseEventHandled;
 }
@@ -215,7 +240,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	if (buttons.isLeftButton ())
+	if (buttons.isLeftButton () && dragStartMouseObserver.shouldStartDrag (where))
 	{
 		if (auto bitmap = getSelectedBitmap ())
 		{
@@ -454,7 +479,9 @@ bool UIBitmapsDataSource::add ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIBitmapSettingsController : public NonAtomicReferenceCounted, public IDialogController
+class UIBitmapSettingsController : public NonAtomicReferenceCounted,
+                                   public IDialogController,
+                                   public IController
 {
 public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
@@ -793,8 +820,11 @@ UIBitmapsController::~UIBitmapsController ()
 void UIBitmapsController::showSettingsDialog ()
 {
 	auto* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
-	UIBitmapSettingsController* fsController = new UIBitmapSettingsController (dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription, actionPerformer);
-	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController, UIEditController::getEditorDescription ());
+	auto fsController = makeOwned<UIBitmapSettingsController> (dataSource->getSelectedBitmap (),
+	                                                           dataSource->getSelectedBitmapName (),
+	                                                           editDescription, actionPerformer);
+	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController,
+	         UIEditController::getEditorDescription ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -926,6 +956,12 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 			settingButton->setMouseEnabled (selectedBitmapName ? true : false);
 		}
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsController::dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source)
+{
+	showSettingsDialog ();
 }
 
 //----------------------------------------------------------------------------------------------------

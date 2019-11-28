@@ -1,12 +1,15 @@
-version: 4.8.{build}
+version: 4.9.{build}
 skip_tags: true
-image: 
-  - Visual Studio 2017
 environment:
   BUILD_TYPE: Release
   ARCH: Win64
   matrix:
-  - GENERATOR: Visual Studio 15 2017 %ARCH%
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    GENERATOR: Visual Studio 15 2017 %ARCH%
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    GENERATOR: Visual Studio 14 2015 %ARCH%
+matrix:
+  fast_finish: true
 build_script:
 - cmd: >-
     cd %APPVEYOR_BUILD_FOLDER%

@@ -31,7 +31,7 @@ using namespace VSTGUI;
 //------------------------------------------------------------------------------------
 HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 {
-	VstKeyCode kc = {0};
+	VstKeyCode kc = {};
     NSString *s = [theEvent charactersIgnoringModifiers];
     if ([s length] == 1)
 	{

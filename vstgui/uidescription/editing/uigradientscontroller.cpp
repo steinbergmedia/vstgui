@@ -271,13 +271,13 @@ void UIColorStopEditView::uiColorChanged (UIColor* c)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorStopEditView::setGradient (CGradient* gradient)
+void UIColorStopEditView::setGradient (CGradient* inGradient)
 {
-	colorStopMap = gradient->getColorStops ();
+	colorStopMap = inGradient->getColorStops ();
 	CGradient::ColorStopMap::const_iterator it = colorStopMap.find (editStartOffset);
 	if (it == colorStopMap.end ())
 		editStartOffset = colorStopMap.begin ()->first;
-	this->gradient = gradient;
+	gradient = inGradient;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -363,7 +363,8 @@ bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath)
 class UIGradientEditorController : public NonAtomicReferenceCounted,
                                    public IDialogController,
                                    public UIColorListenerAdapter,
-                                   public IUIColorStopEditViewListener
+                                   public IUIColorStopEditViewListener,
+                                   public IController
 {
 public:
 	UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer);
@@ -553,6 +554,7 @@ protected:
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 
 	CCoord getGradientIconWidth ();
 };
@@ -624,6 +626,22 @@ void UIGradientsDataSource::update ()
 CCoord UIGradientsDataSource::getGradientIconWidth ()
 {
 	return dataBrowser ? dbGetRowHeight (dataBrowser) * 2. : 0.;
+}
+
+//----------------------------------------------------------------------------------------------------
+CMouseEventResult UIGradientsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+{
+	if (buttons.isDoubleClick () && row >= 0 && row < static_cast<int32_t> (names.size ()))
+	{
+		auto r = browser->getCellBounds ({row, column});
+		r.left = r.right - getGradientIconWidth ();
+		if (r.pointInside (where))
+		{
+			delegate->dbRowDoubleClick (row, this);
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
+	}
+	return UIBaseDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -768,11 +786,20 @@ void UIGradientsController::dbSelectionChanged (int32_t selectedRow, GenericStri
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIGradientsController::dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source)
+{
+	showEditDialog ();
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIGradientsController::showEditDialog ()
 {
 	UIDialogController* dc = new UIDialogController (this, editButton->getFrame ());
-	UIGradientEditorController* fsController = new UIGradientEditorController (dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription, actionPerformer);
-	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController, UIEditController::getEditorDescription ());
+	auto fsController = makeOwned<UIGradientEditorController> (
+	    dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription,
+	    actionPerformer);
+	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController,
+	         UIEditController::getEditorDescription ());
 }
 
 } // VSTGUI

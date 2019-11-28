@@ -140,7 +140,6 @@ public:
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
-	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
 	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;

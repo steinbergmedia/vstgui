@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -11,25 +11,26 @@
 namespace VSTGUI {
 namespace Standalone {
 
-static const char* DefaultPreferencesGroupSeparator = "::";
+static constexpr const char* DefaultPreferencesGroupSeparator = "::";
 
 //------------------------------------------------------------------------
 class Preferences
 {
 public:
 	Preferences (Preferences&&) = default;
-	Preferences& operator=(Preferences&&) = default;
-	
-	Preferences (const std::initializer_list<const char*>& groups, const char* groupSeparator = DefaultPreferencesGroupSeparator)
+	Preferences& operator= (Preferences&&) = default;
+
+	Preferences (const std::initializer_list<const char*>& groups,
+	             const char* groupSeparator = DefaultPreferencesGroupSeparator)
 	: groupSeparator (groupSeparator)
 	{
 		for (auto& g : groups)
 			groupKey += UTF8String (g) + groupSeparator;
 	}
 
-	Preferences (const UTF8String& inGroupKey = "", const char* groupSeparator = DefaultPreferencesGroupSeparator)
-	: groupKey (inGroupKey)
-	, groupSeparator (groupSeparator)
+	Preferences (const UTF8String& inGroupKey = "",
+	             const char* groupSeparator = DefaultPreferencesGroupSeparator)
+	: groupKey (inGroupKey), groupSeparator (groupSeparator)
 	{
 		if (!groupKey.empty ())
 			groupKey += groupSeparator;
@@ -39,28 +40,28 @@ public:
 	{
 		return Preferences (groupKey + subGroup, groupSeparator);
 	}
-	
+
 	inline bool set (const UTF8String& key, const UTF8String& value) const
 	{
 		if (!groupKey.empty ())
-			return preferences.set (groupKey + key, value);
-		return preferences.set (key, value);
+			return preferences->set (groupKey + key, value);
+		return preferences->set (key, value);
 	}
 
 	inline Optional<UTF8String> get (const UTF8String& key) const
 	{
 		if (!groupKey.empty ())
-			return preferences.get (groupKey + key);
-		return preferences.get (key);
+			return preferences->get (groupKey + key);
+		return preferences->get (key);
 	}
-	
-	template<typename T>
+
+	template <typename T>
 	inline bool setNumber (const UTF8String& key, T value) const
 	{
 		return set (key, toString (value));
 	}
 
-	template<typename T>
+	template <typename T>
 	inline bool setFloat (const UTF8String& key, T value, uint32_t precision = 8) const
 	{
 		std::ostringstream sstream;
@@ -69,8 +70,8 @@ public:
 		sstream << value;
 		return set (key, UTF8String (sstream.str ()));
 	}
-	
-	template<typename T>
+
+	template <typename T>
 	inline Optional<T> getNumber (const UTF8String& key) const
 	{
 		if (auto p = get (key))
@@ -92,7 +93,7 @@ public:
 		sstream << '}';
 		return set (key, UTF8String (sstream.str ()));
 	}
-	
+
 	inline Optional<CPoint> getPoint (const UTF8String& key) const
 	{
 		if (auto p = get (key))
@@ -117,14 +118,15 @@ public:
 		}
 		return {};
 	}
-	
+
 	inline const UTF8String& getGroupKey () const { return groupKey; }
 	inline const UTF8String& getGroupSeparator () const { return groupSeparator; }
+
 private:
 	Preferences (const Preferences&) = default;
-	Preferences& operator=(const Preferences&) = default;
+	Preferences& operator= (const Preferences&) = default;
 
-	IPreference& preferences {IApplication::instance ().getPreferences ()};
+	IPreference* preferences {&IApplication::instance ().getPreferences ()};
 	UTF8String groupKey;
 	UTF8String groupSeparator;
 };

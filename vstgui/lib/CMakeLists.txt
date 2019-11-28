@@ -12,6 +12,7 @@ set(${target}_common_sources
     animation/itimingfunction.h
     animation/timingfunctions.cpp
     animation/timingfunctions.h
+    algorithm.h
     cbitmap.cpp
     cbitmap.h
     cbitmapfilter.cpp
@@ -58,6 +59,8 @@ set(${target}_common_sources
     controls/cfontchooser.h
     controls/cknob.cpp
     controls/cknob.h
+    controls/clistcontrol.cpp
+    controls/clistcontrol.h
     controls/cmoviebitmap.cpp
     controls/cmoviebitmap.h
     controls/cmoviebutton.cpp
@@ -78,6 +81,8 @@ set(${target}_common_sources
     controls/cspecialdigit.h
     controls/csplashscreen.cpp
     controls/csplashscreen.h
+    controls/cstringlist.cpp
+    controls/cstringlist.h
     controls/cswitch.cpp
     controls/cswitch.h
     controls/ctextedit.cpp
@@ -147,6 +152,8 @@ set(${target}_common_sources
     platform/platform_win32.h
     platform/platform_x11.h
     platform/std_unorderedmap.h
+    platform/common/genericoptionmenu.cpp
+    platform/common/genericoptionmenu.h
     vstguibase.h
     vstguidebug.cpp
     vstguidebug.h
@@ -244,8 +251,6 @@ set(${target}_win32_sources
 set(${target}_linux_sources
     platform/common/fileresourceinputstream.cpp
     platform/common/fileresourceinputstream.h
-    platform/common/genericoptionmenu.cpp
-    platform/common/genericoptionmenu.h
     platform/common/generictextedit.cpp
     platform/common/generictextedit.h
     platform/common/stb_textedit.h

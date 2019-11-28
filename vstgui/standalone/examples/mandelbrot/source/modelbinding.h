@@ -46,14 +46,14 @@ struct ModelBinding : VSTGUI::Standalone::UIDesc::IModelBinding,
 
 	const ValueList& getValues () const override { return values; }
 
-	void modelChanged (const Model& model) override
+	void modelChanged (const Model& m) override
 	{
 		using namespace VSTGUI::Standalone;
-		Value::performSingleStepEdit (*maxIterations.get (), model.getIterations ());
-		Value::performSinglePlainEdit (*minX.get (), model.getMin ().x);
-		Value::performSinglePlainEdit (*minY.get (), model.getMin ().y);
-		Value::performSinglePlainEdit (*maxX.get (), model.getMax ().x);
-		Value::performSinglePlainEdit (*maxY.get (), model.getMax ().y);
+		Value::performSingleStepEdit (*maxIterations.get (), m.getIterations ());
+		Value::performSinglePlainEdit (*minX.get (), m.getMin ().x);
+		Value::performSinglePlainEdit (*minY.get (), m.getMin ().y);
+		Value::performSinglePlainEdit (*maxX.get (), m.getMax ().x);
+		Value::performSinglePlainEdit (*maxY.get (), m.getMax ().y);
 	}
 
 	void onPerformEdit (IValue& value, IValue::Type newValue) override

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __vst3padcontroller__
-#define __vst3padcontroller__
+#pragma once
 
 #include "../lib/controls/cxypad.h"
 #include "../uidescription/delegationcontroller.h"
@@ -42,5 +41,3 @@ protected:
 };
 
 } // namespace
-
-#endif // __vst3padcontroller__

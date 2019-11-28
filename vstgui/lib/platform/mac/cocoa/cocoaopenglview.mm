@@ -43,7 +43,7 @@ CocoaOpenGLView::CocoaOpenGLView (NSView* parent)
 }
 
 //-----------------------------------------------------------------------------
-bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
+bool CocoaOpenGLView::init (IOpenGLView* inView, PixelFormat* _pixelFormat)
 {
 	if (platformView || openGLViewClass == nullptr)
 		return false;
@@ -112,7 +112,7 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
 				CGLEnable (static_cast<CGLContextObj> ([context CGLContextObj]), kCGLCECrashOnRemovedFunctions);
 		#endif
-			this->view = view;
+			view = inView;
 			platformView.wantsBestResolutionOpenGLSurface = YES;
 			return true;
 		}

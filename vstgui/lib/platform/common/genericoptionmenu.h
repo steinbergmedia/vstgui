@@ -25,9 +25,9 @@ struct GenericOptionMenuTheme
 	CColor selectedTextColor {MakeCColor (0, 0, 0, 255)};
 	CColor disabledTextColor {MakeCColor (150, 150, 150, 255)};
 	CColor titleTextColor {MakeCColor (150, 150, 150, 255)};
-	CColor separatorColor {MakeCColor (180, 180, 180, 255)};
+	CColor separatorColor {MakeCColor (100, 100, 100, 255)};
 	CPoint inset {6., 6.};
-	uint32_t menuAnimationTime {120};
+	uint32_t menuAnimationTime {240};
 };
 
 //------------------------------------------------------------------------
@@ -54,6 +54,7 @@ public:
 private:
 	void removeModalView (PlatformOptionMenuResult result);
 	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override;
+	CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

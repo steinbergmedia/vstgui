@@ -48,6 +48,7 @@ public:
 
 	void selectTemplate (UTF8StringPtr name);
 	void setTemplateView (CViewContainer* view);
+	void navigateTo (CView* view);
 	
 	static void setupDataBrowser (CDataBrowser* orignalBrowser, CDataBrowser* dataBrowser);
 protected:

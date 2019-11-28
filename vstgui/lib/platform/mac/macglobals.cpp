@@ -73,12 +73,8 @@ CGColorRef getCGColor (const CColor& color)
 		CGColorRef result = it->second;
 		return result;
 	}
-	const CGFloat components[] = {
-		static_cast<CGFloat> (color.red / 255.),
-		static_cast<CGFloat> (color.green / 255.),
-		static_cast<CGFloat> (color.blue / 255.),
-		static_cast<CGFloat> (color.alpha / 255.)
-	};
+	const CGFloat components[] = {color.normRed<CGFloat> (), color.normGreen<CGFloat> (),
+	                              color.normBlue<CGFloat> (), color.normAlpha<CGFloat> ()};
 	CGColorRef result = CGColorCreate (GetCGColorSpace (), components);
 	colorMap.emplace (color, result);
 	return result;
