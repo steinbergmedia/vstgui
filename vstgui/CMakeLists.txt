@@ -186,7 +186,7 @@ endif()
 if(NOT VSTGUI_DISABLE_UNITTESTS)
     add_subdirectory(tests)
 endif()
-if(SMTG_VSTGUI_TOOLS)
+if(VSTGUI_TOOLS)
     add_subdirectory(tools)
 endif()
 
