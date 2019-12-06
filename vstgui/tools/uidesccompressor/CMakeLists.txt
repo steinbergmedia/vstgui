@@ -27,5 +27,5 @@ target_link_libraries(${TargetName}
 target_include_directories(${TargetName} PRIVATE ../../../)
 
 vstgui_set_cxx_version(${TargetName} 14)
-set_target_properties(${TargetName} PROPERTIES ${APP_PROPERTIES} ${SMTG_VSTGUI_TOOLS})
+set_target_properties(${TargetName} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_TOOLS_FOLDER})
 target_compile_definitions(${TargetName} ${VSTGUI_COMPILE_DEFINITIONS})
