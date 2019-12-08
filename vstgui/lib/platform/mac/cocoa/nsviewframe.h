@@ -12,7 +12,7 @@
 #include "../../../cview.h"
 #include "../../../idatapackage.h"
 #include "nsviewdraggingsession.h"
-#include <list>
+#include <vector>
 
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
@@ -98,6 +98,9 @@ protected:
 	SharedPointer<ITouchBarCreator> touchBarCreator;
 	SharedPointer<NSViewDraggingSession> draggingSession;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
+
+	using InvalidatedRects = std::vector<CRect>;
+	InvalidatedRects invalidatedRects;
 	
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult lastDragOperationResult;
