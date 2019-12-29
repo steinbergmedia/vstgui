@@ -35,7 +35,7 @@ namespace Minesweeper {
 class Model
 {
 private:
-	enum class Flag : uint16_t
+	enum class Bit : uint16_t
 	{
 		Mine = 1 << 0,
 		Open = 1 << 1,
@@ -43,25 +43,25 @@ private:
 		Trap = 1 << 3,
 	};
 
-	static bool hasBit (uint16_t s, Flag flag) { return (s & static_cast<uint16_t> (flag)) != 0; }
-	static void setBit (uint16_t& s, Flag flag) { s |= static_cast<uint16_t> (flag); }
-	static void unsetBit (uint16_t& s, Flag flag) { s &= ~static_cast<uint16_t> (flag); }
+	static bool hasBit (uint16_t s, Bit flag) { return (s & static_cast<uint16_t> (flag)) != 0; }
+	static void setBit (uint16_t& s, Bit flag) { s |= static_cast<uint16_t> (flag); }
+	static void unsetBit (uint16_t& s, Bit flag) { s &= ~static_cast<uint16_t> (flag); }
 
 	struct Cell
 	{
 		uint16_t neighbours {0};
 		uint16_t flags {0};
 
-		bool isMine () const { return hasBit (flags, Flag::Mine); }
-		bool isOpen () const { return hasBit (flags, Flag::Open); }
-		bool isFlag () const { return hasBit (flags, Flag::Flag); }
-		bool isTrap () const { return hasBit (flags, Flag::Trap); }
+		bool isMine () const { return hasBit (flags, Bit::Mine); }
+		bool isOpen () const { return hasBit (flags, Bit::Open); }
+		bool isFlag () const { return hasBit (flags, Bit::Flag); }
+		bool isTrap () const { return hasBit (flags, Bit::Trap); }
 
-		void setMine () { setBit (flags, Flag::Mine); }
-		void setOpen () { setBit (flags, Flag::Open); }
-		void setTrap () { setBit (flags, Flag::Trap); }
-		void setFlag () { setBit (flags, Flag::Flag); }
-		void unsetFlag () { unsetBit (flags, Flag::Flag); }
+		void setMine () { setBit (flags, Bit::Mine); }
+		void setOpen () { setBit (flags, Bit::Open); }
+		void setTrap () { setBit (flags, Bit::Trap); }
+		void setFlag () { setBit (flags, Bit::Flag); }
+		void unsetFlag () { unsetBit (flags, Bit::Flag); }
 	};
 
 	using Row = std::vector<Cell>;
