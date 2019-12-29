@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+		<font font-name="Arial" name="control" size="10"/>
+		<font font-name="LCD" name="lcd" size="14"/>
+		<font font-name="Arial" name="lost" size="20"/>
+		<font font-name="Arial" name="time" size="6"/>
+	</fonts>
+	<colors>
+		<color name="background" rgba="#d9d9d9ff"/>
+		<color name="card.closed.back" rgba="#a0a0a0ff"/>
+		<color name="card.closed.frame" rgba="#000000ff"/>
+		<color name="card.flaged.back" rgba="#0000001f"/>
+		<color name="card.flaged.frame" rgba="#888888b4"/>
+		<color name="card.opened.back" rgba="#ffffff00"/>
+		<color name="card.opened.frame" rgba="#888888b4"/>
+		<color name="focus" rgba="#40afe3ff"/>
+		<color name="label" rgba="#000000ff"/>
+		<color name="lcd.font" rgba="#ff0000ff"/>
+		<color name="lost.back" rgba="#2c2c2c8c"/>
+		<color name="lost.font" rgba="#ff0000ff"/>
+		<color name="textedit.font" rgba="#ffffffff"/>
+		<color name="textedit.frame" rgba="#9b9b9bff"/>
+	</colors>
+	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" minSize="264, 293" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="264, 293" transparent="false" wants-focus="false">
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control" font-antialias="true" font-color="label" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="35, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="left" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Mines :" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="label" background-offset="0, 0" class="CTextLabel" control-tag="Flags" default-value="0.5" font="lcd" font-antialias="true" font-color="lcd.font" frame-color="textedit.frame" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="45, 9" round-rect-radius="2" shadow-color="~ RedCColor" size="30, 22" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="99" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view autosize="right top " class="CTextButton" control-tag="Start" default-value="0.5" font="control" frame-color="label" frame-color-highlighted="label" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="184, 11" round-radius="3" size="70, 18" text-alignment="center" text-color="label" text-color-highlighted="textedit.font" title="New Game" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
+		<view autosize="left right top bottom " background-color="label" background-color-draw-style="stroked" class="CViewContainer" custom-view-name="MinefieldView" mouse-enabled="true" opacity="1" origin="10, 40" size="244, 243" sub-controller="MinefieldController" transparent="false" wants-focus="false">
+			<view autosize="right top " back-color="lost.back" background-offset="0, 0" class="CTextLabel" custom-view-name="LostView" default-value="0.5" font="lost" font-antialias="true" font-color="lost.font" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="0" origin="174, 2" round-rect-radius="6" shadow-color="label" size="66, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="LOST" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+			<view autosize="right top " back-color="lost.back" background-offset="0, 0" class="CTextLabel" custom-view-name="WonView" default-value="0.5" font="lost" font-antialias="true" font-color="lost.font" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="0" origin="174, 2" round-rect-radius="6" shadow-color="label" size="66, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="WON" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		</view>
+		<view back-color="label" background-offset="0, 0" class="CTextLabel" control-tag="Time" default-value="0.5" font="lcd" font-antialias="true" font-color="lcd.font" frame-color="textedit.frame" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="110, 9" round-rect-radius="2" shadow-color="~ RedCColor" size="40, 22" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="0" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control" font-antialias="true" font-color="label" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="80, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="30, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="left" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Time :" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+	</template>
+	<custom>
+		<attributes Grids="1x 1,5x 5,10x 10,12x 12,15x 15" Size="5, 5" name="UIGridController"/>
+		<attributes SelectedTemplate="Window" name="UITemplateController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1642, 1005" SplitViewSize_0_0="0.639427987742594461373357717093313112855" SplitViewSize_0_1="0.3401430030643513569010849550977582111955" SplitViewSize_1_0="0.5587334014300306961331443744711577892303" SplitViewSize_1_1="0.4361593462717058278244053326488938182592" SplitViewSize_2_0="0.8075517661388550427759014382900204509497" SplitViewSize_2_1="0.1894031668696711245836183934443397447467" TabSwitchValue="6" Version="1" name="UIEditController"/>
+		<attributes UIAttributesController="contr" name="UIAttributesController"/>
+		<attributes SelectedRow="8" name="UIViewCreatorDataSource"/>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/minesweeper/resource/Window.uidesc"/>
+		<attributes SelectedRow="-1" name="UITagsDataSource"/>
+		<attributes SelectedRow="9" name="UIColorsDataSource"/>
+		<attributes SelectedRow="1" name="UIFontsDataSource"/>
+		<attributes SelectedRow="-1" name="UIGradientsDataSource"/>
+		<attributes SelectedRow="-1" name="UIBitmapsDataSource"/>
+		<attributes color="focus" enabled="true" name="FocusDrawing" width="2"/>
+	</custom>
+	<variables/>
+	<bitmaps/>
+	<control-tags>
+		<control-tag name="Cols" tag="1"/>
+		<control-tag name="Flags" tag="3"/>
+		<control-tag name="Mines" tag="2"/>
+		<control-tag name="Rows" tag="0"/>
+		<control-tag name="Start" tag="5"/>
+		<control-tag name="Time" tag="4"/>
+	</control-tags>
+	<gradients>
+		<gradient name="Default TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient Highlighted">
+			<color-stop rgba="#b4b4b4ff" start="0"/>
+			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+	</gradients>
+</vstgui-ui-description>
