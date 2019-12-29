@@ -174,12 +174,13 @@ private:
 		if (!cell.isOpen ())
 		{
 			cell.setOpen ();
+			++opened;
 			if (cell.isMine ())
 			{
 				cell.setTrap ();
 				trapped = true;
+				return false;
 			}
-			++opened;
 			return true;
 		}
 		return false;
@@ -472,7 +473,7 @@ public:
 		{
 			if (model->isFlag (row, column))
 				model->unflag (row, column);
-			else
+			else if (!model->isOpen (row, column))
 				model->flag (row, column);
 		}
 		if (!model->isOpen (row, column))
@@ -560,18 +561,53 @@ private:
 	SharedPointer<CVSTGUITimer> timer;
 };
 
+//------------------------------------------------------------------------
+class DigitsDisplayConverter : public IValueConverter
+{
+public:
+	DigitsDisplayConverter (ValueConverterPtr converter, uint32_t digits)
+	: converter (converter), digits (digits)
+	{
+	}
+
+	UTF8String valueAsString (IValue::Type value) const override
+	{
+		auto plain = static_cast<uint32_t> (std::round (converter->normalizedToPlain (value)));
+		UTF8String str;
+		auto val = static_cast<uint32_t> (std::pow (10, digits - 1));
+		for (auto i = digits; i > 0; --i)
+		{
+			auto v = plain / val;
+			str += toString (v);
+			plain -= v * val;
+			val /= 10;
+		}
+		return str;
+	}
+	IValue::Type stringAsValue (const UTF8String& string) const override
+	{
+		return converter->stringAsValue (string);
+	}
+	IValue::Type plainToNormalized (IValue::Type plain) const override
+	{
+		return converter->plainToNormalized (plain);
+	}
+	IValue::Type normalizedToPlain (IValue::Type normalized) const override
+	{
+		return converter->normalizedToPlain (normalized);
+	}
+
+private:
+	ValueConverterPtr converter;
+	uint32_t digits {3};
+};
+
 static constexpr IdStringPtr GameGroup = "Game";
 static const Command NewGameCommand {GameGroup, "New Game"};
 static const Command NewBeginnerGameCommand {GameGroup, "New Beginner Game"};
 static const Command NewIntermediateGameCommand {GameGroup, "New Intermediate Game"};
 static const Command NewExpertGameCommand {GameGroup, "New Expert Game"};
 
-//------------------------------------------------------------------------
-// TODO: Add Modes:
-//			 Beginner		 9x9 	10 Mines
-// 		 	 Intermediate	16x16	40 Mines
-//		 	 Expert			16x30	99 Mines
-//		 	 Custom
 //------------------------------------------------------------------------
 class WindowController : public WindowControllerAdapter,
                          public UIDesc::Customization,
@@ -614,10 +650,13 @@ public:
 		modelBinding.addValue (
 		    Value::make (valueMines, 0, Value::makeRangeConverter (4, 668, 0)),
 		    UIDesc::ValueCalls::onEndEdit ([this] (auto& value) { verifyNumMines (); }));
-		modelBinding.addValue (Value::make (valueFlags, 0, Value::makeRangeConverter (0, 668, 0)));
+		modelBinding.addValue (Value::make (
+		    valueFlags, 0,
+		    std::make_shared<DigitsDisplayConverter> (Value::makeRangeConverter (0, 668, 0), 2)));
 		modelBinding.addValue (
-		    Value::make (valueTime, 0, Value::makeRangeConverter (0, maxTimeInSeconds, 0)));
-
+		    Value::make (valueTime, 0,
+		                 std::make_shared<DigitsDisplayConverter> (
+		                     Value::makeRangeConverter (0, maxTimeInSeconds, 0), 3)));
 		if (auto value = modelBinding.getValue (valueMines))
 			Value::performSinglePlainEdit (*value.get (), 10);
 		modelBinding.addValue (
