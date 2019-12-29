@@ -34,21 +34,40 @@ namespace Minesweeper {
 //------------------------------------------------------------------------
 class Model
 {
-public:
-	enum Cell : int32_t
+private:
+	enum class Flag : uint16_t
 	{
-		Empty = 0,
-		Value = 0x000000FF,
-		Mine_ = 0x00000F00,
-		Open_ = 0x0000F000,
-		Flag_ = 0x000F0000,
-		Trap_ = 0x00F00000,
+		Mine = 1 << 0,
+		Open = 1 << 1,
+		Flag = 1 << 2,
+		Trap = 1 << 3,
 	};
 
-	using Row = std::vector<int32_t>;
-	using Matrix = std::vector<Row>;
-	using const_iterator = Matrix::const_iterator;
+	static bool hasBit (uint16_t s, Flag flag) { return (s & static_cast<uint16_t> (flag)) != 0; }
+	static void setBit (uint16_t& s, Flag flag) { s |= static_cast<uint16_t> (flag); }
+	static void unsetBit (uint16_t& s, Flag flag) { s &= ~static_cast<uint16_t> (flag); }
 
+	struct Cell
+	{
+		uint16_t neighbours {0};
+		uint16_t flags {0};
+
+		bool isMine () const { return hasBit (flags, Flag::Mine); }
+		bool isOpen () const { return hasBit (flags, Flag::Open); }
+		bool isFlag () const { return hasBit (flags, Flag::Flag); }
+		bool isTrap () const { return hasBit (flags, Flag::Trap); }
+
+		void setMine () { setBit (flags, Flag::Mine); }
+		void setOpen () { setBit (flags, Flag::Open); }
+		void setTrap () { setBit (flags, Flag::Trap); }
+		void setFlag () { setBit (flags, Flag::Flag); }
+		void unsetFlag () { unsetBit (flags, Flag::Flag); }
+	};
+
+	using Row = std::vector<Cell>;
+	using Matrix = std::vector<Row>;
+
+public:
 	Model (uint32_t numberOfRows, uint32_t numberOfCols, uint32_t numberOfMines)
 	: mines (numberOfMines)
 	{
@@ -56,7 +75,7 @@ public:
 		allocateModel (numberOfRows, numberOfCols);
 		clearModel ();
 		setMines ();
-		calc ();
+		calcNeighbours ();
 	}
 
 	uint32_t getNumberOfMines () const { return mines; }
@@ -71,7 +90,8 @@ public:
 			{
 				for (auto col = 0u; col < matrix.front ().size (); ++col)
 				{
-					if (isFlag (row, col) && !isMine (row, col))
+					auto cell = matrix[row][col];
+					if (cell.isFlag () && !cell.isMine ())
 						return false;
 				}
 			}
@@ -84,60 +104,41 @@ public:
 	{
 		if (openInternal (row, col))
 		{
-			if (matrix[row][col] == Open_)
+			auto cell = matrix[row][col];
+			if (cell.isOpen () && cell.neighbours == 0)
 			{
 				openCleanNearby (row, col);
 			}
 		}
-	}
-	bool isOpen (uint32_t row, uint32_t col) const
-	{
-		auto value = matrix[row][col];
-		return (value & Open_) != 0;
 	}
 
 	void flag (uint32_t row, uint32_t col)
 	{
 		if (flagged == mines)
 			return;
-		if (!isFlag (row, col))
+		auto& cell = matrix[row][col];
+		if (!cell.isFlag ())
 		{
-			auto& value = matrix[row][col];
-			value |= Flag_;
+			cell.setFlag ();
 			++flagged;
 		}
 	}
 	void unflag (uint32_t row, uint32_t col)
 	{
-		if (isFlag (row, col))
+		auto& cell = matrix[row][col];
+		if (cell.isFlag ())
 		{
-			auto& value = matrix[row][col];
-			value &= ~Flag_;
+			cell.unsetFlag ();
 			--flagged;
 		}
 	}
-	bool isFlag (uint32_t row, uint32_t col) const
-	{
-		auto value = matrix[row][col];
-		return (value & Flag_) != 0;
-	}
-
-	bool isMine (uint32_t row, uint32_t col) const
-	{
-		auto value = matrix[row][col];
-		return (value & Mine_) != 0;
-	}
-
-	bool isTrapMine (uint32_t row, uint32_t col) const
-	{
-		auto value = matrix[row][col];
-		return (value & Trap_) != 0;
-	}
-
+	bool isOpen (uint32_t row, uint32_t col) const { return matrix[row][col].isOpen (); }
+	bool isFlag (uint32_t row, uint32_t col) const { return matrix[row][col].isFlag (); }
+	bool isMine (uint32_t row, uint32_t col) const { return matrix[row][col].isMine (); }
+	bool isTrapMine (uint32_t row, uint32_t col) const { return matrix[row][col].isTrap (); }
 	uint32_t getNumberOfMinesNearby (uint32_t row, uint32_t col) const
 	{
-		auto value = matrix[row][col];
-		return value & Value;
+		return matrix[row][col].neighbours;
 	}
 
 private:
@@ -148,46 +149,34 @@ private:
 		if (row > 0)
 		{
 			if (col > 0)
-			{
 				open (row - 1, col - 1);
-			}
 			open (row - 1, col);
 			if (col < maxCol)
-			{
 				open (row - 1, col + 1);
-			}
 		}
 		if (col > 0)
-		{
 			open (row, col - 1);
-		}
 		if (col < maxCol)
-		{
 			open (row, col + 1);
-		}
 		if (row < maxRow)
 		{
 			if (col > 0)
-			{
 				open (row + 1, col - 1);
-			}
 			open (row + 1, col);
 			if (col < maxCol)
-			{
 				open (row + 1, col + 1);
-			}
 		}
 	}
 
 	bool openInternal (uint32_t row, uint32_t col)
 	{
-		auto& value = matrix[row][col];
-		if ((value & Open_) == 0)
+		auto& cell = matrix[row][col];
+		if (!cell.isOpen ())
 		{
-			value |= Open_;
-			if (isMine (row, col))
+			cell.setOpen ();
+			if (cell.isMine ())
 			{
-				value |= Trap_;
+				cell.setTrap ();
 				trapped = true;
 			}
 			++opened;
@@ -204,7 +193,7 @@ private:
 	void clearModel ()
 	{
 		std::for_each (matrix.begin (), matrix.end (), [] (auto& r) {
-			std::for_each (r.begin (), r.end (), [] (auto& cell) { cell = Empty; });
+			std::for_each (r.begin (), r.end (), [] (auto& cell) { cell = {}; });
 		});
 	}
 	void setMines ()
@@ -217,16 +206,17 @@ private:
 		{
 			auto row = rowDist (gen);
 			auto col = colDist (gen);
-			if (matrix[row][col] == Mine_)
+			if ((matrix[row][col]).isMine ())
 			{
 				assert (i > 0u);
 				--i;
 				continue;
 			}
-			matrix[row][col] = Mine_;
+			matrix[row][col].setMine ();
 		}
 	}
-	void calc ()
+
+	void calcNeighbours ()
 	{
 		const auto maxCol = matrix.front ().size () - 1;
 		const auto maxRow = matrix.size () - 1;
@@ -235,27 +225,27 @@ private:
 			for (auto col = 0u; col < matrix.front ().size (); ++col)
 			{
 				auto& cell = matrix[row][col];
-				if (cell == Mine_)
+				if (cell.isMine ())
 					continue;
 				if (row > 0)
 				{
 					if (col > 0)
-						cell += matrix[row - 1][col - 1] == Mine_ ? 1 : 0;
-					cell += matrix[row - 1][col] == Mine_ ? 1 : 0;
+						cell.neighbours += matrix[row - 1][col - 1].isMine () ? 1 : 0;
+					cell.neighbours += matrix[row - 1][col].isMine () ? 1 : 0;
 					if (col < maxCol)
-						cell += matrix[row - 1][col + 1] == Mine_ ? 1 : 0;
+						cell.neighbours += matrix[row - 1][col + 1].isMine () ? 1 : 0;
 				}
 				if (col > 0)
-					cell += matrix[row][col - 1] == Mine_ ? 1 : 0;
+					cell.neighbours += matrix[row][col - 1].isMine () ? 1 : 0;
 				if (col < maxCol)
-					cell += matrix[row][col + 1] == Mine_ ? 1 : 0;
+					cell.neighbours += matrix[row][col + 1].isMine () ? 1 : 0;
 				if (row < maxRow)
 				{
 					if (col > 0)
-						cell += matrix[row + 1][col - 1] == Mine_ ? 1 : 0;
-					cell += matrix[row + 1][col] == Mine_ ? 1 : 0;
+						cell.neighbours += matrix[row + 1][col - 1].isMine () ? 1 : 0;
+					cell.neighbours += matrix[row + 1][col].isMine () ? 1 : 0;
 					if (col < maxCol)
-						cell += matrix[row + 1][col + 1] == Mine_ ? 1 : 0;
+						cell.neighbours += matrix[row + 1][col + 1].isMine () ? 1 : 0;
 				}
 			}
 		}
