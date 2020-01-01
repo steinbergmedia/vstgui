@@ -41,6 +41,7 @@ private:
 		Open = 1 << 1,
 		Flag = 1 << 2,
 		Trap = 1 << 3,
+		Question = 1 << 4,
 	};
 
 	static bool hasBit (uint16_t s, Bit flag) { return (s & static_cast<uint16_t> (flag)) != 0; }
@@ -56,12 +57,15 @@ private:
 		bool isOpen () const { return hasBit (flags, Bit::Open); }
 		bool isFlag () const { return hasBit (flags, Bit::Flag); }
 		bool isTrap () const { return hasBit (flags, Bit::Trap); }
+		bool isQuestion () const { return hasBit (flags, Bit::Question); }
 
 		void setMine () { setBit (flags, Bit::Mine); }
 		void setOpen () { setBit (flags, Bit::Open); }
 		void setTrap () { setBit (flags, Bit::Trap); }
 		void setFlag () { setBit (flags, Bit::Flag); }
 		void unsetFlag () { unsetBit (flags, Bit::Flag); }
+		void setQuestion () { setBit (flags, Bit::Question); }
+		void unsetQuestion () { unsetBit (flags, Bit::Question); }
 	};
 
 	using Row = std::vector<Cell>;
@@ -112,28 +116,29 @@ public:
 		}
 	}
 
-	void flag (uint32_t row, uint32_t col)
-	{
-		if (flagged == mines)
-			return;
-		auto& cell = matrix[row][col];
-		if (!cell.isFlag ())
-		{
-			cell.setFlag ();
-			++flagged;
-		}
-	}
-	void unflag (uint32_t row, uint32_t col)
+	void mark (uint32_t row, uint32_t col)
 	{
 		auto& cell = matrix[row][col];
 		if (cell.isFlag ())
 		{
-			cell.unsetFlag ();
 			--flagged;
+			cell.unsetFlag ();
+			cell.setQuestion ();
+		}
+		else if (cell.isQuestion ())
+		{
+			cell.unsetQuestion ();
+		}
+		else
+		{
+			++flagged;
+			cell.setFlag ();
 		}
 	}
+
 	bool isOpen (uint32_t row, uint32_t col) const { return matrix[row][col].isOpen (); }
 	bool isFlag (uint32_t row, uint32_t col) const { return matrix[row][col].isFlag (); }
+	bool isQuestion (uint32_t row, uint32_t col) const { return matrix[row][col].isQuestion (); }
 	bool isMine (uint32_t row, uint32_t col) const { return matrix[row][col].isMine (); }
 	bool isTrapMine (uint32_t row, uint32_t col) const { return matrix[row][col].isTrap (); }
 	uint32_t getNumberOfMinesNearby (uint32_t row, uint32_t col) const
@@ -274,6 +279,7 @@ public:
 	static constexpr auto BombCharacter = "\xF0\x9F\x92\xA3";
 	static constexpr auto FlagCharacter = "\xF0\x9F\x9A\xA9";
 	static constexpr auto ExplosionCharacter = "\xF0\x9F\x92\xA5";
+	static constexpr auto QuestionMarkCharacter = "\xE2\x9D\x93";
 
 	MinefieldViewController (IValue& flagsValue, IValue& timeValue, IController* parent)
 	: DelegationController (parent), flagsValue (flagsValue), timeValue (timeValue)
@@ -371,6 +377,21 @@ public:
 		context.drawRect (r, kDrawFilledAndStroked);
 	}
 
+	void drawQuestionMark (const CRect& r, CDrawContext& context, CFontRef f) const
+	{
+		context.setFont (f);
+		context.setFontColor (kBlackCColor);
+		context.drawString (QuestionMarkCharacter, r);
+	}
+
+	void drawQuestionMarkCell (const CRect& r, CDrawContext& context, CFontRef f) const
+	{
+		context.setFrameColor (flagedFrameColor);
+		context.setFillColor (flagedBackColor);
+		context.drawRect (r, kDrawFilledAndStroked);
+		drawQuestionMark (r, context, f);
+	}
+
 	void drawFlag (const CRect& r, CDrawContext& context, CFontRef f) const
 	{
 		context.setFont (f);
@@ -425,6 +446,10 @@ public:
 			{
 				drawFlaggedCell (r, *context, &font);
 			}
+			else if (model->isQuestion(row, column))
+			{
+				drawQuestionMarkCell (r, *context, &font);
+			}
 			else
 			{
 				drawClosedCell (r, *context);
@@ -471,10 +496,7 @@ public:
 			return kMouseEventHandled;
 		if (buttons.isRightButton ())
 		{
-			if (model->isFlag (row, column))
-				model->unflag (row, column);
-			else if (!model->isOpen (row, column))
-				model->flag (row, column);
+			model->mark (row, column);
 		}
 		if (!model->isOpen (row, column))
 		{
