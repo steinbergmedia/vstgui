@@ -870,6 +870,7 @@ void Window::show ()
 	clientRect.bottom = static_cast<LONG> (initialSize.y * dpiScale);
 	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
 
+	delegate->onShow ();
 	LONG width = clientRect.right - clientRect.left;
 	LONG height = clientRect.bottom - clientRect.top;
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
