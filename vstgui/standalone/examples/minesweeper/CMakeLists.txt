@@ -14,6 +14,7 @@ set(Minesweeper_resources
 
 set(Minesweeper_font
   "resource/font/LCD14.otf"
+  "resource/font/NotoEmoji-Regular.ttf"
 )
 
 ##########################################################################################

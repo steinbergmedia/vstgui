@@ -21,7 +21,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Minesweeper.icns</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2019 Arne Scheffler. All rights reserved.</string>
+	<string>Copyright © 2020 Arne Scheffler. All rights reserved.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

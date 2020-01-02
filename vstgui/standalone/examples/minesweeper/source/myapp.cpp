@@ -72,8 +72,14 @@ private:
 	using Matrix = std::vector<Row>;
 
 public:
-	Model (uint32_t numberOfRows, uint32_t numberOfCols, uint32_t numberOfMines)
-	: mines (numberOfMines)
+	struct IListener
+	{
+		virtual void onCellChanged (uint32_t row, uint32_t col) = 0;
+	};
+
+	Model (uint32_t numberOfRows, uint32_t numberOfCols, uint32_t numberOfMines,
+	       IListener* listener)
+	: mines (numberOfMines), listener (listener)
 	{
 		assert (numberOfMines < numberOfRows * numberOfCols);
 		allocateModel (numberOfRows, numberOfCols);
@@ -134,6 +140,8 @@ public:
 			++flagged;
 			cell.setFlag ();
 		}
+		if (listener)
+			listener->onCellChanged (row, col);
 	}
 
 	bool isOpen (uint32_t row, uint32_t col) const { return matrix[row][col].isOpen (); }
@@ -180,6 +188,15 @@ private:
 		{
 			cell.setOpen ();
 			++opened;
+			if (cell.isFlag ())
+			{
+				cell.unsetFlag ();
+				--flagged;
+			}
+			else if (cell.isQuestion ())
+				cell.unsetQuestion ();
+			if (listener)
+				listener->onCellChanged (row, col);
 			if (cell.isMine ())
 			{
 				cell.setTrap ();
@@ -262,6 +279,7 @@ private:
 	uint32_t opened {0};
 	uint32_t flagged {0};
 	bool trapped {false};
+	IListener* listener {nullptr};
 };
 
 using VSTGUI::DelegationController;
@@ -273,7 +291,8 @@ static constexpr auto maxTimeInSeconds = 999;
 class MinefieldViewController : public DelegationController,
                                 public VSTGUI::DataBrowserDelegateAdapter,
                                 public VSTGUI::NonAtomicReferenceCounted,
-                                public VSTGUI::ViewListenerAdapter
+                                public VSTGUI::ViewListenerAdapter,
+                                public Model::IListener
 {
 public:
 	static constexpr auto BombCharacter = "\xF0\x9F\x92\xA3";
@@ -298,7 +317,7 @@ public:
 			wonView->removeAllAnimations ();
 			wonView->setAlphaValue (0.f);
 		}
-		model = std::make_unique<Model> (rows, cols, mines);
+		model = std::make_unique<Model> (rows, cols, mines, this);
 		numRows = rows;
 		numCols = cols;
 		updateCellSize (dataBrowser->getViewSize ().getSize ());
@@ -318,6 +337,9 @@ public:
 			description->getColor ("card.opened.back", openedBackColor);
 			description->getColor ("card.flaged.frame", flagedFrameColor);
 			description->getColor ("card.flaged.back", flagedBackColor);
+			if (auto f = description->getFont ("emoji"))
+				emojiFont = *f;
+			smallEmojiFont = emojiFont;
 			if (dataBrowser)
 				dataBrowser->unregisterViewListener (this);
 			dataBrowser = nullptr;
@@ -347,6 +369,15 @@ public:
 		}
 
 		return DelegationController::verifyView (view, attributes, description);
+	}
+
+	void onCellChanged (uint32_t row, uint32_t col) override
+	{
+		if (!dataBrowser)
+			return;
+		auto r = dataBrowser->getCellBounds (CDataBrowser::Cell (row, col));
+		r.extend (1., 1.);
+		dataBrowser->invalidRect (r);
 	}
 
 	int32_t dbGetNumRows (CDataBrowser* browser) override { return numRows; }
@@ -380,7 +411,7 @@ public:
 	void drawQuestionMark (const CRect& r, CDrawContext& context, CFontRef f) const
 	{
 		context.setFont (f);
-		context.setFontColor (kBlackCColor);
+		context.setFontColor (kRedCColor);
 		context.drawString (QuestionMarkCharacter, r);
 	}
 
@@ -395,7 +426,7 @@ public:
 	void drawFlag (const CRect& r, CDrawContext& context, CFontRef f) const
 	{
 		context.setFont (f);
-		context.setFontColor (kBlackCColor);
+		context.setFontColor (kRedCColor);
 		context.drawString (FlagCharacter, r);
 	}
 
@@ -417,7 +448,7 @@ public:
 	void drawExplosionCell (const CRect& r, CDrawContext& context, CFontRef f) const
 	{
 		context.setFont (f);
-		context.setFontColor (kBlackCColor);
+		context.setFontColor (kRedCColor);
 		context.drawString (ExplosionCharacter, r);
 	}
 
@@ -444,11 +475,11 @@ public:
 		{
 			if (model->isFlag (row, column))
 			{
-				drawFlaggedCell (r, *context, &font);
+				drawFlaggedCell (r, *context, &emojiFont);
 			}
-			else if (model->isQuestion(row, column))
+			else if (model->isQuestion (row, column))
 			{
-				drawQuestionMarkCell (r, *context, &font);
+				drawQuestionMarkCell (r, *context, &emojiFont);
 			}
 			else
 			{
@@ -460,9 +491,9 @@ public:
 		if (model->isMine (row, column))
 		{
 			if (model->isTrapMine (row, column))
-				drawExplosionCell (r, *context, &font);
+				drawExplosionCell (r, *context, &emojiFont);
 			else
-				drawMinedCell (r, *context, &font);
+				drawMinedCell (r, *context, &emojiFont);
 		}
 		else
 		{
@@ -473,13 +504,28 @@ public:
 		{
 			r.setWidth (r.getWidth () / 2.);
 			r.setHeight (r.getHeight () / 2.);
-			drawFlag (r, *context, &smallFont);
+			drawFlag (r, *context, &smallEmojiFont);
 		}
 	}
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
 	                                 int32_t column, CDataBrowser* browser) override
 	{
+		ignoreMouseUp = false;
+		if (buttons.isLeftButton ())
+		{
+			mouseDownTimer = makeOwned<CVSTGUITimer> (
+			    [this, row, column] (auto) {
+				    mouseDownTimer = nullptr;
+					if (!model->isOpen (row, column))
+					{
+						model->mark (row, column);
+						checkGameOver ();
+					}
+					ignoreMouseUp = true;
+			    },
+			    60);
+		}
 		return kMouseEventHandled;
 	}
 
@@ -492,43 +538,53 @@ public:
 	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
 	                               int32_t column, CDataBrowser* browser) override
 	{
-		if (!model || row < 0 || column < 0 || model->isTrapped () || model->isDone ())
+		mouseDownTimer = nullptr;
+		if (ignoreMouseUp || !model || row < 0 || column < 0 || model->isTrapped () ||
+		    model->isDone ())
 			return kMouseEventHandled;
-		if (buttons.isRightButton ())
-		{
-			model->mark (row, column);
-		}
 		if (!model->isOpen (row, column))
 		{
-			if (buttons.isLeftButton () && !model->isFlag (row, column))
+			if (buttons.isRightButton ())
 			{
-				model->open (row, column);
-				if (model->isTrapped ())
-				{
-					lostView->addAnimation (
-					    "Lost", new VSTGUI::Animation::AlphaValueAnimation (1.f),
-					    new VSTGUI::Animation::RepeatTimingFunction (
-					        new VSTGUI::Animation::LinearTimingFunction (100), -1));
-					timer = nullptr;
-				}
+				model->mark (row, column);
 			}
-			if (model->isDone () && !model->isTrapped ())
+			else if (buttons.isLeftButton ())
 			{
-				wonView->addAnimation ("Won", new VSTGUI::Animation::AlphaValueAnimation (1.f),
-				                       new VSTGUI::Animation::RepeatTimingFunction (
-				                           new VSTGUI::Animation::LinearTimingFunction (250), -1));
-				timer = nullptr;
+				if (!model->isFlag (row, column) && !model->isQuestion (row, column))
+					model->open (row, column);
+				else
+					model->mark (row, column);
 			}
-			Value::performSinglePlainEdit (flagsValue,
-			                               model->getNumberOfMines () - model->getNumberOfFlags ());
-			if (startTime == TimePoint {})
-			{
-				startTime = Clock::now ();
-				timer = makeOwned<CVSTGUITimer> ([this] (auto) { onTimer (); }, 1000);
-			}
+			checkGameOver ();
 		}
-		browser->invalid ();
 		return kMouseEventHandled;
+	}
+
+	void checkGameOver ()
+	{
+		if (startTime == TimePoint {})
+		{
+			startTime = Clock::now ();
+			gameTimer = makeOwned<CVSTGUITimer> ([this] (auto) { onTimer (); }, 1000);
+		}
+		Value::performSinglePlainEdit (flagsValue,
+		                               model->getNumberOfMines () - model->getNumberOfFlags ());
+		if (model->isDone () && !model->isTrapped ())
+		{
+			wonView->addAnimation ("Won", new VSTGUI::Animation::AlphaValueAnimation (1.f),
+			                       new VSTGUI::Animation::RepeatTimingFunction (
+			                           new VSTGUI::Animation::LinearTimingFunction (250), -1));
+			gameTimer = nullptr;
+			dataBrowser->invalid ();
+		}
+		if (model->isTrapped ())
+		{
+			lostView->addAnimation ("Lost", new VSTGUI::Animation::AlphaValueAnimation (1.f),
+			                        new VSTGUI::Animation::RepeatTimingFunction (
+			                            new VSTGUI::Animation::LinearTimingFunction (100), -1));
+			gameTimer = nullptr;
+			dataBrowser->invalid ();
+		}
 	}
 
 	void onTimer ()
@@ -536,7 +592,7 @@ public:
 		auto now = Clock::now ();
 		auto distance = std::chrono::duration_cast<std::chrono::seconds> (now - startTime).count ();
 		if (distance >= maxTimeInSeconds)
-			timer = nullptr;
+			gameTimer = nullptr;
 		Value::performSinglePlainEdit (timeValue, distance);
 	}
 
@@ -555,7 +611,8 @@ public:
 		cellSize.y = newSize.y / numRows;
 		dataBrowser->recalculateLayout ();
 		font.setSize (cellSize.y / 2.);
-		smallFont.setSize (font.getSize () / 2.);
+		emojiFont.setSize (cellSize.y / 2.);
+		smallEmojiFont.setSize (font.getSize () / 2.);
 	}
 
 private:
@@ -573,14 +630,17 @@ private:
 	CColor flagedBackColor {kTransparentCColor};
 	CPoint cellSize {30, 30};
 	CFontDesc font {*kSystemFont};
-	CFontDesc smallFont {*kSystemFont};
+	CFontDesc smallEmojiFont {*kSymbolFont};
+	CFontDesc emojiFont {*kSymbolFont};
 	IValue& flagsValue;
 	IValue& timeValue;
 
 	using Clock = std::chrono::steady_clock;
 	using TimePoint = std::chrono::time_point<Clock>;
 	TimePoint startTime;
-	SharedPointer<CVSTGUITimer> timer;
+	SharedPointer<CVSTGUITimer> gameTimer;
+	SharedPointer<CVSTGUITimer> mouseDownTimer;
+	bool ignoreMouseUp {false};
 };
 
 //------------------------------------------------------------------------
