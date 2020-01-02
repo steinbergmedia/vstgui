@@ -3,7 +3,7 @@
 	<fonts>
 		<font font-name="Arial" name="control" size="10"/>
 		<font font-name="Noto Emoji" name="emoji" size="12"/>
-		<font font-name="LCD" name="lcd" size="14"/>
+		<font alternative-font-names="LCD 14" font-name="LCD" name="lcd" size="14"/>
 		<font font-name="Arial" name="lost" size="20"/>
 		<font font-name="Arial" name="time" size="6"/>
 	</fonts>
