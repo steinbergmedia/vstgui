@@ -910,36 +910,11 @@ void NSViewFrame::drawRect (NSRect* rect)
 	const NSRect* dirtyRects;
 	NSInteger numDirtyRects;
 	[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-
-	// Since macOS 10.14 [NSView getRectsBeingDrawn:count:] just returns one combined rectangle.
-	// This can be expensive, so we track the invalidated rectangles and check if the big combined
-	// rectangle is the same as the rectangles we tracked. Then if the area of our tracked
-	// rectangles is smaller then the area of the big combined one, we draw the individual
-	// rectangles.
-	if (numDirtyRects == 1 && invalidatedRects.size () > 1)
-	{
-		CRect totalBounds = invalidatedRects.front ();
-		double totalArea = 0.;
-		for (auto& r : invalidatedRects)
-		{
-			totalBounds.unite (r);
-			totalArea += r.getWidth () * r.getHeight ();
-		}
-		if (totalBounds == rectFromNSRect (dirtyRects[0]) &&
-		    totalArea < dirtyRects[0].size.width * dirtyRects[0].size.height)
-		{
-			for (auto& r : invalidatedRects)
-				frame->platformDrawRect (&drawContext, r);
-			numDirtyRects = 0;
-		}
-	}
-
 	for (NSInteger i = 0; i < numDirtyRects; i++)
 	{
 		frame->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
 	}
 	drawContext.endDraw ();
-	invalidatedRects.clear ();
 	inDraw = false;
 }
 
@@ -1078,23 +1053,6 @@ bool NSViewFrame::invalidRect (const CRect& rect)
 {
 	if (inDraw)
 		return false;
-	bool add = true;
-	for (auto& r : invalidatedRects)
-	{
-		if (r == rect || r.rectInside (rect))
-		{
-			add = false;
-			break;
-		}
-		else if (rect.rectInside (r))
-		{
-			r = rect;
-			add = false;
-			break;
-		}
-	}
-	if (add)
-		invalidatedRects.push_back (rect);
 	NSRect r = nsRectFromCRect (rect);
 	[nsView setNeedsDisplayInRect:r];
 	return true;
