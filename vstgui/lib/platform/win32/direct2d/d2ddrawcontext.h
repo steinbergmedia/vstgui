@@ -25,6 +25,8 @@ public:
 	D2DDrawContext (D2DBitmap* bitmap);
 	~D2DDrawContext ();
 
+	bool usable () const { return getRenderTarget () != nullptr; }
+
 	ID2D1RenderTarget* getRenderTarget () const { return renderTarget; }
 	ID2D1SolidColorBrush* getFillBrush () const { return fillBrush; }
 	ID2D1SolidColorBrush* getStrokeBrush () const { return strokeBrush; }

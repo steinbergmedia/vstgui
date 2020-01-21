@@ -153,7 +153,13 @@ IDWriteFactory* getDWriteFactory ()
 //-----------------------------------------------------------------------------
 CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect)
 {
-	return new D2DDrawContext (window, surfaceRect);
+	auto context = new D2DDrawContext (window, surfaceRect);
+	if (!context->usable ())
+	{
+		context->forget ();
+		return nullptr;
+	}
+	return context;
 }
 
 //-----------------------------------------------------------------------------

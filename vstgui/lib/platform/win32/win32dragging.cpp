@@ -786,15 +786,17 @@ void Win32DragBitmapWindow::paint ()
 	rect.setWidth (clientRect.right - clientRect.left);
 	rect.setHeight (clientRect.bottom - clientRect.top);
 
-	auto drawContext = owned (createDrawContext (hwnd, hdc, rect));
-	drawContext->beginDraw ();
+	if (auto drawContext = owned (createDrawContext (hwnd, hdc, rect)))
+	{
+		drawContext->beginDraw ();
 
-	drawContext->clearRect (rect);
-	drawContext->setGlobalAlpha (0.9f);
-	CDrawContext::Transform t (*drawContext, CGraphicsTransform ().scale (scaleFactor, scaleFactor));
-	bitmap->draw (drawContext, rect);
+		drawContext->clearRect (rect);
+		drawContext->setGlobalAlpha (0.9f);
+		CDrawContext::Transform t (*drawContext, CGraphicsTransform ().scale (scaleFactor, scaleFactor));
+		bitmap->draw (drawContext, rect);
 
-	drawContext->endDraw ();
+		drawContext->endDraw ();
+	}
 	EndPaint (hwnd, &ps);
 }
 
