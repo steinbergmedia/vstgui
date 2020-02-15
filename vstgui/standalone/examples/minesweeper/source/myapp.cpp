@@ -223,8 +223,8 @@ private:
 	{
 		std::random_device rd;
 		std::mt19937 gen (rd ());
-		std::uniform_int_distribution<> rowDist (0, matrix.size () - 1);
-		std::uniform_int_distribution<> colDist (0, matrix.front ().size () - 1);
+		std::uniform_int_distribution<> rowDist (0, static_cast<int> (matrix.size () - 1));
+		std::uniform_int_distribution<> colDist (0, static_cast<int> (matrix.front ().size () - 1));
 		for (auto i = 0u; i < mines; ++i)
 		{
 			auto row = rowDist (gen);
@@ -595,7 +595,7 @@ public:
 		auto distance = std::chrono::duration_cast<std::chrono::seconds> (now - startTime).count ();
 		if (distance >= maxTimeInSeconds)
 			gameTimer = nullptr;
-		Value::performSinglePlainEdit (timeValue, distance);
+		Value::performSinglePlainEdit (timeValue, static_cast<IValue::Type> (distance));
 	}
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override
@@ -874,9 +874,12 @@ public:
 	void startNewGame ()
 	{
 		assert (minefieldViewController);
-		auto rows = Value::currentPlainValue (*modelBinding.getValue (valueRows));
-		auto cols = Value::currentPlainValue (*modelBinding.getValue (valueCols));
-		auto mines = Value::currentPlainValue (*modelBinding.getValue (valueMines));
+		auto rows =
+		    static_cast<uint32_t> (Value::currentPlainValue (*modelBinding.getValue (valueRows)));
+		auto cols =
+		    static_cast<uint32_t> (Value::currentPlainValue (*modelBinding.getValue (valueCols)));
+		auto mines =
+		    static_cast<uint32_t> (Value::currentPlainValue (*modelBinding.getValue (valueMines)));
 		minefieldViewController->startGame (rows, cols, mines);
 	}
 
