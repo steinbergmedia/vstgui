@@ -326,6 +326,8 @@ public:
 		startTime = {};
 	}
 
+	void setMouseMode (bool state) { mouseMode = state; }
+
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		const auto attr = attributes.getAttributeValue (VSTGUI::IUIDescription::kCustomViewName);
@@ -512,17 +514,17 @@ public:
 	                                 int32_t column, CDataBrowser* browser) override
 	{
 		ignoreMouseUp = false;
-		if (buttons.isLeftButton ())
+		if (!mouseMode && buttons.isLeftButton ())
 		{
 			mouseDownTimer = makeOwned<CVSTGUITimer> (
 			    [this, row, column] (auto) {
 				    mouseDownTimer = nullptr;
-					if (!model->isOpen (row, column))
-					{
-						model->mark (row, column);
-						checkGameOver ();
-					}
-					ignoreMouseUp = true;
+				    if (!model->isOpen (row, column))
+				    {
+					    model->mark (row, column);
+					    checkGameOver ();
+				    }
+				    ignoreMouseUp = true;
 			    },
 			    60);
 		}
@@ -641,6 +643,7 @@ private:
 	SharedPointer<CVSTGUITimer> gameTimer;
 	SharedPointer<CVSTGUITimer> mouseDownTimer;
 	bool ignoreMouseUp {false};
+	bool mouseMode {true};
 };
 
 //------------------------------------------------------------------------
@@ -690,6 +693,11 @@ static const Command NewBeginnerGameCommand {GameGroup, "New Beginner Game"};
 static const Command NewIntermediateGameCommand {GameGroup, "New Intermediate Game"};
 static const Command NewExpertGameCommand {GameGroup, "New Expert Game"};
 
+static constexpr IdStringPtr MouseMode = "Use Mouse Mode";
+static constexpr IdStringPtr TouchpadMode = "Use Touchpad Mode";
+static const Command MouseModeCommand {GameGroup, MouseMode};
+static const Command TouchpadModeCommand {GameGroup, TouchpadMode};
+
 //------------------------------------------------------------------------
 class WindowController : public WindowControllerAdapter,
                          public UIDesc::Customization,
@@ -703,6 +711,7 @@ public:
 	static constexpr auto valueStart = "Start";
 	static constexpr auto valueFlags = "Flags";
 	static constexpr auto valueTime = "Time";
+	static constexpr auto valueMouseMode = "MouseMode";
 
 	WindowController ()
 	{
@@ -710,6 +719,8 @@ public:
 		IApplication::instance ().registerCommand (NewBeginnerGameCommand, 0);
 		IApplication::instance ().registerCommand (NewIntermediateGameCommand, 0);
 		IApplication::instance ().registerCommand (NewExpertGameCommand, 0);
+		IApplication::instance ().registerCommand (MouseModeCommand, 0);
+		IApplication::instance ().registerCommand (TouchpadModeCommand, 0);
 
 		addCreateViewControllerFunc (
 		    "MinefieldController", [this] (const auto& name, auto* parent, auto* uidesc) {
@@ -744,6 +755,12 @@ public:
 		modelBinding.addValue (
 		    Value::make (valueStart),
 		    UIDesc::ValueCalls::onEndEdit ([this] (auto& value) { startNewGame (); }));
+		modelBinding.addValue (
+		    Value::make (valueMouseMode), UIDesc::ValueCalls::onEndEdit ([this] (auto& value) {
+			    if (minefieldViewController)
+				    minefieldViewController->setMouseMode (value.getValue () >= 0.5 ? true : false);
+		    }));
+
 		loadDefaults ();
 	}
 
@@ -765,6 +782,11 @@ public:
 			if (auto valueObject = modelBinding.getValue (valueMines))
 				Value::performSinglePlainEdit (*valueObject, *value);
 		}
+		if (auto value = prefs.getNumber<bool> (valueMouseMode))
+		{
+			if (auto valueObject = modelBinding.getValue (valueMouseMode))
+				Value::performSinglePlainEdit (*valueObject, *value);
+		}
 	}
 
 	void storeDefaults ()
@@ -776,14 +798,46 @@ public:
 			prefs.setNumber (valueCols, static_cast<int32_t> (Value::currentPlainValue (*value)));
 		if (auto value = modelBinding.getValue (valueMines))
 			prefs.setNumber (valueMines, static_cast<int32_t> (Value::currentPlainValue (*value)));
+		if (auto value = modelBinding.getValue (valueMouseMode))
+			prefs.setNumber (valueMouseMode, static_cast<bool> (Value::currentPlainValue (*value)));
 	}
 
-	bool canHandleCommand (const Command& command) override { return command.group == GameGroup; }
+	bool canHandleCommand (const Command& command) override
+	{
+		if (command.group == GameGroup)
+		{
+			if (command.name == TouchpadMode)
+			{
+				if (modelBinding.getValue (valueMouseMode)->getValue () < 0.5)
+					return false;
+			}
+			if (command.name == MouseMode)
+			{
+				if (modelBinding.getValue (valueMouseMode)->getValue () >= 0.5)
+					return false;
+			}
+			return true;
+		}
+		return false;
+	}
 
 	bool handleCommand (const Command& command) override
 	{
 		if (command.group != GameGroup)
 			return false;
+		if (command.name == TouchpadMode)
+		{
+			auto value = modelBinding.getValue (valueMouseMode);
+			Value::performSingleEdit (*value, 0.);
+			return true;
+		}
+		else if (command.name == MouseMode)
+		{
+			auto value = modelBinding.getValue (valueMouseMode);
+			Value::performSingleEdit (*value, 1.);
+			return true;
+		}
+
 		auto rowValue = modelBinding.getValue (valueRows);
 		auto colValue = modelBinding.getValue (valueCols);
 		auto mineValue = modelBinding.getValue (valueMines);
@@ -895,7 +949,7 @@ public:
 
 	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override
 	{
-		if (cmd == Commands::CloseWindow)
+		if (cmd == Commands::CloseWindow || cmd == MouseModeCommand)
 			return true;
 		return false;
 	}
