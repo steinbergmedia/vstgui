@@ -730,6 +730,11 @@ public:
 				    auto timeValue = modelBinding.getValue (valueTime);
 				    minefieldViewController =
 				        new MinefieldViewController (*flagsValue, *timeValue, parent);
+					if (auto valueObject = modelBinding.getValue (valueMouseMode))
+					{
+					    minefieldViewController->setMouseMode (
+					        valueObject->getValue () >= 0.5 ? true : false);
+				    }
 			    }
 			    minefieldViewController->remember ();
 			    return minefieldViewController;
@@ -756,7 +761,7 @@ public:
 		    Value::make (valueStart),
 		    UIDesc::ValueCalls::onEndEdit ([this] (auto& value) { startNewGame (); }));
 		modelBinding.addValue (
-		    Value::make (valueMouseMode), UIDesc::ValueCalls::onEndEdit ([this] (auto& value) {
+		    Value::make (valueMouseMode), UIDesc::ValueCalls::onPerformEdit ([this] (auto& value) {
 			    if (minefieldViewController)
 				    minefieldViewController->setMouseMode (value.getValue () >= 0.5 ? true : false);
 		    }));
