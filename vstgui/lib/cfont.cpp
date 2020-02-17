@@ -89,6 +89,9 @@ CFontDesc::CFontDesc (const CFontDesc& font)
 	*this = font;
 }
 
+//------------------------------------------------------------------------
+CFontDesc::~CFontDesc () noexcept = default;
+
 //-----------------------------------------------------------------------------
 void CFontDesc::beforeDelete ()
 {

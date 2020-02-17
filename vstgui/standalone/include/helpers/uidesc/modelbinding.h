@@ -58,6 +58,7 @@ class ModelBindingCallbacks : public ValueListenerAdapter, public IModelBinding
 {
 public:
 	static ModelBindingCallbacksPtr make () { return std::make_shared<ModelBindingCallbacks> (); }
+	ModelBindingCallbacks () = default;
 	~ModelBindingCallbacks () override;
 
 	ValuePtr addValue (ValuePtr value, const ValueCalls& callbacks = {});
@@ -65,8 +66,8 @@ public:
 
 	ValuePtr getValue (UTF8StringView valueID) const;
 
-private:
 	const ValueList& getValues () const override { return valueList; }
+private:
 
 	void onBeginEdit (IValue& value) override;
 	void onPerformEdit (IValue& value, IValue::Type newValue) override;
