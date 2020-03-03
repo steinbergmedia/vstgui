@@ -232,6 +232,16 @@ bool CFileStream::open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder)
 	return stream != nullptr;
 }
 
+//------------------------------------------------------------------------
+bool CFileStream::isEndOfFile () const
+{
+	if (stream)
+	{
+		return feof (stream) != 0;
+	}
+	return true;
+}
+
 //-----------------------------------------------------------------------------
 uint32_t CFileStream::writeRaw (const void* buffer, uint32_t size)
 {
