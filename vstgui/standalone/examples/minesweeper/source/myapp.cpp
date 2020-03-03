@@ -2,6 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "model.h"
 #include "vstgui/lib/animation/animations.h"
 #include "vstgui/lib/animation/timingfunctions.h"
 #include "vstgui/lib/cdatabrowser.h"
@@ -23,7 +24,6 @@
 #include "vstgui/uidescription/uiattributes.h"
 #include <cassert>
 #include <chrono>
-#include <random>
 #include <vector>
 
 //------------------------------------------------------------------------
@@ -31,256 +31,6 @@ namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
 
-//------------------------------------------------------------------------
-class Model
-{
-private:
-	enum class Bit : uint16_t
-	{
-		Mine = 1 << 0,
-		Open = 1 << 1,
-		Flag = 1 << 2,
-		Trap = 1 << 3,
-		Question = 1 << 4,
-	};
-
-	static bool hasBit (uint16_t s, Bit flag) { return (s & static_cast<uint16_t> (flag)) != 0; }
-	static void setBit (uint16_t& s, Bit flag) { s |= static_cast<uint16_t> (flag); }
-	static void unsetBit (uint16_t& s, Bit flag) { s &= ~static_cast<uint16_t> (flag); }
-
-	struct Cell
-	{
-		uint16_t neighbours {0};
-		uint16_t flags {0};
-
-		bool isMine () const { return hasBit (flags, Bit::Mine); }
-		bool isOpen () const { return hasBit (flags, Bit::Open); }
-		bool isFlag () const { return hasBit (flags, Bit::Flag); }
-		bool isTrap () const { return hasBit (flags, Bit::Trap); }
-		bool isQuestion () const { return hasBit (flags, Bit::Question); }
-
-		void setMine () { setBit (flags, Bit::Mine); }
-		void setOpen () { setBit (flags, Bit::Open); }
-		void setTrap () { setBit (flags, Bit::Trap); }
-		void setFlag () { setBit (flags, Bit::Flag); }
-		void unsetFlag () { unsetBit (flags, Bit::Flag); }
-		void setQuestion () { setBit (flags, Bit::Question); }
-		void unsetQuestion () { unsetBit (flags, Bit::Question); }
-	};
-
-	using Row = std::vector<Cell>;
-	using Matrix = std::vector<Row>;
-
-public:
-	struct IListener
-	{
-		virtual void onCellChanged (uint32_t row, uint32_t col) = 0;
-	};
-
-	Model (uint32_t numberOfRows, uint32_t numberOfCols, uint32_t numberOfMines,
-	       IListener* listener)
-	: mines (numberOfMines), listener (listener)
-	{
-		assert (numberOfMines < numberOfRows * numberOfCols);
-		allocateModel (numberOfRows, numberOfCols);
-		clearModel ();
-		setMines ();
-		calcNeighbours ();
-	}
-
-	uint32_t getNumberOfMines () const { return mines; }
-	uint32_t getNumberOfFlags () const { return flagged; }
-
-	bool isTrapped () const { return trapped; }
-	bool isDone () const
-	{
-		if (flagged == mines)
-		{
-			for (auto row = 0u; row < matrix.size (); ++row)
-			{
-				for (auto col = 0u; col < matrix.front ().size (); ++col)
-				{
-					auto cell = matrix[row][col];
-					if (cell.isFlag () && !cell.isMine ())
-						return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	void open (uint32_t row, uint32_t col)
-	{
-		if (openInternal (row, col))
-		{
-			auto cell = matrix[row][col];
-			if (cell.isOpen () && cell.neighbours == 0)
-			{
-				openCleanNearby (row, col);
-			}
-		}
-	}
-
-	void mark (uint32_t row, uint32_t col)
-	{
-		auto& cell = matrix[row][col];
-		if (cell.isFlag ())
-		{
-			--flagged;
-			cell.unsetFlag ();
-			cell.setQuestion ();
-		}
-		else if (cell.isQuestion ())
-		{
-			cell.unsetQuestion ();
-		}
-		else
-		{
-			++flagged;
-			cell.setFlag ();
-		}
-		if (listener)
-			listener->onCellChanged (row, col);
-	}
-
-	bool isOpen (uint32_t row, uint32_t col) const { return matrix[row][col].isOpen (); }
-	bool isFlag (uint32_t row, uint32_t col) const { return matrix[row][col].isFlag (); }
-	bool isQuestion (uint32_t row, uint32_t col) const { return matrix[row][col].isQuestion (); }
-	bool isMine (uint32_t row, uint32_t col) const { return matrix[row][col].isMine (); }
-	bool isTrapMine (uint32_t row, uint32_t col) const { return matrix[row][col].isTrap (); }
-	uint32_t getNumberOfMinesNearby (uint32_t row, uint32_t col) const
-	{
-		return matrix[row][col].neighbours;
-	}
-
-private:
-	void openCleanNearby (uint32_t row, uint32_t col)
-	{
-		const auto maxCol = matrix.front ().size () - 1;
-		const auto maxRow = matrix.size () - 1;
-		if (row > 0)
-		{
-			if (col > 0)
-				open (row - 1, col - 1);
-			open (row - 1, col);
-			if (col < maxCol)
-				open (row - 1, col + 1);
-		}
-		if (col > 0)
-			open (row, col - 1);
-		if (col < maxCol)
-			open (row, col + 1);
-		if (row < maxRow)
-		{
-			if (col > 0)
-				open (row + 1, col - 1);
-			open (row + 1, col);
-			if (col < maxCol)
-				open (row + 1, col + 1);
-		}
-	}
-
-	bool openInternal (uint32_t row, uint32_t col)
-	{
-		auto& cell = matrix[row][col];
-		if (!cell.isOpen ())
-		{
-			cell.setOpen ();
-			++opened;
-			if (cell.isFlag ())
-			{
-				cell.unsetFlag ();
-				--flagged;
-			}
-			else if (cell.isQuestion ())
-				cell.unsetQuestion ();
-			if (listener)
-				listener->onCellChanged (row, col);
-			if (cell.isMine ())
-			{
-				cell.setTrap ();
-				trapped = true;
-				return false;
-			}
-			return true;
-		}
-		return false;
-	}
-	void allocateModel (uint32_t numberOfRows, uint32_t numberOfCols)
-	{
-		matrix.resize (numberOfRows);
-		std::for_each (matrix.begin (), matrix.end (),
-		               [numberOfCols] (auto& r) { r.resize (numberOfCols); });
-	}
-	void clearModel ()
-	{
-		std::for_each (matrix.begin (), matrix.end (), [] (auto& r) {
-			std::for_each (r.begin (), r.end (), [] (auto& cell) { cell = {}; });
-		});
-	}
-	void setMines ()
-	{
-		std::random_device rd;
-		std::mt19937 gen (rd ());
-		std::uniform_int_distribution<> rowDist (0, static_cast<int> (matrix.size () - 1));
-		std::uniform_int_distribution<> colDist (0, static_cast<int> (matrix.front ().size () - 1));
-		for (auto i = 0u; i < mines; ++i)
-		{
-			auto row = rowDist (gen);
-			auto col = colDist (gen);
-			if ((matrix[row][col]).isMine ())
-			{
-				assert (i > 0u);
-				--i;
-				continue;
-			}
-			matrix[row][col].setMine ();
-		}
-	}
-
-	void calcNeighbours ()
-	{
-		const auto maxCol = matrix.front ().size () - 1;
-		const auto maxRow = matrix.size () - 1;
-		for (auto row = 0u; row < matrix.size (); ++row)
-		{
-			for (auto col = 0u; col < matrix.front ().size (); ++col)
-			{
-				auto& cell = matrix[row][col];
-				if (cell.isMine ())
-					continue;
-				if (row > 0)
-				{
-					if (col > 0)
-						cell.neighbours += matrix[row - 1][col - 1].isMine () ? 1 : 0;
-					cell.neighbours += matrix[row - 1][col].isMine () ? 1 : 0;
-					if (col < maxCol)
-						cell.neighbours += matrix[row - 1][col + 1].isMine () ? 1 : 0;
-				}
-				if (col > 0)
-					cell.neighbours += matrix[row][col - 1].isMine () ? 1 : 0;
-				if (col < maxCol)
-					cell.neighbours += matrix[row][col + 1].isMine () ? 1 : 0;
-				if (row < maxRow)
-				{
-					if (col > 0)
-						cell.neighbours += matrix[row + 1][col - 1].isMine () ? 1 : 0;
-					cell.neighbours += matrix[row + 1][col].isMine () ? 1 : 0;
-					if (col < maxCol)
-						cell.neighbours += matrix[row + 1][col + 1].isMine () ? 1 : 0;
-				}
-			}
-		}
-	}
-
-	Matrix matrix;
-	uint32_t mines {0};
-	uint32_t opened {0};
-	uint32_t flagged {0};
-	bool trapped {false};
-	IListener* listener {nullptr};
-};
 
 using VSTGUI::DelegationController;
 using VSTGUI::CDataBrowser;
@@ -945,8 +695,9 @@ public:
 		if (group == GameGroup)
 		{
 			return [] (const UTF8String& lhs, const UTF8String& rhs) {
-				static auto order = {NewGameCommand.name, NewBeginnerGameCommand.name,
-				                     NewIntermediateGameCommand.name, NewExpertGameCommand.name};
+				static const auto order = {NewGameCommand.name, NewBeginnerGameCommand.name,
+				                           NewIntermediateGameCommand.name,
+				                           NewExpertGameCommand.name};
 				auto leftIndex = std::find (order.begin (), order.end (), lhs);
 				auto rightIndex = std::find (order.begin (), order.end (), rhs);
 				return std::distance (leftIndex, rightIndex) > 0;
