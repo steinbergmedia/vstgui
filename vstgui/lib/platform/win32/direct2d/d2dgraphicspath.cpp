@@ -36,7 +36,7 @@ public:
 		DWRITE_GLYPH_RUN const* glyphRun,
 		DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
 		IUnknown* clientDrawingEffect
-		)
+		) override
 	{
 		return glyphRun->fontFace->GetGlyphRunOutline (
 				glyphRun->fontEmSize,
@@ -56,7 +56,7 @@ public:
 		FLOAT baselineOriginY,
 		DWRITE_UNDERLINE const* underline,
 		IUnknown* clientDrawingEffect
-		)
+		) override
 	{
 		return S_FALSE;
 	}
@@ -67,7 +67,7 @@ public:
 		FLOAT baselineOriginY,
 		DWRITE_STRIKETHROUGH const* strikethrough,
 		IUnknown* clientDrawingEffect
-		)
+		) override
 	{
 		return S_FALSE;
 	}
@@ -80,7 +80,7 @@ public:
 		BOOL isSideways,
 		BOOL isRightToLeft,
 		IUnknown* clientDrawingEffect
-		)
+		) override
 	{
 		return S_FALSE;
 	}
@@ -88,7 +88,7 @@ public:
 	STDMETHOD (IsPixelSnappingDisabled) (
 		__maybenull void* clientDrawingContext,
 		__out BOOL* isDisabled
-		)
+		) override
 	{
 		return S_FALSE;
 	}
@@ -96,7 +96,7 @@ public:
 	STDMETHOD (GetCurrentTransform) (
 		__maybenull void* clientDrawingContext,
 		__out DWRITE_MATRIX* transform
-		)
+		) override
 	{
 		const DWRITE_MATRIX identityTransform =
 		{
@@ -112,14 +112,14 @@ public:
 	STDMETHOD (GetPixelsPerDip) (
 		__maybenull void* clientDrawingContext,
 		__out FLOAT* pixelsPerDip
-		)
+		) override
 	{
 		if (pixelsPerDip)
 			*pixelsPerDip = 96;
 		return S_OK;
 	}
 
-	STDMETHOD (QueryInterface) (REFIID iid, void ** ppvObject)
+	STDMETHOD (QueryInterface) (REFIID iid, void ** ppvObject) override
 	{
 		if (iid == __uuidof(IUnknown)
 			|| iid == __uuidof(IDWriteTextRenderer))
@@ -130,8 +130,8 @@ public:
 		} else
 			return E_NOINTERFACE;
 	}
-    STDMETHOD_ (ULONG, AddRef) (void) { return 1; }
-    STDMETHOD_ (ULONG, Release) (void) { return 1; }
+    STDMETHOD_ (ULONG, AddRef) (void) override { return 1; }
+    STDMETHOD_ (ULONG, Release) (void) override { return 1; }
 
 private:
 	ID2D1GeometrySink* sink;
@@ -141,7 +141,7 @@ private:
 class AlignPixelSink : public ID2D1SimplifiedGeometrySink
 {
 public:
-	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject)
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject) override
 	{
 		if (iid == __uuidof(IUnknown)
 			|| iid == __uuidof(ID2D1SimplifiedGeometrySink))
@@ -152,8 +152,8 @@ public:
 		} else
 			return E_NOINTERFACE;
 	}
-    ULONG STDMETHODCALLTYPE AddRef(void) { return 1; }
-    ULONG STDMETHODCALLTYPE Release(void) { return 1; }
+    ULONG STDMETHODCALLTYPE AddRef(void) override { return 1; }
+    ULONG STDMETHODCALLTYPE Release(void) override { return 1; }
 
 	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
 	{
@@ -165,7 +165,7 @@ public:
 		return D2D1::Point2F (static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y));
 	}
 	
-	STDMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT * beziers, UINT beziersCount)
+	STDMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT * beziers, UINT beziersCount) override
 	{
 		for (UINT i = 0; i < beziersCount; ++i)
 		{
@@ -177,7 +177,7 @@ public:
 		}
 	}
 
-	STDMETHOD_(void, AddLines)(const D2D1_POINT_2F *points, UINT pointsCount)
+	STDMETHOD_(void, AddLines)(const D2D1_POINT_2F *points, UINT pointsCount) override
 	{
 		for (UINT i = 0; i < pointsCount; ++i)
 		{
@@ -187,28 +187,28 @@ public:
 	}
 
 	STDMETHOD_(void, BeginFigure)(D2D1_POINT_2F startPoint,
-								D2D1_FIGURE_BEGIN figureBegin)
+								D2D1_FIGURE_BEGIN figureBegin) override
 	{
 		startPoint = alignPoint (startPoint);
 		sink->BeginFigure (startPoint, figureBegin);
 	}
 
-	STDMETHOD_(void, EndFigure)(D2D1_FIGURE_END figureEnd)
+	STDMETHOD_(void, EndFigure)(D2D1_FIGURE_END figureEnd) override
 	{
 		sink->EndFigure (figureEnd);
 	}
 
-	STDMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode)
+	STDMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode) override
 	{
 		sink->SetFillMode (fillMode);
 	}
 
-	STDMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT vertexFlags)
+	STDMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT vertexFlags) override
 	{
 		sink->SetSegmentFlags (vertexFlags);
 	}
 
-	STDMETHOD(Close)()
+	STDMETHOD(Close)() override
 	{
 		isClosed = true;
 		return sink->Close ();
