@@ -12,6 +12,7 @@
 #include "d2ddrawcontext.h"
 #include "d2dfont.h"
 #include <dwrite.h>
+#include <winnt.h>
 
 #if defined (__GNUC__) && !defined (__clang__)
 #define __maybenull
@@ -27,7 +28,7 @@ public:
 	{
 	}
 
-	HRESULT STDMETHODCALLTYPE DrawGlyphRun (
+	STDMETHOD (DrawGlyphRun) (
 		void* clientDrawingContext,
 		FLOAT baselineOriginX,
 		FLOAT baselineOriginY,
@@ -49,7 +50,7 @@ public:
 			);
 	}
 
-	HRESULT STDMETHODCALLTYPE DrawUnderline (
+	STDMETHOD (DrawUnderline) (
 		void* clientDrawingContext,
 		FLOAT baselineOriginX,
 		FLOAT baselineOriginY,
@@ -60,7 +61,7 @@ public:
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE DrawStrikethrough (
+	STDMETHOD (DrawStrikethrough) (
 		void* clientDrawingContext,
 		FLOAT baselineOriginX,
 		FLOAT baselineOriginY,
@@ -71,7 +72,7 @@ public:
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE DrawInlineObject (
+	STDMETHOD (DrawInlineObject) (
 		void* clientDrawingContext,
 		FLOAT originX,
 		FLOAT originY,
@@ -84,7 +85,7 @@ public:
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE IsPixelSnappingDisabled (
+	STDMETHOD (IsPixelSnappingDisabled) (
 		__maybenull void* clientDrawingContext,
 		__out BOOL* isDisabled
 		)
@@ -92,7 +93,7 @@ public:
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE GetCurrentTransform (
+	STDMETHOD (GetCurrentTransform) (
 		__maybenull void* clientDrawingContext,
 		__out DWRITE_MATRIX* transform
 		)
@@ -108,7 +109,7 @@ public:
 		return S_OK;
 	}
 
-	HRESULT STDMETHODCALLTYPE GetPixelsPerDip (
+	STDMETHOD (GetPixelsPerDip) (
 		__maybenull void* clientDrawingContext,
 		__out FLOAT* pixelsPerDip
 		)
@@ -118,7 +119,7 @@ public:
 		return S_OK;
 	}
 
-	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject)
+	STDMETHOD (QueryInterface) (REFIID iid, void ** ppvObject)
 	{
 		if (iid == __uuidof(IUnknown)
 			|| iid == __uuidof(IDWriteTextRenderer))
@@ -129,8 +130,8 @@ public:
 		} else
 			return E_NOINTERFACE;
 	}
-    ULONG STDMETHODCALLTYPE AddRef(void) { return 1; }
-    ULONG STDMETHODCALLTYPE Release(void) { return 1; }
+    STDMETHOD_ (ULONG, AddRef) (void) { return 1; }
+    STDMETHOD_ (ULONG, Release) (void) { return 1; }
 
 private:
 	ID2D1GeometrySink* sink;

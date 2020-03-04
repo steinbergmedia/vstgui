@@ -196,7 +196,7 @@ CDropTarget::~CDropTarget () noexcept
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void** object)
+COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void** object)
 {
 	if (riid == IID_IDropTarget || riid == IID_IUnknown)
 	{
@@ -209,13 +209,13 @@ STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void** object)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
 {
 	return static_cast<ULONG> (++refCount);
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP_(ULONG) CDropTarget::Release (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::Release (void)
 {
 	refCount--;
 	if (refCount <= 0)
@@ -227,7 +227,7 @@ STDMETHODIMP_(ULONG) CDropTarget::Release (void)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
+COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
 {
 	if (dataObject && pFrame)
 	{
@@ -251,7 +251,7 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, PO
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
+COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 {
 	if (dragData && pFrame)
 	{
@@ -271,7 +271,7 @@ STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragLeave (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragLeave (void)
 {
 	if (dragData && pFrame)
 	{
@@ -287,7 +287,7 @@ STDMETHODIMP CDropTarget::DragLeave (void)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
+COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
 {
 	if (dragData && pFrame)
 	{
@@ -305,7 +305,7 @@ STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL 
 //-----------------------------------------------------------------------------
 // Win32DropSource
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::QueryInterface (REFIID riid, void** object)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DropSource::QueryInterface (REFIID riid, void** object)
 {
 	if (riid == ::IID_IDropSource)
 	{
@@ -323,7 +323,7 @@ STDMETHODIMP Win32DropSource::QueryInterface (REFIID riid, void** object)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::QueryContinueDrag (BOOL escapePressed, DWORD keyState)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DropSource::QueryContinueDrag (BOOL escapePressed, DWORD keyState)
 {
 	if (escapePressed)
 		return DRAGDROP_S_CANCEL;
@@ -335,7 +335,7 @@ STDMETHODIMP Win32DropSource::QueryContinueDrag (BOOL escapePressed, DWORD keySt
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
 {
 	return DRAGDROP_S_USEDEFAULTCURSORS;
 }
@@ -356,7 +356,7 @@ Win32DataObject::~Win32DataObject () noexcept
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::QueryInterface (REFIID riid, void** object)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::QueryInterface (REFIID riid, void** object)
 {
 	if (riid == ::IID_IDataObject)                        
 	{                                                              
@@ -374,7 +374,7 @@ STDMETHODIMP Win32DataObject::QueryInterface (REFIID riid, void** object)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 {
 	medium->tymed = 0;
 	medium->hGlobal = 0;
@@ -502,13 +502,13 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::GetDataHere (FORMATETC *format, STGMEDIUM *pmedium)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetDataHere (FORMATETC *format, STGMEDIUM *pmedium)
 {
 	return E_NOTIMPL;
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 {
 	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
 	{
@@ -538,13 +538,13 @@ STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::GetCanonicalFormatEtc (FORMATETC *formatIn, FORMATETC *formatOut)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetCanonicalFormatEtc (FORMATETC *formatIn, FORMATETC *formatOut)
 {
 	return E_NOTIMPL;
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::SetData (FORMATETC *pformatetc, STGMEDIUM *pmedium, BOOL fRelease)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::SetData (FORMATETC *pformatetc, STGMEDIUM *pmedium, BOOL fRelease)
 {
 	return E_NOTIMPL;
 }
@@ -554,7 +554,7 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 {
 	Win32DataObjectEnumerator (const SharedPointer<IDataPackage>& data) : data (data) {}
 
-	HRESULT STDMETHODCALLTYPE QueryInterface (REFIID riid, void** object) override
+	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE QueryInterface (REFIID riid, void** object) override
 	{
 		if (riid == ::IID_IEnumFORMATETC)
 		{
@@ -571,19 +571,19 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 		return E_NOINTERFACE;
 	}
 
-	ULONG STDMETHODCALLTYPE AddRef (void) override
+	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE AddRef (void) override
 	{
 		remember ();
 		return static_cast<ULONG> (getNbReference ());
 	}
-	ULONG STDMETHODCALLTYPE Release (void) override
+	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE Release (void) override
 	{
 		ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1;
 		forget ();
 		return refCount;
 	}
 
-	HRESULT STDMETHODCALLTYPE Next (ULONG celt, FORMATETC* rgelt, ULONG* pceltFetched) override
+	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Next (ULONG celt, FORMATETC* rgelt, ULONG* pceltFetched) override
 	{
 		if (!rgelt)
 			return E_INVALIDARG;
@@ -617,7 +617,7 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE Skip (ULONG celt) override
+	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Skip (ULONG celt) override
 	{
 		if (index + celt >= data->getCount ())
 			return S_FALSE;
@@ -625,13 +625,13 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 		return S_OK;
 	}
 
-	HRESULT STDMETHODCALLTYPE Reset (void) override
+	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Reset (void) override
 	{
 		index = 0;
 		return S_OK;
 	}
 
-	HRESULT STDMETHODCALLTYPE Clone (IEnumFORMATETC** ppenum) override
+	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Clone (IEnumFORMATETC** ppenum) override
 	{
 		return E_NOTIMPL;
 	}
@@ -641,7 +641,7 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 };
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::EnumFormatEtc (DWORD dwDirection, IEnumFORMATETC** ppenumFormatEtc)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::EnumFormatEtc (DWORD dwDirection, IEnumFORMATETC** ppenumFormatEtc)
 {
 	if (dwDirection != DATADIR_GET)
 		return E_INVALIDARG;
@@ -652,19 +652,19 @@ STDMETHODIMP Win32DataObject::EnumFormatEtc (DWORD dwDirection, IEnumFORMATETC**
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::DAdvise (FORMATETC* pformatetc, DWORD advf, IAdviseSink* pAdvSink, DWORD* pdwConnection)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::DAdvise (FORMATETC* pformatetc, DWORD advf, IAdviseSink* pAdvSink, DWORD* pdwConnection)
 {
 	return E_NOTIMPL;
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::DUnadvise (DWORD dwConnection)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::DUnadvise (DWORD dwConnection)
 {
 	return E_NOTIMPL;
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::EnumDAdvise (IEnumSTATDATA** ppenumAdvise)
+COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::EnumDAdvise (IEnumSTATDATA** ppenumAdvise)
 {
 	return E_NOTIMPL;
 }
