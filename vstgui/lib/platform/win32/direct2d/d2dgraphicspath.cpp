@@ -424,9 +424,8 @@ ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* co
 		ID2D1GeometrySink* sink = 0;
 		if (!SUCCEEDED (localPath->Open (&sink)))
 		{
-			path->Release ();
-			path = 0;
-			return 0;
+			localPath->Release ();
+			return nullptr;
 		}
 
 		path = localPath;
