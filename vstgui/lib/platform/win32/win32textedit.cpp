@@ -25,10 +25,10 @@ HWND CreateEditControl (DWORD wxStyle, const WCHAR* string, DWORD wstyle, const 
 //-----------------------------------------------------------------------------
 Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 : IPlatformTextEdit (textEdit)
-, platformControl (0)
-, platformFont (0)
-, platformBackColor (0)
-, oldWndProcEdit (0)
+, platformControl (nullptr)
+, platformFont (nullptr)
+, platformBackColor (nullptr)
+, oldWndProcEdit (nullptr)
 {
 	CRect rect = textEdit->platformGetSize ();
 	CFontRef fontID = textEdit->platformGetFont ();

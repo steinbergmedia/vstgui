@@ -15,7 +15,7 @@ namespace VSTGUI {
 class Win32Frame;
 
 //-----------------------------------------------------------------------------
-class Win32OpenGLView : public IPlatformOpenGLView
+class Win32OpenGLView final : public IPlatformOpenGLView
 {
 public:
 	Win32OpenGLView (Win32Frame* win32Frame);

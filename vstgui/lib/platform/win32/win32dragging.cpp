@@ -186,7 +186,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 CDropTarget::CDropTarget (Win32Frame* pFrame)
 : refCount (0)
 , pFrame (pFrame)
-, dragData (0)
+, dragData (nullptr)
 {
 }
 
@@ -204,7 +204,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void
 		AddRef ();
       return NOERROR;
 	}
-	*object = 0;
+	*object = nullptr;
 	return E_NOINTERFACE;
 }
 
@@ -377,8 +377,8 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::QueryInterface (REFIID riid, 
 COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 {
 	medium->tymed = 0;
-	medium->hGlobal = 0;
-	medium->pUnkForRelease = 0;
+	medium->hGlobal = nullptr;
+	medium->pUnkForRelease = nullptr;
 
 	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
 	{
@@ -391,7 +391,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, S
 				uint32_t bufferSize = dataPackage->getData (i, buffer, type);
 				UTF8StringHelper utf8String (static_cast<const char*> (buffer), bufferSize);
 				SIZE_T size = 0;
-				const void* data = 0;
+				const void* data = nullptr;
 				if (format->cfFormat == CF_UNICODETEXT)
 				{
 					size = bufferSize * sizeof (WCHAR);

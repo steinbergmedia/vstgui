@@ -121,10 +121,10 @@ static void gatherFonts (std::list<std::string>& fontFamilyNames, IDWriteFontCol
 	UINT32 numFonts = collection->GetFontFamilyCount ();
 	for (UINT32 i = 0; i < numFonts; ++i)
 	{
-		IDWriteFontFamily* fontFamily = 0;
+		IDWriteFontFamily* fontFamily = nullptr;
 		if (!SUCCEEDED (collection->GetFontFamily (i, &fontFamily)))
 			continue;
-		IDWriteLocalizedStrings* names = 0;
+		IDWriteLocalizedStrings* names = nullptr;
 		if (!SUCCEEDED (fontFamily->GetFamilyNames (&names)))
 			continue;
 		UINT32 nameLength = 0;
@@ -182,7 +182,7 @@ static COM::Ptr<IDWriteFont> getFont (IDWriteTextFormat* format, int32_t style)
 
 //-----------------------------------------------------------------------------
 D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style)
-: textFormat (0)
+: textFormat (nullptr)
 , ascent (-1)
 , descent (-1)
 , leading (-1)
@@ -246,7 +246,7 @@ bool D2DFont::asLogFont (LOGFONTW& logfont) const
 IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 {
 	const WinString* winString = dynamic_cast<const WinString*> (string);
-	IDWriteTextLayout* textLayout = 0;
+	IDWriteTextLayout* textLayout = nullptr;
 	if (winString)
 		getDWriteFactory ()->CreateTextLayout (winString->getWideString (), (UINT32)wcslen (winString->getWideString ()), textFormat, 10000, 1000, &textLayout);
 	return textLayout;

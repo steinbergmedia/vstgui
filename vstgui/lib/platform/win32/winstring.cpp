@@ -20,7 +20,7 @@ SharedPointer<IPlatformString> IPlatformString::createWithUTF8String (UTF8String
 
 //-----------------------------------------------------------------------------
 WinString::WinString (UTF8StringPtr utf8String)
-: wideString (0)
+: wideString (nullptr)
 , wideStringBufferSize (0)
 {
 	setUTF8String (utf8String);
@@ -38,7 +38,7 @@ void WinString::setUTF8String (UTF8StringPtr utf8String)
 {
 	if (utf8String)
 	{
-		int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8String, -1, 0, 0);
+		int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8String, -1, nullptr, 0);
 		if ((numChars+1)*2 > wideStringBufferSize)
 		{
 			if (wideString)

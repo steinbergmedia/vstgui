@@ -19,18 +19,18 @@ class D2DFont;
 class D2DDrawContext;
 
 //-----------------------------------------------------------------------------
-class D2DGraphicsPath : public CGraphicsPath
+class D2DGraphicsPath final : public CGraphicsPath
 {
 public:
 	D2DGraphicsPath ();
 	D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text);
 	~D2DGraphicsPath ();
 	
-	ID2D1Geometry* createPath (int32_t fillMode, D2DDrawContext* context = 0, CGraphicsTransform* transform = 0);
+	ID2D1Geometry* createPath (int32_t fillMode, D2DDrawContext* context = nullptr, CGraphicsTransform* transform = nullptr);
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
 
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
 	CPoint getCurrentPosition () override;
 	CRect getBoundingBox () override;
 	void dirty () override;

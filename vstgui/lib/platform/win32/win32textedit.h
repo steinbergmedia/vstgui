@@ -19,7 +19,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class Win32TextEdit : public IPlatformTextEdit
+class Win32TextEdit final : public IPlatformTextEdit
 {
 public:
 	Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit);

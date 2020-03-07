@@ -16,7 +16,7 @@ struct IDWriteTextLayout;
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class D2DFont : public IPlatformFont, public IFontPainter
+class D2DFont final : public IPlatformFont, public IFontPainter
 {
 public:
 	D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style);

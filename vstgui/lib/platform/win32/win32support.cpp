@@ -48,7 +48,7 @@ public:
 	{
 		if (factory == nullptr)
 		{
-			D2D1_FACTORY_OPTIONS* options = 0;
+			D2D1_FACTORY_OPTIONS* options = nullptr;
 		#if 0 //DEBUG
 			D2D1_FACTORY_OPTIONS debugOptions;
 			debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
@@ -185,8 +185,8 @@ static SharedPointer<IPlatformBitmap> createFromIStream (IStream* stream)
 SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
 	UTF8StringHelper path (absolutePath);
-	IStream* stream = 0;
-	if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, 0, &stream)))
+	IStream* stream = nullptr;
+	if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, nullptr, &stream)))
 	{
 		auto result = createFromIStream (stream);
 		stream->Release ();
@@ -215,7 +215,7 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* pt
 #ifdef __GNUC__
 	FreeLibrary (shlwDll);
 #endif
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -242,7 +242,7 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 ResourceStream::ResourceStream ()
-: resData (0)
+: resData (nullptr)
 , streamPos (0)
 , resSize (0)
 , _refcount (1)
@@ -252,7 +252,7 @@ ResourceStream::ResourceStream ()
 //-----------------------------------------------------------------------------
 bool ResourceStream::open (const CResourceDescription& resourceDesc, const char* type)
 {
-	HRSRC rsrc = 0;
+	HRSRC rsrc = nullptr;
 	if (resourceDesc.type == CResourceDescription::kIntegerType)
 		rsrc = FindResourceA (GetInstance (), MAKEINTRESOURCEA (resourceDesc.u.id), type);
 	else
