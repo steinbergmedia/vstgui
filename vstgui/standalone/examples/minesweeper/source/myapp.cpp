@@ -651,23 +651,29 @@ public:
 
 	const ValueList& getValues () const override { return modelBinding.getValues (); }
 
-	void startNewGame ()
+	std::tuple<uint32_t, uint32_t, uint32_t> getRowsColsMines ()
 	{
-		assert (minefieldViewController);
 		auto rows =
 		    static_cast<uint32_t> (Value::currentPlainValue (*modelBinding.getValue (valueRows)));
 		auto cols =
 		    static_cast<uint32_t> (Value::currentPlainValue (*modelBinding.getValue (valueCols)));
 		auto mines =
 		    static_cast<uint32_t> (Value::currentPlainValue (*modelBinding.getValue (valueMines)));
+		return {rows, cols, mines};
+	}
+
+	void startNewGame ()
+	{
+		assert (minefieldViewController);
+		uint32_t rows, cols, mines;
+		std::tie (rows, cols, mines) = getRowsColsMines ();
 		minefieldViewController->startGame (rows, cols, mines);
 	}
 
 	void verifyNumMines ()
 	{
-		auto rows = Value::currentPlainValue (*modelBinding.getValue (valueRows));
-		auto cols = Value::currentPlainValue (*modelBinding.getValue (valueCols));
-		auto mines = Value::currentPlainValue (*modelBinding.getValue (valueMines));
+		uint32_t rows, cols, mines;
+		std::tie (rows, cols, mines) = getRowsColsMines ();
 		if (rows * cols < mines)
 		{
 			Value::performSinglePlainEdit (*modelBinding.getValue (valueMines), rows * cols * 0.8);
@@ -679,12 +685,8 @@ public:
 		if (auto path = IApplication::instance ().getCommonDirectories ().get (
 		        CommonDirectoryLocation::AppPreferencesPath, "", true))
 		{
-			auto rows = static_cast<uint32_t> (
-			    Value::currentPlainValue (*modelBinding.getValue (valueRows)));
-			auto cols = static_cast<uint32_t> (
-			    Value::currentPlainValue (*modelBinding.getValue (valueCols)));
-			auto mines = static_cast<uint32_t> (
-			    Value::currentPlainValue (*modelBinding.getValue (valueMines)));
+			uint32_t rows, cols, mines;
+			std::tie (rows, cols, mines) = getRowsColsMines ();
 			auto highScoreName =
 			    toString (rows) + "x" + toString (cols) + "x" + toString (mines) + ".highscore";
 			*path += highScoreName;
