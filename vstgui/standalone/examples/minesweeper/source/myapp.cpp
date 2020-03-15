@@ -680,27 +680,30 @@ public:
 		}
 	}
 
+	UTF8String getHighscoreListName ()
+	{
+		uint32_t rows, cols, mines;
+		std::tie (rows, cols, mines) = getRowsColsMines ();
+		return toString (rows) + "x" + toString (cols) + "x" + toString (mines) + ".highscore";
+	}
+
 	void onWon (uint32_t secondsToWin)
 	{
-		if (auto path = IApplication::instance ().getCommonDirectories ().get (
-		        CommonDirectoryLocation::AppPreferencesPath, "", true))
+		auto path = IApplication::instance ().getCommonDirectories ().get (
+		    CommonDirectoryLocation::AppPreferencesPath, "", true);
+		if (!path)
+			return;
+		*path += getHighscoreListName ();
+		auto highscoreList = LoadHighScoreList (*path);
+		if (!highscoreList)
+			highscoreList = Optional<HighScoreList> (HighScoreList ());
+		if (highscoreList)
 		{
-			uint32_t rows, cols, mines;
-			std::tie (rows, cols, mines) = getRowsColsMines ();
-			auto highScoreName =
-			    toString (rows) + "x" + toString (cols) + "x" + toString (mines) + ".highscore";
-			*path += highScoreName;
-			auto highscoreList = LoadHighScoreList (*path);
-			if (!highscoreList)
-				highscoreList = Optional<HighScoreList> (HighScoreList ());
-			if (highscoreList)
+			auto pos = highscoreList->isHighScore (secondsToWin);
+			if (pos)
 			{
-				auto pos = highscoreList->isHighScore (secondsToWin);
-				if (pos)
-				{
-					highscoreList->addHighscore ("Me", secondsToWin);
-					SaveHighScoreList (*highscoreList, *path);
-				}
+				highscoreList->addHighscore ("Me", secondsToWin);
+				SaveHighScoreList (*highscoreList, *path);
 			}
 		}
 	}
