@@ -10,13 +10,14 @@
 namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
+namespace {
 
 //------------------------------------------------------------------------
-UTF8String readLine (CFileStream& stream, char separator)
+UTF8String readUntil (char separator, CFileStream& stream)
 {
 	std::string str;
 	std::string::value_type character;
-	while (stream.readRaw (&character, sizeof (character)) == sizeof(character))
+	while (stream.readRaw (&character, sizeof (character)) == sizeof (character))
 	{
 		if (character == separator)
 			break;
@@ -26,25 +27,32 @@ UTF8String readLine (CFileStream& stream, char separator)
 }
 
 //------------------------------------------------------------------------
+} // anonymous
+
+//------------------------------------------------------------------------
 Optional<HighScoreList> LoadHighScoreList (const UTF8String& path)
 {
 	CFileStream stream;
 	if (!stream.open (path.data (), CFileStream::kReadMode))
 		return {};
-		
+
 	HighScoreList list;
 	while (!stream.isEndOfFile ())
 	{
-		auto secondsStr = readLine (stream, ':');
-		if (auto seconds = UTF8StringView (secondsStr).toNumber<uint32_t>())
+		auto secondsStr = readUntil (':', stream);
+		if (auto seconds = UTF8StringView (secondsStr).toNumber<uint32_t> ())
 		{
-			auto name = readLine (stream, '\n');
-			list.addHighscore (name, *seconds);
+			auto name = readUntil (':', stream);
+			auto dateStr = readUntil ('\n', stream);
+			if (auto date = UTF8StringView (dateStr).toNumber<uint32_t> ())
+			{
+				list.addHighscore (name, *seconds, *date);
+			}
 		}
 		else if (!stream.isEndOfFile ())
 			return {};
 	}
-	return  {std::move (list)};
+	return {std::move (list)};
 }
 
 //------------------------------------------------------------------------
@@ -53,12 +61,14 @@ bool SaveHighScoreList (const HighScoreList& list, const UTF8String& path)
 	CFileStream stream;
 	if (!stream.open (path.data (), CFileStream::kWriteMode | CFileStream::kTruncateMode))
 		return false;
-	
+
 	for (auto& element : list)
 	{
 		stream << std::to_string (element.seconds);
 		stream << std::string (1, ':');
 		stream << element.name.getString ();
+		stream << std::string (1, ':');
+		stream << std::to_string (element.date);
 		stream << std::string (1, '\n');
 	}
 	return true;
@@ -85,25 +95,31 @@ auto HighScoreList::highscorePosition (uint32_t seconds) const -> ListConstItera
 }
 
 //------------------------------------------------------------------------
-bool HighScoreList::isHighScore (uint32_t seconds) const
+Optional<size_t> HighScoreList::isHighScore (uint32_t seconds) const
 {
-	return highscorePosition (seconds) != list.end ();
+	auto pos = highscorePosition (seconds);
+	if (pos == list.end ())
+		return {};
+	return {std::distance (list.begin (), pos)};
 }
 
 //------------------------------------------------------------------------
-bool HighScoreList::addHighscore (UTF8StringPtr name, uint32_t seconds)
+Optional<size_t> HighScoreList::addHighscore (UTF8StringPtr name, uint32_t seconds,
+                                              std::time_t date)
 {
 	auto it = highscorePosition (seconds);
 	if (it == list.end ())
-		return false;
+		return {};
 
+	// TODO: Check name for not allowed characters: ':' and '\n'
 	auto pos = std::distance (list.begin (), it);
 	auto end = list.begin ();
 	std::advance (end, list.size () - 1);
 	std::move_backward (it, end, list.end ());
 	list[pos].name = name;
 	list[pos].seconds = seconds;
-	return true;
+	list[pos].date = (date == 0) ? std::time (nullptr) : date;
+	return {pos};
 }
 
 //------------------------------------------------------------------------

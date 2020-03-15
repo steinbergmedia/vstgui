@@ -2,6 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "highscorelist.h"
 #include "model.h"
 #include "vstgui/lib/animation/animations.h"
 #include "vstgui/lib/animation/timingfunctions.h"
@@ -18,6 +19,7 @@
 #include "vstgui/standalone/include/helpers/windowcontroller.h"
 #include "vstgui/standalone/include/helpers/windowlistener.h"
 #include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/icommondirectories.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/uidescription/iuidescription.h"
@@ -30,7 +32,6 @@
 namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
-
 
 using VSTGUI::DelegationController;
 using VSTGUI::CDataBrowser;
@@ -50,8 +51,14 @@ public:
 	static constexpr auto ExplosionCharacter = "\xF0\x9F\x92\xA5";
 	static constexpr auto QuestionMarkCharacter = "\xE2\x9D\x93";
 
-	MinefieldViewController (IValue& flagsValue, IValue& timeValue, IController* parent)
-	: DelegationController (parent), flagsValue (flagsValue), timeValue (timeValue)
+	using WonCallbackFunc = std::function<void (int32_t secondsToWin)>;
+
+	MinefieldViewController (IValue& flagsValue, IValue& timeValue, IController* parent,
+	                         WonCallbackFunc&& wonCallback)
+	: DelegationController (parent)
+	, flagsValue (flagsValue)
+	, timeValue (timeValue)
+	, wonCallback (std::move (wonCallback))
 	{
 	}
 
@@ -323,20 +330,36 @@ public:
 		                               model->getNumberOfMines () - model->getNumberOfFlags ());
 		if (model->isDone () && !model->isTrapped ())
 		{
-			wonView->addAnimation ("Won", new VSTGUI::Animation::AlphaValueAnimation (1.f),
-			                       new VSTGUI::Animation::RepeatTimingFunction (
-			                           new VSTGUI::Animation::LinearTimingFunction (250), -1));
-			gameTimer = nullptr;
-			dataBrowser->invalid ();
+			onGameWon ();
 		}
 		if (model->isTrapped ())
 		{
-			lostView->addAnimation ("Lost", new VSTGUI::Animation::AlphaValueAnimation (1.f),
-			                        new VSTGUI::Animation::RepeatTimingFunction (
-			                            new VSTGUI::Animation::LinearTimingFunction (100), -1));
-			gameTimer = nullptr;
-			dataBrowser->invalid ();
+			onGameLost ();
 		}
+	}
+
+	void onGameLost ()
+	{
+		lostView->addAnimation ("Lost", new Animation::AlphaValueAnimation (1.f),
+		                        new Animation::RepeatTimingFunction (
+		                            new Animation::CubicBezierTimingFunction (
+		                                Animation::CubicBezierTimingFunction::easyInOut (250)),
+		                            -1));
+		gameTimer = nullptr;
+		dataBrowser->invalid ();
+	}
+
+	void onGameWon ()
+	{
+		wonView->addAnimation ("Won", new Animation::AlphaValueAnimation (1.f),
+		                       new Animation::RepeatTimingFunction (
+		                           new Animation::CubicBezierTimingFunction (
+		                               Animation::CubicBezierTimingFunction::easyInOut (400)),
+		                           -1));
+		gameTimer = nullptr;
+		dataBrowser->invalid ();
+		if (wonCallback)
+			wonCallback (Value::currentPlainValue (timeValue));
 	}
 
 	void onTimer ()
@@ -386,6 +409,7 @@ private:
 	CFontDesc emojiFont {*kSymbolFont};
 	IValue& flagsValue;
 	IValue& timeValue;
+	WonCallbackFunc wonCallback;
 
 	using Clock = std::chrono::steady_clock;
 	using TimePoint = std::chrono::time_point<Clock>;
@@ -472,23 +496,24 @@ public:
 		IApplication::instance ().registerCommand (MouseModeCommand, 0);
 		IApplication::instance ().registerCommand (TouchpadModeCommand, 0);
 
-		addCreateViewControllerFunc (
-		    "MinefieldController", [this] (const auto& name, auto* parent, auto* uidesc) {
-			    if (!minefieldViewController)
-			    {
-				    auto flagsValue = modelBinding.getValue (valueFlags);
-				    auto timeValue = modelBinding.getValue (valueTime);
-				    minefieldViewController =
-				        new MinefieldViewController (*flagsValue, *timeValue, parent);
-					if (auto valueObject = modelBinding.getValue (valueMouseMode))
-					{
-					    minefieldViewController->setMouseMode (
-					        valueObject->getValue () >= 0.5 ? true : false);
-				    }
-			    }
-			    minefieldViewController->remember ();
-			    return minefieldViewController;
-		    });
+		addCreateViewControllerFunc ("MinefieldController", [this] (const auto& name, auto* parent,
+		                                                            auto* uidesc) {
+			if (!minefieldViewController)
+			{
+				auto flagsValue = modelBinding.getValue (valueFlags);
+				auto timeValue = modelBinding.getValue (valueTime);
+				minefieldViewController = new MinefieldViewController (
+				    *flagsValue, *timeValue, parent,
+				    [this] (uint32_t secondsToWin) { onWon (secondsToWin); });
+				if (auto valueObject = modelBinding.getValue (valueMouseMode))
+				{
+					minefieldViewController->setMouseMode (valueObject->getValue () >= 0.5 ? true :
+					                                                                         false);
+				}
+			}
+			minefieldViewController->remember ();
+			return minefieldViewController;
+		});
 		modelBinding.addValue (
 		    Value::make (valueRows, 0, Value::makeRangeConverter (8, 30, 0)),
 		    UIDesc::ValueCalls::onEndEdit ([this] (auto& value) { verifyNumMines (); }));
@@ -646,6 +671,35 @@ public:
 		if (rows * cols < mines)
 		{
 			Value::performSinglePlainEdit (*modelBinding.getValue (valueMines), rows * cols * 0.8);
+		}
+	}
+
+	void onWon (uint32_t secondsToWin)
+	{
+		if (auto path = IApplication::instance ().getCommonDirectories ().get (
+		        CommonDirectoryLocation::AppPreferencesPath, "", true))
+		{
+			auto rows = static_cast<uint32_t> (
+			    Value::currentPlainValue (*modelBinding.getValue (valueRows)));
+			auto cols = static_cast<uint32_t> (
+			    Value::currentPlainValue (*modelBinding.getValue (valueCols)));
+			auto mines = static_cast<uint32_t> (
+			    Value::currentPlainValue (*modelBinding.getValue (valueMines)));
+			auto highScoreName =
+			    toString (rows) + "x" + toString (cols) + "x" + toString (mines) + ".highscore";
+			*path += highScoreName;
+			auto highscoreList = LoadHighScoreList (*path);
+			if (!highscoreList)
+				highscoreList = Optional<HighScoreList> (HighScoreList ());
+			if (highscoreList)
+			{
+				auto pos = highscoreList->isHighScore (secondsToWin);
+				if (pos)
+				{
+					highscoreList->addHighscore ("Me", secondsToWin);
+					SaveHighScoreList (*highscoreList, *path);
+				}
+			}
 		}
 	}
 
