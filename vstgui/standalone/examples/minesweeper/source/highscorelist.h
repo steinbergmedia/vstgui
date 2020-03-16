@@ -15,7 +15,7 @@ namespace Standalone {
 namespace Minesweeper {
 
 //------------------------------------------------------------------------
-class HighScoreList
+class HighScoreListModel
 {
 public:
 //------------------------------------------------------------------------
@@ -30,7 +30,9 @@ public:
 		bool valid () const { return seconds != std::numeric_limits<uint32_t>::max (); }
 	};
 
-	HighScoreList () { clear (); }
+	HighScoreListModel () { clear (); }
+	HighScoreListModel (HighScoreListModel&&) = default;
+	HighScoreListModel& operator= (HighScoreListModel&&) = default;
 
 	void clear ();
 	Optional<size_t> addHighscore (UTF8StringPtr name, uint32_t seconds, std::time_t date = 0);
@@ -52,8 +54,42 @@ private:
 };
 
 //------------------------------------------------------------------------
-Optional<HighScoreList> LoadHighScoreList (const UTF8String& path);
-bool SaveHighScoreList (const HighScoreList& list, const UTF8String& path);
+Optional<HighScoreListModel> LoadHighScoreListModel (const UTF8String& path);
+bool SaveHighScoreListModel (const HighScoreListModel& list, const UTF8String& path);
+
+//------------------------------------------------------------------------
+class HighScoreList
+{
+public:
+	static std::shared_ptr<HighScoreList> make (const UTF8String& path)
+	{
+		auto instance = std::make_shared<HighScoreList> ();
+		instance->path = path;
+		if (auto l = LoadHighScoreListModel (path))
+		{
+			instance->list = std::move (*l);
+		}
+		return instance;
+	}
+
+	const UTF8String& getPath () const { return path; }
+	const HighScoreListModel& get () const { return list; }
+	HighScoreListModel& get () { return list; }
+
+	Optional<size_t> addHighscore (UTF8StringPtr name, uint32_t seconds, std::time_t date = 0)
+	{
+		auto res = list.addHighscore (name, seconds, date);
+		if (res)
+			save ();
+		return res;
+	}
+	Optional<size_t> isHighScore (uint32_t seconds) const { return list.isHighScore (seconds); }
+
+private:
+	void save () { SaveHighScoreListModel (list, path); }
+	UTF8String path;
+	HighScoreListModel list;
+};
 
 //------------------------------------------------------------------------
 } // Minesweeper

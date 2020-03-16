@@ -33,16 +33,13 @@ namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
 
-using VSTGUI::DelegationController;
-using VSTGUI::CDataBrowser;
-
 static constexpr auto maxTimeInSeconds = 999;
 
 //------------------------------------------------------------------------
 class MinefieldViewController : public DelegationController,
-                                public VSTGUI::DataBrowserDelegateAdapter,
-                                public VSTGUI::NonAtomicReferenceCounted,
-                                public VSTGUI::ViewListenerAdapter,
+                                public DataBrowserDelegateAdapter,
+                                public NonAtomicReferenceCounted,
+                                public ViewListenerAdapter,
                                 public Model::IListener
 {
 public:
@@ -87,7 +84,7 @@ public:
 
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
 	{
-		const auto attr = attributes.getAttributeValue (VSTGUI::IUIDescription::kCustomViewName);
+		const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "MinefieldView")
 		{
 			description->getColor ("card.closed.frame", closedFrameColor);
@@ -112,7 +109,7 @@ public:
 	CView* verifyView (CView* view, const UIAttributes& attributes,
 	                   const IUIDescription* description) override
 	{
-		const auto attr = attributes.getAttributeValue (VSTGUI::IUIDescription::kCustomViewName);
+		const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr)
 		{
 			if (*attr == "LostView")
@@ -340,7 +337,14 @@ public:
 
 	void onGameLost ()
 	{
-		lostView->addAnimation ("Lost", new Animation::AlphaValueAnimation (1.f),
+		auto animView = lostView;
+		if (auto vc = lostView->asViewContainer ())
+		{
+			animView = vc->getView (0);
+			animView->setAlphaValue (0.f);
+			lostView->setAlphaValue (1.f);
+		}
+		animView->addAnimation ("Lost", new Animation::AlphaValueAnimation (1.f),
 		                        new Animation::RepeatTimingFunction (
 		                            new Animation::CubicBezierTimingFunction (
 		                                Animation::CubicBezierTimingFunction::easyInOut (250)),
@@ -351,11 +355,18 @@ public:
 
 	void onGameWon ()
 	{
-		wonView->addAnimation ("Won", new Animation::AlphaValueAnimation (1.f),
-		                       new Animation::RepeatTimingFunction (
-		                           new Animation::CubicBezierTimingFunction (
-		                               Animation::CubicBezierTimingFunction::easyInOut (400)),
-		                           -1));
+		auto animView = wonView;
+		if (auto vc = wonView->asViewContainer ())
+		{
+			animView = vc->getView (0);
+			animView->setAlphaValue (0.f);
+			wonView->setAlphaValue (1.f);
+		}
+		animView->addAnimation ("Won", new Animation::AlphaValueAnimation (1.f),
+		                        new Animation::RepeatTimingFunction (
+		                            new Animation::CubicBezierTimingFunction (
+		                                Animation::CubicBezierTimingFunction::easyInOut (400)),
+		                            -1));
 		gameTimer = nullptr;
 		dataBrowser->invalid ();
 		if (wonCallback)
@@ -418,6 +429,168 @@ private:
 	SharedPointer<CVSTGUITimer> mouseDownTimer;
 	bool ignoreMouseUp {false};
 	bool mouseMode {true};
+};
+
+//------------------------------------------------------------------------
+class HighScoreWindowController : public DelegationController,
+                                  public DataBrowserDelegateAdapter,
+                                  public NonAtomicReferenceCounted
+{
+public:
+	HighScoreWindowController (const std::shared_ptr<HighScoreList>& list, IController* parent)
+	: DelegationController (parent), list (list)
+	{
+	}
+
+	int32_t dbGetNumRows (CDataBrowser* browser) override { return HighScoreListModel::Size; }
+	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 4; };
+	CCoord dbGetRowHeight (CDataBrowser* browser) override { return 15; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override
+	{
+		switch (index)
+		{
+			case 0: return 20;
+			case 1: return 40;
+			case 2: return 100;
+			case 3: return 140;
+		}
+		return 10;
+	}
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
+	                 int32_t flags, CDataBrowser* browser) override
+	{
+		auto entry = list->get ().begin ();
+		std::advance (entry, row);
+		if (entry == list->get ().end ())
+			return;
+		bool valid = entry->valid ();
+		switch (column)
+		{
+			case 0:
+			{
+				context->drawString (toString (row + 1), size);
+				break;
+			}
+			case 1:
+			{
+				if (valid)
+					context->drawString (toString (entry->seconds), size);
+				break;
+			}
+			case 2:
+			{
+				if (valid)
+					context->drawString (entry->name, size);
+				break;
+			}
+			case 3:
+			{
+				if (valid)
+				{
+					char mbstr[100];
+					if (std::strftime (mbstr, sizeof (mbstr), "%F",
+					                   std::localtime (&entry->date)))
+					{
+						context->drawString (mbstr, size);
+					}
+				}
+				break;
+			}
+		}
+	}
+
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
+		if (attr && *attr == "DataBrowser")
+		{
+			return new CDataBrowser ({}, this, 0, 0.);
+		}
+		return nullptr;
+	}
+
+private:
+	std::shared_ptr<HighScoreList> list;
+};
+
+//------------------------------------------------------------------------
+void ShowHighscoreWindow (const std::shared_ptr<HighScoreList>& list)
+{
+	auto customization = UIDesc::Customization::make ();
+	customization->addCreateViewControllerFunc (
+	    "DataBrowserController",
+	    [list] (const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc)
+	        -> IController* { return new HighScoreWindowController (list, parent); });
+	UIDesc::Config config;
+	config.uiDescFileName = "Highscore.uidesc";
+	config.viewName = "Window";
+	config.customization = customization;
+	config.windowConfig.title = "Minesweeper - Highscore";
+	config.windowConfig.autoSaveFrameName = "MinesweeperHighscoreWindow";
+	config.windowConfig.style.border ().close ().centered ();
+	if (auto window = UIDesc::makeWindow (config))
+		window->show ();
+}
+
+//------------------------------------------------------------------------
+class NewHighScoreViewController : public DelegationController,
+                                   public ValueListenerAdapter,
+                                   public NonAtomicReferenceCounted
+{
+public:
+	NewHighScoreViewController (IValue& nameValue, IValue& okValue, IController* parent)
+	: DelegationController (parent), nameValue (nameValue), okValue (okValue)
+	{
+		okValue.registerListener (this);
+		okValue.setActive (false);
+	}
+
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+	                   const IUIDescription* description) override
+	{
+		const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
+		if (attr)
+		{
+			if (*attr == "MainView")
+			{
+				mainView = view;
+				mainView->setAlphaValue (0.f);
+				mainView->setMouseEnabled (false);
+			}
+		}
+
+		return DelegationController::verifyView (view, attributes, description);
+	}
+
+	void onNewHighscore (uint32_t secondsToWin, const std::shared_ptr<HighScoreList>& list)
+	{
+		currentSecondsToWin = secondsToWin;
+		highscoreList = list;
+		mainView->setAlphaValue (1.f);
+		mainView->setMouseEnabled (true);
+		okValue.setActive (true);
+	}
+
+	void onEndEdit (IValue& value) override
+	{
+		if (value.getValue () > 0.5)
+		{
+			value.performEdit (0.);
+			auto name = Value::currentStringValue (nameValue);
+			highscoreList->addHighscore (name, currentSecondsToWin);
+			ShowHighscoreWindow (highscoreList);
+			highscoreList = nullptr;
+			mainView->setMouseEnabled (false);
+			mainView->setAlphaValue (0.f);
+		}
+	}
+
+private:
+	SharedPointer<CView> mainView;
+	IValue& nameValue;
+	IValue& okValue;
+	std::shared_ptr<HighScoreList> highscoreList;
+	uint32_t currentSecondsToWin {0};
 };
 
 //------------------------------------------------------------------------
@@ -486,6 +659,8 @@ public:
 	static constexpr auto valueFlags = "Flags";
 	static constexpr auto valueTime = "Time";
 	static constexpr auto valueMouseMode = "MouseMode";
+	static constexpr auto valueHighScoreOK = "HighScoreOK";
+	static constexpr auto valueHighScoreName = "HighScoreName";
 
 	WindowController ()
 	{
@@ -514,6 +689,20 @@ public:
 			minefieldViewController->remember ();
 			return minefieldViewController;
 		});
+
+		addCreateViewControllerFunc (
+		    "NewHighScoreViewController", [this] (const auto& name, auto* parent, auto* uidesc) {
+			    if (!highscoreViewController)
+			    {
+				    auto nameValue = modelBinding.getValue (valueHighScoreName);
+				    auto okValue = modelBinding.getValue (valueHighScoreOK);
+				    highscoreViewController =
+				        new NewHighScoreViewController (*nameValue, *okValue, parent);
+			    }
+			    highscoreViewController->remember ();
+			    return highscoreViewController;
+		    });
+
 		modelBinding.addValue (
 		    Value::make (valueRows, 0, Value::makeRangeConverter (8, 30, 0)),
 		    UIDesc::ValueCalls::onEndEdit ([this] (auto& value) { verifyNumMines (); }));
@@ -540,6 +729,9 @@ public:
 			    if (minefieldViewController)
 				    minefieldViewController->setMouseMode (value.getValue () >= 0.5 ? true : false);
 		    }));
+
+		modelBinding.addValue (Value::makeStringValue (valueHighScoreName, ""));
+		modelBinding.addValue (Value::make (valueHighScoreOK));
 
 		loadDefaults ();
 	}
@@ -690,13 +882,11 @@ public:
 	void onWon (uint32_t secondsToWin)
 	{
 		auto path = IApplication::instance ().getCommonDirectories ().get (
-		    CommonDirectoryLocation::AppPreferencesPath, "", true);
+		    CommonDirectoryLocation::AppPreferencesPath, {}, true);
 		if (!path)
 			return;
 		*path += getHighscoreListName ();
-		auto highscoreList = LoadHighScoreList (*path);
-		if (!highscoreList)
-			highscoreList = Optional<HighScoreList> (HighScoreList ());
+		auto highscoreList = HighScoreList::make (*path);
 		if (highscoreList)
 		{
 			auto pos = highscoreList->isHighScore (secondsToWin);
@@ -708,9 +898,20 @@ public:
 		}
 	}
 
+	void showHighscoreListWindowDebug ()
+	{
+		auto path = IApplication::instance ().getCommonDirectories ().get (
+			CommonDirectoryLocation::AppPreferencesPath, {}, true);
+		if (!path)
+			return;
+		*path += getHighscoreListName ();
+		auto highscoreList = HighScoreList::make (*path);
+		ShowHighscoreWindow (highscoreList);
+	}
 private:
 	UIDesc::ModelBindingCallbacks modelBinding;
 	MinefieldViewController* minefieldViewController {nullptr};
+	NewHighScoreViewController* highscoreViewController {nullptr};
 	IWindow* window {nullptr};
 };
 

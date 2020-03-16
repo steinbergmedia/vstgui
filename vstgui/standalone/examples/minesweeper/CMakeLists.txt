@@ -13,6 +13,7 @@ set(${target}_sources
 
 set(Minesweeper_resources
   "resource/Window.uidesc"
+  "resource/Highscore.uidesc"
   "resource/Minesweeper.icns"
 )
 

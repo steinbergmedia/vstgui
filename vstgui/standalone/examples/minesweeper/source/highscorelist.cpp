@@ -30,13 +30,13 @@ UTF8String readUntil (char separator, CFileStream& stream)
 } // anonymous
 
 //------------------------------------------------------------------------
-Optional<HighScoreList> LoadHighScoreList (const UTF8String& path)
+Optional<HighScoreListModel> LoadHighScoreListModel (const UTF8String& path)
 {
 	CFileStream stream;
 	if (!stream.open (path.data (), CFileStream::kReadMode))
 		return {};
 
-	HighScoreList list;
+	HighScoreListModel list;
 	while (!stream.isEndOfFile ())
 	{
 		auto secondsStr = readUntil (':', stream);
@@ -56,7 +56,7 @@ Optional<HighScoreList> LoadHighScoreList (const UTF8String& path)
 }
 
 //------------------------------------------------------------------------
-bool SaveHighScoreList (const HighScoreList& list, const UTF8String& path)
+bool SaveHighScoreListModel (const HighScoreListModel& list, const UTF8String& path)
 {
 	CFileStream stream;
 	if (!stream.open (path.data (), CFileStream::kWriteMode | CFileStream::kTruncateMode))
@@ -75,27 +75,27 @@ bool SaveHighScoreList (const HighScoreList& list, const UTF8String& path)
 }
 
 //------------------------------------------------------------------------
-void HighScoreList::clear ()
+void HighScoreListModel::clear ()
 {
 	std::for_each (list.begin (), list.end (), [] (auto& sel) { sel = {}; });
 }
 
 //------------------------------------------------------------------------
-auto HighScoreList::highscorePosition (uint32_t seconds) -> ListIterator
+auto HighScoreListModel::highscorePosition (uint32_t seconds) -> ListIterator
 {
 	return std::find_if (list.begin (), list.end (),
 	                     [seconds] (const auto& entry) { return entry.seconds > seconds; });
 }
 
 //------------------------------------------------------------------------
-auto HighScoreList::highscorePosition (uint32_t seconds) const -> ListConstIterator
+auto HighScoreListModel::highscorePosition (uint32_t seconds) const -> ListConstIterator
 {
 	return std::find_if (list.begin (), list.end (),
 	                     [seconds] (const auto& entry) { return entry.seconds > seconds; });
 }
 
 //------------------------------------------------------------------------
-Optional<size_t> HighScoreList::isHighScore (uint32_t seconds) const
+Optional<size_t> HighScoreListModel::isHighScore (uint32_t seconds) const
 {
 	auto pos = highscorePosition (seconds);
 	if (pos == list.end ())
@@ -104,8 +104,8 @@ Optional<size_t> HighScoreList::isHighScore (uint32_t seconds) const
 }
 
 //------------------------------------------------------------------------
-Optional<size_t> HighScoreList::addHighscore (UTF8StringPtr name, uint32_t seconds,
-                                              std::time_t date)
+Optional<size_t> HighScoreListModel::addHighscore (UTF8StringPtr name, uint32_t seconds,
+                                                   std::time_t date)
 {
 	auto it = highscorePosition (seconds);
 	if (it == list.end ())
@@ -123,13 +123,13 @@ Optional<size_t> HighScoreList::addHighscore (UTF8StringPtr name, uint32_t secon
 }
 
 //------------------------------------------------------------------------
-auto HighScoreList::begin () const -> ListConstIterator
+auto HighScoreListModel::begin () const -> ListConstIterator
 {
 	return list.begin ();
 }
 
 //------------------------------------------------------------------------
-auto HighScoreList::end () const -> ListConstIterator
+auto HighScoreListModel::end () const -> ListConstIterator
 {
 	return list.end ();
 }
