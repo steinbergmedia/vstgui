@@ -3,7 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "commands.h"
-#include "highscorelist.h"
+#include "highscores.h"
 #include "minefieldviewcontroller.h"
 #include "vstgui/lib/cdatabrowser.h"
 #include "vstgui/lib/cdrawcontext.h"
@@ -17,57 +17,17 @@
 #include "vstgui/standalone/include/helpers/windowcontroller.h"
 #include "vstgui/standalone/include/helpers/windowlistener.h"
 #include "vstgui/standalone/include/iapplication.h"
-#include "vstgui/standalone/include/icommondirectories.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
 #include <cassert>
-#include <unordered_map>
 #include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
-
-//------------------------------------------------------------------------
-class HighScores
-{
-public:
-	static HighScores& instance ()
-	{
-		static HighScores gInstance;
-		return gInstance;
-	}
-
-	std::shared_ptr<HighScoreList> get (uint32_t rows, uint32_t cols, uint32_t mines)
-	{
-		auto path = IApplication::instance ().getCommonDirectories ().get (
-		    CommonDirectoryLocation::AppPreferencesPath, {}, true);
-		if (!path)
-			return nullptr;
-		*path += getHighscoreListName (rows, cols, mines);
-
-		auto it = lists.find (path->getString ());
-		if (it != lists.end ())
-		{
-			return it->second;
-		}
-
-		auto list = HighScoreList::make (*path);
-		lists.insert ({path->getString (), list});
-		return list;
-	}
-
-private:
-	UTF8String getHighscoreListName (uint32_t rows, uint32_t cols, uint32_t mines)
-	{
-		return toString (rows) + "x" + toString (cols) + "x" + toString (mines) + ".highscore";
-	}
-
-	std::unordered_map<std::string, std::shared_ptr<HighScoreList>> lists;
-};
 
 //------------------------------------------------------------------------
 class HighScoreViewController : public DelegationController,
