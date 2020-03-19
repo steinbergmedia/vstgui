@@ -55,9 +55,13 @@ public:
 		if (group == GameGroup)
 		{
 			return [] (const UTF8String& lhs, const UTF8String& rhs) {
-				static const auto order = {NewGameCommand.name, NewBeginnerGameCommand.name,
+				static const auto order = {NewGameCommand.name,
+				                           NewBeginnerGameCommand.name,
 				                           NewIntermediateGameCommand.name,
-				                           NewExpertGameCommand.name};
+				                           NewExpertGameCommand.name,
+				                           MouseModeCommand.name,
+				                           TouchpadModeCommand.name,
+				                           ToggleHighscoresCommand.name};
 				auto leftIndex = std::find (order.begin (), order.end (), lhs);
 				auto rightIndex = std::find (order.begin (), order.end (), rhs);
 				return std::distance (leftIndex, rightIndex) > 0;
@@ -68,7 +72,7 @@ public:
 
 	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override
 	{
-		if (cmd == Commands::CloseWindow || cmd == MouseModeCommand)
+		if (cmd == Commands::CloseWindow || cmd == MouseModeCommand || cmd == ToggleHighscoresCommand)
 			return true;
 		return false;
 	}

@@ -3,6 +3,7 @@
 	<fonts>
 		<font font-name="Arial" name="control" size="10"/>
 		<font font-name="Noto Emoji" name="emoji" size="12"/>
+		<font font-name="Arial" name="highscore" size="12"/>
 		<font alternative-font-names="LCD 14" font-name="LCD" name="lcd" size="14"/>
 		<font font-name="Arial" name="lost" size="20"/>
 		<font font-name="Arial" name="time" size="6"/>
@@ -16,6 +17,7 @@
 		<color name="card.opened.back" rgba="#ffffff00"/>
 		<color name="card.opened.frame" rgba="#888888b4"/>
 		<color name="focus" rgba="#40afe3ff"/>
+		<color name="highscore.font" rgba="#000000ff"/>
 		<color name="label" rgba="#000000ff"/>
 		<color name="lcd.font" rgba="#ff0000ff"/>
 		<color name="lost.back" rgba="#2c2c2c8c"/>
@@ -25,7 +27,7 @@
 	</colors>
 	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" minSize="264, 294" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="264, 294" transparent="false" wants-focus="false">
 		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control" font-antialias="true" font-color="label" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="35, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="left" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Mines :" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view back-color="label" background-offset="0, 0" class="CTextLabel" control-tag="Flags" default-value="0.5" font="lcd" font-antialias="true" font-color="lcd.font" frame-color="textedit.frame" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="45, 9" round-rect-radius="2" shadow-color="~ RedCColor" size="30, 22" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="10" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="label" background-offset="0, 0" class="CTextLabel" control-tag="Flags" default-value="0.5" font="lcd" font-antialias="true" font-color="lcd.font" frame-color="textedit.frame" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="45, 9" round-rect-radius="2" shadow-color="~ RedCColor" size="30, 22" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="40" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
 		<view autosize="right top " class="CTextButton" control-tag="Start" default-value="0.5" font="control" frame-color="label" frame-color-highlighted="label" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="184, 11" round-radius="3" size="70, 18" text-alignment="center" text-color="label" text-color-highlighted="textedit.font" title="New Game" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
 		<view autosize="left right top bottom " background-color="label" background-color-draw-style="stroked" class="CViewContainer" custom-view-name="MinefieldView" mouse-enabled="true" opacity="1" origin="10, 40" size="244, 244" sub-controller="MinefieldController" transparent="false" wants-focus="false">
 			<view autosize="left right top bottom " background-color="lost.back" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="LostView" mouse-enabled="false" opacity="0" origin="2, 2" size="238, 239" transparent="false" wants-focus="false">
@@ -37,23 +39,27 @@
 		</view>
 		<view back-color="label" background-offset="0, 0" class="CTextLabel" control-tag="Time" default-value="0.5" font="lcd" font-antialias="true" font-color="lcd.font" frame-color="textedit.frame" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="110, 9" round-rect-radius="2" shadow-color="~ RedCColor" size="40, 22" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="000" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
 		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control" font-antialias="true" font-color="label" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="80, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="30, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="left" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Time :" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view autosize="left right top bottom " background-color="lost.back" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="MainView" mouse-enabled="false" opacity="0" origin="0, 0" size="265, 295" sub-controller="NewHighScoreViewController" transparent="false" wants-focus="false">
+		<view background-color="lost.back" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="MainView" mouse-enabled="false" opacity="0" origin="0, 0" size="265, 295" sub-controller="NewHighScoreViewController" transparent="false" wants-focus="false">
 			<view autosize="left right top " back-color="card.closed.frame" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control" font-antialias="true" font-color="textedit.font" frame-color="card.closed.frame" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 95" round-rect-radius="3" shadow-color="lcd.font" size="185, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="You have a new HighScore" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
 			<view autosize="left right top " back-color="card.closed.frame" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control" font-antialias="true" font-color="textedit.font" frame-color="card.closed.frame" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="41, 123" round-rect-radius="3" shadow-color="lcd.font" size="185, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Please enter your name:" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-			<view autosize="left right top " back-color="card.closed.frame" background-offset="0, 0" class="CTextEdit" control-tag="HighScoreName" default-value="0.5" font="control" font-antialias="true" font-color="textedit.font" frame-color="card.closed.frame" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="41, 153" placeholder-title="Name" round-rect-radius="3" secure-style="false" shadow-color="lcd.font" size="185, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Arne Scheffler" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-			<view autosize="left right top " class="CTextButton" control-tag="HighScoreOK" default-value="0.5" font="control" frame-color="label" frame-color-highlighted="label" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="93, 191" round-radius="3" size="80, 18" text-alignment="center" text-color="label" text-color-highlighted="textedit.font" title="OK" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
+			<view autosize="left right top " back-color="card.closed.frame" background-offset="0, 0" class="CTextEdit" control-tag="NewHighScoreName" default-value="0.5" font="control" font-antialias="true" font-color="textedit.font" frame-color="card.closed.frame" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="41, 153" placeholder-title="Name" round-rect-radius="3" secure-style="false" shadow-color="lcd.font" size="185, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+			<view autosize="left right top " class="CTextButton" control-tag="NewHighScoreOK" default-value="0.5" font="control" frame-color="label" frame-color-highlighted="label" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="93, 191" round-radius="3" size="80, 18" text-alignment="center" text-color="label" text-color-highlighted="textedit.font" title="OK" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
+		</view>
+		<view autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="false" opacity="0" origin="15, 45" size="235, 235" sub-controller="HighScoreViewController" transparent="false" wants-focus="false">
+			<view auto-drag-scrolling="false" auto-hide-scrollbars="false" background-color="~ BlackCColor" background-color-draw-style="filled and stroked" bordered="true" class="CScrollView" container-size="219, 177.273" custom-view-name="DataBrowser" follow-focus-view="false" horizontal-scrollbar="false" mouse-enabled="true" opacity="1" origin="10, 10" overlay-scrollbars="false" scrollbar-background-color="#ffffffc8" scrollbar-frame-color="~ BlackCColor" scrollbar-scroller-color="~ BlueCColor" scrollbar-width="16" size="215, 195" sub-controller="DataBrowserController" transparent="true" vertical-scrollbar="false" wants-focus="false"/>
+			<view class="CTextButton" control-tag="CloseHighscoreView" default-value="0.5" font="control" frame-color="label" frame-color-highlighted="label" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="75, 210" round-radius="3" size="70, 18" text-alignment="center" text-color="label" text-color-highlighted="textedit.font" title="Close" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
 		</view>
 	</template>
 	<custom>
 		<attributes Grids="1x 1,5x 5,10x 10,12x 12,15x 15" Size="5, 5" name="UIGridController"/>
 		<attributes SelectedTemplate="Window" name="UITemplateController"/>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1640, 1005" SplitViewSize_0_0="0.8151174668028600134306316249421797692776" SplitViewSize_0_1="0.1644535240040858048438110472488915547729" SplitViewSize_1_0="0.5587334014300306961331443744711577892303" SplitViewSize_1_1="0.4361593462717058278244053326488938182592" SplitViewSize_2_0="0.8073170731707317582248606413486413657665" SplitViewSize_2_1="0.1896341463414634165296490664331940934062" TabSwitchValue="6" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1640, 1005" SplitViewSize_0_0="0.8151174668028600134306316249421797692776" SplitViewSize_0_1="0.1644535240040858048438110472488915547729" SplitViewSize_1_0="0.5638406537282941721755946673511061817408" SplitViewSize_1_1="0.4310520939734422962708038085111184045672" SplitViewSize_2_0="0.8073170731707317582248606413486413657665" SplitViewSize_2_1="0.1896341463414634165296490664331940934062" TabSwitchValue="2" Version="1" name="UIEditController"/>
 		<attributes UIAttributesController="contr" name="UIAttributesController"/>
 		<attributes SelectedRow="30" name="UIViewCreatorDataSource"/>
 		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/minesweeper/resource/Window.uidesc"/>
 		<attributes SelectedRow="-1" name="UITagsDataSource"/>
-		<attributes SelectedRow="9" name="UIColorsDataSource"/>
-		<attributes SelectedRow="1" name="UIFontsDataSource"/>
+		<attributes SelectedRow="8" name="UIColorsDataSource"/>
+		<attributes SelectedRow="2" name="UIFontsDataSource"/>
 		<attributes SelectedRow="-1" name="UIGradientsDataSource"/>
 		<attributes SelectedRow="-1" name="UIBitmapsDataSource"/>
 		<attributes color="focus" enabled="true" name="FocusDrawing" width="2"/>
@@ -61,12 +67,13 @@
 	<variables/>
 	<bitmaps/>
 	<control-tags>
+		<control-tag name="CloseHighscoreView" tag="9"/>
 		<control-tag name="Cols" tag="1"/>
 		<control-tag name="Flags" tag="3"/>
-		<control-tag name="HighScoreName" tag="7"/>
-		<control-tag name="HighScoreOK" tag="8"/>
 		<control-tag name="Mines" tag="2"/>
 		<control-tag name="MouseMode" tag="6"/>
+		<control-tag name="NewHighScoreName" tag="7"/>
+		<control-tag name="NewHighScoreOK" tag="8"/>
 		<control-tag name="Rows" tag="0"/>
 		<control-tag name="Start" tag="5"/>
 		<control-tag name="Time" tag="4"/>

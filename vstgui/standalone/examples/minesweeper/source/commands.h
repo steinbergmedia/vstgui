@@ -13,11 +13,13 @@ namespace Minesweeper {
 
 //------------------------------------------------------------------------
 static constexpr IdStringPtr GameGroup = "Game";
+static constexpr IdStringPtr ToggleHighscores = "Toggle Highscores";
 
 static const Command NewGameCommand {GameGroup, "New Game"};
 static const Command NewBeginnerGameCommand {GameGroup, "New Beginner Game"};
 static const Command NewIntermediateGameCommand {GameGroup, "New Intermediate Game"};
 static const Command NewExpertGameCommand {GameGroup, "New Expert Game"};
+static const Command ToggleHighscoresCommand {GameGroup, ToggleHighscores};
 
 //------------------------------------------------------------------------
 static constexpr IdStringPtr MouseMode = "Use Mouse Mode";
@@ -30,4 +32,3 @@ static const Command TouchpadModeCommand {GameGroup, TouchpadMode};
 } // Minesweeper
 } // Standalone
 } // VSTGUI
-

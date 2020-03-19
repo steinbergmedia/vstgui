@@ -15,6 +15,7 @@ namespace Minesweeper {
 
 class MinefieldViewController;
 class EnterHighScoreViewController;
+class HighScoreViewController;
 
 //------------------------------------------------------------------------
 class WindowController final : public WindowControllerAdapter,
@@ -23,16 +24,6 @@ class WindowController final : public WindowControllerAdapter,
                                public ICommandHandler
 {
 public:
-	static constexpr auto valueRows = "Rows";
-	static constexpr auto valueCols = "Cols";
-	static constexpr auto valueMines = "Mines";
-	static constexpr auto valueStart = "Start";
-	static constexpr auto valueFlags = "Flags";
-	static constexpr auto valueTime = "Time";
-	static constexpr auto valueMouseMode = "MouseMode";
-	static constexpr auto valueHighScoreOK = "HighScoreOK";
-	static constexpr auto valueHighScoreName = "HighScoreName";
-
 	WindowController ();
 	~WindowController () noexcept override;
 
@@ -55,9 +46,14 @@ public:
 	void showHighscoreListWindowDebug ();
 
 private:
+
+	void showHideHighscores ();
+	void hideHighscores ();
+
 	UIDesc::ModelBindingCallbacks modelBinding;
 	SharedPointer<MinefieldViewController> minefieldViewController;
 	SharedPointer<EnterHighScoreViewController> enterHighscoreViewController;
+	SharedPointer<HighScoreViewController> highscoreViewController;
 	IWindow* window {nullptr};
 };
 

@@ -123,14 +123,27 @@ private:
 };
 
 //------------------------------------------------------------------------
+static constexpr auto valueRows = "Rows";
+static constexpr auto valueCols = "Cols";
+static constexpr auto valueMines = "Mines";
+static constexpr auto valueStart = "Start";
+static constexpr auto valueFlags = "Flags";
+static constexpr auto valueTime = "Time";
+static constexpr auto valueMouseMode = "MouseMode";
+static constexpr auto valueNewHighScoreOK = "NewHighScoreOK";
+static constexpr auto valueNewHighScoreName = "NewHighScoreName";
+static constexpr auto valueCloseHighscoreView = "CloseHighscoreView";
+
+//------------------------------------------------------------------------
 WindowController::WindowController ()
 {
 	IApplication::instance ().registerCommand (NewGameCommand, 'n');
-	IApplication::instance ().registerCommand (NewBeginnerGameCommand, 0);
-	IApplication::instance ().registerCommand (NewIntermediateGameCommand, 0);
-	IApplication::instance ().registerCommand (NewExpertGameCommand, 0);
+	IApplication::instance ().registerCommand (NewBeginnerGameCommand, '1');
+	IApplication::instance ().registerCommand (NewIntermediateGameCommand, '2');
+	IApplication::instance ().registerCommand (NewExpertGameCommand, '3');
 	IApplication::instance ().registerCommand (MouseModeCommand, 0);
 	IApplication::instance ().registerCommand (TouchpadModeCommand, 0);
+	IApplication::instance ().registerCommand (ToggleHighscoresCommand, 0);
 
 	addCreateViewControllerFunc (
 	    "MinefieldController", [this] (const auto& name, auto* parent, auto* uidesc) {
@@ -155,13 +168,21 @@ WindowController::WindowController ()
 	    "NewHighScoreViewController", [this] (const auto& name, auto* parent, auto* uidesc) {
 		    if (!enterHighscoreViewController)
 		    {
-			    auto nameValue = modelBinding.getValue (valueHighScoreName);
-			    auto okValue = modelBinding.getValue (valueHighScoreOK);
+			    auto nameValue = modelBinding.getValue (valueNewHighScoreName);
+			    auto okValue = modelBinding.getValue (valueNewHighScoreOK);
 			    enterHighscoreViewController =
 			        owned (new EnterHighScoreViewController (*nameValue, *okValue, parent));
 		    }
 		    enterHighscoreViewController->remember ();
 		    return enterHighscoreViewController;
+	    });
+
+	addCreateViewControllerFunc (
+	    "HighScoreViewController", [this] (const auto& name, auto* parent, auto* uidesc) {
+		    if (!highscoreViewController)
+			    highscoreViewController = owned (new HighScoreViewController (parent));
+		    highscoreViewController->remember ();
+		    return highscoreViewController;
 	    });
 
 	modelBinding.addValue (
@@ -191,8 +212,17 @@ WindowController::WindowController ()
 			    minefieldViewController->setMouseMode (value.getValue () >= 0.5 ? true : false);
 	    }));
 
-	modelBinding.addValue (Value::makeStringValue (valueHighScoreName, ""));
-	modelBinding.addValue (Value::make (valueHighScoreOK));
+	modelBinding.addValue (Value::makeStringValue (valueNewHighScoreName, ""));
+	modelBinding.addValue (Value::make (valueNewHighScoreOK));
+
+	modelBinding.addValue (Value::make (valueCloseHighscoreView),
+	                       UIDesc::ValueCalls::onPerformEdit ([this] (auto& value) {
+		                       if (value.getValue () >= 0.5)
+		                       {
+			                       value.performEdit (0.);
+			                       hideHighscores ();
+		                       }
+	                       }));
 
 	loadDefaults ();
 
@@ -267,6 +297,11 @@ bool WindowController::handleCommand (const Command& command)
 {
 	if (command.group != GameGroup)
 		return false;
+	if (command.name == ToggleHighscores)
+	{
+		showHideHighscores ();
+		return true;
+	}
 	if (command.name == TouchpadMode)
 	{
 		auto value = modelBinding.getValue (valueMouseMode);
@@ -377,6 +412,36 @@ void WindowController::onWon (uint32_t secondsToWin)
 	{
 		enterHighscoreViewController->onNewHighscore (secondsToWin, highscoreList);
 	}
+}
+
+//------------------------------------------------------------------------
+void WindowController::showHideHighscores ()
+{
+	if (!highscoreViewController)
+		return;
+	if (highscoreViewController->isVisible ())
+	{
+		highscoreViewController->hide ();
+	}
+	else
+	{
+		uint32_t rows, cols, mines;
+		std::tie (rows, cols, mines) = getRowsColsMines ();
+		if (auto highscoreList = HighScores::instance ().get (rows, cols, mines))
+		{
+			highscoreViewController->setHighScoreList (highscoreList);
+			highscoreViewController->show ();
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void WindowController::hideHighscores ()
+{
+	if (!highscoreViewController)
+		return;
+	if (highscoreViewController->isVisible ())
+		highscoreViewController->hide ();
 }
 
 //------------------------------------------------------------------------
