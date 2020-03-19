@@ -4,6 +4,7 @@
 
 #include "model.h"
 #include <random>
+#include <cassert>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

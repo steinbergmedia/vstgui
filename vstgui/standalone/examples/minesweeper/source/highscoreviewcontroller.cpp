@@ -8,10 +8,34 @@
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
 
+#include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/standalone/include/helpers/uidesc/customization.h"
+
+#include <ctime>
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
+
+//------------------------------------------------------------------------
+void ShowHighscoreWindow (const std::shared_ptr<HighScoreList>& list)
+{
+	auto customization = UIDesc::Customization::make ();
+	customization->addCreateViewControllerFunc (
+	    "DataBrowserController",
+	    [list] (const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc)
+	        -> IController* { return new HighScoreViewController (list, parent); });
+	UIDesc::Config config;
+	config.uiDescFileName = "Highscore.uidesc";
+	config.viewName = "Window";
+	config.customization = customization;
+	config.windowConfig.title = "Minesweeper - Highscore";
+	config.windowConfig.autoSaveFrameName = "MinesweeperHighscoreWindow";
+	config.windowConfig.style.border ().close ().centered ();
+	if (auto window = UIDesc::makeWindow (config))
+		window->show ();
+}
 
 //------------------------------------------------------------------------
 HighScoreViewController::HighScoreViewController (const std::shared_ptr<HighScoreList>& list,

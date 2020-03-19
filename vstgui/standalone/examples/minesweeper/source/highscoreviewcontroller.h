@@ -33,6 +33,9 @@ private:
 	std::shared_ptr<HighScoreList> list;
 };
 
+// temporarily:
+void ShowHighscoreWindow (const std::shared_ptr<HighScoreList>& list);
+
 //------------------------------------------------------------------------
 } // Minesweeper
 } // Standalone

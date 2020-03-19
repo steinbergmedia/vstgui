@@ -16,6 +16,8 @@ set(${target}_sources
   "source/model.cpp"
   "source/model.h"
   "source/myapp.cpp"
+  "source/windowcontroller.cpp"
+  "source/windowcontroller.h"
 )
 
 set(Minesweeper_resources
