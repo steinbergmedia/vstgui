@@ -26,8 +26,8 @@
 #include "vstgui/uidescription/uiattributes.h"
 #include <cassert>
 #include <chrono>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -47,7 +47,7 @@ public:
 	std::shared_ptr<HighScoreList> get (uint32_t rows, uint32_t cols, uint32_t mines)
 	{
 		auto path = IApplication::instance ().getCommonDirectories ().get (
-			CommonDirectoryLocation::AppPreferencesPath, {}, true);
+		    CommonDirectoryLocation::AppPreferencesPath, {}, true);
 		if (!path)
 			return nullptr;
 		*path += getHighscoreListName (rows, cols, mines);
@@ -62,6 +62,7 @@ public:
 		lists.insert ({path->getString (), list});
 		return list;
 	}
+
 private:
 	UTF8String getHighscoreListName (uint32_t rows, uint32_t cols, uint32_t mines)
 	{
@@ -470,12 +471,12 @@ private:
 };
 
 //------------------------------------------------------------------------
-class HighScoreWindowController : public DelegationController,
-                                  public DataBrowserDelegateAdapter,
-                                  public NonAtomicReferenceCounted
+class HighScoreViewController : public DelegationController,
+                                public DataBrowserDelegateAdapter,
+                                public NonAtomicReferenceCounted
 {
 public:
-	HighScoreWindowController (const std::shared_ptr<HighScoreList>& list, IController* parent)
+	HighScoreViewController (const std::shared_ptr<HighScoreList>& list, IController* parent)
 	: DelegationController (parent), list (list)
 	{
 	}
@@ -526,8 +527,7 @@ public:
 				if (valid)
 				{
 					char mbstr[100];
-					if (std::strftime (mbstr, sizeof (mbstr), "%F",
-					                   std::localtime (&entry->date)))
+					if (std::strftime (mbstr, sizeof (mbstr), "%F", std::localtime (&entry->date)))
 					{
 						context->drawString (mbstr, size);
 					}
@@ -558,7 +558,7 @@ void ShowHighscoreWindow (const std::shared_ptr<HighScoreList>& list)
 	customization->addCreateViewControllerFunc (
 	    "DataBrowserController",
 	    [list] (const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc)
-	        -> IController* { return new HighScoreWindowController (list, parent); });
+	        -> IController* { return new HighScoreViewController (list, parent); });
 	UIDesc::Config config;
 	config.uiDescFileName = "Highscore.uidesc";
 	config.viewName = "Window";
@@ -910,7 +910,7 @@ public:
 		}
 	}
 
- 	void onWon (uint32_t secondsToWin)
+	void onWon (uint32_t secondsToWin)
 	{
 		uint32_t rows, cols, mines;
 		std::tie (rows, cols, mines) = getRowsColsMines ();
@@ -923,7 +923,6 @@ public:
 		{
 			highscoreViewController->onNewHighscore (secondsToWin, highscoreList);
 		}
-
 	}
 
 	void showHighscoreListWindowDebug ()
@@ -935,6 +934,7 @@ public:
 			return;
 		ShowHighscoreWindow (highscoreList);
 	}
+
 private:
 	UIDesc::ModelBindingCallbacks modelBinding;
 	MinefieldViewController* minefieldViewController {nullptr};
