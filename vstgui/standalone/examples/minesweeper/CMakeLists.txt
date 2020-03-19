@@ -4,6 +4,7 @@
 set(target Minesweeper)
 
 set(${target}_sources
+  "source/commands.h"
   "source/highscorelist.cpp"
   "source/highscorelist.h"
   "source/minefieldviewcontroller.cpp"
