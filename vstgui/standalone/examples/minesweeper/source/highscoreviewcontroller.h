@@ -5,8 +5,10 @@
 #pragma once
 
 #include "highscorelist.h"
+#include "vstgui/lib/cfont.h"
 #include "vstgui/lib/idatabrowserdelegate.h"
 #include "vstgui/uidescription/delegationcontroller.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -14,12 +16,14 @@ namespace Standalone {
 namespace Minesweeper {
 
 //------------------------------------------------------------------------
-class HighScoreViewController : public DelegationController,
-                                public DataBrowserDelegateAdapter,
-                                public NonAtomicReferenceCounted
+class HighScoreViewController final : public DelegationController,
+                                      public DataBrowserDelegateAdapter,
+                                      public NonAtomicReferenceCounted
 {
 public:
-	HighScoreViewController (const std::shared_ptr<HighScoreList>& list, IController* parent);
+	HighScoreViewController (IController* parent);
+
+	void setHighScoreList (const std::shared_ptr<HighScoreList>& list);
 
 	int32_t dbGetNumRows (CDataBrowser* browser) override;
 	int32_t dbGetNumColumns (CDataBrowser* browser) override;
@@ -28,9 +32,17 @@ public:
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
 	                 int32_t flags, CDataBrowser* browser) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	void dbAttached (CDataBrowser* browser) override;
+	void dbRemoved (CDataBrowser* browser) override;
+	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) override;
 
 private:
+	static constexpr const size_t NumCols = 4;
+
+	CFontDesc font;
+	CDataBrowser* dataBrowser {nullptr};
 	std::shared_ptr<HighScoreList> list;
+	std::array<CCoord, NumCols> columnWidths;
 };
 
 // temporarily:

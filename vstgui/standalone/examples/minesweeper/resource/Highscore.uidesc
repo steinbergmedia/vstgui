@@ -4,14 +4,14 @@
 	</fonts>
 	<colors>
 	</colors>
-	<template autosize="left right top bottom " background-color="~ GreyCColor" background-color-draw-style="filled and stroked" class="CViewContainer" maxSize="300, 300" minSize="300, 300" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="300, 300" transparent="false" wants-focus="false">
-		<view auto-drag-scrolling="false" auto-hide-scrollbars="true" autosize="left right top bottom " background-color="~ BlackCColor" background-color-draw-style="filled and stroked" bordered="true" class="CScrollView" container-size="200, 200" custom-view-name="DataBrowser" follow-focus-view="false" horizontal-scrollbar="true" mouse-enabled="true" opacity="1" origin="0, 0" overlay-scrollbars="true" scrollbar-background-color="#ffffffc8" scrollbar-frame-color="~ BlackCColor" scrollbar-scroller-color="~ BlueCColor" scrollbar-width="16" size="300, 300" sub-controller="DataBrowserController" transparent="true" vertical-scrollbar="true" wants-focus="false"/>
+	<template autosize="left right top bottom " background-color="~ GreyCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="300, 300" transparent="false" wants-focus="false">
+		<view auto-drag-scrolling="false" auto-hide-scrollbars="false" autosize="left right top bottom " background-color="~ BlackCColor" background-color-draw-style="filled and stroked" bordered="true" class="CScrollView" container-size="304, 300" custom-view-name="DataBrowser" follow-focus-view="false" horizontal-scrollbar="false" mouse-enabled="true" opacity="1" origin="0, 0" overlay-scrollbars="false" scrollbar-background-color="#ffffffc8" scrollbar-frame-color="~ BlackCColor" scrollbar-scroller-color="~ BlueCColor" scrollbar-width="16" size="300, 300" sub-controller="DataBrowserController" transparent="true" vertical-scrollbar="false" wants-focus="false"/>
 	</template>
 	<custom>
 		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/minesweeper/resource/Highscore.uidesc"/>
 		<attributes Grids="1x 1,5x 5,10x 10,12x 12,15x 15" name="UIGridController"/>
 		<attributes SelectedTemplate="Window" name="UITemplateController"/>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1640, 1005" SplitViewSize_0_0="0.8672114402451480685840579099021852016449" SplitViewSize_0_1="0.1123595505617977496903847622888861224055" SplitViewSize_1_0="0.4892747701736465670840914299333235248923" SplitViewSize_1_1="0.5056179775280899013623070459289010614157" SplitViewSize_2_0="0.7890243902439024736850115004926919937134" SplitViewSize_2_1="0.2079268292682926733139225916602299548686" TabSwitchValue="0" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1640, 1005" SplitViewSize_0_0="0.8672114402451480685840579099021852016449" SplitViewSize_0_1="0.1123595505617977496903847622888861224055" SplitViewSize_1_0="0.4943820224719100986376929540710989385843" SplitViewSize_1_1="0.5005107252298263142975542905332986265421" SplitViewSize_2_0="0.7890243902439024736850115004926919937134" SplitViewSize_2_1="0.2079268292682926733139225916602299548686" TabSwitchValue="0" Version="1" name="UIEditController"/>
 		<attributes name="UIAttributesController"/>
 		<attributes SelectedRow="18" name="UIViewCreatorDataSource"/>
 	</custom>
