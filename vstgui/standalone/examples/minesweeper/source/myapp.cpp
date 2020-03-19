@@ -27,11 +27,49 @@
 #include <cassert>
 #include <chrono>
 #include <vector>
+#include <unordered_map>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
+
+//------------------------------------------------------------------------
+class HighScores
+{
+public:
+	static HighScores& instance ()
+	{
+		static HighScores gInstance;
+		return gInstance;
+	}
+
+	std::shared_ptr<HighScoreList> get (uint32_t rows, uint32_t cols, uint32_t mines)
+	{
+		auto path = IApplication::instance ().getCommonDirectories ().get (
+			CommonDirectoryLocation::AppPreferencesPath, {}, true);
+		if (!path)
+			return nullptr;
+		*path += getHighscoreListName (rows, cols, mines);
+
+		auto it = lists.find (path->getString ());
+		if (it != lists.end ())
+		{
+			return it->second;
+		}
+
+		auto list = HighScoreList::make (*path);
+		lists.insert ({path->getString (), list});
+		return list;
+	}
+private:
+	UTF8String getHighscoreListName (uint32_t rows, uint32_t cols, uint32_t mines)
+	{
+		return toString (rows) + "x" + toString (cols) + "x" + toString (mines) + ".highscore";
+	}
+
+	std::unordered_map<std::string, std::shared_ptr<HighScoreList>> lists;
+};
 
 static constexpr auto maxTimeInSeconds = 999;
 
@@ -872,40 +910,29 @@ public:
 		}
 	}
 
-	UTF8String getHighscoreListName ()
+ 	void onWon (uint32_t secondsToWin)
 	{
 		uint32_t rows, cols, mines;
 		std::tie (rows, cols, mines) = getRowsColsMines ();
-		return toString (rows) + "x" + toString (cols) + "x" + toString (mines) + ".highscore";
-	}
-
-	void onWon (uint32_t secondsToWin)
-	{
-		auto path = IApplication::instance ().getCommonDirectories ().get (
-		    CommonDirectoryLocation::AppPreferencesPath, {}, true);
-		if (!path)
+		auto highscoreList = HighScores::instance ().get (rows, cols, mines);
+		if (!highscoreList)
 			return;
-		*path += getHighscoreListName ();
-		auto highscoreList = HighScoreList::make (*path);
-		if (highscoreList)
+
+		auto pos = highscoreList->isHighScore (secondsToWin);
+		if (pos)
 		{
-			auto pos = highscoreList->isHighScore (secondsToWin);
-			if (pos)
-			{
-				highscoreList->addHighscore ("Me", secondsToWin);
-				SaveHighScoreList (*highscoreList, *path);
-			}
+			highscoreViewController->onNewHighscore (secondsToWin, highscoreList);
 		}
+
 	}
 
 	void showHighscoreListWindowDebug ()
 	{
-		auto path = IApplication::instance ().getCommonDirectories ().get (
-			CommonDirectoryLocation::AppPreferencesPath, {}, true);
-		if (!path)
+		uint32_t rows, cols, mines;
+		std::tie (rows, cols, mines) = getRowsColsMines ();
+		auto highscoreList = HighScores::instance ().get (rows, cols, mines);
+		if (!highscoreList)
 			return;
-		*path += getHighscoreListName ();
-		auto highscoreList = HighScoreList::make (*path);
 		ShowHighscoreWindow (highscoreList);
 	}
 private:
