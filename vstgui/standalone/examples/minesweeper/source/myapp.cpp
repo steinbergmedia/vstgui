@@ -4,10 +4,8 @@
 
 #include "commands.h"
 #include "highscores.h"
+#include "highscoreviewcontroller.h"
 #include "minefieldviewcontroller.h"
-#include "vstgui/lib/cdatabrowser.h"
-#include "vstgui/lib/cdrawcontext.h"
-#include "vstgui/lib/idatabrowserdelegate.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
 #include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/preferences.h"
@@ -18,7 +16,6 @@
 #include "vstgui/standalone/include/helpers/windowlistener.h"
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
-#include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
 #include <cassert>
@@ -28,87 +25,6 @@
 namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
-
-//------------------------------------------------------------------------
-class HighScoreViewController : public DelegationController,
-                                public DataBrowserDelegateAdapter,
-                                public NonAtomicReferenceCounted
-{
-public:
-	HighScoreViewController (const std::shared_ptr<HighScoreList>& list, IController* parent)
-	: DelegationController (parent), list (list)
-	{
-	}
-
-	int32_t dbGetNumRows (CDataBrowser* browser) override { return HighScoreListModel::Size; }
-	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 4; };
-	CCoord dbGetRowHeight (CDataBrowser* browser) override { return 15; }
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override
-	{
-		switch (index)
-		{
-			case 0: return 20;
-			case 1: return 40;
-			case 2: return 100;
-			case 3: return 140;
-		}
-		return 10;
-	}
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
-	                 int32_t flags, CDataBrowser* browser) override
-	{
-		auto entry = list->get ().begin ();
-		std::advance (entry, row);
-		if (entry == list->get ().end ())
-			return;
-		bool valid = entry->valid ();
-		switch (column)
-		{
-			case 0:
-			{
-				context->drawString (toString (row + 1), size);
-				break;
-			}
-			case 1:
-			{
-				if (valid)
-					context->drawString (toString (entry->seconds), size);
-				break;
-			}
-			case 2:
-			{
-				if (valid)
-					context->drawString (entry->name, size);
-				break;
-			}
-			case 3:
-			{
-				if (valid)
-				{
-					char mbstr[100];
-					if (std::strftime (mbstr, sizeof (mbstr), "%F", std::localtime (&entry->date)))
-					{
-						context->drawString (mbstr, size);
-					}
-				}
-				break;
-			}
-		}
-	}
-
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
-	{
-		const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
-		if (attr && *attr == "DataBrowser")
-		{
-			return new CDataBrowser ({}, this, 0, 0.);
-		}
-		return nullptr;
-	}
-
-private:
-	std::shared_ptr<HighScoreList> list;
-};
 
 //------------------------------------------------------------------------
 void ShowHighscoreWindow (const std::shared_ptr<HighScoreList>& list)

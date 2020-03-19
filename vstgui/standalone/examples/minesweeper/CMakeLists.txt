@@ -9,6 +9,8 @@ set(${target}_sources
   "source/highscorelist.h"
   "source/highscores.cpp"
   "source/highscores.h"
+  "source/highscoreviewcontroller.cpp"
+  "source/highscoreviewcontroller.h"
   "source/minefieldviewcontroller.cpp"
   "source/minefieldviewcontroller.h"
   "source/model.cpp"
