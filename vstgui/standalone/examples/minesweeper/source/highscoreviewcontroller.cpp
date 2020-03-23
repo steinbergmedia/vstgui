@@ -8,6 +8,7 @@
 #include "vstgui/lib/cdrawcontext.h"
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
+#include <cassert>
 #include <ctime>
 
 //------------------------------------------------------------------------
