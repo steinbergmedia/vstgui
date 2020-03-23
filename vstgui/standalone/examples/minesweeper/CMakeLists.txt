@@ -4,7 +4,21 @@
 set(target Minesweeper)
 
 set(${target}_sources
+  "source/commands.h"
+  "source/highscorelist.cpp"
+  "source/highscorelist.h"
+  "source/highscores.cpp"
+  "source/highscores.h"
+  "source/highscoreviewcontroller.cpp"
+  "source/highscoreviewcontroller.h"
+  "source/keepchildviewscentered.h"
+  "source/minefieldviewcontroller.cpp"
+  "source/minefieldviewcontroller.h"
+  "source/model.cpp"
+  "source/model.h"
   "source/myapp.cpp"
+  "source/windowcontroller.cpp"
+  "source/windowcontroller.h"
 )
 
 set(Minesweeper_resources
