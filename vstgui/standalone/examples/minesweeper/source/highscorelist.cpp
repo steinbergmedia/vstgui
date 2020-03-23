@@ -132,7 +132,7 @@ Optional<size_t> HighScoreListModel::isHighScore (uint32_t seconds) const
 	auto pos = highscorePosition (seconds);
 	if (pos == list.end ())
 		return {};
-	return {std::distance (list.begin (), pos)};
+	return {static_cast<size_t> (std::distance (list.begin (), pos))};
 }
 
 //------------------------------------------------------------------------
@@ -150,7 +150,7 @@ Optional<size_t> HighScoreListModel::addHighscore (UTF8StringPtr name, uint32_t 
 	list[pos].name = replaceChars (name, {':', '\n'}, '_');
 	list[pos].seconds = seconds;
 	list[pos].date = (date == 0) ? std::time (nullptr) : date;
-	return {pos};
+	return Optional<size_t> (pos);
 }
 
 //------------------------------------------------------------------------
