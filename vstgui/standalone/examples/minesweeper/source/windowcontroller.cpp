@@ -5,6 +5,7 @@
 #include "commands.h"
 #include "highscores.h"
 #include "highscoreviewcontroller.h"
+#include "keepchildviewscentered.h"
 #include "minefieldviewcontroller.h"
 #include "vstgui/standalone/include/helpers/preferences.h"
 #include "vstgui/standalone/include/helpers/value.h"
@@ -26,8 +27,14 @@ class EnterHighScoreViewController final : public DelegationController,
                                            public NonAtomicReferenceCounted
 {
 public:
-	EnterHighScoreViewController (IValue& nameValue, IValue& okValue, IController* parent)
-	: DelegationController (parent), nameValue (nameValue), okValue (okValue)
+	using OnEndEditFunc = std::function<void ()>;
+
+	EnterHighScoreViewController (IValue& nameValue, IValue& okValue, IController* parent,
+	                              OnEndEditFunc&& func)
+	: DelegationController (parent)
+	, nameValue (nameValue)
+	, okValue (okValue)
+	, onEndEditFunc (std::move (func))
 	{
 		okValue.registerListener (this);
 		okValue.setActive (false);
@@ -44,6 +51,7 @@ public:
 				mainView = view;
 				mainView->setAlphaValue (0.f);
 				mainView->setMouseEnabled (false);
+				keepChildViewsCentered (mainView->asViewContainer ());
 			}
 		}
 
@@ -66,10 +74,10 @@ public:
 			value.performEdit (0.);
 			auto name = Value::currentStringValue (nameValue);
 			highscoreList->addHighscore (name, currentSecondsToWin);
-			ShowHighscoreWindow (highscoreList);
 			highscoreList = nullptr;
 			mainView->setMouseEnabled (false);
 			mainView->setAlphaValue (0.f);
+			onEndEditFunc ();
 		}
 	}
 
@@ -79,6 +87,7 @@ private:
 	IValue& okValue;
 	std::shared_ptr<HighScoreList> highscoreList;
 	uint32_t currentSecondsToWin {0};
+	OnEndEditFunc onEndEditFunc;
 };
 
 //------------------------------------------------------------------------
@@ -143,7 +152,7 @@ WindowController::WindowController ()
 	IApplication::instance ().registerCommand (NewExpertGameCommand, '3');
 	IApplication::instance ().registerCommand (MouseModeCommand, 0);
 	IApplication::instance ().registerCommand (TouchpadModeCommand, 0);
-	IApplication::instance ().registerCommand (ToggleHighscoresCommand, 0);
+	IApplication::instance ().registerCommand (ToggleHighscoresCommand, '/');
 
 	addCreateViewControllerFunc (
 	    "MinefieldController", [this] (const auto& name, auto* parent, auto* uidesc) {
@@ -170,8 +179,8 @@ WindowController::WindowController ()
 		    {
 			    auto nameValue = modelBinding.getValue (valueNewHighScoreName);
 			    auto okValue = modelBinding.getValue (valueNewHighScoreOK);
-			    enterHighscoreViewController =
-			        owned (new EnterHighScoreViewController (*nameValue, *okValue, parent));
+			    enterHighscoreViewController = owned (new EnterHighScoreViewController (
+			        *nameValue, *okValue, parent, [this] () { showHighscores (); }));
 		    }
 		    enterHighscoreViewController->remember ();
 		    return enterHighscoreViewController;
@@ -225,8 +234,6 @@ WindowController::WindowController ()
 	                       }));
 
 	loadDefaults ();
-
-	showHighscoreListWindowDebug ();
 }
 
 //------------------------------------------------------------------------
@@ -338,6 +345,11 @@ bool WindowController::handleCommand (const Command& command)
 		Value::performSinglePlainEdit (*colValue, 30);
 		Value::performSinglePlainEdit (*mineValue, 99);
 	}
+	else
+	{
+		hideHighscores ();
+	}
+
 	startNewGame ();
 	return true;
 }
@@ -385,6 +397,10 @@ void WindowController::startNewGame ()
 	uint32_t rows, cols, mines;
 	std::tie (rows, cols, mines) = getRowsColsMines ();
 	minefieldViewController->startGame (rows, cols, mines);
+	auto highscoreList = HighScores::instance ().get (rows, cols, mines);
+	if (!highscoreList)
+		return;
+	highscoreViewController->setHighScoreList (highscoreList);
 }
 
 //------------------------------------------------------------------------
@@ -420,39 +436,29 @@ void WindowController::showHideHighscores ()
 	if (!highscoreViewController)
 		return;
 	if (highscoreViewController->isVisible ())
-	{
 		highscoreViewController->hide ();
-	}
 	else
+		showHighscores ();
+}
+
+//------------------------------------------------------------------------
+void WindowController::showHighscores ()
+{
+	assert (highscoreViewController);
+	uint32_t rows, cols, mines;
+	std::tie (rows, cols, mines) = getRowsColsMines ();
+	if (auto highscoreList = HighScores::instance ().get (rows, cols, mines))
 	{
-		uint32_t rows, cols, mines;
-		std::tie (rows, cols, mines) = getRowsColsMines ();
-		if (auto highscoreList = HighScores::instance ().get (rows, cols, mines))
-		{
-			highscoreViewController->setHighScoreList (highscoreList);
-			highscoreViewController->show ();
-		}
+		highscoreViewController->setHighScoreList (highscoreList);
+		highscoreViewController->show ();
 	}
 }
 
 //------------------------------------------------------------------------
 void WindowController::hideHighscores ()
 {
-	if (!highscoreViewController)
-		return;
-	if (highscoreViewController->isVisible ())
-		highscoreViewController->hide ();
-}
-
-//------------------------------------------------------------------------
-void WindowController::showHighscoreListWindowDebug ()
-{
-	uint32_t rows, cols, mines;
-	std::tie (rows, cols, mines) = getRowsColsMines ();
-	auto highscoreList = HighScores::instance ().get (rows, cols, mines);
-	if (!highscoreList)
-		return;
-	ShowHighscoreWindow (highscoreList);
+	assert (highscoreViewController);
+	highscoreViewController->hide ();
 }
 
 //------------------------------------------------------------------------

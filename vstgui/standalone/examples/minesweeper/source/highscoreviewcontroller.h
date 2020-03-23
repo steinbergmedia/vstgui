@@ -53,9 +53,6 @@ private:
 	std::array<CCoord, NumCols> columnWidths;
 };
 
-// temporarily:
-void ShowHighscoreWindow (const std::shared_ptr<HighScoreList>& list);
-
 //------------------------------------------------------------------------
 } // Minesweeper
 } // Standalone

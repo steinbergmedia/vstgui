@@ -3,43 +3,17 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "highscoreviewcontroller.h"
+#include "keepchildviewscentered.h"
 #include "vstgui/lib/cdatabrowser.h"
 #include "vstgui/lib/cdrawcontext.h"
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
-
-#include "vstgui/standalone/include/helpers/uidesc/customization.h"
-#include "vstgui/standalone/include/iuidescwindow.h"
-
 #include <ctime>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 namespace Minesweeper {
-
-//------------------------------------------------------------------------
-void ShowHighscoreWindow (const std::shared_ptr<HighScoreList>& list)
-{
-	auto customization = UIDesc::Customization::make ();
-	customization->addCreateViewControllerFunc (
-	    "DataBrowserController",
-	    [list] (const UTF8StringView& name, IController* parent,
-	            const IUIDescription* uiDesc) -> IController* {
-		    auto ctrler = new HighScoreViewController (parent);
-		    ctrler->setHighScoreList (list);
-		    return ctrler;
-	    });
-	UIDesc::Config config;
-	config.uiDescFileName = "Highscore.uidesc";
-	config.viewName = "Window";
-	config.customization = customization;
-	config.windowConfig.title = "Minesweeper - Highscore";
-	config.windowConfig.autoSaveFrameName = "MinesweeperHighscoreWindow";
-	config.windowConfig.style.border ().close ().centered ().size ();
-	if (auto window = UIDesc::makeWindow (config))
-		window->show ();
-}
 
 //------------------------------------------------------------------------
 HighScoreViewController::HighScoreViewController (IController* parent)
@@ -99,6 +73,11 @@ void HighScoreViewController::hide ()
 void HighScoreViewController::dbAttached (CDataBrowser* browser)
 {
 	dataBrowser = browser;
+	if (auto parent = browser->getParentView ())
+	{
+		assert (parent->asViewContainer ());
+		keepChildViewsCentered (parent->asViewContainer ());
+	}
 }
 
 //------------------------------------------------------------------------
@@ -232,8 +211,7 @@ CView* HighScoreViewController::createView (const UIAttributes& attributes,
 		if (auto f = description->getFont ("highscore"))
 			font = *f;
 		description->getColor ("highscore.font", fontColor);
-		return new CDataBrowser ({}, this,
-		                         CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines,
+		return new CDataBrowser ({}, this, CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines,
 		                         0.);
 	}
 	return nullptr;

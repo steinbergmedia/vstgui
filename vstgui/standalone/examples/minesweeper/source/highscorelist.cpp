@@ -27,6 +27,36 @@ UTF8String readUntil (char separator, CFileStream& stream)
 }
 
 //------------------------------------------------------------------------
+UTF8String replaceChars (const UTF8String& str, std::initializer_list<char> characters,
+                         char replacement)
+{
+	std::string result;
+	auto start = str.begin ();
+	auto current = start;
+	while (current != str.end ())
+	{
+		for (const auto& character : characters)
+		{
+			if (*current == character)
+			{
+				if (start != current)
+					result.append (start.base (), current.base ());
+				if (replacement)
+					result += replacement;
+				start = current;
+				++start;
+				break;
+			}
+		}
+		++current;
+	}
+	if (start != current)
+		result.append (start.base (), current.base ());
+
+	return {std::move (result)};
+}
+
+//------------------------------------------------------------------------
 } // anonymous
 
 //------------------------------------------------------------------------
@@ -64,6 +94,8 @@ bool SaveHighScoreListModel (const HighScoreListModel& list, const UTF8String& p
 
 	for (auto& element : list)
 	{
+		if (!element.valid ())
+			break;
 		stream << std::to_string (element.seconds);
 		stream << std::string (1, ':');
 		stream << element.name.getString ();
@@ -111,12 +143,11 @@ Optional<size_t> HighScoreListModel::addHighscore (UTF8StringPtr name, uint32_t 
 	if (it == list.end ())
 		return {};
 
-	// TODO: Check name for not allowed characters: ':' and '\n'
 	auto pos = std::distance (list.begin (), it);
 	auto end = list.begin ();
 	std::advance (end, list.size () - 1);
 	std::move_backward (it, end, list.end ());
-	list[pos].name = name;
+	list[pos].name = replaceChars (name, {':', '\n'}, '_');
 	list[pos].seconds = seconds;
 	list[pos].date = (date == 0) ? std::time (nullptr) : date;
 	return {pos};

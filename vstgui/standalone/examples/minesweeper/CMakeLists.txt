@@ -11,6 +11,7 @@ set(${target}_sources
   "source/highscores.h"
   "source/highscoreviewcontroller.cpp"
   "source/highscoreviewcontroller.h"
+  "source/keepchildviewscentered.h"
   "source/minefieldviewcontroller.cpp"
   "source/minefieldviewcontroller.h"
   "source/model.cpp"

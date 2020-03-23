@@ -43,11 +43,10 @@ public:
 	void startNewGame ();
 	void verifyNumMines ();
 	void onWon (uint32_t secondsToWin);
-	void showHighscoreListWindowDebug ();
 
 private:
-
 	void showHideHighscores ();
+	void showHighscores ();
 	void hideHighscores ();
 
 	UIDesc::ModelBindingCallbacks modelBinding;
