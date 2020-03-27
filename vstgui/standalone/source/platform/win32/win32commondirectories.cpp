@@ -112,7 +112,7 @@ Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location,
 		{
 			UTF8String result (appResourcePath);
 			if (!addSubDir (result, subDir, create))
-				return {}
+				return {};
 			return result;
 		}
 		case CommonDirectoryLocation::AppPreferencesPath:
