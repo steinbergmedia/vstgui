@@ -80,10 +80,11 @@ function(vstgui_add_resources target resources)
     foreach(resource ${resources})
       get_filename_component(sourcePath "${resource}" ABSOLUTE "${CMAKE_CURRENT_LIST_DIR}")
       if(IS_DIRECTORY "${sourcePath}")
+		get_filename_component(directoryName "${resource}" NAME)
         add_custom_command(TARGET ${target} POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E copy_directory
           "${sourcePath}"
-          "${destination}"
+          "${destination}/${directoryName}"
         )
 	  else()
         add_custom_command(TARGET ${target} POST_BUILD
