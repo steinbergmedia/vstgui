@@ -118,18 +118,11 @@ Platform& Platform::getInstance ()
 Platform::Platform ()
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-
-	Cairo::Bitmap::setGetResourcePathFunc ([this]() {
-		auto path = getPath ();
-		path += "/Contents/Resources/";
-		return path;
-	});
 }
 
 //------------------------------------------------------------------------
 Platform::~Platform ()
 {
-	Cairo::Bitmap::setGetResourcePathFunc ([]() { return std::string (); });
 }
 
 //------------------------------------------------------------------------

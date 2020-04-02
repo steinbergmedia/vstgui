@@ -795,7 +795,20 @@ Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
 };
 
 //------------------------------------------------------------------------
-UTF8String Frame::resourcePath = Platform::getInstance ().getPath () + "/Contents/Resources/";
+const UTF8String& Frame::getResourcePath ()
+{
+	if (!userDefinedResourcePath.empty ())
+	{
+		return userDefinedResourcePath;
+	}
+	else
+	{
+		static UTF8String path = Platform::getInstance ().getPath () + "/Contents/Resources/";
+		return path;
+	}
+}
+
+UTF8String Frame::userDefinedResourcePath;
 
 //------------------------------------------------------------------------
 } // X11

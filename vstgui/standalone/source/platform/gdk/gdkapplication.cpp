@@ -104,7 +104,7 @@ bool Application::init (int argc, char* argv[])
 				path += desc.u.name;
 				return FileResourceInputStream::create (path);
 			};
-		VSTGUI::X11::Frame::resourcePath = execPath + "/Resources/";
+		VSTGUI::X11::Frame::userDefinedResourcePath = execPath + "/Resources/";
 
 		PlatformCallbacks callbacks;
 		callbacks.quit = [this] () { quit (); };

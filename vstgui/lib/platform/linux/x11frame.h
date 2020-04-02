@@ -32,7 +32,9 @@ public:
 
 	static CreateIResourceInputStreamFunc createResourceInputStreamFunc;
 
-	static UTF8String resourcePath;
+	static const UTF8String& getResourcePath ();
+
+	static UTF8String userDefinedResourcePath;
 
 private:
 	bool getGlobalPosition (CPoint& pos) const override;

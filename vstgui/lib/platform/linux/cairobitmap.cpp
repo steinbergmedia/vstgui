@@ -9,6 +9,10 @@
 #include <memory>
 #include <vector>
 
+#if LINUX
+#include "x11platform.h"
+#endif
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Cairo {
@@ -128,15 +132,6 @@ private:
 } // CairoBitmapPrivate
 
 //-----------------------------------------------------------------------------
-Bitmap::GetResourcePathFunc Bitmap::getResourcePath = [] () { return std::string (); };
-
-//-----------------------------------------------------------------------------
-void Bitmap::setGetResourcePathFunc (GetResourcePathFunc&& func)
-{
-	getResourcePath = std::move (func);
-}
-
-//-----------------------------------------------------------------------------
 SharedPointer<Bitmap> Bitmap::create (UTF8StringPtr absolutePath)
 {
 	if (auto surface = Cairo::CairoBitmapPrivate::createImageFromPath (absolutePath))
@@ -246,11 +241,21 @@ double Bitmap::getScaleFactor () const
 }
 
 //-----------------------------------------------------------------------------
+
 PNGBitmapBuffer Bitmap::createMemoryPNGRepresentation () const
 {
 	Cairo::CairoBitmapPrivate::PNGMemoryWriter writer;
 	return writer.create (getSurface ());
 }
+
+#if LINUX
+std::string Bitmap::getResourcePath ()
+{
+	auto path = X11::Platform::getInstance ().getPath ();
+	path += "/Contents/Resources/";
+	return path;
+}
+#endif
 
 //-----------------------------------------------------------------------------
 namespace CairoBitmapPrivate {
