@@ -94,7 +94,11 @@ public:
 	bool operator!= (const StringType& str) const noexcept;
 
 	UTF8String& operator+= (const UTF8String& other);
+	UTF8String& operator+= (StringType::value_type ch);
+	UTF8String& operator+= (const StringType::value_type* other);
 	UTF8String operator+ (const UTF8String& other);
+	UTF8String operator+ (StringType::value_type ch);
+	UTF8String operator+ (const StringType::value_type* other);
 
 	void assign (UTF8StringPtr str);
 	void clear () noexcept;
