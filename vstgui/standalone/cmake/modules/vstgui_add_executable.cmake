@@ -105,7 +105,7 @@ function(vstgui_set_target_infoplist target infoplist)
     set_target_properties(${target} PROPERTIES
       MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
       XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
-      XCODE_ATTRIBUTE_INFOPLIST_OTHER_PREPROCESSOR_FLAGS "-I${IncludeDir"}
+      XCODE_ATTRIBUTE_INFOPLIST_OTHER_PREPROCESSOR_FLAGS "-I${IncludeDir}"
     )
   endif(CMAKE_HOST_APPLE)
 endfunction()
