@@ -856,21 +856,32 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 			Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, paramFound ? &paramID : nullptr);
 			if (contextMenu)
 			{
-				getFrame ()->onStartLocalEventLoop ();
 				if (controllerMenu)
-					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu, contextMenu);
-				if (contextMenu->popup (static_cast<Steinberg::UCoord> (where2.x), static_cast<Steinberg::UCoord> (where2.y)) == Steinberg::kResultTrue)
-					result = kMouseEventHandled;
-				contextMenu->release ();
+					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu,
+					                                                         contextMenu);
+				getFrame ()->doAfterEventProcessing ([=] () {
+					contextMenu->popup (static_cast<Steinberg::UCoord> (where2.x),
+					                    static_cast<Steinberg::UCoord> (where2.y));
+					contextMenu->release ();
+				});
+				result = kMouseEventHandled;
 			}
 		}
 		if (result == kMouseEventNotHandled)
-	#endif
-		if (controllerMenu)
 		{
-			controllerMenu->setStyle (COptionMenu::kPopupStyle|COptionMenu::kMultipleCheckStyle);
-			controllerMenu->popup (frame, where);
-			result = kMouseEventHandled;
+	#endif
+			if (controllerMenu)
+			{
+				controllerMenu->remember ();
+				SharedPointer<CFrame> blockFrame = getFrame ();
+				getFrame ()->doAfterEventProcessing ([=] () {
+					controllerMenu->setStyle (COptionMenu::kPopupStyle |
+					                          COptionMenu::kMultipleCheckStyle);
+					controllerMenu->popup (blockFrame, where);
+					controllerMenu->forget ();
+				});
+				result = kMouseEventHandled;
+			}
 		}
 		if (controllerMenu)
 			controllerMenu->forget ();
