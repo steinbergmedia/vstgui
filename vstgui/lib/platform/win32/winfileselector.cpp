@@ -65,11 +65,11 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 			filters[0].pszSpec = wAllSpec;
 		}
 		numExtensions = i;
-		filters[i].pszName = 0;
-		filters[i].pszSpec = 0;
+		filters[i].pszName = nullptr;
+		filters[i].pszSpec = nullptr;
 		return filters;
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ static void freeExtensionFilter (COMDLG_FILTERSPEC* filters)
 }
 
 //-----------------------------------------------------------------------------
-class VistaFileSelector : public CNewFileSelector
+class VistaFileSelector final : public CNewFileSelector
 {
 public:
 	VistaFileSelector (CFrame* frame, Style style);
@@ -113,7 +113,7 @@ CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 		#if DEBUG
 		DebugPrint ("Need frame for CNewFileSelector\n");
 		#endif
-		return 0;
+		return nullptr;
 	}
 	return new VistaFileSelector (parent, style);
 }
@@ -126,15 +126,15 @@ typedef HRESULT (STDAPICALLTYPE *SHCreateItemFromParsingNameProc) (__in PCWSTR p
 #else
 typedef HRESULT (STDAPICALLTYPE *SHCreateItemFromParsingNameProc) (PCWSTR pszPath, IBindCtx *pbc, REFIID riid, void **ppv);
 #endif
-SHCreateItemFromParsingNameProc _SHCreateItemFromParsingName = 0;
+SHCreateItemFromParsingNameProc _SHCreateItemFromParsingName = nullptr;
 
 //-----------------------------------------------------------------------------
 VistaFileSelector::VistaFileSelector (CFrame* frame, Style style)
 : CNewFileSelector (frame)
 , style (style)
-, fileDialog (0)
+, fileDialog (nullptr)
 {
-	if (_SHCreateItemFromParsingName == 0)
+	if (_SHCreateItemFromParsingName == nullptr)
 	{
 		HINSTANCE shell32Instance = LoadLibraryA ("shell32.dll");
 		if (shell32Instance)
@@ -170,7 +170,7 @@ void VistaFileSelector::cancelInternal ()
 //-----------------------------------------------------------------------------
 bool VistaFileSelector::runModalInternal ()
 {
-	fileDialog = 0;
+	fileDialog = nullptr;
 	HRESULT hr = -1;
 	if (style == kSelectSaveFile)
 	{
@@ -194,7 +194,7 @@ bool VistaFileSelector::runModalInternal ()
 				if (FAILED (hr))
 				{
 					fileDialog->Release ();
-					fileDialog = 0;
+					fileDialog = nullptr;
 					return false;
 				}
 			}
@@ -207,7 +207,7 @@ bool VistaFileSelector::runModalInternal ()
 				if (FAILED (hr))
 				{
 					fileDialog->Release ();
-					fileDialog = 0;
+					fileDialog = nullptr;
 					return false;
 				}
 			}
@@ -215,7 +215,7 @@ bool VistaFileSelector::runModalInternal ()
 	}
 	if (FAILED (hr))
 	{
-		fileDialog = 0;
+		fileDialog = nullptr;
 		return false;
 	}
 
@@ -247,7 +247,7 @@ bool VistaFileSelector::runModalInternal ()
 	{
 		if (allowMultiFileSelection)
 		{
-			IFileOpenDialog* openFileDialog = 0;
+			IFileOpenDialog* openFileDialog = nullptr;
 			hr = fileDialog->QueryInterface (IID_PPV_ARG(IFileOpenDialog, &openFileDialog));
 			if (SUCCEEDED (hr))
 			{
@@ -263,7 +263,7 @@ bool VistaFileSelector::runModalInternal ()
 						hr = items->GetItemAt (i, &item);
 						if (SUCCEEDED (hr))
 						{
-							LPWSTR filesysPath = 0;
+							LPWSTR filesysPath = nullptr;
 							hr = item->GetDisplayName (SIGDN_FILESYSPATH, &filesysPath);
 							if (SUCCEEDED (hr))
 							{
@@ -284,7 +284,7 @@ bool VistaFileSelector::runModalInternal ()
 			hr = fileDialog->GetResult (&item);
 			if (SUCCEEDED (hr))
 			{
-				LPWSTR filesysPath = 0;
+				LPWSTR filesysPath = nullptr;
 				hr = item->GetDisplayName (SIGDN_FILESYSPATH, &filesysPath);
 				if (SUCCEEDED (hr))
 				{
@@ -296,7 +296,7 @@ bool VistaFileSelector::runModalInternal ()
 		}
 	}
 	fileDialog->Release ();
-	fileDialog = 0;
+	fileDialog = nullptr;
 	freeExtensionFilter (filters);
 	return SUCCEEDED (hr);
 }

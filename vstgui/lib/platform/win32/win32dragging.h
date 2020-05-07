@@ -45,15 +45,15 @@ public:
 	~CDropTarget () noexcept;
 
 	// IUnknown
-	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void);
-	STDMETHOD_ (ULONG, Release) (void);
+	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
+	STDMETHOD_ (ULONG, AddRef) (void) override;
+	STDMETHOD_ (ULONG, Release) (void) override;
    
 	// IDropTarget
-	STDMETHOD (DragEnter) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
-	STDMETHOD (DragOver) (DWORD keyState, POINTL pt, DWORD* effect);
-	STDMETHOD (DragLeave) (void);
-	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
+	STDMETHOD (DragEnter) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect) override;
+	STDMETHOD (DragOver) (DWORD keyState, POINTL pt, DWORD* effect) override;
+	STDMETHOD (DragLeave) (void) override;
+	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect) override;
 private:
 	int32_t refCount;
 	Win32Frame* pFrame;
@@ -67,13 +67,13 @@ class Win32DropSource final
 {
 public:
 	// IUnknown
-	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
+	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
+	STDMETHOD_ (ULONG, AddRef) (void) override { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) (void) override { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
 	
 	// IDropSource
-	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState);
-	STDMETHOD (GiveFeedback) (DWORD effect);
+	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState) override;
+	STDMETHOD (GiveFeedback) (DWORD effect) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -86,20 +86,20 @@ public:
 	~Win32DataObject () noexcept;
 
 	// IUnknown
-	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
+	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
+	STDMETHOD_ (ULONG, AddRef) (void) override { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) (void) override { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
 
 	// IDataObject
-	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium);
-	STDMETHOD (GetDataHere) (FORMATETC *format, STGMEDIUM *medium);
-	STDMETHOD (QueryGetData) (FORMATETC *format);
-	STDMETHOD (GetCanonicalFormatEtc) (FORMATETC *formatIn, FORMATETC *formatOut);
-	STDMETHOD (SetData) (FORMATETC *format, STGMEDIUM *medium, BOOL release);
-	STDMETHOD (EnumFormatEtc) (DWORD direction, IEnumFORMATETC** enumFormat);
-	STDMETHOD (DAdvise) (FORMATETC* format, DWORD advf, IAdviseSink* advSink, DWORD* connection);
-	STDMETHOD (DUnadvise) (DWORD connection);
-	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise);
+	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium) override;
+	STDMETHOD (GetDataHere) (FORMATETC *format, STGMEDIUM *medium) override;
+	STDMETHOD (QueryGetData) (FORMATETC *format) override;
+	STDMETHOD (GetCanonicalFormatEtc) (FORMATETC *formatIn, FORMATETC *formatOut) override;
+	STDMETHOD (SetData) (FORMATETC *format, STGMEDIUM *medium, BOOL release) override;
+	STDMETHOD (EnumFormatEtc) (DWORD direction, IEnumFORMATETC** enumFormat) override;
+	STDMETHOD (DAdvise) (FORMATETC* format, DWORD advf, IAdviseSink* advSink, DWORD* connection) override;
+	STDMETHOD (DUnadvise) (DWORD connection) override;
+	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise) override;
 private:
 	IDataPackage* dataPackage;
 };

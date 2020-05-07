@@ -48,8 +48,8 @@ extern Optional<VstKeyCode> keyMessageToKeyCode (WPARAM wParam, LPARAM lParam);
 class UTF8StringHelper
 {
 public:
-	UTF8StringHelper (const char* utf8Str, int numChars = -1) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true), numCharacters (numChars) {}
-	UTF8StringHelper (const WCHAR* wideStr, int numChars = -1) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false), numCharacters (numChars) {}
+	UTF8StringHelper (const char* utf8Str, int numChars = -1) : utf8Str (utf8Str), allocWideStr (nullptr), allocStrIsWide (true), numCharacters (numChars) {}
+	UTF8StringHelper (const WCHAR* wideStr, int numChars = -1) : wideStr (wideStr), allocUTF8Str (nullptr), allocStrIsWide (false), numCharacters (numChars) {}
 	~UTF8StringHelper () noexcept
 	{
 		if (allocUTF8Str)
@@ -67,7 +67,7 @@ public:
 		{
 			if (!allocWideStr && utf8Str)
 			{
-				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, numCharacters, 0, 0);
+				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, numCharacters, nullptr, 0);
 				allocWideStr = (WCHAR*)::std::malloc ((static_cast<size_t> (numChars)+1)*sizeof (WCHAR));
 				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, numCharacters, allocWideStr, numChars) == 0)
 				{
@@ -87,9 +87,9 @@ public:
 		{
 			if (!allocUTF8Str && wideStr)
 			{
-				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, numCharacters, 0, 0, 0, 0);
+				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, numCharacters, nullptr, 0, nullptr, nullptr);
 				allocUTF8Str = (char*)::std::malloc (static_cast<size_t> (allocSize)+1);
-				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, numCharacters, allocUTF8Str, allocSize, 0, 0) == 0)
+				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, numCharacters, allocUTF8Str, allocSize, nullptr, nullptr) == 0)
 				{
 					allocUTF8Str[0] = 0;
 				}
@@ -113,7 +113,7 @@ protected:
 	int numCharacters {-1};
 };
 
-class ResourceStream : public IStream
+class ResourceStream final : public IStream
 {
 public:
 	ResourceStream ();
@@ -144,7 +144,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class WinResourceInputStream : public IPlatformResourceInputStream
+class WinResourceInputStream final : public IPlatformResourceInputStream
 {
 public:
 	using ResourceStreamPtr = std::unique_ptr<ResourceStream>;

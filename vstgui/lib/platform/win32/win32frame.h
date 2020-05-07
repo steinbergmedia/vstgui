@@ -13,7 +13,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class Win32Frame : public IPlatformFrame, public IWin32PlatformFrame
+class Win32Frame final : public IPlatformFrame, public IWin32PlatformFrame
 {
 public:
 	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent, PlatformType parentType);
@@ -44,7 +44,7 @@ public:
 #if VSTGUI_OPENGL_SUPPORT
 	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
-	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return 0; } // not yet supported
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return nullptr; } // not yet supported
 	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;

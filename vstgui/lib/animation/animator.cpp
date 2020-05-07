@@ -302,6 +302,7 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 				animation->done = true;
 				animation->animationTarget->animationFinished (view, name, true);
 			}
+			animation->notification = nullptr;
 			pImpl->animations.remove (animation);
 		}
 	});

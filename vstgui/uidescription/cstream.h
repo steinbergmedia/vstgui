@@ -146,6 +146,7 @@ public:
 	};
 
 	bool open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder = kNativeByteOrder);
+	bool isEndOfFile () const;
 
 	uint32_t writeRaw (const void* buffer, uint32_t size) override;
 	uint32_t readRaw (void* buffer, uint32_t size) override;

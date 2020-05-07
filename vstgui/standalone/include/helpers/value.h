@@ -217,6 +217,16 @@ inline IStepValue::StepType currentStepValue (IValue& value)
 }
 
 //------------------------------------------------------------------------
+inline UTF8String currentStringValue (IValue& value)
+{
+	if (auto stringValue = value.dynamicCast<IStringValue> ())
+	{
+		return stringValue->getString ();
+	}
+	return value.getConverter ().valueAsString (value.getValue ());
+}
+
+//------------------------------------------------------------------------
 inline void performSingleEdit (IValue& value, IValue::Type newValue)
 {
 	value.beginEdit ();

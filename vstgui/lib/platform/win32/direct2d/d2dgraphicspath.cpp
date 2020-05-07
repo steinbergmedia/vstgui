@@ -12,6 +12,7 @@
 #include "d2ddrawcontext.h"
 #include "d2dfont.h"
 #include <dwrite.h>
+#include <winnt.h>
 
 #if defined (__GNUC__) && !defined (__clang__)
 #define __maybenull
@@ -20,14 +21,14 @@
 
 namespace VSTGUI {
 
-class D2DPathTextRenderer : public IDWriteTextRenderer
+class D2DPathTextRenderer final : public IDWriteTextRenderer
 {
 public:
 	D2DPathTextRenderer (ID2D1GeometrySink* sink) : sink (sink)
 	{
 	}
 
-	HRESULT STDMETHODCALLTYPE DrawGlyphRun (
+	STDMETHOD (DrawGlyphRun) (
 		void* clientDrawingContext,
 		FLOAT baselineOriginX,
 		FLOAT baselineOriginY,
@@ -35,7 +36,7 @@ public:
 		DWRITE_GLYPH_RUN const* glyphRun,
 		DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
 		IUnknown* clientDrawingEffect
-		)
+		) override
 	{
 		return glyphRun->fontFace->GetGlyphRunOutline (
 				glyphRun->fontEmSize,
@@ -49,29 +50,29 @@ public:
 			);
 	}
 
-	HRESULT STDMETHODCALLTYPE DrawUnderline (
+	STDMETHOD (DrawUnderline) (
 		void* clientDrawingContext,
 		FLOAT baselineOriginX,
 		FLOAT baselineOriginY,
 		DWRITE_UNDERLINE const* underline,
 		IUnknown* clientDrawingEffect
-		)
+		) override
 	{
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE DrawStrikethrough (
+	STDMETHOD (DrawStrikethrough) (
 		void* clientDrawingContext,
 		FLOAT baselineOriginX,
 		FLOAT baselineOriginY,
 		DWRITE_STRIKETHROUGH const* strikethrough,
 		IUnknown* clientDrawingEffect
-		)
+		) override
 	{
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE DrawInlineObject (
+	STDMETHOD (DrawInlineObject) (
 		void* clientDrawingContext,
 		FLOAT originX,
 		FLOAT originY,
@@ -79,23 +80,23 @@ public:
 		BOOL isSideways,
 		BOOL isRightToLeft,
 		IUnknown* clientDrawingEffect
-		)
+		) override
 	{
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE IsPixelSnappingDisabled (
+	STDMETHOD (IsPixelSnappingDisabled) (
 		__maybenull void* clientDrawingContext,
 		__out BOOL* isDisabled
-		)
+		) override
 	{
 		return S_FALSE;
 	}
 
-	HRESULT STDMETHODCALLTYPE GetCurrentTransform (
+	STDMETHOD (GetCurrentTransform) (
 		__maybenull void* clientDrawingContext,
 		__out DWRITE_MATRIX* transform
-		)
+		) override
 	{
 		const DWRITE_MATRIX identityTransform =
 		{
@@ -108,17 +109,17 @@ public:
 		return S_OK;
 	}
 
-	HRESULT STDMETHODCALLTYPE GetPixelsPerDip (
+	STDMETHOD (GetPixelsPerDip) (
 		__maybenull void* clientDrawingContext,
 		__out FLOAT* pixelsPerDip
-		)
+		) override
 	{
 		if (pixelsPerDip)
 			*pixelsPerDip = 96;
 		return S_OK;
 	}
 
-	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject)
+	STDMETHOD (QueryInterface) (REFIID iid, void ** ppvObject) override
 	{
 		if (iid == __uuidof(IUnknown)
 			|| iid == __uuidof(IDWriteTextRenderer))
@@ -129,18 +130,18 @@ public:
 		} else
 			return E_NOINTERFACE;
 	}
-    ULONG STDMETHODCALLTYPE AddRef(void) { return 1; }
-    ULONG STDMETHODCALLTYPE Release(void) { return 1; }
+    STDMETHOD_ (ULONG, AddRef) (void) override { return 1; }
+    STDMETHOD_ (ULONG, Release) (void) override { return 1; }
 
 private:
 	ID2D1GeometrySink* sink;
 };
 
 //-----------------------------------------------------------------------------
-class AlignPixelSink : public ID2D1SimplifiedGeometrySink
+class AlignPixelSink final : public ID2D1SimplifiedGeometrySink
 {
 public:
-	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject)
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject) override
 	{
 		if (iid == __uuidof(IUnknown)
 			|| iid == __uuidof(ID2D1SimplifiedGeometrySink))
@@ -151,8 +152,8 @@ public:
 		} else
 			return E_NOINTERFACE;
 	}
-    ULONG STDMETHODCALLTYPE AddRef(void) { return 1; }
-    ULONG STDMETHODCALLTYPE Release(void) { return 1; }
+    ULONG STDMETHODCALLTYPE AddRef(void) override { return 1; }
+    ULONG STDMETHODCALLTYPE Release(void) override { return 1; }
 
 	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
 	{
@@ -164,7 +165,7 @@ public:
 		return D2D1::Point2F (static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y));
 	}
 	
-	STDMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT * beziers, UINT beziersCount)
+	STDMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT * beziers, UINT beziersCount) override
 	{
 		for (UINT i = 0; i < beziersCount; ++i)
 		{
@@ -176,7 +177,7 @@ public:
 		}
 	}
 
-	STDMETHOD_(void, AddLines)(const D2D1_POINT_2F *points, UINT pointsCount)
+	STDMETHOD_(void, AddLines)(const D2D1_POINT_2F *points, UINT pointsCount) override
 	{
 		for (UINT i = 0; i < pointsCount; ++i)
 		{
@@ -186,36 +187,36 @@ public:
 	}
 
 	STDMETHOD_(void, BeginFigure)(D2D1_POINT_2F startPoint,
-								D2D1_FIGURE_BEGIN figureBegin)
+								D2D1_FIGURE_BEGIN figureBegin) override
 	{
 		startPoint = alignPoint (startPoint);
 		sink->BeginFigure (startPoint, figureBegin);
 	}
 
-	STDMETHOD_(void, EndFigure)(D2D1_FIGURE_END figureEnd)
+	STDMETHOD_(void, EndFigure)(D2D1_FIGURE_END figureEnd) override
 	{
 		sink->EndFigure (figureEnd);
 	}
 
-	STDMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode)
+	STDMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode) override
 	{
 		sink->SetFillMode (fillMode);
 	}
 
-	STDMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT vertexFlags)
+	STDMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT vertexFlags) override
 	{
 		sink->SetSegmentFlags (vertexFlags);
 	}
 
-	STDMETHOD(Close)()
+	STDMETHOD(Close)() override
 	{
 		isClosed = true;
 		return sink->Close ();
 	}
 
 	AlignPixelSink (D2DDrawContext* context)
-	: path (0)
-	, sink (0)
+	: path (nullptr)
+	, sink (nullptr)
 	, context (context)
 	, isClosed (true)
 	{
@@ -249,13 +250,13 @@ public:
 				if (!isClosed)
 					sink->Close ();
 				sink->Release ();
-				sink = 0;
+				sink = nullptr;
 			}
 			ID2D1PathGeometry* result = path;
-			path = 0;
+			path = nullptr;
 			return result;
 		}
-		return 0;
+		return nullptr;
 	}
 private:
 	ID2D1PathGeometry* path;
@@ -266,33 +267,33 @@ private:
 
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath ()
-: path (0)
+: path (nullptr)
 , currentPathFillMode (-1)
 {
 }
 
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
-: path (0)
+: path (nullptr)
 {
-	ID2D1PathGeometry* localPath = 0;
+	ID2D1PathGeometry* localPath = nullptr;
 	getD2DFactory ()->CreatePathGeometry (&localPath);
-	if (localPath == 0)
+	if (localPath == nullptr)
 		return;
 
 	IDWriteTextLayout* layout = font->createTextLayout (UTF8String (text).getPlatformString ());
-	if (layout == 0)
+	if (layout == nullptr)
 		return;
 	
-	ID2D1PathGeometry* textPath = 0;
+	ID2D1PathGeometry* textPath = nullptr;
 	getD2DFactory ()->CreatePathGeometry (&textPath);
-	if (textPath == 0)
+	if (textPath == nullptr)
 	{
 		layout->Release ();
 		return;
 	}
 	
-	ID2D1GeometrySink* sink = 0;
+	ID2D1GeometrySink* sink = nullptr;
 	if (!SUCCEEDED (textPath->Open (&sink)))
 	{
 		textPath->Release ();
@@ -301,7 +302,7 @@ D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 	}
 	
 	D2DPathTextRenderer renderer (sink);
-	layout->Draw (0, &renderer, 0, 0);
+	layout->Draw (nullptr, &renderer, 0, 0);
 	
 	sink->Close ();
 	sink->Release ();
@@ -314,7 +315,7 @@ D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 	}
 	
 	D2D1_RECT_F bounds = {};
-	if (SUCCEEDED (textPath->GetBounds (0, &bounds)))
+	if (SUCCEEDED (textPath->GetBounds (nullptr, &bounds)))
 	{
 		textPath->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, D2D1::Matrix3x2F::Translation (0, -bounds.top), sink);
 	}
@@ -331,7 +332,7 @@ D2DGraphicsPath::~D2DGraphicsPath ()
 	if (path)
 	{
 		path->Release ();
-		path = 0;
+		path = nullptr;
 	}
 }
 
@@ -386,7 +387,7 @@ CRect D2DGraphicsPath::getBoundingBox ()
 	if (_path)
 	{
 		D2D1_RECT_F bounds;
-		if (SUCCEEDED (_path->GetBounds (0, &bounds)))
+		if (SUCCEEDED (_path->GetBounds (nullptr, &bounds)))
 		{
 			r.left = bounds.left;
 			r.top = bounds.top;
@@ -404,29 +405,28 @@ void D2DGraphicsPath::dirty ()
 	if (path)
 	{
 		path->Release ();
-		path = 0;
+		path = nullptr;
 	}
 }
 
 //-----------------------------------------------------------------------------
 ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* context, CGraphicsTransform* transform)
 {
-	if (!elements.empty () && (path == 0 || fillMode != currentPathFillMode))
+	if (!elements.empty () && (path == nullptr || fillMode != currentPathFillMode))
 	{
 		dirty ();
-		ID2D1PathGeometry* localPath = 0;
+		ID2D1PathGeometry* localPath = nullptr;
 		if (!SUCCEEDED (getD2DFactory ()->CreatePathGeometry (&localPath)))
-			return 0;
+			return nullptr;
 		if (fillMode == -1)
 			fillMode = 0;
 		currentPathFillMode = fillMode;
 		
-		ID2D1GeometrySink* sink = 0;
+		ID2D1GeometrySink* sink = nullptr;
 		if (!SUCCEEDED (localPath->Open (&sink)))
 		{
-			path->Release ();
-			path = 0;
-			return 0;
+			localPath->Release ();
+			return nullptr;
 		}
 
 		path = localPath;
@@ -598,7 +598,7 @@ ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* co
 		if (!SUCCEEDED (res))
 		{
 			path->Release ();
-			path = 0;
+			path = nullptr;
 		}
 		sink->Release ();
 	}
@@ -607,9 +607,9 @@ ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* co
 		ID2D1Geometry* geometry = path;
 		if (transform)
 		{
-			ID2D1TransformedGeometry* tg = 0;
+			ID2D1TransformedGeometry* tg = nullptr;
 			if (!SUCCEEDED (getD2DFactory ()->CreateTransformedGeometry (geometry, convert (*transform), &tg)))
-				return 0;
+				return nullptr;
 			geometry = tg;
 		}
 		if (context)
@@ -619,13 +619,13 @@ ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* co
 			{
 				if (transform)
 					geometry->Release ();
-				return 0;
+				return nullptr;
 			}
-			if (!SUCCEEDED (geometry->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, 0, &sink)))
+			if (!SUCCEEDED (geometry->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, nullptr, &sink)))
 			{
 				if (transform)
 					geometry->Release ();
-				return 0;
+				return nullptr;
 			}
 			
 			ID2D1PathGeometry* result = sink.get ();

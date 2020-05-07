@@ -14,7 +14,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class Win32OptionMenu : public IPlatformOptionMenu
+class Win32OptionMenu final : public IPlatformOptionMenu
 {
 public:
 	Win32OptionMenu (HWND windowHandle);

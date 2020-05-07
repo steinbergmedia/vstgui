@@ -80,7 +80,7 @@ struct HiDPISupport : DllBase
 			return getDpiForMonitorFunc (hmonitor, dpiType, dpiX, dpiY);
 		if (dpiX)
 			*dpiX = 96;
-		if (*dpiY)
+		if (dpiY)
 			*dpiY = 96;
 		return S_OK;
 	}

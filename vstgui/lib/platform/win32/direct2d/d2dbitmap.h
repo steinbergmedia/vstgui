@@ -21,7 +21,7 @@ struct IWICBitmapLock;
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class D2DBitmap : public Win32BitmapBase
+class D2DBitmap final : public Win32BitmapBase
 {
 public:
 	D2DBitmap ();
@@ -44,7 +44,7 @@ public:
 protected:
 	void replaceBitmapSource (IWICBitmapSource* newSourceBitmap);
 
-	class PixelAccess : public IPlatformBitmapPixelAccess
+	class PixelAccess final : public IPlatformBitmapPixelAccess
 	{
 	public:
 		PixelAccess ();

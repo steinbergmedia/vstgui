@@ -13,22 +13,22 @@ struct IUnknown;
 
 namespace VSTGUI {
 
-static FORMATETC formatTEXTDrop		= {CF_UNICODETEXT,0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-static FORMATETC formatHDrop		= {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-static FORMATETC formatBinaryDrop	= {CF_PRIVATEFIRST, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+static FORMATETC formatTEXTDrop		= {CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+static FORMATETC formatHDrop		= {CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+static FORMATETC formatBinaryDrop	= {CF_PRIVATEFIRST, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 
 //-----------------------------------------------------------------------------
 Win32DataPackage::Win32DataPackage (::IDataObject* platformDataObject)
 : platformDataObject (platformDataObject)
 , nbItems (0)
 , stringsAreFiles (false)
-, data (0)
+, data (nullptr)
 , dataSize (0)
 {
 	if (!platformDataObject)
 		return;
 
-	STGMEDIUM medium = {0};
+	STGMEDIUM medium = {};
 	HRESULT hr = platformDataObject->QueryGetData (&formatTEXTDrop);
 	if (hr == S_OK) // text
 	{
@@ -58,7 +58,7 @@ Win32DataPackage::Win32DataPackage (::IDataObject* platformDataObject)
 			hr = platformDataObject->GetData (&formatHDrop, &medium);
 			if (hr == S_OK)
 			{
-				nbItems = DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+				nbItems = DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, nullptr, 0);
 				stringsAreFiles = true;
 
 				TCHAR fileDropped[1024];

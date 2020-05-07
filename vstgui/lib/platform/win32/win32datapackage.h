@@ -17,7 +17,7 @@ struct IDataObject;
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class Win32DataPackage : public IDataPackage
+class Win32DataPackage final : public IDataPackage
 {
 public:
 	Win32DataPackage (::IDataObject* platformDataObject);

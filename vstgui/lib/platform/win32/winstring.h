@@ -13,7 +13,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class WinString : public IPlatformString
+class WinString final : public IPlatformString
 {
 public:
 	WinString (UTF8StringPtr utf8String);

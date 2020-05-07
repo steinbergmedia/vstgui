@@ -11,7 +11,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class WinTimer : public IPlatformTimer
+class WinTimer final : public IPlatformTimer
 {
 public:
 	WinTimer (IPlatformTimerCallback* callback);
@@ -57,7 +57,7 @@ bool WinTimer::start (uint32_t fireTime)
 	if (timer)
 		return false;
 
-	timer = SetTimer ((HWND)NULL, (UINT_PTR)0, fireTime, TimerProc);
+	timer = SetTimer (nullptr, (UINT_PTR)0, fireTime, TimerProc);
 	if (timer)
 		gTimerMap.emplace (timer, callback);
 
