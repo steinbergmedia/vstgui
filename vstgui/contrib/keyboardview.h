@@ -229,7 +229,7 @@ class KeyboardView : public KeyboardViewBase
 {
 public:
 	KeyboardView ();
-	void setDelegate (IKeyboardViewPlayerDelegate* delegate) { this->delegate = delegate; }
+	void setDelegate (IKeyboardViewPlayerDelegate* inDelegate) { delegate = inDelegate; }
 
 private:
 	double calcYParameter (NoteIndex note, CCoord y) const;
