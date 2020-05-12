@@ -29,6 +29,16 @@ set(${target}_sources
     uiviewswitchcontainer.h
     xmlparser.cpp
     xmlparser.h
+    detail/locale.h
+    detail/parsecolor.h
+    detail/scalefactorutils.h
+    detail/uidesclist.cpp
+    detail/uidesclist.h
+    detail/uinode.cpp
+    detail/uinode.h
+    detail/uiviewcreatorattributes.h
+    detail/uixmlpersistence.cpp
+    detail/uixmlpersistence.h
     editing/doc.h
     editing/iaction.h
     editing/igridprocessor.h
@@ -81,7 +91,6 @@ set(${target}_sources
     editing/uiundomanager.h
     editing/uiviewcreatecontroller.cpp
     editing/uiviewcreatecontroller.h
-    detail/uiviewcreatorattributes.h
     viewcreator/animationsplashscreencreator.cpp
     viewcreator/animationsplashscreencreator.h
     viewcreator/animknobcreator.cpp

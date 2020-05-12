@@ -12,8 +12,7 @@
 #include <memory>
 
 namespace VSTGUI {
-
-class UINode;
+namespace Detail { class UINode; }
 
 //-----------------------------------------------------------------------------
 /// @brief XML description parser and view creator
@@ -21,6 +20,8 @@ class UINode;
 //-----------------------------------------------------------------------------
 class UIDescription : public NonAtomicReferenceCounted, public IUIDescription
 {
+	using UINode = Detail::UINode;
+
 protected:
 	enum SaveFlagBits
 	{
@@ -140,7 +141,6 @@ public:
 	
 	void freePlatformResources ();
 
-	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 	
 protected:
