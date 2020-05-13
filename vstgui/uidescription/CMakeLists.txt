@@ -34,6 +34,8 @@ set(${target}_sources
     detail/scalefactorutils.h
     detail/uidesclist.cpp
     detail/uidesclist.h
+    detail/uijsonpersistence.cpp
+    detail/uijsonpersistence.h
     detail/uinode.cpp
     detail/uinode.h
     detail/uiviewcreatorattributes.h

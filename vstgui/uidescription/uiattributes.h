@@ -25,6 +25,8 @@ public:
 	explicit UIAttributes (UTF8StringPtr* attributes = nullptr);
 	~UIAttributes () noexcept override = default;
 
+	using UIAttributesMap::empty;
+
 	using UIAttributesMap::begin;
 	using UIAttributesMap::end;
 	using UIAttributesMap::iterator;

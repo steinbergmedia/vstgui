@@ -11,6 +11,7 @@
 #include <limits>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 namespace VSTGUI {
 
@@ -278,4 +279,26 @@ private:
 	size_t bufferSize;
 };
 
+//------------------------------------------------------------------------
+class StdOutStream : public OutputStream
+{
+public:
+	StdOutStream () {}
+	uint32_t writeRaw (const void* buffer, uint32_t size) override
+	{
+		auto byteBuffer = reinterpret_cast<const uint8_t*>(buffer);
+		for (auto i = 0u; i < size; ++i, ++byteBuffer)
+		{
+			std::cout << *byteBuffer;
+		}
+		return size;
+	}
+	bool operator<< (const std::string& str) override
+	{
+		std::cout << str;
+		return true;
+	}
+};
+
+//------------------------------------------------------------------------
 } // VSTGUI
