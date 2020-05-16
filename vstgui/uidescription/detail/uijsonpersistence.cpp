@@ -4,30 +4,360 @@
 
 #include "../uiattributes.h"
 #include "uijsonpersistence.h"
+#include <deque>
 #include <map>
 #include <string_view>
 
 #define RAPIDJSON_HAS_STDSTRING 1
+#include "../rapidjson/include/rapidjson/document.h"
 #include "../rapidjson/include/rapidjson/prettywriter.h"
+#include "../rapidjson/include/rapidjson/reader.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Detail {
 
 static constexpr auto attributeNameStr = "name";
+static constexpr auto attributeClassStr = "class";
 static constexpr auto attributeTagStr = "tag";
 static constexpr auto attributeRGBAStr = "rgba";
 static constexpr auto keyDataStr = "data";
 static constexpr auto keyChildrenStr = "children";
 static constexpr auto keyTemplatesStr = "templates";
+static constexpr auto attributesStr = "attributes";
+static constexpr auto colorStr = "color";
+static constexpr auto controlTagStr = "control-tag";
+static constexpr auto bitmapStr = "bitmap";
+static constexpr auto fontStr = "font";
+static constexpr auto templateStr = "template";
+static constexpr auto colorStopStr = "color-stop";
+static constexpr auto viewStr = "view";
+static constexpr auto gradientStr = "gradient";
 
 //------------------------------------------------------------------------
 namespace UIJsonDescReader {
 
 //------------------------------------------------------------------------
+struct InputStreamWrapper
+{
+	using Ch = uint8_t;
+
+	InputStreamWrapper (InputStream& s) : stream (s) { s.readRaw (&current, 1); }
+
+	Ch Peek () const { return current; }
+	Ch Take ()
+	{
+		auto c = current;
+		if (stream.readRaw (&current, 1) != 1)
+			current = 0;
+		else
+			++pos;
+		return c;
+	}
+	size_t Tell () { return pos; }
+
+	Ch* PutBegin ()
+	{
+		vstgui_assert (false);
+		return 0;
+	}
+	void Put (Ch c) { vstgui_assert (false); }
+	void Flush () { vstgui_assert (false); };
+	size_t PutEnd (Ch* begin)
+	{
+		vstgui_assert (false);
+		return 0;
+	}
+
+	Ch current {};
+	size_t pos {0};
+	InputStream& stream;
+};
+
+//------------------------------------------------------------------------
+struct Handler
+{
+	using Ch = char;
+	using SizeType = rapidjson::SizeType;
+
+	enum class State
+	{
+		Uninitialized = 0,
+		Initialized,
+		InRootNode,
+		InBitmapRootNode,
+		InFontRootNode,
+		InColorRootNode,
+		InGradientRootNode,
+		InControlTagRootNode,
+		InCustomRootNode,
+		InTemplateRootNode,
+		BitmapNode,
+		FontNode,
+		GradientNode,
+		TemplateNode,
+		ChildrenNode,
+		ViewNode,
+		DataNode,
+		ViewAttributes,
+	};
+
+	bool Null () { return false; }
+	bool Bool (bool b) { return false; }
+	bool Int (int i) { return false; }
+	bool Uint (unsigned i) { return false; }
+	bool Int64 (int64_t i) { return false; }
+	bool Uint64 (uint64_t i) { return false; }
+	bool Double (double d) { return false; }
+	bool RawNumber (const Ch* str, SizeType length, bool copy) { return false; }
+	bool String (const Ch* str, SizeType length, bool copy)
+	{
+		if (state == State::InColorRootNode)
+		{
+			auto attrs = newAttributesWithNameAttr (keyStr);
+			attrs->setAttribute (attributeRGBAStr, {str, length});
+			nodeStack.back ()->getChildren ().add (new UIColorNode (colorStr, attrs));
+		}
+		else if (state == State::InControlTagRootNode)
+		{
+			auto attrs = newAttributesWithNameAttr (keyStr);
+			attrs->setAttribute (attributeTagStr, {str, length});
+			nodeStack.back ()->getChildren ().add (new UIControlTagNode (controlTagStr, attrs));
+		}
+		else
+		{
+			nodeStack.back ()->getAttributes ()->setAttribute (keyStr, {str, length});
+		}
+		keyStr.clear ();
+		return true;
+	}
+
+	bool Key (const Ch* str, SizeType length, bool copy)
+	{
+		keyStr = {str, length};
+		return true;
+	}
+
+	bool StartObject ()
+	{
+		UINode* newNode = nullptr;
+		State newState {};
+		switch (state)
+		{
+			case State::Uninitialized:
+			{
+				newState = State::Initialized;
+				break;
+			}
+			case State::Initialized:
+			{
+				vstgui_assert (keyStr == "vstgui-ui-description" ||
+				               keyStr == "vstgui-ui-description-view-list") rootNode =
+				    makeOwned<UINode> (std::move (keyStr));
+				newNode = rootNode;
+				newState = State::InRootNode;
+				break;
+			}
+			case State::InRootNode:
+			{
+				if (keyStr == keyTemplatesStr)
+				{
+					newState = State::InTemplateRootNode;
+					break;
+				}
+				auto needsFastChildNameAttributeLookup = false;
+				if (keyStr == MainNodeNames::kBitmap)
+				{
+					newState = State::InBitmapRootNode;
+					needsFastChildNameAttributeLookup = true;
+				}
+				else if (keyStr == MainNodeNames::kFont)
+					newState = State::InFontRootNode;
+				else if (keyStr == MainNodeNames::kColor)
+				{
+					newState = State::InColorRootNode;
+					needsFastChildNameAttributeLookup = true;
+				}
+				else if (keyStr == MainNodeNames::kGradient)
+					newState = State::InGradientRootNode;
+				else if (keyStr == MainNodeNames::kControlTag)
+				{
+					newState = State::InControlTagRootNode;
+					needsFastChildNameAttributeLookup = true;
+				}
+				else if (keyStr == MainNodeNames::kCustom)
+					newState = State::InCustomRootNode;
+				else
+					return false;
+				newNode = new UINode (keyStr, nullptr, needsFastChildNameAttributeLookup);
+				break;
+			}
+			case State::InBitmapRootNode:
+			{
+				newNode = new UIBitmapNode (bitmapStr, newAttributesWithNameAttr (keyStr));
+				newState = State::BitmapNode;
+				break;
+			}
+			case State::InFontRootNode:
+			{
+				newNode = new UIFontNode (fontStr, newAttributesWithNameAttr (keyStr));
+				newState = State::FontNode;
+				break;
+			}
+			case State::InCustomRootNode:
+			{
+				newNode = new UINode (attributesStr, newAttributesWithNameAttr (keyStr));
+				newState = State::DataNode;
+				break;
+			}
+			case State::InTemplateRootNode:
+			{
+				newNode = new UINode (templateStr, newAttributesWithNameAttr (keyStr));
+				newState = State::TemplateNode;
+				break;
+			}
+			case State::BitmapNode:
+			{
+				vstgui_assert (keyStr == keyDataStr);
+				newNode = new UINode (keyStr);
+				newState = State::DataNode;
+				break;
+			}
+			case State::GradientNode:
+			{
+				vstgui_assert (keyStr.empty ());
+				newNode = new UINode (colorStopStr);
+				newState = State::DataNode;
+				break;
+			}
+			case State::TemplateNode:
+			{
+				if (keyStr == attributesStr)
+					newState = State::ViewAttributes;
+				else if (keyStr == keyChildrenStr)
+					newState = State::ChildrenNode;
+				break;
+			}
+			case State::ChildrenNode:
+			{
+				newNode = new UINode (viewStr);
+				newState = State::ViewNode;
+				break;
+			}
+			case State::ViewNode:
+			{
+				newState = State::ChildrenNode;
+				break;
+			}
+			case State::InColorRootNode:
+			case State::InControlTagRootNode:
+			case State::InGradientRootNode:
+			case State::FontNode:
+			case State::DataNode:
+			case State::ViewAttributes:
+			{
+				// not allowed here, invalid JSON data!
+				return false;
+			}
+		}
+		keyStr.clear ();
+		pushNode (newNode);
+		pushState (newState);
+		return true;
+	}
+
+	bool EndObject (SizeType memberCount)
+	{
+		if (state == State::InTemplateRootNode || state == State::ChildrenNode ||
+		    state == State::ViewAttributes)
+		{
+			popState ();
+			return true;
+		}
+		popState ();
+		return popNode ();
+	}
+
+	bool StartArray ()
+	{
+		if (state == State::InGradientRootNode)
+		{
+			auto newNode = new UIGradientNode (gradientStr, newAttributesWithNameAttr (keyStr));
+			pushNode (newNode);
+			pushState (State::GradientNode);
+			keyStr.clear ();
+			return true;
+		}
+		return false;
+	}
+
+	bool EndArray (SizeType elementCount)
+	{
+		if (state != State::GradientNode)
+			return false;
+		popState ();
+		if (!popNode ())
+			return false;
+		return true;
+	}
+
+	bool popNode ()
+	{
+		if (nodeStack.empty ())
+			return state == State::Uninitialized;
+		nodeStack.pop_back ();
+		return true;
+	}
+
+	void pushNode (UINode* newNode)
+	{
+		if (newNode)
+		{
+			if (newNode != rootNode)
+				nodeStack.back ()->getChildren ().add (newNode);
+			nodeStack.emplace_back (newNode);
+		}
+	}
+
+	void popState ()
+	{
+		stateStack.pop_back ();
+		state = stateStack.back ();
+	}
+
+	void pushState (State newState)
+	{
+		stateStack.emplace_back (newState);
+		state = newState;
+	}
+
+	static SharedPointer<UIAttributes> newAttributesWithNameAttr (const std::string& name)
+	{
+		auto attributes = makeOwned<UIAttributes> ();
+		attributes->setAttribute (attributeNameStr, name);
+		return attributes;
+	}
+
+	SharedPointer<UINode> rootNode;
+	std::deque<UINode*> nodeStack;
+	std::deque<State> stateStack {State::Uninitialized};
+	State state {};
+	std::string keyStr;
+};
+
+//------------------------------------------------------------------------
 SharedPointer<UINode> read (InputStream& stream)
 {
-	return nullptr;
+	InputStreamWrapper streamWrapper (stream);
+	Handler handler;
+	rapidjson::Reader reader;
+
+	auto result = reader.Parse (streamWrapper, handler);
+	if (result.IsError ())
+	{
+		return nullptr;
+	}
+	return handler.rootNode;
 }
 
 //------------------------------------------------------------------------
@@ -58,6 +388,14 @@ static const std::string* getNodeAttributeName (const UINode* node)
 {
 	if (auto attributes = node->getAttributes ())
 		return attributes->getAttributeValue (attributeNameStr);
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+static const std::string* getNodeAttributeViewClass (const UINode* node)
+{
+	if (auto attributes = node->getAttributes ())
+		return attributes->getAttributeValue (attributeClassStr);
 	return nullptr;
 }
 
@@ -146,20 +484,24 @@ static void writeResourceNode (const char* name, const UINode* resNode, Proc pro
 }
 
 //------------------------------------------------------------------------
-static void writeTemplateNode (const UINode* node, JSONWriter& writer)
+static void writeTemplateNode (const std::string* name, const UINode* node, JSONWriter& writer)
 {
-	auto name = getNodeAttributeName (node);
 	if (name)
 		writer.Key (*name);
 	writer.StartObject ();
+	writer.String (attributesStr);
+	writer.StartObject ();
 	writeAttributes (*node->getAttributes (), writer, name != nullptr);
+	writer.EndObject ();
 	if (node->getChildren ().empty () == false)
 	{
 		writer.Key (keyChildrenStr);
-		writer.StartArray ();
+		writer.StartObject ();
 		for (const auto& child : node->getChildren ())
-			writeTemplateNode (child, writer);
-		writer.EndArray ();
+		{
+			writeTemplateNode (getNodeAttributeViewClass (child), child, writer);
+		}
+		writer.EndObject ();
 	}
 	writer.EndObject ();
 }
@@ -171,7 +513,7 @@ static void writeTemplates (const std::vector<const UINode*>& templates, JSONWri
 	writer.StartObject ();
 	for (auto& child : templates)
 	{
-		writeTemplateNode (child, writer);
+		writeTemplateNode (getNodeAttributeName (child), child, writer);
 	}
 	writer.EndObject ();
 }
