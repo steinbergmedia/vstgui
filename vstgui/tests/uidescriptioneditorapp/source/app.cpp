@@ -36,7 +36,8 @@ using namespace Application;
 //------------------------------------------------------------------------
 static void makeAndOpenWindow ();
 
-static const Command BenchmarkCommand {CommandGroup::File, "Run JSON/XML Benchmark"};
+static const IdStringPtr RunJSONXMLBenchmark = "Run JSON/XML Benchmark";
+static const Command BenchmarkCommand {CommandGroup::File, RunJSONXMLBenchmark};
 
 //------------------------------------------------------------------------
 class Controller : public WindowControllerAdapter, public ICommandHandler
@@ -183,7 +184,7 @@ public:
 
 	void runBenchmark ()
 	{
-		static constexpr auto iterations = 1000u;
+		static constexpr auto iterations = 100u;
 
 		if (!uidesc)
 			return;
@@ -216,7 +217,7 @@ public:
 		}
 		auto xmlEndTime = std::chrono::high_resolution_clock::now ();
 
-		InputStreamContentProvider jsonContentProvider (xmlData);
+		InputStreamContentProvider jsonContentProvider (jsonData);
 
 		auto jsonStartTime = std::chrono::high_resolution_clock::now ();
 		for (auto i = 0u; i < iterations; ++i)
@@ -274,7 +275,7 @@ public:
 
 	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override
 	{
-		if (cmd == Commands::CloseWindow)
+		if (cmd == Commands::CloseWindow || cmd == BenchmarkCommand)
 			return true;
 		return false;
 	}
@@ -288,7 +289,8 @@ public:
 				static const auto order = {
 				    Commands::NewDocument.name,    Commands::OpenDocument.name,
 				    Commands::SaveDocument.name,   Commands::SaveDocumentAs.name,
-				    Commands::RevertDocument.name, Commands::CloseWindow.name};
+				    Commands::RevertDocument.name, BenchmarkCommand.name,
+				    Commands::CloseWindow.name};
 				auto leftIndex = std::find (order.begin (), order.end (), lhs);
 				auto rightIndex = std::find (order.begin (), order.end (), rhs);
 				return std::distance (leftIndex, rightIndex) > 0;

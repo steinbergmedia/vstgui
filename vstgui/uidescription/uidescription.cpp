@@ -239,20 +239,19 @@ void UIDescription::setContentProvider (IContentProvider* provider)
 	impl->contentProvider = provider;
 }
 
-//------------------------------------------------------------------------
-static SharedPointer<Detail::UINode> parseUIDesc (IContentProvider* contentProvider)
-{
-	if (auto nodes = Detail::UIJsonDescReader::read (*contentProvider))
-		return nodes;
-	Detail::UIXMLParser parser;
-	return parser.parse (contentProvider);
-}
-
 //-----------------------------------------------------------------------------
 bool UIDescription::parse ()
 {
 	if (parsed ())
 		return true;
+		
+	static auto parseUIDesc = [] (IContentProvider* contentProvider) {
+		if (auto nodes = Detail::UIJsonDescReader::read (*contentProvider))
+			return nodes;
+		Detail::UIXMLParser parser;
+		return parser.parse (contentProvider);
+	};
+
 	if (impl->contentProvider)
 	{
 		if ((impl->nodes = parseUIDesc (impl->contentProvider)))
