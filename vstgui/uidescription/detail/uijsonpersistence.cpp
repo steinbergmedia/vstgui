@@ -485,10 +485,10 @@ void writeSingleAttributeNode (const char* attrName, const UINode* node, JSONWri
 template <typename JSONWriter, typename Proc>
 void writeResourceNode (const char* name, const UINode* resNode, Proc proc, JSONWriter& writer)
 {
-	if (resNode->getChildren ().empty ())
-		return;
 	writer.Key (name);
 	writer.StartObject ();
+	if (resNode->getAttributes () && resNode->getAttributes ()->empty () == false)
+		writeAttributes (*resNode->getAttributes (), writer);
 	for (auto& child : resNode->getChildren ())
 	{
 		if (child->noExport () == false)
