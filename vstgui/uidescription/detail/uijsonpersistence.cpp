@@ -18,12 +18,14 @@ namespace VSTGUI {
 namespace Detail {
 
 static constexpr auto attributeNameStr = "name";
+static constexpr auto attributeValueStr = "value";
 static constexpr auto attributeClassStr = "class";
 static constexpr auto attributeTagStr = "tag";
 static constexpr auto attributeRGBAStr = "rgba";
 static constexpr auto keyDataStr = "data";
 static constexpr auto keyChildrenStr = "children";
 static constexpr auto keyTemplatesStr = "templates";
+static constexpr auto keyViewsStr = "views";
 static constexpr auto attributesStr = "attributes";
 static constexpr auto colorStr = "color";
 static constexpr auto controlTagStr = "control-tag";
@@ -91,6 +93,7 @@ struct Handler
 		InGradientRootNode,
 		InControlTagRootNode,
 		InCustomRootNode,
+		InVariableRootNode,
 		InTemplateRootNode,
 		BitmapNode,
 		FontNode,
@@ -123,6 +126,12 @@ struct Handler
 			auto attrs = newAttributesWithNameAttr (keyStr);
 			attrs->setAttribute (attributeTagStr, {str, length});
 			nodeStack.back ()->getChildren ().add (new UIControlTagNode (controlTagStr, attrs));
+		}
+		else if (state == State::InVariableRootNode)
+		{
+			auto attrs = newAttributesWithNameAttr (keyStr);
+			attrs->setAttribute (attributeValueStr, {str, length});
+			nodeStack.back ()->getChildren ().add (new UIVariableNode (controlTagStr, attrs));
 		}
 		else
 		{
@@ -160,7 +169,7 @@ struct Handler
 			}
 			case State::InRootNode:
 			{
-				if (keyStr == keyTemplatesStr)
+				if (keyStr == keyTemplatesStr || keyStr == keyViewsStr)
 				{
 					newState = State::InTemplateRootNode;
 					break;
@@ -187,6 +196,8 @@ struct Handler
 				}
 				else if (keyStr == MainNodeNames::kCustom)
 					newState = State::InCustomRootNode;
+				else if (keyStr == MainNodeNames::kVariable)
+					newState = State::InVariableRootNode;
 				else
 					return false;
 				newNode = new UINode (keyStr, nullptr, needsFastChildNameAttributeLookup);
@@ -251,6 +262,7 @@ struct Handler
 			}
 			case State::InColorRootNode:
 			case State::InControlTagRootNode:
+			case State::InVariableRootNode:
 			case State::InGradientRootNode:
 			case State::FontNode:
 			case State::DataNode:
@@ -507,8 +519,25 @@ static void writeTemplateNode (const std::string* name, const UINode* node, JSON
 }
 
 //------------------------------------------------------------------------
+static void writeViewNodes (const std::vector<const UINode*>& views, JSONWriter& writer)
+{
+	if (views.empty ())
+		return;
+	writer.Key (keyViewsStr);
+	writer.StartObject ();
+	for (auto& child : views)
+	{
+		writeTemplateNode (getNodeAttributeViewClass (child), child, writer);
+	}
+	writer.EndObject ();
+}
+
+
+//------------------------------------------------------------------------
 static void writeTemplates (const std::vector<const UINode*>& templates, JSONWriter& writer)
 {
+	if (templates.empty ())
+		return;
 	writer.Key (keyTemplatesStr);
 	writer.StartObject ();
 	for (auto& child : templates)
@@ -527,6 +556,7 @@ static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	writeAttributes (*rootNode->getAttributes (), writer);
 	bool result = true;
 	std::vector<const UINode*> templateNodes;
+	std::vector<const UINode*> viewNodes;
 	const UINode* bitmapsNode = nullptr;
 	const UINode* fontsNode = nullptr;
 	const UINode* colorsNode = nullptr;
@@ -537,7 +567,7 @@ static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	for (const auto& child : rootNode->getChildren ())
 	{
 		if (child->getName () == MainNodeNames::kTemplate)
-			templateNodes.push_back (child);
+			templateNodes.emplace_back (child);
 		else if (child->getName () == MainNodeNames::kBitmap)
 			bitmapsNode = child;
 		else if (child->getName () == MainNodeNames::kFont)
@@ -552,12 +582,18 @@ static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 			gradientsNode = child;
 		else if (child->getName () == MainNodeNames::kCustom)
 			customNode = child;
+		else if (child->getName () == viewStr)
+			viewNodes.emplace_back (child);
 		else
 			return false; // unexpected input
 	}
 	if (variablesNode)
 	{
-		writeResourceNode (MainNodeNames::kVariable, variablesNode, writeNode, writer);
+		writeResourceNode (MainNodeNames::kVariable, variablesNode,
+		                   [] (UINode* node, JSONWriter& writer) {
+			                   writeSingleAttributeNode (attributeValueStr, node, writer);
+		                   },
+		                   writer);
 	}
 	if (bitmapsNode)
 	{
@@ -591,6 +627,7 @@ static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	{
 		writeResourceNode (MainNodeNames::kCustom, customNode, writeNode, writer);
 	}
+	writeViewNodes (viewNodes, writer);
 	writeTemplates (templateNodes, writer);
 	writer.EndObject ();
 	writer.EndObject ();
