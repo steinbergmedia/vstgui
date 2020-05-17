@@ -145,7 +145,8 @@ public:
 	void freePlatformResources ();
 
 	static CViewAttributeID kTemplateNameAttributeID;
-	
+
+	SharedPointer<UINode> getRootNode () const; // for testing
 protected:
 	void addDefaultNodes ();
 

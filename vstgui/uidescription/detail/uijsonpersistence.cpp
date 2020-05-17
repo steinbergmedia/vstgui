@@ -4,6 +4,7 @@
 
 #include "../uiattributes.h"
 #include "uijsonpersistence.h"
+#include <array>
 #include <deque>
 #include <map>
 #include <string_view>
@@ -40,21 +41,35 @@ static constexpr auto gradientStr = "gradient";
 namespace UIJsonDescReader {
 
 //------------------------------------------------------------------------
+template<size_t size>
 struct InputStreamWrapper
 {
 	using Ch = uint8_t;
 
-	InputStreamWrapper (InputStream& s) : stream (s) { s.readRaw (&current, 1); }
+	InputStreamWrapper (InputStream& s) : stream (s)
+	{
+		bufferLeft = bufferSize = stream.readRaw (buffer.data (), buffer.size ());
+		current = buffer[bufferSize-bufferLeft];
+	}
 
 	Ch Peek () const { return current; }
 	Ch Take ()
 	{
-		auto c = current;
-		if (stream.readRaw (&current, 1) != 1)
-			current = 0;
+		auto result = Peek ();
+		++pos;
+		if (bufferLeft == 1)
+		{
+			bufferLeft = bufferSize = stream.readRaw (buffer.data (), buffer.size ());
+			if (bufferSize == 0)
+			{
+				current = 0;
+				return result;
+			}
+		}
 		else
-			++pos;
-		return c;
+			--bufferLeft;
+		current = buffer[bufferSize-bufferLeft];
+		return result;
 	}
 	size_t Tell () { return pos; }
 
@@ -74,6 +89,10 @@ struct InputStreamWrapper
 	Ch current {};
 	size_t pos {0};
 	InputStream& stream;
+	
+	std::array<Ch, size> buffer;
+	size_t bufferLeft {};
+	size_t bufferSize {};
 };
 
 //------------------------------------------------------------------------
@@ -251,7 +270,8 @@ struct Handler
 			}
 			case State::ChildrenNode:
 			{
-				newNode = new UINode (viewStr);
+				auto attr = makeOwned<UIAttributes> (15);
+				newNode = new UINode (viewStr, attr);
 				newState = State::ViewNode;
 				break;
 			}
@@ -360,7 +380,7 @@ struct Handler
 //------------------------------------------------------------------------
 SharedPointer<UINode> read (InputStream& stream)
 {
-	InputStreamWrapper streamWrapper (stream);
+	InputStreamWrapper<1024> streamWrapper (stream);
 	Handler handler;
 	rapidjson::Reader reader;
 

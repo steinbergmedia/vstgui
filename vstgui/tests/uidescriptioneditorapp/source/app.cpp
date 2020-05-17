@@ -5,6 +5,7 @@
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cframe.h"
+#include "vstgui/lib/malloc.h"
 #include "vstgui/lib/platform/iplatformframe.h"
 #include "vstgui/lib/platform/common/genericoptionmenu.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
@@ -20,6 +21,10 @@
 #include "vstgui/uidescription/editing/uieditmenucontroller.h"
 #include "vstgui/uidescription/editing/uiundomanager.h"
 #include "vstgui/uidescription/uidescription.h"
+#include "vstgui/uidescription/uicontentprovider.h"
+#include "vstgui/uidescription/detail/uijsonpersistence.h"
+#include "vstgui/uidescription/detail/uixmlpersistence.h"
+#include <chrono>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -30,6 +35,8 @@ using namespace Application;
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
 static void makeAndOpenWindow ();
+
+static const Command BenchmarkCommand {CommandGroup::File, "Run JSON/XML Benchmark"};
 
 //------------------------------------------------------------------------
 class Controller : public WindowControllerAdapter, public ICommandHandler
@@ -60,7 +67,7 @@ public:
 
 		IApplication::instance ().registerCommand (Commands::SaveDocument, 's');
 		IApplication::instance ().registerCommand (Commands::RevertDocument, 0);
-
+		IApplication::instance ().registerCommand (BenchmarkCommand, 0);
 		return true;
 	}
 
@@ -136,6 +143,8 @@ public:
 			return editController->getUndoManager ()->canRedo ();
 		if (command == Commands::RevertDocument)
 			return !editController->getUndoManager ()->isSavePosition ();
+		if (command == BenchmarkCommand)
+			return true;
 		return false;
 	}
 
@@ -156,6 +165,11 @@ public:
 				window->close ();
 			}
 		}
+		if (command == BenchmarkCommand)
+		{
+			runBenchmark ();
+			return true;
+		}
 		return false;
 	}
 
@@ -165,6 +179,61 @@ public:
 		{
 			platformFrame->setupGenericOptionMenu (true);
 		}
+	}
+
+	void runBenchmark ()
+	{
+		static constexpr auto iterations = 1000u;
+
+		if (!uidesc)
+			return;
+		auto node = uidesc->getRootNode ();
+		if (!node)
+			return;
+
+		CMemoryStream xmlData (1024, 1024, false);
+		CMemoryStream jsonData (1024, 1024, false);
+
+		Detail::UIXMLDescWriter xmlWriter;
+		if (!xmlWriter.write (xmlData, node))
+			return;
+		xmlData.rewind ();
+
+		if (!Detail::UIJsonDescWriter::write (jsonData, node))
+			return;
+		jsonData.end ();
+		jsonData.rewind ();
+
+		InputStreamContentProvider xmlContentProvider (xmlData);
+		
+		auto xmlStartTime = std::chrono::high_resolution_clock::now ();
+		for (auto i = 0u; i < iterations; ++i)
+		{
+			xmlData.rewind ();
+			Detail::UIXMLParser parser;
+			if (!parser.parse (&xmlContentProvider))
+				return;
+		}
+		auto xmlEndTime = std::chrono::high_resolution_clock::now ();
+
+		auto jsonStartTime = std::chrono::high_resolution_clock::now ();
+		for (auto i = 0u; i < iterations; ++i)
+		{
+			jsonData.rewind ();
+			if (!Detail::UIJsonDescReader::read (jsonData))
+				return;
+		}
+		auto jsonEndTime = std::chrono::high_resolution_clock::now ();
+
+		auto xmlDuration =
+		    std::chrono::duration_cast<std::chrono::milliseconds> (xmlEndTime - xmlStartTime)
+		        .count ();
+		auto jsonDuration =
+		    std::chrono::duration_cast<std::chrono::milliseconds> (jsonEndTime - jsonStartTime)
+		        .count ();
+
+		printf ("xml :%lld\n", xmlDuration);
+		printf ("json:%lld\n", jsonDuration);
 	}
 
 	std::string descPath;

@@ -340,6 +340,12 @@ void UIDescription::freePlatformResources ()
 		FreeNodePlatformResources (impl->nodes);
 }
 
+//------------------------------------------------------------------------
+auto UIDescription::getRootNode () const -> SharedPointer<UINode>
+{
+	return impl->nodes;
+}
+
 //-----------------------------------------------------------------------------
 bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
 {

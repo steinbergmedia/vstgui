@@ -23,6 +23,7 @@ public:
 	using StringArray = std::vector<std::string>;
 	
 	explicit UIAttributes (UTF8StringPtr* attributes = nullptr);
+	explicit UIAttributes (size_t reserve);
 	~UIAttributes () noexcept override = default;
 
 	using UIAttributesMap::empty;
