@@ -791,7 +791,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		{
 			if (uiEditController->getUndoManager ()->isSavePosition () == false)
 				Detail::saveSharedUIDescription ();
-			int32_t flags = UIDescription::kWriteImagesIntoXMLFile |
+			int32_t flags = UIDescription::kWriteImagesIntoUIDescFile |
 			                CompressedUIDescription::kForceWriteCompressedDesc;
 			if (!uiDesc->save (uiDesc->getFilePath (), flags))
 			{

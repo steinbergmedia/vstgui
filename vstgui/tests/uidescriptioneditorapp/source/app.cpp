@@ -64,7 +64,10 @@ public:
 		return true;
 	}
 
-	bool save () { return uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoXMLFile); }
+	bool save ()
+	{
+		return uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoUIDescFile);
+	}
 
 	void beforeShow (IWindow& window) override
 	{

@@ -648,7 +648,7 @@ TESTCASE(UIDescriptionTests,
 		SaveUIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		CMemoryStream outputStream (1024, 1024, false);
-		EXPECT(desc.saveToStream (outputStream, SaveUIDescription::kWriteImagesIntoXMLFile));
+		EXPECT(desc.saveToStream (outputStream, SaveUIDescription::kWriteImagesIntoUIDescFile));
 		outputStream.end ();
 		std::string result (reinterpret_cast<const char*> (outputStream.getBuffer ()));
 		EXPECT(result.size() == str.size ());

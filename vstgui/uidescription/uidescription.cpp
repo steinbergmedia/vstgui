@@ -81,7 +81,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 {
 	using UINode = Detail::UINode;
 	
-	CResourceDescription xmlFile;
+	CResourceDescription uidescFile;
 	std::string filePath;
 	
 	mutable IController* controller {nullptr};
@@ -108,13 +108,13 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 };
 
 //-----------------------------------------------------------------------------
-UIDescription::UIDescription (const CResourceDescription& xmlFile, IViewFactory* _viewFactory)
+UIDescription::UIDescription (const CResourceDescription& uidescFile, IViewFactory* _viewFactory)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-	impl->xmlFile = xmlFile;
+	impl->uidescFile = uidescFile;
 	impl->viewFactory = _viewFactory;
-	if (xmlFile.type == CResourceDescription::kStringType && xmlFile.u.name != nullptr)
-		setFilePath (xmlFile.u.name);
+	if (uidescFile.type == CResourceDescription::kStringType && uidescFile.u.name != nullptr)
+		setFilePath (uidescFile.u.name);
 	if (impl->viewFactory == nullptr)
 		impl->viewFactory = getGenericViewFactory ();
 }
@@ -138,7 +138,7 @@ UIDescription::~UIDescription () noexcept
 void UIDescription::setFilePath (UTF8StringPtr path)
 {
 	impl->filePath = path;
-	impl->xmlFile.u.name = impl->filePath.data (); // make sure that xmlFile.u.name points to valid memory
+	impl->uidescFile.u.name = impl->filePath.data (); // make sure that xmlFile.u.name points to valid memory
 }
 
 //-----------------------------------------------------------------------------
@@ -148,9 +148,9 @@ UTF8StringPtr UIDescription::getFilePath () const
 }
 
 //-----------------------------------------------------------------------------
-const CResourceDescription& UIDescription::getXmlFile () const
+const CResourceDescription& UIDescription::getUIDescFile () const
 {
-	return impl->xmlFile;
+	return impl->uidescFile;
 }
 
 //-----------------------------------------------------------------------------
@@ -256,7 +256,7 @@ bool UIDescription::parse ()
 	else
 	{
 		CResourceInputStream resInputStream;
-		if (resInputStream.open (impl->xmlFile))
+		if (resInputStream.open (impl->uidescFile))
 		{
 			InputStreamContentProvider contentProvider (resInputStream);
 			if ((impl->nodes = parser.parse (&contentProvider)))
@@ -265,10 +265,10 @@ bool UIDescription::parse ()
 				return true;
 			}
 		}
-		else if (impl->xmlFile.type == CResourceDescription::kStringType)
+		else if (impl->uidescFile.type == CResourceDescription::kStringType)
 		{
 			CFileStream fileStream;
-			if (fileStream.open (impl->xmlFile.u.name, CFileStream::kReadMode))
+			if (fileStream.open (impl->uidescFile.u.name, CFileStream::kReadMode))
 			{
 				InputStreamContentProvider contentProvider (fileStream);
 				if ((impl->nodes = parser.parse (&contentProvider)))
@@ -430,9 +430,9 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 			{
 				if (auto* bitmapNode = dynamic_cast<Detail::UIBitmapNode*> (childNode))
 				{
-					if (flags & kWriteImagesIntoXMLFile)
+					if (flags & kWriteImagesIntoUIDescFile)
 					{
-						if (!(flags & kDoNotVerifyImageXMLData) || !bitmapNode->hasXMLData ())
+						if (!(flags & kDoNotVerifyImageData) || !bitmapNode->hasXMLData ())
 							bitmapNode->createXMLData (impl->filePath);
 					}
 					else

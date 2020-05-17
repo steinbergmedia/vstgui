@@ -1377,7 +1377,7 @@ int32_t UIEditController::getSaveOptions ()
 	bool val;
 	if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
 	{
-		flags |= UIDescription::kWriteImagesIntoXMLFile;
+		flags |= UIDescription::kWriteImagesIntoUIDescFile;
 	}
 	if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
 	{

@@ -26,12 +26,12 @@ protected:
 	enum SaveFlagBits
 	{
 		WriteWindowsResourceFileBit = 0,
-		WriteImagesIntoXMLFileBit,
-		DoNotVerifyImageXMLDataBit,
+		WriteImagesIntoUIDescFileBit,
+		DoNotVerifyImageDataBit,
 		LastSaveFlagBit,
 	};
 public:
-	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
+	UIDescription (const CResourceDescription& uidescFile, IViewFactory* viewFactory = nullptr);
 	UIDescription (IContentProvider* contentProvider, IViewFactory* viewFactory = nullptr);
 	~UIDescription () noexcept override;
 
@@ -39,8 +39,11 @@ public:
 
 	enum SaveFlags {
 		kWriteWindowsResourceFile	= 1 << WriteWindowsResourceFileBit,
-		kWriteImagesIntoXMLFile		= 1 << WriteImagesIntoXMLFileBit,
-		kDoNotVerifyImageXMLData	= 1 << DoNotVerifyImageXMLDataBit,
+		kWriteImagesIntoUIDescFile	= 1 << WriteImagesIntoUIDescFileBit,
+		kDoNotVerifyImageData	= 1 << DoNotVerifyImageDataBit,
+		
+		kWriteImagesIntoXMLFile [[deprecated("use kWriteImagesIntoUIDescFile")]] = kWriteImagesIntoUIDescFile,
+		kDoNotVerifyImageXMLData [[deprecated("use kDoNotVerifyImageData")]] = kDoNotVerifyImageData,
 	};
 
 	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile);
@@ -151,7 +154,7 @@ protected:
 	bool parsed () const;
 	void setContentProvider (IContentProvider* provider);
 
-	const CResourceDescription& getXmlFile () const;
+	const CResourceDescription& getUIDescFile () const;
 private:
 	CView* createViewFromNode (UINode* node) const;
 	UINode* getBaseNode (UTF8StringPtr name) const;

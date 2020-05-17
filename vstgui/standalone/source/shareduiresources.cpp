@@ -331,7 +331,7 @@ void saveSharedUIDescription ()
 {
 	if (auto uiDesc = getSharedUIDescription ())
 	{
-		int32_t flags = UIDescription::kWriteImagesIntoXMLFile |
+		int32_t flags = UIDescription::kWriteImagesIntoUIDescFile |
 		                CompressedUIDescription::kForceWriteCompressedDesc;
 		if (uiDesc->save (uiDesc->getFilePath (), flags))
 			return;

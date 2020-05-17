@@ -96,14 +96,14 @@ bool CompressedUIDescription::parse ()
 		return true;
 	bool result = false;
 	CResourceInputStream resStream (kLittleEndianByteOrder);
-	if (resStream.open (getXmlFile ()))
+	if (resStream.open (getUIDescFile ()))
 	{
 		result = parseWithStream (resStream);
 	}
-	else if (getXmlFile ().type == CResourceDescription::kStringType)
+	else if (getUIDescFile ().type == CResourceDescription::kStringType)
 	{
 		CFileStream fileStream;
-		if (fileStream.open (getXmlFile ().u.name,
+		if (fileStream.open (getUIDescFile ().u.name,
 		                     CFileStream::kReadMode | CFileStream::kBinaryMode,
 		                     kLittleEndianByteOrder))
 		{
@@ -142,7 +142,7 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 			}
 		}
 	}
-	if (!(flags & kNoPlainXmlFileBackup))
+	if (!(flags & kNoPlainUIDescFileBackup))
 	{
 		// make a xml backup
 		std::string xmlFileName (filename);
