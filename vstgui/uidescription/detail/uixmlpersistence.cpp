@@ -11,7 +11,7 @@ namespace VSTGUI {
 namespace Detail {
 
 //-----------------------------------------------------------------------------
-SharedPointer<UINode> UIXMLParser::parse (Xml::IContentProvider* provider)
+SharedPointer<UINode> UIXMLParser::parse (IContentProvider* provider)
 {
 	Xml::Parser parser;
 	if (parser.parse (provider, this))

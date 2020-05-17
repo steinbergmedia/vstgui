@@ -81,9 +81,9 @@ bool CompressedUIDescription::parseWithStream (InputStream& stream)
 		if (zin.open (stream))
 		{
 			Xml::InputStreamContentProvider compressedContentProvider (zin);
-			setXmlContentProvider (&compressedContentProvider);
+			setContentProvider (&compressedContentProvider);
 			result = UIDescription::parse ();
-			setXmlContentProvider (nullptr);
+			setContentProvider (nullptr);
 		}
 	}
 	return result;

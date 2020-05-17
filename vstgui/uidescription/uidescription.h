@@ -32,7 +32,7 @@ protected:
 	};
 public:
 	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
-	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = nullptr);
+	UIDescription (IContentProvider* contentProvider, IViewFactory* viewFactory = nullptr);
 	~UIDescription () noexcept override;
 
 	virtual bool parse ();
@@ -149,7 +149,7 @@ protected:
 	bool saveToStream (OutputStream& stream, int32_t flags);
 
 	bool parsed () const;
-	void setXmlContentProvider (Xml::IContentProvider* provider);
+	void setContentProvider (IContentProvider* provider);
 
 	const CResourceDescription& getXmlFile () const;
 private:

@@ -127,7 +127,7 @@ bool Parser::parse (IContentProvider* provider, IHandler* handler)
 			return false;
 		}
 
-		uint32_t bytesRead = provider->readRawXmlData ((int8_t*)buffer, kBufferSize);
+		uint32_t bytesRead = provider->readRawData ((int8_t*)buffer, kBufferSize);
 		if (bytesRead == kStreamIOError)
 			bytesRead = 0;
 		XML_Status status = XML_ParseBuffer (pImpl->parser, static_cast<int> (bytesRead), bytesRead == 0);
@@ -211,7 +211,7 @@ MemoryContentProvider::MemoryContentProvider (const void* data, uint32_t dataSiz
 }
 
 //------------------------------------------------------------------------
-uint32_t MemoryContentProvider::readRawXmlData (int8_t* buffer, uint32_t size)
+uint32_t MemoryContentProvider::readRawData (int8_t* buffer, uint32_t size)
 {
 	return readRaw (buffer, size);
 }
@@ -235,7 +235,7 @@ InputStreamContentProvider::InputStreamContentProvider (InputStream& stream)
 }
 
 //------------------------------------------------------------------------
-uint32_t InputStreamContentProvider::readRawXmlData (int8_t* buffer, uint32_t size)
+uint32_t InputStreamContentProvider::readRawData (int8_t* buffer, uint32_t size)
 {
 	return stream.readRaw (buffer, size);
 }

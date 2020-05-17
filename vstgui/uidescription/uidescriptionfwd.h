@@ -16,10 +16,10 @@ class IViewFactory;
 class InputStream;
 class OutputStream;
 class IBitmapCreator;
+class IContentProvider;
 
 namespace Xml {
 
-class IContentProvider;
 class IHandler;
 class Parser;
 class MemoryContentProvider;

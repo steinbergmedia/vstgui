@@ -9,6 +9,7 @@
 #include "uiviewcreator.h"
 #include "cstream.h"
 #include "base64codec.h"
+#include "icontentprovider.h"
 #include "icontroller.h"
 #include "xmlparser.h"
 #include "../lib/cfont.h"
@@ -27,6 +28,7 @@
 #include "detail/parsecolor.h"
 #include "detail/scalefactorutils.h"
 #include "detail/uidesclist.h"
+#include "detail/uijsonpersistence.h"
 #include "detail/uinode.h"
 #include "detail/uiviewcreatorattributes.h"
 #include "detail/uixmlpersistence.h"
@@ -84,7 +86,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	
 	mutable IController* controller {nullptr};
 	IViewFactory* viewFactory {nullptr};
-	Xml::IContentProvider* xmlContentProvider {nullptr};
+	IContentProvider* contentProvider {nullptr};
 	IBitmapCreator* bitmapCreator { nullptr};
 
 	SharedPointer<UINode> nodes;
@@ -118,11 +120,11 @@ UIDescription::UIDescription (const CResourceDescription& xmlFile, IViewFactory*
 }
 
 //-----------------------------------------------------------------------------
-UIDescription::UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* _viewFactory)
+UIDescription::UIDescription (IContentProvider* contentProvider, IViewFactory* _viewFactory)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->viewFactory = _viewFactory;
-	impl->xmlContentProvider = xmlContentProvider;
+	impl->contentProvider = contentProvider;
 	if (impl->viewFactory == nullptr)
 		impl->viewFactory = getGenericViewFactory ();
 }
@@ -232,9 +234,9 @@ bool UIDescription::parsed () const
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setXmlContentProvider (Xml::IContentProvider* provider)
+void UIDescription::setContentProvider (IContentProvider* provider)
 {
-	impl->xmlContentProvider = provider;
+	impl->contentProvider = provider;
 }
 
 //-----------------------------------------------------------------------------
@@ -243,9 +245,9 @@ bool UIDescription::parse ()
 	if (parsed ())
 		return true;
 	Detail::UIXMLParser parser;
-	if (impl->xmlContentProvider)
+	if (impl->contentProvider)
 	{
-		if ((impl->nodes = parser.parse (impl->xmlContentProvider)))
+		if ((impl->nodes = parser.parse (impl->contentProvider)))
 		{
 			addDefaultNodes ();
 			return true;
@@ -561,8 +563,7 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 			customData->remember ();
 		}
 		UINode baseNode ("vstgui-ui-description-view-list", nodeList);
-		Detail::UIXMLDescWriter writer;
-		return writer.write (stream, &baseNode);
+		return Detail::UIJsonDescWriter::write (stream, &baseNode, false);
 	}
 	return false;
 }
@@ -570,10 +571,7 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 //-----------------------------------------------------------------------------
 bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData)
 {
-	Xml::InputStreamContentProvider contentProvider (stream);
-	Detail::UIXMLParser parser;
-	SharedPointer<UINode> baseNode = parser.parse (&contentProvider);
-	if (baseNode)
+	if (auto baseNode = Detail::UIJsonDescReader::read (stream))
 	{
 		Detail::UIDescList& children = baseNode->getChildren ();
 		for (auto& childNode : children)

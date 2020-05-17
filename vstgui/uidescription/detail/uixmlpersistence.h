@@ -15,7 +15,7 @@ namespace Detail {
 //-----------------------------------------------------------------------------
 struct UIXMLParser : public Xml::IHandler
 {
-	SharedPointer<UINode> parse (Xml::IContentProvider* provider);
+	SharedPointer<UINode> parse (IContentProvider* provider);
 
 	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
 	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;

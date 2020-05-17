@@ -11,6 +11,7 @@ set(${target}_sources
     cstream.h
     delegationcontroller.h
     doc.h
+    icontentprovider.h
     icontroller.h
     iuidescription.h
     iviewcreator.h
