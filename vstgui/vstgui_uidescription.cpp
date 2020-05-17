@@ -69,4 +69,9 @@
 #include "uidescription/viewcreator/vumetercreator.cpp"
 #include "uidescription/viewcreator/xypadcreator.cpp"
 
+#include "uidescription/detail/uidesclist.cpp"
+#include "uidescription/detail/uijsonpersistence.cpp"
+#include "uidescription/detail/uinode.cpp"
+#include "uidescription/detail/uixmlpersistence.cpp"
+
 #include "uidescription/xmlparser.cpp" // needs to be last
