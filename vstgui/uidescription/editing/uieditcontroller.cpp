@@ -61,7 +61,7 @@ public:
 		if (uiDesc == nullptr)
 		{
 #ifdef HAVE_EDITORUIDESC_H
-			Xml::MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
+			MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
 			SharedPointer<UIDescription> editorDesc = owned (new UIDescription (&provider));
 			if (editorDesc->parse ())
 			{

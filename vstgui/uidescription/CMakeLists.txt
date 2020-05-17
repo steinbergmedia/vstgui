@@ -18,6 +18,8 @@ set(${target}_sources
     iviewfactory.h
     uiattributes.cpp
     uiattributes.h
+    uicontentprovider.cpp
+    uicontentprovider.h
     uidescription.cpp
     uidescription.h
     uidescriptionlistener.h

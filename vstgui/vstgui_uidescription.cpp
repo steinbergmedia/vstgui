@@ -4,8 +4,10 @@
 
 #include "vstgui_uidescription.h"
 
+#include "uidescription/compresseduidescription.cpp"
 #include "uidescription/cstream.cpp"
 #include "uidescription/uiattributes.cpp"
+#include "uidescription/uicontentprovider.cpp"
 #include "uidescription/uidescription.cpp"
 #include "uidescription/uiviewcreator.cpp"
 #include "uidescription/uiviewfactory.cpp"

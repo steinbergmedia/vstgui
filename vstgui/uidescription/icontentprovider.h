@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../lib/vstguibase.h"
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 

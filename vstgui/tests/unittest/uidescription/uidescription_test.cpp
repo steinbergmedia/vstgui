@@ -7,6 +7,7 @@
 #include "../../../uidescription/uidescriptionlistener.h"
 #include "../../../uidescription/uiattributes.h"
 #include "../../../uidescription/icontroller.h"
+#include "../../../uidescription/uicontentprovider.h"
 #include "../../../uidescription/xmlparser.h"
 #include "../../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../../lib/ccolor.h"
@@ -182,7 +183,7 @@ constexpr auto sharedResourcesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
 
 struct SaveUIDescription : public UIDescription
 {
-	SaveUIDescription (Xml::IContentProvider* xmlContentProvider)
+	SaveUIDescription (IContentProvider* xmlContentProvider)
 	: UIDescription (xmlContentProvider) {}
 
 	using UIDescription::saveToStream;
@@ -392,7 +393,7 @@ using StringPtrList = std::list<const std::string*>;
 TESTCASE(UIDescriptionTests,
 
 	TEST(parseEmpty,
-		Xml::MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen(emptyUIDesc)));
+		MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen(emptyUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		EXPECT(desc.getGradient ("t") == nullptr);
@@ -406,7 +407,7 @@ TESTCASE(UIDescriptionTests,
 	);
 	
 	TEST(colors,
-		Xml::MemoryContentProvider provider (colorNodesUIDesc, static_cast<uint32_t> (strlen(colorNodesUIDesc)));
+		MemoryContentProvider provider (colorNodesUIDesc, static_cast<uint32_t> (strlen(colorNodesUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		CColor c;
@@ -447,7 +448,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(fonts,
-		Xml::MemoryContentProvider provider (fontNodesUIDesc, static_cast<uint32_t> (strlen(fontNodesUIDesc)));
+		MemoryContentProvider provider (fontNodesUIDesc, static_cast<uint32_t> (strlen(fontNodesUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		EXPECT(desc.hasFontName ("f1"));
@@ -504,7 +505,7 @@ TESTCASE(UIDescriptionTests,
 	);
 	
 	TEST(bitmaps,
-		Xml::MemoryContentProvider provider (bitmapNodesUIDesc, static_cast<uint32_t> (strlen(bitmapNodesUIDesc)));
+		MemoryContentProvider provider (bitmapNodesUIDesc, static_cast<uint32_t> (strlen(bitmapNodesUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		EXPECT(desc.hasBitmapName ("b1"));
@@ -532,7 +533,7 @@ TESTCASE(UIDescriptionTests,
 	);
 	
 	TEST(tags,
-		Xml::MemoryContentProvider provider (tagNodesUIDesc, static_cast<uint32_t> (strlen(tagNodesUIDesc)));
+		MemoryContentProvider provider (tagNodesUIDesc, static_cast<uint32_t> (strlen(tagNodesUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		EXPECT(desc.hasTagName ("t1"));
@@ -558,7 +559,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(lookupTagsCalculateTag,
-		Xml::MemoryContentProvider provider (calculateTagNodesUIDesc, static_cast<uint32_t> (strlen(calculateTagNodesUIDesc)));
+		MemoryContentProvider provider (calculateTagNodesUIDesc, static_cast<uint32_t> (strlen(calculateTagNodesUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		auto name = desc.lookupControlTagName (3);
@@ -567,7 +568,7 @@ TESTCASE(UIDescriptionTests,
 	);
 	
 	TEST(gradient,
-		Xml::MemoryContentProvider provider (gradientNodesUIDesc, static_cast<uint32_t> (strlen(gradientNodesUIDesc)));
+		MemoryContentProvider provider (gradientNodesUIDesc, static_cast<uint32_t> (strlen(gradientNodesUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		EXPECT(desc.hasGradientName ("g1"));
@@ -601,7 +602,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(variables,
-		Xml::MemoryContentProvider provider (variableNodesUIDesc, static_cast<uint32_t> (strlen(variableNodesUIDesc)));
+		MemoryContentProvider provider (variableNodesUIDesc, static_cast<uint32_t> (strlen(variableNodesUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		double value;
@@ -621,7 +622,7 @@ TESTCASE(UIDescriptionTests,
 	);
 	
 	TEST(calculations,
-		Xml::MemoryContentProvider provider (tagNodesUIDesc, static_cast<uint32_t> (strlen(tagNodesUIDesc)));
+		MemoryContentProvider provider (tagNodesUIDesc, static_cast<uint32_t> (strlen(tagNodesUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		double value;
@@ -643,7 +644,7 @@ TESTCASE(UIDescriptionTests,
 
 	TEST(writeToStream,
 		std::string str (withAllNodesUIDesc);
-		Xml::MemoryContentProvider provider (str.data (), static_cast<uint32_t> (str.size ()));
+		MemoryContentProvider provider (str.data (), static_cast<uint32_t> (str.size ()));
 		SaveUIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		CMemoryStream outputStream (1024, 1024, false);
@@ -655,7 +656,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(getViewAttributes,
-		 Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		 MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		 UIDescription desc (&provider);
 		 EXPECT(desc.parse () == true);
 		 
@@ -669,7 +670,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(collectTemplateViewNames,
-		 Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		 MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		 UIDescription desc (&provider);
 		 EXPECT(desc.parse () == true);
 
@@ -680,7 +681,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(duplicateTemplate,
-		 Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		 MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		 UIDescription desc (&provider);
 		 EXPECT(desc.parse () == true);
 
@@ -697,7 +698,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(changeTemplateName,
-		 Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		 MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		 UIDescription desc (&provider);
 		 EXPECT(desc.parse () == true);
 
@@ -709,7 +710,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(getTemplateNameFromView,
-		 Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		 MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		 UIDescription desc (&provider);
 		 EXPECT(desc.parse () == true);
 
@@ -721,7 +722,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(removeTemplate,
-		 Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		 MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		 UIDescription desc (&provider);
 		 EXPECT(desc.parse () == true);
 		 
@@ -730,7 +731,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(addNewTemplate,
-		 Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		 MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		 UIDescription desc (&provider);
 		 EXPECT(desc.parse () == true);
 
@@ -743,7 +744,7 @@ TESTCASE(UIDescriptionTests,
 	);
 	
 	TEST(storeRestoreViews,
-		Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 
@@ -767,7 +768,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(storeRestoreViewsAttached,
-		Xml::MemoryContentProvider provider (restoreViewUIDesc, static_cast<uint32_t> (strlen(restoreViewUIDesc)));
+		MemoryContentProvider provider (restoreViewUIDesc, static_cast<uint32_t> (strlen(restoreViewUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 
@@ -792,7 +793,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(updateViewDescription,
-		Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+		MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		Controller controller;
@@ -808,7 +809,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(customAttributes,
-		Xml::MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
+		MemoryContentProvider provider (createViewUIDesc, static_cast<uint32_t> (strlen(createViewUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		auto attr = desc.getCustomAttributes("Test", false);
@@ -820,7 +821,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(listeners,
-		Xml::MemoryContentProvider provider (completeExample, static_cast<uint32_t> (strlen(completeExample)));
+		MemoryContentProvider provider (completeExample, static_cast<uint32_t> (strlen(completeExample)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 
@@ -909,7 +910,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(focusSettings,
-		Xml::MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen(emptyUIDesc)));
+		MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen(emptyUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 
@@ -924,7 +925,7 @@ TESTCASE(UIDescriptionTests,
 	);
 
 	TEST(sharedResources,
-		Xml::MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen(emptyUIDesc)));
+		MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen(emptyUIDesc)));
 		UIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 
@@ -935,7 +936,7 @@ TESTCASE(UIDescriptionTests,
 		EXPECT(desc.getGradient ("g1") == nullptr);
 		EXPECT(desc.getBitmap ("b1") == nullptr);
 
-		Xml::MemoryContentProvider resProvider (sharedResourcesUIDesc, static_cast<uint32_t> (strlen(sharedResourcesUIDesc)));
+		MemoryContentProvider resProvider (sharedResourcesUIDesc, static_cast<uint32_t> (strlen(sharedResourcesUIDesc)));
 		UIDescription resDesc (&resProvider);
 		EXPECT(resDesc.parse () == true);
 
@@ -957,7 +958,7 @@ TESTCASE(UIDescriptionTests,
 
 #if 0
 	TEST(completeExample,
-		Xml::MemoryContentProvider provider (completeExample, strlen(completeExample));
+		MemoryContentProvider provider (completeExample, strlen(completeExample));
 		SaveUIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		auto view = owned (desc.createView ("view", nullptr));

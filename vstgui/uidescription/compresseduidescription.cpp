@@ -5,7 +5,7 @@
 #include "../lib/cresourcedescription.h"
 #include "compresseduidescription.h"
 #include "cstream.h"
-#include "xmlparser.h"
+#include "uicontentprovider.h"
 #include <array>
 
 //------------------------------------------------------------------------
@@ -80,7 +80,7 @@ bool CompressedUIDescription::parseWithStream (InputStream& stream)
 		ZLibInputStream zin;
 		if (zin.open (stream))
 		{
-			Xml::InputStreamContentProvider compressedContentProvider (zin);
+			InputStreamContentProvider compressedContentProvider (zin);
 			setContentProvider (&compressedContentProvider);
 			result = UIDescription::parse ();
 			setContentProvider (nullptr);

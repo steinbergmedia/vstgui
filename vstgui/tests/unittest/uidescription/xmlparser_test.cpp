@@ -4,6 +4,7 @@
 
 #include "../unittests.h"
 #include "../../../uidescription/xmlparser.h"
+#include "../../../uidescription/uicontentprovider.h"
 #include <string>
 
 namespace VSTGUI {

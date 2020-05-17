@@ -9,7 +9,7 @@
 #include "uiviewcreator.h"
 #include "cstream.h"
 #include "base64codec.h"
-#include "icontentprovider.h"
+#include "uicontentprovider.h"
 #include "icontroller.h"
 #include "xmlparser.h"
 #include "../lib/cfont.h"
@@ -258,7 +258,7 @@ bool UIDescription::parse ()
 		CResourceInputStream resInputStream;
 		if (resInputStream.open (impl->xmlFile))
 		{
-			Xml::InputStreamContentProvider contentProvider (resInputStream);
+			InputStreamContentProvider contentProvider (resInputStream);
 			if ((impl->nodes = parser.parse (&contentProvider)))
 			{
 				addDefaultNodes ();
@@ -270,7 +270,7 @@ bool UIDescription::parse ()
 			CFileStream fileStream;
 			if (fileStream.open (impl->xmlFile.u.name, CFileStream::kReadMode))
 			{
-				Xml::InputStreamContentProvider contentProvider (fileStream);
+				InputStreamContentProvider contentProvider (fileStream);
 				if ((impl->nodes = parser.parse (&contentProvider)))
 				{
 					addDefaultNodes ();
