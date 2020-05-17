@@ -448,6 +448,8 @@ void writeAttributes (const UIAttributes& attributes, JSONWriter& writer,
 	{
 		if (ignoreNameAttribute && attr.first == attributeNameStr)
 			continue;
+		if (attr.second.empty ()) // don't write empty attributes
+			continue;
 		writer.Key (attr.first.data (), attr.first.size ());
 		writer.String (attr.second.data (), attr.second.size ());
 	}
