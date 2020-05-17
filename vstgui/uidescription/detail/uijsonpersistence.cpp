@@ -41,15 +41,22 @@ static constexpr auto gradientStr = "gradient";
 namespace UIJsonDescReader {
 
 //------------------------------------------------------------------------
-template<size_t size>
-struct InputStreamWrapper
+template <size_t size>
+struct ContentProviderWrapper
 {
 	using Ch = uint8_t;
 
-	InputStreamWrapper (InputStream& s) : stream (s)
+	ContentProviderWrapper (IContentProvider& s) : stream (s)
 	{
-		bufferLeft = bufferSize = stream.readRaw (buffer.data (), buffer.size ());
-		current = buffer[bufferSize-bufferLeft];
+		bufferLeft = bufferSize =
+		    stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()), buffer.size ());
+		if (bufferSize == 0)
+		{
+			current = 0;
+			bufferLeft = 1;
+		}
+		else
+			current = buffer[bufferSize - bufferLeft];
 	}
 
 	Ch Peek () const { return current; }
@@ -59,7 +66,8 @@ struct InputStreamWrapper
 		++pos;
 		if (bufferLeft == 1)
 		{
-			bufferLeft = bufferSize = stream.readRaw (buffer.data (), buffer.size ());
+			bufferLeft = bufferSize =
+			    stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()), buffer.size ());
 			if (bufferSize == 0)
 			{
 				current = 0;
@@ -68,7 +76,7 @@ struct InputStreamWrapper
 		}
 		else
 			--bufferLeft;
-		current = buffer[bufferSize-bufferLeft];
+		current = buffer[bufferSize - bufferLeft];
 		return result;
 	}
 	size_t Tell () { return pos; }
@@ -88,8 +96,8 @@ struct InputStreamWrapper
 
 	Ch current {};
 	size_t pos {0};
-	InputStream& stream;
-	
+	IContentProvider& stream;
+
 	std::array<Ch, size> buffer;
 	size_t bufferLeft {};
 	size_t bufferSize {};
@@ -378,9 +386,9 @@ struct Handler
 };
 
 //------------------------------------------------------------------------
-SharedPointer<UINode> read (InputStream& stream)
+SharedPointer<UINode> read (IContentProvider& stream)
 {
-	InputStreamWrapper<1024> streamWrapper (stream);
+	ContentProviderWrapper<1024> streamWrapper (stream);
 	Handler handler;
 	rapidjson::Reader reader;
 

@@ -239,15 +239,23 @@ void UIDescription::setContentProvider (IContentProvider* provider)
 	impl->contentProvider = provider;
 }
 
+//------------------------------------------------------------------------
+static SharedPointer<Detail::UINode> parseUIDesc (IContentProvider* contentProvider)
+{
+	if (auto nodes = Detail::UIJsonDescReader::read (*contentProvider))
+		return nodes;
+	Detail::UIXMLParser parser;
+	return parser.parse (contentProvider);
+}
+
 //-----------------------------------------------------------------------------
 bool UIDescription::parse ()
 {
 	if (parsed ())
 		return true;
-	Detail::UIXMLParser parser;
 	if (impl->contentProvider)
 	{
-		if ((impl->nodes = parser.parse (impl->contentProvider)))
+		if ((impl->nodes = parseUIDesc (impl->contentProvider)))
 		{
 			addDefaultNodes ();
 			return true;
@@ -259,7 +267,7 @@ bool UIDescription::parse ()
 		if (resInputStream.open (impl->uidescFile))
 		{
 			InputStreamContentProvider contentProvider (resInputStream);
-			if ((impl->nodes = parser.parse (&contentProvider)))
+			if ((impl->nodes = parseUIDesc (&contentProvider)))
 			{
 				addDefaultNodes ();
 				return true;
@@ -271,7 +279,7 @@ bool UIDescription::parse ()
 			if (fileStream.open (impl->uidescFile.u.name, CFileStream::kReadMode))
 			{
 				InputStreamContentProvider contentProvider (fileStream);
-				if ((impl->nodes = parser.parse (&contentProvider)))
+				if ((impl->nodes = parseUIDesc (&contentProvider)))
 				{
 					addDefaultNodes ();
 					return true;
@@ -450,8 +458,12 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 	impl->nodes->getAttributes ()->setAttribute ("version", "1");
 	
 	BufferedOutputStream bufferedStream (stream);
-	Detail::UIXMLDescWriter writer;
-	return writer.write (bufferedStream, impl->nodes);
+	if (flags & kWriteAsXML)
+	{
+		Detail::UIXMLDescWriter writer;
+		return writer.write (bufferedStream, impl->nodes);
+	}
+	return Detail::UIJsonDescWriter::write (bufferedStream, impl->nodes);
 }
 
 //-----------------------------------------------------------------------------
@@ -577,7 +589,8 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 //-----------------------------------------------------------------------------
 bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData)
 {
-	if (auto baseNode = Detail::UIJsonDescReader::read (stream))
+	InputStreamContentProvider contentProvider (stream);
+	if (auto baseNode = Detail::UIJsonDescReader::read (contentProvider))
 	{
 		Detail::UIDescList& children = baseNode->getChildren ();
 		for (auto& childNode : children)

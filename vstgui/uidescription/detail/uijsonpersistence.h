@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../cstream.h"
+#include "../icontentprovider.h"
 #include "uinode.h"
 
 //------------------------------------------------------------------------
@@ -15,7 +16,7 @@ namespace Detail {
 namespace UIJsonDescReader {
 
 //------------------------------------------------------------------------
-SharedPointer<UINode> read (InputStream& stream);
+SharedPointer<UINode> read (IContentProvider& contentProvider);
 
 //------------------------------------------------------------------------
 } // UIJsonDescReader

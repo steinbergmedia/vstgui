@@ -216,11 +216,13 @@ public:
 		}
 		auto xmlEndTime = std::chrono::high_resolution_clock::now ();
 
+		InputStreamContentProvider jsonContentProvider (xmlData);
+
 		auto jsonStartTime = std::chrono::high_resolution_clock::now ();
 		for (auto i = 0u; i < iterations; ++i)
 		{
 			jsonData.rewind ();
-			if (!Detail::UIJsonDescReader::read (jsonData))
+			if (!Detail::UIJsonDescReader::read (jsonContentProvider))
 				return;
 		}
 		auto jsonEndTime = std::chrono::high_resolution_clock::now ();

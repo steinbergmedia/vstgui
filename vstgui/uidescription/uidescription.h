@@ -28,6 +28,7 @@ protected:
 		WriteWindowsResourceFileBit = 0,
 		WriteImagesIntoUIDescFileBit,
 		DoNotVerifyImageDataBit,
+		WriteAsXmlBit,
 		LastSaveFlagBit,
 	};
 public:
@@ -41,6 +42,7 @@ public:
 		kWriteWindowsResourceFile	= 1 << WriteWindowsResourceFileBit,
 		kWriteImagesIntoUIDescFile	= 1 << WriteImagesIntoUIDescFileBit,
 		kDoNotVerifyImageData	= 1 << DoNotVerifyImageDataBit,
+		kWriteAsXML = 1 << WriteAsXmlBit,
 		
 		kWriteImagesIntoXMLFile [[deprecated("use kWriteImagesIntoUIDescFile")]] = kWriteImagesIntoUIDescFile,
 		kDoNotVerifyImageXMLData [[deprecated("use kDoNotVerifyImageData")]] = kDoNotVerifyImageData,
