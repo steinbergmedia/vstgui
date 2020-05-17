@@ -3,6 +3,8 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../lib/vstguibase.h"
+#include "cstream.h"
+#include "icontentprovider.h"
 
 /// @cond ignore
 #if VSTGUI_USE_SYSTEM_EXPAT

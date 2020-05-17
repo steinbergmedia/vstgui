@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../lib/vstguibase.h"
-#include "cstream.h"
-#include "icontentprovider.h"
+#include "uidescriptionfwd.h"
 #include <memory>
 
 namespace VSTGUI {

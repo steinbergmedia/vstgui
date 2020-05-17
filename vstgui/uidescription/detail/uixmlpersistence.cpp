@@ -4,6 +4,7 @@
 
 #include "uixmlpersistence.h"
 #include "../uiattributes.h"
+#include "../cstream.h"
 #include <map>
 
 //------------------------------------------------------------------------
