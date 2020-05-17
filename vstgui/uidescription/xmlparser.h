@@ -5,6 +5,9 @@
 #pragma once
 
 #include "../lib/vstguibase.h"
+
+#if VSTGUI_ENABLE_XML_PARSER
+
 #include "uidescriptionfwd.h"
 #include <memory>
 
@@ -41,3 +44,5 @@ protected:
 };
 
 }} // namespaces
+
+#endif // VSTGUI_ENABLE_XML_PARSER

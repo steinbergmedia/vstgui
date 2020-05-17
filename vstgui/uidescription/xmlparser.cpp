@@ -3,6 +3,9 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../lib/vstguibase.h"
+
+#if VSTGUI_ENABLE_XML_PARSER
+
 #include "cstream.h"
 #include "icontentprovider.h"
 
@@ -228,3 +231,5 @@ namespace Xml {
 #endif
 
 /// @endcond
+
+#endif // VSTGUI_ENABLE_XML_PARSER

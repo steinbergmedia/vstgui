@@ -245,11 +245,15 @@ bool UIDescription::parse ()
 	if (parsed ())
 		return true;
 		
-	static auto parseUIDesc = [] (IContentProvider* contentProvider) {
+	static auto parseUIDesc = [] (IContentProvider* contentProvider) -> SharedPointer<UINode> {
 		if (auto nodes = Detail::UIJsonDescReader::read (*contentProvider))
 			return nodes;
+#if VSTGUI_ENABLE_XML_PARSER
 		Detail::UIXMLParser parser;
-		return parser.parse (contentProvider);
+		if (auto nodes = parser.parse (contentProvider))
+			return nodes;
+#endif
+		return nullptr;
 	};
 
 	if (impl->contentProvider)
@@ -459,8 +463,15 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 	BufferedOutputStream bufferedStream (stream);
 	if (flags & kWriteAsXML)
 	{
+#if VSTGUI_ENABLE_XML_PARSER
 		Detail::UIXMLDescWriter writer;
 		return writer.write (bufferedStream, impl->nodes);
+#else
+#if DEBUG
+		DebugPrint ("XML not available.");
+#endif
+		return false;
+#endif
 	}
 	return Detail::UIJsonDescWriter::write (bufferedStream, impl->nodes);
 }

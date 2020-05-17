@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include "../../lib/vstguibase.h"
+
+#if VSTGUI_ENABLE_XML_PARSER
+
 #include "uinode.h"
 #include "../xmlparser.h"
 #include <deque>
@@ -51,3 +55,6 @@ protected:
 //------------------------------------------------------------------------
 } // Detail
 } // VSTGUI
+
+#endif
+

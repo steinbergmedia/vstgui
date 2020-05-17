@@ -510,9 +510,30 @@ void writeSingleAttributeNode (const char* attrName, const UINode* node, JSONWri
 	vstgui_assert (name);
 	writer.Key (*name);
 	vstgui_assert (node->getAttributes ());
-	auto tag = node->getAttributes ()->getAttributeValue (attrName);
-	vstgui_assert (tag);
-	writer.String (*tag);
+	if (auto tag = node->getAttributes ()->getAttributeValue (attrName))
+		writer.String (*tag);
+	else
+		writer.String ("");
+}
+
+//------------------------------------------------------------------------
+template <typename JSONWriter>
+void writeColorAttributeNode (const UINode* node, JSONWriter& writer)
+{
+	auto name = getNodeAttributeName (node);
+	vstgui_assert (name);
+	writer.Key (*name);
+	vstgui_assert (node->getAttributes ());
+	if (auto color = node->getAttributes ()->getAttributeValue (attributeRGBAStr))
+	{
+		writer.String (*color);
+	}
+	else
+	{
+		auto colorNode = dynamic_cast<const UIColorNode*> (node);
+		vstgui_assert (colorNode);
+		writer.String (colorNode->getColor ().toString ().getString ());
+	}
 }
 
 //------------------------------------------------------------------------
@@ -623,6 +644,11 @@ bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 			customNode = child;
 		else if (child->getName () == viewStr)
 			viewNodes.emplace_back (child);
+		else if (child->getName () == "comment")
+		{
+			// comments are removed
+			continue;
+		}
 		else
 			return false; // unexpected input
 	}
@@ -644,10 +670,7 @@ bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	}
 	if (colorsNode)
 	{
-		writeResourceNode (MainNodeNames::kColor, colorsNode,
-		                   [] (UINode* node, JSONWriter& writer) {
-			                   writeSingleAttributeNode (attributeRGBAStr, node, writer);
-		                   },
+		writeResourceNode (MainNodeNames::kColor, colorsNode, writeColorAttributeNode<JSONWriter>,
 		                   writer);
 	}
 	if (gradientsNode)

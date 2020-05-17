@@ -3,6 +3,9 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uixmlpersistence.h"
+
+#if VSTGUI_ENABLE_XML_PARSER
+
 #include "../uiattributes.h"
 #include "../cstream.h"
 #include <map>
@@ -305,3 +308,5 @@ bool UIXMLDescWriter::writeNode (UINode* node, OutputStream& stream)
 //------------------------------------------------------------------------
 } // Detail
 } // VSTGUI
+
+#endif // VSTGUI_ENABLE_XML_PARSER

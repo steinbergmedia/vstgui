@@ -19,6 +19,10 @@ namespace VSTGUI {
 
 namespace {
 
+#if VSTGUI_ENABLE_XML_PARSER
+static constexpr auto defaultSafeFlags =
+    UIDescription::kWriteImagesIntoUIDescFile | UIDescription::kWriteAsXML;
+
 constexpr auto emptyUIDesc = R"(
 <vstgui-ui-description version="1">
 </vstgui-ui-description>
@@ -148,73 +152,6 @@ constexpr auto withAllNodesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
 </vstgui-ui-description>
 )";
 
-constexpr auto sharedResourcesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
-<vstgui-ui-description version="1">
-	<colors>
-		<color name="c1" rgba="#000000ff"/>
-	</colors>
-	<fonts>
-		<font font-name="Arial" name="f1" size="8"/>
-	</fonts>
-	<bitmaps>
-		<bitmap name="b1" path="b1.png">
-			<data encoding="base64">
-				iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABe2lDQ1BJQ0MgUHJvZmlsZQAAKJF9kE0rRF
-				EYx38zXjNkwcLC4jaG1RCjvGyUmYSaxTRGedvcueZFmXG7c4VsLJTtFCU23hZ8AjYWylopRUrKVyA20vUc
-				Q+OlPHXO+Z3nPM+/5/zB7ddNc7a0HTJZ24oOBrWx8Qmt4gEX5XjQ8OpGzuyPRMJIfJ0/4+VaqiWuWpXW3/
-				d/wzOdyBngqhTuM0zLFh4SblqwTcVKr96SoYRXFKcKvKE4XuCjj5pYNCR8KqwZaX1a+E7Yb6StDLiVvi/+
-				rSb1jTOz88bnPOon1Yns6IicXlmN5IgySFC8GGaAEF100Ct7F60EaJMbdmLRVs2hOXPJmkmlba1fnEhow1
-				mjza8F2ju6Qfn6269ibm4Xep6hJF/MxTfhZA0abos53w7UrsLxualb+keqRJY7mYTHQ6gZh7pLqJrMJTsD
-				hR9VB6Hs3nGemqFiHd7yjvO65zhv+9IsHp1lCx59anFwA7FlCF/A1ja0iHbt1Dv7WWccXX/QZQAAAExJRE
-				FUKBVjZEAALSAzDMFFYa0C8q6BRJhQhBEcUSAThIkGDUCVIIwBcNmAoRAmMKoBFhL4aEagJLYYhkXaazTN
-				q1jQBGBcdIUwcQYAOGIGVqwWW9EAAAAASUVORK5CYII=
-			</data>
-		</bitmap>
-	</bitmaps>
-	<gradients>
-		<gradient name="g1">
-			<color-stop rgba="#000000ff" start="0"/>
-			<color-stop rgba="#ff0000ff" start="0.5"/>
-			<color-stop rgba="#ffffffff" start="1"/>
-		</gradient>
-	</gradients>
-</vstgui-ui-description>
-)";
-
-struct SaveUIDescription : public UIDescription
-{
-	SaveUIDescription (IContentProvider* xmlContentProvider)
-	: UIDescription (xmlContentProvider) {}
-
-	using UIDescription::saveToStream;
-};
-
-struct Controller : public IController
-{
-	void valueChanged (CControl* pControl) override {};
-	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
-	{
-		return registeredTag;
-	}
-	IControlListener* getControlListener (UTF8StringPtr controlTagName) override
-	{
-		return this;
-	}
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
-	{
-		return nullptr;
-	}
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
-	{
-		return view;
-	}
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override
-	{
-		return nullptr;
-	}
-
-};
-
 constexpr auto createViewUIDesc = R"(
 <vstgui-ui-description version="1">
 	<template background-color="~ TransparentCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="view" opacity="1" origin="0, 0" size="400, 235" transparent="false">
@@ -315,6 +252,1209 @@ constexpr auto completeExample = R"(
 	</gradients>
 </vstgui-ui-description>
 )";
+
+constexpr auto sharedResourcesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<colors>
+		<color name="c1" rgba="#000000ff"/>
+	</colors>
+	<fonts>
+		<font font-name="Arial" name="f1" size="8"/>
+	</fonts>
+	<bitmaps>
+		<bitmap name="b1" path="b1.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABe2lDQ1BJQ0MgUHJvZmlsZQAAKJF9kE0rRF
+				EYx38zXjNkwcLC4jaG1RCjvGyUmYSaxTRGedvcueZFmXG7c4VsLJTtFCU23hZ8AjYWylopRUrKVyA20vUc
+				Q+OlPHXO+Z3nPM+/5/zB7ddNc7a0HTJZ24oOBrWx8Qmt4gEX5XjQ8OpGzuyPRMJIfJ0/4+VaqiWuWpXW3/
+				d/wzOdyBngqhTuM0zLFh4SblqwTcVKr96SoYRXFKcKvKE4XuCjj5pYNCR8KqwZaX1a+E7Yb6StDLiVvi/+
+				rSb1jTOz88bnPOon1Yns6IicXlmN5IgySFC8GGaAEF100Ct7F60EaJMbdmLRVs2hOXPJmkmlba1fnEhow1
+				mjza8F2ju6Qfn6269ibm4Xep6hJF/MxTfhZA0abos53w7UrsLxualb+keqRJY7mYTHQ6gZh7pLqJrMJTsD
+				hR9VB6Hs3nGemqFiHd7yjvO65zhv+9IsHp1lCx59anFwA7FlCF/A1ja0iHbt1Dv7WWccXX/QZQAAAExJRE
+				FUKBVjZEAALSAzDMFFYa0C8q6BRJhQhBEcUSAThIkGDUCVIIwBcNmAoRAmMKoBFhL4aEagJLYYhkXaazTN
+				q1jQBGBcdIUwcQYAOGIGVqwWW9EAAAAASUVORK5CYII=
+			</data>
+		</bitmap>
+	</bitmaps>
+	<gradients>
+		<gradient name="g1">
+			<color-stop rgba="#000000ff" start="0"/>
+			<color-stop rgba="#ff0000ff" start="0.5"/>
+			<color-stop rgba="#ffffffff" start="1"/>
+		</gradient>
+	</gradients>
+</vstgui-ui-description>
+)";
+
+#else
+
+//------------------------------------------------------------------------
+static constexpr auto defaultSafeFlags = UIDescription::kWriteImagesIntoUIDescFile;
+
+constexpr auto emptyUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1"
+	}
+}
+)";
+
+constexpr auto colorNodesUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"colors": {
+			"c1": "#000000ff",
+			"c2": "#ffffffff",
+			"c3": "#ff000064",
+			"c4": "#00ff0096",
+			"c5": "#ff00ff64"
+		}
+	}
+}
+)";
+
+constexpr auto fontNodesUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"fonts": {
+			"f1": {
+				"font-name": "Arial",
+				"size": "8"
+			},
+			"f2": {
+				"bold": "true",
+				"font-name": "Arial",
+				"size": "8"
+			},
+			"f3": {
+				"font-name": "Arial",
+				"italic": "true",
+				"size": "8"
+			},
+			"f4": {
+				"font-name": "Arial",
+				"size": "8",
+				"underline": "true"
+			},
+			"f5": {
+				"font-name": "Arial",
+				"size": "8",
+				"strike-through": "true"
+			},
+			"f6": {
+				"alternative-font-names": "Arial, Courier",
+				"font-name": "bla",
+				"size": "8"
+			}
+		}
+	}
+}
+)";
+
+constexpr auto bitmapNodesUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"bitmaps": {
+			"b1": {
+				"path": "b1.png"
+			},
+			"b1#2.0x": {
+				"path": "b1#2.0x.png",
+				"scale-factor": "2"
+			}
+		}
+	}
+}
+)";
+
+constexpr auto tagNodesUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"control-tags": {
+			"t1": "1234",
+			"t2": "4321",
+			"t3": "'mytg'"
+		}
+	}
+}
+)";
+
+constexpr auto calculateTagNodesUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"control-tags": {
+			"t1": "1+2"
+		}
+	}
+}
+)";
+
+constexpr auto gradientNodesUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"gradients": {
+			"g1": [
+				{
+					"rgba": "#000000ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#ff0000ff",
+					"start": "0.5"
+				},
+				{
+					"rgba": "#ffffffff",
+					"start": "1"
+				}
+			]
+		}
+	}
+}
+)";
+
+constexpr auto variableNodesUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"variables": {
+			"v1": "10",
+			"v2": "string",
+			"v3": "string",
+			"v4": "20.5",
+			"v5": "2*var.v1",
+			"v6": ""
+		}
+	}
+}
+)";
+
+constexpr auto withAllNodesUIDesc = R"({
+	"vstgui-ui-description": {
+		"version": "1",
+		"variables": {
+			"test": "10",
+			"test": "this is a string"
+		},
+		"bitmaps": {
+			"b1": {
+				"path": "b1.png",
+				"data": {
+					"encoding": "base64",
+					"data": "iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABe2lDQ1BJQ0MgUHJvZmlsZQAAKJF9kE0rRFEYx38zXjNkwcLC4jaG1RCjvGyUmYSaxTRGedvcueZFmXG7c4VsLJTtFCU23hZ8AjYWylopRUrKVyA20vUcQ+OlPHXO+Z3nPM+/5/zB7ddNc7a0HTJZ24oOBrWx8Qmt4gEX5XjQ8OpGzuyPRMJIfJ0/4+VaqiWuWpXW3/d/wzOdyBngqhTuM0zLFh4SblqwTcVKr96SoYRXFKcKvKE4XuCjj5pYNCR8KqwZaX1a+E7Yb6StDLiVvi/+rSb1jTOz88bnPOon1Yns6IicXlmN5IgySFC8GGaAEF100Ct7F60EaJMbdmLRVs2hOXPJmkmlba1fnEhow1mjza8F2ju6Qfn6269ibm4Xep6hJF/MxTfhZA0abos53w7UrsLxualb+keqRJY7mYTHQ6gZh7pLqJrMJTsDhR9VB6Hs3nGemqFiHd7yjvO65zhv+9IsHp1lCx59anFwA7FlCF/A1ja0iHbt1Dv7WWccXX/QZQAAAExJREFUKBVjZEAALSAzDMFFYa0C8q6BRJhQhBEcUSAThIkGDUCVIIwBcNmAoRAmMKoBFhL4aEagJLYYhkXaazTNq1jQBGBcdIUwcQYAOGIGVqwWW9EAAAAASUVORK5CYII="
+				}
+			},
+			"b1#2.0x": {
+				"path": "b1#2.0x.png",
+				"scale-factor": "2"
+			},
+			"dataBitmap": {
+				"path": "dataBitmap.png"
+			}
+		},
+		"fonts": {
+			"f1": {
+				"font-name": "Arial",
+				"size": "8"
+			},
+			"f2": {
+				"bold": "true",
+				"font-name": "Arial",
+				"size": "8"
+			}
+		},
+		"colors": {
+			"c1": "#000000ff",
+			"c2": "#ffffffff",
+			"c3": "#ff000064"
+		},
+		"gradients": {
+			"g1": [
+				{
+					"rgba": "#000000ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#ff0000ff",
+					"start": "0.5"
+				},
+				{
+					"rgba": "#ffffffff",
+					"start": "1"
+				}
+			]
+		},
+		"control-tags": {
+			"t1": "1234",
+			"t2": "4321"
+		}
+	}
+})";
+
+constexpr auto createViewUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"templates": {
+			"view": {
+				"attributes": {
+					"background-color": "~ TransparentCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "400, 235",
+					"transparent": "false"
+				},
+				"children": {
+					"CView": {
+						"attributes": {
+							"class": "CView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "4, 10",
+							"size": "392, 40",
+							"transparent": "false"
+						}
+					}
+				}
+			}
+		}
+	}
+}
+)";
+
+constexpr auto restoreViewUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"templates": {
+			"view": {
+				"attributes": {
+					"background-color": "~ TransparentCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "400, 235",
+					"transparent": "false"
+				},
+				"children": {
+					"CViewContainer": {
+						"attributes": {
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "4, 10",
+							"size": "392, 40",
+							"transparent": "false"
+						}
+					},
+					"CViewContainer": {
+						"attributes": {
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "4, 10",
+							"size": "392, 40",
+							"transparent": "false"
+						},
+						"children": {
+							"CView": {
+								"attributes": {
+									"class": "CView",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "4, 10",
+									"size": "392, 40",
+									"transparent": "false"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+)";
+
+constexpr auto completeExample = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"variables": {},
+		"bitmaps": {
+			"animation_knob": {
+				"path": "animation_knob.png"
+			},
+			"FrameBackground": {
+				"nineparttiled-offsets": "10, 20, 10, 10",
+				"path": "FrameBackground.png"
+			},
+			"TabController": {
+				"path": "TabController.png"
+			},
+			"horizontal_slider_back": {
+				"path": "horizontal_slider_back.bmp"
+			},
+			"onoff_button": {
+				"path": "onoff_button.bmp"
+			},
+			"rocker_switch": {
+				"path": "rocker_switch.bmp"
+			},
+			"slider_handle": {
+				"path": "slider_handle.bmp"
+			},
+			"switch_horizontal": {
+				"path": "switch_horizontal.bmp"
+			},
+			"switch_vertical": {
+				"path": "switch_vertical.bmp"
+			},
+			"vertical_slider_back": {
+				"path": "vertical_slider_back.bmp"
+			},
+			"vumeter_back": {
+				"path": "vumeter_back.bmp"
+			},
+			"vumeter_front": {
+				"path": "vumeter_front.bmp"
+			}
+		},
+		"fonts": {},
+		"colors": {},
+		"gradients": {
+			"Default TextButton Gradient": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient Highlighted": [
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#646464ff",
+					"start": "1"
+				}
+			]
+		},
+		"control-tags": {
+			"Switch": "20000"
+		},
+		"custom": {
+			"UIViewInspector": {
+				"windowSize": "71, 194, 471, 709"
+			},
+			"UIViewHierarchyBrowser": {
+				"windowSize": "513, 194, 813, 694"
+			},
+			"FocusDrawing": {},
+			"UIGridController": {},
+			"UITemplateController": {
+				"SelectedTemplate": "tab1"
+			},
+			"UIEditController": {
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 1244, 755",
+				"SplitViewSize_0_0": "0.8228882833787466433150825650955084711313",
+				"SplitViewSize_0_1": "0.1498637602179836436633308949240017682314",
+				"SplitViewSize_1_0": "0.480926430517711167578198683258960954845",
+				"SplitViewSize_1_1": "0.5122615803814714041664046817459166049957",
+				"SplitViewSize_2_0": "0.7033762057877813722583937305898871272802",
+				"SplitViewSize_2_1": "0.2926045016077170601853651987767079845071",
+				"Version": "1"
+			},
+			"UIAttributesController": {},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "20"
+			}
+		},
+		"templates": {
+			"view": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ WhiteCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"maxSize": "300, 500",
+					"minSize": "150, 300",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "300, 500",
+					"transparent": "false"
+				},
+				"children": {
+					"UIViewSwitchContainer": {
+						"attributes": {
+							"animation-style": "fade",
+							"animation-time": "120",
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "UIViewSwitchContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 10",
+							"size": "280, 480",
+							"transparent": "false"
+						}
+					}
+				}
+			},
+			"tab1": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ BlackCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "280, 480",
+					"transparent": "true"
+				},
+				"children": {
+					"CLayeredViewContainer": {
+						"attributes": {
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CLayeredViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 20",
+							"size": "100, 100",
+							"transparent": "false",
+							"z-index": "0"
+						}
+					},
+					"CShadowViewContainer": {
+						"attributes": {
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"bitmap": "0",
+							"class": "CShadowViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "130, 20",
+							"shadow-blur-size": "4",
+							"shadow-intensity": "0.3",
+							"shadow-offset": "0, 0",
+							"size": "200, 200",
+							"transparent": "false"
+						}
+					},
+					"CScrollView": {
+						"attributes": {
+							"auto-drag-scrolling": "false",
+							"auto-hide-scrollbars": "false",
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"bordered": "true",
+							"class": "CScrollView",
+							"container-size": "200, 200",
+							"follow-focus-view": "false",
+							"horizontal-scrollbar": "true",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "40, 240",
+							"overlay-scrollbars": "false",
+							"scrollbar-background-color": "#ffffffc8",
+							"scrollbar-frame-color": "~ BlackCColor",
+							"scrollbar-scroller-color": "~ BlueCColor",
+							"scrollbar-width": "16",
+							"size": "100, 100",
+							"transparent": "false",
+							"vertical-scrollbar": "true"
+						}
+					},
+					"CRowColumnView": {
+						"attributes": {
+							"animate-view-resizing": "false",
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CRowColumnView",
+							"equal-size-layout": "left-top",
+							"margin": "0,0,0,0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "60, 360",
+							"row-style": "true",
+							"size": "100, 100",
+							"spacing": "0",
+							"transparent": "false",
+							"view-resize-animation-time": "200"
+						}
+					},
+					"CSplitView": {
+						"attributes": {
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CSplitView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "horizontal",
+							"origin": "160, 280",
+							"resize-method": "last",
+							"separator-width": "10",
+							"size": "100, 100",
+							"transparent": "false"
+						}
+					}
+				}
+			},
+			"tab2": {
+				"attributes": {
+					"autosize": "left right top bottom row ",
+					"background-color": "~ BlackCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "280, 480",
+					"transparent": "true"
+				},
+				"children": {
+					"CAnimKnob": {
+						"attributes": {
+							"angle-range": "270",
+							"angle-start": "135",
+							"background-offset": "0, 0",
+							"circle-drawing": "false",
+							"class": "CAnimKnob",
+							"corona-color": "~ WhiteCColor",
+							"corona-dash-dot": "false",
+							"corona-drawing": "false",
+							"corona-from-center": "false",
+							"corona-inset": "0",
+							"corona-inverted": "false",
+							"corona-outline": "false",
+							"default-value": "0.5",
+							"handle-color": "~ WhiteCColor",
+							"handle-line-width": "1",
+							"handle-shadow-color": "~ GreyCColor",
+							"height-of-one-image": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 10",
+							"size": "20, 20",
+							"sub-pixmaps": "0",
+							"transparent": "false",
+							"value-inset": "0",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "1.5"
+						}
+					},
+					"CAnimationSplashScreen": {
+						"attributes": {
+							"animation-index": "0",
+							"animation-time": "500",
+							"background-offset": "0, 0",
+							"class": "CAnimationSplashScreen",
+							"default-value": "0.5",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "50, 10",
+							"size": "20, 20",
+							"splash-origin": "0, 0",
+							"splash-size": "0, 0",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CCheckBox": {
+						"attributes": {
+							"autosize-to-fit": "false",
+							"background-offset": "0, 0",
+							"boxfill-color": "~ WhiteCColor",
+							"boxframe-color": "~ BlackCColor",
+							"checkmark-color": "~ RedCColor",
+							"class": "CCheckBox",
+							"default-value": "0.5",
+							"draw-crossbox": "false",
+							"font": "~ SystemFont",
+							"font-color": "~ WhiteCColor",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "110, 10",
+							"size": "100, 20",
+							"title": "Title",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CControl": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CControl",
+							"default-value": "0.5",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "20, 50",
+							"size": "20, 20",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CGradientView": {
+						"attributes": {
+							"class": "CGradientView",
+							"draw-antialiased": "true",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient-angle": "0",
+							"gradient-style": "linear",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "70, 50",
+							"radial-center": "0.5, 0.5",
+							"radial-radius": "1",
+							"round-rect-radius": "5",
+							"size": "100, 100",
+							"transparent": "false"
+						}
+					},
+					"CHorizontalSwitch": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CHorizontalSwitch",
+							"default-value": "0",
+							"height-of-one-image": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "20, 160",
+							"size": "20, 20",
+							"sub-pixmaps": "0",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CKickButton": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CKickButton",
+							"default-value": "0.5",
+							"height-of-one-image": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "70, 150",
+							"size": "20, 20",
+							"sub-pixmaps": "0",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CKnob": {
+						"attributes": {
+							"angle-range": "270",
+							"angle-start": "135",
+							"background-offset": "0, 0",
+							"circle-drawing": "false",
+							"class": "CKnob",
+							"corona-color": "~ WhiteCColor",
+							"corona-dash-dot": "false",
+							"corona-drawing": "false",
+							"corona-from-center": "false",
+							"corona-inset": "0",
+							"corona-inverted": "false",
+							"corona-outline": "false",
+							"default-value": "0.5",
+							"handle-color": "~ WhiteCColor",
+							"handle-line-width": "1",
+							"handle-shadow-color": "~ GreyCColor",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "120, 150",
+							"size": "20, 20",
+							"transparent": "false",
+							"value-inset": "3",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "1.5"
+						}
+					},
+					"CMovieBitmap": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CMovieBitmap",
+							"default-value": "0.5",
+							"height-of-one-image": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "170, 160",
+							"size": "20, 20",
+							"sub-pixmaps": "0",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CMovieButton": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CMovieButton",
+							"default-value": "0.5",
+							"height-of-one-image": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "30, 200",
+							"size": "20, 20",
+							"sub-pixmaps": "0",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"COnOffButton": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "COnOffButton",
+							"default-value": "0.5",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "80, 190",
+							"size": "20, 20",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"COptionMenu": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "COptionMenu",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1.84467e+19",
+							"menu-check-style": "false",
+							"menu-popup-style": "false",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "140, 190",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "20, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"transparent": "false",
+							"value-precision": "2",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CParamDisplay": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CParamDisplay",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "30, 230",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "20, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"transparent": "false",
+							"value-precision": "2",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CRockerSwitch": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CRockerSwitch",
+							"default-value": "0.5",
+							"height-of-one-image": "0",
+							"max-value": "1",
+							"min-value": "-1",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "70, 230",
+							"size": "20, 20",
+							"sub-pixmaps": "3",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CSegmentButton": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CSegmentButton",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"icon-text-margin": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "120, 230",
+							"round-radius": "5",
+							"segment-names": "Segment 1,Segment 2,Segment 3,Segment 4",
+							"size": "200, 20",
+							"style": "horizontal",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CSlider": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"bitmap-offset": "0, 0",
+							"class": "CSlider",
+							"default-value": "0.5",
+							"draw-back": "false",
+							"draw-back-color": "~ WhiteCColor",
+							"draw-frame": "false",
+							"draw-frame-color": "~ WhiteCColor",
+							"draw-value": "false",
+							"draw-value-color": "~ WhiteCColor",
+							"draw-value-from-center": "false",
+							"draw-value-inverted": "false",
+							"handle-offset": "0, 0",
+							"max-value": "1",
+							"min-value": "0",
+							"mode": "free click",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "horizontal",
+							"origin": "20, 270",
+							"reverse-orientation": "false",
+							"size": "20, 20",
+							"transparent": "false",
+							"transparent-handle": "true",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "10"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CTextButton",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "true",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "60, 270",
+							"round-radius": "6",
+							"size": "100, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextEdit": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextEdit",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"immediate-text-change": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "180, 270",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "100, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-doubleclick": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"transparent": "false",
+							"value-precision": "2",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "20, 300",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "100, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"transparent": "false",
+							"value-precision": "2",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CVerticalSwitch": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CVerticalSwitch",
+							"default-value": "0",
+							"height-of-one-image": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "20, 330",
+							"size": "20, 20",
+							"sub-pixmaps": "0",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CView": {
+						"attributes": {
+							"class": "CView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "50, 330",
+							"size": "20, 20",
+							"transparent": "false"
+						}
+					},
+					"CVuMeter": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CVuMeter",
+							"decrease-step-value": "0.1",
+							"default-value": "0.5",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"num-led": "100",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "90, 330",
+							"size": "20, 20",
+							"transparent": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CXYPad": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CXYPad",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "2",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "140, 330",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "100, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"transparent": "false",
+							"value-precision": "2",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			}
+		}
+	}
+}
+)";
+
+constexpr auto sharedResourcesUIDesc = R"(
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"bitmaps": {
+			"b1": {
+				"path": "b1.png",
+				"data": {
+					"encoding": "base64",
+					"data": "iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABe2lDQ1BJQ0MgUHJvZmlsZQAAKJF9kE0rRFEYx38zXjNkwcLC4jaG1RCjvGyUmYSaxTRGedvcueZFmXG7c4VsLJTtFCU23hZ8AjYWylopRUrKVyA20vUcQ+OlPHXO+Z3nPM+/5/zB7ddNc7a0HTJZ24oOBrWx8Qmt4gEX5XjQ8OpGzuyPRMJIfJ0/4+VaqiWuWpXW3/d/wzOdyBngqhTuM0zLFh4SblqwTcVKr96SoYRXFKcKvKE4XuCjj5pYNCR8KqwZaX1a+E7Yb6StDLiVvi/+rSb1jTOz88bnPOon1Yns6IicXlmN5IgySFC8GGaAEF100Ct7F60EaJMbdmLRVs2hOXPJmkmlba1fnEhow1mjza8F2ju6Qfn6269ibm4Xep6hJF/MxTfhZA0abos53w7UrsLxualb+keqRJY7mYTHQ6gZh7pLqJrMJTsDhR9VB6Hs3nGemqFiHd7yjvO65zhv+9IsHp1lCx59anFwA7FlCF/A1ja0iHbt1Dv7WWccXX/QZQAAAExJREFUKBVjZEAALSAzDMFFYa0C8q6BRJhQhBEcUSAThIkGDUCVIIwBcNmAoRAmMKoBFhL4aEagJLYYhkXaazTNq1jQBGBcdIUwcQYAOGIGVqwWW9EAAAAASUVORK5CYII="
+				}
+			}
+		},
+		"fonts": {
+			"f1": {
+				"font-name": "Arial",
+				"size": "8"
+			}
+		},
+		"colors": {
+			"c1": "#000000ff"
+		},
+		"gradients": {
+			"g1": [
+				{
+					"rgba": "#000000ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#ff0000ff",
+					"start": "0.5"
+				},
+				{
+					"rgba": "#ffffffff",
+					"start": "1"
+				}
+			]
+		}
+	}
+}
+)";
+
+
+#endif
+
+struct SaveUIDescription : public UIDescription
+{
+	SaveUIDescription (IContentProvider* xmlContentProvider)
+	: UIDescription (xmlContentProvider) {}
+
+	using UIDescription::saveToStream;
+};
+
+struct Controller : public IController
+{
+	void valueChanged (CControl* pControl) override {};
+	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
+	{
+		return registeredTag;
+	}
+	IControlListener* getControlListener (UTF8StringPtr controlTagName) override
+	{
+		return this;
+	}
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		return nullptr;
+	}
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		return view;
+	}
+	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override
+	{
+		return nullptr;
+	}
+
+};
 
 enum class UIDescTestCase
 {
@@ -648,7 +1788,7 @@ TESTCASE(UIDescriptionTests,
 		SaveUIDescription desc (&provider);
 		EXPECT(desc.parse () == true);
 		CMemoryStream outputStream (1024, 1024, false);
-		EXPECT(desc.saveToStream (outputStream, SaveUIDescription::kWriteImagesIntoUIDescFile|SaveUIDescription::kWriteAsXML));
+		EXPECT(desc.saveToStream (outputStream, defaultSafeFlags));
 		outputStream.end ();
 		std::string result (reinterpret_cast<const char*> (outputStream.getBuffer ()));
 		EXPECT(result.size() == str.size ());

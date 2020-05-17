@@ -3,6 +3,9 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../unittests.h"
+
+#if VSTGUI_ENABLE_XML_PARSER
+
 #include "../../../uidescription/xmlparser.h"
 #include "../../../uidescription/uicontentprovider.h"
 #include <string>
@@ -93,3 +96,5 @@ TESTCASE(XMLParserTest,
 );
 
 } // VSTGUI
+
+#endif // VSTGUI_ENABLE_XML_PARSER

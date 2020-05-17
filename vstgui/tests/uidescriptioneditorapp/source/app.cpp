@@ -68,7 +68,9 @@ public:
 
 		IApplication::instance ().registerCommand (Commands::SaveDocument, 's');
 		IApplication::instance ().registerCommand (Commands::RevertDocument, 0);
+#if VSTGUI_ENABLE_XML_PARSER
 		IApplication::instance ().registerCommand (BenchmarkCommand, 0);
+#endif
 		return true;
 	}
 
@@ -184,6 +186,7 @@ public:
 
 	void runBenchmark ()
 	{
+#if VSTGUI_ENABLE_XML_PARSER
 		static constexpr auto iterations = 100u;
 
 		if (!uidesc)
@@ -237,6 +240,7 @@ public:
 
 		printf ("xml :%lld\n", xmlDuration);
 		printf ("json:%lld\n", jsonDuration);
+#endif
 	}
 
 	std::string descPath;
