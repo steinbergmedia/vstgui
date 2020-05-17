@@ -24,7 +24,7 @@ SharedPointer<UINode> read (InputStream& stream);
 namespace UIJsonDescWriter {
 
 //------------------------------------------------------------------------
-bool write (OutputStream& stream, UINode* rootNode);
+bool write (OutputStream& stream, UINode* rootNode, bool pretty = true);
 
 //------------------------------------------------------------------------
 } // UIJsonDescWriter

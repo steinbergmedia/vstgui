@@ -393,7 +393,6 @@ struct OutputStreamWrapper
 };
 
 using DefaultOutputStreamWrapper = OutputStreamWrapper<uint8_t>;
-using JSONWriter = rapidjson::PrettyWriter<DefaultOutputStreamWrapper>;
 
 //------------------------------------------------------------------------
 static const std::string* getNodeAttributeName (const UINode* node)
@@ -412,8 +411,9 @@ static const std::string* getNodeAttributeViewClass (const UINode* node)
 }
 
 //------------------------------------------------------------------------
-static void writeAttributes (const UIAttributes& attributes, JSONWriter& writer,
-                             bool ignoreNameAttribute = false)
+template <typename JSONWriter>
+void writeAttributes (const UIAttributes& attributes, JSONWriter& writer,
+                      bool ignoreNameAttribute = false)
 {
 	std::map<std::string_view, std::string_view> ordered (attributes.begin (), attributes.end ());
 	for (const auto& attr : ordered)
@@ -426,7 +426,8 @@ static void writeAttributes (const UIAttributes& attributes, JSONWriter& writer,
 }
 
 //------------------------------------------------------------------------
-static void writeNode (const UINode* node, JSONWriter& writer)
+template <typename JSONWriter>
+void writeNode (const UINode* node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	if (name)
@@ -450,7 +451,8 @@ static void writeNode (const UINode* node, JSONWriter& writer)
 }
 
 //------------------------------------------------------------------------
-static void writeGradientNode (const UINode* node, JSONWriter& writer)
+template <typename JSONWriter>
+void writeGradientNode (const UINode* node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	vstgui_assert (name);
@@ -467,7 +469,8 @@ static void writeGradientNode (const UINode* node, JSONWriter& writer)
 }
 
 //------------------------------------------------------------------------
-static void writeSingleAttributeNode (const char* attrName, const UINode* node, JSONWriter& writer)
+template <typename JSONWriter>
+void writeSingleAttributeNode (const char* attrName, const UINode* node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	vstgui_assert (name);
@@ -479,9 +482,8 @@ static void writeSingleAttributeNode (const char* attrName, const UINode* node, 
 }
 
 //------------------------------------------------------------------------
-template <typename Proc>
-static void writeResourceNode (const char* name, const UINode* resNode, Proc proc,
-                               JSONWriter& writer)
+template <typename JSONWriter, typename Proc>
+void writeResourceNode (const char* name, const UINode* resNode, Proc proc, JSONWriter& writer)
 {
 	if (resNode->getChildren ().empty ())
 		return;
@@ -496,7 +498,8 @@ static void writeResourceNode (const char* name, const UINode* resNode, Proc pro
 }
 
 //------------------------------------------------------------------------
-static void writeTemplateNode (const std::string* name, const UINode* node, JSONWriter& writer)
+template <typename JSONWriter>
+void writeTemplateNode (const std::string* name, const UINode* node, JSONWriter& writer)
 {
 	if (name)
 		writer.Key (*name);
@@ -519,7 +522,8 @@ static void writeTemplateNode (const std::string* name, const UINode* node, JSON
 }
 
 //------------------------------------------------------------------------
-static void writeViewNodes (const std::vector<const UINode*>& views, JSONWriter& writer)
+template <typename JSONWriter>
+void writeViewNodes (const std::vector<const UINode*>& views, JSONWriter& writer)
 {
 	if (views.empty ())
 		return;
@@ -532,9 +536,9 @@ static void writeViewNodes (const std::vector<const UINode*>& views, JSONWriter&
 	writer.EndObject ();
 }
 
-
 //------------------------------------------------------------------------
-static void writeTemplates (const std::vector<const UINode*>& templates, JSONWriter& writer)
+template <typename JSONWriter>
+void writeTemplates (const std::vector<const UINode*>& templates, JSONWriter& writer)
 {
 	if (templates.empty ())
 		return;
@@ -548,7 +552,8 @@ static void writeTemplates (const std::vector<const UINode*>& templates, JSONWri
 }
 
 //------------------------------------------------------------------------
-static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
+template <typename JSONWriter>
+bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 {
 	writer.StartObject ();
 	writer.Key (rootNode->getName ());
@@ -597,11 +602,11 @@ static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	}
 	if (bitmapsNode)
 	{
-		writeResourceNode (MainNodeNames::kBitmap, bitmapsNode, writeNode, writer);
+		writeResourceNode (MainNodeNames::kBitmap, bitmapsNode, writeNode<JSONWriter>, writer);
 	}
 	if (fontsNode)
 	{
-		writeResourceNode (MainNodeNames::kFont, fontsNode, writeNode, writer);
+		writeResourceNode (MainNodeNames::kFont, fontsNode, writeNode<JSONWriter>, writer);
 	}
 	if (colorsNode)
 	{
@@ -613,7 +618,8 @@ static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	}
 	if (gradientsNode)
 	{
-		writeResourceNode (MainNodeNames::kGradient, gradientsNode, writeGradientNode, writer);
+		writeResourceNode (MainNodeNames::kGradient, gradientsNode, writeGradientNode<JSONWriter>,
+		                   writer);
 	}
 	if (controlTagsNode)
 	{
@@ -625,7 +631,7 @@ static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	}
 	if (customNode)
 	{
-		writeResourceNode (MainNodeNames::kCustom, customNode, writeNode, writer);
+		writeResourceNode (MainNodeNames::kCustom, customNode, writeNode<JSONWriter>, writer);
 	}
 	writeViewNodes (viewNodes, writer);
 	writeTemplates (templateNodes, writer);
@@ -635,11 +641,18 @@ static bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 }
 
 //------------------------------------------------------------------------
-bool write (OutputStream& stream, UINode* rootNode)
+bool write (OutputStream& stream, UINode* rootNode, bool pretty)
 {
 	DefaultOutputStreamWrapper output (stream);
-	JSONWriter writer (output);
-	writer.SetIndent ('\t', 1);
+
+	if (pretty)
+	{
+		rapidjson::PrettyWriter<DefaultOutputStreamWrapper> writer (output);
+		writer.SetIndent ('\t', 1);
+		auto result = writeRootNode (rootNode, writer);
+		return result;
+	}
+	rapidjson::Writer<DefaultOutputStreamWrapper> writer (output);
 	auto result = writeRootNode (rootNode, writer);
 	return result;
 }
