@@ -160,6 +160,10 @@ struct Handler
 			attrs->setAttribute (attributeValueStr, {str, length});
 			nodeStack.back ()->getChildren ().add (new UIVariableNode (controlTagStr, attrs));
 		}
+		else if (state == State::DataNode && keyStr == "data")
+		{
+			nodeStack.back ()->setData ({str, length});
+		}
 		else
 		{
 			nodeStack.back ()->getAttributes ()->setAttribute (keyStr, {str, length});
