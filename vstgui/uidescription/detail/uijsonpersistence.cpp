@@ -192,8 +192,8 @@ struct Handler
 			case State::Initialized:
 			{
 				vstgui_assert (keyStr == "vstgui-ui-description" ||
-				               keyStr == "vstgui-ui-description-view-list") rootNode =
-				    makeOwned<UINode> (std::move (keyStr));
+				               keyStr == "vstgui-ui-description-view-list");
+				rootNode = makeOwned<UINode> (std::move (keyStr));
 				newNode = rootNode;
 				newState = State::InRootNode;
 				break;
