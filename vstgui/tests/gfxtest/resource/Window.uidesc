@@ -1,34 +1,116 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<vstgui-ui-description version="1">
-	<fonts>
-	</fonts>
-	<colors>
-	</colors>
-	<template autosize="left right top bottom " background-color="~ GreyCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="300, 300" transparent="false" wants-focus="false">
-		<view background-offset="0, 0" class="CTextButton" control-tag="ShowDrawDeviceTests" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" round-radius="6" size="190, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Show DrawDevice Tests" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-	</template>
-	<custom>
-		<attributes name="UIDescFilePath" path="Z:\VST3\vstgui\vstgui\tests\gfxtest\resource\Window.uidesc"/>
-		<attributes Size="10, 10" name="UIGridController"/>
-		<attributes SelectedTemplate="Window" name="UITemplateController"/>
-		<attributes EditViewScale="1" EditorSize="0, 0, 500, 500" SplitViewSize_0_0="0.7286012526096032893008214159635826945305" SplitViewSize_0_1="0.2296450939457202466975616061972687020898" SplitViewSize_1_0="0.4655532359081419602198081975075183436275" SplitViewSize_1_1="0.5240083507306889654131509814760647714138" SplitViewSize_2_0="0.6400000000000000133226762955018784850836" SplitViewSize_2_1="0.3499999999999999777955395074968691915274" TabSwitchValue="0" Version="1" name="UIEditController"/>
-		<attributes UIAttributesController="tag" name="UIAttributesController"/>
-		<attributes SelectedRow="23" name="UIViewCreatorDataSource"/>
-		<attributes SelectedRow="-1" name="UITagsDataSource"/>
-	</custom>
-	<variables/>
-	<bitmaps/>
-	<control-tags>
-		<control-tag name="ShowDrawDeviceTests" tag="0"/>
-	</control-tags>
-	<gradients>
-		<gradient name="Default TextButton Gradient">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="Default TextButton Gradient Highlighted">
-			<color-stop rgba="#b4b4b4ff" start="0"/>
-			<color-stop rgba="#646464ff" start="1"/>
-		</gradient>
-	</gradients>
-</vstgui-ui-description>
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"variables": {},
+		"bitmaps": {},
+		"fonts": {},
+		"colors": {},
+		"gradients": {
+			"Default TextButton Gradient": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient Highlighted": [
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#646464ff",
+					"start": "1"
+				}
+			]
+		},
+		"control-tags": {
+			"ShowDrawDeviceTests": "0"
+		},
+		"custom": {
+			"UIDescFilePath": {
+				"path": "/Users/scheffle/Source/vstgui/vstgui/tests/gfxtest/resource/Window.uidesc"
+			},
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
+				"Size": "10, 10"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "Window"
+			},
+			"UIEditController": {
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 500, 500",
+				"SplitViewSize_0_0": "0.7278481012658227777833985783217940479517",
+				"SplitViewSize_0_1": "0.2299578059071729907447689811306190676987",
+				"SplitViewSize_1_0": "0.4662447257383966481292247863166267052293",
+				"SplitViewSize_1_1": "0.523206751054852370330650046525988727808",
+				"SplitViewSize_2_0": "0.6400000000000000133226762955018784850836",
+				"SplitViewSize_2_1": "0.3499999999999999777955395074968691915274",
+				"TabSwitchValue": "0",
+				"Version": "1"
+			},
+			"UIAttributesController": {
+				"UIAttributesController": "tag"
+			},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "23"
+			},
+			"UITagsDataSource": {
+				"SelectedRow": "-1"
+			}
+		},
+		"templates": {
+			"Window": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ GreyCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "300, 300",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CTextButton": {
+						"attributes": {
+							"background-offset": "0, 0",
+							"class": "CTextButton",
+							"control-tag": "ShowDrawDeviceTests",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 10",
+							"round-radius": "6",
+							"size": "190, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Show DrawDevice Tests",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			}
+		}
+	}
+}
