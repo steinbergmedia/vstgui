@@ -7,7 +7,10 @@
 #include <array>
 #include <deque>
 #include <map>
+
+#if __cplusplus > 201402L
 #include <string_view>
+#endif
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include "../rapidjson/include/rapidjson/document.h"
@@ -447,7 +450,11 @@ template <typename JSONWriter>
 void writeAttributes (const UIAttributes& attributes, JSONWriter& writer,
                       bool ignoreNameAttribute = false)
 {
+#if __cplusplus > 201402L
 	std::map<std::string_view, std::string_view> ordered (attributes.begin (), attributes.end ());
+#else
+	std::map<std::string, std::string> ordered (attributes.begin (), attributes.end ());
+#endif
 	for (const auto& attr : ordered)
 	{
 		if (ignoreNameAttribute && attr.first == attributeNameStr)
