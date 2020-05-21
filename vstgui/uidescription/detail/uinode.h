@@ -44,7 +44,7 @@ public:
 	DataStorage& getData () { return data; }
 	const DataStorage& getData () const { return data; }
 
-	void setData (std::string_view newData);
+	void setData (DataStorage&& newData);
 
 	const SharedPointer<UIAttributes>& getAttributes () const { return attributes; }
 	UIDescList& getChildren () const { return *children; }

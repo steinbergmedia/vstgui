@@ -80,9 +80,9 @@ void UINode::sortChildren ()
 }
 
 //------------------------------------------------------------------------
-void UINode::setData (std::string_view newData)
+void UINode::setData (DataStorage&& newData)
 {
-	data = newData;
+	data = std::move (newData);
 }
 
 //-----------------------------------------------------------------------------
