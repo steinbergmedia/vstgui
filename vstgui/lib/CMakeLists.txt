@@ -96,6 +96,7 @@ set(${target}_common_sources
     controls/icommandmenuitemtarget.h
     controls/icontrollistener.h
     controls/ioptionmenulistener.h
+    controls/itexteditlistener.h
     controls/itextlabellistener.h
     copenglview.cpp
     copenglview.h
