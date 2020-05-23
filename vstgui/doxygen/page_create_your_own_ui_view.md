@@ -18,7 +18,7 @@ To create a new graphical view you need to create a class that inherites from *C
 
 Your header file should look like this :
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 #pragma once
 
 #include "vstgui/vstgui.h"
@@ -36,11 +36,11 @@ public:
 };
 
 } // namespace VSTGUI
-```
+~~~~~~~~~~~~~
 
 And your cpp file :
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 #include "MyControl.h"
 
 namespace VSTGUI {
@@ -61,7 +61,7 @@ void MyControl::draw (CDrawContext* pContext)
 }
 
 } // namespace VSTGUI
-```
+~~~~~~~~~~~~~
 
 We have two functions, the constructor which only calls the parent constructor and the *draw* function which will define the design of the view. In this example we draw a white rectangle with black borders.
 
@@ -73,7 +73,7 @@ You need to create a new class, a "factory", that will register your view and cr
 
 Let us begin by creating an empty class that inherites from  *'ViewCreatorAdapter'* :
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 #pragma once
 
 #include "vstgui/vstgui.h"
@@ -92,46 +92,46 @@ public:
 };
 
 } // namespace VSTGUI
-```
+~~~~~~~~~~~~~
 
 In the constructor we need to register our view to the UIViewFactory. If we don't do that it will not appear in the list that will allow us to add the view to our VST3 plugin.
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 MyControlFactory () { UIViewFactory::registerViewCreator (*this); }
-```
+~~~~~~~~~~~~~
 
 The main factory needs 3 others functions :
 
 * The name of the view (as shown in the WYSIWYS editor)
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 IdStringPtr getViewName () const { return "Name of my UI component"; }
-```
+~~~~~~~~~~~~~
 
 * The parent class of the view (In this tutorial we're using *CControl*)
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 IdStringPtr getBaseViewName () const { return UIViewCreator::kCControl; }
-```
+~~~~~~~~~~~~~
 
 * and a creator method which returns a new view with a default size
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 CView* create (const UIAttributes& attributes, const IUIDescription* description) const
 {
 	return new MyControl (CRect (0, 0, 100, 100));
 }
-```
+~~~~~~~~~~~~~
 
 You also need to create a static variable having the same type as our factory. This variable will call the constructor of your factory. Thus, your view will be registered automatically.
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 MyControlFactory __gMyControlFactory;
-```
+~~~~~~~~~~~~~
 
 So at the end you should have something like this :
 
-```c++
+~~~~~~~~~~~~~{.cpp}
 #pragma once
 #include "vstgui/vstgui.h"
 #include "vstgui/vstgui_uidescription.h"
@@ -166,7 +166,7 @@ public:
 MyControlFactory __gMyControlFactory;
 
 } // namespace VSTGUI
-```
+~~~~~~~~~~~~~
 
 ## Result
 
