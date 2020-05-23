@@ -22,17 +22,9 @@ TODO:
 */
 
 /**
-@page page_uidescription_editor New Inline UI Editor for VST3 (WYSIWYG)
+@page page_uidescription_editor Inline UI Editor for VST3 (WYSIWYG)
 
-- @ref ui_editor_intro @n
-- @ref ui_editor_preparation @n
-- @ref ui_editor_parameter_binding @n
-- @ref ui_editor_the_editor @n
-- @ref ui_editor_custom_view_creation @n
-- @ref ui_editor_sub_controllers @n
-- @ref ui_editor_templates @n
-
-<hr/>
+@tableofcontents
 
 @section ui_editor_intro Introduction
 

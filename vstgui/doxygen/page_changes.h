@@ -5,6 +5,8 @@
 /**
 @page page_news_and_changes New stuff in VSTGUI 4
 
+@tableofcontents
+
 - @ref version4_introduction @n
 - @ref new_stuff @n
 - @ref code_changes @n
@@ -20,6 +22,11 @@ The result is that code written for any earlier version of VSTGUI is not always 
 It's recommended to start new projects with version 4 while old projects should stay with version 3.6.
 
 @section new_stuff New Stuff
+
+@subsection version4_10 Version 4.10
+
+- UIDescription files are now written in JSON format and the old XML format is deprecated
+- It's now possible to conditionally remove the XML parser and the expat library from building (set VSTGUI_ENABLE_XML_PARSER to 0)
 
 @subsection version4_9 Version 4.9
 

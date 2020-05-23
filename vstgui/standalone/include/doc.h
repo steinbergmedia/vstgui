@@ -14,11 +14,7 @@ See @ref standalone_library "this page" for an introduction.
 
 @page standalone_library Standalone Library
 
-- @ref standalone_about @n
-- @ref standalone_modelbinding @n
-- @ref standalone_window_customization @n
-- @ref standalone_supported_os @n
-- @ref standalone_compiler_requirements @n
+@tableofcontents
 
 @section standalone_about About
 
