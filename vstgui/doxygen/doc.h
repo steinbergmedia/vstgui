@@ -21,10 +21,10 @@ VSTGUI is a User Interface Toolkit mainly for Audio Plug-Ins (VST, AudioUnit, et
 \par History
 First developed inhouse of Steinberg Media Technologies (around 1998) for their first VST Plug-Ins. 
 Later added as binary libraries to the official VST SDK. 
-Since May 2003 VSTGUI is open source, was hosted at sourceforge and now at GitHub https://github.com/steinbergmedia/vstgui.
+Since May 2003 VSTGUI is open source, was hosted at sourceforge and now at [GitHub](https://github.com/steinbergmedia/vstgui).
 
 Currently VSTGUI compiles on
-\par Microsoft Windows (with Visual Studio and Windows 7 Platform SDK)
+\par Microsoft Windows (with Visual Studio 2015/2017/2019 and Windows 7 Platform SDK)
 - 7 (32 and 64 bit)
 - 8 (32 and 64 bit)
 - 10 (32 and 64 bit)
@@ -35,8 +35,7 @@ Currently VSTGUI compiles on
 \par Linux (with gcc >= 5.4 or clang >= 3.8)
 - Ubuntu 2016.04 or newer
 
-\sa
-<a href="https://github.com/steinbergmedia/vstgui target=_blank> VSTGUI @ GitHub </a>
+\sa [VSTGUI @ GitHub](https://github.com/steinbergmedia/vstgui)
 
 @page page_setup Setup
 
