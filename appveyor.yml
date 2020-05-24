@@ -2,7 +2,7 @@ version: 4.10.{build}
 skip_tags: true
 environment:
   BUILD_TYPE: Release
-  ARCH: Win64
+  ARCH: x64
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     GENERATOR: Visual Studio 16 2019
@@ -17,10 +17,13 @@ build_script:
     cd %APPVEYOR_BUILD_FOLDER%
 
 
-    cd vstgui
+    mkdir build
 
 
-    cmake -H. -Bbuild -G"%GENERATOR%" -A %ARCH%
+    cd build
 
 
-    cmake --build build --config %BUILD_TYPE%
+    cmake -G"%GENERATOR%" -A %ARCH% ../vstgui/CMakeLists.txt
+
+
+    cmake --build . --config %BUILD_TYPE%
