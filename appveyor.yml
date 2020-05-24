@@ -1,13 +1,15 @@
-version: 4.9.{build}
+version: 4.10.{build}
 skip_tags: true
 environment:
   BUILD_TYPE: Release
   ARCH: Win64
   matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    GENERATOR: Visual Studio 16 2019
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    GENERATOR: Visual Studio 15 2017 %ARCH%
+    GENERATOR: Visual Studio 15 2017
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    GENERATOR: Visual Studio 14 2015 %ARCH%
+    GENERATOR: Visual Studio 14 2015
 matrix:
   fast_finish: true
 build_script:
@@ -18,7 +20,7 @@ build_script:
     cd vstgui
 
 
-    cmake -H. -Bbuild -G"%GENERATOR%"
+    cmake -H. -Bbuild -G"%GENERATOR%" -A %ARCH%
 
 
     cmake --build build --config %BUILD_TYPE%
