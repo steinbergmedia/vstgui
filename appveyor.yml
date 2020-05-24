@@ -17,13 +17,10 @@ build_script:
     cd %APPVEYOR_BUILD_FOLDER%
 
 
-    mkdir build
+    cd vstgui
 
 
-    cd build
+    cmake -H. -Bbuild -G"%GENERATOR%" -A %ARCH% CMakeLists.txt
 
 
-    cmake -H. -G"%GENERATOR%" -A %ARCH% ../vstgui/CMakeLists.txt
-
-
-    cmake --build . --config %BUILD_TYPE%
+    cmake --build build --config %BUILD_TYPE%
