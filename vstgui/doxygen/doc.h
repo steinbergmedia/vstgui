@@ -11,7 +11,6 @@ Welcome to VSTGUI
 - @ref intro @n
 - @ref page_news_and_changes @n
 - @ref page_uidescription_editor @n
-- @ref page_changelog @n
 - @ref page_license @n
 
 @section intro Introduction

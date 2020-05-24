@@ -97,7 +97,7 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 @subsection version4_0 Version 4.0
 
-- VST3 Support : Complete inline VST3 Editor support. See @ref page_vst3_inline_editing @n
+- VST3 Support : Complete inline VST3 Editor support. See @ref page_uidescription_editor @n
 - UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
 - Animation Support : Simple to use animations. See @ref page_animation
 - Amalgamation : Easy integration in your projects via one or two source files

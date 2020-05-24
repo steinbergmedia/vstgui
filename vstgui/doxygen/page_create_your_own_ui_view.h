@@ -1,6 +1,8 @@
-# Create your own view for the WYSIWYG editor in VSTGUI
+/**
 
-## Introduction
+@page create_your_own_view Create your own view for the WYSIWYG editor in VSTGUI
+
+@section create_your_own_view_intro Introduction
 
 When you want to edit your own VST3 plugin. You can find the need to create your own View.
 
@@ -12,7 +14,7 @@ You can find more information about this interface in the documentation : "VSTGU
 
 During this tutorial we will make a new view that will appear in the "Views Tab" at the bottom right of the editor and it allow us to drag and drop it inside our VST3 plugin.
 
-## Create the new view class
+@section create_your_own_view_createView Create the new view class
 
 To create a new graphical view you need to create a class that inherites from *CView* or *CControl*. We recommend that you start with the *CControl* class when you plan to have an interactive view, otherwise if it only should display data use *CView*.
 
@@ -29,7 +31,7 @@ class MyControl : public CControl
 {
 public:
 	MyControl (const CRect& size );
-	
+
 	void draw (CDrawContext *pContext) override;
 
 	CLASS_METHODS (MyControl, CControl)
@@ -51,7 +53,7 @@ void MyControl::draw (CDrawContext* pContext)
 {
 	// --- setup the background rectangle
 	pContext->setLineWidth (1);
-	pContext->setFillColor (CColor (255, 255, 255, 255)); // white background 
+	pContext->setFillColor (CColor (255, 255, 255, 255)); // white background
 	pContext->setFrameColor (CColor (0, 0, 0, 255)); // black borders
 
 	// --- draw the rect filled (with white) and stroked (line around rectangle)
@@ -65,7 +67,7 @@ void MyControl::draw (CDrawContext* pContext)
 
 We have two functions, the constructor which only calls the parent constructor and the *draw* function which will define the design of the view. In this example we draw a white rectangle with black borders.
 
-## Register your view
+@section create_your_own_view_registerView Register your view
 
 So now you have a basic graphical view. But it will not appear in the list when you edit your plugin.
 
@@ -81,7 +83,7 @@ Let us begin by creating an empty class that inherites from  *'ViewCreatorAdapte
 #include "vstgui/uidescription/detail/uiviewcreatorattributes.h"
 
 // Replace this include by the header file of your new view.
-#include "MyControl.h" 
+#include "MyControl.h"
 
 namespace VSTGUI {
 
@@ -168,8 +170,10 @@ MyControlFactory __gMyControlFactory;
 } // namespace VSTGUI
 ~~~~~~~~~~~~~
 
-## Result
+@section create_your_own_view_result Result
 
 Now if you come back to the VST 3 plugin Editor you can find your new view in the list.
 
 ![Edit VST3 plugin](screenshots/newuicompname.png)
+
+*/

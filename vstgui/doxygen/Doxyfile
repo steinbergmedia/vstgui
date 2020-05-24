@@ -825,14 +825,15 @@ WARN_LOGFILE           =
 
 INPUT                  = ./doc.h \
                          ./page_changes.h \
-                         ./page_changelog.h \
                          ./page_license.h \
                          ../lib/ \
                          ./page_keyeventflow.h \
-                         page_create_your_own_ui_view.md \
                          ../uidescription/ \
+                         ./page_create_your_own_ui_view.h \
+                         ./page_view_system_overview.h \
                          ../plugin-bindings/ \
                          ../standalone/include/ \
+                         ./page_misc.h
                          ../contrib
 
 # This tag can be used to specify the character encoding of the source files
