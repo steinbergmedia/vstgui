@@ -20,6 +20,9 @@ build_script:
     cd vstgui
 
 
+    mkdir build
+
+
     dir
 
 
