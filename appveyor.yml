@@ -23,7 +23,7 @@ build_script:
     cd build
 
 
-    cmake -G"%GENERATOR%" -A %ARCH% ../vstgui/CMakeLists.txt
+    cmake -H. -G"%GENERATOR%" -A %ARCH% ../vstgui/CMakeLists.txt
 
 
     cmake --build . --config %BUILD_TYPE%
