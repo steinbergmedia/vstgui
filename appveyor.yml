@@ -20,7 +20,13 @@ build_script:
     cd vstgui
 
 
+    dir
+
+
     cmake -H. -Bbuild -G"%GENERATOR%" -A %ARCH% CMakeLists.txt
+
+
+    dir
 
 
     cmake --build build --config %BUILD_TYPE%
