@@ -1313,8 +1313,8 @@ bool VST3Editor::validateCommandMenuItem (CCommandMenuItem* item)
 bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
 {
 	auto& cmdCategory = item->getCommandCategory ();
-	auto& cmdName = item->getCommandName ();
 #if VSTGUI_LIVE_EDITING
+	auto& cmdName = item->getCommandName ();
 	if (cmdCategory == "Edit")
 	{
 		if (cmdName == "Sync Parameter Tags")
