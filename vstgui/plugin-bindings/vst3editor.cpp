@@ -632,7 +632,7 @@ void VST3Editor::valueChanged (CControl* pControl)
 		auto* textEdit = dynamic_cast<CTextEdit*> (pControl);
 		if (textEdit && pcl->getParameter ())
 		{
-			String str (textEdit->getText ());
+			Steinberg::String str (textEdit->getText ());
 			str.toWideString (kCP_Utf8);
 			if (getController ()->getParamValueByString (paramID,
 			                                             const_cast<Vst::TChar*> (str.text16 ()),
