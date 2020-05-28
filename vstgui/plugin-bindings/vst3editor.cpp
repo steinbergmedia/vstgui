@@ -193,12 +193,11 @@ public:
 		if (parameter)
 			editController->endEdit (getParameterID ());
 
-		using namespace Steinberg;
 		// fix textual representation.
 		// It can happen that a parameter edit does not change the normalized value but the textual
 		// representation shows a wrong text because the text is only translated when the
 		// normalized value changes.
-		Vst::String128 str {};
+		Steinberg::Vst::String128 str {};
 		for (const auto& c : controls)
 		{
 			if (auto label = dynamic_cast<CTextLabel*> (c))
@@ -209,8 +208,8 @@ public:
 					    getParameterID (), editController->getParamNormalized (getParameterID ()),
 					    str);
 				}
-				String s (str);
-				s.toMultiByte (kCP_Utf8);
+				Steinberg::String s (str);
+				s.toMultiByte (Steinberg::kCP_Utf8);
 				if (label->getText () != s.text8 ())
 					label->setText (s.text8 ());
 			}
