@@ -192,8 +192,30 @@ public:
 	{
 		if (parameter)
 			editController->endEdit (getParameterID ());
+
+		// fix textual representation.
+		// It can happen that a parameter edit does not change the normalized value but the textual
+		// representation shows a wrong text because the text is only translated when the
+		// normalized value changes.
+		Steinberg::Vst::String128 str {};
+		for (const auto& c : controls)
+		{
+			if (auto label = dynamic_cast<CTextLabel*> (c))
+			{
+				if (str[0] == 0)
+				{
+					editController->getParamStringByValue (
+					    getParameterID (), editController->getParamNormalized (getParameterID ()),
+					    str);
+				}
+				Steinberg::String s (str);
+				s.toMultiByte (Steinberg::kCP_Utf8);
+				if (label->getText () != s.text8 ())
+					label->setText (s.text8 ());
+			}
+		}
 	}
-	
+
 	void performEdit (Steinberg::Vst::ParamValue value)
 	{
 		if (parameter)
@@ -565,7 +587,7 @@ bool VST3Editor::requestResize (const CPoint& newSize)
 	CCoord width = newSize.x;
 	CCoord height = newSize.y;
 	double scaleFactor = getAbsScaleFactor ();
-	if (editingEnabled || (width >= std::round (minSize.x * scaleFactor) && width <= std::round (maxSize.x * scaleFactor) 
+	if (editingEnabled || (width >= std::round (minSize.x * scaleFactor) && width <= std::round (maxSize.x * scaleFactor)
                         && height >= std::round (minSize.y * scaleFactor) && height <= std::round (maxSize.y * scaleFactor)))
 	{
 		Steinberg::ViewRect vr;
@@ -600,22 +622,27 @@ ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag) co
 //-----------------------------------------------------------------------------
 void VST3Editor::valueChanged (CControl* pControl)
 {
+	using namespace Steinberg;
+
 	ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
 	if (pcl)
 	{
-		Steinberg::Vst::ParamValue value = pControl->getValueNormalized ();
+		auto paramID = pcl->getParameterID ();
+		auto normalizedValue = static_cast<Vst::ParamValue> (pControl->getValueNormalized ());
 		auto* textEdit = dynamic_cast<CTextEdit*> (pControl);
 		if (textEdit && pcl->getParameter ())
 		{
 			Steinberg::String str (textEdit->getText ());
-			str.toWideString (Steinberg::kCP_Utf8);
-			if (getController ()->getParamValueByString (pcl->getParameterID (), (Steinberg::Vst::TChar*)str.text16 (), value) != Steinberg::kResultTrue)
+			str.toWideString (kCP_Utf8);
+			if (getController ()->getParamValueByString (paramID,
+			                                             const_cast<Vst::TChar*> (str.text16 ()),
+			                                             normalizedValue) != kResultTrue)
 			{
 				pcl->update (nullptr, kChanged);
 				return;
 			}
 		}
-		pcl->performEdit (value);
+		pcl->performEdit (normalizedValue);
 	}
 }
 
@@ -1286,8 +1313,8 @@ bool VST3Editor::validateCommandMenuItem (CCommandMenuItem* item)
 bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
 {
 	auto& cmdCategory = item->getCommandCategory ();
-	auto& cmdName = item->getCommandName ();
 #if VSTGUI_LIVE_EDITING
+	auto& cmdName = item->getCommandName ();
 	if (cmdCategory == "Edit")
 	{
 		if (cmdName == "Sync Parameter Tags")

@@ -249,13 +249,15 @@ void InputStreamContentProvider::rewind ()
 }
 
 //------------------------------------------------------------------------
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wconversion"
-#endif
-
 }} // namespaces
 
 #if !VSTGUI_USE_SYSTEM_EXPAT
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wshadow"
+#endif
 
 namespace VSTGUI {
 namespace Xml {
@@ -267,6 +269,10 @@ namespace Xml {
 #ifdef OLD_BYTEORDER
 	#undef BYTEORDER
 	#define BYTEORDER = OLD_BYTEORDER
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
 
 #endif
