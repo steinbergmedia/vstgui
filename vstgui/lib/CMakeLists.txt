@@ -3,7 +3,7 @@
 ##########################################################################################
 set(target vstgui)
 
-set(${target}_common_sources 
+set(${target}_common_sources
     animation/animations.cpp
     animation/animations.h
     animation/animator.cpp
@@ -41,6 +41,7 @@ set(${target}_common_sources
     cgraphicspath.cpp
     cgraphicspath.h
     cgraphicstransform.h
+    cinvalidrectlist.h
     clayeredviewcontainer.cpp
     clayeredviewcontainer.h
     clinestyle.cpp
