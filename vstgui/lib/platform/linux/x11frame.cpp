@@ -8,6 +8,7 @@
 #include "../../crect.h"
 #include "../../dragging.h"
 #include "../../vstkeycode.h"
+#include "../../cinvalidrectlist.h"
 #include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"
 #include "../iplatformtextedit.h"
@@ -28,7 +29,7 @@
 #include <cairo/cairo-xcb.h>
 
 #ifdef None
-#	undef None
+#undef None
 #endif
 
 //------------------------------------------------------------------------
@@ -97,13 +98,13 @@ inline uint32_t translateModifiers (int state)
 
 //------------------------------------------------------------------------
 struct RedrawTimerHandler
-	: ITimerHandler
-	, NonAtomicReferenceCounted
+: ITimerHandler
+, NonAtomicReferenceCounted
 {
-	using RedrawCallback = std::function<void()>;
+	using RedrawCallback = std::function<void ()>;
 
 	RedrawTimerHandler (uint64_t delay, RedrawCallback&& redrawCallback)
-		: redrawCallback (std::move (redrawCallback))
+	: redrawCallback (std::move (redrawCallback))
 	{
 		RunLoop::instance ().get ()->registerTimer (delay, this);
 	}
@@ -128,13 +129,13 @@ struct DrawHandler
 										   window.getSize ().x, window.getSize ().y);
 		windowSurface.assign (s);
 		onSizeChanged (window.getSize ());
-		device = cairo_device_reference(cairo_surface_get_device(s));
+		device = cairo_device_reference (cairo_surface_get_device (s));
 	}
 
-	~DrawHandler()
+	~DrawHandler ()
 	{
-		cairo_device_finish(device);
-		cairo_device_destroy(device);
+		cairo_device_finish (device);
+		cairo_device_destroy (device);
 	}
 
 	void onSizeChanged (const CPoint& size)
@@ -169,7 +170,7 @@ struct DrawHandler
 	}
 
 private:
-	cairo_device_t *device = nullptr;
+	cairo_device_t* device = nullptr;
 	Cairo::SurfaceHandle windowSurface;
 	Cairo::SurfaceHandle backBuffer;
 	SharedPointer<Cairo::Context> drawContext;
@@ -251,16 +252,16 @@ private:
 		MouseUp,
 	};
 
-	State state{State::Uninitialized};
+	State state {State::Uninitialized};
 	CPoint point;
 	CButtonState firstClickState;
-	xcb_timestamp_t firstClickTime{0};
+	xcb_timestamp_t firstClickTime {0};
 };
 
 //------------------------------------------------------------------------
 struct Frame::Impl : IFrameEventHandler
 {
-	using RectList = std::vector<CRect>;
+	using RectList = CInvalidRectList;
 
 	ChildWindow window;
 	DrawHandler drawHandler;
@@ -269,12 +270,12 @@ struct Frame::Impl : IFrameEventHandler
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
 	SharedPointer<RedrawTimerHandler> redrawTimer;
 	RectList dirtyRects;
-	CCursorType currentCursor{kCursorDefault};
-	uint32_t pointerGrabed{0};
+	CCursorType currentCursor {kCursorDefault};
+	uint32_t pointerGrabed {0};
 
 	//------------------------------------------------------------------------
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
-		: window (parent, size), drawHandler (window), frame (frame)
+	: window (parent, size), drawHandler (window), frame (frame)
 	{
 		RunLoop::instance ().registerWindowEventHandler (window.getID (), this);
 	}
@@ -288,7 +289,7 @@ struct Frame::Impl : IFrameEventHandler
 		window.setSize (size);
 		drawHandler.onSizeChanged (size.getSize ());
 		dirtyRects.clear ();
-		dirtyRects.push_back (size);
+		dirtyRects.add (size);
 	}
 
 	//------------------------------------------------------------------------
@@ -314,7 +315,7 @@ struct Frame::Impl : IFrameEventHandler
 	//------------------------------------------------------------------------
 	void redraw ()
 	{
-		drawHandler.draw (dirtyRects, [&](CDrawContext* context, const CRect& rect) {
+		drawHandler.draw (dirtyRects, [&] (CDrawContext* context, const CRect& rect) {
 			frame->platformDrawRect (context, rect);
 		});
 		dirtyRects.clear ();
@@ -323,11 +324,11 @@ struct Frame::Impl : IFrameEventHandler
 	//------------------------------------------------------------------------
 	void invalidRect (CRect r)
 	{
-		dirtyRects.emplace_back (r);
+		dirtyRects.add (r);
 		if (redrawTimer)
 			return;
-		redrawTimer = makeOwned<RedrawTimerHandler> (16, [this]() {
-			if (dirtyRects.empty ())
+		redrawTimer = makeOwned<RedrawTimerHandler> (16, [this] () {
+			if (dirtyRects.data ().empty ())
 				return;
 			redraw ();
 		});
@@ -558,11 +559,9 @@ struct Frame::Impl : IFrameEventHandler
 };
 
 //------------------------------------------------------------------------
-Frame::Frame (IPlatformFrameCallback* frame,
-			  const CRect& size,
-			  uint32_t parent,
+Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 			  IPlatformFrameConfig* config)
-	: IPlatformFrame (frame)
+: IPlatformFrame (frame)
 {
 	auto cfg = dynamic_cast<FrameConfig*> (config);
 	if (cfg && cfg->runLoop)
@@ -618,9 +617,11 @@ bool Frame::getSize (CRect& size) const
 //------------------------------------------------------------------------
 bool Frame::getCurrentMousePosition (CPoint& mousePosition) const
 {
-	xcb_query_pointer_cookie_t cookie = xcb_query_pointer(RunLoop::instance ().getXcbConnection (), getX11WindowID ());
-	xcb_query_pointer_reply_t* reply = xcb_query_pointer_reply(RunLoop::instance ().getXcbConnection (), cookie, nullptr);
-	if(!reply)
+	xcb_query_pointer_cookie_t cookie =
+		xcb_query_pointer (RunLoop::instance ().getXcbConnection (), getX11WindowID ());
+	xcb_query_pointer_reply_t* reply =
+		xcb_query_pointer_reply (RunLoop::instance ().getXcbConnection (), cookie, nullptr);
+	if (!reply)
 		return false;
 
 	mousePosition.x = reply->win_x;
@@ -704,7 +705,7 @@ SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 //------------------------------------------------------------------------
 SharedPointer<IPlatformOpenGLView> Frame::createPlatformOpenGLView ()
 {
-#	warning TODO: Implementation
+#warning TODO: Implementation
 	return nullptr;
 }
 #endif
@@ -718,8 +719,7 @@ SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width,
-																CCoord height,
+SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CCoord height,
 																double scaleFactor)
 {
 	CPoint size (width * scaleFactor, height * scaleFactor);
@@ -748,7 +748,7 @@ bool Frame::doDrag (const DragDescription& dragDescription,
 }
 
 //------------------------------------------------------------------------
-void Frame::setClipboard (const SharedPointer<IDataPackage>& data){
+void Frame::setClipboard (const SharedPointer<IDataPackage>& data) {
 #warning TODO: Implementation
 }
 
@@ -776,7 +776,7 @@ bool Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
 {
 	if (theme)
 		impl->genericOptionMenuTheme =
-		    std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+			std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
 	else
 		impl->genericOptionMenuTheme = nullptr;
 	return true;
@@ -784,7 +784,7 @@ bool Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
 
 //------------------------------------------------------------------------
 Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
-	[](const CResourceDescription& desc) -> IPlatformResourceInputStream::Ptr {
+	[] (const CResourceDescription& desc) -> IPlatformResourceInputStream::Ptr {
 	if (desc.type != CResourceDescription::kStringType)
 		return nullptr;
 	auto path = Platform::getInstance ().getPath ();
@@ -803,8 +803,7 @@ UTF8String Frame::resourcePath = Platform::getInstance ().getPath () + "/Content
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
-													 const CRect& size,
-													 void* parent,
+													 const CRect& size, void* parent,
 													 PlatformType parentType,
 													 IPlatformFrameConfig* config)
 {
