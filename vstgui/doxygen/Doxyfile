@@ -756,7 +756,7 @@ CITE_BIB_FILES         =
 # messages are off.
 # The default value is: NO.
 
-QUIET                  = NO
+QUIET                  = YES
 
 # The WARNINGS tag can be used to turn on/off the warning messages that are
 # generated to standard error (stderr) by doxygen. If WARNINGS is set to YES
@@ -834,7 +834,6 @@ INPUT                  = ./doc.h \
                          ../plugin-bindings/ \
                          ../standalone/include/ \
                          ./page_misc.h
-                         ../contrib
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
