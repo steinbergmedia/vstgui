@@ -14,7 +14,7 @@ struct CInvalidRectList
 {
 	using RectList = std::vector<CRect>;
 
-	bool add (CRect r);
+	bool add (const CRect& r);
 
 	RectList::iterator begin () { return list.begin (); }
 	RectList::iterator end () { return list.end (); }
@@ -29,7 +29,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-inline bool CInvalidRectList::add (CRect r)
+inline bool CInvalidRectList::add (const CRect& r)
 {
 	for (auto it = list.begin (), end = list.end (); it != end; ++it)
 	{
@@ -51,7 +51,7 @@ inline bool CInvalidRectList::add (CRect r)
 		CRect jr (*it);
 		jr.unite (r);
 		auto joinedArea = jr.getWidth () * jr.getHeight ();
-		if (joinedArea < (area1 + area2))
+		if (joinedArea <= (area1 + area2))
 		{
 			list.erase (it);
 			return add (jr);
