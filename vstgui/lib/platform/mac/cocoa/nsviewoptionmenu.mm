@@ -52,7 +52,7 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 	menuClassCount++;
 #endif
 	__OBJC_SUPER(self)
-	self = objc_msgSendSuper (SUPER, @selector(init));
+	self = SuperInit (SUPER, @selector(init));
 	if (self)
 	{
 		NSMenu* nsMenu = (NSMenu*)self;
@@ -163,7 +163,7 @@ static void VSTGUI_NSMenu_Dealloc (id self, SEL _cmd)
 	if (var)
 		delete var;
 	__OBJC_SUPER(self)
-	objc_msgSendSuper (SUPER, @selector(dealloc)); // [super dealloc];
+	SuperDealloc (SUPER, @selector(dealloc)); // [super dealloc];
 }
 
 //------------------------------------------------------------------------------------

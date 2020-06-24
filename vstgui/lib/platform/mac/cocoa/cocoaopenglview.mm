@@ -247,11 +247,12 @@ __attribute__((__destructor__)) static void cleanup_VSTGUI_NSOpenGLView ()
 		objc_disposeClassPair (openGLViewClass);
 }
 
+static id (*SuperInitWithFramePixelFormat) (id, SEL, NSRect, NSOpenGLPixelFormat*) = (id (*) (id, SEL, NSRect, NSOpenGLPixelFormat*))objc_msgSendSuper;
 //-----------------------------------------------------------------------------
 static id VSTGUI_NSOpenGLView_Init (id self, SEL _cmd, NSRect frameRect, NSOpenGLPixelFormat* format, CocoaOpenGLView* callback)
 {
 	__OBJC_SUPER(self)
-	self = objc_msgSendSuper (SUPER, @selector(initWithFrame:pixelFormat:), frameRect, format);
+	self = SuperInitWithFramePixelFormat (SUPER, @selector(initWithFrame:pixelFormat:), frameRect, format);
 	if (self)
 	{
 		OBJC_SET_VALUE(self, cocoaOpenGLView, callback);
@@ -267,7 +268,7 @@ static void VSTGUI_NSOpenGLView_Dealloc (id self, SEL _cmd)
 	if (callback)
 		callback->forget ();
 	__OBJC_SUPER(self)
-	objc_msgSendSuper (SUPER, @selector(dealloc));
+	SuperDealloc (SUPER, @selector(dealloc));
 }
 
 //-----------------------------------------------------------------------------
