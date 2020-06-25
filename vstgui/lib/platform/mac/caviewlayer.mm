@@ -79,8 +79,8 @@ static Class viewLayerClass = nullptr;
 //-----------------------------------------------------------------------------
 static id VSTGUI_CALayer_Init (id self, SEL _cmd)
 {
-	__OBJC_SUPER(self)
-	self = objc_msgSendSuper (SUPER, @selector(init));
+	__OBJC_SUPER (self)
+	self = SuperInit (SUPER, @selector (init));
 	if (self)
 	{
 		[self setNeedsDisplayOnBoundsChange:YES];

@@ -46,7 +46,7 @@ private:
 	static id Init (id self, SEL, const void* buffer, size_t bufferSize)
 	{
 		__OBJC_SUPER (self)
-		self = objc_msgSendSuper (SUPER, @selector (init));
+		self = SuperInit (SUPER, @selector (init));
 		if (self)
 		{
 			auto data = [[[NSData alloc] initWithBytes:buffer length:bufferSize] autorelease];

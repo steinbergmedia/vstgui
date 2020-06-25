@@ -69,7 +69,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		editFrameRect.origin.y = static_cast<CGFloat> (textInset.y/2.);
 		editFrameRect.size.width -= textInset.x/2.;
 		editFrameRect.size.height -= textInset.y/2. - 1.;
-		self = objc_msgSendSuper (SUPER, @selector(initWithFrame:), editFrameRect);
+		self = SuperInitWithFrame (SUPER, @selector(initWithFrame:), editFrameRect);
 		if (!self)
 		{
 			[containerView release];
@@ -191,8 +191,8 @@ static void VSTGUI_NSTextField_RemoveFromSuperview (id self, SEL _cmd)
 	{
 		[[containerView window] makeFirstResponder:[containerView superview]];
 		[containerView removeFromSuperview];
-		__OBJC_SUPER(self)
-		objc_msgSendSuper (SUPER, @selector(removeFromSuperview)); // [super removeFromSuperview];
+		__OBJC_SUPER(self)		
+		SuperRemoveFromSuperview (SUPER, @selector(removeFromSuperview)); // [super removeFromSuperview];
 		[containerView release];
 	}
 }
@@ -206,7 +206,7 @@ static void VSTGUI_NSTextField_TextDidChange (id self, SEL _cmd, NSNotification*
 		te->getTextEdit ()->platformTextDidChange ();
 	}
 	__OBJC_SUPER(self)
-	objc_msgSendSuper (SUPER, @selector(textDidChange:), notification);
+	SuperTextDidChange (SUPER, @selector(textDidChange:), notification);
 }
 
 //------------------------------------------------------------------------------------
