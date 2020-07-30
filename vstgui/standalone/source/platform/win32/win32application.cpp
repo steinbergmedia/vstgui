@@ -100,8 +100,10 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 		auto utf8Path = std::string (helper.getUTF8String ());
 		if (auto p = ascendPath (utf8Path))
 		{
-			*p += "\\Resources";
-			IWin32PlatformFrame::setResourceBasePath (UTF8String (*p));
+			*p += "\\Resources\\";
+			UTF8String resourcePath (*p);
+			IWin32PlatformFrame::setResourceBasePath (resourcePath);
+			commonDirectories.setAppResourcePath (resourcePath);
 		}
 	}
 

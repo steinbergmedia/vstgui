@@ -24,6 +24,17 @@ UTF8String createAppPathString ()
 }
 
 //------------------------------------------------------------------------
+NSURL* addSubDirs (NSURL* url, std::vector<const UTF8String*> subDirs)
+{
+	for (const auto& subDir : subDirs)
+	{
+		if (!subDir->empty ())
+			url = [url URLByAppendingPathComponent:stringFromUTF8String (*subDir)];
+	}
+	return url;
+}
+
+//------------------------------------------------------------------------
 Optional<UTF8String> getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directory,
                               std::vector<const UTF8String*> subDirs, bool create)
 {
@@ -35,11 +46,7 @@ Optional<UTF8String> getPath (NSSearchPathDomainMask domain, NSSearchPathDirecto
 	                                  error:nil];
 	if (url)
 	{
-		for (const auto& subDir : subDirs)
-		{
-			if (!subDir->empty ())
-				url = [url URLByAppendingPathComponent:stringFromUTF8String (*subDir)];
-		}
+		url = addSubDirs (url, subDirs);
 		if (create)
 		{
 			if (![fileManager createDirectoryAtURL:url
@@ -68,6 +75,12 @@ Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location,
 		{
 			auto url = [[NSBundle mainBundle] bundleURL];
 			return UTF8String ([url fileSystemRepresentation]);
+		}
+		case CommonDirectoryLocation::AppResourcesPath:
+		{
+			auto url = [[NSBundle mainBundle] resourceURL];
+			url = addSubDirs (url, {&subDir});
+			return UTF8String ([url fileSystemRepresentation]) + "/";
 		}
 		case CommonDirectoryLocation::AppPreferencesPath:
 		{

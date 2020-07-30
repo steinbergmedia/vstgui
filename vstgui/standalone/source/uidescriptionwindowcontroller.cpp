@@ -63,7 +63,7 @@ public:
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 
-	IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override;
+	const IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override;
 
 private:
 	struct Impl;
@@ -1027,7 +1027,7 @@ bool WindowController::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-IMenuBuilder* WindowController::getWindowMenuBuilder (const IWindow& window) const
+const IMenuBuilder* WindowController::getWindowMenuBuilder (const IWindow& window) const
 {
 	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
 		return menuBuilder.get ();

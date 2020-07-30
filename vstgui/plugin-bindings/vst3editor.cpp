@@ -131,9 +131,8 @@ public:
 		}
 		else
 		{
-			CControl* control = controls.front ();
-			if (control)
-				value = control->getValueNormalized ();
+			if (auto ctrl = controls.front ())
+				value = ctrl->getValueNormalized ();
 		}
 		auto* display = dynamic_cast<CParamDisplay*> (control);
 		if (display)
@@ -193,8 +192,30 @@ public:
 	{
 		if (parameter)
 			editController->endEdit (getParameterID ());
+
+		// fix textual representation.
+		// It can happen that a parameter edit does not change the normalized value but the textual
+		// representation shows a wrong text because the text is only translated when the
+		// normalized value changes.
+		Steinberg::Vst::String128 str {};
+		for (const auto& c : controls)
+		{
+			if (auto label = dynamic_cast<CTextLabel*> (c))
+			{
+				if (str[0] == 0)
+				{
+					editController->getParamStringByValue (
+					    getParameterID (), editController->getParamNormalized (getParameterID ()),
+					    str);
+				}
+				Steinberg::String s (str);
+				s.toMultiByte (Steinberg::kCP_Utf8);
+				if (label->getText () != s.text8 ())
+					label->setText (s.text8 ());
+			}
+		}
 	}
-	
+
 	void performEdit (Steinberg::Vst::ParamValue value)
 	{
 		if (parameter)
@@ -410,7 +431,7 @@ void VST3Editor::init ()
 	if (description->parse ())
 	{
 		// get sizes
-		const UIAttributes* attr = description->getViewAttributes (viewName.c_str ());
+		const auto* attr = description->getViewAttributes (viewName.c_str ());
 		if (attr)
 		{
 			const std::string* sizeStr = attr->getAttributeValue ("size");
@@ -435,10 +456,10 @@ void VST3Editor::init ()
 		#if DEBUG
 		else
 		{
-			auto* attr = new UIAttributes ();
-			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
-			attr->setAttribute ("size", "300, 300");
-			description->addNewTemplate (viewName.c_str (), attr);
+			auto* debugAttr = new UIAttributes ();
+			debugAttr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
+			debugAttr->setAttribute ("size", "300, 300");
+			description->addNewTemplate (viewName.c_str (), debugAttr);
 			rect.right = 300;
 			rect.bottom = 300;
 			minSize (rect.right, rect.bottom);
@@ -566,7 +587,7 @@ bool VST3Editor::requestResize (const CPoint& newSize)
 	CCoord width = newSize.x;
 	CCoord height = newSize.y;
 	double scaleFactor = getAbsScaleFactor ();
-	if (editingEnabled || (width >= std::round (minSize.x * scaleFactor) && width <= std::round (maxSize.x * scaleFactor) 
+	if (editingEnabled || (width >= std::round (minSize.x * scaleFactor) && width <= std::round (maxSize.x * scaleFactor)
                         && height >= std::round (minSize.y * scaleFactor) && height <= std::round (maxSize.y * scaleFactor)))
 	{
 		Steinberg::ViewRect vr;
@@ -601,22 +622,27 @@ ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag) co
 //-----------------------------------------------------------------------------
 void VST3Editor::valueChanged (CControl* pControl)
 {
+	using namespace Steinberg;
+
 	ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
 	if (pcl)
 	{
-		Steinberg::Vst::ParamValue value = pControl->getValueNormalized ();
+		auto paramID = pcl->getParameterID ();
+		auto normalizedValue = static_cast<Vst::ParamValue> (pControl->getValueNormalized ());
 		auto* textEdit = dynamic_cast<CTextEdit*> (pControl);
 		if (textEdit && pcl->getParameter ())
 		{
 			Steinberg::String str (textEdit->getText ());
-			str.toWideString (Steinberg::kCP_Utf8);
-			if (getController ()->getParamValueByString (pcl->getParameterID (), (Steinberg::Vst::TChar*)str.text16 (), value) != Steinberg::kResultTrue)
+			str.toWideString (kCP_Utf8);
+			if (getController ()->getParamValueByString (paramID,
+			                                             const_cast<Vst::TChar*> (str.text16 ()),
+			                                             normalizedValue) != kResultTrue)
 			{
 				pcl->update (nullptr, kChanged);
 				return;
 			}
 		}
-		pcl->performEdit (value);
+		pcl->performEdit (normalizedValue);
 	}
 }
 
@@ -856,21 +882,32 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 			Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, paramFound ? &paramID : nullptr);
 			if (contextMenu)
 			{
-				getFrame ()->onStartLocalEventLoop ();
 				if (controllerMenu)
-					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu, contextMenu);
-				if (contextMenu->popup (static_cast<Steinberg::UCoord> (where2.x), static_cast<Steinberg::UCoord> (where2.y)) == Steinberg::kResultTrue)
-					result = kMouseEventHandled;
-				contextMenu->release ();
+					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu,
+					                                                         contextMenu);
+				getFrame ()->doAfterEventProcessing ([=] () {
+					contextMenu->popup (static_cast<Steinberg::UCoord> (where2.x),
+					                    static_cast<Steinberg::UCoord> (where2.y));
+					contextMenu->release ();
+				});
+				result = kMouseEventHandled;
 			}
 		}
 		if (result == kMouseEventNotHandled)
-	#endif
-		if (controllerMenu)
 		{
-			controllerMenu->setStyle (COptionMenu::kPopupStyle|COptionMenu::kMultipleCheckStyle);
-			controllerMenu->popup (frame, where);
-			result = kMouseEventHandled;
+	#endif
+			if (controllerMenu)
+			{
+				controllerMenu->remember ();
+				SharedPointer<CFrame> blockFrame = getFrame ();
+				getFrame ()->doAfterEventProcessing ([=] () {
+					controllerMenu->setStyle (COptionMenu::kPopupStyle |
+					                          COptionMenu::kMultipleCheckStyle);
+					controllerMenu->popup (blockFrame, where);
+					controllerMenu->forget ();
+				});
+				result = kMouseEventHandled;
+			}
 		}
 		if (controllerMenu)
 			controllerMenu->forget ();
@@ -921,20 +958,20 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 }
 
 //-----------------------------------------------------------------------------
-IController* VST3Editor::createSubController (UTF8StringPtr name, const IUIDescription* description)
+IController* VST3Editor::createSubController (UTF8StringPtr name, const IUIDescription* desc)
 {
-	return delegate ? delegate->createSubController (name, description, this) : nullptr;
+	return delegate ? delegate->createSubController (name, desc, this) : nullptr;
 }
 
 //-----------------------------------------------------------------------------
-CView* VST3Editor::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* VST3Editor::createView (const UIAttributes& attrs, const IUIDescription* desc)
 {
 	if (delegate)
 	{
-		const std::string* customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName);
+		const std::string* customViewName = attrs.getAttributeValue (IUIDescription::kCustomViewName);
 		if (customViewName)
 		{
-			CView* view = delegate->createCustomView (customViewName->c_str (), attributes, description, this);
+			CView* view = delegate->createCustomView (customViewName->c_str (), attrs, desc, this);
 			return view;
 		}
 	}
@@ -942,10 +979,10 @@ CView* VST3Editor::createView (const UIAttributes& attributes, const IUIDescript
 }
 
 //-----------------------------------------------------------------------------
-CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* desc)
 {
 	if (delegate)
-		view = delegate->verifyView (view, attributes, description, this);
+		view = delegate->verifyView (view, attributes, desc, this);
 	auto* control = dynamic_cast<CControl*> (view);
 	if (control && control->getTag () != -1 && control->getListener () == this)
 	{
@@ -1276,8 +1313,8 @@ bool VST3Editor::validateCommandMenuItem (CCommandMenuItem* item)
 bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
 {
 	auto& cmdCategory = item->getCommandCategory ();
-	auto& cmdName = item->getCommandName ();
 #if VSTGUI_LIVE_EDITING
+	auto& cmdName = item->getCommandName ();
 	if (cmdCategory == "Edit")
 	{
 		if (cmdName == "Sync Parameter Tags")
@@ -1376,9 +1413,9 @@ void VST3Editor::save (bool saveAs)
 			return;
 		fileSelector->setTitle ("Save UIDescription File");
 		fileSelector->setDefaultExtension (CFileExtension ("VSTGUI UI Description", "uidesc"));
-		const std::string* filePath = attributes->getAttributeValue ("Path");
-		if (filePath)
-			fileSelector->setInitialDirectory (filePath->c_str ());
+		const std::string* prevFilePath = attributes->getAttributeValue ("Path");
+		if (prevFilePath)
+			fileSelector->setInitialDirectory (prevFilePath->c_str ());
 		else if (!xmlFile.empty ())
 		{
 			if (xmlFile[0] == '/')

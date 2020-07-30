@@ -263,6 +263,19 @@ inline bool performStringValueEdit (IValue& value, const UTF8String& str)
 	}
 	return false;
 }
+
+//------------------------------------------------------------------------
+inline bool performStringAppendValueEdit (IValue& value, const UTF8String& str)
+{
+	if (auto stringValue = value.dynamicCast<IStringValue> ())
+	{
+		value.beginEdit ();
+		stringValue->setString (stringValue->getString () + str);
+		value.endEdit ();
+		return true;
+	}
+	return false;
+}
 /** @} */
 
 //------------------------------------------------------------------------
