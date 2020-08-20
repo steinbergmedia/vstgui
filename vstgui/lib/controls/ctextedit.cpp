@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "ctextedit.h"
+#include "itexteditlistener.h"
 #include "../cframe.h"
 #include "../platform/iplatformframe.h"
 #include <cassert>
@@ -93,6 +94,18 @@ void CTextEdit::setSecureStyle (bool state)
 bool CTextEdit::getSecureStyle () const
 {
 	return secureStyle;
+}
+
+//------------------------------------------------------------------------
+void CTextEdit::registerTextEditListener (ITextEditListener* listener)
+{
+	textEditListeners.add (listener);
+}
+
+//------------------------------------------------------------------------
+void CTextEdit::unregisterTextEditListener (ITextEditListener* listener)
+{
+	textEditListeners.remove (listener);
 }
 
 //------------------------------------------------------------------------
@@ -336,6 +349,8 @@ void CTextEdit::createPlatformTextEdit ()
 	
 	bWasReturnPressed = false;
 	platformControl = getFrame ()->getPlatformFrame ()->createPlatformTextEdit (this);
+	textEditListeners.forEach (
+	    [this] (ITextEditListener* l) { l->onTextEditPlatformControlTookFocus (this); });
 }
 
 //------------------------------------------------------------------------
@@ -368,10 +383,12 @@ void CTextEdit::looseFocus ()
 
 	auto _platformControl = platformControl;
 	platformControl = nullptr;
-	
 	updateText (_platformControl);
 	
 	_platformControl = nullptr;
+
+	textEditListeners.forEach (
+	    [this] (ITextEditListener* l) { l->onTextEditPlatformControlLostFocus (this); });
 
 	// if you want to destroy the text edit do it with the loose focus message
 	CView* receiver = getParentView () ? getParentView () : getFrame ();
@@ -402,4 +419,3 @@ void CTextEdit::updateText (IPlatformTextEdit* pte)
 }
 
 } // VSTGUI
-
