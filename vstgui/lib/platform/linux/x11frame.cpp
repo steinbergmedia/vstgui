@@ -454,6 +454,7 @@ struct Frame::Impl : IFrameEventHandler
 	{
 		CPoint where (event.event_x, event.event_y);
 		auto buttons = translateMouseButtons (event.state);
+		buttons |= translateModifiers (event.state);
 		doubleClickDetector.onMouseMove (where, buttons, event.time);
 		frame->platformOnMouseMoved (where, buttons);
 		// make sure we get more motion events
