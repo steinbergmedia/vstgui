@@ -845,6 +845,7 @@ void NSViewFrame::drawRect (NSRect* rect)
 bool NSViewFrame::onMouseDown (NSEvent* theEvent)
 {
 	CButtonState buttons = eventButton (theEvent);
+	mouseDownButtonState = buttons.getButtonState ();
 	[nsView.window makeFirstResponder:nsView];
 	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
@@ -862,9 +863,9 @@ bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 {
 	CButtonState buttons = eventButton (theEvent);
 	NSUInteger modifiers = [theEvent modifierFlags];
+	mapModifiers (modifiers, buttons);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
 	CPoint p = pointFromNSPoint (nsPoint);
 	CMouseEventResult result = frame->platformOnMouseUp (p, buttons);
 	return (result != kMouseEventNotHandled) ? true : false;
@@ -873,16 +874,15 @@ bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
 {
-	CButtonState buttons = eventButton (theEvent);
 	NSUInteger modifiers = [theEvent modifierFlags];
+	CButtonState buttons = theEvent.type == NSMouseMoved ? 0 : mouseDownButtonState;
+	mapModifiers (modifiers, buttons);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
 	CPoint p = pointFromNSPoint (nsPoint);
 	CMouseEventResult result = frame->platformOnMouseMoved (p, buttons);
 	return (result != kMouseEventNotHandled) ? true : false;
 }
-
 
 // IPlatformFrame
 //-----------------------------------------------------------------------------

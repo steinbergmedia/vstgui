@@ -110,6 +110,7 @@ protected:
 	bool trackingAreaInitialized;
 	bool inDraw;
 	CCursorType cursor;
+	CButtonState mouseDownButtonState {};
 };
 
 } // VSTGUI
