@@ -78,7 +78,7 @@ int main (int argv, char* argc[])
 	{
 		printAndTerminate ("Parsing failed!");
 	}
-	int32_t flags = UIDescription::kWriteImagesIntoXMLFile;
+	int32_t flags = UIDescription::kWriteImagesIntoUIDescFile;
 	if (noCompression)
 	{
 		if (inputPath == outputPath && uiDesc.getOriginalIsCompressed () == false)
@@ -94,9 +94,9 @@ int main (int argv, char* argc[])
 		if (inputPath == outputPath && uiDesc.getOriginalIsCompressed () == true)
 			return 0;
 
-		flags |= CompressedUIDescription::kNoPlainXmlFileBackup |
+		flags |= CompressedUIDescription::kNoPlainUIDescFileBackup |
 		         CompressedUIDescription::kForceWriteCompressedDesc |
-		         CompressedUIDescription::kDoNotVerifyImageXMLData;
+		         CompressedUIDescription::kDoNotVerifyImageData;
 		uiDesc.setCompressionLevel (compressionLevel);
 		if (!uiDesc.save (outputPath.data (), flags))
 		{

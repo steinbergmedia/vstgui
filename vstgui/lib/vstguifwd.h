@@ -132,6 +132,7 @@ struct DragDescription;
 struct DragEventData;
 struct ModalViewSession;
 struct CListControlRowDesc;
+struct CNinePartTiledDescription;
 
 // interfaces
 class IViewListener;

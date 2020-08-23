@@ -1,90 +1,665 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<vstgui-ui-description version="1">
-	<fonts>
-		<font font-name="Arial" name="control" size="10"/>
-		<font font-name="Noto Emoji" name="emoji" size="12"/>
-		<font font-name="Arial" name="highscore" size="12"/>
-		<font alternative-font-names="LCD 14" font-name="LCD" name="lcd" size="14"/>
-		<font font-name="Arial" name="lost" size="20"/>
-		<font font-name="Arial" name="time" size="6"/>
-	</fonts>
-	<colors>
-		<color name="background" rgba="#d9d9d9ff"/>
-		<color name="card.closed.back" rgba="#a0a0a0ff"/>
-		<color name="card.closed.frame" rgba="#000000ff"/>
-		<color name="card.flaged.back" rgba="#0000001f"/>
-		<color name="card.flaged.frame" rgba="#888888b4"/>
-		<color name="card.opened.back" rgba="#ffffff00"/>
-		<color name="card.opened.frame" rgba="#888888b4"/>
-		<color name="focus" rgba="#40afe3ff"/>
-		<color name="highscore.font" rgba="#000000ff"/>
-		<color name="label" rgba="#000000ff"/>
-		<color name="lcd.font" rgba="#ff0000ff"/>
-		<color name="lost.back" rgba="#2c2c2c8c"/>
-		<color name="lost.font" rgba="#ff0000ff"/>
-		<color name="textedit.font" rgba="#ffffffff"/>
-		<color name="textedit.frame" rgba="#9b9b9bff"/>
-	</colors>
-	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" minSize="364, 394" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="364, 394" transparent="false" wants-focus="false">
-		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control" font-antialias="true" font-color="label" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="35, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="left" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Mines :" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view back-color="label" background-offset="0, 0" class="CTextLabel" control-tag="Flags" default-value="0.5" font="lcd" font-antialias="true" font-color="lcd.font" frame-color="textedit.frame" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="45, 9" round-rect-radius="2" shadow-color="~ RedCColor" size="30, 22" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="10" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view autosize="right top " class="CTextButton" control-tag="Start" default-value="0.5" font="control" frame-color="label" frame-color-highlighted="label" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="284, 11" round-radius="3" size="70, 18" text-alignment="center" text-color="label" text-color-highlighted="textedit.font" title="New Game" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="left right top bottom " background-color="label" background-color-draw-style="stroked" class="CViewContainer" custom-view-name="MinefieldView" mouse-enabled="true" opacity="1" origin="10, 40" size="344, 344" sub-controller="MinefieldController" transparent="false" wants-focus="false">
-			<view autosize="left right top bottom " background-color="lost.back" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="LostView" mouse-enabled="false" opacity="0" origin="2, 2" size="338, 339" transparent="false" wants-focus="false">
-				<view autosize="left right top bottom " back-color="~ TransparentCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="lost" font-antialias="true" font-color="lost.font" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="label" size="339, 339" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="center" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="EXPLODED" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-			</view>
-			<view autosize="left right top bottom " background-color="lost.back" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="WonView" mouse-enabled="false" opacity="0" origin="2, 2" size="338, 339" transparent="false" wants-focus="false">
-				<view autosize="left right top bottom " back-color="lost.back" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="lost" font-antialias="true" font-color="lost.font" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="0" origin="0, 0" round-rect-radius="6" shadow-color="label" size="338, 339" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="center" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="FIELD CLEANED" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-			</view>
-		</view>
-		<view back-color="label" background-offset="0, 0" class="CTextLabel" control-tag="Time" default-value="0.5" font="lcd" font-antialias="true" font-color="lcd.font" frame-color="textedit.frame" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="110, 9" round-rect-radius="2" shadow-color="~ RedCColor" size="40, 22" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="000" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control" font-antialias="true" font-color="label" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="80, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="30, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="left" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Time :" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view autosize="left right top bottom " background-color="lost.back" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="MainView" mouse-enabled="false" opacity="0" origin="0, 0" size="365, 395" sub-controller="NewHighScoreViewController" transparent="false" wants-focus="false">
-			<view auto-height="false" back-color="card.closed.frame" background-offset="0, 0" class="CMultiLineTextLabel" default-value="0.5" font="highscore" font-antialias="true" font-color="textedit.font" frame-color="card.closed.frame" frame-width="1" line-layout="wrap" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 80" round-rect-radius="3" shadow-color="lcd.font" size="285, 56.3965" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 5" text-rotation="0" text-shadow-offset="1, 1" title="You have a new HighScore!\n\nPlease enter your name:" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-			<view back-color="card.closed.frame" background-offset="0, 0" class="CTextEdit" control-tag="NewHighScoreName" default-value="0.5" font="highscore" font-antialias="true" font-color="textedit.font" frame-color="card.closed.frame" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="41, 143" placeholder-title="Name" round-rect-radius="3" secure-style="false" shadow-color="lcd.font" size="285, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Arne" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
-			<view class="CTextButton" control-tag="NewHighScoreOK" default-value="0.5" font="control" frame-color="label" frame-color-highlighted="label" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="133, 176" round-radius="3" size="100, 18" text-alignment="center" text-color="label" text-color-highlighted="textedit.font" title="OK" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		</view>
-		<view autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="false" opacity="0" origin="15, 45" size="335, 335" sub-controller="HighScoreViewController" transparent="false" wants-focus="false">
-			<view auto-drag-scrolling="false" auto-hide-scrollbars="false" background-color="~ BlackCColor" background-color-draw-style="filled and stroked" bordered="true" class="CScrollView" container-size="315, 259.091" custom-view-name="DataBrowser" follow-focus-view="false" horizontal-scrollbar="false" mouse-enabled="true" opacity="1" origin="10, 10" overlay-scrollbars="false" scrollbar-background-color="#ffffffc8" scrollbar-frame-color="~ BlackCColor" scrollbar-scroller-color="~ BlueCColor" scrollbar-width="16" size="315, 285" sub-controller="DataBrowserController" transparent="true" vertical-scrollbar="false" wants-focus="false"/>
-			<view class="CTextButton" control-tag="CloseHighscoreView" default-value="0.5" font="control" frame-color="label" frame-color-highlighted="label" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="135, 305" round-radius="3" size="70, 18" text-alignment="center" text-color="label" text-color-highlighted="textedit.font" title="Close" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		</view>
-	</template>
-	<custom>
-		<attributes Grids="1x 1,5x 5,10x 10,12x 12,15x 15" Size="5, 5" name="UIGridController"/>
-		<attributes SelectedTemplate="Window" name="UITemplateController"/>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1640, 1005" SplitViewSize_0_0="0.8151174668028600134306316249421797692776" SplitViewSize_0_1="0.1644535240040858048438110472488915547729" SplitViewSize_1_0="0.567926455566905019622936379164457321167" SplitViewSize_1_1="0.426966292134831448823462096697767265141" SplitViewSize_2_0="0.8073170731707317582248606413486413657665" SplitViewSize_2_1="0.1896341463414634165296490664331940934062" TabSwitchValue="6" Version="1" name="UIEditController"/>
-		<attributes UIAttributesController="contr" name="UIAttributesController"/>
-		<attributes SelectedRow="30" name="UIViewCreatorDataSource"/>
-		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/minesweeper/resource/Window.uidesc"/>
-		<attributes SelectedRow="-1" name="UITagsDataSource"/>
-		<attributes SelectedRow="8" name="UIColorsDataSource"/>
-		<attributes SelectedRow="2" name="UIFontsDataSource"/>
-		<attributes SelectedRow="-1" name="UIGradientsDataSource"/>
-		<attributes SelectedRow="-1" name="UIBitmapsDataSource"/>
-		<attributes color="focus" enabled="true" name="FocusDrawing" width="2"/>
-	</custom>
-	<variables/>
-	<bitmaps/>
-	<control-tags>
-		<control-tag name="CloseHighscoreView" tag="9"/>
-		<control-tag name="Cols" tag="1"/>
-		<control-tag name="Flags" tag="3"/>
-		<control-tag name="Mines" tag="2"/>
-		<control-tag name="MouseMode" tag="6"/>
-		<control-tag name="NewHighScoreName" tag="7"/>
-		<control-tag name="NewHighScoreOK" tag="8"/>
-		<control-tag name="Rows" tag="0"/>
-		<control-tag name="Start" tag="5"/>
-		<control-tag name="Time" tag="4"/>
-	</control-tags>
-	<gradients>
-		<gradient name="Default TextButton Gradient">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="Default TextButton Gradient Highlighted">
-			<color-stop rgba="#b4b4b4ff" start="0"/>
-			<color-stop rgba="#646464ff" start="1"/>
-		</gradient>
-	</gradients>
-</vstgui-ui-description>
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"variables": {},
+		"bitmaps": {},
+		"fonts": {
+			"control": {
+				"font-name": "Arial",
+				"size": "10"
+			},
+			"emoji": {
+				"font-name": "Noto Emoji",
+				"size": "12"
+			},
+			"highscore": {
+				"font-name": "Arial",
+				"size": "12"
+			},
+			"lcd": {
+				"alternative-font-names": "LCD 14",
+				"font-name": "LCD",
+				"size": "14"
+			},
+			"lost": {
+				"font-name": "Arial",
+				"size": "20"
+			},
+			"time": {
+				"font-name": "Arial",
+				"size": "6"
+			}
+		},
+		"colors": {
+			"background": "#d9d9d9ff",
+			"card.closed.back": "#a0a0a0ff",
+			"card.closed.frame": "#000000ff",
+			"card.flaged.back": "#0000001f",
+			"card.flaged.frame": "#888888b4",
+			"card.opened.back": "#ffffff00",
+			"card.opened.frame": "#888888b4",
+			"focus": "#40afe3ff",
+			"highscore.font": "#000000ff",
+			"label": "#000000ff",
+			"lcd.font": "#ff0000ff",
+			"lost.back": "#2c2c2c8c",
+			"lost.font": "#ff0000ff",
+			"textedit.font": "#ffffffff",
+			"textedit.frame": "#9b9b9bff"
+		},
+		"gradients": {
+			"Default TextButton Gradient": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient Highlighted": [
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#646464ff",
+					"start": "1"
+				}
+			]
+		},
+		"control-tags": {
+			"CloseHighscoreView": "9",
+			"Cols": "1",
+			"Flags": "3",
+			"Mines": "2",
+			"MouseMode": "6",
+			"NewHighScoreName": "7",
+			"NewHighScoreOK": "8",
+			"Rows": "0",
+			"Start": "5",
+			"Time": "4"
+		},
+		"custom": {
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
+				"Size": "5, 5"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "Window"
+			},
+			"UIEditController": {
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 1640, 1005",
+				"SplitViewSize_0_0": "0.8151174668028600134306316249421797692776",
+				"SplitViewSize_0_1": "0.1644535240040858048438110472488915547729",
+				"SplitViewSize_1_0": "0.567926455566905019622936379164457321167",
+				"SplitViewSize_1_1": "0.426966292134831448823462096697767265141",
+				"SplitViewSize_2_0": "0.8073170731707317582248606413486413657665",
+				"SplitViewSize_2_1": "0.1896341463414634165296490664331940934062",
+				"TabSwitchValue": "6",
+				"Version": "1"
+			},
+			"UIAttributesController": {
+				"UIAttributesController": "contr"
+			},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "30"
+			},
+			"UIDescFilePath": {
+				"path": "/Users/scheffle/Source/vstgui/vstgui/standalone/examples/minesweeper/resource/Window.uidesc"
+			},
+			"UITagsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIColorsDataSource": {
+				"SelectedRow": "8"
+			},
+			"UIFontsDataSource": {
+				"SelectedRow": "2"
+			},
+			"UIGradientsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIBitmapsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"FocusDrawing": {
+				"color": "focus",
+				"enabled": "true",
+				"width": "2"
+			}
+		},
+		"templates": {
+			"Window": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "background",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"minSize": "364, 394",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "364, 394",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CTextLabel": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "control",
+							"font-antialias": "true",
+							"font-color": "label",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 10",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "35, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "left",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "Mines :",
+							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"back-color": "label",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"control-tag": "Flags",
+							"default-value": "0.5",
+							"font": "lcd",
+							"font-antialias": "true",
+							"font-color": "lcd.font",
+							"frame-color": "textedit.frame",
+							"frame-width": "-1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "45, 9",
+							"round-rect-radius": "2",
+							"shadow-color": "~ RedCColor",
+							"size": "30, 22",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "right",
+							"text-inset": "5, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "99",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"autosize": "right top ",
+							"class": "CTextButton",
+							"control-tag": "Start",
+							"default-value": "0.5",
+							"font": "control",
+							"frame-color": "label",
+							"frame-color-highlighted": "label",
+							"frame-width": "-1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "true",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "284, 11",
+							"round-radius": "3",
+							"size": "70, 18",
+							"text-alignment": "center",
+							"text-color": "label",
+							"text-color-highlighted": "textedit.font",
+							"title": "New Game",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CViewContainer": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"background-color": "label",
+							"background-color-draw-style": "stroked",
+							"class": "CViewContainer",
+							"custom-view-name": "MinefieldView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 40",
+							"size": "344, 344",
+							"sub-controller": "MinefieldController",
+							"transparent": "false",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CViewContainer": {
+								"attributes": {
+									"autosize": "left right top bottom ",
+									"background-color": "lost.back",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"custom-view-name": "LostView",
+									"mouse-enabled": "false",
+									"opacity": "0",
+									"origin": "2, 2",
+									"size": "338, 339",
+									"transparent": "false",
+									"wants-focus": "false"
+								},
+								"children": {
+									"CTextLabel": {
+										"attributes": {
+											"autosize": "left right top bottom ",
+											"back-color": "~ TransparentCColor",
+											"background-offset": "0, 0",
+											"class": "CTextLabel",
+											"default-value": "0.5",
+											"font": "lost",
+											"font-antialias": "true",
+											"font-color": "lost.font",
+											"frame-color": "~ TransparentCColor",
+											"frame-width": "1",
+											"max-value": "1",
+											"min-value": "0",
+											"mouse-enabled": "false",
+											"opacity": "1",
+											"origin": "0, 0",
+											"round-rect-radius": "6",
+											"shadow-color": "label",
+											"size": "339, 339",
+											"style-3D-in": "false",
+											"style-3D-out": "false",
+											"style-no-draw": "false",
+											"style-no-frame": "false",
+											"style-no-text": "false",
+											"style-round-rect": "false",
+											"style-shadow-text": "true",
+											"text-alignment": "center",
+											"text-inset": "5, 0",
+											"text-rotation": "0",
+											"text-shadow-offset": "1, 1",
+											"title": "EXPLODED",
+											"transparent": "false",
+											"value-precision": "2",
+											"wants-focus": "false",
+											"wheel-inc-value": "0.1"
+										}
+									}
+								}
+							},
+							"CViewContainer": {
+								"attributes": {
+									"autosize": "left right top bottom ",
+									"background-color": "lost.back",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"custom-view-name": "WonView",
+									"mouse-enabled": "false",
+									"opacity": "0",
+									"origin": "2, 2",
+									"size": "338, 339",
+									"transparent": "false",
+									"wants-focus": "false"
+								},
+								"children": {
+									"CTextLabel": {
+										"attributes": {
+											"autosize": "left right top bottom ",
+											"back-color": "lost.back",
+											"background-offset": "0, 0",
+											"class": "CTextLabel",
+											"default-value": "0.5",
+											"font": "lost",
+											"font-antialias": "true",
+											"font-color": "lost.font",
+											"frame-color": "~ TransparentCColor",
+											"frame-width": "1",
+											"max-value": "1",
+											"min-value": "0",
+											"mouse-enabled": "true",
+											"opacity": "0",
+											"origin": "0, 0",
+											"round-rect-radius": "6",
+											"shadow-color": "label",
+											"size": "338, 339",
+											"style-3D-in": "false",
+											"style-3D-out": "false",
+											"style-no-draw": "false",
+											"style-no-frame": "false",
+											"style-no-text": "false",
+											"style-round-rect": "false",
+											"style-shadow-text": "true",
+											"text-alignment": "center",
+											"text-inset": "5, 0",
+											"text-rotation": "0",
+											"text-shadow-offset": "1, 1",
+											"title": "FIELD CLEANED",
+											"transparent": "true",
+											"value-precision": "2",
+											"wants-focus": "false",
+											"wheel-inc-value": "0.1"
+										}
+									}
+								}
+							}
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"back-color": "label",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"control-tag": "Time",
+							"default-value": "0.5",
+							"font": "lcd",
+							"font-antialias": "true",
+							"font-color": "lcd.font",
+							"frame-color": "textedit.frame",
+							"frame-width": "-1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "110, 9",
+							"round-rect-radius": "2",
+							"shadow-color": "~ RedCColor",
+							"size": "40, 22",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "right",
+							"text-inset": "5, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "000",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "control",
+							"font-antialias": "true",
+							"font-color": "label",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "80, 10",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "30, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "left",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "Time :",
+							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CViewContainer": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"background-color": "lost.back",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"custom-view-name": "MainView",
+							"mouse-enabled": "false",
+							"opacity": "0",
+							"origin": "0, 0",
+							"size": "365, 395",
+							"sub-controller": "NewHighScoreViewController",
+							"transparent": "false",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CMultiLineTextLabel": {
+								"attributes": {
+									"auto-height": "false",
+									"back-color": "card.closed.frame",
+									"background-offset": "0, 0",
+									"class": "CMultiLineTextLabel",
+									"default-value": "0.5",
+									"font": "highscore",
+									"font-antialias": "true",
+									"font-color": "textedit.font",
+									"frame-color": "card.closed.frame",
+									"frame-width": "1",
+									"line-layout": "wrap",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "40, 80",
+									"round-rect-radius": "3",
+									"shadow-color": "lcd.font",
+									"size": "285, 56.3965",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "true",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 5",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "You have a new HighScore!\\n\\nPlease enter your name:",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CTextEdit": {
+								"attributes": {
+									"back-color": "card.closed.frame",
+									"background-offset": "0, 0",
+									"class": "CTextEdit",
+									"control-tag": "NewHighScoreName",
+									"default-value": "0.5",
+									"font": "highscore",
+									"font-antialias": "true",
+									"font-color": "textedit.font",
+									"frame-color": "card.closed.frame",
+									"frame-width": "1",
+									"immediate-text-change": "false",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "41, 143",
+									"placeholder-title": "Name",
+									"round-rect-radius": "3",
+									"secure-style": "false",
+									"shadow-color": "lcd.font",
+									"size": "285, 20",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-doubleclick": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "true",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CTextButton": {
+								"attributes": {
+									"class": "CTextButton",
+									"control-tag": "NewHighScoreOK",
+									"default-value": "0.5",
+									"font": "control",
+									"frame-color": "label",
+									"frame-color-highlighted": "label",
+									"frame-width": "-1",
+									"gradient": "Default TextButton Gradient",
+									"gradient-highlighted": "Default TextButton Gradient Highlighted",
+									"icon-position": "left",
+									"icon-text-margin": "0",
+									"kick-style": "false",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "133, 176",
+									"round-radius": "3",
+									"size": "100, 18",
+									"text-alignment": "center",
+									"text-color": "label",
+									"text-color-highlighted": "textedit.font",
+									"title": "OK",
+									"transparent": "false",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							}
+						}
+					},
+					"CViewContainer": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"background-color": "background",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"mouse-enabled": "false",
+							"opacity": "0",
+							"origin": "15, 45",
+							"size": "335, 335",
+							"sub-controller": "HighScoreViewController",
+							"transparent": "false",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CScrollView": {
+								"attributes": {
+									"auto-drag-scrolling": "false",
+									"auto-hide-scrollbars": "false",
+									"background-color": "~ BlackCColor",
+									"background-color-draw-style": "filled and stroked",
+									"bordered": "true",
+									"class": "CScrollView",
+									"container-size": "315, 259.091",
+									"custom-view-name": "DataBrowser",
+									"follow-focus-view": "false",
+									"horizontal-scrollbar": "false",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "10, 10",
+									"overlay-scrollbars": "false",
+									"scrollbar-background-color": "#ffffffc8",
+									"scrollbar-frame-color": "~ BlackCColor",
+									"scrollbar-scroller-color": "~ BlueCColor",
+									"scrollbar-width": "16",
+									"size": "315, 285",
+									"sub-controller": "DataBrowserController",
+									"transparent": "true",
+									"vertical-scrollbar": "false",
+									"wants-focus": "false"
+								}
+							},
+							"CTextButton": {
+								"attributes": {
+									"class": "CTextButton",
+									"control-tag": "CloseHighscoreView",
+									"default-value": "0.5",
+									"font": "control",
+									"frame-color": "label",
+									"frame-color-highlighted": "label",
+									"frame-width": "-1",
+									"gradient": "Default TextButton Gradient",
+									"gradient-highlighted": "Default TextButton Gradient Highlighted",
+									"icon-position": "left",
+									"icon-text-margin": "0",
+									"kick-style": "false",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "135, 305",
+									"round-radius": "3",
+									"size": "70, 18",
+									"text-alignment": "center",
+									"text-color": "label",
+									"text-color-highlighted": "textedit.font",
+									"title": "Close",
+									"transparent": "false",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

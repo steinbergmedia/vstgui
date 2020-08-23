@@ -25,6 +25,7 @@
 #include "uifocussettingscontroller.h"
 #include "../cstream.h"
 #include "../uiattributes.h"
+#include "../uicontentprovider.h"
 #include "../xmlparser.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
@@ -61,7 +62,7 @@ public:
 		if (uiDesc == nullptr)
 		{
 #ifdef HAVE_EDITORUIDESC_H
-			Xml::MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
+			MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
 			SharedPointer<UIDescription> editorDesc = owned (new UIDescription (&provider));
 			if (editorDesc->parse ())
 			{
@@ -1377,7 +1378,7 @@ int32_t UIEditController::getSaveOptions ()
 	bool val;
 	if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
 	{
-		flags |= UIDescription::kWriteImagesIntoXMLFile;
+		flags |= UIDescription::kWriteImagesIntoUIDescFile;
 	}
 	if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
 	{

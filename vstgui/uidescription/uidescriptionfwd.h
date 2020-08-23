@@ -16,14 +16,8 @@ class IViewFactory;
 class InputStream;
 class OutputStream;
 class IBitmapCreator;
-
-namespace Xml {
-
 class IContentProvider;
-class IHandler;
-class Parser;
 class MemoryContentProvider;
 class InputStreamContentProvider;
 
-} // Xml
 } // VSTGUI

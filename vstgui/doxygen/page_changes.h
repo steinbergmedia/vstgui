@@ -5,6 +5,8 @@
 /**
 @page page_news_and_changes New stuff in VSTGUI 4
 
+@tableofcontents
+
 - @ref version4_introduction @n
 - @ref new_stuff @n
 - @ref code_changes @n
@@ -20,6 +22,11 @@ The result is that code written for any earlier version of VSTGUI is not always 
 It's recommended to start new projects with version 4 while old projects should stay with version 3.6.
 
 @section new_stuff New Stuff
+
+@subsection version4_10 Version 4.10
+
+- UIDescription files are now written in JSON format and the old XML format is deprecated
+- It's now possible to conditionally remove the XML parser and the expat library from building (set VSTGUI_ENABLE_XML_PARSER to 0)
 
 @subsection version4_9 Version 4.9
 
@@ -90,7 +97,7 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 @subsection version4_0 Version 4.0
 
-- VST3 Support : Complete inline VST3 Editor support. See @ref page_vst3_inline_editing @n
+- VST3 Support : Complete inline VST3 Editor support. See @ref page_uidescription_editor @n
 - UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
 - Animation Support : Simple to use animations. See @ref page_animation
 - Amalgamation : Easy integration in your projects via one or two source files

@@ -20,6 +20,7 @@
 #include "../../uidescription/editing/uieditmenucontroller.h"
 #include "../../uidescription/icontroller.h"
 #include "../../uidescription/uiattributes.h"
+#include "../../uidescription/uicontentprovider.h"
 #include "../../uidescription/uidescription.h"
 #include "../include/helpers/menubuilder.h"
 #include "../include/helpers/valuelistener.h"
@@ -316,8 +317,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	bool initStatic (WindowPtr& inWindow, UTF8String inXml, const char* inTemplateName)
 	{
 		window = inWindow.get ();
-		Xml::MemoryContentProvider xmlContentProvider (inXml,
-		                                               static_cast<uint32_t> (inXml.length ()));
+		MemoryContentProvider xmlContentProvider (inXml, static_cast<uint32_t> (inXml.length ()));
 		uiDesc = makeOwned<UIDescription> (&xmlContentProvider);
 		if (!uiDesc->parse ())
 			return false;
@@ -791,7 +791,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		{
 			if (uiEditController->getUndoManager ()->isSavePosition () == false)
 				Detail::saveSharedUIDescription ();
-			int32_t flags = UIDescription::kWriteImagesIntoXMLFile |
+			int32_t flags = UIDescription::kWriteImagesIntoUIDescFile |
 			                CompressedUIDescription::kForceWriteCompressedDesc;
 			if (!uiDesc->save (uiDesc->getFilePath (), flags))
 			{

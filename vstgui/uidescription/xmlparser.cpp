@@ -4,6 +4,11 @@
 
 #include "../lib/vstguibase.h"
 
+#if VSTGUI_ENABLE_XML_PARSER
+
+#include "cstream.h"
+#include "icontentprovider.h"
+
 /// @cond ignore
 #if VSTGUI_USE_SYSTEM_EXPAT
 #include <expat.h>
@@ -127,7 +132,7 @@ bool Parser::parse (IContentProvider* provider, IHandler* handler)
 			return false;
 		}
 
-		uint32_t bytesRead = provider->readRawXmlData ((int8_t*)buffer, kBufferSize);
+		uint32_t bytesRead = provider->readRawData ((int8_t*)buffer, kBufferSize);
 		if (bytesRead == kStreamIOError)
 			bytesRead = 0;
 		XML_Status status = XML_ParseBuffer (pImpl->parser, static_cast<int> (bytesRead), bytesRead == 0);
@@ -203,56 +208,11 @@ bool Parser::stop ()
 }
 
 //------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-MemoryContentProvider::MemoryContentProvider (const void* data, uint32_t dataSize)
-: CMemoryStream ((const int8_t*)data, dataSize, false)
-{
-}
-
-//------------------------------------------------------------------------
-uint32_t MemoryContentProvider::readRawXmlData (int8_t* buffer, uint32_t size)
-{
-	return readRaw (buffer, size);
-}
-
-//------------------------------------------------------------------------
-void MemoryContentProvider::rewind ()
-{
-	CMemoryStream::rewind ();
-}
-
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-InputStreamContentProvider::InputStreamContentProvider (InputStream& stream)
-: stream (stream)
-, startPos (0)
-{
-	auto* seekStream = dynamic_cast<SeekableStream*> (&stream);
-	if (seekStream)
-		startPos = seekStream->tell ();	
-}
-
-//------------------------------------------------------------------------
-uint32_t InputStreamContentProvider::readRawXmlData (int8_t* buffer, uint32_t size)
-{
-	return stream.readRaw (buffer, size);
-}
-
-//------------------------------------------------------------------------
-void InputStreamContentProvider::rewind ()
-{
-	auto* seekStream = dynamic_cast<SeekableStream*> (&stream);
-	if (seekStream)
-		seekStream->seek (startPos, SeekableStream::kSeekSet);
-}
-
-//------------------------------------------------------------------------
 }} // namespaces
 
 #if !VSTGUI_USE_SYSTEM_EXPAT
 
+//------------------------------------------------------------------------
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
@@ -278,3 +238,5 @@ namespace Xml {
 #endif
 
 /// @endcond
+
+#endif // VSTGUI_ENABLE_XML_PARSER

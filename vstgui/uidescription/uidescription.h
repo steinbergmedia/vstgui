@@ -12,8 +12,7 @@
 #include <memory>
 
 namespace VSTGUI {
-
-class UINode;
+namespace Detail { class UINode; }
 
 //-----------------------------------------------------------------------------
 /// @brief XML description parser and view creator
@@ -21,25 +20,32 @@ class UINode;
 //-----------------------------------------------------------------------------
 class UIDescription : public NonAtomicReferenceCounted, public IUIDescription
 {
+	using UINode = Detail::UINode;
+
 protected:
 	enum SaveFlagBits
 	{
 		WriteWindowsResourceFileBit = 0,
-		WriteImagesIntoXMLFileBit,
-		DoNotVerifyImageXMLDataBit,
+		WriteImagesIntoUIDescFileBit,
+		DoNotVerifyImageDataBit,
+		WriteAsXmlBit,
 		LastSaveFlagBit,
 	};
 public:
-	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
-	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = nullptr);
+	UIDescription (const CResourceDescription& uidescFile, IViewFactory* viewFactory = nullptr);
+	UIDescription (IContentProvider* contentProvider, IViewFactory* viewFactory = nullptr);
 	~UIDescription () noexcept override;
 
 	virtual bool parse ();
 
 	enum SaveFlags {
 		kWriteWindowsResourceFile	= 1 << WriteWindowsResourceFileBit,
-		kWriteImagesIntoXMLFile		= 1 << WriteImagesIntoXMLFileBit,
-		kDoNotVerifyImageXMLData	= 1 << DoNotVerifyImageXMLDataBit,
+		kWriteImagesIntoUIDescFile	= 1 << WriteImagesIntoUIDescFileBit,
+		kDoNotVerifyImageData	= 1 << DoNotVerifyImageDataBit,
+		kWriteAsXML = 1 << WriteAsXmlBit,
+		
+		kWriteImagesIntoXMLFile [[deprecated("use kWriteImagesIntoUIDescFile")]] = kWriteImagesIntoUIDescFile,
+		kDoNotVerifyImageXMLData [[deprecated("use kDoNotVerifyImageData")]] = kDoNotVerifyImageData,
 	};
 
 	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile);
@@ -140,18 +146,18 @@ public:
 	
 	void freePlatformResources ();
 
-	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
-	
+
+	SharedPointer<UINode> getRootNode () const; // for testing
 protected:
 	void addDefaultNodes ();
 
 	bool saveToStream (OutputStream& stream, int32_t flags);
 
 	bool parsed () const;
-	void setXmlContentProvider (Xml::IContentProvider* provider);
+	void setContentProvider (IContentProvider* provider);
 
-	const CResourceDescription& getXmlFile () const;
+	const CResourceDescription& getUIDescFile () const;
 private:
 	CView* createViewFromNode (UINode* node) const;
 	UINode* getBaseNode (UTF8StringPtr name) const;

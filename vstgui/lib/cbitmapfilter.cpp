@@ -1027,6 +1027,6 @@ void registerStandardFilters (Factory& factory)
 
 } // Standard
 
-///@end cond
+///@endcond
 
 }} // namespaces

@@ -5,7 +5,7 @@
 #include "../lib/cresourcedescription.h"
 #include "compresseduidescription.h"
 #include "cstream.h"
-#include "xmlparser.h"
+#include "uicontentprovider.h"
 #include <array>
 
 //------------------------------------------------------------------------
@@ -60,6 +60,43 @@ protected:
 	std::array<Bytef, 4096> internalBuffer;
 };
 
+//------------------------------------------------------------------------
+class ZLibInputContentProvider : public IContentProvider
+{
+public:
+	ZLibInputContentProvider (InputStream& source) : source (source)
+	{
+		if (auto seekStream = dynamic_cast<SeekableStream*>(&source))
+			startPos = seekStream->tell ();
+	}
+
+	bool open ()
+	{
+		zin = std::make_unique<ZLibInputStream>();
+		return zin->open (source);
+	}
+
+	uint32_t readRawData (int8_t* buffer, uint32_t size) override
+	{
+		if (zin)
+			return zin->readRaw (buffer, size);
+		return 0;
+	}
+
+	void rewind () override
+	{
+		if (auto seekStream = dynamic_cast<SeekableStream*>(&source))
+		{
+			seekStream->seek (startPos, SeekableStream::SeekMode::kSeekSet);
+			open ();
+		}
+	}
+
+	InputStream& source;
+	std::unique_ptr<ZLibInputStream> zin;
+	int64_t startPos {0};
+};
+
 //-----------------------------------------------------------------------------
 static constexpr int64_t kUIDescIdentifier = 0x7072637365646975LL; // 8 byte identifier
 
@@ -77,13 +114,12 @@ bool CompressedUIDescription::parseWithStream (InputStream& stream)
 	stream >> identifier;
 	if (identifier == kUIDescIdentifier)
 	{
-		ZLibInputStream zin;
-		if (zin.open (stream))
+		ZLibInputContentProvider zin (stream);
+		if (zin.open ())
 		{
-			Xml::InputStreamContentProvider compressedContentProvider (zin);
-			setXmlContentProvider (&compressedContentProvider);
+			setContentProvider (&zin);
 			result = UIDescription::parse ();
-			setXmlContentProvider (nullptr);
+			setContentProvider (nullptr);
 		}
 	}
 	return result;
@@ -96,14 +132,14 @@ bool CompressedUIDescription::parse ()
 		return true;
 	bool result = false;
 	CResourceInputStream resStream (kLittleEndianByteOrder);
-	if (resStream.open (getXmlFile ()))
+	if (resStream.open (getUIDescFile ()))
 	{
 		result = parseWithStream (resStream);
 	}
-	else if (getXmlFile ().type == CResourceDescription::kStringType)
+	else if (getUIDescFile ().type == CResourceDescription::kStringType)
 	{
 		CFileStream fileStream;
-		if (fileStream.open (getXmlFile ().u.name,
+		if (fileStream.open (getUIDescFile ().u.name,
 		                     CFileStream::kReadMode | CFileStream::kBinaryMode,
 		                     kLittleEndianByteOrder))
 		{
@@ -142,14 +178,19 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 			}
 		}
 	}
-	if (!(flags & kNoPlainXmlFileBackup))
+	if (!(flags & kNoPlainUIDescFileBackup))
 	{
 		// make a xml backup
-		std::string xmlFileName (filename);
+		std::string backupFileName (filename);
 		if (originalIsCompressed|| (flags & kForceWriteCompressedDesc))
-			xmlFileName.append (".xml");
+		{
+			if (flags & kWriteAsXML)
+				backupFileName.append (".xml");
+			else
+				backupFileName.append (".json");
+		}
 		CFileStream xmlFileStream;
-		if (xmlFileStream.open (xmlFileName.data (),
+		if (xmlFileStream.open (backupFileName.data (),
 		                        CFileStream::kWriteMode | CFileStream::kTruncateMode,
 		                        kLittleEndianByteOrder))
 		{
