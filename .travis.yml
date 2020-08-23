@@ -24,6 +24,10 @@ matrix:
       osx_image: xcode11.5
       compiler: clang
       env: CPPCOMPILER='clang++' CCOMPILER='clang' BUILD_TYPE='Debug'
+    - os: osx
+      osx_image: xcode12u
+      compiler: clang
+      env: CPPCOMPILER='clang++' CCOMPILER='clang' BUILD_TYPE='Debug'
 
     # linux
     - os: linux
