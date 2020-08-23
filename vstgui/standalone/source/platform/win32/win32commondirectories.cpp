@@ -1,13 +1,13 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "win32commondirectories.h"
 #include "../../../../lib/platform/win32/win32support.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
-#include <shlobj.h>
+#include "win32commondirectories.h"
 #include <array>
+#include <shlobj.h>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -67,8 +67,15 @@ CommonDirectories::CommonDirectories ()
 }
 
 //------------------------------------------------------------------------
-Optional<UTF8String> CommonDirectories::getLocalAppDataPath (const UTF8String& dir, const UTF8String& subDir,
-                                                   bool create) const
+void CommonDirectories::setAppResourcePath (const UTF8String& path)
+{
+	appResourcePath = path;
+}
+
+//------------------------------------------------------------------------
+Optional<UTF8String> CommonDirectories::getLocalAppDataPath (const UTF8String& dir,
+                                                             const UTF8String& subDir,
+                                                             bool create) const
 {
 	if (!localAppDataPath.empty ())
 	{
@@ -95,13 +102,23 @@ Optional<UTF8String> CommonDirectories::getAppPath () const
 }
 
 //------------------------------------------------------------------------
-Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location, const UTF8String& subDir, bool create) const
+Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location,
+                                             const UTF8String& subDir, bool create) const
 {
 	switch (location)
 	{
 		case CommonDirectoryLocation::AppPath: return getAppPath ();
-		case CommonDirectoryLocation::AppPreferencesPath: return getLocalAppDataPath ("Preferences", subDir, create);
-		case CommonDirectoryLocation::AppCachesPath: return getLocalAppDataPath ("Caches", subDir, create);
+		case CommonDirectoryLocation::AppResourcesPath:
+		{
+			UTF8String result (appResourcePath);
+			if (!addSubDir (result, subDir, create))
+				return {};
+			return result;
+		}
+		case CommonDirectoryLocation::AppPreferencesPath:
+			return getLocalAppDataPath ("Preferences", subDir, create);
+		case CommonDirectoryLocation::AppCachesPath:
+			return getLocalAppDataPath ("Caches", subDir, create);
 		case CommonDirectoryLocation::UserDocumentsPath:
 		{
 			auto result = GetKnownFolderPathStr (FOLDERID_Documents, create);

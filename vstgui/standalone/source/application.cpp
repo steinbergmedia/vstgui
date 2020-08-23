@@ -67,7 +67,7 @@ public:
 private:
 	void registerStandardCommands ();
 	bool doCommandHandling (const Command& command, bool checkOnly);
-	CommandList getCommandList (const Interface& context, IMenuBuilder* menuBuilder);
+	CommandList getCommandList (const Interface& context, const IMenuBuilder* menuBuilder);
 	bool inQuit () const { return hasBit (flags, flagInQuit); }
 	void setInQuit (bool state) { setBit (flags, flagInQuit, state); }
 
@@ -255,7 +255,7 @@ bool Application::canQuit ()
 }
 
 //------------------------------------------------------------------------
-auto Application::getCommandList (const Interface& context, IMenuBuilder* menuBuilder)
+auto Application::getCommandList (const Interface& context, const IMenuBuilder* menuBuilder)
     -> CommandList
 {
 	CommandList menuCommandList;

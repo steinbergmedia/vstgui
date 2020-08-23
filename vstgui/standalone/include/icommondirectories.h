@@ -17,6 +17,8 @@ enum class CommonDirectoryLocation
 {
 	/** Path to the application. */
 	AppPath,
+	/** Path to the resources of the application. */
+	AppResourcesPath,
 	/** Path to the folder where application preferences are stored. */
 	AppPreferencesPath,
 	/** Path to the folder for application specific cache files. */

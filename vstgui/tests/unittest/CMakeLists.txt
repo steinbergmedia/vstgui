@@ -25,6 +25,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/cbuttonstate_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/ccolor_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cframe_test.cpp"
+	"${VSTGUI_TEST_BASE}lib/cinvalidrectlist_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/clinestyle_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cpoint_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/crect_test.cpp"

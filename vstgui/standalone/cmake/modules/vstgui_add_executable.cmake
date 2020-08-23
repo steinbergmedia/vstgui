@@ -78,11 +78,21 @@ function(vstgui_add_resources target resources)
       )
     endif()
     foreach(resource ${resources})
-      add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_LIST_DIR}/${resource}"
-        "${destination}"
-      )
+      get_filename_component(sourcePath "${resource}" ABSOLUTE "${CMAKE_CURRENT_LIST_DIR}")
+      if(IS_DIRECTORY "${sourcePath}")
+		get_filename_component(directoryName "${resource}" NAME)
+        add_custom_command(TARGET ${target} POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${sourcePath}"
+          "${destination}/${directoryName}"
+        )
+	  else()
+        add_custom_command(TARGET ${target} POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy
+          "${sourcePath}"
+          "${destination}"
+        )
+	  endif()
     endforeach(resource ${resources})
   endif()  
 endfunction()
@@ -91,8 +101,12 @@ endfunction()
 function(vstgui_set_target_infoplist target infoplist)
   if(CMAKE_HOST_APPLE)
     get_filename_component(InfoPlistFile "${infoplist}" ABSOLUTE)
+    get_filename_component(IncludeDir "${InfoPlistFile}" DIRECTORY)
     set_target_properties(${target} PROPERTIES
       MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
+      XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
+      XCODE_ATTRIBUTE_INFOPLIST_OTHER_PREPROCESSOR_FLAGS "-I${IncludeDir}"
+      XCODE_ATTRIBUTE_INFOPLIST_PREPROCESSOR_DEFINITIONS __plist_preprocessor__
     )
   endif(CMAKE_HOST_APPLE)
 endfunction()

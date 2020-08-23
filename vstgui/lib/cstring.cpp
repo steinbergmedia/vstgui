@@ -95,7 +95,35 @@ UTF8String& UTF8String::operator+= (const UTF8String& other)
 }
 
 //-----------------------------------------------------------------------------
+UTF8String& UTF8String::operator+= (StringType::value_type ch)
+{
+	string += ch;
+	platformString = nullptr;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+UTF8String& UTF8String::operator+= (const StringType::value_type* other)
+{
+	string += other;
+	platformString = nullptr;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
 UTF8String UTF8String::operator+ (const UTF8String& other)
+{
+	return UTF8String (*this) += other;
+}
+
+//-----------------------------------------------------------------------------
+UTF8String UTF8String::operator+ (StringType::value_type ch)
+{
+	return UTF8String (*this) += ch;
+}
+
+//-----------------------------------------------------------------------------
+UTF8String UTF8String::operator+ (const StringType::value_type* other)
 {
 	return UTF8String (*this) += other;
 }

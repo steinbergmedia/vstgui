@@ -36,7 +36,7 @@ public:
 		return nullptr;
 	}
 	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override {}
-	IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override { return nullptr; }
+	const IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override { return nullptr; }
 };
 
 //------------------------------------------------------------------------

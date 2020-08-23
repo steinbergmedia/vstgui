@@ -5,6 +5,7 @@
 #include "cframe.h"
 #include "coffscreencontext.h"
 #include "ctooltipsupport.h"
+#include "cinvalidrectlist.h"
 #include "itouchevent.h"
 #include "iscalefactorchangedlistener.h"
 #include "idatapackage.h"
@@ -36,7 +37,7 @@ private:
 	using InvalidRects = std::vector<CRect>;
 
 	SharedPointer<CFrame> frame;
-	InvalidRects invalidRects;
+	CInvalidRectList invalidRects;
 	uint32_t lastTicks;
 #if VSTGUI_LOG_COLLECT_INVALID_RECTS
 	uint32_t numAddedRects;
@@ -1948,7 +1949,7 @@ CFrame::CollectInvalidRects::~CollectInvalidRects () noexcept
 //-----------------------------------------------------------------------------
 void CFrame::CollectInvalidRects::flush ()
 {
-	if (!invalidRects.empty ())
+	if (!invalidRects.data ().empty ())
 	{
 		if (frame->isVisible () && frame->pImpl->platformFrame)
 		{
@@ -1969,30 +1970,7 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 #if VSTGUI_LOG_COLLECT_INVALID_RECTS
 	numAddedRects++;
 #endif
-	bool add = true;
-	for (auto it = invalidRects.begin (), end = invalidRects.end (); it != end; ++it)
-	{
-		if (it->rectInside (rect))
-		{
-			add = false;
-			break;
-		}
-		
-		CRect r (rect);
-		if (r.bound (*it) == rect)
-		{
-			add = false;
-			break;
-		}
-		r = *it;
-		if (r.bound (rect) == *it)
-		{
-			invalidRects.erase (it);
-			break;
-		}
-	}
-	if (add)
-		invalidRects.emplace_back (rect);
+	invalidRects.add (rect);
 	uint32_t now = frame->getTicks ();
 	if (now - lastTicks > 16)
 	{
