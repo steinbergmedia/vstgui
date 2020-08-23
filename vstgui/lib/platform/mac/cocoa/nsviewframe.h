@@ -20,6 +20,7 @@
 struct NSView;
 struct NSRect;
 struct NSDraggingSession;
+struct NSEvent;
 #endif
 
 namespace VSTGUI {
@@ -52,6 +53,9 @@ public:
 	void scaleFactorChanged (double newScaleFactor);
 	void cursorUpdate ();
 	virtual void drawRect (NSRect* rect);
+	bool onMouseDown (NSEvent* evt);
+	bool onMouseUp (NSEvent* evt);
+	bool onMouseMoved (NSEvent* evt);
 
 	// IPlatformFrame
 	bool getGlobalPosition (CPoint& pos) const override;
@@ -106,6 +110,7 @@ protected:
 	bool trackingAreaInitialized;
 	bool inDraw;
 	CCursorType cursor;
+	CButtonState mouseDownButtonState {};
 };
 
 } // VSTGUI

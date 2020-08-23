@@ -233,135 +233,58 @@ static void VSTGUI_NSView_drawRect (id self, SEL _cmd, NSRect rect)
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
-		return NO;
-
-	CButtonState buttons = eventButton (theEvent);
-	[[self window] makeFirstResponder:self];
-	NSUInteger modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	if ([theEvent clickCount] == 2)
-		buttons |= kDoubleClick;
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->platformOnMouseDown (p, buttons);
-	return (result != kMouseEventNotHandled) ? YES : NO;
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		return frame->onMouseDown (theEvent) ? YES : NO;
+	return NO;
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
-		return NO;
-
-	CButtonState buttons = eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->platformOnMouseUp (p, buttons);
-	return (result != kMouseEventNotHandled) ? YES : NO;
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		return frame->onMouseUp (theEvent) ? YES : NO;
+	return NO;
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
-		return NO;
-
-	CButtonState buttons = eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->platformOnMouseMoved (p, buttons);
-	return (result != kMouseEventNotHandled) ? YES : NO;
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		return frame->onMouseMoved (theEvent) ? YES : NO;
+	return NO;
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
-	__OBJC_SUPER(self)
 	if (![self onMouseDown: theEvent])
-		SuperEventMsg (SUPER, @selector(mouseDown:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_rightMouseDown (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseDown: theEvent])
-		SuperEventMsg (SUPER, @selector(rightMouseDown:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_otherMouseDown (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseDown: theEvent])
-		SuperEventMsg (SUPER, @selector(otherMouseDown:), theEvent);
+	{
+		__OBJC_SUPER(self)
+		SuperEventMsg (SUPER, _cmd, theEvent);
+	}
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
-	__OBJC_SUPER(self)
 	if (![self onMouseUp: theEvent])
-		SuperEventMsg (SUPER, @selector(mouseUp:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_rightMouseUp (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseUp: theEvent])
-		SuperEventMsg (SUPER, @selector(rightMouseUp:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_otherMouseUp (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseUp: theEvent])
-		SuperEventMsg (SUPER, @selector(otherMouseUp:), theEvent);
+	{
+		__OBJC_SUPER(self)
+		SuperEventMsg (SUPER, _cmd, theEvent);
+	}
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 {
-	__OBJC_SUPER(self)
 	if (![self onMouseMoved: theEvent])
-		SuperEventMsg (SUPER, @selector(mouseMoved:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_mouseDragged (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseMoved: theEvent])
-		SuperEventMsg (SUPER, @selector(mouseDragged:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_rightMouseDragged (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseMoved: theEvent])
-		SuperEventMsg (SUPER, @selector(rightMouseDragged:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_otherMouseDragged (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseMoved: theEvent])
-		SuperEventMsg (SUPER, @selector(otherMouseDragged:), theEvent);
+	{
+		__OBJC_SUPER(self)
+		SuperEventMsg (SUPER, _cmd, theEvent);
+	}
 }
 
 //------------------------------------------------------------------------------------
@@ -755,15 +678,15 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseUp:), IMP (VSTGUI_NSView_onMouseUp), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseMoved:), IMP (VSTGUI_NSView_onMouseMoved), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseDown:), IMP (VSTGUI_NSView_mouseDown), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseDown:), IMP (VSTGUI_NSView_rightMouseDown), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseDown:), IMP (VSTGUI_NSView_otherMouseDown), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseDown:), IMP (VSTGUI_NSView_mouseDown), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseDown:), IMP (VSTGUI_NSView_mouseDown), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseUp:), IMP (VSTGUI_NSView_mouseUp), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseUp:), IMP (VSTGUI_NSView_rightMouseUp), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseUp:), IMP (VSTGUI_NSView_otherMouseUp), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseUp:), IMP (VSTGUI_NSView_mouseUp), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseUp:), IMP (VSTGUI_NSView_mouseUp), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseMoved:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseDragged:), IMP (VSTGUI_NSView_mouseDragged), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseDragged:), IMP (VSTGUI_NSView_rightMouseDragged), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseDragged:), IMP (VSTGUI_NSView_otherMouseDragged), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseDragged:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseDragged:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseDragged:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(scrollWheel:), IMP (VSTGUI_NSView_scrollWheel), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseEntered:), IMP (VSTGUI_NSView_mouseEntered), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseExited:), IMP (VSTGUI_NSView_mouseExited), "v@:@:^:"))
@@ -916,6 +839,49 @@ void NSViewFrame::drawRect (NSRect* rect)
 	}
 	drawContext.endDraw ();
 	inDraw = false;
+}
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::onMouseDown (NSEvent* theEvent)
+{
+	CButtonState buttons = eventButton (theEvent);
+	mouseDownButtonState = buttons.getButtonState ();
+	[nsView.window makeFirstResponder:nsView];
+	NSUInteger modifiers = [theEvent modifierFlags];
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
+	mapModifiers (modifiers, buttons);
+	if ([theEvent clickCount] == 2)
+		buttons |= kDoubleClick;
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = frame->platformOnMouseDown (p, buttons);
+	return (result != kMouseEventNotHandled) ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::onMouseUp (NSEvent* theEvent)
+{
+	CButtonState buttons = eventButton (theEvent);
+	NSUInteger modifiers = [theEvent modifierFlags];
+	mapModifiers (modifiers, buttons);
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = frame->platformOnMouseUp (p, buttons);
+	return (result != kMouseEventNotHandled) ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
+{
+	NSUInteger modifiers = [theEvent modifierFlags];
+	CButtonState buttons = theEvent.type == NSMouseMoved ? 0 : mouseDownButtonState;
+	mapModifiers (modifiers, buttons);
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = frame->platformOnMouseMoved (p, buttons);
+	return (result != kMouseEventNotHandled) ? true : false;
 }
 
 // IPlatformFrame
