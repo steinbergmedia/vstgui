@@ -270,10 +270,10 @@ inline CRect& CRect::unite (const CRect& rect)
 //------------------------------------------------------------------------
 inline CRect& CRect::makeIntegral ()
 {
-	left = std::floor (left + 0.5);
-	right = std::floor (right + 0.5);
-	top = std::floor (top + 0.5);
-	bottom = std::floor (bottom + 0.5);
+	left = std::floor (left);
+	right = std::ceil (right);
+	top = std::floor (top);
+	bottom = std::ceil (bottom);
 	return *this;
 }
 
