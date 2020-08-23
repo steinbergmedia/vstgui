@@ -23,7 +23,7 @@
 				"SelectedTemplate": "view"
 			},
 			"UIEditController": {
-				"EditViewScale": "1",
+				"EditViewScale": "1.5",
 				"EditorSize": "0, 0, 1158, 1005",
 				"SplitViewSize_0_0": "0.7436159346271705716802102870133239775896",
 				"SplitViewSize_0_1": "0.2359550561797752743498080008066608570516",
@@ -31,7 +31,7 @@
 				"SplitViewSize_1_1": "0.411644535240040854162657524284441024065",
 				"SplitViewSize_2_0": "0.6424870466321243034357735268713440746069",
 				"SplitViewSize_2_1": "0.3531951640759931065893795221199980005622",
-				"TabSwitchValue": "6",
+				"TabSwitchValue": "2",
 				"Version": "1"
 			},
 			"UIAttributesController": {},
@@ -48,7 +48,7 @@
 				"SelectedRow": "7"
 			},
 			"UIColorsDataSource": {
-				"SelectedRow": "0"
+				"SelectedRow": "2"
 			},
 			"FocusDrawing": {
 				"color": "Focus",
@@ -928,7 +928,7 @@
 							"font": "~ NormalFont",
 							"font-color": "~ BlackCColor",
 							"font-color-selected": "~ BlackCColor",
-							"hover-color": "#00000064",
+							"hover-color": "Hover",
 							"line-color": "~ BlackCColor",
 							"line-width": "-1",
 							"max-value": "7",
@@ -938,7 +938,7 @@
 							"origin": "15, 200",
 							"row-height": "16",
 							"size": "110, 144",
-							"style-hover": "false",
+							"style-hover": "true",
 							"sub-controller": "WeekdaysController",
 							"text-alignment": "center",
 							"text-inset": "5",
