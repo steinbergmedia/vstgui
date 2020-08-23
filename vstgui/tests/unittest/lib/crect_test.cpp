@@ -13,9 +13,9 @@ TESTCASE(CRectTest,
 		CRect r (0.2, 0.5, 10.8, 12.1);
 		r.makeIntegral ();
 		EXPECT(r.left == 0.0)
-		EXPECT(r.top == 1.0)
+		EXPECT(r.top == 0.0)
 		EXPECT(r.right == 11.0)
-		EXPECT(r.bottom == 12.0)
+		EXPECT(r.bottom == 13.0)
 	);
 
 	TEST(getCenter,
