@@ -15,6 +15,7 @@
 		"colors": {
 			"Black Alpha 140": "#0000008c",
 			"Focus": "#3bafffff",
+			"Hover": "#00000014",
 			"TextShadow": "#0000002f"
 		},
 		"gradients": {
