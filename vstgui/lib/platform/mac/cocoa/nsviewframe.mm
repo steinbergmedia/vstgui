@@ -1027,6 +1027,9 @@ bool NSViewFrame::invalidRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_14
+	if (nsView.wantsLayer)
+		return false;
 	NSRect r = nsRectFromCRect (src);
 	NSSize d = NSMakeSize (distance.x, distance.y);
 	[nsView scrollRect:r by:d];
@@ -1052,6 +1055,9 @@ bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 		[nsView setNeedsDisplayInRect:r2];
 	}
 	return true;
+#else
+	return false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
