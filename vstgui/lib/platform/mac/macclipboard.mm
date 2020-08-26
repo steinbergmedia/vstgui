@@ -13,8 +13,127 @@
 #import <Carbon/Carbon.h>
 #endif
 
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14      101400
+#endif
+
 namespace VSTGUI {
 namespace MacClipboard {
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+//------------------------------------------------------------------------
+static auto DefaultPBItemTypes =
+    @[NSPasteboardTypeString, NSPasteboardTypeFileURL, NSPasteboardTypeColor];
+
+//------------------------------------------------------------------------
+class Pasteboard : public IDataPackage
+{
+public:
+	Pasteboard (NSPasteboard* pb) : pb (pb) { entries.resize ([pb pasteboardItems].count); }
+
+	uint32_t getCount () const override { return entries.size (); }
+	uint32_t getDataSize (uint32_t index) const override
+	{
+		if (index >= getCount ())
+			return 0;
+		prepareEntryAtIndex (index);
+		return entries[index].data.size ();
+	}
+	Type getDataType (uint32_t index) const override
+	{
+		if (index >= getCount ())
+			return Type::kError;
+		prepareEntryAtIndex (index);
+		return entries[index].type;
+	}
+	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const override
+	{
+		if (index >= getCount ())
+			return 0;
+		prepareEntryAtIndex (index);
+		buffer = entries[index].data.data ();
+		type = entries[index].type;
+		return entries[index].data.size ();
+	}
+
+private:
+	struct Entry
+	{
+		std::vector<uint8_t> data;
+		Type type {Type::kError};
+	};
+
+	void prepareEntryAtIndex (uint32_t index) const
+	{
+		if (entries[index].type == Type::kError)
+			entries[index] = std::move (makeEntry (pb.pasteboardItems[index]));
+	}
+
+	static Entry makeEntry (NSPasteboardItem* item)
+	{
+		Entry result;
+		if (auto availableType = [item availableTypeFromArray:DefaultPBItemTypes])
+		{
+			if ([availableType isEqualToString:NSPasteboardTypeFileURL])
+			{
+				result.type = Type::kFilePath;
+				NSString* fileUrlStr = [item stringForType:NSPasteboardTypeFileURL];
+				NSURL* url = [NSURL URLWithString:fileUrlStr];
+				std::string pathStr = url.path.UTF8String;
+				result.data.resize (pathStr.size ());
+				memcpy (result.data.data (), pathStr.data (), pathStr.size ());
+			}
+			else if ([availableType isEqualToString:NSPasteboardTypeColor])
+			{
+				result.type = Type::kText;
+				if (NSData* nsColorData = [item dataForType:NSPasteboardTypeColor])
+				{
+					if (NSColor* nsColor =
+					        [NSKeyedUnarchiver unarchivedObjectOfClass:[NSColor class]
+					                                          fromData:nsColorData
+					                                             error:nil])
+					{
+						nsColor = [nsColor
+						    colorUsingColorSpace:[[[NSColorSpace alloc]
+						                             initWithCGColorSpace:GetCGColorSpace ()]
+						                             autorelease]];
+						int32_t red = static_cast<int32_t> ([nsColor redComponent] * 255.);
+						int32_t green = static_cast<int32_t> ([nsColor greenComponent] * 255.);
+						int32_t blue = static_cast<int32_t> ([nsColor blueComponent] * 255.);
+						int32_t alpha = static_cast<int32_t> ([nsColor alphaComponent] * 255.);
+						char str[10];
+						sprintf (str, "#%02x%02x%02x%02x", red, green, blue, alpha);
+						result.data.resize (10);
+						memcpy (result.data.data (), str, 10);
+					}
+				}
+			}
+			else
+			{
+				assert ([availableType isEqualToString:NSPasteboardTypeString]);
+				result.type = Type::kText;
+				if (auto data = [item dataForType:availableType])
+				{
+					result.data.resize (data.length);
+					memcpy (result.data.data (), data.bytes, data.length);
+				}
+			}
+		}
+		else
+		{
+			result.type = Type::kBinary;
+			auto data = [item dataForType:item.types[0]];
+			result.data.resize (data.length);
+			memcpy (result.data.data (), data.bytes, data.length);
+		}
+		return result;
+	}
+
+	NSPasteboard* pb;
+	mutable std::vector<Entry> entries;
+};
+
+#else
 
 //-----------------------------------------------------------------------------
 class Pasteboard : public IDataPackage
@@ -155,6 +274,7 @@ uint32_t Pasteboard::getData (uint32_t index, const void*& buffer, Pasteboard::T
 	}
 	return 0;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -194,6 +314,8 @@ void setClipboard (const SharedPointer<IDataPackage>& dataSource)
 	NSPasteboard* pb = [NSPasteboard generalPasteboard];
 	if (dataSource)
 	{
+		[pb clearContents];
+
 		uint32_t nbItems = dataSource->getCount ();
 		NSMutableArray* fileArray = nullptr;
 		IDataPackage::Type type;
@@ -213,15 +335,21 @@ void setClipboard (const SharedPointer<IDataPackage>& dataSource)
 					}
 					case IDataPackage::kText:
 					{
-						[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
-						[pb setString:[[[NSString alloc] initWithBytes:data length:length encoding:NSUTF8StringEncoding] autorelease] forType:NSStringPboardType];
+						[pb declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString] owner:nil];
+						[pb setString:[[[NSString alloc] initWithBytes:data length:length encoding:NSUTF8StringEncoding] autorelease] forType:NSPasteboardTypeString];
 						return;
 					}
 					case IDataPackage::kFilePath:
 					{
 						if (fileArray == nullptr)
 							fileArray = [[[NSMutableArray alloc] init] autorelease];
-						[fileArray addObject:[NSString stringWithCString:(const char*)data encoding:NSUTF8StringEncoding]];
+						auto fileStr =
+						    [NSString stringWithUTF8String:static_cast<const char*> (data)];
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+						[fileArray addObject:[NSURL fileURLWithPath:fileStr]];
+#else
+						[fileArray addObject:fileStr];
+#endif
 						break;
 					}
 					case IDataPackage::kError:
@@ -233,8 +361,12 @@ void setClipboard (const SharedPointer<IDataPackage>& dataSource)
 		}
 		if (fileArray)
 		{
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+			[pb writeObjects:fileArray];
+#else
 			[pb declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
 			[pb setPropertyList:fileArray forType:NSFilenamesPboardType];
+#endif
 		}
 	}
 	else

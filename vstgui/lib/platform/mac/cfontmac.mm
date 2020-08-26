@@ -15,6 +15,10 @@
 #import <Cocoa/Cocoa.h>
 #endif
 
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14      101400
+#endif
+
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -39,6 +43,31 @@ private:
 			getUrlsForType (t, fontUrls);
 		if (CFArrayGetCount (fontUrls) == 0)
 			return;
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+		if (@available (macOS 10.15, *))
+		{
+			CTFontManagerRegisterFontURLs (
+			    fontUrls, kCTFontManagerScopeProcess, true, [] (CFArrayRef errors, bool done) {
+				    CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
+				                          ErrorApplierFunction, nullptr);
+				    return true;
+			    });
+		}
+		else
+		{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+			CFArrayRef errors;
+			if (!CTFontManagerRegisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
+			{
+				CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
+				                      ErrorApplierFunction, nullptr);
+				CFRelease (errors);
+			}
+#pragma clang diagnostic pop
+
+		}
+#else
 		CFArrayRef errors;
 		if (!CTFontManagerRegisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
 		{
@@ -46,11 +75,37 @@ private:
 			                      ErrorApplierFunction, nullptr);
 			CFRelease (errors);
 		}
+#endif
 	}
 	~RegisterBundleFonts ()
 	{
 		if (CFArrayGetCount (fontUrls) == 0)
 			return;
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+		if (@available (macOS 10.15, *))
+		{
+			CTFontManagerUnregisterFontURLs (
+			    fontUrls, kCTFontManagerScopeProcess, [] (CFArrayRef errors, bool done) {
+				    CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
+				                          ErrorApplierFunction, nullptr);
+				    return true;
+			    });
+		}
+		else
+		{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+			CFArrayRef errors;
+			if (!CTFontManagerUnregisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess,
+			                                          &errors))
+			{
+				CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
+				                      ErrorApplierFunction, nullptr);
+				CFRelease (errors);
+			}
+#pragma clang diagnostic pop
+		}
+#else
 		CFArrayRef errors;
 		if (!CTFontManagerUnregisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
 		{
@@ -58,6 +113,7 @@ private:
 			                      ErrorApplierFunction, nullptr);
 			CFRelease (errors);
 		}
+#endif
 	}
 
 	void getUrlsForType (CFStringRef fontType, CFMutableArrayRef& array)

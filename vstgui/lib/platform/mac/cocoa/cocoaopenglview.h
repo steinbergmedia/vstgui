@@ -44,7 +44,10 @@ protected:
 	static void initClass ();
 
 	NSView* parent;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 	NSOpenGLView* platformView;
+#pragma clang diagnostic pop
 	IOpenGLView* view;
 	PixelFormat pixelFormat;
 };

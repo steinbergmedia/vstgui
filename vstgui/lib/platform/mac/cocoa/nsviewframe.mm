@@ -25,6 +25,10 @@
 	#import <Carbon/Carbon.h>
 #endif
 
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14      101400
+#endif
+
 using namespace VSTGUI;
 
 //------------------------------------------------------------------------------------
@@ -90,8 +94,21 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, NSFilenamesPboardType, NSPasteboardTypeColor, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
-		
+		[self
+		    registerForDraggedTypes:
+		        [NSArray
+		            arrayWithObjects:NSPasteboardTypeString,
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+                                     NSPasteboardTypeFileURL,
+#else
+		                             NSFilenamesPboardType,
+#endif
+		                             NSPasteboardTypeColor,
+		                             [NSString
+		                                 stringWithCString:MacClipboard::getPasteboardBinaryType ()
+		                                          encoding:NSASCIIStringEncoding],
+		                             nil]];
+
 		[self setFocusRingType:NSFocusRingTypeNone];
 	}
 	return self;
@@ -875,7 +892,7 @@ bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
 {
 	NSUInteger modifiers = [theEvent modifierFlags];
-	CButtonState buttons = theEvent.type == NSMouseMoved ? 0 : mouseDownButtonState;
+	CButtonState buttons = theEvent.type == MacEventType::MouseMoved ? 0 : mouseDownButtonState;
 	mapModifiers (modifiers, buttons);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
@@ -1027,6 +1044,9 @@ bool NSViewFrame::invalidRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_14
+	if (nsView.wantsLayer)
+		return false;
 	NSRect r = nsRectFromCRect (src);
 	NSSize d = NSMakeSize (distance.x, distance.y);
 	[nsView scrollRect:r by:d];
@@ -1052,6 +1072,9 @@ bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 		[nsView setNeedsDisplayInRect:r2];
 	}
 	return true;
+#else
+	return false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1080,7 +1103,7 @@ Optional<UTF8String> NSViewFrame::convertCurrentKeyEventToText ()
 	auto event = [NSApp currentEvent];
 	if (!event)
 		return {};
-	if (!(event.type == NSKeyDown || event.type == NSKeyUp))
+	if (!(event.type == MacEventType::KeyDown || event.type == MacEventType::KeyUp))
 		return {};
 	if (event.characters.length <= 0)
 		return {};
