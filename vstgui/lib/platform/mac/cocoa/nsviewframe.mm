@@ -90,8 +90,21 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, NSPasteboardTypeFileURL, NSPasteboardTypeColor, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
-		
+		[self
+		    registerForDraggedTypes:
+		        [NSArray
+		            arrayWithObjects:NSPasteboardTypeString,
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+                                     NSPasteboardTypeFileURL,
+#else
+		                             NSFilenamesPboardType,
+#endif
+		                             NSPasteboardTypeColor,
+		                             [NSString
+		                                 stringWithCString:MacClipboard::getPasteboardBinaryType ()
+		                                          encoding:NSASCIIStringEncoding],
+		                             nil]];
+
 		[self setFocusRingType:NSFocusRingTypeNone];
 	}
 	return self;
