@@ -25,6 +25,10 @@
 	#import <Carbon/Carbon.h>
 #endif
 
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14      101400
+#endif
+
 using namespace VSTGUI;
 
 //------------------------------------------------------------------------------------
