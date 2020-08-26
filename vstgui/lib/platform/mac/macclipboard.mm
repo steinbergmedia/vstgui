@@ -13,6 +13,10 @@
 #import <Carbon/Carbon.h>
 #endif
 
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14      101400
+#endif
+
 namespace VSTGUI {
 namespace MacClipboard {
 
@@ -360,8 +364,8 @@ void setClipboard (const SharedPointer<IDataPackage>& dataSource)
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
 			[pb writeObjects:fileArray];
 #else
-			[pb declareTypes:[NSArray arrayWithObject:FilenamesPboardType] owner:nil];
-			[pb setPropertyList:fileArray forType:FilenamesPboardType];
+			[pb declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
+			[pb setPropertyList:fileArray forType:NSFilenamesPboardType];
 #endif
 		}
 	}
