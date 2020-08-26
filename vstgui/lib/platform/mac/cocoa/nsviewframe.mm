@@ -90,7 +90,7 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, NSFilenamesPboardType, NSPasteboardTypeColor, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
+		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, NSPasteboardTypeFileURL, NSPasteboardTypeColor, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
 		
 		[self setFocusRingType:NSFocusRingTypeNone];
 	}
@@ -875,7 +875,7 @@ bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
 {
 	NSUInteger modifiers = [theEvent modifierFlags];
-	CButtonState buttons = theEvent.type == NSMouseMoved ? 0 : mouseDownButtonState;
+	CButtonState buttons = theEvent.type == MacEventType::MouseMoved ? 0 : mouseDownButtonState;
 	mapModifiers (modifiers, buttons);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
@@ -1080,7 +1080,7 @@ Optional<UTF8String> NSViewFrame::convertCurrentKeyEventToText ()
 	auto event = [NSApp currentEvent];
 	if (!event)
 		return {};
-	if (!(event.type == NSKeyDown || event.type == NSKeyUp))
+	if (!(event.type == MacEventType::KeyDown || event.type == MacEventType::KeyUp))
 		return {};
 	if (event.characters.length <= 0)
 		return {};

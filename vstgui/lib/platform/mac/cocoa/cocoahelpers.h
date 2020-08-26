@@ -145,10 +145,14 @@ namespace MacEventType
 	static constexpr auto LeftMouseDown = ::NSEventTypeLeftMouseDown;
 	static constexpr auto LeftMouseDragged = ::NSEventTypeLeftMouseDragged;
 	static constexpr auto MouseMoved = ::NSEventTypeMouseMoved;
+	static constexpr auto KeyDown = ::NSEventTypeKeyDown;
+	static constexpr auto KeyUp = ::NSEventTypeKeyUp;
 #else
 	static constexpr auto LeftMouseDown = ::NSLeftMouseDown;
 	static constexpr auto LeftMouseDragged = ::NSLeftMouseDragged;
 	static constexpr auto MouseMoved = ::NSMouseMoved;
+	static constexpr auto KeyDown = ::NSKeyDown;
+	static constexpr auto KeyUp = ::NSKeyUp;
 #endif
 }
 
