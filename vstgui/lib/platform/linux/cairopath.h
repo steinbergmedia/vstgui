@@ -18,8 +18,7 @@ public:
 	Path (const ContextHandle& cr) noexcept;
 	~Path () noexcept;
 
-	cairo_path_t* getPath (const ContextHandle& handle,
-						   const CGraphicsTransform* alignTransform = nullptr);
+	cairo_path_t* getPath (const ContextHandle& handle, bool align = false);
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1,
 							   const CColor& color2) override;

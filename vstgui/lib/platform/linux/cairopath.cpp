@@ -83,9 +83,9 @@ void Path::dirty ()
 }
 
 //------------------------------------------------------------------------
-cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransform* alignTm)
+cairo_path_t* Path::getPath (const ContextHandle& handle, bool align)
 {
-	if (alignTm)
+	if (align)
 		dirty ();
 	if (!path)
 	{
@@ -97,9 +97,9 @@ cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransfo
 				case Element::Type::kBeginSubpath:
 				{
 					cairo_new_sub_path (handle);
-					if (alignTm)
+					if (align)
 					{
-						auto p = pixelAlign (*alignTm,
+						auto p = pixelAlign (handle,
 											 CPoint {e.instruction.point.x, e.instruction.point.y});
 						cairo_move_to (handle, p.x - 0.5, p.y - 0.5);
 					}
@@ -114,9 +114,9 @@ cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransfo
 				}
 				case Element::Type::kLine:
 				{
-					if (alignTm)
+					if (align)
 					{
-						auto p = pixelAlign (*alignTm,
+						auto p = pixelAlign (handle,
 											 CPoint {e.instruction.point.x, e.instruction.point.y});
 						cairo_line_to (handle, p.x - 0.5, p.y - 0.5);
 					}
@@ -134,11 +134,11 @@ cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransfo
 				}
 				case Element::Type::kRect:
 				{
-					if (alignTm)
+					if (align)
 					{
 						auto r = pixelAlign (
-							*alignTm, CRect {e.instruction.rect.left, e.instruction.rect.top,
-											 e.instruction.rect.right, e.instruction.rect.bottom});
+							handle, CRect {e.instruction.rect.left, e.instruction.rect.top,
+										   e.instruction.rect.right, e.instruction.rect.bottom});
 						cairo_rectangle (handle, r.left - 0.5, r.top - 0.5, r.getWidth (),
 										 r.getHeight ());
 					}

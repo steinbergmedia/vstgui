@@ -82,14 +82,8 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-template <typename T>
-inline T pixelAlign (const CGraphicsTransform& tm, T obj)
-{
-	tm.transform (obj);
-	obj.makeIntegral ();
-	tm.inverse ().transform (obj);
-	return obj;
-}
+CPoint pixelAlign (const ContextHandle& handle, const CPoint& point);
+CRect pixelAlign (const ContextHandle& handle, const CRect& rect);
 
 //------------------------------------------------------------------------
 } // Cairo

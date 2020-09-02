@@ -261,8 +261,8 @@ void Context::drawLine (const CDrawContext::LinePair& line)
 		setSourceColor (getFrameColor ());
 		if (getDrawMode ().integralMode ())
 		{
-			CPoint start = pixelAlign (getCurrentTransform (), line.first);
-			CPoint end = pixelAlign (getCurrentTransform (), line.second);
+			CPoint start = pixelAlign (cr, line.first);
+			CPoint end = pixelAlign (cr, line.second);
 			cairo_move_to (cr, start.x + 0.5, start.y + 0.5);
 			cairo_line_to (cr, end.x + 0.5, end.y + 0.5);
 		}
@@ -287,8 +287,8 @@ void Context::drawLines (const CDrawContext::LineList& lines)
 		{
 			for (auto& line : lines)
 			{
-				CPoint start = pixelAlign (getCurrentTransform (), line.first);
-				CPoint end = pixelAlign (getCurrentTransform (), line.second);
+				CPoint start = pixelAlign (cr, line.first);
+				CPoint end = pixelAlign (cr, line.second);
 				cairo_move_to (cr, start.x + 0.5, start.y + 0.5);
 				cairo_line_to (cr, end.x + 0.5, end.y + 0.5);
 				cairo_stroke (cr);
@@ -316,9 +316,10 @@ void Context::drawPolygon (const CDrawContext::PointList& polygonPointList,
 	if (auto cd = DrawBlock::begin (*this))
 	{
 		auto& last = polygonPointList.back ();
-		cairo_move_to (cr, last.x, last.y);
+		double o = (drawStyle != kDrawFilled) ? 0.5 : 0.0;
+		cairo_move_to (cr, last.x + o, last.y + o);
 		for (auto& it : polygonPointList)
-			cairo_line_to (cr, it.x, it.y);
+			cairo_line_to (cr, it.x + o, it.y + o);
 
 		draw (drawStyle);
 	}
@@ -330,14 +331,20 @@ void Context::drawRect (const CRect& rect, const CDrawStyle drawStyle)
 	if (auto cd = DrawBlock::begin (*this))
 	{
 		CRect r (rect);
+		if (drawStyle != kDrawFilled)
+		{
+			r.right -= 1.;
+			r.bottom -= 1.;
+		}
+
+		double o = (drawStyle != kDrawFilled) ? 0.5 : 0.0;
 		if (needPixelAlignment (getDrawMode ()))
 		{
-			r = pixelAlign (getCurrentTransform (), r);
-			cairo_rectangle (cr, r.left + 0.5, r.top + 0.5, r.getWidth (), r.getHeight ());
+			r = pixelAlign (cr, r);
+			cairo_rectangle (cr, r.left + o, r.top + o, r.getWidth (), r.getHeight ());
 		}
 		else
-			cairo_rectangle (cr, r.left + 0.5, r.top + 0.5, r.getWidth () - 0.5,
-							 r.getHeight () - 0.5);
+			cairo_rectangle (cr, r.left + o, r.top + o, r.getWidth (), r.getHeight ());
 		draw (drawStyle);
 	}
 }
@@ -457,7 +464,7 @@ void Context::drawGraphicsPath (CGraphicsPath* path, CDrawContext::PathDrawMode 
 		if (auto cd = DrawBlock::begin (*this))
 		{
 			auto p = cairoPath->getPath (
-				cr, needPixelAlignment (getDrawMode ()) ? &getCurrentTransform () : nullptr);
+				cr, needPixelAlignment (getDrawMode ()));
 			if (transformation)
 			{
 				cairo_matrix_t currentMatrix;
@@ -534,6 +541,26 @@ void Context::fillRadialGradient (CGraphicsPath* path, const CGradient& gradient
 	if (cd)
 	{
 	}
+}
+
+//-----------------------------------------------------------------------------
+CPoint pixelAlign (const ContextHandle& handle, const CPoint& point)
+{
+    double x = point.x;
+    double y = point.y;
+    cairo_user_to_device(handle, &x, &y);
+    return CPoint(std::round(x), std::round(y));
+}
+
+CRect pixelAlign (const ContextHandle& handle, const CRect& rect)
+{
+    double left = rect.left;
+    double top = rect.top;
+    double right = rect.right;
+    double bottom = rect.bottom;
+    cairo_user_to_device(handle, &left, &top);
+    cairo_user_to_device(handle, &right, &bottom);
+    return CRect(std::round(left), std::round(top), std::round(right), std::round(bottom));
 }
 
 //-----------------------------------------------------------------------------
