@@ -544,12 +544,20 @@ void Context::fillRadialGradient (CGraphicsPath* path, const CGradient& gradient
 }
 
 //-----------------------------------------------------------------------------
+inline void roundPixel(const ContextHandle& handle, double& x, double& y)
+{
+    cairo_user_to_device (handle, &x, &y);
+    x = std::round (x);
+    y = std::round (y);
+    cairo_device_to_user (handle, &x, &y);
+}
+
 CPoint pixelAlign (const ContextHandle& handle, const CPoint& point)
 {
     double x = point.x;
     double y = point.y;
-    cairo_user_to_device(handle, &x, &y);
-    return CPoint(std::round(x), std::round(y));
+    roundPixel (handle, x, y);
+    return CPoint (x, y);
 }
 
 CRect pixelAlign (const ContextHandle& handle, const CRect& rect)
@@ -558,9 +566,9 @@ CRect pixelAlign (const ContextHandle& handle, const CRect& rect)
     double top = rect.top;
     double right = rect.right;
     double bottom = rect.bottom;
-    cairo_user_to_device(handle, &left, &top);
-    cairo_user_to_device(handle, &right, &bottom);
-    return CRect(std::round(left), std::round(top), std::round(right), std::round(bottom));
+    roundPixel (handle, left, top);
+    roundPixel (handle, right, bottom);
+    return CRect (std::round (left), std::round (top), std::round (right), std::round (bottom));
 }
 
 //-----------------------------------------------------------------------------
