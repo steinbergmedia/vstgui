@@ -8,6 +8,7 @@
 #include "vstgui/lib/optional.h"
 #include <array>
 #include <ctime>
+#include <memory>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -18,9 +19,9 @@ namespace Minesweeper {
 class HighScoreListModel
 {
 public:
-//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 	static constexpr size_t Size = 10u;
-//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 	struct Entry
 	{
 		uint32_t seconds {std::numeric_limits<uint32_t>::max ()};
@@ -45,7 +46,7 @@ public:
 
 	ListConstIterator begin () const;
 	ListConstIterator end () const;
-//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 private:
 	ListIterator highscorePosition (uint32_t seconds);
 	ListConstIterator highscorePosition (uint32_t seconds) const;
