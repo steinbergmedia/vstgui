@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "model.h"
+#include <algorithm>
 #include <random>
 #include <cassert>
 
@@ -13,7 +14,7 @@ namespace Minesweeper {
 
 //------------------------------------------------------------------------
 Model::Model (uint32_t numberOfRows, uint32_t numberOfCols, uint32_t numberOfMines,
-              IListener* listener)
+			  IListener* listener)
 : mines (numberOfMines), listener (listener)
 {
 	assert (numberOfMines < numberOfRows * numberOfCols);
@@ -192,7 +193,7 @@ void Model::allocateModel (uint32_t numberOfRows, uint32_t numberOfCols)
 {
 	matrix.resize (numberOfRows);
 	std::for_each (matrix.begin (), matrix.end (),
-	               [numberOfCols] (auto& r) { r.resize (numberOfCols); });
+				   [numberOfCols] (auto& r) { r.resize (numberOfCols); });
 }
 
 //------------------------------------------------------------------------
