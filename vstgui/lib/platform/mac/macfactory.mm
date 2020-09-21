@@ -2,16 +2,17 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "cgbitmap.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
 #include "../iplatformframecallback.h"
 #include "../iplatformresourceinputstream.h"
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
+#include "cfontmac.h"
+#include "cgbitmap.h"
 #include "macfactory.h"
-#include <mach/mach_time.h>
 #include <list>
+#include <mach/mach_time.h>
 #include <memory>
 
 //-----------------------------------------------------------------------------
@@ -48,23 +49,16 @@ PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const C
 PlatformFontPtr MacFactory::createFont (const UTF8String& name, const CCoord& size,
                                         const int32_t& style) const noexcept
 {
-	return IPlatformFont::create (name, size, style);
+	auto font = makeOwned<CoreTextFont> (name, size, style);
+	if (font->getFontRef ())
+		return std::move (font);
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 bool MacFactory::getAllFontFamilies (const FontFamilyCallback& callback) const noexcept
 {
-	std::list<std::string> names;
-	if (IPlatformFont::getAllPlatformFontFamilies (names))
-	{
-		for (const auto& n : names)
-		{
-			if (!callback (n))
-				break;
-		}
-		return true;
-	}
-	return false;
+	return CoreTextFont::getAllFontFamilies (callback);
 }
 
 //-----------------------------------------------------------------------------

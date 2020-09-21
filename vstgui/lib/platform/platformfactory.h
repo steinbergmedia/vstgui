@@ -16,11 +16,12 @@ using PNGBitmapBuffer = std::vector<uint8_t>;
 const IPlatformFactory& getPlatformFactory ();
 void setPlatformFactory (PlatformFactoryPtr&& factory);
 
+using FontFamilyCallback = std::function<bool (const std::string&)>;
+
 //-----------------------------------------------------------------------------
 class IPlatformFactory
 {
 public:
-	using FontFamilyCallback = std::function<bool (const std::string&)>;
 
 	virtual ~IPlatformFactory () noexcept = default;
 

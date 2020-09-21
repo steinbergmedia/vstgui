@@ -147,16 +147,7 @@ static uint32_t getCTVersion ()
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
-{
-	auto font = makeOwned<CoreTextFont> (name, size, style);
-	if (font->getFontRef ())
-		return std::move (font);
-	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+bool CoreTextFont::getAllFontFamilies (const FontFamilyCallback& callback) noexcept
 {
 	RegisterBundleFonts::init ();
 #if TARGET_OS_IPHONE
@@ -164,10 +155,12 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 #else
 	NSArray* fonts = [(NSArray*)CTFontManagerCopyAvailableFontFamilyNames () autorelease];
 #endif
+	fonts = [fonts sortedArrayUsingSelector:@selector (localizedCaseInsensitiveCompare:)];
 	for (uint32_t i = 0; i < [fonts count]; i++)
 	{
 		NSString* font = [fonts objectAtIndex:i];
-		fontFamilyNames.emplace_back ([font UTF8String]);
+		if (!callback ([font UTF8String]))
+			break;
 	}
 	return true;
 }
