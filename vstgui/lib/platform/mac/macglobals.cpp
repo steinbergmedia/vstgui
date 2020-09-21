@@ -11,26 +11,10 @@
 #include "../iplatformframe.h"
 #include "../common/fileresourceinputstream.h"
 #include "../std_unorderedmap.h"
-#include <mach/mach_time.h>
 
 #define USE_MAIN_DISPLAY_COLORSPACE	1
 
 namespace VSTGUI {
-
-//-----------------------------------------------------------------------------
-uint32_t IPlatformFrame::getTicks ()
-{
-	static struct mach_timebase_info timebaseInfo;
-	static bool initialized = false;
-	if (!initialized)
-	{
-		initialized = true;
-		mach_timebase_info (&timebaseInfo);
-	}
-	uint64_t absTime = mach_absolute_time ();
-	double d = (absTime / timebaseInfo.denom) * timebaseInfo.numer;	// nano seconds
-	return static_cast<uint32_t> (d / 1000000);
-}
 
 //-----------------------------------------------------------------------------
 struct ColorHash

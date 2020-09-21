@@ -12,6 +12,9 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class MacFactory final : public IPlatformFactory
 {
+public:
+	MacFactory ();
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */

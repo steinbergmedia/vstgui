@@ -10,16 +10,30 @@
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
 #include "macfactory.h"
+#include <mach/mach_time.h>
 #include <list>
 #include <memory>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
+namespace MacFactoryDetail {
+static struct mach_timebase_info timebaseInfo;
+} // MacFactoryDetail
+
+//------------------------------------------------------------------------
+MacFactory::MacFactory ()
+{
+	mach_timebase_info (&MacFactoryDetail::timebaseInfo);
+}
 
 //-----------------------------------------------------------------------------
 uint64_t MacFactory::getTicks () const noexcept
 {
-	return IPlatformFrame::getTicks ();
+	uint64_t absTime = mach_absolute_time ();
+	auto d =
+	    ((absTime * MacFactoryDetail::timebaseInfo.numer) / MacFactoryDetail::timebaseInfo.denom) /
+	    1000000;
+	return d;
 }
 
 //-----------------------------------------------------------------------------
