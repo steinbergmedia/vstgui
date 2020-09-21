@@ -11,27 +11,7 @@
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
-class IPlatformFactory;
-class IPlatformFrame;
-class IPlatformBitmap;
-class IPlatformFont;
-class IPlatformString;
-class IPlatformTimer;
-class IPlatformResourceInputStream;
-class IPlatformFrameConfig;
-class IPlatformFrameCallback;
-class IPlatformTimerCallback;
-
-enum class PlatformType : int32_t;
-
 using PNGBitmapBuffer = std::vector<uint8_t>;
-using PlatformFramePtr = SharedPointer<IPlatformFrame>;
-using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
-using PlatformFontPtr = SharedPointer<IPlatformFont>;
-using PlatformStringPtr = SharedPointer<IPlatformString>;
-using PlatformTimerPtr = SharedPointer<IPlatformTimer>;
-using PlatformResourceInputStreamPtr = std::unique_ptr<IPlatformResourceInputStream>;
-using PlatformFactoryPtr = std::unique_ptr<IPlatformFactory>;
 
 const IPlatformFactory& getPlatformFactory ();
 void setPlatformFactory (PlatformFactoryPtr&& factory);
