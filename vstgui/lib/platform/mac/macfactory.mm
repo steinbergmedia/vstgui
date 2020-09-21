@@ -2,7 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "../iplatformbitmap.h"
+#include "cgbitmap.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
 #include "../iplatformframecallback.h"
@@ -56,13 +56,13 @@ bool MacFactory::getAllFontFamilies (const FontFamilyCallback& callback) const n
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr MacFactory::createBitmap (const CPoint& size) const noexcept
 {
-	return IPlatformBitmap::create (&const_cast<CPoint&> (size));
+	return CGBitmap::create (&const_cast<CPoint&> (size));
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr MacFactory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	if (auto bitmap = IPlatformBitmap::create ())
+	if (auto bitmap = makeOwned<CGBitmap> ())
 	{
 		if (bitmap->load (desc))
 			return bitmap;
@@ -73,21 +73,21 @@ PlatformBitmapPtr MacFactory::createBitmap (const CResourceDescription& desc) co
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr MacFactory::createBitmapFromPath (UTF8StringPtr absolutePath) const noexcept
 {
-	return IPlatformBitmap::createFromPath (absolutePath);
+	return CGBitmap::createFromPath (absolutePath);
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr MacFactory::createBitmapFromMemory (const void* ptr, uint32_t memSize) const
     noexcept
 {
-	return IPlatformBitmap::createFromMemory (ptr, memSize);
+	return CGBitmap::createFromMemory (ptr, memSize);
 }
 
 //-----------------------------------------------------------------------------
 PNGBitmapBuffer MacFactory::createBitmapMemoryPNGRepresentation (
     const PlatformBitmapPtr& bitmap) const noexcept
 {
-	return IPlatformBitmap::createMemoryPNGRepresentation (bitmap);
+	return CGBitmap::createMemoryPNGRepresentation (bitmap);
 }
 
 //-----------------------------------------------------------------------------
