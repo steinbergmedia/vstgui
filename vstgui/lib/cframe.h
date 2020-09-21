@@ -40,7 +40,7 @@ public:
 	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	bool open (void* pSystemWindow, PlatformType systemWindowType = kDefaultNative, IPlatformFrameConfig* = nullptr);
+	bool open (void* pSystemWindow, PlatformType systemWindowType = PlatformType::kDefaultNative, IPlatformFrameConfig* = nullptr);
 	/** closes the frame and calls forget */
 	void close ();
 

@@ -13,7 +13,7 @@ struct VstKeyCode;
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-enum PlatformType {
+enum class PlatformType : int32_t {
 	kHWND,		// Windows HWND
 	kWindowRef,	// macOS WindowRef (Carbon)
 	kNSView,	// macOS NSView

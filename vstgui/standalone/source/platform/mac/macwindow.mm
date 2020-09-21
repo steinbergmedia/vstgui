@@ -94,7 +94,7 @@ public:
 	void activate () override;
 	void center () override;
 
-	PlatformType getPlatformType () const override { return kNSView; };
+	PlatformType getPlatformType () const override { return PlatformType::kNSView; };
 	void* _Nonnull getPlatformHandle () const override
 	{
 		return static_cast<void*> ((__bridge void*)nsWindow.contentView);

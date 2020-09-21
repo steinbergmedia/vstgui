@@ -1344,7 +1344,7 @@ void* NSViewFrame::makeTouchBar () const
 IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType platformType, IPlatformFrameConfig* config)
 {
 	#if MAC_CARBON
-	if (platformType == kWindowRef || platformType == kDefaultNative)
+	if (platformType == PlatformType::kWindowRef || platformType == PlatformType::kDefaultNative)
 		return new HIViewFrame (frame, size, reinterpret_cast<WindowRef> (parent));
 	#endif
 	return new NSViewFrame (frame, size, reinterpret_cast<NSView*> (parent), config);

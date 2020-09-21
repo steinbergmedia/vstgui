@@ -763,7 +763,7 @@ SharedPointer<IDataPackage> Frame::getClipboard ()
 //------------------------------------------------------------------------
 PlatformType Frame::getPlatformType () const
 {
-	return kX11EmbedWindowID;
+	return PlatformType::kX11EmbedWindowID;
 }
 
 //------------------------------------------------------------------------
@@ -808,7 +808,7 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 													 PlatformType parentType,
 													 IPlatformFrameConfig* config)
 {
-	if (parentType == kDefaultNative || parentType == kX11EmbedWindowID)
+	if (parentType == PlatformType::kDefaultNative || parentType == PlatformType::kX11EmbedWindowID)
 	{
 		auto x11Parent = reinterpret_cast<XID> (parent);
 		return new X11::Frame (frame, size, x11Parent, config);

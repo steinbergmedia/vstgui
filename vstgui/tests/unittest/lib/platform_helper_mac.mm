@@ -24,7 +24,7 @@ struct MacParentHandle : PlatformParentHandle
 	
 	PlatformType getType () const override
 	{
-		return kNSView;
+		return PlatformType::kNSView;
 	}
 
 	void* getHandle () const override
