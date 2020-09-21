@@ -751,9 +751,7 @@ Animation::Animator* CFrame::getAnimator ()
  */
 uint32_t CFrame::getTicks () const
 {
-	if (pImpl->platformFrame)
-		return pImpl->platformFrame->getTicks ();
-	return std::numeric_limits<uint32_t>::max ();
+	return getPlatformFactory ().getTicks ();
 }
 
 //-----------------------------------------------------------------------------
