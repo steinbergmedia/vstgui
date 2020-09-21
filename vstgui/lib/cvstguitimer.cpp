@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cvstguitimer.h"
+#include "platform/platformfactory.h"
 
 #if DEBUG
 #define DEBUGLOG	0
@@ -60,7 +61,7 @@ bool CVSTGUITimer::start ()
 {
 	if (platformTimer == nullptr)
 	{
-		platformTimer = IPlatformTimer::create (this);
+		platformTimer = getPlatformFactory ().createTimer (this);
 		if (platformTimer)
 		{
 			platformTimer->start (fireTime);
@@ -111,4 +112,3 @@ void CVSTGUITimer::fire ()
 }
 
 } // VSTGUI
-

@@ -61,5 +61,6 @@
 #include "lib/animation/animator.cpp"
 #include "lib/animation/timingfunctions.cpp"
 
+#include "lib/platform/platformfactory.cpp"
 #include "lib/platform/common/fileresourceinputstream.cpp"
 #include "lib/platform/common/genericoptionmenu.cpp"

@@ -6,6 +6,7 @@
 #include "../lib/cresourcedescription.h"
 #include "../lib/malloc.h"
 #include "../lib/platform/iplatformresourceinputstream.h"
+#include "../lib/platform/platformfactory.h"
 #include <algorithm>
 #include <sstream>
 
@@ -347,7 +348,7 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 {
 	if (platformStream)
 		return false;
-	platformStream = IPlatformResourceInputStream::create (res);
+	platformStream = getPlatformFactory ().createResourceInputStream (res);
 	return platformStream != nullptr;
 }
 

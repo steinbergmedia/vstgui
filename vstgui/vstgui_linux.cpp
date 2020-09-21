@@ -1,4 +1,4 @@
-﻿#include "vstgui.cpp"
+#include "vstgui.cpp"
 
 #include "lib/platform/linux/linuxstring.cpp"
 
@@ -14,4 +14,5 @@
 #include "lib/platform/linux/cairogradient.cpp"
 #include "lib/platform/linux/cairopath.cpp"
 
+#include "lib/platform/linux/linuxfactory.cpp"
 #include "lib/platform/common/generictextedit.cpp"

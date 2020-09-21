@@ -10,6 +10,7 @@
 #include "vstgui/lib/cgraphicstransform.h"
 #include "vstgui/lib/coffscreencontext.h"
 #include "vstgui/lib/platform/iplatformbitmap.h"
+#include "vstgui/lib/platform/platformfactory.h"
 #include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
@@ -91,7 +92,8 @@ private:
 			auto bitmap = offscreen->getBitmap ();
 			if (auto platformBitmap = bitmap->getPlatformBitmap ())
 			{
-				auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+				auto buffer =
+				    getPlatformFactory ().createBitmapMemoryPNGRepresentation (platformBitmap);
 				if (buffer.empty ())
 					return;
 				CFileStream stream;

@@ -10,6 +10,7 @@
 
 #include "lib/platform/win32/win32datapackage.cpp"
 #include "lib/platform/win32/win32dragging.cpp"
+#include "lib/platform/win32/win32factory.cpp"
 #include "lib/platform/win32/win32frame.cpp"
 #include "lib/platform/win32/win32openglview.cpp"
 #include "lib/platform/win32/win32optionmenu.cpp"

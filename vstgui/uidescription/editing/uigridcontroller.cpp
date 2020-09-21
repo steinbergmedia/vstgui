@@ -9,6 +9,7 @@
 #include "../../lib/algorithm.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/cstringlist.h"
+#include "../../lib/platform/platformfactory.h"
 #include "../uiattributes.h"
 #include "uieditcontroller.h"
 #include <array>
@@ -128,7 +129,7 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 			if (auto drawer = dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
 			{
 				drawer->setStringProvider ([this] (int32_t row) {
-					return IPlatformString::createWithUTF8String (
+					return getPlatformFactory ().createString (
 					    pointToDisplayString (defGrids[row]));
 				});
 			}

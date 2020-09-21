@@ -8,6 +8,7 @@
 #include "ctextedit.h"
 #include "cscrollbar.h"
 #include "../cstring.h"
+#include "../platform/platformfactory.h"
 #include "../platform/iplatformfont.h"
 #include <list>
 #include <cmath>
@@ -86,7 +87,10 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 , selFont (nullptr)
 {
 	std::list<std::string> fnList;
-	IPlatformFont::getAllPlatformFontFamilies (fnList);
+	getPlatformFactory ().getAllFontFamilies ([&fnList] (const std::string& name) {
+		fnList.push_back (name);
+		return true;
+	});
 	fnList.sort ();
 	std::list<std::string>::const_iterator it = fnList.begin ();
 	while (it != fnList.end ())

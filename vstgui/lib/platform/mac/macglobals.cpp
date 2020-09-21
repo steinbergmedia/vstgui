@@ -7,6 +7,7 @@
 #if MAC
 #include "../../cframe.h"
 #include "../../ccolor.h"
+#include "macfactory.h"
 #include "../iplatformframe.h"
 #include "../common/fileresourceinputstream.h"
 #include "../std_unorderedmap.h"

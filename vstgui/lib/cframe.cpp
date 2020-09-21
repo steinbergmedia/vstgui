@@ -11,6 +11,7 @@
 #include "idatapackage.h"
 #include "animation/animator.h"
 #include "controls/ctextedit.h"
+#include "platform/platformfactory.h"
 #include "platform/iplatformframe.h"
 #include <cassert>
 #include <vector>
@@ -202,7 +203,8 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType, IPlatformFram
 	if (!systemWin || isAttached ())
 		return false;
 
-	pImpl->platformFrame = owned (IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin, systemWindowType, config));
+	pImpl->platformFrame = getPlatformFactory ().createFrame (this, getViewSize (), systemWin,
+	                                                          systemWindowType, config);
 	if (!pImpl->platformFrame)
 	{
 		return false;

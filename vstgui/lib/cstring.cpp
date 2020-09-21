@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cstring.h"
+#include "platform/platformfactory.h"
 #include <cstring>
 #include <algorithm>
 
@@ -161,7 +162,7 @@ void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const noexcept
 IPlatformString* UTF8String::getPlatformString () const noexcept
 {
 	if (platformString == nullptr)
-		platformString = IPlatformString::createWithUTF8String (data ());
+		platformString = getPlatformFactory ().createString (data ());
 	return platformString;
 }
 
