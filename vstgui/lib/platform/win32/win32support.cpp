@@ -227,18 +227,6 @@ PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPoin
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
-{
-	return owned<IPlatformFont> (new D2DFont (name, size, style));
-}
-
-//-----------------------------------------------------------------------------
-bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
-{
-	return D2DFont::getAllPlatformFontFamilies (fontFamilyNames);
-}
-
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 ResourceStream::ResourceStream ()

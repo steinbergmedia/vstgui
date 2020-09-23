@@ -9,6 +9,7 @@
 #if WINDOWS
 
 #include "../win32support.h"
+#include "../../platformfactory.h"
 
 struct IDWriteTextFormat;
 struct IDWriteTextLayout;
@@ -25,8 +26,7 @@ public:
 
 	bool asLogFont (LOGFONTW& logfont) const;
 
-	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
-
+	static bool getAllFontFamilies (const FontFamilyCallback& callback);
 protected:
 	~D2DFont ();
 	

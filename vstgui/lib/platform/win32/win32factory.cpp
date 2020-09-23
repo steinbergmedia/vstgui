@@ -9,6 +9,7 @@
 #include "../iplatformresourceinputstream.h"
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
+#include "direct2d/d2dfont.h"
 #include "win32factory.h"
 #include "win32frame.h"
 #include <list>
@@ -35,23 +36,13 @@ PlatformFramePtr Win32Factory::createFrame (IPlatformFrameCallback* frame, const
 PlatformFontPtr Win32Factory::createFont (const UTF8String& name, const CCoord& size,
                                           const int32_t& style) const noexcept
 {
-	return IPlatformFont::create (name, size, style);
+	return makeOwned<D2DFont> (name, size, style);
 }
 
 //-----------------------------------------------------------------------------
 bool Win32Factory::getAllFontFamilies (const FontFamilyCallback& callback) const noexcept
 {
-	std::list<std::string> names;
-	if (IPlatformFont::getAllPlatformFontFamilies (names))
-	{
-		for (const auto& n : names)
-		{
-			if (!callback (n))
-				break;
-		}
-		return true;
-	}
-	return false;
+	return D2DFont::getAllFontFamilies (callback);
 }
 
 //-----------------------------------------------------------------------------
