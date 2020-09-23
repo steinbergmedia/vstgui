@@ -13,6 +13,7 @@
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dfont.h"
 #include "win32frame.h"
+#include "winstring.h"
 #include <list>
 #include <memory>
 #include <shlwapi.h>
@@ -128,7 +129,7 @@ PlatformResourceInputStreamPtr Win32Factory::createResourceInputStream (
 //-----------------------------------------------------------------------------
 PlatformStringPtr Win32Factory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return IPlatformString::createWithUTF8String (utf8String);
+	return makeOwned<WinString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------
