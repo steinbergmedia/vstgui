@@ -14,6 +14,7 @@
 #include "direct2d/d2dfont.h"
 #include "win32frame.h"
 #include "winstring.h"
+#include "wintimer.h"
 #include <list>
 #include <memory>
 #include <shlwapi.h>
@@ -135,7 +136,7 @@ PlatformStringPtr Win32Factory::createString (UTF8StringPtr utf8String) const no
 //-----------------------------------------------------------------------------
 PlatformTimerPtr Win32Factory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
-	return IPlatformTimer::create (callback);
+	return makeOwned<WinTimer> (callback);
 }
 
 //-----------------------------------------------------------------------------

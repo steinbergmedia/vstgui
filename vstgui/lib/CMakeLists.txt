@@ -253,6 +253,7 @@ set(${target}_win32_sources
     platform/win32/winstring.cpp
     platform/win32/winstring.h
     platform/win32/wintimer.cpp
+    platform/win32/wintimer.h
 )
 
  ##########################################################################################
