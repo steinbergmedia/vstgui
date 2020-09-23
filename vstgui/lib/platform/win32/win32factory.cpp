@@ -20,7 +20,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 uint64_t Win32Factory::getTicks () const noexcept
 {
-	return IPlatformFrame::getTicks ();
+	return static_cast<uint64_t> (GetTickCount64 ());
 }
 
 //-----------------------------------------------------------------------------

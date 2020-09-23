@@ -388,12 +388,6 @@ bool Win32Frame::scrollRect (const CRect& src, const CPoint& distance)
 }
 
 //-----------------------------------------------------------------------------
-uint32_t IPlatformFrame::getTicks ()
-{
-	return (uint32_t)GetTickCount ();
-}
-
-//-----------------------------------------------------------------------------
 bool Win32Frame::showTooltip (const CRect& rect, const char* utf8Text)
 {
 	initTooltip ();
