@@ -9,8 +9,10 @@
 #include "../iplatformresourceinputstream.h"
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
+#include "carbon/hiviewframe.h"
 #include "cfontmac.h"
 #include "cgbitmap.h"
+#include "cocoa/nsviewframe.h"
 #include "macfactory.h"
 #include "macglobals.h"
 #include "macstring.h"
@@ -46,7 +48,11 @@ PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const C
                                           void* parent, PlatformType parentType,
                                           IPlatformFrameConfig* config) const noexcept
 {
-	return owned (IPlatformFrame::createPlatformFrame (frame, size, parent, parentType, config));
+#if MAC_CARBON
+	if (platformType == PlatformType::kWindowRef || platformType == PlatformType::kDefaultNative)
+		return makeOwned<HIViewFrame> (frame, size, reinterpret_cast<WindowRef> (parent));
+#endif // MAC_CARBON
+	return makeOwned<NSViewFrame> (frame, size, reinterpret_cast<NSView*> (parent), config);
 }
 
 //-----------------------------------------------------------------------------
