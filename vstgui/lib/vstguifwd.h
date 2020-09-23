@@ -6,6 +6,7 @@
 
 #include "vstguibase.h"
 #include <functional>
+#include <memory>
 
 namespace VSTGUI {
 

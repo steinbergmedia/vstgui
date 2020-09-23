@@ -6,6 +6,7 @@
 
 #include "../vstguifwd.h"
 #include <functional>
+#include <vector>
 
 /// @cond ignore
 
