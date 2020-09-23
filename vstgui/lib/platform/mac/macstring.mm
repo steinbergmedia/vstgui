@@ -9,12 +9,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformString> IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
-{
-	return makeOwned<MacString> (utf8String);
-}
-
-//-----------------------------------------------------------------------------
 MacString::MacString (UTF8StringPtr utf8String)
 : cfString (nullptr)
 , ctLine (nullptr)

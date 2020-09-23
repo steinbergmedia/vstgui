@@ -13,6 +13,7 @@
 #include "cgbitmap.h"
 #include "macfactory.h"
 #include "macglobals.h"
+#include "macstring.h"
 #include <list>
 #include <mach/mach_time.h>
 #include <memory>
@@ -132,7 +133,7 @@ PlatformResourceInputStreamPtr MacFactory::createResourceInputStream (
 //-----------------------------------------------------------------------------
 PlatformStringPtr MacFactory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return IPlatformString::createWithUTF8String (utf8String);
+	return makeOwned<MacString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------
