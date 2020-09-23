@@ -210,6 +210,7 @@ set(${target}_mac_sources
     platform/mac/macstring.h
     platform/mac/macstring.mm
     platform/mac/mactimer.cpp
+    platform/mac/mactimer.h
     platform/mac/quartzgraphicspath.cpp
     platform/mac/quartzgraphicspath.h
     platform/win32

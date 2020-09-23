@@ -14,6 +14,7 @@
 #include "macfactory.h"
 #include "macglobals.h"
 #include "macstring.h"
+#include "mactimer.h"
 #include <list>
 #include <mach/mach_time.h>
 #include <memory>
@@ -139,7 +140,7 @@ PlatformStringPtr MacFactory::createString (UTF8StringPtr utf8String) const noex
 //-----------------------------------------------------------------------------
 PlatformTimerPtr MacFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
-	return IPlatformTimer::create (callback);
+	return makeOwned<MacTimer> (callback);
 }
 
 //-----------------------------------------------------------------------------
