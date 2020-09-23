@@ -2,6 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "win32factory.h"
 #include "../iplatformbitmap.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
@@ -9,11 +10,12 @@
 #include "../iplatformresourceinputstream.h"
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
+#include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dfont.h"
-#include "win32factory.h"
 #include "win32frame.h"
 #include <list>
 #include <memory>
+#include <shlwapi.h>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -48,38 +50,72 @@ bool Win32Factory::getAllFontFamilies (const FontFamilyCallback& callback) const
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr Win32Factory::createBitmap (const CPoint& size) const noexcept
 {
-	return IPlatformBitmap::create (&const_cast<CPoint&> (size));
+	return makeOwned<D2DBitmap> (size);
+}
+
+//------------------------------------------------------------------------
+static SharedPointer<IPlatformBitmap> createFromIStream (IStream* stream)
+{
+	auto bitmap = makeOwned<D2DBitmap> ();
+	if (bitmap->loadFromStream (stream))
+		return bitmap;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr Win32Factory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	if (auto bitmap = IPlatformBitmap::create ())
-	{
-		if (bitmap->load (desc))
-			return bitmap;
-	}
+	auto bitmap = makeOwned<D2DBitmap> ();
+	if (bitmap->load (desc))
+		return bitmap;
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr Win32Factory::createBitmapFromPath (UTF8StringPtr absolutePath) const noexcept
 {
-	return IPlatformBitmap::createFromPath (absolutePath);
+	UTF8StringHelper path (absolutePath);
+	IStream* stream = nullptr;
+	if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, nullptr, &stream)))
+	{
+		auto result = createFromIStream (stream);
+		stream->Release ();
+		return result;
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr Win32Factory::createBitmapFromMemory (const void* ptr, uint32_t memSize) const
     noexcept
 {
-	return IPlatformBitmap::createFromMemory (ptr, memSize);
+#ifdef __GNUC__
+	using SHCreateMemStreamProc = IStream* (*) (const BYTE* pInit, UINT cbInit);
+	HMODULE shlwDll = LoadLibraryA ("shlwapi.dll");
+	SHCreateMemStreamProc proc = reinterpret_cast<SHCreateMemStreamProc> (GetProcAddress (shlwDll, MAKEINTRESOURCEA (12)));
+	IStream* stream = proc (static_cast<const BYTE*> (ptr), memSize);
+#else
+	IStream* stream = SHCreateMemStream ((const BYTE*)ptr, memSize);
+#endif
+	if (stream)
+	{
+		auto result = createFromIStream (stream);
+		stream->Release ();
+		return result;
+	}
+#ifdef __GNUC__
+	FreeLibrary (shlwDll);
+#endif
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 PNGBitmapBuffer Win32Factory::createBitmapMemoryPNGRepresentation (
     const PlatformBitmapPtr& bitmap) const noexcept
 {
-	return IPlatformBitmap::createMemoryPNGRepresentation (bitmap);
+	if (auto bitmapBase = bitmap.cast<Win32BitmapBase> ())
+		return bitmapBase->createMemoryPNGRepresentation ();
+	return {};
 }
 
 //-----------------------------------------------------------------------------
