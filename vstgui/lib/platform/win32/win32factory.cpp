@@ -10,6 +10,7 @@
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
 #include "win32factory.h"
+#include "win32frame.h"
 #include <list>
 #include <memory>
 
@@ -27,7 +28,7 @@ PlatformFramePtr Win32Factory::createFrame (IPlatformFrameCallback* frame, const
                                             void* parent, PlatformType parentType,
                                             IPlatformFrameConfig* config) const noexcept
 {
-	return owned (IPlatformFrame::createPlatformFrame (frame, size, parent, parentType, config));
+	return makeOwned<Win32Frame> (frame, size, static_cast<HWND> (parent), parentType);
 }
 
 //-----------------------------------------------------------------------------
