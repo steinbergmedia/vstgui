@@ -2,6 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "../common/fileresourceinputstream.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
 #include "../iplatformframecallback.h"
@@ -11,6 +12,7 @@
 #include "cfontmac.h"
 #include "cgbitmap.h"
 #include "macfactory.h"
+#include "macglobals.h"
 #include <list>
 #include <mach/mach_time.h>
 #include <memory>
@@ -102,7 +104,29 @@ PNGBitmapBuffer MacFactory::createBitmapMemoryPNGRepresentation (
 PlatformResourceInputStreamPtr MacFactory::createResourceInputStream (
     const CResourceDescription& desc) const noexcept
 {
-	return IPlatformResourceInputStream::create (desc);
+	if (desc.type == CResourceDescription::kIntegerType)
+		return nullptr;
+	if (auto bundle = getBundleRef ())
+	{
+		PlatformResourceInputStreamPtr result;
+		CFStringRef cfStr = CFStringCreateWithCString (nullptr, desc.u.name, kCFStringEncodingUTF8);
+		if (cfStr)
+		{
+			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
+			if (url)
+			{
+				char filePath[PATH_MAX];
+				if (CFURLGetFileSystemRepresentation (url, true, (UInt8*)filePath, PATH_MAX))
+				{
+					result = FileResourceInputStream::create (filePath);
+				}
+				CFRelease (url);
+			}
+			CFRelease (cfStr);
+		}
+		return result;
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
