@@ -7,6 +7,8 @@
 #if WINDOWS
 
 #include "../win32support.h"
+#include "../win32resourcestream.h"
+#include "../win32factory.h"
 #include "../winstring.h"
 #include "../comptr.h"
 #include "d2ddrawcontext.h"
@@ -59,7 +61,10 @@ private:
 	}
 	CustomFonts ()
 	{
-		auto basePath = WinResourceInputStream::getBasePath ();
+		auto winFactory = getWin32Factory ();
+		if (!winFactory)
+			return;
+		auto basePath = winFactory->getResourceBasePath ();
 		if (!basePath)
 			return;
 		*basePath += "Fonts\\*";

@@ -245,6 +245,8 @@ set(${target}_win32_sources
     platform/win32/win32openglview.h
     platform/win32/win32optionmenu.cpp
     platform/win32/win32optionmenu.h
+    platform/win32/win32resourcestream.cpp
+    platform/win32/win32resourcestream.h
     platform/win32/win32support.cpp
     platform/win32/win32support.h
     platform/win32/win32textedit.cpp

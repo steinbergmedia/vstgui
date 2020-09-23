@@ -5,6 +5,8 @@
 #pragma once
 
 #include "../platformfactory.h"
+#include "../../optional.h"
+#include "../../cstring.h"
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -12,6 +14,10 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class Win32Factory final : public IPlatformFactory
 {
+public:
+	void setResourceBasePath (const UTF8String& path) const;
+	Optional<UTF8String> getResourceBasePath () const;
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */
@@ -91,6 +97,12 @@ class Win32Factory final : public IPlatformFactory
 	 */
 	PlatformTimerPtr createTimer (IPlatformTimerCallback* callback) const noexcept final;
 };
+
+//------------------------------------------------------------------------
+inline const Win32Factory* getWin32Factory ()
+{
+	return dynamic_cast<const Win32Factory*> (&getPlatformFactory ());
+}
 
 //------------------------------------------------------------------------
 } // VSTGUI
