@@ -1002,8 +1002,12 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 		if (bitmap && bitmapNode->getScaledBitmapsAdded () == false)
 		{
 			double scaleFactor;
-			if (!Detail::decodeScaleFactorFromName (bitmap->getResourceDescription ().u.name, scaleFactor))
+			auto decoded = Detail::decodeScaleFactorFromName (bitmap->getResourceDescription ().u.name, scaleFactor);
+			if (!decoded || scaleFactor == 1.)
 			{
+				std::string bitmapName = name;
+				if (decoded)
+					bitmapName = Detail::removeScaleFactorFromName (bitmapName);
 				// find scaled versions for this bitmap
 				UINode* bitmapsNode = getBaseNode (Detail::MainNodeNames::kBitmap);
 				for (auto& it : bitmapsNode->getChildren ())
@@ -1015,7 +1019,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					if (childNodeBitmapName == nullptr)
 						continue;
 					std::string nameWithoutScaleFactor = Detail::removeScaleFactorFromName (*childNodeBitmapName);
-					if (nameWithoutScaleFactor == name)
+					if (nameWithoutScaleFactor == bitmapName)
 					{
 						childNode->setScaledBitmapsAdded ();
 						CBitmap* childBitmap = getBitmap (childNodeBitmapName->c_str ());
