@@ -22,10 +22,6 @@ namespace MacClipboard {
 
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
 //------------------------------------------------------------------------
-static auto DefaultPBItemTypes =
-    @[NSPasteboardTypeString, NSPasteboardTypeFileURL, NSPasteboardTypeColor];
-
-//------------------------------------------------------------------------
 class Pasteboard : public IDataPackage
 {
 public:
@@ -71,6 +67,8 @@ private:
 
 	static Entry makeEntry (NSPasteboardItem* item)
 	{
+		auto DefaultPBItemTypes =
+		    @[NSPasteboardTypeString, NSPasteboardTypeFileURL, NSPasteboardTypeColor];
 		Entry result;
 		if (auto availableType = [item availableTypeFromArray:DefaultPBItemTypes])
 		{
