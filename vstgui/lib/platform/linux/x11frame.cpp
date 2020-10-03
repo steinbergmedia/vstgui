@@ -803,20 +803,6 @@ UTF8String Frame::resourcePath = Platform::getInstance ().getPath () + "/Content
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
-													 const CRect& size, void* parent,
-													 PlatformType parentType,
-													 IPlatformFrameConfig* config)
-{
-	if (parentType == PlatformType::kDefaultNative || parentType == PlatformType::kX11EmbedWindowID)
-	{
-		auto x11Parent = reinterpret_cast<XID> (parent);
-		return new X11::Frame (frame, size, x11Parent, config);
-	}
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
 auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
 {
 	return X11::Frame::createResourceInputStreamFunc (desc);

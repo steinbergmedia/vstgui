@@ -4,7 +4,7 @@
 
 #include "cairobitmap.h"
 #include "../iplatformfont.h"
-#include "../iplatformframe.h"
+#include "x11frame.h"
 #include "../iplatformframecallback.h"
 #include "../iplatformresourceinputstream.h"
 #include "linuxstring.h"
@@ -13,6 +13,7 @@
 #include <list>
 #include <memory>
 #include <chrono>
+#include <X11/X.h>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -29,7 +30,12 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 											void* parent, PlatformType parentType,
 											IPlatformFrameConfig* config) const noexcept
 {
-	return owned (IPlatformFrame::createPlatformFrame (frame, size, parent, parentType, config));
+	if (parentType == PlatformType::kDefaultNative || parentType == PlatformType::kX11EmbedWindowID)
+	{
+		auto x11Parent = reinterpret_cast<XID> (parent);
+		return makeOwned<X11::Frame> (frame, size, x11Parent, config);
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
