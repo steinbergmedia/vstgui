@@ -39,7 +39,7 @@ private:
 
 	SharedPointer<CFrame> frame;
 	CInvalidRectList invalidRects;
-	uint32_t lastTicks;
+	uint64_t lastTicks;
 #if VSTGUI_LOG_COLLECT_INVALID_RECTS
 	uint32_t numAddedRects;
 #endif
@@ -749,7 +749,7 @@ Animation::Animator* CFrame::getAnimator ()
 /**
  * @return tick count in milliseconds
  */
-uint32_t CFrame::getTicks () const
+uint64_t CFrame::getTicks () const
 {
 	return getPlatformFactory ().getTicks ();
 }
@@ -1966,7 +1966,7 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 	numAddedRects++;
 #endif
 	invalidRects.add (rect);
-	uint32_t now = frame->getTicks ();
+	auto now = frame->getTicks ();
 	if (now - lastTicks > 16)
 	{
 		flush ();

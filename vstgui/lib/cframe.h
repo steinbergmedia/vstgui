@@ -57,7 +57,7 @@ public:
 	void idle ();
 
 	/** get the current time (in ms) */
-	uint32_t getTicks () const;
+	uint64_t getTicks () const;
 
 	/** default knob mode if host does not provide one */
 	static int32_t kDefaultKnobMode;
