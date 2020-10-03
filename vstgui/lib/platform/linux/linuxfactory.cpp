@@ -3,7 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cairobitmap.h"
-#include "../iplatformfont.h"
+#include "cairofont.h"
 #include "x11frame.h"
 #include "../iplatformframecallback.h"
 #include "../iplatformresourceinputstream.h"
@@ -42,23 +42,13 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 PlatformFontPtr LinuxFactory::createFont (const UTF8String& name, const CCoord& size,
 										  const int32_t& style) const noexcept
 {
-	return IPlatformFont::create (name, size, style);
+	return makeOwned<Cairo::Font> (name, size, style);
 }
 
 //-----------------------------------------------------------------------------
 bool LinuxFactory::getAllFontFamilies (const FontFamilyCallback& callback) const noexcept
 {
-	std::list<std::string> names;
-	if (IPlatformFont::getAllPlatformFontFamilies (names))
-	{
-		for (const auto& n : names)
-		{
-			if (!callback (n))
-				break;
-		}
-		return true;
-	}
-	return false;
+	return Cairo::Font::getAllFamilies (callback);
 }
 
 //-----------------------------------------------------------------------------
