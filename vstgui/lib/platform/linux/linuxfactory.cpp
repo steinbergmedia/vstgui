@@ -8,7 +8,7 @@
 #include "../iplatformframecallback.h"
 #include "../iplatformresourceinputstream.h"
 #include "linuxstring.h"
-#include "../iplatformtimer.h"
+#include "x11timer.h"
 #include "linuxfactory.h"
 #include <list>
 #include <memory>
@@ -106,7 +106,7 @@ PlatformStringPtr LinuxFactory::createString (UTF8StringPtr utf8String) const no
 //-----------------------------------------------------------------------------
 PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
-	return IPlatformTimer::create (callback);
+	return makeOwned<X11::Timer> (callback);
 }
 
 //-----------------------------------------------------------------------------
