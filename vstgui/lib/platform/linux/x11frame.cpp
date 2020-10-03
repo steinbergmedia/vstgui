@@ -817,12 +817,6 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 }
 
 //------------------------------------------------------------------------
-uint32_t IPlatformFrame::getTicks ()
-{
-	return static_cast<uint32_t> (X11::Platform::getCurrentTimeMs ());
-}
-
-//------------------------------------------------------------------------
 auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
 {
 	return X11::Frame::createResourceInputStreamFunc (desc);

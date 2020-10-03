@@ -12,6 +12,7 @@
 #include "linuxfactory.h"
 #include <list>
 #include <memory>
+#include <chrono>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -19,7 +20,8 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 uint64_t LinuxFactory::getTicks () const noexcept
 {
-	return IPlatformFrame::getTicks ();
+	using namespace std::chrono;
+	return duration_cast<milliseconds> (steady_clock::now ().time_since_epoch ()).count ();
 }
 
 //-----------------------------------------------------------------------------
