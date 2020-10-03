@@ -52,7 +52,7 @@ struct ContentProviderWrapper
 	ContentProviderWrapper (IContentProvider& s) : stream (s)
 	{
 		bufferLeft = bufferSize =
-		    stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()), buffer.size ());
+		    stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()), static_cast<int32_t> (buffer.size ()));
 		if (bufferSize == 0)
 		{
 			current = 0;
@@ -70,7 +70,7 @@ struct ContentProviderWrapper
 		if (bufferLeft == 1)
 		{
 			bufferLeft = bufferSize =
-			    stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()), buffer.size ());
+			    stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()), static_cast<int32_t> (buffer.size ()));
 			if (bufferSize == 0)
 			{
 				current = 0;
@@ -461,8 +461,8 @@ void writeAttributes (const UIAttributes& attributes, JSONWriter& writer,
 			continue;
 		if (attr.second.empty ()) // don't write empty attributes
 			continue;
-		writer.Key (attr.first.data (), attr.first.size ());
-		writer.String (attr.second.data (), attr.second.size ());
+		writer.Key (attr.first.data (), static_cast<rapidjson::SizeType> (attr.first.size ()));
+		writer.String (attr.second.data (), static_cast<rapidjson::SizeType> (attr.second.size ()));
 	}
 }
 
