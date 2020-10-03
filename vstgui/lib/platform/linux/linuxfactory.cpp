@@ -2,7 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "../iplatformbitmap.h"
+#include "cairobitmap.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
 #include "../iplatformframecallback.h"
@@ -56,13 +56,13 @@ bool LinuxFactory::getAllFontFamilies (const FontFamilyCallback& callback) const
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr LinuxFactory::createBitmap (const CPoint& size) const noexcept
 {
-	return IPlatformBitmap::create (&const_cast<CPoint&> (size));
+	return makeOwned<Cairo::Bitmap> (size);
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr LinuxFactory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	if (auto bitmap = IPlatformBitmap::create ())
+	if (auto bitmap = makeOwned<Cairo::Bitmap> ())
 	{
 		if (bitmap->load (desc))
 			return bitmap;
@@ -73,21 +73,25 @@ PlatformBitmapPtr LinuxFactory::createBitmap (const CResourceDescription& desc) 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr LinuxFactory::createBitmapFromPath (UTF8StringPtr absolutePath) const noexcept
 {
-	return IPlatformBitmap::createFromPath (absolutePath);
+	return Cairo::Bitmap::create (absolutePath);
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr LinuxFactory::createBitmapFromMemory (const void* ptr,
 														uint32_t memSize) const noexcept
 {
-	return IPlatformBitmap::createFromMemory (ptr, memSize);
+	return Cairo::Bitmap::create (ptr, memSize);
 }
 
 //-----------------------------------------------------------------------------
 PNGBitmapBuffer
 LinuxFactory::createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept
 {
-	return IPlatformBitmap::createMemoryPNGRepresentation (bitmap);
+	if (auto cairoBitmap = dynamic_cast<Cairo::Bitmap*> (bitmap.get ()))
+	{
+		return cairoBitmap->createMemoryPNGRepresentation ();
+	}
+	return {};
 }
 
 //-----------------------------------------------------------------------------

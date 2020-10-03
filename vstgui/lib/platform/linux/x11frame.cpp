@@ -724,7 +724,7 @@ SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CC
 																double scaleFactor)
 {
 	CPoint size (width * scaleFactor, height * scaleFactor);
-	auto bitmap = new Cairo::Bitmap (&size);
+	auto bitmap = new Cairo::Bitmap (size);
 	bitmap->setScaleFactor (scaleFactor);
 	auto context = owned (new Cairo::Context (bitmap));
 	bitmap->forget ();
