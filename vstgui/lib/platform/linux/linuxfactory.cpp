@@ -106,7 +106,7 @@ LinuxFactory::createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitm
 PlatformResourceInputStreamPtr
 LinuxFactory::createResourceInputStream (const CResourceDescription& desc) const noexcept
 {
-	return IPlatformResourceInputStream::create (desc);
+	return X11::Frame::createResourceInputStreamFunc (desc);
 }
 
 //-----------------------------------------------------------------------------
