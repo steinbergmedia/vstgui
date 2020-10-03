@@ -7,7 +7,7 @@
 #include "../iplatformframe.h"
 #include "../iplatformframecallback.h"
 #include "../iplatformresourceinputstream.h"
-#include "../iplatformstring.h"
+#include "linuxstring.h"
 #include "../iplatformtimer.h"
 #include "linuxfactory.h"
 #include <list>
@@ -24,15 +24,15 @@ uint64_t LinuxFactory::getTicks () const noexcept
 
 //-----------------------------------------------------------------------------
 PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const CRect& size,
-                                            void* parent, PlatformType parentType,
-                                            IPlatformFrameConfig* config) const noexcept
+											void* parent, PlatformType parentType,
+											IPlatformFrameConfig* config) const noexcept
 {
 	return owned (IPlatformFrame::createPlatformFrame (frame, size, parent, parentType, config));
 }
 
 //-----------------------------------------------------------------------------
 PlatformFontPtr LinuxFactory::createFont (const UTF8String& name, const CCoord& size,
-                                          const int32_t& style) const noexcept
+										  const int32_t& style) const noexcept
 {
 	return IPlatformFont::create (name, size, style);
 }
@@ -77,22 +77,22 @@ PlatformBitmapPtr LinuxFactory::createBitmapFromPath (UTF8StringPtr absolutePath
 }
 
 //-----------------------------------------------------------------------------
-PlatformBitmapPtr LinuxFactory::createBitmapFromMemory (const void* ptr, uint32_t memSize) const
-    noexcept
+PlatformBitmapPtr LinuxFactory::createBitmapFromMemory (const void* ptr,
+														uint32_t memSize) const noexcept
 {
 	return IPlatformBitmap::createFromMemory (ptr, memSize);
 }
 
 //-----------------------------------------------------------------------------
-PNGBitmapBuffer LinuxFactory::createBitmapMemoryPNGRepresentation (
-    const PlatformBitmapPtr& bitmap) const noexcept
+PNGBitmapBuffer
+LinuxFactory::createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept
 {
 	return IPlatformBitmap::createMemoryPNGRepresentation (bitmap);
 }
 
 //-----------------------------------------------------------------------------
-PlatformResourceInputStreamPtr LinuxFactory::createResourceInputStream (
-    const CResourceDescription& desc) const noexcept
+PlatformResourceInputStreamPtr
+LinuxFactory::createResourceInputStream (const CResourceDescription& desc) const noexcept
 {
 	return IPlatformResourceInputStream::create (desc);
 }
@@ -100,7 +100,7 @@ PlatformResourceInputStreamPtr LinuxFactory::createResourceInputStream (
 //-----------------------------------------------------------------------------
 PlatformStringPtr LinuxFactory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return IPlatformString::createWithUTF8String (utf8String);
+	return makeOwned<LinuxString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------
