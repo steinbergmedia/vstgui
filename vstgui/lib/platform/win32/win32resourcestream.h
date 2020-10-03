@@ -51,7 +51,7 @@ class WinResourceInputStream final : public IPlatformResourceInputStream
 {
 public:
 	using ResourceStreamPtr = std::unique_ptr<ResourceStream>;
-	static Ptr create (const CResourceDescription& desc);
+	static PlatformResourceInputStreamPtr create (const CResourceDescription& desc);
 
 private:
 	WinResourceInputStream (ResourceStreamPtr&& stream);

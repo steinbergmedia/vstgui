@@ -5,18 +5,18 @@
 #include "fileresourceinputstream.h"
 
 #if WINDOWS
-	#define fseeko _fseeki64
-	#define ftello _ftelli64
+#define fseeko _fseeki64
+#define ftello _ftelli64
 #endif
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
-FileResourceInputStream::Ptr FileResourceInputStream::create (const std::string& path)
+PlatformResourceInputStreamPtr FileResourceInputStream::create (const std::string& path)
 {
 	auto cstr = path.data ();
 	if (auto handle = fopen (cstr, "rb"))
-		return Ptr (new FileResourceInputStream (handle));
+		return PlatformResourceInputStreamPtr (new FileResourceInputStream (handle));
 	return nullptr;
 }
 

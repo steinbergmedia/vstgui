@@ -183,12 +183,12 @@ ULONG STDMETHODCALLTYPE ResourceStream::Release (void)
 }
 
 //-----------------------------------------------------------------------------
-auto WinResourceInputStream::create (const CResourceDescription& desc) -> Ptr
+auto WinResourceInputStream::create (const CResourceDescription& desc) -> PlatformResourceInputStreamPtr
 {
 	auto stream = ResourceStreamPtr (new ResourceStream ());
 	if (stream->open (desc, "DATA"))
 	{
-		return Ptr (new WinResourceInputStream (std::move (stream)));
+		return PlatformResourceInputStreamPtr (new WinResourceInputStream (std::move (stream)));
 	}
 	return nullptr;
 }

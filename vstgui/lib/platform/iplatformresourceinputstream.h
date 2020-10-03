@@ -20,9 +20,6 @@ public:
 	virtual uint32_t readRaw (void* buffer, uint32_t size) = 0;
 	virtual int64_t seek (int64_t pos, SeekMode mode) = 0;
 	virtual int64_t tell () = 0;
-
-	using Ptr = std::unique_ptr<IPlatformResourceInputStream>;
-	static Ptr create (const CResourceDescription& desc);
 };
 
 //-----------------------------------------------------------------------------

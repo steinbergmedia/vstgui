@@ -29,7 +29,7 @@ namespace Win32FactoryPrivate {
 static UTF8String gWinResourceBasePath;
 
 //------------------------------------------------------------------------
-static std::function<IPlatformResourceInputStream::Ptr (const CResourceDescription& desc)>
+static std::function<PlatformResourceInputStreamPtr (const CResourceDescription& desc)>
 	gCreateResourceInputStream =
 	    [] (const CResourceDescription& desc) { return WinResourceInputStream::create (desc); };
 
@@ -40,7 +40,7 @@ void setBasePath (const UTF8String& path)
 	if (!UTF8StringView (gWinResourceBasePath).endsWith ("\\"))
 		gWinResourceBasePath += "\\";
 	gCreateResourceInputStream = [] (const CResourceDescription& desc) {
-		IPlatformResourceInputStream::Ptr result = nullptr;
+		PlatformResourceInputStreamPtr result = nullptr;
 		if (desc.type == CResourceDescription::kStringType && !gWinResourceBasePath.empty ())
 		{
 			auto path = gWinResourceBasePath;
@@ -189,12 +189,6 @@ void Win32Factory::setResourceBasePath (const UTF8String& path) const
 Optional<UTF8String> Win32Factory::getResourceBasePath () const
 {
 	return Win32FactoryPrivate::getBasePath ();
-}
-
-//-----------------------------------------------------------------------------
-auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
-{
-	return Win32FactoryPrivate::gCreateResourceInputStream (desc);
 }
 
 //------------------------------------------------------------------------
