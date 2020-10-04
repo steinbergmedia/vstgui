@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "window.h"
+#include "application.h"
 #include "../../lib/cframe.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/dispatchlist.h"
@@ -371,11 +372,36 @@ bool Window::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
+struct WindowContextMenuCommandHandler : ICommandMenuItemTarget, NonAtomicReferenceCounted
+{
+	WindowContextMenuCommandHandler (Window* window) : window (window) {}
+	bool validateCommandMenuItem (CCommandMenuItem* item) override
+	{
+		Command cmd = {item->getCommandCategory (), item->getCommandName ()};
+		if (window->canHandleCommand (cmd) || getApplicationPlatformAccess ()->canHandleCommand (cmd))
+			return true;
+		item->setEnabled (false);
+		return false;
+	}
+	bool onCommandMenuItemSelected (CCommandMenuItem* item) override
+	{
+		Command cmd = {item->getCommandCategory (), item->getCommandName ()};
+		if (window->handleCommand (cmd))
+			return true;
+		return getApplicationPlatformAccess ()->handleCommand (cmd);
+	}
+
+	Window* window;
+};
+
+//------------------------------------------------------------------------
 CMouseEventResult Window::onMouseDown (CFrame* inFrame, const CPoint& _where,
                                        const CButtonState& buttons)
 {
 	if (!buttons.isRightButton ())
 		return kMouseEventNotHandled;
+
+	auto contextMenu = makeOwned<COptionMenu> ();
 
 	CPoint where (_where);
 	inFrame->getTransform ().transform (where);
@@ -383,7 +409,6 @@ CMouseEventResult Window::onMouseDown (CFrame* inFrame, const CPoint& _where,
 	CViewContainer::ViewList views;
 	if (inFrame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
 	{
-		auto contextMenu = makeOwned<COptionMenu> ();
 		for (const auto& view : views)
 		{
 			auto viewController = getViewController (view);
@@ -400,14 +425,49 @@ CMouseEventResult Window::onMouseDown (CFrame* inFrame, const CPoint& _where,
 			else if (contextMenuController)
 				contextMenuController->appendContextMenuItems (*contextMenu, p);
 		}
-		if (contextMenu->getNbEntries () > 0)
+	}
+	if (contextMenu->getNbEntries () == 0 &&
+	    getApplicationPlatformAccess ()->getConfiguration ().showCommandsInWindowContextMenu)
+	{
+		auto commandList = getApplicationPlatformAccess ()->getCommandList (
+		    staticPtrCast<Platform::IWindow> (getPlatformWindow ()).get ());
+		if (!commandList.empty ())
 		{
-			contextMenu->cleanupSeparators (true);
-			contextMenu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
-			contextMenu->popup (inFrame, _where);
-			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+			auto menuHandler = makeOwned<WindowContextMenuCommandHandler> (this);
+			for (const auto& cat : commandList)
+			{
+				auto item = new CMenuItem (cat.first);
+				auto catMenu = new COptionMenu ();
+				item->setSubmenu (catMenu);
+				for (const auto& entry : cat.second)
+				{
+					if (entry.name == CommandName::MenuSeparator)
+					{
+						catMenu->addSeparator ();
+					}
+					else
+					{
+						auto catItem =
+							new CCommandMenuItem ({entry.name, menuHandler, entry.group, entry.name});
+						catMenu->addEntry (catItem);
+					}
+				}
+				if (catMenu->getNbEntries () > 0)
+					contextMenu->addEntry (item);
+				else
+					item->forget ();
+			}
 		}
 	}
+
+	if (contextMenu->getNbEntries () > 0)
+	{
+		contextMenu->cleanupSeparators (true);
+		contextMenu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
+		contextMenu->popup (inFrame, _where);
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+
 	return kMouseEventNotHandled;
 }
 
