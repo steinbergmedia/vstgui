@@ -150,6 +150,12 @@ void Application::setConfiguration (Standalone::Application::Configuration&& con
 				config.useCompressedUIDescriptionFiles = c.second.value.integer != 0;
 				break;
 			}
+			case ConfigKey::ShowCommandsInContextMenu:
+			{
+				vstgui_assert (c.second.type == ConfigValue::Type::Integer);
+				config.showCommandsInWindowContextMenu = c.second.value.integer != 0;
+				break;
+			}
 		}
 	}
 }

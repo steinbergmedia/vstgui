@@ -27,6 +27,7 @@ struct CommandWithKey : Command
 struct Configuration
 {
 	bool useCompressedUIDescriptionFiles {false};
+	bool showCommandsInWindowContextMenu {false};
 };
 
 //------------------------------------------------------------------------
