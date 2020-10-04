@@ -70,7 +70,16 @@ class DisabledControlsController : public DelegationController,
 {
 public:
 	DisabledControlsController (IController* parent) : DelegationController (parent) {}
-
+	~DisabledControlsController ()
+	{
+		for (auto control : controls)
+		{
+			control->unregisterViewListener (this);
+			control->unregisterViewMouseListener (this);
+		}
+		controls.clear ();
+	}
+	
 	CView* verifyView (CView* view, const UIAttributes& attributes,
 	                   const IUIDescription* description) override
 	{
@@ -78,6 +87,7 @@ public:
 		{
 			control->registerViewMouseListener (this);
 			control->registerViewListener (this);
+			controls.push_back (control);
 		}
 		return controller->verifyView (view, attributes, description);
 	}
@@ -89,9 +99,19 @@ public:
 
 	void viewWillDelete (CView* view) override
 	{
-		view->unregisterViewListener (this);
-		view->unregisterViewMouseListener (this);
+		if (auto control = dynamic_cast<CControl*> (view))
+		{
+			auto it = std::find (controls.begin (), controls.end (), control);
+			if (it != controls.end ())
+			{
+				control->unregisterViewListener (this);
+				control->unregisterViewMouseListener (this);
+				controls.erase (it);
+			}
+		}
 	}
+
+	std::vector<CControl*> controls;
 };
 
 //------------------------------------------------------------------------
