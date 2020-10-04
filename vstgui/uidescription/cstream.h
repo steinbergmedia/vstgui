@@ -228,7 +228,7 @@ public:
 
 	using InputStream::operator>>;
 protected:
-	std::unique_ptr<IPlatformResourceInputStream> platformStream;
+	PlatformResourceInputStreamPtr platformStream;
 };
 
 //------------------------------------------------------------------------

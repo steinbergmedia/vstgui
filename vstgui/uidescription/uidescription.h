@@ -183,7 +183,7 @@ class IBitmapCreator
 public:
 	virtual ~IBitmapCreator () noexcept = default;
 	
-	virtual SharedPointer<IPlatformBitmap> createBitmap (const UIAttributes& attributes) = 0;
+	virtual PlatformBitmapPtr createBitmap (const UIAttributes& attributes) = 0;
 };
 
 } // VSTGUI

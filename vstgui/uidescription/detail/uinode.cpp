@@ -348,7 +348,7 @@ UINode* UIBitmapNode::dataNode () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> UIBitmapNode::createBitmapFromDataNode () const
+PlatformBitmapPtr UIBitmapNode::createBitmapFromDataNode () const
 {
 	if (auto node = dataNode ())
 	{

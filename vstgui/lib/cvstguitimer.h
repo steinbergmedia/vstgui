@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "vstguibase.h"
+#include "vstguifwd.h"
 #include "platform/iplatformtimer.h"
 #include <functional>
 
@@ -47,7 +47,7 @@ protected:
 	uint32_t fireTime;
 	CallbackFunc callbackFunc;
 
-	SharedPointer<IPlatformTimer> platformTimer;
+	PlatformTimerPtr platformTimer;
 };
 
 namespace Call

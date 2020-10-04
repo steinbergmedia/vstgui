@@ -59,7 +59,7 @@ struct CFrame::Impl
 	using FunctionQueue = std::queue<EventProcessingFunction>;
 	using ModalViewSessionStack = std::stack<ModalViewSession>;
 
-	SharedPointer<IPlatformFrame> platformFrame;
+	PlatformFramePtr platformFrame;
 	VSTGUIEditorInterface* editor {nullptr};
 	IViewAddedRemovedObserver* viewAddedRemovedObserver {nullptr};
 	SharedPointer<CTooltipSupport> tooltips;

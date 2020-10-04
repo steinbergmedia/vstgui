@@ -213,7 +213,7 @@ void StringListControlDrawer::drawRow (CDrawContext* context, CRect size, Row ro
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformString> StringListControlDrawer::getString (int32_t row) const
+PlatformStringPtr StringListControlDrawer::getString (int32_t row) const
 {
 	return impl->func ? impl->func (row) : getPlatformFactory ().createString (toString (row));
 }

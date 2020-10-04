@@ -20,8 +20,6 @@ namespace VSTGUI {
 class CBitmap : public AtomicReferenceCounted
 {
 public:
-	using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
-
 	/** Create an image from a resource identifier */
 	explicit CBitmap (const CResourceDescription& desc);
 	/** Create an image with a given size */
