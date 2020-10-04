@@ -83,7 +83,7 @@ public:
 	 *	events are only dispatched to the modal view or its child views.
 	 *	Modal view sessions can be stacked but must be ended in the same order.
 	 *
-	 *	@param view new modal view (ownership is shared with the caller)
+	 *	@param view new modal view (ownership is transfered to frame, the same as addView)
 	 *	@return a unique session identifier
 	 */
 	Optional<ModalViewSessionID> beginModalViewSession (CView* view);
