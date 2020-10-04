@@ -40,6 +40,13 @@ enum class ConfigKey : uint64_t
 	 *	development purposes an uncompressed text file is also written.
 	 */
 	UseCompressedUIDescriptionFiles,
+	/** Show application commands in a window context menu
+	 *
+	 *	This option expects an integer ConfigValue where 0 means that the commands are not shown in
+	 *	the context menu of a window which is shown on a right mouse click, on any other value the
+	 *	commands are shown. If this option is not specified the commands are not shown.
+	 */
+	ShowCommandsInContextMenu,
 };
 
 //------------------------------------------------------------------------
