@@ -56,6 +56,7 @@ struct FreeTypeFontFace
 
 	bool valid () const { return face != nullptr; }
 	operator FT_Face () const { return face; }
+
 private:
 	void destroy ()
 	{
@@ -288,9 +289,7 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 }
 
 //------------------------------------------------------------------------
-Font::~Font ()
-{
-}
+Font::~Font () {}
 
 //------------------------------------------------------------------------
 bool Font::valid () const
@@ -344,7 +343,7 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 				const auto& cr = cairoContext->getCairo ();
 				auto alpha = color.normAlpha<double> () * cairoContext->getGlobalAlpha ();
 				cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
-				                       color.normBlue<double> (), alpha);
+									   color.normBlue<double> (), alpha);
 				cairo_move_to (cr, p.x, p.y);
 				cairo_set_scaled_font (cr, impl->font);
 				cairo_show_text (cr, linuxString->get ().data ());
@@ -366,25 +365,17 @@ CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, boo
 }
 
 //------------------------------------------------------------------------
-} // Cairo
-
-//------------------------------------------------------------------------
-SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
-{
-	auto font = owned (new Cairo::Font (name, size, style));
-	if (!font->valid ())
-		font = nullptr;
-	return font;
-}
-
-//------------------------------------------------------------------------
-bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+bool Font::getAllFamilies (const FontFamilyCallback& callback)
 {
 	auto& map = Cairo::FontList::instance ().getFonts ();
 	for (auto& e : map)
-		fontFamilyNames.push_back (e.first);
+	{
+		if (!callback (e.first))
+			break;
+	}
 	return true;
 }
 
 //------------------------------------------------------------------------
+} // Cairo
 } // VSTGUI

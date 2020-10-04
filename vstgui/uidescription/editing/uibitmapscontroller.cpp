@@ -23,6 +23,7 @@
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/platform/iplatformbitmap.h"
+#include "../../lib/platform/platformfactory.h"
 
 namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
@@ -119,10 +120,10 @@ public:
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
 		{
 			// get rid of the scale factor
-			auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+			auto buffer = getPlatformFactory ().createBitmapMemoryPNGRepresentation (platformBitmap);
 			if (!buffer.empty ())
 			{
-				auto newPlatformBitmap = IPlatformBitmap::createFromMemory (buffer.data (), static_cast<uint32_t> (buffer.size ()));
+				auto newPlatformBitmap = getPlatformFactory ().createBitmapFromMemory (buffer.data (), static_cast<uint32_t> (buffer.size ()));
 				CView::setBackground (makeOwned<CBitmap> (newPlatformBitmap));
 			}
 		}

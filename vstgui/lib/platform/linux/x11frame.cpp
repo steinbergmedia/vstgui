@@ -724,7 +724,7 @@ SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CC
 																double scaleFactor)
 {
 	CPoint size (width * scaleFactor, height * scaleFactor);
-	auto bitmap = new Cairo::Bitmap (&size);
+	auto bitmap = new Cairo::Bitmap (size);
 	bitmap->setScaleFactor (scaleFactor);
 	auto context = owned (new Cairo::Context (bitmap));
 	bitmap->forget ();
@@ -763,7 +763,7 @@ SharedPointer<IDataPackage> Frame::getClipboard ()
 //------------------------------------------------------------------------
 PlatformType Frame::getPlatformType () const
 {
-	return kX11EmbedWindowID;
+	return PlatformType::kX11EmbedWindowID;
 }
 
 //------------------------------------------------------------------------
@@ -785,7 +785,7 @@ bool Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
 
 //------------------------------------------------------------------------
 Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
-	[] (const CResourceDescription& desc) -> IPlatformResourceInputStream::Ptr {
+	[] (const CResourceDescription& desc) -> PlatformResourceInputStreamPtr {
 	if (desc.type != CResourceDescription::kStringType)
 		return nullptr;
 	auto path = Platform::getInstance ().getPath ();
@@ -799,34 +799,4 @@ UTF8String Frame::resourcePath = Platform::getInstance ().getPath () + "/Content
 
 //------------------------------------------------------------------------
 } // X11
-
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
-													 const CRect& size, void* parent,
-													 PlatformType parentType,
-													 IPlatformFrameConfig* config)
-{
-	if (parentType == kDefaultNative || parentType == kX11EmbedWindowID)
-	{
-		auto x11Parent = reinterpret_cast<XID> (parent);
-		return new X11::Frame (frame, size, x11Parent, config);
-	}
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
-uint32_t IPlatformFrame::getTicks ()
-{
-	return static_cast<uint32_t> (X11::Platform::getCurrentTimeMs ());
-}
-
-//------------------------------------------------------------------------
-auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
-{
-	return X11::Frame::createResourceInputStreamFunc (desc);
-}
-
-//------------------------------------------------------------------------
 } // VSTGUI

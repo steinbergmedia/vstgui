@@ -11,6 +11,7 @@
 #include "idatapackage.h"
 #include "animation/animator.h"
 #include "controls/ctextedit.h"
+#include "platform/platformfactory.h"
 #include "platform/iplatformframe.h"
 #include <cassert>
 #include <vector>
@@ -38,7 +39,7 @@ private:
 
 	SharedPointer<CFrame> frame;
 	CInvalidRectList invalidRects;
-	uint32_t lastTicks;
+	uint64_t lastTicks;
 #if VSTGUI_LOG_COLLECT_INVALID_RECTS
 	uint32_t numAddedRects;
 #endif
@@ -202,7 +203,8 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType, IPlatformFram
 	if (!systemWin || isAttached ())
 		return false;
 
-	pImpl->platformFrame = owned (IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin, systemWindowType, config));
+	pImpl->platformFrame = getPlatformFactory ().createFrame (this, getViewSize (), systemWin,
+	                                                          systemWindowType, config);
 	if (!pImpl->platformFrame)
 	{
 		return false;
@@ -747,11 +749,9 @@ Animation::Animator* CFrame::getAnimator ()
 /**
  * @return tick count in milliseconds
  */
-uint32_t CFrame::getTicks () const
+uint64_t CFrame::getTicks () const
 {
-	if (pImpl->platformFrame)
-		return pImpl->platformFrame->getTicks ();
-	return std::numeric_limits<uint32_t>::max ();
+	return getPlatformFactory ().getTicks ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1966,7 +1966,7 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 	numAddedRects++;
 #endif
 	invalidRects.add (rect);
-	uint32_t now = frame->getTicks ();
+	auto now = frame->getTicks ();
 	if (now - lastTicks > 16)
 	{
 		flush ();

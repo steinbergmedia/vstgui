@@ -40,7 +40,7 @@ public:
 	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	bool open (void* pSystemWindow, PlatformType systemWindowType = kDefaultNative, IPlatformFrameConfig* = nullptr);
+	bool open (void* pSystemWindow, PlatformType systemWindowType = PlatformType::kDefaultNative, IPlatformFrameConfig* = nullptr);
 	/** closes the frame and calls forget */
 	void close ();
 
@@ -57,7 +57,7 @@ public:
 	void idle ();
 
 	/** get the current time (in ms) */
-	uint32_t getTicks () const;
+	uint64_t getTicks () const;
 
 	/** default knob mode if host does not provide one */
 	static int32_t kDefaultKnobMode;

@@ -95,7 +95,7 @@ public:
 #include "../cvstguitimer.h"
 #include "../cview.h"
 #include "../dispatchlist.h"
-#include "../platform/iplatformframe.h"
+#include "../platform/platformfactory.h"
 #include <list>
 
 #define DEBUG_LOG	0 // DEBUG
@@ -205,7 +205,7 @@ public:
 	IAnimationTarget* animationTarget;
 	ITimingFunction* timingFunction;
 	DoneFunction notification;
-	uint32_t startTime;
+	uint64_t startTime;
 	float lastPos;
 	bool done;
 };
@@ -331,7 +331,7 @@ void Animator::removeAnimations (CView* view)
 void Animator::onTimer ()
 {
 	auto selfGuard = shared (this);
-	uint32_t currentTicks = IPlatformFrame::getTicks ();
+	auto currentTicks = getPlatformFactory ().getTicks ();
 	pImpl->animations.forEach ([&] (SharedPointer<Detail::Animation>& animation) {
 		if (animation->startTime == 0)
 		{

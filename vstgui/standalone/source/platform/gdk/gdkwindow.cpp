@@ -328,7 +328,7 @@ void Window::center () {}
 //------------------------------------------------------------------------
 PlatformType Window::getPlatformType () const
 {
-	return kX11EmbedWindowID;
+	return PlatformType::kX11EmbedWindowID;
 }
 
 //------------------------------------------------------------------------

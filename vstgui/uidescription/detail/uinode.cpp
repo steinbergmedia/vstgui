@@ -5,7 +5,7 @@
 #include "../../lib/cbitmap.h"
 #include "../../lib/cfont.h"
 #include "../../lib/cgradient.h"
-#include "../../lib/platform/iplatformfont.h"
+#include "../../lib/platform/platformfactory.h"
 #include "../base64codec.h"
 #include "../cstream.h"
 #include "../uiattributes.h"
@@ -306,7 +306,8 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 		{
 			if (auto platformBitmap = bm->getPlatformBitmap ())
 			{
-				auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+				auto buffer =
+				    getPlatformFactory ().createBitmapMemoryPNGRepresentation (platformBitmap);
 				if (!buffer.empty ())
 				{
 					auto result = Base64Codec::encode (buffer.data (),
@@ -355,8 +356,8 @@ SharedPointer<IPlatformBitmap> UIBitmapNode::createBitmapFromDataNode () const
 		if (codecStr && *codecStr == "base64")
 		{
 			auto result = Base64Codec::decode (node->getData ());
-			if (auto platformBitmap =
-			        IPlatformBitmap::createFromMemory (result.data.get (), result.dataSize))
+			if (auto platformBitmap = getPlatformFactory ().createBitmapFromMemory (
+			        result.data.get (), result.dataSize))
 			{
 				double scaleFactor = 1.;
 				if (attributes->getDoubleAttribute ("scale-factor", scaleFactor))
@@ -392,8 +393,11 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 				if (removeLastPathComponent (absPath))
 				{
 					absPath += "/" + *path;
-					if (auto platformBitmap = IPlatformBitmap::createFromPath (absPath.c_str ()))
+					if (auto platformBitmap =
+					        getPlatformFactory ().createBitmapFromPath (absPath.c_str ()))
+					{
 						bitmap->setPlatformBitmap (platformBitmap);
+					}
 				}
 			}
 		}
@@ -513,23 +517,23 @@ CFontRef UIFontNode::getFont ()
 			if (attributes->hasAttribute ("alternative-font-names"))
 			{
 				std::list<std::string> fontNames;
-				if (IPlatformFont::getAllPlatformFontFamilies (fontNames))
+				getPlatformFactory ().getAllFontFamilies ([&fontNames] (const std::string& name) {
+					fontNames.push_back (name);
+					return true;
+				});
+				if (std::find (fontNames.begin (), fontNames.end (), *nameAttr) == fontNames.end ())
 				{
-					if (std::find (fontNames.begin (), fontNames.end (), *nameAttr) ==
-					    fontNames.end ())
+					std::vector<std::string> alternativeFontNames;
+					attributes->getStringArrayAttribute ("alternative-font-names",
+					                                     alternativeFontNames);
+					for (auto& alternateFontName : alternativeFontNames)
 					{
-						std::vector<std::string> alternativeFontNames;
-						attributes->getStringArrayAttribute ("alternative-font-names",
-						                                     alternativeFontNames);
-						for (auto& alternateFontName : alternativeFontNames)
+						auto trimmedString = trim (UTF8String (alternateFontName));
+						if (std::find (fontNames.begin (), fontNames.end (),
+						               trimmedString.getString ()) != fontNames.end ())
 						{
-							auto trimmedString = trim (UTF8String (alternateFontName));
-							if (std::find (fontNames.begin (), fontNames.end (),
-							               trimmedString.getString ()) != fontNames.end ())
-							{
-								font = new CFontDesc (trimmedString.data (), size, fontStyle);
-								break;
-							}
+							font = new CFontDesc (trimmedString.data (), size, fontStyle);
+							break;
 						}
 					}
 				}

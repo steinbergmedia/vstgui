@@ -1,10 +1,11 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms 
+﻿// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #pragma once
 
 #include "../iplatformfont.h"
+#include "../platformfactory.h"
 #include <memory>
 
 //------------------------------------------------------------------------
@@ -12,7 +13,9 @@ namespace VSTGUI {
 namespace Cairo {
 
 //------------------------------------------------------------------------
-class Font : public IPlatformFont, public IFontPainter
+class Font
+: public IPlatformFont
+, public IFontPainter
 {
 public:
 	Font (UTF8StringPtr name, const CCoord& size, const int32_t& style);
@@ -30,6 +33,8 @@ public:
 					 bool antialias = true) const override;
 	CCoord getStringWidth (CDrawContext* context, IPlatformString* string,
 						   bool antialias = true) const override;
+
+	static bool getAllFamilies (const FontFamilyCallback& callback);
 
 private:
 	struct Impl;

@@ -193,18 +193,6 @@ CNewFileSelector* CNewFileSelector::create (CFrame* frame, Style style)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
-                                                     const CRect& size, void* parent,
-                                                     PlatformType platformType,
-                                                     IPlatformFrameConfig* config)
-{
-	return new UIViewFrame (frame, size, (__bridge UIView*)parent);
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 UIViewFrame::UIViewFrame (IPlatformFrameCallback* frame, const CRect& size, UIView* parent)
 : IPlatformFrame (frame)
 , uiView (nullptr)

@@ -149,6 +149,8 @@ set(${target}_common_sources
     platform/iplatformtextedit.h
     platform/iplatformtimer.h
     platform/iplatformviewlayer.h
+    platform/platformfactory.cpp
+    platform/platformfactory.h
     platform/platform_macos.h
     platform/platform_win32.h
     platform/platform_x11.h
@@ -200,12 +202,15 @@ set(${target}_mac_sources
     platform/mac/cocoa/nsviewoptionmenu.mm
     platform/mac/macclipboard.h
     platform/mac/macclipboard.mm
+    platform/mac/macfactory.h
+    platform/mac/macfactory.mm
     platform/mac/macfileselector.mm
     platform/mac/macglobals.cpp
     platform/mac/macglobals.h
     platform/mac/macstring.h
     platform/mac/macstring.mm
     platform/mac/mactimer.cpp
+    platform/mac/mactimer.h
     platform/mac/quartzgraphicspath.cpp
     platform/mac/quartzgraphicspath.h
     platform/win32
@@ -232,12 +237,16 @@ set(${target}_win32_sources
     platform/win32/win32datapackage.h
     platform/win32/win32dragging.cpp
     platform/win32/win32dragging.h
+    platform/win32/win32factory.cpp
+    platform/win32/win32factory.h
     platform/win32/win32frame.cpp
     platform/win32/win32frame.h
     platform/win32/win32openglview.cpp
     platform/win32/win32openglview.h
     platform/win32/win32optionmenu.cpp
     platform/win32/win32optionmenu.h
+    platform/win32/win32resourcestream.cpp
+    platform/win32/win32resourcestream.h
     platform/win32/win32support.cpp
     platform/win32/win32support.h
     platform/win32/win32textedit.cpp
@@ -246,6 +255,7 @@ set(${target}_win32_sources
     platform/win32/winstring.cpp
     platform/win32/winstring.h
     platform/win32/wintimer.cpp
+    platform/win32/wintimer.h
 )
 
  ##########################################################################################
@@ -277,6 +287,8 @@ set(${target}_linux_sources
     platform/linux/x11timer.h
     platform/linux/x11utils.cpp
     platform/linux/x11utils.h
+    platform/linux/linuxfactory.cpp
+    platform/linux/linuxfactory.h
 )
 
 ##########################################################################################

@@ -75,7 +75,7 @@ private:
 	CommonDirectories commonDirectories;
 	Preference prefs;
 
-	bool isInitialized{false};
+	bool isInitialized {false};
 };
 
 //------------------------------------------------------------------------
@@ -89,16 +89,16 @@ bool Application::init (int argc, char* argv[])
 	for (auto i = 0; i < argc; ++i)
 		cmdArgs.push_back (argv[i]);
 
-	app->signal_startup ().connect ([cmdArgs = std::move (cmdArgs), this]() mutable {
+	app->signal_startup ().connect ([cmdArgs = std::move (cmdArgs), this] () mutable {
 		char result[PATH_MAX];
 		ssize_t count = readlink ("/proc/self/exe", result, PATH_MAX);
 		if (count == -1)
 			exit (-1);
 		std::string execPath = dirname (result);
 		VSTGUI::X11::Frame::createResourceInputStreamFunc =
-			[execPath](const CResourceDescription& desc) {
+			[execPath] (const CResourceDescription& desc) {
 				if (desc.type == CResourceDescription::kIntegerType)
-					return IPlatformResourceInputStream::Ptr ();
+					return PlatformResourceInputStreamPtr ();
 				std::string path (execPath);
 				path += "/Resources/";
 				path += desc.u.name;
@@ -107,10 +107,10 @@ bool Application::init (int argc, char* argv[])
 		VSTGUI::X11::Frame::resourcePath = execPath + "/Resources/";
 
 		PlatformCallbacks callbacks;
-		callbacks.quit = [this]() { quit (); };
-		callbacks.onCommandUpdate = [this]() { doCommandUpdate (); };
-		callbacks.showAlert = [](const AlertBoxConfig& config) { return AlertResult::Error; };
-		callbacks.showAlertForWindow = [](const AlertBoxForWindowConfig& config) {
+		callbacks.quit = [this] () { quit (); };
+		callbacks.onCommandUpdate = [this] () { doCommandUpdate (); };
+		callbacks.showAlert = [] (const AlertBoxConfig& config) { return AlertResult::Error; };
+		callbacks.showAlertForWindow = [] (const AlertBoxForWindowConfig& config) {
 			if (config.callback)
 				config.callback (AlertResult::Error);
 		};
@@ -174,7 +174,7 @@ void Application::doCommandUpdate ()
 			if (!app->has_action (actionName))
 			{
 				if (auto action = app->add_action (actionName,
-												   [this, command]() { handleCommand (command); }))
+												   [this, command] () { handleCommand (command); }))
 				{
 				}
 			}

@@ -7,6 +7,8 @@
 #if WINDOWS
 
 #include "../win32support.h"
+#include "../win32resourcestream.h"
+#include "../win32factory.h"
 #include "../../../cstring.h"
 #include <wincodec.h>
 #include <d2d1.h>
@@ -178,15 +180,19 @@ bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 	bool result = false;
 	if (resourceDesc.type == CResourceDescription::kStringType)
 	{
-		if (auto path = WinResourceInputStream::getBasePath ())
+		if (auto factory = getWin32Factory ())
 		{
-			*path += resourceDesc.u.name;
-			UTF8StringHelper wpath (*path);
-			IStream* stream = nullptr;
-			if (SUCCEEDED (SHCreateStreamOnFileEx (wpath, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, 0, &stream)))
+			if (auto path = factory->getResourceBasePath ())
 			{
-				result = loadFromStream (stream);
-				stream->Release ();
+				*path += resourceDesc.u.name;
+				UTF8StringHelper wpath (*path);
+				IStream* stream = nullptr;
+				if (SUCCEEDED (SHCreateStreamOnFileEx (wpath, STGM_READ | STGM_SHARE_DENY_WRITE, 0,
+				                                       false, 0, &stream)))
+				{
+					result = loadFromStream (stream);
+					stream->Release ();
+				}
 			}
 		}
 	}

@@ -16,7 +16,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
+PlatformBitmapPtr CGBitmap::create (CPoint* size)
 {
 	if (size)
 		return makeOwned<CGBitmap> (*size);
@@ -24,9 +24,9 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
+PlatformBitmapPtr CGBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
-	SharedPointer<IPlatformBitmap> bitmap;
+	PlatformBitmapPtr bitmap;
 	CFURLRef url = CFURLCreateFromFileSystemRepresentation (nullptr, (const UInt8*)absolutePath, static_cast<CFIndex> (strlen (absolutePath)), false);
 	if (url)
 	{
@@ -45,9 +45,9 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr ab
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
+PlatformBitmapPtr CGBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
-	SharedPointer<IPlatformBitmap> bitmap;
+	PlatformBitmapPtr bitmap;
 	CFDataRef data = CFDataCreate (nullptr, (const UInt8*)ptr, static_cast<CFIndex> (memSize));
 	if (data)
 	{
@@ -66,7 +66,7 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* pt
 }
 
 //-----------------------------------------------------------------------------
-PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPointer<IPlatformBitmap>& bitmap)
+PNGBitmapBuffer CGBitmap::createMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap)
 {
 	PNGBitmapBuffer buffer;
 #if !TARGET_OS_IPHONE

@@ -7,6 +7,8 @@
 #if WINDOWS
 
 #include "../win32support.h"
+#include "../win32resourcestream.h"
+#include "../win32factory.h"
 #include "../winstring.h"
 #include "../comptr.h"
 #include "d2ddrawcontext.h"
@@ -59,7 +61,10 @@ private:
 	}
 	CustomFonts ()
 	{
-		auto basePath = WinResourceInputStream::getBasePath ();
+		auto winFactory = getWin32Factory ();
+		if (!winFactory)
+			return;
+		auto basePath = winFactory->getResourceBasePath ();
 		if (!basePath)
 			return;
 		*basePath += "Fonts\\*";
@@ -116,7 +121,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-static void gatherFonts (std::list<std::string>& fontFamilyNames, IDWriteFontCollection* collection)
+static void gatherFonts (const FontFamilyCallback& callback, IDWriteFontCollection* collection)
 {
 	UINT32 numFonts = collection->GetFontFamilyCount ();
 	for (UINT32 i = 0; i < numFonts; ++i)
@@ -135,20 +140,20 @@ static void gatherFonts (std::list<std::string>& fontFamilyNames, IDWriteFontCol
 		if (SUCCEEDED (names->GetString (0, name, nameLength)))
 		{
 			UTF8StringHelper str (name);
-			fontFamilyNames.emplace_back (str.getUTF8String ());
+			callback (str.getUTF8String ());
 		}
 		delete [] name;
 	}
 }
 
 //-----------------------------------------------------------------------------
-bool D2DFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+bool D2DFont::getAllFontFamilies (const FontFamilyCallback& callback)
 {
 	IDWriteFontCollection* collection = nullptr;
 	if (SUCCEEDED (getDWriteFactory ()->GetSystemFontCollection (&collection, true)))
-		gatherFonts (fontFamilyNames, collection);
+		gatherFonts (callback, collection);
 	if (auto customFontCollection = CustomFonts::getFontCollection ())
-		gatherFonts (fontFamilyNames, customFontCollection);
+		gatherFonts (callback, customFontCollection);
 	return true;
 }
 

@@ -39,12 +39,6 @@ static TCHAR gClassName[100];
 static bool bSwapped_mouse_buttons = false; 
 
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config)
-{
-	return new Win32Frame (frame, size, (HWND)parent, parentType);
-}
-
-//-----------------------------------------------------------------------------
 static bool isParentLayered (HWND parent)
 {
 	WINDOWINFO info;
@@ -391,12 +385,6 @@ bool Win32Frame::invalidRect (const CRect& rect)
 bool Win32Frame::scrollRect (const CRect& src, const CPoint& distance)
 {
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-uint32_t IPlatformFrame::getTicks ()
-{
-	return (uint32_t)GetTickCount ();
 }
 
 //-----------------------------------------------------------------------------

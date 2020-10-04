@@ -2,41 +2,21 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "../iplatformtimer.h"
+#include "wintimer.h"
 
 #if WINDOWS
 #include <windows.h>
 #include <map>
 
 namespace VSTGUI {
+namespace WinTimerPrivate {
 
-//-----------------------------------------------------------------------------
-class WinTimer final : public IPlatformTimer
-{
-public:
-	WinTimer (IPlatformTimerCallback* callback);
-	~WinTimer () noexcept;
+using TimerMap = std::map<UINT_PTR, IPlatformTimerCallback*>;
+static TimerMap gTimerMap;
 
-	bool start (uint32_t fireTime) override;
-	bool stop () override;
-private:
-	using TimerMap = std::map<UINT_PTR, IPlatformTimerCallback*>;
-	static TimerMap gTimerMap;
+static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 
-	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
-	UINT_PTR timer;
-	IPlatformTimerCallback* callback;
-};
-
-//-----------------------------------------------------------------------------
-SharedPointer<IPlatformTimer> IPlatformTimer::create (IPlatformTimerCallback* callback)
-{
-	return owned<IPlatformTimer> (new WinTimer (callback));
-}
-
-//-----------------------------------------------------------------------------
-WinTimer::TimerMap WinTimer::gTimerMap;
+} // WinTimerPrivate
 
 //-----------------------------------------------------------------------------
 WinTimer::WinTimer (IPlatformTimerCallback* callback)
@@ -57,9 +37,9 @@ bool WinTimer::start (uint32_t fireTime)
 	if (timer)
 		return false;
 
-	timer = SetTimer (nullptr, (UINT_PTR)0, fireTime, TimerProc);
+	timer = SetTimer (nullptr, (UINT_PTR)0, fireTime, WinTimerPrivate::TimerProc);
 	if (timer)
-		gTimerMap.emplace (timer, callback);
+		WinTimerPrivate::gTimerMap.emplace (timer, callback);
 
 	return false;
 }
@@ -70,11 +50,11 @@ bool WinTimer::stop ()
 	if (timer)
 	{
 		KillTimer ((HWND)NULL, timer);
-		if (!gTimerMap.empty ())
+		if (!WinTimerPrivate::gTimerMap.empty ())
 		{
-			TimerMap::const_iterator it = gTimerMap.find (timer);
-			if (it != gTimerMap.end ())
-				gTimerMap.erase (it);
+			auto it = WinTimerPrivate::gTimerMap.find (timer);
+			if (it != WinTimerPrivate::gTimerMap.end ())
+				WinTimerPrivate::gTimerMap.erase (it);
 		}
 		timer = 0;
 		return true;
@@ -83,7 +63,7 @@ bool WinTimer::stop ()
 }
 
 //------------------------------------------------------------------------
-VOID CALLBACK WinTimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+VOID CALLBACK WinTimerPrivate::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
 	TimerMap::const_iterator it = gTimerMap.find (idEvent);
 	if (it != gTimerMap.end ())

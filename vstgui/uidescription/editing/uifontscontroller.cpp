@@ -11,7 +11,7 @@
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csearchtextedit.h"
-#include "../../lib/platform/iplatformfont.h"
+#include "../../lib/platform/platformfactory.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -129,16 +129,11 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 		{
 			case kFontMainTag:
 			{
-				fontMenu = dynamic_cast<COptionMenu*>(control);
-				std::list<std::string> fontFamilyNames;
-				if (IPlatformFont::getAllPlatformFontFamilies (fontFamilyNames))
-				{
-					fontFamilyNames.sort ();
-					for (auto& name : fontFamilyNames)
-					{
-						fontMenu->addEntry (name.data ());
-					}
-				}
+				fontMenu = dynamic_cast<COptionMenu*> (control);
+				getPlatformFactory ().getAllFontFamilies ([&] (const std::string& name) {
+					fontMenu->addEntry (name.data ());
+					return true;
+				});
 				fontMenu->setStyle (fontMenu->getStyle () | COptionMenu::kNoTextStyle);
 				fontMenu->setMouseEnabled (false);
 				break;

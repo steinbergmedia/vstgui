@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../iplatformfont.h"
+#include "../platformfactory.h"
 
 #if MAC
 #include "../../ccolor.h"
@@ -34,6 +35,7 @@ public:
 	CTFontRef getFontRef () const { return fontRef; }
 	CGFloat getSize () const { return CTFontGetSize (fontRef); }
 
+	static bool getAllFontFamilies (const FontFamilyCallback& callback) noexcept;
 //------------------------------------------------------------------------------------
 protected:
 	~CoreTextFont () noexcept override;
