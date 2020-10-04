@@ -112,7 +112,7 @@ public:
 //-----------------------------------------------------------------------------
 private:
 	StringType string;
-	mutable SharedPointer<IPlatformString> platformString;
+	mutable PlatformStringPtr platformString;
 };
 
 inline bool operator== (const UTF8String::StringType& lhs, const UTF8String& rhs) noexcept { return lhs == rhs.getString (); }

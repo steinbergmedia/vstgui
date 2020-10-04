@@ -22,7 +22,7 @@ namespace VSTGUI {
 class StringListControlDrawer : public IListControlDrawer, public NonAtomicReferenceCounted
 {
 public:
-	using Func = std::function<SharedPointer<IPlatformString> (int32_t row)>;
+	using Func = std::function<PlatformStringPtr (int32_t row)>;
 
 	StringListControlDrawer ();
 	~StringListControlDrawer () noexcept override;
@@ -56,7 +56,7 @@ public:
 	void drawRow (CDrawContext* context, CRect size, Row row) override;
 
 private:
-	SharedPointer<IPlatformString> getString (int32_t row) const;
+	PlatformStringPtr getString (int32_t row) const;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

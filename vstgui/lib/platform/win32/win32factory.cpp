@@ -96,7 +96,7 @@ PlatformBitmapPtr Win32Factory::createBitmap (const CPoint& size) const noexcept
 }
 
 //------------------------------------------------------------------------
-static SharedPointer<IPlatformBitmap> createFromIStream (IStream* stream)
+static PlatformBitmapPtr createFromIStream (IStream* stream)
 {
 	auto bitmap = makeOwned<D2DBitmap> ();
 	if (bitmap->loadFromStream (stream))

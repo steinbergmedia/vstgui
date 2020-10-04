@@ -140,7 +140,7 @@ public:
 protected:
 	~UIBitmapNode () noexcept override;
 	CBitmap* createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const;
-	SharedPointer<IPlatformBitmap> createBitmapFromDataNode () const;
+	PlatformBitmapPtr createBitmapFromDataNode () const;
 	static bool imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2);
 	UINode* dataNode () const;
 	CBitmap* bitmap;
