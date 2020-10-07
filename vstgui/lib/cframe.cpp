@@ -601,8 +601,11 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 		auto it = pImpl->mouseViews.rbegin ();
 		while (it != pImpl->mouseViews.rend ())
 		{
-			CPoint p = (*it)->translateToLocal (where2);
-			result = (*it)->onMouseMoved (p, buttons2);
+			CPoint p (where2);
+			auto view = *it;
+			if (auto parent = view->getParentView ())
+				parent->translateToLocal (p);
+			result = view->onMouseMoved (p, buttons2);
 			if (result == kMouseEventHandled)
 				break;
 			++it;
