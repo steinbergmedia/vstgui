@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "x11frame.h"
+#include "x11dragging.h"
 #include "x11utils.h"
 #include "../../cbuttonstate.h"
 #include "../../cframe.h"
@@ -258,10 +259,11 @@ struct Frame::Impl : IFrameEventHandler
 	RectList dirtyRects;
 	CCursorType currentCursor {kCursorDefault};
 	uint32_t pointerGrabed {0};
+	XdndHandler dndHandler;
 
 	//------------------------------------------------------------------------
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
-	: window (parent, size), drawHandler (window), frame (frame)
+	: window (parent, size), drawHandler (window), frame (frame), dndHandler (&window, frame)
 	{
 		RunLoop::instance ().registerWindowEventHandler (window.getID (), this);
 	}
@@ -490,8 +492,13 @@ struct Frame::Impl : IFrameEventHandler
 #endif
 	}
 
+	void onEvent (xcb_selection_notify_event_t& event) override
+	{
+		dndHandler.selectionNotify (event);
+	}
+
 	//------------------------------------------------------------------------
-	void onEvent (xcb_client_message_event_t& event) override
+	void onEvent (xcb_client_message_event_t& event, xcb_window_t proxyId = 0) override
 	{
 		if (Atoms::xEmbed.valid () && event.type == Atoms::xEmbed ())
 		{
@@ -541,6 +548,22 @@ struct Frame::Impl : IFrameEventHandler
 				case XEMBED::REQUEST_FOCUS:
 					break;
 			}
+		}
+		else if (Atoms::xDndEnter.valid () && event.type == Atoms::xDndEnter ())
+		{
+			dndHandler.enter (event, proxyId ? proxyId : window.getID ());
+		}
+		else if (Atoms::xDndPosition.valid () && event.type == Atoms::xDndPosition ())
+		{
+			dndHandler.position (event);
+		}
+		else if (Atoms::xDndLeave.valid () && event.type == Atoms::xDndLeave ())
+		{
+			dndHandler.leave (event);
+		}
+		else if (Atoms::xDndDrop.valid () && event.type == Atoms::xDndDrop ())
+		{
+			dndHandler.drop (event);
 		}
 	}
 };

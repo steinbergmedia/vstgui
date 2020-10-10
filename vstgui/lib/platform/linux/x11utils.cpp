@@ -67,6 +67,20 @@ ChildWindow::ChildWindow (::Window parentId, CPoint size)
 							 Atoms::xEmbedInfo (), 32, 2, &info);
 	}
 
+	// setup Xdnd
+	if (Atoms::xDndAware.valid ())
+	{
+		uint32_t version = 5;
+		xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), Atoms::xDndAware (),
+							 XCB_ATOM_ATOM, 32, 1, &version);
+	}
+	if (Atoms::xDndProxy.valid ())
+	{
+		uint32_t proxy = getID ();
+		xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), Atoms::xDndProxy (),
+							 XCB_ATOM_WINDOW, 32, 1, &proxy);
+	}
+
 	xcb_flush (connection);
 }
 
@@ -153,6 +167,10 @@ Atom xDndSelection ("XdndSelection");
 Atom xDndFinished ("XdndFinished");
 Atom xDndActionCopy ("XdndActionCopy");
 Atom xDndActionMove ("XdndActionMove");
+Atom xMimeTypeTextPlain ("text/plain");
+Atom xMimeTypeTextPlainUtf8 ("text/plain;charset=utf-8");
+Atom xMimeTypeUriList ("text/uri-list");
+Atom xMimeTypeApplicationOctetStream ("application/octet-stream");
 Atom xVstguiSelection ("XVSTGUISelection");
 
 }

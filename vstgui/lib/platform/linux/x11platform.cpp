@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -7,6 +7,7 @@
 #include "../../cframe.h"
 #include "../../cstring.h"
 #include "x11frame.h"
+#include "x11dragging.h"
 #include "cairobitmap.h"
 #include <cassert>
 #include <chrono>
@@ -244,9 +245,32 @@ struct RunLoop::Impl : IEventHandler
 	void dispatchEvent (T& event, xcb_window_t windowId)
 	{
 		auto it = windowEventHandlerMap.find (windowId);
-		if (it == windowEventHandlerMap.end ())
+
+		if (it != windowEventHandlerMap.end ())
+		{
+			it->second->onEvent (event);
 			return;
-		it->second->onEvent (event);
+		}
+
+		// we may receive a proxied drag-and-drop event; if that is the case,
+		// the window has the attribute XdndProxy, and acts as a proxy for the
+		// other window designated by the value of this attribute.
+		if (std::is_same<T, xcb_client_message_event_t>::value)
+		{
+			xcb_client_message_event_t& cmsg =
+				reinterpret_cast<xcb_client_message_event_t&> (event);
+
+			if (isXdndClientMessage (cmsg))
+			{
+				xcb_window_t targetId = getXdndProxy (windowId);
+				if (targetId != 0)
+					it = windowEventHandlerMap.find (targetId);
+				if (it != windowEventHandlerMap.end ()) {
+					it->second->onEvent (cmsg, windowId);
+					return;
+				}
+			}
+		}
 	}
 
 	//------------------------------------------------------------------------
@@ -354,6 +378,12 @@ struct RunLoop::Impl : IEventHandler
 				{
 					auto ev = reinterpret_cast<xcb_property_notify_event_t*> (event);
 					dispatchEvent (*ev, ev->window);
+					break;
+				}
+				case XCB_SELECTION_NOTIFY:
+				{
+					auto ev = reinterpret_cast<xcb_selection_notify_event_t*> (event);
+					dispatchEvent (*ev, ev->requestor);
 					break;
 				}
 				case XCB_CLIENT_MESSAGE:

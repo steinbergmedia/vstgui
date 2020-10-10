@@ -98,6 +98,10 @@ extern Atom xDndSelection;
 extern Atom xDndFinished;
 extern Atom xDndActionCopy;
 extern Atom xDndActionMove;
+extern Atom xMimeTypeTextPlain;
+extern Atom xMimeTypeTextPlainUtf8;
+extern Atom xMimeTypeUriList;
+extern Atom xMimeTypeApplicationOctetStream;
 extern Atom xVstguiSelection;
 
 //------------------------------------------------------------------------
