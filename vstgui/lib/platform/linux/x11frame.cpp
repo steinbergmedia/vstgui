@@ -46,7 +46,9 @@ std::string getAtomName (xcb_atom_t atom)
 	if (auto reply = xcb_get_atom_name_reply (xcb, cookie, nullptr))
 	{
 		auto length = xcb_get_atom_name_name_length (reply);
-		name = xcb_get_atom_name_name (reply);
+		name.assign (
+			xcb_get_atom_name_name (reply),
+			xcb_get_atom_name_name_length (reply));
 		free (reply);
 	}
 	return name;
