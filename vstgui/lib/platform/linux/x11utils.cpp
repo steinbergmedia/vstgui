@@ -141,6 +141,19 @@ namespace Atoms {
 
 Atom xEmbedInfo ("_XEMBED_INFO");
 Atom xEmbed ("_XEMBED");
+Atom xDndAware ("XdndAware");
+Atom xDndProxy ("XdndProxy");
+Atom xDndEnter ("XdndEnter");
+Atom xDndPosition ("XdndPosition");
+Atom xDndLeave ("XdndLeave");
+Atom xDndStatus ("XdndStatus");
+Atom xDndDrop ("XdndDrop");
+Atom xDndTypeList ("XdndTypeList");
+Atom xDndSelection ("XdndSelection");
+Atom xDndFinished ("XdndFinished");
+Atom xDndActionCopy ("XdndActionCopy");
+Atom xDndActionMove ("XdndActionMove");
+Atom xVstguiSelection ("XVSTGUISelection");
 
 }
 

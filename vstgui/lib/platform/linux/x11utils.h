@@ -86,6 +86,19 @@ namespace Atoms {
 
 extern Atom xEmbedInfo;
 extern Atom xEmbed;
+extern Atom xDndAware;
+extern Atom xDndProxy;
+extern Atom xDndEnter;
+extern Atom xDndPosition;
+extern Atom xDndLeave;
+extern Atom xDndStatus;
+extern Atom xDndDrop;
+extern Atom xDndTypeList;
+extern Atom xDndSelection;
+extern Atom xDndFinished;
+extern Atom xDndActionCopy;
+extern Atom xDndActionMove;
+extern Atom xVstguiSelection;
 
 //------------------------------------------------------------------------
 }
