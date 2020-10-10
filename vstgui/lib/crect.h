@@ -17,7 +17,8 @@ struct CRect
 {
 	constexpr CRect () = default;
 	inline constexpr CRect (CCoord left, CCoord top, CCoord right, CCoord bottom);
-	inline constexpr CRect (const CRect& r);
+	inline constexpr CRect (const CRect& r) = default;
+	inline CRect& operator = (const CRect& r) = default;
 	inline CRect (const CPoint& origin, const CPoint& size);
 
 	inline CRect& operator () (CCoord left, CCoord top, CCoord right, CCoord bottom);
@@ -83,11 +84,6 @@ struct CRect
 //------------------------------------------------------------------------
 inline constexpr CRect::CRect (CCoord left, CCoord top, CCoord right, CCoord bottom)
 : left (left), top (top), right (right), bottom (bottom)
-{}
-
-//------------------------------------------------------------------------
-inline constexpr CRect::CRect (const CRect& r)
-: left (r.left), top (r.top), right (r.right), bottom (r.bottom)
 {}
 
 //------------------------------------------------------------------------
