@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "x11frame.h"
+#include "x11utils.h"
 #include "../../cbuttonstate.h"
 #include "../../cframe.h"
 #include "../../crect.h"
@@ -36,23 +37,6 @@
 namespace VSTGUI {
 namespace X11 {
 namespace {
-
-//------------------------------------------------------------------------
-std::string getAtomName (xcb_atom_t atom)
-{
-	std::string name;
-	auto xcb = RunLoop::instance ().getXcbConnection ();
-	auto cookie = xcb_get_atom_name (xcb, atom);
-	if (auto reply = xcb_get_atom_name_reply (xcb, cookie, nullptr))
-	{
-		auto length = xcb_get_atom_name_name_length (reply);
-		name.assign (
-			xcb_get_atom_name_name (reply),
-			xcb_get_atom_name_name_length (reply));
-		free (reply);
-	}
-	return name;
-}
 
 //------------------------------------------------------------------------
 inline CButtonState translateMouseButtons (xcb_button_t value)

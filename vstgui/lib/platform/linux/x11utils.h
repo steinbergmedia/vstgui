@@ -89,5 +89,9 @@ extern Atom xEmbed;
 
 //------------------------------------------------------------------------
 }
+
+using xcb_atom_t = uint32_t;
+std::string getAtomName (xcb_atom_t atom);
+
 } // X11
 } // VSTGUI
