@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -35,22 +35,22 @@ public:
 	void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle) override;
 	void drawRect (const CRect& rect, const CDrawStyle drawStyle) override;
 	void drawArc (const CRect& rect, const float startAngle1, const float endAngle2,
-	              const CDrawStyle drawStyle) override;
+				  const CDrawStyle drawStyle) override;
 	void drawEllipse (const CRect& rect, const CDrawStyle drawStyle) override;
 	void drawPoint (const CPoint& point, const CColor& color) override;
 	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset,
-	                 float alpha) override;
+					 float alpha) override;
 	void clearRect (const CRect& rect) override;
 	CGraphicsPath* createGraphicsPath () override;
 	CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text) override;
 	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode,
-	                       CGraphicsTransform* transformation) override;
+						   CGraphicsTransform* transformation) override;
 	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient,
-	                         const CPoint& startPoint, const CPoint& endPoint, bool evenOdd,
-	                         CGraphicsTransform* transformation) override;
+							 const CPoint& startPoint, const CPoint& endPoint, bool evenOdd,
+							 CGraphicsTransform* transformation) override;
 	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center,
-	                         CCoord radius, const CPoint& originOffset, bool evenOdd,
-	                         CGraphicsTransform* transformation) override;
+							 CCoord radius, const CPoint& originOffset, bool evenOdd,
+							 CGraphicsTransform* transformation) override;
 
 	void saveGlobalState () override;
 	void restoreGlobalState () override;
@@ -75,6 +75,7 @@ struct DrawBlock
 
 	~DrawBlock ();
 	operator bool () { return !clipIsEmpty; }
+
 private:
 	explicit DrawBlock (Context& context);
 	Context& context;
@@ -82,11 +83,25 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-template <typename T>
-inline T pixelAlign (const CGraphicsTransform& tm, T obj)
+inline CPoint pixelAlign (const CGraphicsTransform& tm, const CPoint& p)
 {
+	auto obj = p;
 	tm.transform (obj);
-	obj.makeIntegral ();
+	obj.x = std::round (obj.x) - 0.5;
+	obj.y = std::round (obj.y) - 0.5;
+	tm.inverse ().transform (obj);
+	return obj;
+}
+
+//-----------------------------------------------------------------------------
+inline CRect pixelAlign (const CGraphicsTransform& tm, const CRect& r)
+{
+	auto obj = r;
+	tm.transform (obj);
+	obj.left = std::round (obj.left) - 0.5;
+	obj.right = std::round (obj.right) - 0.5;
+	obj.top = std::round (obj.top) - 0.5;
+	obj.bottom = std::round (obj.bottom) - 0.5;
 	tm.inverse ().transform (obj);
 	return obj;
 }
