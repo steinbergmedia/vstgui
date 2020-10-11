@@ -61,7 +61,7 @@ private:
 	}
 	CustomFonts ()
 	{
-		auto winFactory = getWin32Factory ();
+		auto winFactory = getPlatformFactory ().asWin32Factory ();
 		if (!winFactory)
 			return;
 		auto basePath = winFactory->getResourceBasePath ();

@@ -7,6 +7,7 @@
 #include "win32async.h"
 
 #include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
+#include "../../../../lib/platform/win32/win32factory.h"
 #include "../../../../lib/platform/win32/win32frame.h"
 #include "../../../../lib/platform/win32/win32dll.h"
 #include "../../../../lib/platform/win32/winstring.h"
@@ -23,8 +24,6 @@
 #pragma comment(lib, "Dwmapi.lib")
 #pragma comment(lib, "Comctl32.lib")
 
-extern void* hInstance;
-
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
@@ -33,9 +32,12 @@ namespace Win32 {
 
 static const WCHAR* gWindowClassName = L"VSTGUI Standalone WindowClass";
 
+//------------------------------------------------------------------------
 static HINSTANCE getHInstance ()
 {
-	return static_cast<HINSTANCE> (hInstance);
+	if (auto wf = getPlatformFactory ().asWin32Factory ())
+		return wf->getInstance ();
+	return nullptr;
 }
 
 static LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam,

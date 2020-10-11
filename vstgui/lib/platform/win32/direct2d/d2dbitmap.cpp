@@ -180,7 +180,7 @@ bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 	bool result = false;
 	if (resourceDesc.type == CResourceDescription::kStringType)
 	{
-		if (auto factory = getWin32Factory ())
+		if (auto factory = getPlatformFactory ().asWin32Factory ())
 		{
 			if (auto path = factory->getResourceBasePath ())
 			{
