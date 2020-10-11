@@ -17,6 +17,7 @@
 #include "win32resourcestream.h"
 #include "winstring.h"
 #include "wintimer.h"
+#include <cassert>
 #include <list>
 #include <memory>
 #include <shlwapi.h>
