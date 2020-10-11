@@ -16,7 +16,6 @@
 struct IUnknown;
 #include <windows.h>
 #include <Shlobj.h>
-void* hInstance = nullptr;
 #elif LINUX
 #endif
 
@@ -37,6 +36,7 @@ int main (int argv, char* argc[])
 	VSTGUI::getPlatformFactory ().asMacFactory ()->setBundle (CFBundleGetMainBundle ());
 #elif WINDOWS
 	CoInitialize (nullptr);
+	VSTGUI::getPlatformFactory ().asWin32Factory ()->setInstance (GetModuleHandle (nullptr));
 #endif
 	std::string inputPath;
 	std::string outputPath;

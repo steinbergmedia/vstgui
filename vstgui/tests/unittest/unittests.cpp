@@ -9,6 +9,7 @@
 
 #if MAC
 #include "../../lib/platform/mac/macfactory.h"
+#include <CoreFoundation/CoreFoundation.h>
 #elif WINDOWS
 #include "../../lib/platform/win32/win32factory.h"
 #endif
@@ -258,14 +259,6 @@ static int RunTests ()
 
 }} // namespaces
 
-#if __APPLE_CC__
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
-#if WINDOWS
-void* hInstance = nullptr;
-#endif
-
 int main ()
 {
 	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
@@ -275,7 +268,7 @@ int main ()
 	VSTGUI::getPlatformFactory ().asMacFactory ()->setBundle (CFBundleGetMainBundle ());
 #elif WINDOWS
 	CoInitialize (nullptr);
-	hInstance = GetModuleHandle (nullptr);
+	VSTGUI::getPlatformFactory ().asWin32Factory ()->setInstance (GetModuleHandle (nullptr));
 #endif
 	return VSTGUI::UnitTest::RunTests ();
 }
