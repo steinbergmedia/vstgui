@@ -51,7 +51,6 @@ public:
 	~Platform ();
 
 	static Platform& getInstance ();
-	static uint64_t getCurrentTimeMs ();
 
 	std::string getPath ();
 

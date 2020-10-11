@@ -119,7 +119,7 @@ Platform::Platform ()
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 
-	Cairo::Bitmap::setGetResourcePathFunc ([this]() {
+	Cairo::Bitmap::setGetResourcePathFunc ([this] () {
 		auto path = getPath ();
 		path += "/Contents/Resources/";
 		return path;
@@ -129,14 +129,7 @@ Platform::Platform ()
 //------------------------------------------------------------------------
 Platform::~Platform ()
 {
-	Cairo::Bitmap::setGetResourcePathFunc ([]() { return std::string (); });
-}
-
-//------------------------------------------------------------------------
-uint64_t Platform::getCurrentTimeMs ()
-{
-	using namespace std::chrono;
-	return duration_cast<milliseconds> (steady_clock::now ().time_since_epoch ()).count ();
+	Cairo::Bitmap::setGetResourcePathFunc ([] () { return std::string (); });
 }
 
 //------------------------------------------------------------------------
@@ -173,17 +166,17 @@ struct RunLoop::Impl : IEventHandler
 	using WindowEventHandlerMap = std::unordered_map<uint32_t, IFrameEventHandler*>;
 
 	SharedPointer<IRunLoop> runLoop;
-	std::atomic<uint32_t> useCount{0};
-	xcb_connection_t* xcbConnection{nullptr};
-	xcb_cursor_context_t* cursorContext{nullptr};
-	xkb_context* xkbContext{nullptr};
-	xkb_state* xkbState{nullptr};
-	xkb_state* xkbUnprocessedState{nullptr};
-	xkb_keymap* xkbKeymap{nullptr};
+	std::atomic<uint32_t> useCount {0};
+	xcb_connection_t* xcbConnection {nullptr};
+	xcb_cursor_context_t* cursorContext {nullptr};
+	xkb_context* xkbContext {nullptr};
+	xkb_state* xkbState {nullptr};
+	xkb_state* xkbUnprocessedState {nullptr};
+	xkb_keymap* xkbKeymap {nullptr};
 	WindowEventHandlerMap windowEventHandlerMap;
-	std::array<xcb_cursor_t, CCursorType::kCursorIBeam + 1> cursors{{XCB_CURSOR_NONE}};
+	std::array<xcb_cursor_t, CCursorType::kCursorIBeam + 1> cursors {{XCB_CURSOR_NONE}};
 	VstKeyCode lastUnprocessedKeyEvent;
-	uint32_t lastUtf32KeyEventChar{0};
+	uint32_t lastUtf32KeyEventChar {0};
 
 	void init (const SharedPointer<IRunLoop>& inRunLoop)
 	{
@@ -255,8 +248,7 @@ struct RunLoop::Impl : IEventHandler
 		if (!xkbUnprocessedState)
 			return;
 
-
-		VstKeyCode code{};
+		VstKeyCode code {};
 
 		if (event.state & XCB_MOD_MASK_SHIFT)
 			code.modifier |= MODIFIER_SHIFT;
@@ -451,30 +443,30 @@ template<size_t count>
 using CharPtrArray = std::array<const char*, count>;
 
 constexpr auto CursorDefaultNames = //
-	CharPtrArray<4>{"left_ptr", "arrow", "dnd-none", "op_left_arrow"};
+	CharPtrArray<4> {"left_ptr", "arrow", "dnd-none", "op_left_arrow"};
 constexpr auto CursorWaitNames = //
-	CharPtrArray<3>{"wait", "watch", "progress"};
+	CharPtrArray<3> {"wait", "watch", "progress"};
 constexpr auto CursorHSizeNames = //
-	CharPtrArray<8>{"size_hor", "sb_h_double_arrow", "h_double_arrow", "e-resize",
-					"w-resize", "row-resize",		 "right_side",	 "left_side"};
+	CharPtrArray<8> {"size_hor", "sb_h_double_arrow", "h_double_arrow", "e-resize",
+					 "w-resize", "row-resize",		  "right_side",		"left_side"};
 constexpr auto CursorVSizeNames = //
-	CharPtrArray<12>{"size_ver",	  "sb_v_double_arrow", "v_double_arrow",   "n-resize",
-					 "s-resize",	  "col-resize",		   "top_side",		   "bottom_side",
-					 "base_arrow_up", "base_arrow_down",   "based_arrow_down", "based_arrow_up"};
+	CharPtrArray<12> {"size_ver",	   "sb_v_double_arrow", "v_double_arrow",	"n-resize",
+					  "s-resize",	   "col-resize",		"top_side",			"bottom_side",
+					  "base_arrow_up", "base_arrow_down",	"based_arrow_down", "based_arrow_up"};
 constexpr auto CursorNESWSizeNames = //
-	CharPtrArray<5>{"size_bdiag", "fd_double_arrow", "bottom_left_corner", "top_right_corner"};
+	CharPtrArray<5> {"size_bdiag", "fd_double_arrow", "bottom_left_corner", "top_right_corner"};
 constexpr auto CursorNWSESizeNames = //
-	CharPtrArray<5>{"size_fdiag", "bd_double_arrow", "bottom_right_corner", "top_left_corner"};
+	CharPtrArray<5> {"size_fdiag", "bd_double_arrow", "bottom_right_corner", "top_left_corner"};
 constexpr auto CursorSizeAllNames = //
-	CharPtrArray<4>{"cross", "diamond-cross", "cross-reverse", "crosshair"};
+	CharPtrArray<4> {"cross", "diamond-cross", "cross-reverse", "crosshair"};
 constexpr auto CursorCopyNames = //
-	CharPtrArray<2>{"dnd-copy", "copy"};
+	CharPtrArray<2> {"dnd-copy", "copy"};
 constexpr auto CursorNotAllowedNames = //
-	CharPtrArray<4>{"forbidden", "circle", "dnd-no-drop", "not-allowed"};
+	CharPtrArray<4> {"forbidden", "circle", "dnd-no-drop", "not-allowed"};
 constexpr auto CursorHandNames = //
-	CharPtrArray<4>{"openhand", "hand1", "all_scroll", "all-scroll"};
+	CharPtrArray<4> {"openhand", "hand1", "all_scroll", "all-scroll"};
 constexpr auto CursorIBeamNames = //
-	CharPtrArray<3>{"ibeam", "xterm", "text"};
+	CharPtrArray<3> {"ibeam", "xterm", "text"};
 
 //------------------------------------------------------------------------
 } // anonymous
