@@ -12,6 +12,12 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class LinuxFactory final : public IPlatformFactory
 {
+public:
+	LinuxFactory ();
+
+	void setResourcePath (const std::string& path) const noexcept;
+	std::string getResourcePath () const noexcept;
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */
@@ -26,8 +32,8 @@ class LinuxFactory final : public IPlatformFactory
 	 *	@return platform frame or nullptr on failure
 	 */
 	PlatformFramePtr createFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent,
-	                              PlatformType parentType,
-	                              IPlatformFrameConfig* config = nullptr) const noexcept final;
+								  PlatformType parentType,
+								  IPlatformFrameConfig* config = nullptr) const noexcept final;
 
 	/** Create a platform font object
 	 *	@param name name of the font
@@ -36,7 +42,7 @@ class LinuxFactory final : public IPlatformFactory
 	 *	@return platform font or nullptr on failure
 	 */
 	PlatformFontPtr createFont (const UTF8String& name, const CCoord& size,
-	                            const int32_t& style) const noexcept final;
+								const int32_t& style) const noexcept final;
 	/** Query all platform font families
 	 *	@param callback callback called for every font
 	 *	@return true on success
@@ -63,21 +69,21 @@ class LinuxFactory final : public IPlatformFactory
 	 *	@param memSize memory size
 	 *	@return platform bitmap or nullptr on failure
 	 */
-	PlatformBitmapPtr createBitmapFromMemory (const void* ptr, uint32_t memSize) const
-	    noexcept final;
+	PlatformBitmapPtr createBitmapFromMemory (const void* ptr,
+											  uint32_t memSize) const noexcept final;
 	/** Create a memory representation of the platform bitmap in PNG format.
 	 *	@param bitmap the platform bitmap object
 	 *	@return memory buffer containing the PNG representation of the bitmap
 	 */
-	PNGBitmapBuffer createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const
-	    noexcept final;
+	PNGBitmapBuffer
+	createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept final;
 
 	/** Create a platform resource input stream
 	 *	@param desc description where to find the file to open
 	 *	@return platform resource input stream or nullptr if not found
 	 */
-	PlatformResourceInputStreamPtr createResourceInputStream (
-	    const CResourceDescription& desc) const noexcept final;
+	PlatformResourceInputStreamPtr
+	createResourceInputStream (const CResourceDescription& desc) const noexcept final;
 
 	/** Create a platform string object
 	 *	@param utf8String optional initial UTF-8 encoded string
@@ -90,6 +96,14 @@ class LinuxFactory final : public IPlatformFactory
 	 *	@return platform timer object or nullptr on failure
 	 */
 	PlatformTimerPtr createTimer (IPlatformTimerCallback* callback) const noexcept final;
+
+	const LinuxFactory* asLinuxFactory () const noexcept final;
+	const MacFactory* asMacFactory () const noexcept final;
+	const Win32Factory* asWin32Factory () const noexcept final;
+
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 #include "../../../lib/cstring.h"
 #include "cairocontext.h"
 #include "linuxstring.h"
-#include "x11frame.h"
+#include "linuxfactory.h"
 #include <cairo/cairo-ft.h>
 #include <fontconfig/fontconfig.h>
 #include <freetype2/ft2build.h>
@@ -143,10 +143,14 @@ private:
 	{
 		FcInit ();
 		auto config = FcInitLoadConfigAndFonts ();
-		if (!X11::Frame::resourcePath.empty ())
+		if (auto linuxFactory = getPlatformFactory ().asLinuxFactory ())
 		{
-			auto fontDir = X11::Frame::resourcePath + "Fonts/";
-			FcConfigAppFontAddDir (config, reinterpret_cast<const FcChar8*> (fontDir.data ()));
+			auto resPath = linuxFactory->getResourcePath ();
+			if (!resPath.empty ())
+			{
+				auto fontDir = resPath + "Fonts/";
+				FcConfigAppFontAddDir (config, reinterpret_cast<const FcChar8*> (fontDir.data ()));
+			}
 		}
 
 		auto pattern = FcPatternCreate ();

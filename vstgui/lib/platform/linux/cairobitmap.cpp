@@ -4,7 +4,7 @@
 
 #include "../../cpoint.h"
 #include "../../cresourcedescription.h"
-
+#include "linuxfactory.h"
 #include "cairobitmap.h"
 #include <memory>
 #include <vector>
@@ -128,15 +128,6 @@ private:
 } // CairoBitmapPrivate
 
 //-----------------------------------------------------------------------------
-Bitmap::GetResourcePathFunc Bitmap::getResourcePath = [] () { return std::string (); };
-
-//-----------------------------------------------------------------------------
-void Bitmap::setGetResourcePathFunc (GetResourcePathFunc&& func)
-{
-	getResourcePath = std::move (func);
-}
-
-//-----------------------------------------------------------------------------
 SharedPointer<Bitmap> Bitmap::create (UTF8StringPtr absolutePath)
 {
 	if (auto surface = Cairo::CairoBitmapPrivate::createImageFromPath (absolutePath))
@@ -186,7 +177,10 @@ Bitmap::~Bitmap () {}
 //-----------------------------------------------------------------------------
 bool Bitmap::load (const CResourceDescription& desc)
 {
-	auto path = getResourcePath ();
+	auto linuxFactory = getPlatformFactory ().asLinuxFactory ();
+	if (!linuxFactory)
+		return false;
+	auto path = linuxFactory->getResourcePath ();
 	if (!path.empty ())
 	{
 		if (desc.type == CResourceDescription::kIntegerType)

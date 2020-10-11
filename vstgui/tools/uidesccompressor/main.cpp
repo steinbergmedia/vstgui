@@ -10,14 +10,15 @@
 //------------------------------------------------------------------------
 #if MAC
 #include <CoreFoundation/CoreFoundation.h>
-namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
+namespace VSTGUI {
+void* gBundleRef = CFBundleGetMainBundle ();
+}
 #elif WINDOWS
 struct IUnknown;
 #include <windows.h>
 #include <Shlobj.h>
 void* hInstance = nullptr;
 #elif LINUX
-namespace VSTGUI { void* soHandle = nullptr; }
 #endif
 
 using namespace VSTGUI;
@@ -71,7 +72,7 @@ int main (int argv, char* argc[])
 		printAndTerminate ("No input or output path specified!");
 	}
 	printf ("Copy %s to %s%s\n", inputPath.data (), outputPath.data (),
-	        noCompression ? " [uncompressed]" : "[compressed]");
+			noCompression ? " [uncompressed]" : "[compressed]");
 
 	CompressedUIDescription uiDesc (CResourceDescription (inputPath.data ()));
 	if (!uiDesc.parse ())
@@ -95,8 +96,8 @@ int main (int argv, char* argc[])
 			return 0;
 
 		flags |= CompressedUIDescription::kNoPlainUIDescFileBackup |
-		         CompressedUIDescription::kForceWriteCompressedDesc |
-		         CompressedUIDescription::kDoNotVerifyImageData;
+				 CompressedUIDescription::kForceWriteCompressedDesc |
+				 CompressedUIDescription::kDoNotVerifyImageData;
 		uiDesc.setCompressionLevel (compressionLevel);
 		if (!uiDesc.save (outputPath.data (), flags))
 		{

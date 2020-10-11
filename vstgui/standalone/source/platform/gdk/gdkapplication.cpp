@@ -7,6 +7,7 @@
 #include "../../../include/iapplication.h"
 #include "../../../../lib/vstkeycode.h"
 #include "../../../../lib/platform/linux/x11frame.h"
+#include "../../../../lib/platform/linux/linuxfactory.h"
 #include "../../../../lib/platform/common/fileresourceinputstream.h"
 #include "gdkcommondirectories.h"
 #include "gdkpreference.h"
@@ -42,8 +43,6 @@ bool operator== (const VstKeyCode& k1, const VstKeyCode& k2)
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-void* soHandle = nullptr;
-
 namespace Standalone {
 namespace Platform {
 namespace GDK {
@@ -95,16 +94,7 @@ bool Application::init (int argc, char* argv[])
 		if (count == -1)
 			exit (-1);
 		std::string execPath = dirname (result);
-		VSTGUI::X11::Frame::createResourceInputStreamFunc =
-			[execPath] (const CResourceDescription& desc) {
-				if (desc.type == CResourceDescription::kIntegerType)
-					return PlatformResourceInputStreamPtr ();
-				std::string path (execPath);
-				path += "/Resources/";
-				path += desc.u.name;
-				return FileResourceInputStream::create (path);
-			};
-		VSTGUI::X11::Frame::resourcePath = execPath + "/Resources/";
+		getPlatformFactory ().asLinuxFactory ()->setResourcePath (execPath + "/Resources/");
 
 		PlatformCallbacks callbacks;
 		callbacks.quit = [this] () { quit (); };

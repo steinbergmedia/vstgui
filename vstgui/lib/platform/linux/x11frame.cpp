@@ -784,19 +784,5 @@ bool Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
 }
 
 //------------------------------------------------------------------------
-Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
-	[] (const CResourceDescription& desc) -> PlatformResourceInputStreamPtr {
-	if (desc.type != CResourceDescription::kStringType)
-		return nullptr;
-	auto path = Platform::getInstance ().getPath ();
-	path += "/Contents/Resources/";
-	path += desc.u.name;
-	return FileResourceInputStream::create (path);
-};
-
-//------------------------------------------------------------------------
-UTF8String Frame::resourcePath = Platform::getInstance ().getPath () + "/Contents/Resources/";
-
-//------------------------------------------------------------------------
 } // X11
 } // VSTGUI
