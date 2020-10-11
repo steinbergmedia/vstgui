@@ -10,6 +10,7 @@
 
 #include "../../crect.h"
 #include "../../cpoint.h"
+#include "macfactory.h"
 
 #if TARGET_OS_IPHONE
 	#include <CoreFoundation/CoreFoundation.h>
@@ -21,9 +22,14 @@
 namespace VSTGUI {
 struct CColor;
 
-// TODO: This needs to be done a nicer fashion
-extern void* gBundleRef;
-inline CFBundleRef getBundleRef () { return (CFBundleRef)gBundleRef; }
+inline CFBundleRef getBundleRef ()
+{
+	if (auto mf = getPlatformFactory ().asMacFactory ())
+	{
+		return mf->getBundle ();
+	}
+	return nullptr;
+}
 extern CGColorSpaceRef GetCGColorSpace ();
 extern CGColorRef getCGColor (const CColor& color);
 

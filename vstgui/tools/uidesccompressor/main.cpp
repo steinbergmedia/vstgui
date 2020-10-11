@@ -9,11 +9,10 @@
 
 //------------------------------------------------------------------------
 #if MAC
+#include "../../lib/platform/mac/macfactory.h"
 #include <CoreFoundation/CoreFoundation.h>
-namespace VSTGUI {
-void* gBundleRef = CFBundleGetMainBundle ();
-}
 #elif WINDOWS
+#include "../../lib/platform/win32/win32factory.h"
 struct IUnknown;
 #include <windows.h>
 #include <Shlobj.h>
@@ -34,7 +33,9 @@ void printAndTerminate (const char* msg)
 //------------------------------------------------------------------------
 int main (int argv, char* argc[])
 {
-#if WINDOWS
+#if MAC
+	VSTGUI::getPlatformFactory ().asMacFactory ()->setBundle (CFBundleGetMainBundle ());
+#elif WINDOWS
 	CoInitialize (nullptr);
 #endif
 	std::string inputPath;

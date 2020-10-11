@@ -7,6 +7,12 @@
 #if ENABLE_UNIT_TESTS
 #include "../../lib/vstguidebug.h"
 
+#if MAC
+#include "../../lib/platform/mac/macfactory.h"
+#elif WINDOWS
+#include "../../lib/platform/win32/win32factory.h"
+#endif
+
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>
@@ -254,9 +260,6 @@ static int RunTests ()
 
 #if __APPLE_CC__
 #include <CoreFoundation/CoreFoundation.h>
-namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
-#elif __linux__
-namespace VSTGUI { void* soHandle = nullptr; }
 #endif
 
 #if WINDOWS
@@ -268,7 +271,9 @@ int main ()
 	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
 		throw std::logic_error (desc ? desc : "unknown");
 	});
-#if WINDOWS
+#if MAC
+	VSTGUI::getPlatformFactory ().asMacFactory ()->setBundle (CFBundleGetMainBundle ());
+#elif WINDOWS
 	CoInitialize (nullptr);
 	hInstance = GetModuleHandle (nullptr);
 #endif

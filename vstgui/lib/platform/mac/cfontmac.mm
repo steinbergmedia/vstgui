@@ -118,8 +118,7 @@ private:
 
 	void getUrlsForType (CFStringRef fontType, CFMutableArrayRef& array)
 	{
-		if (auto a = CFBundleCopyResourceURLsOfType (static_cast<CFBundleRef> (gBundleRef),
-		                                             fontType, CFSTR ("Fonts")))
+		if (auto a = CFBundleCopyResourceURLsOfType (getBundleRef (), fontType, CFSTR ("Fonts")))
 		{
 			CFArrayAppendArray (array, a, CFRangeMake (0, CFArrayGetCount (a)));
 			CFRelease (a);

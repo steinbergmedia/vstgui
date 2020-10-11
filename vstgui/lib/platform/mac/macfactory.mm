@@ -24,23 +24,38 @@
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
-namespace MacFactoryDetail {
-static struct mach_timebase_info timebaseInfo;
-} // MacFactoryDetail
 
-//------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+struct MacFactory::Impl
+{
+	struct mach_timebase_info timebaseInfo;
+	CFBundleRef bundle {nullptr};
+};
+
+//-----------------------------------------------------------------------------
 MacFactory::MacFactory ()
 {
-	mach_timebase_info (&MacFactoryDetail::timebaseInfo);
+	impl = std::unique_ptr<Impl> (new Impl);
+	mach_timebase_info (&impl->timebaseInfo);
+}
+
+//-----------------------------------------------------------------------------
+CFBundleRef MacFactory::getBundle () const noexcept
+{
+	return impl->bundle;
+}
+
+//-----------------------------------------------------------------------------
+void MacFactory::setBundle (CFBundleRef bundle) const noexcept
+{
+	impl->bundle = bundle;
 }
 
 //-----------------------------------------------------------------------------
 uint64_t MacFactory::getTicks () const noexcept
 {
 	uint64_t absTime = mach_absolute_time ();
-	auto d =
-	    ((absTime * MacFactoryDetail::timebaseInfo.numer) / MacFactoryDetail::timebaseInfo.denom) /
-	    1000000;
+	auto d = ((absTime * impl->timebaseInfo.numer) / impl->timebaseInfo.denom) / 1000000;
 	return d;
 }
 
@@ -152,6 +167,24 @@ PlatformStringPtr MacFactory::createString (UTF8StringPtr utf8String) const noex
 PlatformTimerPtr MacFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
 	return makeOwned<MacTimer> (callback);
+}
+
+//-----------------------------------------------------------------------------
+const LinuxFactory* MacFactory::asLinuxFactory () const noexcept
+{
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const MacFactory* MacFactory::asMacFactory () const noexcept
+{
+	return this;
+}
+
+//-----------------------------------------------------------------------------
+const Win32Factory* MacFactory::asWin32Factory () const noexcept
+{
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

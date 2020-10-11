@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "../../../../lib/platform/mac/cocoa/cocoahelpers.h"
+#import "../../../../lib/platform/mac/macfactory.h"
 #import "../../../include/iappdelegate.h"
 #import "../../../include/iapplication.h"
 #import "../../application.h"
@@ -653,12 +654,9 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 @end
 
 //------------------------------------------------------------------------
-namespace VSTGUI { void* _Nullable gBundleRef = nullptr; }
-
-//------------------------------------------------------------------------
 int main (int argc, const char* _Nonnull* _Nonnull argv)
 {
-	VSTGUI::gBundleRef = CFBundleGetMainBundle ();
+	VSTGUI::getPlatformFactory ().asMacFactory ()->setBundle (CFBundleGetMainBundle ());
 	VSTGUIApplicationDelegate* delegate = [VSTGUIApplicationDelegate new];
 	[NSApplication sharedApplication].delegate = delegate;
 	return NSApplicationMain (argc, argv);
