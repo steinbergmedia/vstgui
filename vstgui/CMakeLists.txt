@@ -81,6 +81,7 @@ if(LINUX)
     pkg_check_modules(LIBXCB_XKB REQUIRED xcb-xkb)
     pkg_check_modules(LIBXKB_COMMON REQUIRED xkbcommon)
     pkg_check_modules(LIBXKB_COMMON_X11 REQUIRED xkbcommon-x11)
+    pkg_check_modules(GLIB REQUIRED glib-2.0)
     set(LINUX_LIBRARIES
         ${X11_LIBRARIES}
         ${FREETYPE_LIBRARIES}
@@ -91,6 +92,7 @@ if(LINUX)
         ${LIBXCB_XKB_LIBRARIES}
         ${LIBXKB_COMMON_LIBRARIES}
         ${LIBXKB_COMMON_X11_LIBRARIES}
+        ${GLIB_LIBRARIES}
         cairo
         fontconfig
         dl
