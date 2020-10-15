@@ -278,6 +278,8 @@ set(${target}_linux_sources
     platform/linux/cairoutils.h
     platform/linux/linuxstring.cpp
     platform/linux/linuxstring.h
+    platform/linux/x11dragging.cpp
+    platform/linux/x11dragging.h
     platform/linux/x11fileselector.cpp
     platform/linux/x11frame.cpp
     platform/linux/x11frame.h
@@ -317,5 +319,6 @@ vstgui_source_group_by_folder(${target})
 if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
     target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${GLIB_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES})
 endif()
