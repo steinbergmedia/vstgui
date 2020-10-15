@@ -10,7 +10,8 @@
 #include <cairo/cairo-ft.h>
 #include <fontconfig/fontconfig.h>
 #include <freetype2/ft2build.h>
-#include <unordered_map>
+#include <map>
+#include <set>
 #include <cassert>
 
 #include FT_FREETYPE_H
@@ -27,7 +28,7 @@ class FreeType
 public:
 	static FreeType& instance ();
 
-	FreeTypeFontFace createFromPath (const std::string& path);
+	FreeTypeFontFace createFromPath (const std::string& path, int index);
 
 private:
 	FreeType ();
@@ -76,7 +77,7 @@ using CairoFontFaceHandle =
 struct CairoFontFace
 {
 	CairoFontFace () noexcept {}
-	CairoFontFace (const std::string& path) : path (path) {}
+	CairoFontFace (const std::string& path, int index) : path (path), index (index) {}
 
 	CairoFontFace (const CairoFontFace& o) { assert (false); }
 	CairoFontFace& operator= (const CairoFontFace& o) = delete;
@@ -87,6 +88,7 @@ struct CairoFontFace
 		std::swap (ftFace, o.ftFace);
 		std::swap (face, o.face);
 		std::swap (path, o.path);
+		std::swap (index, o.index);
 		return *this;
 	}
 
@@ -94,7 +96,7 @@ struct CairoFontFace
 	{
 		if (!face && !path.empty ())
 		{
-			ftFace = FreeType::instance ().createFromPath (path);
+			ftFace = FreeType::instance ().createFromPath (path, index);
 			if (ftFace.valid ())
 			{
 				face = CairoFontFaceHandle (cairo_ft_font_face_create_for_ft_face (ftFace, 0));
@@ -107,6 +109,7 @@ private:
 	mutable FreeTypeFontFace ftFace;
 	mutable CairoFontFaceHandle face;
 	std::string path;
+	int index = 0;
 };
 
 //------------------------------------------------------------------------
@@ -119,72 +122,140 @@ public:
 		return gInstance;
 	}
 
-	struct FontFamily
+	FcConfig* getFontConfig ()
 	{
-		std::unordered_map<std::string, CairoFontFace> styles;
-	};
-
-	using Fonts = std::unordered_map<std::string, FontFamily>;
-
-	std::vector<std::string> fontFamilyNames ()
-	{
-		std::vector<std::string> result;
-		for (auto e : fonts)
-			result.push_back (e.first);
-		return result;
+		return fcConfig;
 	}
+
+	using Fonts = std::map<std::pair<std::string, int>, CairoFontFace>;
 
 	const Fonts& getFonts () const { return fonts; }
 
-	void clear () { fonts.clear (); }
+	CairoFontFace& createFont(const std::string& file, int index)
+	{
+		auto key = std::make_pair (file, index);
+		auto it = fonts.find (key);
+		if (it == fonts.end ())
+		{
+			auto value = std::make_pair (key, CairoFontFace (file, index));
+			it = fonts.insert (std::move (value)).first;
+		}
+		return it->second;
+	}
+
+	void clear() { fonts.clear(); }
+
+	bool queryFont (UTF8StringPtr name, CCoord size, int32_t style, std::string* fileStr, int* indexInt)
+	{
+		bool found = false;
+		if (!fcConfig)
+			return false;
+		FcPattern* pattern = nullptr;
+		if ((pattern = FcPatternCreate ()) &&
+		    FcPatternAddString  (pattern, FC_FAMILY, reinterpret_cast<const FcChar8*> (name)) &&
+		    FcPatternAddInteger (pattern, FC_SLANT, slantFromStyle (style)) &&
+		    FcPatternAddInteger (pattern, FC_WEIGHT, weightFromStyle (style)) &&
+		    FcConfigSubstitute (fcConfig, pattern, FcMatchFont))
+		{
+			FcDefaultSubstitute (pattern);
+			FcResult result;
+			FcPattern* font = FcFontMatch (fcConfig, pattern, &result);
+			if (result == FcResultMatch)
+			{
+				FcChar8* file;
+				int index;
+				if (FcPatternGetString (font, FC_FILE, 0, &file) == FcResultMatch &&
+				    FcPatternGetInteger (font, FC_INDEX, 0, &index) == FcResultMatch)
+				{
+					if (fileStr)
+						fileStr->assign (reinterpret_cast<char*> (file));
+					if (indexInt)
+						*indexInt = index;
+					found = true;
+				}
+			}
+			if (font)
+				FcPatternDestroy(font);
+		}
+		if (pattern)
+			FcPatternDestroy (pattern);
+		return found;
+	}
+
+	bool getAllFontFamilies(const FontFamilyCallback& callback)
+	{
+		if (!fcConfig)
+			return false;
+		std::set<std::string> fontFamilyKnown;
+		FcPattern* pattern = nullptr;
+		FcObjectSet* objectSet = nullptr;
+		FcFontSet* fontList = nullptr;
+		if ((pattern = FcPatternCreate ()) &&
+		    (objectSet = FcObjectSetBuild (FC_FAMILY, FC_FILE, FC_STYLE, nullptr)) &&
+		    (fontList = FcFontList (fcConfig, pattern, objectSet)))
+		{
+			for (int i = 0; i < fontList->nfont; ++i)
+			{
+				auto* font = fontList->fonts[i];
+				FcChar8* family;
+				if (FcPatternGetString (font, FC_FAMILY, 0, &family) == FcResultMatch)
+				{
+					std::string familyStr (reinterpret_cast<const char*> (family));
+					if (fontFamilyKnown.insert(familyStr).second)
+					{
+						if (!callback (familyStr))
+							break;
+					}
+				}
+			}
+		}
+		if (fontList)
+			FcFontSetDestroy (fontList);
+		if (objectSet)
+			FcObjectSetDestroy (objectSet);
+		if (pattern)
+			FcPatternDestroy (pattern);
+		return true;
+	}
 
 private:
 	FontList ()
 	{
-		FcInit ();
-		auto config = FcInitLoadConfigAndFonts ();
+		if (!FcInit ())
+			return;
+
+		fcConfig = FcInitLoadConfigAndFonts ();
+		if (!fcConfig)
+			return;
+
 		if (!X11::Frame::resourcePath.empty ())
 		{
 			auto fontDir = X11::Frame::resourcePath + "Fonts/";
-			FcConfigAppFontAddDir (config, reinterpret_cast<const FcChar8*> (fontDir.data ()));
+			FcConfigAppFontAddDir (fcConfig, reinterpret_cast<const FcChar8*> (fontDir.data ()));
 		}
-
-		auto pattern = FcPatternCreate ();
-		auto objectSet = FcObjectSetBuild (FC_FAMILY, FC_FILE, FC_STYLE, nullptr);
-		auto fontList = FcFontList (config, pattern, objectSet);
-		for (auto i = 0; i < fontList->nfont; ++i)
-		{
-			auto font = fontList->fonts[i];
-			FcChar8* family;
-			FcChar8* file;
-			FcChar8* style;
-			if (FcPatternGetString (font, FC_FAMILY, 0, &family) == FcResultMatch &&
-				FcPatternGetString (font, FC_FILE, 0, &file) == FcResultMatch &&
-				FcPatternGetString (font, FC_STYLE, 0, &style) == FcResultMatch)
-			{
-				std::string familyStr (reinterpret_cast<const char*> (family));
-				std::string fileStr (reinterpret_cast<const char*> (file));
-				std::string styleStr (reinterpret_cast<const char*> (style));
-				auto it = fonts.find (familyStr);
-				if (it == fonts.end ())
-				{
-					FontFamily fam;
-					fam.styles.emplace (styleStr, CairoFontFace {fileStr});
-					fonts.emplace (familyStr, std::move (fam));
-				}
-				else
-					it->second.styles.emplace (styleStr, CairoFontFace {fileStr});
-			}
-		}
-		FcFontSetDestroy (fontList);
-		FcObjectSetDestroy (objectSet);
-		FcPatternDestroy (pattern);
-		FcConfigDestroy (config);
 	}
 
-	~FontList () {}
+	~FontList ()
+	{
+		if (fcConfig)
+			FcConfigDestroy (fcConfig);
+	}
 
+	FontList (const FontList&) = delete;
+	FontList& operator= (const FontList&) = delete;
+
+	FcConfig* fcConfig = nullptr;
 	Fonts fonts;
+
+	static int slantFromStyle (int32_t style)
+	{
+		return (style & kItalicFace) ? FC_SLANT_ITALIC : FC_SLANT_ROMAN;
+	}
+
+	static int weightFromStyle (int32_t style)
+	{
+		return (style & kBoldFace) ? FC_WEIGHT_BOLD : FC_WEIGHT_REGULAR;
+	}
 };
 
 //------------------------------------------------------------------------
@@ -195,10 +266,10 @@ FreeType& FreeType::instance ()
 }
 
 //------------------------------------------------------------------------
-FreeTypeFontFace FreeType::createFromPath (const std::string& path)
+FreeTypeFontFace FreeType::createFromPath (const std::string& path, int index)
 {
 	FT_Face face {nullptr};
-	FT_New_Face (library, path.data (), 0, &face);
+	FT_New_Face (library, path.data (), index, &face);
 	return FreeTypeFontFace (face);
 }
 
@@ -214,7 +285,7 @@ FreeType::FreeType ()
 //------------------------------------------------------------------------
 FreeType::~FreeType ()
 {
-	FontList::instance ().clear ();
+       FontList::instance ().clear ();
 	if (library)
 		FT_Done_FreeType (library);
 }
@@ -233,48 +304,42 @@ struct Font::Impl
 Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-	auto& map = FontList::instance ().getFonts ();
-	auto it = map.find (name);
-	if (it == map.end ())
+
+	auto& fontList = FontList::instance ();
+
+	bool found = false;
+	std::string file;
+	int index {};
+
+	static constexpr auto defaultNames = {"Liberation Sans", "Noto Sans", "Ubuntu", "FreeSans"};
+
+	for (int numTry = 0; !found && numTry < 2; ++numTry)
 	{
-		static constexpr auto defaults = {"Liberation Sans", "Noto Sans", "Ubuntu", "FreeSans"};
-		for (auto& defName : defaults)
+		int32_t tryStyle = (numTry == 0) ? style : 0;
+		if (name[0] != '\0')
+			found = fontList.queryFont (name, size, tryStyle, &file, &index);
+		if (!found)
 		{
-			it = map.find (defName); // default font
-			if (it != map.end ())
-				break;
+			for (auto& defName : defaultNames)
+			{
+				found = fontList.queryFont (defName, size, tryStyle, &file, &index);
+				if (found)
+					break;
+			}
 		}
 	}
-	if (it != map.end ())
+
+	if (found)
 	{
+		CairoFontFace& face = fontList.createFont (file, index);
 		cairo_matrix_t matrix, ctm;
 		cairo_matrix_init_scale (&matrix, size, size);
 		cairo_matrix_init_identity (&ctm);
 		auto options = cairo_font_options_create ();
 		cairo_font_options_set_hint_style (options, CAIRO_HINT_STYLE_NONE);
 		cairo_font_options_set_hint_metrics (options, CAIRO_HINT_METRICS_ON);
-
-		auto styleIt = it->second.styles.find ("Regular");
-		if (style & kBoldFace)
-		{
-			if (style & kItalicFace)
-				styleIt = it->second.styles.find ("Bold Italic");
-			else
-				styleIt = it->second.styles.find ("Bold");
-		}
-		else if (style & kItalicFace)
-		{
-			styleIt = it->second.styles.find ("Italic");
-		}
-		if (styleIt == it->second.styles.end ())
-			styleIt = it->second.styles.find ("Regular");
-		if (styleIt == it->second.styles.end ())
-			styleIt = it->second.styles.begin ();
-		if (styleIt != it->second.styles.end ())
-		{
-			impl->font = ScaledFontHandle (
-				cairo_scaled_font_create (styleIt->second, &matrix, &ctm, options));
-		}
+		impl->font = ScaledFontHandle (
+			cairo_scaled_font_create (face, &matrix, &ctm, options));
 		cairo_font_options_destroy (options);
 		auto status = cairo_scaled_font_status (impl->font);
 		if (status != CAIRO_STATUS_SUCCESS)
@@ -367,13 +432,7 @@ CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, boo
 //------------------------------------------------------------------------
 bool Font::getAllFamilies (const FontFamilyCallback& callback)
 {
-	auto& map = Cairo::FontList::instance ().getFonts ();
-	for (auto& e : map)
-	{
-		if (!callback (e.first))
-			break;
-	}
-	return true;
+	return Cairo::FontList::instance ().getAllFontFamilies (callback);
 }
 
 //------------------------------------------------------------------------
