@@ -9,6 +9,7 @@
 #include "../lib/vstguifwd.h"
 #include "uidescriptionfwd.h"
 #include <vector>
+#include <string>
 
 namespace VSTGUI {
 class IViewSwitchController;

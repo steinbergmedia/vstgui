@@ -432,6 +432,16 @@ inline Optional<T> UTF8StringView::toNumber () const
 	return makeOptional (static_cast<T> (number));
 }
 
+//------------------------------------------------------------------------
+template<>
+inline Optional<bool> UTF8StringView::toNumber () const
+{
+	auto number = toInteger ();
+	if (number > 1 || number < 0)
+		return {};
+	return makeOptional (static_cast<bool> (number));
+}
+
 //-----------------------------------------------------------------------------
 inline bool UTF8StringView::operator== (const UTF8StringPtr otherString) const
 {
