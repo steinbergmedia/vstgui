@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../../lib/controls/ccontrol.h"
+#include "../../../../lib/controls/icontrollistener.h"
 #include "../../unittests.h"
 
 namespace VSTGUI {
