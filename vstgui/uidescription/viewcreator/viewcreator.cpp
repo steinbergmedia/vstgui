@@ -14,6 +14,8 @@
 #include "../../lib/cdrawcontext.h"
 #endif
 
+#include <sstream>
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {

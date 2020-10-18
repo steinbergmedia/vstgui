@@ -286,7 +286,7 @@ void DocumentWindowController::onSetContentView (IWindow& w, const SharedPointer
 //------------------------------------------------------------------------
 void DocumentWindowController::onClosed (const IWindow& w)
 {
-	assert (&w == window.get ());
+	vstgui_assert (&w == window.get ());
 	window = nullptr;
 }
 
@@ -330,7 +330,7 @@ bool DocumentWindowController::canClose (const IWindow&)
 static bool exportImage (const SharedPointer<CBitmap>& image, UTF8StringPtr path)
 {
 	auto platformBitmap = image->getPlatformBitmap ();
-	assert (platformBitmap);
+	vstgui_assert (platformBitmap);
 	auto buffer = getPlatformFactory ().createBitmapMemoryPNGRepresentation (platformBitmap);
 	CFileStream stream;
 	if (!stream.open (path, CFileStream::kWriteMode | CFileStream::kBinaryMode |

@@ -325,9 +325,9 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 		distance *= -1;
 
 	if (buttons & kShift)
-		value -= 0.1f * distance * wheelInc;
+		value -= 0.1f * distance * getWheelInc ();
 	else
-		value -= distance * wheelInc;
+		value -= distance * getWheelInc ();
 	bounceValue ();
 
 	if (isDirty ())

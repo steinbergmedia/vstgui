@@ -10,6 +10,7 @@
 #include "../uiattributes.h"
 #include "../iuidescription.h"
 #include "../../lib/dragging.h"
+#include <sstream>
 
 namespace VSTGUI {
 

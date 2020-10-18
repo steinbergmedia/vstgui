@@ -10,9 +10,11 @@
 #include "ifocusdrawing.h"
 #include "itouchevent.h"
 #include "iviewlistener.h"
+#include "controls/icontrollistener.h"
 #include "cgraphicspath.h"
 #include "controls/ccontrol.h"
 #include "dragging.h"
+#include "dispatchlist.h"
 
 #include <algorithm>
 #include <cassert>

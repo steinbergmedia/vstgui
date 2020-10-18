@@ -16,6 +16,7 @@
 #include "uinode.h"
 #include <list>
 #include <string>
+#include <sstream>
 
 namespace VSTGUI {
 namespace Detail {
