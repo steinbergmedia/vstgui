@@ -6,6 +6,7 @@
 
 #include "../ipreference.h"
 #include "../iapplication.h"
+#include <sstream>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

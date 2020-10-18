@@ -7,6 +7,7 @@
 #include "../../../lib/dispatchlist.h"
 #include "../../include/ivaluelistener.h"
 #include <algorithm>
+#include <sstream>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

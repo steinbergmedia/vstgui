@@ -241,9 +241,9 @@ bool CKnobBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const
 
 	float v = getValueNormalized ();
 	if (buttons & kZoomModifier)
-		v += 0.1f * distance * wheelInc;
+		v += 0.1f * distance * getWheelInc ();
 	else
-		v += distance * wheelInc;
+		v += distance * getWheelInc ();
 	setValueNormalized (v);
 
 	if (isDirty ())
@@ -270,9 +270,9 @@ int32_t CKnobBase::onKeyDown (VstKeyCode& keyCode)
 
 			float v = getValueNormalized ();
 			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
-				v += 0.1f * distance * wheelInc;
+				v += 0.1f * distance * getWheelInc ();
 			else
-				v += distance * wheelInc;
+				v += distance * getWheelInc ();
 			setValueNormalized (v);
 
 			if (isDirty ())

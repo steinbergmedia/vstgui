@@ -10,6 +10,7 @@
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
 #include <array>
+#include <sstream>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ccontrol.h"
+#include <algorithm>
 
 namespace VSTGUI {
 

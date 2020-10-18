@@ -18,10 +18,15 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
+TimeWatch::TimeWatch (UTF8StringPtr inName, bool startNow)
 : startTime (0)
 {
-	this->name = name ? name : "";
+	if (inName)
+	{
+		auto len = std::strlen (inName);
+		name = std::unique_ptr<char[]> (new char[len + 1]);
+		std::strcpy (name.get (), inName);
+	}
 	if (startNow)
 		start ();
 }
@@ -44,7 +49,10 @@ void TimeWatch::stop ()
 	if (startTime > 0)
 	{
 		clock_t stopTime = std::clock ();
-		DebugPrint ("%s took %d\n", name.data (), stopTime - startTime);
+		if (name)
+			DebugPrint ("%s took %d\n", name.get (), stopTime - startTime);
+		else
+			DebugPrint ("it took %d\n", stopTime - startTime);
 		startTime = 0;
 	}
 }
@@ -72,10 +80,10 @@ void DebugPrint (const char *format, ...)
 
 namespace VSTGUI {
 
-static AssertionHandler assertionHandler {};
+static AssertionHandler assertionHandler = nullptr;
 
 //------------------------------------------------------------------------
-void setAssertionHandler (const AssertionHandler& handler)
+void setAssertionHandler (AssertionHandler handler)
 {
 	assertionHandler = handler;
 }

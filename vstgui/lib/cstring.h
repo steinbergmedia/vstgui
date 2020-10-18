@@ -8,7 +8,6 @@
 #include "optional.h"
 #include "platform/iplatformstring.h"
 #include <string>
-#include <sstream>
 #include <functional>
 #include <algorithm>
 #include <cctype>
@@ -418,42 +417,19 @@ inline bool UTF8StringView::endsWith (const UTF8StringView& endString) const
 }
 
 //-----------------------------------------------------------------------------
-inline double UTF8StringView::toDouble (uint32_t precision) const
-{
-	std::istringstream sstream (str);
-	sstream.imbue (std::locale::classic ());
-	sstream.precision (static_cast<std::streamsize> (precision));
-	double result;
-	sstream >> result;
-	return result;
-}
-
-//-----------------------------------------------------------------------------
 inline float UTF8StringView::toFloat (uint32_t precision) const
 {
 	return static_cast<float>(toDouble (precision));
 }
 
 //------------------------------------------------------------------------
-inline int64_t UTF8StringView::toInteger () const
-{
-	if (auto number = toNumber<int64_t> ())
-		return *number;
-	return 0;
-}
-
-//------------------------------------------------------------------------
 template<typename T>
 inline Optional<T> UTF8StringView::toNumber () const
 {
-	static_assert (std::is_arithmetic<T>::value, "only arithmetic types allowed");
-	std::istringstream sstream (str);
-	sstream.imbue (std::locale::classic ());
-	T number {};
-	sstream >> number;
-	if (!sstream.fail ())
-		return makeOptional (number);
-	return {};
+	auto number = toInteger ();
+	if (number > std::numeric_limits<T>::max () || number < std::numeric_limits<T>::min ())
+		return {};
+	return makeOptional (static_cast<T> (number));
 }
 
 //-----------------------------------------------------------------------------
