@@ -7,6 +7,7 @@
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../../../lib/controls/ccontrol.h"
+#include "../../../../lib/controls/icontrollistener.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 

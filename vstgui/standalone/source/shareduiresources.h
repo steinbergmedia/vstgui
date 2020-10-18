@@ -8,6 +8,10 @@
 #include "../../lib/optional.h"
 #include "../include/ishareduiresources.h"
 
+#if VSTGUI_LIVE_EDITING
+#include <string>
+#endif
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {

@@ -5,9 +5,34 @@
 #include "cstring.h"
 #include "platform/platformfactory.h"
 #include <cstring>
+#include <sstream>
 #include <algorithm>
 
 namespace VSTGUI {
+
+//-----------------------------------------------------------------------------
+double UTF8StringView::toDouble (uint32_t precision) const
+{
+	std::istringstream sstream (str);
+	sstream.imbue (std::locale::classic ());
+	sstream.precision (static_cast<std::streamsize> (precision));
+	double result;
+	sstream >> result;
+	return result;
+}
+
+//------------------------------------------------------------------------
+int64_t UTF8StringView::toInteger () const
+{
+	std::istringstream sstream (str);
+	sstream.imbue (std::locale::classic ());
+	int64_t number {};
+	sstream >> number;
+	if (!sstream.fail ())
+		return number;
+	return {};
+}
+
 
 //-----------------------------------------------------------------------------
 UTF8String::UTF8String (UTF8StringPtr str)

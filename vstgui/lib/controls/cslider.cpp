@@ -347,7 +347,7 @@ void CSliderBase::doRamping ()
 	if (isStyleRight () || isStyleBottom ())
 		clickValue = 1.f - clickValue;
 
-	normValue += distance * wheelInc;
+	normValue += distance * getWheelInc ();
 	if ((clickValue > normValue && distance < 0.f) || (clickValue < normValue && distance > 0.f))
 	{
 		normValue = clickValue;
@@ -521,9 +521,9 @@ bool CSliderBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, con
 		_distance *= -1.f;
 	float normValue = getValueNormalized ();
 	if (buttons & kZoomModifier)
-		normValue += 0.1f * _distance * wheelInc;
+		normValue += 0.1f * _distance * getWheelInc ();
 	else
-		normValue += _distance * wheelInc;
+		normValue += _distance * getWheelInc ();
 
 	setValueNormalized (normValue);
 
@@ -559,9 +559,9 @@ int32_t CSliderBase::onKeyDown (VstKeyCode& keyCode)
 
 			float normValue = getValueNormalized ();
 			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
-				normValue += 0.1f * distance * wheelInc;
+				normValue += 0.1f * distance * getWheelInc ();
 			else
-				normValue += distance * wheelInc;
+				normValue += distance * getWheelInc ();
 
 			setValueNormalized (normValue);
 

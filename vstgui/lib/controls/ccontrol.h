@@ -6,10 +6,6 @@
 
 #include "../cview.h"
 #include "../ifocusdrawing.h"
-#include "../idependency.h"
-#include "../dispatchlist.h"
-#include "icontrollistener.h"
-#include <list>
 
 namespace VSTGUI {
 namespace Constants {
@@ -44,16 +40,16 @@ public:
 	virtual void setValueNormalized (float val);
 	virtual float getValueNormalized () const;
 
-	virtual void setMin (float val) { vmin = val; bounceValue (); }
-	virtual float getMin () const { return vmin; }
-	virtual void setMax (float val) { vmax = val; bounceValue (); }
-	virtual float getMax () const { return vmax; }
+	virtual void setMin (float val);
+	virtual float getMin () const;
+	virtual void setMax (float val);
+	virtual float getMax () const;
 	float getRange () const { return getMax () - getMin (); }
 
-	virtual void setOldValue (float val) { oldValue = val; }
-	virtual	float getOldValue (void) const { return oldValue; }
-	virtual void setDefaultValue (float val) { defaultValue = val; }
-	virtual	float getDefaultValue (void) const { return defaultValue; }
+	virtual void setOldValue (float val);
+	virtual	float getOldValue (void) const;
+	virtual void setDefaultValue (float val);
+	virtual	float getDefaultValue (void) const;
 
 	virtual void bounceValue ();
 	virtual bool checkDefaultValue (CButtonState button);
@@ -71,7 +67,7 @@ public:
 
 	virtual void beginEdit ();
 	virtual void endEdit ();
-	bool isEditing () const { return editing > 0; }
+	bool isEditing () const;
 
 	/** get main listener */
 	virtual IControlListener* getListener () const { return listener; }
@@ -88,8 +84,8 @@ public:
 	/// @name Misc
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setWheelInc (float val) { wheelInc = val; }
-	virtual float getWheelInc () const { return wheelInc; }
+	virtual void setWheelInc (float val);
+	virtual float getWheelInc () const;
 	//@}
 
 	// overrides
@@ -107,21 +103,16 @@ public:
 
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
-	~CControl () noexcept override = default;
+	~CControl () noexcept override;
 	static int32_t mapVstKeyModifier (int32_t vstModifier);
 
-	using SubListenerDispatcher = DispatchList<IControlListener*>;
-
 	IControlListener* listener;
-	SubListenerDispatcher subListeners;
 	int32_t  tag;
-	float oldValue;
-	float defaultValue;
 	float value;
-	float vmin;
-	float vmax;
-	float wheelInc;
-	int32_t editing;
+
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //-----------------------------------------------------------------------------

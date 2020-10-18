@@ -6,6 +6,7 @@
 #include "../platform/iplatformfont.h"
 #include "../cdrawmethods.h"
 #include "../cdrawcontext.h"
+#include <sstream>
 
 namespace VSTGUI {
 

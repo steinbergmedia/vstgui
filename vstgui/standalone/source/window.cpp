@@ -14,6 +14,7 @@
 #include "../include/iwindowcontroller.h"
 #include "platform/iplatformwindow.h"
 
+#include <sstream>
 #include <vector>
 
 //------------------------------------------------------------------------
