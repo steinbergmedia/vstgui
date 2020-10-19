@@ -25,8 +25,10 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_10 Version 4.10
 
+- VSTGUI now needs to be initialized and terminated explicitly. See VSTGUI::initPlatform.
 - UIDescription files are now written in JSON format and the old XML format is deprecated
 - It's now possible to conditionally remove the XML parser and the expat library from building (set VSTGUI_ENABLE_XML_PARSER to 0)
+- This is the last version not depending on c++17 compiler support.
 
 @subsection version4_9 Version 4.9
 
