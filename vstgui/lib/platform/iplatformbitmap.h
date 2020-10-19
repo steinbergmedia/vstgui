@@ -10,7 +10,6 @@
 #include <vector>
 
 namespace VSTGUI {
-using PNGBitmapBuffer = std::vector<uint8_t>;
 class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
