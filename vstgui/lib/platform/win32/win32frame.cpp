@@ -620,10 +620,10 @@ void Win32Frame::paint (HWND hwnd)
 						if (mustAdd)
 							dirtyRects.emplace_back (ur);
 					}
-					for (auto& updateRect : dirtyRects)
+					for (auto& _updateRect : dirtyRects)
 					{
-						drawContext->clearRect (updateRect);
-						getFrame ()->platformDrawRect (drawContext, updateRect);
+						drawContext->clearRect (_updateRect);
+						getFrame ()->platformDrawRect (drawContext, _updateRect);
 					}
 				}
 				else

@@ -12,6 +12,7 @@
 #include "vstgui/uidescription/uiattributes.h"
 #include "vstgui/uidescription/uiviewcreator.h"
 #include "vstgui/uidescription/uiviewfactory.h"
+#include <sstream>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

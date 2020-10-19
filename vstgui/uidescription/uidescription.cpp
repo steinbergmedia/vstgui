@@ -1746,6 +1746,8 @@ bool UIDescription::setCustomAttributes (UTF8StringPtr name, const SharedPointer
 		return false;
 	UINode* parent = getBaseNode (Detail::MainNodeNames::kCustom);
 	vstgui_assert (parent != nullptr);
+	if (!parent)
+		return false;
 	attr->setAttribute ("name", name);
 	customNode = new UINode ("attributes", attr);
 	parent->getChildren ().add (customNode);

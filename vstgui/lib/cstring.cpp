@@ -272,7 +272,8 @@ UTF8StringBuffer newWithString (UTF8StringPtr string)
 	if (string == nullptr)
 		return nullptr;
 	UTF8StringBuffer buffer = (UTF8StringBuffer)std::malloc (UTF8StringView (string).calculateByteCount ());
-	std::strcpy (buffer, string);
+	if (buffer)
+		std::strcpy (buffer, string);
 	return buffer;
 }
 

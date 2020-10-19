@@ -496,6 +496,9 @@ void COptionMenu::cleanupSeparators (bool deep)
 	{
 		auto entry = getEntry (i);
 		vstgui_assert (entry);
+		if (!entry)
+			continue;
+
 		if (entry->isSeparator ())
 		{
 			if (lastEntryWasSeparator)

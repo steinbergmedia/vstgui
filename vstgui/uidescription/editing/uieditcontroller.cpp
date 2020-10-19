@@ -295,7 +295,7 @@ public:
 					return false;
 				});
 				zoomValueControl->setValueToStringFunction ([] (float value, char utf8String[256], CParamDisplay*) {
-					snprintf (utf8String, 255, "%d %%", static_cast<uint32_t> (value));
+					snprintf (utf8String, 255, "%u %%", static_cast<uint32_t> (value));
 					return true;
 				});
 				zoomValueControl->setValue (100.f);
@@ -801,7 +801,8 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	if (message == UIEditView::kMsgAttached)
 	{
 		vstgui_assert (editView);
-		editView->getFrame ()->registerKeyboardHook (this);
+		if (editView)
+			editView->getFrame ()->registerKeyboardHook (this);
 		return kMessageNotified;
 	}
 	else if (message == UIEditView::kMsgRemoved)

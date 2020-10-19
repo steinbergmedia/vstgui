@@ -1405,6 +1405,8 @@ void VST3Editor::save (bool saveAs)
 {
 	UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
 	vstgui_assert(attributes);
+	if (!attributes)
+		return;
 	std::string savePath;
 	if (saveAs)
 	{
@@ -1436,7 +1438,7 @@ void VST3Editor::save (bool saveAs)
 	}
 	else
 	{
-		const std::string* filePath = attributes->getAttributeValue ("Path");
+		const std::string* filePath = attributes ? attributes->getAttributeValue ("Path") : nullptr;
 		if (filePath)
 			savePath = *filePath;
 	}

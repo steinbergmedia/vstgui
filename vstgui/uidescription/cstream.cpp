@@ -111,7 +111,10 @@ int64_t CMemoryStream::seek (int64_t seekpos, SeekMode mode)
 	{
 		case kSeekSet: newPos = seekpos; break;
 		case kSeekCurrent: newPos = pos + seekpos; break;
-		case kSeekEnd: newPos = size - seekpos; break;
+		case kSeekEnd:
+		default:
+			newPos = size - seekpos;
+			break;
 	}
 	if (newPos <= size && newPos > 0)
 	{
@@ -274,7 +277,10 @@ int64_t CFileStream::seek (int64_t pos, SeekMode mode)
 		{
 			case kSeekSet: fseekmode = SEEK_SET; break;
 			case kSeekCurrent: fseekmode = SEEK_CUR; break;
-			case kSeekEnd: fseekmode = SEEK_END; break;
+			case kSeekEnd:
+			default:
+				fseekmode = SEEK_END;
+				break;
 		}
 		if (fseeko (stream, pos, fseekmode) == 0)
 			return tell ();

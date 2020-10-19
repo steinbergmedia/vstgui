@@ -1239,6 +1239,7 @@ int32_t CDragContainerHelper::getType (int32_t idx) const
 			break;
 		}
 		case IDataPackage::kError:
+		default:
 		{
 			outType = kError;
 			break;

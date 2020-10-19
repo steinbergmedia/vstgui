@@ -28,38 +28,54 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 {
 	if (extensions.empty () == false)
 	{
-		DWORD i = extensions.size () > 1 ? 1u:0u;
-		COMDLG_FILTERSPEC* filters = new COMDLG_FILTERSPEC[extensions.size ()+1+i];
+		DWORD i = extensions.size () > 1 ? 1u : 0u;
+		auto* filters = new COMDLG_FILTERSPEC[extensions.size () + 1 + i];
 		size_t allExtensionCharCount = 0;
 		std::list<CFileExtension>::iterator it = extensions.begin ();
 		while (it != extensions.end ())
 		{
 			UTF8StringHelper desc ((*it).getDescription ().data ());
 			UTF8StringHelper ext ((*it).getExtension ().data ());
-			WCHAR* wDesc = (WCHAR*)std::malloc ((wcslen (desc)+1) * sizeof (WCHAR));
-			WCHAR* wSpec = (WCHAR*)std::malloc ((wcslen (ext)+3) * sizeof (WCHAR));
-			memcpy (wDesc, desc.getWideString (), (wcslen (desc)+1) * sizeof (WCHAR));
-			memcpy (wSpec+2, ext.getWideString (), (wcslen (ext)+1) * sizeof (WCHAR));
-			wSpec[0] = 0x002a; // *
-			wSpec[1] = 0x002e; // .
-			filters[i].pszName = wDesc;
-			filters[i].pszSpec = wSpec;
-			if (defaultExtension && *defaultExtension == (*it))
-				defaultFileTypeIndex = i+1;
-			allExtensionCharCount += wcslen (filters[i].pszSpec) + 1;
-			it++; i++;
+			WCHAR* wDesc = (WCHAR*)std::malloc ((wcslen (desc) + 1) * sizeof (WCHAR));
+			WCHAR* wSpec = (WCHAR*)std::malloc ((wcslen (ext) + 3) * sizeof (WCHAR));
+			if (wDesc && wSpec)
+			{
+				memcpy (wDesc, desc.getWideString (), (wcslen (desc) + 1) * sizeof (WCHAR));
+				memcpy (wSpec + 2, ext.getWideString (), (wcslen (ext) + 1) * sizeof (WCHAR));
+				wSpec[0] = 0x002a; // *
+				wSpec[1] = 0x002e; // .
+
+				filters[i].pszName = wDesc;
+				filters[i].pszSpec = wSpec;
+				if (defaultExtension && *defaultExtension == (*it))
+					defaultFileTypeIndex = i + 1;
+				allExtensionCharCount += wcslen (filters[i].pszSpec) + 1;
+			}
+			else
+			{
+				filters[i].pszName = nullptr;
+				filters[i].pszSpec = nullptr;
+				break;
+			}
+
+			it++;
+			i++;
 		}
 		if (extensions.size () > 1)
 		{
-			WCHAR* wAllName = (WCHAR*)std::malloc ((wcslen (kAllSupportedFileTypesString)+1) * sizeof (WCHAR));
-			wcscpy (wAllName, kAllSupportedFileTypesString);
+			WCHAR* wAllName =
+			    (WCHAR*)std::malloc ((wcslen (kAllSupportedFileTypesString) + 1) * sizeof (WCHAR));
 			WCHAR* wAllSpec = (WCHAR*)std::malloc (allExtensionCharCount * sizeof (WCHAR));
-			wAllSpec[0] = 0;
-			for (DWORD j = 1; j < i; j++)
+			if (wAllName && wAllSpec)
 			{
-				wcscat (wAllSpec, filters[j].pszSpec);
-				if (j != i-1)
-					wcscat (wAllSpec, L";");
+				wcscpy (wAllName, kAllSupportedFileTypesString);
+				wAllSpec[0] = 0;
+				for (DWORD j = 1; j < i; j++)
+				{
+					wcscat (wAllSpec, filters[j].pszSpec);
+					if (j != i - 1)
+						wcscat (wAllSpec, L";");
+				}
 			}
 			filters[0].pszName = wAllName;
 			filters[0].pszSpec = wAllSpec;
@@ -84,7 +100,7 @@ static void freeExtensionFilter (COMDLG_FILTERSPEC* filters)
 			std::free ((void*)filters[i].pszSpec);
 			i++;
 		}
-		delete [] filters;
+		delete[] filters;
 	}
 }
 
@@ -95,9 +111,10 @@ public:
 	VistaFileSelector (CFrame* frame, Style style);
 	~VistaFileSelector () noexcept;
 
-	virtual bool runInternal (CBaseObject* delegate) override;
-	virtual void cancelInternal () override;
-	virtual bool runModalInternal () override;
+	bool runInternal (CBaseObject* delegate) override;
+	void cancelInternal () override;
+	bool runModalInternal () override;
+
 protected:
 	Style style;
 	IFileDialog* fileDialog;
@@ -171,10 +188,10 @@ void VistaFileSelector::cancelInternal ()
 bool VistaFileSelector::runModalInternal ()
 {
 	fileDialog = nullptr;
-	HRESULT hr = -1;
+	HRESULT hr = E_UNEXPECTED;
 	if (style == kSelectSaveFile)
 	{
-		hr = CoCreateInstance (CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARG(IFileDialog, &fileDialog));
+		hr = CoCreateInstance (CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARG(IFileDialog, &fileDialog));
 		if (!defaultSaveName.empty ())
 		{
 			fileDialog->SetFileName (UTF8StringHelper (defaultSaveName.data ()));
@@ -182,7 +199,7 @@ bool VistaFileSelector::runModalInternal ()
 	}
 	else
 	{
-		hr = CoCreateInstance (CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARG(IFileDialog, &fileDialog));
+		hr = CoCreateInstance (CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARG(IFileDialog, &fileDialog));
 		if (SUCCEEDED (hr))
 		{
 			if (style == kSelectDirectory)
@@ -234,7 +251,7 @@ bool VistaFileSelector::runModalInternal ()
 	if (!initialPath.empty () && _SHCreateItemFromParsingName)
 	{
 		IShellItem* shellItem;
-		hr = _SHCreateItemFromParsingName (UTF8StringHelper (initialPath.data ()), 0, IID_PPV_ARG (IShellItem, &shellItem));
+		hr = _SHCreateItemFromParsingName (UTF8StringHelper (initialPath.data ()), nullptr, IID_PPV_ARG (IShellItem, &shellItem));
 		if (SUCCEEDED (hr))
 		{
 			fileDialog->SetFolder (shellItem);

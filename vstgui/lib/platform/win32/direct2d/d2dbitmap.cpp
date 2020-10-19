@@ -303,8 +303,7 @@ bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool _alphaPremultiplied
 {
 	bool result = false;
 	vstgui_assert (inBitmap);
-	IWICBitmap* icBitmap = inBitmap->getBitmap ();
-	if (icBitmap)
+	if (IWICBitmap* icBitmap = inBitmap ? inBitmap->getBitmap () : nullptr)
 	{
 		WICRect rcLock = { 0, 0, (INT)inBitmap->getSize ().x, (INT)inBitmap->getSize ().y };
 		if (SUCCEEDED (icBitmap->Lock (&rcLock, WICBitmapLockRead | WICBitmapLockWrite, &bLock)))

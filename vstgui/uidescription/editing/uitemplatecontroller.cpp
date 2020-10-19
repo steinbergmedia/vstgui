@@ -54,11 +54,10 @@ public:
 			{
 				if (parent->advanceNextFocusView (browser, false))
 				{
-					CView* focusView = dynamic_cast<CView*> (browser->getFrame()->getFocusView ());
-					if (focusView)
+					if (auto* focusView = dynamic_cast<CView*> (browser->getFrame()->getFocusView ()))
 					{
 						CViewContainer* parent2 = focusView->getParentView ()->asViewContainer ();
-						while (parent2 != browser->getFrame ())
+						while (parent2 && parent2 != browser->getFrame ())
 						{
 							parent2 = parent2->getParentView ()->asViewContainer ();
 							CDataBrowser* focusBrowser = dynamic_cast<CDataBrowser*>(parent2);

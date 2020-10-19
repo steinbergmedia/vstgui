@@ -90,6 +90,8 @@ public:
 		__out BOOL* isDisabled
 		) override
 	{
+		if (isDisabled)
+			*isDisabled = FALSE;
 		return S_FALSE;
 	}
 

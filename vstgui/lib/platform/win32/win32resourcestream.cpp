@@ -211,7 +211,7 @@ uint32_t WinResourceInputStream::readRaw (void* buffer, uint32_t size)
 //-----------------------------------------------------------------------------
 int64_t WinResourceInputStream::seek (int64_t pos, SeekMode mode)
 {
-	DWORD dwOrigin;
+	DWORD dwOrigin = 0;
 	switch (mode)
 	{
 		case SeekMode::Set: dwOrigin = STREAM_SEEK_SET; break;

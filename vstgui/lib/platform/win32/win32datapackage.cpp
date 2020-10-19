@@ -83,8 +83,11 @@ Win32DataPackage::Win32DataPackage (::IDataObject* platformDataObject)
 				if (blob && dataSize)
 				{
 					data = std::malloc (dataSize);
-					memcpy (data, blob, dataSize);
-					nbItems = 1;
+					if (data)
+					{
+						memcpy (data, blob, dataSize);
+						nbItems = 1;
+					}
 				}
 				GlobalUnlock (medium.hGlobal);
 				if (medium.pUnkForRelease)
@@ -163,7 +166,7 @@ bool Win32DataPackage::checkResolveLink (const TCHAR* nativePath, TCHAR* resolve
 	{
 		IShellLink* psl;
 		IPersistFile* ppf;
-		WIN32_FIND_DATA wfd;
+		WIN32_FIND_DATA wfd {0};
 		HRESULT hres;
 		
 		// Get a pointer to the IShellLink interface.

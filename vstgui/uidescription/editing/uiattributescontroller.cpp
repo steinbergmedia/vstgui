@@ -1162,7 +1162,8 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 {
 	const auto* viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	vstgui_assert (viewFactory);
-	
+	if (!viewFactory)
+		return;
 	for (const auto& view : *selection)
 	{
 		StringList temp;

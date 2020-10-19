@@ -359,25 +359,28 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 			geometry = path;
 			geometry->AddRef ();
 		}
-		ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient);
-		if (collection)
+		if (geometry)
 		{
-			// brush properties
-			ID2D1RadialGradientBrush* brush = nullptr;
-			D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES properties;
-			properties.center = makeD2DPoint (center);
-			properties.gradientOriginOffset = makeD2DPoint (originOffset);
-			properties.radiusX = (FLOAT)radius;
-			properties.radiusY = (FLOAT)radius;
-
-			if (SUCCEEDED (getRenderTarget ()->CreateRadialGradientBrush (properties, collection, &brush)))
+			if (ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient))
 			{
-				getRenderTarget ()->FillGeometry (geometry, brush);
-				brush->Release ();
+				// brush properties
+				ID2D1RadialGradientBrush* brush = nullptr;
+				D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES properties;
+				properties.center = makeD2DPoint (center);
+				properties.gradientOriginOffset = makeD2DPoint (originOffset);
+				properties.radiusX = (FLOAT)radius;
+				properties.radiusY = (FLOAT)radius;
+
+				if (SUCCEEDED (getRenderTarget ()->CreateRadialGradientBrush (properties,
+																			  collection, &brush)))
+				{
+					getRenderTarget ()->FillGeometry (geometry, brush);
+					brush->Release ();
+				}
+				collection->Release ();
 			}
-			collection->Release ();
+			geometry->Release ();
 		}
-		geometry->Release ();
 		path->Release ();
 	}
 }
@@ -818,9 +821,9 @@ void D2DDrawContext::restoreGlobalState ()
 	COffscreenContext::restoreGlobalState ();
 	if (prevAlpha != getCurrentState ().globalAlpha)
 	{
-		float prevAlpha = getCurrentState ().globalAlpha;
+		float _prevAlpha = getCurrentState ().globalAlpha;
 		getCurrentState ().globalAlpha = -1.f;
-		setGlobalAlpha (prevAlpha);
+		setGlobalAlpha (_prevAlpha);
 	}
 	else
 	{

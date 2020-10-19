@@ -257,6 +257,9 @@ bool UIXMLDescWriter::writeComment (UICommentNode* node, OutputStream& stream)
 //-----------------------------------------------------------------------------
 bool UIXMLDescWriter::writeNode (UINode* node, OutputStream& stream)
 {
+	if (!node)
+		return false;
+
 	bool result = true;
 	if (node->noExport ())
 		return result;

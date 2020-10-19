@@ -341,7 +341,7 @@ void Animator::onTimer ()
 			animation->animationTarget->animationStart (animation->view, animation->name.data ());
 			animation->startTime = currentTicks;
 		}
-		uint32_t time = currentTicks - animation->startTime;
+		uint32_t time = static_cast<uint32_t> (currentTicks - animation->startTime);
 		float pos = animation->timingFunction->getPosition (time);
 		if (pos != animation->lastPos)
 		{

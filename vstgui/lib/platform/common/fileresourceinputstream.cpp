@@ -57,6 +57,7 @@ int64_t FileResourceInputStream::seek (int64_t pos, SeekMode mode)
 			whence = SEEK_CUR;
 			break;
 		case SeekMode::End:
+		default:
 			whence = SEEK_END;
 			break;
 	}
