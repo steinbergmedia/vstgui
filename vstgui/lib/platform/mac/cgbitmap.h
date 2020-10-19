@@ -33,7 +33,7 @@ public:
 	CGBitmap ();
 	~CGBitmap () noexcept override;
 	
-	bool load (const CResourceDescription& desc) override;
+	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const override { return size; }
 	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override { scaleFactor = factor; }

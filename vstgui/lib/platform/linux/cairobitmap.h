@@ -29,7 +29,7 @@ public:
 	explicit Bitmap (const SurfaceHandle& surface);
 	~Bitmap () override;
 
-	bool load (const CResourceDescription& desc) override;
+	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const override;
 	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override;
