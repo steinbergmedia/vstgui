@@ -37,7 +37,7 @@ int main (int argv, char* argc[])
 #elif WINDOWS
 	CoInitialize (nullptr);
 	VSTGUI::initPlatform (GetModuleHandle (nullptr));
-#lif LINUX
+#elif LINUX
 	VSTGUI::initPlatform ();
 #endif
 	std::string inputPath;
