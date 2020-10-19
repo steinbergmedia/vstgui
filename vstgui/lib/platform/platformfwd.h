@@ -9,10 +9,9 @@
 #include <string>
 
 #if WINDOWS
-struct HINSTANCE__;
-typedef HINSTANCE__* HINSTANCE;
+using HINSTANCE = struct HINSTANCE__*;
 #elif MAC
-typedef struct __CFBundle *CFBundleRef;
+using CFBundleRef = struct __CFBundle*;
 #endif
 
 //------------------------------------------------------------------------

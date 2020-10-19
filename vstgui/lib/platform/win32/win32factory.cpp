@@ -30,6 +30,7 @@ struct Win32Factory::Impl
 {
 	HINSTANCE instance {nullptr};
 	UTF8String resourceBasePath;
+	bool useD2DHardwareRenderer {false};
 
 	PlatformResourceInputStreamPtr createResourceInputStream (const CResourceDescription& desc)
 	{
@@ -83,6 +84,18 @@ void Win32Factory::setResourceBasePath (const UTF8String& path) const noexcept
 Optional<UTF8String> Win32Factory::getResourceBasePath () const noexcept
 {
 	return impl->getBasePath ();
+}
+
+//-----------------------------------------------------------------------------
+void Win32Factory::useD2DHardwareRenderer (bool state) const noexcept
+{
+	impl->useD2DHardwareRenderer = state;
+}
+
+//-----------------------------------------------------------------------------
+bool Win32Factory::useD2DHardwareRenderer () const noexcept
+{
+	return impl->useD2DHardwareRenderer;
 }
 
 //-----------------------------------------------------------------------------

@@ -8,8 +8,6 @@
 #include "../../optional.h"
 #include "../../cstring.h"
 
-using HINSTANCE = struct HINSTANCE__*;
-
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -22,6 +20,9 @@ public:
 	HINSTANCE getInstance () const noexcept;
 	void setResourceBasePath (const UTF8String& path) const noexcept;
 	Optional<UTF8String> getResourceBasePath () const noexcept;
+
+	void useD2DHardwareRenderer (bool state) const noexcept;
+	bool useD2DHardwareRenderer () const noexcept;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
