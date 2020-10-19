@@ -5,14 +5,13 @@
 #include "vstgui/lib/cresourcedescription.h"
 #include "vstgui/lib/cstring.h"
 #include "vstgui/uidescription/compresseduidescription.h"
+#include "vstgui/lib/platform/platformfactory.h"
 #include <string>
 
 //------------------------------------------------------------------------
 #if MAC
-#include "../../lib/platform/mac/macfactory.h"
 #include <CoreFoundation/CoreFoundation.h>
 #elif WINDOWS
-#include "../../lib/platform/win32/win32factory.h"
 struct IUnknown;
 #include <windows.h>
 #include <Shlobj.h>
