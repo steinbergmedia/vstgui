@@ -5,24 +5,28 @@
 #pragma once
 
 #include "../vstguifwd.h"
-#include <functional>
-#include <vector>
-#include <string>
-
-/// @cond ignore
+#include "platformfwd.h"
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
-using PNGBitmapBuffer = std::vector<uint8_t>;
 
+//-----------------------------------------------------------------------------
+/** Init the platform layer of VSTGUI. Must be done before using most VSTGUI object.
+
+	The instance is depended on the platform:
+	- HINSTANCE on Windows
+	- CFBundleRef on macOS
+	- void* on Linux (the handle returned from dlopen)
+ */
+void initPlatform (PlatformInstanceHandle instance);
+
+//-----------------------------------------------------------------------------
+/** exit the platform layer of VSTGUI. */
+void exitPlatform ();
+
+//-----------------------------------------------------------------------------
+/** get the global platform factory instance */
 const IPlatformFactory& getPlatformFactory ();
-void setPlatformFactory (PlatformFactoryPtr&& factory);
-
-using FontFamilyCallback = std::function<bool (const std::string&)>;
-
-class LinuxFactory;
-class MacFactory;
-class Win32Factory;
 
 //-----------------------------------------------------------------------------
 class IPlatformFactory
@@ -119,5 +123,3 @@ public:
 
 //-----------------------------------------------------------------------------
 } // VSTGUI
-
-/// @endcond

@@ -21,28 +21,29 @@ namespace VSTGUI {
 static PlatformFactoryPtr factory;
 
 //-----------------------------------------------------------------------------
-const IPlatformFactory& getPlatformFactory ()
-{
-	return *factory.get ();
-}
-
-//-----------------------------------------------------------------------------
 void setPlatformFactory (PlatformFactoryPtr&& f)
 {
 	factory = std::move (f);
 }
 
-//------------------------------------------------------------------------
-struct InitDefaultPlatformFactory
+//-----------------------------------------------------------------------------
+void initPlatform (PlatformInstanceHandle instance)
 {
-	InitDefaultPlatformFactory ()
-	{
-		setPlatformFactory (std::unique_ptr<IPlatformFactory> (new VSTGUIPlatformFactory));
-	}
-};
+	vstgui_assert (!factory);
+	setPlatformFactory (std::unique_ptr<IPlatformFactory> (new VSTGUIPlatformFactory (instance)));
+}
 
-//------------------------------------------------------------------------
-static InitDefaultPlatformFactory __gInitDefaultPlatformFactory;
+//-----------------------------------------------------------------------------
+void exitPlatform ()
+{
+	setPlatformFactory (nullptr);
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformFactory& getPlatformFactory ()
+{
+	return *factory.get ();
+}
 
 //-----------------------------------------------------------------------------
 } // VSTGUI

@@ -25,45 +25,41 @@ namespace VSTGUI {
 struct LinuxFactory::Impl
 {
 	std::string resPath;
+
+	void setupResPath (void* handle)
+	{
+		if (handle && resPath.empty ())
+		{
+			struct link_map* map;
+			if (dlinfo (handle, RTLD_DI_LINKMAP, &map) == 0)
+			{
+				auto path = std::string (map->l_name);
+				for (int i = 0; i < 3; i++)
+				{
+					int delPos = path.find_last_of ('/');
+					if (delPos == -1)
+					{
+						fprintf (stderr, "Could not determine bundle location.\n");
+						return; // unexpected
+					}
+					path.erase (delPos, path.length () - delPos);
+				}
+				auto rp = realpath (path.data (), nullptr);
+				path = rp;
+				free (rp);
+				path += "/Contents/Resources/";
+				std::swap (resPath, path);
+			}
+		}
+	}
 };
 
 //-----------------------------------------------------------------------------
-LinuxFactory::LinuxFactory ()
+LinuxFactory::LinuxFactory (void* soHandle)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
+	impl->setupResPath (soHandle);
 }
-
-#if 0
-//-----------------------------------------------------------------------------
-void LinuxFactory::setSOHandle (void* handle)
-{
-	// TODO: users of VSTGUI should just set the resource path
-	impl->soHandle = handle;
-	if (handle && impl->resPath.empty ())
-	{
-		struct link_map* map;
-		if (dlinfo (handle, RTLD_DI_LINKMAP, &map) == 0)
-		{
-			auto path = std::string (map->l_name);
-			for (int i = 0; i < 3; i++)
-			{
-				int delPos = path.find_last_of ('/');
-				if (delPos == -1)
-				{
-					fprintf (stderr, "Could not determine bundle location.\n");
-					return; // unexpected
-				}
-				path.erase (delPos, path.length () - delPos);
-			}
-			auto rp = realpath (path.data (), nullptr);
-			path = rp;
-			free (rp);
-			path += "/Contents/Resources/";
-			std::swap (impl->resPath, path);
-		}
-	}
-}
-#endif
 
 //-----------------------------------------------------------------------------
 void LinuxFactory::setResourcePath (const std::string& path) const noexcept

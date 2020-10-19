@@ -265,12 +265,16 @@ int main ()
 		throw std::logic_error (desc ? desc : "unknown");
 	});
 #if MAC
-	VSTGUI::getPlatformFactory ().asMacFactory ()->setBundle (CFBundleGetMainBundle ());
+	VSTGUI::initPlatform (CFBundleGetMainBundle ());
 #elif WINDOWS
 	CoInitialize (nullptr);
-	VSTGUI::getPlatformFactory ().asWin32Factory ()->setInstance (GetModuleHandle (nullptr));
+	VSTGUI::initPlatform (GetModuleHandle (nullptr));
+#elif LINUX
+	VSTGUI::initPlatform (nullptr);
 #endif
-	return VSTGUI::UnitTest::RunTests ();
+	auto result = VSTGUI::UnitTest::RunTests ();
+	VSTGUI::exitPlatform ();
+	return result;
 }
 
 TESTCASE(Example,

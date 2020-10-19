@@ -15,10 +15,9 @@ namespace VSTGUI {
 class MacFactory final : public IPlatformFactory
 {
 public:
-	MacFactory ();
+	MacFactory (CFBundleRef bundle);
 
 	CFBundleRef getBundle () const noexcept;
-	void setBundle (CFBundleRef bundle) const noexcept;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks

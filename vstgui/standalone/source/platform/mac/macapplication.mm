@@ -656,7 +656,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 //------------------------------------------------------------------------
 int main (int argc, const char* _Nonnull* _Nonnull argv)
 {
-	VSTGUI::getPlatformFactory ().asMacFactory ()->setBundle (CFBundleGetMainBundle ());
+	VSTGUI::initPlatform (CFBundleGetMainBundle ());
 	VSTGUIApplicationDelegate* delegate = [VSTGUIApplicationDelegate new];
 	[NSApplication sharedApplication].delegate = delegate;
 	return NSApplicationMain (argc, argv);

@@ -151,6 +151,7 @@ set(${target}_common_sources
     platform/iplatformviewlayer.h
     platform/platformfactory.cpp
     platform/platformfactory.h
+    platform/platformfwd.h
     platform/platform_macos.h
     platform/platform_win32.h
     platform/platform_x11.h

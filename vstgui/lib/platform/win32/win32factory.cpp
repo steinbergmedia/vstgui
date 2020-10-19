@@ -60,14 +60,9 @@ struct Win32Factory::Impl
 };
 
 //-----------------------------------------------------------------------------
-Win32Factory::Win32Factory ()
+Win32Factory::Win32Factory (HINSTANCE instance)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-}
-
-//-----------------------------------------------------------------------------
-void Win32Factory::setInstance (HINSTANCE instance) const noexcept
-{
 	impl->instance = instance;
 }
 

@@ -33,9 +33,10 @@ struct MacFactory::Impl
 };
 
 //-----------------------------------------------------------------------------
-MacFactory::MacFactory ()
+MacFactory::MacFactory (CFBundleRef bundle)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
+	impl->bundle = bundle;
 	mach_timebase_info (&impl->timebaseInfo);
 }
 
@@ -43,12 +44,6 @@ MacFactory::MacFactory ()
 CFBundleRef MacFactory::getBundle () const noexcept
 {
 	return impl->bundle;
-}
-
-//-----------------------------------------------------------------------------
-void MacFactory::setBundle (CFBundleRef bundle) const noexcept
-{
-	impl->bundle = bundle;
 }
 
 //-----------------------------------------------------------------------------

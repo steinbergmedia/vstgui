@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../iplatformbitmap.h"
+#include "../platformfwd.h"
 
 #if MAC
 #include "../../cpoint.h"

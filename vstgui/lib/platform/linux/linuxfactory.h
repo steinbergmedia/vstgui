@@ -13,7 +13,7 @@ namespace VSTGUI {
 class LinuxFactory final : public IPlatformFactory
 {
 public:
-	LinuxFactory ();
+	LinuxFactory (void* soHandle);
 
 	void setResourcePath (const std::string& path) const noexcept;
 	std::string getResourcePath () const noexcept;

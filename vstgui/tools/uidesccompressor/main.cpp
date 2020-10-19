@@ -33,10 +33,12 @@ void printAndTerminate (const char* msg)
 int main (int argv, char* argc[])
 {
 #if MAC
-	VSTGUI::getPlatformFactory ().asMacFactory ()->setBundle (CFBundleGetMainBundle ());
+	VSTGUI::initPlatform (CFBundleGetMainBundle ());
 #elif WINDOWS
 	CoInitialize (nullptr);
-	VSTGUI::getPlatformFactory ().asWin32Factory ()->setInstance (GetModuleHandle (nullptr));
+	VSTGUI::initPlatform (GetModuleHandle (nullptr));
+#lif LINUX
+	VSTGUI::initPlatform ();
 #endif
 	std::string inputPath;
 	std::string outputPath;

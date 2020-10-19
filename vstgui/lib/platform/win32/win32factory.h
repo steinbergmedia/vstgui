@@ -17,9 +17,8 @@ namespace VSTGUI {
 class Win32Factory final : public IPlatformFactory
 {
 public:
-	Win32Factory ();
+	Win32Factory (HINSTANCE instance);
 
-	void setInstance (HINSTANCE instance) const noexcept;
 	HINSTANCE getInstance () const noexcept;
 	void setResourceBasePath (const UTF8String& path) const noexcept;
 	Optional<UTF8String> getResourceBasePath () const noexcept;
