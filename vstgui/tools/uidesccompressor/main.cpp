@@ -38,7 +38,7 @@ int main (int argv, char* argc[])
 	CoInitialize (nullptr);
 	VSTGUI::initPlatform (GetModuleHandle (nullptr));
 #elif LINUX
-	VSTGUI::initPlatform ();
+	VSTGUI::initPlatform (nullptr);
 #endif
 	std::string inputPath;
 	std::string outputPath;
