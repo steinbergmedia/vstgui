@@ -12,6 +12,7 @@
 #include <cassert>
 #include <algorithm>
 #include <memory>
+#include <climits>
 
 namespace VSTGUI {
 
