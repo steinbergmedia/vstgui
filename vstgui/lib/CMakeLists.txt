@@ -299,7 +299,7 @@ if(CMAKE_HOST_APPLE)
 endif()
 
 ##########################################################################################
-if(MSVC)
+if(WIN32)
     set(${target}_sources ${${target}_common_sources} ${${target}_win32_sources})
 endif()
 
