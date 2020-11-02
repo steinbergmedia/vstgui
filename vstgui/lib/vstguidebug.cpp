@@ -4,6 +4,7 @@
 
 #include "vstguidebug.h"
 #include <cstdarg>
+#include <exception>
 
 #if DEBUG
 
@@ -107,7 +108,7 @@ void doAssert (const char* filename, const char* line, const char* desc) noexcep
 			assertionHandler (filename, line, desc);
 		} catch (...)
 		{
-		 std::rethrow_exception (std::current_exception());
+			std::rethrow_exception (std::current_exception ());
 		}
 	}
 #if DEBUG
