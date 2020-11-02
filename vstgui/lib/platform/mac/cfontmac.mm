@@ -43,7 +43,7 @@ private:
 			getUrlsForType (t, fontUrls);
 		if (CFArrayGetCount (fontUrls) == 0)
 			return;
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14 && MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_14
 		if (@available (macOS 10.15, *))
 		{
 			CTFontManagerRegisterFontURLs (
@@ -81,7 +81,7 @@ private:
 	{
 		if (CFArrayGetCount (fontUrls) == 0)
 			return;
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14 && MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_14
 		if (@available (macOS 10.15, *))
 		{
 			CTFontManagerUnregisterFontURLs (
