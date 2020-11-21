@@ -537,7 +537,6 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 	if (view1 && view2)
 	{
 		CRect newSize (_newSize);
-		newSize.makeIntegral ();
 
 		CRect constrainSize (getViewSize ());
 		constrainSize.originize ();
