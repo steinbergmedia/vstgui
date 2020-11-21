@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ctextlabel.h"
+#include "../dispatchlist.h"
 #include "../platform/iplatformtextedit.h"
 #include <functional>
 
@@ -60,6 +61,9 @@ public:
 	
 	virtual void setPlaceholderString (const UTF8String& str);
 	const UTF8String& getPlaceholderString () const { return placeholderString; }
+
+	void registerTextEditListener (ITextEditListener* listener);
+	void unregisterTextEditListener (ITextEditListener* listener);
 	//@}
 
 	// overrides
@@ -112,6 +116,7 @@ protected:
 	bool secureStyle {false};
 	mutable SharedPointer<CFontDesc> platformFont;
 	UTF8String placeholderString;
+	DispatchList<ITextEditListener*> textEditListeners;
 };
 
 } // VSTGUI

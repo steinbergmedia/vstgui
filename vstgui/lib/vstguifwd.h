@@ -157,6 +157,7 @@ class IDraggingSession;
 class IDropTarget;
 class ICommandMenuItemTarget;
 class IOptionMenuListener;
+class ITextEditListener;
 class ITextLabelListener;
 class IListControlDrawer;
 class IListControlConfigurator;
