@@ -624,6 +624,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	}
 	Detail::cleanupSharedUIResources ();
 	Async::waitAllTasksDone ();
+	VSTGUI::exitPlatform ();
 }
 
 //------------------------------------------------------------------------

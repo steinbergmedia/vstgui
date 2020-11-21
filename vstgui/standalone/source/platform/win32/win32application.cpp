@@ -326,7 +326,7 @@ int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
 	VSTGUI::Standalone::Platform::Win32::Application app;
 	app.init (instance, lpCmdLine);
 	app.run ();
-
+	VSTGUI::exitPlatform ();
 	OleUninitialize ();
 	return 0;
 }

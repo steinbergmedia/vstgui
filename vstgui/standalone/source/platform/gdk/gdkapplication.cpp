@@ -183,8 +183,13 @@ void Application::doCommandUpdate ()
 //------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
+	VSTGUI::initPlatform (nullptr);
 	VSTGUI::Standalone::Platform::GDK::Application app;
 	if (app.init (argc, argv))
-		return app.run ();
+	{
+		auto result = app.run ();
+		VSTGUI::exitPlatform ();
+		return result;
+	}
 	return -1;
 }
