@@ -27,7 +27,6 @@ class Win32Factory;
 #if WINDOWS
 using PlatformInstanceHandle = HINSTANCE;
 #elif MAC
-typedef struct __CFBundle *CFBundleRef;
 using PlatformInstanceHandle = CFBundleRef;
 #elif LINUX
 using PlatformInstanceHandle = void*;
