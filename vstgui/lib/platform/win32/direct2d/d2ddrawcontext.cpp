@@ -7,6 +7,7 @@
 #if WINDOWS
 
 #include "../win32support.h"
+#include "../win32factory.h"
 #include "../../../cgradient.h"
 #include "d2dbitmap.h"
 #include "d2dgraphicspath.h"
@@ -15,22 +16,11 @@
 
 namespace VSTGUI {
 
-static D2D1_RENDER_TARGET_TYPE gRenderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
-
 //-----------------------------------------------------------------------------
 inline D2D1::ColorF toColorF (CColor c, float alpha)
 {
 	return D2D1::ColorF (c.normRed<float> (), c.normGreen<float> (), c.normBlue<float> (),
 	                     c.normAlpha<float> () * alpha);
-}
-
-//-----------------------------------------------------------------------------
-void useD2DHardwareRenderer (bool state)
-{
-	if (state)
-		gRenderTargetType = D2D1_RENDER_TARGET_TYPE_HARDWARE;
-	else
-		gRenderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 }
 
 //-----------------------------------------------------------------------------
@@ -135,13 +125,19 @@ void D2DDrawContext::createRenderTarget ()
 {
 	if (window)
 	{
+		D2D1_RENDER_TARGET_TYPE renderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+		if (auto pf = getPlatformFactory ().asWin32Factory ())
+		{
+			renderTargetType = pf->useD2DHardwareRenderer () ? D2D1_RENDER_TARGET_TYPE_HARDWARE :
+			                                                   D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+		}
 		RECT rc;
 		GetClientRect (window, &rc);
 
 		D2D1_SIZE_U size = D2D1::SizeU (static_cast<UINT32> (rc.right - rc.left), static_cast<UINT32> (rc.bottom - rc.top));
 		ID2D1HwndRenderTarget* hwndRenderTarget = nullptr;
 		D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
-		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (gRenderTargetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
+		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (renderTargetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
 		if (SUCCEEDED (hr))
 		{
 			renderTarget = hwndRenderTarget;

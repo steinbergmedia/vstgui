@@ -25,8 +25,10 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_10 Version 4.10
 
+- VSTGUI now needs to be initialized and terminated explicitly. See VSTGUI::init() and VSTGUI::exit().
 - UIDescription files are now written in JSON format and the old XML format is deprecated
 - It's now possible to conditionally remove the XML parser and the expat library from building (set VSTGUI_ENABLE_XML_PARSER to 0)
+- This is the last version not depending on c++17 compiler support.
 
 @subsection version4_9 Version 4.9
 
@@ -107,6 +109,10 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_9_to_4_10 VSTGUI 4.9 -> VSTGUI 4.10
+
+- one has to use VSTGUI::init() before using VSTGUI and VSTGUI::exit() after use
 
 @subsection code_changes_4_8_to_4_9 VSTGUI 4.8 -> VSTGUI 4.9
 

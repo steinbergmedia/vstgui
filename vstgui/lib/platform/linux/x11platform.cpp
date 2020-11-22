@@ -103,65 +103,6 @@ const VirtMap keyMap = {{XKB_KEY_BackSpace, VKEY_BACK},
 } // anonymous
 
 //------------------------------------------------------------------------
-struct Platform::Impl
-{
-	std::string path;
-};
-
-//------------------------------------------------------------------------
-Platform& Platform::getInstance ()
-{
-	static Platform gInstance;
-	return gInstance;
-}
-
-//------------------------------------------------------------------------
-Platform::Platform ()
-{
-	impl = std::unique_ptr<Impl> (new Impl);
-
-	Cairo::Bitmap::setGetResourcePathFunc ([this] () {
-		auto path = getPath ();
-		path += "/Contents/Resources/";
-		return path;
-	});
-}
-
-//------------------------------------------------------------------------
-Platform::~Platform ()
-{
-	Cairo::Bitmap::setGetResourcePathFunc ([] () { return std::string (); });
-}
-
-//------------------------------------------------------------------------
-std::string Platform::getPath ()
-{
-	if (impl->path.empty () && soHandle)
-	{
-		struct link_map* map;
-		if (dlinfo (soHandle, RTLD_DI_LINKMAP, &map) == 0)
-		{
-			auto path = std::string (map->l_name);
-			for (int i = 0; i < 3; i++)
-			{
-				int delPos = path.find_last_of ('/');
-				if (delPos == -1)
-				{
-					fprintf (stderr, "Could not determine bundle location.\n");
-					return {}; // unexpected
-				}
-				path.erase (delPos, path.length () - delPos);
-			}
-			auto rp = realpath (path.data (), nullptr);
-			path = rp;
-			free (rp);
-			std::swap (impl->path, path);
-		}
-	}
-	return impl->path;
-}
-
-//------------------------------------------------------------------------
 struct RunLoop::Impl : IEventHandler
 {
 	using WindowEventHandlerMap = std::unordered_map<uint32_t, IFrameEventHandler*>;

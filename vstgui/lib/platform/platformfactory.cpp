@@ -18,31 +18,34 @@ using VSTGUIPlatformFactory = VSTGUI::LinuxFactory;
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
-static PlatformFactoryPtr factory;
-
-//-----------------------------------------------------------------------------
-const IPlatformFactory& getPlatformFactory ()
-{
-	return *factory.get ();
-}
+static PlatformFactoryPtr gPlatformFactory;
 
 //-----------------------------------------------------------------------------
 void setPlatformFactory (PlatformFactoryPtr&& f)
 {
-	factory = std::move (f);
+	gPlatformFactory = std::move (f);
 }
 
-//------------------------------------------------------------------------
-struct InitDefaultPlatformFactory
+//-----------------------------------------------------------------------------
+void initPlatform (PlatformInstanceHandle instance)
 {
-	InitDefaultPlatformFactory ()
-	{
-		setPlatformFactory (std::unique_ptr<IPlatformFactory> (new VSTGUIPlatformFactory));
-	}
-};
+	vstgui_assert (!gPlatformFactory);
+	setPlatformFactory (std::unique_ptr<IPlatformFactory> (new VSTGUIPlatformFactory (instance)));
+}
 
-//------------------------------------------------------------------------
-static InitDefaultPlatformFactory __gInitDefaultPlatformFactory;
+//-----------------------------------------------------------------------------
+void exitPlatform ()
+{
+	vstgui_assert (gPlatformFactory);
+	setPlatformFactory (nullptr);
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformFactory& getPlatformFactory ()
+{
+	vstgui_assert (gPlatformFactory);
+	return *gPlatformFactory.get ();
+}
 
 //-----------------------------------------------------------------------------
 } // VSTGUI

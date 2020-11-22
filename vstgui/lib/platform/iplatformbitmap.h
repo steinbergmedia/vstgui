@@ -10,14 +10,12 @@
 #include <vector>
 
 namespace VSTGUI {
-using PNGBitmapBuffer = std::vector<uint8_t>;
 class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
 class IPlatformBitmap : public AtomicReferenceCounted
 {
 public:
-	virtual bool load (const CResourceDescription& desc) = 0;
 	virtual const CPoint& getSize () const = 0;
 
 	virtual SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) = 0;

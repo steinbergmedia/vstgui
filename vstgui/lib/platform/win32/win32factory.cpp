@@ -17,50 +17,86 @@
 #include "win32resourcestream.h"
 #include "winstring.h"
 #include "wintimer.h"
+#include <cassert>
 #include <list>
 #include <memory>
 #include <shlwapi.h>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
-namespace Win32FactoryPrivate {
 
-//------------------------------------------------------------------------
-static UTF8String gWinResourceBasePath;
-
-//------------------------------------------------------------------------
-static std::function<PlatformResourceInputStreamPtr (const CResourceDescription& desc)>
-	gCreateResourceInputStream =
-	    [] (const CResourceDescription& desc) { return WinResourceInputStream::create (desc); };
-
-//------------------------------------------------------------------------
-void setBasePath (const UTF8String& path)
+//-----------------------------------------------------------------------------
+struct Win32Factory::Impl
 {
-	gWinResourceBasePath = path;
-	if (!UTF8StringView (gWinResourceBasePath).endsWith ("\\"))
-		gWinResourceBasePath += "\\";
-	gCreateResourceInputStream = [] (const CResourceDescription& desc) {
-		PlatformResourceInputStreamPtr result = nullptr;
-		if (desc.type == CResourceDescription::kStringType && !gWinResourceBasePath.empty ())
+	HINSTANCE instance {nullptr};
+	UTF8String resourceBasePath;
+	bool useD2DHardwareRenderer {false};
+
+	PlatformResourceInputStreamPtr createResourceInputStream (const CResourceDescription& desc)
+	{
+		if (resourceBasePath.empty ())
+			return WinResourceInputStream::create (desc);
+		if (desc.type == CResourceDescription::kStringType)
 		{
-			auto path = gWinResourceBasePath;
+			auto path = resourceBasePath;
 			path += desc.u.name;
-			result = FileResourceInputStream::create (path.getString ());
+			return FileResourceInputStream::create (path.getString ());
 		}
-		return result;
-	};
-}
-
-//------------------------------------------------------------------------
-Optional<UTF8String> getBasePath ()
-{
-	if (gWinResourceBasePath.empty ())
 		return {};
-	return Optional<UTF8String>{gWinResourceBasePath};
+	}
+
+	void setBasePath (const UTF8String& path)
+	{
+		resourceBasePath = path;
+		if (!path.empty () && !UTF8StringView (resourceBasePath).endsWith ("\\"))
+			resourceBasePath += "\\";
+	}
+
+	Optional<UTF8String> getBasePath () const
+	{
+		if (resourceBasePath.empty ())
+			return {};
+		return Optional<UTF8String> {resourceBasePath};
+	}
+};
+
+//-----------------------------------------------------------------------------
+Win32Factory::Win32Factory (HINSTANCE instance)
+{
+	impl = std::unique_ptr<Impl> (new Impl);
+	impl->instance = instance;
 }
 
-//------------------------------------------------------------------------
-} // Win32FactoryPrivate
+//-----------------------------------------------------------------------------
+HINSTANCE Win32Factory::getInstance () const noexcept
+{
+	assert (impl->instance); // missing instance handle means VSTGUI was not initialized correctly
+	return impl->instance;
+}
+
+//-----------------------------------------------------------------------------
+void Win32Factory::setResourceBasePath (const UTF8String& path) const noexcept
+{
+	impl->setBasePath (path);
+}
+
+//-----------------------------------------------------------------------------
+Optional<UTF8String> Win32Factory::getResourceBasePath () const noexcept
+{
+	return impl->getBasePath ();
+}
+
+//-----------------------------------------------------------------------------
+void Win32Factory::useD2DHardwareRenderer (bool state) const noexcept
+{
+	impl->useD2DHardwareRenderer = state;
+}
+
+//-----------------------------------------------------------------------------
+bool Win32Factory::useD2DHardwareRenderer () const noexcept
+{
+	return impl->useD2DHardwareRenderer;
+}
 
 //-----------------------------------------------------------------------------
 uint64_t Win32Factory::getTicks () const noexcept
@@ -164,7 +200,7 @@ PNGBitmapBuffer Win32Factory::createBitmapMemoryPNGRepresentation (
 PlatformResourceInputStreamPtr Win32Factory::createResourceInputStream (
     const CResourceDescription& desc) const noexcept
 {
-	return Win32FactoryPrivate::gCreateResourceInputStream (desc);
+	return impl->createResourceInputStream (desc);
 }
 
 //-----------------------------------------------------------------------------
@@ -180,21 +216,21 @@ PlatformTimerPtr Win32Factory::createTimer (IPlatformTimerCallback* callback) co
 }
 
 //-----------------------------------------------------------------------------
-void Win32Factory::setResourceBasePath (const UTF8String& path) const
+const LinuxFactory* Win32Factory::asLinuxFactory () const noexcept
 {
-	Win32FactoryPrivate::setBasePath (path);
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-Optional<UTF8String> Win32Factory::getResourceBasePath () const
+const MacFactory* Win32Factory::asMacFactory () const noexcept
 {
-	return Win32FactoryPrivate::getBasePath ();
+	return nullptr;
 }
 
-//------------------------------------------------------------------------
-void IWin32PlatformFrame::setResourceBasePath (const UTF8String& path)
+//-----------------------------------------------------------------------------
+const Win32Factory* Win32Factory::asWin32Factory () const noexcept
 {
-	Win32FactoryPrivate::setBasePath (path);
+	return this;
 }
 
 //-----------------------------------------------------------------------------

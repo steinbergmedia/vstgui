@@ -6,6 +6,7 @@
 #include "cairofont.h"
 #include "x11frame.h"
 #include "../iplatformframecallback.h"
+#include "../common/fileresourceinputstream.h"
 #include "../iplatformresourceinputstream.h"
 #include "linuxstring.h"
 #include "x11timer.h"
@@ -14,9 +15,63 @@
 #include <memory>
 #include <chrono>
 #include <X11/X.h>
+#include <dlfcn.h>
+#include <link.h>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
+
+//-----------------------------------------------------------------------------
+struct LinuxFactory::Impl
+{
+	std::string resPath;
+
+	void setupResPath (void* handle)
+	{
+		if (handle && resPath.empty ())
+		{
+			struct link_map* map;
+			if (dlinfo (handle, RTLD_DI_LINKMAP, &map) == 0)
+			{
+				auto path = std::string (map->l_name);
+				for (int i = 0; i < 3; i++)
+				{
+					int delPos = path.find_last_of ('/');
+					if (delPos == -1)
+					{
+						fprintf (stderr, "Could not determine bundle location.\n");
+						return; // unexpected
+					}
+					path.erase (delPos, path.length () - delPos);
+				}
+				auto rp = realpath (path.data (), nullptr);
+				path = rp;
+				free (rp);
+				path += "/Contents/Resources/";
+				std::swap (resPath, path);
+			}
+		}
+	}
+};
+
+//-----------------------------------------------------------------------------
+LinuxFactory::LinuxFactory (void* soHandle)
+{
+	impl = std::unique_ptr<Impl> (new Impl);
+	impl->setupResPath (soHandle);
+}
+
+//-----------------------------------------------------------------------------
+void LinuxFactory::setResourcePath (const std::string& path) const noexcept
+{
+	impl->resPath = path;
+}
+
+//-----------------------------------------------------------------------------
+std::string LinuxFactory::getResourcePath () const noexcept
+{
+	return impl->resPath;
+}
 
 //-----------------------------------------------------------------------------
 uint64_t LinuxFactory::getTicks () const noexcept
@@ -96,7 +151,11 @@ LinuxFactory::createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitm
 PlatformResourceInputStreamPtr
 LinuxFactory::createResourceInputStream (const CResourceDescription& desc) const noexcept
 {
-	return X11::Frame::createResourceInputStreamFunc (desc);
+	if (desc.type == CResourceDescription::kIntegerType)
+		return {};
+	auto path = impl->resPath;
+	path += desc.u.name;
+	return FileResourceInputStream::create (path);
 }
 
 //-----------------------------------------------------------------------------
@@ -109,6 +168,24 @@ PlatformStringPtr LinuxFactory::createString (UTF8StringPtr utf8String) const no
 PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
 	return makeOwned<X11::Timer> (callback);
+}
+
+//-----------------------------------------------------------------------------
+const LinuxFactory* LinuxFactory::asLinuxFactory () const noexcept
+{
+	return this;
+}
+
+//-----------------------------------------------------------------------------
+const MacFactory* LinuxFactory::asMacFactory () const noexcept
+{
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const Win32Factory* LinuxFactory::asWin32Factory () const noexcept
+{
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

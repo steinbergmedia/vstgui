@@ -27,13 +27,6 @@ public:
 		   IPlatformFrameConfig* config);
 	~Frame ();
 
-	using CreateIResourceInputStreamFunc =
-		std::function<PlatformResourceInputStreamPtr (const CResourceDescription& desc)>;
-
-	static CreateIResourceInputStreamFunc createResourceInputStreamFunc;
-
-	static UTF8String resourcePath;
-
 private:
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;

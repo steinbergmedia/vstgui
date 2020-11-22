@@ -32,6 +32,7 @@
 #include "lib/cvstguitimer.cpp"
 #include "lib/genericstringlistdatabrowsersource.cpp"
 #include "lib/vstguidebug.cpp"
+#include "lib/vstguiinit.cpp"
 
 #include "lib/controls/cautoanimation.cpp"
 #include "lib/controls/cbuttons.cpp"

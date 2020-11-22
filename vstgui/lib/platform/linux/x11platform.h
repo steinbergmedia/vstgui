@@ -24,7 +24,6 @@ using xcb_window_t = uint32_t;
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-extern void* soHandle; // shared library handle
 
 //------------------------------------------------------------------------
 namespace X11 {
@@ -45,23 +44,6 @@ struct IFrameEventHandler
 	virtual void onEvent (xcb_property_notify_event_t& event) = 0;
 	virtual void onEvent (xcb_selection_notify_event_t& event) = 0;
 	virtual void onEvent (xcb_client_message_event_t& event, xcb_window_t proxyId = 0) = 0;
-};
-
-//------------------------------------------------------------------------
-class Platform
-{
-public:
-	~Platform ();
-
-	static Platform& getInstance ();
-
-	std::string getPath ();
-
-private:
-	Platform ();
-
-	struct Impl;
-	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

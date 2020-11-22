@@ -15,8 +15,14 @@ namespace VSTGUI {
 class Win32Factory final : public IPlatformFactory
 {
 public:
-	void setResourceBasePath (const UTF8String& path) const;
-	Optional<UTF8String> getResourceBasePath () const;
+	Win32Factory (HINSTANCE instance);
+
+	HINSTANCE getInstance () const noexcept;
+	void setResourceBasePath (const UTF8String& path) const noexcept;
+	Optional<UTF8String> getResourceBasePath () const noexcept;
+
+	void useD2DHardwareRenderer (bool state) const noexcept;
+	bool useD2DHardwareRenderer () const noexcept;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
@@ -96,13 +102,15 @@ public:
 	 *	@return platform timer object or nullptr on failure
 	 */
 	PlatformTimerPtr createTimer (IPlatformTimerCallback* callback) const noexcept final;
-};
 
-//------------------------------------------------------------------------
-inline const Win32Factory* getWin32Factory ()
-{
-	return dynamic_cast<const Win32Factory*> (&getPlatformFactory ());
-}
+	const LinuxFactory* asLinuxFactory () const noexcept final;
+	const MacFactory* asMacFactory () const noexcept final;
+	const Win32Factory* asWin32Factory () const noexcept final;
+
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+};
 
 //------------------------------------------------------------------------
 } // VSTGUI

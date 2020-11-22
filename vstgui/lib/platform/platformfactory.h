@@ -5,26 +5,33 @@
 #pragma once
 
 #include "../vstguifwd.h"
-#include <functional>
-#include <vector>
-#include <string>
-
-/// @cond ignore
+#include "platformfwd.h"
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
-using PNGBitmapBuffer = std::vector<uint8_t>;
 
+//-----------------------------------------------------------------------------
+/** Init the platform layer of VSTGUI.
+
+	The instance is depended on the platform:
+	- HINSTANCE on Windows
+	- CFBundleRef on macOS
+	- void* on Linux (the handle returned from dlopen)
+ */
+void initPlatform (PlatformInstanceHandle instance);
+
+//-----------------------------------------------------------------------------
+/** exit the platform layer of VSTGUI. */
+void exitPlatform ();
+
+//-----------------------------------------------------------------------------
+/** get the global platform factory instance */
 const IPlatformFactory& getPlatformFactory ();
-void setPlatformFactory (PlatformFactoryPtr&& factory);
-
-using FontFamilyCallback = std::function<bool (const std::string&)>;
 
 //-----------------------------------------------------------------------------
 class IPlatformFactory
 {
 public:
-
 	virtual ~IPlatformFactory () noexcept = default;
 
 	/** Return platform ticks (millisecond resolution)
@@ -40,10 +47,9 @@ public:
 	 *	@param config optional config object
 	 *	@return platform frame or nullptr on failure
 	 */
-	virtual PlatformFramePtr createFrame (IPlatformFrameCallback* frame, const CRect& size,
-	                                      void* parent, PlatformType parentType,
-	                                      IPlatformFrameConfig* config = nullptr) const
-	    noexcept = 0;
+	virtual PlatformFramePtr createFrame (
+		IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType,
+		IPlatformFrameConfig* config = nullptr) const noexcept = 0;
 
 	/** Create a platform font object
 	 *	@param name name of the font
@@ -52,7 +58,7 @@ public:
 	 *	@return platform font or nullptr on failure
 	 */
 	virtual PlatformFontPtr createFont (const UTF8String& name, const CCoord& size,
-	                                    const int32_t& style) const noexcept = 0;
+										const int32_t& style) const noexcept = 0;
 	/** Query all platform font families
 	 *	@param callback callback called for every font
 	 *	@return true on success
@@ -82,8 +88,8 @@ public:
 	 *	@param memSize memory size
 	 *	@return platform bitmap or nullptr on failure
 	 */
-	virtual PlatformBitmapPtr createBitmapFromMemory (const void* ptr, uint32_t memSize) const
-	    noexcept = 0;
+	virtual PlatformBitmapPtr createBitmapFromMemory (const void* ptr,
+													  uint32_t memSize) const noexcept = 0;
 	/** Create a memory representation of the platform bitmap in PNG format.
 	 *	@param bitmap the platform bitmap object
 	 *	@return memory buffer containing the PNG representation of the bitmap
@@ -109,9 +115,11 @@ public:
 	 *	@return platform timer object or nullptr on failure
 	 */
 	virtual PlatformTimerPtr createTimer (IPlatformTimerCallback* callback) const noexcept = 0;
+
+	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
+	virtual const MacFactory* asMacFactory () const noexcept = 0;
+	virtual const Win32Factory* asWin32Factory () const noexcept = 0;
 };
 
 //-----------------------------------------------------------------------------
 } // VSTGUI
-
-/// @endcond

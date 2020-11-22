@@ -9,6 +9,7 @@
 #include "../../vstkeycode.h"
 #include "../common/fileresourceinputstream.h"
 #include "../platform_win32.h"
+#include "win32factory.h"
 
 #include <d2d1.h>
 #include <dwrite.h>
@@ -25,11 +26,15 @@
 #pragma comment (lib,"dwrite.lib")
 #endif
 
-extern void* hInstance;
-
 namespace VSTGUI {
 
-HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
+//-----------------------------------------------------------------------------
+HINSTANCE GetInstance ()
+{
+	if (auto wf = getPlatformFactory ().asWin32Factory ())
+		return wf->getInstance ();
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 class D2DFactory

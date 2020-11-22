@@ -6,6 +6,8 @@
 
 #include "../platformfactory.h"
 
+typedef struct __CFBundle *CFBundleRef;
+
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -13,7 +15,9 @@ namespace VSTGUI {
 class MacFactory final : public IPlatformFactory
 {
 public:
-	MacFactory ();
+	MacFactory (CFBundleRef bundle);
+
+	CFBundleRef getBundle () const noexcept;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
@@ -93,6 +97,14 @@ public:
 	 *	@return platform timer object or nullptr on failure
 	 */
 	PlatformTimerPtr createTimer (IPlatformTimerCallback* callback) const noexcept final;
+
+	const LinuxFactory* asLinuxFactory () const noexcept final;
+	const MacFactory* asMacFactory () const noexcept final;
+	const Win32Factory* asWin32Factory () const noexcept final;
+
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

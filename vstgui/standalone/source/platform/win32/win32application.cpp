@@ -7,7 +7,9 @@
 #include "win32preference.h"
 #include "win32window.h"
 
+#include "../../../../lib/vstguiinit.h"
 #include "../../../../lib/platform/win32/win32dll.h"
+#include "../../../../lib/platform/win32/win32factory.h"
 #include "../../../../lib/platform/win32/win32support.h"
 #include "../../../../lib/platform/platform_win32.h"
 #include "../../../include/iappdelegate.h"
@@ -102,7 +104,7 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 		{
 			*p += "\\Resources\\";
 			UTF8String resourcePath (*p);
-			IWin32PlatformFrame::setResourceBasePath (resourcePath);
+			getPlatformFactory ().asWin32Factory ()->setResourceBasePath (resourcePath);
 			commonDirectories.setAppResourcePath (resourcePath);
 		}
 	}
@@ -313,8 +315,6 @@ void Application::run ()
 } // Standalone
 } // VSTGUI
 
-void* hInstance = nullptr; // for VSTGUI
-
 //------------------------------------------------------------------------
 int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
                        _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
@@ -325,13 +325,12 @@ int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
 	if (FAILED (hr))
 		return FALSE;
 
-	hInstance = instance;
-
-	VSTGUI::useD2DHardwareRenderer (true);
+	VSTGUI::init (instance);
+	VSTGUI::getPlatformFactory ().asWin32Factory ()->useD2DHardwareRenderer (true);
 	VSTGUI::Standalone::Platform::Win32::Application app;
 	app.init (instance, lpCmdLine);
 	app.run ();
-
+	VSTGUI::exit ();
 	OleUninitialize ();
 	return 0;
 }
