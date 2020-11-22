@@ -62,7 +62,7 @@ private:
 	void prepareEntryAtIndex (uint32_t index) const
 	{
 		if (entries[index].type == Type::kError)
-			entries[index] = std::move (makeEntry (pb.pasteboardItems[index]));
+			entries[index] = makeEntry (pb.pasteboardItems[index]);
 	}
 
 	static Entry makeEntry (NSPasteboardItem* item)
