@@ -5,7 +5,7 @@
 #include "vstgui/lib/cresourcedescription.h"
 #include "vstgui/lib/cstring.h"
 #include "vstgui/uidescription/compresseduidescription.h"
-#include "vstgui/lib/platform/platformfactory.h"
+#include "vstgui/lib/vstguiinit.h"
 #include <string>
 
 //------------------------------------------------------------------------
@@ -32,12 +32,12 @@ void printAndTerminate (const char* msg)
 int main (int argv, char* argc[])
 {
 #if MAC
-	VSTGUI::initPlatform (CFBundleGetMainBundle ());
+	VSTGUI::init (CFBundleGetMainBundle ());
 #elif WINDOWS
 	CoInitialize (nullptr);
-	VSTGUI::initPlatform (GetModuleHandle (nullptr));
+	VSTGUI::init (GetModuleHandle (nullptr));
 #elif LINUX
-	VSTGUI::initPlatform (nullptr);
+	VSTGUI::init (nullptr);
 #endif
 	std::string inputPath;
 	std::string outputPath;
@@ -106,5 +106,6 @@ int main (int argv, char* argc[])
 			printAndTerminate ("saving failed");
 		}
 	}
+	VSTGUI::exit ();
 	return 0;
 }

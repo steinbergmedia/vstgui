@@ -162,6 +162,8 @@ set(${target}_common_sources
     vstguidebug.cpp
     vstguidebug.h
     vstguifwd.h
+    vstguiinit.cpp
+    vstguiinit.h
     vstkeycode.h
 )
 

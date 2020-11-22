@@ -11,7 +11,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-/** Init the platform layer of VSTGUI. Must be done before using most VSTGUI object.
+/** Init the platform layer of VSTGUI.
 
 	The instance is depended on the platform:
 	- HINSTANCE on Windows

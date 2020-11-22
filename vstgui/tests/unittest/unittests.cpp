@@ -6,12 +6,10 @@
 
 #if ENABLE_UNIT_TESTS
 #include "../../lib/vstguidebug.h"
+#include "../../lib/vstguiinit.h"
 
 #if MAC
-#include "../../lib/platform/mac/macfactory.h"
 #include <CoreFoundation/CoreFoundation.h>
-#elif WINDOWS
-#include "../../lib/platform/win32/win32factory.h"
 #endif
 
 #include <chrono>
@@ -265,15 +263,15 @@ int main ()
 		throw std::logic_error (desc ? desc : "unknown");
 	});
 #if MAC
-	VSTGUI::initPlatform (CFBundleGetMainBundle ());
+	VSTGUI::init (CFBundleGetMainBundle ());
 #elif WINDOWS
 	CoInitialize (nullptr);
-	VSTGUI::initPlatform (GetModuleHandle (nullptr));
+	VSTGUI::init (GetModuleHandle (nullptr));
 #elif LINUX
-	VSTGUI::initPlatform (nullptr);
+	VSTGUI::init (nullptr);
 #endif
 	auto result = VSTGUI::UnitTest::RunTests ();
-	VSTGUI::exitPlatform ();
+	VSTGUI::exit ();
 	return result;
 }
 

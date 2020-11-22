@@ -5,6 +5,7 @@
 #include "../../application.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
+#include "../../../../lib/vstguiinit.h"
 #include "../../../../lib/vstkeycode.h"
 #include "../../../../lib/platform/linux/x11frame.h"
 #include "../../../../lib/platform/linux/linuxfactory.h"
@@ -92,7 +93,7 @@ bool Application::init (int argc, char* argv[])
 		char result[PATH_MAX];
 		ssize_t count = readlink ("/proc/self/exe", result, PATH_MAX);
 		if (count == -1)
-			exit (-1);
+			::exit (-1);
 		std::string execPath = dirname (result);
 		getPlatformFactory ().asLinuxFactory ()->setResourcePath (execPath + "/Resources/");
 
@@ -183,12 +184,12 @@ void Application::doCommandUpdate ()
 //------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
-	VSTGUI::initPlatform (nullptr);
+	VSTGUI::init (nullptr);
 	VSTGUI::Standalone::Platform::GDK::Application app;
 	if (app.init (argc, argv))
 	{
 		auto result = app.run ();
-		VSTGUI::exitPlatform ();
+		VSTGUI::exit ();
 		return result;
 	}
 	return -1;

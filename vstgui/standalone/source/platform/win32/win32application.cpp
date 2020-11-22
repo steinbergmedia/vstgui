@@ -7,6 +7,7 @@
 #include "win32preference.h"
 #include "win32window.h"
 
+#include "../../../../lib/vstguiinit.h"
 #include "../../../../lib/platform/win32/win32dll.h"
 #include "../../../../lib/platform/win32/win32factory.h"
 #include "../../../../lib/platform/win32/win32support.h"
@@ -321,12 +322,12 @@ int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
 	if (FAILED (hr))
 		return FALSE;
 
-	VSTGUI::initPlatform (instance);
+	VSTGUI::init (instance);
 	VSTGUI::getPlatformFactory ().asWin32Factory ()->useD2DHardwareRenderer (true);
 	VSTGUI::Standalone::Platform::Win32::Application app;
 	app.init (instance, lpCmdLine);
 	app.run ();
-	VSTGUI::exitPlatform ();
+	VSTGUI::exit ();
 	OleUninitialize ();
 	return 0;
 }

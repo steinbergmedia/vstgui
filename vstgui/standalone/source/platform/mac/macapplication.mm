@@ -4,6 +4,7 @@
 
 #import "../../../../lib/platform/mac/cocoa/cocoahelpers.h"
 #import "../../../../lib/platform/mac/macfactory.h"
+#import "../../../../lib/vstguiinit.h"
 #import "../../../include/iappdelegate.h"
 #import "../../../include/iapplication.h"
 #import "../../application.h"
@@ -624,7 +625,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	}
 	Detail::cleanupSharedUIResources ();
 	Async::waitAllTasksDone ();
-	VSTGUI::exitPlatform ();
+	VSTGUI::exit ();
 }
 
 //------------------------------------------------------------------------
@@ -657,7 +658,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 //------------------------------------------------------------------------
 int main (int argc, const char* _Nonnull* _Nonnull argv)
 {
-	VSTGUI::initPlatform (CFBundleGetMainBundle ());
+	VSTGUI::init (CFBundleGetMainBundle ());
 	VSTGUIApplicationDelegate* delegate = [VSTGUIApplicationDelegate new];
 	[NSApplication sharedApplication].delegate = delegate;
 	return NSApplicationMain (argc, argv);
