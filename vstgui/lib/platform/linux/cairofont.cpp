@@ -122,16 +122,13 @@ public:
 		return gInstance;
 	}
 
-	FcConfig* getFontConfig ()
-	{
-		return fcConfig;
-	}
+	FcConfig* getFontConfig () { return fcConfig; }
 
 	using Fonts = std::map<std::pair<std::string, int>, CairoFontFace>;
 
 	const Fonts& getFonts () const { return fonts; }
 
-	CairoFontFace& createFont(const std::string& file, int index)
+	CairoFontFace& createFont (const std::string& file, int index)
 	{
 		auto key = std::make_pair (file, index);
 		auto it = fonts.find (key);
@@ -143,19 +140,20 @@ public:
 		return it->second;
 	}
 
-	void clear() { fonts.clear(); }
+	void clear () { fonts.clear (); }
 
-	bool queryFont (UTF8StringPtr name, CCoord size, int32_t style, std::string* fileStr, int* indexInt)
+	bool queryFont (UTF8StringPtr name, CCoord size, int32_t style, std::string* fileStr,
+					int* indexInt)
 	{
 		bool found = false;
 		if (!fcConfig)
 			return false;
 		FcPattern* pattern = nullptr;
 		if ((pattern = FcPatternCreate ()) &&
-		    FcPatternAddString  (pattern, FC_FAMILY, reinterpret_cast<const FcChar8*> (name)) &&
-		    FcPatternAddInteger (pattern, FC_SLANT, slantFromStyle (style)) &&
-		    FcPatternAddInteger (pattern, FC_WEIGHT, weightFromStyle (style)) &&
-		    FcConfigSubstitute (fcConfig, pattern, FcMatchFont))
+			FcPatternAddString (pattern, FC_FAMILY, reinterpret_cast<const FcChar8*> (name)) &&
+			FcPatternAddInteger (pattern, FC_SLANT, slantFromStyle (style)) &&
+			FcPatternAddInteger (pattern, FC_WEIGHT, weightFromStyle (style)) &&
+			FcConfigSubstitute (fcConfig, pattern, FcMatchPattern))
 		{
 			FcDefaultSubstitute (pattern);
 			FcResult result;
@@ -165,7 +163,7 @@ public:
 				FcChar8* file;
 				int index;
 				if (FcPatternGetString (font, FC_FILE, 0, &file) == FcResultMatch &&
-				    FcPatternGetInteger (font, FC_INDEX, 0, &index) == FcResultMatch)
+					FcPatternGetInteger (font, FC_INDEX, 0, &index) == FcResultMatch)
 				{
 					if (fileStr)
 						fileStr->assign (reinterpret_cast<char*> (file));
@@ -175,14 +173,14 @@ public:
 				}
 			}
 			if (font)
-				FcPatternDestroy(font);
+				FcPatternDestroy (font);
 		}
 		if (pattern)
 			FcPatternDestroy (pattern);
 		return found;
 	}
 
-	bool getAllFontFamilies(const FontFamilyCallback& callback)
+	bool getAllFontFamilies (const FontFamilyCallback& callback)
 	{
 		if (!fcConfig)
 			return false;
@@ -191,8 +189,8 @@ public:
 		FcObjectSet* objectSet = nullptr;
 		FcFontSet* fontList = nullptr;
 		if ((pattern = FcPatternCreate ()) &&
-		    (objectSet = FcObjectSetBuild (FC_FAMILY, FC_FILE, FC_STYLE, nullptr)) &&
-		    (fontList = FcFontList (fcConfig, pattern, objectSet)))
+			(objectSet = FcObjectSetBuild (FC_FAMILY, FC_FILE, FC_STYLE, nullptr)) &&
+			(fontList = FcFontList (fcConfig, pattern, objectSet)))
 		{
 			for (int i = 0; i < fontList->nfont; ++i)
 			{
@@ -201,7 +199,7 @@ public:
 				if (FcPatternGetString (font, FC_FAMILY, 0, &family) == FcResultMatch)
 				{
 					std::string familyStr (reinterpret_cast<const char*> (family));
-					if (fontFamilyKnown.insert(familyStr).second)
+					if (fontFamilyKnown.insert (familyStr).second)
 					{
 						if (!callback (familyStr))
 							break;
@@ -234,7 +232,8 @@ private:
 			if (!resPath.empty ())
 			{
 				auto fontDir = resPath + "Fonts/";
-				FcConfigAppFontAddDir (fcConfig, reinterpret_cast<const FcChar8*> (fontDir.data ()));
+				FcConfigAppFontAddDir (fcConfig,
+									   reinterpret_cast<const FcChar8*> (fontDir.data ()));
 			}
 		}
 	}
@@ -289,7 +288,7 @@ FreeType::FreeType ()
 //------------------------------------------------------------------------
 FreeType::~FreeType ()
 {
-       FontList::instance ().clear ();
+	FontList::instance ().clear ();
 	if (library)
 		FT_Done_FreeType (library);
 }
@@ -342,8 +341,7 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 		auto options = cairo_font_options_create ();
 		cairo_font_options_set_hint_style (options, CAIRO_HINT_STYLE_NONE);
 		cairo_font_options_set_hint_metrics (options, CAIRO_HINT_METRICS_ON);
-		impl->font = ScaledFontHandle (
-			cairo_scaled_font_create (face, &matrix, &ctm, options));
+		impl->font = ScaledFontHandle (cairo_scaled_font_create (face, &matrix, &ctm, options));
 		cairo_font_options_destroy (options);
 		auto status = cairo_scaled_font_status (impl->font);
 		if (status != CAIRO_STATUS_SUCCESS)
