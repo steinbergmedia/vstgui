@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../iplatformstring.h"
+#include <string>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
