@@ -94,15 +94,15 @@ public:
 	 *	@param bitmap the platform bitmap object
 	 *	@return memory buffer containing the PNG representation of the bitmap
 	 */
-	virtual PNGBitmapBuffer createBitmapMemoryPNGRepresentation (
-	    const PlatformBitmapPtr& bitmap) const noexcept = 0;
+	virtual PNGBitmapBuffer
+		createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept = 0;
 
 	/** Create a platform resource input stream
 	 *	@param desc description where to find the file to open
 	 *	@return platform resource input stream or nullptr if not found
 	 */
-	virtual PlatformResourceInputStreamPtr createResourceInputStream (
-	    const CResourceDescription& desc) const noexcept = 0;
+	virtual PlatformResourceInputStreamPtr
+		createResourceInputStream (const CResourceDescription& desc) const noexcept = 0;
 
 	/** Create a platform string object
 	 *	@param utf8String optional initial UTF-8 encoded string
