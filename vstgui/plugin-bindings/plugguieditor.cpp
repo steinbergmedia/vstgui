@@ -12,6 +12,7 @@
 
 #if WINDOWS
 #include <windows.h>
+#include <ole2.h>
 #endif
 
 #if MAC
