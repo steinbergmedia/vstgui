@@ -314,4 +314,13 @@ UTF8String CColor::toString () const
 	return UTF8String (str.str ());
 }
 
+//-----------------------------------------------------------------------------
+void CColor::fromRGBA(uint32_t color)
+{
+	red = (color >> 24) & 0xFF;
+	green = (color >> 16) & 0xFF;
+	blue = (color >> 8) & 0xFF;
+	alpha = color & 0xFF;
+}
+	
 } // VSTGUI
