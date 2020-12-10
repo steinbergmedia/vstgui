@@ -56,7 +56,7 @@ public:
 		bool selected {false};
 	};
 	using Segments = std::vector<Segment>;
-	static constexpr uint32_t kPushBack = std::numeric_limits<uint32_t>::max ();
+	static constexpr uint32_t kPushBack = (std::numeric_limits<uint32_t>::max) ();
 
 	CSegmentButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
 
