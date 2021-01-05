@@ -6,6 +6,7 @@
 #import "vstgui/vstgui.h"
 #import "vstgui/vstgui_uidescription.h"
 #import "vstgui/lib/platform/mac/macglobals.h"
+#import <sstream>
 
 using namespace VSTGUI;
 

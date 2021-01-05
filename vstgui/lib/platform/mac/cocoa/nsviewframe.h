@@ -6,7 +6,7 @@
 
 #include "../../../vstguifwd.h"
 
-#if MAC_COCOA
+#if MAC_COCOA && !TARGET_OS_IPHONE
 
 #include "../../platform_macos.h"
 #include "../../../cview.h"
