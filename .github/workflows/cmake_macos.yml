@@ -1,4 +1,4 @@
-name: CMake
+name: Build on macOS 10.15
 
 on: [push]
 
