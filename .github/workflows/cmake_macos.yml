@@ -24,7 +24,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake -S $GITHUB_WORKSPACE/vstgui -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DVSTGUI_STANDALONE=$BUILD_STANDALONE
+      run: cmake -S "${{github.workspace}}/vstgui" -B "${{github.workspace}}/build" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DVSTGUI_STANDALONE=$BUILD_STANDALONE
 
     - name: Build
       working-directory: ${{github.workspace}}/build
