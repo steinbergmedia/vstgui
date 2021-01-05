@@ -304,8 +304,6 @@ SharedPointer<IPlatformViewLayer> UIViewFrame::createPlatformViewLayer (IPlatfor
 DragResult UIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) { return kDragError; }
 #endif
 bool UIViewFrame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) { return false; }
-void UIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data) {}
-SharedPointer<IDataPackage> UIViewFrame::getClipboard () { return nullptr; }
 
 }
 

@@ -116,6 +116,17 @@ public:
 	 */
 	virtual PlatformTimerPtr createTimer (IPlatformTimerCallback* callback) const noexcept = 0;
 
+	/** Set clipboard data
+	 *	@param data data to put on the clipboard
+	 *	@return true on success
+	 */
+	virtual bool setClipboard (const SharedPointer<IDataPackage>& data) const noexcept = 0;
+
+	/** Get clipboard data
+	 *	@return data package pointer 
+	 */
+	virtual SharedPointer<IDataPackage> getClipboard () const noexcept = 0;
+	
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;
 	virtual const Win32Factory* asWin32Factory () const noexcept = 0;

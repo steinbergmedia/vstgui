@@ -170,6 +170,20 @@ PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) co
 	return makeOwned<X11::Timer> (callback);
 }
 
+//------------------------------------------------------------------------
+bool LinuxFactory::setClipboard (const SharedPointer<IDataPackage>& data) const noexcept
+{
+	// TODO: Linux Clipboard Implementation
+	return false;
+}
+
+//------------------------------------------------------------------------
+SharedPointer<IDataPackage> LinuxFactory::getClipboard () const noexcept
+{
+	// TODO: Linux Clipboard Implementation
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 const LinuxFactory* LinuxFactory::asLinuxFactory () const noexcept
 {

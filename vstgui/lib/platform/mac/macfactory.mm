@@ -14,6 +14,7 @@
 #include "cgbitmap.h"
 #include "cocoa/nsviewframe.h"
 #include "ios/uiviewframe.h"
+#include "macclipboard.h"
 #include "macfactory.h"
 #include "macglobals.h"
 #include "macstring.h"
@@ -162,6 +163,27 @@ PlatformStringPtr MacFactory::createString (UTF8StringPtr utf8String) const noex
 PlatformTimerPtr MacFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
 	return makeOwned<MacTimer> (callback);
+}
+
+//------------------------------------------------------------------------
+bool MacFactory::setClipboard (const SharedPointer<IDataPackage>& data) const noexcept
+{
+#if TARGET_OS_IPHONE
+	return false;
+#else
+	MacClipboard::setClipboard (data);
+	return true;
+#endif
+}
+
+//------------------------------------------------------------------------
+SharedPointer<IDataPackage> MacFactory::getClipboard () const noexcept
+{
+#if TARGET_OS_IPHONE
+	return nullptr;
+#else
+	return MacClipboard::createClipboardDataPackage ();
+#endif
 }
 
 //-----------------------------------------------------------------------------

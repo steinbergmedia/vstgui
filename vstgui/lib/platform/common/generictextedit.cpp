@@ -482,14 +482,14 @@ bool STBTextEditView::doCopy ()
 	auto dataPackage =
 		CDropSource::create (getText ().data (), getText ().length (), IDataPackage::kText);
 #endif
-	getFrame ()->getPlatformFrame ()->setClipboard (dataPackage);
+	getFrame ()->setClipboard (dataPackage);
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool STBTextEditView::doPaste ()
 {
-	if (auto clipboard = getFrame ()->getPlatformFrame ()->getClipboard ())
+	if (auto clipboard = getFrame ()->getClipboard ())
 	{
 		auto count = clipboard->getCount ();
 		for (auto i = 0u; i < count; ++i)

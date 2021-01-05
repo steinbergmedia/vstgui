@@ -720,16 +720,13 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 //-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> CFrame::getClipboard ()
 {
-	if (pImpl->platformFrame)
-		return pImpl->platformFrame->getClipboard ();
-	return nullptr;
+	return getPlatformFactory ().getClipboard ();
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
-	if (pImpl->platformFrame)
-		pImpl->platformFrame->setClipboard (data);
+	getPlatformFactory ().setClipboard (data);
 }
 
 //-----------------------------------------------------------------------------

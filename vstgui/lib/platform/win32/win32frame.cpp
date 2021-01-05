@@ -510,28 +510,6 @@ bool Win32Frame::doDrag (const DragDescription& dragDescription, const SharedPoi
 }
 
 //-----------------------------------------------------------------------------
-void Win32Frame::setClipboard (const SharedPointer<IDataPackage>& data)
-{
-	auto dataObject = makeOwned<Win32DataObject> (data);
-	auto hr = OleSetClipboard (dataObject);
-	if (hr != S_OK)
-	{
-#if DEBUG
-		DebugPrint ("Setting clipboard failed!\n");
-#endif
-	}
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> Win32Frame::getClipboard ()
-{
-	IDataObject* dataObject = nullptr;;
-	if (OleGetClipboard (&dataObject) != S_OK)
-		return nullptr;
-	return makeOwned<Win32DataPackage> (dataObject);
-}
-
-//-----------------------------------------------------------------------------
 void Win32Frame::onFrameClosed ()
 {
 	frame = nullptr;
