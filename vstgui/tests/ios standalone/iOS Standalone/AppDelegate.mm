@@ -3,16 +3,14 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "AppDelegate.h"
+#import "vstgui/lib/vstguiinit.h"
 
-namespace VSTGUI {
-	void* gBundleRef = nullptr;
-}
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-	VSTGUI::gBundleRef = CFBundleGetMainBundle ();
+	VSTGUI::init (CFBundleGetMainBundle ());	
     // Override point for customization after application launch.
     return YES;
 }
