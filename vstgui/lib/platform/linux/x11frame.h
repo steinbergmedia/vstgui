@@ -54,8 +54,6 @@ private:
 #endif
 	bool doDrag (const DragDescription& dragDescription,
 				 const SharedPointer<IDragCallback>& callback) override;
-	void setClipboard (const SharedPointer<IDataPackage>& data) override;
-	SharedPointer<IDataPackage> getClipboard () override;
 
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}

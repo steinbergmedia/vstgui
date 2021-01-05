@@ -758,18 +758,6 @@ bool Frame::doDrag (const DragDescription& dragDescription,
 }
 
 //------------------------------------------------------------------------
-void Frame::setClipboard (const SharedPointer<IDataPackage>& data) {
-#warning TODO: Implementation
-}
-
-//------------------------------------------------------------------------
-SharedPointer<IDataPackage> Frame::getClipboard ()
-{
-#warning TODO: Implementation
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
 PlatformType Frame::getPlatformType () const
 {
 	return PlatformType::kX11EmbedWindowID;

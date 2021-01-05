@@ -14,6 +14,7 @@
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dfont.h"
 #include "win32frame.h"
+#include "win32dragging.h"
 #include "win32resourcestream.h"
 #include "winstring.h"
 #include "wintimer.h"
@@ -213,6 +214,23 @@ PlatformStringPtr Win32Factory::createString (UTF8StringPtr utf8String) const no
 PlatformTimerPtr Win32Factory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
 	return makeOwned<WinTimer> (callback);
+}
+
+//------------------------------------------------------------------------
+bool Win32Factory::setClipboard (const SharedPointer<IDataPackage>& data) const noexcept
+{
+	auto dataObject = makeOwned<Win32DataObject> (data);
+	auto hr = OleSetClipboard (dataObject);
+	return hr == S_OK;
+}
+
+//------------------------------------------------------------------------
+SharedPointer<IDataPackage> Win32Factory::getClipboard () const noexcept
+{
+	IDataObject* dataObject = nullptr;;
+	if (OleGetClipboard (&dataObject) != S_OK)
+		return nullptr;
+	return makeOwned<Win32DataPackage> (dataObject);
 }
 
 //-----------------------------------------------------------------------------

@@ -582,19 +582,6 @@ bool HIViewFrame::doDrag (const DragDescription& dragDescription, const SharedPo
 }
 
 
-//-----------------------------------------------------------------------------
-void HIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
-{
-	MacClipboard::setClipboard (data);
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> HIViewFrame::getClipboard ()
-{
-	return MacClipboard::createClipboardDataPackage ();
-}
-
-
 #define ENABLE_LOGGING 0
 
 #if ENABLE_LOGGING

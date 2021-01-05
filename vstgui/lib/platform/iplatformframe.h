@@ -76,11 +76,6 @@ public:
 	virtual bool doDrag (const DragDescription& dragDescription,
 						 const SharedPointer<IDragCallback>& callback) = 0;
 
-	/** set clipboard data */
-	virtual void setClipboard (const SharedPointer<IDataPackage>& data) = 0;
-	/** get clipboard data */
-	virtual SharedPointer<IDataPackage> getClipboard () = 0;
-
 	/** */
 	virtual PlatformType getPlatformType () const = 0;
 

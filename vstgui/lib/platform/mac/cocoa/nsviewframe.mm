@@ -1292,18 +1292,6 @@ bool NSViewFrame::doDrag (const DragDescription& dragDescription,
 }
 
 //-----------------------------------------------------------------------------
-void NSViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
-{
-	MacClipboard::setClipboard (data);
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> NSViewFrame::getClipboard ()
-{
-	return MacClipboard::createClipboardDataPackage ();
-}
-
-//-----------------------------------------------------------------------------
 void NSViewFrame::setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator)
 {
 	touchBarCreator = creator;

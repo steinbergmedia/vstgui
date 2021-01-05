@@ -103,6 +103,17 @@ public:
 	 */
 	PlatformTimerPtr createTimer (IPlatformTimerCallback* callback) const noexcept final;
 
+	/** Set clipboard data
+	 *	@param data data to put on the clipboard
+	 *	@return true on success
+	 */
+	bool setClipboard (const SharedPointer<IDataPackage>& data) const noexcept final;
+
+	/** Get clipboard data
+	 *	@return data package pointer 
+	 */
+	SharedPointer<IDataPackage> getClipboard () const noexcept final;
+
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;
 	const Win32Factory* asWin32Factory () const noexcept final;
