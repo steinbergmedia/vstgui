@@ -18,4 +18,4 @@ jobs:
         source-dir: '${{github.workspace}}/vstgui'
         build-dir: '${{github.workspace}}/build'
         build-type: 'Debug'
-        build-vstgui-standalone: OFF
+        build-vstgui-standalone: ON
