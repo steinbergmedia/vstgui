@@ -2,31 +2,20 @@ name: Build
 
 on: [push]
 
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug
-  BUILD_STANDALONE: OFF
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [macos-10.15, windows-2019]
+        os: [macos-10.15, macos-11.0]
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Create Build Environment
-      run: cmake -E make_directory ${{github.workspace}}/build
-
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{github.workspace}}/build
-      run: cmake -S "${{github.workspace}}/vstgui" -B "${{github.workspace}}/build" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DVSTGUI_STANDALONE=$BUILD_STANDALONE
-
-    - name: Build
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      run: cmake --build . --config $BUILD_TYPE
+    - uses: actions/cmake@v1
+      with:
+        source-dir: '${{github.workspace}}/vstgui'
+        build-dir: '${{github.workspace}}/build'
+        build-type: 'Debug'
+        build-vstgui-standalone: OFF
