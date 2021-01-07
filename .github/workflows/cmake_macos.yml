@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - uses: actions/cmake@v1
+    - uses: ./.github/actions/cmake
       with:
         source-dir: '${{github.workspace}}/vstgui'
         build-dir: '${{github.workspace}}/build'
