@@ -22,7 +22,7 @@ runs:
   steps:
   - name: Create Build Environment
     shell: bash
-    run: cmake -E make_directory ${{inputs.build-dir}}
+    run: cmake -E make_directory "${{inputs.build-dir}}"
 
   - name: Configure CMake
     shell: bash
