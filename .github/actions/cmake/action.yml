@@ -18,6 +18,7 @@ inputs:
     required: 'false'
     default: OFF
 runs:
+  using: "composite"
   steps:
   - name: Create Build Environment
     shell: bash
