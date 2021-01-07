@@ -1,6 +1,6 @@
-name: Windows build
+name: Linux build
 
-on: [workflow_dispatch]
+on: [push]
 
 jobs:
   build:
