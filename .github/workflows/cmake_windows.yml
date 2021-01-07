@@ -1,4 +1,4 @@
-name: macOS Build
+name: Windows build
 
 on: [push]
 
@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-10.15, macos-11.0]
+        os: [windows-2019]
 
     steps:
     - uses: actions/checkout@v2
