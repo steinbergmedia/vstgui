@@ -20,6 +20,7 @@
 #include "../common/genericoptionmenu.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
+#include "../../cinvalidrectlist.h"
 
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"
@@ -572,31 +573,14 @@ void Win32Frame::paint (HWND hwnd)
 					updateRegionList = (RGNDATA*) std::malloc (updateRegionListSize);
 				}
 				GetRegionData (rgn, len, updateRegionList);
-				if (updateRegionList->rdh.nCount > 1)
+				if (updateRegionList->rdh.nCount > 0)
 				{
-					std::vector<CRect> dirtyRects;
-					dirtyRects.reserve (updateRegionList->rdh.nCount);
-					RECT* rp = (RECT*)updateRegionList->Buffer;
-					dirtyRects.emplace_back (CRect (rp->left, rp->top, rp->right, rp->bottom));
-					++rp;
-					for (uint32_t i = 1; i < updateRegionList->rdh.nCount; ++i, ++rp)
+					CInvalidRectList dirtyRects;
+					RECT* rp = reinterpret_cast<RECT*> (updateRegionList->Buffer);
+					for (uint32_t i = 0; i < updateRegionList->rdh.nCount; ++i, ++rp)
 					{
 						CRect ur (rp->left, rp->top, rp->right, rp->bottom);
-						auto mustAdd = true;
-						for (auto& r : dirtyRects)
-						{
-							auto cr = ur;
-							cr.unite (r);
-							if (cr.getWidth () * cr.getHeight () ==
-							    ur.getWidth () * ur.getHeight () + r.getWidth () * r.getHeight ())
-							{
-								r = cr;
-								mustAdd = false;
-								break;
-							}
-						}
-						if (mustAdd)
-							dirtyRects.emplace_back (ur);
+						dirtyRects.add (ur);
 					}
 					for (auto& _updateRect : dirtyRects)
 					{
