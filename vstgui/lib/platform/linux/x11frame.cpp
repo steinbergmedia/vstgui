@@ -728,20 +728,6 @@ SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
 	return nullptr;
 }
 
-//------------------------------------------------------------------------
-SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CCoord height,
-																double scaleFactor)
-{
-	CPoint size (width * scaleFactor, height * scaleFactor);
-	auto bitmap = new Cairo::Bitmap (size);
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = owned (new Cairo::Context (bitmap));
-	bitmap->forget ();
-	if (context->valid ())
-		return context;
-	return nullptr;
-}
-
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 DragResult Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)

@@ -69,7 +69,6 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , windowHandle (nullptr)
 , tooltipWindow (nullptr)
 , oldFocusWindow (nullptr)
-, backBuffer (nullptr)
 , deviceContext (nullptr)
 , inPaint (false)
 , mouseInside (false)
@@ -112,7 +111,7 @@ Win32Frame::~Win32Frame () noexcept
 	if (tooltipWindow)
 		DestroyWindow (tooltipWindow);
 	if (backBuffer)
-		backBuffer->forget ();
+		backBuffer = nullptr;
 	if (windowHandle)
 		RevokeDragDrop (windowHandle);
 	if (parentWindow)
@@ -270,8 +269,7 @@ bool Win32Frame::setSize (const CRect& newSize)
 	}
 	if (backBuffer)
 	{
-		backBuffer->forget ();
-		backBuffer = createOffscreenContext (newSize.getWidth (), newSize.getHeight ());
+		backBuffer = getPlatformFactory ().createOffscreenContext (newSize.getSize ());
 	}
 	if (!parentWindow)
 		return true;
@@ -465,16 +463,6 @@ SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
 	return owned<IPlatformOpenGLView> (new Win32OpenGLView (this));
 }
 #endif
-
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
-{
-	D2DBitmap* bitmap = new D2DBitmap (CPoint (width * scaleFactor, height * scaleFactor));
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
-	bitmap->forget ();
-	return context;
-}
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 class Win32LegacyDragSupport final : virtual public DragCallbackAdapter, virtual public NonAtomicReferenceCounted

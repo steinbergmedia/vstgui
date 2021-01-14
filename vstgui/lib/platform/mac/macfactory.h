@@ -6,7 +6,7 @@
 
 #include "../platformfactory.h"
 
-typedef struct __CFBundle *CFBundleRef;
+typedef struct __CFBundle* CFBundleRef;
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -33,8 +33,8 @@ public:
 	 *	@return platform frame or nullptr on failure
 	 */
 	PlatformFramePtr createFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent,
-	                              PlatformType parentType,
-	                              IPlatformFrameConfig* config = nullptr) const noexcept final;
+								  PlatformType parentType,
+								  IPlatformFrameConfig* config = nullptr) const noexcept final;
 
 	/** Create a platform font object
 	 *	@param name name of the font
@@ -43,7 +43,7 @@ public:
 	 *	@return platform font or nullptr on failure
 	 */
 	PlatformFontPtr createFont (const UTF8String& name, const CCoord& size,
-	                            const int32_t& style) const noexcept final;
+								const int32_t& style) const noexcept final;
 	/** Query all platform font families
 	 *	@param callback callback called for every font
 	 *	@return true on success
@@ -70,21 +70,21 @@ public:
 	 *	@param memSize memory size
 	 *	@return platform bitmap or nullptr on failure
 	 */
-	PlatformBitmapPtr createBitmapFromMemory (const void* ptr, uint32_t memSize) const
-	    noexcept final;
+	PlatformBitmapPtr createBitmapFromMemory (const void* ptr,
+											  uint32_t memSize) const noexcept final;
 	/** Create a memory representation of the platform bitmap in PNG format.
 	 *	@param bitmap the platform bitmap object
 	 *	@return memory buffer containing the PNG representation of the bitmap
 	 */
-	PNGBitmapBuffer createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const
-	    noexcept final;
+	PNGBitmapBuffer
+		createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept final;
 
 	/** Create a platform resource input stream
 	 *	@param desc description where to find the file to open
 	 *	@return platform resource input stream or nullptr if not found
 	 */
-	PlatformResourceInputStreamPtr createResourceInputStream (
-	    const CResourceDescription& desc) const noexcept final;
+	PlatformResourceInputStreamPtr
+		createResourceInputStream (const CResourceDescription& desc) const noexcept final;
 
 	/** Create a platform string object
 	 *	@param utf8String optional initial UTF-8 encoded string
@@ -105,9 +105,17 @@ public:
 	bool setClipboard (const SharedPointer<IDataPackage>& data) const noexcept final;
 
 	/** Get clipboard data
-	 *	@return data package pointer 
+	 *	@return data package pointer
 	 */
 	SharedPointer<IDataPackage> getClipboard () const noexcept final;
+
+	/** create an offscreen draw device
+	 *	@param size the size of the bitmap where the offscreen renders to
+	 *	@param scaleFactor the scale factor for drawing
+	 *	@return an offscreen context object or nullptr on failure
+	 */
+	COffscreenContextPtr createOffscreenContext (const CPoint& size,
+												 double scaleFactor = 1.) const noexcept final;
 
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;

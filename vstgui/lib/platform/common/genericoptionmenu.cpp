@@ -58,7 +58,7 @@ public:
 	{
 		if (maxWidth >= 0.)
 			return maxWidth;
-		auto context = COffscreenContext::create (frame, 1, 1);
+		auto context = COffscreenContext::create ({1., 1.});
 		maxWidth = 0.;
 		maxTitleWidth = 0.;
 		hasRightMargin = false;

@@ -57,7 +57,10 @@ if (cachedBitmap)
 class COffscreenContext : public CDrawContext
 {
 public:
-	static SharedPointer<COffscreenContext> create (CFrame* frame, CCoord width, CCoord height, double scaleFactor = 1.);
+	static SharedPointer<COffscreenContext> create (const CPoint& size, double scaleFactor = 1.);
+	VSTGUI_DEPRECATED (static SharedPointer<COffscreenContext> create (CFrame* frame, CCoord width,
+	                                                                   CCoord height,
+	                                                                   double scaleFactor = 1.);)
 
 	//-----------------------------------------------------------------------------
 	/// @name COffscreenContext Methods
@@ -78,5 +81,16 @@ protected:
 
 	SharedPointer<CBitmap> bitmap;
 };
+
+//-----------------------------------------------------------------------------
+/** Render a bitmap offscreen
+ *	@param size size of the bitmap
+ *	@param scaleFactor scale factor (bitmap size will be scaled by this)
+ *	@param drawFunction user supplied draw function
+ *	@return bitmap pointer on success and nullptr on failure
+ */
+SharedPointer<CBitmap> renderBitmapOffscreen (
+    const CPoint& size, double scaleFactor,
+    const std::function<void (CDrawContext& drawContext)> drawFunction);
 
 } // VSTGUI

@@ -463,17 +463,6 @@ SharedPointer<IPlatformOptionMenu> HIViewFrame::createPlatformOptionMenu ()
 	return makeOwned<HIViewOptionMenu> ();
 }
 
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> HIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
-{
-	auto bitmap = makeOwned<CGBitmap> (CPoint (width * scaleFactor, height * scaleFactor));
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = makeOwned<CGDrawContext> (bitmap);
-	if (context->getCGContext ())
-		return context;
-	return nullptr;
-}
-
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------------
 DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)

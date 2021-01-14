@@ -107,15 +107,15 @@ uint64_t Win32Factory::getTicks () const noexcept
 
 //-----------------------------------------------------------------------------
 PlatformFramePtr Win32Factory::createFrame (IPlatformFrameCallback* frame, const CRect& size,
-                                            void* parent, PlatformType parentType,
-                                            IPlatformFrameConfig* config) const noexcept
+											void* parent, PlatformType parentType,
+											IPlatformFrameConfig* config) const noexcept
 {
 	return makeOwned<Win32Frame> (frame, size, static_cast<HWND> (parent), parentType);
 }
 
 //-----------------------------------------------------------------------------
 PlatformFontPtr Win32Factory::createFont (const UTF8String& name, const CCoord& size,
-                                          const int32_t& style) const noexcept
+										  const int32_t& style) const noexcept
 {
 	return makeOwned<D2DFont> (name, size, style);
 }
@@ -155,7 +155,8 @@ PlatformBitmapPtr Win32Factory::createBitmapFromPath (UTF8StringPtr absolutePath
 {
 	UTF8StringHelper path (absolutePath);
 	IStream* stream = nullptr;
-	if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, nullptr, &stream)))
+	if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ | STGM_SHARE_DENY_WRITE, 0, false,
+										   nullptr, &stream)))
 	{
 		auto result = createFromIStream (stream);
 		stream->Release ();
@@ -165,13 +166,14 @@ PlatformBitmapPtr Win32Factory::createBitmapFromPath (UTF8StringPtr absolutePath
 }
 
 //-----------------------------------------------------------------------------
-PlatformBitmapPtr Win32Factory::createBitmapFromMemory (const void* ptr, uint32_t memSize) const
-    noexcept
+PlatformBitmapPtr Win32Factory::createBitmapFromMemory (const void* ptr,
+														uint32_t memSize) const noexcept
 {
 #ifdef __GNUC__
-	using SHCreateMemStreamProc = IStream* (*) (const BYTE* pInit, UINT cbInit);
+	using SHCreateMemStreamProc = IStream* (*)(const BYTE* pInit, UINT cbInit);
 	HMODULE shlwDll = LoadLibraryA ("shlwapi.dll");
-	SHCreateMemStreamProc proc = reinterpret_cast<SHCreateMemStreamProc> (GetProcAddress (shlwDll, MAKEINTRESOURCEA (12)));
+	SHCreateMemStreamProc proc =
+		reinterpret_cast<SHCreateMemStreamProc> (GetProcAddress (shlwDll, MAKEINTRESOURCEA (12)));
 	IStream* stream = proc (static_cast<const BYTE*> (ptr), memSize);
 #else
 	IStream* stream = SHCreateMemStream ((const BYTE*)ptr, memSize);
@@ -190,7 +192,7 @@ PlatformBitmapPtr Win32Factory::createBitmapFromMemory (const void* ptr, uint32_
 
 //-----------------------------------------------------------------------------
 PNGBitmapBuffer Win32Factory::createBitmapMemoryPNGRepresentation (
-    const PlatformBitmapPtr& bitmap) const noexcept
+	const PlatformBitmapPtr& bitmap) const noexcept
 {
 	if (auto bitmapBase = bitmap.cast<Win32BitmapBase> ())
 		return bitmapBase->createMemoryPNGRepresentation ();
@@ -198,8 +200,8 @@ PNGBitmapBuffer Win32Factory::createBitmapMemoryPNGRepresentation (
 }
 
 //-----------------------------------------------------------------------------
-PlatformResourceInputStreamPtr Win32Factory::createResourceInputStream (
-    const CResourceDescription& desc) const noexcept
+PlatformResourceInputStreamPtr
+	Win32Factory::createResourceInputStream (const CResourceDescription& desc) const noexcept
 {
 	return impl->createResourceInputStream (desc);
 }
@@ -227,10 +229,22 @@ bool Win32Factory::setClipboard (const SharedPointer<IDataPackage>& data) const 
 //------------------------------------------------------------------------
 SharedPointer<IDataPackage> Win32Factory::getClipboard () const noexcept
 {
-	IDataObject* dataObject = nullptr;;
+	IDataObject* dataObject = nullptr;
 	if (OleGetClipboard (&dataObject) != S_OK)
 		return nullptr;
 	return makeOwned<Win32DataPackage> (dataObject);
+}
+
+//------------------------------------------------------------------------
+auto Win32Factory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
+	-> COffscreenContextPtr
+{
+	if (auto bitmap = makeOwned<D2DBitmap> (size * scaleFactor))
+	{
+		bitmap->setScaleFactor (scaleFactor);
+		return owned<COffscreenContext> (new D2DDrawContext (bitmap));
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

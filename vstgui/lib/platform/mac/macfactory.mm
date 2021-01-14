@@ -12,6 +12,7 @@
 #include "carbon/hiviewframe.h"
 #include "cfontmac.h"
 #include "cgbitmap.h"
+#include "cgdrawcontext.h"
 #include "cocoa/nsviewframe.h"
 #include "ios/uiviewframe.h"
 #include "macclipboard.h"
@@ -57,8 +58,8 @@ uint64_t MacFactory::getTicks () const noexcept
 
 //-----------------------------------------------------------------------------
 PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const CRect& size,
-                                          void* parent, PlatformType parentType,
-                                          IPlatformFrameConfig* config) const noexcept
+										  void* parent, PlatformType parentType,
+										  IPlatformFrameConfig* config) const noexcept
 {
 #if TARGET_OS_IPHONE
 	return makeOwned<UIViewFrame> (frame, size, (__bridge UIView*)parent);
@@ -73,7 +74,7 @@ PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const C
 
 //-----------------------------------------------------------------------------
 PlatformFontPtr MacFactory::createFont (const UTF8String& name, const CCoord& size,
-                                        const int32_t& style) const noexcept
+										const int32_t& style) const noexcept
 {
 	auto font = makeOwned<CoreTextFont> (name, size, style);
 	if (font->getFontRef ())
@@ -111,22 +112,22 @@ PlatformBitmapPtr MacFactory::createBitmapFromPath (UTF8StringPtr absolutePath) 
 }
 
 //-----------------------------------------------------------------------------
-PlatformBitmapPtr MacFactory::createBitmapFromMemory (const void* ptr, uint32_t memSize) const
-    noexcept
+PlatformBitmapPtr MacFactory::createBitmapFromMemory (const void* ptr,
+													  uint32_t memSize) const noexcept
 {
 	return CGBitmap::createFromMemory (ptr, memSize);
 }
 
 //-----------------------------------------------------------------------------
-PNGBitmapBuffer MacFactory::createBitmapMemoryPNGRepresentation (
-    const PlatformBitmapPtr& bitmap) const noexcept
+PNGBitmapBuffer
+	MacFactory::createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept
 {
 	return CGBitmap::createMemoryPNGRepresentation (bitmap);
 }
 
 //-----------------------------------------------------------------------------
-PlatformResourceInputStreamPtr MacFactory::createResourceInputStream (
-    const CResourceDescription& desc) const noexcept
+PlatformResourceInputStreamPtr
+	MacFactory::createResourceInputStream (const CResourceDescription& desc) const noexcept
 {
 	if (desc.type == CResourceDescription::kIntegerType)
 		return nullptr;
@@ -184,6 +185,18 @@ SharedPointer<IDataPackage> MacFactory::getClipboard () const noexcept
 #else
 	return MacClipboard::createClipboardDataPackage ();
 #endif
+}
+
+//------------------------------------------------------------------------
+auto MacFactory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
+	-> COffscreenContextPtr
+{
+	auto bitmap = makeOwned<CGBitmap> (size * scaleFactor);
+	bitmap->setScaleFactor (scaleFactor);
+	auto context = makeOwned<CGDrawContext> (bitmap);
+	if (context->getCGContext ())
+		return std::move (context);
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

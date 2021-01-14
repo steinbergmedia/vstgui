@@ -5,7 +5,7 @@
 #include "coffscreencontext.h"
 #include "cframe.h"
 #include "cbitmap.h"
-#include "platform/iplatformframe.h"
+#include "platform/platformfactory.h"
 
 namespace VSTGUI {
 
@@ -29,15 +29,19 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 		bitmap->draw (pContext, destRect, srcOffset);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 SharedPointer<COffscreenContext> COffscreenContext::create (CFrame* frame, CCoord width, CCoord height, double scaleFactor)
 {
-	if (width >= 1. && height >= 1.)
-	{
-		IPlatformFrame* pf = frame ? frame->getPlatformFrame () : nullptr;
-		if (pf)
-			return pf->createOffscreenContext (width, height, scaleFactor);
-	}
+	return create ({width, height}, scaleFactor);
+}
+#endif
+
+//-----------------------------------------------------------------------------
+SharedPointer<COffscreenContext> COffscreenContext::create (const CPoint& size, double scaleFactor)
+{
+	if (size.x >= 1. && size.y >= 1.)
+		return getPlatformFactory ().createOffscreenContext (size, scaleFactor);
 	return nullptr;
 }
 
@@ -51,6 +55,20 @@ CCoord COffscreenContext::getWidth () const
 CCoord COffscreenContext::getHeight () const
 {
 	return bitmap ? bitmap->getHeight () : 0.;
+}
+
+//-----------------------------------------------------------------------------
+SharedPointer<CBitmap> renderBitmapOffscreen (
+    const CPoint& size, double scaleFactor,
+    const std::function<void (CDrawContext& drawContext)> drawCallback)
+{
+	auto context = COffscreenContext::create (size, scaleFactor);
+	if (!context)
+		return nullptr;
+	context->beginDraw ();
+	drawCallback (*context);
+	context->endDraw ();
+	return shared (context->getBitmap ());
 }
 
 } // VSTGUI

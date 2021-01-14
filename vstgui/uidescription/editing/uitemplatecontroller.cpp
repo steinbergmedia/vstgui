@@ -680,8 +680,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
 		dragRow = row;
 
 		auto cellBounds = browser->getCellBounds ({row, column});
-		auto offscreen = COffscreenContext::create (browser->getFrame (), cellBounds.getWidth (),
-		                                            cellBounds.getHeight (),
+		auto offscreen = COffscreenContext::create (cellBounds.getSize (),
 		                                            browser->getFrame ()->getScaleFactor ());
 		auto offscreenSize = cellBounds;
 		offscreenSize.originize ();

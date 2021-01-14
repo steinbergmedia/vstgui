@@ -663,7 +663,7 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 	r.setSize (size);
 	size.y *= docContext->getImagePaths ().size ();
 
-	auto offscreen = COffscreenContext::create (contentView, size.x, size.y);
+	auto offscreen = COffscreenContext::create (size);
 	if (!offscreen)
 		return nullptr;
 

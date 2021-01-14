@@ -32,6 +32,8 @@ const IPlatformFactory& getPlatformFactory ();
 class IPlatformFactory
 {
 public:
+	using COffscreenContextPtr = SharedPointer<COffscreenContext>;
+
 	virtual ~IPlatformFactory () noexcept = default;
 
 	/** Return platform ticks (millisecond resolution)
@@ -123,10 +125,18 @@ public:
 	virtual bool setClipboard (const SharedPointer<IDataPackage>& data) const noexcept = 0;
 
 	/** Get clipboard data
-	 *	@return data package pointer 
+	 *	@return data package pointer
 	 */
 	virtual SharedPointer<IDataPackage> getClipboard () const noexcept = 0;
-	
+
+	/** create an offscreen draw device
+	 *	@param size the size of the bitmap where the offscreen renders to
+	 *	@param scaleFactor the scale factor for drawing
+	 *	@return an offscreen context object or nullptr on failure
+	 */
+	virtual COffscreenContextPtr
+		createOffscreenContext (const CPoint& size, double scaleFactor = 1.) const noexcept = 0;
+
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;
 	virtual const Win32Factory* asWin32Factory () const noexcept = 0;

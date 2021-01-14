@@ -84,7 +84,7 @@ private:
 
 		auto size = getViewSize ().getSize ();
 		auto scaleFactor = getFrame ()->getScaleFactor ();
-		if (auto offscreen = COffscreenContext::create (getFrame (), size.x, size.y, scaleFactor))
+		if (auto offscreen = COffscreenContext::create (size, scaleFactor))
 		{
 			offscreen->beginDraw ();
 			func (this, *offscreen, size);
@@ -209,7 +209,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	auto boxBlurFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur));
 	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, 2);
 
-	auto offscreen = COffscreenContext::create (view->getFrame (), 20, 20);
+	auto offscreen = COffscreenContext::create ({20., 20.});
 	offscreen->beginDraw ();
 	offscreen->setFillColor (kRedCColor);
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
@@ -219,7 +219,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	boxBlurFilter->run (true);
 	bitmap->draw (&context, {0, 0, 20, 20});
 
-	offscreen = COffscreenContext::create (view->getFrame (), 20, 20);
+	offscreen = COffscreenContext::create ({20., 20.});
 	offscreen->beginDraw ();
 	offscreen->clearRect({0, 0, 20, 20});
 	offscreen->setFillColor (kGreenCColor);
@@ -230,7 +230,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	boxBlurFilter->run (true);
 	bitmap->draw (&context, {20, 0, 40, 20});
 
-	offscreen = COffscreenContext::create (view->getFrame (), 20, 20);
+	offscreen = COffscreenContext::create ({20., 20.});
 	offscreen->beginDraw ();
 	offscreen->clearRect({0, 0, 20, 20});
 	offscreen->setFillColor (kBlueCColor);
@@ -241,7 +241,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	boxBlurFilter->run (true);
 	bitmap->draw (&context, {40, 0, 60, 20});
 
-	offscreen = COffscreenContext::create (view->getFrame (), 20, 20);
+	offscreen = COffscreenContext::create ({20., 20.});
 	offscreen->beginDraw ();
 	offscreen->clearRect({0, 0, 20, 20});
 	offscreen->setFillColor (kGreyCColor);

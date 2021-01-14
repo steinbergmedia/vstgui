@@ -76,14 +76,14 @@ public:
 	 *	@return memory buffer containing the PNG representation of the bitmap
 	 */
 	PNGBitmapBuffer
-	createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept final;
+		createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept final;
 
 	/** Create a platform resource input stream
 	 *	@param desc description where to find the file to open
 	 *	@return platform resource input stream or nullptr if not found
 	 */
 	PlatformResourceInputStreamPtr
-	createResourceInputStream (const CResourceDescription& desc) const noexcept final;
+		createResourceInputStream (const CResourceDescription& desc) const noexcept final;
 
 	/** Create a platform string object
 	 *	@param utf8String optional initial UTF-8 encoded string
@@ -96,7 +96,7 @@ public:
 	 *	@return platform timer object or nullptr on failure
 	 */
 	PlatformTimerPtr createTimer (IPlatformTimerCallback* callback) const noexcept final;
-	
+
 	/** Set clipboard data
 	 *	@param data data to put on the clipboard
 	 *	@return true on success
@@ -104,9 +104,17 @@ public:
 	bool setClipboard (const SharedPointer<IDataPackage>& data) const noexcept final;
 
 	/** Get clipboard data
-	 *	@return data package pointer 
+	 *	@return data package pointer
 	 */
 	SharedPointer<IDataPackage> getClipboard () const noexcept final;
+
+	/** create an offscreen draw device
+	 *	@param size the size of the bitmap where the offscreen renders to
+	 *	@param scaleFactor the scale factor for drawing
+	 *	@return an offscreen context object or nullptr on failure
+	 */
+	COffscreenContextPtr createOffscreenContext (const CPoint& size,
+												 double scaleFactor = 1.) const noexcept final;
 
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;

@@ -4,6 +4,7 @@
 
 #include "cairobitmap.h"
 #include "cairofont.h"
+#include "cairocontext.h"
 #include "x11frame.h"
 #include "../iplatformframecallback.h"
 #include "../common/fileresourceinputstream.h"
@@ -137,8 +138,8 @@ PlatformBitmapPtr LinuxFactory::createBitmapFromMemory (const void* ptr,
 }
 
 //-----------------------------------------------------------------------------
-PNGBitmapBuffer
-LinuxFactory::createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap) const noexcept
+PNGBitmapBuffer LinuxFactory::createBitmapMemoryPNGRepresentation (
+	const PlatformBitmapPtr& bitmap) const noexcept
 {
 	if (auto cairoBitmap = dynamic_cast<Cairo::Bitmap*> (bitmap.get ()))
 	{
@@ -149,7 +150,7 @@ LinuxFactory::createBitmapMemoryPNGRepresentation (const PlatformBitmapPtr& bitm
 
 //-----------------------------------------------------------------------------
 PlatformResourceInputStreamPtr
-LinuxFactory::createResourceInputStream (const CResourceDescription& desc) const noexcept
+	LinuxFactory::createResourceInputStream (const CResourceDescription& desc) const noexcept
 {
 	if (desc.type == CResourceDescription::kIntegerType)
 		return {};
@@ -181,6 +182,19 @@ bool LinuxFactory::setClipboard (const SharedPointer<IDataPackage>& data) const 
 SharedPointer<IDataPackage> LinuxFactory::getClipboard () const noexcept
 {
 	// TODO: Linux Clipboard Implementation
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+auto LinuxFactory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
+	-> COffscreenContextPtr
+{
+	auto bitmap = new Cairo::Bitmap (size * scaleFactor);
+	bitmap->setScaleFactor (scaleFactor);
+	auto context = owned (new Cairo::Context (bitmap));
+	bitmap->forget ();
+	if (context->valid ())
+		return context;
 	return nullptr;
 }
 

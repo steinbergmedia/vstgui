@@ -270,19 +270,6 @@ SharedPointer<IPlatformOptionMenu> UIViewFrame::createPlatformOptionMenu ()
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> UIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
-{
-	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
-	bitmap->setScaleFactor (scaleFactor);
-	CGDrawContext* context = new CGDrawContext (bitmap);
-	bitmap->forget ();
-	if (context->getCGContext ())
-		return owned<COffscreenContext> (context);
-	context->forget ();
-	return 0;
-}
-
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOpenGLView> UIViewFrame::createPlatformOpenGLView ()

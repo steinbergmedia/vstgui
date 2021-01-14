@@ -297,10 +297,7 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 {
 	CRect selectionRect = selection->getBounds ();
 	auto scaleFactor = frame->getScaleFactor ();
-	auto context = COffscreenContext::create (frame, selectionRect.getWidth (),
-	                                          selectionRect.getHeight (), scaleFactor);
-	context->beginDraw ();
-	{
+	auto bitmap = renderBitmapOffscreen (selectionRect.getSize (), scaleFactor, [&] (auto& context) {
 		CGraphicsTransform tm;
 		CGraphicsTransform invTm;
 		if (anchorView)
@@ -317,7 +314,7 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 			originalZoom = anchorView->getFrame ()->getZoom ();
 			anchorView->getFrame ()->setZoom (1.);
 		}
-		CDrawContext::Transform tr (*context, tm);
+		CDrawContext::Transform tr (context, tm);
 		for (auto view : *selection)
 		{
 			if (!selection->containsParent (view))
@@ -326,18 +323,18 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 				p = view->translateToGlobal (p);
 				if (anchorView)
 					invTm.transform (p);
-				CDrawContext::Transform transform (*context,
+				CDrawContext::Transform transform (context,
 				                                   CGraphicsTransform ().translate (p.x, p.y));
-				context->setClipRect (view->getViewSize ());
+				context.setClipRect (view->getViewSize ());
 				if (IPlatformViewLayerDelegate* layer = view.cast<IPlatformViewLayerDelegate> ())
 				{
 					CRect r (view->getViewSize ());
 					r.originize ();
-					layer->drawViewLayer (context, r);
+					layer->drawViewLayer (&context, r);
 				}
 				else
 				{
-					view->drawRect (context, view->getViewSize ());
+					view->drawRect (&context, view->getViewSize ());
 				}
 			}
 		}
@@ -345,10 +342,7 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 		{
 			anchorView->getFrame ()->setZoom (originalZoom);
 		}
-	}
-
-	context->endDraw ();
-	auto bitmap = shared (context->getBitmap ());
+	});
 	return bitmap;
 }
 
