@@ -12,6 +12,7 @@
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dgraphicspath.h"
+#include "win32factory.h"
 #include "win32textedit.h"
 #include "win32optionmenu.h"
 #include "win32support.h"
