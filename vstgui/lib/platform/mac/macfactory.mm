@@ -167,7 +167,7 @@ PlatformTimerPtr MacFactory::createTimer (IPlatformTimerCallback* callback) cons
 }
 
 //------------------------------------------------------------------------
-bool MacFactory::setClipboard (const SharedPointer<IDataPackage>& data) const noexcept
+bool MacFactory::setClipboard (const DataPackagePtr& data) const noexcept
 {
 #if TARGET_OS_IPHONE
 	return false;
@@ -178,7 +178,7 @@ bool MacFactory::setClipboard (const SharedPointer<IDataPackage>& data) const no
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IDataPackage> MacFactory::getClipboard () const noexcept
+auto MacFactory::getClipboard () const noexcept -> DataPackagePtr
 {
 #if TARGET_OS_IPHONE
 	return nullptr;

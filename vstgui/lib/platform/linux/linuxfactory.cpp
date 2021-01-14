@@ -172,14 +172,14 @@ PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) co
 }
 
 //------------------------------------------------------------------------
-bool LinuxFactory::setClipboard (const SharedPointer<IDataPackage>& data) const noexcept
+bool LinuxFactory::setClipboard (const DataPackagePtr& data) const noexcept
 {
 	// TODO: Linux Clipboard Implementation
 	return false;
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IDataPackage> LinuxFactory::getClipboard () const noexcept
+auto LinuxFactory::getClipboard () const noexcept -> DataPackagePtr
 {
 	// TODO: Linux Clipboard Implementation
 	return nullptr;

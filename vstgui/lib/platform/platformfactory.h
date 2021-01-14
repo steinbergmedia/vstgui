@@ -32,6 +32,7 @@ const IPlatformFactory& getPlatformFactory ();
 class IPlatformFactory
 {
 public:
+	using DataPackagePtr = SharedPointer<IDataPackage>;
 	using COffscreenContextPtr = SharedPointer<COffscreenContext>;
 
 	virtual ~IPlatformFactory () noexcept = default;
@@ -122,12 +123,12 @@ public:
 	 *	@param data data to put on the clipboard
 	 *	@return true on success
 	 */
-	virtual bool setClipboard (const SharedPointer<IDataPackage>& data) const noexcept = 0;
+	virtual bool setClipboard (const DataPackagePtr& data) const noexcept = 0;
 
 	/** Get clipboard data
 	 *	@return data package pointer
 	 */
-	virtual SharedPointer<IDataPackage> getClipboard () const noexcept = 0;
+	virtual DataPackagePtr getClipboard () const noexcept = 0;
 
 	/** create an offscreen draw device
 	 *	@param size the size of the bitmap where the offscreen renders to

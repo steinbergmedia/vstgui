@@ -220,7 +220,7 @@ PlatformTimerPtr Win32Factory::createTimer (IPlatformTimerCallback* callback) co
 }
 
 //------------------------------------------------------------------------
-bool Win32Factory::setClipboard (const SharedPointer<IDataPackage>& data) const noexcept
+bool Win32Factory::setClipboard (const DataPackagePtr& data) const noexcept
 {
 	auto dataObject = makeOwned<Win32DataObject> (data);
 	auto hr = OleSetClipboard (dataObject);
@@ -228,7 +228,7 @@ bool Win32Factory::setClipboard (const SharedPointer<IDataPackage>& data) const 
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IDataPackage> Win32Factory::getClipboard () const noexcept
+auto Win32Factory::getClipboard () const noexcept -> DataPackagePtr
 {
 	IDataObject* dataObject = nullptr;
 	if (OleGetClipboard (&dataObject) != S_OK)

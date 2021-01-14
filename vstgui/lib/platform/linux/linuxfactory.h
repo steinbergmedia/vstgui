@@ -101,12 +101,12 @@ public:
 	 *	@param data data to put on the clipboard
 	 *	@return true on success
 	 */
-	bool setClipboard (const SharedPointer<IDataPackage>& data) const noexcept final;
+	bool setClipboard (const DataPackagePtr& data) const noexcept final;
 
 	/** Get clipboard data
 	 *	@return data package pointer
 	 */
-	SharedPointer<IDataPackage> getClipboard () const noexcept final;
+	DataPackagePtr getClipboard () const noexcept final;
 
 	/** create an offscreen draw device
 	 *	@param size the size of the bitmap where the offscreen renders to
