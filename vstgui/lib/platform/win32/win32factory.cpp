@@ -12,6 +12,7 @@
 #include "../iplatformtimer.h"
 #include "../common/fileresourceinputstream.h"
 #include "direct2d/d2dbitmap.h"
+#include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dfont.h"
 #include "win32frame.h"
 #include "win32dragging.h"
