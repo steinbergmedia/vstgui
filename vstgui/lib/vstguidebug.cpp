@@ -61,18 +61,18 @@ void TimeWatch::stop ()
 //-----------------------------------------------------------------------------
 void DebugPrint (const char *format, ...)
 {
-	char string[300];
+	static constexpr auto BufferSize = 1024u;
+	char string[BufferSize];
 	std::va_list marker;
 	va_start (marker, format);
-	std::vsprintf (string, format, marker);
-	if (string[0] == 0)
+	if (std::vsnprintf (string, BufferSize, format, marker) == 0)
 		std::strcpy (string, "Empty string\n");
-	#if WINDOWS
+#if WINDOWS
 	UTF8StringHelper debugString (string);
 	OutputDebugString (debugString);
-	#else
+#else
 	std::fprintf (stderr, "%s", string);
-	#endif
+#endif
 }
 
 } // VSTGUI
