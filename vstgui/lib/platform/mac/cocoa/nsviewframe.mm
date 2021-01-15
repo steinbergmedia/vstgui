@@ -784,7 +784,10 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 		{
 			[nsView setWantsLayer:YES];
 			if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion >= 13))
+			{
 				nsView.layer.drawsAsynchronously = YES;
+				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+			}
 		}
 	}
 }
