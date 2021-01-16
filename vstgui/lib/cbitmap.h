@@ -20,6 +20,9 @@ namespace VSTGUI {
 class CBitmap : public AtomicReferenceCounted
 {
 public:
+	using BitmapVector = std::vector<PlatformBitmapPtr>;
+	using const_iterator = BitmapVector::const_iterator;
+
 	/** Create an image from a resource identifier */
 	explicit CBitmap (const CResourceDescription& desc);
 	/** Create an image with a given size */
@@ -52,6 +55,9 @@ public:
 
 	bool addBitmap (const PlatformBitmapPtr& platformBitmap);
 	PlatformBitmapPtr getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
+
+	const_iterator begin () const { return bitmaps.begin (); }
+	const_iterator end () const { return bitmaps.end (); }
 	//@}
 
 //-----------------------------------------------------------------------------
@@ -59,7 +65,6 @@ protected:
 	CBitmap ();
 
 	CResourceDescription resourceDesc;
-	using BitmapVector = std::vector<PlatformBitmapPtr>;
 	BitmapVector bitmaps;
 };
 
