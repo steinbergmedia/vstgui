@@ -16,6 +16,7 @@ class IViewFactory;
 class InputStream;
 class OutputStream;
 class IBitmapCreator;
+class IBitmapCreator2;
 class IContentProvider;
 class MemoryContentProvider;
 class InputStreamContentProvider;

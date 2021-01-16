@@ -88,6 +88,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	IViewFactory* viewFactory {nullptr};
 	IContentProvider* contentProvider {nullptr};
 	IBitmapCreator* bitmapCreator { nullptr};
+	IBitmapCreator2* bitmapCreator2 { nullptr};
 
 	SharedPointer<UINode> nodes;
 	SharedPointer<UIDescription> sharedResources;
@@ -332,6 +333,12 @@ void UIDescription::unregisterListener (UIDescriptionListener* listener)
 void UIDescription::setBitmapCreator (IBitmapCreator* creator)
 {
 	impl->bitmapCreator = creator;
+}
+
+//------------------------------------------------------------------------
+void UIDescription::setBitmapCreator2 (IBitmapCreator2* creator)
+{
+	impl->bitmapCreator2 = creator;
 }
 
 //-----------------------------------------------------------------------------
@@ -911,6 +918,20 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 				if (Detail::decodeScaleFactorFromName (name, scaleFactor))
 					platformBitmap->setScaleFactor (scaleFactor);
 				bitmap->setPlatformBitmap (platformBitmap);
+			}
+		}
+		if (impl->bitmapCreator2 && bitmap && bitmap->getPlatformBitmap () == nullptr)
+		{
+			if (auto b = impl->bitmapCreator2->createBitmap (*bitmapNode->getAttributes ()))
+			{
+				bitmap->setPlatformBitmap (b->getPlatformBitmap ());
+				auto it = b->begin ();
+				++it;
+				while (it != b->end ())
+				{
+					bitmap->addBitmap (*it);
+					++it;
+				}
 			}
 		}
 		if (bitmap && bitmapNode->getFilterProcessed () == false)

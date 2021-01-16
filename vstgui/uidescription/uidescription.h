@@ -139,6 +139,7 @@ public:
 	void unregisterListener (UIDescriptionListener* listener);
 
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
+	void setBitmapCreator2 (IBitmapCreator2* bitmapCreator);
 
 	using FocusDrawing = FocusDrawingSettings;
 	FocusDrawing getFocusDrawingSettings () const;
@@ -184,6 +185,15 @@ public:
 	virtual ~IBitmapCreator () noexcept = default;
 	
 	virtual PlatformBitmapPtr createBitmap (const UIAttributes& attributes) = 0;
+};
+
+//-----------------------------------------------------------------------------
+class IBitmapCreator2
+{
+public:
+	virtual ~IBitmapCreator2 () noexcept = default;
+	
+	virtual SharedPointer<CBitmap> createBitmap (const UIAttributes& attributes) = 0;
 };
 
 } // VSTGUI
