@@ -33,6 +33,7 @@ struct Win32Factory::Impl
 	HINSTANCE instance {nullptr};
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
+	bool useGenericTextEdit {false};
 
 	PlatformResourceInputStreamPtr createResourceInputStream (const CResourceDescription& desc)
 	{
@@ -98,6 +99,18 @@ void Win32Factory::useD2DHardwareRenderer (bool state) const noexcept
 bool Win32Factory::useD2DHardwareRenderer () const noexcept
 {
 	return impl->useD2DHardwareRenderer;
+}
+
+//-----------------------------------------------------------------------------
+void Win32Factory::useGenericTextEdit (bool state) const noexcept
+{
+	impl->useGenericTextEdit = state;
+}
+
+//-----------------------------------------------------------------------------
+bool Win32Factory::useGenericTextEdit () const noexcept
+{
+	return impl->useGenericTextEdit;
 }
 
 //-----------------------------------------------------------------------------

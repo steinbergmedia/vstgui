@@ -19,6 +19,7 @@
 #include "win32datapackage.h"
 #include "win32dragging.h"
 #include "../common/genericoptionmenu.h"
+#include "../common/generictextedit.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
 #include "../../cinvalidrectlist.h"
@@ -441,6 +442,11 @@ bool Win32Frame::hideTooltip ()
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
+	if (auto win32Factory = getPlatformFactory ().asWin32Factory ())
+	{
+		if (win32Factory->useGenericTextEdit ())
+			return makeOwned<GenericTextEdit> (textEdit);
+	}
 	return owned<IPlatformTextEdit> (new Win32TextEdit (windowHandle, textEdit));
 }
 

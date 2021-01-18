@@ -24,6 +24,9 @@ public:
 	void useD2DHardwareRenderer (bool state) const noexcept;
 	bool useD2DHardwareRenderer () const noexcept;
 
+	void useGenericTextEdit (bool state) const noexcept;
+	bool useGenericTextEdit () const noexcept;
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */

@@ -157,8 +157,13 @@ set(${target}_common_sources
     platform/platform_win32.h
     platform/platform_x11.h
     platform/std_unorderedmap.h
+    platform/common/fileresourceinputstream.cpp
+    platform/common/fileresourceinputstream.h
     platform/common/genericoptionmenu.cpp
     platform/common/genericoptionmenu.h
+    platform/common/generictextedit.cpp
+    platform/common/generictextedit.h
+    platform/common/stb_textedit.h
     vstguibase.h
     vstguidebug.cpp
     vstguidebug.h
@@ -170,12 +175,6 @@ set(${target}_common_sources
 
   ##########################################################################################
 set(${target}_mac_sources
-    platform/common/fileresourceinputstream.cpp
-    platform/common/fileresourceinputstream.h
-    platform/common/genericoptionmenu.cpp
-    platform/common/genericoptionmenu.h
-    platform/common/generictextedit.cpp
-    platform/common/generictextedit.h
     platform/mac/carbon/hiviewframe.cpp
     platform/mac/carbon/hiviewframe.h
     platform/mac/carbon/hiviewoptionmenu.cpp
@@ -225,8 +224,6 @@ set(${target}_mac_sources
 
   ##########################################################################################
 set(${target}_win32_sources
-    platform/common/fileresourceinputstream.cpp
-    platform/common/fileresourceinputstream.h
     platform/win32/direct2d/d2dbitmap.cpp
     platform/win32/direct2d/d2dbitmap.h
     platform/win32/direct2d/d2ddrawcontext.cpp
@@ -264,11 +261,6 @@ set(${target}_win32_sources
 
  ##########################################################################################
 set(${target}_linux_sources
-    platform/common/fileresourceinputstream.cpp
-    platform/common/fileresourceinputstream.h
-    platform/common/generictextedit.cpp
-    platform/common/generictextedit.h
-    platform/common/stb_textedit.h
     platform/linux/cairobitmap.cpp
     platform/linux/cairobitmap.h
     platform/linux/cairocontext.cpp
