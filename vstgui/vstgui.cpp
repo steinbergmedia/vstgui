@@ -65,3 +65,4 @@
 #include "lib/platform/platformfactory.cpp"
 #include "lib/platform/common/fileresourceinputstream.cpp"
 #include "lib/platform/common/genericoptionmenu.cpp"
+#include "lib/platform/common/generictextedit.cpp"
