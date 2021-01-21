@@ -922,7 +922,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 		}
 		if (impl->bitmapCreator2 && bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
-			if (auto b = impl->bitmapCreator2->createBitmap (*bitmapNode->getAttributes ()))
+			if (auto b = impl->bitmapCreator2->createBitmap (*bitmapNode->getAttributes (), this))
 			{
 				bitmap->setPlatformBitmap (b->getPlatformBitmap ());
 				auto it = b->begin ();

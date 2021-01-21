@@ -192,8 +192,9 @@ class IBitmapCreator2
 {
 public:
 	virtual ~IBitmapCreator2 () noexcept = default;
-	
-	virtual SharedPointer<CBitmap> createBitmap (const UIAttributes& attributes) = 0;
+
+	virtual SharedPointer<CBitmap> createBitmap (const UIAttributes& attributes,
+												 const IUIDescription* desc) = 0;
 };
 
 } // VSTGUI
