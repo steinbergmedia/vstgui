@@ -58,6 +58,8 @@ static void (*SuperRemoveFromSuperview) (id, SEL) = SuperDealloc;
 static void (*SuperEventMsg) (id, SEL, NSEvent*) = (void (*) (id, SEL, NSEvent*))objc_msgSendSuper;
 static void (*SuperUpdateTrackingAreas) (id, SEL) = (void (*) (id, SEL))objc_msgSendSuper;
 static void (*SuperTextDidChange) (id, SEL, NSNotification*) = (void (*) (id, SEL, NSNotification*))objc_msgSendSuper;
+static void (*SuperSetNeedsDisplayInRect) (id, SEL,
+										   NSRect) = (void (*) (id, SEL, NSRect))objc_msgSendSuper;
 
 //------------------------------------------------------------------------------------
 extern HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass);

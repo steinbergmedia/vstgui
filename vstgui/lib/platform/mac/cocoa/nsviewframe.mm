@@ -247,6 +247,16 @@ static void VSTGUI_NSView_drawRect (id self, SEL _cmd, NSRect rect)
 		frame->drawRect (&rect);
 }
 
+//------------------------------------------------------------------------
+static void VSTGUI_NSView_setNeedsDisplayInRect (id self, SEL _cmd, NSRect rect)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		frame->setNeedsDisplayInRect (rect);
+	__OBJC_SUPER (self)
+	SuperSetNeedsDisplayInRect (SUPER, _cmd, rect);
+}
+
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
@@ -690,6 +700,8 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(isOpaque), IMP (VSTGUI_NSView_isOpaque), "B@:@:"))
 		sprintf (funcSig, "v@:@:%s:", nsRectEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), funcSig))
+		VSTGUI_CHECK_YES (class_addMethod (viewClass, @selector (setNeedsDisplayInRect:),
+										   IMP (VSTGUI_NSView_setNeedsDisplayInRect), funcSig))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(shouldBeTreatedAsInkEvent:), IMP(VSTGUI_NSView_shouldBeTreatedAsInkEvent), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseDown:), IMP (VSTGUI_NSView_onMouseDown), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseUp:), IMP (VSTGUI_NSView_onMouseUp), "B@:@:^:"))
@@ -787,6 +799,7 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 			{
 				nsView.layer.drawsAsynchronously = YES;
 				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+				useInvalidRects = true;
 			}
 		}
 	}
@@ -837,6 +850,13 @@ void NSViewFrame::cursorUpdate ()
 	setMouseCursor (cursor);
 }
 
+//------------------------------------------------------------------------
+void NSViewFrame::setNeedsDisplayInRect (NSRect r)
+{
+	if (useInvalidRects)
+		invalidRectList.add (rectFromNSRect (r));
+}
+
 //-----------------------------------------------------------------------------
 void NSViewFrame::drawRect (NSRect* rect)
 {
@@ -850,12 +870,24 @@ void NSViewFrame::drawRect (NSRect* rect)
 #endif
 	CGDrawContext drawContext (cgContext, rectFromNSRect ([nsView bounds]));
 	drawContext.beginDraw ();
-	const NSRect* dirtyRects;
-	NSInteger numDirtyRects;
-	[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-	for (NSInteger i = 0; i < numDirtyRects; i++)
+
+	if (useInvalidRects)
 	{
-		frame->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
+		for (auto r : invalidRectList)
+		{
+			frame->platformDrawRect (&drawContext, r);
+		}
+		invalidRectList.clear ();
+	}
+	else
+	{
+		const NSRect* dirtyRects;
+		NSInteger numDirtyRects;
+		[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
+		for (NSInteger i = 0; i < numDirtyRects; i++)
+		{
+			frame->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
+		}
 	}
 	drawContext.endDraw ();
 	inDraw = false;

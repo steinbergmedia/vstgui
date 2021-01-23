@@ -10,6 +10,7 @@
 
 #include "../../platform_macos.h"
 #include "../../../cview.h"
+#include "../../../cinvalidrectlist.h"
 #include "../../../idatapackage.h"
 #include "nsviewdraggingsession.h"
 #include <list>
@@ -39,7 +40,8 @@ public:
 	void* makeTouchBar () const;
 	NSViewDraggingSession* getDraggingSession () const { return draggingSession; }
 	void clearDraggingSession () { draggingSession = nullptr; }
-	
+	void setNeedsDisplayInRect (NSRect r);
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 #endif
@@ -106,8 +108,10 @@ protected:
 	bool ignoreNextResignFirstResponder;
 	bool trackingAreaInitialized;
 	bool inDraw;
+	bool useInvalidRects {false};
 	CCursorType cursor;
 	CButtonState mouseDownButtonState {};
+	CInvalidRectList invalidRectList;
 };
 
 } // VSTGUI
