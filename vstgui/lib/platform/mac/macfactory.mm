@@ -32,6 +32,7 @@ struct MacFactory::Impl
 {
 	struct mach_timebase_info timebaseInfo;
 	CFBundleRef bundle {nullptr};
+	bool useAsynchronousLayerDrawing {true};
 };
 
 //-----------------------------------------------------------------------------
@@ -46,6 +47,18 @@ MacFactory::MacFactory (CFBundleRef bundle)
 CFBundleRef MacFactory::getBundle () const noexcept
 {
 	return impl->bundle;
+}
+
+//-----------------------------------------------------------------------------
+void MacFactory::setUseAsynchronousLayerDrawing (bool state) const noexcept
+{
+	impl->useAsynchronousLayerDrawing = state;
+}
+
+//-----------------------------------------------------------------------------
+bool MacFactory::getUseAsynchronousLayerDrawing () const noexcept
+{
+	return impl->useAsynchronousLayerDrawing;
 }
 
 //-----------------------------------------------------------------------------

@@ -19,6 +19,9 @@ public:
 
 	CFBundleRef getBundle () const noexcept;
 
+	void setUseAsynchronousLayerDrawing (bool state) const noexcept;
+	bool getUseAsynchronousLayerDrawing () const noexcept;
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */

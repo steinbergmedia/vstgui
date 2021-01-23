@@ -12,6 +12,7 @@
 #import "cocoaopenglview.h"
 #import "autoreleasepool.h"
 #import "../macclipboard.h"
+#import "../macfactory.h"
 #import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
@@ -835,9 +836,14 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 			[nsView setWantsLayer:YES];
 			if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion >= 13))
 			{
-				nsView.layer.drawsAsynchronously = YES;
 				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
-				useInvalidRects = true;
+				// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
+				// the CoreGraphics engineers decided to be clever and join dirty rectangles without
+				// letting us know
+				if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
+					nsView.layer.drawsAsynchronously = YES;
+				else
+					useInvalidRects = true;
 			}
 		}
 	}
