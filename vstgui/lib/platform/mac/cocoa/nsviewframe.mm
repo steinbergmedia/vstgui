@@ -25,11 +25,36 @@
 	#import <Carbon/Carbon.h>
 #endif
 
+#include <QuartzCore/QuartzCore.h>
+
 #ifndef MAC_OS_X_VERSION_10_14
 #define MAC_OS_X_VERSION_10_14      101400
 #endif
 
 using namespace VSTGUI;
+
+#if DEBUG
+//------------------------------------------------------------------------
+@interface DebugRedrawAnimDelegate : NSObject<CAAnimationDelegate>
+@property (retain, readwrite) CALayer* layer;
+
+@end
+
+@implementation DebugRedrawAnimDelegate
+
+//------------------------------------------------------------------------
+- (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag
+{
+	if (flag)
+	{
+		[self.layer removeFromSuperlayer];
+		[self.layer release];
+	}
+}
+
+@end
+
+#endif // DEBUG
 
 //------------------------------------------------------------------------------------
 HIDDEN inline IPlatformFrameCallback* getFrame (id obj)
@@ -245,6 +270,17 @@ static void VSTGUI_NSView_drawRect (id self, SEL _cmd, NSRect rect)
 	NSViewFrame* frame = getNSViewFrame (self);
 	if (frame)
 		frame->drawRect (&rect);
+}
+
+//------------------------------------------------------------------------
+static void VSTGUI_NSView_viewWillDraw (id self, SEL _cmd)
+{
+	if (auto layer = [self layer])
+	{
+		layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+	}
+	__OBJC_SUPER (self)
+	SuperViewWillRedraw (SUPER, _cmd);
 }
 
 //------------------------------------------------------------------------
@@ -702,6 +738,8 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), funcSig))
 		VSTGUI_CHECK_YES (class_addMethod (viewClass, @selector (setNeedsDisplayInRect:),
 										   IMP (VSTGUI_NSView_setNeedsDisplayInRect), funcSig))
+		VSTGUI_CHECK_YES (class_addMethod (viewClass, @selector (viewWillDraw),
+										   IMP (VSTGUI_NSView_viewWillDraw), "v@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(shouldBeTreatedAsInkEvent:), IMP(VSTGUI_NSView_shouldBeTreatedAsInkEvent), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseDown:), IMP (VSTGUI_NSView_onMouseDown), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseUp:), IMP (VSTGUI_NSView_onMouseUp), "B@:@:^:"))
@@ -858,6 +896,46 @@ void NSViewFrame::setNeedsDisplayInRect (NSRect r)
 }
 
 //-----------------------------------------------------------------------------
+void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
+{
+#if DEBUG
+	if (visualizeDirtyRects && nsView.layer)
+	{
+		auto delegate = [[DebugRedrawAnimDelegate new] autorelease];
+		auto anim = [CABasicAnimation animation];
+		anim.fromValue = [NSNumber numberWithDouble:isClipBoundingBox ? 0.2 : 0.8];
+		anim.toValue = [NSNumber numberWithDouble:0.];
+		anim.keyPath = @"opacity";
+		anim.delegate = delegate;
+		anim.duration = isClipBoundingBox ? 1. : 1.;
+
+		auto rect = nsRectFromCRect (r);
+		for (CALayer* layer in nsView.layer.sublayers)
+		{
+			if (![layer.name isEqualToString:@"DebugLayer"])
+				continue;
+			if (CGRectEqualToRect (rect, layer.frame))
+			{
+				[layer removeAnimationForKey:@"opacity"];
+				[layer addAnimation:anim forKey:@"opacity"];
+				return;
+			}
+		}
+		auto layer = [[CALayer new] autorelease];
+		layer.name = @"DebugLayer";
+		layer.backgroundColor = CGColorCreateGenericRGB (isClipBoundingBox ? 0. : 1., 1., 0., 1.);
+		layer.opacity = 0.f;
+		layer.zPosition = isClipBoundingBox ? 10 : 11;
+		layer.frame = nsRectFromCRect (r);
+		[nsView.layer addSublayer:layer];
+
+		delegate.layer = layer;
+		[layer addAnimation:anim forKey:@"opacity"];
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
 void NSViewFrame::drawRect (NSRect* rect)
 {
 	inDraw = true;
@@ -868,14 +946,19 @@ void NSViewFrame::drawRect (NSRect* rect)
 #else
 	auto cgContext = static_cast<CGContextRef> ([nsContext CGContext]);
 #endif
+
+	addDebugRedrawRect (rectFromNSRect (*rect), true);
+
 	CGDrawContext drawContext (cgContext, rectFromNSRect ([nsView bounds]));
 	drawContext.beginDraw ();
 
 	if (useInvalidRects)
 	{
+		joinNearbyInvalidRects (invalidRectList, 24.);
 		for (auto r : invalidRectList)
 		{
 			frame->platformDrawRect (&drawContext, r);
+			addDebugRedrawRect (r, false);
 		}
 		invalidRectList.clear ();
 	}
@@ -886,7 +969,9 @@ void NSViewFrame::drawRect (NSRect* rect)
 		[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
 		for (NSInteger i = 0; i < numDirtyRects; i++)
 		{
-			frame->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
+			auto r = rectFromNSRect (dirtyRects[i]);
+			frame->platformDrawRect (&drawContext, r);
+			addDebugRedrawRect (r, false);
 		}
 	}
 	drawContext.endDraw ();

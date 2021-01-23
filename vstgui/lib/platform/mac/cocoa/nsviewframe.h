@@ -22,6 +22,7 @@ struct NSView;
 struct NSRect;
 struct NSDraggingSession;
 struct NSEvent;
+struct CALayer;
 #endif
 
 namespace VSTGUI {
@@ -93,6 +94,8 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
+	void addDebugRedrawRect (CRect r, bool isClipBoundingBox = false);
+
 	static void initClass ();
 
 	NSView* nsView;
@@ -109,6 +112,9 @@ protected:
 	bool trackingAreaInitialized;
 	bool inDraw;
 	bool useInvalidRects {false};
+#if DEBUG
+	bool visualizeDirtyRects {false};
+#endif
 	CCursorType cursor;
 	CButtonState mouseDownButtonState {};
 	CInvalidRectList invalidRectList;

@@ -60,6 +60,7 @@ static void (*SuperUpdateTrackingAreas) (id, SEL) = (void (*) (id, SEL))objc_msg
 static void (*SuperTextDidChange) (id, SEL, NSNotification*) = (void (*) (id, SEL, NSNotification*))objc_msgSendSuper;
 static void (*SuperSetNeedsDisplayInRect) (id, SEL,
 										   NSRect) = (void (*) (id, SEL, NSRect))objc_msgSendSuper;
+static void (*SuperViewWillRedraw) (id, SEL) = SuperDealloc;
 
 //------------------------------------------------------------------------------------
 extern HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass);
