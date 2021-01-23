@@ -175,6 +175,7 @@ static const std::string kAttrTruncateMode = "truncate-mode";
 //-----------------------------------------------------------------------------
 static const std::string kAttrLineLayout = "line-layout";
 static const std::string kAttrAutoHeight = "auto-height";
+static const std::string kAttrVerticalCentered = "vertical-centered";
 
 //-----------------------------------------------------------------------------
 // CTextEditCreator attributes
