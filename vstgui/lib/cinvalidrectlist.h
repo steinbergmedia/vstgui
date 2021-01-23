@@ -21,6 +21,8 @@ struct CInvalidRectList
 	RectList::const_iterator begin () const { return list.begin (); }
 	RectList::const_iterator end () const { return list.end (); }
 
+	void erase (RectList::iterator it) { list.erase (it); }
+
 	void clear () { list.clear (); }
 	const RectList& data () const { return list; }
 
@@ -59,6 +61,49 @@ inline bool CInvalidRectList::add (const CRect& r)
 	}
 	list.emplace_back (r);
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+inline void joinNearbyInvalidRects (CInvalidRectList& list, CCoord maxDistance)
+{
+	for (auto it = list.begin (); it != list.end (); ++it)
+	{
+		for (auto it2 = list.begin (); it2 != list.end (); ++it2)
+		{
+			if (it2 == it)
+				continue;
+			if (it->left == it2->left && it->right == it2->right)
+			{
+				CCoord distance;
+				if (it->bottom < it2->top)
+					distance = it2->top - it->bottom;
+				else
+					distance = it->top - it2->bottom;
+				if (distance <= maxDistance)
+				{
+					it->unite (*it2);
+					list.erase (it2);
+					joinNearbyInvalidRects (list, maxDistance);
+					return;
+				}
+			}
+			if (it->top == it2->top && it->bottom == it2->bottom)
+			{
+				CCoord distance;
+				if (it->right < it2->left)
+					distance = it2->left - it->right;
+				else
+					distance = it->left - it2->right;
+				if (distance <= maxDistance)
+				{
+					it->unite (*it2);
+					list.erase (it2);
+					joinNearbyInvalidRects (list, maxDistance);
+					return;
+				}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
