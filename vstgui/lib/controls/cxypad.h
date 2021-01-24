@@ -5,6 +5,7 @@
 #pragma once
 
 #include "cparamdisplay.h"
+#include "../cbitmap.h"
 #include <cmath>
 
 namespace VSTGUI {

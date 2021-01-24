@@ -4,7 +4,6 @@
 
 #include "cxypad.h"
 #include "../cdrawcontext.h"
-#include "../cbitmap.h"
 
 namespace VSTGUI {
 
