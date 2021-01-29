@@ -35,6 +35,11 @@ private:
 		CFShow (error);
 	}
 
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_14
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 	RegisterBundleFonts ()
 	{
 		fontUrls = CFArrayCreateMutable (kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
@@ -43,30 +48,13 @@ private:
 			getUrlsForType (t, fontUrls);
 		if (CFArrayGetCount (fontUrls) == 0)
 			return;
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14 && MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_14
-		if (@available (macOS 10.15, *))
-		{
-			CTFontManagerRegisterFontURLs (
-			    fontUrls, kCTFontManagerScopeProcess, true, [] (CFArrayRef errors, bool done) {
-				    CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
-				                          ErrorApplierFunction, nullptr);
-				    return true;
-			    });
-		}
-		else
-		{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-			CFArrayRef errors;
-			if (!CTFontManagerRegisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
-			{
+#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_14
+		CTFontManagerRegisterFontURLs (
+			fontUrls, kCTFontManagerScopeProcess, true, [] (CFArrayRef errors, bool done) {
 				CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
-				                      ErrorApplierFunction, nullptr);
-				CFRelease (errors);
-			}
-#pragma clang diagnostic pop
-
-		}
+									  ErrorApplierFunction, nullptr);
+				return true;
+			});
 #else
 		CFArrayRef errors;
 		if (!CTFontManagerRegisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
@@ -81,30 +69,13 @@ private:
 	{
 		if (CFArrayGetCount (fontUrls) == 0)
 			return;
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14 && MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_14
-		if (@available (macOS 10.15, *))
-		{
-			CTFontManagerUnregisterFontURLs (
-			    fontUrls, kCTFontManagerScopeProcess, [] (CFArrayRef errors, bool done) {
-				    CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
-				                          ErrorApplierFunction, nullptr);
-				    return true;
-			    });
-		}
-		else
-		{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-			CFArrayRef errors;
-			if (!CTFontManagerUnregisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess,
-			                                          &errors))
-			{
+#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_14
+		CTFontManagerUnregisterFontURLs (
+			fontUrls, kCTFontManagerScopeProcess, [] (CFArrayRef errors, bool done) {
 				CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
-				                      ErrorApplierFunction, nullptr);
-				CFRelease (errors);
-			}
-#pragma clang diagnostic pop
-		}
+									  ErrorApplierFunction, nullptr);
+				return true;
+			});
 #else
 		CFArrayRef errors;
 		if (!CTFontManagerUnregisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
@@ -115,6 +86,10 @@ private:
 		}
 #endif
 	}
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_14
+#pragma clang diagnostic pop
+#endif
 
 	void getUrlsForType (CFStringRef fontType, CFMutableArrayRef& array)
 	{
