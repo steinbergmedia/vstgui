@@ -25,7 +25,11 @@ namespace VSTGUI {
 #define VSTGUI_STB_TEXTEDIT_USE_UNICODE 1
 
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+#if defined(_MSC_VER) && _MSC_VER >= 1900 && _MSC_VER < 1920
+using STB_CharT = wchar_t;
+#else
 using STB_CharT = char16_t;
+#endif
 using StringConvert = std::wstring_convert<std::codecvt_utf8_utf16<STB_CharT>, STB_CharT>;
 #else
 using STB_CharT = char;
@@ -478,8 +482,8 @@ bool STBTextEditView::doCopy ()
 	if (editState.select_start == editState.select_end)
 		return false;
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	auto txt = StringConvert{}.to_bytes (uString.data () + editState.select_start,
-										 uString.data () + editState.select_end);
+	auto txt = StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (uString.data () + editState.select_start),
+										 reinterpret_cast<const STB_CharT*> (uString.data () + editState.select_end));
 	auto dataPackage =
 		CDropSource::create (txt.data (), static_cast<uint32_t> (txt.size ()), IDataPackage::kText);
 #else
@@ -545,7 +549,8 @@ void STBTextEditView::setText (const UTF8String& txt)
 	if (editState.select_start != editState.select_end)
 		selectAll ();
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	uString = StringConvert{}.from_bytes (CTextLabel::getText ().getString ());
+	auto tmpStr = StringConvert{}.from_bytes (CTextLabel::getText ().getString ());
+	uString = {tmpStr.data (), tmpStr.data () + tmpStr.size ()};
 #endif
 }
 
@@ -700,7 +705,7 @@ int STBTextEditView::deleteChars (STBTextEditView* self, size_t pos, size_t num)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	self->uString.erase (pos, num);
-	self->setText (StringConvert{}.to_bytes (self->uString));
+	self->setText (StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (self->uString.data ()), reinterpret_cast<const STB_CharT*> (self->uString.data () + self->uString.size ())));
 	self->onTextChange ();
 	return true;
 #else
@@ -719,8 +724,8 @@ int STBTextEditView::insertChars (STBTextEditView* self,
 								  size_t num)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	self->uString.insert (pos, text, num);
-	self->setText (StringConvert{}.to_bytes (self->uString));
+	self->uString.insert (pos, reinterpret_cast<const char16_t*> (text), num);
+	self->setText (StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (self->uString.data ()), reinterpret_cast<const STB_CharT*> (self->uString.data () + self->uString.size ())));
 	self->onTextChange ();
 	return true;
 #else
