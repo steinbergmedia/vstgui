@@ -31,6 +31,7 @@
 #include "lib/cviewcontainer.cpp"
 #include "lib/cvstguitimer.cpp"
 #include "lib/genericstringlistdatabrowsersource.cpp"
+#include "lib/pixelbuffer.cpp"
 #include "lib/vstguidebug.cpp"
 #include "lib/vstguiinit.cpp"
 

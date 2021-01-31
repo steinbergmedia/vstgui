@@ -37,6 +37,7 @@
 #include "lib/cviewcontainer.h"
 #include "lib/cvstguitimer.h"
 #include "lib/iviewlistener.h"
+#include "lib/pixelbuffer.h"
 #include "lib/vstguidebug.h"
 
 #include "lib/controls/cautoanimation.h"
