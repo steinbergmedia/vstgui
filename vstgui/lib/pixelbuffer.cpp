@@ -35,10 +35,10 @@ inline uint32_t shuffle (uint32_t input)
 template<Format SourceFormat, Format DestinationFormat>
 inline void convert (uint8_t* buffer, uint32_t bytesPerRow, uint32_t width, uint32_t height)
 {
-	for (auto y = 0; y < height; ++y, buffer += bytesPerRow)
+	for (auto y = 0u; y < height; ++y, buffer += bytesPerRow)
 	{
 		auto intPtr = reinterpret_cast<uint32_t*> (buffer);
-		for (auto x = 0; x < width; ++x, ++intPtr)
+		for (auto x = 0u; x < width; ++x, ++intPtr)
 		{
 			auto pixel = *intPtr;
 			switch (SourceFormat)
