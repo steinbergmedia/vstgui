@@ -23,10 +23,19 @@ inline uint32_t shuffle (uint32_t input)
 	auto b3 = (input & 0x0000FF00);
 	auto b4 = (input & 0x000000FF);
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4293)
+#endif
+
 	b1 = (s1 >= 0) ? b1 << s1 : b1 >> -s1;
 	b2 = (s2 >= 0) ? b2 << s2 : b2 >> -s2;
 	b3 = (s3 >= 0) ? b3 << s3 : b3 >> -s3;
 	b4 = (s4 >= 0) ? b4 << s4 : b4 >> -s4;
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 	return b1 | b2 | b3 | b4;
 }
