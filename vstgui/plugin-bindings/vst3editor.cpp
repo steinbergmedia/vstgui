@@ -1388,7 +1388,11 @@ static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 		bool val;
 		if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
 		{
+#if ((VSTGUI_VERSION_MAJOR == 4 && VSTGUI_VERSION_MINOR > 9) || (VSTGUI_VERSION_MAJOR > 4))
+			flags |= UIDescription::kWriteImagesIntoUIDescFile;
+#else
 			flags |= UIDescription::kWriteImagesIntoXMLFile;
+#endif
 		}
 		if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
 		{
