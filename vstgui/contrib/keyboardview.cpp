@@ -740,7 +740,7 @@ void KeyboardViewBase::createBitmapCache ()
 		return;
 
 #if ((VSTGUI_VERSION_MAJOR == 4 && VSTGUI_VERSION_MINOR > 9) || (VSTGUI_VERSION_MAJOR > 4))
-	if (auto offscreen = COffscreenContext::create (whiteKeyWidth, getHeight ()))
+	if (auto offscreen = COffscreenContext::create (CPoint (whiteKeyWidth, getHeight ())))
 #else
 	if (auto offscreen = COffscreenContext::create (getFrame (), whiteKeyWidth, getHeight ()))
 #endif
@@ -757,7 +757,7 @@ void KeyboardViewBase::createBitmapCache ()
 	}
 
 #if ((VSTGUI_VERSION_MAJOR == 4 && VSTGUI_VERSION_MINOR > 9) || (VSTGUI_VERSION_MAJOR > 4))
-	if (auto offscreen = COffscreenContext::create (blackKeyWidth, blackKeyHeight))
+	if (auto offscreen = COffscreenContext::create (CPoint (blackKeyWidth, blackKeyHeight)))
 #else
 	if (auto offscreen = COffscreenContext::create (getFrame (), blackKeyWidth, blackKeyHeight))
 #endif
