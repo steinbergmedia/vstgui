@@ -739,7 +739,11 @@ void KeyboardViewBase::createBitmapCache ()
 	if (!whiteKeyBitmap || !blackKeyBitmap)
 		return;
 
+#if ((VSTGUI_VERSION_MAJOR == 4 && VSTGUI_VERSION_MINOR > 9) || (VSTGUI_VERSION_MAJOR > 4))
+	if (auto offscreen = COffscreenContext::create (whiteKeyWidth, getHeight ()))
+#else
 	if (auto offscreen = COffscreenContext::create (getFrame (), whiteKeyWidth, getHeight ()))
+#endif
 	{
 		offscreen->beginDraw ();
 		CRect r (0, 0, whiteKeyWidth, getHeight ());
@@ -752,7 +756,11 @@ void KeyboardViewBase::createBitmapCache ()
 		whiteKeyBitmapCache = offscreen->getBitmap ();
 	}
 
+#if ((VSTGUI_VERSION_MAJOR == 4 && VSTGUI_VERSION_MINOR > 9) || (VSTGUI_VERSION_MAJOR > 4))
+	if (auto offscreen = COffscreenContext::create (blackKeyWidth, blackKeyHeight))
+#else
 	if (auto offscreen = COffscreenContext::create (getFrame (), blackKeyWidth, blackKeyHeight))
+#endif
 	{
 		offscreen->beginDraw ();
 		CRect r (0, 0, blackKeyWidth, blackKeyHeight);
