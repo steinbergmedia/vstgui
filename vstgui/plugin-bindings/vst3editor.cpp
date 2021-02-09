@@ -1606,8 +1606,8 @@ bool VST3Editor::enableEditing (bool state)
 			if (view)
 			{
 				double scaleFactor = getAbsScaleFactor ();
-				CCoord width = view->getWidth () * scaleFactor;
-				CCoord height = view->getHeight () * scaleFactor;
+				CCoord width = std::ceil (view->getWidth () * scaleFactor);
+				CCoord height = std::ceil (view->getHeight () * scaleFactor);
 
 				if (canResize () == Steinberg::kResultTrue)
 				{
