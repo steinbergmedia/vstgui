@@ -76,7 +76,7 @@ size_t Win32Menu::addItem (ItemPtr&& item)
 	items.emplace_back (item);
 	auto& i = items.back ();
 	if (i->isSeparator ())
-		AppendMenu (menu, MF_SEPARATOR, 0, 0);
+		AppendMenu (menu, MF_SEPARATOR, 0, nullptr);
 	else
 	{
 		if (i->key != 0)

@@ -209,13 +209,13 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void
 }
 
 //-----------------------------------------------------------------------------
-COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::AddRef ()
 {
 	return static_cast<ULONG> (++refCount);
 }
 
 //-----------------------------------------------------------------------------
-COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::Release (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::Release ()
 {
 	refCount--;
 	if (refCount <= 0)
@@ -271,7 +271,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL 
 }
 
 //-----------------------------------------------------------------------------
-COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragLeave (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragLeave ()
 {
 	if (dragData && pFrame)
 	{
@@ -423,7 +423,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, S
 	else if (format->cfFormat == CF_HDROP)
 	{
 		HRESULT result = E_UNEXPECTED;
-		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)std::malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
+		auto** wideStringFileNames = (UTF8StringHelper**)std::malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
 		if (!wideStringFileNames)
 			return result;
 		
@@ -450,7 +450,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, S
 		{
 			if (void* memory = GlobalLock (memoryHandle))
 			{
-				DROPFILES* dropFiles = (DROPFILES*)memory;
+				auto* dropFiles = (DROPFILES*)memory;
 				dropFiles->pFiles = sizeof (DROPFILES);
 				dropFiles->pt.x = 0;
 				dropFiles->pt.y = 0;
@@ -580,12 +580,12 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 		return E_NOINTERFACE;
 	}
 
-	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE AddRef (void) override
+	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE AddRef () override
 	{
 		remember ();
 		return static_cast<ULONG> (getNbReference ());
 	}
-	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE Release (void) override
+	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE Release () override
 	{
 		ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1;
 		forget ();
@@ -634,7 +634,7 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 		return S_OK;
 	}
 
-	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Reset (void) override
+	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Reset () override
 	{
 		index = 0;
 		return S_OK;

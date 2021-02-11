@@ -250,7 +250,7 @@ bool D2DFont::asLogFont (LOGFONTW& logfont) const
 //-----------------------------------------------------------------------------
 IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 {
-	const WinString* winString = dynamic_cast<const WinString*> (string);
+	const auto* winString = dynamic_cast<const WinString*> (string);
 	IDWriteTextLayout* textLayout = nullptr;
 	if (winString)
 		getDWriteFactory ()->CreateTextLayout (winString->getWideString (), (UINT32)wcslen (winString->getWideString ()), textFormat, 10000, 1000, &textLayout);
@@ -260,7 +260,7 @@ IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 //-----------------------------------------------------------------------------
 void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias) const
 {
-	D2DDrawContext* d2dContext = dynamic_cast<D2DDrawContext*> (context);
+	auto* d2dContext = dynamic_cast<D2DDrawContext*> (context);
 	if (d2dContext && textFormat)
 	{
 		D2DDrawContext::D2DApplyClip ac (d2dContext);

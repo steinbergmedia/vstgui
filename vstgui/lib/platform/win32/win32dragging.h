@@ -46,13 +46,13 @@ public:
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
-	STDMETHOD_ (ULONG, AddRef) (void) override;
-	STDMETHOD_ (ULONG, Release) (void) override;
+	STDMETHOD_ (ULONG, AddRef) () override;
+	STDMETHOD_ (ULONG, Release) () override;
    
 	// IDropTarget
 	STDMETHOD (DragEnter) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect) override;
 	STDMETHOD (DragOver) (DWORD keyState, POINTL pt, DWORD* effect) override;
-	STDMETHOD (DragLeave) (void) override;
+	STDMETHOD (DragLeave) () override;
 	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect) override;
 private:
 	int32_t refCount;
@@ -68,8 +68,8 @@ class Win32DropSource final
 public:
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
-	STDMETHOD_ (ULONG, AddRef) (void) override { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) (void) override { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
+	STDMETHOD_ (ULONG, AddRef) () override { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) () override { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
 	
 	// IDropSource
 	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState) override;
@@ -87,8 +87,8 @@ public:
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
-	STDMETHOD_ (ULONG, AddRef) (void) override { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) (void) override { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
+	STDMETHOD_ (ULONG, AddRef) () override { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) () override { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
 
 	// IDataObject
 	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium) override;

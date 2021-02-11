@@ -259,7 +259,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 	if (ac.isEmpty ())
 		return;
 
-	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == nullptr)
 		return;
 
@@ -278,7 +278,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const CGradient& d2dGradient) const
 {
 	ID2D1GradientStopCollection* collection = nullptr;
-	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient.getColorStops ().size ()];
+	auto* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient.getColorStops ().size ()];
 	uint32_t index = 0;
 	for (CGradient::ColorStopMap::const_iterator it = d2dGradient.getColorStops ().begin (); it != d2dGradient.getColorStops ().end (); ++it, ++index)
 	{
@@ -300,7 +300,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 	if (ac.isEmpty ())
 		return;
 	
-	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == nullptr)
 		return;
 
@@ -336,7 +336,7 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 	if (ac.isEmpty ())
 		return;
 	
-	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == nullptr)
 		return;
 
@@ -491,7 +491,7 @@ void D2DDrawContext::drawLine (const LinePair& line)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawLines (const LineList& lines)
 {
-	if (lines.size () == 0 || renderTarget == nullptr)
+	if (lines.empty () || renderTarget == nullptr)
 		return;
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
@@ -520,7 +520,7 @@ void D2DDrawContext::drawLines (const LineList& lines)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle)
 {
-	if (renderTarget == nullptr || polygonPointList.size () == 0)
+	if (renderTarget == nullptr || polygonPointList.empty ())
 		return;
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())

@@ -139,9 +139,9 @@ CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 #ifndef __GNUC__
-typedef HRESULT (STDAPICALLTYPE *SHCreateItemFromParsingNameProc) (__in PCWSTR pszPath, __in_opt IBindCtx *pbc, __in REFIID riid, __deref_out void **ppv);
+using SHCreateItemFromParsingNameProc = HRESULT (STDAPICALLTYPE *) (__in PCWSTR pszPath, __in_opt IBindCtx *pbc, __in REFIID riid, __deref_out void **ppv);
 #else
-typedef HRESULT (STDAPICALLTYPE *SHCreateItemFromParsingNameProc) (PCWSTR pszPath, IBindCtx *pbc, REFIID riid, void **ppv);
+using SHCreateItemFromParsingNameProc = HRESULT (STDAPICALLTYPE *) (PCWSTR pszPath, IBindCtx *pbc, REFIID riid, void **ppv);
 #endif
 SHCreateItemFromParsingNameProc _SHCreateItemFromParsingName = nullptr;
 

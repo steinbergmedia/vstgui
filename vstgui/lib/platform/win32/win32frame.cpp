@@ -92,7 +92,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 		windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
 										WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
 										0, 0, (int)size.getWidth (), (int)size.getHeight (), 
-										parentWindow, NULL, GetInstance (), NULL);
+										parentWindow, nullptr, GetInstance (), nullptr);
 
 		if (windowHandle)
 		{
@@ -138,7 +138,7 @@ void Win32Frame::initWindowClass ()
 	gUseCount++;
 	if (gUseCount == 1)
 	{
-		OleInitialize (0);
+		OleInitialize (nullptr);
 
 		VSTGUI_SPRINTF (gClassName, TEXT("VSTGUI%p"), GetInstance ());
 		
@@ -151,7 +151,7 @@ void Win32Frame::initWindowClass ()
 		windowClass.hInstance   = GetInstance ();
 		windowClass.hIcon = nullptr; 
 
-		windowClass.hCursor = LoadCursor (NULL, IDC_ARROW);
+		windowClass.hCursor = LoadCursor (nullptr, IDC_ARROW);
 		#if DEBUG_DRAWING
 		windowClass.hbrBackground = GetSysColorBrush (COLOR_BTNFACE);
 		#else
@@ -187,8 +187,8 @@ void Win32Frame::initTooltip ()
 							  WS_POPUP,
 							  CW_USEDEFAULT, CW_USEDEFAULT,
 							  CW_USEDEFAULT, CW_USEDEFAULT,
-							  NULL, (HMENU)NULL, GetInstance (),
-							  NULL);
+							  nullptr, (HMENU)nullptr, GetInstance (),
+							  nullptr);
 
 		// Prepare TOOLINFO structure for use as tracking ToolTip.
 		ti.cbSize = sizeof(TOOLINFO);
@@ -218,7 +218,7 @@ HWND Win32Frame::getOuterWindow () const
 	HWND  hTempWnd = windowHandle;
 	GetWindowRect (hTempWnd, &rctPluginWnd);
     
-	while (hTempWnd != NULL)
+	while (hTempWnd != nullptr)
 	{
 		// Looking for caption bar
 		if (GetWindowLong (hTempWnd, GWL_STYLE) & WS_CAPTION)
@@ -247,7 +247,7 @@ HWND Win32Frame::getOuterWindow () const
 		hTempWnd = GetParent (hTempWnd);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 // IPlatformFrame
@@ -458,7 +458,7 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 		CButtonState buttons;
 		getCurrentMouseButtons (buttons);
 		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttons,
-		                                     *genericOptionMenuTheme.get ());
+		                                     *genericOptionMenuTheme);
 	}
 	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
 }
@@ -521,9 +521,9 @@ bool Win32Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme
 	else
 	{
 		if (theme)
-			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+			genericOptionMenuTheme = std::make_unique<GenericOptionMenuTheme> (*theme);
 		else
-			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme);
+			genericOptionMenuTheme = std::make_unique<GenericOptionMenuTheme> ();
 	}
 	return true;
 }
@@ -557,7 +557,7 @@ void Win32Frame::paint (HWND hwnd)
 
 			CDrawContext* drawContext = backBuffer ? backBuffer : deviceContext;
 			drawContext->beginDraw ();
-			DWORD len = GetRegionData (rgn, 0, NULL);
+			DWORD len = GetRegionData (rgn, 0, nullptr);
 			if (len)
 			{
 				if (len > updateRegionListSize)
@@ -571,7 +571,7 @@ void Win32Frame::paint (HWND hwnd)
 				if (updateRegionList->rdh.nCount > 0)
 				{
 					CInvalidRectList dirtyRects;
-					RECT* rp = reinterpret_cast<RECT*> (updateRegionList->Buffer);
+					auto* rp = reinterpret_cast<RECT*> (updateRegionList->Buffer);
 					for (uint32_t i = 0; i < updateRegionList->rdh.nCount; ++i, ++rp)
 					{
 						CRect ur (rp->left, rp->top, rp->right, rp->bottom);
@@ -718,7 +718,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		}
 		case WM_CTLCOLOREDIT:
 		{
-			Win32TextEdit* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr ((HWND)lParam, GWLP_USERDATA);
+			auto* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr ((HWND)lParam, GWLP_USERDATA);
 			if (win32TextEdit)
 			{
 				CColor fontColor = win32TextEdit->getTextEdit ()->platformGetFontColor ();
@@ -933,7 +933,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			{
 				// text control changes will be forwarded to the text control window proc
 				HWND controlWindow = (HWND)lParam;
-				WINDOWSPROC textEditWindowProc = (WINDOWSPROC)(LONG_PTR)GetWindowLongPtr (controlWindow, GWLP_WNDPROC);
+				auto textEditWindowProc = (WINDOWSPROC)(LONG_PTR)GetWindowLongPtr (controlWindow, GWLP_WNDPROC);
 				if (textEditWindowProc)
 				{
 					textEditWindowProc (controlWindow, WM_COMMAND, wParam, lParam);
@@ -948,7 +948,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	Win32Frame* win32Frame = (Win32Frame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
+	auto* win32Frame = (Win32Frame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 	if (win32Frame)
 	{
 		return win32Frame->proc (hwnd, message, wParam, lParam);

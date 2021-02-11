@@ -24,7 +24,7 @@ public:
 	Optional<UTF8String> get (const UTF8String& key) override;
 
 private:
-	HKEY hKey;
+	HKEY hKey {nullptr};
 };
 
 //------------------------------------------------------------------------

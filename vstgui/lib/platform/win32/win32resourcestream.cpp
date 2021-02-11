@@ -119,7 +119,7 @@ HRESULT STDMETHODCALLTYPE ResourceStream::Commit (DWORD grfCommitFlags)
 }
 
 //-----------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE ResourceStream::Revert (void)
+HRESULT STDMETHODCALLTYPE ResourceStream::Revert ()
 {
 	streamPos = 0;
 	return S_OK;
@@ -168,13 +168,13 @@ HRESULT STDMETHODCALLTYPE ResourceStream::QueryInterface (REFIID iid, void** ppv
 }
 
 //-----------------------------------------------------------------------------
-ULONG STDMETHODCALLTYPE ResourceStream::AddRef (void)
+ULONG STDMETHODCALLTYPE ResourceStream::AddRef ()
 {
 	return (ULONG)InterlockedIncrement (&_refcount);
 }
 
 //-----------------------------------------------------------------------------
-ULONG STDMETHODCALLTYPE ResourceStream::Release (void)
+ULONG STDMETHODCALLTYPE ResourceStream::Release ()
 {
 	ULONG res = (ULONG)InterlockedDecrement (&_refcount);
 	if (res == 0)
@@ -220,7 +220,7 @@ int64_t WinResourceInputStream::seek (int64_t pos, SeekMode mode)
 	}
 	LARGE_INTEGER li;
 	li.QuadPart = pos;
-	if (stream->Seek (li, dwOrigin, 0) == S_OK)
+	if (stream->Seek (li, dwOrigin, nullptr) == S_OK)
 		return tell ();
 	return kStreamSeekError;
 }

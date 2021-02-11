@@ -65,7 +65,7 @@ LRESULT CALLBACK AsyncWndMessageProc (HWND hwnd, UINT message, WPARAM wParam, LP
 	{
 		if (message == WM_USER_ASYNC)
 		{
-			Async::Task* task = reinterpret_cast<Async::Task*> (wParam);
+			auto* task = reinterpret_cast<Async::Task*> (wParam);
 			(*task) ();
 			delete task;
 			return 0;

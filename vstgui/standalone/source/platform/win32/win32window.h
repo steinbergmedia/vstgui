@@ -9,7 +9,7 @@
 
 #ifndef _WINDEF_
 struct HWND__;
-typedef HWND__* HWND;
+using HWND = HWND__*;
 #endif
 
 //------------------------------------------------------------------------
