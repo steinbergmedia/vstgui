@@ -49,7 +49,7 @@ bool WinTimer::stop ()
 {
 	if (timer)
 	{
-		KillTimer ((HWND)NULL, timer);
+		KillTimer ((HWND) nullptr, static_cast<UINT_PTR> (timer));
 		if (!WinTimerPrivate::gTimerMap.empty ())
 		{
 			auto it = WinTimerPrivate::gTimerMap.find (timer);

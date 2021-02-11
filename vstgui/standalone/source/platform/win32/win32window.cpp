@@ -123,7 +123,7 @@ private:
 //------------------------------------------------------------------------
 static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	Window* window = reinterpret_cast<Window*> ((LONG_PTR)GetWindowLongPtr (hWnd, GWLP_USERDATA));
+	auto* window = reinterpret_cast<Window*> ((LONG_PTR)GetWindowLongPtr (hWnd, GWLP_USERDATA));
 	if (window)
 		return window->proc (message, wParam, lParam);
 	if (message == WM_NCCREATE)
@@ -449,7 +449,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_SIZING:
 		{
-			RECT* newSize = reinterpret_cast<RECT*> (lParam);
+			auto* newSize = reinterpret_cast<RECT*> (lParam);
 			RECT oldSize;
 			GetWindowRect (hwnd, &oldSize);
 			RECT clientSize;

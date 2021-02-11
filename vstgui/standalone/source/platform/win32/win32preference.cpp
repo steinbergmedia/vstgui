@@ -26,7 +26,7 @@ Win32Preference::Win32Preference ()
 	{
 		DWORD dw;
 		RegCreateKeyEx (HKEY_CURRENT_USER, winStr->getWideString (), 0, REG_NONE,
-	                REG_OPTION_NON_VOLATILE, KEY_WRITE | KEY_READ, NULL, &hKey, &dw);
+	                REG_OPTION_NON_VOLATILE, KEY_WRITE | KEY_READ, nullptr, &hKey, &dw);
 	}
 }
 
@@ -61,11 +61,11 @@ Optional<UTF8String> Win32Preference::get (const UTF8String& key)
 	DWORD dwType {};
 	DWORD dwCount {};
 	if (keyStr && SUCCEEDED (
-	        RegQueryValueEx (hKey, keyStr->getWideString (), NULL, &dwType, nullptr, &dwCount)) &&
+	        RegQueryValueEx (hKey, keyStr->getWideString (), nullptr, &dwType, nullptr, &dwCount)) &&
 	    dwType == REG_SZ && dwCount > 0)
 	{
 		auto buffer = std::make_unique<uint8_t[]> (dwCount + 1);
-		if (SUCCEEDED (RegQueryValueEx (hKey, keyStr->getWideString (), NULL, &dwType,
+		if (SUCCEEDED (RegQueryValueEx (hKey, keyStr->getWideString (), nullptr, &dwType,
 		                                buffer.get (), &dwCount)))
 		{
 			UTF8StringHelper helper (reinterpret_cast<const WCHAR*> (buffer.get ()));

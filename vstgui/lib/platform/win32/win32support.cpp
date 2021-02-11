@@ -81,7 +81,7 @@ public:
 #else
 #define VSTGUI_WICImagingFactory CLSID_WICImagingFactory
 #endif
-			CoCreateInstance (VSTGUI_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&imagingFactory);
+			CoCreateInstance (VSTGUI_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&imagingFactory);
 		}
 		return imagingFactory;
 	}

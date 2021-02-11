@@ -55,7 +55,7 @@ void Win32OpenGLView::initWindowClass ()
 		windowClass.hInstance   = GetInstance ();
 		windowClass.hIcon = nullptr; 
 
-		windowClass.hCursor = LoadCursor (NULL, IDC_ARROW);
+		windowClass.hCursor = LoadCursor (nullptr, IDC_ARROW);
 		windowClass.lpszMenuName  = nullptr; 
 		windowClass.lpszClassName = gGLWindowClassName; 
 		RegisterClass (&windowClass);
@@ -75,7 +75,7 @@ void Win32OpenGLView::destroyWindowClass ()
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32OpenGLView::WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	Win32OpenGLView* oglView = (Win32OpenGLView*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
+	auto* oglView = (Win32OpenGLView*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 	if (oglView)
 	{
 		switch (message)
@@ -156,7 +156,7 @@ bool Win32OpenGLView::createWindow (PixelFormat* pixelFormat)
 	windowHandle = CreateWindowEx (style, gGLWindowClassName, TEXT("Window"),
 									WS_CHILD | WS_VISIBLE, 
 									0, 0, (int)0, (int)0, 
-									win32Frame->getPlatformWindow (), NULL, GetInstance (), NULL);
+									win32Frame->getPlatformWindow (), nullptr, GetInstance (), nullptr);
 
 	if (windowHandle)
 	{
