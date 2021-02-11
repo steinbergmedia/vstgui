@@ -1247,7 +1247,11 @@ Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 		if (r == currentSize)
 			return Steinberg::kResultTrue;
 	}
-	return VSTGUIEditor::onSize (newSize);
+	auto oldState = requestResizeGuard;
+	requestResizeGuard = true;
+	auto result = VSTGUIEditor::onSize (newSize);
+	requestResizeGuard = oldState;
+	return result;
 }
 
 //------------------------------------------------------------------------
