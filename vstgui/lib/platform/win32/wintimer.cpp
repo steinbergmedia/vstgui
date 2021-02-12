@@ -5,8 +5,8 @@
 #include "wintimer.h"
 
 #if WINDOWS
-#include <windows.h>
 #include <map>
+#include <windows.h>
 
 namespace VSTGUI {
 namespace WinTimerPrivate {
@@ -19,9 +19,7 @@ static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dw
 } // WinTimerPrivate
 
 //-----------------------------------------------------------------------------
-WinTimer::WinTimer (IPlatformTimerCallback* callback)
-: timer (0)
-, callback (callback)
+WinTimer::WinTimer (IPlatformTimerCallback* callback) : timer (0), callback (callback)
 {
 }
 
@@ -39,7 +37,7 @@ bool WinTimer::start (uint32_t fireTime)
 
 	timer = SetTimer (nullptr, (UINT_PTR)0, fireTime, WinTimerPrivate::TimerProc);
 	if (timer)
-		WinTimerPrivate::gTimerMap.emplace (timer, callback);
+		WinTimerPrivate::gTimerMap.emplace (static_cast<UINT_PTR> (timer), callback);
 
 	return false;
 }
@@ -52,7 +50,7 @@ bool WinTimer::stop ()
 		KillTimer ((HWND) nullptr, static_cast<UINT_PTR> (timer));
 		if (!WinTimerPrivate::gTimerMap.empty ())
 		{
-			auto it = WinTimerPrivate::gTimerMap.find (timer);
+			auto it = WinTimerPrivate::gTimerMap.find (static_cast<UINT_PTR> (timer));
 			if (it != WinTimerPrivate::gTimerMap.end ())
 				WinTimerPrivate::gTimerMap.erase (it);
 		}
@@ -69,7 +67,5 @@ VOID CALLBACK WinTimerPrivate::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent
 	if (it != gTimerMap.end ())
 		(*it).second->fire ();
 }
-
 }
-
 #endif

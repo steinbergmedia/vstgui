@@ -100,7 +100,7 @@
 		#error Visual Studio 2015 or newer needed
 	#endif
 	#include <type_traits>
-	#include <stdint.h>
+	#include <cstdint>
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
