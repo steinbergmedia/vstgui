@@ -1,4 +1,4 @@
-Language: Cpp
+#Language: Cpp
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
