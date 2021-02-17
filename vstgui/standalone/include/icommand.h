@@ -64,6 +64,7 @@ static constexpr IdStringPtr Application = "Application";
 static constexpr IdStringPtr File = "File";
 static constexpr IdStringPtr Edit = "Edit";
 static constexpr IdStringPtr Window = "Window";
+static constexpr IdStringPtr Debug = "Debug";
 
 //------------------------------------------------------------------------
 } // CommandGroup
@@ -90,6 +91,9 @@ static constexpr IdStringPtr Delete = "Delete";
 static constexpr IdStringPtr SelectAll = "Select All";
 
 static constexpr IdStringPtr MenuSeparator = "~";
+
+static constexpr IdStringPtr ToggleInlineUIEditor = "Toggle Inline UI-Editor";
+static constexpr IdStringPtr ResaveSharedResources = "Resave Shared Resources";
 
 } // CommandName
 
@@ -121,6 +125,14 @@ static const Command Delete {CommandGroup::Edit, CommandName::Delete};
 static const Command SelectAll {CommandGroup::Edit, CommandName::SelectAll};
 
 //------------------------------------------------------------------------
+namespace Debug {
+
+static const Command ToggleInlineUIEditor {CommandGroup::Debug, CommandName::ToggleInlineUIEditor};
+static const Command ResaveSharedResources {CommandGroup::Debug,
+											CommandName::ResaveSharedResources};
+
+//------------------------------------------------------------------------
+} // Debug
 } // Commands
 
 //------------------------------------------------------------------------

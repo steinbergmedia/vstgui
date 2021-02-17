@@ -197,7 +197,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		[nsWindow.contentView addSubview:contentView];
 #if DEBUG
 		auto tbvController = [VSTGUITitlebarViewController new];
-		tbvController.layoutAttribute = NSLayoutAttributeLeft;
+		tbvController.layoutAttribute = NSLayoutAttributeRight;
 		[nsWindow addTitlebarAccessoryViewController:tbvController];
 #endif
 	}
@@ -824,26 +824,18 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 //------------------------------------------------------------------------
 - (void)loadView
 {
-	auto image = [NSImage imageNamed:NSImageNameAdvanced];
-	auto control = [NSButton buttonWithImage:image target:self action:@selector (doAction:)];
-	control.showsBorderOnlyWhileMouseInside = YES;
-	control.bezelStyle = NSBezelStyleCircular;
+	auto control = [NSButton buttonWithTitle:@"ⓔ" target:self action:@selector (doAction:)];
+	control.showsBorderOnlyWhileMouseInside = NO;
+	control.bordered = NO;
+	control.bezelStyle = NSBezelStyleRounded;
 	self.view = control;
 }
 
+//------------------------------------------------------------------------
 - (void)doAction:(id)sender
 {
-	auto keyEvent = [NSEvent keyEventWithType:NSEventTypeKeyDown
-									 location:NSEvent.mouseLocation
-								modifierFlags:NSEventModifierFlagCommand | NSEventModifierFlagShift
-									timestamp:NSDate.timeIntervalSinceReferenceDate
-								 windowNumber:[NSApp mainWindow].windowNumber
-									  context:nil
-								   characters:@"E"
-				  charactersIgnoringModifiers:@"E"
-									isARepeat:NO
-									  keyCode:0];
-	[NSApp postEvent:keyEvent atStart:NO];
+	using namespace VSTGUI::Standalone;
+	IApplication::instance ().executeCommand (Commands::Debug::ToggleInlineUIEditor);
 }
 
 @end

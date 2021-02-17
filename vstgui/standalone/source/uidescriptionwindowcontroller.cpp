@@ -669,9 +669,6 @@ struct WindowController::Impl : public IController, public ICommandHandler
 };
 
 #if VSTGUI_LIVE_EDITING
-static const Command ToggleEditingCommand {"Debug", "Toggle Inline Editor"};
-static const Command ResaveSharedResourcesCommand {"Debug", "Resave Shared Resources"};
-
 //------------------------------------------------------------------------
 struct WindowController::EditImpl : WindowController::Impl
 {
@@ -679,9 +676,9 @@ struct WindowController::EditImpl : WindowController::Impl
 	          const CustomizationPtr& customization)
 	: Impl (controller, modelBinding, customization)
 	{
-		IApplication::instance ().registerCommand (ToggleEditingCommand, 'E');
+		IApplication::instance ().registerCommand (Commands::Debug::ToggleInlineUIEditor, 'E');
 		if (IApplication::instance ().getDelegate ().getSharedUIResourceFilename ())
-			IApplication::instance ().registerCommand (ResaveSharedResourcesCommand, 0);
+			IApplication::instance ().registerCommand (Commands::Debug::ResaveSharedResources, 0);
 	}
 
 	bool init (WindowPtr& inWindow, const char* fileName, const char* templateName) override
@@ -878,9 +875,9 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	bool canHandleCommand (const Command& command) override
 	{
-		if (command == ToggleEditingCommand)
+		if (command == Commands::Debug::ToggleInlineUIEditor)
 			return frame->getModalView () == nullptr;
-		if (command == ResaveSharedResourcesCommand)
+		if (command == Commands::Debug::ResaveSharedResources)
 			return true;
 		else if (uiEditController && uiEditController->getMenuController ()->canHandleCommand (
 		                                 command.group, command.name))
@@ -890,12 +887,12 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	bool handleCommand (const Command& command) override
 	{
-		if (command == ToggleEditingCommand)
+		if (command == Commands::Debug::ToggleInlineUIEditor)
 		{
 			enableEditing (!isEditing);
 			return true;
 		}
-		else if (command == ResaveSharedResourcesCommand)
+		else if (command == Commands::Debug::ResaveSharedResources)
 		{
 			Detail::saveSharedUIDescription ();
 			return true;
