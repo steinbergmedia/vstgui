@@ -72,6 +72,15 @@ public:
 	 *	@param defaultCommandKey default command key
 	 */
 	virtual void registerCommand (const Command& command, char16_t defaultCommandKey) = 0;
+	/** Execute a command
+	 *
+	 *	The command will be first dispatched to the active window (if there is one) and if the
+	 *	window did not handle the command the command is dispatched to the application delegate.
+	 *
+	 *	@param command command name and group
+	 *	@return if the command was executed
+	 */
+	virtual bool executeCommand (const Command& command) = 0;
 	/** Enable or disable tooltips in all windows
 	 *
 	 *	@param state true to enable tooltips, false for disabling them

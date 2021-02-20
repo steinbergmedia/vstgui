@@ -169,6 +169,7 @@ namespace MacWindowStyleMask
 	static constexpr auto Miniaturizable = ::NSWindowStyleMaskMiniaturizable;
 	static constexpr auto Closable = ::NSWindowStyleMaskClosable;
 	static constexpr auto Utility = ::NSWindowStyleMaskUtilityWindow;
+	static constexpr auto FullSizeContentView = ::NSWindowStyleMaskFullSizeContentView;
 #else
 	static constexpr auto Borderless = ::NSBorderlessWindowMask;
 	static constexpr auto Titled = ::NSTitledWindowMask;
@@ -176,6 +177,7 @@ namespace MacWindowStyleMask
 	static constexpr auto Miniaturizable = ::NSMiniaturizableWindowMask;
 	static constexpr auto Closable = ::NSClosableWindowMask;
 	static constexpr auto Utility = ::NSUtilityWindowMask;
+	static constexpr auto FullSizeContentView = ::NSFullSizeContentViewWindowMask;
 #endif
 }
 
