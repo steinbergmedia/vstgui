@@ -265,14 +265,20 @@ void CControl::bounceValue ()
 		value = getMin ();
 }
 
+//------------------------------------------------------------------------
+CControl::CheckDefaultValueFuncT CControl::CheckDefaultValueFunc = [] (CControl*,
+																	   CButtonState button) {
+#if TARGET_OS_IPHONE
+	return button.isDoubleClick ();
+#else
+	return (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier);
+#endif
+};
+
 //-----------------------------------------------------------------------------
 bool CControl::checkDefaultValue (CButtonState button)
 {
-#if TARGET_OS_IPHONE
-	if (button.isDoubleClick ())
-#else
-	if (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier)
-#endif
+	if (CheckDefaultValueFunc (this, button))
 	{
 		float defValue = getDefaultValue ();
 		if (defValue != getValue ())
