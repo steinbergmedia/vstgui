@@ -7,110 +7,18 @@
 #include "cairocontext.h"
 #include "linuxstring.h"
 #include "linuxfactory.h"
-#include <cairo/cairo-ft.h>
+#include <pango/pangocairo.h>
+#include <pango/pangofc-fontmap.h>
 #include <fontconfig/fontconfig.h>
-#include <freetype2/ft2build.h>
-#include <map>
-#include <set>
-#include <cassert>
-
-#include FT_FREETYPE_H
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Cairo {
 namespace {
 
-struct FreeTypeFontFace;
-//------------------------------------------------------------------------
-class FreeType
-{
-public:
-	static FreeType& instance ();
-
-	FreeTypeFontFace createFromPath (const std::string& path, int index);
-
-private:
-	FreeType ();
-	~FreeType ();
-
-	FT_Library library {nullptr};
-};
-
-//------------------------------------------------------------------------
-struct FreeTypeFontFace
-{
-	FreeTypeFontFace (FT_Face face = nullptr) : face (face) {}
-	~FreeTypeFontFace () { destroy (); }
-
-	FreeTypeFontFace (const FreeTypeFontFace&) = delete;
-	FreeTypeFontFace& operator= (const FreeTypeFontFace& o) = delete;
-
-	FreeTypeFontFace (FreeTypeFontFace&& o) { *this = std::move (o); }
-
-	FreeTypeFontFace& operator= (FreeTypeFontFace&& o)
-	{
-		destroy ();
-		std::swap (face, o.face);
-		return *this;
-	}
-
-	bool valid () const { return face != nullptr; }
-	operator FT_Face () const { return face; }
-
-private:
-	void destroy ()
-	{
-		if (face)
-			FT_Done_Face (face);
-		face = nullptr;
-	}
-
-	FT_Face face {nullptr};
-};
-
-using CairoFontFaceHandle =
-	Handle<cairo_font_face_t*, decltype (&cairo_font_face_reference), cairo_font_face_reference,
-		   decltype (&cairo_font_face_destroy), cairo_font_face_destroy>;
-
-//------------------------------------------------------------------------
-struct CairoFontFace
-{
-	CairoFontFace () noexcept {}
-	CairoFontFace (const std::string& path, int index) : path (path), index (index) {}
-
-	CairoFontFace (const CairoFontFace& o) { assert (false); }
-	CairoFontFace& operator= (const CairoFontFace& o) = delete;
-
-	CairoFontFace (CairoFontFace&& o) noexcept { *this = std::move (o); }
-	CairoFontFace& operator= (CairoFontFace&& o) noexcept
-	{
-		std::swap (ftFace, o.ftFace);
-		std::swap (face, o.face);
-		std::swap (path, o.path);
-		std::swap (index, o.index);
-		return *this;
-	}
-
-	operator cairo_font_face_t* () const
-	{
-		if (!face && !path.empty ())
-		{
-			ftFace = FreeType::instance ().createFromPath (path, index);
-			if (ftFace.valid ())
-			{
-				face = CairoFontFaceHandle (cairo_ft_font_face_create_for_ft_face (ftFace, 0));
-			}
-		}
-		return face;
-	}
-
-private:
-	mutable FreeTypeFontFace ftFace;
-	mutable CairoFontFaceHandle face;
-	std::string path;
-	int index = 0;
-};
+using PangoFontHandle =
+	Handle<PangoFont*, decltype (&g_object_ref), g_object_ref,
+		   decltype (&g_object_unref), g_object_unref>;
 
 //------------------------------------------------------------------------
 class FontList
@@ -122,133 +30,91 @@ public:
 		return gInstance;
 	}
 
-	FcConfig* getFontConfig () { return fcConfig; }
-
-	using Fonts = std::map<std::pair<std::string, int>, CairoFontFace>;
-
-	const Fonts& getFonts () const { return fonts; }
-
-	CairoFontFace& createFont (const std::string& file, int index)
+	FcConfig* getFontConfig ()
 	{
-		auto key = std::make_pair (file, index);
-		auto it = fonts.find (key);
-		if (it == fonts.end ())
-		{
-			auto value = std::make_pair (key, CairoFontFace (file, index));
-			it = fonts.insert (std::move (value)).first;
-		}
-		return it->second;
+		return fcConfig;
 	}
 
-	void clear () { fonts.clear (); }
-
-	bool queryFont (UTF8StringPtr name, CCoord size, int32_t style, std::string* fileStr,
-					int* indexInt)
+	PangoFontMap* getFontMap ()
 	{
-		bool found = false;
-		if (!fcConfig)
-			return false;
-		FcPattern* pattern = nullptr;
-		if ((pattern = FcPatternCreate ()) &&
-			FcPatternAddString (pattern, FC_FAMILY, reinterpret_cast<const FcChar8*> (name)) &&
-			FcPatternAddInteger (pattern, FC_SLANT, slantFromStyle (style)) &&
-			FcPatternAddInteger (pattern, FC_WEIGHT, weightFromStyle (style)) &&
-			FcConfigSubstitute (fcConfig, pattern, FcMatchPattern))
-		{
-			FcDefaultSubstitute (pattern);
-			FcResult result;
-			FcPattern* font = FcFontMatch (fcConfig, pattern, &result);
-			if (result == FcResultMatch)
-			{
-				FcChar8* file;
-				int index;
-				if (FcPatternGetString (font, FC_FILE, 0, &file) == FcResultMatch &&
-					FcPatternGetInteger (font, FC_INDEX, 0, &index) == FcResultMatch)
-				{
-					if (fileStr)
-						fileStr->assign (reinterpret_cast<char*> (file));
-					if (indexInt)
-						*indexInt = index;
-					found = true;
-				}
-			}
-			if (font)
-				FcPatternDestroy (font);
-		}
-		if (pattern)
-			FcPatternDestroy (pattern);
-		return found;
+		return fontMap;
 	}
 
-	bool getAllFontFamilies (const FontFamilyCallback& callback)
+	PangoContext* getFontContext ()
 	{
-		if (!fcConfig)
+		return fontContext;
+	}
+
+	bool queryFont (UTF8StringPtr name, CCoord size, int32_t style, PangoFontHandle& fontHandle)
+	{
+		PangoFontDescription* desc = pango_font_description_new ();
+		pango_font_description_set_family_static (desc, name);
+		pango_font_description_set_absolute_size (desc, pango_units_from_double (size));
+		if (style & kItalicFace)
+			pango_font_description_set_style (desc, PANGO_STYLE_ITALIC);
+		if (style & kBoldFace)
+			pango_font_description_set_weight (desc, PANGO_WEIGHT_BOLD);
+		PangoFont* font = pango_font_map_load_font (fontMap, fontContext, desc);
+		pango_font_description_free (desc);
+		if (font)
+			fontHandle.assign (font);
+		return font != nullptr;
+	}
+
+	bool getAllFontFamilies(const FontFamilyCallback& callback)
+	{
+		if (!fontContext)
 			return false;
-		std::set<std::string> fontFamilyKnown;
-		FcPattern* pattern = nullptr;
-		FcObjectSet* objectSet = nullptr;
-		FcFontSet* fontList = nullptr;
-		if ((pattern = FcPatternCreate ()) &&
-			(objectSet = FcObjectSetBuild (FC_FAMILY, FC_FILE, FC_STYLE, nullptr)) &&
-			(fontList = FcFontList (fcConfig, pattern, objectSet)))
+		PangoFontFamily** families = nullptr;
+		int numFamilies = 0;
+		pango_context_list_families (fontContext, &families, &numFamilies);
+		for (int i = 0; i < numFamilies; ++i)
 		{
-			for (int i = 0; i < fontList->nfont; ++i)
-			{
-				auto* font = fontList->fonts[i];
-				FcChar8* family;
-				if (FcPatternGetString (font, FC_FAMILY, 0, &family) == FcResultMatch)
-				{
-					std::string familyStr (reinterpret_cast<const char*> (family));
-					if (fontFamilyKnown.insert (familyStr).second)
-					{
-						if (!callback (familyStr))
-							break;
-					}
-				}
-			}
+			PangoFontFamily* family = families[i];
+			if (!callback (pango_font_family_get_name (family)))
+				break;
 		}
-		if (fontList)
-			FcFontSetDestroy (fontList);
-		if (objectSet)
-			FcObjectSetDestroy (objectSet);
-		if (pattern)
-			FcPatternDestroy (pattern);
+		g_free (families);
 		return true;
 	}
 
 private:
 	FontList ()
 	{
-		if (!FcInit ())
-			return;
+		fontMap = pango_cairo_font_map_new ();
+		fontContext = pango_font_map_create_context (fontMap);
 
-		fcConfig = FcInitLoadConfigAndFonts ();
-		if (!fcConfig)
-			return;
-
-		if (auto linuxFactory = getPlatformFactory ().asLinuxFactory ())
+		PangoFcFontMap *fcMap = G_TYPE_CHECK_INSTANCE_CAST (fontMap, PANGO_TYPE_FC_FONT_MAP, PangoFcFontMap);
+		if (fcMap && FcInit () && (fcConfig = FcInitLoadConfigAndFonts ()))
 		{
-			auto resPath = linuxFactory->getResourcePath ();
-			if (!resPath.empty ())
+			if (auto linuxFactory = getPlatformFactory ().asLinuxFactory ())
 			{
-				auto fontDir = resPath + "Fonts/";
-				FcConfigAppFontAddDir (fcConfig,
-									   reinterpret_cast<const FcChar8*> (fontDir.data ()));
+				const UTF8String& resourcePath = linuxFactory->getResourcePath ();
+				if (!resourcePath.empty ())
+				{
+					auto fontDir = resourcePath + "Fonts/";
+					FcConfigAppFontAddDir (fcConfig, reinterpret_cast<const FcChar8*> (fontDir.data ()));
+				}
+				pango_fc_font_map_set_config (fcMap, fcConfig);
+				FcConfigDestroy (fcConfig);
 			}
 		}
 	}
 
 	~FontList ()
 	{
-		if (fcConfig)
-			FcConfigDestroy (fcConfig);
+		if (fontMap)
+			g_object_unref (fontMap);
+		if (fontContext)
+			g_object_unref (fontContext);
 	}
 
 	FontList (const FontList&) = delete;
 	FontList& operator= (const FontList&) = delete;
 
 	FcConfig* fcConfig = nullptr;
-	Fonts fonts;
+	PangoFontMap* fontMap = nullptr;
+	PangoContext* fontContext = nullptr;
 
 	static int slantFromStyle (int32_t style)
 	{
@@ -262,45 +128,17 @@ private:
 };
 
 //------------------------------------------------------------------------
-FreeType& FreeType::instance ()
-{
-	static FreeType gInstance;
-	return gInstance;
-}
-
-//------------------------------------------------------------------------
-FreeTypeFontFace FreeType::createFromPath (const std::string& path, int index)
-{
-	FT_Face face {nullptr};
-	FT_New_Face (library, path.data (), index, &face);
-	return FreeTypeFontFace (face);
-}
-
-//------------------------------------------------------------------------
-FreeType::FreeType ()
-{
-	if (FT_Init_FreeType (&library) != 0)
-	{
-		vstgui_assert (false, "Could not initialize FreeType");
-	}
-}
-
-//------------------------------------------------------------------------
-FreeType::~FreeType ()
-{
-	FontList::instance ().clear ();
-	if (library)
-		FT_Done_FreeType (library);
-}
-
-//------------------------------------------------------------------------
 } // anonymous
 
 //------------------------------------------------------------------------
 struct Font::Impl
 {
-	ScaledFontHandle font;
-	cairo_font_extents_t extents {};
+	PangoFontHandle font;
+	int32_t style;
+	CCoord ascent {-1.};
+	CCoord descent {-1.};
+	CCoord leading {-1.};
+	CCoord capHeight {-1.};
 };
 
 //------------------------------------------------------------------------
@@ -310,49 +148,42 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 
 	auto& fontList = FontList::instance ();
 
-	bool found = false;
-	std::string file;
-	int index {};
-
-	static constexpr auto defaultNames = {"Liberation Sans", "Noto Sans", "Ubuntu", "FreeSans"};
-
-	for (int numTry = 0; !found && numTry < 2; ++numTry)
+	if (fontList.queryFont (name, size, style, impl->font))
 	{
-		int32_t tryStyle = (numTry == 0) ? style : 0;
-		if (name[0] != '\0')
-			found = fontList.queryFont (name, size, tryStyle, &file, &index);
-		if (!found)
+		PangoFontMetrics* metrics = pango_font_get_metrics (impl->font, nullptr);
+		if (metrics)
 		{
-			for (auto& defName : defaultNames)
+			impl->ascent = pango_units_to_double (pango_font_metrics_get_ascent (metrics));
+			impl->descent = pango_units_to_double (pango_font_metrics_get_descent (metrics));
+			impl->leading = pango_units_to_double (pango_font_metrics_get_height (metrics));
+			pango_font_metrics_unref (metrics);
+		}
+
+		PangoContext* context = fontList.getFontContext();
+		if (context)
+		{
+			PangoLayout* layout = pango_layout_new (context);
+			if (layout)
 			{
-				found = fontList.queryFont (defName, size, tryStyle, &file, &index);
-				if (found)
-					break;
+				PangoFontDescription* desc = pango_font_describe (impl->font);
+				if (desc)
+				{
+					pango_layout_set_font_description (layout, desc);
+					pango_font_description_free (desc);
+				}
+
+				pango_layout_set_text (layout, "M", -1);
+
+				PangoRectangle inkExtents {};
+				pango_layout_get_pixel_extents (layout, &inkExtents, nullptr);
+				impl->capHeight = inkExtents.height;
+
+				g_object_unref (layout);
 			}
 		}
 	}
 
-	if (found)
-	{
-		CairoFontFace& face = fontList.createFont (file, index);
-		cairo_matrix_t matrix, ctm;
-		cairo_matrix_init_scale (&matrix, size, size);
-		cairo_matrix_init_identity (&ctm);
-		auto options = cairo_font_options_create ();
-		cairo_font_options_set_hint_style (options, CAIRO_HINT_STYLE_NONE);
-		cairo_font_options_set_hint_metrics (options, CAIRO_HINT_METRICS_ON);
-		impl->font = ScaledFontHandle (cairo_scaled_font_create (face, &matrix, &ctm, options));
-		cairo_font_options_destroy (options);
-		auto status = cairo_scaled_font_status (impl->font);
-		if (status != CAIRO_STATUS_SUCCESS)
-		{
-			impl->font.reset ();
-		}
-		else if (impl->font)
-		{
-			cairo_scaled_font_extents (impl->font, &impl->extents);
-		}
-	}
+	impl->style = style;
 }
 
 //------------------------------------------------------------------------
@@ -367,27 +198,25 @@ bool Font::valid () const
 //------------------------------------------------------------------------
 double Font::getAscent () const
 {
-	return impl->extents.ascent;
+	return impl->ascent;
 }
 
 //------------------------------------------------------------------------
 double Font::getDescent () const
 {
-	return impl->extents.descent;
+	return impl->descent;
 }
 
 //------------------------------------------------------------------------
 double Font::getLeading () const
 {
-#warning TODO: Implementation
-	return -1.;
+	return impl->leading;
 }
 
 //------------------------------------------------------------------------
 double Font::getCapHeight () const
 {
-#warning TODO: Implementation
-	return -1.;
+	return impl->capHeight;
 }
 
 //------------------------------------------------------------------------
@@ -411,9 +240,52 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 				auto alpha = color.normAlpha<double> () * cairoContext->getGlobalAlpha ();
 				cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
 									   color.normBlue<double> (), alpha);
-				cairo_move_to (cr, p.x, p.y);
-				cairo_set_scaled_font (cr, impl->font);
-				cairo_show_text (cr, linuxString->get ().data ());
+
+				PangoContext* context = FontList::instance ().getFontContext();
+				if (context)
+				{
+					PangoLayout* layout = pango_layout_new (context);
+					if (layout)
+					{
+						if (impl->font)
+						{
+							PangoFontDescription* desc = pango_font_describe (impl->font);
+							if (desc)
+							{
+								pango_layout_set_font_description (layout, desc);
+								pango_font_description_free (desc);
+							}
+						}
+
+						PangoAttrList* attrs = pango_attr_list_new ();
+						if (attrs)
+						{
+							if (impl->style & kUnderlineFace)
+								pango_attr_list_insert (attrs, pango_attr_underline_new (PANGO_UNDERLINE_SINGLE));
+							if (impl->style & kStrikethroughFace)
+								pango_attr_list_insert (attrs, pango_attr_strikethrough_new (true));
+							pango_layout_set_attributes(layout, attrs);
+							pango_attr_list_unref (attrs);
+						}
+
+						pango_layout_set_text (layout, linuxString->get ().c_str (), -1);
+
+						PangoRectangle extents {};
+						pango_layout_get_pixel_extents (layout, nullptr, &extents);
+
+						PangoLayoutIter* iter = pango_layout_get_iter (layout);
+						CCoord baseline = 0.0;
+						if (iter)
+						{
+							baseline = pango_units_to_double (pango_layout_iter_get_baseline (iter));
+							pango_layout_iter_free (iter);
+						}
+
+						cairo_move_to (cr, p.x + extents.x, p.y + extents.y - baseline);
+						pango_cairo_show_layout (cr, layout);
+						g_object_unref (layout);
+					}
+				}
 			}
 		}
 	}
@@ -424,9 +296,29 @@ CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, boo
 {
 	if (auto linuxString = dynamic_cast<LinuxString*> (string))
 	{
-		cairo_text_extents_t e;
-		cairo_scaled_font_text_extents (impl->font, linuxString->get ().data (), &e);
-		return e.x_advance;
+		int pangoWidth = 0;
+		PangoContext* context = FontList::instance ().getFontContext();
+		if (context)
+		{
+			PangoLayout* layout = pango_layout_new (context);
+			if (layout)
+			{
+				if (impl->font)
+				{
+					PangoFontDescription* desc = pango_font_describe (impl->font);
+					if (desc)
+					{
+						pango_layout_set_font_description (layout, desc);
+						pango_font_description_free (desc);
+					}
+				}
+				pango_layout_set_text (layout, linuxString->get ().c_str (), -1);
+				pango_layout_get_pixel_size (layout, &pangoWidth, nullptr);
+				g_object_unref (layout);
+			}
+		}
+
+		return pangoWidth;
 	}
 	return 0;
 }
