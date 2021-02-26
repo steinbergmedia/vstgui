@@ -8,6 +8,7 @@
 #include "linuxstring.h"
 #include "linuxfactory.h"
 #include <pango/pangocairo.h>
+#include <pango/pango-features.h>
 #include <pango/pangofc-fontmap.h>
 #include <fontconfig/fontconfig.h>
 
@@ -155,7 +156,9 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 		{
 			impl->ascent = pango_units_to_double (pango_font_metrics_get_ascent (metrics));
 			impl->descent = pango_units_to_double (pango_font_metrics_get_descent (metrics));
+#if PANGO_VERSION_MAJOR > 1 || (PANGO_VERSION_MAJOR == 1 && PANGO_VERSION_MINOR >= 44)
 			impl->leading = pango_units_to_double (pango_font_metrics_get_height (metrics));
+#endif
 			pango_font_metrics_unref (metrics);
 		}
 
