@@ -47,9 +47,9 @@ public:
 	float getRange () const { return getMax () - getMin (); }
 
 	virtual void setOldValue (float val);
-	virtual	float getOldValue (void) const;
+	virtual	float getOldValue () const;
 	virtual void setDefaultValue (float val);
-	virtual	float getDefaultValue (void) const;
+	virtual	float getDefaultValue () const;
 
 	virtual void bounceValue ();
 	virtual bool checkDefaultValue (CButtonState button);
