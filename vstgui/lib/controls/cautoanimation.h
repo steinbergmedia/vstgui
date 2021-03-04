@@ -28,14 +28,14 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** enabled drawing */
-	virtual void openWindow (void);
+	virtual void openWindow ();
 	/** disable drawing */
-	virtual void closeWindow (void);
+	virtual void closeWindow ();
 
 	/** the next sub bitmap should be displayed */
-	virtual void nextPixmap (void);
+	virtual void nextPixmap ();
 	/** the previous sub bitmap should be displayed */
-	virtual void previousPixmap (void);
+	virtual void previousPixmap ();
 
 	bool    isWindowOpened () const { return bWindowOpened; }
 	//@}

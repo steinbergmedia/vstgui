@@ -70,7 +70,7 @@ public:
 	void setText (const UTF8String& txt) override;
 	void valueChanged () override;
 	void setValue (float val) override;
-	void setTextRotation (double angle) override { return; } // not supported
+	void setTextRotation (double angle) override { } // not supported
 
 	void draw (CDrawContext* pContext) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;

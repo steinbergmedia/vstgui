@@ -379,8 +379,7 @@ void COptionMenu::beforePopup ()
 		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (this); });
 	for (auto& menuItem : *menuItems)
 	{
-		CCommandMenuItem* commandItem = menuItem.cast<CCommandMenuItem> ();
-		if (commandItem)
+		if (auto* commandItem = menuItem.cast<CCommandMenuItem> ())
 			commandItem->validate ();
 		if (menuItem->getSubmenu ())
 			menuItem->getSubmenu ()->beforePopup ();
@@ -555,7 +554,7 @@ CMenuItem* COptionMenu::addEntry (CMenuItem* item, int32_t index)
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, const UTF8String& title)
 {
-	CMenuItem* item = new CMenuItem (title, submenu);
+	auto* item = new CMenuItem (title, submenu);
 	return addEntry (item);
 }
 
@@ -564,14 +563,14 @@ CMenuItem* COptionMenu::addEntry (const UTF8String& title, int32_t index, int32_
 {
 	if (title == "-")
 		return addSeparator (index);
-	CMenuItem* item = new CMenuItem (title, nullptr, 0, nullptr, itemFlags);
+	auto* item = new CMenuItem (title, nullptr, 0, nullptr, itemFlags);
 	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addSeparator (int32_t index)
 {
-	CMenuItem* item = new CMenuItem ("", nullptr, 0, nullptr, CMenuItem::kSeparator);
+	auto* item = new CMenuItem ("", nullptr, 0, nullptr, CMenuItem::kSeparator);
 	return addEntry (item, index);
 }
 

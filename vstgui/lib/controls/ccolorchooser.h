@@ -43,7 +43,7 @@ struct CColorChooserUISettings
 class CColorChooser : public CViewContainer, public IControlListener
 {
 public:
-	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor, const CColorChooserUISettings& settings = CColorChooserUISettings ());
+	CColorChooser (IColorChooserDelegate* delegate = nullptr, const CColor& initialColor = kTransparentCColor, const CColorChooserUISettings& settings = CColorChooserUISettings ());
 	~CColorChooser () noexcept override = default;
 
 	void setColor (const CColor& newColor);
