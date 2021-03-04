@@ -193,7 +193,7 @@ CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& 
 		Animation::ITimingFunction* timingFunction = nullptr;
 		if (getAlphaValue () == 1.f)
 		{
-			Animation::InterpolationTimingFunction* interpolTimingFunction = new Animation::InterpolationTimingFunction (400);
+			auto* interpolTimingFunction = new Animation::InterpolationTimingFunction (400);
 			interpolTimingFunction->addPoint (300.f/400.f, 1.f);
 			timingFunction = interpolTimingFunction;
 		}
