@@ -63,6 +63,9 @@ if(LINUX)
     pkg_check_modules(LIBXKB_COMMON REQUIRED xkbcommon)
     pkg_check_modules(LIBXKB_COMMON_X11 REQUIRED xkbcommon-x11)
     pkg_check_modules(GLIB REQUIRED glib-2.0)
+    pkg_check_modules(CAIRO REQUIRED cairo)
+    pkg_check_modules(PANGO REQUIRED pangocairo pangoft2)
+    pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
     set(LINUX_LIBRARIES
         ${X11_LIBRARIES}
         ${FREETYPE_LIBRARIES}
@@ -74,8 +77,9 @@ if(LINUX)
         ${LIBXKB_COMMON_LIBRARIES}
         ${LIBXKB_COMMON_X11_LIBRARIES}
         ${GLIB_LIBRARIES}
-        cairo
-        fontconfig
+        ${CAIRO_LIBRARIES}
+        ${PANGO_LIBRARIES}
+        ${FONTCONFIG_LIBRARIES}
         dl
     )
 endif()
