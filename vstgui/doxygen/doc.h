@@ -80,5 +80,6 @@ Debian/Ubuntu based distribution:
 - libfontconfig1-dev
 - libcairo2-dev
 - libfreetype6-dev
+- libpango1.0-dev
 
 */
