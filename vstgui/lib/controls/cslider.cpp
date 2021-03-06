@@ -579,6 +579,15 @@ int32_t CSliderBase::onKeyDown (VstKeyCode& keyCode)
 			}
 			return 1;
 		}
+		case VKEY_ESCAPE:
+		{
+			if (isEditing ())
+			{
+				onMouseCancel ();
+				return 1;
+			}
+			break;
+		}
 	}
 	return -1;
 }

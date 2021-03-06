@@ -112,7 +112,7 @@ CMouseEventResult CXYPad::onMouseCancel ()
 //------------------------------------------------------------------------
 CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons.isLeftButton ())
+	if (buttons.isLeftButton () && isEditing ())
 	{
 		if (stopTrackingOnMouseExit)
 		{
@@ -168,6 +168,24 @@ bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const fl
 		valueChanged ();
 	}
 	return true;
+}
+
+//------------------------------------------------------------------------
+int32_t CXYPad::onKeyDown (VstKeyCode& keyCode)
+{
+	switch (keyCode.virt)
+	{
+		case VKEY_ESCAPE:
+		{
+			if (isEditing ())
+			{
+				onMouseCancel ();
+				return 1;
+			}
+			break;
+		}
+	}
+	return -1;
 }
 
 //------------------------------------------------------------------------

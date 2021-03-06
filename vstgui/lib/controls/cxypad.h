@@ -30,6 +30,7 @@ public:
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
 	static float calculateValue (float x, float y)
 	{

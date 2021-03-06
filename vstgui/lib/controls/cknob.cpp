@@ -287,7 +287,17 @@ int32_t CKnobBase::onKeyDown (VstKeyCode& keyCode)
 				// end of edit parameter
 				endEdit ();
 			}
-		} return 1;
+			return 1;
+		}
+		case VKEY_ESCAPE:
+		{
+			if (isEditing ())
+			{
+				onMouseCancel ();
+				return 1;
+			}
+			break;
+		}
 	}
 	return -1;
 }
