@@ -517,6 +517,8 @@ bool CSliderBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, con
 	onMouseWheelEditing (this);
 
 	float _distance = distance;
+	if (isStyleHorizontal ())
+		_distance *= -1.f;
 	if (isInverseStyle ())
 		_distance *= -1.f;
 	float normValue = getValueNormalized ();
