@@ -13,6 +13,9 @@
 #endif
 
 #define RAPIDJSON_HAS_STDSTRING 1
+#if DEBUG
+#include "../rapidjson/include/rapidjson/error/en.h"
+#endif
 #include "../rapidjson/include/rapidjson/document.h"
 #include "../rapidjson/include/rapidjson/prettywriter.h"
 #include "../rapidjson/include/rapidjson/reader.h"
@@ -402,6 +405,14 @@ SharedPointer<UINode> read (IContentProvider& stream)
 	auto result = reader.Parse (streamWrapper, handler);
 	if (result.IsError ())
 	{
+#if DEBUG
+		DebugPrint ("JSON Parsing Error:");
+		if (auto errorString = rapidjson::GetParseError_En (result.Code ()))
+			DebugPrint (" %s", errorString);
+		else
+			DebugPrint (" %d", result.Code ());
+		DebugPrint ("\n\tAt byte offset: %d\n", result.Offset ());
+#endif
 		return nullptr;
 	}
 	return handler.rootNode;
