@@ -113,8 +113,26 @@ private:
 			args.push_back ("--title");
 			args.push_back (title.getString ());
 		}
-		if (!initialPath.empty ())
-			args.push_back (initialPath.getString ());
+		args.push_back ("--");
+		args.push_back (initialPath.getString ());
+		if (style == Style::kSelectFile || style == Style::kSelectSaveFile)
+		{
+			std::string filterString;
+			filterString.reserve (256);
+			size_t count = 0;
+			for (auto const &ext : extensions)
+			{
+				if (count != 0)
+						filterString += '|';
+
+				filterString += ext.getDescription ().getString ();
+				filterString += " (*.";
+				filterString += ext.getExtension ().getString ();
+				filterString += ')';
+				++count;
+			}
+			args.push_back (filterString);
+		}
 		if (startProcess (convertToArgv (args).data ()))
 		{
 			return true;
@@ -139,6 +157,21 @@ private:
 			args.push_back ("--title=" + title.getString ());
 		if (!initialPath.empty ())
 			args.push_back ("--filename=" + initialPath.getString ());
+		if (!extensions.empty ())
+		{
+			std::string filterString;
+			filterString.reserve (256);
+			for (auto const &ext : extensions)
+			{
+				filterString = "--file-filter=";
+				filterString += ext.getDescription ().getString ();
+				filterString += " (";
+				filterString += ext.getExtension ().getString ();
+				filterString += ") | *.";
+				filterString += ext.getExtension ().getString ();
+				args.push_back (filterString);
+			}
+		}
 		if (startProcess (convertToArgv (args).data ()))
 		{
 			return true;
