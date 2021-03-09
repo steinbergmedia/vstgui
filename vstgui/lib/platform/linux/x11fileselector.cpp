@@ -113,23 +113,16 @@ private:
 			args.push_back ("--title");
 			args.push_back (title.getString ());
 		}
-		args.push_back ("--");
 		args.push_back (initialPath.getString ());
 		if (style == Style::kSelectFile || style == Style::kSelectSaveFile)
 		{
 			std::string filterString;
 			filterString.reserve (256);
-			size_t count = 0;
 			for (auto const &ext : extensions)
 			{
-				if (count != 0)
-						filterString += '|';
-
-				filterString += ext.getDescription ().getString ();
-				filterString += " (*.";
+				filterString += "*.";
 				filterString += ext.getExtension ().getString ();
-				filterString += ')';
-				++count;
+				filterString += ' ';
 			}
 			args.push_back (filterString);
 		}
