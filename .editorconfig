@@ -1,4 +1,5 @@
 root = true
+vc_generate_documentation_comments = doxygen_slash_star
 
 [*]
 charset = utf-8
