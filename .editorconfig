@@ -9,3 +9,5 @@ insert_final_newline = true
 [*.{c,h,cpp,hpp,m,mm}]
 indent_style = tab
 indent_size = 4
+trim_trailing_whitespace = true
+
