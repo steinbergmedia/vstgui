@@ -14,6 +14,7 @@ include(vstgui_init)
 
 ##########################################################################################
 function(vstgui_set_cxx_version target version)
+    target_compile_features(${target} PUBLIC cxx_std_${version})
     set_property(TARGET ${target} PROPERTY CXX_STANDARD ${version})
     set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
     set_property(TARGET ${target} PROPERTY CMAKE_CXX_STANDARD_REQUIRED ON)
