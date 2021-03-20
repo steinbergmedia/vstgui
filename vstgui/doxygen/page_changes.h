@@ -326,6 +326,10 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------
+/*! @defgroup new_in_4_10 Version 4.10
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
 /*! @defgroup views Views
  *	@ingroup viewsandcontrols
  */
@@ -339,4 +343,3 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  *	@ingroup views
  */
 //------------------------------------------------------------------------
-
