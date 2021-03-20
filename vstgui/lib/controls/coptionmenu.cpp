@@ -430,16 +430,33 @@ bool COptionMenu::popup (const PopupCallback& callback)
 			platformMenu->popup (this, [self, callback] (COptionMenu* menu, PlatformOptionMenuResult result) {
 				if (result.menu != nullptr)
 				{
-					self->beginEdit ();
-					self->lastMenu = result.menu;
-					self->lastResult = result.index;
-					self->lastMenu->setValue (static_cast<float> (self->lastResult));
-					self->valueChanged ();
-					self->invalid ();
-					if (auto commandItem = dynamic_cast<CCommandMenuItem*> (
-					        self->lastMenu->getEntry (self->lastResult)))
-						commandItem->execute ();
-					self->endEdit ();
+					bool preventSettingValue = false;
+					if (self->listeners)
+					{
+						self->listeners->forEach (
+							[self, &result] (IOptionMenuListener* l) {
+								return l->onOptionMenuSetPopupResult (self, result.menu,
+																	  result.index);
+							},
+							[&preventSettingValue] (bool result) {
+								if (result)
+									preventSettingValue = true;
+								return result;
+							});
+					}
+					if (!preventSettingValue)
+					{
+						self->beginEdit ();
+						self->lastMenu = result.menu;
+						self->lastResult = result.index;
+						self->lastMenu->setValue (static_cast<float> (self->lastResult));
+						self->valueChanged ();
+						self->invalid ();
+						if (auto commandItem = dynamic_cast<CCommandMenuItem*> (
+								self->lastMenu->getEntry (self->lastResult)))
+							commandItem->execute ();
+						self->endEdit ();
+					}
 				}
 				self->afterPopup ();
 				if (callback)
