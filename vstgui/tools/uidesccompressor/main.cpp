@@ -5,19 +5,17 @@
 #include "vstgui/lib/cresourcedescription.h"
 #include "vstgui/lib/cstring.h"
 #include "vstgui/uidescription/compresseduidescription.h"
+#include "vstgui/lib/vstguiinit.h"
 #include <string>
 
 //------------------------------------------------------------------------
 #if MAC
 #include <CoreFoundation/CoreFoundation.h>
-namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
 #elif WINDOWS
 struct IUnknown;
 #include <windows.h>
 #include <Shlobj.h>
-void* hInstance = nullptr;
 #elif LINUX
-namespace VSTGUI { void* soHandle = nullptr; }
 #endif
 
 using namespace VSTGUI;
@@ -33,8 +31,13 @@ void printAndTerminate (const char* msg)
 //------------------------------------------------------------------------
 int main (int argv, char* argc[])
 {
-#if WINDOWS
+#if MAC
+	VSTGUI::init (CFBundleGetMainBundle ());
+#elif WINDOWS
 	CoInitialize (nullptr);
+	VSTGUI::init (GetModuleHandle (nullptr));
+#elif LINUX
+	VSTGUI::init (nullptr);
 #endif
 	std::string inputPath;
 	std::string outputPath;
@@ -71,14 +74,14 @@ int main (int argv, char* argc[])
 		printAndTerminate ("No input or output path specified!");
 	}
 	printf ("Copy %s to %s%s\n", inputPath.data (), outputPath.data (),
-	        noCompression ? " [uncompressed]" : "[compressed]");
+			noCompression ? " [uncompressed]" : "[compressed]");
 
 	CompressedUIDescription uiDesc (CResourceDescription (inputPath.data ()));
 	if (!uiDesc.parse ())
 	{
 		printAndTerminate ("Parsing failed!");
 	}
-	int32_t flags = UIDescription::kWriteImagesIntoXMLFile;
+	int32_t flags = UIDescription::kWriteImagesIntoUIDescFile;
 	if (noCompression)
 	{
 		if (inputPath == outputPath && uiDesc.getOriginalIsCompressed () == false)
@@ -94,14 +97,15 @@ int main (int argv, char* argc[])
 		if (inputPath == outputPath && uiDesc.getOriginalIsCompressed () == true)
 			return 0;
 
-		flags |= CompressedUIDescription::kNoPlainXmlFileBackup |
-		         CompressedUIDescription::kForceWriteCompressedDesc |
-		         CompressedUIDescription::kDoNotVerifyImageXMLData;
+		flags |= CompressedUIDescription::kNoPlainUIDescFileBackup |
+				 CompressedUIDescription::kForceWriteCompressedDesc |
+				 CompressedUIDescription::kDoNotVerifyImageData;
 		uiDesc.setCompressionLevel (compressionLevel);
 		if (!uiDesc.save (outputPath.data (), flags))
 		{
 			printAndTerminate ("saving failed");
 		}
 	}
+	VSTGUI::exit ();
 	return 0;
 }

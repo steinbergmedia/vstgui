@@ -5,6 +5,8 @@
 /**
 @page page_news_and_changes New stuff in VSTGUI 4
 
+@tableofcontents
+
 - @ref version4_introduction @n
 - @ref new_stuff @n
 - @ref code_changes @n
@@ -20,6 +22,13 @@ The result is that code written for any earlier version of VSTGUI is not always 
 It's recommended to start new projects with version 4 while old projects should stay with version 3.6.
 
 @section new_stuff New Stuff
+
+@subsection version4_10 Version 4.10
+
+- VSTGUI now needs to be initialized and terminated explicitly. See VSTGUI::init() and VSTGUI::exit().
+- UIDescription files are now written in JSON format and the old XML format is deprecated
+- It's now possible to conditionally remove the XML parser and the expat library from building (set VSTGUI_ENABLE_XML_PARSER to 0)
+- This is the last version not depending on c++17 compiler support.
 
 @subsection version4_9 Version 4.9
 
@@ -90,7 +99,7 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 @subsection version4_0 Version 4.0
 
-- VST3 Support : Complete inline VST3 Editor support. See @ref page_vst3_inline_editing @n
+- VST3 Support : Complete inline VST3 Editor support. See @ref page_uidescription_editor @n
 - UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
 - Animation Support : Simple to use animations. See @ref page_animation
 - Amalgamation : Easy integration in your projects via one or two source files
@@ -100,6 +109,10 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_9_to_4_10 VSTGUI 4.9 -> VSTGUI 4.10
+
+- one has to use VSTGUI::init() before using VSTGUI and VSTGUI::exit() after use
 
 @subsection code_changes_4_8_to_4_9 VSTGUI 4.8 -> VSTGUI 4.9
 
@@ -313,6 +326,10 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------
+/*! @defgroup new_in_4_10 Version 4.10
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
 /*! @defgroup views Views
  *	@ingroup viewsandcontrols
  */
@@ -326,4 +343,3 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  *	@ingroup views
  */
 //------------------------------------------------------------------------
-

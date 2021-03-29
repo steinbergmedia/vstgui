@@ -12,6 +12,7 @@
 #include "vstgui/lib/cscrollview.h"
 #include "vstgui/lib/csplitview.h"
 #include "vstgui/lib/platform/iplatformbitmap.h"
+#include "vstgui/lib/platform/platformfactory.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/standalone/include/ialertbox.h"
@@ -285,7 +286,7 @@ void DocumentWindowController::onSetContentView (IWindow& w, const SharedPointer
 //------------------------------------------------------------------------
 void DocumentWindowController::onClosed (const IWindow& w)
 {
-	assert (&w == window.get ());
+	vstgui_assert (&w == window.get ());
 	window = nullptr;
 }
 
@@ -329,8 +330,8 @@ bool DocumentWindowController::canClose (const IWindow&)
 static bool exportImage (const SharedPointer<CBitmap>& image, UTF8StringPtr path)
 {
 	auto platformBitmap = image->getPlatformBitmap ();
-	assert (platformBitmap);
-	auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+	vstgui_assert (platformBitmap);
+	auto buffer = getPlatformFactory ().createBitmapMemoryPNGRepresentation (platformBitmap);
 	CFileStream stream;
 	if (!stream.open (path, CFileStream::kWriteMode | CFileStream::kBinaryMode |
 	                            CFileStream::kTruncateMode))
@@ -405,11 +406,11 @@ void DocumentWindowController::doSaveAs (std::function<void (bool saved)>&& cust
 //------------------------------------------------------------------------
 void DocumentWindowController::onImagePathAdded (const Path& newPath, size_t index)
 {
-	auto platformBitmap = IPlatformBitmap::createFromPath (newPath.data ());
+	auto platformBitmap = getPlatformFactory ().createBitmapFromPath (newPath.data ());
 	if (!platformBitmap)
 	{
 		CPoint size (docContext->getWidth (), docContext->getHeight ());
-		platformBitmap = IPlatformBitmap::create (&size);
+		platformBitmap = getPlatformFactory().createBitmap (size);
 	}
 	auto it = imageList.begin ();
 	if (index >= imageList.size ())
@@ -662,7 +663,7 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 	r.setSize (size);
 	size.y *= docContext->getImagePaths ().size ();
 
-	auto offscreen = COffscreenContext::create (contentView, size.x, size.y);
+	auto offscreen = COffscreenContext::create (size);
 	if (!offscreen)
 		return nullptr;
 

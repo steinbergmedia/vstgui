@@ -379,7 +379,7 @@ To activate the inline editor you need to define the preprocessor definition "VS
 Rebuild your plug-in, start your prefered host, instanciate your plug-in, open the context menu inside your editor and choose "Enable Editing".
 Now you can define tags, colors, fonts, bitmaps and add views to your editor.
 
-See @ref page_vst3_inline_editing @n
+See @ref page_uidescription_editor @n
 */
 //-----------------------------------------------------------------------------
 VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
@@ -1247,7 +1247,11 @@ Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 		if (r == currentSize)
 			return Steinberg::kResultTrue;
 	}
-	return VSTGUIEditor::onSize (newSize);
+	auto oldState = requestResizeGuard;
+	requestResizeGuard = true;
+	auto result = VSTGUIEditor::onSize (newSize);
+	requestResizeGuard = oldState;
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -1388,7 +1392,11 @@ static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 		bool val;
 		if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
 		{
+#if ((VSTGUI_VERSION_MAJOR == 4 && VSTGUI_VERSION_MINOR > 9) || (VSTGUI_VERSION_MAJOR > 4))
+			flags |= UIDescription::kWriteImagesIntoUIDescFile;
+#else
 			flags |= UIDescription::kWriteImagesIntoXMLFile;
+#endif
 		}
 		if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
 		{
@@ -1405,6 +1413,8 @@ void VST3Editor::save (bool saveAs)
 {
 	UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
 	vstgui_assert(attributes);
+	if (!attributes)
+		return;
 	std::string savePath;
 	if (saveAs)
 	{
@@ -1436,7 +1446,7 @@ void VST3Editor::save (bool saveAs)
 	}
 	else
 	{
-		const std::string* filePath = attributes->getAttributeValue ("Path");
+		const std::string* filePath = attributes ? attributes->getAttributeValue ("Path") : nullptr;
 		if (filePath)
 			savePath = *filePath;
 	}
@@ -1600,8 +1610,8 @@ bool VST3Editor::enableEditing (bool state)
 			if (view)
 			{
 				double scaleFactor = getAbsScaleFactor ();
-				CCoord width = view->getWidth () * scaleFactor;
-				CCoord height = view->getHeight () * scaleFactor;
+				CCoord width = std::ceil (view->getWidth () * scaleFactor);
+				CCoord height = std::ceil (view->getHeight () * scaleFactor);
 
 				if (canResize () == Steinberg::kResultTrue)
 				{

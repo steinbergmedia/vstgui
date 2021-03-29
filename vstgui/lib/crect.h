@@ -17,7 +17,8 @@ struct CRect
 {
 	constexpr CRect () = default;
 	inline constexpr CRect (CCoord left, CCoord top, CCoord right, CCoord bottom);
-	inline constexpr CRect (const CRect& r);
+	inline constexpr CRect (const CRect& r) = default;
+	inline CRect& operator = (const CRect& r) = default;
 	inline CRect (const CPoint& origin, const CPoint& size);
 
 	inline CRect& operator () (CCoord left, CCoord top, CCoord right, CCoord bottom);
@@ -83,11 +84,6 @@ struct CRect
 //------------------------------------------------------------------------
 inline constexpr CRect::CRect (CCoord left, CCoord top, CCoord right, CCoord bottom)
 : left (left), top (top), right (right), bottom (bottom)
-{}
-
-//------------------------------------------------------------------------
-inline constexpr CRect::CRect (const CRect& r)
-: left (r.left), top (r.top), right (r.right), bottom (r.bottom)
 {}
 
 //------------------------------------------------------------------------
@@ -270,10 +266,10 @@ inline CRect& CRect::unite (const CRect& rect)
 //------------------------------------------------------------------------
 inline CRect& CRect::makeIntegral ()
 {
-	left = std::floor (left + 0.5);
-	right = std::floor (right + 0.5);
-	top = std::floor (top + 0.5);
-	bottom = std::floor (bottom + 0.5);
+	left = std::floor (left);
+	right = std::ceil (right);
+	top = std::floor (top);
+	bottom = std::ceil (bottom);
 	return *this;
 }
 

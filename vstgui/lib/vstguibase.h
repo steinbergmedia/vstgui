@@ -7,13 +7,12 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include <string>
 
 //-----------------------------------------------------------------------------
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  9
+#define VSTGUI_VERSION_MINOR  10
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -101,7 +100,7 @@
 		#error Visual Studio 2015 or newer needed
 	#endif
 	#include <type_traits>
-	#include <stdint.h>
+	#include <cstdint>
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
@@ -182,6 +181,10 @@
 
 #ifndef VSTGUI_TOUCH_EVENT_HANDLING
 	#define VSTGUI_TOUCH_EVENT_HANDLING 0
+#endif
+
+#ifndef VSTGUI_ENABLE_XML_PARSER
+	#define VSTGUI_ENABLE_XML_PARSER 1
 #endif
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

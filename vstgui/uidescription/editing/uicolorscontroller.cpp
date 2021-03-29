@@ -247,7 +247,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 						colorStr.data (), static_cast<uint32_t> (colorStr.length () + 1),
 						CDropSource::kText);
 					SharedPointer<CBitmap> dragBitmap;
-					if (auto offscreen = COffscreenContext::create (browser->getFrame (), r.getWidth (), r.getHeight ()))
+					if (auto offscreen = COffscreenContext::create (r.getSize ()))
 					{
 						offscreen->beginDraw ();
 						offscreen->setFillColor (cellColor);

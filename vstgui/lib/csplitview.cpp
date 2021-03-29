@@ -119,28 +119,31 @@ void CSplitView::resizeFirstView (CPoint diff)
 	}
 	while (*it)
 	{
-		CView* view = *it;
-		if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view))
+		if (CView* view = *it)
+		{
+			if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view))
 			separators.emplace_back (separatorView);
-		r = view->getViewSize ();
-		if (style == kHorizontal)
-		{
-			r.offset (diff.x, 0);
-			r.bottom += diff.y;
+		
+			r = view->getViewSize ();
+			if (style == kHorizontal)
+			{
+				r.offset (diff.x, 0);
+				r.bottom += diff.y;
+			}
+			else
+			{
+				r.offset (0, diff.y);
+				r.right += diff.x;
+			}
+			view->setViewSize (r);
+			view->setMouseableArea (r);
 		}
-		else
-		{
-			r.offset (0, diff.y);
-			r.right += diff.x;
-		}
-		view->setViewSize (r);
-		view->setMouseableArea (r);
 		++it;
 	}
-	for (auto& seperatorView : separators)
+	for (auto& separatorView : separators)
 	{
-		r = seperatorView->getViewSize ();
-		requestNewSeparatorSize (seperatorView, r);
+		r = separatorView->getViewSize ();
+		requestNewSeparatorSize (separatorView, r);
 	}
 }
 
@@ -153,50 +156,52 @@ void CSplitView::resizeSecondView (CPoint diff)
 	int32_t viewIndex = 0;
 	while (*it)
 	{
-		CView* view = *it;
-		auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
-		if (separatorView)
-			separators.emplace_back (separatorView);
-		else
-			viewIndex++;
-		r = view->getViewSize ();
-		if (separatorView == nullptr && viewIndex == 2)
+		if (CView* view = *it)
 		{
-			r.right += diff.x;
-			r.bottom += diff.y;
-		}
-		else if (viewIndex == 1)
-		{
-			if (style == kHorizontal)
-			{
-				r.bottom += diff.y;
-			}
+			auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
+			if (separatorView)
+				separators.emplace_back (separatorView);
 			else
+				viewIndex++;
+			r = view->getViewSize ();
+			if (separatorView == nullptr && viewIndex == 2)
 			{
 				r.right += diff.x;
-			}
-		}
-		else if (viewIndex > 1)
-		{
-			if (style == kHorizontal)
-			{
-				r.offset (diff.x, 0);
 				r.bottom += diff.y;
 			}
-			else
+			else if (viewIndex == 1)
 			{
-				r.offset (0, diff.y);
-				r.right += diff.x;
+				if (style == kHorizontal)
+				{
+					r.bottom += diff.y;
+				}
+				else
+				{
+					r.right += diff.x;
+				}
 			}
+			else if (viewIndex > 1)
+			{
+				if (style == kHorizontal)
+				{
+					r.offset (diff.x, 0);
+					r.bottom += diff.y;
+				}
+				else
+				{
+					r.offset (0, diff.y);
+					r.right += diff.x;
+				}
+			}
+			view->setViewSize (r);
+			view->setMouseableArea (r);
 		}
-		view->setViewSize (r);
-		view->setMouseableArea (r);
 		++it;
 	}
-	for (auto& seperatorView : separators)
+	for (auto& separatorView : separators)
 	{
-		r = seperatorView->getViewSize ();
-		requestNewSeparatorSize (seperatorView, r);
+		r = separatorView->getViewSize ();
+		requestNewSeparatorSize (separatorView, r);
 	}
 }
 
@@ -218,26 +223,28 @@ void CSplitView::resizeLastView (CPoint diff)
 	}
 	while (*it)
 	{
-		CView* view = *it;
-		if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view))
-			separators.emplace_back (separatorView);
-		r = view->getViewSize ();
-		if (style == kHorizontal)
+		if (CView* view = *it)
 		{
-			r.bottom += diff.y;
+			if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view))
+				separators.emplace_back (separatorView);
+			r = view->getViewSize ();
+			if (style == kHorizontal)
+			{
+				r.bottom += diff.y;
+			}
+			else
+			{
+				r.right += diff.x;
+			}
+			view->setViewSize (r);
+			view->setMouseableArea (r);
 		}
-		else
-		{
-			r.right += diff.x;
-		}
-		view->setViewSize (r);
-		view->setMouseableArea (r);
 		++it;
 	}
-	for (auto& seperatorView : separators)
+	for (auto& separatorView : separators)
 	{
-		r = seperatorView->getViewSize ();
-		requestNewSeparatorSize (seperatorView, r);
+		r = separatorView->getViewSize ();
+		requestNewSeparatorSize (separatorView, r);
 	}
 }
 
@@ -530,7 +537,6 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 	if (view1 && view2)
 	{
 		CRect newSize (_newSize);
-		newSize.makeIntegral ();
 
 		CRect constrainSize (getViewSize ());
 		constrainSize.originize ();

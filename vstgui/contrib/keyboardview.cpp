@@ -12,6 +12,7 @@
 #include "vstgui/uidescription/uiattributes.h"
 #include "vstgui/uidescription/uiviewcreator.h"
 #include "vstgui/uidescription/uiviewfactory.h"
+#include <sstream>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -738,7 +739,11 @@ void KeyboardViewBase::createBitmapCache ()
 	if (!whiteKeyBitmap || !blackKeyBitmap)
 		return;
 
+#if ((VSTGUI_VERSION_MAJOR == 4 && VSTGUI_VERSION_MINOR > 9) || (VSTGUI_VERSION_MAJOR > 4))
+	if (auto offscreen = COffscreenContext::create (CPoint (whiteKeyWidth, getHeight ())))
+#else
 	if (auto offscreen = COffscreenContext::create (getFrame (), whiteKeyWidth, getHeight ()))
+#endif
 	{
 		offscreen->beginDraw ();
 		CRect r (0, 0, whiteKeyWidth, getHeight ());
@@ -751,7 +756,11 @@ void KeyboardViewBase::createBitmapCache ()
 		whiteKeyBitmapCache = offscreen->getBitmap ();
 	}
 
+#if ((VSTGUI_VERSION_MAJOR == 4 && VSTGUI_VERSION_MINOR > 9) || (VSTGUI_VERSION_MAJOR > 4))
+	if (auto offscreen = COffscreenContext::create (CPoint (blackKeyWidth, blackKeyHeight)))
+#else
 	if (auto offscreen = COffscreenContext::create (getFrame (), blackKeyWidth, blackKeyHeight))
+#endif
 	{
 		offscreen->beginDraw ();
 		CRect r (0, 0, blackKeyWidth, blackKeyHeight);

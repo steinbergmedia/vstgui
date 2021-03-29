@@ -11,12 +11,15 @@ set(${target}_sources
     cstream.h
     delegationcontroller.h
     doc.h
+    icontentprovider.h
     icontroller.h
     iuidescription.h
     iviewcreator.h
     iviewfactory.h
     uiattributes.cpp
     uiattributes.h
+    uicontentprovider.cpp
+    uicontentprovider.h
     uidescription.cpp
     uidescription.h
     uidescriptionlistener.h
@@ -29,6 +32,18 @@ set(${target}_sources
     uiviewswitchcontainer.h
     xmlparser.cpp
     xmlparser.h
+    detail/locale.h
+    detail/parsecolor.h
+    detail/scalefactorutils.h
+    detail/uidesclist.cpp
+    detail/uidesclist.h
+    detail/uijsonpersistence.cpp
+    detail/uijsonpersistence.h
+    detail/uinode.cpp
+    detail/uinode.h
+    detail/uiviewcreatorattributes.h
+    detail/uixmlpersistence.cpp
+    detail/uixmlpersistence.h
     editing/doc.h
     editing/iaction.h
     editing/igridprocessor.h
@@ -81,7 +96,6 @@ set(${target}_sources
     editing/uiundomanager.h
     editing/uiviewcreatecontroller.cpp
     editing/uiviewcreatecontroller.h
-    detail/uiviewcreatorattributes.h
     viewcreator/animationsplashscreencreator.cpp
     viewcreator/animationsplashscreencreator.h
     viewcreator/animknobcreator.cpp
@@ -169,12 +183,27 @@ vstgui_source_group_by_folder(${target})
 
 ##########################################################################################
 if(LINUX)
-    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/editing/ RESULT_VARIABLE result)
+    set (VSTGUI_GENERATED_DIR ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.generated)
+    
+    execute_process(
+        COMMAND
+            ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh ${VSTGUI_GENERATED_DIR}
+        WORKING_DIRECTORY
+            ${CMAKE_CURRENT_SOURCE_DIR}/editing/
+        RESULT_VARIABLE
+            result
+    )
+
     if(result EQUAL 0)
         target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "HAVE_EDITORUIDESC_H")
     else()
         message(FATAL_ERROR "Generating editoruidesc.h failed: ${result}")
     endif()
+
+    target_include_directories(${target}
+        PRIVATE
+            ${VSTGUI_GENERATED_DIR}
+    )
 endif()
 ##########################################################################################
 find_package(EXPAT)

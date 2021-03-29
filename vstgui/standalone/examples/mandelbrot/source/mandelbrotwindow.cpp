@@ -17,6 +17,7 @@
 #include "vstgui/lib/controls/ccontrol.h"
 #include "vstgui/lib/iscalefactorchangedlistener.h"
 #include "vstgui/lib/iviewlistener.h"
+#include "vstgui/lib/platform/platformfactory.h"
 #include "vstgui/standalone/include/helpers/async.h"
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/value.h"
@@ -290,7 +291,8 @@ struct ViewController : DelegationController,
 		{
 			if (auto platformBitmap = bitmap->getPlatformBitmap ())
 			{
-				auto bytes = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+				auto bytes =
+				    getPlatformFactory ().createBitmapMemoryPNGRepresentation (platformBitmap);
 				if (!bytes.empty ())
 				{
 					stream.writeRaw (bytes.data (), static_cast<uint32_t> (bytes.size ()));

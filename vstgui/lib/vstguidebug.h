@@ -5,13 +5,12 @@
 #pragma once
 
 #include "vstguibase.h"
-#include <functional>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
-using AssertionHandler = std::function<void (const char* filename, const char* line, const char* desc)>;
-void setAssertionHandler (const AssertionHandler& handler);
+using AssertionHandler = void (*) (const char* filename, const char* line, const char* desc);
+void setAssertionHandler (AssertionHandler handler);
 bool hasAssertionHandler ();
 void doAssert (const char* filename, const char* line, const char* desc = nullptr) noexcept (false);
 
@@ -23,6 +22,7 @@ void doAssert (const char* filename, const char* line, const char* desc = nullpt
 
 #include <ctime>
 #include <cassert>
+#include <memory>
 
 namespace VSTGUI {
 
@@ -40,7 +40,7 @@ public:
 	void stop ();
 
 protected:
-	std::string name;
+	std::unique_ptr<char[]> name;
 	std::clock_t startTime;
 };
 

@@ -193,18 +193,6 @@ CNewFileSelector* CNewFileSelector::create (CFrame* frame, Style style)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
-                                                     const CRect& size, void* parent,
-                                                     PlatformType platformType,
-                                                     IPlatformFrameConfig* config)
-{
-	return new UIViewFrame (frame, size, (__bridge UIView*)parent);
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 UIViewFrame::UIViewFrame (IPlatformFrameCallback* frame, const CRect& size, UIView* parent)
 : IPlatformFrame (frame)
 , uiView (nullptr)
@@ -282,19 +270,6 @@ SharedPointer<IPlatformOptionMenu> UIViewFrame::createPlatformOptionMenu ()
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> UIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
-{
-	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
-	bitmap->setScaleFactor (scaleFactor);
-	CGDrawContext* context = new CGDrawContext (bitmap);
-	bitmap->forget ();
-	if (context->getCGContext ())
-		return owned<COffscreenContext> (context);
-	context->forget ();
-	return 0;
-}
-
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOpenGLView> UIViewFrame::createPlatformOpenGLView ()
@@ -316,8 +291,6 @@ SharedPointer<IPlatformViewLayer> UIViewFrame::createPlatformViewLayer (IPlatfor
 DragResult UIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) { return kDragError; }
 #endif
 bool UIViewFrame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) { return false; }
-void UIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data) {}
-SharedPointer<IDataPackage> UIViewFrame::getClipboard () { return nullptr; }
 
 }
 

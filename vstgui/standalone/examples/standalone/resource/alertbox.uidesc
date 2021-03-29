@@ -1,48 +1,305 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<vstgui-ui-description version="1">
-	<template autosize="left right top bottom " background-color="~ BlackCColor" background-color-draw-style="filled" class="CViewContainer" mouse-enabled="true" name="AlertBox" opacity="1" origin="0, 0" size="420, 110" sub-controller="ButtonController" transparent="true" wants-focus="false">
-		<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="~ BlackCColor" frame-width="-1" gradient="About Background" gradient-angle="0" gradient-style="linear" mouse-enabled="false" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="2" size="420, 110" transparent="false" wants-focus="false"/>
-		<view autosize="right bottom " class="CTextButton" control-tag="AlertBox.thirdButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="90, 80" round-radius="3" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Third" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="right bottom " class="CTextButton" control-tag="AlertBox.secondButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="-1" gradient="Focused TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="200, 80" round-radius="3" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="OK" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="right bottom " class="CTextButton" control-tag="AlertBox.firstButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="310, 80" round-radius="3" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Cancel" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view auto-height="false" autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CMultiLineTextLabel" control-tag="AlertBox.headline" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="0" line-layout="wrap" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 10" round-rect-radius="6" shadow-color="~ GreyCColor" size="400, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="This is a test headline" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view auto-height="false" autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CMultiLineTextLabel" control-tag="AlertBox.description" default-value="0.5" font="~ SystemFont" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="0" line-layout="wrap" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 40" round-rect-radius="6" shadow-color="~ RedCColor" size="400, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="left" text-inset="5, 5" text-rotation="0" text-shadow-offset="1, 1" title="This is a test description" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-	</template>
-	<control-tags>
-		<control-tag name="AlertBox.description" tag="4"/>
-		<control-tag name="AlertBox.firstButton" tag="0"/>
-		<control-tag name="AlertBox.headline" tag="3"/>
-		<control-tag name="AlertBox.secondButton" tag="1"/>
-		<control-tag name="AlertBox.thirdButton" tag="2"/>
-	</control-tags>
-	<colors>
-		<color name="AlertBox.background" rgba="#ecececff"/>
-	</colors>
-	<gradients>
-		<gradient name="About Background">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="Default TextButton Gradient">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="Default TextButton Gradient Highlighted">
-			<color-stop rgba="#b4b4b4ff" start="0"/>
-			<color-stop rgba="#646464ff" start="1"/>
-		</gradient>
-	</gradients>
-	<custom>
-		<attributes Size="10, 10" name="UIGridController"/>
-		<attributes SelectedTemplate="AlertBox" name="UITemplateController"/>
-		<attributes EditViewScale="1" EditorSize="0, 0, 909, 671" SplitViewSize_0_0="0.6449612403100775104292097239522263407707" SplitViewSize_0_1="0.3240310077519379938770782700885320082307" SplitViewSize_1_0="0.5565891472868217393354939304117579013109" SplitViewSize_1_1="0.4356589147286821783744414915418019518256" SplitViewSize_2_0="0.6974697469746974354265489637327846139669" SplitViewSize_2_1="0.2970297029702970159625863288965774700046" TabSwitchValue="3" Version="1" name="UIEditController"/>
-		<attributes name="UIAttributesController"/>
-		<attributes SelectedRow="4" name="UIViewCreatorDataSource"/>
-		<attributes SelectedRow="0" name="UIGradientsDataSource"/>
-		<attributes SelectedRow="1" name="UIColorsDataSource"/>
-		<attributes color="Focus" enabled="true" name="FocusDrawing" width="1.5"/>
-		<attributes SelectedRow="-1" name="UIFontsDataSource"/>
-		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/standalone/resource/alertbox.uidesc"/>
-	</custom>
-	<variables/>
-</vstgui-ui-description>
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"variables": {},
+		"colors": {
+			"AlertBox.background": "#ecececff"
+		},
+		"gradients": {
+			"About Background": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient Highlighted": [
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#646464ff",
+					"start": "1"
+				}
+			]
+		},
+		"control-tags": {
+			"AlertBox.description": "4",
+			"AlertBox.firstButton": "0",
+			"AlertBox.headline": "3",
+			"AlertBox.secondButton": "1",
+			"AlertBox.thirdButton": "2"
+		},
+		"custom": {
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
+				"Size": "10, 10"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "AlertBox"
+			},
+			"UIEditController": {
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 909, 671",
+				"SplitViewSize_0_0": "0.6449612403100775104292097239522263407707",
+				"SplitViewSize_0_1": "0.3240310077519379938770782700885320082307",
+				"SplitViewSize_1_0": "0.5565891472868217393354939304117579013109",
+				"SplitViewSize_1_1": "0.4356589147286821783744414915418019518256",
+				"SplitViewSize_2_0": "0.6974697469746974354265489637327846139669",
+				"SplitViewSize_2_1": "0.2970297029702970159625863288965774700046",
+				"TabSwitchValue": "3",
+				"Version": "1"
+			},
+			"UIAttributesController": {},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "4"
+			},
+			"UIGradientsDataSource": {
+				"SelectedRow": "0"
+			},
+			"UIColorsDataSource": {
+				"SelectedRow": "1"
+			},
+			"FocusDrawing": {
+				"color": "Focus",
+				"enabled": "true",
+				"width": "1.5"
+			},
+			"UIFontsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIDescFilePath": {
+				"path": "/Users/scheffle/Source/vstgui/vstgui/standalone/examples/standalone/resource/alertbox.uidesc"
+			}
+		},
+		"templates": {
+			"AlertBox": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ BlackCColor",
+					"background-color-draw-style": "filled",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "420, 110",
+					"sub-controller": "ButtonController",
+					"transparent": "true",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CGradientView": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"class": "CGradientView",
+							"draw-antialiased": "true",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "-1",
+							"gradient": "About Background",
+							"gradient-angle": "0",
+							"gradient-style": "linear",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "0, 0",
+							"radial-center": "0.5, 0.5",
+							"radial-radius": "1",
+							"round-rect-radius": "2",
+							"size": "420, 110",
+							"transparent": "false",
+							"wants-focus": "false"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"autosize": "right bottom ",
+							"class": "CTextButton",
+							"control-tag": "AlertBox.thirdButton",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "-1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "90, 80",
+							"round-radius": "3",
+							"size": "100, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Third",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"autosize": "right bottom ",
+							"class": "CTextButton",
+							"control-tag": "AlertBox.secondButton",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "-1",
+							"gradient": "Focused TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "200, 80",
+							"round-radius": "3",
+							"size": "100, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "OK",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"autosize": "right bottom ",
+							"class": "CTextButton",
+							"control-tag": "AlertBox.firstButton",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "-1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "310, 80",
+							"round-radius": "3",
+							"size": "100, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Cancel",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CMultiLineTextLabel": {
+						"attributes": {
+							"auto-height": "false",
+							"autosize": "left right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CMultiLineTextLabel",
+							"control-tag": "AlertBox.headline",
+							"default-value": "0.5",
+							"font": "~ NormalFontVeryBig",
+							"font-antialias": "true",
+							"font-color": "~ BlackCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "0",
+							"line-layout": "wrap",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "10, 10",
+							"round-rect-radius": "6",
+							"shadow-color": "~ GreyCColor",
+							"size": "400, 30",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "This is a test headline",
+							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CMultiLineTextLabel": {
+						"attributes": {
+							"auto-height": "false",
+							"autosize": "left right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CMultiLineTextLabel",
+							"control-tag": "AlertBox.description",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"font-antialias": "true",
+							"font-color": "~ BlackCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "0",
+							"line-layout": "wrap",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "10, 40",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "400, 30",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "left",
+							"text-inset": "5, 5",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "This is a test description",
+							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			}
+		}
+	}
+}

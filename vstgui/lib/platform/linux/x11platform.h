@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -18,11 +18,12 @@ struct xcb_focus_in_event_t;
 struct xcb_expose_event_t;
 struct xcb_map_notify_event_t;
 struct xcb_property_notify_event_t;
+struct xcb_selection_notify_event_t;
 struct xcb_client_message_event_t;
+using xcb_window_t = uint32_t;
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-extern void* soHandle; // shared library handle
 
 //------------------------------------------------------------------------
 namespace X11 {
@@ -41,25 +42,8 @@ struct IFrameEventHandler
 	virtual void onEvent (xcb_focus_in_event_t& event) = 0;
 	virtual void onEvent (xcb_expose_event_t& event) = 0;
 	virtual void onEvent (xcb_property_notify_event_t& event) = 0;
-	virtual void onEvent (xcb_client_message_event_t& event) = 0;
-};
-
-//------------------------------------------------------------------------
-class Platform
-{
-public:
-	~Platform ();
-
-	static Platform& getInstance ();
-	static uint64_t getCurrentTimeMs ();
-
-	std::string getPath ();
-
-private:
-	Platform ();
-
-	struct Impl;
-	std::unique_ptr<Impl> impl;
+	virtual void onEvent (xcb_selection_notify_event_t& event) = 0;
+	virtual void onEvent (xcb_client_message_event_t& event, xcb_window_t proxyId = 0) = 0;
 };
 
 //------------------------------------------------------------------------

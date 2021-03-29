@@ -379,8 +379,7 @@ void COptionMenu::beforePopup ()
 		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (this); });
 	for (auto& menuItem : *menuItems)
 	{
-		CCommandMenuItem* commandItem = menuItem.cast<CCommandMenuItem> ();
-		if (commandItem)
+		if (auto* commandItem = menuItem.cast<CCommandMenuItem> ())
 			commandItem->validate ();
 		if (menuItem->getSubmenu ())
 			menuItem->getSubmenu ()->beforePopup ();
@@ -431,16 +430,33 @@ bool COptionMenu::popup (const PopupCallback& callback)
 			platformMenu->popup (this, [self, callback] (COptionMenu* menu, PlatformOptionMenuResult result) {
 				if (result.menu != nullptr)
 				{
-					self->beginEdit ();
-					self->lastMenu = result.menu;
-					self->lastResult = result.index;
-					self->lastMenu->setValue (static_cast<float> (self->lastResult));
-					self->valueChanged ();
-					self->invalid ();
-					if (auto commandItem = dynamic_cast<CCommandMenuItem*> (
-					        self->lastMenu->getEntry (self->lastResult)))
-						commandItem->execute ();
-					self->endEdit ();
+					bool preventSettingValue = false;
+					if (self->listeners)
+					{
+						self->listeners->forEach (
+							[self, &result] (IOptionMenuListener* l) {
+								return l->onOptionMenuSetPopupResult (self, result.menu,
+																	  result.index);
+							},
+							[&preventSettingValue] (bool result) {
+								if (result)
+									preventSettingValue = true;
+								return result;
+							});
+					}
+					if (!preventSettingValue)
+					{
+						self->beginEdit ();
+						self->lastMenu = result.menu;
+						self->lastResult = result.index;
+						self->lastMenu->setValue (static_cast<float> (self->lastResult));
+						self->valueChanged ();
+						self->invalid ();
+						if (auto commandItem = dynamic_cast<CCommandMenuItem*> (
+								self->lastMenu->getEntry (self->lastResult)))
+							commandItem->execute ();
+						self->endEdit ();
+					}
 				}
 				self->afterPopup ();
 				if (callback)
@@ -471,6 +487,13 @@ bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation, const Popup
 			frame->removeView (menu, false);
 			frame->setFocusView (prevFocusView);
 		}
+		else
+		{
+			// if the selected menu item is a command menu and the command menu has removed this
+			// option menu from the view hierarchy then we have to make sure the reference count is
+			// corrected
+			menu->remember ();
+		}
 		if (callback)
 			callback (menu);
 	});
@@ -489,6 +512,9 @@ void COptionMenu::cleanupSeparators (bool deep)
 	{
 		auto entry = getEntry (i);
 		vstgui_assert (entry);
+		if (!entry)
+			continue;
+
 		if (entry->isSeparator ())
 		{
 			if (lastEntryWasSeparator)
@@ -545,7 +571,7 @@ CMenuItem* COptionMenu::addEntry (CMenuItem* item, int32_t index)
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, const UTF8String& title)
 {
-	CMenuItem* item = new CMenuItem (title, submenu);
+	auto* item = new CMenuItem (title, submenu);
 	return addEntry (item);
 }
 
@@ -554,14 +580,14 @@ CMenuItem* COptionMenu::addEntry (const UTF8String& title, int32_t index, int32_
 {
 	if (title == "-")
 		return addSeparator (index);
-	CMenuItem* item = new CMenuItem (title, nullptr, 0, nullptr, itemFlags);
+	auto* item = new CMenuItem (title, nullptr, 0, nullptr, itemFlags);
 	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addSeparator (int32_t index)
 {
-	CMenuItem* item = new CMenuItem ("", nullptr, 0, nullptr, CMenuItem::kSeparator);
+	auto* item = new CMenuItem ("", nullptr, 0, nullptr, CMenuItem::kSeparator);
 	return addEntry (item, index);
 }
 
@@ -756,7 +782,7 @@ void COptionMenu::takeFocus ()
 
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
-{	
+{
 	CView* receiver = getParentView () ? getParentView () : getFrame ();
 	while (receiver)
 	{

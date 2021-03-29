@@ -29,8 +29,7 @@ COptionMenu* getItemMenu (int32_t idx, int32_t &idxInMenu, int32_t &offsetIdx, C
 	{
 		idxInMenu = idx - oldIDx;
 		return _menu;
-	}
-	
+	}	
 
 	COptionMenu *menu = nullptr;
 	CMenuItemIterator it = _menu->getItems ()->begin ();
@@ -71,8 +70,7 @@ void Win32OptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 	ClientToScreen (windowHandle, &p);
 
 	int32_t offsetIndex = 0;
-	HMENU menu = createMenu (optionMenu, offsetIndex);
-	if (menu)
+	if (HMENU menu = createMenu (optionMenu, offsetIndex))
 	{
 		UINT flags = TPM_LEFTALIGN;
 
@@ -170,8 +168,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 
 			if (item->getSubmenu ())
 			{
-				HMENU submenu = createMenu (item->getSubmenu (), offsetIdx);
-				if (submenu)
+				if (HMENU submenu = createMenu (item->getSubmenu (), offsetIdx))
 				{
 					if (multipleCheck && item->isChecked())
 					{
@@ -203,14 +200,12 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 				IPlatformBitmap* platformBitmap = item->getIcon () ? item->getIcon ()->getPlatformBitmap () : nullptr;
 				if (platformBitmap)
 				{
-					Win32BitmapBase* win32Bitmap = dynamic_cast<Win32BitmapBase*> (platformBitmap);
-					if (win32Bitmap)
+					if (auto* win32Bitmap = dynamic_cast<Win32BitmapBase*> (platformBitmap))
 					{
 						MENUITEMINFO mInfo = {};
 						mInfo.cbSize = sizeof (MENUITEMINFO);
 						mInfo.fMask = MIIM_BITMAP;
-						HBITMAP hBmp = win32Bitmap->createHBitmap ();
-						if (hBmp)
+						if (HBITMAP hBmp = win32Bitmap->createHBitmap ())
 						{
 							mInfo.hbmpItem = hBmp;
 							SetMenuItemInfo (menu, offset + inc, TRUE, &mInfo);

@@ -166,7 +166,7 @@ bool CTabView::addTab (CView* view, UTF8StringPtr name, CBitmap* inTabBitmap)
 	if (inTabBitmap == nullptr)
 		inTabBitmap = tabBitmap;
 
-	CTabButton* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, inTabBitmap, name);
+	auto* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, inTabBitmap, name);
 	b->setTransparency (true);
 
 	return addTab (view, b);

@@ -15,7 +15,7 @@ namespace VSTGUI {
 class FileResourceInputStream : public IPlatformResourceInputStream
 {
 public:
-	static Ptr create (const std::string& path);
+	static PlatformResourceInputStreamPtr create (const std::string& path);
 
 private:
 	FileResourceInputStream (FILE* handle);

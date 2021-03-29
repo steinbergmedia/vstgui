@@ -12,14 +12,17 @@
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dgraphicspath.h"
+#include "win32factory.h"
 #include "win32textedit.h"
 #include "win32optionmenu.h"
 #include "win32support.h"
 #include "win32datapackage.h"
 #include "win32dragging.h"
 #include "../common/genericoptionmenu.h"
+#include "../common/generictextedit.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
+#include "../../cinvalidrectlist.h"
 
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"
@@ -37,12 +40,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 static TCHAR gClassName[100];
 static bool bSwapped_mouse_buttons = false; 
-
-//-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config)
-{
-	return new Win32Frame (frame, size, (HWND)parent, parentType);
-}
 
 //-----------------------------------------------------------------------------
 static bool isParentLayered (HWND parent)
@@ -74,7 +71,6 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , windowHandle (nullptr)
 , tooltipWindow (nullptr)
 , oldFocusWindow (nullptr)
-, backBuffer (nullptr)
 , deviceContext (nullptr)
 , inPaint (false)
 , mouseInside (false)
@@ -96,7 +92,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 		windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
 										WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
 										0, 0, (int)size.getWidth (), (int)size.getHeight (), 
-										parentWindow, NULL, GetInstance (), NULL);
+										parentWindow, nullptr, GetInstance (), nullptr);
 
 		if (windowHandle)
 		{
@@ -117,7 +113,7 @@ Win32Frame::~Win32Frame () noexcept
 	if (tooltipWindow)
 		DestroyWindow (tooltipWindow);
 	if (backBuffer)
-		backBuffer->forget ();
+		backBuffer = nullptr;
 	if (windowHandle)
 		RevokeDragDrop (windowHandle);
 	if (parentWindow)
@@ -142,7 +138,7 @@ void Win32Frame::initWindowClass ()
 	gUseCount++;
 	if (gUseCount == 1)
 	{
-		OleInitialize (0);
+		OleInitialize (nullptr);
 
 		VSTGUI_SPRINTF (gClassName, TEXT("VSTGUI%p"), GetInstance ());
 		
@@ -155,7 +151,7 @@ void Win32Frame::initWindowClass ()
 		windowClass.hInstance   = GetInstance ();
 		windowClass.hIcon = nullptr; 
 
-		windowClass.hCursor = LoadCursor (NULL, IDC_ARROW);
+		windowClass.hCursor = LoadCursor (nullptr, IDC_ARROW);
 		#if DEBUG_DRAWING
 		windowClass.hbrBackground = GetSysColorBrush (COLOR_BTNFACE);
 		#else
@@ -191,8 +187,8 @@ void Win32Frame::initTooltip ()
 							  WS_POPUP,
 							  CW_USEDEFAULT, CW_USEDEFAULT,
 							  CW_USEDEFAULT, CW_USEDEFAULT,
-							  NULL, (HMENU)NULL, GetInstance (),
-							  NULL);
+							  nullptr, (HMENU)nullptr, GetInstance (),
+							  nullptr);
 
 		// Prepare TOOLINFO structure for use as tracking ToolTip.
 		ti.cbSize = sizeof(TOOLINFO);
@@ -222,7 +218,7 @@ HWND Win32Frame::getOuterWindow () const
 	HWND  hTempWnd = windowHandle;
 	GetWindowRect (hTempWnd, &rctPluginWnd);
     
-	while (hTempWnd != NULL)
+	while (hTempWnd != nullptr)
 	{
 		// Looking for caption bar
 		if (GetWindowLong (hTempWnd, GWL_STYLE) & WS_CAPTION)
@@ -251,7 +247,7 @@ HWND Win32Frame::getOuterWindow () const
 		hTempWnd = GetParent (hTempWnd);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 // IPlatformFrame
@@ -275,8 +271,7 @@ bool Win32Frame::setSize (const CRect& newSize)
 	}
 	if (backBuffer)
 	{
-		backBuffer->forget ();
-		backBuffer = createOffscreenContext (newSize.getWidth (), newSize.getHeight ());
+		backBuffer = getPlatformFactory ().createOffscreenContext (newSize.getSize ());
 	}
 	if (!parentWindow)
 		return true;
@@ -394,12 +389,6 @@ bool Win32Frame::scrollRect (const CRect& src, const CPoint& distance)
 }
 
 //-----------------------------------------------------------------------------
-uint32_t IPlatformFrame::getTicks ()
-{
-	return (uint32_t)GetTickCount ();
-}
-
-//-----------------------------------------------------------------------------
 bool Win32Frame::showTooltip (const CRect& rect, const char* utf8Text)
 {
 	initTooltip ();
@@ -453,6 +442,11 @@ bool Win32Frame::hideTooltip ()
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
+	if (auto win32Factory = getPlatformFactory ().asWin32Factory ())
+	{
+		if (win32Factory->useGenericTextEdit ())
+			return makeOwned<GenericTextEdit> (textEdit);
+	}
 	return owned<IPlatformTextEdit> (new Win32TextEdit (windowHandle, textEdit));
 }
 
@@ -464,7 +458,7 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 		CButtonState buttons;
 		getCurrentMouseButtons (buttons);
 		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttons,
-		                                     *genericOptionMenuTheme.get ());
+		                                     *genericOptionMenuTheme);
 	}
 	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
 }
@@ -476,16 +470,6 @@ SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
 	return owned<IPlatformOpenGLView> (new Win32OpenGLView (this));
 }
 #endif
-
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
-{
-	D2DBitmap* bitmap = new D2DBitmap (CPoint (width * scaleFactor, height * scaleFactor));
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
-	bitmap->forget ();
-	return context;
-}
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 class Win32LegacyDragSupport final : virtual public DragCallbackAdapter, virtual public NonAtomicReferenceCounted
@@ -522,28 +506,6 @@ bool Win32Frame::doDrag (const DragDescription& dragDescription, const SharedPoi
 }
 
 //-----------------------------------------------------------------------------
-void Win32Frame::setClipboard (const SharedPointer<IDataPackage>& data)
-{
-	auto dataObject = makeOwned<Win32DataObject> (data);
-	auto hr = OleSetClipboard (dataObject);
-	if (hr != S_OK)
-	{
-#if DEBUG
-		DebugPrint ("Setting clipboard failed!\n");
-#endif
-	}
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> Win32Frame::getClipboard ()
-{
-	IDataObject* dataObject = nullptr;;
-	if (OleGetClipboard (&dataObject) != S_OK)
-		return nullptr;
-	return makeOwned<Win32DataPackage> (dataObject);
-}
-
-//-----------------------------------------------------------------------------
 void Win32Frame::onFrameClosed ()
 {
 	frame = nullptr;
@@ -559,9 +521,9 @@ bool Win32Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme
 	else
 	{
 		if (theme)
-			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+			genericOptionMenuTheme = std::make_unique<GenericOptionMenuTheme> (*theme);
 		else
-			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme);
+			genericOptionMenuTheme = std::make_unique<GenericOptionMenuTheme> ();
 	}
 	return true;
 }
@@ -595,7 +557,7 @@ void Win32Frame::paint (HWND hwnd)
 
 			CDrawContext* drawContext = backBuffer ? backBuffer : deviceContext;
 			drawContext->beginDraw ();
-			DWORD len = GetRegionData (rgn, 0, NULL);
+			DWORD len = GetRegionData (rgn, 0, nullptr);
 			if (len)
 			{
 				if (len > updateRegionListSize)
@@ -606,36 +568,19 @@ void Win32Frame::paint (HWND hwnd)
 					updateRegionList = (RGNDATA*) std::malloc (updateRegionListSize);
 				}
 				GetRegionData (rgn, len, updateRegionList);
-				if (updateRegionList->rdh.nCount > 1)
+				if (updateRegionList->rdh.nCount > 0)
 				{
-					std::vector<CRect> dirtyRects;
-					dirtyRects.reserve (updateRegionList->rdh.nCount);
-					RECT* rp = (RECT*)updateRegionList->Buffer;
-					dirtyRects.emplace_back (CRect (rp->left, rp->top, rp->right, rp->bottom));
-					++rp;
-					for (uint32_t i = 1; i < updateRegionList->rdh.nCount; ++i, ++rp)
+					CInvalidRectList dirtyRects;
+					auto* rp = reinterpret_cast<RECT*> (updateRegionList->Buffer);
+					for (uint32_t i = 0; i < updateRegionList->rdh.nCount; ++i, ++rp)
 					{
 						CRect ur (rp->left, rp->top, rp->right, rp->bottom);
-						auto mustAdd = true;
-						for (auto& r : dirtyRects)
-						{
-							auto cr = ur;
-							cr.unite (r);
-							if (cr.getWidth () * cr.getHeight () ==
-							    ur.getWidth () * ur.getHeight () + r.getWidth () * r.getHeight ())
-							{
-								r = cr;
-								mustAdd = false;
-								break;
-							}
-						}
-						if (mustAdd)
-							dirtyRects.emplace_back (ur);
+						dirtyRects.add (ur);
 					}
-					for (auto& updateRect : dirtyRects)
+					for (auto& _updateRect : dirtyRects)
 					{
-						drawContext->clearRect (updateRect);
-						getFrame ()->platformDrawRect (drawContext, updateRect);
+						drawContext->clearRect (_updateRect);
+						getFrame ()->platformDrawRect (drawContext, _updateRect);
 					}
 				}
 				else
@@ -773,7 +718,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		}
 		case WM_CTLCOLOREDIT:
 		{
-			Win32TextEdit* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr ((HWND)lParam, GWLP_USERDATA);
+			auto* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr ((HWND)lParam, GWLP_USERDATA);
 			if (win32TextEdit)
 			{
 				CColor fontColor = win32TextEdit->getTextEdit ()->platformGetFontColor ();
@@ -883,7 +828,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		case WM_XBUTTONUP:
 		{
 			CButtonState buttons = 0;
-			if (message & MK_LBUTTON || message == WM_LBUTTONUP)
+			if (wParam & MK_LBUTTON || message == WM_LBUTTONUP)
 				buttons |= kLButton;
 			if (wParam & MK_RBUTTON || message == WM_RBUTTONUP)
 				buttons |= kRButton;
@@ -988,7 +933,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			{
 				// text control changes will be forwarded to the text control window proc
 				HWND controlWindow = (HWND)lParam;
-				WINDOWSPROC textEditWindowProc = (WINDOWSPROC)(LONG_PTR)GetWindowLongPtr (controlWindow, GWLP_WNDPROC);
+				auto textEditWindowProc = (WINDOWSPROC)(LONG_PTR)GetWindowLongPtr (controlWindow, GWLP_WNDPROC);
 				if (textEditWindowProc)
 				{
 					textEditWindowProc (controlWindow, WM_COMMAND, wParam, lParam);
@@ -1003,7 +948,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	Win32Frame* win32Frame = (Win32Frame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
+	auto* win32Frame = (Win32Frame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 	if (win32Frame)
 	{
 		return win32Frame->proc (hwnd, message, wParam, lParam);

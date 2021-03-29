@@ -4,8 +4,10 @@
 
 #include "vstgui_uidescription.h"
 
+#include "uidescription/compresseduidescription.cpp"
 #include "uidescription/cstream.cpp"
 #include "uidescription/uiattributes.cpp"
+#include "uidescription/uicontentprovider.cpp"
 #include "uidescription/uidescription.cpp"
 #include "uidescription/uiviewcreator.cpp"
 #include "uidescription/uiviewfactory.cpp"
@@ -68,5 +70,10 @@
 #include "uidescription/viewcreator/viewcreator.cpp"
 #include "uidescription/viewcreator/vumetercreator.cpp"
 #include "uidescription/viewcreator/xypadcreator.cpp"
+
+#include "uidescription/detail/uidesclist.cpp"
+#include "uidescription/detail/uijsonpersistence.cpp"
+#include "uidescription/detail/uinode.cpp"
+#include "uidescription/detail/uixmlpersistence.cpp"
 
 #include "uidescription/xmlparser.cpp" // needs to be last

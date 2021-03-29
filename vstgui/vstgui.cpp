@@ -31,7 +31,9 @@
 #include "lib/cviewcontainer.cpp"
 #include "lib/cvstguitimer.cpp"
 #include "lib/genericstringlistdatabrowsersource.cpp"
+#include "lib/pixelbuffer.cpp"
 #include "lib/vstguidebug.cpp"
+#include "lib/vstguiinit.cpp"
 
 #include "lib/controls/cautoanimation.cpp"
 #include "lib/controls/cbuttons.cpp"
@@ -61,5 +63,7 @@
 #include "lib/animation/animator.cpp"
 #include "lib/animation/timingfunctions.cpp"
 
+#include "lib/platform/platformfactory.cpp"
 #include "lib/platform/common/fileresourceinputstream.cpp"
 #include "lib/platform/common/genericoptionmenu.cpp"
+#include "lib/platform/common/generictextedit.cpp"

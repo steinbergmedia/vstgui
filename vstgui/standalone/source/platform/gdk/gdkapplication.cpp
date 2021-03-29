@@ -5,8 +5,10 @@
 #include "../../application.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
+#include "../../../../lib/vstguiinit.h"
 #include "../../../../lib/vstkeycode.h"
 #include "../../../../lib/platform/linux/x11frame.h"
+#include "../../../../lib/platform/linux/linuxfactory.h"
 #include "../../../../lib/platform/common/fileresourceinputstream.h"
 #include "gdkcommondirectories.h"
 #include "gdkpreference.h"
@@ -42,8 +44,6 @@ bool operator== (const VstKeyCode& k1, const VstKeyCode& k2)
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-void* soHandle = nullptr;
-
 namespace Standalone {
 namespace Platform {
 namespace GDK {
@@ -75,7 +75,7 @@ private:
 	CommonDirectories commonDirectories;
 	Preference prefs;
 
-	bool isInitialized{false};
+	bool isInitialized {false};
 };
 
 //------------------------------------------------------------------------
@@ -89,28 +89,19 @@ bool Application::init (int argc, char* argv[])
 	for (auto i = 0; i < argc; ++i)
 		cmdArgs.push_back (argv[i]);
 
-	app->signal_startup ().connect ([cmdArgs = std::move (cmdArgs), this]() mutable {
+	app->signal_startup ().connect ([cmdArgs = std::move (cmdArgs), this] () mutable {
 		char result[PATH_MAX];
 		ssize_t count = readlink ("/proc/self/exe", result, PATH_MAX);
 		if (count == -1)
-			exit (-1);
+			::exit (-1);
 		std::string execPath = dirname (result);
-		VSTGUI::X11::Frame::createResourceInputStreamFunc =
-			[execPath](const CResourceDescription& desc) {
-				if (desc.type == CResourceDescription::kIntegerType)
-					return IPlatformResourceInputStream::Ptr ();
-				std::string path (execPath);
-				path += "/Resources/";
-				path += desc.u.name;
-				return FileResourceInputStream::create (path);
-			};
-		VSTGUI::X11::Frame::resourcePath = execPath + "/Resources/";
+		getPlatformFactory ().asLinuxFactory ()->setResourcePath (execPath + "/Resources/");
 
 		PlatformCallbacks callbacks;
-		callbacks.quit = [this]() { quit (); };
-		callbacks.onCommandUpdate = [this]() { doCommandUpdate (); };
-		callbacks.showAlert = [](const AlertBoxConfig& config) { return AlertResult::Error; };
-		callbacks.showAlertForWindow = [](const AlertBoxForWindowConfig& config) {
+		callbacks.quit = [this] () { quit (); };
+		callbacks.onCommandUpdate = [this] () { doCommandUpdate (); };
+		callbacks.showAlert = [] (const AlertBoxConfig& config) { return AlertResult::Error; };
+		callbacks.showAlertForWindow = [] (const AlertBoxForWindowConfig& config) {
 			if (config.callback)
 				config.callback (AlertResult::Error);
 		};
@@ -174,7 +165,7 @@ void Application::doCommandUpdate ()
 			if (!app->has_action (actionName))
 			{
 				if (auto action = app->add_action (actionName,
-												   [this, command]() { handleCommand (command); }))
+												   [this, command] () { handleCommand (command); }))
 				{
 				}
 			}
@@ -193,8 +184,13 @@ void Application::doCommandUpdate ()
 //------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
+	VSTGUI::init (nullptr);
 	VSTGUI::Standalone::Platform::GDK::Application app;
 	if (app.init (argc, argv))
-		return app.run ();
+	{
+		auto result = app.run ();
+		VSTGUI::exit ();
+		return result;
+	}
 	return -1;
 }

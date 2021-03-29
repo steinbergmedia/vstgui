@@ -42,11 +42,8 @@ enum class XEmbedMessage
 };
 
 //------------------------------------------------------------------------
-void sendXEmbedProtocolMessage (::Window receiver,
-								::Window parentWindow,
-								XEmbedMessage message,
-								uint32_t detail = 0,
-								uint32_t xEmbedVersion = 1)
+void sendXEmbedProtocolMessage (::Window receiver, ::Window parentWindow, XEmbedMessage message,
+								uint32_t detail = 0, uint32_t xEmbedVersion = 1)
 {
 	auto xDisplay = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
 
@@ -54,7 +51,7 @@ void sendXEmbedProtocolMessage (::Window receiver,
 	if (xEmbedAtom == None)
 		return;
 
-	XEvent ev{};
+	XEvent ev {};
 	ev.xclient.type = ClientMessage;
 	ev.xclient.window = receiver;
 	ev.xclient.message_type = xEmbedAtom;
@@ -73,8 +70,8 @@ void sendXEmbedProtocolMessage (::Window receiver,
 
 //------------------------------------------------------------------------
 class Window
-	: public IGdkWindow
-	, public IWindow
+: public IGdkWindow
+, public IWindow
 {
 public:
 	~Window () noexcept override;
@@ -114,9 +111,9 @@ private:
 
 	WindowStyle style;
 	WindowType type;
-	IWindowDelegate* delegate{nullptr};
+	IWindowDelegate* delegate {nullptr};
 	Gtk::ApplicationWindow gtkWindow;
-	CFrame* contentView{nullptr};
+	CFrame* contentView {nullptr};
 };
 
 //------------------------------------------------------------------------
@@ -147,16 +144,16 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	gtkWindow.set_can_focus (true);
 	gtkWindow.set_title (config.title.getString ());
 
-	gtkWindow.signal_map ().connect ([this]() { delegate->onShow (); });
+	gtkWindow.signal_map ().connect ([this] () { delegate->onShow (); });
 
 	gtkWindow.signal_configure_event ().connect (
-		[this](GdkEventConfigure* event) {
+		[this] (GdkEventConfigure* event) {
 			handleEventConfigure (event);
 			return false;
 		},
 		false);
 
-	gtkWindow.signal_delete_event ().connect ([this](GdkEventAny*) {
+	gtkWindow.signal_delete_event ().connect ([this] (GdkEventAny*) {
 		if (delegate->canClose ())
 		{
 			close ();
@@ -165,14 +162,14 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		return false;
 	});
 
-	gtkWindow.signal_focus_in_event ().connect ([this](GdkEventFocus*) {
+	gtkWindow.signal_focus_in_event ().connect ([this] (GdkEventFocus*) {
 		delegate->onActivated ();
 		sendXEmbedMessage (XEmbedMessage::WINDOW_ACTIVATE);
 		sendXEmbedMessage (XEmbedMessage::FOCUS_IN);
 		return true;
 	});
 
-	gtkWindow.signal_focus_out_event ().connect ([this](GdkEventFocus*) {
+	gtkWindow.signal_focus_out_event ().connect ([this] (GdkEventFocus*) {
 		delegate->onDeactivated ();
 		sendXEmbedMessage (XEmbedMessage::FOCUS_OUT);
 		sendXEmbedMessage (XEmbedMessage::WINDOW_DEACTIVATE);
@@ -186,7 +183,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 	if (style.isMovableByWindowBackground ())
 	{
-		gtkWindow.signal_button_press_event ().connect ([this](GdkEventButton* event) {
+		gtkWindow.signal_button_press_event ().connect ([this] (GdkEventButton* event) {
 			gtkWindow.begin_move_drag (event->button, event->x_root, event->y_root, event->time);
 			return true;
 		});
@@ -243,18 +240,20 @@ void Window::updateGeometryHints () {}
 //------------------------------------------------------------------------
 CPoint Window::getSize () const
 {
+	auto scaleFactor = getScaleFactor ();
 	CPoint size;
-	size.x = gtkWindow.get_width ();
-	size.y = gtkWindow.get_height ();
+	size.x = gtkWindow.get_width () / scaleFactor;
+	size.y = gtkWindow.get_height () / scaleFactor;
 	return size;
 }
 
 //------------------------------------------------------------------------
 CPoint Window::getPosition () const
 {
+	auto scaleFactor = getScaleFactor ();
 	int x, y;
 	gtkWindow.get_position (x, y);
-	return CPoint (x, y);
+	return CPoint (x / scaleFactor, y / scaleFactor);
 }
 
 //------------------------------------------------------------------------
@@ -266,13 +265,15 @@ double Window::getScaleFactor () const
 //------------------------------------------------------------------------
 void Window::setSize (const CPoint& newSize)
 {
-	gtkWindow.resize (newSize.x, newSize.y);
+	auto scaleFactor = getScaleFactor ();
+	gtkWindow.resize (newSize.x * scaleFactor, newSize.y * scaleFactor);
 }
 
 //------------------------------------------------------------------------
 void Window::setPosition (const CPoint& newPosition)
 {
-	gtkWindow.move (newPosition.x, newPosition.y);
+	auto scaleFactor = getScaleFactor ();
+	gtkWindow.move (newPosition.x * scaleFactor, newPosition.y * scaleFactor);
 }
 
 //------------------------------------------------------------------------
@@ -328,7 +329,7 @@ void Window::center () {}
 //------------------------------------------------------------------------
 PlatformType Window::getPlatformType () const
 {
-	return kX11EmbedWindowID;
+	return PlatformType::kX11EmbedWindowID;
 }
 
 //------------------------------------------------------------------------
@@ -362,6 +363,10 @@ PlatformFrameConfigPtr Window::prepareFrameConfig (PlatformFrameConfigPtr&& cont
 void Window::onSetContentView (CFrame* newFrame)
 {
 	contentView = newFrame;
+	if (contentView)
+	{
+		contentView->setZoom (getScaleFactor ());
+	}
 }
 
 //------------------------------------------------------------------------
@@ -377,6 +382,7 @@ void Window::sendXEmbedMessage (XEmbedMessage msg, uint32_t data)
 //------------------------------------------------------------------------
 void Window::handleEventConfigure (GdkEventConfigure* event)
 {
+	auto scaleFactor = getScaleFactor ();
 	CPoint newPos (event->x, event->y);
 	CPoint newSize (event->width, event->height);
 	CPoint constraintSize = delegate->constraintSize (newSize);
@@ -395,7 +401,11 @@ void Window::handleEventConfigure (GdkEventConfigure* event)
 		lastSize = newSize;
 		delegate->onSizeChanged (newSize);
 		if (contentView)
+		{
+			newSize.x *= scaleFactor;
+			newSize.y *= scaleFactor;
 			contentView->setSize (newSize.x, newSize.y);
+		}
 	}
 }
 

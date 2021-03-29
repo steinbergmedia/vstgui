@@ -193,7 +193,7 @@ CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& 
 		Animation::ITimingFunction* timingFunction = nullptr;
 		if (getAlphaValue () == 1.f)
 		{
-			Animation::InterpolationTimingFunction* interpolTimingFunction = new Animation::InterpolationTimingFunction (400);
+			auto* interpolTimingFunction = new Animation::InterpolationTimingFunction (400);
 			interpolTimingFunction->addPoint (300.f/400.f, 1.f);
 			timingFunction = interpolTimingFunction;
 		}
@@ -325,9 +325,9 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 		distance *= -1;
 
 	if (buttons & kShift)
-		value -= 0.1f * distance * wheelInc;
+		value -= 0.1f * distance * getWheelInc ();
 	else
-		value -= distance * wheelInc;
+		value -= distance * getWheelInc ();
 	bounceValue ();
 
 	if (isDirty ())

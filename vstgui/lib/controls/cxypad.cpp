@@ -16,21 +16,47 @@ CXYPad::CXYPad (const CRect& size)
 }
 
 //------------------------------------------------------------------------
+void CXYPad::setHandleBitmap (CBitmap* bitmap)
+{
+	handle = bitmap;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+CBitmap* CXYPad::getHandleBitmap () const
+{
+	return handle;
+}
+
+//------------------------------------------------------------------------
 void CXYPad::draw (CDrawContext* context)
 {
 	drawBack (context);
 
+	auto width = getWidth () - getRoundRectRadius ();
+	auto height = getHeight () - getRoundRectRadius ();
+
 	float x, y;
 	calculateXY (getValue (), x, y);
-	CCoord width = getWidth() - getRoundRectRadius ();
-	CCoord height = getHeight() - getRoundRectRadius ();
+
 	CRect r (x*width, y*height, x*width, y*height);
-	r.extend (getRoundRectRadius () / 2., getRoundRectRadius () / 2.);
-	r.offset (getViewSize ().left + getRoundRectRadius () / 2.,
-	          getViewSize ().top + getRoundRectRadius () / 2.);
-	context->setFillColor (getFontColor ());
-	context->setDrawMode (kAntiAliasing);
-	context->drawEllipse (r, kDrawFilled);
+	if (auto bitmap = getHandleBitmap ())
+	{
+		auto bitmapSize = bitmap->getSize ();
+		r.extend (bitmapSize.x / 2., bitmapSize.y / 2.);
+		r.offset (getViewSize ().left + getRoundRectRadius () / 2.,
+				  getViewSize ().top + getRoundRectRadius () / 2.);
+		bitmap->draw (context, r);
+	}
+	else
+	{
+		r.extend (getRoundRectRadius () / 2., getRoundRectRadius () / 2.);
+		r.offset (getViewSize ().left + getRoundRectRadius () / 2.,
+				  getViewSize ().top + getRoundRectRadius () / 2.);
+		context->setFillColor (getFontColor ());
+		context->setDrawMode (kAntiAliasing);
+		context->drawEllipse (r, kDrawFilled);
+	}
 	setDirty (false);
 }
 
@@ -86,7 +112,7 @@ CMouseEventResult CXYPad::onMouseCancel ()
 //------------------------------------------------------------------------
 CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons.isLeftButton ())
+	if (buttons.isLeftButton () && isEditing ())
 	{
 		if (stopTrackingOnMouseExit)
 		{
@@ -142,6 +168,24 @@ bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const fl
 		valueChanged ();
 	}
 	return true;
+}
+
+//------------------------------------------------------------------------
+int32_t CXYPad::onKeyDown (VstKeyCode& keyCode)
+{
+	switch (keyCode.virt)
+	{
+		case VKEY_ESCAPE:
+		{
+			if (isEditing ())
+			{
+				onMouseCancel ();
+				return 1;
+			}
+			break;
+		}
+	}
+	return -1;
 }
 
 //------------------------------------------------------------------------

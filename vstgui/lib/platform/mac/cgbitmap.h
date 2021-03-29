@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../iplatformbitmap.h"
+#include "../platformfwd.h"
 
 #if MAC
 #include "../../cpoint.h"
@@ -22,12 +23,17 @@ namespace VSTGUI {
 class CGBitmap : public IPlatformBitmap
 {
 public:
+	static PlatformBitmapPtr create (CPoint* size);
+	static PlatformBitmapPtr createFromPath (UTF8StringPtr absolutePath);
+	static PlatformBitmapPtr createFromMemory (const void* ptr, uint32_t memSize);
+	static PNGBitmapBuffer createMemoryPNGRepresentation (const PlatformBitmapPtr& bitmap);
+
 	explicit CGBitmap (const CPoint& size);
 	explicit CGBitmap (CGImageRef image);
 	CGBitmap ();
 	~CGBitmap () noexcept override;
 	
-	bool load (const CResourceDescription& desc) override;
+	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const override { return size; }
 	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override { scaleFactor = factor; }

@@ -3,7 +3,7 @@
 ##########################################################################################
 set(target vstgui)
 
-set(${target}_common_sources 
+set(${target}_common_sources
     animation/animations.cpp
     animation/animations.h
     animation/animator.cpp
@@ -41,6 +41,7 @@ set(${target}_common_sources
     cgraphicspath.cpp
     cgraphicspath.h
     cgraphicstransform.h
+    cinvalidrectlist.h
     clayeredviewcontainer.cpp
     clayeredviewcontainer.h
     clinestyle.cpp
@@ -138,6 +139,8 @@ set(${target}_common_sources
     iviewlistener.h
     malloc.h
     optional.h
+    pixelbuffer.h
+    pixelbuffer.cpp
     platform/iplatformbitmap.h
     platform/iplatformfont.h
     platform/iplatformframe.h
@@ -149,27 +152,31 @@ set(${target}_common_sources
     platform/iplatformtextedit.h
     platform/iplatformtimer.h
     platform/iplatformviewlayer.h
+    platform/platformfactory.cpp
+    platform/platformfactory.h
+    platform/platformfwd.h
     platform/platform_macos.h
     platform/platform_win32.h
     platform/platform_x11.h
     platform/std_unorderedmap.h
-    platform/common/genericoptionmenu.cpp
-    platform/common/genericoptionmenu.h
-    vstguibase.h
-    vstguidebug.cpp
-    vstguidebug.h
-    vstguifwd.h
-    vstkeycode.h
-)
-
-  ##########################################################################################
-set(${target}_mac_sources
     platform/common/fileresourceinputstream.cpp
     platform/common/fileresourceinputstream.h
     platform/common/genericoptionmenu.cpp
     platform/common/genericoptionmenu.h
     platform/common/generictextedit.cpp
     platform/common/generictextedit.h
+    platform/common/stb_textedit.h
+    vstguibase.h
+    vstguidebug.cpp
+    vstguidebug.h
+    vstguifwd.h
+    vstguiinit.cpp
+    vstguiinit.h
+    vstkeycode.h
+)
+
+  ##########################################################################################
+set(${target}_mac_sources
     platform/mac/carbon/hiviewframe.cpp
     platform/mac/carbon/hiviewframe.h
     platform/mac/carbon/hiviewoptionmenu.cpp
@@ -200,12 +207,15 @@ set(${target}_mac_sources
     platform/mac/cocoa/nsviewoptionmenu.mm
     platform/mac/macclipboard.h
     platform/mac/macclipboard.mm
+    platform/mac/macfactory.h
+    platform/mac/macfactory.mm
     platform/mac/macfileselector.mm
     platform/mac/macglobals.cpp
     platform/mac/macglobals.h
     platform/mac/macstring.h
     platform/mac/macstring.mm
     platform/mac/mactimer.cpp
+    platform/mac/mactimer.h
     platform/mac/quartzgraphicspath.cpp
     platform/mac/quartzgraphicspath.h
     platform/win32
@@ -216,8 +226,6 @@ set(${target}_mac_sources
 
   ##########################################################################################
 set(${target}_win32_sources
-    platform/common/fileresourceinputstream.cpp
-    platform/common/fileresourceinputstream.h
     platform/win32/direct2d/d2dbitmap.cpp
     platform/win32/direct2d/d2dbitmap.h
     platform/win32/direct2d/d2ddrawcontext.cpp
@@ -232,12 +240,16 @@ set(${target}_win32_sources
     platform/win32/win32datapackage.h
     platform/win32/win32dragging.cpp
     platform/win32/win32dragging.h
+    platform/win32/win32factory.cpp
+    platform/win32/win32factory.h
     platform/win32/win32frame.cpp
     platform/win32/win32frame.h
     platform/win32/win32openglview.cpp
     platform/win32/win32openglview.h
     platform/win32/win32optionmenu.cpp
     platform/win32/win32optionmenu.h
+    platform/win32/win32resourcestream.cpp
+    platform/win32/win32resourcestream.h
     platform/win32/win32support.cpp
     platform/win32/win32support.h
     platform/win32/win32textedit.cpp
@@ -246,15 +258,11 @@ set(${target}_win32_sources
     platform/win32/winstring.cpp
     platform/win32/winstring.h
     platform/win32/wintimer.cpp
+    platform/win32/wintimer.h
 )
 
  ##########################################################################################
 set(${target}_linux_sources
-    platform/common/fileresourceinputstream.cpp
-    platform/common/fileresourceinputstream.h
-    platform/common/generictextedit.cpp
-    platform/common/generictextedit.h
-    platform/common/stb_textedit.h
     platform/linux/cairobitmap.cpp
     platform/linux/cairobitmap.h
     platform/linux/cairocontext.cpp
@@ -268,6 +276,8 @@ set(${target}_linux_sources
     platform/linux/cairoutils.h
     platform/linux/linuxstring.cpp
     platform/linux/linuxstring.h
+    platform/linux/x11dragging.cpp
+    platform/linux/x11dragging.h
     platform/linux/x11fileselector.cpp
     platform/linux/x11frame.cpp
     platform/linux/x11frame.h
@@ -277,6 +287,8 @@ set(${target}_linux_sources
     platform/linux/x11timer.h
     platform/linux/x11utils.cpp
     platform/linux/x11utils.h
+    platform/linux/linuxfactory.cpp
+    platform/linux/linuxfactory.h
 )
 
 ##########################################################################################
@@ -285,7 +297,7 @@ if(CMAKE_HOST_APPLE)
 endif()
 
 ##########################################################################################
-if(MSVC)
+if(WIN32)
     set(${target}_sources ${${target}_common_sources} ${${target}_win32_sources})
 endif()
 
@@ -299,11 +311,15 @@ endif()
 add_library(${target} STATIC ${${target}_sources})
 
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 11)
+vstgui_set_cxx_version(${target} 14)
 vstgui_source_group_by_folder(${target})
 
 if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
     target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${GLIB_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${CAIRO_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${PANGO_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${FONTCONFIG_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES})
 endif()

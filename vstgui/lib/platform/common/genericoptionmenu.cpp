@@ -33,7 +33,7 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 
 //------------------------------------------------------------------------
 class DataSource : public DataBrowserDelegateAdapter,
-                   public ViewMouseListenerAdapter,
+                   public IMouseObserver,
                    public NonAtomicReferenceCounted
 {
 public:
@@ -58,7 +58,7 @@ public:
 	{
 		if (maxWidth >= 0.)
 			return maxWidth;
-		auto context = COffscreenContext::create (frame, 1, 1);
+		auto context = COffscreenContext::create ({1., 1.});
 		maxWidth = 0.;
 		maxTitleWidth = 0.;
 		hasRightMargin = false;
@@ -103,24 +103,39 @@ private:
 	void dbAttached (CDataBrowser* browser) override
 	{
 		db = browser;
-		db->registerViewMouseListener (this);
+		db->getFrame ()->registerMouseObserver (this);
 	}
 
 	void dbRemoved (CDataBrowser* browser) override
 	{
 		vstgui_assert (db == browser, "unexpected");
 		closeSubMenu (false);
-		db->unregisterViewMouseListener (this);
+		db->getFrame ()->unregisterMouseObserver (this);
 		db = nullptr;
 		clickCallback (menu, ViewRemoved);
 	}
 
-	void viewOnMouseEntered (CView* view) override {}
-
-	void viewOnMouseExited (CView* view) override
+	void onMouseEntered (CView* view, CFrame* frame) override
 	{
-		vstgui_assert (db, "unexpected");
+		if (view == subMenuView)
+		{
+			if (selectedRow >= 0)
+				db->setSelectedRow (selectedRow);
+		}
+	}
+	
+	void onMouseExited (CView* view, CFrame* frame) override
+	{
+		if (view != db)
+			return;
+		selectedRow = db->getSelectedRow ();
 		db->setSelectedRow (CDataBrowser::kNoSelection);
+		db->getFrame ()->doAfterEventProcessing ([this] () {
+			if (db->getSelectedRow () == CDataBrowser::kNoSelection && subMenuView)
+			{
+				closeSubMenu ();
+			}
+		});
 	}
 
 	int32_t dbGetNumRows (CDataBrowser* browser) override { return menu->getNbEntries (); }
@@ -252,6 +267,7 @@ private:
 		}
 		return kMouseEventHandled;
 	}
+	
 	void closeSubMenu (bool allowAnimation = true)
 	{
 		using namespace Animation;
@@ -422,6 +438,7 @@ private:
 	CCoord checkmarkSize {0.};
 	CCoord maxWidth {-1.};
 	CCoord maxTitleWidth {-1.};
+	int32_t selectedRow {-1};
 	bool hasRightMargin {false};
 	GenericOptionMenuTheme theme;
 };

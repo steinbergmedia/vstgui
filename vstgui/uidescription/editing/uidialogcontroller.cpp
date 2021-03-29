@@ -207,7 +207,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
-		if (*name == "view")
+		if (*name == "view" && view)
 		{
 			auto controller = dialogController.cast<IController> ();
 			if (auto subView = dialogDescription->createView (templateName.c_str (), controller))

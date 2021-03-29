@@ -26,15 +26,6 @@
 
 namespace VSTGUI {
 
-#if !MAC_COCOA
-//-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config)
-{
-	return new HIViewFrame (frame, size, (WindowRef)parent);
-}
-
-#endif
-
 SInt32 pSystemVersion;
 
 //-----------------------------------------------------------------------------
@@ -472,17 +463,6 @@ SharedPointer<IPlatformOptionMenu> HIViewFrame::createPlatformOptionMenu ()
 	return makeOwned<HIViewOptionMenu> ();
 }
 
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> HIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
-{
-	auto bitmap = makeOwned<CGBitmap> (CPoint (width * scaleFactor, height * scaleFactor));
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = makeOwned<CGDrawContext> (bitmap);
-	if (context->getCGContext ())
-		return context;
-	return nullptr;
-}
-
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------------
 DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
@@ -588,19 +568,6 @@ DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 bool HIViewFrame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
 {
 	return false;
-}
-
-
-//-----------------------------------------------------------------------------
-void HIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
-{
-	MacClipboard::setClipboard (data);
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> HIViewFrame::getClipboard ()
-{
-	return MacClipboard::createClipboardDataPackage ();
 }
 
 

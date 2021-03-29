@@ -8,6 +8,7 @@
 #include "cpoint.h"
 #include "crect.h"
 #include "cresourcedescription.h"
+#include "pixelbuffer.h"
 #include "platform/iplatformbitmap.h"
 #include <vector>
 
@@ -20,7 +21,8 @@ namespace VSTGUI {
 class CBitmap : public AtomicReferenceCounted
 {
 public:
-	using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
+	using BitmapVector = std::vector<PlatformBitmapPtr>;
+	using const_iterator = BitmapVector::const_iterator;
 
 	/** Create an image from a resource identifier */
 	explicit CBitmap (const CResourceDescription& desc);
@@ -54,6 +56,9 @@ public:
 
 	bool addBitmap (const PlatformBitmapPtr& platformBitmap);
 	PlatformBitmapPtr getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
+
+	const_iterator begin () const { return bitmaps.begin (); }
+	const_iterator end () const { return bitmaps.end (); }
 	//@}
 
 //-----------------------------------------------------------------------------
@@ -61,7 +66,6 @@ protected:
 	CBitmap ();
 
 	CResourceDescription resourceDesc;
-	using BitmapVector = std::vector<PlatformBitmapPtr>;
 	BitmapVector bitmaps;
 };
 
@@ -141,6 +145,26 @@ public:
 protected:
 	CNinePartTiledDescription offsets;
 };
+
+//------------------------------------------------------------------------
+/** Convert between Platform Pixel Accessor pixel format and PixelBuffer format */
+template<typename T1, typename T2,
+		 typename std::enable_if<
+			 std::is_same<PixelBuffer::Format, T2>::value ||
+			 std::is_same<IPlatformBitmapPixelAccess::PixelFormat, T2>::value>::type* = nullptr>
+inline T1 convert (T2 format)
+{
+	using PixelFormat = IPlatformBitmapPixelAccess::PixelFormat;
+	using Format = PixelBuffer::Format;
+	static_assert (std::is_same<Format, T1>::value || std::is_same<PixelFormat, T1>::value,
+				   "Unexpected Format");
+	static_assert (!std::is_same<T1, T2>::value, "Unexpected Format");
+	static_assert (static_cast<int32_t> (Format::ARGB) == PixelFormat::kARGB, "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::ABGR) == PixelFormat::kABGR, "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::RGBA) == PixelFormat::kRGBA, "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::BGRA) == PixelFormat::kBGRA, "Format Mismatch");
+	return static_cast<T1> (format);
+}
 
 //------------------------------------------------------------------------
 // CBitmapPixelAccess

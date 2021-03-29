@@ -84,7 +84,7 @@ inline void IDependency::changed (IdStringPtr message)
 	}
 	else if (dependents.empty () == false)
 	{
-		CBaseObject* This = dynamic_cast<CBaseObject*> (this);
+		auto* This = dynamic_cast<CBaseObject*> (this);
 		DependentList localList (dependents);
 		std::for_each (localList.begin (), localList.end (), rememberObject);
 		for (auto& obj : localList)
@@ -111,7 +111,7 @@ inline void IDependency::deferChanges (bool state)
 //----------------------------------------------------------------------------------------------------
 inline IDependency::~IDependency () noexcept
 {
-	vstgui_assert (dependents.size () == 0);
+	vstgui_assert (dependents.empty ());
 }
 
 } // VSTGUI

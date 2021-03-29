@@ -1,0 +1,21 @@
+name: macOS Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-10.15, macos-11.0]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: ./.github/actions/cmake
+      with:
+        source-dir: '${{github.workspace}}'
+        build-dir: '${{github.workspace}}/build'
+        build-type: 'Debug'
+        build-vstgui-standalone: ON

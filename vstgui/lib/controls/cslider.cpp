@@ -55,7 +55,7 @@ CSliderBase::CSliderBase (const CRect& size, IControlListener* listener, int32_t
 //------------------------------------------------------------------------
 CSliderBase::CSliderBase (const CSliderBase& v) : CControl (v)
 {
-	impl = std::unique_ptr<Impl> (new Impl (*v.impl.get ()));
+	impl = std::unique_ptr<Impl> (new Impl (*v.impl));
 }
 
 //------------------------------------------------------------------------
@@ -347,7 +347,7 @@ void CSliderBase::doRamping ()
 	if (isStyleRight () || isStyleBottom ())
 		clickValue = 1.f - clickValue;
 
-	normValue += distance * wheelInc;
+	normValue += distance * getWheelInc ();
 	if ((clickValue > normValue && distance < 0.f) || (clickValue < normValue && distance > 0.f))
 	{
 		normValue = clickValue;
@@ -517,13 +517,15 @@ bool CSliderBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, con
 	onMouseWheelEditing (this);
 
 	float _distance = distance;
+	if (isStyleHorizontal ())
+		_distance *= -1.f;
 	if (isInverseStyle ())
 		_distance *= -1.f;
 	float normValue = getValueNormalized ();
 	if (buttons & kZoomModifier)
-		normValue += 0.1f * _distance * wheelInc;
+		normValue += 0.1f * _distance * getWheelInc ();
 	else
-		normValue += _distance * wheelInc;
+		normValue += _distance * getWheelInc ();
 
 	setValueNormalized (normValue);
 
@@ -559,9 +561,9 @@ int32_t CSliderBase::onKeyDown (VstKeyCode& keyCode)
 
 			float normValue = getValueNormalized ();
 			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
-				normValue += 0.1f * distance * wheelInc;
+				normValue += 0.1f * distance * getWheelInc ();
 			else
-				normValue += distance * wheelInc;
+				normValue += distance * getWheelInc ();
 
 			setValueNormalized (normValue);
 
@@ -578,6 +580,15 @@ int32_t CSliderBase::onKeyDown (VstKeyCode& keyCode)
 				endEdit ();
 			}
 			return 1;
+		}
+		case VKEY_ESCAPE:
+		{
+			if (isEditing ())
+			{
+				onMouseCancel ();
+				return 1;
+			}
+			break;
 		}
 	}
 	return -1;
@@ -687,7 +698,7 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag,
 //------------------------------------------------------------------------
 CSlider::CSlider (const CSlider& v) : CSliderBase (v)
 {
-	impl = std::unique_ptr<Impl> (new Impl (*v.impl.get ()));
+	impl = std::unique_ptr<Impl> (new Impl (*v.impl));
 }
 
 //------------------------------------------------------------------------

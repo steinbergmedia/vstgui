@@ -6,6 +6,7 @@
 
 #include "vstguibase.h"
 #include <functional>
+#include <memory>
 
 namespace VSTGUI {
 
@@ -14,7 +15,7 @@ using CViewAttributeID = size_t;
 using ModalViewSessionID = uint32_t;
 
 //-----------------------------------------------------------------------------
-static constexpr uint32_t kStreamIOError = std::numeric_limits<uint32_t>::max ();
+static constexpr uint32_t kStreamIOError = (std::numeric_limits<uint32_t>::max) ();
 static constexpr int64_t kStreamSeekError = -1;
 
 // enums
@@ -132,6 +133,7 @@ struct DragDescription;
 struct DragEventData;
 struct ModalViewSession;
 struct CListControlRowDesc;
+struct CNinePartTiledDescription;
 
 // interfaces
 class IViewListener;
@@ -274,5 +276,27 @@ class IPlatformFont;
 class IPlatformFrame;
 class IFontPainter;
 class IPlatformResourceInputStream;
+
+class IPlatformFactory;
+class IPlatformFrame;
+class IPlatformBitmap;
+class IPlatformFont;
+class IPlatformString;
+class IPlatformTimer;
+class IPlatformResourceInputStream;
+class IPlatformFrameConfig;
+class IPlatformFrameCallback;
+class IPlatformTimerCallback;
+
+enum class PlatformType : int32_t;
+
+using PlatformFramePtr = SharedPointer<IPlatformFrame>;
+using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
+using PlatformFontPtr = SharedPointer<IPlatformFont>;
+using PlatformStringPtr = SharedPointer<IPlatformString>;
+using PlatformTimerPtr = SharedPointer<IPlatformTimer>;
+using PlatformResourceInputStreamPtr = std::unique_ptr<IPlatformResourceInputStream>;
+using PlatformFactoryPtr = std::unique_ptr<IPlatformFactory>;
+
 
 } // VSTGUI

@@ -184,7 +184,7 @@ void Win32TextEdit::textChanged ()
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {	
-	Win32TextEdit* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr (hwnd, GWLP_USERDATA);
+	auto* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr (hwnd, GWLP_USERDATA);
 	if (win32TextEdit)
 	{
 		WINDOWSPROC oldProc = win32TextEdit->oldWndProcEdit;

@@ -19,6 +19,7 @@ struct SaveCairoState
 {
 	SaveCairoState (ContextHandle& h) : h (h) { cairo_save (h); }
 	~SaveCairoState () { cairo_restore (h); }
+
 private:
 	ContextHandle& h;
 };
@@ -71,9 +72,9 @@ DrawBlock::DrawBlock (Context& context) : context (context)
 		cairo_clip (context.getCairo ());
 		auto matrix = convert (ct);
 		cairo_set_matrix (context.getCairo (), &matrix);
-		auto antialiasMode = context.getDrawMode ().modeIgnoringIntegralMode () == kAntiAliasing ?
-								 CAIRO_ANTIALIAS_BEST :
-								 CAIRO_ANTIALIAS_NONE;
+		auto antialiasMode = context.getDrawMode ().modeIgnoringIntegralMode () == kAntiAliasing
+								 ? CAIRO_ANTIALIAS_BEST
+								 : CAIRO_ANTIALIAS_NONE;
 		cairo_set_antialias (context.getCairo (), antialiasMode);
 	}
 }
@@ -113,9 +114,7 @@ Context::Context (CRect r, cairo_t* context) : super (r)
 }
 
 //-----------------------------------------------------------------------------
-Context::~Context ()
-{
-}
+Context::~Context () {}
 
 //-----------------------------------------------------------------------------
 void Context::init ()
@@ -161,7 +160,7 @@ void Context::setSourceColor (CColor color)
 	auto alpha = color.normAlpha<double> ();
 	alpha *= getGlobalAlpha ();
 	cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
-	                       color.normBlue<double> (), alpha);
+						   color.normBlue<double> (), alpha);
 	checkCairoStatus (cr);
 }
 
@@ -263,8 +262,8 @@ void Context::drawLine (const CDrawContext::LinePair& line)
 		{
 			CPoint start = pixelAlign (getCurrentTransform (), line.first);
 			CPoint end = pixelAlign (getCurrentTransform (), line.second);
-			cairo_move_to (cr, start.x + 0.5, start.y + 0.5);
-			cairo_line_to (cr, end.x + 0.5, end.y + 0.5);
+			cairo_move_to (cr, start.x, start.y);
+			cairo_line_to (cr, end.x, end.y);
 		}
 		else
 		{
@@ -289,8 +288,8 @@ void Context::drawLines (const CDrawContext::LineList& lines)
 			{
 				CPoint start = pixelAlign (getCurrentTransform (), line.first);
 				CPoint end = pixelAlign (getCurrentTransform (), line.second);
-				cairo_move_to (cr, start.x + 0.5, start.y + 0.5);
-				cairo_line_to (cr, end.x + 0.5, end.y + 0.5);
+				cairo_move_to (cr, start.x, start.y);
+				cairo_line_to (cr, end.x, end.y);
 				cairo_stroke (cr);
 			}
 		}
@@ -333,7 +332,7 @@ void Context::drawRect (const CRect& rect, const CDrawStyle drawStyle)
 		if (needPixelAlignment (getDrawMode ()))
 		{
 			r = pixelAlign (getCurrentTransform (), r);
-			cairo_rectangle (cr, r.left + 0.5, r.top + 0.5, r.getWidth (), r.getHeight ());
+			cairo_rectangle (cr, r.left, r.top, r.getWidth (), r.getHeight ());
 		}
 		else
 			cairo_rectangle (cr, r.left + 0.5, r.top + 0.5, r.getWidth () - 0.5,
@@ -386,11 +385,12 @@ void Context::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offs
 {
 	if (auto cd = DrawBlock::begin (*this))
 	{
-		double transformedScaleFactor = getScaleFactor();
+		double transformedScaleFactor = getScaleFactor ();
 		CGraphicsTransform t = getCurrentTransform ();
 		if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
 			transformedScaleFactor *= t.m11;
-                auto cairoBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor).cast<Bitmap> ();
+		auto cairoBitmap =
+			bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor).cast<Bitmap> ();
 		if (cairoBitmap)
 		{
 			cairo_translate (cr, dest.left, dest.top);
@@ -398,15 +398,17 @@ void Context::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offs
 			cairo_clip (cr);
 
 			// Setup a pattern for scaling bitmaps and take it as source afterwards.
-			auto pattern = cairo_pattern_create_for_surface (cairoBitmap->getSurface());
+			auto pattern = cairo_pattern_create_for_surface (cairoBitmap->getSurface ());
 			cairo_matrix_t matrix;
 			cairo_pattern_get_matrix (pattern, &matrix);
-			cairo_matrix_init_scale (&matrix, cairoBitmap->getScaleFactor (), cairoBitmap->getScaleFactor ());
+			cairo_matrix_init_scale (&matrix, cairoBitmap->getScaleFactor (),
+									 cairoBitmap->getScaleFactor ());
 			cairo_matrix_translate (&matrix, offset.x, offset.y);
 			cairo_pattern_set_matrix (pattern, &matrix);
 			cairo_set_source (cr, pattern);
 
-			cairo_rectangle (cr, -offset.x, -offset.y, dest.getWidth () + offset.x, dest.getHeight () + offset.y);
+			cairo_rectangle (cr, -offset.x, -offset.y, dest.getWidth () + offset.x,
+							 dest.getHeight () + offset.y);
 			alpha *= getGlobalAlpha ();
 			if (alpha != 1.f)
 			{

@@ -40,6 +40,7 @@ public:
 	AlertResult showAlertBox (const AlertBoxConfig& config) override;
 	void showAlertBoxForWindow (const AlertBoxForWindowConfig& config) override;
 	void registerCommand (const Command& command, char16_t defaultCommandKey = 0) override;
+	bool executeCommand (const Command& command) override;
 	void enableTooltips (bool state) override;
 	void quit () override;
 
@@ -148,6 +149,12 @@ void Application::setConfiguration (Standalone::Application::Configuration&& con
 			{
 				vstgui_assert (c.second.type == ConfigValue::Type::Integer);
 				config.useCompressedUIDescriptionFiles = c.second.value.integer != 0;
+				break;
+			}
+			case ConfigKey::ShowCommandsInContextMenu:
+			{
+				vstgui_assert (c.second.type == ConfigValue::Type::Integer);
+				config.showCommandsInWindowContextMenu = c.second.value.integer != 0;
 				break;
 			}
 		}
@@ -376,6 +383,25 @@ void Application::registerCommand (const Command& command, char16_t defaultComma
 		commandList.push_back ({command.group, {c}});
 	if (platform.onCommandUpdate)
 		platform.onCommandUpdate ();
+}
+
+//------------------------------------------------------------------------
+bool Application::executeCommand (const Command& command)
+{
+	if (!windows.empty ())
+	{
+		if (auto commandHandler = dynamicPtrCast<ICommandHandler> (windows.front ()))
+		{
+			if (commandHandler->canHandleCommand (command))
+			{
+				if (commandHandler->handleCommand (command))
+					return true;
+			}
+		}
+	}
+	if (canHandleCommand (command))
+		return handleCommand (command);
+	return false;
 }
 
 //------------------------------------------------------------------------

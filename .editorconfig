@@ -1,0 +1,13 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+vc_generate_documentation_comments = doxygen_slash_star
+
+[*.{c,h,cpp,hpp,m,mm}]
+indent_style = tab
+indent_size = 4
+trim_trailing_whitespace = true
+

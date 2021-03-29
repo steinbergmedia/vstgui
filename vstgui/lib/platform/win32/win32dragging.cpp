@@ -209,13 +209,13 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void
 }
 
 //-----------------------------------------------------------------------------
-COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::AddRef ()
 {
 	return static_cast<ULONG> (++refCount);
 }
 
 //-----------------------------------------------------------------------------
-COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::Release (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::Release ()
 {
 	refCount--;
 	if (refCount <= 0)
@@ -271,7 +271,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL 
 }
 
 //-----------------------------------------------------------------------------
-COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragLeave (void)
+COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragLeave ()
 {
 	if (dragData && pFrame)
 	{
@@ -405,8 +405,9 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, S
 				if (data && size > 0)
 				{
 					HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, size); 
-					void* memory = GlobalLock (memoryHandle);
-					if (memory)
+					if (!memoryHandle)
+						return E_OUTOFMEMORY;
+					if (void* memory = GlobalLock (memoryHandle))
 					{
 						memcpy (memory, data, size);
 						GlobalUnlock (memoryHandle);
@@ -422,7 +423,10 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, S
 	else if (format->cfFormat == CF_HDROP)
 	{
 		HRESULT result = E_UNEXPECTED;
-		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)std::malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
+		auto** wideStringFileNames = (UTF8StringHelper**)std::malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
+		if (!wideStringFileNames)
+			return result;
+		
 		memset (wideStringFileNames, 0, sizeof (UTF8StringHelper*) * dataPackage->getCount ());
 		uint32_t fileNamesIndex = 0;
 		uint32_t bufferSizeNeeded = 0;
@@ -442,32 +446,35 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, S
 		bufferSizeNeeded++;
 		bufferSizeNeeded *= sizeof (WCHAR);
 		bufferSizeNeeded += sizeof (DROPFILES);
-		HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSizeNeeded); 
-		void* memory = GlobalLock (memoryHandle);
-		if (memory)
+		if (HGLOBAL memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSizeNeeded))
 		{
-			DROPFILES* dropFiles = (DROPFILES*)memory;
-			dropFiles->pFiles = sizeof (DROPFILES);
-			dropFiles->pt.x   = 0; 
-			dropFiles->pt.y   = 0;
-			dropFiles->fNC    = FALSE;
-			dropFiles->fWide  = TRUE;
-			int8_t* memAddr = ((int8_t*)memory) + sizeof (DROPFILES);
-			for (uint32_t i = 0; i < fileNamesIndex; i++)
+			if (void* memory = GlobalLock (memoryHandle))
 			{
-				size_t len = (wcslen (wideStringFileNames[i]->getWideString ()) + 1) * 2;
-				memcpy (memAddr, wideStringFileNames[i]->getWideString (), len);
-				memAddr += len;
+				auto* dropFiles = (DROPFILES*)memory;
+				dropFiles->pFiles = sizeof (DROPFILES);
+				dropFiles->pt.x = 0;
+				dropFiles->pt.y = 0;
+				dropFiles->fNC = FALSE;
+				dropFiles->fWide = TRUE;
+				int8_t* memAddr = ((int8_t*)memory) + sizeof (DROPFILES);
+				for (uint32_t i = 0; i < fileNamesIndex; i++)
+				{
+					size_t len = (wcslen (wideStringFileNames[i]->getWideString ()) + 1) * 2;
+					memcpy (memAddr, wideStringFileNames[i]->getWideString (), len);
+					memAddr += len;
+				}
+				*memAddr = 0;
+				memAddr++;
+				*memAddr = 0;
+				memAddr++;
+				GlobalUnlock (memoryHandle);
+				medium->hGlobal = memoryHandle;
+				medium->tymed = TYMED_HGLOBAL;
+				result = S_OK;
 			}
-			*memAddr = 0;
-			memAddr++;
-			*memAddr = 0;
-			memAddr++;
-			GlobalUnlock (memoryHandle);
-			medium->hGlobal = memoryHandle;
-			medium->tymed = TYMED_HGLOBAL;
-			result = S_OK;
 		}
+		else
+			result = E_OUTOFMEMORY;
 		for (uint32_t i = 0; i < fileNamesIndex; i++)
 			delete wideStringFileNames[i];
 		std::free (wideStringFileNames);
@@ -484,8 +491,10 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, S
 				uint32_t bufferSize = dataPackage->getData (i, buffer, type);
 
 				HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSize); 
-				void* memory = GlobalLock (memoryHandle);
-				if (memory)
+				if (!memoryHandle)
+					return E_OUTOFMEMORY;
+
+				if (void* memory = GlobalLock (memoryHandle))
 				{
 					memcpy (memory, buffer, bufferSize);
 					GlobalUnlock (memoryHandle);
@@ -571,12 +580,12 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 		return E_NOINTERFACE;
 	}
 
-	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE AddRef (void) override
+	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE AddRef () override
 	{
 		remember ();
 		return static_cast<ULONG> (getNbReference ());
 	}
-	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE Release (void) override
+	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE Release () override
 	{
 		ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1;
 		forget ();
@@ -625,7 +634,7 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 		return S_OK;
 	}
 
-	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Reset (void) override
+	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Reset () override
 	{
 		index = 0;
 		return S_OK;

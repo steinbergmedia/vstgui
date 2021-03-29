@@ -1,0 +1,35 @@
+name: 'cmake'
+description: 'cmake VSTGUI'
+inputs:
+  source-dir:
+    description: 'Source Directory'
+    required: 'true'
+    default: ''
+  build-dir:
+    description: 'Build Directory'
+    required: 'true'
+    default: ''
+  build-type:
+    description: 'cmake build type'
+    required: 'true'
+    default: 'Debug'
+  build-vstgui-standalone:
+    description: 'build VSTGUI standalone and examples'
+    required: 'false'
+    default: OFF
+runs:
+  using: "composite"
+  steps:
+  - name: Create Build Environment
+    shell: bash
+    run: cmake -E make_directory "${{inputs.build-dir}}"
+
+  - name: Configure CMake
+    shell: bash
+    working-directory: ${{inputs.build-dir}}
+    run: cmake -S "${{inputs.source-dir}}" -B "${{inputs.build-dir}}" -DCMAKE_BUILD_TYPE=${{inputs.build-type}} -DVSTGUI_STANDALONE=${{inputs.build-vstgui-standalone}}
+
+  - name: Build
+    shell: bash
+    working-directory: ${{inputs.build-dir}}
+    run: cmake --build . --config ${{inputs.build-type}}

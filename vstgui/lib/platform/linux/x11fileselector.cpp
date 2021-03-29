@@ -4,7 +4,13 @@
 
 #include "../../cfileselector.h"
 #include <unistd.h>
+#include <sys/wait.h>
 #include <string>
+#include <vector>
+#include <memory>
+#include <cerrno>
+#include <cassert>
+extern "C" { extern char **environ; }
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -47,23 +53,25 @@ struct FileSelector : CNewFileSelector
 	{
 		if (runInternal (nullptr))
 		{
-			while (feof (pipe) == 0)
+			std::string path;
+			path.reserve (1024);
+
+			ssize_t count;
+			char buffer[1024];
+			while ((count = read (readerFd, buffer, sizeof (buffer))) > 0 ||
+				   (count == -1 && errno == EINTR))
 			{
-				char* line = nullptr;
-				size_t count = 0;
-				if (getline (&line, &count, pipe) < 0)
+				if (count > 0)
+					path.append (buffer, count);
+			}
+
+			if (count != -1)
+			{
+				if (! path.empty () && path[0] == '/')
 				{
-					break;
-				}
-				if (line)
-				{
-					if (line[0] == '/')
-					{
-						std::string path (line);
-						path.erase (path.size () - 1);
-						result.emplace_back (path);
-					}
-					free (line);
+					if (path.back () == '\n')
+						path.pop_back ();
+					result.emplace_back (path);
 				}
 			}
 		}
@@ -80,35 +88,34 @@ private:
 
 	void identifiyExDialogType ()
 	{
-		if (auto file = fopen (kdialogpath, "r"))
-		{
-			fclose (file);
-			exDialogType = ExDialogType::kdialog;
-		}
-		else if (auto file = fopen (zenitypath, "r"))
-		{
-			fclose (file);
+		if (access (zenitypath, X_OK) != -1)
 			exDialogType = ExDialogType::zenity;
-		}
+		if (access (kdialogpath, X_OK) != -1)
+			exDialogType = ExDialogType::kdialog;
 	}
 
 	bool runKDialog ()
 	{
-		std::string command = kdialogpath;
-		command += " ";
-		if (style == Style::kSelectFile)
-			command += "--getopenfilename --separate-output";
+		std::vector<std::string> args;
+		args.reserve (16);
+		args.push_back (kdialogpath);
+		if (style == Style::kSelectFile) {
+			args.push_back ("--getopenfilename");
+			args.push_back ("--separate-output");
+		}
 		else if (style == Style::kSelectSaveFile)
-			command += "--getsavefilename";
+			args.push_back ("--getsavefilename");
 		else if (style == Style::kSelectDirectory)
-			command += "--getexistingdirectory";
-        if (allowMultiFileSelection)
-            command += " --multiple";
-		if (!title.empty ())
-			command += " --title '" + title.getString () + "'";
-        if (!initialPath.empty ())
-            command += " \"" + initialPath.getString () + "\"";
-		if (startProcess (command.data ()))
+			args.push_back ("--getexistingdirectory");
+		if (allowMultiFileSelection)
+			args.push_back ("--multiple");
+		if (!title.empty ()) {
+			args.push_back ("--title");
+			args.push_back (title.getString ());
+		}
+		if (!initialPath.empty ())
+			args.push_back (initialPath.getString ());
+		if (startProcess (convertToArgv (args).data ()))
 		{
 			return true;
 		}
@@ -117,40 +124,125 @@ private:
 
 	bool runZenity ()
 	{
-		std::string command = zenitypath;
-		command += " --file-selection ";
+		std::vector<std::string> args;
+		args.reserve (16);
+		args.push_back (zenitypath);
+		args.push_back ("--file-selection");
 		if (style == Style::kSelectDirectory)
-			command += "--directory";
+			args.push_back ("--directory");
 		else if (style == Style::kSelectSaveFile)
-			command += "--save --confirm-overwrite";
+		{
+			args.push_back ("--save");
+			args.push_back ("--confirm-overwrite");
+		}
 		if (!title.empty ())
-			command += "--title=\"" + title.getString () + "\"";
+			args.push_back ("--title=" + title.getString ());
 		if (!initialPath.empty ())
-			command += "--filename=\"" + initialPath.getString () + "\"";
-
-		if (startProcess (command.data ()))
+			args.push_back ("--filename=" + initialPath.getString ());
+		if (startProcess (convertToArgv (args).data ()))
 		{
 			return true;
 		}
 		return false;
 	}
 
-	bool startProcess (const char* command)
+	static std::vector<char*> convertToArgv (const std::vector<std::string>& args)
 	{
-		pipe = popen (command, "re");
-		return pipe != nullptr;
+		std::vector<char*> argv (args.size () + 1);
+		for (size_t i = 0, n = args.size (); i < n; ++i)
+			argv[i] = const_cast<char*>(args[i].c_str ());
+		return argv;
+	}
+
+	bool startProcess (char* argv[])
+	{
+		closeProcess ();
+
+		struct PipePair
+		{
+			int fd[2] = { -1, -1 };
+			~PipePair ()
+			{
+				if (fd[0] != -1) close (fd[0]);
+				if (fd[1] != -1) close (fd[1]);
+			}
+		};
+
+		PipePair rw;
+		if (pipe (rw.fd) != 0)
+			return false;
+
+#if 0
+		char** envp = environ;
+#else
+		std::vector<char*> cleanEnviron;
+		cleanEnviron.reserve (256);
+		for (char** envp = environ; *envp; ++envp)
+		{
+			// ensure the process will link with system libraries,
+			// and not these from the Ardour bundle.
+			if (strncmp (*envp, "LD_LIBRARY_PATH=", 16) == 0)
+				continue;
+			cleanEnviron.push_back (*envp);
+		}
+		cleanEnviron.push_back (nullptr);
+		char** envp = cleanEnviron.data ();
+#endif
+
+		pid_t forkPid = vfork ();
+		if (forkPid == -1)
+			return false;
+
+		if (forkPid == 0) {
+			execute (argv, envp, rw.fd);
+			assert (false);
+		}
+
+		spawnPid = forkPid;
+
+		close (rw.fd[1]);
+		rw.fd[1] = -1;
+		readerFd = rw.fd[0];
+		rw.fd[0] = -1;
+
+		return true;
+	}
+
+	[[noreturn]]
+	static void execute (char* argv[], char* envp[], const int pipeFd[2])
+	{
+		close (pipeFd[0]);
+		if (dup2 (pipeFd[1], STDOUT_FILENO) == -1)
+			_exit (1);
+		close (pipeFd[1]);
+		execve (argv[0], argv, envp);
+		_exit (1);
 	}
 
 	void closeProcess ()
 	{
-		if (pipe)
-			pclose (pipe);
-		pipe = nullptr;
+		if (spawnPid != -1)
+		{
+			if (waitpid (spawnPid, nullptr, WNOHANG) == 0)
+			{
+				kill (spawnPid, SIGTERM);
+				waitpid (spawnPid, nullptr, 0);
+			}
+			spawnPid = -1;
+		}
+
+		if (readerFd != -1)
+		{
+			close (readerFd);
+			readerFd = -1;
+		}
 	}
+
 	Style style;
 	SharedPointer<CBaseObject> delegate;
 	ExDialogType exDialogType{ExDialogType::none};
-	FILE* pipe{nullptr};
+	pid_t spawnPid = -1;
+	int readerFd = -1;
 };
 
 //------------------------------------------------------------------------

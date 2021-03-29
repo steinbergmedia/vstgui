@@ -18,23 +18,14 @@ namespace X11 {
 
 //------------------------------------------------------------------------
 class Frame
-	: public IPlatformFrame
-	, public IX11Frame
-	, public IGenericOptionMenuListener
+: public IPlatformFrame
+, public IX11Frame
+, public IGenericOptionMenuListener
 {
 public:
-	Frame (IPlatformFrameCallback* frame,
-		   const CRect& size,
-		   uint32_t parent,
+	Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 		   IPlatformFrameConfig* config);
 	~Frame ();
-
-	using CreateIResourceInputStreamFunc =
-		std::function<IPlatformResourceInputStream::Ptr (const CResourceDescription& desc)>;
-
-	static CreateIResourceInputStreamFunc createResourceInputStreamFunc;
-
-	static UTF8String resourcePath;
 
 private:
 	bool getGlobalPosition (CPoint& pos) const override;
@@ -56,16 +47,11 @@ private:
 #endif
 	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (
 		IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
-	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width,
-															 CCoord height,
-															 double scaleFactor) override;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 #endif
 	bool doDrag (const DragDescription& dragDescription,
 				 const SharedPointer<IDragCallback>& callback) override;
-	void setClipboard (const SharedPointer<IDataPackage>& data) override;
-	SharedPointer<IDataPackage> getClipboard () override;
 
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}

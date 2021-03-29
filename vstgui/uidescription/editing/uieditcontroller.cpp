@@ -25,6 +25,7 @@
 #include "uifocussettingscontroller.h"
 #include "../cstream.h"
 #include "../uiattributes.h"
+#include "../uicontentprovider.h"
 #include "../xmlparser.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
@@ -61,7 +62,7 @@ public:
 		if (uiDesc == nullptr)
 		{
 #ifdef HAVE_EDITORUIDESC_H
-			Xml::MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
+			MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
 			SharedPointer<UIDescription> editorDesc = owned (new UIDescription (&provider));
 			if (editorDesc->parse ())
 			{
@@ -294,7 +295,7 @@ public:
 					return false;
 				});
 				zoomValueControl->setValueToStringFunction ([] (float value, char utf8String[256], CParamDisplay*) {
-					snprintf (utf8String, 255, "%d %%", static_cast<uint32_t> (value));
+					snprintf (utf8String, 255, "%u %%", static_cast<uint32_t> (value));
 					return true;
 				});
 				zoomValueControl->setValue (100.f);
@@ -800,7 +801,8 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	if (message == UIEditView::kMsgAttached)
 	{
 		vstgui_assert (editView);
-		editView->getFrame ()->registerKeyboardHook (this);
+		if (editView)
+			editView->getFrame ()->registerKeyboardHook (this);
 		return kMessageNotified;
 	}
 	else if (message == UIEditView::kMsgRemoved)
@@ -1377,7 +1379,7 @@ int32_t UIEditController::getSaveOptions ()
 	bool val;
 	if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
 	{
-		flags |= UIDescription::kWriteImagesIntoXMLFile;
+		flags |= UIDescription::kWriteImagesIntoUIDescFile;
 	}
 	if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
 	{

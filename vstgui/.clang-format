@@ -1,4 +1,4 @@
-Language: Cpp
+#Language: Cpp
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
@@ -19,6 +19,7 @@ BinPackArguments: true
 BinPackParameters: true
 BreakBeforeBraces: Custom
 BraceWrapping:
+  AfterCaseLabel:         true
   AfterClass:             true
   AfterControlStatement:  true
   AfterEnum:              true
@@ -30,6 +31,7 @@ BraceWrapping:
   AfterExternBlock:       true
   BeforeCatch:            true
   BeforeElse:             true
+#  BeforeLambdaBody:       false
   IndentBraces:           false
   SplitEmptyFunction:     true
   SplitEmptyRecord:       true
@@ -68,7 +70,7 @@ IncludeBlocks:   Preserve
 IndentCaseLabels: true
 IndentPPDirectives: None
 IndentWidth:     4
-IndentWrappedFunctionNames: false
+IndentWrappedFunctionNames: true
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: true

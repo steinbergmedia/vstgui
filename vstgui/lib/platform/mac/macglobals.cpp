@@ -7,29 +7,14 @@
 #if MAC
 #include "../../cframe.h"
 #include "../../ccolor.h"
+#include "macfactory.h"
 #include "../iplatformframe.h"
 #include "../common/fileresourceinputstream.h"
 #include "../std_unorderedmap.h"
-#include <mach/mach_time.h>
 
 #define USE_MAIN_DISPLAY_COLORSPACE	1
 
 namespace VSTGUI {
-
-//-----------------------------------------------------------------------------
-uint32_t IPlatformFrame::getTicks ()
-{
-	static struct mach_timebase_info timebaseInfo;
-	static bool initialized = false;
-	if (!initialized)
-	{
-		initialized = true;
-		mach_timebase_info (&timebaseInfo);
-	}
-	uint64_t absTime = mach_absolute_time ();
-	double d = (absTime / timebaseInfo.denom) * timebaseInfo.numer;	// nano seconds
-	return static_cast<uint32_t> (d / 1000000);
-}
 
 //-----------------------------------------------------------------------------
 struct ColorHash
@@ -125,34 +110,6 @@ public:
 CGColorSpaceRef GetCGColorSpace ()
 {
 	return GenericMacColorSpace::instance ().colorspace;
-}
-
-//-----------------------------------------------------------------------------
-auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
-{
-	if (desc.type == CResourceDescription::kIntegerType)
-		return nullptr;
-	if (auto bundle = getBundleRef ())
-	{
-		Ptr result;
-		CFStringRef cfStr = CFStringCreateWithCString (nullptr, desc.u.name, kCFStringEncodingUTF8);
-		if (cfStr)
-		{
-			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
-			if (url)
-			{
-				char filePath[PATH_MAX];
-				if (CFURLGetFileSystemRepresentation (url, true, (UInt8*)filePath, PATH_MAX))
-				{
-					result = FileResourceInputStream::create (filePath);
-				}
-				CFRelease (url);
-			}
-			CFRelease (cfStr);
-		}
-		return result;
-	}
-	return nullptr;
 }
 
 } // VSTGUI

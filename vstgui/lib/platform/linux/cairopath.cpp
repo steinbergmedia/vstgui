@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -12,9 +12,7 @@ namespace VSTGUI {
 namespace Cairo {
 
 //------------------------------------------------------------------------
-Path::Path (const ContextHandle& cr) noexcept : cr (cr)
-{
-}
+Path::Path (const ContextHandle& cr) noexcept : cr (cr) {}
 
 //------------------------------------------------------------------------
 Path::~Path () noexcept
@@ -101,7 +99,7 @@ cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransfo
 					{
 						auto p = pixelAlign (*alignTm,
 											 CPoint {e.instruction.point.x, e.instruction.point.y});
-						cairo_move_to (handle, p.x - 0.5, p.y - 0.5);
+						cairo_move_to (handle, p.x, p.y);
 					}
 					else
 						cairo_move_to (handle, e.instruction.point.x, e.instruction.point.y);
@@ -118,7 +116,7 @@ cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransfo
 					{
 						auto p = pixelAlign (*alignTm,
 											 CPoint {e.instruction.point.x, e.instruction.point.y});
-						cairo_line_to (handle, p.x - 0.5, p.y - 0.5);
+						cairo_line_to (handle, p.x, p.y);
 					}
 					else
 						cairo_line_to (handle, e.instruction.point.x, e.instruction.point.y);
@@ -139,8 +137,7 @@ cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransfo
 						auto r = pixelAlign (
 							*alignTm, CRect {e.instruction.rect.left, e.instruction.rect.top,
 											 e.instruction.rect.right, e.instruction.rect.bottom});
-						cairo_rectangle (handle, r.left - 0.5, r.top - 0.5, r.getWidth (),
-										 r.getHeight ());
+						cairo_rectangle (handle, r.left, r.top, r.getWidth (), r.getHeight ());
 					}
 					else
 					{
@@ -150,7 +147,8 @@ cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransfo
 					}
 					break;
 				}
-				case Element::Type::kEllipse: {
+				case Element::Type::kEllipse:
+				{
 #warning TODO: Implementation Element::Type::kEllipse
 					break;
 				}

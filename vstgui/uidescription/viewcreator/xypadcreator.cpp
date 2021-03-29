@@ -7,6 +7,8 @@
 #include "../../lib/controls/cxypad.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiviewfactory.h"
+#include "../uiattributes.h"
+#include "../uiviewcreator.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -41,6 +43,53 @@ CView* XYPadCreator::create (const UIAttributes& attributes,
                              const IUIDescription* description) const
 {
 	return new CXYPad (CRect (0, 0, 60, 60));
+}
+
+//------------------------------------------------------------------------
+bool XYPadCreator::apply (CView* view, const UIAttributes& attributes,
+						  const IUIDescription* description) const
+{
+	auto pad = dynamic_cast<CXYPad*> (view);
+	if (!pad)
+		return false;
+
+	CBitmap* bitmap;
+	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
+		pad->setHandleBitmap (bitmap);
+
+	return true;
+}
+
+//------------------------------------------------------------------------
+bool XYPadCreator::getAttributeNames (StringList& attributeNames) const
+{
+	attributeNames.emplace_back (kAttrHandleBitmap);
+	return true;
+}
+
+//------------------------------------------------------------------------
+auto XYPadCreator::getAttributeType (const string& attributeName) const -> AttrType
+{
+	if (attributeName == kAttrHandleBitmap)
+		return kBitmapType;
+	return kUnknownType;
+}
+
+//------------------------------------------------------------------------
+bool XYPadCreator::getAttributeValue (CView* view, const string& attributeName, string& stringValue,
+									  const IUIDescription* desc) const
+{
+	auto pad = dynamic_cast<CXYPad*> (view);
+	if (!pad)
+		return false;
+	if (attributeName == kAttrHandleBitmap)
+	{
+		if (auto bitmap = pad->getHandleBitmap ())
+		{
+			return bitmapToString (bitmap, stringValue, desc);
+		}
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------

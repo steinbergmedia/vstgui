@@ -58,6 +58,9 @@ static void (*SuperRemoveFromSuperview) (id, SEL) = SuperDealloc;
 static void (*SuperEventMsg) (id, SEL, NSEvent*) = (void (*) (id, SEL, NSEvent*))objc_msgSendSuper;
 static void (*SuperUpdateTrackingAreas) (id, SEL) = (void (*) (id, SEL))objc_msgSendSuper;
 static void (*SuperTextDidChange) (id, SEL, NSNotification*) = (void (*) (id, SEL, NSNotification*))objc_msgSendSuper;
+static void (*SuperSetNeedsDisplayInRect) (id, SEL,
+										   NSRect) = (void (*) (id, SEL, NSRect))objc_msgSendSuper;
+static void (*SuperViewWillRedraw) (id, SEL) = SuperDealloc;
 
 //------------------------------------------------------------------------------------
 extern HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass);
@@ -145,10 +148,14 @@ namespace MacEventType
 	static constexpr auto LeftMouseDown = ::NSEventTypeLeftMouseDown;
 	static constexpr auto LeftMouseDragged = ::NSEventTypeLeftMouseDragged;
 	static constexpr auto MouseMoved = ::NSEventTypeMouseMoved;
+	static constexpr auto KeyDown = ::NSEventTypeKeyDown;
+	static constexpr auto KeyUp = ::NSEventTypeKeyUp;
 #else
 	static constexpr auto LeftMouseDown = ::NSLeftMouseDown;
 	static constexpr auto LeftMouseDragged = ::NSLeftMouseDragged;
 	static constexpr auto MouseMoved = ::NSMouseMoved;
+	static constexpr auto KeyDown = ::NSKeyDown;
+	static constexpr auto KeyUp = ::NSKeyUp;
 #endif
 }
 
@@ -162,6 +169,7 @@ namespace MacWindowStyleMask
 	static constexpr auto Miniaturizable = ::NSWindowStyleMaskMiniaturizable;
 	static constexpr auto Closable = ::NSWindowStyleMaskClosable;
 	static constexpr auto Utility = ::NSWindowStyleMaskUtilityWindow;
+	static constexpr auto FullSizeContentView = ::NSWindowStyleMaskFullSizeContentView;
 #else
 	static constexpr auto Borderless = ::NSBorderlessWindowMask;
 	static constexpr auto Titled = ::NSTitledWindowMask;
@@ -169,6 +177,7 @@ namespace MacWindowStyleMask
 	static constexpr auto Miniaturizable = ::NSMiniaturizableWindowMask;
 	static constexpr auto Closable = ::NSClosableWindowMask;
 	static constexpr auto Utility = ::NSUtilityWindowMask;
+	static constexpr auto FullSizeContentView = ::NSFullSizeContentViewWindowMask;
 #endif
 }
 

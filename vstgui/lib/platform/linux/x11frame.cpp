@@ -3,11 +3,14 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "x11frame.h"
+#include "x11dragging.h"
+#include "x11utils.h"
 #include "../../cbuttonstate.h"
 #include "../../cframe.h"
 #include "../../crect.h"
 #include "../../dragging.h"
 #include "../../vstkeycode.h"
+#include "../../cinvalidrectlist.h"
 #include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"
 #include "../iplatformtextedit.h"
@@ -28,28 +31,13 @@
 #include <cairo/cairo-xcb.h>
 
 #ifdef None
-#	undef None
+#undef None
 #endif
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace X11 {
 namespace {
-
-//------------------------------------------------------------------------
-std::string getAtomName (xcb_atom_t atom)
-{
-	std::string name;
-	auto xcb = RunLoop::instance ().getXcbConnection ();
-	auto cookie = xcb_get_atom_name (xcb, atom);
-	if (auto reply = xcb_get_atom_name_reply (xcb, cookie, nullptr))
-	{
-		auto length = xcb_get_atom_name_name_length (reply);
-		name = xcb_get_atom_name_name (reply);
-		free (reply);
-	}
-	return name;
-}
 
 //------------------------------------------------------------------------
 inline CButtonState translateMouseButtons (xcb_button_t value)
@@ -97,13 +85,13 @@ inline uint32_t translateModifiers (int state)
 
 //------------------------------------------------------------------------
 struct RedrawTimerHandler
-	: ITimerHandler
-	, NonAtomicReferenceCounted
+: ITimerHandler
+, NonAtomicReferenceCounted
 {
-	using RedrawCallback = std::function<void()>;
+	using RedrawCallback = std::function<void ()>;
 
 	RedrawTimerHandler (uint64_t delay, RedrawCallback&& redrawCallback)
-		: redrawCallback (std::move (redrawCallback))
+	: redrawCallback (std::move (redrawCallback))
 	{
 		RunLoop::instance ().get ()->registerTimer (delay, this);
 	}
@@ -128,13 +116,13 @@ struct DrawHandler
 										   window.getSize ().x, window.getSize ().y);
 		windowSurface.assign (s);
 		onSizeChanged (window.getSize ());
-		device = cairo_device_reference(cairo_surface_get_device(s));
+		device = cairo_device_reference (cairo_surface_get_device (s));
 	}
 
-	~DrawHandler()
+	~DrawHandler ()
 	{
-		cairo_device_finish(device);
-		cairo_device_destroy(device);
+		cairo_device_finish (device);
+		cairo_device_destroy (device);
 	}
 
 	void onSizeChanged (const CPoint& size)
@@ -169,7 +157,7 @@ struct DrawHandler
 	}
 
 private:
-	cairo_device_t *device = nullptr;
+	cairo_device_t* device = nullptr;
 	Cairo::SurfaceHandle windowSurface;
 	Cairo::SurfaceHandle backBuffer;
 	SharedPointer<Cairo::Context> drawContext;
@@ -251,16 +239,16 @@ private:
 		MouseUp,
 	};
 
-	State state{State::Uninitialized};
+	State state {State::Uninitialized};
 	CPoint point;
 	CButtonState firstClickState;
-	xcb_timestamp_t firstClickTime{0};
+	xcb_timestamp_t firstClickTime {0};
 };
 
 //------------------------------------------------------------------------
 struct Frame::Impl : IFrameEventHandler
 {
-	using RectList = std::vector<CRect>;
+	using RectList = CInvalidRectList;
 
 	ChildWindow window;
 	DrawHandler drawHandler;
@@ -269,12 +257,13 @@ struct Frame::Impl : IFrameEventHandler
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
 	SharedPointer<RedrawTimerHandler> redrawTimer;
 	RectList dirtyRects;
-	CCursorType currentCursor{kCursorDefault};
-	uint32_t pointerGrabed{0};
+	CCursorType currentCursor {kCursorDefault};
+	uint32_t pointerGrabed {0};
+	XdndHandler dndHandler;
 
 	//------------------------------------------------------------------------
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
-		: window (parent, size), drawHandler (window), frame (frame)
+	: window (parent, size), drawHandler (window), frame (frame), dndHandler (&window, frame)
 	{
 		RunLoop::instance ().registerWindowEventHandler (window.getID (), this);
 	}
@@ -288,7 +277,7 @@ struct Frame::Impl : IFrameEventHandler
 		window.setSize (size);
 		drawHandler.onSizeChanged (size.getSize ());
 		dirtyRects.clear ();
-		dirtyRects.push_back (size);
+		dirtyRects.add (size);
 	}
 
 	//------------------------------------------------------------------------
@@ -314,7 +303,7 @@ struct Frame::Impl : IFrameEventHandler
 	//------------------------------------------------------------------------
 	void redraw ()
 	{
-		drawHandler.draw (dirtyRects, [&](CDrawContext* context, const CRect& rect) {
+		drawHandler.draw (dirtyRects, [&] (CDrawContext* context, const CRect& rect) {
 			frame->platformDrawRect (context, rect);
 		});
 		dirtyRects.clear ();
@@ -323,11 +312,11 @@ struct Frame::Impl : IFrameEventHandler
 	//------------------------------------------------------------------------
 	void invalidRect (CRect r)
 	{
-		dirtyRects.emplace_back (r);
+		dirtyRects.add (r);
 		if (redrawTimer)
 			return;
-		redrawTimer = makeOwned<RedrawTimerHandler> (16, [this]() {
-			if (dirtyRects.empty ())
+		redrawTimer = makeOwned<RedrawTimerHandler> (16, [this] () {
+			if (dirtyRects.data ().empty ())
 				return;
 			redraw ();
 		});
@@ -454,6 +443,7 @@ struct Frame::Impl : IFrameEventHandler
 	{
 		CPoint where (event.event_x, event.event_y);
 		auto buttons = translateMouseButtons (event.state);
+		buttons |= translateModifiers (event.state);
 		doubleClickDetector.onMouseMove (where, buttons, event.time);
 		frame->platformOnMouseMoved (where, buttons);
 		// make sure we get more motion events
@@ -502,8 +492,13 @@ struct Frame::Impl : IFrameEventHandler
 #endif
 	}
 
+	void onEvent (xcb_selection_notify_event_t& event) override
+	{
+		dndHandler.selectionNotify (event);
+	}
+
 	//------------------------------------------------------------------------
-	void onEvent (xcb_client_message_event_t& event) override
+	void onEvent (xcb_client_message_event_t& event, xcb_window_t proxyId = 0) override
 	{
 		if (Atoms::xEmbed.valid () && event.type == Atoms::xEmbed ())
 		{
@@ -554,15 +549,29 @@ struct Frame::Impl : IFrameEventHandler
 					break;
 			}
 		}
+		else if (Atoms::xDndEnter.valid () && event.type == Atoms::xDndEnter ())
+		{
+			dndHandler.enter (event, proxyId ? proxyId : window.getID ());
+		}
+		else if (Atoms::xDndPosition.valid () && event.type == Atoms::xDndPosition ())
+		{
+			dndHandler.position (event);
+		}
+		else if (Atoms::xDndLeave.valid () && event.type == Atoms::xDndLeave ())
+		{
+			dndHandler.leave (event);
+		}
+		else if (Atoms::xDndDrop.valid () && event.type == Atoms::xDndDrop ())
+		{
+			dndHandler.drop (event);
+		}
 	}
 };
 
 //------------------------------------------------------------------------
-Frame::Frame (IPlatformFrameCallback* frame,
-			  const CRect& size,
-			  uint32_t parent,
+Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 			  IPlatformFrameConfig* config)
-	: IPlatformFrame (frame)
+: IPlatformFrame (frame)
 {
 	auto cfg = dynamic_cast<FrameConfig*> (config);
 	if (cfg && cfg->runLoop)
@@ -618,9 +627,11 @@ bool Frame::getSize (CRect& size) const
 //------------------------------------------------------------------------
 bool Frame::getCurrentMousePosition (CPoint& mousePosition) const
 {
-	xcb_query_pointer_cookie_t cookie = xcb_query_pointer(RunLoop::instance ().getXcbConnection (), getX11WindowID ());
-	xcb_query_pointer_reply_t* reply = xcb_query_pointer_reply(RunLoop::instance ().getXcbConnection (), cookie, nullptr);
-	if(!reply)
+	xcb_query_pointer_cookie_t cookie =
+		xcb_query_pointer (RunLoop::instance ().getXcbConnection (), getX11WindowID ());
+	xcb_query_pointer_reply_t* reply =
+		xcb_query_pointer_reply (RunLoop::instance ().getXcbConnection (), cookie, nullptr);
+	if (!reply)
 		return false;
 
 	mousePosition.x = reply->win_x;
@@ -704,7 +715,7 @@ SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 //------------------------------------------------------------------------
 SharedPointer<IPlatformOpenGLView> Frame::createPlatformOpenGLView ()
 {
-#	warning TODO: Implementation
+#warning TODO: Implementation
 	return nullptr;
 }
 #endif
@@ -714,21 +725,6 @@ SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
 	IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
 	// optional
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
-SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width,
-																CCoord height,
-																double scaleFactor)
-{
-	CPoint size (width * scaleFactor, height * scaleFactor);
-	auto bitmap = new Cairo::Bitmap (&size);
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = owned (new Cairo::Context (bitmap));
-	bitmap->forget ();
-	if (context->valid ())
-		return context;
 	return nullptr;
 }
 
@@ -748,21 +744,9 @@ bool Frame::doDrag (const DragDescription& dragDescription,
 }
 
 //------------------------------------------------------------------------
-void Frame::setClipboard (const SharedPointer<IDataPackage>& data){
-#warning TODO: Implementation
-}
-
-//------------------------------------------------------------------------
-SharedPointer<IDataPackage> Frame::getClipboard ()
-{
-#warning TODO: Implementation
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
 PlatformType Frame::getPlatformType () const
 {
-	return kX11EmbedWindowID;
+	return PlatformType::kX11EmbedWindowID;
 }
 
 //------------------------------------------------------------------------
@@ -776,57 +760,12 @@ bool Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
 {
 	if (theme)
 		impl->genericOptionMenuTheme =
-		    std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+			std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
 	else
 		impl->genericOptionMenuTheme = nullptr;
 	return true;
 }
 
 //------------------------------------------------------------------------
-Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
-	[](const CResourceDescription& desc) -> IPlatformResourceInputStream::Ptr {
-	if (desc.type != CResourceDescription::kStringType)
-		return nullptr;
-	auto path = Platform::getInstance ().getPath ();
-	path += "/Contents/Resources/";
-	path += desc.u.name;
-	return FileResourceInputStream::create (path);
-};
-
-//------------------------------------------------------------------------
-UTF8String Frame::resourcePath = Platform::getInstance ().getPath () + "/Contents/Resources/";
-
-//------------------------------------------------------------------------
 } // X11
-
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
-													 const CRect& size,
-													 void* parent,
-													 PlatformType parentType,
-													 IPlatformFrameConfig* config)
-{
-	if (parentType == kDefaultNative || parentType == kX11EmbedWindowID)
-	{
-		auto x11Parent = reinterpret_cast<XID> (parent);
-		return new X11::Frame (frame, size, x11Parent, config);
-	}
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
-uint32_t IPlatformFrame::getTicks ()
-{
-	return static_cast<uint32_t> (X11::Platform::getCurrentTimeMs ());
-}
-
-//------------------------------------------------------------------------
-auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
-{
-	return X11::Frame::createResourceInputStreamFunc (desc);
-}
-
-//------------------------------------------------------------------------
 } // VSTGUI

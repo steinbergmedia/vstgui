@@ -6,6 +6,7 @@
 #include "cdrawcontext.h"
 #include "ccolor.h"
 #include "platform/iplatformbitmap.h"
+#include "platform/platformfactory.h"
 #include <cassert>
 
 namespace VSTGUI {
@@ -44,20 +45,15 @@ CBitmap::CBitmap ()
 CBitmap::CBitmap (const CResourceDescription& desc)
 : resourceDesc (desc)
 {
-	if (auto platformBitmap = IPlatformBitmap::create ())
-	{
-		if (platformBitmap->load (desc))
-		{
-			bitmaps.emplace_back (platformBitmap);
-		}
-	}
+	if (auto platformBitmap = getPlatformFactory ().createBitmap (desc))
+		bitmaps.emplace_back (platformBitmap);
 }
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (CCoord width, CCoord height)
 {
-	CPoint p (width, height);
-	bitmaps.emplace_back (IPlatformBitmap::create (&p));
+	if (auto platformBitmap = getPlatformFactory ().createBitmap ({width, height}))
+		bitmaps.emplace_back (platformBitmap);
 }
 
 //------------------------------------------------------------------------
@@ -66,9 +62,11 @@ CBitmap::CBitmap (CPoint size, double scaleFactor)
 	size.x *= scaleFactor;
 	size.y *= scaleFactor;
 	size.makeIntegral ();
-	auto bitmap = IPlatformBitmap::create (&size);
-	bitmap->setScaleFactor (scaleFactor);
-	bitmaps.emplace_back (bitmap);
+	if (auto platformBitmap = getPlatformFactory ().createBitmap (size))
+	{
+		platformBitmap->setScaleFactor (scaleFactor);
+		bitmaps.emplace_back (platformBitmap);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -301,4 +299,3 @@ CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremu
 }
 
 } // VSTGUI
-

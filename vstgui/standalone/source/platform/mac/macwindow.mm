@@ -30,6 +30,11 @@ static_assert (false, "Need newer clang compiler!");
 #endif
 
 //------------------------------------------------------------------------
+@interface VSTGUITitlebarViewController : NSTitlebarAccessoryViewController
+- (void)loadView;
+@end
+
+//------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 namespace Platform {
@@ -73,6 +78,14 @@ namespace Platform {
 namespace Mac {
 
 //------------------------------------------------------------------------
+static NSPoint getWindowContentRectOffset (NSWindow* window)
+{
+	auto cls = window.contentLayoutRect.size;
+	auto fs = window.frame.size;
+	return NSMakePoint (fs.width - cls.width, fs.height - cls.height);
+}
+
+//------------------------------------------------------------------------
 class Window : public IMacWindow
 {
 public:
@@ -94,10 +107,10 @@ public:
 	void activate () override;
 	void center () override;
 
-	PlatformType getPlatformType () const override { return kNSView; };
+	PlatformType getPlatformType () const override { return PlatformType::kNSView; };
 	void* _Nonnull getPlatformHandle () const override
 	{
-		return static_cast<void*> ((__bridge void*)nsWindow.contentView);
+		return static_cast<void*> ((__bridge void*)contentView);
 	}
 	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override
 	{
@@ -105,7 +118,7 @@ public:
 	}
 	void onSetContentView (CFrame* _Nullable newFrame) override;
 
-	void windowDidResize (const CPoint& newSize);
+	void windowDidResize (CPoint newSize);
 	void windowWillClose ();
 	IWindowDelegate& getDelegate () const { return *delegate; }
 	NSWindow* _Nonnull getNSWindow () const override { return nsWindow; }
@@ -116,6 +129,7 @@ private:
 
 	WindowStyle style;
 	NSWindow* _Nullable nsWindow {nullptr};
+	NSView* _Nullable contentView {nullptr};
 	VSTGUIWindowDelegate* _Nullable nsWindowDelegate {nullptr};
 	IWindowDelegate* _Nullable delegate {nullptr};
 	CFrame* _Nullable frame {nullptr};
@@ -129,7 +143,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 	NSUInteger styleMask = 0;
 	if (style.hasBorder ())
-		styleMask |= MacWindowStyleMask::Titled;
+		styleMask |= MacWindowStyleMask::Titled | MacWindowStyleMask::FullSizeContentView;
 	if (style.canSize ())
 		styleMask |= MacWindowStyleMask::Resizable | MacWindowStyleMask::Miniaturizable;
 	if (style.canClose ())
@@ -176,6 +190,22 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 			    NSWindowCollectionBehaviorFullScreenPrimary | nsWindow.collectionBehavior;
 		}
 	}
+	if (style.hasBorder ())
+	{
+		auto layoutRect = nsWindow.contentLayoutRect;
+		contentView = [[NSView alloc] initWithFrame:layoutRect];
+		[nsWindow.contentView addSubview:contentView];
+#if DEBUG
+		auto tbvController = [VSTGUITitlebarViewController new];
+		tbvController.layoutAttribute = NSLayoutAttributeRight;
+		[nsWindow addTitlebarAccessoryViewController:tbvController];
+#endif
+	}
+	else
+	{
+		contentView = nsWindow.contentView;
+	}
+
 	nsWindow.collectionBehavior =
 	    NSWindowCollectionBehaviorFullScreenAuxiliary | nsWindow.collectionBehavior;
 	[nsWindow setDelegate:nsWindowDelegate];
@@ -238,8 +268,14 @@ void Window::onSetContentView (CFrame* _Nullable newFrame)
 }
 
 //------------------------------------------------------------------------
-void Window::windowDidResize (const CPoint& newSize)
+void Window::windowDidResize (CPoint newSize)
 {
+	if (contentView != nsWindow.contentView)
+	{
+		contentView.frame = nsWindow.contentLayoutRect;
+		newSize.x = nsWindow.contentLayoutRect.size.width;
+		newSize.y = nsWindow.contentLayoutRect.size.height;
+	}
 	delegate->onSizeChanged (newSize);
 	if (frame)
 		frame->setSize (newSize.x, newSize.y);
@@ -310,9 +346,10 @@ NSRect Window::validateFrameRect (NSRect r) const
 void Window::setSize (const CPoint& newSize)
 {
 	NSRect r = [nsWindow contentRectForFrameRect:nsWindow.frame];
-	CGFloat diff = newSize.y - r.size.height;
-	r.size.width = newSize.x;
-	r.size.height = newSize.y;
+	auto offset = getWindowContentRectOffset (nsWindow);
+	CGFloat diff = (newSize.y + offset.y) - r.size.height;
+	r.size.width = newSize.x + offset.x;
+	r.size.height = newSize.y + offset.y;
 	r.origin.y -= diff;
 	[nsWindow setFrame:[nsWindow frameRectForContentRect:r]
 	           display:[nsWindow isVisible]
@@ -583,10 +620,11 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	NSRect r {};
 	r.size = frameSize;
 	r = [sender contentRectForFrameRect:r];
-	VSTGUI::CPoint p (r.size.width, r.size.height);
+	auto offset = VSTGUI::Standalone::Platform::Mac::getWindowContentRectOffset (sender);
+	VSTGUI::CPoint p (r.size.width - offset.x, r.size.height - offset.y);
 	p = self.macWindow->getDelegate ().constraintSize (p);
-	r.size.width = p.x;
-	r.size.height = p.y;
+	r.size.width = p.x + offset.x;
+	r.size.height = p.y + offset.y;
 	r = [sender frameRectForContentRect:r];
 	return r.size;
 }
@@ -776,6 +814,28 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	if (app->dontClosePopupOnDeactivation (self.macWindow))
 		return;
 	[self.macWindow->getNSWindow () close];
+}
+
+@end
+
+//------------------------------------------------------------------------
+@implementation VSTGUITitlebarViewController
+
+//------------------------------------------------------------------------
+- (void)loadView
+{
+	auto control = [NSButton buttonWithTitle:@"ⓔ" target:self action:@selector (doAction:)];
+	control.showsBorderOnlyWhileMouseInside = NO;
+	control.bordered = NO;
+	control.bezelStyle = NSBezelStyleRounded;
+	self.view = control;
+}
+
+//------------------------------------------------------------------------
+- (void)doAction:(id)sender
+{
+	using namespace VSTGUI::Standalone;
+	IApplication::instance ().executeCommand (Commands::Debug::ToggleInlineUIEditor);
 }
 
 @end

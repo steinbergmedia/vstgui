@@ -2,6 +2,10 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#if defined(_WIN32)
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+#endif
+
 #include "generictextedit.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
@@ -9,6 +13,7 @@
 #include "../../cframe.h"
 #include "../../cvstguitimer.h"
 #include "../../cdropsource.h"
+
 #include <numeric>
 #include <string>
 #include <codecvt>
@@ -20,7 +25,11 @@ namespace VSTGUI {
 #define VSTGUI_STB_TEXTEDIT_USE_UNICODE 1
 
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+#if defined(_MSC_VER) && _MSC_VER >= 1900 && _MSC_VER < 1920
+using STB_CharT = wchar_t;
+#else
 using STB_CharT = char16_t;
+#endif
 using StringConvert = std::wstring_convert<std::codecvt_utf8_utf16<STB_CharT>, STB_CharT>;
 #else
 using STB_CharT = char;
@@ -355,15 +364,14 @@ CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
 	auto where = _where;
 	if (auto parent = getParentView ())
 	{
-		parent->translateToLocal (where);
+		where = translateToLocal (where, true);
 		if (buttons.isLeftButton () && hitTest (where, buttons))
 		{
-			CPoint where2 (where);
-			where2.x -= getViewSize ().left;
-			where2.y -= getViewSize ().top;
+			where.x -= getViewSize ().left;
+			where.y -= getViewSize ().top;
 			callSTB ([&]() {
-				stb_textedit_click (this, &editState, static_cast<float> (where2.x),
-									static_cast<float> (where2.y));
+				stb_textedit_click (this, &editState, static_cast<float> (where.x),
+									static_cast<float> (where.y));
 			});
 			return kMouseEventHandled;
 		}
@@ -379,15 +387,14 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 	auto where = _where;
 	if (auto parent = getParentView ())
 	{
-		parent->translateToLocal (where);
+		where = translateToLocal (where, true);
 		if (buttons.isLeftButton () && hitTest (where, buttons))
 		{
-			CPoint where2 (where);
-			where2.x -= getViewSize ().left;
-			where2.y -= getViewSize ().top;
+			where.x -= getViewSize ().left;
+			where.y -= getViewSize ().top;
 			callSTB ([&]() {
-				stb_textedit_drag (this, &editState, static_cast<float> (where2.x),
-								   static_cast<float> (where2.y));
+				stb_textedit_drag (this, &editState, static_cast<float> (where.x),
+								   static_cast<float> (where.y));
 			});
 			return kMouseEventHandled;
 		}
@@ -475,21 +482,22 @@ bool STBTextEditView::doCopy ()
 	if (editState.select_start == editState.select_end)
 		return false;
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	auto txt = StringConvert{}.to_bytes (uString.data () + editState.select_start,
-										 uString.data () + editState.select_end);
-	auto dataPackage = CDropSource::create (txt.data (), txt.size (), IDataPackage::kText);
+	auto txt = StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (uString.data () + editState.select_start),
+										 reinterpret_cast<const STB_CharT*> (uString.data () + editState.select_end));
+	auto dataPackage =
+		CDropSource::create (txt.data (), static_cast<uint32_t> (txt.size ()), IDataPackage::kText);
 #else
 	auto dataPackage =
 		CDropSource::create (getText ().data (), getText ().length (), IDataPackage::kText);
 #endif
-	getFrame ()->getPlatformFrame ()->setClipboard (dataPackage);
+	getFrame ()->setClipboard (dataPackage);
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool STBTextEditView::doPaste ()
 {
-	if (auto clipboard = getFrame ()->getPlatformFrame ()->getClipboard ())
+	if (auto clipboard = getFrame ()->getClipboard ())
 	{
 		auto count = clipboard->getCount ();
 		for (auto i = 0u; i < count; ++i)
@@ -501,9 +509,11 @@ bool STBTextEditView::doPaste ()
 			{
 				auto text = reinterpret_cast<const char*> (buffer);
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-				auto uText = StringConvert{}.from_bytes (text, text + size);
-				callSTB (
-					[&]() { stb_textedit_paste (this, &editState, uText.data (), uText.size ()); });
+				auto uText = StringConvert {}.from_bytes (text, text + size);
+				callSTB ([&] () {
+					stb_textedit_paste (this, &editState, uText.data (),
+										static_cast<int> (uText.size ()));
+				});
 #else
 				callSTB ([&]() { stb_textedit_paste (this, &editState, text, size); });
 #endif
@@ -539,7 +549,8 @@ void STBTextEditView::setText (const UTF8String& txt)
 	if (editState.select_start != editState.select_end)
 		selectAll ();
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	uString = StringConvert{}.from_bytes (CTextLabel::getText ().getString ());
+	auto tmpStr = StringConvert{}.from_bytes (CTextLabel::getText ().getString ());
+	uString = {tmpStr.data (), tmpStr.data () + tmpStr.size ()};
 #endif
 }
 
@@ -561,7 +572,8 @@ CCoord STBTextEditView::getCharWidth (STB_CharT c, STB_CharT pc) const
 		return tcWidth - pcWidth;
 	}
 	UTF8String str (StringConvert{}.to_bytes (c));
-	return fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
+	auto width = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
+	return width / getGlobalTransform ().m11; 
 #else
 	if (pc)
 	{
@@ -693,7 +705,7 @@ int STBTextEditView::deleteChars (STBTextEditView* self, size_t pos, size_t num)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	self->uString.erase (pos, num);
-	self->setText (StringConvert{}.to_bytes (self->uString));
+	self->setText (StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (self->uString.data ()), reinterpret_cast<const STB_CharT*> (self->uString.data () + self->uString.size ())));
 	self->onTextChange ();
 	return true;
 #else
@@ -712,8 +724,8 @@ int STBTextEditView::insertChars (STBTextEditView* self,
 								  size_t num)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	self->uString.insert (pos, text, num);
-	self->setText (StringConvert{}.to_bytes (self->uString));
+	self->uString.insert (pos, reinterpret_cast<const char16_t*> (text), num);
+	self->setText (StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (self->uString.data ()), reinterpret_cast<const STB_CharT*> (self->uString.data () + self->uString.size ())));
 	self->onTextChange ();
 	return true;
 #else
@@ -739,7 +751,7 @@ STB_CharT STBTextEditView::getChar (STBTextEditView* self, int pos)
 int STBTextEditView::getLength (STBTextEditView* self)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	return self->uString.size ();
+	return static_cast<int> (self->uString.size ());
 #else
 	return static_cast<int> (self->getText ().length ());
 #endif

@@ -6,6 +6,8 @@
 #include "../cdrawcontext.h"
 #include "../ccolor.h"
 #include "../cfont.h"
+#include "../platform/platformfactory.h"
+#include "../platform/iplatformstring.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -211,9 +213,9 @@ void StringListControlDrawer::drawRow (CDrawContext* context, CRect size, Row ro
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformString> StringListControlDrawer::getString (int32_t row) const
+PlatformStringPtr StringListControlDrawer::getString (int32_t row) const
 {
-	return impl->func ? impl->func (row) : IPlatformString::createWithUTF8String (toString (row));
+	return impl->func ? impl->func (row) : getPlatformFactory ().createString (toString (row));
 }
 
 //------------------------------------------------------------------------

@@ -1,58 +1,955 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<vstgui-ui-description version="1">
-	<template autosize="left right top bottom " background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CViewContainer" maxSize="800, 800" minSize="410, 350" mouse-enabled="true" name="view" opacity="1" origin="0, 0" size="410, 350" sub-controller="DisabledControlsController" transparent="true" wants-focus="false">
-		<view autosize="left right top " background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" size="410, 20" transparent="false" wants-focus="false"/>
-		<view autosize="left right bottom " background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 330" size="410, 20" transparent="false" wants-focus="false"/>
-		<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="~ BlackCColor" frame-width="2" gradient="Background" gradient-angle="0" gradient-style="linear" mouse-enabled="false" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="5" size="410, 350" transparent="false" wants-focus="false"/>
-		<view autosize-to-fit="false" boxfill-color="~ BlackCColor" boxframe-color="~ BlackCColor" checkmark-color="~ WhiteCColor" class="CCheckBox" control-tag="Activate" default-value="0.5" draw-crossbox="true" font="~ SystemFont" font-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="20, 10" round-rect-radius="2" size="100, 20" title="Active" tooltip="Checkbox" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view bitmap-offset="0, 0" class="CSlider" control-tag="Test" default-value="0.5" draw-back="true" draw-back-color="~ WhiteCColor" draw-frame="true" draw-frame-color="~ BlackCColor" draw-value="true" draw-value-color="~ RedCColor" draw-value-from-center="false" draw-value-inverted="true" frame-width="1" handle-offset="0, 0" max-value="1" min-value="0" mode="free click" mouse-enabled="true" opacity="1" orientation="vertical" origin="10, 50" reverse-orientation="true" size="20, 140" tooltip="Slider" transparent="false" wants-focus="true" wheel-inc-value="0.05" zoom-factor="10"/>
-		<view autosize="left right top " bitmap-offset="0, 0" class="CSlider" control-tag="Test" default-value="0.5" draw-back="true" draw-back-color="~ WhiteCColor" draw-frame="true" draw-frame-color="~ BlackCColor" draw-value="true" draw-value-color="~ RedCColor" draw-value-from-center="false" draw-value-inverted="false" frame-width="1" handle-offset="0, 0" max-value="1" min-value="0" mode="free click" mouse-enabled="true" opacity="1" orientation="horizontal" origin="40, 80" reverse-orientation="false" size="230, 20" tooltip="Slider" transparent="false" wants-focus="true" wheel-inc-value="0.1" zoom-factor="10"/>
-		<view autosize="right top " class="CTextButton" control-tag="ShowPopup" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="280, 80" round-radius="10" size="20, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="e" tooltip="Text Button" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="left right top " class="CSegmentButton" control-tag="StepTest" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 110" round-radius="3" segment-names="0,1,2,3,4" selection-mode="Single" size="260, 20" style="horizontal" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" tooltip="Segment Button" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="left right top " bitmap-offset="0, 0" class="CSlider" control-tag="StepTest" default-value="0.5" draw-back="true" draw-back-color="~ WhiteCColor" draw-frame="true" draw-frame-color="~ BlackCColor" draw-value="true" draw-value-color="~ RedCColor" draw-value-from-center="false" draw-value-inverted="false" frame-width="1" handle-offset="0, 0" max-value="1" min-value="0" mode="free click" mouse-enabled="true" opacity="1" orientation="horizontal" origin="40, 140" reverse-orientation="false" size="260, 20" tooltip="Slider" transparent="false" wants-focus="true" wheel-inc-value="0.21" zoom-factor="10"/>
-		<view autosize="left right top " class="CSegmentButton" control-tag="StringList" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 170" round-radius="3" segment-names="one,two,three,four,five" selection-mode="Single" size="260, 20" style="horizontal" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" tooltip="Segment Button" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view class="CTextButton" control-tag="ShowAlert" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="170, 210" round-radius="3" size="95, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Show Alert 1" tooltip="Text Button" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="right top " back-color="~ BlackCColor" background-offset="0, 0" class="CParamDisplay" control-tag="Test" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="310, 50" round-rect-radius="3" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" tooltip="Parameter Display" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view autosize="right top " back-color="TextShadow" background-offset="0, 0" class="CTextEdit" control-tag="Test" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="310, 80" round-rect-radius="3" secure-style="false" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="0.00" tooltip="Text Edit" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="right top " back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="StepTest" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="310, 110" round-rect-radius="6" secure-style="false" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="0" tooltip="Text Edit" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="right top " back-color="~ BlackCColor" background-offset="0, 0" class="COptionMenu" control-tag="StepTest" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="4" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="310, 140" round-rect-radius="6" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" tooltip="Option Menu" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="right top " back-color="~ BlackCColor" background-offset="0, 0" class="COptionMenu" control-tag="StringList" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="4" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="310, 170" round-rect-radius="6" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" tooltip="Option Menu" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="right top " back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="StringList" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="310, 200" round-rect-radius="6" secure-style="false" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="one" tooltip="Text Edit" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
-		<view auto-height="false" autosize="left right top bottom " back-color="~ WhiteCColor" background-offset="0, 0" class="CMultiLineTextLabel" default-value="0.5" font="EffectsEighty" font-antialias="true" font-color="~ BlackCColor" frame-color="~ WhiteCColor" frame-width="1" line-layout="wrap" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="135, 290" round-rect-radius="6" shadow-color="TextShadow" size="265, 50" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="left" text-inset="3, 3" text-rotation="0" text-shadow-offset="1, 1" title="This is a multine line text label! That wraps the lines if they are too long." tooltip="Mutliline Label" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view autosize="left top " class="CSegmentButton" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="-1" gradient="Vertical Segment Button" gradient-highlighted="Vertical Segment Button Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="135, 200" round-radius="3" segment-names="1,2,3,4" selection-mode="Multiple" size="20, 80" style="vertical" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" tooltip="Segment Button" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view class="CTextButton" control-tag="ShowAlert2" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="170, 235" round-radius="3" size="95, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Show Alert 2" tooltip="Text Button" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view class="CTextButton" control-tag="ShowAlert3" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="170, 260" round-radius="3" size="95, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Show Alert 3" tooltip="Text Button" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view angle-range="240" angle-start="150" autosize="right top " circle-drawing="false" class="CKnob" control-tag="Test" corona-color="~ RedCColor" corona-dash-dot="true" corona-dash-dot-lengths="1.1,0.1" corona-drawing="true" corona-from-center="false" corona-inset="12" corona-inverted="false" corona-line-cap-butt="true" corona-outline="true" corona-outline-width-add="2" default-value="0.5" handle-color="~ WhiteCColor" handle-line-width="8" handle-shadow-color="~ BlackCColor" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="330, 230" size="70, 70" skip-handle-drawing="true" tooltip="Knob" transparent="false" value-inset="5" wants-focus="true" wheel-inc-value="0.1" zoom-factor="1.5"/>
-		<view angle-range="270" angle-start="135" autosize="right top " circle-drawing="false" class="CKnob" control-tag="Test" corona-color="~ GreenCColor" corona-dash-dot="true" corona-dash-dot-lengths="1.26,0.1" corona-drawing="true" corona-from-center="false" corona-inset="12" corona-inverted="true" corona-line-cap-butt="true" corona-outline="true" corona-outline-width-add="2" default-value="0.5" handle-color="~ WhiteCColor" handle-line-width="8" handle-shadow-color="~ BlackCColor" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="265, 225" size="70, 70" skip-handle-drawing="true" tooltip="Knob" transparent="false" value-inset="3" wants-focus="true" wheel-inc-value="0.1" zoom-factor="1.5"/>
-		<view autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="MutableString" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" immediate-text-change="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 50" round-rect-radius="3" secure-style="false" shadow-color="~ RedCColor" size="260, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="This is a string value" tooltip="Text Edit" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="left right top " back-color="~ WhiteCColor" background-offset="0, 0" class="CParamDisplay" control-tag="MutableString" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="120, 10" round-rect-radius="3" shadow-color="~ RedCColor" size="280, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" tooltip="Parameter Display" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
-		<view back-color="~ WhiteCColor" back-color-selected="TextShadow" class="CStringListControl" control-tag="Weekdays" default-value="0.5" font="~ NormalFont" font-color="~ BlackCColor" font-color-selected="~ BlackCColor" hover-color="#00000064" line-color="~ BlackCColor" line-width="-1" max-value="7" min-value="0" mouse-enabled="true" opacity="1" origin="15, 200" row-height="16" size="110, 144" style-hover="false" sub-controller="WeekdaysController" text-alignment="center" text-inset="5" tooltip="String List Control" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-	</template>
-	<control-tags>
-		<control-tag name="Activate" tag="0"/>
-		<control-tag name="MutableString" tag="8"/>
-		<control-tag name="ShowAlert" tag="3"/>
-		<control-tag name="ShowAlert2" tag="4"/>
-		<control-tag name="ShowAlert3" tag="5"/>
-		<control-tag name="ShowPopup" tag="7"/>
-		<control-tag name="StepTest" tag="2"/>
-		<control-tag name="StringList" tag="6"/>
-		<control-tag name="Test" tag="1"/>
-		<control-tag name="Weekdays" tag="9"/>
-	</control-tags>
-	<custom>
-		<attributes Size="5, 5" name="UIGridController"/>
-		<attributes SelectedTemplate="view" name="UITemplateController"/>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1158, 1005" SplitViewSize_0_0="0.7436159346271705716802102870133239775896" SplitViewSize_0_1="0.2359550561797752743498080008066608570516" SplitViewSize_1_0="0.5842696629213482983900007639022078365088" SplitViewSize_1_1="0.411644535240040854162657524284441024065" SplitViewSize_2_0="0.6424870466321243034357735268713440746069" SplitViewSize_2_1="0.3531951640759931065893795221199980005622" TabSwitchValue="6" Version="1" name="UIEditController"/>
-		<attributes name="UIAttributesController"/>
-		<attributes SelectedRow="24" name="UIViewCreatorDataSource"/>
-		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"/>
-		<attributes SelectedRow="-1" name="UITagsDataSource"/>
-		<attributes SelectedRow="7" name="UIGradientsDataSource"/>
-		<attributes SelectedRow="0" name="UIColorsDataSource"/>
-		<attributes color="Focus" enabled="true" name="FocusDrawing" width="1.5"/>
-		<attributes SelectedRow="-1" name="UIBitmapsDataSource"/>
-		<attributes SelectedRow="1" name="UIFontsDataSource"/>
-	</custom>
-	<variables/>
-</vstgui-ui-description>
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"variables": {},
+		"control-tags": {
+			"Activate": "0",
+			"MutableString": "8",
+			"ShowAlert": "3",
+			"ShowAlert2": "4",
+			"ShowAlert3": "5",
+			"ShowPopup": "7",
+			"StepTest": "2",
+			"StringList": "6",
+			"Test": "1",
+			"Weekdays": "9"
+		},
+		"custom": {
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
+				"Size": "5, 5"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "view"
+			},
+			"UIEditController": {
+				"EditViewScale": "1.5",
+				"EditorSize": "0, 0, 1158, 1005",
+				"SplitViewSize_0_0": "0.7436159346271705716802102870133239775896",
+				"SplitViewSize_0_1": "0.2359550561797752743498080008066608570516",
+				"SplitViewSize_1_0": "0.5842696629213482983900007639022078365088",
+				"SplitViewSize_1_1": "0.411644535240040854162657524284441024065",
+				"SplitViewSize_2_0": "0.6424870466321243034357735268713440746069",
+				"SplitViewSize_2_1": "0.3531951640759931065893795221199980005622",
+				"TabSwitchValue": "2",
+				"Version": "1"
+			},
+			"UIAttributesController": {},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "24"
+			},
+			"UIDescFilePath": {
+				"path": "/media/psf/Source/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"
+			},
+			"UITagsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIGradientsDataSource": {
+				"SelectedRow": "7"
+			},
+			"UIColorsDataSource": {
+				"SelectedRow": "2"
+			},
+			"FocusDrawing": {
+				"color": "Focus",
+				"enabled": "true",
+				"width": "1.5"
+			},
+			"UIBitmapsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIFontsDataSource": {
+				"SelectedRow": "1"
+			}
+		},
+		"templates": {
+			"view": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ BlackCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"maxSize": "800, 800",
+					"minSize": "410, 350",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "410, 350",
+					"sub-controller": "DisabledControlsController",
+					"transparent": "true",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CViewContainer": {
+						"attributes": {
+							"autosize": "left right top ",
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "0, 0",
+							"size": "410, 20",
+							"transparent": "false",
+							"wants-focus": "false"
+						}
+					},
+					"CViewContainer": {
+						"attributes": {
+							"autosize": "left right bottom ",
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "0, 330",
+							"size": "410, 20",
+							"transparent": "false",
+							"wants-focus": "false"
+						}
+					},
+					"CGradientView": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"class": "CGradientView",
+							"draw-antialiased": "true",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "2",
+							"gradient": "Background",
+							"gradient-angle": "0",
+							"gradient-style": "linear",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "0, 0",
+							"radial-center": "0.5, 0.5",
+							"radial-radius": "1",
+							"round-rect-radius": "5",
+							"size": "410, 350",
+							"transparent": "false",
+							"wants-focus": "false"
+						}
+					},
+					"CCheckBox": {
+						"attributes": {
+							"autosize-to-fit": "false",
+							"boxfill-color": "~ BlackCColor",
+							"boxframe-color": "~ BlackCColor",
+							"checkmark-color": "~ WhiteCColor",
+							"class": "CCheckBox",
+							"control-tag": "Activate",
+							"default-value": "0.5",
+							"draw-crossbox": "true",
+							"font": "~ SystemFont",
+							"font-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "20, 10",
+							"round-rect-radius": "2",
+							"size": "100, 20",
+							"title": "Active",
+							"tooltip": "Checkbox",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CSlider": {
+						"attributes": {
+							"bitmap-offset": "0, 0",
+							"class": "CSlider",
+							"control-tag": "Test",
+							"default-value": "0.5",
+							"draw-back": "true",
+							"draw-back-color": "~ WhiteCColor",
+							"draw-frame": "true",
+							"draw-frame-color": "~ BlackCColor",
+							"draw-value": "true",
+							"draw-value-color": "~ RedCColor",
+							"draw-value-from-center": "false",
+							"draw-value-inverted": "true",
+							"frame-width": "1",
+							"handle-offset": "0, 0",
+							"max-value": "1",
+							"min-value": "0",
+							"mode": "free click",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "10, 50",
+							"reverse-orientation": "true",
+							"size": "20, 140",
+							"tooltip": "Slider",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.05",
+							"zoom-factor": "10"
+						}
+					},
+					"CSlider": {
+						"attributes": {
+							"autosize": "left right top ",
+							"bitmap-offset": "0, 0",
+							"class": "CSlider",
+							"control-tag": "Test",
+							"default-value": "0.5",
+							"draw-back": "true",
+							"draw-back-color": "~ WhiteCColor",
+							"draw-frame": "true",
+							"draw-frame-color": "~ BlackCColor",
+							"draw-value": "true",
+							"draw-value-color": "~ RedCColor",
+							"draw-value-from-center": "false",
+							"draw-value-inverted": "false",
+							"frame-width": "1",
+							"handle-offset": "0, 0",
+							"max-value": "1",
+							"min-value": "0",
+							"mode": "free click",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "horizontal",
+							"origin": "40, 80",
+							"reverse-orientation": "false",
+							"size": "230, 20",
+							"tooltip": "Slider",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "10"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"autosize": "right top ",
+							"class": "CTextButton",
+							"control-tag": "ShowPopup",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "280, 80",
+							"round-radius": "10",
+							"size": "20, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "e",
+							"tooltip": "Text Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CSegmentButton": {
+						"attributes": {
+							"autosize": "left right top ",
+							"class": "CSegmentButton",
+							"control-tag": "StepTest",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-text-margin": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "40, 110",
+							"round-radius": "3",
+							"segment-names": "0,1,2,3,4",
+							"selection-mode": "Single",
+							"size": "260, 20",
+							"style": "horizontal",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"tooltip": "Segment Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CSlider": {
+						"attributes": {
+							"autosize": "left right top ",
+							"bitmap-offset": "0, 0",
+							"class": "CSlider",
+							"control-tag": "StepTest",
+							"default-value": "0.5",
+							"draw-back": "true",
+							"draw-back-color": "~ WhiteCColor",
+							"draw-frame": "true",
+							"draw-frame-color": "~ BlackCColor",
+							"draw-value": "true",
+							"draw-value-color": "~ RedCColor",
+							"draw-value-from-center": "false",
+							"draw-value-inverted": "false",
+							"frame-width": "1",
+							"handle-offset": "0, 0",
+							"max-value": "1",
+							"min-value": "0",
+							"mode": "free click",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "horizontal",
+							"origin": "40, 140",
+							"reverse-orientation": "false",
+							"size": "260, 20",
+							"tooltip": "Slider",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.21",
+							"zoom-factor": "10"
+						}
+					},
+					"CSegmentButton": {
+						"attributes": {
+							"autosize": "left right top ",
+							"class": "CSegmentButton",
+							"control-tag": "StringList",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-text-margin": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "40, 170",
+							"round-radius": "3",
+							"segment-names": "one,two,three,four,five",
+							"selection-mode": "Single",
+							"size": "260, 20",
+							"style": "horizontal",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"tooltip": "Segment Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "ShowAlert",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "170, 210",
+							"round-radius": "3",
+							"size": "95, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Show Alert 1",
+							"tooltip": "Text Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CParamDisplay": {
+						"attributes": {
+							"autosize": "right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CParamDisplay",
+							"control-tag": "Test",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "310, 50",
+							"round-rect-radius": "3",
+							"shadow-color": "~ RedCColor",
+							"size": "90, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"tooltip": "Parameter Display",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextEdit": {
+						"attributes": {
+							"autosize": "right top ",
+							"back-color": "TextShadow",
+							"background-offset": "0, 0",
+							"class": "CTextEdit",
+							"control-tag": "Test",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"immediate-text-change": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "310, 80",
+							"round-rect-radius": "3",
+							"secure-style": "false",
+							"shadow-color": "~ RedCColor",
+							"size": "90, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-doubleclick": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "0.00",
+							"tooltip": "Text Edit",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextEdit": {
+						"attributes": {
+							"autosize": "right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextEdit",
+							"control-tag": "StepTest",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"immediate-text-change": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "310, 110",
+							"round-rect-radius": "6",
+							"secure-style": "false",
+							"shadow-color": "~ RedCColor",
+							"size": "90, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-doubleclick": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "0",
+							"tooltip": "Text Edit",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"COptionMenu": {
+						"attributes": {
+							"autosize": "right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "COptionMenu",
+							"control-tag": "StepTest",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"max-value": "4",
+							"menu-check-style": "true",
+							"menu-popup-style": "true",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "310, 140",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "90, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"tooltip": "Option Menu",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"COptionMenu": {
+						"attributes": {
+							"autosize": "right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "COptionMenu",
+							"control-tag": "StringList",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"max-value": "4",
+							"menu-check-style": "true",
+							"menu-popup-style": "true",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "310, 170",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "90, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"tooltip": "Option Menu",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextEdit": {
+						"attributes": {
+							"autosize": "right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextEdit",
+							"control-tag": "StringList",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"immediate-text-change": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "310, 200",
+							"round-rect-radius": "6",
+							"secure-style": "false",
+							"shadow-color": "~ RedCColor",
+							"size": "90, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-doubleclick": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "one",
+							"tooltip": "Text Edit",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CMultiLineTextLabel": {
+						"attributes": {
+							"auto-height": "false",
+							"autosize": "left right top bottom ",
+							"back-color": "~ WhiteCColor",
+							"background-offset": "0, 0",
+							"class": "CMultiLineTextLabel",
+							"default-value": "0.5",
+							"font": "EffectsEighty",
+							"font-antialias": "true",
+							"font-color": "~ BlackCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"line-layout": "wrap",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "135, 290",
+							"round-rect-radius": "6",
+							"shadow-color": "TextShadow",
+							"size": "265, 50",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "left",
+							"text-inset": "3, 3",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "This is a multine line text label! That wraps the lines if they are too long.",
+							"tooltip": "Mutliline Label",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CSegmentButton": {
+						"attributes": {
+							"autosize": "left top ",
+							"class": "CSegmentButton",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "-1",
+							"gradient": "Vertical Segment Button",
+							"gradient-highlighted": "Vertical Segment Button Highlighted",
+							"icon-text-margin": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "135, 200",
+							"round-radius": "3",
+							"segment-names": "1,2,3,4",
+							"selection-mode": "Multiple",
+							"size": "20, 80",
+							"style": "vertical",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"tooltip": "Segment Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "ShowAlert2",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "170, 235",
+							"round-radius": "3",
+							"size": "95, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Show Alert 2",
+							"tooltip": "Text Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "ShowAlert3",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "170, 260",
+							"round-radius": "3",
+							"size": "95, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Show Alert 3",
+							"tooltip": "Text Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CKnob": {
+						"attributes": {
+							"angle-range": "240",
+							"angle-start": "150",
+							"autosize": "right top ",
+							"circle-drawing": "false",
+							"class": "CKnob",
+							"control-tag": "Test",
+							"corona-color": "~ RedCColor",
+							"corona-dash-dot": "true",
+							"corona-dash-dot-lengths": "1.1,0.1",
+							"corona-drawing": "true",
+							"corona-from-center": "false",
+							"corona-inset": "12",
+							"corona-inverted": "false",
+							"corona-line-cap-butt": "true",
+							"corona-outline": "true",
+							"corona-outline-width-add": "2",
+							"default-value": "0.5",
+							"handle-color": "~ WhiteCColor",
+							"handle-line-width": "8",
+							"handle-shadow-color": "~ BlackCColor",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "330, 230",
+							"size": "70, 70",
+							"skip-handle-drawing": "true",
+							"tooltip": "Knob",
+							"transparent": "false",
+							"value-inset": "5",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "1.5"
+						}
+					},
+					"CKnob": {
+						"attributes": {
+							"angle-range": "270",
+							"angle-start": "135",
+							"autosize": "right top ",
+							"circle-drawing": "false",
+							"class": "CKnob",
+							"control-tag": "Test",
+							"corona-color": "~ GreenCColor",
+							"corona-dash-dot": "true",
+							"corona-dash-dot-lengths": "1.26,0.1",
+							"corona-drawing": "true",
+							"corona-from-center": "false",
+							"corona-inset": "12",
+							"corona-inverted": "true",
+							"corona-line-cap-butt": "true",
+							"corona-outline": "true",
+							"corona-outline-width-add": "2",
+							"default-value": "0.5",
+							"handle-color": "~ WhiteCColor",
+							"handle-line-width": "8",
+							"handle-shadow-color": "~ BlackCColor",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "265, 225",
+							"size": "70, 70",
+							"skip-handle-drawing": "true",
+							"tooltip": "Knob",
+							"transparent": "false",
+							"value-inset": "3",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "1.5"
+						}
+					},
+					"CTextEdit": {
+						"attributes": {
+							"autosize": "left right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextEdit",
+							"control-tag": "MutableString",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"immediate-text-change": "true",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "40, 50",
+							"round-rect-radius": "3",
+							"secure-style": "false",
+							"shadow-color": "~ RedCColor",
+							"size": "260, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-doubleclick": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "This is a string value",
+							"tooltip": "Text Edit",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CParamDisplay": {
+						"attributes": {
+							"autosize": "left right top ",
+							"back-color": "~ WhiteCColor",
+							"background-offset": "0, 0",
+							"class": "CParamDisplay",
+							"control-tag": "MutableString",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ BlackCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "-1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "120, 10",
+							"round-rect-radius": "3",
+							"shadow-color": "~ RedCColor",
+							"size": "280, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"tooltip": "Parameter Display",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CStringListControl": {
+						"attributes": {
+							"back-color": "~ WhiteCColor",
+							"back-color-selected": "TextShadow",
+							"class": "CStringListControl",
+							"control-tag": "Weekdays",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-color": "~ BlackCColor",
+							"font-color-selected": "~ BlackCColor",
+							"hover-color": "Hover",
+							"line-color": "~ BlackCColor",
+							"line-width": "-1",
+							"max-value": "7",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "15, 200",
+							"row-height": "16",
+							"size": "110, 144",
+							"style-hover": "true",
+							"sub-controller": "WeekdaysController",
+							"text-alignment": "center",
+							"text-inset": "5",
+							"tooltip": "String List Control",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			}
+		}
+	}
+}

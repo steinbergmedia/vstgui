@@ -4,6 +4,7 @@
 
 #include "vstguidebug.h"
 #include <cstdarg>
+#include <exception>
 
 #if DEBUG
 
@@ -18,10 +19,15 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
+TimeWatch::TimeWatch (UTF8StringPtr inName, bool startNow)
 : startTime (0)
 {
-	this->name = name ? name : "";
+	if (inName)
+	{
+		auto len = std::strlen (inName);
+		name = std::unique_ptr<char[]> (new char[len + 1]);
+		std::strcpy (name.get (), inName);
+	}
 	if (startNow)
 		start ();
 }
@@ -44,7 +50,10 @@ void TimeWatch::stop ()
 	if (startTime > 0)
 	{
 		clock_t stopTime = std::clock ();
-		DebugPrint ("%s took %d\n", name.data (), stopTime - startTime);
+		if (name)
+			DebugPrint ("%s took %d\n", name.get (), stopTime - startTime);
+		else
+			DebugPrint ("it took %d\n", stopTime - startTime);
 		startTime = 0;
 	}
 }
@@ -52,18 +61,18 @@ void TimeWatch::stop ()
 //-----------------------------------------------------------------------------
 void DebugPrint (const char *format, ...)
 {
-	char string[300];
+	static constexpr auto BufferSize = 1024u;
+	char string[BufferSize];
 	std::va_list marker;
 	va_start (marker, format);
-	std::vsprintf (string, format, marker);
-	if (string[0] == 0)
+	if (std::vsnprintf (string, BufferSize, format, marker) == 0)
 		std::strcpy (string, "Empty string\n");
-	#if WINDOWS
+#if WINDOWS
 	UTF8StringHelper debugString (string);
 	OutputDebugString (debugString);
-	#else
+#else
 	std::fprintf (stderr, "%s", string);
-	#endif
+#endif
 }
 
 } // VSTGUI
@@ -72,10 +81,10 @@ void DebugPrint (const char *format, ...)
 
 namespace VSTGUI {
 
-static AssertionHandler assertionHandler {};
+static AssertionHandler assertionHandler = nullptr;
 
 //------------------------------------------------------------------------
-void setAssertionHandler (const AssertionHandler& handler)
+void setAssertionHandler (AssertionHandler handler)
 {
 	assertionHandler = handler;
 }
@@ -99,7 +108,7 @@ void doAssert (const char* filename, const char* line, const char* desc) noexcep
 			assertionHandler (filename, line, desc);
 		} catch (...)
 		{
-		 std::rethrow_exception (std::current_exception());
+			std::rethrow_exception (std::current_exception ());
 		}
 	}
 #if DEBUG

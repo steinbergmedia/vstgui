@@ -33,13 +33,20 @@ using Configuration = std::vector<std::pair<ConfigKey, ConfigValue>>;
  */
 enum class ConfigKey : uint64_t
 {
-	/** Instead of plain xml files, use compressed ui description files.
+	/** Instead of plain text files, use compressed ui description files.
 	 *
-	 *	This option expects an integer ConfigValue where 0 means that plain xml files are used and
+	 *	This option expects an integer ConfigValue where 0 means that plain text files are used and
 	 *	any other value means that the ui description file is compressed. In this case for
-	 *	development purposes an uncompressed xml file is also written.
+	 *	development purposes an uncompressed text file is also written.
 	 */
 	UseCompressedUIDescriptionFiles,
+	/** Show application commands in a window context menu
+	 *
+	 *	This option expects an integer ConfigValue where 0 means that the commands are not shown in
+	 *	the context menu of a window which is shown on a right mouse click, on any other value the
+	 *	commands are shown. If this option is not specified the commands are not shown.
+	 */
+	ShowCommandsInContextMenu,
 };
 
 //------------------------------------------------------------------------

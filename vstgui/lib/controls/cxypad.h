@@ -5,6 +5,7 @@
 #pragma once
 
 #include "cparamdisplay.h"
+#include "../cbitmap.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -18,6 +19,9 @@ public:
 	void setStopTrackingOnMouseExit (bool state) { stopTrackingOnMouseExit = state; }
 	bool getStopTrackingOnMouseExit () const { return stopTrackingOnMouseExit; }
 
+	void setHandleBitmap (CBitmap* bitmap);
+	CBitmap* getHandleBitmap () const;
+
 	void draw (CDrawContext* context) override;
 	void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr) override;
 
@@ -26,6 +30,7 @@ public:
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
 	static float calculateValue (float x, float y)
 	{
@@ -50,6 +55,7 @@ protected:
 	CPoint mouseChangeStartPoint;
 	CPoint lastMouseChangePoint;
 	bool stopTrackingOnMouseExit;
+	SharedPointer<CBitmap> handle;
 };
 
 } // VSTGUI

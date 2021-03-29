@@ -6,6 +6,7 @@
 #include "../platform/iplatformfont.h"
 #include "../cdrawmethods.h"
 #include "../cdrawcontext.h"
+#include <sstream>
 
 namespace VSTGUI {
 
@@ -215,6 +216,15 @@ void CMultiLineTextLabel::setAutoHeight (bool state)
 }
 
 //------------------------------------------------------------------------
+void CMultiLineTextLabel::setVerticalCentered (bool state)
+{
+	if (verticalCentered == state)
+		return;
+	verticalCentered = state;
+	lines.clear ();
+}
+
+//------------------------------------------------------------------------
 CCoord CMultiLineTextLabel::getMaxLineWidth ()
 {
 	if (lines.empty () && getText ().empty () == false)
@@ -244,7 +254,7 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 	pContext->setFont (getFont ());
 	
 	newClip.offsetInverse (getViewSize().getTopLeft ());
-	
+
 	CDrawContext::Transform t (*pContext, CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
 
 	if (style & kShadowText)
@@ -454,6 +464,16 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 			          std::move (element.first)});
 		}
 		y += lineHeight;
+	}
+	if (getVerticalCentered () && !lines.empty ())
+	{
+		auto maxHeight = lines.back ().r.bottom;
+		auto offset = ((getHeight () - textInset.y) - maxHeight) / 2.;
+		if (offset > 0)
+		{
+			for (auto& l : lines)
+				l.r.offset (0, offset);
+		}
 	}
 }
 

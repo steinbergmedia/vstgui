@@ -226,6 +226,12 @@ UIAttributes::UIAttributes (UTF8StringPtr* attributes)
 {
 	if (attributes)
 	{
+		size_t count = 0;
+		while (attributes[count] != nullptr && attributes[count+1] != nullptr)
+			count += 2;
+		if (count)
+			UIAttributesMap::reserve (count / 2);
+		
 		int32_t i = 0;
 		while (attributes[i] != nullptr && attributes[i+1] != nullptr)
 		{
@@ -233,6 +239,12 @@ UIAttributes::UIAttributes (UTF8StringPtr* attributes)
 			i += 2;
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+UIAttributes::UIAttributes (size_t reserve)
+{
+	UIAttributesMap::reserve (reserve);
 }
 
 //-----------------------------------------------------------------------------

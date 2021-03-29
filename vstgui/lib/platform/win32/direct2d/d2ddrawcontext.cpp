@@ -7,6 +7,7 @@
 #if WINDOWS
 
 #include "../win32support.h"
+#include "../win32factory.h"
 #include "../../../cgradient.h"
 #include "d2dbitmap.h"
 #include "d2dgraphicspath.h"
@@ -15,22 +16,11 @@
 
 namespace VSTGUI {
 
-static D2D1_RENDER_TARGET_TYPE gRenderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
-
 //-----------------------------------------------------------------------------
 inline D2D1::ColorF toColorF (CColor c, float alpha)
 {
 	return D2D1::ColorF (c.normRed<float> (), c.normGreen<float> (), c.normBlue<float> (),
 	                     c.normAlpha<float> () * alpha);
-}
-
-//-----------------------------------------------------------------------------
-void useD2DHardwareRenderer (bool state)
-{
-	if (state)
-		gRenderTargetType = D2D1_RENDER_TARGET_TYPE_HARDWARE;
-	else
-		gRenderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 }
 
 //-----------------------------------------------------------------------------
@@ -135,13 +125,19 @@ void D2DDrawContext::createRenderTarget ()
 {
 	if (window)
 	{
+		D2D1_RENDER_TARGET_TYPE renderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+		if (auto pf = getPlatformFactory ().asWin32Factory ())
+		{
+			renderTargetType = pf->useD2DHardwareRenderer () ? D2D1_RENDER_TARGET_TYPE_HARDWARE :
+			                                                   D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+		}
 		RECT rc;
 		GetClientRect (window, &rc);
 
 		D2D1_SIZE_U size = D2D1::SizeU (static_cast<UINT32> (rc.right - rc.left), static_cast<UINT32> (rc.bottom - rc.top));
 		ID2D1HwndRenderTarget* hwndRenderTarget = nullptr;
 		D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
-		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (gRenderTargetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
+		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (renderTargetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
 		if (SUCCEEDED (hr))
 		{
 			renderTarget = hwndRenderTarget;
@@ -263,7 +259,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 	if (ac.isEmpty ())
 		return;
 
-	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == nullptr)
 		return;
 
@@ -282,7 +278,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const CGradient& d2dGradient) const
 {
 	ID2D1GradientStopCollection* collection = nullptr;
-	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient.getColorStops ().size ()];
+	auto* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient.getColorStops ().size ()];
 	uint32_t index = 0;
 	for (CGradient::ColorStopMap::const_iterator it = d2dGradient.getColorStops ().begin (); it != d2dGradient.getColorStops ().end (); ++it, ++index)
 	{
@@ -304,7 +300,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 	if (ac.isEmpty ())
 		return;
 	
-	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == nullptr)
 		return;
 
@@ -340,7 +336,7 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 	if (ac.isEmpty ())
 		return;
 	
-	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == nullptr)
 		return;
 
@@ -359,25 +355,28 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 			geometry = path;
 			geometry->AddRef ();
 		}
-		ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient);
-		if (collection)
+		if (geometry)
 		{
-			// brush properties
-			ID2D1RadialGradientBrush* brush = nullptr;
-			D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES properties;
-			properties.center = makeD2DPoint (center);
-			properties.gradientOriginOffset = makeD2DPoint (originOffset);
-			properties.radiusX = (FLOAT)radius;
-			properties.radiusY = (FLOAT)radius;
-
-			if (SUCCEEDED (getRenderTarget ()->CreateRadialGradientBrush (properties, collection, &brush)))
+			if (ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient))
 			{
-				getRenderTarget ()->FillGeometry (geometry, brush);
-				brush->Release ();
+				// brush properties
+				ID2D1RadialGradientBrush* brush = nullptr;
+				D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES properties;
+				properties.center = makeD2DPoint (center);
+				properties.gradientOriginOffset = makeD2DPoint (originOffset);
+				properties.radiusX = (FLOAT)radius;
+				properties.radiusY = (FLOAT)radius;
+
+				if (SUCCEEDED (getRenderTarget ()->CreateRadialGradientBrush (properties,
+																			  collection, &brush)))
+				{
+					getRenderTarget ()->FillGeometry (geometry, brush);
+					brush->Release ();
+				}
+				collection->Release ();
 			}
-			collection->Release ();
+			geometry->Release ();
 		}
-		geometry->Release ();
 		path->Release ();
 	}
 }
@@ -492,7 +491,7 @@ void D2DDrawContext::drawLine (const LinePair& line)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawLines (const LineList& lines)
 {
-	if (lines.size () == 0 || renderTarget == nullptr)
+	if (lines.empty () || renderTarget == nullptr)
 		return;
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
@@ -521,7 +520,7 @@ void D2DDrawContext::drawLines (const LineList& lines)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle)
 {
-	if (renderTarget == nullptr || polygonPointList.size () == 0)
+	if (renderTarget == nullptr || polygonPointList.empty ())
 		return;
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
@@ -818,9 +817,9 @@ void D2DDrawContext::restoreGlobalState ()
 	COffscreenContext::restoreGlobalState ();
 	if (prevAlpha != getCurrentState ().globalAlpha)
 	{
-		float prevAlpha = getCurrentState ().globalAlpha;
+		float _prevAlpha = getCurrentState ().globalAlpha;
 		getCurrentState ().globalAlpha = -1.f;
-		setGlobalAlpha (prevAlpha);
+		setGlobalAlpha (_prevAlpha);
 	}
 	else
 	{

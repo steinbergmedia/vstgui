@@ -1264,7 +1264,8 @@ void UIEditView::onDoubleClickEditing (CView* view)
 	auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
 	vstgui_assert (factory);
 	std::string attrValue;
-	if (!factory->getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue, description))
+	if (!factory ||
+	    !factory->getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue, description))
 		return;
 
 	auto frame = getFrame ();

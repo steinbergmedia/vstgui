@@ -102,6 +102,13 @@ public:
 	/** returns true if this view resizes itself according to the contents */
 	bool getAutoHeight () const { return autoHeight; }
 
+	/** draw the lines vertical centered
+	 *	@param state on or off
+	 */
+	void setVerticalCentered (bool state);
+	/** returns true if the view draws the lines vertically centered */
+	bool getVerticalCentered () const { return verticalCentered; }
+
 	/** return the maximum line width of all lines */
 	CCoord getMaxLineWidth ();
 
@@ -119,6 +126,7 @@ private:
 	void recalculateHeight ();
 	
 	bool autoHeight {false};
+	bool verticalCentered {false};
 	LineLayout lineLayout {LineLayout::clip};
 
 	struct Line

@@ -638,18 +638,22 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 	{
 		if (auto context = beginCGContext (false, true))
 		{
-			CGLayerRef layer = cgBitmap->getCGLayer ();
-			if (layer == nullptr)
+			CGLayerRef layer = nullptr;
+			if (scaleFactor == 1.)
 			{
-				auto it = bitmapDrawCount.find (cgBitmap);
-				if (it == bitmapDrawCount.end ())
+				layer = cgBitmap->getCGLayer ();
+				if (layer == nullptr)
 				{
-					bitmapDrawCount.emplace (cgBitmap, 1);
-				}
-				else
-				{
-					it->second++;
-					layer = cgBitmap->createCGLayer (context);
+					auto it = bitmapDrawCount.find (cgBitmap);
+					if (it == bitmapDrawCount.end ())
+					{
+						bitmapDrawCount.emplace (cgBitmap, 1);
+					}
+					else
+					{
+						it->second++;
+						layer = cgBitmap->createCGLayer (context);
+					}
 				}
 			}
 

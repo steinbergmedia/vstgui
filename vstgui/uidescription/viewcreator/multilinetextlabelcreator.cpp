@@ -75,6 +75,9 @@ bool MultiLineTextLabelCreator::apply (CView* view, const UIAttributes& attribut
 	bool autoHeight;
 	if (attributes.getBooleanAttribute (kAttrAutoHeight, autoHeight))
 		label->setAutoHeight (autoHeight);
+	bool verticalCentered;
+	if (attributes.getBooleanAttribute (kAttrVerticalCentered, verticalCentered))
+		label->setVerticalCentered (verticalCentered);
 
 	return true;
 }
@@ -84,6 +87,7 @@ bool MultiLineTextLabelCreator::getAttributeNames (StringList& attributeNames) c
 {
 	attributeNames.emplace_back (kAttrLineLayout);
 	attributeNames.emplace_back (kAttrAutoHeight);
+	attributeNames.emplace_back (kAttrVerticalCentered);
 	return true;
 }
 
@@ -93,6 +97,8 @@ auto MultiLineTextLabelCreator::getAttributeType (const string& attributeName) c
 	if (attributeName == kAttrLineLayout)
 		return kListType;
 	if (attributeName == kAttrAutoHeight)
+		return kBooleanType;
+	if (attributeName == kAttrVerticalCentered)
 		return kBooleanType;
 	return kUnknownType;
 }
@@ -113,6 +119,11 @@ bool MultiLineTextLabelCreator::getAttributeValue (CView* view, const string& at
 	else if (attributeName == kAttrAutoHeight)
 	{
 		stringValue = label->getAutoHeight () ? strTrue : strFalse;
+		return true;
+	}
+	else if (attributeName == kAttrVerticalCentered)
+	{
+		stringValue = label->getVerticalCentered () ? strTrue : strFalse;
 		return true;
 	}
 

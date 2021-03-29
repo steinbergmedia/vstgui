@@ -1,54 +1,125 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<vstgui-ui-description version="1">
-	<fonts>
-		<font font-name="EffectsEighty" name="EffectsEighty" size="32"/>
-		<font font-name="Arial" name="View Label" size="8"/>
-	</fonts>
-	<colors>
-		<color name="Black Alpha 140" rgba="#0000008c"/>
-		<color name="Focus" rgba="#3bafffff"/>
-		<color name="TextShadow" rgba="#0000002f"/>
-	</colors>
-	<custom>
-		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"/>
-	</custom>
-	<gradients>
-		<gradient name="About Background">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#b3b3b3ff" start="0.5"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="Background">
-			<color-stop rgba="#464646ff" start="0"/>
-			<color-stop rgba="#393939ff" start="1"/>
-		</gradient>
-		<gradient name="Default TextButton Gradient">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="Default TextButton Gradient Highlighted">
-			<color-stop rgba="#b4b4b4ff" start="0"/>
-			<color-stop rgba="#646464ff" start="1"/>
-		</gradient>
-		<gradient name="Focused TextButton Gradient">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#9b9b9bff" start="0.660000026226043701171875"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="New">
-			<color-stop rgba="#a0a0a0d2" start="0"/>
-			<color-stop rgba="#b9b9b9d2" start="0.9807874177631579204472700439509935677052"/>
-		</gradient>
-		<gradient name="Vertical Segment Button">
-			<color-stop rgba="#c7c7c7ff" start="0"/>
-			<color-stop rgba="#ffffffff" start="0.4920847039473684181309920404601143673062"/>
-			<color-stop rgba="#c7c7c7ff" start="1"/>
-		</gradient>
-		<gradient name="Vertical Segment Button Highlighted">
-			<color-stop rgba="#141414ff" start="0"/>
-			<color-stop rgba="#4d4d4dff" start="0.5116673519736841813099204046011436730623"/>
-			<color-stop rgba="#141414ff" start="1"/>
-		</gradient>
-	</gradients>
-	<bitmaps/>
-</vstgui-ui-description>
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"bitmaps": {},
+		"fonts": {
+			"EffectsEighty": {
+				"font-name": "EffectsEighty",
+				"size": "32"
+			},
+			"View Label": {
+				"font-name": "Arial",
+				"size": "8"
+			}
+		},
+		"colors": {
+			"Black Alpha 140": "#0000008c",
+			"Focus": "#3bafffff",
+			"Hover": "#00000014",
+			"TextShadow": "#0000002f"
+		},
+		"gradients": {
+			"About Background": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b3b3b3ff",
+					"start": "0.5"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Background": [
+				{
+					"rgba": "#464646ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#393939ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient Highlighted": [
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#646464ff",
+					"start": "1"
+				}
+			],
+			"Focused TextButton Gradient": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#9b9b9bff",
+					"start": "0.660000026226043701171875"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"New": [
+				{
+					"rgba": "#a0a0a0d2",
+					"start": "0"
+				},
+				{
+					"rgba": "#b9b9b9d2",
+					"start": "0.9807874177631579204472700439509935677052"
+				}
+			],
+			"Vertical Segment Button": [
+				{
+					"rgba": "#c7c7c7ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#ffffffff",
+					"start": "0.4920847039473684181309920404601143673062"
+				},
+				{
+					"rgba": "#c7c7c7ff",
+					"start": "1"
+				}
+			],
+			"Vertical Segment Button Highlighted": [
+				{
+					"rgba": "#141414ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#4d4d4dff",
+					"start": "0.5116673519736841813099204046011436730623"
+				},
+				{
+					"rgba": "#141414ff",
+					"start": "1"
+				}
+			]
+		},
+		"custom": {
+			"UIDescFilePath": {
+				"path": "/media/psf/Source/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"
+			}
+		}
+	}
+}

@@ -7,11 +7,26 @@
 #include "../cframe.h"
 #include "../cgraphicspath.h"
 #include "../cvstguitimer.h"
+#include "../dispatchlist.h"
 #include <cassert>
 
 #define VSTGUI_CCONTROL_LOG_EDITING 0 //DEBUG
 
 namespace VSTGUI {
+
+//------------------------------------------------------------------------
+struct CControl::Impl
+{
+	using SubListenerDispatcher = DispatchList<IControlListener*>;
+
+	SubListenerDispatcher subListeners;
+	float oldValue {1};
+	float defaultValue {0.5};
+	float vmin {0};
+	float vmax {1.f};
+	float wheelInc {0.1f};
+	int32_t editing {0};
+};
 
 //------------------------------------------------------------------------
 // CControl
@@ -23,14 +38,9 @@ CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag, 
 : CView (size)
 , listener (listener)
 , tag (tag)
-, oldValue (1)
-, defaultValue (0.5f)
 , value (0)
-, vmin (0)
-, vmax (1.f)
-, wheelInc (0.1f)
-, editing (0)
 {
+	impl = std::unique_ptr<Impl> (new Impl);
 	setTransparency (false);
 	setMouseEnabled (true);
 	setBackground (pBackground);
@@ -41,27 +51,89 @@ CControl::CControl (const CControl& c)
 : CView (c)
 , listener (c.listener)
 , tag (c.tag)
-, oldValue (c.oldValue)
-, defaultValue (c.defaultValue)
 , value (c.value)
-, vmin (c.vmin)
-, vmax (c.vmax)
-, wheelInc (c.wheelInc)
-, editing (0)
 {
+	impl = std::unique_ptr<Impl> (new Impl);
+	impl->oldValue = c.impl->oldValue;
+	impl->defaultValue = c.impl->defaultValue;
+	impl->vmin = c.impl->vmin;
+	impl->vmax = c.impl->vmax;
+	impl->wheelInc = c.impl->wheelInc;
 }
+
+//------------------------------------------------------------------------
+CControl::~CControl () noexcept = default;
 
 //------------------------------------------------------------------------
 void CControl::registerControlListener (IControlListener* subListener)
 {
 	vstgui_assert (listener != subListener, "the subListener is already the main listener");
-	subListeners.add (subListener);
+	impl->subListeners.add (subListener);
 }
 
 //------------------------------------------------------------------------
 void CControl::unregisterControlListener (IControlListener* subListener)
 {
-	subListeners.remove (subListener);
+	impl->subListeners.remove (subListener);
+}
+
+//------------------------------------------------------------------------
+void CControl::setWheelInc (float val)
+{
+	impl->wheelInc = val;
+}
+
+//------------------------------------------------------------------------
+float CControl::getWheelInc () const
+{
+	return impl->wheelInc;
+}
+
+//------------------------------------------------------------------------
+void CControl::setMin (float val)
+{
+	impl->vmin = val;
+	bounceValue ();
+}
+//------------------------------------------------------------------------
+float CControl::getMin () const
+{
+	return impl->vmin;
+}
+//------------------------------------------------------------------------
+void CControl::setMax (float val)
+{
+	impl->vmax = val;
+	bounceValue ();
+}
+//------------------------------------------------------------------------
+float CControl::getMax () const
+{
+	return impl->vmax;
+}
+
+//------------------------------------------------------------------------
+void CControl::setOldValue (float val)
+{
+	impl->oldValue = val;
+}
+
+//------------------------------------------------------------------------
+float CControl::getOldValue (void) const
+{
+	return impl->oldValue;
+}
+
+//------------------------------------------------------------------------
+void CControl::setDefaultValue (float val)
+{
+	impl->defaultValue = val;
+}
+
+//------------------------------------------------------------------------
+float CControl::getDefaultValue (void) const
+{
+	return impl->defaultValue;
 }
 
 //------------------------------------------------------------------------
@@ -79,20 +151,26 @@ void CControl::setTag (int32_t val)
 }
 
 //------------------------------------------------------------------------
+bool CControl::isEditing () const
+{
+	return impl->editing > 0;
+}
+
+//------------------------------------------------------------------------
 void CControl::beginEdit ()
 {
 	// begin of edit parameter
-	editing++;
-	if (editing == 1)
+	impl->editing++;
+	if (impl->editing == 1)
 	{
 		if (listener)
 			listener->controlBeginEdit (this);
-		subListeners.forEach ([this] (IControlListener* l) { l->controlBeginEdit (this); });
+		impl->subListeners.forEach ([this] (IControlListener* l) { l->controlBeginEdit (this); });
 		if (getFrame ())
 			getFrame ()->beginEdit (tag);
 	}
 #if VSTGUI_CCONTROL_LOG_EDITING
-	DebugPrint("beginEdit [%d] - %d\n", tag, editing);
+	DebugPrint("beginEdit [%d] - %d\n", tag, impl->editing);
 #endif
 }
 
@@ -101,17 +179,17 @@ void CControl::endEdit ()
 {
 	if (!isEditing ())
 		return;
-	--editing;
-	if (editing == 0)
+	--impl->editing;
+	if (impl->editing == 0)
 	{
 		if (getFrame ())
 			getFrame ()->endEdit (tag);
 		if (listener)
 			listener->controlEndEdit (this);
-		subListeners.forEach ([this] (IControlListener* l) { l->controlEndEdit (this); });
+		impl->subListeners.forEach ([this] (IControlListener* l) { l->controlEndEdit (this); });
 	}
 #if VSTGUI_CCONTROL_LOG_EDITING
-	DebugPrint("endEdit [%d] - %d\n", tag, editing);
+	DebugPrint("endEdit [%d] - %d\n", tag, impl->editing);
 #endif
 }
 
@@ -152,7 +230,7 @@ void CControl::valueChanged ()
 {
 	if (listener)
 		listener->valueChanged (this);
-	subListeners.forEach ([this] (IControlListener* l) { l->valueChanged (this); });
+	impl->subListeners.forEach ([this] (IControlListener* l) { l->valueChanged (this); });
 }
 
 //------------------------------------------------------------------------
@@ -187,14 +265,20 @@ void CControl::bounceValue ()
 		value = getMin ();
 }
 
+//------------------------------------------------------------------------
+CControl::CheckDefaultValueFuncT CControl::CheckDefaultValueFunc = [] (CControl*,
+																	   CButtonState button) {
+#if TARGET_OS_IPHONE
+	return button.isDoubleClick ();
+#else
+	return (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier);
+#endif
+};
+
 //-----------------------------------------------------------------------------
 bool CControl::checkDefaultValue (CButtonState button)
 {
-#if TARGET_OS_IPHONE
-	if (button.isDoubleClick ())
-#else
-	if (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier)
-#endif
+	if (CheckDefaultValueFunc (this, button))
 	{
 		float defValue = getDefaultValue ();
 		if (defValue != getValue ())

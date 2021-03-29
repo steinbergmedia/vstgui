@@ -23,6 +23,7 @@
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/platform/iplatformbitmap.h"
+#include "../../lib/platform/platformfactory.h"
 
 namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
@@ -119,10 +120,10 @@ public:
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
 		{
 			// get rid of the scale factor
-			auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+			auto buffer = getPlatformFactory ().createBitmapMemoryPNGRepresentation (platformBitmap);
 			if (!buffer.empty ())
 			{
-				auto newPlatformBitmap = IPlatformBitmap::createFromMemory (buffer.data (), static_cast<uint32_t> (buffer.size ()));
+				auto newPlatformBitmap = getPlatformFactory ().createBitmapFromMemory (buffer.data (), static_cast<uint32_t> (buffer.size ()));
 				CView::setBackground (makeOwned<CBitmap> (newPlatformBitmap));
 			}
 		}
@@ -160,6 +161,8 @@ protected:
 	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
+	DragOperation dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where,
+	                                  IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
 	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 
@@ -305,6 +308,12 @@ void UIBitmapsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser*
 
 //----------------------------------------------------------------------------------------------------
 DragOperation UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+{
+	return dragContainsBitmaps ? DragOperation::Copy : DragOperation::None;
+}
+
+//----------------------------------------------------------------------------------------------------
+DragOperation UIBitmapsDataSource::dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
 	return dragContainsBitmaps ? DragOperation::Copy : DragOperation::None;
 }

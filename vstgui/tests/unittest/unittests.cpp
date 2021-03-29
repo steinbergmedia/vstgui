@@ -6,6 +6,11 @@
 
 #if ENABLE_UNIT_TESTS
 #include "../../lib/vstguidebug.h"
+#include "../../lib/vstguiinit.h"
+
+#if MAC
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 #include <chrono>
 #include <cstdarg>
@@ -252,27 +257,22 @@ static int RunTests ()
 
 }} // namespaces
 
-#if __APPLE_CC__
-#include <CoreFoundation/CoreFoundation.h>
-namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
-#elif __linux__
-namespace VSTGUI { void* soHandle = nullptr; }
-#endif
-
-#if WINDOWS
-void* hInstance = nullptr;
-#endif
-
 int main ()
 {
 	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
 		throw std::logic_error (desc ? desc : "unknown");
 	});
-#if WINDOWS
+#if MAC
+	VSTGUI::init (CFBundleGetMainBundle ());
+#elif WINDOWS
 	CoInitialize (nullptr);
-	hInstance = GetModuleHandle (nullptr);
+	VSTGUI::init (GetModuleHandle (nullptr));
+#elif LINUX
+	VSTGUI::init (nullptr);
 #endif
-	return VSTGUI::UnitTest::RunTests ();
+	auto result = VSTGUI::UnitTest::RunTests ();
+	VSTGUI::exit ();
+	return result;
 }
 
 TESTCASE(Example,

@@ -70,7 +70,7 @@ struct WinPlatformHandle : PlatformParentHandle
 		DestroyWindow (window);
 	}
 
-	PlatformType getType () const override { return kHWND; }
+	PlatformType getType () const override { return PlatformType::kHWND; }
 	void* getHandle () const override { return window; };
 	void forceRedraw () override {};
 };

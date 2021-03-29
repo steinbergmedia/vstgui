@@ -543,7 +543,7 @@ public:
 		if (description->getColor (item->getTitle (), color))
 		{
 			
-			if (auto context = COffscreenContext::create (menu->getFrame (), size, size))
+			if (auto context = COffscreenContext::create ({size, size}))
 			{
 				context->beginDraw ();
 				context->setFillColor (color);
@@ -622,7 +622,7 @@ public:
 		const CCoord size = 15;
 		if (CGradient* gradient = description->getGradient (item->getTitle ()))
 		{
-			if (auto context = COffscreenContext::create (menu->getFrame (), size, size))
+			if (auto context = COffscreenContext::create ({size, size}))
 			{
 				context->beginDraw ();
 				SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
@@ -1162,7 +1162,8 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 {
 	const auto* viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	vstgui_assert (viewFactory);
-	
+	if (!viewFactory)
+		return;
 	for (const auto& view : *selection)
 	{
 		StringList temp;

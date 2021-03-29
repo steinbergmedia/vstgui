@@ -1,10 +1,10 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms 
+﻿// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../cpoint.h"
 #include "../../cresourcedescription.h"
-
+#include "linuxfactory.h"
 #include "cairobitmap.h"
 #include <memory>
 #include <vector>
@@ -128,23 +128,41 @@ private:
 } // CairoBitmapPrivate
 
 //-----------------------------------------------------------------------------
-Bitmap::GetResourcePathFunc Bitmap::getResourcePath = [] () { return std::string (); };
-
-//-----------------------------------------------------------------------------
-void Bitmap::setGetResourcePathFunc (GetResourcePathFunc&& func)
+SharedPointer<Bitmap> Bitmap::create (UTF8StringPtr absolutePath)
 {
-	getResourcePath = std::move (func);
-}
-
-//-----------------------------------------------------------------------------
-Bitmap::Bitmap (const CPoint* _size)
-{
-	if (_size)
+	if (auto surface = Cairo::CairoBitmapPrivate::createImageFromPath (absolutePath))
 	{
-		size = *_size;
-		surface = SurfaceHandle (cairo_image_surface_create (CAIRO_FORMAT_ARGB32, size.x, size.y));
+		if (cairo_surface_status (surface) != CAIRO_STATUS_SUCCESS)
+		{
+			cairo_surface_destroy (surface);
+			return nullptr;
+		}
+		return makeOwned<Bitmap> (surface);
 	}
+	return nullptr;
 }
+
+//-----------------------------------------------------------------------------
+SharedPointer<Bitmap> Bitmap::create (const void* ptr, uint32_t memSize)
+{
+	Cairo::CairoBitmapPrivate::PNGMemoryReader reader (reinterpret_cast<const uint8_t*> (ptr),
+													   memSize);
+	if (auto surface = reader.create ())
+	{
+		return makeOwned<Bitmap> (Cairo::SurfaceHandle {surface});
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+Bitmap::Bitmap (const CPoint& _size)
+{
+	size = _size;
+	surface = SurfaceHandle (cairo_image_surface_create (CAIRO_FORMAT_ARGB32, size.x, size.y));
+}
+
+//-----------------------------------------------------------------------------
+Bitmap::Bitmap () = default;
 
 //-----------------------------------------------------------------------------
 Bitmap::Bitmap (const SurfaceHandle& surface) : surface (surface)
@@ -154,14 +172,15 @@ Bitmap::Bitmap (const SurfaceHandle& surface) : surface (surface)
 }
 
 //-----------------------------------------------------------------------------
-Bitmap::~Bitmap ()
-{
-}
+Bitmap::~Bitmap () {}
 
 //-----------------------------------------------------------------------------
 bool Bitmap::load (const CResourceDescription& desc)
 {
-	auto path = getResourcePath ();
+	auto linuxFactory = getPlatformFactory ().asLinuxFactory ();
+	if (!linuxFactory)
+		return false;
+	auto path = linuxFactory->getResourcePath ();
 	if (!path.empty ())
 	{
 		if (desc.type == CResourceDescription::kIntegerType)
@@ -221,6 +240,13 @@ double Bitmap::getScaleFactor () const
 }
 
 //-----------------------------------------------------------------------------
+PNGBitmapBuffer Bitmap::createMemoryPNGRepresentation () const
+{
+	Cairo::CairoBitmapPrivate::PNGMemoryWriter writer;
+	return writer.create (getSurface ());
+}
+
+//-----------------------------------------------------------------------------
 namespace CairoBitmapPrivate {
 
 //-----------------------------------------------------------------------------
@@ -256,50 +282,4 @@ PixelAccess::~PixelAccess ()
 //-----------------------------------------------------------------------------
 } // CairoBitmapPrivate
 } // Cairo
-
-//-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
-{
-	return owned (new Cairo::Bitmap (size));
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
-{
-	if (auto surface = Cairo::CairoBitmapPrivate::createImageFromPath (absolutePath))
-	{
-		if (cairo_surface_status (surface) != CAIRO_STATUS_SUCCESS)
-		{
-			cairo_surface_destroy (surface);
-			return nullptr;
-		}
-		return owned (new Cairo::Bitmap (surface));
-	}
-	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
-{
-	Cairo::CairoBitmapPrivate::PNGMemoryReader reader (reinterpret_cast<const uint8_t*> (ptr),
-													   memSize);
-	if (auto surface = reader.create ())
-	{
-		return owned (new Cairo::Bitmap (Cairo::SurfaceHandle {surface}));
-	}
-	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPointer<IPlatformBitmap>& bitmap)
-{
-	if (auto cairoBitmap = bitmap.cast<Cairo::Bitmap> ())
-	{
-		Cairo::CairoBitmapPrivate::PNGMemoryWriter writer;
-		return writer.create (cairoBitmap->getSurface ());
-	}
-	return {};
-}
-
-//-----------------------------------------------------------------------------
 } // VSTGUI

@@ -40,7 +40,7 @@ public:
 	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	bool open (void* pSystemWindow, PlatformType systemWindowType = kDefaultNative, IPlatformFrameConfig* = nullptr);
+	bool open (void* pSystemWindow, PlatformType systemWindowType = PlatformType::kDefaultNative, IPlatformFrameConfig* = nullptr);
 	/** closes the frame and calls forget */
 	void close ();
 
@@ -57,7 +57,7 @@ public:
 	void idle ();
 
 	/** get the current time (in ms) */
-	uint32_t getTicks () const;
+	uint64_t getTicks () const;
 
 	/** default knob mode if host does not provide one */
 	static int32_t kDefaultKnobMode;
@@ -83,7 +83,7 @@ public:
 	 *	events are only dispatched to the modal view or its child views.
 	 *	Modal view sessions can be stacked but must be ended in the same order.
 	 *
-	 *	@param view new modal view (ownership is shared with the caller)
+	 *	@param view new modal view (ownership is transfered to frame, the same as addView)
 	 *	@return a unique session identifier
 	 */
 	Optional<ModalViewSessionID> beginModalViewSession (CView* view);

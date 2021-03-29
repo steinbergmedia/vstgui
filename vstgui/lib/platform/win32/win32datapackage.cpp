@@ -83,8 +83,11 @@ Win32DataPackage::Win32DataPackage (::IDataObject* platformDataObject)
 				if (blob && dataSize)
 				{
 					data = std::malloc (dataSize);
-					memcpy (data, blob, dataSize);
-					nbItems = 1;
+					if (data)
+					{
+						memcpy (data, blob, dataSize);
+						nbItems = 1;
+					}
 				}
 				GlobalUnlock (medium.hGlobal);
 				if (medium.pUnkForRelease)
@@ -163,11 +166,11 @@ bool Win32DataPackage::checkResolveLink (const TCHAR* nativePath, TCHAR* resolve
 	{
 		IShellLink* psl;
 		IPersistFile* ppf;
-		WIN32_FIND_DATA wfd;
+		WIN32_FIND_DATA wfd {0};
 		HRESULT hres;
 		
 		// Get a pointer to the IShellLink interface.
-		hres = CoCreateInstance (CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+		hres = CoCreateInstance (CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER,
 			IID_IShellLink, (void**)&psl);
 		if (SUCCEEDED (hres))
 		{
@@ -179,7 +182,7 @@ bool Win32DataPackage::checkResolveLink (const TCHAR* nativePath, TCHAR* resolve
 				hres = ppf->Load (nativePath, STGM_READ);
 				if (SUCCEEDED (hres))
 				{					
-					hres = psl->Resolve (0, static_cast<DWORD> (MAKELONG (SLR_ANY_MATCH | SLR_NO_UI, 500)));
+					hres = psl->Resolve (nullptr, static_cast<DWORD> (MAKELONG (SLR_ANY_MATCH | SLR_NO_UI, 500)));
 					if (SUCCEEDED (hres))
 					{
 						// Get the path to the link target.

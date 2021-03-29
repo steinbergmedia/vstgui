@@ -45,13 +45,10 @@ public:
 	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override { return nullptr; } // not supported
 #endif
 	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return 0; } // not supported
-	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 #endif
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
-	void setClipboard (const SharedPointer<IDataPackage>& data) override;
-	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kWindowRef; }
 	void onFrameClosed () override {}
 	Optional<UTF8String> convertCurrentKeyEventToText () override { return {}; }

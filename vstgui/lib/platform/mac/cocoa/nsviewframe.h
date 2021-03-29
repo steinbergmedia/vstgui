@@ -6,10 +6,11 @@
 
 #include "../../../vstguifwd.h"
 
-#if MAC_COCOA
+#if MAC_COCOA && !TARGET_OS_IPHONE
 
 #include "../../platform_macos.h"
 #include "../../../cview.h"
+#include "../../../cinvalidrectlist.h"
 #include "../../../idatapackage.h"
 #include "nsviewdraggingsession.h"
 #include <list>
@@ -20,6 +21,8 @@
 struct NSView;
 struct NSRect;
 struct NSDraggingSession;
+struct NSEvent;
+struct CALayer;
 #endif
 
 namespace VSTGUI {
@@ -38,7 +41,8 @@ public:
 	void* makeTouchBar () const;
 	NSViewDraggingSession* getDraggingSession () const { return draggingSession; }
 	void clearDraggingSession () { draggingSession = nullptr; }
-	
+	void setNeedsDisplayInRect (NSRect r);
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 #endif
@@ -52,6 +56,9 @@ public:
 	void scaleFactorChanged (double newScaleFactor);
 	void cursorUpdate ();
 	virtual void drawRect (NSRect* rect);
+	bool onMouseDown (NSEvent* evt);
+	bool onMouseUp (NSEvent* evt);
+	bool onMouseMoved (NSEvent* evt);
 
 	// IPlatformFrame
 	bool getGlobalPosition (CPoint& pos) const override;
@@ -71,14 +78,11 @@ public:
 	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
 	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
-	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor) override;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 #endif
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
 
-	void setClipboard (const SharedPointer<IDataPackage>& data) override;
-	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
 	void onFrameClosed () override {}
 	Optional<UTF8String> convertCurrentKeyEventToText () override;
@@ -90,6 +94,8 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
+	void addDebugRedrawRect (CRect r, bool isClipBoundingBox = false);
+
 	static void initClass ();
 
 	NSView* nsView;
@@ -105,7 +111,13 @@ protected:
 	bool ignoreNextResignFirstResponder;
 	bool trackingAreaInitialized;
 	bool inDraw;
+	bool useInvalidRects {false};
+#if DEBUG
+	bool visualizeDirtyRects {false};
+#endif
 	CCursorType cursor;
+	CButtonState mouseDownButtonState {};
+	CInvalidRectList invalidRectList;
 };
 
 } // VSTGUI

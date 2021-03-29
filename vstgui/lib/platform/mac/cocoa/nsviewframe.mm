@@ -12,6 +12,7 @@
 #import "cocoaopenglview.h"
 #import "autoreleasepool.h"
 #import "../macclipboard.h"
+#import "../macfactory.h"
 #import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
@@ -25,7 +26,36 @@
 	#import <Carbon/Carbon.h>
 #endif
 
+#include <QuartzCore/QuartzCore.h>
+
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14      101400
+#endif
+
 using namespace VSTGUI;
+
+#if DEBUG
+//------------------------------------------------------------------------
+@interface DebugRedrawAnimDelegate : NSObject<CAAnimationDelegate>
+@property (retain, readwrite) CALayer* layer;
+
+@end
+
+@implementation DebugRedrawAnimDelegate
+
+//------------------------------------------------------------------------
+- (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag
+{
+	if (flag)
+	{
+		[self.layer removeFromSuperlayer];
+		[self.layer release];
+	}
+}
+
+@end
+
+#endif // DEBUG
 
 //------------------------------------------------------------------------------------
 HIDDEN inline IPlatformFrameCallback* getFrame (id obj)
@@ -90,8 +120,21 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, NSFilenamesPboardType, NSPasteboardTypeColor, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
-		
+		[self
+		    registerForDraggedTypes:
+		        [NSArray
+		            arrayWithObjects:NSPasteboardTypeString,
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+                                     NSPasteboardTypeFileURL,
+#else
+		                             NSFilenamesPboardType,
+#endif
+		                             NSPasteboardTypeColor,
+		                             [NSString
+		                                 stringWithCString:MacClipboard::getPasteboardBinaryType ()
+		                                          encoding:NSASCIIStringEncoding],
+		                             nil]];
+
 		[self setFocusRingType:NSFocusRingTypeNone];
 	}
 	return self;
@@ -230,138 +273,82 @@ static void VSTGUI_NSView_drawRect (id self, SEL _cmd, NSRect rect)
 		frame->drawRect (&rect);
 }
 
+//------------------------------------------------------------------------
+static void VSTGUI_NSView_viewWillDraw (id self, SEL _cmd)
+{
+	if (auto layer = [self layer])
+	{
+		layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+	}
+	__OBJC_SUPER (self)
+	SuperViewWillRedraw (SUPER, _cmd);
+}
+
+//------------------------------------------------------------------------
+static void VSTGUI_NSView_setNeedsDisplayInRect (id self, SEL _cmd, NSRect rect)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		frame->setNeedsDisplayInRect (rect);
+	__OBJC_SUPER (self)
+	SuperSetNeedsDisplayInRect (SUPER, _cmd, rect);
+}
+
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
-		return NO;
-
-	CButtonState buttons = eventButton (theEvent);
-	[[self window] makeFirstResponder:self];
-	NSUInteger modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	if ([theEvent clickCount] == 2)
-		buttons |= kDoubleClick;
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->platformOnMouseDown (p, buttons);
-	return (result != kMouseEventNotHandled) ? YES : NO;
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		return frame->onMouseDown (theEvent) ? YES : NO;
+	return NO;
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
-		return NO;
-
-	CButtonState buttons = eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->platformOnMouseUp (p, buttons);
-	return (result != kMouseEventNotHandled) ? YES : NO;
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		return frame->onMouseUp (theEvent) ? YES : NO;
+	return NO;
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
-		return NO;
-
-	CButtonState buttons = eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->platformOnMouseMoved (p, buttons);
-	return (result != kMouseEventNotHandled) ? YES : NO;
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		return frame->onMouseMoved (theEvent) ? YES : NO;
+	return NO;
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
-	__OBJC_SUPER(self)
 	if (![self onMouseDown: theEvent])
-		SuperEventMsg (SUPER, @selector(mouseDown:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_rightMouseDown (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseDown: theEvent])
-		SuperEventMsg (SUPER, @selector(rightMouseDown:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_otherMouseDown (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseDown: theEvent])
-		SuperEventMsg (SUPER, @selector(otherMouseDown:), theEvent);
+	{
+		__OBJC_SUPER(self)
+		SuperEventMsg (SUPER, _cmd, theEvent);
+	}
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
-	__OBJC_SUPER(self)
 	if (![self onMouseUp: theEvent])
-		SuperEventMsg (SUPER, @selector(mouseUp:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_rightMouseUp (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseUp: theEvent])
-		SuperEventMsg (SUPER, @selector(rightMouseUp:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_otherMouseUp (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseUp: theEvent])
-		SuperEventMsg (SUPER, @selector(otherMouseUp:), theEvent);
+	{
+		__OBJC_SUPER(self)
+		SuperEventMsg (SUPER, _cmd, theEvent);
+	}
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 {
-	__OBJC_SUPER(self)
 	if (![self onMouseMoved: theEvent])
-		SuperEventMsg (SUPER, @selector(mouseMoved:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_mouseDragged (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseMoved: theEvent])
-		SuperEventMsg (SUPER, @selector(mouseDragged:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_rightMouseDragged (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseMoved: theEvent])
-		SuperEventMsg (SUPER, @selector(rightMouseDragged:), theEvent);
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_otherMouseDragged (id self, SEL _cmd, NSEvent* theEvent)
-{
-	__OBJC_SUPER(self)
-	if (![self onMouseMoved: theEvent])
-		SuperEventMsg (SUPER, @selector(otherMouseDragged:), theEvent);
+	{
+		__OBJC_SUPER(self)
+		SuperEventMsg (SUPER, _cmd, theEvent);
+	}
 }
 
 //------------------------------------------------------------------------------------
@@ -750,20 +737,24 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(isOpaque), IMP (VSTGUI_NSView_isOpaque), "B@:@:"))
 		sprintf (funcSig, "v@:@:%s:", nsRectEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), funcSig))
+		VSTGUI_CHECK_YES (class_addMethod (viewClass, @selector (setNeedsDisplayInRect:),
+										   IMP (VSTGUI_NSView_setNeedsDisplayInRect), funcSig))
+		VSTGUI_CHECK_YES (class_addMethod (viewClass, @selector (viewWillDraw),
+										   IMP (VSTGUI_NSView_viewWillDraw), "v@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(shouldBeTreatedAsInkEvent:), IMP(VSTGUI_NSView_shouldBeTreatedAsInkEvent), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseDown:), IMP (VSTGUI_NSView_onMouseDown), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseUp:), IMP (VSTGUI_NSView_onMouseUp), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(onMouseMoved:), IMP (VSTGUI_NSView_onMouseMoved), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseDown:), IMP (VSTGUI_NSView_mouseDown), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseDown:), IMP (VSTGUI_NSView_rightMouseDown), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseDown:), IMP (VSTGUI_NSView_otherMouseDown), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseDown:), IMP (VSTGUI_NSView_mouseDown), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseDown:), IMP (VSTGUI_NSView_mouseDown), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseUp:), IMP (VSTGUI_NSView_mouseUp), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseUp:), IMP (VSTGUI_NSView_rightMouseUp), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseUp:), IMP (VSTGUI_NSView_otherMouseUp), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseUp:), IMP (VSTGUI_NSView_mouseUp), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseUp:), IMP (VSTGUI_NSView_mouseUp), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseMoved:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseDragged:), IMP (VSTGUI_NSView_mouseDragged), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseDragged:), IMP (VSTGUI_NSView_rightMouseDragged), "v@:@:^:"))
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseDragged:), IMP (VSTGUI_NSView_otherMouseDragged), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseDragged:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(rightMouseDragged:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(otherMouseDragged:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(scrollWheel:), IMP (VSTGUI_NSView_scrollWheel), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseEntered:), IMP (VSTGUI_NSView_mouseEntered), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(mouseExited:), IMP (VSTGUI_NSView_mouseExited), "v@:@:^:"))
@@ -844,7 +835,16 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 		{
 			[nsView setWantsLayer:YES];
 			if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion >= 13))
-				nsView.layer.drawsAsynchronously = YES;
+			{
+				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+				// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
+				// the CoreGraphics engineers decided to be clever and join dirty rectangles without
+				// letting us know
+				if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
+					nsView.layer.drawsAsynchronously = YES;
+				else
+					useInvalidRects = true;
+			}
 		}
 	}
 }
@@ -894,6 +894,53 @@ void NSViewFrame::cursorUpdate ()
 	setMouseCursor (cursor);
 }
 
+//------------------------------------------------------------------------
+void NSViewFrame::setNeedsDisplayInRect (NSRect r)
+{
+	if (useInvalidRects)
+		invalidRectList.add (rectFromNSRect (r));
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
+{
+#if DEBUG
+	if (visualizeDirtyRects && nsView.layer)
+	{
+		auto delegate = [[DebugRedrawAnimDelegate new] autorelease];
+		auto anim = [CABasicAnimation animation];
+		anim.fromValue = [NSNumber numberWithDouble:isClipBoundingBox ? 0.2 : 0.8];
+		anim.toValue = [NSNumber numberWithDouble:0.];
+		anim.keyPath = @"opacity";
+		anim.delegate = delegate;
+		anim.duration = isClipBoundingBox ? 1. : 1.;
+
+		auto rect = nsRectFromCRect (r);
+		for (CALayer* layer in nsView.layer.sublayers)
+		{
+			if (![layer.name isEqualToString:@"DebugLayer"])
+				continue;
+			if (CGRectEqualToRect (rect, layer.frame))
+			{
+				[layer removeAnimationForKey:@"opacity"];
+				[layer addAnimation:anim forKey:@"opacity"];
+				return;
+			}
+		}
+		auto layer = [[CALayer new] autorelease];
+		layer.name = @"DebugLayer";
+		layer.backgroundColor = CGColorCreateGenericRGB (isClipBoundingBox ? 0. : 1., 1., 0., 1.);
+		layer.opacity = 0.f;
+		layer.zPosition = isClipBoundingBox ? 10 : 11;
+		layer.frame = nsRectFromCRect (r);
+		[nsView.layer addSublayer:layer];
+
+		delegate.layer = layer;
+		[layer addAnimation:anim forKey:@"opacity"];
+	}
+#endif
+}
+
 //-----------------------------------------------------------------------------
 void NSViewFrame::drawRect (NSRect* rect)
 {
@@ -905,17 +952,79 @@ void NSViewFrame::drawRect (NSRect* rect)
 #else
 	auto cgContext = static_cast<CGContextRef> ([nsContext CGContext]);
 #endif
+
+	addDebugRedrawRect (rectFromNSRect (*rect), true);
+
 	CGDrawContext drawContext (cgContext, rectFromNSRect ([nsView bounds]));
 	drawContext.beginDraw ();
-	const NSRect* dirtyRects;
-	NSInteger numDirtyRects;
-	[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-	for (NSInteger i = 0; i < numDirtyRects; i++)
+
+	if (useInvalidRects)
 	{
-		frame->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
+		joinNearbyInvalidRects (invalidRectList, 24.);
+		for (auto r : invalidRectList)
+		{
+			frame->platformDrawRect (&drawContext, r);
+			addDebugRedrawRect (r, false);
+		}
+		invalidRectList.clear ();
+	}
+	else
+	{
+		const NSRect* dirtyRects;
+		NSInteger numDirtyRects;
+		[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
+		for (NSInteger i = 0; i < numDirtyRects; i++)
+		{
+			auto r = rectFromNSRect (dirtyRects[i]);
+			frame->platformDrawRect (&drawContext, r);
+			addDebugRedrawRect (r, false);
+		}
 	}
 	drawContext.endDraw ();
 	inDraw = false;
+}
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::onMouseDown (NSEvent* theEvent)
+{
+	CButtonState buttons = eventButton (theEvent);
+	mouseDownButtonState = buttons.getButtonState ();
+	[nsView.window makeFirstResponder:nsView];
+	NSUInteger modifiers = [theEvent modifierFlags];
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
+	mapModifiers (modifiers, buttons);
+	if ([theEvent clickCount] == 2)
+		buttons |= kDoubleClick;
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = frame->platformOnMouseDown (p, buttons);
+	return (result != kMouseEventNotHandled) ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::onMouseUp (NSEvent* theEvent)
+{
+	CButtonState buttons = eventButton (theEvent);
+	NSUInteger modifiers = [theEvent modifierFlags];
+	mapModifiers (modifiers, buttons);
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = frame->platformOnMouseUp (p, buttons);
+	return (result != kMouseEventNotHandled) ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
+{
+	NSUInteger modifiers = [theEvent modifierFlags];
+	CButtonState buttons = theEvent.type == MacEventType::MouseMoved ? 0 : mouseDownButtonState;
+	mapModifiers (modifiers, buttons);
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = frame->platformOnMouseMoved (p, buttons);
+	return (result != kMouseEventNotHandled) ? true : false;
 }
 
 // IPlatformFrame
@@ -1061,6 +1170,9 @@ bool NSViewFrame::invalidRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_14
+	if (nsView.wantsLayer)
+		return false;
 	NSRect r = nsRectFromCRect (src);
 	NSSize d = NSMakeSize (distance.x, distance.y);
 	[nsView scrollRect:r by:d];
@@ -1086,6 +1198,9 @@ bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 		[nsView setNeedsDisplayInRect:r2];
 	}
 	return true;
+#else
+	return false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1114,7 +1229,7 @@ Optional<UTF8String> NSViewFrame::convertCurrentKeyEventToText ()
 	auto event = [NSApp currentEvent];
 	if (!event)
 		return {};
-	if (!(event.type == NSKeyDown || event.type == NSKeyUp))
+	if (!(event.type == MacEventType::KeyDown || event.type == MacEventType::KeyUp))
 		return {};
 	if (event.characters.length <= 0)
 		return {};
@@ -1179,17 +1294,6 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 	auto layer = makeOwned<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
 	return std::move (layer);
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> NSViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
-{
-	auto bitmap = makeOwned<CGBitmap> (CPoint (width * scaleFactor, height * scaleFactor));
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = makeOwned<CGDrawContext> (bitmap);
-	if (context->getCGContext ())
-		return std::move (context);
-	return nullptr;
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -1303,18 +1407,6 @@ bool NSViewFrame::doDrag (const DragDescription& dragDescription,
 }
 
 //-----------------------------------------------------------------------------
-void NSViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
-{
-	MacClipboard::setClipboard (data);
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> NSViewFrame::getClipboard ()
-{
-	return MacClipboard::createClipboardDataPackage ();
-}
-
-//-----------------------------------------------------------------------------
 void NSViewFrame::setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator)
 {
 	touchBarCreator = creator;
@@ -1349,16 +1441,6 @@ void* NSViewFrame::makeTouchBar () const
 	if (touchBarCreator)
 		return touchBarCreator->createTouchBar ();
 	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType platformType, IPlatformFrameConfig* config)
-{
-	#if MAC_CARBON
-	if (platformType == kWindowRef || platformType == kDefaultNative)
-		return new HIViewFrame (frame, size, reinterpret_cast<WindowRef> (parent));
-	#endif
-	return new NSViewFrame (frame, size, reinterpret_cast<NSView*> (parent), config);
 }
 
 //------------------------------------------------------------------------------------

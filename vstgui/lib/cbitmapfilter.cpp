@@ -12,6 +12,7 @@
 #include <cassert>
 #include <algorithm>
 #include <memory>
+#include <climits>
 
 namespace VSTGUI {
 
@@ -21,7 +22,8 @@ namespace BitmapFilter {
 template<typename T> void Property::assign (T toAssign)
 {
 	value = std::malloc (sizeof (toAssign));
-	memcpy (value, &toAssign, sizeof (toAssign));
+	if (value)
+		memcpy (value, &toAssign, sizeof (toAssign));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -154,7 +156,8 @@ Property& Property::operator=(const Property& p)
 		if (valueSize)
 		{
 			value = std::malloc (valueSize);
-			memcpy (value, p.value, valueSize);
+			if (value)
+				memcpy (value, p.value, valueSize);
 		}
 	}
 	return *this;
@@ -1027,6 +1030,6 @@ void registerStandardFilters (Factory& factory)
 
 } // Standard
 
-///@end cond
+///@endcond
 
 }} // namespaces

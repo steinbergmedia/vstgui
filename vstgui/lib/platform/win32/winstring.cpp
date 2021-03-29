@@ -13,12 +13,6 @@ namespace VSTGUI {
 static int kMinWinStringBufferSize = 256;
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformString> IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
-{
-	return owned<IPlatformString> (new WinString (utf8String));
-}
-
-//-----------------------------------------------------------------------------
 WinString::WinString (UTF8StringPtr utf8String)
 : wideString (nullptr)
 , wideStringBufferSize (0)
@@ -46,7 +40,7 @@ void WinString::setUTF8String (UTF8StringPtr utf8String)
 			wideStringBufferSize = std::max<int> ((numChars+1)*2, kMinWinStringBufferSize);
 			wideString = (WCHAR*)std::malloc (static_cast<size_t> (wideStringBufferSize));
 		}
-		if (MultiByteToWideChar (CP_UTF8, 0, utf8String, -1, wideString, numChars) == 0)
+		if (wideString && MultiByteToWideChar (CP_UTF8, 0, utf8String, -1, wideString, numChars) == 0)
 		{
 			wideString[0] = 0;
 		}

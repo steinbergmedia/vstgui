@@ -15,6 +15,10 @@
 #import <Cocoa/Cocoa.h>
 #endif
 
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14      101400
+#endif
+
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -31,6 +35,11 @@ private:
 		CFShow (error);
 	}
 
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_14
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 	RegisterBundleFonts ()
 	{
 		fontUrls = CFArrayCreateMutable (kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
@@ -39,6 +48,14 @@ private:
 			getUrlsForType (t, fontUrls);
 		if (CFArrayGetCount (fontUrls) == 0)
 			return;
+#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_14
+		CTFontManagerRegisterFontURLs (
+			fontUrls, kCTFontManagerScopeProcess, true, [] (CFArrayRef errors, bool done) {
+				CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
+									  ErrorApplierFunction, nullptr);
+				return true;
+			});
+#else
 		CFArrayRef errors;
 		if (!CTFontManagerRegisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
 		{
@@ -46,11 +63,20 @@ private:
 			                      ErrorApplierFunction, nullptr);
 			CFRelease (errors);
 		}
+#endif
 	}
 	~RegisterBundleFonts ()
 	{
 		if (CFArrayGetCount (fontUrls) == 0)
 			return;
+#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_14
+		CTFontManagerUnregisterFontURLs (
+			fontUrls, kCTFontManagerScopeProcess, [] (CFArrayRef errors, bool done) {
+				CFArrayApplyFunction (errors, CFRangeMake (0, CFArrayGetCount (errors)),
+									  ErrorApplierFunction, nullptr);
+				return true;
+			});
+#else
 		CFArrayRef errors;
 		if (!CTFontManagerUnregisterFontsForURLs (fontUrls, kCTFontManagerScopeProcess, &errors))
 		{
@@ -58,12 +84,16 @@ private:
 			                      ErrorApplierFunction, nullptr);
 			CFRelease (errors);
 		}
+#endif
 	}
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_14
+#pragma clang diagnostic pop
+#endif
 
 	void getUrlsForType (CFStringRef fontType, CFMutableArrayRef& array)
 	{
-		if (auto a = CFBundleCopyResourceURLsOfType (static_cast<CFBundleRef> (gBundleRef),
-		                                             fontType, CFSTR ("Fonts")))
+		if (auto a = CFBundleCopyResourceURLsOfType (getBundleRef (), fontType, CFSTR ("Fonts")))
 		{
 			CFArrayAppendArray (array, a, CFRangeMake (0, CFArrayGetCount (a)));
 			CFRelease (a);
@@ -91,16 +121,7 @@ static uint32_t getCTVersion ()
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
-{
-	auto font = makeOwned<CoreTextFont> (name, size, style);
-	if (font->getFontRef ())
-		return std::move (font);
-	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+bool CoreTextFont::getAllFontFamilies (const FontFamilyCallback& callback) noexcept
 {
 	RegisterBundleFonts::init ();
 #if TARGET_OS_IPHONE
@@ -108,10 +129,12 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 #else
 	NSArray* fonts = [(NSArray*)CTFontManagerCopyAvailableFontFamilyNames () autorelease];
 #endif
+	fonts = [fonts sortedArrayUsingSelector:@selector (localizedCaseInsensitiveCompare:)];
 	for (uint32_t i = 0; i < [fonts count]; i++)
 	{
 		NSString* font = [fonts objectAtIndex:i];
-		fontFamilyNames.emplace_back ([font UTF8String]);
+		if (!callback ([font UTF8String]))
+			break;
 	}
 	return true;
 }

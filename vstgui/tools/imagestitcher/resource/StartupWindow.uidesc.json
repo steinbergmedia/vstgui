@@ -1,0 +1,302 @@
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"bitmaps": {},
+		"fonts": {
+			"Title": {
+				"font-name": "Arial",
+				"size": "36"
+			}
+		},
+		"colors": {
+			"Focus": "#63bfffc8",
+			"WindowFrame": "#a6a6a6ff"
+		},
+		"gradients": {
+			"BackgroundGradient": [
+				{
+					"rgba": "#b9b9b9ff",
+					"start": "0.1360608552631579204472700439509935677052"
+				},
+				{
+					"rgba": "#dbdbdbb4",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient Highlighted": [
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#646464ff",
+					"start": "1"
+				}
+			]
+		},
+		"control-tags": {
+			"CloseWindow": "2",
+			"CreateNewDocument": "0",
+			"OpenDocument": "1"
+		},
+		"custom": {
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
+				"Size": "10, 10"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "Window"
+			},
+			"UIEditController": {
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 982, 685",
+				"SplitViewSize_0_0": "0.638846737481031823335797525942325592041",
+				"SplitViewSize_0_1": "0.3308042488619120091719594256574055179954",
+				"SplitViewSize_1_0": "0.4977238239757207916014181137143168598413",
+				"SplitViewSize_1_1": "0.4946889226100151804033089320000726729631",
+				"SplitViewSize_2_0": "0.8167006109979633166062740201596170663834",
+				"SplitViewSize_2_1": "0.178207739307535639738944155396893620491",
+				"TabSwitchValue": "3",
+				"Version": "1"
+			},
+			"UIAttributesController": {},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "4"
+			},
+			"UIFontsDataSource": {
+				"SelectedRow": "0"
+			},
+			"UIBitmapsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIColorsDataSource": {
+				"SelectedRow": "0"
+			},
+			"UIGradientsDataSource": {
+				"SelectedRow": "0"
+			},
+			"FocusDrawing": {
+				"color": "Focus",
+				"enabled": "true",
+				"width": "2"
+			},
+			"UIDescFilePath": {
+				"path": "/Users/scheffle/Source/vstgui/vstgui/tools/imagestitcher/resource/StartupWindow.uidesc"
+			}
+		},
+		"templates": {
+			"Window": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ WhiteCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"maxSize": "560, 170",
+					"minSize": "560, 170",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "560, 170",
+					"transparent": "true",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CGradientView": {
+						"attributes": {
+							"class": "CGradientView",
+							"draw-antialiased": "true",
+							"frame-color": "WindowFrame",
+							"frame-width": "-1",
+							"gradient": "BackgroundGradient",
+							"gradient-angle": "180",
+							"gradient-style": "radial",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "0, 0",
+							"radial-center": "0.5, 0.5",
+							"radial-radius": "1",
+							"round-rect-radius": "3",
+							"size": "560, 170",
+							"transparent": "false",
+							"wants-focus": "false"
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "Title",
+							"font-antialias": "true",
+							"font-color": "~ BlackCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "0, 10",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "560, 50",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "VSTGUI ImageStitcher",
+							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "~ NormalFontVeryBig",
+							"font-antialias": "true",
+							"font-color": "~ BlackCColor",
+							"frame-color": "WindowFrame",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "0, 60",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "560, 40",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "Welcome!",
+							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "CreateNewDocument",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "120, 110",
+							"round-radius": "4",
+							"size": "150, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Create new Document",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "OpenDocument",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "290, 110",
+							"round-radius": "4",
+							"size": "150, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Open Document",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "CloseWindow",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "240, 140",
+							"round-radius": "4",
+							"size": "80, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Quit",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			}
+		}
+	}
+}

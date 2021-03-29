@@ -15,7 +15,7 @@ class CompressedUIDescription : public UIDescription
 protected:
 	enum CompressedSaveFlagBits
 	{
-		NoPlainXmlFileBackupBit = UIDescription::LastSaveFlagBit,
+		NoPlainUIDescFileBackupBit = UIDescription::LastSaveFlagBit,
 		ForceWriteCompressedDesc,
 		LastCompressedSaveFlagBit,
 	};
@@ -24,8 +24,10 @@ public:
 
 	enum SaveFlags
 	{
-		kNoPlainXmlFileBackup = 1 << NoPlainXmlFileBackupBit,
-		kForceWriteCompressedDesc = 1 << ForceWriteCompressedDesc
+		kNoPlainUIDescFileBackup = 1 << NoPlainUIDescFileBackupBit,
+		kForceWriteCompressedDesc = 1 << ForceWriteCompressedDesc,
+		
+		kNoPlainXmlFileBackup [[deprecated("use kNoPlainUIDescFileBackup")]] = kNoPlainUIDescFileBackup,
 	};
 
 	bool parse () override;

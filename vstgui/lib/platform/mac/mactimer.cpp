@@ -2,34 +2,11 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "../iplatformtimer.h"
+#include "mactimer.h"
 
 #if MAC
-#include <CoreFoundation/CoreFoundation.h>
 
 namespace VSTGUI {
-
-//-----------------------------------------------------------------------------
-class MacTimer : public IPlatformTimer
-{
-public:
-	explicit MacTimer (IPlatformTimerCallback* callback);
-	~MacTimer () override;
-
-	bool start (uint32_t fireTime) override;
-	bool stop () override;
-private:
-	static void timerCallback (CFRunLoopTimerRef timer, void *info);
-
-	IPlatformTimerCallback* callback;
-	CFRunLoopTimerRef timer;
-};
-
-//-----------------------------------------------------------------------------
-SharedPointer<IPlatformTimer> IPlatformTimer::create (IPlatformTimerCallback* callback)
-{
-	return makeOwned<MacTimer> (callback);
-}
 
 //-----------------------------------------------------------------------------
 MacTimer::MacTimer (IPlatformTimerCallback* callback)

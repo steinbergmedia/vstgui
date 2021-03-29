@@ -5,6 +5,7 @@
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cframe.h"
+#include "vstgui/lib/malloc.h"
 #include "vstgui/lib/platform/iplatformframe.h"
 #include "vstgui/lib/platform/common/genericoptionmenu.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
@@ -20,6 +21,10 @@
 #include "vstgui/uidescription/editing/uieditmenucontroller.h"
 #include "vstgui/uidescription/editing/uiundomanager.h"
 #include "vstgui/uidescription/uidescription.h"
+#include "vstgui/uidescription/uicontentprovider.h"
+#include "vstgui/uidescription/detail/uijsonpersistence.h"
+#include "vstgui/uidescription/detail/uixmlpersistence.h"
+#include <chrono>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -30,6 +35,9 @@ using namespace Application;
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
 static void makeAndOpenWindow ();
+
+static const IdStringPtr RunJSONXMLBenchmark = "Run JSON/XML Benchmark";
+static const Command BenchmarkCommand {CommandGroup::File, RunJSONXMLBenchmark};
 
 //------------------------------------------------------------------------
 class Controller : public WindowControllerAdapter, public ICommandHandler
@@ -60,11 +68,16 @@ public:
 
 		IApplication::instance ().registerCommand (Commands::SaveDocument, 's');
 		IApplication::instance ().registerCommand (Commands::RevertDocument, 0);
-
+#if VSTGUI_ENABLE_XML_PARSER
+		IApplication::instance ().registerCommand (BenchmarkCommand, 0);
+#endif
 		return true;
 	}
 
-	bool save () { return uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoXMLFile); }
+	bool save ()
+	{
+		return uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoUIDescFile);
+	}
 
 	void beforeShow (IWindow& window) override
 	{
@@ -133,6 +146,8 @@ public:
 			return editController->getUndoManager ()->canRedo ();
 		if (command == Commands::RevertDocument)
 			return !editController->getUndoManager ()->isSavePosition ();
+		if (command == BenchmarkCommand)
+			return true;
 		return false;
 	}
 
@@ -153,6 +168,11 @@ public:
 				window->close ();
 			}
 		}
+		if (command == BenchmarkCommand)
+		{
+			runBenchmark ();
+			return true;
+		}
 		return false;
 	}
 
@@ -162,6 +182,65 @@ public:
 		{
 			platformFrame->setupGenericOptionMenu (true);
 		}
+	}
+
+	void runBenchmark ()
+	{
+#if VSTGUI_ENABLE_XML_PARSER
+		static constexpr auto iterations = 100u;
+
+		if (!uidesc)
+			return;
+		auto node = uidesc->getRootNode ();
+		if (!node)
+			return;
+
+		CMemoryStream xmlData (1024, 1024, false);
+		CMemoryStream jsonData (1024, 1024, false);
+
+		Detail::UIXMLDescWriter xmlWriter;
+		if (!xmlWriter.write (xmlData, node))
+			return;
+		xmlData.rewind ();
+
+		if (!Detail::UIJsonDescWriter::write (jsonData, node))
+			return;
+		jsonData.end ();
+		jsonData.rewind ();
+
+		InputStreamContentProvider xmlContentProvider (xmlData);
+		
+		auto xmlStartTime = std::chrono::high_resolution_clock::now ();
+		for (auto i = 0u; i < iterations; ++i)
+		{
+			xmlData.rewind ();
+			Detail::UIXMLParser parser;
+			if (!parser.parse (&xmlContentProvider))
+				return;
+		}
+		auto xmlEndTime = std::chrono::high_resolution_clock::now ();
+
+		InputStreamContentProvider jsonContentProvider (jsonData);
+
+		auto jsonStartTime = std::chrono::high_resolution_clock::now ();
+		for (auto i = 0u; i < iterations; ++i)
+		{
+			jsonData.rewind ();
+			if (!Detail::UIJsonDescReader::read (jsonContentProvider))
+				return;
+		}
+		auto jsonEndTime = std::chrono::high_resolution_clock::now ();
+
+		auto xmlDuration =
+		    std::chrono::duration_cast<std::chrono::milliseconds> (xmlEndTime - xmlStartTime)
+		        .count ();
+		auto jsonDuration =
+		    std::chrono::duration_cast<std::chrono::milliseconds> (jsonEndTime - jsonStartTime)
+		        .count ();
+
+		printf ("xml :%lld\n", xmlDuration);
+		printf ("json:%lld\n", jsonDuration);
+#endif
 	}
 
 	std::string descPath;
@@ -200,7 +279,7 @@ public:
 
 	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override
 	{
-		if (cmd == Commands::CloseWindow)
+		if (cmd == Commands::CloseWindow || cmd == BenchmarkCommand)
 			return true;
 		return false;
 	}
@@ -214,7 +293,8 @@ public:
 				static const auto order = {
 				    Commands::NewDocument.name,    Commands::OpenDocument.name,
 				    Commands::SaveDocument.name,   Commands::SaveDocumentAs.name,
-				    Commands::RevertDocument.name, Commands::CloseWindow.name};
+				    Commands::RevertDocument.name, BenchmarkCommand.name,
+				    Commands::CloseWindow.name};
 				auto leftIndex = std::find (order.begin (), order.end (), lhs);
 				auto rightIndex = std::find (order.begin (), order.end (), rhs);
 				return std::distance (leftIndex, rightIndex) > 0;

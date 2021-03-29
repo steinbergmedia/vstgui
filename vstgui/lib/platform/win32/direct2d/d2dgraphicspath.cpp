@@ -90,6 +90,8 @@ public:
 		__out BOOL* isDisabled
 		) override
 	{
+		if (isDisabled)
+			*isDisabled = FALSE;
 		return S_FALSE;
 	}
 
@@ -130,8 +132,8 @@ public:
 		} else
 			return E_NOINTERFACE;
 	}
-    STDMETHOD_ (ULONG, AddRef) (void) override { return 1; }
-    STDMETHOD_ (ULONG, Release) (void) override { return 1; }
+    STDMETHOD_ (ULONG, AddRef) () override { return 1; }
+    STDMETHOD_ (ULONG, Release) () override { return 1; }
 
 private:
 	ID2D1GeometrySink* sink;
@@ -152,8 +154,8 @@ public:
 		} else
 			return E_NOINTERFACE;
 	}
-    ULONG STDMETHODCALLTYPE AddRef(void) override { return 1; }
-    ULONG STDMETHODCALLTYPE Release(void) override { return 1; }
+    ULONG STDMETHODCALLTYPE AddRef() override { return 1; }
+    ULONG STDMETHODCALLTYPE Release() override { return 1; }
 
 	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
 	{
@@ -233,7 +235,7 @@ public:
 	bool init ()
 	{
 		getD2DFactory ()->CreatePathGeometry (&path);
-		if (path == 0)
+		if (path == nullptr)
 			return false;
 		if (!SUCCEEDED (path->Open (&sink)))
 			return false;
@@ -435,9 +437,8 @@ ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* co
 
 		bool figureOpen = false;
 		CPoint lastPos;
-		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); it++)
+		for (const CGraphicsPath::Element& e : elements)
 		{
-			const Element& e = (*it);
 			switch (e.type)
 			{
 				case Element::kArc:

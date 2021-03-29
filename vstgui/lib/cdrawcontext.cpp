@@ -353,7 +353,7 @@ CGraphicsPath* CDrawContext::createRoundRectGraphicsPath (const CRect& size, CCo
 //-----------------------------------------------------------------------------
 void CDrawContext::pushTransform (const CGraphicsTransform& transformation)
 {
-	vstgui_assert (transformStack.size () > 0);
+	vstgui_assert (!transformStack.empty ());
 	const CGraphicsTransform& currentTransform = transformStack.top ();
 	CGraphicsTransform newTransform = currentTransform * transformation;
 	transformStack.push (newTransform);
