@@ -140,7 +140,7 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 				if (image)
 				{
-					NSImage* nsImage = imageFromCGImageRef (image);
+					NSImage* nsImage = imageFromCGImageRef (image, cgBitmap->getScaleFactor ());
 					if (nsImage)
 					{
 						[nsItem setImage:nsImage];
