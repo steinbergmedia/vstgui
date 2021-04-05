@@ -686,28 +686,28 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		case WM_MOUSEWHEEL:
 		case WM_MOUSEHWHEEL:	// new since vista
 		{
-			MouseWheelEvent event;
+			MouseWheelEvent wheelEvent;
 
 			CButtonState buttons = 0;
 			if (GetAsyncKeyState (VK_SHIFT) < 0)
-				event.modifiers.add (ModifierKey::Shift)
+				wheelEvent.modifiers.add (ModifierKey::Shift);
 			if (GetAsyncKeyState (VK_CONTROL) < 0)
-				event.modifiers.add (ModifierKey::Control)
+				wheelEvent.modifiers.add (ModifierKey::Control);
 			if (GetAsyncKeyState (VK_MENU) < 0)
-				event.modifiers.add (ModifierKey::Alt)
+				wheelEvent.modifiers.add (ModifierKey::Alt);
 			if (GetAsyncKeyState (VK_LWIN) < 0 || GetAsyncKeyState (VK_RWIN) < 0)
-				event.modifiers.add (ModifierKey::Super)
+				wheelEvent.modifiers.add (ModifierKey::Super);
 
 			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
 			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
 			ScreenToClient (windowHandle, &p);
-			event.mousePosition = {p.x, p.y};
+			wheelEvent.mousePosition = {p.x, p.y};
 			if (message == WM_MOUSEWHEEL)
-				event.deltaY = static_cast<CCoord> (zDelta);
+				wheelEvent.deltaY = static_cast<CCoord> (zDelta);
 			else
-				event.deltaX = static_cast<CCoord> (zDelta);
-			pFrame->platformOnEvent (event);
-			if (event.consumed)
+				wheelEvent.deltaX = static_cast<CCoord> (zDelta);
+			pFrame->platformOnEvent (wheelEvent);
+			if (wheelEvent.consumed)
 				return 0;
 			break;
 		}
