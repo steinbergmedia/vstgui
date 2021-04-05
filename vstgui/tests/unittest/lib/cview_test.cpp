@@ -7,6 +7,7 @@
 #include "../../../lib/cview.h"
 #include "../../../lib/cviewcontainer.h"
 #include "../../../lib/dragging.h"
+#include "../../../lib/events.h"
 #include "../../../lib/iviewlistener.h"
 #include "../../../lib/idatapackage.h"
 
@@ -252,8 +253,9 @@ TESTCASE(CViewTest,
 		VstKeyCode key;
 		EXPECT(v.onKeyDown (key) == -1);
 		EXPECT(v.onKeyUp (key) == -1);
-		EXPECT(v.onWheel (CPoint (0, 0), kMouseWheelAxisX, 1.f, 0) == false);
-		EXPECT(v.onWheel (CPoint (0, 0), kMouseWheelAxisY, 1.f, 0) == false);
+		MouseWheelEvent event;
+		v.onMouseWheelEvent (event);
+		EXPECT(event.consumed == false);
 		CPoint p (0, 0);
 		EXPECT(v.onMouseDown (p, kLButton) == kMouseEventNotImplemented);
 		EXPECT(v.onMouseUp (p, kLButton) == kMouseEventNotImplemented);

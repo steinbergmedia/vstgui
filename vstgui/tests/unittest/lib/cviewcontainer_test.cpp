@@ -100,10 +100,10 @@ public:
 		return DragOperation::None;
 	}
 
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) override
+	void onMouseWheelEvent (MouseWheelEvent& event) override
 	{
 		onWheelCalled = true;
-		return true;
+		event.consumed = true;
 	}
 	
  };
