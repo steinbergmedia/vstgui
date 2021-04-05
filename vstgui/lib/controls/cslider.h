@@ -63,8 +63,7 @@ public:
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
 
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance,
-	              const CButtonState& buttons) override;
+	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
 	void setViewSize (const CRect& rect, bool invalid) override;

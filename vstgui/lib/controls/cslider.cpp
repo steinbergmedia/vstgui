@@ -6,6 +6,7 @@
 #include "../cdrawcontext.h"
 #include "../cgraphicspath.h"
 #include "../cvstguitimer.h"
+#include "../events.h"
 #include "cslider.h"
 #include <cmath>
 
@@ -504,28 +505,23 @@ CMouseEventResult CSliderBase::onMouseMoved (CPoint& where, const CButtonState& 
 }
 
 //------------------------------------------------------------------------
-bool CSliderBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance,
-                           const CButtonState& buttons)
+void CSliderBase::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (!getMouseEnabled ())
-		return false;
-
-	if ((isStyleHorizontal () && axis == kMouseWheelAxisY) ||
-	    (!isStyleHorizontal () && axis == kMouseWheelAxisX))
-		return false;
+	auto distance = isStyleHorizontal () ? event.deltaX : event.deltaY;
+	if (distance == 0.)
+		return;
 
 	onMouseWheelEditing (this);
 
-	float _distance = distance;
 	if (isStyleHorizontal ())
-		_distance *= -1.f;
+		distance *= -1.;
 	if (isInverseStyle ())
-		_distance *= -1.f;
+		distance *= -1.;
 	float normValue = getValueNormalized ();
-	if (buttons & kZoomModifier)
-		normValue += 0.1f * _distance * getWheelInc ();
+	if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
+		normValue += 0.1 * distance * getWheelInc ();
 	else
-		normValue += _distance * getWheelInc ();
+		normValue += distance * getWheelInc ();
 
 	setValueNormalized (normValue);
 
@@ -536,7 +532,7 @@ bool CSliderBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, con
 		valueChanged ();
 	}
 
-	return true;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
