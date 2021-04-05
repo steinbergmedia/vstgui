@@ -31,6 +31,7 @@ enum class EventType : uint32_t
 struct Event
 {
 	Event () noexcept;
+	Event (const Event&) = delete;
 
 	/** Type */
 	EventType type {EventType::Unknown};
@@ -51,6 +52,7 @@ struct Modifiers
 	explicit Modifiers (uint32_t data = 0) : data (data) {}
 	Modifiers (const Modifiers&) = default;
 	
+	bool empty () const { return data == 0;}
 	bool has (ModifierKey modifier) const { return data & cast (modifier); }
 	bool is (ModifierKey modifier) const { return data == cast (modifier); }
 

@@ -468,6 +468,9 @@ bool CView::removed (CView* parent)
 void CView::onMouseWheelEvent (MouseWheelEvent& event)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+	if (!getMouseEnabled ())
+		return;
+
 	auto buttons = buttonStateFromEventModifiers (event.modifiers);
 	if (event.flags | MouseWheelEvent::DirectionInvertedFromDevice)
 		buttons |= kMouseWheelInverted;
@@ -491,7 +494,7 @@ void CView::dispatchEvent (Event& event)
 	{
 		case EventType::MouseWheel:
 		{
-			auto wheelEvent = castMouseWheelEvent (event);
+			auto& wheelEvent = castMouseWheelEvent (event);
 			onMouseWheelEvent (wheelEvent);
 			break;
 		}
