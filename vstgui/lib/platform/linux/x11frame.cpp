@@ -398,33 +398,33 @@ struct Frame::Impl : IFrameEventHandler
 		{
 			if (event.detail >= 4 && event.detail <= 7) // mouse wheel
 			{
-				MouseWheelEvent event;
-				event.mousePosition = where;
-				event.modifiers = toModifiers (event.state);
+				MouseWheelEvent wheelEvent;
+				wheelEvent.mousePosition = where;
+				wheelEvent.modifiers = toModifiers (event.state);
 				switch (event.detail)
 				{
 					case 4: // up
 					{
-						event.deltaY = 1;
+						wheelEvent.deltaY = 1;
 						break;
 					}
 					case 5: // down
 					{
-						event.deltaY = -1;
+						wheelEvent.deltaY = -1;
 						break;
 					}
 					case 6: // left
 					{
-						event.deltaX = -1;
+						wheelEvent.deltaX = -1;
 						break;
 					}
 					case 7: // right
 					{
-						event.deltaX = 1;
+						wheelEvent.deltaX = 1;
 						break;
 					}
 				}
-				frame->platformOnEvent (event);
+				frame->platformOnEvent (wheelEvent);
 			}
 			else // mouse down
 			{
