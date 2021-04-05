@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../../lib/controls/cxypad.h"
+#include "../../../../lib/events.h"
 #include "../../unittests.h"
 
 namespace VSTGUI {
@@ -108,10 +109,15 @@ TESTCASE(CXYPadTest,
 		float y = 1.f;
 		CXYPad::calculateXY (pad.getValue (), x, y);
 		EXPECT(x == 0.f && y == 0.f);
-		pad.onWheel (CPoint (1, 1), CMouseWheelAxis::kMouseWheelAxisX, 1.f, 0);
+		MouseWheelEvent event;
+		event.mousePosition = CPoint (1, 1);
+		event.deltaX = 1.;
+		pad.onMouseWheelEvent (event);
 		CXYPad::calculateXY (pad.getValue (), x, y);
 		EXPECT(x == pad.getWheelInc () && y == 0.f);
-		pad.onWheel (CPoint (1, 1), CMouseWheelAxis::kMouseWheelAxisY, 1.f, 0);
+		event.deltaX = 0.;
+		event.deltaY = 1.;
+		pad.onMouseWheelEvent (event);
 		CXYPad::calculateXY (pad.getValue (), x, y);
 		EXPECT(x == pad.getWheelInc () && y == pad.getWheelInc ());
 
