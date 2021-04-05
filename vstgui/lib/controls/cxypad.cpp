@@ -173,7 +173,7 @@ void CXYPad::onMouseWheelEvent (MouseWheelEvent& event)
 		invalid ();
 		valueChanged ();
 	}
-	return true;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
