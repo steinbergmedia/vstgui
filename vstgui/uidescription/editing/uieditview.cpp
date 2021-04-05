@@ -25,6 +25,7 @@
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/clayeredviewcontainer.h"
 #include "../../lib/dragging.h"
+#include "../../lib/events.h"
 #include "../../lib/idatapackage.h"
 #include "../../lib/controls/ctextedit.h"
 #include <cassert>
@@ -481,11 +482,12 @@ bool UIEditView::advanceNextFocusView (CView* oldFocus, bool reverse)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
+void UIEditView::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (editing == false)
-		return CViewContainer::onWheel (where, axis, distance, buttons);
-	return false;
+	if (editing)
+		event.consumed = true;
+	else
+		CViewContainer::onMouseWheelEvent (event);
 }
 
 //----------------------------------------------------------------------------------------------------
