@@ -15,6 +15,8 @@
 #include "controls/ccontrol.h"
 #include "dragging.h"
 #include "dispatchlist.h"
+#include "events.h"
+#include "finally.h"
 
 #include <algorithm>
 #include <cassert>
@@ -977,6 +979,39 @@ bool CViewContainer::hitTest (const CPoint& where, const CButtonState& buttons)
 	return CView::hitTest (where2, buttons);
 }
 
+//------------------------------------------------------------------------
+void CViewContainer::dispatchEvent (Event& event)
+{
+	CView::dispatchEvent (event);
+	if (event.consumed)
+		return;
+	switch (event.type)
+	{
+		case EventType::MouseWheel:
+		{
+			auto& wheelEvent = castMouseWheelEvent (event);
+			auto pos = wheelEvent.mousePosition;
+			auto f = finally ([&] () { wheelEvent.mousePosition = pos; });
+			CPoint where2 (pos);
+			wheelEvent.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
+			getTransform ().inverse ().transform (wheelEvent.mousePosition);
+			for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end;
+			     ++it)
+			{
+				const auto& pV = *it;
+				if (pV && pV->isVisible () && pV->getMouseEnabled () &&
+				    pV->getMouseableArea ().pointInside (wheelEvent.mousePosition))
+				{
+					pV->dispatchEvent (wheelEvent);
+					if (!pV->getTransparency () || event.consumed)
+						return;
+				}
+			}
+		}
+		default: break;
+	}
+}
+
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
@@ -1080,26 +1115,6 @@ CMouseEventResult CViewContainer::onMouseCancel ()
 		return result;
 	}
 	return kMouseEventHandled;
-}
-
-//-----------------------------------------------------------------------------
-bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
-{
-	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
-	{
-		const auto& pV = *it;
-		CPoint where2 (where);
-		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		getTransform ().inverse ().transform (where2);
-		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->getMouseableArea ().pointInside (where2))
-		{
-			if (pV->onWheel (where2, axis, distance, buttons))
-				return true;
-			if (!pV->getTransparency ())
-				return false;
-		}
-	}
-	return false;
 }
 
 //-----------------------------------------------------------------------------

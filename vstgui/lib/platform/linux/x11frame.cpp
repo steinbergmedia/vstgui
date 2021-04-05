@@ -11,6 +11,7 @@
 #include "../../dragging.h"
 #include "../../vstkeycode.h"
 #include "../../cinvalidrectlist.h"
+#include "../../events.h"
 #include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"
 #include "../iplatformtextedit.h"
@@ -78,6 +79,21 @@ inline uint32_t translateModifiers (int state)
 	if (state & (XCB_MOD_MASK_1 | XCB_MOD_MASK_5))
 		buttons |= kAlt;
 	return buttons;
+}
+
+//------------------------------------------------------------------------
+inline Modifiers toModifiers (int state)
+{
+	Modifiers mods;
+	if (state & XCB_MOD_MASK_CONTROL)
+		mods.add (ModifierKey::Control);
+	if (state & XCB_MOD_MASK_SHIFT)
+		mods.add (ModifierKey::Shift);
+	if (state & (XCB_MOD_MASK_1 | XCB_MOD_MASK_5))
+		mods.add (ModifierKey::Alt);
+	if (state & XCB_MOD_MASK_4)
+		mods.add (ModifierKey::Super);
+	return mods;
 }
 
 //------------------------------------------------------------------------
@@ -382,30 +398,33 @@ struct Frame::Impl : IFrameEventHandler
 		{
 			if (event.detail >= 4 && event.detail <= 7) // mouse wheel
 			{
-				auto buttons = translateModifiers (event.state);
+				MouseWheelEvent event;
+				event.mousePosition = where;
+				event.modifiers = toModifiers (event.state);
 				switch (event.detail)
 				{
 					case 4: // up
 					{
-						frame->platformOnMouseWheel (where, kMouseWheelAxisY, 1, buttons);
+						event.deltaY = 1;
 						break;
 					}
 					case 5: // down
 					{
-						frame->platformOnMouseWheel (where, kMouseWheelAxisY, -1, buttons);
+						event.deltaY = -1;
 						break;
 					}
 					case 6: // left
 					{
-						frame->platformOnMouseWheel (where, kMouseWheelAxisX, -1, buttons);
+						event.deltaX = -1;
 						break;
 					}
 					case 7: // right
 					{
-						frame->platformOnMouseWheel (where, kMouseWheelAxisX, 1, buttons);
+						event.deltaX = 1;
 						break;
 					}
 				}
+				frame->platformOnEvent (event);
 			}
 			else // mouse down
 			{

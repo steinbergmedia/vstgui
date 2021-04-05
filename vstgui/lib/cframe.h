@@ -214,7 +214,6 @@ public:
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	int32_t onKeyUp (VstKeyCode& keyCode) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -234,7 +233,9 @@ protected:
 	
 	~CFrame () noexcept override = default;
 	void beforeDelete () override;
-	
+
+	void dispatchEvent (Event& event) override;
+
 	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
 	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
 	void removeFromMouseViews (CView* view);
@@ -258,7 +259,7 @@ protected:
 	CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) override;
-	bool platformOnMouseWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	void platformOnEvent (Event& event) override;
 	DragOperation platformOnDragEnter (DragEventData data) override;
 	DragOperation platformOnDragMove (DragEventData data) override;
 	void platformOnDragLeave (DragEventData data) override;

@@ -20,6 +20,7 @@
 #import "../../../cvstguitimer.h"
 #import "../../common/genericoptionmenu.h"
 #import "../../../cframe.h"
+#import "../../../events.h"
 
 #if MAC_CARBON
 	#import "../carbon/hiviewframe.h"
@@ -93,6 +94,21 @@ static void mapModifiers (NSUInteger nsEventModifiers, CButtonState& buttonState
 		buttonState |= kAlt;
 	if (nsEventModifiers & MacEventModifier::ControlKeyMask)
 		buttonState |= kApple;
+}
+
+//------------------------------------------------------------------------------------
+static Modifiers modifiersFromModifierFlags (NSUInteger nsEventModifiers)
+{
+	Modifiers mods;
+	if (nsEventModifiers & MacEventModifier::ShiftKeyMask)
+		mods.add (ModifierKey::Shift);
+	if (nsEventModifiers & MacEventModifier::CommandKeyMask)
+		mods.add (ModifierKey::Control);
+	if (nsEventModifiers & MacEventModifier::AlternateKeyMask)
+		mods.add (ModifierKey::Alt);
+	if (nsEventModifiers & MacEventModifier::ControlKeyMask)
+		mods.add (ModifierKey::Super);
+	return mods;
 }
 
 //------------------------------------------------------------------------------------
@@ -358,29 +374,36 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 
-	CButtonState buttons = 0;
+	auto distanceX = [theEvent scrollingDeltaX];
+	auto distanceY = [theEvent scrollingDeltaY];
+	if (std::abs (distanceX) == 0. && std::abs (distanceY) == 0.)
+		return;
+
+	MouseWheelEvent event;
+
 	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	auto distanceX = [theEvent scrollingDeltaX];
-	auto distanceY = [theEvent scrollingDeltaY];
+
 	if ([theEvent hasPreciseScrollingDeltas])
 	{
 		distanceX *= 0.1;
 		distanceY *= 0.1;
+		event.flags |= MouseWheelEvent::PreciseDeltas;
 	}
 	if ([theEvent isDirectionInvertedFromDevice])
 	{
 		distanceX *= -1;
 		distanceY *= -1;
-		buttons |= kMouseWheelInverted;
+		event.flags |= MouseWheelEvent::DirectionInvertedFromDevice;
 	}
-	CPoint p = pointFromNSPoint (nsPoint);
-	if (distanceX != 0.)
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, static_cast<float> (distanceX), buttons);
-	if (distanceY != 0.)
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, static_cast<float> (distanceY), buttons);
+
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	event.modifiers = modifiersFromModifierFlags ([theEvent modifierFlags]);
+	event.deltaX = distanceX;
+	event.deltaY = distanceY;
+
+	_vstguiframe->platformOnEvent (event);
 }
 
 //------------------------------------------------------------------------------------

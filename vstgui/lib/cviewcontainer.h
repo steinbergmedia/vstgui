@@ -136,11 +136,11 @@ public:
 	// CView
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	void dispatchEvent (Event& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
 	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 

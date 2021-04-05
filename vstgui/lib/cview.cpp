@@ -12,6 +12,7 @@
 #include "idatapackage.h"
 #include "iviewlistener.h"
 #include "malloc.h"
+#include "events.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
 #include "platform/iplatformframe.h"
@@ -461,6 +462,54 @@ bool CView::removed (CView* parent)
 	pImpl->parentFrame = nullptr;
 	setViewFlag (kIsAttached, false);
 	return true;
+}
+
+//------------------------------------------------------------------------
+void CView::onMouseWheelEvent (MouseWheelEvent& event)
+{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	auto buttons = buttonStateFromEventModifiers (event.modifiers);
+	if (event.flags | MouseWheelEvent::DirectionInvertedFromDevice)
+		buttons |= kMouseWheelInverted;
+	if (event.deltaX != 0.)
+	{
+		if (onWheel (event.mousePosition, kMouseWheelAxisX, event.deltaX, buttons))
+			event.consumed = true;
+	}
+	if (event.deltaY != 0.)
+	{
+		if (onWheel (event.mousePosition, kMouseWheelAxisY, event.deltaY, buttons))
+			event.consumed = true;
+	}
+#endif
+}
+
+//------------------------------------------------------------------------
+void CView::dispatchEvent (Event& event)
+{
+	switch (event.type)
+	{
+		case EventType::MouseWheel:
+		{
+			auto wheelEvent = castMouseWheelEvent (event);
+			onMouseWheelEvent (wheelEvent);
+			break;
+		}
+		case EventType::KeyUp:
+		{
+			break;
+		}
+		case EventType::KeyRepeat:
+		{
+			break;
+		}
+		case EventType::KeyDown:
+		{
+			break;
+		}
+		case EventType::Unknown: assert (false); break;
+	}
+	
 }
 
 //-----------------------------------------------------------------------------

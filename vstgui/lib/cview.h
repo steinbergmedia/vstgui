@@ -81,6 +81,9 @@ public:
 	bool isVisible () const { return hasViewFlag (kVisible) && getAlphaValue () > 0.f; }
 	//@}
 
+	virtual void onMouseWheelEvent (MouseWheelEvent& event);
+
+	virtual void dispatchEvent (Event& event);
 	//-----------------------------------------------------------------------------
 	/// @name Mouse Methods
 	//-----------------------------------------------------------------------------
@@ -104,10 +107,11 @@ public:
 	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
 
 	VSTGUI_DEPRECATED(
-	/** \deprecated never called anymore, please override the method below for wheel handling */
+	/** \deprecated never called anymore, please use onMouseWheelEvent instead */
 	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) final { return false; })
-	/** called if a mouse wheel event is happening over this view */
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
+	VSTGUI_DEPRECATED(
+	/** \deprecated please use onMouseWheelEvent instead */
+	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);)
 
 	/** turn on/off mouse usage for this view */
 	virtual void setMouseEnabled (bool bEnable = true);

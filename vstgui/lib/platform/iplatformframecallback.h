@@ -37,7 +37,7 @@ public:
 	virtual CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) = 0;
 	virtual CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) = 0;
 	virtual CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) = 0;
-	virtual bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) = 0;
+	virtual void platformOnEvent (Event& event) = 0;
 
 	virtual DragOperation platformOnDragEnter (DragEventData data) = 0;
 	virtual DragOperation platformOnDragMove (DragEventData data) = 0;

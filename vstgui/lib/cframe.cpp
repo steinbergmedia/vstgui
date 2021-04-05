@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cframe.h"
+#include "events.h"
 #include "coffscreencontext.h"
 #include "ctooltipsupport.h"
 #include "cinvalidrectlist.h"
@@ -698,23 +699,33 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 	return result;
 }
 
-//------------------------------------------------------------------------
-bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
+//-----------------------------------------------------------------------------
+void CFrame::dispatchEvent (Event& event)
 {
-	if (auto modalView = getModalView ())
-	{
-		CPoint where2 (where);
-		getTransform ().inverse ().transform (where2);
-		return modalView->onWheel (where2, axis, distance, buttons);
-	}
+	Impl::PostEventHandler peh (*pImpl);
+	CollectInvalidRects cir (this);
 
-	bool result = false;
-	if (getMouseDownView () == nullptr)
+	auto modalView = getModalView ();
+	auto mousePosEvent = asMousePositionEvent (event);
+	CPoint mousePosition;
+	if (mousePosEvent)
+		mousePosition = mousePosEvent->mousePosition;
+
+	if (modalView && mousePosEvent)
+		getTransform ().inverse ().transform (mousePosEvent->mousePosition);
+
+	if (modalView)
+		modalView->dispatchEvent (event);
+	else
+		CViewContainer::dispatchEvent (event);
+
+	if (mousePosEvent)
 	{
-		result = CViewContainer::onWheel (where, axis, distance, buttons);
-		checkMouseViews (where, buttons);
+		CButtonState buttons;
+		if (auto modifierEvent = asModifierEvent (event))
+			buttons = buttonStateFromEventModifiers (modifierEvent->modifiers);
+		checkMouseViews (mousePosition, buttons);
 	}
-	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -1644,6 +1655,12 @@ bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
+void CFrame::platformOnEvent (Event& event)
+{
+	dispatchEvent (event);
+}
+
+//-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!getMouseEnabled ())
@@ -1681,16 +1698,6 @@ CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const CButtonSta
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseExited (where, buttons);
-}
-
-//-----------------------------------------------------------------------------
-bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
-{
-	if (!getMouseEnabled ())
-		return false;
-	Impl::PostEventHandler peh (*pImpl);
-	CollectInvalidRects cir (this);
-	return onWheel (where, axis, distance, buttons);
 }
 
 //-----------------------------------------------------------------------------

@@ -243,6 +243,17 @@ class CVuMeter;
 class CXYPad;
 class CListControl;
 
+// events
+struct Event;
+struct ModifierEvent;
+struct MousePositionEvent;
+struct MouseWheelEvent;
+struct KeyboardEvent;
+struct Modifiers;
+enum class EventType : uint32_t;
+enum class VirtualKey : uint32_t;
+enum class ModifierKey : uint32_t;
+
 // animation
 namespace Animation {
 class IAnimationTarget;

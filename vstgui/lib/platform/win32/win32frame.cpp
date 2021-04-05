@@ -23,6 +23,7 @@
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
 #include "../../cinvalidrectlist.h"
+#include "../../events.h"
 
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"
@@ -683,36 +684,30 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 	switch (message)
 	{
 		case WM_MOUSEWHEEL:
-		{
-			CButtonState buttons = 0;
-			if (GetAsyncKeyState (VK_SHIFT)   < 0)
-				buttons |= kShift;
-			if (GetAsyncKeyState (VK_CONTROL) < 0)
-				buttons |= kControl;
-			if (GetAsyncKeyState (VK_MENU)    < 0)
-				buttons |= kAlt;
-			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
-			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
-			ScreenToClient (windowHandle, &p);
-			CPoint where (p.x, p.y);
-			if (pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, ((float)zDelta / WHEEL_DELTA), buttons))
-				return 0;
-			break;
-		}
 		case WM_MOUSEHWHEEL:	// new since vista
 		{
+			MouseWheelEvent event;
+
 			CButtonState buttons = 0;
-			if (GetAsyncKeyState (VK_SHIFT)   < 0)
-				buttons |= kShift;
+			if (GetAsyncKeyState (VK_SHIFT) < 0)
+				event.modifiers.add (ModifierKey::Shift)
 			if (GetAsyncKeyState (VK_CONTROL) < 0)
-				buttons |= kControl;
-			if (GetAsyncKeyState (VK_MENU)    < 0)
-				buttons |= kAlt;
+				event.modifiers.add (ModifierKey::Control)
+			if (GetAsyncKeyState (VK_MENU) < 0)
+				event.modifiers.add (ModifierKey::Alt)
+			if (GetAsyncKeyState (VK_LWIN) < 0 || GetAsyncKeyState (VK_RWIN) < 0)
+				event.modifiers.add (ModifierKey::Super)
+
 			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
 			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
 			ScreenToClient (windowHandle, &p);
-			CPoint where (p.x, p.y);
-			if (pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, ((float)-zDelta / WHEEL_DELTA), buttons))
+			event.mousePosition = {p.x, p.y};
+			if (message == WM_MOUSEWHEEL)
+				event.deltaY = static_cast<CCoord> (zDelta);
+			else
+				event.deltaX = static_cast<CCoord> (zDelta);
+			pFrame->platformOnEvent (event);
+			if (event.consumed)
 				return 0;
 			break;
 		}
