@@ -985,16 +985,20 @@ void CViewContainer::dispatchEvent (Event& event)
 	CView::dispatchEvent (event);
 	if (event.consumed)
 		return;
+	CPoint mousePos;
+	auto mouseEvent = asMousePositionEvent (event);
+	if (mouseEvent)
+	{
+		mousePos = mouseEvent->mousePosition;
+		mouseEvent->mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
+		getTransform ().inverse ().transform (mouseEvent->mousePosition);
+	}
+	auto f = finally ([&] () { if (mouseEvent) mouseEvent->mousePosition = mousePos; });
 	switch (event.type)
 	{
 		case EventType::MouseWheel:
 		{
 			auto& wheelEvent = castMouseWheelEvent (event);
-			auto pos = wheelEvent.mousePosition;
-			auto f = finally ([&] () { wheelEvent.mousePosition = pos; });
-			CPoint where2 (pos);
-			wheelEvent.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
-			getTransform ().inverse ().transform (wheelEvent.mousePosition);
 			for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end;
 			     ++it)
 			{
