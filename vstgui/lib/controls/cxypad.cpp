@@ -4,6 +4,7 @@
 
 #include "cxypad.h"
 #include "../cdrawcontext.h"
+#include "../events.h"
 
 namespace VSTGUI {
 
@@ -145,20 +146,25 @@ CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& butto
 }
 
 //------------------------------------------------------------------------
-bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& _distance,
-                      const CButtonState& buttons)
+void CXYPad::onMouseWheelEvent (MouseWheelEvent& event)
 {
 	float x, y;
 	calculateXY (getValue (), x, y);
-	auto distance = _distance * getWheelInc ();
-	if (buttons & kMouseWheelInverted)
-		distance = -distance;
-	if (buttons & kShift)
-		distance *= 0.1f;
-	if (axis == kMouseWheelAxisX)
-		x += distance;
-	else
-		y += distance;
+
+	auto distanceX = event.deltaX * getWheelInc ();
+	auto distanceY = event.deltaY * getWheelInc ();
+	if (event.flags & MouseWheelEvent::DirectionInvertedFromDevice)
+	{
+		distanceX *= -1.;
+		distanceY *= -1.;
+	}
+	if (event.modifiers.has (ModifierKey::Shift))
+	{
+		distanceX *= 0.1;
+		distanceY *= 0.1;
+	}
+	x += distanceX;
+	y += distanceY;
 	boundValues (x, y);
 	onMouseWheelEditing (this);
 	setValue (calculateValue (x, y));
