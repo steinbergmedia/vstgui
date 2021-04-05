@@ -6,6 +6,7 @@
 #include "../../../lib/iviewlistener.h"
 #include "../../../lib/ccolor.h"
 #include "../../../lib/dragging.h"
+#include "../../../lib/events.h"
 #include "../unittests.h"
 #include <vector>
 
@@ -376,7 +377,12 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->onMouseMoved (p, kLButton) == kMouseEventNotHandled);
 		EXPECT(container->onMouseUp (p, kLButton) == kMouseEventNotHandled);
 		EXPECT(container->onMouseCancel () == kMouseEventHandled);
-		EXPECT(container->onWheel (p, kMouseWheelAxisX, 1.f, 0) == false);
+
+		MouseWheelEvent event;
+		event.mousePosition = p;
+		event.deltaX = 1.;
+		container->dispatchEvent (event);
+		EXPECT(event.consumed == false);
 	);
 
 	TEST(mouseEvents,
@@ -403,7 +409,10 @@ TESTCASE(CViewContainerTest,
 		EXPECT(v2->mouseUpCalled == false);
 		
 		p (60, 10);
-		EXPECT(container->onWheel (p, kMouseWheelAxisX, 0.5f, 0));
+		MouseWheelEvent event;
+		event.mousePosition = p;
+		event.deltaX = 0.5;
+		container->dispatchEvent (event);
 		EXPECT(v1->onWheelCalled == false);
 		EXPECT(v2->onWheelCalled);
 	);
