@@ -7,6 +7,7 @@
 #import "../../../crect.h"
 #import "../../../cpoint.h"
 #import "../../../ccolor.h"
+#import "../../../vstguifwd.h"
 
 #if MAC_COCOA && defined (__OBJC__)
 
@@ -68,6 +69,7 @@ extern HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent);
 extern HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode);
 extern HIDDEN int32_t eventButton (NSEvent* theEvent);
 extern HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p);
+extern HIDDEN NSImage* bitmapToNSImage (VSTGUI::CBitmap* bitmap);
 
 //------------------------------------------------------------------------------------
 // Helpers
@@ -112,14 +114,6 @@ HIDDEN inline NSColor* nsColorFromCColor (const VSTGUI::CColor& color)
 	                             green:color.normGreen<CGFloat> ()
 	                              blue:color.normBlue<CGFloat> ()
 	                             alpha:color.normAlpha<CGFloat> ()];
-}
-
-//------------------------------------------------------------------------------------
-HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image, double scaleFactor = 1.)
-{
-	auto width = CGImageGetWidth (image) / scaleFactor;
-	auto height = CGImageGetHeight (image) / scaleFactor;
-	return [[NSImage alloc] initWithCGImage:image size:NSMakeSize (width, height)];
 }
 
 //------------------------------------------------------------------------------------

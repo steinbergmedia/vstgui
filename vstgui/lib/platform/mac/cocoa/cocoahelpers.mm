@@ -8,6 +8,8 @@
 
 #include "../../../vstkeycode.h"
 #include "../../../cview.h"
+#include "../../../cbitmap.h"
+#include "../cgbitmap.h"
 
 //------------------------------------------------------------------------------------
 HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass)
@@ -222,5 +224,26 @@ HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p)
 	p = r.origin;
 }
 
+//-----------------------------------------------------------------------------
+HIDDEN NSImage* bitmapToNSImage (CBitmap* bitmap)
+{
+	if (!bitmap)
+		return nil;
+
+	NSImage* image =
+	    [[NSImage alloc] initWithSize:NSMakeSize (bitmap->getWidth (), bitmap->getHeight ())];
+	for (auto& platformBitmap : *bitmap)
+	{
+		if (auto cgBitmap = dynamic_cast<CGBitmap*> (platformBitmap.get ()))
+		{
+			if (auto rep = [[NSBitmapImageRep alloc] initWithCGImage:cgBitmap->getCGImage ()])
+			{
+				[image addRepresentation:rep];
+				[rep release];
+			}
+		}
+	}
+	return image;
+}
 
 #endif // MAC_COCOA

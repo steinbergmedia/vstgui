@@ -133,19 +133,12 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 					[nsItem setKeyEquivalentModifierMask:keyModifiers];
 				}
 			}
-			if (nsItem && item->getIcon ())
+			if (nsItem)
 			{
-				IPlatformBitmap* platformBitmap = item->getIcon ()->getPlatformBitmap ();
-				CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : nullptr;
-				CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
-				if (image)
+				if (auto nsImage = bitmapToNSImage (item->getIcon ()))
 				{
-					NSImage* nsImage = imageFromCGImageRef (image, cgBitmap->getScaleFactor ());
-					if (nsImage)
-					{
-						[nsItem setImage:nsImage];
-						[nsImage release];
-					}
+					[nsItem setImage:nsImage];
+					[nsImage release];
 				}
 			}
 		}
