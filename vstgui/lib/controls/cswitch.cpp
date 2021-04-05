@@ -6,6 +6,7 @@
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
 #include "../cvstguitimer.h"
+#include "../events.h"
 
 namespace VSTGUI {
 
@@ -558,11 +559,11 @@ int32_t CRockerSwitch::onKeyUp (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
-bool CRockerSwitch::onWheel (const CPoint& where, const CMouseWheelAxis& axis,
-                             const float& distance, const CButtonState& buttons)
+void CRockerSwitch::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (!getMouseEnabled ())
-		return false;
+	auto distance = event.deltaY;
+	if (distance == 0.)
+		return;
 
 	if (distance > 0)
 		value = getMin ();
@@ -582,7 +583,7 @@ bool CRockerSwitch::onWheel (const CPoint& where, const CMouseWheelAxis& axis,
 	resetValueTimer->stop ();
 	resetValueTimer->start ();
 
-	return true;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
