@@ -8,6 +8,7 @@
 #include "../cframe.h"
 #include "../cgraphicspath.h"
 #include "../cvstguitimer.h"
+#include "../events.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -232,18 +233,15 @@ CMouseEventResult CKnobBase::onMouseMoved (CPoint& where, const CButtonState& bu
 }
 
 //------------------------------------------------------------------------
-bool CKnobBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float &distance, const CButtonState &buttons)
+void CKnobBase::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (!getMouseEnabled ())
-		return false;
-
 	onMouseWheelEditing (this);
 
 	float v = getValueNormalized ();
-	if (buttons & kZoomModifier)
-		v += 0.1f * distance * getWheelInc ();
+	if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
+		v += 0.1f * event.deltaY * getWheelInc ();
 	else
-		v += distance * getWheelInc ();
+		v += event.deltaY * getWheelInc ();
 	setValueNormalized (v);
 
 	if (isDirty ())
@@ -251,7 +249,7 @@ bool CKnobBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const
 		invalid ();
 		valueChanged ();
 	}
-	return true;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
