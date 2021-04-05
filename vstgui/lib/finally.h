@@ -19,7 +19,6 @@ public:
 	{
 		action = std::move (other.action);
 		other.invoke (false);
-		return *this;
 	}
 	FinalAction (const FinalAction&) = delete;
 	FinalAction& operator= (const FinalAction&) = delete;
