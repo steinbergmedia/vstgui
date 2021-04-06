@@ -279,6 +279,7 @@ private:
 #endif
 	void initModalViewSession (const ModalViewSession& session);
 	void clearModalViewSessions ();
+	void dispatchKeyboardEvent (KeyboardEvent& event);
 
 	struct Impl;
 	Impl* pImpl {nullptr};

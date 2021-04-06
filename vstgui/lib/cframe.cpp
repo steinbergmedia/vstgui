@@ -700,17 +700,75 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 }
 
 //-----------------------------------------------------------------------------
+void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
+{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	VstKeyCode vstKeyCode = toVstKeyCode (event);
+	int32_t result = 0;
+	if (event.type == EventType::KeyUp)
+		result = keyboardHooksOnKeyUp (vstKeyCode);
+	else
+		result = keyboardHooksOnKeyDown (vstKeyCode);
+	if (result != -1)
+	{
+		event.consumed = true;
+		return;
+	}
+#endif
+	if (pImpl->focusView)
+	{
+		CBaseObjectGuard og (pImpl->focusView);
+		if (pImpl->focusView->getMouseEnabled ())
+			pImpl->focusView->onKeyboardEvent (event);
+		if (event.consumed)
+			return;
+		CView* parent = pImpl->focusView->getParentView ();
+		while (parent && parent != this)
+		{
+			if (parent->getMouseEnabled ())
+			{
+				parent->onKeyboardEvent (event);
+				if (event.consumed)
+					return;
+			}
+			parent = parent->getParentView ();
+		}
+	}
+	if (auto modalView = getModalView ())
+	{
+		CBaseObjectGuard og (modalView);
+		modalView->onKeyboardEvent (event);
+		if (event.consumed)
+			return;
+	}
+	if (event.type != EventType::KeyUp)
+	{
+		if (event.modifiers.empty () || event.modifiers.is (ModifierKey::Shift))
+		{
+			if (advanceNextFocusView (pImpl->focusView, event.modifiers.is (ModifierKey::Shift)))
+				event.consumed = true;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CFrame::dispatchEvent (Event& event)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 
-	auto modalView = getModalView ();
+	if (auto keyEvent = asKeyboardEvent (event))
+	{
+		dispatchKeyboardEvent (*keyEvent);
+		return;
+	}
+
 	auto mousePosEvent = asMousePositionEvent (event);
 	CPoint mousePosition;
 	if (mousePosEvent)
 		mousePosition = mousePosEvent->mousePosition;
 
+	auto modalView = getModalView ();
 	if (modalView && mousePosEvent)
 		getTransform ().inverse ().transform (mousePosEvent->mousePosition);
 

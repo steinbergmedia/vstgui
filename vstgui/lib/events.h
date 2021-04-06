@@ -8,6 +8,10 @@
 #include "cbuttonstate.h"
 #include "cpoint.h"
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "vstkeycode.h"
+#endif
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -122,7 +126,7 @@ struct MouseWheelEvent : MousePositionEvent
  */
 enum class VirtualKey : uint32_t
 {
-	Unknown = 0,
+	None = 0,
 
 	Back,
 	Tab,
@@ -186,7 +190,8 @@ enum class VirtualKey : uint32_t
 	ControlModifier,
 	AltModifier,
 
-	Equals
+	Equals,
+	// DO NOT CHANGE THE ORDER ABOVE
 
 };
 
@@ -215,7 +220,7 @@ struct KeyboardEvent : ModifierEvent
 	/** UTF-16 character */
 	uint32_t character {0};
 	/** virtual key */
-	VirtualKey virt {VirtualKey::Unknown};
+	VirtualKey virt {VirtualKey::None};
 };
 
 //------------------------------------------------------------------------
@@ -252,6 +257,23 @@ inline ModifierEvent* asModifierEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
+/** event as keyboard event or nullpointer if not a keyboard event
+ *	@ingroup new_in_4_11
+ */
+inline KeyboardEvent* asKeyboardEvent (Event& event)
+{
+	switch (event.type)
+	{
+		case EventType::KeyDown:
+		case EventType::KeyRepeat:
+		case EventType::KeyUp:
+			return static_cast<KeyboardEvent*> (&event);
+		default: break;
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
 /** cast to a mouse wheel event
  *	@ingroup new_in_4_11
  */
@@ -262,7 +284,18 @@ inline MouseWheelEvent& castMouseWheelEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/**
+/** cast to a mouse wheel event
+ *	@ingroup new_in_4_11
+ */
+inline KeyboardEvent& castKeyboardEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::KeyDown || event.type == EventType::KeyUp ||
+	               event.type == EventType::KeyRepeat);
+	return static_cast<KeyboardEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** helper function to convert from new Modifiers to old CButtonState
  *	@ingroup new_in_4_11
  */
 inline CButtonState buttonStateFromEventModifiers (const Modifiers& mods)
@@ -277,6 +310,37 @@ inline CButtonState buttonStateFromEventModifiers (const Modifiers& mods)
 	return state;
 }
 
+//------------------------------------------------------------------------
+/** helper function to convert from new VirtualKey to old VstVirtualKey
+ *
+ *	returns 0 if key cannot be mapped
+ *	@ingroup new_in_4_11
+ */
+inline unsigned char toVstVirtualKey (VirtualKey key)
+{
+	auto k = static_cast<uint32_t> (key);
+	if (k <= static_cast<uint32_t> (VirtualKey::Equals))
+		return static_cast<unsigned char> (k);
+	return 0;
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+inline VstKeyCode toVstKeyCode (const KeyboardEvent& event)
+{
+	VstKeyCode keyCode {};
+	keyCode.character = event.character;
+	keyCode.virt = toVstVirtualKey (event.virt);
+	if (event.modifiers.has (ModifierKey::Shift))
+		keyCode.modifier |= MODIFIER_SHIFT;
+	if (event.modifiers.has (ModifierKey::Alt))
+		keyCode.modifier |= MODIFIER_ALTERNATE;
+	if (event.modifiers.has (ModifierKey::Control))
+		keyCode.modifier |= MODIFIER_CONTROL;
+	if (event.modifiers.has (ModifierKey::Super))
+		keyCode.modifier |= MODIFIER_COMMAND;
+	return keyCode;
+}
+#endif
 
 //------------------------------------------------------------------------
 } // VSTGUI

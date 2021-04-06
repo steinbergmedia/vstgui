@@ -1021,6 +1021,13 @@ void CViewContainer::dispatchEvent (Event& event)
 				}
 			}
 		}
+		case EventType::KeyUp:
+		case EventType::KeyRepeat:
+		case EventType::KeyDown:
+		{
+			vstgui_assert (false);
+			break;
+		}
 		default: break;
 	}
 }

@@ -14,7 +14,6 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <Cocoa/Cocoa.h>
-struct VstKeyCode;
 
 #define HIDDEN __attribute__((__visibility__("hidden")))
 
@@ -65,7 +64,7 @@ static void (*SuperViewWillRedraw) (id, SEL) = SuperDealloc;
 
 //------------------------------------------------------------------------------------
 extern HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass);
-extern HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent);
+extern HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, VSTGUI::KeyboardEvent& event);
 extern HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode);
 extern HIDDEN int32_t eventButton (NSEvent* theEvent);
 extern HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p);

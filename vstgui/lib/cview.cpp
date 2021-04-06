@@ -469,10 +469,6 @@ void CView::onMouseWheelEvent (MouseWheelEvent& event)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 #include "private/disabledeprecatedmessage.h"
-
-	if (!getMouseEnabled ())
-		return;
-
 	auto buttons = buttonStateFromEventModifiers (event.modifiers);
 	if (event.flags | MouseWheelEvent::DirectionInvertedFromDevice)
 		buttons |= kMouseWheelInverted;
@@ -491,6 +487,36 @@ void CView::onMouseWheelEvent (MouseWheelEvent& event)
 }
 
 //------------------------------------------------------------------------
+void CView::onKeyboardEvent (KeyboardEvent& event)
+{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	auto keyCode = toVstKeyCode (event);
+
+	switch (event.type)
+	{
+		case EventType::KeyDown: [[fallthrough]];
+		case EventType::KeyRepeat:
+		{
+			if (onKeyDown (keyCode) == 1)
+				event.consumed = true;
+			break;
+		}
+		case EventType::KeyUp:
+		{
+			if (onKeyUp (keyCode) == 1)
+				event.consumed = true;
+			break;
+		}
+		default:
+		{
+			vstgui_assert (false);
+			break;
+		}
+	}
+#endif
+}
+
+//------------------------------------------------------------------------
 void CView::dispatchEvent (Event& event)
 {
 	switch (event.type)
@@ -501,21 +527,16 @@ void CView::dispatchEvent (Event& event)
 			onMouseWheelEvent (wheelEvent);
 			break;
 		}
-		case EventType::KeyUp:
-		{
-			break;
-		}
-		case EventType::KeyRepeat:
-		{
-			break;
-		}
+		case EventType::KeyUp: [[fallthrough]];
+		case EventType::KeyRepeat: [[fallthrough]];
 		case EventType::KeyDown:
 		{
+			auto& keyEvent = castKeyboardEvent (event);
+			onKeyboardEvent (keyEvent);
 			break;
 		}
-		case EventType::Unknown: assert (false); break;
+		case EventType::Unknown: vstgui_assert (false); break;
 	}
-	
 }
 
 //-----------------------------------------------------------------------------

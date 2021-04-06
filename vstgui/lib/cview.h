@@ -82,6 +82,7 @@ public:
 	//@}
 
 	virtual void onMouseWheelEvent (MouseWheelEvent& event);
+	virtual void onKeyboardEvent (KeyboardEvent& event);
 
 	virtual void dispatchEvent (Event& event);
 	//-----------------------------------------------------------------------------

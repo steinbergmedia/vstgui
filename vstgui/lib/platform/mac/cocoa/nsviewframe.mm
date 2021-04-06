@@ -470,12 +470,14 @@ static BOOL VSTGUI_NSView_performKeyEquivalent (id self, SEL _cmd, NSEvent* theE
 			firstResponder = [firstResponder superview];
 		if (firstResponder == self)
 		{
-			IPlatformFrameCallback* frame = getFrame (self);
-			if (frame)
+			if (auto _vstguiframe = getFrame (self))
 			{
-				VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
-				if (frame->platformOnKeyDown (keyCode))
-					return YES;
+				KeyboardEvent keyEvent;
+				if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
+				{
+					_vstguiframe->platformOnEvent (keyEvent);
+					return keyEvent.consumed ? YES: NO;
+				}
 			}
 		}
 	}
@@ -489,18 +491,22 @@ static void VSTGUI_NSView_keyDown (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 
-	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
-	
-	bool res = _vstguiframe->platformOnKeyDown (keyCode);
-	if (!res&& keyCode.virt == VKEY_TAB)
+	KeyboardEvent keyEvent;
+	if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
 	{
-		if (keyCode.modifier & kShift)
-			[[self window] selectKeyViewPrecedingView:self];
-		else
-			[[self window] selectKeyViewFollowingView:self];
+		_vstguiframe->platformOnEvent (keyEvent);
+		if (keyEvent.consumed)
+			return;
+		if (keyEvent.virt == VirtualKey::Tab)
+		{
+			if (keyEvent.modifiers.has (ModifierKey::Shift))
+				[[self window] selectKeyViewPrecedingView:self];
+			else
+				[[self window] selectKeyViewFollowingView:self];
+			return;
+		}
 	}
-	else if (!res)
-		[[self nextResponder] keyDown:theEvent];
+	[[self nextResponder] keyDown:theEvent];
 }
 
 //------------------------------------------------------------------------------------
@@ -510,11 +516,14 @@ static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 
-	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
-
-	bool res = _vstguiframe->platformOnKeyUp (keyCode);
-	if (!res)
-		[[self nextResponder] keyUp:theEvent];
+	KeyboardEvent keyEvent;
+	if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
+	{
+		_vstguiframe->platformOnEvent (keyEvent);
+		if (keyEvent.consumed)
+			return;
+	}
+	[[self nextResponder] keyUp:theEvent];
 }
 
 //------------------------------------------------------------------------------------
