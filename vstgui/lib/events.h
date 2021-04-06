@@ -270,6 +270,7 @@ inline MousePositionEvent* asMousePositionEvent (Event& event)
 {
 	switch (event.type)
 	{
+		case EventType::ZoomGesture: [[fallthrough]];
 		case EventType::MouseWheel:
 			return static_cast<MousePositionEvent*> (&event);
 		default: break;
