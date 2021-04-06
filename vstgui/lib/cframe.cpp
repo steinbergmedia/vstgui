@@ -741,7 +741,7 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 		if (event.consumed)
 			return;
 	}
-	if (event.type != EventType::KeyUp)
+	if (event.type != EventType::KeyUp && event.virt == VirtualKey::Tab)
 	{
 		if (event.modifiers.empty () || event.modifiers.is (ModifierKey::Shift))
 		{
