@@ -144,6 +144,10 @@ public:
 	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance,
+	              const CButtonState& buttons) final;
+#endif
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	virtual void onTouchEvent (ITouchEvent& event) override;
 	virtual bool wantsMultiTouchEvents () const override { return true; }

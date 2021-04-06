@@ -979,6 +979,15 @@ bool CViewContainer::hitTest (const CPoint& where, const CButtonState& buttons)
 	return CView::hitTest (where2, buttons);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+bool CViewContainer::onWheel (const CPoint& where, const CMouseWheelAxis& axis,
+                              const float& distance, const CButtonState& buttons)
+{
+	return false;
+}
+#endif
+
 //------------------------------------------------------------------------
 void CViewContainer::dispatchEvent (Event& event)
 {
