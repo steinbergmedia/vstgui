@@ -612,6 +612,7 @@ TESTCASE(CFrameTest,
 );
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "../../../lib/private/disabledeprecatedmessage.h"
 TESTCASE(CFrameLegacyTest,
 	TEST(setModalView,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
@@ -628,6 +629,7 @@ TESTCASE(CFrameLegacyTest,
 		EXPECT (frame->getModalView () == nullptr);
 	);
 );
+#include "../../../lib/private/enbledeprecatedmessage.h"
 #endif
 
 } // VSTGUI

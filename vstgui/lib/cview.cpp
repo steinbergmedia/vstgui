@@ -468,6 +468,8 @@ bool CView::removed (CView* parent)
 void CView::onMouseWheelEvent (MouseWheelEvent& event)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
+
 	if (!getMouseEnabled ())
 		return;
 
@@ -484,6 +486,7 @@ void CView::onMouseWheelEvent (MouseWheelEvent& event)
 		if (onWheel (event.mousePosition, kMouseWheelAxisY, event.deltaY, buttons))
 			event.consumed = true;
 	}
+#include "private/enbledeprecatedmessage.h"
 #endif
 }
 

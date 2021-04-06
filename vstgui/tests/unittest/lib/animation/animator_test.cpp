@@ -48,6 +48,7 @@ struct MessageReceiver : public CBaseObject
 
 } // anonymous
 
+#include "../../../../lib/private/disabledeprecatedmessage.h"
 //-----------------------------------------------------------------------------
 TESTCASE(AnimatorTest,
 	CFRunLoopGetMain ();
@@ -91,6 +92,7 @@ TESTCASE(AnimatorTest,
 	);
 #endif
 );
+#include "../../../../lib/private/enbledeprecatedmessage.h"
 
 } // VSTGUI
 
