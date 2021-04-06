@@ -53,18 +53,35 @@ struct Event
  */
 struct Modifiers
 {
-	explicit Modifiers (uint32_t data = 0) : data (data) {}
+	Modifiers () = default;
 	Modifiers (const Modifiers&) = default;
 	
+	/** test if no modifier key is set */
 	bool empty () const { return data == 0;}
+	/** test if modifier key is set */
 	bool has (ModifierKey modifier) const { return data & cast (modifier); }
+	/** test if modifier key is set exclusively */
 	bool is (ModifierKey modifier) const { return data == cast (modifier); }
-
+	/** test if the modifier keys are set exclusively */
+	bool is (const std::initializer_list<ModifierKey>& modifiers) const
+	{
+		uint32_t d = 0;
+		for (auto& mod : modifiers)
+			d |= cast (mod);
+		return data == d;
+	}
+	/** test if modifier key is set */
 	bool operator| (ModifierKey modifier) const { return has (modifier); }
+	/** test if modifier key is set exclusively */
 	bool operator== (ModifierKey modifier) const { return is (modifier); }
 
+	/** add a modifier key */
 	void add (ModifierKey modifier) { data |= cast (modifier); }
+	/** remove a modifier key */
 	void remove (ModifierKey modifier) { data &= ~cast (modifier); }
+	/** clear all modifiers */
+	void clear () { data = 0; }
+	/** set to one modifier key */
 	Modifiers& operator= (ModifierKey modifier)
 	{
 		data = cast (modifier);
