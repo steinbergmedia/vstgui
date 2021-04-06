@@ -517,6 +517,11 @@ void CView::onKeyboardEvent (KeyboardEvent& event)
 }
 
 //------------------------------------------------------------------------
+void CView::onZoomGestureEvent (ZoomGestureEvent& event)
+{
+}
+
+//------------------------------------------------------------------------
 void CView::dispatchEvent (Event& event)
 {
 	switch (event.type)
@@ -525,6 +530,12 @@ void CView::dispatchEvent (Event& event)
 		{
 			auto& wheelEvent = castMouseWheelEvent (event);
 			onMouseWheelEvent (wheelEvent);
+			break;
+		}
+		case EventType::ZoomGesture:
+		{
+			auto& zoomGesture = castZoomGestureEvent (event);
+			onZoomGestureEvent (zoomGesture);
 			break;
 		}
 		case EventType::KeyUp: [[fallthrough]];

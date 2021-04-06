@@ -490,6 +490,19 @@ void UIEditView::onMouseWheelEvent (MouseWheelEvent& event)
 		CViewContainer::onMouseWheelEvent (event);
 }
 
+//------------------------------------------------------------------------
+void UIEditView::onZoomGestureEvent (ZoomGestureEvent& event)
+{
+	if (editing)
+	{
+		auto scale = getTransform ().m11;
+		auto newScale = scale + scale * event.zoom;
+		setScale (newScale);
+	}
+	else
+		CViewContainer::onZoomGestureEvent (event);
+}
+
 //----------------------------------------------------------------------------------------------------
 void UIEditView::invalidSelection ()
 {

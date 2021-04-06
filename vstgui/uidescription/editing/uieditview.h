@@ -107,6 +107,7 @@ protected:
 	CViewContainer* getContainerAt (const CPoint& p, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool advanceNextFocusView (CView* oldFocus, bool reverse) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
+	void onZoomGestureEvent (ZoomGestureEvent& event) override;
 
 	void looseFocus () override;
 	void takeFocus () override;

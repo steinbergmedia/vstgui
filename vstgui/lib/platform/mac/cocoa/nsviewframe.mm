@@ -527,6 +527,33 @@ static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
+static void VSTGUI_NSView_magnifyWithEvent (id self, SEL _cmd, NSEvent* theEvent)
+{
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
+	if (!_vstguiframe)
+		return;
+
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [self convertPoint:nsPoint fromView:nil];
+
+	ZoomGestureEvent event;
+	switch (theEvent.phase)
+	{
+		case NSEventPhaseBegan: event.phase = ZoomGestureEvent::Phase::Begin; break;
+		case NSEventPhaseChanged: event.phase = ZoomGestureEvent::Phase::Changed; break;
+		case NSEventPhaseCancelled: [[fallthrough]];
+		case NSEventPhaseEnded: event.phase = ZoomGestureEvent::Phase::End; break;
+		default: return;
+	}
+
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.zoom = theEvent.magnification;
+	
+	_vstguiframe->platformOnEvent (event);
+}
+
+//------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id sender)
 {
 	NSViewFrame* frame = getNSViewFrame (self);
@@ -795,6 +822,8 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(performKeyEquivalent:), IMP (VSTGUI_NSView_performKeyEquivalent), "B@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(keyDown:), IMP (VSTGUI_NSView_keyDown), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(keyUp:), IMP (VSTGUI_NSView_keyUp), "v@:@:^:"))
+
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(magnifyWithEvent:), IMP (VSTGUI_NSView_magnifyWithEvent), "v@:@:^:"))
 
 		sprintf (funcSig, "%s@:@:", @encode(NSFocusRingType));
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(focusRingType), IMP (VSTGUI_NSView_focusRingType), funcSig))

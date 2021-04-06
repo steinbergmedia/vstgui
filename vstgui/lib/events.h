@@ -26,6 +26,7 @@ enum class EventType : uint32_t
 	KeyRepeat,
 	KeyDown,
 	MouseWheel,
+	ZoomGesture,
 };
 
 //------------------------------------------------------------------------
@@ -133,6 +134,27 @@ struct MouseWheelEvent : MousePositionEvent
 	uint32_t flags {0};
 
 	MouseWheelEvent () { type = EventType::MouseWheel; }
+};
+
+//------------------------------------------------------------------------
+struct GestureEvent : MousePositionEvent
+{
+	enum class Phase {
+		Unknown,
+		Begin,
+		Changed,
+		End,
+	};
+	
+	Phase phase {Phase::Unknown};
+};
+
+//------------------------------------------------------------------------
+struct ZoomGestureEvent : GestureEvent
+{
+	double zoom;
+
+	ZoomGestureEvent () { type = EventType::ZoomGesture; }
 };
 
 //------------------------------------------------------------------------
@@ -291,6 +313,16 @@ inline KeyboardEvent* asKeyboardEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
+/** cast to a mouse position event
+ *	@ingroup new_in_4_11
+ */
+inline MousePositionEvent& castMousePositionEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::MouseWheel || event.type == EventType::ZoomGesture);
+	return static_cast<MousePositionEvent&> (event);
+}
+
+//------------------------------------------------------------------------
 /** cast to a mouse wheel event
  *	@ingroup new_in_4_11
  */
@@ -298,6 +330,16 @@ inline MouseWheelEvent& castMouseWheelEvent (Event& event)
 {
 	vstgui_assert (event.type == EventType::MouseWheel);
 	return static_cast<MouseWheelEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** cast to a zoom gesture event
+ *	@ingroup new_in_4_11
+ */
+inline ZoomGestureEvent& castZoomGestureEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::ZoomGesture);
+	return static_cast<ZoomGestureEvent&> (event);
 }
 
 //------------------------------------------------------------------------

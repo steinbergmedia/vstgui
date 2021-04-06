@@ -1005,24 +1005,26 @@ void CViewContainer::dispatchEvent (Event& event)
 	auto f = finally ([&] () { if (mouseEvent) mouseEvent->mousePosition = mousePos; });
 	switch (event.type)
 	{
+		case EventType::ZoomGesture:
 		case EventType::MouseWheel:
 		{
-			auto& wheelEvent = castMouseWheelEvent (event);
+			auto& mousePosEvent = castMousePositionEvent (event);
 			for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end;
 			     ++it)
 			{
 				const auto& pV = *it;
 				if (pV && pV->isVisible () && pV->getMouseEnabled () &&
-				    pV->getMouseableArea ().pointInside (wheelEvent.mousePosition))
+				    pV->getMouseableArea ().pointInside (mousePosEvent.mousePosition))
 				{
-					pV->dispatchEvent (wheelEvent);
+					pV->dispatchEvent (event);
 					if (!pV->getTransparency () || event.consumed)
 						return;
 				}
 			}
+			break;
 		}
-		case EventType::KeyUp:
-		case EventType::KeyRepeat:
+		case EventType::KeyUp: [[fallthrough]];
+		case EventType::KeyRepeat: [[fallthrough]];
 		case EventType::KeyDown:
 		{
 			vstgui_assert (false);
