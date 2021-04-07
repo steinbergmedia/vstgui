@@ -37,10 +37,9 @@ HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, KeyboardEvent& ev
 		event.type = EventType::KeyUp;
 	else if (theEvent.type == NSEventTypeKeyDown || theEvent.type == NSEventTypeFlagsChanged)
 	{
+		event.type = EventType::KeyDown;
 		if (theEvent.ARepeat)
-			event.type = EventType::KeyRepeat;
-		else
-			event.type = EventType::KeyDown;
+			event.isRepeat = true;
 	}
 	else
 		return false;

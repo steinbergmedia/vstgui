@@ -495,8 +495,7 @@ void CView::onKeyboardEvent (KeyboardEvent& event)
 
 	switch (event.type)
 	{
-		case EventType::KeyDown: [[fallthrough]];
-		case EventType::KeyRepeat:
+		case EventType::KeyDown:
 		{
 			if (onKeyDown (keyCode) == 1)
 				event.consumed = true;
@@ -541,7 +540,6 @@ void CView::dispatchEvent (Event& event)
 			break;
 		}
 		case EventType::KeyUp: [[fallthrough]];
-		case EventType::KeyRepeat: [[fallthrough]];
 		case EventType::KeyDown:
 		{
 			auto& keyEvent = castKeyboardEvent (event);

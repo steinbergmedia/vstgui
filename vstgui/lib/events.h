@@ -23,7 +23,6 @@ enum class EventType : uint32_t
 {
 	Unknown,
 	KeyUp,
-	KeyRepeat,
 	KeyDown,
 	MouseWheel,
 	ZoomGesture,
@@ -260,6 +259,8 @@ struct KeyboardEvent : ModifierEvent
 	uint32_t character {0};
 	/** virtual key */
 	VirtualKey virt {VirtualKey::None};
+	/** indicates for a key down event if this is a repeated key down */
+	bool isRepeat {false};
 };
 
 //------------------------------------------------------------------------
@@ -286,9 +287,8 @@ inline ModifierEvent* asModifierEvent (Event& event)
 {
 	switch (event.type)
 	{
-		case EventType::KeyDown:
-		case EventType::KeyRepeat:
-		case EventType::KeyUp:
+		case EventType::KeyDown: [[fallthrough]];
+		case EventType::KeyUp: [[fallthrough]];
 		case EventType::MouseWheel:
 			return static_cast<ModifierEvent*> (&event);
 		default: break;
@@ -304,8 +304,7 @@ inline KeyboardEvent* asKeyboardEvent (Event& event)
 {
 	switch (event.type)
 	{
-		case EventType::KeyDown:
-		case EventType::KeyRepeat:
+		case EventType::KeyDown: [[fallthrough]];
 		case EventType::KeyUp:
 			return static_cast<KeyboardEvent*> (&event);
 		default: break;
@@ -349,8 +348,7 @@ inline ZoomGestureEvent& castZoomGestureEvent (Event& event)
  */
 inline KeyboardEvent& castKeyboardEvent (Event& event)
 {
-	vstgui_assert (event.type == EventType::KeyDown || event.type == EventType::KeyUp ||
-	               event.type == EventType::KeyRepeat);
+	vstgui_assert (event.type == EventType::KeyDown || event.type == EventType::KeyUp);
 	return static_cast<KeyboardEvent&> (event);
 }
 

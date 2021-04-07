@@ -1024,7 +1024,6 @@ void CViewContainer::dispatchEvent (Event& event)
 			break;
 		}
 		case EventType::KeyUp: [[fallthrough]];
-		case EventType::KeyRepeat: [[fallthrough]];
 		case EventType::KeyDown:
 		{
 			vstgui_assert (false);
