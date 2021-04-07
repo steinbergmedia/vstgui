@@ -846,9 +846,10 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 }
 
 //------------------------------------------------------------------------
-int32_t UIEditView::onKeyDown (VstKeyCode& keyCode)
+void UIEditView::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (mouseEditMode != MouseEditMode::NoEditing && keyCode.virt == VKEY_ESCAPE)
+	if (mouseEditMode != MouseEditMode::NoEditing && event.virt == VirtualKey::Escape &&
+	    event.type == EventType::KeyDown)
 	{
 		if (lines)
 		{
@@ -863,9 +864,10 @@ int32_t UIEditView::onKeyDown (VstKeyCode& keyCode)
 		}
 		mouseEditMode = MouseEditMode::NoEditing;
 		getFrame ()->setCursor (kCursorDefault);
-		return 1;
+		event.consumed = true;
+		return;
 	}
-	return CViewContainer::onKeyDown (keyCode);
+	CViewContainer::onKeyboardEvent (event);
 }
 
 //-----------------------------------------------------------------------------

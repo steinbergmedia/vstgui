@@ -84,7 +84,7 @@ protected:
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	std::vector<CView*> findChildsInArea (CViewContainer* view, CRect r) const;
 
