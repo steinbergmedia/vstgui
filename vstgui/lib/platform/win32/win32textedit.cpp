@@ -202,10 +202,14 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 				{
 					if (auto keyEvent = keyMessageToKeyboardEvent (wParam, lParam))
 					{
-						keyEvent->eventType = EventType::KeyDown;
+						keyEvent->type = EventType::KeyDown;
 						// for now only dispatch virtual keys
-						if (keyEvent->character == 0 && win32TextEdit->textEdit->platformOnKeyboardEvent (*keyEvent))
-							return 0;
+						if (keyEvent->character == 0)
+						{
+							win32TextEdit->textEdit->platformOnKeyboardEvent (*keyEvent);
+							if (keyEvent->consumed)
+								return 0;
+						}
 					}
 				}
 				break;

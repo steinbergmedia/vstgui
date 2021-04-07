@@ -36,6 +36,7 @@ struct Event
 {
 	Event () noexcept;
 	Event (const Event&) = delete;
+	Event (Event&&) = default;
 
 	/** Type */
 	EventType type {EventType::Unknown};
