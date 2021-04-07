@@ -677,10 +677,12 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
 			ScreenToClient (windowHandle, &p);
 			wheelEvent.mousePosition = {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
+			if (zDelta != WHEEL_DELTA)
+				wheelEvent.flags |= MouseWheelEvent::Flags::PreciseDeltas;
 			if (message == WM_MOUSEWHEEL)
-				wheelEvent.deltaY = static_cast<CCoord> (zDelta);
+				wheelEvent.deltaY = static_cast<CCoord> (zDelta) / WHEEL_DELTA;
 			else
-				wheelEvent.deltaX = static_cast<CCoord> (zDelta);
+				wheelEvent.deltaX = static_cast<CCoord> (zDelta) / WHEEL_DELTA;
 			pFrame->platformOnEvent (wheelEvent);
 			if (wheelEvent.consumed)
 				return 0;
