@@ -474,12 +474,12 @@ void CView::onMouseWheelEvent (MouseWheelEvent& event)
 		buttons |= kMouseWheelInverted;
 	if (event.deltaX != 0.)
 	{
-		if (onWheel (event.mousePosition, kMouseWheelAxisX, event.deltaX, buttons))
+		if (onWheel (event.mousePosition, kMouseWheelAxisX, static_cast<float> (event.deltaX), buttons))
 			event.consumed = true;
 	}
 	if (event.deltaY != 0.)
 	{
-		if (onWheel (event.mousePosition, kMouseWheelAxisY, event.deltaY, buttons))
+		if (onWheel (event.mousePosition, kMouseWheelAxisY, static_cast<float> (event.deltaY), buttons))
 			event.consumed = true;
 	}
 #include "private/enbledeprecatedmessage.h"

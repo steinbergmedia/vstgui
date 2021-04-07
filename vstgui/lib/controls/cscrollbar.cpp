@@ -316,9 +316,9 @@ void CScrollbar::onMouseWheelEvent (MouseWheelEvent& event)
 
 	float distance = 0.f;
 	if (direction == kHorizontal)
-		distance = event.deltaX;
+		distance = static_cast<float> (event.deltaX);
 	else
-		distance = event.deltaY;
+		distance = static_cast<float> (event.deltaY);
 
 	if (distance == 0.f)
 		return;

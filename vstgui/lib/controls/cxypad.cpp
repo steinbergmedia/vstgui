@@ -151,17 +151,17 @@ void CXYPad::onMouseWheelEvent (MouseWheelEvent& event)
 	float x, y;
 	calculateXY (getValue (), x, y);
 
-	auto distanceX = event.deltaX * getWheelInc ();
-	auto distanceY = event.deltaY * getWheelInc ();
+	auto distanceX = static_cast<float> (event.deltaX) * getWheelInc ();
+	auto distanceY = static_cast<float> (event.deltaY) * getWheelInc ();
 	if (event.flags & MouseWheelEvent::DirectionInvertedFromDevice)
 	{
-		distanceX *= -1.;
-		distanceY *= -1.;
+		distanceX *= -1.f;
+		distanceY *= -1.f;
 	}
 	if (event.modifiers.has (ModifierKey::Shift))
 	{
-		distanceX *= 0.1;
-		distanceY *= 0.1;
+		distanceX *= 0.1f;
+		distanceY *= 0.1f;
 	}
 	x += distanceX;
 	y += distanceY;

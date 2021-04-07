@@ -239,9 +239,9 @@ void CKnobBase::onMouseWheelEvent (MouseWheelEvent& event)
 
 	float v = getValueNormalized ();
 	if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
-		v += 0.1f * event.deltaY * getWheelInc ();
+		v += 0.1f * static_cast<float> (event.deltaY) * getWheelInc ();
 	else
-		v += event.deltaY * getWheelInc ();
+		v += static_cast<float> (event.deltaY) * getWheelInc ();
 	setValueNormalized (v);
 
 	if (isDirty ())

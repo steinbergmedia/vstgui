@@ -519,9 +519,9 @@ void CSliderBase::onMouseWheelEvent (MouseWheelEvent& event)
 		distance *= -1.;
 	float normValue = getValueNormalized ();
 	if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
-		normValue += 0.1 * distance * getWheelInc ();
+		normValue += 0.1f * static_cast<float> (distance) * getWheelInc ();
 	else
-		normValue += distance * getWheelInc ();
+		normValue += static_cast<float> (distance) * getWheelInc ();
 
 	setValueNormalized (normValue);
 
