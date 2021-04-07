@@ -24,6 +24,7 @@
 #include "../../cgradient.h"
 #include "../../cinvalidrectlist.h"
 #include "../../events.h"
+#include "../../finally.h"
 
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"
@@ -616,7 +617,11 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 	SharedPointer<Win32Frame> lifeGuard (this);
 	IPlatformFrameCallback* pFrame = getFrame ();
 	bool doubleClick = false;
-	
+
+	auto oldEvent = std::move (currentEvent);
+	auto f = finally ([this, oldEvent = std::move (oldEvent)] () mutable { currentEvent = std::move (oldEvent); });
+	currentEvent = Optional<MSG> ({hwnd, message, wParam, lParam});
+
 	switch (message)
 	{
 		case WM_MOUSEWHEEL:
@@ -778,7 +783,8 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			if (message == WM_KEYDOWN)
 			{
 				keyEvent.type = EventType::KeyDown;
-				if (lParam & 0xFFFF)
+				auto repeatCount = (lParam & 0xFFFF);
+				if (repeatCount > 1)
 					keyEvent.isRepeat = true;
 			}
 			else
@@ -847,6 +853,22 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		}
 	}
 	return DefWindowProc (hwnd, message, wParam, lParam);
+}
+
+//-----------------------------------------------------------------------------
+Optional<UTF8String> Win32Frame::convertCurrentKeyEventToText ()
+{
+	if (currentEvent && currentEvent->message == WM_KEYDOWN)
+	{
+		MSG msg;
+		if (PeekMessage (&msg, windowHandle, WM_CHAR, WM_CHAR, PM_REMOVE | PM_NOYIELD))
+		{
+			std::wstring wideStr (1, static_cast<wchar_t> (msg.wParam));
+			UTF8StringHelper helper (wideStr.data ());
+			return Optional<UTF8String> (UTF8String (helper.getUTF8String ()));
+		}
+	}
+	return {};
 }
 
 //-----------------------------------------------------------------------------
