@@ -607,70 +607,6 @@ void Win32Frame::paint (HWND hwnd)
 	inPaint = false;
 }
 
-static unsigned char translateWinVirtualKey (WPARAM winVKey)
-{
-	switch (winVKey)
-	{
-		case VK_BACK: return VKEY_BACK;
-		case VK_TAB: return VKEY_TAB;
-		case VK_CLEAR: return VKEY_CLEAR;
-		case VK_RETURN: return VKEY_RETURN;
-		case VK_PAUSE: return VKEY_PAUSE;
-		case VK_ESCAPE: return VKEY_ESCAPE;
-		case VK_SPACE: return VKEY_SPACE;
-// TODO:		case VK_NEXT: return VKEY_NEXT;
-		case VK_END: return VKEY_END;
-		case VK_HOME: return VKEY_HOME;
-		case VK_LEFT: return VKEY_LEFT;
-		case VK_RIGHT: return VKEY_RIGHT;
-		case VK_UP: return VKEY_UP;
-		case VK_DOWN: return VKEY_DOWN;
-		case VK_PRIOR: return VKEY_PAGEUP;
-		case VK_NEXT: return VKEY_PAGEDOWN;
-		case VK_SELECT: return VKEY_SELECT;
-		case VK_PRINT: return VKEY_PRINT;
-		case VK_SNAPSHOT: return VKEY_SNAPSHOT;
-		case VK_INSERT: return VKEY_INSERT;
-		case VK_DELETE: return VKEY_DELETE;
-		case VK_HELP: return VKEY_HELP;
-		case VK_NUMPAD0: return VKEY_NUMPAD0;
-		case VK_NUMPAD1: return VKEY_NUMPAD1;
-		case VK_NUMPAD2: return VKEY_NUMPAD2;
-		case VK_NUMPAD3: return VKEY_NUMPAD3;
-		case VK_NUMPAD4: return VKEY_NUMPAD4;
-		case VK_NUMPAD5: return VKEY_NUMPAD5;
-		case VK_NUMPAD6: return VKEY_NUMPAD6;
-		case VK_NUMPAD7: return VKEY_NUMPAD7;
-		case VK_NUMPAD8: return VKEY_NUMPAD8;
-		case VK_NUMPAD9: return VKEY_NUMPAD9;
-		case VK_MULTIPLY: return VKEY_MULTIPLY;
-		case VK_ADD: return VKEY_ADD;
-		case VK_SEPARATOR: return VKEY_SEPARATOR;
-		case VK_SUBTRACT: return VKEY_SUBTRACT;
-		case VK_DECIMAL: return VKEY_DECIMAL;
-		case VK_DIVIDE: return VKEY_DIVIDE;
-		case VK_F1: return VKEY_F1;
-		case VK_F2: return VKEY_F2;
-		case VK_F3: return VKEY_F3;
-		case VK_F4: return VKEY_F4;
-		case VK_F5: return VKEY_F5;
-		case VK_F6: return VKEY_F6;
-		case VK_F7: return VKEY_F7;
-		case VK_F8: return VKEY_F8;
-		case VK_F9: return VKEY_F9;
-		case VK_F10: return VKEY_F10;
-		case VK_F11: return VKEY_F11;
-		case VK_F12: return VKEY_F12;
-		case VK_NUMLOCK: return VKEY_NUMLOCK;
-		case VK_SCROLL: return VKEY_SCROLL;
-		case VK_SHIFT: return VKEY_SHIFT;
-		case VK_CONTROL: return VKEY_CONTROL;
-		case VK_MENU: return VKEY_ALT;
-		case VKEY_EQUALS: return VKEY_EQUALS;
-	}
-	return 0;
-}
-
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -687,16 +623,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		case WM_MOUSEHWHEEL:	// new since vista
 		{
 			MouseWheelEvent wheelEvent;
-
-			CButtonState buttons = 0;
-			if (GetAsyncKeyState (VK_SHIFT) < 0)
-				wheelEvent.modifiers.add (ModifierKey::Shift);
-			if (GetAsyncKeyState (VK_CONTROL) < 0)
-				wheelEvent.modifiers.add (ModifierKey::Control);
-			if (GetAsyncKeyState (VK_MENU) < 0)
-				wheelEvent.modifiers.add (ModifierKey::Alt);
-			if (GetAsyncKeyState (VK_LWIN) < 0 || GetAsyncKeyState (VK_RWIN) < 0)
-				wheelEvent.modifiers.add (ModifierKey::Super);
+			updateModifiers (wheelEvent.modifiers);
 
 			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
 			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
@@ -844,52 +771,34 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			ReleaseCapture ();
 			return 0;
 		}
+		case WM_KEYUP: [[fallthrough]];
 		case WM_KEYDOWN:
 		{
-			VstKeyCode key {};
-			if (GetAsyncKeyState (VK_SHIFT)   < 0)
-				key.modifier |= MODIFIER_SHIFT;
-			if (GetAsyncKeyState (VK_CONTROL) < 0)
-				key.modifier |= MODIFIER_CONTROL;
-			if (GetAsyncKeyState (VK_MENU)    < 0)
-				key.modifier |= MODIFIER_ALTERNATE;
-			key.virt = translateWinVirtualKey (wParam);
-			key.character = MapVirtualKey (static_cast<UINT> (wParam), MAPVK_VK_TO_CHAR);
-			if (key.virt || key.character)
+			KeyboardEvent keyEvent;
+			if (message == WM_KEYDOWN)
 			{
-				key.character = std::tolower (key.character);
-				if (pFrame->platformOnKeyDown (key))
+				keyEvent.type = EventType::KeyDown;
+				if (lParam & 0xFFFF)
+					keyEvent.isRepeat = true;
+			}
+			else
+				keyEvent.type = EventType::KeyUp;
+			updateModifiers (keyEvent.modifiers);
+
+			keyEvent.virt = translateWinVirtualKey (wParam);
+			keyEvent.character = MapVirtualKey (static_cast<UINT> (wParam), MAPVK_VK_TO_CHAR);
+			if (keyEvent.virt != VirtualKey::None || keyEvent.character)
+			{
+				keyEvent.character = std::tolower (keyEvent.character);
+				pFrame->platformOnEvent (keyEvent);
+				if (keyEvent.consumed)
 					return 0;
 			}
 
 			if (IsWindow (oldFocusWindow))
 			{
-				auto oldProc = reinterpret_cast<WNDPROC> (GetWindowLongPtr (oldFocusWindow, GWLP_WNDPROC));
-				if (oldProc && oldProc != WindowProc)
-					return CallWindowProc (oldProc, oldFocusWindow, message, wParam, lParam);
-			}
-			break;
-		}
-		case WM_KEYUP:
-		{
-			VstKeyCode key {};
-			if (GetAsyncKeyState (VK_SHIFT)   < 0)
-				key.modifier |= MODIFIER_SHIFT;
-			if (GetAsyncKeyState (VK_CONTROL) < 0)
-				key.modifier |= MODIFIER_CONTROL;
-			if (GetAsyncKeyState (VK_MENU)    < 0)
-				key.modifier |= MODIFIER_ALTERNATE;
-			key.virt = translateWinVirtualKey (wParam);
-			key.character = MapVirtualKey (static_cast<UINT> (wParam), MAPVK_VK_TO_CHAR);
-			if (key.virt || key.character)
-			{
-				if (pFrame->platformOnKeyUp (key))
-					return 0;
-			}
-
-			if (IsWindow (oldFocusWindow))
-			{
-				auto oldProc = reinterpret_cast<WNDPROC> (GetWindowLongPtr (oldFocusWindow, GWLP_WNDPROC));
+				auto oldProc =
+				    reinterpret_cast<WNDPROC> (GetWindowLongPtr (oldFocusWindow, GWLP_WNDPROC));
 				if (oldProc && oldProc != WindowProc)
 					return CallWindowProc (oldProc, oldFocusWindow, message, wParam, lParam);
 			}

@@ -21,8 +21,6 @@ interface ID2D1Factory;
 interface IDWriteFactory;
 interface IWICImagingFactory;
 
-struct VstKeyCode;
-
 namespace VSTGUI {
 
 #define VSTGUI_STRCMP	wcscmp
@@ -42,7 +40,9 @@ extern void useD2D ();
 extern void unuseD2D ();
 extern IDWriteFactory* getDWriteFactory ();
 extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect);
-extern Optional<VstKeyCode> keyMessageToKeyCode (WPARAM wParam, LPARAM lParam);
+extern VirtualKey translateWinVirtualKey (WPARAM winVKey);
+extern void updateModifiers (Modifiers& modifiers);
+extern Optional<KeyboardEvent> keyMessageToKeyboardEvent (WPARAM wParam, LPARAM lParam);
 
 class UTF8StringHelper
 {

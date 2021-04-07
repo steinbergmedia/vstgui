@@ -8,7 +8,7 @@
 
 #include "win32support.h"
 #include "direct2d/d2dfont.h"
-#include "../../vstkeycode.h"
+#include "../../events.h"
 
 namespace VSTGUI {
 
@@ -200,10 +200,11 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 			{
 				if (win32TextEdit->textEdit)
 				{
-					if (auto keyCode = keyMessageToKeyCode (wParam, lParam))
+					if (auto keyEvent = keyMessageToKeyboardEvent (wParam, lParam))
 					{
+						keyEvent->eventType = EventType::KeyDown;
 						// for now only dispatch virtual keys
-						if (keyCode->character == 0 && win32TextEdit->textEdit->platformOnKeyDown (*keyCode))
+						if (keyEvent->character == 0 && win32TextEdit->textEdit->platformOnKeyboardEvent (*keyEvent))
 							return 0;
 					}
 				}
