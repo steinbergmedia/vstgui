@@ -37,6 +37,7 @@
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/iviewlistener.h"
 #include "../../lib/cvstguitimer.h"
+#include "../../lib/events.h"
 
 #include <sstream>
 #include <algorithm>
@@ -1344,25 +1345,20 @@ void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
+void UIEditController::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
 {
+	if (event.type == EventType::KeyUp)
+		return;
 	if (frame->getModalView () == nullptr)
 	{
 		if (frame->getFocusView ())
 		{
 			auto* edit = dynamic_cast<CTextEdit*>(frame->getFocusView ());
 			if (edit && edit->getPlatformTextEdit ())
-				return -1;
+				return;
 		}
-		return menuController->processKeyCommand (code);
+		menuController->processKeyCommand (event);
 	}
-	return -1;
-}
-
-//----------------------------------------------------------------------------------------------------
-int32_t UIEditController::onKeyUp (const VstKeyCode& code, CFrame* frame)
-{
-	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------

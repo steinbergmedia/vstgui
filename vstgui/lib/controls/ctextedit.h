@@ -104,7 +104,7 @@ protected:
 	CRect platformGetVisibleSize () const override;
 	CPoint platformGetTextInset () const override { return getTextInset (); }
 	void platformLooseFocus (bool returnPressed) override;
-	bool platformOnKeyDown (const VstKeyCode& key) override;
+	void platformOnKeyboardEvent (KeyboardEvent& event) override;
 	void platformTextDidChange () override;
 	bool platformIsSecureTextEdit () override;
 

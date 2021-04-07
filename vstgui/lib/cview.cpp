@@ -490,6 +490,7 @@ void CView::onMouseWheelEvent (MouseWheelEvent& event)
 void CView::onKeyboardEvent (KeyboardEvent& event)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
 	auto keyCode = toVstKeyCode (event);
 
 	switch (event.type)
@@ -513,6 +514,7 @@ void CView::onKeyboardEvent (KeyboardEvent& event)
 			break;
 		}
 	}
+#include "private/enbledeprecatedmessage.h"
 #endif
 }
 

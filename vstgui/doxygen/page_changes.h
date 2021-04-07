@@ -23,6 +23,10 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_11 Version 4.11
+
+- Reworked event handling, please see @ref code_changes_4_10_to_4_11
+
 @subsection version4_10 Version 4.10
 
 - VSTGUI now needs to be initialized and terminated explicitly. See VSTGUI::init() and VSTGUI::exit().
@@ -109,6 +113,24 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_10_to_4_11 VSTGUI 4.10 -> VSTGUI 4.11
+
+Changes due to event handling rework:
+- IKeyboardHook changed its methods. If you inherit from it, you need to adopt to the new methods
+- CViewContainer::onWheel is now marked final, you cannot inherit this method, please use the new CView::onMouseWheelEvent instead
+
+CView has the following new methods:
+- dispatchEvent
+- onKeyboardEvent
+- onMouseWheelEvent
+- onZoomGestureEvent
+- ...
+Which replaces the following old methods:
+- onKeyDown
+- onKeyUp
+- onWheel
+- ...
 
 @subsection code_changes_4_9_to_4_10 VSTGUI 4.9 -> VSTGUI 4.10
 

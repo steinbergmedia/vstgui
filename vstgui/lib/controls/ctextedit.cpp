@@ -5,6 +5,7 @@
 #include "ctextedit.h"
 #include "itexteditlistener.h"
 #include "../cframe.h"
+#include "../events.h"
 #include "../platform/iplatformframe.h"
 #include <cassert>
 
@@ -296,21 +297,21 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 }
 
 //------------------------------------------------------------------------
-bool CTextEdit::platformOnKeyDown (const VstKeyCode& key)
+void CTextEdit::platformOnKeyboardEvent (KeyboardEvent& event)
 {
-	if (dynamic_cast<IPlatformFrameCallback*> (getFrame ())->platformOnKeyDown (const_cast<VstKeyCode&> (key)) == 1)
-		return true;
-	if (key.virt == VKEY_RETURN)
+	dynamic_cast<IPlatformFrameCallback*> (getFrame ())->platformOnEvent (event);
+	if (event.consumed)
+		return;
+	if (event.virt == VirtualKey::Return)
 	{
 		platformLooseFocus (true);
-		return true;
+		event.consumed = true;
 	}
-	else if (key.virt == VKEY_ESCAPE)
+	else if (event.virt == VirtualKey::Escape)
 	{
 		platformLooseFocus (false);
-		return true;
+		event.consumed = true;
 	}
-	return false;
 }
 
 //------------------------------------------------------------------------

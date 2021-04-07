@@ -214,8 +214,6 @@ public:
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
-	int32_t onKeyUp (VstKeyCode& keyCode) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 
 	VSTGUIEditorInterface* getEditor () const override;
@@ -242,8 +240,7 @@ protected:
 	void setCollectInvalidRects (CollectInvalidRects* collectInvalidRects);
 
 	// keyboard hooks
-	int32_t keyboardHooksOnKeyDown (const VstKeyCode& key);
-	int32_t keyboardHooksOnKeyUp (const VstKeyCode& key);
+	void dispatchKeyboardEventToHooks (KeyboardEvent& event);
 
 	// mouse observers
 	void callMouseObserverMouseEntered (CView* view);
@@ -264,8 +261,6 @@ protected:
 	DragOperation platformOnDragMove (DragEventData data) override;
 	void platformOnDragLeave (DragEventData data) override;
 	bool platformOnDrop (DragEventData data) override;
-	bool platformOnKeyDown (VstKeyCode& keyCode) override;
-	bool platformOnKeyUp (VstKeyCode& keyCode) override;
 	void platformOnActivate (bool state) override;
 	void platformOnWindowActivate (bool state) override;
 	void platformScaleFactorChanged (double newScaleFactor) override;
@@ -331,11 +326,9 @@ class IKeyboardHook
 {
 public:
 	virtual ~IKeyboardHook () noexcept = default;
-	
-	/** should return 1 if no further key down processing should apply, otherwise -1 */
-	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;
-	/** should return 1 if no further key up processing should apply, otherwise -1 */
-	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;
+
+	/** the event will not be dispatched further if it is consumed. */
+	virtual void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) = 0;
 };
 
 //-----------------------------------------------------------------------------

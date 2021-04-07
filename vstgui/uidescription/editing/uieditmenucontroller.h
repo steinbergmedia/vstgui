@@ -150,7 +150,7 @@ public:
 	COptionMenu* getFileMenu () const { return fileMenu; }
 	COptionMenu* getEditMenu () const { return editMenu; }
 
-	int32_t processKeyCommand (const VstKeyCode& key);
+	void processKeyCommand (KeyboardEvent& event);
 	bool handleCommand (const UTF8StringPtr category, const UTF8StringPtr name);
 	bool canHandleCommand (const UTF8StringPtr category, const UTF8StringPtr name) const;
 
@@ -163,7 +163,7 @@ protected:
 	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
 
 	bool validateMenuItem (CCommandMenuItem& item);
-	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key);
+	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const KeyboardEvent& event);
 	void createEditMenu (COptionMenu* menu);
 	void createFileMenu (COptionMenu* menu);
 

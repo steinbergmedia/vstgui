@@ -630,91 +630,12 @@ CMouseEventResult CFrame::onMouseExited (CPoint &where, const CButtonState& butt
 }
 
 //-----------------------------------------------------------------------------
-int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
-{
-	int32_t result = keyboardHooksOnKeyDown (keyCode);
-
-	if (result == -1 && pImpl->focusView)
-	{
-		CBaseObjectGuard og (pImpl->focusView);
-		if (pImpl->focusView->getMouseEnabled ())
-			result = pImpl->focusView->onKeyDown (keyCode);
-		if (result == -1)
-		{
-			CView* parent = pImpl->focusView->getParentView ();
-			while (parent && parent != this && result == -1)
-			{
-				if (parent->getMouseEnabled ())
-					result = parent->onKeyDown (keyCode);
-				parent = parent->getParentView ();
-			}
-		}
-	}
-
-	if (result == -1)
-	{
-		if (auto modalView = getModalView ())
-		{
-			CBaseObjectGuard og (modalView);
-			result = modalView->onKeyDown (keyCode);
-		}
-	}
-
-	if (result == -1 && keyCode.virt == VKEY_TAB)
-	{
-		if (keyCode.modifier == 0 || keyCode.modifier == MODIFIER_SHIFT)
-			result = advanceNextFocusView (pImpl->focusView, (keyCode.modifier & MODIFIER_SHIFT) ? true : false) ? 1 : -1;
-	}
-
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
-{
-	int32_t result = keyboardHooksOnKeyUp (keyCode);
-
-	if (result == -1 && pImpl->focusView)
-	{
-		if (pImpl->focusView->getMouseEnabled ())
-			result = pImpl->focusView->onKeyUp (keyCode);
-		if (result == -1)
-		{
-			CView* parent = pImpl->focusView->getParentView ();
-			while (parent && parent != this && result == -1)
-			{
-				if (parent->getMouseEnabled ())
-					result = parent->onKeyUp (keyCode);
-				parent = parent->getParentView ();
-			}
-		}
-	}
-
-	if (result == -1)
-	{
-		if (auto modalView = getModalView ())
-			result = modalView->onKeyUp (keyCode);
-	}
-
-	return result;
-}
-
-//-----------------------------------------------------------------------------
 void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	VstKeyCode vstKeyCode = toVstKeyCode (event);
-	int32_t result = 0;
-	if (event.type == EventType::KeyUp)
-		result = keyboardHooksOnKeyUp (vstKeyCode);
-	else
-		result = keyboardHooksOnKeyDown (vstKeyCode);
-	if (result != -1)
-	{
-		event.consumed = true;
+	dispatchKeyboardEventToHooks (event);
+	if (event.consumed)
 		return;
-	}
-#endif
+
 	if (pImpl->focusView)
 	{
 		CBaseObjectGuard og (pImpl->focusView);
@@ -1552,29 +1473,14 @@ void CFrame::unregisterKeyboardHook (IKeyboardHook* hook)
 }
 
 //-----------------------------------------------------------------------------
-int32_t CFrame::keyboardHooksOnKeyDown (const VstKeyCode& key)
+void CFrame::dispatchKeyboardEventToHooks (KeyboardEvent& event)
 {
-	int32_t result = -1;
-	pImpl->keyboardHooks.forEachReverse ([&] (IKeyboardHook* hook) {
-		if (result <= 0)
-		{
-			result = hook->onKeyDown (key, this);
-		}
-	});
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-int32_t CFrame::keyboardHooksOnKeyUp (const VstKeyCode& key)
-{
-	int32_t result = -1;
-	pImpl->keyboardHooks.forEachReverse ([&] (IKeyboardHook* hook) {
-		if (result <= 0)
-		{
-			result = hook->onKeyUp (key, this);
-		}
-	});
-	return result;
+	pImpl->keyboardHooks.forEachReverse (
+	    [&] (IKeyboardHook* hook) {
+		    hook->onKeyboardEvent (event, this);
+		    return !event.consumed;
+	    },
+	    [] (bool consumed) { return consumed; });
 }
 
 //-----------------------------------------------------------------------------
@@ -1800,26 +1706,6 @@ bool CFrame::platformOnDrop (DragEventData data)
 	CollectInvalidRects cir (this);
 	data.modifiers = data.modifiers.getModifierState ();
 	return getDropTarget ()->onDrop (data);
-}
-
-//-----------------------------------------------------------------------------
-bool CFrame::platformOnKeyDown (VstKeyCode& keyCode)
-{
-	if (!getMouseEnabled ())
-		return false;
-	Impl::PostEventHandler peh (*pImpl);
-	CollectInvalidRects cir (this);
-	return onKeyDown (keyCode) == 1;
-}
-
-//-----------------------------------------------------------------------------
-bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
-{
-	if (!getMouseEnabled ())
-		return false;
-	Impl::PostEventHandler peh (*pImpl);
-	CollectInvalidRects cir (this);
-	return onKeyUp (keyCode) == 1;
 }
 
 //-----------------------------------------------------------------------------

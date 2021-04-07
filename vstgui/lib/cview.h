@@ -158,10 +158,12 @@ public:
 	/// @name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	VSTGUI_DEPRECATED(
 	/** called if a key down event occurs and this view has focus */
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);)
+	VSTGUI_DEPRECATED(
 	/** called if a key up event occurs and this view has focus */
-	virtual int32_t onKeyUp (VstKeyCode& keyCode);
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);)
 	//@}
 
 	//-----------------------------------------------------------------------------
