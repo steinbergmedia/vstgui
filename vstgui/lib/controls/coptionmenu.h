@@ -312,7 +312,7 @@ public:
 
 	void draw (CDrawContext* pContext) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	void takeFocus () override;
 	void looseFocus () override;

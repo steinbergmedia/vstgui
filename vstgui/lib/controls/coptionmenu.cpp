@@ -6,6 +6,7 @@
 #include "../cbitmap.h"
 #include "../cframe.h"
 #include "../cstring.h"
+#include "../events.h"
 
 #include "../platform/iplatformoptionmenu.h"
 #include "../platform/iplatformframe.h"
@@ -313,21 +314,22 @@ void COptionMenu::unregisterOptionMenuListener (IOptionMenuListener* listener)
 }
 
 //------------------------------------------------------------------------
-int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
+void COptionMenu::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.modifier == 0 && keyCode.character == 0)
+	if (event.type != EventType::KeyUp && event.modifiers.empty () && event.character == 0)
 	{
-		if (keyCode.virt == VKEY_RETURN)
+		if (event.virt == VirtualKey::Return)
 		{
 			auto self = shared (this);
 			getFrame ()->doAfterEventProcessing ([self] () {
 				self->doPopup ();
 			});
-			return 1;
+			event.consumed = true;
+			return;
 		}
 		if (!(style & (kMultipleCheckStyle & ~kCheckStyle)))
 		{
-			if (keyCode.virt == VKEY_UP)
+			if (event.virt == VirtualKey::Up)
 			{
 				int32_t value = (int32_t)getValue ()-1;
 				if (value >= 0)
@@ -345,9 +347,10 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 						invalid ();
 					}
 				}
-				return 1;
+				event.consumed = true;
+				return;
 			}
-			if (keyCode.virt == VKEY_DOWN)
+			if (event.virt == VirtualKey::Down)
 			{
 				int32_t value = (int32_t)getValue ()+1;
 				if (value < getNbEntries ())
@@ -365,11 +368,12 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 						invalid ();
 					}
 				}
-				return 1;
+				event.consumed = true;
+				return;
 			}
 		}
 	}
-	return CParamDisplay::onKeyDown (keyCode);
+	CParamDisplay::onKeyboardEvent (event);
 }
 
 //------------------------------------------------------------------------
