@@ -36,7 +36,9 @@ struct Event
 {
 	Event () noexcept;
 	Event (const Event&) = delete;
+	Event& operator= (const Event&) = delete;
 	Event (Event&&) = default;
+	Event& operator= (Event&&) = default;
 
 	/** Type */
 	EventType type {EventType::Unknown};
@@ -56,9 +58,9 @@ struct Modifiers
 {
 	Modifiers () = default;
 	Modifiers (const Modifiers&) = default;
-	
+
 	/** test if no modifier key is set */
-	bool empty () const { return data == 0;}
+	bool empty () const { return data == 0; }
 	/** test if modifier key is set */
 	bool has (ModifierKey modifier) const { return data & cast (modifier); }
 	/** test if modifier key is set exclusively */
@@ -139,13 +141,14 @@ struct MouseWheelEvent : MousePositionEvent
 //------------------------------------------------------------------------
 struct GestureEvent : MousePositionEvent
 {
-	enum class Phase {
+	enum class Phase
+	{
 		Unknown,
 		Begin,
 		Changed,
 		End,
 	};
-	
+
 	Phase phase {Phase::Unknown};
 };
 
@@ -246,7 +249,8 @@ enum class ModifierKey : uint32_t
 	Alt = 1 << 1,
 	/** the control key (Command key on macOS and control key on other platforms) */
 	Control = 1 << 2,
-	/** the super key (Control key on macOS, Windows key on Windows and Super key on other platforms)*/
+	/** the super key (Control key on macOS, Windows key on Windows and Super key on other
+	   platforms)*/
 	Super = 1 << 3,
 };
 
@@ -272,10 +276,12 @@ inline MousePositionEvent* asMousePositionEvent (Event& event)
 {
 	switch (event.type)
 	{
-		case EventType::ZoomGesture: [[fallthrough]];
+		case EventType::ZoomGesture:
+			[[fallthrough]];
 		case EventType::MouseWheel:
 			return static_cast<MousePositionEvent*> (&event);
-		default: break;
+		default:
+			break;
 	}
 	return nullptr;
 }
@@ -288,11 +294,14 @@ inline ModifierEvent* asModifierEvent (Event& event)
 {
 	switch (event.type)
 	{
-		case EventType::KeyDown: [[fallthrough]];
-		case EventType::KeyUp: [[fallthrough]];
+		case EventType::KeyDown:
+			[[fallthrough]];
+		case EventType::KeyUp:
+			[[fallthrough]];
 		case EventType::MouseWheel:
 			return static_cast<ModifierEvent*> (&event);
-		default: break;
+		default:
+			break;
 	}
 	return nullptr;
 }
@@ -305,10 +314,12 @@ inline KeyboardEvent* asKeyboardEvent (Event& event)
 {
 	switch (event.type)
 	{
-		case EventType::KeyDown: [[fallthrough]];
+		case EventType::KeyDown:
+			[[fallthrough]];
 		case EventType::KeyUp:
 			return static_cast<KeyboardEvent*> (&event);
-		default: break;
+		default:
+			break;
 	}
 	return nullptr;
 }

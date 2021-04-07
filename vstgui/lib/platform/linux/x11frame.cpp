@@ -11,7 +11,6 @@
 #include "../../dragging.h"
 #include "../../vstkeycode.h"
 #include "../../cinvalidrectlist.h"
-#include "../../events.h"
 #include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"
 #include "../iplatformtextedit.h"
@@ -34,6 +33,8 @@
 #ifdef None
 #undef None
 #endif
+
+#include "../../events.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -379,15 +380,8 @@ struct Frame::Impl : IFrameEventHandler
 	void onEvent (xcb_key_press_event_t& event) override
 	{
 		auto type = (event.response_type & ~0x80);
-		auto keyCode = RunLoop::instance ().getCurrentKeyEvent ();
-		if (type == XCB_KEY_PRESS)
-		{
-			frame->platformOnKeyDown (keyCode);
-		}
-		else
-		{
-			frame->platformOnKeyUp (keyCode);
-		}
+		auto keyEvent = RunLoop::instance ().getCurrentKeyEvent ();
+		frame->platformOnEvent (keyEvent);
 	}
 
 	//------------------------------------------------------------------------

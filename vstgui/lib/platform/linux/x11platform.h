@@ -59,7 +59,7 @@ struct RunLoop
 	void unregisterWindowEventHandler (uint32_t windowId);
 
 	uint32_t getCursorID (CCursorType cursor);
-	VstKeyCode getCurrentKeyEvent () const;
+	KeyboardEvent&& getCurrentKeyEvent () const;
 	Optional<UTF8String> convertCurrentKeyEventToText () const;
 
 	static RunLoop& instance ();
