@@ -4,6 +4,7 @@
 
 #include "../../../lib/cframe.h"
 #include "../../../lib/ccolor.h"
+#include "../../../lib/events.h"
 #include "../unittests.h"
 #include "platform_helper.h"
 #include <vector>
@@ -93,18 +94,18 @@ public:
 	bool keyDownCalled {false};
 	bool keyUpCalled {false};
 
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override
+	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override
 	{
-		keyDownCalled = true;
-		return -1;
+		if (event.type == EventType::KeyDown)
+		{
+			keyDownCalled = true;
+		}
+		else if (event.type == EventType::KeyUp)
+		{
+			keyUpCalled = true;
+		}
+		event.consumed = true;
 	}
-	
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override
-	{
-		keyUpCalled = true;
-		return -1;
-	}
-
 };
 
 class CollectInvalidRectView : public CView
@@ -329,16 +330,20 @@ TESTCASE(CFrameTest,
 		EXPECT (frame->getModalView () == nullptr);
 	);
 	
-	TEST(onKeyDown,
+	TEST(keyDownEvent,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 		auto view = new View ();
 		frame->addView (view);
 		frame->attached (frame);
 		frame->onActivate (true);
-		VstKeyCode key {};
-		EXPECT (frame->onKeyDown (key) == -1);
+		KeyboardEvent event;
+		event.type = EventType::KeyDown;
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == false);
 		frame->setFocusView (view);
-		EXPECT (frame->onKeyDown (key) == 1);
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == true);
+		event.consumed = false;
 		EXPECT (view->onKeyDownCalled);
 		frame->removeAll ();
 		auto container = new Container ();
@@ -346,31 +351,40 @@ TESTCASE(CFrameTest,
 		container->addView (view2);
 		frame->addView (container);
 		frame->setFocusView (view2);
-		EXPECT (frame->onKeyDown (key) == 1);
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == true);
+		event.consumed = false;
 		EXPECT (container->onKeyDownCalled);
 		frame->setFocusView (nullptr);
 		view2->setWantsFocus (true);
 		EXPECT (frame->getFocusView () == nullptr);
-		key.virt = VKEY_TAB;
-		EXPECT (frame->onKeyDown (key) == 1);
-		EXPECT (frame->getFocusView() == view2);
+		event.virt = VirtualKey::Tab;
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == true);
+		event.consumed = false;
+		EXPECT (frame->getFocusView () == view2);
 		auto view3 = shared (new View ());
 		auto modalSession = frame->beginModalViewSession (view3);
-		EXPECT (frame->onKeyDown (key) == 1);
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == true);
 		EXPECT (view3->onKeyDownCalled);
 		frame->endModalViewSession (*modalSession);
 	);
 
-	TEST(onKeyUp,
+	TEST(keyUpEvent,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 		auto view = new View ();
 		frame->addView (view);
 		frame->attached (frame);
 		frame->onActivate (true);
-		VstKeyCode key {};
-		EXPECT (frame->onKeyUp (key) == -1);
+		KeyboardEvent event;
+		event.type = EventType::KeyUp;
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == false);
 		frame->setFocusView (view);
-		EXPECT (frame->onKeyUp (key) == 1);
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == true);
+		event.consumed = false;
 		EXPECT (view->onKeyUpCalled);
 		frame->removeAll ();
 		auto container = new Container ();
@@ -378,11 +392,14 @@ TESTCASE(CFrameTest,
 		container->addView (view2);
 		frame->addView (container);
 		frame->setFocusView (view2);
-		EXPECT (frame->onKeyUp (key) == 1);
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == true);
+		event.consumed = false;
 		EXPECT (container->onKeyUpCalled);
 		auto view3 = shared (new View ());
 		auto modalSession = frame->beginModalViewSession (view3);
-		EXPECT (frame->onKeyUp (key) == 1);
+		frame->dispatchEvent (event);
+		EXPECT (event.consumed == true);
 		EXPECT (view3->onKeyUpCalled);
 		frame->endModalViewSession (*modalSession);
 	);
@@ -558,12 +575,13 @@ TESTCASE(CFrameTest,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 		frame->attached (frame);
 		frame->registerKeyboardHook (&hook);
-
-		VstKeyCode key;
-		frame->onKeyDown (key);
+		KeyboardEvent event;
+		event.type = EventType::KeyDown;
+		frame->dispatchEvent (event);
 		EXPECT (hook.keyDownCalled);
 		EXPECT (hook.keyUpCalled == false);
-		frame->onKeyUp (key);
+		event.type = EventType::KeyUp;
+		frame->dispatchEvent (event);
 		EXPECT (hook.keyUpCalled);
 		
 		frame->unregisterKeyboardHook (&hook);
@@ -591,7 +609,7 @@ TESTCASE(CFrameTest,
 	);
 	
 //	TEST(collectInvalidRectsOnMouseDown,
-//		// It is expected that this test failes on Mac OS X 10.11 because of OS changes 
+//		// It is expected that this test failes on Mac OS X 10.11 because of OS changes
 //		auto platformHandle = UnitTest::PlatformParentHandle::create ();
 //		auto frame = new CFrame (CRect (0, 0, 100, 100), nullptr);
 //		auto view = new CollectInvalidRectView ();

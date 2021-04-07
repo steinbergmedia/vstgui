@@ -215,6 +215,7 @@ public:
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void dispatchEvent (Event& event) override;
 
 	VSTGUIEditorInterface* getEditor () const override;
 	IPlatformFrame* getPlatformFrame () const;
@@ -231,8 +232,6 @@ protected:
 	
 	~CFrame () noexcept override = default;
 	void beforeDelete () override;
-
-	void dispatchEvent (Event& event) override;
 
 	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
 	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
