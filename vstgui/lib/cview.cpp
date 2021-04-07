@@ -1094,7 +1094,9 @@ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
 	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
 	if (auto frame = getFrame ())
 	{
+#include "private/disabledeprecatedmessage.h"
 		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
+#include "private/enbledeprecatedmessage.h"
 	}
 }
 #endif

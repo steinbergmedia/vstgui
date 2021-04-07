@@ -5,8 +5,9 @@
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
-#elif _MSVC
-#pragma warning(disabled : 4995) // deprecated
+#elif _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996) // deprecated
 #else
 #endif
 

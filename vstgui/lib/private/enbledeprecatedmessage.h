@@ -4,8 +4,8 @@
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#elif _MSVC
-#pragma warning(3 : 4995) // deprecated
+#elif _MSC_VER
+#pragma warning(pop)
 #else
 #endif
 
