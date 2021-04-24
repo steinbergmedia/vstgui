@@ -33,9 +33,6 @@ class IPlatformFrameCallback
 public:
 	virtual bool platformDrawRect (CDrawContext* context, const CRect& rect) = 0;
 	
-	virtual CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) = 0;
-	virtual CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) = 0;
-	virtual CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) = 0;
 	virtual CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) = 0;
 	virtual void platformOnEvent (Event& event) = 0;
 

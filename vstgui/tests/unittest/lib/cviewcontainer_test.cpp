@@ -373,10 +373,18 @@ TESTCASE(CViewContainerTest,
 	
 	TEST(mouseEventsInEmptyContainer,
 		CPoint p;
-		EXPECT(container->onMouseDown (p, kLButton) == kMouseEventNotHandled);
-		EXPECT(container->onMouseMoved (p, kLButton) == kMouseEventNotHandled);
-		EXPECT(container->onMouseUp (p, kLButton) == kMouseEventNotHandled);
-		EXPECT(container->onMouseCancel () == kMouseEventHandled);
+		MouseDownEvent downEvent;
+		container->dispatchEvent (downEvent);
+		EXPECT(downEvent.consumed == false);
+		MouseMoveEvent moveEvent;
+		container->dispatchEvent (moveEvent);
+		EXPECT(moveEvent.consumed == false);
+		MouseUpEvent upEvent;
+		container->dispatchEvent (upEvent);
+		EXPECT(upEvent.consumed == false);
+		MouseCancelEvent cancelEvent;
+		container->dispatchEvent (cancelEvent);
+		EXPECT(cancelEvent.consumed == true);
 
 		MouseWheelEvent event;
 		event.mousePosition = p;
@@ -397,20 +405,24 @@ TESTCASE(CViewContainerTest,
 		container->addView (v1);
 		container->addView (v2);
 		
-		CPoint p (10, 10);
-		EXPECT(container->onMouseDown (p, kLButton) == kMouseEventHandled);
+		MouseDownEvent downEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
+		container->dispatchEvent (downEvent);
+		EXPECT(downEvent.consumed == true);
 		EXPECT(v1->mouseDownCalled);
 		EXPECT(v2->mouseDownCalled == false);
-		EXPECT(container->onMouseMoved (p, kLButton) == kMouseEventHandled);
+		MouseMoveEvent moveEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
+		container->dispatchEvent (moveEvent);
+		EXPECT(moveEvent.consumed == true);
 		EXPECT(v1->mouseMovedCalled);
 		EXPECT(v2->mouseMovedCalled == false);
-		EXPECT(container->onMouseUp (p, kLButton) == kMouseEventHandled);
+		MouseUpEvent upEvent (CPoint (10 ,10), MouseEventButtonState (MouseEventButtonState::Left));
+		container->dispatchEvent (upEvent);
+		EXPECT(upEvent.consumed);
 		EXPECT(v1->mouseUpCalled);
 		EXPECT(v2->mouseUpCalled == false);
 		
-		p (60, 10);
 		MouseWheelEvent event;
-		event.mousePosition = p;
+		event.mousePosition (60, 10);
 		event.deltaX = 0.5;
 		container->dispatchEvent (event);
 		EXPECT(v1->onWheelCalled == false);
@@ -424,10 +436,13 @@ TESTCASE(CViewContainerTest,
 		v1->setMouseableArea (r1);
 		container->addView (v1);
 		
-		CPoint p (10, 10);
-		EXPECT(container->onMouseDown (p, kLButton) == kMouseEventHandled);
+		MouseDownEvent downEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
+		container->dispatchEvent (downEvent);
+		EXPECT(downEvent.consumed == true);
 		EXPECT(v1->mouseDownCalled);
-		container->onMouseCancel ();
+		MouseCancelEvent cancelEvent;
+		container->dispatchEvent (cancelEvent);
+		EXPECT(cancelEvent.consumed == true);
 		EXPECT(v1->mouseCancelCalled);
 	);
 
@@ -496,11 +511,20 @@ TESTCASE(CViewContainerTest,
 		v1->setMouseableArea (r1);
 		container->addView (v1);
 		container->addView (v2);
-		CPoint p1 (10, 10);
-		EXPECT(container->onMouseDown (p1, kLButton) == kMouseEventNotImplemented);
+		MouseDownEvent downEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
+		container->dispatchEvent (downEvent);
+		EXPECT(downEvent.consumed == false);
 		EXPECT(v1->mouseDownCalled == false);
-		EXPECT(container->onMouseMoved (p1, kLButton) == kMouseEventNotHandled);
-		EXPECT(container->onMouseUp (p1, kLButton) == kMouseEventNotHandled);
+		MouseMoveEvent moveEvent;
+		moveEvent.mousePosition = downEvent.mousePosition;
+		moveEvent.buttonState = downEvent.buttonState;
+		container->dispatchEvent (moveEvent);
+		EXPECT(moveEvent.consumed == false);
+		MouseUpEvent upEvent;
+		upEvent.mousePosition = downEvent.mousePosition;
+		upEvent.buttonState = downEvent.buttonState;
+		container->dispatchEvent (upEvent);
+		EXPECT(upEvent.consumed == false);
 	);
 	
 	TEST(getViewsAt,

@@ -136,10 +136,11 @@ public:
 	// CView
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
-	void dispatchEvent (Event& event) override;
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	void onMouseDownEvent (MouseDownEvent& event) override;
+	void onMouseMoveEvent (MouseMoveEvent& event) override;
+	void onMouseUpEvent (MouseUpEvent& event) override;
+	void onMouseWheelEvent (MouseWheelEvent& event) override;
+	void onZoomGestureEvent (ZoomGestureEvent& event) override;
 	CMouseEventResult onMouseCancel () override;
 	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
@@ -253,6 +254,8 @@ protected:
 	
 	const ViewList& getChildren () const;
 private:
+	void dispatchEventToSubViews (Event& event);
+	
 	void clearMouseDownView ();
 	CRect getLastDrawnFocus () const;
 	void setLastDrawnFocus (CRect r);

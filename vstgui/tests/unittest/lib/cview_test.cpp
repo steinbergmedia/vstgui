@@ -250,9 +250,12 @@ TESTCASE(CViewTest,
 
 	TEST(defaultHandling,
 		View v;
-		VstKeyCode key;
-		EXPECT(v.onKeyDown (key) == -1);
-		EXPECT(v.onKeyUp (key) == -1);
+		KeyboardEvent keyEvent;
+		v.dispatchEvent (keyEvent);
+		EXPECT(keyEvent.consumed == false);
+		keyEvent.type = EventType::KeyUp;
+		v.dispatchEvent (keyEvent);
+		EXPECT(keyEvent.consumed == false);
 		MouseWheelEvent event;
 		v.onMouseWheelEvent (event);
 		EXPECT(event.consumed == false);

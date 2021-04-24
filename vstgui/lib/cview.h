@@ -81,11 +81,23 @@ public:
 	bool isVisible () const { return hasViewFlag (kVisible) && getAlphaValue () > 0.f; }
 	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name Event Handling Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void onMouseDownEvent (MouseDownEvent& event);
+	virtual void onMouseMoveEvent (MouseMoveEvent& event);
+	virtual void onMouseUpEvent (MouseUpEvent& event);
+	virtual void onMouseCancelEvent (MouseCancelEvent& event);
+	
 	virtual void onMouseWheelEvent (MouseWheelEvent& event);
-	virtual void onKeyboardEvent (KeyboardEvent& event);
 	virtual void onZoomGestureEvent (ZoomGestureEvent& event);
 
+	virtual void onKeyboardEvent (KeyboardEvent& event);
+
 	virtual void dispatchEvent (Event& event);
+	//@}
+
 	//-----------------------------------------------------------------------------
 	/// @name Mouse Methods
 	//-----------------------------------------------------------------------------

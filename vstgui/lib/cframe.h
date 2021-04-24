@@ -210,9 +210,6 @@ public:
 	bool attached (CView* parent) override;
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void dispatchEvent (Event& event) override;
@@ -251,9 +248,6 @@ protected:
 
 	// platform frame
 	bool platformDrawRect (CDrawContext* context, const CRect& rect) override;
-	CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) override;
 	void platformOnEvent (Event& event) override;
 	DragOperation platformOnDragEnter (DragEventData data) override;
@@ -274,6 +268,10 @@ private:
 	void initModalViewSession (const ModalViewSession& session);
 	void clearModalViewSessions ();
 	void dispatchKeyboardEvent (KeyboardEvent& event);
+	void dispatchMouseEvent (MouseEvent& event);
+	void dispatchMouseDownEvent (MouseDownEvent& event);
+	void dispatchMouseMoveEvent (MouseMoveEvent& event);
+	void dispatchMouseUpEvent (MouseUpEvent& event);
 
 	struct Impl;
 	Impl* pImpl {nullptr};

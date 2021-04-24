@@ -421,12 +421,12 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
-	CButtonState buttons = 0; //eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	CPoint p = pointFromNSPoint (getGlobalMouseLocation (self));
 
-	mapModifiers (modifiers, buttons);
-	_vstguiframe->platformOnMouseMoved (p, buttons);
+	MouseMoveEvent event;
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.mousePosition = pointFromNSPoint (getGlobalMouseLocation (self));
+
+	_vstguiframe->platformOnEvent (event);
 }
 
 //------------------------------------------------------------------------------------
@@ -940,8 +940,10 @@ void NSViewFrame::initTrackingArea ()
 		if ([nsView hitTest:p])
 		{
 			options |= NSTrackingAssumeInside;
-			CPoint cp = pointFromNSPoint (p);
-			frame->platformOnMouseMoved (cp, 0);
+
+			MouseMoveEvent event;
+			event.mousePosition = pointFromNSPoint (p);
+			frame->platformOnEvent (event);
 		}
 		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[nsView frame] options:options owner:nsView userInfo:nil] autorelease];
 		[nsView addTrackingArea: trackingArea];
@@ -1045,47 +1047,68 @@ void NSViewFrame::drawRect (NSRect* rect)
 	inDraw = false;
 }
 
+//------------------------------------------------------------------------
+static MouseEventButtonState buttonStateFromNSEvent (NSEvent* theEvent)
+{
+	MouseEventButtonState state;
+	switch (theEvent.buttonNumber)
+	{
+		case 0:
+		{
+			if (theEvent.modifierFlags & NSControlKeyMask)
+				state.add (MouseEventButtonState::Right);
+			else
+				state.add (MouseEventButtonState::Left);
+			break;
+		}
+		case 1: state.add (MouseEventButtonState::Right); break;
+		case 2: state.add (MouseEventButtonState::Middle); break;
+		case 3: state.add (MouseEventButtonState::Fourth); break;
+		case 4: state.add (MouseEventButtonState::Fifth); break;
+	}
+	return state;
+}
+
 //-----------------------------------------------------------------------------
 bool NSViewFrame::onMouseDown (NSEvent* theEvent)
 {
-	CButtonState buttons = eventButton (theEvent);
-	mouseDownButtonState = buttons.getButtonState ();
-	[nsView.window makeFirstResponder:nsView];
-	NSUInteger modifiers = [theEvent modifierFlags];
+	MouseDownEvent event;
+	event.buttonState = buttonStateFromNSEvent (theEvent);
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.clickCount = theEvent.clickCount;
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	if ([theEvent clickCount] == 2)
-		buttons |= kDoubleClick;
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = frame->platformOnMouseDown (p, buttons);
-	return (result != kMouseEventNotHandled) ? true : false;
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	frame->platformOnEvent (event);
+	return event.consumed;
 }
 
 //-----------------------------------------------------------------------------
 bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 {
-	CButtonState buttons = eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	mapModifiers (modifiers, buttons);
+	MouseUpEvent event;
+	event.buttonState = buttonStateFromNSEvent (theEvent);
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.clickCount = theEvent.clickCount;
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = frame->platformOnMouseUp (p, buttons);
-	return (result != kMouseEventNotHandled) ? true : false;
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	frame->platformOnEvent (event);
+	return event.consumed;
 }
 
 //-----------------------------------------------------------------------------
 bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
 {
-	NSUInteger modifiers = [theEvent modifierFlags];
-	CButtonState buttons = theEvent.type == MacEventType::MouseMoved ? 0 : mouseDownButtonState;
-	mapModifiers (modifiers, buttons);
+	MouseMoveEvent event;
+	event.buttonState = buttonStateFromNSEvent (theEvent);
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.clickCount = theEvent.clickCount;
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = frame->platformOnMouseMoved (p, buttons);
-	return (result != kMouseEventNotHandled) ? true : false;
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	frame->platformOnEvent (event);
+	return event.consumed;
 }
 
 // IPlatformFrame

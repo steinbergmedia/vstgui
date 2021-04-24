@@ -989,78 +989,90 @@ bool CViewContainer::onWheel (const CPoint& where, const CMouseWheelAxis& axis,
 #endif
 
 //------------------------------------------------------------------------
-void CViewContainer::dispatchEvent (Event& event)
+void CViewContainer::dispatchEventToSubViews (Event& event)
 {
-	CView::dispatchEvent (event);
-	if (event.consumed)
-		return;
-	CPoint mousePos;
-	auto mouseEvent = asMousePositionEvent (event);
-	if (mouseEvent)
+	if (auto mouseEvent = asMousePositionEvent (event))
 	{
-		mousePos = mouseEvent->mousePosition;
+		auto mousePos = mouseEvent->mousePosition;
+		auto f = finally ([&] () { mouseEvent->mousePosition = mousePos; });
 		mouseEvent->mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
 		getTransform ().inverse ().transform (mouseEvent->mousePosition);
-	}
-	auto f = finally ([&] () { if (mouseEvent) mouseEvent->mousePosition = mousePos; });
-	switch (event.type)
-	{
-		case EventType::ZoomGesture:
-		case EventType::MouseWheel:
+		for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end;
+			 ++it)
 		{
-			auto& mousePosEvent = castMousePositionEvent (event);
-			for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end;
-			     ++it)
+			const auto& pV = *it;
+			if (pV && pV->isVisible () && pV->getMouseEnabled () &&
+				pV->getMouseableArea ().pointInside (mouseEvent->mousePosition))
 			{
-				const auto& pV = *it;
-				if (pV && pV->isVisible () && pV->getMouseEnabled () &&
-				    pV->getMouseableArea ().pointInside (mousePosEvent.mousePosition))
-				{
-					pV->dispatchEvent (event);
-					if (!pV->getTransparency () || event.consumed)
-						return;
-				}
+				pV->dispatchEvent (event);
+				if (!pV->getTransparency () || event.consumed)
+					return;
 			}
-			break;
 		}
-		case EventType::KeyUp: [[fallthrough]];
-		case EventType::KeyDown:
-		{
-			vstgui_assert (false);
-			break;
-		}
-		default: break;
 	}
 }
 
-//-----------------------------------------------------------------------------
-CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState& buttons)
+//------------------------------------------------------------------------
+void CViewContainer::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	// convert to relativ pos
-	CPoint where2 (where);
-	where2.offset (-getViewSize ().left, -getViewSize ().top);
-	getTransform ().inverse ().transform (where2);
+	dispatchEventToSubViews (event);
+}
 
+//------------------------------------------------------------------------
+void CViewContainer::onZoomGestureEvent (ZoomGestureEvent& event)
+{
+	dispatchEventToSubViews (event);
+}
+
+//------------------------------------------------------------------------
+void CViewContainer::onMouseDownEvent (MouseDownEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	auto mouseResult = onMouseDown (event.mousePosition, buttonState);
+	if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
+	{
+		event.consumed = true;
+		if (mouseResult == kMouseMoveEventHandledButDontNeedMoreEvents)
+			event.ignoreFollowUpMoveAndUpEvents (true);
+		return;
+	}
+
+	auto f = finally ([&, pos = event.mousePosition] () { event.mousePosition = pos; });
+	auto mousePos = event.mousePosition;
+	event.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
+	getTransform ().inverse ().transform (event.mousePosition);
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
 	{
-		auto pV = *it;
-		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
+		const auto& pV = *it;
+		if (pV && pV->isVisible () && pV->getMouseEnabled () &&
+		    pV->hitTest (event.mousePosition, buttonState))
 		{
-			if (buttons & (kAlt | kShift | kControl | kApple | kRButton))
+			if (!event.modifiers.empty ())
 			{
-				auto control = pV.cast<CControl> ();
-				if (control && control->getListener ())
+				if (auto control = pV.cast<CControl> ())
 				{
-					if (control->getListener ()->controlModifierClicked (control, buttons) != 0)
-						return kMouseEventHandled;
+					if (auto listener = control->getListener ())
+					{
+						if (listener->controlModifierClicked (control, buttonState) != 0)
+						{
+							event.consumed = true;
+							return;
+						}
+					}
 				}
 			}
 			auto frame = getFrame ();
 			auto previousFocusView = frame ? frame->getFocusView () : nullptr;
-			auto result = pV->callMouseListener (MouseListenerCall::MouseDown, where2, buttons);
-			if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
-				result = pV->onMouseDown (where2, buttons);
-			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
+			mouseResult = pV->callMouseListener (MouseListenerCall::MouseDown, event.mousePosition, buttonState);
+			if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
+			{
+				event.consumed = true;
+				if (mouseResult == kMouseMoveEventHandledButDontNeedMoreEvents)
+					event.ignoreFollowUpMoveAndUpEvents (true);
+				return;
+			}
+			pV->dispatchEvent (event);
+			if (event.consumed)
 			{
 				if (pV->getNbReference () >1)
 				{
@@ -1069,59 +1081,72 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 					{
 						getFrame ()->setFocusView (pV);
 					}
-
-					if (result == kMouseEventHandled)
+					if (!event.ignoreFollowUpMoveAndUpEvents ())
 						setMouseDownView (pV);
 				}
-				return result;
+				return;
 			}
 			if (!pV->getTransparency ())
-				return result;
+				return;
 		}
 	}
-	return kMouseEventNotHandled;
 }
 
-//-----------------------------------------------------------------------------
-CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& buttons)
+//------------------------------------------------------------------------
+void CViewContainer::onMouseMoveEvent (MouseMoveEvent& event)
 {
-	if (auto view = getMouseDownView ())
+	auto buttonState = buttonStateFromMouseEvent (event);
+	auto mouseResult = onMouseMoved (event.mousePosition, buttonState);
+	if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
 	{
-		CBaseObjectGuard crg (view);
-
-		CPoint where2 (where);
-		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		getTransform ().inverse ().transform (where2);
-		auto mouseResult = view->callMouseListener (MouseListenerCall::MouseUp, where2, buttons);
-		if (mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented)
-			view->onMouseUp (where2, buttons);
-		clearMouseDownView ();
-		return kMouseEventHandled;
+		event.consumed = true;
+		if (mouseResult == kMouseMoveEventHandledButDontNeedMoreEvents)
+			event.ignoreFollowUpMoveAndUpEvents (true);
+		return;
 	}
-	return kMouseEventNotHandled;
-}
-
-//-----------------------------------------------------------------------------
-CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonState& buttons)
-{
-	if (auto view = getMouseDownView ())
+	if (auto view = shared (getMouseDownView ()))
 	{
-		CBaseObjectGuard crg (view);
-
-		CPoint where2 (where);
-		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		getTransform ().inverse ().transform (where2);
-		auto mouseResult = view->callMouseListener (MouseListenerCall::MouseMoved, where2, buttons);
-		if (mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented)
-			mouseResult = view->onMouseMoved (where2, buttons);
-		if (mouseResult != kMouseEventHandled && mouseResult != kMouseEventNotImplemented)
+		auto f = finally ([&, pos = event.mousePosition] () { event.mousePosition = pos; });
+		event.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
+		getTransform ().inverse ().transform (event.mousePosition);
+		mouseResult = view->callMouseListener (MouseListenerCall::MouseMoved, event.mousePosition,
+		                                       buttonState);
+		if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
 		{
-			clearMouseDownView ();
-			return kMouseEventNotHandled;
+			event.consumed = true;
+			if (mouseResult == kMouseMoveEventHandledButDontNeedMoreEvents)
+				event.ignoreFollowUpMoveAndUpEvents (true);
+			return;
 		}
-		return kMouseEventHandled;
+		view->onMouseMoveEvent (event);
 	}
-	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+void CViewContainer::onMouseUpEvent (MouseUpEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	auto mouseResult = onMouseUp (event.mousePosition, buttonState);
+	if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
+	{
+		event.consumed = true;
+		return;
+	}
+	if (auto view = shared (getMouseDownView ()))
+	{
+		auto f = finally ([&, pos = event.mousePosition] () { event.mousePosition = pos; });
+		event.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
+		getTransform ().inverse ().transform (event.mousePosition);
+		mouseResult =
+		    view->callMouseListener (MouseListenerCall::MouseUp, event.mousePosition, buttonState);
+		if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
+		{
+			event.consumed = true;
+			return;
+		}
+		view->onMouseUpEvent (event);
+		clearMouseDownView ();
+	}
 }
 
 //-----------------------------------------------------------------------------

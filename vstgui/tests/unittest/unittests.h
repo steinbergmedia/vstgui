@@ -61,7 +61,7 @@ namespace UnitTest {
 class error : public std::logic_error
 {
 public:
-	error (const char* str) : std::logic_error (str) {}
+	error (const char* str);
 };
 
 #define	VSTGUI_UNITTEST_MAKE_STRING_PRIVATE_DONT_USE(x)	# x

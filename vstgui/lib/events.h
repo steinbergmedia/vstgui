@@ -22,10 +22,32 @@ namespace VSTGUI {
 enum class EventType : uint32_t
 {
 	Unknown,
-	KeyUp,
-	KeyDown,
+	MouseDown,
+	MouseMove,
+	MouseUp,
+	MouseCancel,
 	MouseWheel,
 	ZoomGesture,
+	KeyUp,
+	KeyDown,
+};
+
+//------------------------------------------------------------------------
+struct EventConsumeState
+{
+	enum
+	{
+		NotHandled = 0,
+		Handled,
+		Last,
+	};
+
+	void operator= (bool state) { data = state ? Handled : NotHandled; }
+	operator bool () { return data & Handled; }
+
+	void reset () { data = NotHandled; }
+
+	uint32_t data {NotHandled};
 };
 
 //------------------------------------------------------------------------
@@ -47,7 +69,7 @@ struct Event
 	/** Timestamp */
 	uint64_t timestamp;
 	/** Consumed? If this is true, event dispatching is stopped. */
-	bool consumed {false};
+	EventConsumeState consumed;
 };
 
 //------------------------------------------------------------------------
@@ -116,12 +138,122 @@ struct MousePositionEvent : ModifierEvent
 };
 
 //------------------------------------------------------------------------
+struct MouseEventButtonState
+{
+	enum Position : uint32_t
+	{
+		Left = 1 << 1,
+		Middle = 1 << 2,
+		Right = 1 << 3,
+		Fourth = 1 << 4,
+		Fifth = 1 << 5,
+	};
+
+	bool isLeft () const { return data == Left; }
+	bool isMiddle () const { return data == Middle; }
+	bool isRight () const { return data == Right; }
+	bool is (Position pos) const { return data == pos; }
+	bool isOther (uint32_t index) const { return data == (1 << index); }
+	bool has (Position pos) const { return data & pos; }
+
+	void add (Position pos) { data |= pos; }
+	void set (Position pos) { data = pos; }
+	void clear () { data = 0; }
+
+	MouseEventButtonState () = default;
+	MouseEventButtonState (Position pos) { set (pos); }
+private:
+	uint32_t data {0};
+};
+
+//------------------------------------------------------------------------
+/** MouseEvent
+ *	@ingroup new_in_4_11
+ */
+struct MouseEvent : MousePositionEvent
+{
+	MouseEventButtonState buttonState;
+	uint32_t clickCount {0};
+};
+
+//------------------------------------------------------------------------
+/** MouseDownEvent
+ *	@ingroup new_in_4_11
+ */
+struct MouseDownEvent : MouseEvent
+{
+	MouseDownEvent () { type = EventType::MouseDown; }
+	MouseDownEvent (const CPoint& pos, MouseEventButtonState buttons)
+	: MouseDownEvent ()
+	{
+		mousePosition = pos;
+		buttonState = buttons;
+	}
+
+	void ignoreFollowUpMoveAndUpEvents (bool state)
+	{
+		if (state)
+			consumed.data |= IgnoreFollowUpEventsBit;
+		else
+			consumed.data &= ~IgnoreFollowUpEventsBit;
+	}
+
+	bool ignoreFollowUpMoveAndUpEvents ()
+	{
+		return consumed.data & IgnoreFollowUpEventsBit;
+	}
+
+protected:
+	enum
+	{
+		IgnoreFollowUpEvents = EventConsumeState::Last,
+		IgnoreFollowUpEventsBit = 1 << IgnoreFollowUpEvents
+	};
+};
+
+//------------------------------------------------------------------------
+/** MouseMoveEvent
+ *	@ingroup new_in_4_11
+ */
+struct MouseMoveEvent : MouseDownEvent
+{
+	MouseMoveEvent () { type = EventType::MouseMove; }
+	MouseMoveEvent (const CPoint& pos, MouseEventButtonState buttons = {})
+	: MouseMoveEvent ()
+	{
+		mousePosition = pos;
+		buttonState = buttons;
+	}
+};
+
+//------------------------------------------------------------------------
+/** MouseUpEvent
+ *	@ingroup new_in_4_11
+ */
+struct MouseUpEvent : MouseEvent
+{
+	MouseUpEvent () { type = EventType::MouseUp; }
+	MouseUpEvent (const CPoint& pos, MouseEventButtonState buttons)
+	: MouseUpEvent ()
+	{
+		mousePosition = pos;
+		buttonState = buttons;
+	}
+};
+
+//------------------------------------------------------------------------
+struct MouseCancelEvent : Event
+{
+	MouseCancelEvent () { type = EventType::MouseCancel; }
+};
+
+//------------------------------------------------------------------------
 /** MouseWheelEvent
  *	@ingroup new_in_4_11
  */
 struct MouseWheelEvent : MousePositionEvent
 {
-	enum Flags
+	enum Flags : uint32_t
 	{
 		/** deltaX and deltaY are inverted */
 		DirectionInvertedFromDevice = 1 << 0,
@@ -141,7 +273,7 @@ struct MouseWheelEvent : MousePositionEvent
 //------------------------------------------------------------------------
 struct GestureEvent : MousePositionEvent
 {
-	enum class Phase
+	enum class Phase : uint32_t
 	{
 		Unknown,
 		Begin,
@@ -266,6 +398,8 @@ struct KeyboardEvent : ModifierEvent
 	VirtualKey virt {VirtualKey::None};
 	/** indicates for a key down event if this is a repeated key down */
 	bool isRepeat {false};
+
+	KeyboardEvent (EventType t = EventType::KeyDown) { type = t; }
 };
 
 //------------------------------------------------------------------------
@@ -279,7 +413,33 @@ inline MousePositionEvent* asMousePositionEvent (Event& event)
 		case EventType::ZoomGesture:
 			[[fallthrough]];
 		case EventType::MouseWheel:
+			[[fallthrough]];
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
 			return static_cast<MousePositionEvent*> (&event);
+		default:
+			break;
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+/** event as mouse position event or nullpointer if not a mouse position event
+ *	@ingroup new_in_4_11
+ */
+inline MouseEvent* asMouseEvent (Event& event)
+{
+	switch (event.type)
+	{
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
+			return static_cast<MouseEvent*> (&event);
 		default:
 			break;
 	}
@@ -299,6 +459,12 @@ inline ModifierEvent* asModifierEvent (Event& event)
 		case EventType::KeyUp:
 			[[fallthrough]];
 		case EventType::MouseWheel:
+			[[fallthrough]];
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
 			return static_cast<ModifierEvent*> (&event);
 		default:
 			break;
@@ -330,8 +496,58 @@ inline KeyboardEvent* asKeyboardEvent (Event& event)
  */
 inline MousePositionEvent& castMousePositionEvent (Event& event)
 {
-	vstgui_assert (event.type == EventType::MouseWheel || event.type == EventType::ZoomGesture);
+	vstgui_assert (event.type >= EventType::MouseDown && event.type <= EventType::ZoomGesture);
 	return static_cast<MousePositionEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** cast to a mouse event
+ *	@ingroup new_in_4_11
+ */
+inline MouseEvent& castMouseEvent (Event& event)
+{
+	vstgui_assert (event.type >= EventType::MouseDown && event.type <= EventType::MouseUp);
+	return static_cast<MouseEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** cast to a mouse down event
+ *	@ingroup new_in_4_11
+ */
+inline MouseDownEvent& castMouseDownEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::MouseDown);
+	return static_cast<MouseDownEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** cast to a mouse move event
+ *	@ingroup new_in_4_11
+ */
+inline MouseMoveEvent& castMouseMoveEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::MouseMove);
+	return static_cast<MouseMoveEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** cast to a mouse up event
+ *	@ingroup new_in_4_11
+ */
+inline MouseUpEvent& castMouseUpEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::MouseUp);
+	return static_cast<MouseUpEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** cast to a mouse cancel event
+ *	@ingroup new_in_4_11
+ */
+inline MouseCancelEvent& castMouseCancelEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::MouseCancel);
+	return static_cast<MouseCancelEvent&> (event);
 }
 
 //------------------------------------------------------------------------
@@ -377,6 +593,23 @@ inline CButtonState buttonStateFromEventModifiers (const Modifiers& mods)
 		state |= kShift;
 	if (mods.has (ModifierKey::Alt))
 		state |= kAlt;
+	return state;
+}
+
+//------------------------------------------------------------------------
+inline CButtonState buttonStateFromMouseEvent (const MouseEvent& event)
+{
+	CButtonState state = buttonStateFromEventModifiers (event.modifiers);
+	if (event.buttonState.has (MouseEventButtonState::Left))
+		state |= kLButton;
+	if (event.buttonState.has (MouseEventButtonState::Right))
+		state |= kRButton;
+	if (event.buttonState.has (MouseEventButtonState::Middle))
+		state |= kMButton;
+	if (event.buttonState.has (MouseEventButtonState::Fourth))
+		state |= kButton4;
+	if (event.buttonState.has (MouseEventButtonState::Fifth))
+		state |= kButton5;
 	return state;
 }
 
