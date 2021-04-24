@@ -42,6 +42,45 @@ namespace X11 {
 namespace {
 
 //------------------------------------------------------------------------
+inline void setupMouseEventButtons (MouseEvent& event, xcb_button_t value)
+{
+	switch (value)
+	{
+		case 1:
+			event.buttonState.add (MouseEventButtonState::Left);
+			break;
+		case 2:
+			event.buttonState.add (MouseEventButtonState::Middle);
+			break;
+		case 3:
+			event.buttonState.add (MouseEventButtonState::Right);
+			break;
+	}
+}
+
+//------------------------------------------------------------------------
+inline void setupMouseEventButtons (MouseEvent& event, int state)
+{
+	if (state & XCB_BUTTON_MASK_1)
+		event.buttonState.add (MouseEventButtonState::Left);
+	if (state & XCB_BUTTON_MASK_2)
+		event.buttonState.add (MouseEventButtonState::Right);
+	if (state & XCB_BUTTON_MASK_3)
+		event.buttonState.add (MouseEventButtonState::Middle);
+}
+
+//------------------------------------------------------------------------
+inline void setupEventModifiers (Modifiers& modifiers, int state)
+{
+	if (state & XCB_MOD_MASK_CONTROL)
+		modifiers.add (ModifierKey::Control);
+	if (state & XCB_MOD_MASK_SHIFT)
+		modifiers.add (ModifierKey::Shift);
+	if (state & (XCB_MOD_MASK_1 | XCB_MOD_MASK_5))
+		modifiers.add (ModifierKey::Alt);
+}
+
+//------------------------------------------------------------------------
 inline CButtonState translateMouseButtons (xcb_button_t value)
 {
 	switch (value)
@@ -422,12 +461,15 @@ struct Frame::Impl : IFrameEventHandler
 			}
 			else // mouse down
 			{
-				auto buttons = translateMouseButtons (event.detail);
-				buttons |= translateModifiers (event.state);
-				doubleClickDetector.onMouseDown (where, buttons, event.time);
-				auto result = frame->platformOnMouseDown (where, buttons);
+				MouseDownEvent downEvent;
+				downEvent.mousePosition = where;
+				setupMouseEventButtons (downEvent, event.detail);
+				setupEventModifiers (downEvent.modifiers, event.state);
+				// TODO: doubleClickDetector
+				// doubleClickDetector.onMouseDown (where, buttons, event.time);
+				frame->platformOnEvent (downEvent);
 				grabPointer ();
-				if (result != kMouseEventNotHandled)
+				if (downEvent.consumed)
 				{
 					auto xcb = RunLoop::instance ().getXcbConnection ();
 					xcb_set_input_focus (xcb, XCB_INPUT_FOCUS_PARENT, window.getID (),
@@ -442,10 +484,13 @@ struct Frame::Impl : IFrameEventHandler
 			}
 			else
 			{
-				auto buttons = translateMouseButtons (event.detail);
-				buttons |= translateModifiers (event.state);
-				doubleClickDetector.onMouseUp (where, buttons, event.time);
-				frame->platformOnMouseUp (where, buttons);
+				MouseUpEvent upEvent;
+				upEvent.mousePosition = where;
+				setupMouseEventButtons (upEvent, event.detail);
+				setupEventModifiers (upEvent.modifiers, event.state);
+				// TODO: doubleClickDetector
+				// doubleClickDetector.onMouseUp (where, buttons, event.time);
+				frame->platformOnEvent (upEvent);
 				ungrabPointer ();
 			}
 		}
@@ -454,11 +499,13 @@ struct Frame::Impl : IFrameEventHandler
 	//------------------------------------------------------------------------
 	void onEvent (xcb_motion_notify_event_t& event) override
 	{
-		CPoint where (event.event_x, event.event_y);
-		auto buttons = translateMouseButtons (event.state);
-		buttons |= translateModifiers (event.state);
-		doubleClickDetector.onMouseMove (where, buttons, event.time);
-		frame->platformOnMouseMoved (where, buttons);
+		MouseMoveEvent moveEvent;
+		moveEvent.mousePosition (event.event_x, event.event_y);
+		setupMouseEventButtons (moveEvent, event.state);
+		setupEventModifiers (moveEvent.modifiers, event.state);
+		// TODO: doubleClickDetector
+		// doubleClickDetector.onMouseMove (where, buttons, event.time);
+		frame->platformOnEvent (moveEvent);
 		// make sure we get more motion events
 		auto xcb = RunLoop::instance ().getXcbConnection ();
 		xcb_get_motion_events (xcb, window.getID (), event.time, event.time + 10000000);
