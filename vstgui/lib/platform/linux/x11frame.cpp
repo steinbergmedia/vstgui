@@ -233,7 +233,20 @@ private:
 //------------------------------------------------------------------------
 struct DoubleClickDetector
 {
-	void onMouseDown (CPoint where, CButtonState& buttons, xcb_timestamp_t time)
+	void onEvent (MouseDownEvent& event, xcb_timestamp_t time)
+	{
+		if (event.type == EventType::MouseDown)
+			onMouseDown (event.mousePosition, event.buttonState, time);
+		if (event.type == EventType::MouseMove)
+			onMouseMove (event.mousePosition, event.buttonState, time);
+		if (event.type == EventType::MouseUp)
+			onMouseUp (event.mousePosition, event.buttonState, time);
+		if (isDoubleClick)
+			event.clickCount = 2;
+	}
+
+private:
+	void onMouseDown (CPoint where, MouseEventButtonState buttonState, xcb_timestamp_t time)
 	{
 		switch (state)
 		{
@@ -241,8 +254,9 @@ struct DoubleClickDetector
 			case State::Uninitialized:
 			{
 				state = State::MouseDown;
-				firstClickState = buttons;
+				firstClickState = buttonState;
 				firstClickTime = time;
+				isDoubleClick = false;
 				point = where;
 				break;
 			}
@@ -250,7 +264,7 @@ struct DoubleClickDetector
 			{
 				if (timeInside (time) && pointInside (where))
 				{
-					buttons |= kDoubleClick;
+					isDoubleClick = true;
 				}
 				state = State::Uninitialized;
 				break;
@@ -258,7 +272,7 @@ struct DoubleClickDetector
 		}
 	}
 
-	void onMouseUp (CPoint where, CButtonState buttons, xcb_timestamp_t time)
+	void onMouseUp (CPoint where, MouseEventButtonState buttonState, xcb_timestamp_t time)
 	{
 		if (state == State::MouseDown && pointInside (where))
 			state = State::MouseUp;
@@ -266,13 +280,12 @@ struct DoubleClickDetector
 			state = State::Uninitialized;
 	}
 
-	void onMouseMove (CPoint where, CButtonState buttons, xcb_timestamp_t time)
+	void onMouseMove (CPoint where, MouseEventButtonState buttonState, xcb_timestamp_t time)
 	{
 		if (!pointInside (where))
 			state = State::Uninitialized;
 	}
 
-private:
 	bool timeInside (xcb_timestamp_t time)
 	{
 		constexpr xcb_timestamp_t threshold = 250; // in milliseconds
@@ -296,8 +309,9 @@ private:
 	};
 
 	State state {State::Uninitialized};
+	bool isDoubleClick {false};
 	CPoint point;
-	CButtonState firstClickState;
+	MouseEventButtonState firstClickState;
 	xcb_timestamp_t firstClickTime {0};
 };
 
@@ -465,8 +479,7 @@ struct Frame::Impl : IFrameEventHandler
 				downEvent.mousePosition = where;
 				setupMouseEventButtons (downEvent, event.detail);
 				setupEventModifiers (downEvent.modifiers, event.state);
-				// TODO: doubleClickDetector
-				// doubleClickDetector.onMouseDown (where, buttons, event.time);
+				doubleClickDetector.onEvent (downEvent, event.time);
 				frame->platformOnEvent (downEvent);
 				grabPointer ();
 				if (downEvent.consumed)
@@ -488,8 +501,7 @@ struct Frame::Impl : IFrameEventHandler
 				upEvent.mousePosition = where;
 				setupMouseEventButtons (upEvent, event.detail);
 				setupEventModifiers (upEvent.modifiers, event.state);
-				// TODO: doubleClickDetector
-				// doubleClickDetector.onMouseUp (where, buttons, event.time);
+				doubleClickDetector.onEvent (upEvent, event.time);
 				frame->platformOnEvent (upEvent);
 				ungrabPointer ();
 			}
@@ -503,8 +515,7 @@ struct Frame::Impl : IFrameEventHandler
 		moveEvent.mousePosition (event.event_x, event.event_y);
 		setupMouseEventButtons (moveEvent, event.state);
 		setupEventModifiers (moveEvent.modifiers, event.state);
-		// TODO: doubleClickDetector
-		// doubleClickDetector.onMouseMove (where, buttons, event.time);
+		doubleClickDetector.onEvent (moveEvent, event.time);
 		frame->platformOnEvent (moveEvent);
 		// make sure we get more motion events
 		auto xcb = RunLoop::instance ().getXcbConnection ();
