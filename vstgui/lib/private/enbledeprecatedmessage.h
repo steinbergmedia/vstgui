@@ -4,8 +4,9 @@
 
 #ifdef __clang__
 #pragma clang diagnostic pop
+#elif defined __GNUC__
+#pragma GCC diagnostic pop
 #elif _MSC_VER
 #pragma warning(pop)
 #else
 #endif
-

@@ -1336,6 +1336,7 @@ void CView::unregisterViewListener (IViewListener* listener)
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
 //------------------------------------------------------------------------
 void CView::registerViewMouseListener (IViewMouseListener* listener)
 {
@@ -1352,6 +1353,7 @@ void CView::unregisterViewMouseListener (IViewMouseListener* listener)
 		return;
 	pImpl->viewMouseListener->remove (listener);
 }
+#include "private/enbledeprecatedmessage.h"
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons)
@@ -1359,8 +1361,8 @@ CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, 
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (!pImpl->viewMouseListener)
 		return result;
-	pImpl->viewMouseListener->forEachReverse (
 #include "private/disabledeprecatedmessage.h"
+	pImpl->viewMouseListener->forEachReverse (
 	    [&] (IViewMouseListener* l) {
 #include "private/enbledeprecatedmessage.h"
 		    switch (type)
