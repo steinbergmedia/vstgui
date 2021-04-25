@@ -324,6 +324,8 @@ bool Win32Frame::getCurrentModifiers (Modifiers& modifiers) const
 		modifiers.add (ModifierKey::Control);
 	if (GetAsyncKeyState (VK_MENU) < 0)
 		modifiers.add (ModifierKey::Alt);
+	if (GetAsyncKeyState (VK_LWIN) < 0)
+		modifiers.add (ModifierKey::Super);
 	return true;
 }
 
@@ -643,8 +645,10 @@ static void setupMouseEventFromWParam (MouseEvent& event, WPARAM wParam)
 		event.modifiers.add (ModifierKey::Control);
 	if (wParam & MK_SHIFT)
 		event.modifiers.add (ModifierKey::Shift);
-	if (GetAsyncKeyState (VK_MENU)    < 0)
+	if (GetAsyncKeyState (VK_MENU) < 0)
 		event.modifiers.add (ModifierKey::Alt);
+	if (GetAsyncKeyState (VK_LWIN) < 0)
+		event.modifiers.add (ModifierKey::Super);
 }
 
 //-----------------------------------------------------------------------------
@@ -735,7 +739,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		{
 			MouseExitEvent event;
 			getCurrentMousePosition (event.mousePosition);
-			// TODO: mouse button state
+			getCurrentModifiers (event.modifiers);
 			pFrame->platformOnEvent (event);
 			mouseInside = false;
 			return 0;
