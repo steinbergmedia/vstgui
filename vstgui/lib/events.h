@@ -26,6 +26,8 @@ enum class EventType : uint32_t
 	MouseMove,
 	MouseUp,
 	MouseCancel,
+	MouseEnter,
+	MouseExit,
 	MouseWheel,
 	ZoomGesture,
 	KeyUp,
@@ -173,7 +175,46 @@ private:
 struct MouseEvent : MousePositionEvent
 {
 	MouseEventButtonState buttonState;
-	uint32_t clickCount {0};
+};
+
+//------------------------------------------------------------------------
+/** MouseEnterEvent
+ *	@ingroup new_in_4_11
+ */
+struct MouseEnterEvent : MouseEvent
+{
+	MouseEnterEvent () { type = EventType::MouseEnter; }
+	MouseEnterEvent (CPoint pos, MouseEventButtonState buttons, Modifiers mods)
+	: MouseEnterEvent ()
+	{
+		mousePosition = pos;
+		buttonState = buttons;
+		modifiers = mods;
+	}
+	MouseEnterEvent (const MouseEvent& e)
+	: MouseEnterEvent (e.mousePosition, e.buttonState, e.modifiers)
+	{
+	}
+};
+
+//------------------------------------------------------------------------
+/** MouseExitEvent
+ *	@ingroup new_in_4_11
+ */
+struct MouseExitEvent : MouseEvent
+{
+	MouseExitEvent () { type = EventType::MouseExit; }
+	MouseExitEvent (CPoint pos, MouseEventButtonState buttons, Modifiers mods)
+	: MouseExitEvent ()
+	{
+		mousePosition = pos;
+		buttonState = buttons;
+		modifiers = mods;
+	}
+	MouseExitEvent (const MouseEvent& e)
+	: MouseExitEvent (e.mousePosition, e.buttonState, e.modifiers)
+	{
+	}
 };
 
 //------------------------------------------------------------------------
@@ -182,6 +223,8 @@ struct MouseEvent : MousePositionEvent
  */
 struct MouseDownEvent : MouseEvent
 {
+	uint32_t clickCount {0};
+
 	MouseDownEvent () { type = EventType::MouseDown; }
 	MouseDownEvent (const CPoint& pos, MouseEventButtonState buttons)
 	: MouseDownEvent ()
@@ -230,7 +273,7 @@ struct MouseMoveEvent : MouseDownEvent
 /** MouseUpEvent
  *	@ingroup new_in_4_11
  */
-struct MouseUpEvent : MouseEvent
+struct MouseUpEvent : MouseDownEvent
 {
 	MouseUpEvent () { type = EventType::MouseUp; }
 	MouseUpEvent (const CPoint& pos, MouseEventButtonState buttons)
@@ -419,6 +462,10 @@ inline MousePositionEvent* asMousePositionEvent (Event& event)
 		case EventType::MouseMove:
 			[[fallthrough]];
 		case EventType::MouseUp:
+			[[fallthrough]];
+		case EventType::MouseEnter:
+			[[fallthrough]];
+		case EventType::MouseExit:
 			return static_cast<MousePositionEvent*> (&event);
 		default:
 			break;
@@ -439,6 +486,10 @@ inline MouseEvent* asMouseEvent (Event& event)
 		case EventType::MouseMove:
 			[[fallthrough]];
 		case EventType::MouseUp:
+			[[fallthrough]];
+		case EventType::MouseEnter:
+			[[fallthrough]];
+		case EventType::MouseExit:
 			return static_cast<MouseEvent*> (&event);
 		default:
 			break;
@@ -506,7 +557,7 @@ inline MousePositionEvent& castMousePositionEvent (Event& event)
  */
 inline MouseEvent& castMouseEvent (Event& event)
 {
-	vstgui_assert (event.type >= EventType::MouseDown && event.type <= EventType::MouseUp);
+	vstgui_assert (event.type >= EventType::MouseDown && event.type <= EventType::MouseExit);
 	return static_cast<MouseEvent&> (event);
 }
 
@@ -538,6 +589,26 @@ inline MouseUpEvent& castMouseUpEvent (Event& event)
 {
 	vstgui_assert (event.type == EventType::MouseUp);
 	return static_cast<MouseUpEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** cast to a mouse enter event
+ *	@ingroup new_in_4_11
+ */
+inline MouseEnterEvent& castMouseEnterEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::MouseEnter);
+	return static_cast<MouseEnterEvent&> (event);
+}
+
+//------------------------------------------------------------------------
+/** cast to a mouse exit event
+ *	@ingroup new_in_4_11
+ */
+inline MouseExitEvent& castMouseExitEvent (Event& event)
+{
+	vstgui_assert (event.type == EventType::MouseExit);
+	return static_cast<MouseExitEvent&> (event);
 }
 
 //------------------------------------------------------------------------

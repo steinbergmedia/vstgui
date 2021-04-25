@@ -546,6 +546,42 @@ void CView::onMouseCancelEvent (MouseCancelEvent& event)
 }
 
 //------------------------------------------------------------------------
+void CView::onMouseEnterEvent (MouseEnterEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	switch (onMouseEntered (event.mousePosition, buttonState))
+	{
+		case kMouseEventHandled:
+		{
+			event.consumed = true;
+			break;
+		}
+		case kMouseDownEventHandledButDontNeedMovedOrUpEvents: [[fallthrough]];
+		case kMouseEventNotHandled: [[fallthrough]];
+		case kMouseEventNotImplemented: [[fallthrough]];
+		case kMouseMoveEventHandledButDontNeedMoreEvents: break;
+	}
+}
+
+//------------------------------------------------------------------------
+void CView::onMouseExitEvent (MouseExitEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	switch (onMouseExited (event.mousePosition, buttonState))
+	{
+		case kMouseEventHandled:
+		{
+			event.consumed = true;
+			break;
+		}
+		case kMouseDownEventHandledButDontNeedMovedOrUpEvents: [[fallthrough]];
+		case kMouseEventNotHandled: [[fallthrough]];
+		case kMouseEventNotImplemented: [[fallthrough]];
+		case kMouseMoveEventHandledButDontNeedMoreEvents: break;
+	}
+}
+
+//------------------------------------------------------------------------
 void CView::onMouseWheelEvent (MouseWheelEvent& event)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -630,6 +666,18 @@ void CView::dispatchEvent (Event& event)
 		{
 			auto& mouseCancelEvent = castMouseCancelEvent (event);
 			onMouseCancelEvent (mouseCancelEvent);
+			break;
+		}
+		case EventType::MouseEnter:
+		{
+			auto& mouseEnterEvent = castMouseEnterEvent (event);
+			onMouseEnterEvent (mouseEnterEvent);
+			break;
+		}
+		case EventType::MouseExit:
+		{
+			auto& mouseExitEvent = castMouseExitEvent (event);
+			onMouseExitEvent (mouseExitEvent);
 			break;
 		}
 		case EventType::MouseWheel:

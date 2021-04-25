@@ -435,11 +435,10 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
-	CButtonState buttons = 0; //eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	mapModifiers (modifiers, buttons);
-	CPoint p = pointFromNSPoint (getGlobalMouseLocation (self));
-	_vstguiframe->platformOnMouseExited (p, buttons);
+	MouseExitEvent event;
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.mousePosition = pointFromNSPoint (getGlobalMouseLocation (self));
+	_vstguiframe->platformOnEvent (event);
 }
 
 //------------------------------------------------------------------------------------

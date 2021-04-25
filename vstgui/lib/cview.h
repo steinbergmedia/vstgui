@@ -89,6 +89,8 @@ public:
 	virtual void onMouseMoveEvent (MouseMoveEvent& event);
 	virtual void onMouseUpEvent (MouseUpEvent& event);
 	virtual void onMouseCancelEvent (MouseCancelEvent& event);
+	virtual void onMouseEnterEvent (MouseEnterEvent& event);
+	virtual void onMouseExitEvent (MouseExitEvent& event);
 	
 	virtual void onMouseWheelEvent (MouseWheelEvent& event);
 	virtual void onZoomGestureEvent (ZoomGestureEvent& event);
@@ -123,9 +125,9 @@ public:
 	VSTGUI_DEPRECATED(
 	/** \deprecated never called anymore, please use onMouseWheelEvent instead */
 	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) final { return false; })
-	VSTGUI_DEPRECATED(
+	VSTGUI_DEPRECATED_MSG(
 	/** \deprecated please use onMouseWheelEvent instead */
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);)
+	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);, "Use CView::onMouseWheelEvent instead")
 
 	/** turn on/off mouse usage for this view */
 	virtual void setMouseEnabled (bool bEnable = true);
@@ -162,20 +164,21 @@ public:
 	/** set a custom drop target */
 	void setDropTarget (const SharedPointer<IDropTarget>& dt);
 
+	VSTGUI_DEPRECATED(
 	/** \deprecated start a drag operation. See CDropSource to create the source data package */
-	VSTGUI_DEPRECATED(DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
+	DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	VSTGUI_DEPRECATED(
+	VSTGUI_DEPRECATED_MSG(
 	/** called if a key down event occurs and this view has focus */
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);)
-	VSTGUI_DEPRECATED(
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);, "Use CView::onKeyboardEvent instead")
+	VSTGUI_DEPRECATED_MSG(
 	/** called if a key up event occurs and this view has focus */
-	virtual int32_t onKeyUp (VstKeyCode& keyCode);)
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);, "Use CView::onKeyboardEvent instead")
 	//@}
 
 	//-----------------------------------------------------------------------------

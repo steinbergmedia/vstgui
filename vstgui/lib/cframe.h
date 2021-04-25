@@ -210,7 +210,6 @@ public:
 	bool attached (CView* parent) override;
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
-	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void dispatchEvent (Event& event) override;
 
@@ -230,8 +229,8 @@ protected:
 	~CFrame () noexcept override = default;
 	void beforeDelete () override;
 
-	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
-	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
+	void checkMouseViews (const MouseEvent& event);
+	void clearMouseViews (const CPoint& where, Modifiers modifiers, bool callMouseExit = true);
 	void removeFromMouseViews (CView* view);
 	void setCollectInvalidRects (CollectInvalidRects* collectInvalidRects);
 
@@ -248,7 +247,6 @@ protected:
 
 	// platform frame
 	bool platformDrawRect (CDrawContext* context, const CRect& rect) override;
-	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) override;
 	void platformOnEvent (Event& event) override;
 	DragOperation platformOnDragEnter (DragEventData data) override;
 	DragOperation platformOnDragMove (DragEventData data) override;

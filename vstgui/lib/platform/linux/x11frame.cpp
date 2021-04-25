@@ -527,10 +527,11 @@ struct Frame::Impl : IFrameEventHandler
 	{
 		if ((event.response_type & ~0x80) == XCB_LEAVE_NOTIFY)
 		{
-			CPoint where (event.event_x, event.event_y);
-			auto buttons = translateMouseButtons (event.state);
-			buttons |= translateModifiers (event.state);
-			frame->platformOnMouseExited (where, buttons);
+			MouseExitEvent exitEvent;
+			exitEvent.mousePosition (event.event_x, event.event_y);
+			setupMouseEventButtons (exitEvent, event.state);
+			setupEventModifiers (exitEvent.modifiers, event.state);
+			frame->platformOnEvent (exitEvent);
 			setCursorInternal (kCursorDefault);
 		}
 		else

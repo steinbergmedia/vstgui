@@ -252,6 +252,8 @@ struct MouseDownEvent;
 struct MouseMoveEvent;
 struct MouseUpEvent;
 struct MouseCancelEvent;
+struct MouseEnterEvent;
+struct MouseExitEvent;
 struct GestureEvent;
 struct MouseWheelEvent;
 struct ZoomGestureEvent;

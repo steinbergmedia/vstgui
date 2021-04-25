@@ -25,7 +25,7 @@ namespace VSTGUI {
 	and that you must make sure that the dependent objects are alife while added as dependent.
 */
 //----------------------------------------------------------------------------------------------------
-class IDependency
+class [[deprecated("Please use listeners instead")]] IDependency
 {
 public:
 	/** add a dependent object */
@@ -61,7 +61,7 @@ protected:
 	int32_t deferChangeCount {0};
 	DeferedChangesSet deferedChanges;
 	DependentList dependents;
-} VSTGUI_DEPRECATED_ATTRIBUTE;
+};
 
 //----------------------------------------------------------------------------------------------------
 inline void IDependency::addDependency (CBaseObject* obj)

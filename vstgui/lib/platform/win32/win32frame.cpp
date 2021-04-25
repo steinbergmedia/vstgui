@@ -715,11 +715,10 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		}
 		case WM_MOUSELEAVE:
 		{
-			CPoint where;
-			getCurrentMousePosition (where);
-			CButtonState buttons;
-			getCurrentMouseButtons (buttons);
-			pFrame->platformOnMouseExited (where, buttons);
+			MouseExitEvent event;
+			getCurrentMousePosition (event.mousePosition);
+			// TODO: mouse button state
+			pFrame->platformOnEvent (event);
 			mouseInside = false;
 			return 0;
 		}
