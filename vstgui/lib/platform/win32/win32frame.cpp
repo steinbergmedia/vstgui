@@ -460,9 +460,9 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 		CButtonState buttons;
 		getCurrentMouseButtons (buttons);
 		MouseEventButtonState buttonState;
-		if (buttons.isLeft ())
+		if (buttons.isLeftButton ())
 			buttonState.set (MouseEventButtonState::Left);
-		else if (buttons.isRIght ())
+		else if (buttons.isRightButton ())
 			buttonState.set (MouseEventButtonState::Right);
 		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
 		                                     *genericOptionMenuTheme);

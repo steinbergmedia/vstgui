@@ -1364,7 +1364,6 @@ CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, 
 #include "private/disabledeprecatedmessage.h"
 	pImpl->viewMouseListener->forEachReverse (
 	    [&] (IViewMouseListener* l) {
-#include "private/enbledeprecatedmessage.h"
 		    switch (type)
 		    {
 			    case MouseListenerCall::MouseDown: return l->viewOnMouseDown (this, pos, buttons);
@@ -1382,6 +1381,7 @@ CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, 
 		    }
 		    return false;
 	    });
+#include "private/enbledeprecatedmessage.h"
 	return result;
 }
 
@@ -1392,12 +1392,12 @@ void CView::callMouseListenerEnteredExited (bool mouseEntered)
 		return;
 #include "private/disabledeprecatedmessage.h"
 	pImpl->viewMouseListener->forEachReverse ([&] (IViewMouseListener* l) {
-#include "private/enbledeprecatedmessage.h"
 		if (mouseEntered)
 			l->viewOnMouseEntered (this);
 		else
 			l->viewOnMouseExited (this);
 	});
+#include "private/enbledeprecatedmessage.h"
 }
 #endif
 
