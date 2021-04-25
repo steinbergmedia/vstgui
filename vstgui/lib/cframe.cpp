@@ -637,9 +637,9 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			}
 			modalView->dispatchEvent (event);
 		}
-		return;
 	}
-	CView::dispatchEvent (event);
+	else
+		CView::dispatchEvent (event);
 	if (event.consumed == false)
 	{
 		event.buttonState.clear ();
