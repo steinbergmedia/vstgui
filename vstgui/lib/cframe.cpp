@@ -577,7 +577,7 @@ void CFrame::dispatchMouseDownEvent (MouseDownEvent& event)
 
 	auto buttonState = buttonStateFromMouseEvent (event);
 
-	if (callMouseObserverMouseDown (event.mousePosition, buttonState) == kMouseEventHandled)
+	if (callMouseObserverMouseDown (event.mousePosition, buttonState) != kMouseEventNotHandled)
 	{
 		event.consumed = true;
 		return;

@@ -157,6 +157,7 @@ struct MouseEventButtonState
 	bool is (Position pos) const { return data == pos; }
 	bool isOther (uint32_t index) const { return data == (1 << index); }
 	bool has (Position pos) const { return data & pos; }
+	bool empty () const { return data == 0; }
 
 	void add (Position pos) { data |= pos; }
 	void set (Position pos) { data = pos; }
@@ -164,6 +165,9 @@ struct MouseEventButtonState
 
 	MouseEventButtonState () = default;
 	MouseEventButtonState (Position pos) { set (pos); }
+
+	bool operator== (const MouseEventButtonState& other) const { return data == other.data; }
+	bool operator!= (const MouseEventButtonState& other) const { return data != other.data; }
 private:
 	uint32_t data {0};
 };

@@ -569,7 +569,7 @@ struct GenericOptionMenu::Impl
 	IGenericOptionMenuListener* listener {nullptr};
 	GenericOptionMenuTheme theme;
 	Callback callback;
-	CButtonState initialButtons;
+	MouseEventButtonState initialButtonState;
 	bool focusDrawingWasEnabled {false};
 };
 
@@ -583,7 +583,6 @@ GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons
 
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->frame = frame;
-	impl->initialButtons = initialButtons;
 	impl->theme = theme;
 	impl->container = new Impl::ContainerT (frameSize);
 	impl->container->setZIndex (100);
@@ -592,6 +591,10 @@ GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons
 	impl->modalViewSession = impl->frame->beginModalViewSession (impl->container);
 	impl->focusDrawingWasEnabled = impl->frame->focusDrawingEnabled ();
 	impl->frame->setFocusDrawingEnabled (false);
+	if (initialButtons.isLeftButton ())
+		impl->initialButtonState.set(MouseEventButtonState::Left);
+	else if (initialButtons.isRightButton ())
+		impl->initialButtonState.set(MouseEventButtonState::Right);
 }
 
 //------------------------------------------------------------------------
@@ -661,22 +664,26 @@ void GenericOptionMenu::viewOnEvent (CView* view, Event& event)
 	else if (event.type == EventType::MouseUp)
 	{
 		auto& upEvent = castMouseUpEvent (event);
-		if (impl->initialButtons.isLeftButton () && upEvent.buttonState.isLeft ())
+		if (impl->initialButtonState == upEvent.buttonState && !impl->mouseUpTimer)
 		{
 			if (auto container = view->asViewContainer ())
 			{
 				CViewContainer::ViewList views;
 				if (container->getViewsAt (upEvent.mousePosition, views, GetViewOptions ().deep ().includeInvisible ()))
 				{
+					auto pos = upEvent.mousePosition;
+					view->translateToGlobal (pos);
 					MouseDownEvent downEvent;
-					downEvent.mousePosition = upEvent.mousePosition;
 					downEvent.buttonState = upEvent.buttonState;
 					downEvent.clickCount = 1;
 					for (auto& v : views)
 					{
+						downEvent.mousePosition = pos;
+						v->translateToLocal (downEvent.mousePosition);
 						v->dispatchEvent (downEvent);
 						if (downEvent.consumed)
 						{
+							upEvent.mousePosition = downEvent.mousePosition;
 							v->dispatchEvent (upEvent);
 							break;
 						}
@@ -717,24 +724,25 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 
 	if (auto view = impl->frame->getViewAt (where, GetViewOptions ().deep ().includeInvisible ()))
 	{
-		if (impl->initialButtons.getButtonState () != 0)
+		if (!impl->initialButtonState.empty ())
 		{
-			impl->frame->getCurrentMouseLocation (where);
-			view->translateToLocal (where);
-			view->onMouseMoved (where, impl->initialButtons);
-			impl->mouseUpTimer = makeOwned<CVSTGUITimer> (
-			    [this, where, view] (CVSTGUITimer* timer) {
-				    timer->stop ();
-				    if (!impl->container ||
-				        impl->frame->getCurrentMouseButtons ().getButtonState () == 0)
-					    return;
-				    impl->container->registerViewListener (this);
-				    CPoint p (where);
-				    view->translateToGlobal (p);
-				    impl->frame->onMouseDown (p, impl->initialButtons);
-			    },
-			    200);
+			MouseMoveEvent moveEvent;
+			moveEvent.buttonState = impl->initialButtonState;
+			impl->frame->getCurrentMouseLocation (moveEvent.mousePosition);
+			view->translateToLocal (moveEvent.mousePosition);
+			view->dispatchEvent (moveEvent);
 		}
+	}
+	if (!impl->initialButtonState.empty ())
+	{
+		impl->mouseUpTimer = makeOwned<CVSTGUITimer> (
+			[this] (CVSTGUITimer*) {
+				impl->mouseUpTimer = nullptr;
+				if (!impl->container ||
+					impl->frame->getCurrentMouseButtons ().getButtonState () == 0)
+					return;
+			},
+			200);
 	}
 	if (impl->listener)
 		impl->listener->optionMenuPopupStarted ();
