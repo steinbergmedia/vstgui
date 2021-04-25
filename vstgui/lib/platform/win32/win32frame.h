@@ -27,6 +27,8 @@ public:
 	
 	CCursorType getLastSetCursor () const { return lastSetCursor; }
 
+	bool getCurrentModifiers (Modifiers& modifiers) const;
+
 	// IPlatformFrame
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;

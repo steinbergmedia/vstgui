@@ -505,7 +505,7 @@ bool ImageFramesView::onDrop (DragEventData eventData)
 	std::vector<size_t> indices;
 	if (getIndicesFromDataPackage (eventData.drag, &indices))
 	{
-		auto doCopy = (eventData.modifiers.getModifierState () & kAlt) != 0;
+		auto doCopy = eventData.modifiers.has (ModifierKey::Alt);
 		reorderImages (dropPosition, doCopy, indices);
 	}
 	else
@@ -556,7 +556,7 @@ DragOperation ImageFramesView::onDragMove (DragEventData eventData)
 			dropIndicatorPos = newIndex;
 			invalid ();
 		}
-		auto doCopy = dragHasImages ? true : (eventData.modifiers.getModifierState () & kAlt);
+		auto doCopy = dragHasImages ? true : eventData.modifiers.has (ModifierKey::Alt);
 		return doCopy ? DragOperation::Copy : DragOperation::Move;
 	}
 	return DragOperation::None;

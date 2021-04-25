@@ -565,11 +565,9 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	NSUInteger modifiers = [NSEvent modifierFlags];
-	CButtonState buttons = 0;
-	mapModifiers (modifiers, buttons);
+	auto modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 
-	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	DragEventData data {frame->getDragDataPackage (), where, modifiers};
 	auto result = frame->getFrame ()->platformOnDragEnter (data);
 	if (result == DragOperation::Copy)
 		return NSDragOperationCopy;
@@ -588,11 +586,9 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	NSUInteger modifiers = [NSEvent modifierFlags];
-	CButtonState buttons = 0;
-	mapModifiers (modifiers, buttons);
+	auto modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 
-	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	DragEventData data {frame->getDragDataPackage (), where, modifiers};
 	auto result = frame->getFrame ()->platformOnDragMove (data);
 	if (result == DragOperation::Copy)
 		return NSDragOperationCopy;
@@ -611,11 +607,9 @@ static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	NSUInteger modifiers = [NSEvent modifierFlags];
-	CButtonState buttons = 0;
-	mapModifiers (modifiers, buttons);
+	auto modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 
-	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	DragEventData data {frame->getDragDataPackage (), where, modifiers};
 	frame->getFrame ()->platformOnDragLeave (data);
 	frame->setDragDataPackage (nullptr);
 
@@ -631,11 +625,9 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	NSUInteger modifiers = [NSEvent modifierFlags];
-	CButtonState buttons = 0;
-	mapModifiers (modifiers, buttons);
+	auto modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 
-	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	DragEventData data {frame->getDragDataPackage (), where, modifiers};
 	bool result = frame->getFrame ()->platformOnDrop (data);
 	frame->setMouseCursor (kCursorDefault);
 	frame->setDragDataPackage (nullptr);

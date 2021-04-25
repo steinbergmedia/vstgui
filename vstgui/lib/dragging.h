@@ -6,7 +6,7 @@
 
 #include "vstguifwd.h"
 #include "cbitmap.h"
-#include "cbuttonstate.h"
+#include "events.h"
 #include "cpoint.h"
 #include "idatapackage.h"
 #include <functional>
@@ -71,7 +71,7 @@ struct DragEventData
 	/** mouse position */
 	CPoint pos;
 	/** key modifiers */
-	CButtonState modifiers;
+	Modifiers modifiers;
 };
 
 //------------------------------------------------------------------------

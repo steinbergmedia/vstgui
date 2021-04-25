@@ -461,7 +461,7 @@ TESTCASE(CViewContainerTest,
 		DragEventData data;
 		data.drag = nullptr;
 		data.pos = CPoint (10, 10);
-		data.modifiers = 0;
+		data.modifiers.clear ();
 
 		auto dropTarget = container->getDropTarget ();
 		dropTarget->onDragEnter (data);
@@ -490,7 +490,7 @@ TESTCASE(CViewContainerTest,
 		DragEventData data;
 		data.drag = nullptr;
 		data.pos = CPoint (10, 10);
-		data.modifiers = 0;
+		data.modifiers.clear ();
 
 		auto dropTarget = container->getDropTarget ();
 		dropTarget->onDragEnter (data);

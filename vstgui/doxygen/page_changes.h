@@ -132,6 +132,8 @@ Which replaces the following old methods:
 - onWheel
 - ...
 
+- DragEventData has changed it's modifiers type from CButtonState to Modifiers
+
 @subsection code_changes_4_9_to_4_10 VSTGUI 4.9 -> VSTGUI 4.10
 
 - one has to use VSTGUI::init() before using VSTGUI and VSTGUI::exit() after use

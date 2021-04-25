@@ -315,6 +315,19 @@ bool Win32Frame::getCurrentMousePosition (CPoint& mousePosition) const
 }
 
 //-----------------------------------------------------------------------------
+bool Win32Frame::getCurrentModifiers (Modifiers& modifiers) const
+{
+	modifiers.clear ();
+	if (GetAsyncKeyState (VK_SHIFT) < 0)
+		modifiers.add (ModifierKey::Shift);
+	if (GetAsyncKeyState (VK_CONTROL) < 0)
+		modifiers.add (ModifierKey::Control);
+	if (GetAsyncKeyState (VK_MENU) < 0)
+		modifiers.add (ModifierKey::Alt);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 bool Win32Frame::getCurrentMouseButtons (CButtonState& buttons) const
 {
 	if (GetAsyncKeyState (VK_LBUTTON) < 0)
