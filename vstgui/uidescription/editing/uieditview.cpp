@@ -498,9 +498,8 @@ void UIEditView::onZoomGestureEvent (ZoomGestureEvent& event)
 		auto scale = getTransform ().m11;
 		auto newScale = scale + scale * event.zoom;
 		setScale (newScale);
+		event.consumed = true;
 	}
-	else
-		CViewContainer::onZoomGestureEvent (event);
 }
 
 //----------------------------------------------------------------------------------------------------
