@@ -198,7 +198,6 @@ int32_t UIColorStopEditView::onKeyDown (VstKeyCode& keyCode)
 			break;
 		}
 	}
-	return CView::onKeyDown (keyCode);
 }
 
 //----------------------------------------------------------------------------------------------------
