@@ -40,7 +40,7 @@ struct IGenericOptionMenuListener
 };
 
 //------------------------------------------------------------------------
-class GenericOptionMenu : public IPlatformOptionMenu, public ViewMouseListenerAdapter
+class GenericOptionMenu : public IPlatformOptionMenu, public ViewListenerAdapter
 {
 public:
 	GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
@@ -53,8 +53,9 @@ public:
 
 private:
 	void removeModalView (PlatformOptionMenuResult result);
-	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override;
-	CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) override;
+	void viewOnEvent (CView* view, Event& event) override;
+//	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override;
+//	CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

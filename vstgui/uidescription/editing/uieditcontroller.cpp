@@ -213,7 +213,6 @@ protected:
 //----------------------------------------------------------------------------------------------------
 class UIZoomSettingController : public IController,
                                 public IContextMenuController2,
-                                public ViewMouseListenerAdapter,
                                 public ViewListenerAdapter,
                                 public NonAtomicReferenceCounted
 {
@@ -312,7 +311,6 @@ public:
 				zoomValueControl->setFrameWidth (-1);
 				zoomValueControl->setTooltipText ("Editor Zoom");
 				zoomValueControl->registerViewListener (this);
-				zoomValueControl->registerViewMouseListener (this);
 				zoomValueControl->setStyle (zoomValueControl->getStyle () | CTextEdit::kDoubleClickStyle);
 			}
 		}
@@ -342,12 +340,15 @@ public:
 		}
 	}
 
-	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override
+	void viewOnEvent (CView* view, Event& event) override
 	{
 		vstgui_assert (view == zoomValueControl);
-		if (buttons.isDoubleClick ())
+		if (event.type != EventType::MouseDown)
+			return;
+		auto& downEvent = castMouseDownEvent (event);
+		if (downEvent.clickCount > 1)
 			popupTimer = nullptr;
-		else if (buttons.isLeftButton () && buttons.getModifierState () == 0)
+		else if (downEvent.buttonState.isLeft () && downEvent.modifiers.empty ())
 		{
 			popupTimer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) {
 				popupTimer = nullptr;
@@ -359,14 +360,12 @@ public:
 				                 zoomValueControl->getViewSize ().getTopLeft (), true));
 			}, 250);
 		}
-		return kMouseEventNotHandled;
 	}
 
 	void viewWillDelete (CView* view) override
 	{
 		vstgui_assert (view == zoomValueControl);
 		view->unregisterViewListener (this);
-		view->unregisterViewMouseListener (this);
 		zoomValueControl = nullptr;
 	}
 

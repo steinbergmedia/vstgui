@@ -179,12 +179,15 @@ struct CView::Impl
 {
 	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
-	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
 	
 	ViewAttributes attributes;
 	std::unique_ptr<ViewListenerDispatcher> viewListeners;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
+	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
 	std::unique_ptr<ViewMouseListenerDispatcher> viewMouseListener;
-	
+#include "private/enbledeprecatedmessage.h"
+#endif
 	CRect size;
 	int32_t viewFlags {0};
 	int32_t autosizeFlags {kAutosizeNone};
@@ -354,11 +357,18 @@ void CView::setMouseEnabled (bool state)
 		{
 			setDirty (true);
 		}
+		if (pImpl->viewListeners)
+			pImpl->viewListeners->forEach (
+			    [&] (IViewListener* listener) { listener->viewOnMouseEnabled (this, state); });
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		if (pImpl->viewMouseListener)
 		{
+#include "private/disabledeprecatedmessage.h"
 			pImpl->viewMouseListener->forEach (
 			    [&] (IViewMouseListener* listener) { listener->viewOnMouseEnabled (this, state); });
+#include "private/enbledeprecatedmessage.h"
 		}
+#endif
 	}
 }
 
@@ -642,6 +652,16 @@ void CView::onZoomGestureEvent (ZoomGestureEvent& event)
 //------------------------------------------------------------------------
 void CView::dispatchEvent (Event& event)
 {
+	if (pImpl->viewListeners)
+	{
+		pImpl->viewListeners->forEachReverse (
+		    [&] (IViewListener* listener) {
+			    listener->viewOnEvent (this, event);
+			    return event.consumed;
+		    },
+		    [] (bool consumed) { return consumed; });
+	}
+
 	switch (event.type)
 	{
 		case EventType::MouseDown:
@@ -1315,6 +1335,7 @@ void CView::unregisterViewListener (IViewListener* listener)
 	pImpl->viewListeners->remove (listener);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 void CView::registerViewMouseListener (IViewMouseListener* listener)
 {
@@ -1339,7 +1360,9 @@ CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, 
 	if (!pImpl->viewMouseListener)
 		return result;
 	pImpl->viewMouseListener->forEachReverse (
+#include "private/disabledeprecatedmessage.h"
 	    [&] (IViewMouseListener* l) {
+#include "private/enbledeprecatedmessage.h"
 		    switch (type)
 		    {
 			    case MouseListenerCall::MouseDown: return l->viewOnMouseDown (this, pos, buttons);
@@ -1365,13 +1388,16 @@ void CView::callMouseListenerEnteredExited (bool mouseEntered)
 {
 	if (!pImpl->viewMouseListener)
 		return;
+#include "private/disabledeprecatedmessage.h"
 	pImpl->viewMouseListener->forEachReverse ([&] (IViewMouseListener* l) {
+#include "private/enbledeprecatedmessage.h"
 		if (mouseEntered)
 			l->viewOnMouseEntered (this);
 		else
 			l->viewOnMouseExited (this);
 	});
 }
+#endif
 
 //-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CView::getDropTarget ()

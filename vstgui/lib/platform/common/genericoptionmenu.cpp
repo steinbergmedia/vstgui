@@ -15,6 +15,7 @@
 #include "../../controls/coptionmenu.h"
 #include "../../controls/cscrollbar.h"
 #include "../../cvstguitimer.h"
+#include "../../events.h"
 #include "../../idatabrowserdelegate.h"
 
 //------------------------------------------------------------------------
@@ -587,7 +588,7 @@ GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons
 	impl->container = new Impl::ContainerT (frameSize);
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
-	impl->container->registerViewMouseListener (this);
+	impl->container->registerViewListener (this);
 	impl->modalViewSession = impl->frame->beginModalViewSession (impl->container);
 	impl->focusDrawingWasEnabled = impl->frame->focusDrawingEnabled ();
 	impl->frame->setFocusDrawingEnabled (false);
@@ -624,7 +625,7 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 				    return;
 			    auto callback = std::move (self->impl->callback);
 			    self->impl->callback = nullptr;
-			    self->impl->container->unregisterViewMouseListener (self);
+			    self->impl->container->unregisterViewListener (self);
 			    if (self->impl->modalViewSession)
 			    {
 					self->impl->frame->endModalViewSession (*self->impl->modalViewSession);
@@ -638,44 +639,62 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult GenericOptionMenu::viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons)
+void GenericOptionMenu::viewOnEvent (CView* view, Event& event)
 {
-	if (auto container = view->asViewContainer ())
-	{
-		CViewContainer::ViewList views;
-		if (container->getViewsAt (pos, views, GetViewOptions ().deep ().includeInvisible ()))
-		{
-			return kMouseEventNotHandled;
-		}
-		auto self = shared (this);
-		self->removeModalView ({nullptr, -1});
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-	}
-	return kMouseEventNotHandled;
-}
-
-//------------------------------------------------------------------------
-CMouseEventResult GenericOptionMenu::viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons)
-{
-	if (impl->initialButtons.isLeftButton () && buttons.isLeftButton ())
+	if (event.type == EventType::MouseDown)
 	{
 		if (auto container = view->asViewContainer ())
 		{
+			auto& downEvent = castMouseDownEvent (event);
 			CViewContainer::ViewList views;
-			if (container->getViewsAt (pos, views, GetViewOptions ().deep ().includeInvisible ()))
+			if (container->getViewsAt (downEvent.mousePosition, views, GetViewOptions ().deep ().includeInvisible ()))
 			{
-				if (view->onMouseDown (pos, buttons) == kMouseEventHandled)
-					view->onMouseUp (pos, buttons);
+				return;
 			}
-			else
+			auto self = shared (this);
+			self->removeModalView ({nullptr, -1});
+			downEvent.ignoreFollowUpMoveAndUpEvents (true);
+			downEvent.consumed = true;
+			return;
+		}
+	}
+	else if (event.type == EventType::MouseUp)
+	{
+		auto& upEvent = castMouseUpEvent (event);
+		if (impl->initialButtons.isLeftButton () && upEvent.buttonState.isLeft ())
+		{
+			if (auto container = view->asViewContainer ())
 			{
-				auto self = shared (this);
-				self->removeModalView ({nullptr, -1});
-				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+				CViewContainer::ViewList views;
+				if (container->getViewsAt (upEvent.mousePosition, views, GetViewOptions ().deep ().includeInvisible ()))
+				{
+					MouseDownEvent downEvent;
+					downEvent.mousePosition = upEvent.mousePosition;
+					downEvent.buttonState = upEvent.buttonState;
+					downEvent.clickCount = 1;
+					for (auto& v : views)
+					{
+						v->dispatchEvent (downEvent);
+						if (downEvent.consumed)
+						{
+							v->dispatchEvent (upEvent);
+							break;
+						}
+					}
+					event.consumed = true;
+					return;
+				}
+				else
+				{
+					auto self = shared (this);
+					self->removeModalView ({nullptr, -1});
+					upEvent.ignoreFollowUpMoveAndUpEvents (true);
+					upEvent.consumed = true;
+					return;
+				}
 			}
 		}
 	}
-	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
@@ -686,7 +705,7 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 
 	auto self = shared (this);
 	auto clickCallback = [self] (COptionMenu* menu, int32_t index) {
-		self->impl->container->unregisterViewMouseListener (self);
+		self->impl->container->unregisterViewListener (self);
 		self->removeModalView ({menu, index});
 	};
 
@@ -709,7 +728,7 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 				    if (!impl->container ||
 				        impl->frame->getCurrentMouseButtons ().getButtonState () == 0)
 					    return;
-				    impl->container->registerViewMouseListener (this);
+				    impl->container->registerViewListener (this);
 				    CPoint p (where);
 				    view->translateToGlobal (p);
 				    impl->frame->onMouseDown (p, impl->initialButtons);

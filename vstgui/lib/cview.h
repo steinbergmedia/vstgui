@@ -356,8 +356,10 @@ public:
 	void registerViewListener (IViewListener* listener);
 	void unregisterViewListener (IViewListener* listener);
 	
-	void registerViewMouseListener (IViewMouseListener* listener);
-	void unregisterViewMouseListener (IViewMouseListener* listener);
+	VSTGUI_DEPRECATED_MSG(
+	void registerViewMouseListener (IViewMouseListener* listener);, "Use registerViewListener instead")
+	VSTGUI_DEPRECATED_MSG(
+	void unregisterViewMouseListener (IViewMouseListener* listener);, "Use unregisterViewListener instead")
 	//@}
 
 	//-----------------------------------------------------------------------------
