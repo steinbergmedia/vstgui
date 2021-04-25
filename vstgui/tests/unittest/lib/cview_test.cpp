@@ -53,6 +53,8 @@ struct ViewListener : public IViewListener
 		view->unregisterViewListener (this);
 		willDeleteCalled = true;
 	}
+	void viewOnEvent (CView* view, Event& event) override {}
+	void viewOnMouseEnabled (CView* view, bool state) override {}
 
 	bool sizeChangedCalled {false};
 	bool attachedCalled {false};
