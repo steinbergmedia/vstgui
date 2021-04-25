@@ -1183,6 +1183,13 @@ bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 }
 
 //-----------------------------------------------------------------------------
+bool NSViewFrame::getCurrentModifiers (Modifiers& modifiers) const
+{
+	modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 bool NSViewFrame::setMouseCursor (CCursorType type)
 {
 	cursor = type;

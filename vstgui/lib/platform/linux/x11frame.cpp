@@ -718,6 +718,12 @@ bool Frame::getCurrentMouseButtons (CButtonState& buttons) const
 }
 
 //------------------------------------------------------------------------
+bool Frame::getCurrentModifiers (Modifiers& modifiers) const
+{
+	return false;
+}
+
+//------------------------------------------------------------------------
 bool Frame::setMouseCursor (CCursorType type)
 {
 	impl->setCursor (type);
