@@ -574,7 +574,7 @@ struct GenericOptionMenu::Impl
 };
 
 //------------------------------------------------------------------------
-GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
+GenericOptionMenu::GenericOptionMenu (CFrame* frame, MouseEventButtonState initialButtons,
                                       GenericOptionMenuTheme theme)
 {
 	auto frameSize = frame->getViewSize ();
@@ -591,10 +591,7 @@ GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons
 	impl->modalViewSession = impl->frame->beginModalViewSession (impl->container);
 	impl->focusDrawingWasEnabled = impl->frame->focusDrawingEnabled ();
 	impl->frame->setFocusDrawingEnabled (false);
-	if (initialButtons.isLeftButton ())
-		impl->initialButtonState.set(MouseEventButtonState::Left);
-	else if (initialButtons.isRightButton ())
-		impl->initialButtonState.set(MouseEventButtonState::Right);
+	impl->initialButtonState = initialButtons;
 }
 
 //------------------------------------------------------------------------

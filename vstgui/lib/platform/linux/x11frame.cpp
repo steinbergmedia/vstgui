@@ -778,7 +778,8 @@ SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 	GenericOptionMenuTheme theme;
 	if (impl->genericOptionMenuTheme)
 		theme = *impl->genericOptionMenuTheme.get ();
-	auto optionMenu = makeOwned<GenericOptionMenu> (cFrame, 0, theme);
+	auto optionMenu = makeOwned<GenericOptionMenu> (
+	    cFrame, MouseEventButtonState (MouseEventButtonState::Left), theme);
 	optionMenu->setListener (this);
 	return optionMenu;
 }

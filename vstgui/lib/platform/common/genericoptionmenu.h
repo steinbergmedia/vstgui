@@ -8,6 +8,7 @@
 
 #include "../../ccolor.h"
 #include "../../cfont.h"
+#include "../../events.h"
 #include "../../iviewlistener.h"
 
 #include <memory>
@@ -43,7 +44,7 @@ struct IGenericOptionMenuListener
 class GenericOptionMenu : public IPlatformOptionMenu, public ViewListenerAdapter
 {
 public:
-	GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
+	GenericOptionMenu (CFrame* frame, MouseEventButtonState initialButtons,
 	                   GenericOptionMenuTheme theme = {});
 	~GenericOptionMenu () noexcept override;
 

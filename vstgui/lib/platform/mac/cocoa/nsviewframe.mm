@@ -1347,9 +1347,10 @@ SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 {
 	if (genericOptionMenuTheme)
 	{
-		CButtonState buttons;
-		getCurrentMouseButtons (buttons);
-		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttons,
+		MouseEventButtonState buttonState;
+		if (auto event = [NSApp currentEvent])
+			buttonState = buttonStateFromNSEvent (event);
+		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
 		                                     *genericOptionMenuTheme.get ());
 	}
 	return makeOwned<NSViewOptionMenu> ();
