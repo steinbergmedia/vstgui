@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "../lib/idependency.h"
 #include "iuidescription.h"
 #include "uidescriptionfwd.h"
 #include <list>
