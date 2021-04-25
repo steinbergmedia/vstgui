@@ -534,7 +534,7 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 	{
 		CBaseObjectGuard og (pImpl->focusView);
 		if (pImpl->focusView->getMouseEnabled ())
-			pImpl->focusView->onKeyboardEvent (event);
+			pImpl->focusView->dispatchEvent (event);
 		if (event.consumed)
 			return;
 		CView* parent = pImpl->focusView->getParentView ();
@@ -542,7 +542,7 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 		{
 			if (parent->getMouseEnabled ())
 			{
-				parent->onKeyboardEvent (event);
+				parent->dispatchEvent (event);
 				if (event.consumed)
 					return;
 			}
@@ -552,7 +552,7 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 	if (auto modalView = getModalView ())
 	{
 		CBaseObjectGuard og (modalView);
-		modalView->onKeyboardEvent (event);
+		modalView->dispatchEvent (event);
 		if (event.consumed)
 			return;
 	}
@@ -650,7 +650,8 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			auto view = *it;
 			if (auto parent = view->getParentView ())
 				parent->translateToLocal (p);
-			view->onMouseMoveEvent (event);
+			event.mousePosition = p;
+			view->dispatchEvent (event);
 			if (event.consumed)
 				break;
 			++it;

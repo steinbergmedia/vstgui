@@ -204,10 +204,16 @@ void CViewContainer::setMouseDownView (CView* view)
 		// make sure the old mouse down view get a mouse cancel or if not implemented a mouse up
 		if (auto cvc = mouseDownView->asViewContainer ())
 			cvc->setMouseDownView (nullptr);
-		else if (mouseDownView->onMouseCancel () == kMouseEventNotImplemented)
+		else
 		{
-			CPoint p = mouseDownView->getViewSize ().getTopLeft () - CPoint (10, 10);
-			mouseDownView->onMouseUp (p, 0);
+			MouseCancelEvent cancelEvent;
+			mouseDownView->dispatchEvent (cancelEvent);
+			if (!cancelEvent.consumed)
+			{
+				MouseUpEvent upEvent;
+				upEvent.mousePosition = mouseDownView->getViewSize ().getTopLeft () - CPoint (10, 10);
+				mouseDownView->dispatchEvent (upEvent);
+			}
 		}
 	}
 	setAttribute (kCViewContainerMouseDownViewAttribute, view);
@@ -1118,7 +1124,7 @@ void CViewContainer::onMouseMoveEvent (MouseMoveEvent& event)
 				event.ignoreFollowUpMoveAndUpEvents (true);
 			return;
 		}
-		view->onMouseMoveEvent (event);
+		view->dispatchEvent (event);
 	}
 }
 
@@ -1144,7 +1150,7 @@ void CViewContainer::onMouseUpEvent (MouseUpEvent& event)
 			event.consumed = true;
 			return;
 		}
-		view->onMouseUpEvent (event);
+		view->dispatchEvent (event);
 		clearMouseDownView ();
 	}
 }
