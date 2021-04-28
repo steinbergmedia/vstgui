@@ -85,19 +85,13 @@ public:
 	/// @name Event Handling Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void onMouseDownEvent (MouseDownEvent& event);
-	virtual void onMouseMoveEvent (MouseMoveEvent& event);
-	virtual void onMouseUpEvent (MouseUpEvent& event);
-	virtual void onMouseCancelEvent (MouseCancelEvent& event);
-	virtual void onMouseEnterEvent (MouseEnterEvent& event);
-	virtual void onMouseExitEvent (MouseExitEvent& event);
 	
-	virtual void onMouseWheelEvent (MouseWheelEvent& event);
-	virtual void onZoomGestureEvent (ZoomGestureEvent& event);
-
-	virtual void onKeyboardEvent (KeyboardEvent& event);
-
+	/** dispatch an event
+	 *
+	 *	the event is then dispatched to one of the event methods.
+	 */
 	virtual void dispatchEvent (Event& event);
+
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -105,22 +99,50 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** called when a mouse down event occurs */
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	/** called when a mouse up event occurs */
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual void onMouseDownEvent (MouseDownEvent& event);
 	/** called when a mouse move event occurs */
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual void onMouseMoveEvent (MouseMoveEvent& event);
+	/** called when a mouse up event occurs */
+	virtual void onMouseUpEvent (MouseUpEvent& event);
 	/** called when mouse tracking should be canceled */
-	virtual CMouseEventResult onMouseCancel ();
+	virtual void onMouseCancelEvent (MouseCancelEvent& event);
 
 	/** called when the mouse enters this view */
-	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
+	virtual void onMouseEnterEvent (MouseEnterEvent& event);
 	/** called when the mouse leaves this view */
-	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
+	virtual void onMouseExitEvent (MouseExitEvent& event);
+	
+	/** called when a mouse wheel event occurs */
+	virtual void onMouseWheelEvent (MouseWheelEvent& event);
+	/** called when a zoom gesture event occurs */
+	virtual void onZoomGestureEvent (ZoomGestureEvent& event);
 
-	void setHitTestPath (CGraphicsPath* path);
-	/** check if where hits this view */
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
+	/** turn on/off mouse usage for this view */
+	virtual void setMouseEnabled (bool bEnable = true);
+	/** get the state of wheather this view uses the mouse or not */
+	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }
+
+	/** set the area in which the view reacts to the mouse */
+	virtual void setMouseableArea (const CRect& rect);
+	/** get the area in which the view reacts to the mouse */
+	CRect getMouseableArea () const;
+
+	//-----------------------------------------------------------------------------
+	// The following non deprecated mouse methods will still work for the next few years,
+	// but you should if possible refactor your own code to use the newer event methods
+	//-----------------------------------------------------------------------------
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseCancel ();
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
 
 	VSTGUI_DEPRECATED(
 	/** \deprecated never called anymore, please use onMouseWheelEvent instead */
@@ -129,19 +151,24 @@ public:
 	/** \deprecated please use onMouseWheelEvent instead */
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);, "Use CView::onMouseWheelEvent instead")
 
-	/** turn on/off mouse usage for this view */
-	virtual void setMouseEnabled (bool bEnable = true);
-	/** get the state of wheather this view uses the mouse or not */
-	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }
-
-	/** set the area in which the view reacts to the mouse */
-	void setMouseableArea (const CRect& rect);
 	VSTGUI_DEPRECATED(
 	/** get the area in which the view reacts to the mouse */
 	CRect& getMouseableArea (CRect& rect) const;)
-	/** get the area in which the view reacts to the mouse */
-	CRect getMouseableArea () const;
 	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Hit testing Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	void setHitTestPath (CGraphicsPath* path);
+	/** check if where hits this view
+	 *
+	 *	the default behaviour is to return true if where is inside the view size of this view, but if you set a hit test path
+	 *	the path is checked if the point lies in its boundaries.
+	 */
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
+	//@}
+
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	//-----------------------------------------------------------------------------
@@ -173,6 +200,13 @@ public:
 	/// @name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	
+	/** called when a keyboard event is dispatched to this view
+	 *
+	 *	This happens normally only if the view is the focus view.
+	 */
+	virtual void onKeyboardEvent (KeyboardEvent& event);
+
 	VSTGUI_DEPRECATED_MSG(
 	/** called if a key down event occurs and this view has focus */
 	virtual int32_t onKeyDown (VstKeyCode& keyCode);, "Use CView::onKeyboardEvent instead")
