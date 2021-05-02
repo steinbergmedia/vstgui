@@ -1932,4 +1932,22 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 	}
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+void OldKeyboardHookAdapter::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
+{
+	auto vstKeyCode = toVstKeyCode (event);
+	if (event.type == EventType::KeyDown)
+	{
+		if (onKeyDown (vstKeyCode, frame) != -1)
+			event.consumed = true;
+	}
+	else
+	{
+		if (onKeyUp (vstKeyCode, frame) != -1)
+			event.consumed = true;
+	}
+}
+#endif
+
 } // VSTGUI

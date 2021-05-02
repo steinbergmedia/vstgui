@@ -326,6 +326,18 @@ public:
 	virtual void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) = 0;
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+class OldKeyboardHookAdapter : public IKeyboardHook
+{
+public:
+	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;
+	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;
+private:
+	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
+};
+#endif
+
 //-----------------------------------------------------------------------------
 // IViewAddedRemovedObserver Declaration
 //! @brief view added removed observer interface for CFrame

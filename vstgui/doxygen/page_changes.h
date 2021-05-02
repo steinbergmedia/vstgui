@@ -117,8 +117,8 @@ Note: All current deprecated methods will be removed in the next version. So mak
 @subsection code_changes_4_10_to_4_11 VSTGUI 4.10 -> VSTGUI 4.11
 
 Changes due to event handling rework:
-- IKeyboardHook changed its methods. If you inherit from it, you need to adopt to the new methods
-- CViewContainer::onWheel is now marked final, you cannot inherit this method, please use the new CView::onMouseWheelEvent instead
+- IKeyboardHook changed its methods. If you inherit from it, you need to adopt to the new methods or use OldKeyboardHookAdapter
+- CViewContainer::onWheel is now marked final, you cannot inherit this method, please override the new CView::onMouseWheelEvent instead if you need to handle mouse wheel events in a custom view container
 
 CView has the following new methods:
 - dispatchEvent
