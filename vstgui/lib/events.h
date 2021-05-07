@@ -502,6 +502,26 @@ inline MouseEvent* asMouseEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
+/** event as mouse down event or nullpointer if not a mouse down event
+ *	@ingroup new_in_4_11
+ */
+inline MouseDownEvent* asMouseDownEvent (Event& event)
+{
+	switch (event.type)
+	{
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
+			return static_cast<MouseDownEvent*> (&event);
+		default:
+			break;
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
 /** event as modifier event or nullpointer if not a modifier event
  *	@ingroup new_in_4_11
  */
@@ -659,7 +679,7 @@ inline KeyboardEvent& castKeyboardEvent (Event& event)
 /** helper function to convert from new Modifiers to old CButtonState
  *	@ingroup new_in_4_11
  */
-inline CButtonState buttonStateFromEventModifiers (const Modifiers& mods)
+inline CButtonState buttonStateFromEventModifiers (Modifiers& mods)
 {
 	CButtonState state;
 	if (mods.has (ModifierKey::Control))
@@ -672,7 +692,7 @@ inline CButtonState buttonStateFromEventModifiers (const Modifiers& mods)
 }
 
 //------------------------------------------------------------------------
-inline CButtonState buttonStateFromMouseEvent (const MouseEvent& event)
+inline CButtonState buttonStateFromMouseEvent (MouseEvent& event)
 {
 	CButtonState state = buttonStateFromEventModifiers (event.modifiers);
 	if (event.buttonState.has (MouseEventButtonState::Left))
@@ -685,6 +705,11 @@ inline CButtonState buttonStateFromMouseEvent (const MouseEvent& event)
 		state |= kButton4;
 	if (event.buttonState.has (MouseEventButtonState::Fifth))
 		state |= kButton5;
+	if (auto downEvent = asMouseDownEvent (event))
+	{
+		if (downEvent->clickCount > 1)
+			state |= kDoubleClick;
+	}
 	return state;
 }
 
