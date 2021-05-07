@@ -1529,7 +1529,7 @@ void CFrame::dispatchKeyboardEventToHooks (KeyboardEvent& event)
 	pImpl->keyboardHooks.forEachReverse (
 	    [&] (IKeyboardHook* hook) {
 		    hook->onKeyboardEvent (event, this);
-		    return !event.consumed;
+		    return event.consumed;
 	    },
 	    [] (bool consumed) { return consumed; });
 }

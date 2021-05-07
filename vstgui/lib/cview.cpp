@@ -660,6 +660,8 @@ void CView::dispatchEvent (Event& event)
 			    return event.consumed;
 		    },
 		    [] (bool consumed) { return consumed; });
+		if (event.consumed)
+			return;
 	}
 
 	switch (event.type)
