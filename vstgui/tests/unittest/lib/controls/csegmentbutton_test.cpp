@@ -302,6 +302,32 @@ TESTCASE(CSegmentButtonTest,
 
 		parent->removed (root);
 	);
+	
+	TEST(mouseDownEventWithManySegments,
+		// Create segment button with 32 segments and attach it
+		const auto numSegments = 32;
+		CRect r (0, 0, 20 * numSegments, 100);
+		auto b = new CSegmentButton (r);
+		b->setStyle (CSegmentButton::Style::kHorizontal);
+		for (auto i = 0; i < numSegments; ++i)
+			b->addSegment ({});
+		for (const auto& s : b->getSegments())
+			EXPECT (s.rect == CRect (0, 0, 0, 0));
+		auto root = owned (new CViewContainer (r));
+		auto parent = new CViewContainer (r);
+		root->addView (parent);
+		parent->addView (b);
+		parent->attached (root);
+
+		// Select the e.g. 20th segment
+		constexpr auto kSelectedSegment = 20;
+		CPoint p (0, 0);
+		p (20 * kSelectedSegment + 5, 0);
+		EXPECT (b->onMouseDown (p, kLButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
+		EXPECT (b->getSelectedSegment () == kSelectedSegment);
+
+		parent->removed (root);
+	);
 
 	TEST(focusPathSetting,
 		CSegmentButton b (CRect (0, 0, 10, 10));
