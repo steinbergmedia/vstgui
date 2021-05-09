@@ -34,6 +34,7 @@ public:
 	bool getSize (CRect& size) const override;
 	bool getCurrentMousePosition (CPoint& mousePosition) const override { return false; };
 	bool getCurrentMouseButtons (CButtonState& buttons) const override { return false; };
+	bool getCurrentModifiers (Modifiers& modifiers) const override { return false; }
 	bool setMouseCursor (CCursorType type) override { return false; };
 	bool invalidRect (const CRect& rect) override;
 	bool scrollRect (const CRect& src, const CPoint& distance) override;

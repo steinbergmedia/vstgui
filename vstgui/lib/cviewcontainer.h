@@ -152,7 +152,7 @@ public:
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	virtual void onTouchEvent (ITouchEvent& event) override;
 	virtual bool wantsMultiTouchEvents () const override { return true; }
-	virtual void findSingleTouchEventTarget (ITouchEvent::Touch& event);
+	virtual bool findSingleTouchEventTarget (ITouchEvent::Touch& event);
 #endif
 
 	SharedPointer<IDropTarget> getDropTarget () override;

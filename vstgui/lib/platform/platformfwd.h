@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../vstguibase.h"
+
 #include <vector>
 #include <functional>
 #include <string>

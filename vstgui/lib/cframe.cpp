@@ -1768,21 +1768,22 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 		{
 			if (e.second.targetIsSingleTouch)
 			{
-				CButtonState buttons (kLButton);
 				CPoint where (e.second.location);
 				target->frameToLocal (where);
 				switch (e.second.state)
 				{
 					case ITouchEvent::kMoved:
 					{
-						CMouseEventResult result = target->onMouseMoved (where, buttons);
-						if (result == kMouseMoveEventHandledButDontNeedMoreEvents)
+						MouseMoveEvent moveEvent (where, MouseEventButtonState::Left);
+						target->dispatchEvent (moveEvent);
+						if (moveEvent.ignoreFollowUpMoveAndUpEvents ())
 						{
-							event.unsetTouchTarget(e.first, target);
-							if (target->hitTest (where, buttons) == false)
+							event.unsetTouchTarget (e.first, target);
+							if (target->hitTest (where, kLButton) == false)
 							{
 								// when the touch goes out of the target and it tells us to
-								const_cast<ITouchEvent::Touch&> (e.second).state = ITouchEvent::kBegan;
+								const_cast<ITouchEvent::Touch&> (e.second).state =
+								    ITouchEvent::kBegan;
 								hasBeganTouch = true;
 							}
 						}
@@ -1790,14 +1791,20 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 					}
 					case ITouchEvent::kCanceled:
 					{
-						if (target->onMouseCancel () != kMouseEventHandled)
-							target->onMouseUp (where, buttons);
+						MouseCancelEvent cancelEvent;
+						target->dispatchEvent (cancelEvent);
+						if (cancelEvent.consumed == false)
+						{
+							MouseUpEvent upEvent (where, MouseEventButtonState::Left);
+							target->dispatchEvent (upEvent);
+						}
 						event.unsetTouchTarget (e.first, target);
 						break;
 					}
 					case ITouchEvent::kEnded:
 					{
-						target->onMouseUp (where, buttons);
+						MouseUpEvent upEvent (where, MouseEventButtonState::Left);
+						target->dispatchEvent (upEvent);
 						event.unsetTouchTarget (e.first, target);
 						break;
 					}
@@ -1810,7 +1817,8 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 			}
 			else
 			{
-				if (std::find (targetDispatched.begin (), targetDispatched.end (), target) == targetDispatched.end ())
+				if (std::find (targetDispatched.begin (), targetDispatched.end (), target) ==
+				    targetDispatched.end ())
 				{
 					target->onTouchEvent (event);
 					targetDispatched.emplace_back (target);
@@ -1827,11 +1835,11 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 		if (CView* focusView = getFocusView ())
 		{
 			if (dynamic_cast<CTextEdit*> (focusView))
-				setFocusView (0);
+				setFocusView (nullptr);
 		}
 		for (const auto& e : event)
 		{
-			if (e.second.target == 0 && e.second.state == ITouchEvent::kBegan)
+			if (e.second.target == nullptr && e.second.state == ITouchEvent::kBegan)
 			{
 				findSingleTouchEventTarget (const_cast<ITouchEvent::Touch&> (e.second));
 			}

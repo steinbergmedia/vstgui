@@ -1218,12 +1218,11 @@ void CViewContainer::onTouchEvent (ITouchEvent& event)
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
+bool CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 {
 	vstgui_assert(event.target == 0);
 	vstgui_assert(event.state == ITouchEvent::kBegan);
 
-	CButtonState buttons (kLButton + (event.tapCount > 1 ? kDoubleClick : 0));
 	CPoint where (event.location);
 	frameToLocal (where);
 	ReverseViewIterator it (this);
@@ -1231,31 +1230,31 @@ void CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 	{
 		CView* view = *it;
 		CBaseObjectGuard guard (view);
-		if (view->getMouseEnabled () && view->isVisible () && view->hitTest (where, buttons))
+		if (view->getMouseEnabled () && view->isVisible () && view->hitTest (where, kLButton))
 		{
 			if (auto container = view->asViewContainer ())
 			{
-				container->findSingleTouchEventTarget (event);
-				if (event.target != 0)
-					return;
+				if (container->findSingleTouchEventTarget (event))
+					return true;
 			}
 			else
 			{
-				CMouseEventResult result = view->onMouseDown (where, buttons);
-				if (result == kMouseEventHandled)
+				MouseDownEvent downEvent (where, MouseEventButtonState::Left);
+				downEvent.clickCount = event.tapCount;
+				view->dispatchEvent (downEvent);
+				if (downEvent.ignoreFollowUpMoveAndUpEvents())
+					return true;
+				else if (downEvent.consumed)
 				{
 					event.target = view;
 					event.targetIsSingleTouch = true;
-					return;
-				}
-				else if (result == kMouseDownEventHandledButDontNeedMovedOrUpEvents)
-				{
-					return;
+					return true;
 				}
 			}
 		}
 		it++;
 	}
+	return false;
 }
 
 #endif
