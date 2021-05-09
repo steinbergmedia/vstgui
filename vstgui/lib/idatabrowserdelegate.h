@@ -5,7 +5,10 @@
 #pragma once
 
 #include "dragging.h"
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 #include "vstkeycode.h"
+#include "events.h"
+#endif
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -105,7 +108,7 @@ public:
 
 	/** @name Keyboard Handling */
 	///	@{
-	virtual int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) = 0;
+	virtual void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) = 0;
 	///	@}
 
 	virtual ~IDataBrowserDelegate () noexcept = default;
@@ -187,7 +190,17 @@ public:
 	                          CDataBrowser* browser) override
 	{
 	}
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override { return -1; }
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override
+	{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+		if (dbOnKeyDown (toVstKeyCode (event), browser) != -1)
+			event.consumed = true;
+#endif
+	}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	virtual int32_t dbOnKeyDown (const VstKeyCode& keyCode, CDataBrowser* browser) { return -1; }
+#endif
 };
 
 //------------------------------------------------------------------------

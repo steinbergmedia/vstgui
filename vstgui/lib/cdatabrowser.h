@@ -105,7 +105,7 @@ public:
 	void setViewSize (const CRect& size, bool invalid) override;
 	void setWantsFocus (bool state) override;
 
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 protected:
 	~CDataBrowser () noexcept override;
