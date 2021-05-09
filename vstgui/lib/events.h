@@ -431,6 +431,8 @@ enum class ModifierKey : uint32_t
 	/** the super key (Control key on macOS, Windows key on Windows and Super key on other
 	   platforms)*/
 	Super = 1 << 3,
+	
+	None = 0
 };
 
 //------------------------------------------------------------------------

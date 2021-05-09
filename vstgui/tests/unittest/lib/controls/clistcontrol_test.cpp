@@ -4,7 +4,7 @@
 
 #include "../../../../lib/controls/clistcontrol.h"
 #include "../../../../lib/cscrollview.h"
-#include "../../../../lib/vstkeycode.h"
+#include "../../../../lib/events.h"
 #include "../../unittests.h"
 
 //------------------------------------------------------------------------
@@ -40,9 +40,14 @@ static SharedPointer<CScrollView> createScrollViewAndEmbedListControl (CViewCont
 }
 
 //------------------------------------------------------------------------
-static VstKeyCode makeKeyCode (int32_t c, unsigned char virt, unsigned char modifier)
+static KeyboardEvent makeKeyboardEvent (int32_t c, VirtualKey virt, ModifierKey modifier = ModifierKey::None)
 {
-	return {c, virt, modifier};
+	KeyboardEvent event;
+	event.type = EventType::KeyDown;
+	event.character = c;
+	event.virt = virt;
+	event.modifiers.add (modifier);
+	return event;
 }
 
 //------------------------------------------------------------------------
@@ -122,8 +127,9 @@ TESTCASE(CListControlTest,
 		listControl->setValue (2.f);
 		EXPECT (listControl->getValue () == 2.f);
 
-		auto code = makeKeyCode (0, VKEY_DOWN, 0);
-		EXPECT (listControl->onKeyDown (code) == -1);
+		auto event = makeKeyboardEvent (0, VirtualKey::Down);
+		listControl->onKeyboardEvent (event);
+		EXPECT (event.consumed == false);
 		EXPECT (listControl->getValue () == 2.f);
 	);
 
@@ -134,28 +140,34 @@ TESTCASE(CListControlTest,
 
 		listControl->setValue (1.f);
 
-		auto code = makeKeyCode (0, VKEY_DOWN, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
+		auto event = makeKeyboardEvent (0, VirtualKey::Down, ModifierKey::Shift);
+		listControl->onKeyboardEvent (event);
+		EXPECT (event.consumed == false);
 		EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_UP, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
+		event = makeKeyboardEvent (0, VirtualKey::Up, ModifierKey::Shift);
+		listControl->onKeyboardEvent (event);
+		EXPECT (event.consumed == false);
 		EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_HOME, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
+		event = makeKeyboardEvent (0, VirtualKey::Home, ModifierKey::Shift);
+		listControl->onKeyboardEvent (event);
+		EXPECT (event.consumed == false);
 		EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_END, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
+		event = makeKeyboardEvent (0, VirtualKey::End, ModifierKey::Shift);
+		listControl->onKeyboardEvent (event);
+		EXPECT (event.consumed == false);
 		EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_PAGEUP, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
+		event = makeKeyboardEvent (0, VirtualKey::PageUp, ModifierKey::Shift);
+		listControl->onKeyboardEvent (event);
+		EXPECT (event.consumed == false);
 		EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_PAGEDOWN, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
+		event = makeKeyboardEvent (0, VirtualKey::PageDown, ModifierKey::Shift);
+		listControl->onKeyboardEvent (event);
+		EXPECT (event.consumed == false);
 		EXPECT (listControl->getValue () == 1.f);
 	);
 
@@ -165,8 +177,9 @@ TESTCASE(CListControlTest,
 		listControl->setValue (5.f);
 		EXPECT (listControl->getValue () == 5.f);
 
-		auto code = makeKeyCode (0, VKEY_HOME, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
+		auto event = makeKeyboardEvent (0, VirtualKey::Home);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == 0.f);
 	);
 
@@ -177,8 +190,9 @@ TESTCASE(CListControlTest,
 		listControl->setValue (0.f);
 		EXPECT (listControl->getValue () == 0.f);
 
-		auto code = makeKeyCode (0, VKEY_END, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
+		auto event = makeKeyboardEvent (0, VirtualKey::End);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == numRows);
 	);
 
@@ -189,12 +203,15 @@ TESTCASE(CListControlTest,
 		listControl->setValue (2.f);
 		EXPECT (listControl->getValue () == 2.f);
 
-		auto code = makeKeyCode (0, VKEY_UP, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
+		auto event = makeKeyboardEvent (0, VirtualKey::Up);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == 1.f);
+		event.consumed.reset ();
 
 		listControl->setValue (0.f);
-		EXPECT (listControl->onKeyDown (code) == 1);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == numRows);
 	);
 
@@ -205,12 +222,15 @@ TESTCASE(CListControlTest,
 		listControl->setValue (2.f);
 		EXPECT (listControl->getValue () == 2.f);
 
-		auto code = makeKeyCode (0, VKEY_DOWN, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
+		auto event = makeKeyboardEvent (0, VirtualKey::Down);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == 3.f);
+		event.consumed.reset ();
 
 		listControl->setValue (numRows);
-		EXPECT (listControl->onKeyDown (code) == 1);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == 0.f);
 	);
 
@@ -224,14 +244,20 @@ TESTCASE(CListControlTest,
 		auto rect = listControl->getRowRect (0);
 		scrollView->makeRectVisible (*rect);
 
-		auto code = makeKeyCode (0, VKEY_PAGEUP, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
+		auto event = makeKeyboardEvent (0, VirtualKey::PageUp);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == 15.f);
-		listControl->setValue (16);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 15.f);
+		event.consumed.reset ();
 
-		EXPECT (listControl->onKeyDown (code) == 1);
+		listControl->setValue (16);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
+		EXPECT (listControl->getValue () == 15.f);
+		event.consumed.reset ();
+
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == 0.f);
 
 		scrollView->removed (parent);
@@ -248,14 +274,20 @@ TESTCASE(CListControlTest,
 		auto rect = listControl->getRowRect (numRows);
 		scrollView->makeRectVisible (*rect);
 
-		auto code = makeKeyCode (0, VKEY_PAGEDOWN, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
+		auto event = makeKeyboardEvent (0, VirtualKey::PageDown);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == 15.f);
-		listControl->setValue (14);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 15.f);
+		event.consumed.reset ();
 
-		EXPECT (listControl->onKeyDown (code) == 1);
+		listControl->setValue (14);
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
+		EXPECT (listControl->getValue () == 15.f);
+		event.consumed.reset ();
+
+		listControl->onKeyboardEvent (event);
+		EXPECT(event.consumed == true);
 		EXPECT (listControl->getValue () == 30.f);
 
 		scrollView->removed (parent);
