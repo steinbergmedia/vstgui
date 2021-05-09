@@ -3,15 +3,22 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "AppDelegate.h"
+#import "ViewController.h"
 #import "vstgui/lib/vstguiinit.h"
-
+#import <UIKit/UIKit.h>
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
 	VSTGUI::init (CFBundleGetMainBundle ());	
-    // Override point for customization after application launch.
+
+	UIScreen* mainScreen = UIScreen.mainScreen;
+
+	UIWindow* window = [[UIWindow alloc] initWithFrame:mainScreen.bounds];
+	window.rootViewController = [ViewController new];
+	[window makeKeyAndVisible];
+
     return YES;
 }
 							
