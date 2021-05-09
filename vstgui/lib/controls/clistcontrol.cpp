@@ -415,6 +415,8 @@ void CListControl::onKeyboardEvent (KeyboardEvent& event)
 				vr.top += 2;
 				if (auto firstVisibleRow = getRowAtPoint (vr.getTopLeft ()))
 				{
+					while (!rowSelectable (*firstVisibleRow))
+						*firstVisibleRow += 1;
 					if (*firstVisibleRow == getIntValue ())
 					{
 						vr.offset (0, -vr.getHeight ());
@@ -453,6 +455,8 @@ void CListControl::onKeyboardEvent (KeyboardEvent& event)
 				vr.bottom -= 2;
 				if (auto lastVisibleRow = getRowAtPoint (vr.getBottomLeft ()))
 				{
+					while (!rowSelectable (*lastVisibleRow))
+						*lastVisibleRow -= 1;
 					if (*lastVisibleRow == getIntValue ())
 					{
 						vr.offset (0, vr.getHeight ());
