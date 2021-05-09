@@ -170,60 +170,63 @@ private:
 		}
 	}
 
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override
 	{
-		if (key.character == 0 && key.modifier == 0)
+		if (event.type != EventType::KeyDown || event.character != 0 || !event.modifiers.empty ())
+			return;
+		switch (event.virt)
 		{
-			switch (key.virt)
+			default: return;
+			case VirtualKey::Down:
 			{
-				case VKEY_DOWN:
+				alterSelection (browser->getSelectedRow (), 1);
+				event.consumed = true;
+				return;
+			}
+			case VirtualKey::Up:
+			{
+				alterSelection (browser->getSelectedRow (), -1);
+				event.consumed = true;
+				return;
+			}
+			case VirtualKey::Escape:
+			{
+				clickCallback (menu, CDataBrowser::kNoSelection);
+				event.consumed = true;
+				return;
+			}
+			case VirtualKey::Return:
+			case VirtualKey::Enter:
+			{
+				if (clickCallback)
+					clickCallback (menu, browser->getSelectedRow ());
+				event.consumed = true;
+				return;
+			}
+			case VirtualKey::Left:
+			{
+				if (parentDataSource)
 				{
-					alterSelection (browser->getSelectedRow (), 1);
-					return 1;
+					parentDataSource->closeSubMenu ();
+					event.consumed = true;
 				}
-				case VKEY_UP:
+				return;
+			}
+			case VirtualKey::Right:
+			{
+				auto row = db->getSelectedRow ();
+				if (auto item = menu->getEntry (row))
 				{
-					alterSelection (browser->getSelectedRow (), -1);
-					return 1;
-				}
-				case VKEY_ESCAPE:
-				{
-					clickCallback (menu, CDataBrowser::kNoSelection);
-					return 1;
-				}
-				case VKEY_RETURN:
-				case VKEY_ENTER:
-				{
-					if (clickCallback)
-						clickCallback (menu, browser->getSelectedRow ());
-					return 1;
-				}
-				case VKEY_LEFT:
-				{
-					if (parentDataSource)
+					if (auto subMenu = item->getSubmenu ())
 					{
-						parentDataSource->closeSubMenu ();
-						return 1;
-					}
-					break;
-				}
-				case VKEY_RIGHT:
-				{
-					auto row = db->getSelectedRow ();
-					if (auto item = menu->getEntry (row))
-					{
-						if (auto subMenu = item->getSubmenu ())
-						{
-							auto r = db->getCellBounds ({row, 0});
-							openSubMenu (item, r);
-							return 1;
-						}
+						auto r = db->getCellBounds ({row, 0});
+						openSubMenu (item, r);
+						event.consumed = true;
 					}
 				}
-				default: break;
+				return;
 			}
 		}
-		return -1;
 	}
 
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
