@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.12)
 
 project(vstgui_ios_test)
 
+if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
+	message(FATAL_ERROR "Unsupported system (${CMAKE_SYSTEM_NAME}). Use -DCMAKE_SYSTEM_NAME=iOS when invoking cmake")
+endif()
+
 set(target "iostest")
 set(sources
 	"../../vstgui_ios.mm"
