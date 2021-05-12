@@ -8,6 +8,7 @@ set(VSTGUI_TEST_BASE "")
 #set(VSTGUI_TEST_BASE "${VSTGUI_TEST_BASE}")
 
 set(${target}_sources
+	"${VSTGUI_TEST_BASE}unittestmain.cpp"
 	"${VSTGUI_TEST_BASE}unittests.cpp"
 	"${VSTGUI_TEST_BASE}unittests.h"
 	"${VSTGUI_TEST_BASE}lib/animation/animations_test.cpp"
