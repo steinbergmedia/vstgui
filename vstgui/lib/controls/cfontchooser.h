@@ -73,7 +73,7 @@ protected:
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 	void valueChanged (CControl* pControl) override;
 	bool attached (CView* parent) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	IFontChooserDelegate* delegate;
 	CDataBrowser* fontBrowser;
