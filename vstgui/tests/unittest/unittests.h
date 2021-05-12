@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -14,9 +14,9 @@
 #include <cstdlib>
 #include <stdexcept>
 
-/* 
+/*
 	How-to write tests:
-	
+
 	1) include this file
 	2) optional: put the test code into namespaces: namespace VSTGUI { namespace UnitTest {
 	3) open testcase : TESTCASE (MySuite,
@@ -27,9 +27,9 @@
 	8) optional: close namespaces: }}
 
 	Complete Example:
-	
+
 		#include "unittests.h"
-		
+
 		TESTCASE(Example,
 
 			int result;
@@ -42,7 +42,7 @@
 				result = 1+1;
 				EXPECT (result == 2)
 			);
-	
+
 			TEST(ThreeMinusOneIsTwo,
 				result = 3-1;
 				if (result != 2)
@@ -61,7 +61,13 @@ namespace UnitTest {
 class error : public std::logic_error
 {
 public:
-	error (const char* str);
+	error (const char* file, size_t line, const char* str)
+	: std::logic_error (str), filePath (file), lineNo (line)
+	{
+	}
+
+	std::string filePath;
+	size_t lineNo;
 };
 
 #define	VSTGUI_UNITTEST_MAKE_STRING_PRIVATE_DONT_USE(x)	# x
@@ -70,7 +76,7 @@ public:
 //----------------------------------------------------------------------------------------------------
 #define TESTCASE(name,function) static VSTGUI::UnitTest::TestCaseRegistrar name##TestCaseRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestCase* testCase) { function })
 #define TEST(name,function) testCase->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } return true; });
-#define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__ ":" VSTGUI_UNITTEST_MAKE_STRING(__LINE__) ": Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
+#define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
 #define FAIL(reason) { context->print (__FILE__ ":" VSTGUI_UNITTEST_MAKE_STRING(__LINE__) ": Failure: " reason); return false; }
 
 #define EXPECT_EXCEPTION(call, name) \
@@ -131,10 +137,10 @@ public:
 
 	Iterator begin () const { return tests.begin (); }
 	Iterator end () const { return tests.end (); }
-	
+
 	const SetupFunction& setup () const { return setupFunction; }
 	const TeardownFunction& teardown () const { return teardownFunction; }
-	
+
 	TestCase& operator= (TestCase&& tc) noexcept;
 private:
 	Tests tests;
