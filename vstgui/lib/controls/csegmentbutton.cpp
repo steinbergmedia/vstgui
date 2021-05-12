@@ -517,7 +517,10 @@ uint32_t CSegmentButton::getSegmentIndex (float value) const
 {
 	if (value < 0.f || value > 1.f)
 		return kPushBack;
-	return static_cast<uint32_t> (static_cast<float> (segments.size () - 1) * value);
+
+	const auto segmentIndex = static_cast<float> (segments.size () - 1) * value;
+	const auto segmentIndexRounded = static_cast<uint32_t> (segmentIndex + 0.5f);
+	return segmentIndexRounded;
 }
 
 //-----------------------------------------------------------------------------
