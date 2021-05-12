@@ -7,7 +7,7 @@
 
 namespace VSTGUI {
 
-TESTCASE(CCheckboxTest,
+TESTCASE(CTextButtonTest,
 
 	TEST(mouseEventsKickStyle,
 		auto b = owned (new CTextButton (CRect (10, 10, 50, 20)));

@@ -29,14 +29,14 @@ TESTCASE(CTextEditCreatorTest,
 		});
 	);
 
-	TEST(autoSizeToFit,
+	TEST(secureStyle,
 		DummyUIDescription uidesc;
 		testAttribute<CTextEdit> (kCTextEdit, kAttrSecureStyle, true, &uidesc, [&] (CTextEdit* v) {
 			return v->getSecureStyle () == true;
 		});
 	);
 
-	TEST(autoSizeToFit,
+	TEST(placeholderTitle,
 		DummyUIDescription uidesc;
 		auto testValue = "This is a placeholder";
 		testAttribute<CTextEdit> (kCTextEdit, kAttrPlaceholderTitle, testValue, &uidesc, [&] (CTextEdit* b) {
