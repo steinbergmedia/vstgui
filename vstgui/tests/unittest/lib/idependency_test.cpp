@@ -79,5 +79,5 @@ TESTCASE(IDependencyTest,
 
 } // VSTGUI
 
-#include "../../../lib/private/enbledeprecatedmessage.h"
+#include "../../../lib/private/enabledeprecatedmessage.h"
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS

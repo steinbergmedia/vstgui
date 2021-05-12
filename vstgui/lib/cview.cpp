@@ -186,7 +186,7 @@ struct CView::Impl
 #include "private/disabledeprecatedmessage.h"
 	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
 	std::unique_ptr<ViewMouseListenerDispatcher> viewMouseListener;
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 #endif
 	CRect size;
 	int32_t viewFlags {0};
@@ -366,7 +366,7 @@ void CView::setMouseEnabled (bool state)
 #include "private/disabledeprecatedmessage.h"
 			pImpl->viewMouseListener->forEach (
 			    [&] (IViewMouseListener* listener) { listener->viewOnMouseEnabled (this, state); });
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 		}
 #endif
 	}
@@ -609,7 +609,7 @@ void CView::onMouseWheelEvent (MouseWheelEvent& event)
 		if (onWheel (event.mousePosition, kMouseWheelAxisY, static_cast<float> (event.deltaY), buttons))
 			event.consumed = true;
 	}
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 #endif
 }
 
@@ -640,7 +640,7 @@ void CView::onKeyboardEvent (KeyboardEvent& event)
 			break;
 		}
 	}
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 #endif
 }
 
@@ -1271,7 +1271,7 @@ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
 	{
 #include "private/disabledeprecatedmessage.h"
 		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 	}
 }
 #endif
@@ -1355,7 +1355,7 @@ void CView::unregisterViewMouseListener (IViewMouseListener* listener)
 		return;
 	pImpl->viewMouseListener->remove (listener);
 }
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons)
@@ -1383,7 +1383,7 @@ CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, 
 		    }
 		    return false;
 	    });
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 	return result;
 }
 
@@ -1399,7 +1399,7 @@ void CView::callMouseListenerEnteredExited (bool mouseEntered)
 		else
 			l->viewOnMouseExited (this);
 	});
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 }
 #endif
 

@@ -125,7 +125,7 @@ public:
 	void viewOnMouseExited (CView* view) override {}
 	void viewOnMouseEnabled (CView* view, bool state) override {}
 };
-#include "private/enbledeprecatedmessage.h"
+#include "private/enabledeprecatedmessage.h"
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 } // VSTGUI

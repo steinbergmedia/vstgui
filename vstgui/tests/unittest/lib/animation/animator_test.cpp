@@ -92,7 +92,7 @@ TESTCASE(AnimatorTest,
 	);
 #endif
 );
-#include "../../../../lib/private/enbledeprecatedmessage.h"
+#include "../../../../lib/private/enabledeprecatedmessage.h"
 
 } // VSTGUI
 

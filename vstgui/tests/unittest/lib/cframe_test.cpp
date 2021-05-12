@@ -664,7 +664,7 @@ TESTCASE(CFrameLegacyTest,
 		EXPECT (frame->getModalView () == nullptr);
 	);
 );
-#include "../../../lib/private/enbledeprecatedmessage.h"
+#include "../../../lib/private/enabledeprecatedmessage.h"
 #endif
 
 } // VSTGUI
