@@ -8,6 +8,10 @@
 #include "../../lib/vstguidebug.h"
 #include "../../lib/vstguiinit.h"
 
+#include <chrono>
+#include <cstdarg>
+#include <cstdio>
+
 #if MAC
 #include <CoreFoundation/CoreFoundation.h>
 #endif
@@ -35,9 +39,9 @@ private:
 	struct Result {
 		int succeded;
 		int failed;
-		
+
 		Result () : succeded (0), failed (0) {}
-		
+
 		Result& operator +=(const Result& r) { succeded += r.succeded; failed += r.failed; return *this; }
 	};
 public:
@@ -48,7 +52,7 @@ public:
 		testOutput += str;
 		testOutput += "\n";
 	}
-	
+
 	void printOutput ()
 	{
 		if (testOutput.empty () == false)
@@ -94,7 +98,7 @@ public:
 		intend--;
 		return result;
 	}
-	
+
 	bool runTest (const std::string& testName, const TestFunction& f)
 	{
 		time_point<system_clock> start, end;
@@ -120,7 +124,7 @@ public:
 		printOutput ();
 		return result;
 	}
-	
+
 	int run ()
 	{
 		Result result;
