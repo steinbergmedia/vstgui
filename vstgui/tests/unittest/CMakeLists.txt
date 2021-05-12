@@ -133,7 +133,7 @@ if(XCODE)
 	)
 
 	add_library(${target} MODULE ${${target}_sources})
-	vstgui_set_cxx_version(${target} 14)
+	vstgui_set_cxx_version(${target} 17)
 	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
 	target_link_libraries(${target}
 		${${target}_PLATFORM_LIBS}
@@ -161,7 +161,7 @@ else()
 		${${target}_PLATFORM_LIBS}
 	)
 
-	vstgui_set_cxx_version(${target} 14)
+	vstgui_set_cxx_version(${target} 17)
 	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
 	vstgui_source_group_by_folder(${target})
 
