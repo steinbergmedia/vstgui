@@ -13,7 +13,7 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-TESTCASE(COnOffButtonCreatorTest,
+TESTCASE(CCheckBoxCreatorTest,
 
 	TEST(title,
 		DummyUIDescription uidesc;

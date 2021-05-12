@@ -61,7 +61,13 @@ namespace UnitTest {
 class error : public std::logic_error
 {
 public:
-	error (const char* str) : std::logic_error (str) {}
+	error (const char* file, size_t line, const char* str)
+	: std::logic_error (str), filePath (file), lineNo (line)
+	{
+	}
+
+	std::string filePath;
+	size_t lineNo;
 };
 
 #define	VSTGUI_UNITTEST_MAKE_STRING_PRIVATE_DONT_USE(x)	# x
@@ -70,7 +76,7 @@ public:
 //----------------------------------------------------------------------------------------------------
 #define TESTCASE(name,function) static VSTGUI::UnitTest::TestCaseRegistrar name##TestCaseRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestCase* testCase) { function })
 #define TEST(name,function) testCase->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } return true; });
-#define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__ ":" VSTGUI_UNITTEST_MAKE_STRING(__LINE__) ": Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
+#define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
 #define FAIL(reason) { context->print (__FILE__ ":" VSTGUI_UNITTEST_MAKE_STRING(__LINE__) ": Failure: " reason); return false; }
 
 #define EXPECT_EXCEPTION(call, name) \

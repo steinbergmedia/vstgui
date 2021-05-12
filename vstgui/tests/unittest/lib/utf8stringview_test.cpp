@@ -41,7 +41,8 @@ TESTCASE (
 		EXPECT(str.calculateByteCount () == 46);
 	);
 
-	TEST(contains, UTF8StringView str (asciiStr);
+	TEST(contains,
+		UTF8StringView str (asciiStr);
 		EXPECT(str.contains ("simple") == true);
 		EXPECT(str.contains ("not") == false);
 	);
@@ -74,7 +75,7 @@ TESTCASE (
 		EXPECT(str1 != str3);
 	);
 
-	TEST(contains,
+	TEST(containsCheckCase,
 		UTF8StringView str (asciiStr);
 		EXPECT(str.contains ("simple"));
 		EXPECT(str.contains ("Simple") == false);
@@ -84,11 +85,6 @@ TESTCASE (
 	TEST(startsWith,
 		UTF8StringView str (asciiStr);
 		EXPECT(str.startsWith ("This"));
-	);
-
-	TEST(endsWith,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.endsWith ("String"));
 	);
 
 	TEST(toDouble,
