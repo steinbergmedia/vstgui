@@ -636,7 +636,7 @@ TEST_CASE (CFrameTest, SetPosition)
 	frame->close ();
 }
 
-#if !MAC
+#if 0
 TEST_CASE (CFrameTest, CollectInvalidRectsOnMouseDown)
 {
 	// It is expected that this test failes on Mac OS X 10.11 because of OS changes
