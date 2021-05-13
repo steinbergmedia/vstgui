@@ -74,9 +74,21 @@ public:
 #define	VSTGUI_UNITTEST_MAKE_STRING(x) VSTGUI_UNITTEST_MAKE_STRING_PRIVATE_DONT_USE(x)
 
 //----------------------------------------------------------------------------------------------------
+#define TEST_CASE(suite, name) \
+	static bool test##suite##name (VSTGUI::UnitTest::Context* context); \
+	static VSTGUI::UnitTest::TestCaseRegistrar register##suite##name (VSTGUI_UNITTEST_MAKE_STRING(suite), \
+		VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) {\
+			return test##suite##name (context); \
+		});\
+	bool test##suite##name (VSTGUI::UnitTest::Context* context)
+
+//----------------------------------------------------------------------------------------------------
 #define TESTCASE(name,function) static VSTGUI::UnitTest::TestCaseRegistrar name##TestCaseRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestCase* testCase) { function })
 #define TEST(name,function) testCase->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } });
+#define SETUP(function) testCase->setSetupFunction ([](VSTGUI::UnitTest::Context* context) { function } )
+#define TEARDOWN(function) testCase->setTeardownFunction ([](VSTGUI::UnitTest::Context* context) { function } )
 
+//------------------------------------------------------------------------
 #define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
 #define FAIL(reason) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Failure: " reason); }
 
@@ -92,8 +104,10 @@ public:
 	EXPECT(b);\
 }
 
-#define SETUP(function) testCase->setSetupFunction ([](VSTGUI::UnitTest::Context* context) { function } )
-#define TEARDOWN(function) testCase->setTeardownFunction ([](VSTGUI::UnitTest::Context* context) { function } )
+#define EXPECT_TRUE(condition) EXPECT(condition)
+#define EXPECT_FALSE(condition) EXPECT(!condition)
+#define EXPECT_EQ(var1, var2) EXPECT (var1 == var2)
+
 //----------------------------------------------------------------------------------------------------
 class Context;
 class TestCase;

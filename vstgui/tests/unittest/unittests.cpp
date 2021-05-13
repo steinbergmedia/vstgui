@@ -132,7 +132,9 @@ TestCaseRegistrar::TestCaseRegistrar (std::string&& suite, std::string&& testNam
 	}
 	else
 	{
-		registry.registerTestCase (TestCase (std::move (suite), [] (auto) {}));
+		TestCase ts (std::move (suite), [] (auto) {});
+		ts.registerTest (std::move (testName), std::move (testFunction));
+		registry.registerTestCase (std::move (ts));
 	}
 }
 
