@@ -106,9 +106,9 @@ public:
 		printf ("%s", testName.c_str());
 		intend++;
 		start = system_clock::now ();
-		bool result;
+		bool result = true;
 		try {
-			result = f (this);
+			f (this);
 		} catch (const error& exc)
 		{
 			result = false;

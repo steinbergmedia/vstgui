@@ -105,6 +105,37 @@ void UnitTestRegistry::registerTestCase (TestCase&& testCase)
 	testCases.push_back (std::move (testCase));
 }
 
+//------------------------------------------------------------------------
+TestCase* UnitTestRegistry::find (const std::string& name)
+{
+	auto it = std::find_if (testCases.begin (), testCases.end (),
+	                        [&name] (auto& tc) { return tc.getName () == name; });
+	if (it == testCases.end ())
+		return nullptr;
+	return &(*it);
+}
+
+//------------------------------------------------------------------------
+TestCaseRegistrar::TestCaseRegistrar (std::string&& suite, TestCaseFunction&& testCase)
+{
+	UnitTestRegistry::instance ().registerTestCase (
+	    TestCase (std::move (suite), std::move (testCase)));
+}
+
+//------------------------------------------------------------------------
+TestCaseRegistrar::TestCaseRegistrar (std::string&& suite, std::string&& testName, TestFunction&& testFunction)
+{
+	auto& registry = UnitTestRegistry::instance ();
+	if (auto tc = registry.find (suite))
+	{
+		tc->registerTest (std::move (testName), std::move (testFunction));
+	}
+	else
+	{
+		registry.registerTestCase (TestCase (std::move (suite), [] (auto) {}));
+	}
+}
+
 //----------------------------------------------------------------------------------------------------
 void Context::print (const char* fmt, ...)
 {

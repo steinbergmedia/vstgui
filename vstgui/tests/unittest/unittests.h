@@ -75,9 +75,10 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 #define TESTCASE(name,function) static VSTGUI::UnitTest::TestCaseRegistrar name##TestCaseRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestCase* testCase) { function })
-#define TEST(name,function) testCase->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } return true; });
+#define TEST(name,function) testCase->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } });
+
 #define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
-#define FAIL(reason) { context->print (__FILE__ ":" VSTGUI_UNITTEST_MAKE_STRING(__LINE__) ": Failure: " reason); return false; }
+#define FAIL(reason) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Failure: " reason); }
 
 #define EXPECT_EXCEPTION(call, name) \
 { \
@@ -98,7 +99,7 @@ class Context;
 class TestCase;
 
 //----------------------------------------------------------------------------------------------------
-using TestFunction = std::function<bool(Context*)>;
+using TestFunction = std::function<void(Context*)>;
 using SetupFunction = std::function<void(Context*)>;
 using TeardownFunction = std::function<void(Context*)>;
 using TestCaseFunction = std::function<void(TestCase*)>;
@@ -115,6 +116,8 @@ public:
 
 	Iterator begin () const { return testCases.begin (); }
 	Iterator end () const { return testCases.end (); }
+
+	TestCase* find (const std::string& name);
 private:
 	TestCases testCases;
 };
@@ -154,10 +157,8 @@ private:
 class TestCaseRegistrar
 {
 public:
-	TestCaseRegistrar (std::string&& name, TestCaseFunction&& testCase)
-	{
-		UnitTestRegistry::instance().registerTestCase (TestCase (std::move (name), std::move (testCase)));
-	}
+	TestCaseRegistrar (std::string&& suite, TestCaseFunction&& testCase);
+	TestCaseRegistrar (std::string&& suite, std::string&& testName, TestFunction&& testFunction);
 };
 
 //----------------------------------------------------------------------------------------------------

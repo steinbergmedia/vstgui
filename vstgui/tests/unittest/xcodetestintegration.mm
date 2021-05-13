@@ -56,10 +56,10 @@ void testFunc (id self, SEL _cmd)
 		setup (&context);
 
 	XCTSourceCodeLocation* sourceCodeLocation = nullptr;
-	bool result;
+	bool result = true;
 	try
 	{
-		result = it->second (&context);
+		it->second (&context);
 	}
 	catch (const error& exc)
 	{
@@ -143,7 +143,6 @@ void testFunc (id self, SEL _cmd)
 		for (auto& test : testCase)
 		{
 			std::string name = "test" + test.first;
-			name[4] = toupper(name[4]);
 			auto sel = sel_registerName (name.data ());
 			if (!class_addMethod (cls, sel, reinterpret_cast<IMP> (testFunc), "v@:"))
 			{
