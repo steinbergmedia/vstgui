@@ -76,17 +76,17 @@ public:
 //----------------------------------------------------------------------------------------------------
 #define TEST_CASE(suite, name) \
 	static bool test##suite##name (VSTGUI::UnitTest::Context* context); \
-	static VSTGUI::UnitTest::TestCaseRegistrar register##suite##name (VSTGUI_UNITTEST_MAKE_STRING(suite), \
+	static VSTGUI::UnitTest::TestRegistrar register##suite##name (VSTGUI_UNITTEST_MAKE_STRING(suite), \
 		VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) {\
 			return test##suite##name (context); \
 		});\
 	bool test##suite##name (VSTGUI::UnitTest::Context* context)
 
 //----------------------------------------------------------------------------------------------------
-#define TESTCASE(name,function) static VSTGUI::UnitTest::TestCaseRegistrar name##TestCaseRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestCase* testCase) { function })
-#define TEST(name,function) testCase->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } });
-#define SETUP(function) testCase->setSetupFunction ([](VSTGUI::UnitTest::Context* context) { function } )
-#define TEARDOWN(function) testCase->setTeardownFunction ([](VSTGUI::UnitTest::Context* context) { function } )
+#define TESTCASE(name,function) static VSTGUI::UnitTest::TestRegistrar name##TestRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestSuite* testSuite) { function })
+#define TEST(name,function) testSuite->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } });
+#define SETUP(function) testSuite->setSetupFunction ([](VSTGUI::UnitTest::Context* context) { function } )
+#define TEARDOWN(function) testSuite->setTeardownFunction ([](VSTGUI::UnitTest::Context* context) { function } )
 
 //------------------------------------------------------------------------
 #define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
@@ -110,41 +110,41 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 class Context;
-class TestCase;
+class TestSuite;
 
 //----------------------------------------------------------------------------------------------------
 using TestFunction = std::function<void(Context*)>;
 using SetupFunction = std::function<void(Context*)>;
 using TeardownFunction = std::function<void(Context*)>;
-using TestCaseFunction = std::function<void(TestCase*)>;
+using TestSuiteFunction = std::function<void(TestSuite*)>;
 
 //----------------------------------------------------------------------------------------------------
 class UnitTestRegistry
 {
-	using TestCases = std::list<TestCase>;
-	using Iterator = TestCases::const_iterator;
+	using TestSuites = std::list<TestSuite>;
+	using Iterator = TestSuites::const_iterator;
 public:
 	static UnitTestRegistry& instance ();
 
-	void registerTestCase (TestCase&& testCase);
+	void registerTestSuite (TestSuite&& testSuite);
 
-	Iterator begin () const { return testCases.begin (); }
-	Iterator end () const { return testCases.end (); }
+	Iterator begin () const { return testSuites.begin (); }
+	Iterator end () const { return testSuites.end (); }
 
-	TestCase* find (const std::string& name);
+	TestSuite* find (const std::string& name);
 private:
-	TestCases testCases;
+	TestSuites testSuites;
 };
 
 //----------------------------------------------------------------------------------------------------
-class TestCase
+class TestSuite
 {
 	using TestPair = std::pair<std::string, TestFunction>;
 	using Tests = std::list<TestPair>;
 	using Iterator = Tests::const_iterator;
 public:
-	TestCase (std::string&& name, TestCaseFunction&& testCase);
-	TestCase (TestCase&& tc) noexcept;
+	TestSuite (std::string&& name, TestSuiteFunction&& testCase);
+	TestSuite (TestSuite&& tc) noexcept;
 
 	void setSetupFunction (SetupFunction&& setupFunction);
 	void setTeardownFunction (TeardownFunction&& teardownFunction);
@@ -158,21 +158,21 @@ public:
 	const SetupFunction& setup () const { return setupFunction; }
 	const TeardownFunction& teardown () const { return teardownFunction; }
 
-	TestCase& operator= (TestCase&& tc) noexcept;
+	TestSuite& operator= (TestSuite&& tc) noexcept;
 private:
 	Tests tests;
 	std::string name;
-	TestCaseFunction tcf;
+	TestSuiteFunction tcf;
 	SetupFunction setupFunction;
 	TeardownFunction teardownFunction;
 };
 
 //----------------------------------------------------------------------------------------------------
-class TestCaseRegistrar
+class TestRegistrar
 {
 public:
-	TestCaseRegistrar (std::string&& suite, TestCaseFunction&& testCase);
-	TestCaseRegistrar (std::string&& suite, std::string&& testName, TestFunction&& testFunction);
+	TestRegistrar (std::string&& suite, TestSuiteFunction&& testSuite);
+	TestRegistrar (std::string&& suite, std::string&& testName, TestFunction&& testFunction);
 };
 
 //----------------------------------------------------------------------------------------------------

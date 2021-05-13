@@ -37,7 +37,7 @@ void setupFunc (id self, SEL _cmd)
 void testFunc (id self, SEL _cmd)
 {
 	auto ivar = class_getInstanceVariable ([self class], "_testCase");
-	auto testCase = reinterpret_cast<TestCase*> (object_getIvar (self, ivar));
+	auto testCase = reinterpret_cast<TestSuite*> (object_getIvar (self, ivar));
 	auto name = std::string (sel_getName (_cmd) + 4);
 	auto it = std::find_if (testCase->begin (), testCase->end (),
 	                        [&] (auto& pair) { return pair.first == name; });
