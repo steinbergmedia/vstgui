@@ -15,6 +15,7 @@
 #include "../../lib/cgradientview.h"
 #include "../../lib/ifocusdrawing.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/events.h"
 #include <algorithm>
 
 namespace VSTGUI {
@@ -49,7 +50,7 @@ private:
 	void draw (CDrawContext* context) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
@@ -158,47 +159,52 @@ void UIColorStopEditView::removeColorStop (double startOffset)
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIColorStopEditView::onKeyDown (VstKeyCode& keyCode)
+void UIColorStopEditView::onKeyboardEvent (KeyboardEvent& event)
 {
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown)
+		return;
+	switch (event.virt)
 	{
-		case VKEY_LEFT:
+		case VirtualKey::Left:
 		{
-			if (keyCode.modifier == 0)
+			if (event.modifiers.empty ())
 			{
 				selectPrevColorStop ();
-				return 1;
+				event.consumed = true;
 			}
-			else if (keyCode.modifier == MODIFIER_ALTERNATE)
+			else if (event.modifiers.is (ModifierKey::Alt))
 			{
-				setCurrentStartOffset (editStartOffset-0.001);
+				setCurrentStartOffset (editStartOffset - 0.001);
+				event.consumed = true;
 			}
 			break;
 		}
-		case VKEY_RIGHT:
+		case VirtualKey::Right:
 		{
-			if (keyCode.modifier == 0)
+			if (event.modifiers.empty ())
 			{
 				selectNextColorStop ();
-				return 1;
+				event.consumed = true;
 			}
-			else if (keyCode.modifier == MODIFIER_ALTERNATE)
+			else if (event.modifiers.is(ModifierKey::Alt))
 			{
-				setCurrentStartOffset (editStartOffset+0.001);
+				setCurrentStartOffset (editStartOffset + 0.001);
+				event.consumed = true;
 			}
 			break;
 		}
-		case VKEY_BACK:
+		case VirtualKey::Back:
 		{
-			if (keyCode.modifier == 0)
+			if (event.modifiers.empty ())
 			{
 				removeColorStop (getSelectedColorStart ());
-				return 1;
+				event.consumed = true;
 			}
 			break;
 		}
+		default:
+			break;
 	}
-	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -221,6 +227,7 @@ CMouseEventResult UIColorStopEditView::onMouseDown (CPoint& where, const CButton
 	}
 	else if (buttons.isLeftButton ())
 	{
+		getFrame ()->setFocusView (this);
 		double pos = gradientStartPosFromMousePos (where);
 		double range = (stopWidth / getWidth ()) / 2.;
 		for (auto& colorStop : colorStopMap)
