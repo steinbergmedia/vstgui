@@ -25,34 +25,29 @@ void setupFunc (id self, SEL _cmd)
 {
 	auto cls = [self class];
 	std::string clsName (class_getName (cls) + 7);
-	auto it =
-	    std::find_if (UnitTestRegistry::instance ().begin (), UnitTestRegistry::instance ().end (),
-	                  [&] (auto& testCase) { return testCase.getName () == clsName; });
-	assert (it != UnitTestRegistry::instance ().end ());
-	auto ivar = class_getInstanceVariable ([self class], "_testCase");
-	object_setIvar (self, ivar, reinterpret_cast<id> (&(*it)));
+	auto testSuite = UnitTestRegistry::instance ().find (clsName);
+	assert (testSuite);
+	auto ivar = class_getInstanceVariable ([self class], "_testSuite");
+	object_setIvar (self, ivar, reinterpret_cast<id> (testSuite));
 }
 
 //------------------------------------------------------------------------
 void testFunc (id self, SEL _cmd)
 {
-	auto ivar = class_getInstanceVariable ([self class], "_testCase");
-	auto testCase = reinterpret_cast<TestSuite*> (object_getIvar (self, ivar));
+	auto ivar = class_getInstanceVariable ([self class], "_testSuite");
+	auto testSuite = reinterpret_cast<TestSuite*> (object_getIvar (self, ivar));
 	auto name = std::string (sel_getName (_cmd) + 4);
-	auto it = std::find_if (testCase->begin (), testCase->end (),
+	auto it = std::find_if (testSuite->begin (), testSuite->end (),
 	                        [&] (auto& pair) { return pair.first == name; });
-	if (it == testCase->end ())
-	{
+	assert (it != testSuite->end ());
 
-		return;
-	}
 	struct TestContext : Context
 	{
 		void printRaw (const char* str) override { text += str; }
 		std::string text;
 	} context;
 
-	if (auto setup = testCase->setup ())
+	if (auto setup = testSuite->setup ())
 		setup (&context);
 
 	XCTSourceCodeLocation* sourceCodeLocation = nullptr;
@@ -101,7 +96,7 @@ void testFunc (id self, SEL _cmd)
 		[self recordIssue:issue];
 	}
 
-	if (auto teardown = testCase->teardown ())
+	if (auto teardown = testSuite->teardown ())
 		teardown (&context);
 }
 
@@ -137,7 +132,7 @@ void testFunc (id self, SEL _cmd)
 			NSLog (@"Duplicate TestCase name: %s", testCase.getName ().data ());
 			continue;
 		}
-		class_addIvar (cls, "_testCase", sizeof (void*), (uint8_t)log2 (sizeof (void*)),
+		class_addIvar (cls, "_testSuite", sizeof (void*), (uint8_t)log2 (sizeof (void*)),
 		               @encode (void*));
 		class_addMethod (cls, @selector (setUp), reinterpret_cast<IMP> (setupFunc), "v@:");
 		for (auto& test : testCase)
