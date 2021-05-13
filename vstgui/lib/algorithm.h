@@ -16,7 +16,7 @@ template <typename Iter, typename Type, typename ResultType = int32_t>
 Optional<ResultType> indexOf (Iter first, Iter last, const Type& value)
 {
 	auto it = std::find (first, last, value);
-	if (first == last)
+	if (it == last)
 		return {};
 	return {static_cast<ResultType> (std::distance (first, it))};
 }
