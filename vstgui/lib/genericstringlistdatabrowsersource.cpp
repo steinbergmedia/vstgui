@@ -193,16 +193,17 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 }
 
 //-----------------------------------------------------------------------------
-int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
-                                                         CDataBrowser* browser)
+void GenericStringListDataBrowserSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser)
 {
-	VstKeyCode key = _key;
-	if (key.virt == VKEY_SPACE)
+	if (event.type != EventType::KeyDown)
+		return;
+
+	if (event.virt == VirtualKey::Space)
 	{
-		key.virt = 0;
-		key.character = 0x20;
+		event.virt = VirtualKey::None;
+		event.character = 0x20;
 	}
-	if (dataBrowser && key.virt == 0 && key.modifier == 0)
+	if (dataBrowser && event.virt == VirtualKey::None && event.modifiers.empty ())
 	{
 		if (timer == nullptr)
 		{
@@ -214,7 +215,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 			timer->stop ();
 			timer->start ();
 		}
-		keyDownFindString += static_cast<char> (toupper (key.character));
+		keyDownFindString += static_cast<char> (toupper (event.character));
 		StringVector::const_iterator it = stringList->begin ();
 		int32_t row = 0;
 		while (it != stringList->end ())
@@ -224,13 +225,13 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 			if (str == keyDownFindString)
 			{
 				dataBrowser->setSelectedRow (row, true);
-				return 1;
+				event.consumed = true;
+				return;
 			}
 			row++;
 			++it;
 		}
 	}
-	return -1;
 }
 
 //-----------------------------------------------------------------------------
