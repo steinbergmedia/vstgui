@@ -127,6 +127,8 @@ endif()
 ##########################################################################################
 
 if(XCODE)
+	find_library(xctest NAMES XCTest REQUIRED)
+
 	set(${target}_sources
 		"${${target}_sources}"
 		"${VSTGUI_TEST_BASE}xcodetestintegration.mm"
@@ -137,7 +139,7 @@ if(XCODE)
 	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
 	target_link_libraries(${target}
 		${${target}_PLATFORM_LIBS}
-		"-framework XCTest"
+		"${xctest}"
 	)
 
 	set_target_properties(${target}

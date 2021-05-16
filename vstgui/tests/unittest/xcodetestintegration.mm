@@ -17,9 +17,6 @@
 
 using namespace VSTGUI::UnitTest;
 
-static std::string currentFile;
-static std::string currentLineNo;
-
 //------------------------------------------------------------------------
 void setupFunc (id self, SEL _cmd)
 {
@@ -50,7 +47,9 @@ void testFunc (id self, SEL _cmd)
 	if (auto setup = testSuite->setup ())
 		setup (&context);
 
-	XCTSourceCodeLocation* sourceCodeLocation = nullptr;
+	size_t assertLineNo = 0;
+	std::string assertFilePath;
+
 	bool result = true;
 	try
 	{
@@ -60,9 +59,8 @@ void testFunc (id self, SEL _cmd)
 	{
 		result = false;
 		context.print ("%s", exc.what () ? exc.what () : "unknown");
-		sourceCodeLocation = [[[XCTSourceCodeLocation alloc]
-		    initWithFilePath:[NSString stringWithUTF8String:exc.filePath.data ()]
-		          lineNumber:exc.lineNo] autorelease];
+		assertLineNo = exc.lineNo;
+		assertFilePath = exc.filePath;
 	}
 	catch (const std::logic_error& exc)
 	{
@@ -76,13 +74,10 @@ void testFunc (id self, SEL _cmd)
 	}
 	if (!result)
 	{
-		if (!sourceCodeLocation)
-		{
-			auto lineNo = VSTGUI::UTF8StringView (currentLineNo.data ()).toInteger ();
-			sourceCodeLocation = [[[XCTSourceCodeLocation alloc]
-			    initWithFilePath:[NSString stringWithUTF8String:currentFile.data ()]
-			          lineNumber:lineNo] autorelease];
-		}
+#ifdef MAC_OS_X_VERSION_11
+		auto sourceCodeLocation = [[[XCTSourceCodeLocation alloc]
+		    initWithFilePath:[NSString stringWithUTF8String:assertFilePath.data ()]
+		          lineNumber:assertLineNo] autorelease];
 		auto sourceCodeContext =
 		    [[[XCTSourceCodeContext alloc] initWithLocation:sourceCodeLocation] autorelease];
 		auto issue =
@@ -94,6 +89,13 @@ void testFunc (id self, SEL _cmd)
 		                        attachments:@[]] autorelease];
 
 		[self recordIssue:issue];
+#else
+
+		[self recordFailureWithDescription:[NSString stringWithUTF8String:context.text.data ()]
+		                            inFile:[NSString stringWithUTF8String:assertFilePath.data ()]
+		                            atLine:assertLineNo
+		                          expected:NO];
+#endif
 	}
 
 	if (auto teardown = testSuite->teardown ())
@@ -111,15 +113,13 @@ void testFunc (id self, SEL _cmd)
 {
 	VSTGUI::init (CFBundleGetMainBundle ());
 	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
-		if (desc)
-			throw std::logic_error (desc);
-		currentFile = file;
-		currentLineNo = line;
-		std::string text = "assert: ";
-		text += file;
-		text += ":";
-		text += line;
-		throw std::logic_error (text.data ());
+		size_t lineNo = 0;
+		if (line)
+		{
+			if (auto l = VSTGUI::UTF8StringView (line).toNumber<size_t>())
+				lineNo = *l;
+		}
+		throw VSTGUI::UnitTest::error (file, lineNo, desc ? desc : "assert");
 	});
 
 	auto baseClass = objc_getClass ("XCTestCase");
