@@ -31,7 +31,6 @@ TEST_CASE (CBitmap, ScaleFactor)
 	EXPECT_EQ (bitmap.getBestPlatformBitmapForScaleFactor (1.5), b2);
 	EXPECT_EQ (bitmap.getBestPlatformBitmapForScaleFactor (1.6), b2);
 	EXPECT_EQ (bitmap.getBestPlatformBitmapForScaleFactor (2.6), b2);
-	return true;
 }
 
 //------------------------------------------------------------------------
@@ -67,7 +66,6 @@ TEST_CASE (CBitmap, PixelAccess)
 			x = 0;
 		}
 	} while (++(*accessor));
-	return true;
 }
 
 //------------------------------------------------------------------------
