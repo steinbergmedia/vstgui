@@ -75,12 +75,12 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 #define TEST_CASE(suite, name) \
-	static bool test##suite##name (VSTGUI::UnitTest::Context* context); \
+	static void test##suite##name (VSTGUI::UnitTest::Context* context); \
 	static VSTGUI::UnitTest::TestRegistrar register##suite##name (VSTGUI_UNITTEST_MAKE_STRING(suite), \
 		VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) {\
-			return test##suite##name (context); \
+			test##suite##name (context); \
 		});\
-	bool test##suite##name (VSTGUI::UnitTest::Context* context)
+	void test##suite##name (VSTGUI::UnitTest::Context* context)
 
 //----------------------------------------------------------------------------------------------------
 #define TESTCASE(name,function) static VSTGUI::UnitTest::TestRegistrar name##TestRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestSuite* testSuite) { function })
