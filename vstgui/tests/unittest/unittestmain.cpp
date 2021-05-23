@@ -68,6 +68,7 @@ public:
 
 	Result runTestSuite (const TestSuite& testSuite)
 	{
+		currentTestSuite = &testSuite;
 		Result result;
 		printf ("%s\n", testSuite.getName ().c_str());
 		intend++;
@@ -132,16 +133,23 @@ public:
 		start = system_clock::now ();
 		for (auto& it : UnitTestRegistry::instance ())
 		{
-			result += runTestSuite (std::move (it));
+			result += runTestSuite (it);
 		}
 		end = system_clock::now ();
 		print ("\nDone running %d tests in %lldms. [%d Failed]\n", result.succeded+result.failed, duration_cast<milliseconds> (end-start).count (), result.failed);
 		printOutput ();
 		return result.failed;
 	}
+	
+	std::any& storage () override
+	{
+		return currentTestSuite->getStorage ();
+	}
+
 private:
 	int intend;
 	std::string testOutput;
+	const TestSuite* currentTestSuite {nullptr};
 };
 
 static int RunTests ()

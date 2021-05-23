@@ -127,6 +127,10 @@ endif()
 ##########################################################################################
 
 if(XCODE)
+	option(VSTGUI_USE_XCODE_XCTEST "Use integrated Xcode testing" ON)
+endif(XCODE)
+
+if(VSTGUI_USE_XCODE_XCTEST)
 	find_library(xctest NAMES XCTest REQUIRED)
 
 	set(${target}_sources
@@ -177,7 +181,7 @@ else()
 		target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 	endif()
 
-endif(XCODE)
+endif(VSTGUI_USE_XCODE_XCTEST)
 
 #if(CMAKE_HOST_APPLE)
 #  option(VSTGUI_ENABLE_CODECOVERAGE "Generate Code Coverage Data" OFF)

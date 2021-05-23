@@ -40,20 +40,27 @@ void testFunc (id self, SEL _cmd)
 
 	struct TestContext : Context
 	{
+		TestContext (TestSuite& suite) : suite (suite) {}
 		void printRaw (const char* str) override { text += str; }
+		std::any& storage () override { return suite.getStorage (); }
+		TestSuite& suite;
 		std::string text;
-	} context;
-
-	if (auto setup = testSuite->setup ())
-		setup (&context);
+	} context (*testSuite);
 
 	size_t assertLineNo = 0;
 	std::string assertFilePath;
 
 	bool result = true;
+
 	try
 	{
+		if (auto setup = testSuite->setup ())
+			setup (&context);
+
 		it->second (&context);
+
+		if (auto teardown = testSuite->teardown ())
+			teardown (&context);
 	}
 	catch (const error& exc)
 	{
@@ -97,9 +104,6 @@ void testFunc (id self, SEL _cmd)
 		                          expected:NO];
 #endif
 	}
-
-	if (auto teardown = testSuite->teardown ())
-		teardown (&context);
 }
 
 //------------------------------------------------------------------------

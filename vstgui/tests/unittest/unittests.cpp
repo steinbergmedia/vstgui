@@ -69,6 +69,7 @@ TestSuite& TestSuite::operator=(TestSuite &&tc) noexcept
 	tcf = std::move (tc.tcf);
 	setupFunction = std::move (tc.setupFunction);
 	teardownFunction = std::move (tc.teardownFunction);
+	storage = std::move (tc.storage);
 	return *this;
 }
 
@@ -88,6 +89,12 @@ void TestSuite::setSetupFunction (SetupFunction&& _setupFunction)
 void TestSuite::setTeardownFunction (TeardownFunction&& _teardownFunction)
 {
 	teardownFunction = std::move (_teardownFunction);
+}
+
+//----------------------------------------------------------------------------------------------------
+void TestSuite::setStorage (std::any&& s)
+{
+	storage = std::move (s);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -134,6 +141,28 @@ TestRegistrar::TestRegistrar (std::string&& suite, std::string&& testName, TestF
 	{
 		TestSuite ts (std::move (suite), [] (auto) {});
 		ts.registerTest (std::move (testName), std::move (testFunction));
+		registry.registerTestSuite (std::move (ts));
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+TestRegistrar::TestRegistrar (std::string&& suite, SetupFunction&& sotFunction, bool isSetupFunc)
+{
+	auto& registry = UnitTestRegistry::instance ();
+	if (auto tc = registry.find (suite))
+	{
+		if (isSetupFunc)
+			tc->setSetupFunction (std::move (sotFunction));
+		else
+			tc->setTeardownFunction (std::move (sotFunction));
+	}
+	else
+	{
+		TestSuite ts (std::move (suite), [] (auto) {});
+		if (isSetupFunc)
+			ts.setSetupFunction (std::move (sotFunction));
+		else
+			ts.setTeardownFunction (std::move (sotFunction));
 		registry.registerTestSuite (std::move (ts));
 	}
 }

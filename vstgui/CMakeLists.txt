@@ -95,7 +95,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 if(VSTGUI_MAIN_PROJECT_BUILD)
-    message("Building only vstgui")
+    message(STATUS "Building only vstgui")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
         $<$<CONFIG:Debug>:${CMAKE_BINARY_DIR}/Debug/>$<$<CONFIG:Release>:${CMAKE_BINARY_DIR}/Release/>$<$<CONFIG:ReleaseLTO>:${CMAKE_BINARY_DIR}/ReleaseLTO/>
     )

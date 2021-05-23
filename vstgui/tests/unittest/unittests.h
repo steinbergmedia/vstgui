@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
+#include <any>
 
 /*
 	How-to write tests:
@@ -82,6 +83,21 @@ public:
 		});\
 	void test##suite##name (VSTGUI::UnitTest::Context* context)
 
+#define TEST_SUITE_SETUP(suite) \
+	static void setup##suite (VSTGUI::UnitTest::Context* context); \
+	static VSTGUI::UnitTest::TestRegistrar registerSetup##suite (VSTGUI_UNITTEST_MAKE_STRING(suite), \
+		[](VSTGUI::UnitTest::Context* context) { setup##suite (context); }, true);\
+	void setup##suite (VSTGUI::UnitTest::Context* context)
+
+#define TEST_SUITE_TEARDOWN(suite) \
+	static void teardown##suite (VSTGUI::UnitTest::Context* context); \
+	static VSTGUI::UnitTest::TestRegistrar registerTeardown##suite (VSTGUI_UNITTEST_MAKE_STRING(suite), \
+		[](VSTGUI::UnitTest::Context* context) { teardown##suite (context); }, false);\
+	void teardown##suite (VSTGUI::UnitTest::Context* context)
+
+#define TEST_SUITE_SET_STORAGE(Type, value) context->storage () = std::make_any<Type> (value)
+#define TEST_SUITE_GET_STORAGE(Type) *std::any_cast<Type> (&context->storage ())
+
 //----------------------------------------------------------------------------------------------------
 #define TESTCASE(name,function) static VSTGUI::UnitTest::TestRegistrar name##TestRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestSuite* testSuite) { function })
 #define TEST(name,function) testSuite->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } });
@@ -149,9 +165,11 @@ public:
 
 	void setSetupFunction (SetupFunction&& setupFunction);
 	void setTeardownFunction (TeardownFunction&& teardownFunction);
+	void setStorage (std::any&& s);
 	void registerTest (std::string&& name, TestFunction&& function);
 
 	const std::string& getName () const { return name; }
+	std::any& getStorage () const { return storage; }
 
 	Iterator begin () const { return tests.begin (); }
 	Iterator end () const { return tests.end (); }
@@ -166,6 +184,7 @@ private:
 	TestSuiteFunction tcf;
 	SetupFunction setupFunction;
 	TeardownFunction teardownFunction;
+	mutable std::any storage;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -174,6 +193,7 @@ class TestRegistrar
 public:
 	TestRegistrar (std::string&& suite, TestSuiteFunction&& testSuite);
 	TestRegistrar (std::string&& suite, std::string&& testName, TestFunction&& testFunction);
+	TestRegistrar (std::string&& suite, SetupFunction&& setupFunction, bool isSetupFunc = true);
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -182,6 +202,7 @@ class Context
 public:
 	void print (const char* fmt, ...);
 	virtual void printRaw (const char* str) = 0;
+	virtual std::any& storage () = 0;
 };
 
 }} // namespaces
