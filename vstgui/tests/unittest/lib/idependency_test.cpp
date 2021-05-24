@@ -61,8 +61,9 @@ TEST_CASE (IDependencyTest, SimpleDeferChanges)
 	tObj.addDependency (&dObj);
 	{
 		IDependency::DeferChanges df (&tObj);
-		tObj.changed ("Test");
-		tObj.changed ("Test");
+		IdStringPtr messageID = "Test";
+		tObj.changed (messageID);
+		tObj.changed (messageID);
 		EXPECT (dObj.notifyCalledCount == 0)
 	}
 	EXPECT (dObj.notifyCalledCount == 1)
