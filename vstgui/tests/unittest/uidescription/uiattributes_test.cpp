@@ -191,6 +191,11 @@ TESTCASE(UIAttributesTest,
 		EXPECT(UIAttributes::stringToRect ("0, 12.5, 5, 8", r) && r == CRect (0, 12.5, 5, 8))
 	)
 
+	TEST(stringArrayToString_emptyStringArray,
+		const UIAttributes::StringArray strings;
+		const auto s = UIAttributes::stringArrayToString(strings);
+		EXPECT(s.empty())
+	)
 );
 
 } // VSTGUI
