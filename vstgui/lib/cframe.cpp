@@ -349,7 +349,7 @@ void CFrame::clearMouseViews (const CPoint& where, Modifiers modifiers, bool cal
 		{
 			MouseExitEvent exitEvent;
 			exitEvent.modifiers = modifiers;
-			exitEvent.mousePosition = (*it)->translateToLocal (where);
+			exitEvent.mousePosition = (*it)->translateToLocal (where, true);
 			(*it)->dispatchEvent (exitEvent);
 		#if DEBUG_MOUSE_VIEWS
 			DebugPrint ("mouseExited : %p[%d,%d]\n", (*it), (int)lp.x, (int)lp.y);
@@ -419,7 +419,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 	if (vc == nullptr && currentMouseView)
 	{
 		MouseExitEvent exitEvent (event);
-		exitEvent.mousePosition = currentMouseView->translateToLocal (exitEvent.mousePosition);
+		exitEvent.mousePosition = currentMouseView->translateToLocal (exitEvent.mousePosition, true);
 		currentMouseView->dispatchEvent (exitEvent);
 		callMouseObserverMouseExited (currentMouseView);
 	#if DEBUG_MOUSE_VIEWS
@@ -437,7 +437,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		if (vc->isChild (mouseView, true) == false)
 		{
 			MouseExitEvent exitEvent (event);
-			exitEvent.mousePosition = vc->translateToLocal (exitEvent.mousePosition);
+			exitEvent.mousePosition = vc->translateToLocal (exitEvent.mousePosition, true);
 			vc->dispatchEvent (exitEvent);
 			callMouseObserverMouseExited (vc);
 		#if DEBUG_MOUSE_VIEWS
@@ -467,7 +467,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		while (it2 != pImpl->mouseViews.end ())
 		{
 			MouseEnterEvent enterEvent (event);
-			enterEvent.mousePosition = (*it2)->translateToLocal (enterEvent.mousePosition);
+			enterEvent.mousePosition = (*it2)->translateToLocal (enterEvent.mousePosition, true);
 			(*it2)->dispatchEvent (enterEvent);
 			callMouseObserverMouseEntered ((*it2));
 		#if DEBUG_MOUSE_VIEWS
@@ -492,7 +492,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		while (it2 != pImpl->mouseViews.end ())
 		{
 			MouseEnterEvent enterEvent (event);
-			enterEvent.mousePosition = (*it2)->translateToLocal (enterEvent.mousePosition);
+			enterEvent.mousePosition = (*it2)->translateToLocal (enterEvent.mousePosition, true);
 			(*it2)->dispatchEvent (enterEvent);
 			callMouseObserverMouseEntered ((*it2));
 		#if DEBUG_MOUSE_VIEWS
@@ -649,7 +649,7 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			CPoint p (transformedMousePosition);
 			auto view = *it;
 			if (auto parent = view->getParentView ())
-				parent->translateToLocal (p);
+				parent->translateToLocal (p, true);
 			event.mousePosition = p;
 			view->dispatchEvent (event);
 			if (event.consumed)
