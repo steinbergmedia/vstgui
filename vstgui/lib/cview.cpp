@@ -240,10 +240,12 @@ void CView::beforeDelete ()
 		});
 		vstgui_assert (pImpl->viewListeners->empty (), "View listeners not empty");
 	}
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (pImpl->viewMouseListener)
 	{
 		vstgui_assert (pImpl->viewMouseListener->empty (), "View mouse listeners not empty");
 	}
+#endif
 
 	vstgui_assert (isAttached () == false, "View is still attached");
 
@@ -860,6 +862,7 @@ void CView::draw (CDrawContext* pContext)
 	setDirty (false);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 /**
  * @param where location
@@ -893,7 +896,6 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
 	return -1;
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------
 /**
  * a drag can only be started from within onMouseDown

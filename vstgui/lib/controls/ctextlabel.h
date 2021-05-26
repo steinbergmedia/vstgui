@@ -65,7 +65,9 @@ protected:
 	void freeText ();
 	void calculateTruncatedText ();
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override { return false; }
+#endif
 
 	TextTruncateMode textTruncateMode;
 	UTF8String text;
