@@ -415,6 +415,7 @@ public:
 	virtual CViewContainer* asViewContainer () { return nullptr; }
 	virtual const CViewContainer* asViewContainer () const { return nullptr; }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	enum class MouseListenerCall
 	{
 		MouseDown,
@@ -424,7 +425,8 @@ public:
 	};
 	CMouseEventResult callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons);
 	void callMouseListenerEnteredExited (bool mouseEntered);
-	
+#endif
+
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void beforeDelete () override;

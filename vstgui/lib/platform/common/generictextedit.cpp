@@ -83,8 +83,7 @@ public:
 	static int getLength (STBTextEditView* self);
 
 private:
-	using CTextLabel::onKeyDown;
-	using CTextLabel::onKeyUp;
+	using CTextLabel::onKeyboardEvent;
 	using CTextLabel::onMouseEntered;
 	using CTextLabel::onMouseExited;
 	using CTextLabel::onMouseMoved;

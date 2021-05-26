@@ -322,6 +322,7 @@ bool CControl::getFocusPath (CGraphicsPath& outPath)
 	return true;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
 {
@@ -336,6 +337,7 @@ int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
 		modifiers |= kControl;
 	return modifiers;
 }
+#endif
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------

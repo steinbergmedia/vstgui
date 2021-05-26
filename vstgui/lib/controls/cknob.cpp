@@ -253,21 +253,23 @@ void CKnobBase::onMouseWheelEvent (MouseWheelEvent& event)
 }
 
 //------------------------------------------------------------------------
-int32_t CKnobBase::onKeyDown (VstKeyCode& keyCode)
+void CKnobBase::onKeyboardEvent (KeyboardEvent& event)
 {
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown)
+		return;
+	switch (event.virt)
 	{
-		case VKEY_UP :
-		case VKEY_RIGHT :
-		case VKEY_DOWN :
-		case VKEY_LEFT :
+		case VirtualKey::Up :
+		case VirtualKey::Right :
+		case VirtualKey::Down :
+		case VirtualKey::Left :
 		{
 			float distance = 1.f;
-			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
+			if (event.virt == VirtualKey::Down || event.virt == VirtualKey::Left)
 				distance = -distance;
 
 			float v = getValueNormalized ();
-			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
+			if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
 				v += 0.1f * distance * getWheelInc ();
 			else
 				v += distance * getWheelInc ();
@@ -276,28 +278,23 @@ int32_t CKnobBase::onKeyDown (VstKeyCode& keyCode)
 			if (isDirty ())
 			{
 				invalid ();
-
-				// begin of edit parameter
 				beginEdit ();
-				
 				valueChanged ();
-			
-				// end of edit parameter
 				endEdit ();
 			}
-			return 1;
+			event.consumed = true;
 		}
-		case VKEY_ESCAPE:
+		case VirtualKey::Escape:
 		{
 			if (isEditing ())
 			{
 				onMouseCancel ();
-				return 1;
+				event.consumed = true;
 			}
 			break;
 		}
+		default: return;
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------

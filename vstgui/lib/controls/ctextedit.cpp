@@ -238,27 +238,26 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const CButtonState& but
 }
 
 //------------------------------------------------------------------------
-int32_t CTextEdit::onKeyDown (VstKeyCode& keyCode)
+void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (platformControl)
+	if (!platformControl || event.type != EventType::KeyDown)
+		return;
+	
+	if (event.virt == VirtualKey::Escape)
 	{
-		if (keyCode.virt == VKEY_ESCAPE)
-		{
-			bWasReturnPressed = false;
-			platformControl->setText (text);
-			getFrame ()->setFocusView (nullptr);
-			looseFocus ();
-			return 1;
-		}
-		else if (keyCode.virt == VKEY_RETURN)
-		{
-			bWasReturnPressed = true;
-			getFrame ()->setFocusView (nullptr);
-			looseFocus ();
-			return 1;
-		}
+		bWasReturnPressed = false;
+		platformControl->setText (text);
+		getFrame ()->setFocusView (nullptr);
+		looseFocus ();
+		event.consumed = true;
 	}
-	return -1;
+	else if (event.virt == VirtualKey::Return)
+	{
+		bWasReturnPressed = true;
+		getFrame ()->setFocusView (nullptr);
+		looseFocus ();
+		event.consumed = true;
+	}
 }
 
 //------------------------------------------------------------------------

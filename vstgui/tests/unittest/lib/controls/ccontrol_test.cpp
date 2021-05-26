@@ -16,10 +16,14 @@ public:
 	Control () : CControl (CRect (0, 0, 10, 10)) {}
 	void draw (CDrawContext* pContext) override {}
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	static int32_t mapVstKeyModifier (int32_t vstModifier)
 	{
+#include "../../../../lib/private/disabledeprecatedmessage.h"
 		return CControl::mapVstKeyModifier (vstModifier);
+#include "../../../../lib/private/enabledeprecatedmessage.h"
 	}
+#endif
 
 	CLASS_METHODS (Control, CControl)
 };
@@ -116,6 +120,7 @@ TEST_CASE (CControlTest, CheckDefaultValue)
 	EXPECT (c.checkDefaultValue (kRButton) == false);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 TEST_CASE (CControlTest, mapVstKeyModifier)
 {
 	EXPECT (Control::mapVstKeyModifier (MODIFIER_SHIFT) == kShift);
@@ -123,5 +128,6 @@ TEST_CASE (CControlTest, mapVstKeyModifier)
 	EXPECT (Control::mapVstKeyModifier (MODIFIER_COMMAND) == kApple);
 	EXPECT (Control::mapVstKeyModifier (MODIFIER_CONTROL) == kControl);
 }
+#endif
 
 } // VSTGUI

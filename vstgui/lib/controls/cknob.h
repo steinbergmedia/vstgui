@@ -36,7 +36,7 @@ public:
 
 	// overrides
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 	void setViewSize (const CRect &rect, bool invalid = true) override;
 	bool sizeToFit () override;
 	void setMin (float val) override;

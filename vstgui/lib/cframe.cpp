@@ -591,12 +591,14 @@ void CFrame::dispatchMouseDownEvent (MouseDownEvent& event)
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			event.mousePosition = transformedMousePosition;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 			auto result = modalView->callMouseListener (MouseListenerCall::MouseDown, event.mousePosition, buttonState);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
 				event.consumed = true;
 				return;
 			}
+#endif
 			modalView->dispatchEvent (event);
 			if (event.consumed)
 				setMouseDownView (modalView);
@@ -629,12 +631,14 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			event.mousePosition = transformedMousePosition;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 			auto result = modalView->callMouseListener (MouseListenerCall::MouseMoved, event.mousePosition, buttonState);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
 				event.consumed = true;
 				return;
 			}
+#endif
 			modalView->dispatchEvent (event);
 		}
 	}
@@ -674,13 +678,14 @@ void CFrame::dispatchMouseUpEvent (MouseUpEvent& event)
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			event.mousePosition = transformedMousePosition;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 			auto result = modalView->callMouseListener (MouseListenerCall::MouseUp, event.mousePosition, buttonState);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
 				event.consumed = true;
 				return;
 			}
-
+#endif
 			modalView->dispatchEvent (event);
 		}
 		return;
@@ -1573,7 +1578,9 @@ void CFrame::unregisterMouseObserver (IMouseObserver* observer)
 //-----------------------------------------------------------------------------
 void CFrame::callMouseObserverMouseEntered (CView* view)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	view->callMouseListenerEnteredExited (true);
+#endif
 	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		observer->onMouseEntered (view, this);
 	});
@@ -1585,7 +1592,9 @@ void CFrame::callMouseObserverMouseExited (CView* view)
 	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		observer->onMouseExited (view, this);
 	});
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	view->callMouseListenerEnteredExited (false);
+#endif
 }
 
 //-----------------------------------------------------------------------------

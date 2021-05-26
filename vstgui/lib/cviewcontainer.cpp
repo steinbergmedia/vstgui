@@ -1069,6 +1069,7 @@ void CViewContainer::onMouseDownEvent (MouseDownEvent& event)
 			}
 			auto frame = getFrame ();
 			auto previousFocusView = frame ? frame->getFocusView () : nullptr;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 			mouseResult = pV->callMouseListener (MouseListenerCall::MouseDown, event.mousePosition, buttonState);
 			if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
 			{
@@ -1077,6 +1078,7 @@ void CViewContainer::onMouseDownEvent (MouseDownEvent& event)
 					event.ignoreFollowUpMoveAndUpEvents (true);
 				return;
 			}
+#endif
 			pV->dispatchEvent (event);
 			if (event.consumed)
 			{
@@ -1115,6 +1117,7 @@ void CViewContainer::onMouseMoveEvent (MouseMoveEvent& event)
 		auto f = finally ([&, pos = event.mousePosition] () { event.mousePosition = pos; });
 		event.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
 		getTransform ().inverse ().transform (event.mousePosition);
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		mouseResult = view->callMouseListener (MouseListenerCall::MouseMoved, event.mousePosition,
 		                                       buttonState);
 		if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
@@ -1124,6 +1127,7 @@ void CViewContainer::onMouseMoveEvent (MouseMoveEvent& event)
 				event.ignoreFollowUpMoveAndUpEvents (true);
 			return;
 		}
+#endif
 		view->dispatchEvent (event);
 	}
 }
@@ -1143,6 +1147,7 @@ void CViewContainer::onMouseUpEvent (MouseUpEvent& event)
 		auto f = finally ([&, pos = event.mousePosition] () { event.mousePosition = pos; });
 		event.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
 		getTransform ().inverse ().transform (event.mousePosition);
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		mouseResult =
 		    view->callMouseListener (MouseListenerCall::MouseUp, event.mousePosition, buttonState);
 		if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
@@ -1150,6 +1155,7 @@ void CViewContainer::onMouseUpEvent (MouseUpEvent& event)
 			event.consumed = true;
 			return;
 		}
+#endif
 		view->dispatchEvent (event);
 		clearMouseDownView ();
 	}
@@ -1161,7 +1167,9 @@ CMouseEventResult CViewContainer::onMouseCancel ()
 	if (auto mouseDownView = getMouseDownView ())
 	{
 		CBaseObjectGuard crg (mouseDownView);
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		mouseDownView->callMouseListener (MouseListenerCall::MouseCancel, {}, 0);
+#endif
 		auto result = mouseDownView->onMouseCancel ();
 		clearMouseDownView ();
 		return result;

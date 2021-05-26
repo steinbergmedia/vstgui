@@ -111,7 +111,7 @@ public:
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
 	~CControl () noexcept override;
-	static int32_t mapVstKeyModifier (int32_t vstModifier);
+	VSTGUI_DEPRECATED (static int32_t mapVstKeyModifier (int32_t vstModifier);)
 
 	IControlListener* listener;
 	int32_t  tag;

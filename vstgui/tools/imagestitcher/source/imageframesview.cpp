@@ -563,22 +563,22 @@ DragOperation ImageFramesView::onDragMove (DragEventData eventData)
 }
 
 //------------------------------------------------------------------------
-int32_t ImageFramesView::onKeyDown (VstKeyCode& keyCode)
+void ImageFramesView::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.virt == 0 || !imageList || imageList->empty ())
-		return -1;
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown || event.virt == VirtualKey::None || !imageList || imageList->empty ())
+		return;
+	switch (event.virt)
 	{
-		case VKEY_UP:
+		case VirtualKey::Up:
 		{
 			auto index = firstSelectedIndex ();
 			if (index <= 0)
 				index = static_cast<int32_t> (imageList->size ());
 			--index;
 			selectExclusive (static_cast<size_t> (index));
-			return 1;
+			event.consumed = true;
 		}
-		case VKEY_DOWN:
+		case VirtualKey::Down:
 		{
 			auto index = lastSelectedIndex ();
 			if (index == static_cast<int32_t> (imageList->size ()) - 1)
@@ -586,10 +586,10 @@ int32_t ImageFramesView::onKeyDown (VstKeyCode& keyCode)
 			else
 				++index;
 			selectExclusive (static_cast<size_t> (index));
-			return 1;
+			event.consumed = true;
 		}
+		default: break;
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------

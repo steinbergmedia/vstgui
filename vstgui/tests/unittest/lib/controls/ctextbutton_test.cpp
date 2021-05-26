@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../../lib/controls/cbuttons.h"
+#include "../../../../lib/events.h"
 #include "../../unittests.h"
 
 namespace VSTGUI {
@@ -94,26 +95,36 @@ TEST_CASE (CTextButtonTest, KeyEvents)
 	auto b = owned (new CTextButton (CRect (10, 10, 50, 20)));
 	b->setStyle (CTextButton::kOnOffStyle);
 	b->setValue (b->getMin ());
-	VstKeyCode keyCode {};
-	keyCode.virt = VKEY_RETURN;
-	EXPECT (b->onKeyDown (keyCode) == 1);
+	KeyboardEvent retEvent;
+	retEvent.virt = VirtualKey::Return;
+	b->onKeyboardEvent (retEvent);
+	EXPECT_TRUE (retEvent.consumed);
 	EXPECT (b->getValue () == b->getMax ());
-	EXPECT (b->onKeyDown (keyCode) == 1);
+	retEvent.consumed.reset();
+	b->onKeyboardEvent (retEvent);
+	EXPECT_TRUE (retEvent.consumed);
 	EXPECT (b->getValue () == b->getMin ());
 
-	keyCode.virt = 0;
-	keyCode.character = 't';
-	EXPECT (b->onKeyDown (keyCode) == -1);
+	KeyboardEvent charEvent;
+	charEvent.character = 't';
+	b->onKeyboardEvent (charEvent);
+	EXPECT_FALSE (charEvent.consumed);
 
 	b->setStyle (CTextButton::kKickStyle);
-	keyCode.character = 0;
-	keyCode.virt = VKEY_RETURN;
-	EXPECT (b->onKeyDown (keyCode) == 1);
+	retEvent.consumed.reset();
+	b->onKeyboardEvent (retEvent);
+	EXPECT_TRUE (retEvent.consumed);
 	EXPECT (b->getValue () == b->getMin ());
-	EXPECT (b->onKeyDown (keyCode) == 1);
+	retEvent.consumed.reset();
+	b->onKeyboardEvent (retEvent);
+	EXPECT_TRUE (retEvent.consumed);
 	EXPECT (b->getValue () == b->getMin ());
 
-	EXPECT (b->onKeyUp (keyCode) == -1);
+	KeyboardEvent upEvent;
+	upEvent.type = EventType::KeyUp;
+	upEvent.virt = VirtualKey::Return;
+	b->onKeyboardEvent (upEvent);
+	EXPECT_FALSE (upEvent.consumed);
 }
 
 TEST_CASE (CTextButtonTest, FocusPathSetting)

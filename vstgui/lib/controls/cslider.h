@@ -64,7 +64,7 @@ public:
 	CMouseEventResult onMouseCancel () override;
 
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	void setViewSize (const CRect& rect, bool invalid) override;
 

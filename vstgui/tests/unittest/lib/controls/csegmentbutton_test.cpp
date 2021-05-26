@@ -4,6 +4,7 @@
 
 #include "../../../../lib/controls/csegmentbutton.h"
 #include "../../../../lib/cviewcontainer.h"
+#include "../../../../lib/events.h"
 #include "../../unittests.h"
 
 namespace VSTGUI {
@@ -97,20 +98,30 @@ TEST_CASE (CSegmentButtonTest, RightKeyEvent)
 
 	b.setStyle (CSegmentButton::Style::kHorizontal);
 	b.setSelectedSegment (0);
-	VstKeyCode keycode {};
-	keycode.virt = VKEY_RIGHT;
-	EXPECT (b.onKeyDown (keycode) == 1);
+
+	KeyboardEvent event;
+	event.virt = VirtualKey::Right;
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 2);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 2);
 
 	b.setSelectedSegment (1);
 	b.setStyle (CSegmentButton::Style::kVertical);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 }
 
@@ -127,20 +138,30 @@ TEST_CASE (CSegmentButtonTest, LeftKeyEvent)
 
 	b.setStyle (CSegmentButton::Style::kHorizontal);
 	b.setSelectedSegment (2);
-	VstKeyCode keycode {};
-	keycode.virt = VKEY_LEFT;
-	EXPECT (b.onKeyDown (keycode) == 1);
+
+	KeyboardEvent event;
+	event.virt = VirtualKey::Left;
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 0);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 0);
 
 	b.setSelectedSegment (1);
 	b.setStyle (CSegmentButton::Style::kVertical);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 }
 
@@ -157,20 +178,30 @@ TEST_CASE (CSegmentButtonTest, DownKeyEvent)
 
 	b.setStyle (CSegmentButton::Style::kVertical);
 	b.setSelectedSegment (0);
-	VstKeyCode keycode {};
-	keycode.virt = VKEY_DOWN;
-	EXPECT (b.onKeyDown (keycode) == 1);
+	
+	KeyboardEvent event;
+	event.virt = VirtualKey::Down;
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 2);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 2);
 
 	b.setSelectedSegment (1);
 	b.setStyle (CSegmentButton::Style::kHorizontal);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 }
 
@@ -187,20 +218,29 @@ TEST_CASE (CSegmentButtonTest, UpKeyEvent)
 
 	b.setStyle (CSegmentButton::Style::kVertical);
 	b.setSelectedSegment (2);
-	VstKeyCode keycode {};
-	keycode.virt = VKEY_UP;
-	EXPECT (b.onKeyDown (keycode) == 1);
+	KeyboardEvent event;
+	event.virt = VirtualKey::Up;
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 0);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 0);
 
 	b.setSelectedSegment (1);
 	b.setStyle (CSegmentButton::Style::kHorizontal);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
-	EXPECT (b.onKeyDown (keycode) == 1);
+	event.consumed.reset ();
+	b.onKeyboardEvent (event);
+	EXPECT_TRUE(event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 }
 

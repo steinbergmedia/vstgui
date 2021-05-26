@@ -536,27 +536,29 @@ void CSliderBase::onMouseWheelEvent (MouseWheelEvent& event)
 }
 
 //------------------------------------------------------------------------
-int32_t CSliderBase::onKeyDown (VstKeyCode& keyCode)
+void CSliderBase::onKeyboardEvent (KeyboardEvent& event)
 {
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown)
+		return;
+	switch (event.virt)
 	{
-		case VKEY_UP:
-		case VKEY_RIGHT:
-		case VKEY_DOWN:
-		case VKEY_LEFT:
+		case VirtualKey::Up: [[fallthrough]];
+		case VirtualKey::Right: [[fallthrough]];
+		case VirtualKey::Down: [[fallthrough]];
+		case VirtualKey::Left:
 		{
 			float distance = 1.f;
 			bool isInverse = isInverseStyle ();
-			if ((keyCode.virt == VKEY_DOWN && !isInverse) ||
-			    (keyCode.virt == VKEY_UP && isInverse) ||
-			    (keyCode.virt == VKEY_LEFT && !isInverse) ||
-			    (keyCode.virt == VKEY_RIGHT && isInverse))
+			if ((event.virt == VirtualKey::Down && !isInverse) ||
+			    (event.virt == VirtualKey::Up && isInverse) ||
+			    (event.virt == VirtualKey::Left && !isInverse) ||
+			    (event.virt == VirtualKey::Right && isInverse))
 			{
 				distance = -distance;
 			}
 
 			float normValue = getValueNormalized ();
-			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
+			if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
 				normValue += 0.1f * distance * getWheelInc ();
 			else
 				normValue += distance * getWheelInc ();
@@ -575,19 +577,19 @@ int32_t CSliderBase::onKeyDown (VstKeyCode& keyCode)
 				// end of edit parameter
 				endEdit ();
 			}
-			return 1;
+			event.consumed = true;
 		}
-		case VKEY_ESCAPE:
+		case VirtualKey::Escape:
 		{
 			if (isEditing ())
 			{
 				onMouseCancel ();
-				return 1;
+				event.consumed = true;
 			}
 			break;
 		}
+		default: break;
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------

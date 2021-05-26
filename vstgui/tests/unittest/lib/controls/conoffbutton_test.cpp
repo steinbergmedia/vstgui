@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../../lib/controls/cbuttons.h"
+#include "../../../../lib/events.h"
 #include "../../unittests.h"
 
 namespace VSTGUI {
@@ -42,16 +43,21 @@ TEST_CASE (COnOffButtonTest, KeyEvents)
 {
 	auto b = owned (new COnOffButton (CRect (10, 10, 50, 20)));
 	b->setValue (b->getMin ());
-	VstKeyCode keyCode {};
-	keyCode.virt = VKEY_RETURN;
-	EXPECT (b->onKeyDown (keyCode) == 1);
+	KeyboardEvent event;
+	event.virt = VirtualKey::Return;
+	b->onKeyboardEvent (event);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b->getValue () == b->getMax ());
-	EXPECT (b->onKeyDown (keyCode) == 1);
+	event.consumed.reset ();
+	b->onKeyboardEvent (event);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b->getValue () == b->getMin ());
 
-	keyCode.virt = 0;
-	keyCode.character = 't';
-	EXPECT (b->onKeyDown (keyCode) == -1);
+	event.consumed.reset ();
+	event.virt = VirtualKey::None;
+	event.character = 't';
+	b->onKeyboardEvent (event);
+	EXPECT_FALSE (event.consumed);
 }
 
 } // VSTGUI

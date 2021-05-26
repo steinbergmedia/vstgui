@@ -38,15 +38,16 @@ class View : public CView
 {
 public:
 	View () : CView (CRect (0, 0, 10, 10)) {}
+	bool onMouseDownCalled {false};
 	bool onKeyDownCalled {false};
 	bool onKeyUpCalled {false};
-	bool onMouseDownCalled {false};
 	CMouseEventResult onMouseDown (CPoint& p, const CButtonState& buttons) override
 	{
 		onMouseDownCalled = true;
 		return kMouseEventHandled;
 	}
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	int32_t onKeyDown (VstKeyCode& key) override
 	{
 		onKeyDownCalled = true;
@@ -57,15 +58,32 @@ public:
 		onKeyUpCalled = true;
 		return 1;
 	}
+#else
+	void onKeyboardEvent (KeyboardEvent& event) override
+	{
+		if (event.type == EventType::KeyDown)
+		{
+			onKeyDownCalled = true;
+			event.consumed = true;
+		}
+		else if (event.type == EventType::KeyUp)
+		{
+			onKeyUpCalled = true;
+			event.consumed = true;
+		}
+	}
+#endif
 };
 
 class Container : public CViewContainer
 {
 public:
-	Container () : CViewContainer (CRect (0, 0, 20, 20)) {}
 	bool onKeyDownCalled {false};
 	bool onKeyUpCalled {false};
 
+	Container () : CViewContainer (CRect (0, 0, 20, 20)) {}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	int32_t onKeyDown (VstKeyCode& key) override
 	{
 		if (onKeyDownCalled)
@@ -80,6 +98,21 @@ public:
 		onKeyUpCalled = true;
 		return 1;
 	}
+#else
+	void onKeyboardEvent (KeyboardEvent& event) override
+	{
+		if (event.type == EventType::KeyDown)
+		{
+			onKeyDownCalled = true;
+			event.consumed = true;
+		}
+		else if (event.type == EventType::KeyUp)
+		{
+			onKeyUpCalled = true;
+			event.consumed = true;
+		}
+	}
+#endif
 };
 
 class KeyboardHook : public IKeyboardHook

@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../../lib/controls/cbuttons.h"
+#include "../../../../lib/events.h"
 #include "../../unittests.h"
 
 namespace VSTGUI {
@@ -43,19 +44,28 @@ TEST_CASE (CKickButtonTest, KeyEvents)
 {
 	auto b = owned (new CKickButton (CRect (10, 10, 50, 20), nullptr, 0, nullptr));
 	b->setValue (b->getMin ());
-	VstKeyCode keyCode {};
-	keyCode.virt = VKEY_RETURN;
-	EXPECT (b->onKeyDown (keyCode) == 1);
+	KeyboardEvent event;
+	event.virt = VirtualKey::Return;
+	b->onKeyboardEvent (event);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b->getValue () == b->getMax ());
-	EXPECT (b->onKeyDown (keyCode) == 1);
+	event.consumed.reset ();
+	b->onKeyboardEvent (event);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b->getValue () == b->getMax ());
-	EXPECT (b->onKeyUp (keyCode) == 1);
+	event.consumed.reset ();
+	event.type = EventType::KeyUp;
+	b->onKeyboardEvent (event);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b->getValue () == b->getMin ());
 
-	keyCode.virt = 0;
-	keyCode.character = 't';
-	EXPECT (b->onKeyDown (keyCode) == -1);
-	EXPECT (b->onKeyUp (keyCode) == -1);
+	KeyboardEvent event2;
+	event2.character = 't';
+	b->onKeyboardEvent (event2);
+	EXPECT_FALSE (event2.consumed);
+	event2.type = EventType::KeyUp;
+	b->onKeyboardEvent (event2);
+	EXPECT_FALSE (event2.consumed);
 }
 
 } // VSTGUI
