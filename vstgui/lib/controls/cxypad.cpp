@@ -177,21 +177,18 @@ void CXYPad::onMouseWheelEvent (MouseWheelEvent& event)
 }
 
 //------------------------------------------------------------------------
-int32_t CXYPad::onKeyDown (VstKeyCode& keyCode)
+void CXYPad::onKeyboardEvent (KeyboardEvent& event)
 {
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown)
+		return;
+	if (event.virt == VirtualKey::Escape)
 	{
-		case VKEY_ESCAPE:
+		if (isEditing ())
 		{
-			if (isEditing ())
-			{
-				onMouseCancel ();
-				return 1;
-			}
-			break;
+			onMouseCancel ();
+			event.consumed = true;
 		}
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------
