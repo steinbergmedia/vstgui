@@ -83,7 +83,7 @@ public:
  *	@ingroup new_in_4_7
  */
 //-----------------------------------------------------------------------------
-class [[deprecated("Use IViewEventListener instead")]] IViewMouseListener
+class [[deprecated("Use IViewListener instead")]] IViewMouseListener
 {
 public:
 	virtual ~IViewMouseListener () noexcept = default;
