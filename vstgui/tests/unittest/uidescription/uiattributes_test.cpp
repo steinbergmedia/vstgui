@@ -133,7 +133,9 @@ TEST_CASE (UIAttributesTest, StoreRestore)
 	a2.restore (s);
 	for (auto& v : a)
 	{
-		EXPECT (a2.hasAttribute (v.first));
+		auto value = a2.getAttributeValue (v.first);
+		EXPECT (value);
+		EXPECT_EQ (*value, v.second);
 	}
 }
 
