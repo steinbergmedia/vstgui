@@ -317,7 +317,11 @@ protected:
 						c->setValue ((float)value - minValue);
 					}
 					else
+					{
 						c->setValue ((float)value);
+						if (c->isDirty ())
+							c->valueChanged ();
+					}
 				}
 				else
 					c->setValueNormalized ((float)value);
