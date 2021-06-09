@@ -81,7 +81,6 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}uidescription/uiviewfactory_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewswitchcontainer_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/xmlparser_test.cpp"
-	"${VSTGUI_TEST_BASE}../../vstgui_uidescription.cpp"
 )
 
 ##########################################################################################
@@ -89,7 +88,6 @@ if(CMAKE_HOST_APPLE)
 	set(${target}_sources
 		${${target}_sources}
 		"${VSTGUI_TEST_BASE}lib/platform_helper_mac.mm"
-		"${VSTGUI_TEST_BASE}../../vstgui_mac.mm"
 	)
 
 	set(${target}_PLATFORM_LIBS
@@ -144,6 +142,8 @@ if(VSTGUI_USE_XCODE_XCTEST)
 	target_link_libraries(${target}
 		${${target}_PLATFORM_LIBS}
 		"${xctest}"
+		vstgui
+		vstgui_uidescription
 	)
 
 	set_target_properties(${target}
@@ -157,8 +157,16 @@ if(VSTGUI_USE_XCODE_XCTEST)
 	vstgui_source_group_by_folder(${target})
 
 else()
+	if(CMAKE_HOST_APPLE)
+		set(${target}_sources
+			${${target}_sources}
+			"${VSTGUI_TEST_BASE}../../vstgui_mac.mm"
+		)
+	endif()
+	
 	set(${target}_sources
 		${${target}_sources}
+		"${VSTGUI_TEST_BASE}../../vstgui_uidescription.cpp"
 		"${VSTGUI_TEST_BASE}unittestmain.cpp"
 	)
 
