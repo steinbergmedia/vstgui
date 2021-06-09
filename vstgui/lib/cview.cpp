@@ -766,6 +766,25 @@ CMouseEventResult CView::onMouseCancel ()
 	return kMouseEventNotImplemented;
 }
 
+//------------------------------------------------------------------------
+bool CView::hitTest (const CPoint& where, const Event& event)
+{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
+	auto mouseEvent = asMouseEvent (event);
+	return hitTest (where, mouseEvent ? buttonStateFromMouseEvent (*mouseEvent) : -1);
+#include "private/enabledeprecatedmessage.h"
+#else
+	if (auto path = getHitTestPath ())
+	{
+		CPoint p (where);
+		p.offset (-getViewSize ().left, -getViewSize ().top);
+		return path->hitTest (p);
+	}
+	return getMouseableArea ().pointInside (where);
+#endif
+}
+
 //-----------------------------------------------------------------------------
 /**
  * @param where location

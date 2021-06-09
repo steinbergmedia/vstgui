@@ -946,10 +946,10 @@ bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
 //-----------------------------------------------------------------------------
 /**
  * @param where point
- * @param buttons mouse button and modifier state
+ * @param event current event
  * @return true if any sub view accepts the hit
  */
-bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState& buttons)
+bool CViewContainer::hitTestSubViews (const CPoint& where, const Event& event)
 {
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
@@ -958,11 +958,11 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState& b
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
 	{
 		const auto& pV = *it;
-		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
+		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, event))
 		{
 			if (auto container = pV->asViewContainer ())
 			{
-				if (container->hitTestSubViews (where2, buttons))
+				if (container->hitTestSubViews (where2, event))
 					return true;
 			}
 			else
@@ -970,19 +970,6 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState& b
 		}
 	}
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-/**
- * @param where point
- * @param buttons mouse button and modifier state
- * @return true if container accepts the hit
- */
-bool CViewContainer::hitTest (const CPoint& where, const CButtonState& buttons)
-{
-	CPoint where2 (where);
-	//return hitTestSubViews (where); would change default behavior
-	return CView::hitTest (where2, buttons);
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -1051,7 +1038,7 @@ void CViewContainer::onMouseDownEvent (MouseDownEvent& event)
 	{
 		const auto& pV = *it;
 		if (pV && pV->isVisible () && pV->getMouseEnabled () &&
-		    pV->hitTest (event.mousePosition, buttonState))
+		    pV->hitTest (event.mousePosition, event))
 		{
 			if (!event.modifiers.empty ())
 			{

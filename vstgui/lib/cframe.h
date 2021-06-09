@@ -202,7 +202,7 @@ public:
 	CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const override;
 	CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
-	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
+	bool hitTestSubViews (const CPoint& where, const Event& event) override;
 	CPoint& frameToLocal (CPoint& point) const override { return point; }
 	CPoint& localToFrame (CPoint& point) const override { return point; }
 

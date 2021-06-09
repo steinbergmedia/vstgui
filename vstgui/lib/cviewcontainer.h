@@ -88,7 +88,7 @@ public:
 	/** change view z order position */
 	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);
 
-	virtual bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1);
+	virtual bool hitTestSubViews (const CPoint& where, const Event& event);
 
 	/** enable or disable autosizing subviews. Per default this is enabled. */
 	virtual void setAutosizingEnabled (bool state);
@@ -142,7 +142,6 @@ public:
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void onZoomGestureEvent (ZoomGestureEvent& event) override;
 	CMouseEventResult onMouseCancel () override;
-	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

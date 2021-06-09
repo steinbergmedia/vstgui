@@ -504,23 +504,23 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 }
 
 //------------------------------------------------------------------------
-bool CFrame::hitTestSubViews (const CPoint& where, const CButtonState& buttons)
+bool CFrame::hitTestSubViews (const CPoint& where, const Event& event)
 {
 	if (auto modalView = getModalView ())
 	{
 		CPoint where2 (where);
 		getTransform ().inverse ().transform (where2);
-		if (modalView->isVisible () && modalView->getMouseEnabled () && modalView->hitTest (where2, buttons))
+		if (modalView->isVisible () && modalView->getMouseEnabled () && modalView->hitTest (where2, event))
 		{
 			if (auto viewContainer = modalView->asViewContainer ())
 			{
-				return viewContainer->hitTestSubViews (where2, buttons);
+				return viewContainer->hitTestSubViews (where2, event);
 			}
 			return true;
 		}
 		return false;
 	}
-	return CViewContainer::hitTestSubViews (where, buttons);
+	return CViewContainer::hitTestSubViews (where, event);
 }
 
 //-----------------------------------------------------------------------------

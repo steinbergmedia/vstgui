@@ -504,6 +504,30 @@ inline MouseEvent* asMouseEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
+/** event as mouse position event or nullpointer if not a mouse position event
+ *	@ingroup new_in_4_11
+ */
+inline const MouseEvent* asMouseEvent (const Event& event)
+{
+	switch (event.type)
+	{
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
+			[[fallthrough]];
+		case EventType::MouseEnter:
+			[[fallthrough]];
+		case EventType::MouseExit:
+			return static_cast<const MouseEvent*> (&event);
+		default:
+			break;
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
 /** event as mouse down event or nullpointer if not a mouse down event
  *	@ingroup new_in_4_11
  */
@@ -517,6 +541,26 @@ inline MouseDownEvent* asMouseDownEvent (Event& event)
 			[[fallthrough]];
 		case EventType::MouseUp:
 			return static_cast<MouseDownEvent*> (&event);
+		default:
+			break;
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+/** event as mouse down event or nullpointer if not a mouse down event
+ *	@ingroup new_in_4_11
+ */
+inline const MouseDownEvent* asMouseDownEvent (const Event& event)
+{
+	switch (event.type)
+	{
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
+			return static_cast<const MouseDownEvent*> (&event);
 		default:
 			break;
 	}
@@ -681,7 +725,7 @@ inline KeyboardEvent& castKeyboardEvent (Event& event)
 /** helper function to convert from new Modifiers to old CButtonState
  *	@ingroup new_in_4_11
  */
-inline CButtonState buttonStateFromEventModifiers (Modifiers& mods)
+inline CButtonState buttonStateFromEventModifiers (const Modifiers& mods)
 {
 	CButtonState state;
 	if (mods.has (ModifierKey::Control))
@@ -694,7 +738,7 @@ inline CButtonState buttonStateFromEventModifiers (Modifiers& mods)
 }
 
 //------------------------------------------------------------------------
-inline CButtonState buttonStateFromMouseEvent (MouseEvent& event)
+inline CButtonState buttonStateFromMouseEvent (const MouseEvent& event)
 {
 	CButtonState state = buttonStateFromEventModifiers (event.modifiers);
 	if (event.buttonState.has (MouseEventButtonState::Left))
