@@ -56,10 +56,7 @@ inline bool needPixelAlignment (CDrawMode mode)
 DrawBlock::DrawBlock (Context& context) : context (context)
 {
 	auto ct = context.getCurrentTransform ();
-	CRect clip;
-	context.getClipRect (clip);
-	ct.transform (clip);
-	clip.bound (context.getSurfaceRect ());
+	CRect clip = context.getCurrentStateClipRect ();
 	if (clip.isEmpty ())
 	{
 		clipIsEmpty = true;
@@ -122,6 +119,12 @@ void Context::init ()
 	if (surface)
 		cr.assign (cairo_create (surface));
 	super::init ();
+}
+
+//-----------------------------------------------------------------------------
+CRect Context::getCurrentStateClipRect () const
+{
+	return getCurrentState ().clipRect;
 }
 
 //-----------------------------------------------------------------------------
