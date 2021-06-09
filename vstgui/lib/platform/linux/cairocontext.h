@@ -58,6 +58,7 @@ public:
 	void beginDraw () override;
 	void endDraw () override;
 
+	CRect getCurrentStateClipRect () const;
 private:
 	void init () override;
 	void setSourceColor (CColor color);
