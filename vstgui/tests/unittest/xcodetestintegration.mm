@@ -81,7 +81,7 @@ void testFunc (id self, SEL _cmd)
 	}
 	if (!result)
 	{
-#ifdef MAC_OS_X_VERSION_11
+#ifdef MAC_OS_VERSION_11_0
 		auto sourceCodeLocation = [[[XCTSourceCodeLocation alloc]
 		    initWithFilePath:[NSString stringWithUTF8String:assertFilePath.data ()]
 		          lineNumber:assertLineNo] autorelease];
