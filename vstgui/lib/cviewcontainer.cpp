@@ -1197,10 +1197,11 @@ void CViewContainer::onTouchEvent (ITouchEvent& event)
 			{
 				if (e.second.state == ITouchEvent::kBegan && e.second.target == 0)
 				{
-					CButtonState buttons (kLButton + (e.second.tapCount > 1 ? kDoubleClick : 0));
 					CPoint where (e.second.location);
 					frameToLocal (where);
-					if (view->hitTest (where, buttons))
+					MouseDownEvent downEvent (where, MouseEventButtonState::Left);
+					downEvent.clickCount = e.second.tapCount;
+					if (view->hitTest (where, downEvent))
 					{
 						view->onTouchEvent (event);
 						break;
@@ -1220,12 +1221,16 @@ bool CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 
 	CPoint where (event.location);
 	frameToLocal (where);
+
+	MouseDownEvent downEvent (where, MouseEventButtonState::Left);
+	downEvent.clickCount = event.tapCount;
+
 	ReverseViewIterator it (this);
 	while (*it)
 	{
 		CView* view = *it;
 		CBaseObjectGuard guard (view);
-		if (view->getMouseEnabled () && view->isVisible () && view->hitTest (where, kLButton))
+		if (view->getMouseEnabled () && view->isVisible () && view->hitTest (where, downEvent))
 		{
 			if (auto container = view->asViewContainer ())
 			{
@@ -1234,10 +1239,8 @@ bool CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 			}
 			else
 			{
-				MouseDownEvent downEvent (where, MouseEventButtonState::Left);
-				downEvent.clickCount = event.tapCount;
 				view->dispatchEvent (downEvent);
-				if (downEvent.ignoreFollowUpMoveAndUpEvents())
+				if (downEvent.ignoreFollowUpMoveAndUpEvents ())
 					return true;
 				else if (downEvent.consumed)
 				{

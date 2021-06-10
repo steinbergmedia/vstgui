@@ -1788,7 +1788,8 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 						if (moveEvent.ignoreFollowUpMoveAndUpEvents ())
 						{
 							event.unsetTouchTarget (e.first, target);
-							if (target->hitTest (where, kLButton) == false)
+							MouseMoveEvent mouseMoveEvent (where, MouseEventButtonState::Left);
+							if (target->hitTest (where, mouseMoveEvent) == false)
 							{
 								// when the touch goes out of the target and it tells us to
 								const_cast<ITouchEvent::Touch&> (e.second).state =
