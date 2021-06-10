@@ -264,6 +264,8 @@ enum class EventType : uint32_t;
 enum class VirtualKey : uint32_t;
 enum class ModifierKey : uint32_t;
 
+const Event& noEvent ();
+
 // animation
 namespace Animation {
 class IAnimationTarget;

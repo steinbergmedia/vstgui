@@ -166,7 +166,7 @@ public:
 	 *	the default behaviour is to return true if where is inside the view size of this view, but if you set a hit test path
 	 *	the path is checked if the point lies in its boundaries.
 	 */
-	virtual bool hitTest (const CPoint& where, const Event& event);
+	virtual bool hitTest (const CPoint& where, const Event& event = noEvent ());
 
 	VSTGUI_DEPRECATED_MSG(
 	/** \deprecated check if where hits this view
@@ -174,7 +174,7 @@ public:
 	 *	the default behaviour is to return true if where is inside the view size of this view, but if you set a hit test path
 	 *	the path is checked if the point lies in its boundaries.
 	 */
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);, "Use the other hitTest method")
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons);, "Use the other hitTest method")
 
 	//@}
 

@@ -735,4 +735,11 @@ inline VstKeyCode toVstKeyCode (const KeyboardEvent& event)
 #endif
 
 //------------------------------------------------------------------------
+inline const Event& noEvent ()
+{
+	static Event e;
+	return e;
+}
+
+//------------------------------------------------------------------------
 } // VSTGUI
