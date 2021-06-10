@@ -75,6 +75,13 @@ struct Event
 };
 
 //------------------------------------------------------------------------
+inline const Event& noEvent ()
+{
+	static Event e;
+	return e;
+}
+
+//------------------------------------------------------------------------
 /** Modifiers
  *	@ingroup new_in_4_11
  */
@@ -670,40 +677,15 @@ inline KeyboardEvent& castKeyboardEvent (Event& event)
 /** helper function to convert from new Modifiers to old CButtonState
  *	@ingroup new_in_4_11
  */
-inline CButtonState buttonStateFromEventModifiers (const Modifiers& mods)
-{
-	CButtonState state;
-	if (mods.has (ModifierKey::Control))
-		state |= kControl;
-	if (mods.has (ModifierKey::Shift))
-		state |= kShift;
-	if (mods.has (ModifierKey::Alt))
-		state |= kAlt;
-	return state;
-}
+CButtonState buttonStateFromEventModifiers (const Modifiers& mods);
 
 //------------------------------------------------------------------------
-inline CButtonState buttonStateFromMouseEvent (const MouseEvent& event)
-{
-	CButtonState state = buttonStateFromEventModifiers (event.modifiers);
-	if (event.buttonState.has (MouseEventButtonState::Left))
-		state |= kLButton;
-	if (event.buttonState.has (MouseEventButtonState::Right))
-		state |= kRButton;
-	if (event.buttonState.has (MouseEventButtonState::Middle))
-		state |= kMButton;
-	if (event.buttonState.has (MouseEventButtonState::Fourth))
-		state |= kButton4;
-	if (event.buttonState.has (MouseEventButtonState::Fifth))
-		state |= kButton5;
-	if (auto downEvent = asMouseDownEvent (event))
-	{
-		if (downEvent->clickCount > 1)
-			state |= kDoubleClick;
-	}
-	return state;
-}
+/** helper function to convert from new MouseEvent to old CButtonState
+ *	@ingroup new_in_4_11
+ */
+CButtonState buttonStateFromMouseEvent (const MouseEvent& event);
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 /** helper function to convert from new VirtualKey to old VstVirtualKey
  *
@@ -718,30 +700,8 @@ inline unsigned char toVstVirtualKey (VirtualKey key)
 	return 0;
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-inline VstKeyCode toVstKeyCode (const KeyboardEvent& event)
-{
-	VstKeyCode keyCode {};
-	keyCode.character = event.character;
-	keyCode.virt = toVstVirtualKey (event.virt);
-	if (event.modifiers.has (ModifierKey::Shift))
-		keyCode.modifier |= MODIFIER_SHIFT;
-	if (event.modifiers.has (ModifierKey::Alt))
-		keyCode.modifier |= MODIFIER_ALTERNATE;
-	if (event.modifiers.has (ModifierKey::Control))
-		keyCode.modifier |= MODIFIER_CONTROL;
-	if (event.modifiers.has (ModifierKey::Super))
-		keyCode.modifier |= MODIFIER_COMMAND;
-	return keyCode;
-}
+VstKeyCode toVstKeyCode (const KeyboardEvent& event);
 #endif
-
-//------------------------------------------------------------------------
-inline const Event& noEvent ()
-{
-	static Event e;
-	return e;
-}
 
 //------------------------------------------------------------------------
 } // VSTGUI
