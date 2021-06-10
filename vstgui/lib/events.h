@@ -527,6 +527,8 @@ inline ModifierEventT* asModifierEvent (EventT& event)
 	{
 		case EventType::KeyDown: [[fallthrough]];
 		case EventType::KeyUp: [[fallthrough]];
+		case EventType::MouseEnter: [[fallthrough]];
+		case EventType::MouseExit: [[fallthrough]];
 		case EventType::MouseWheel: [[fallthrough]];
 		case EventType::MouseDown: [[fallthrough]];
 		case EventType::MouseMove: [[fallthrough]];
