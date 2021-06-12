@@ -38,44 +38,48 @@ TEST_CASE (CXYPadTest, MouseLeftDownInteraction)
 {
 	CXYPad pad (CRect (0, 0, 100, 100));
 	pad.setRoundRectRadius (0.f);
-	CPoint p (0, 0);
-	pad.onMouseDown (p, kLButton);
-	p (10, 10);
-	pad.onMouseMoved (p, kLButton);
+
+	MouseDownEvent downEvent ({0., 0.}, {MouseEventButtonState::Left});
+	pad.dispatchEvent (downEvent);
+	MouseMoveEvent moveEvent ({10., 10.}, {MouseEventButtonState::Left});
+	pad.dispatchEvent (moveEvent);
 	float x = 1.f;
 	float y = 1.f;
 	pad.calculateXY (pad.getValue (), x, y);
 	EXPECT (x == 0.1f);
 	EXPECT (y == 0.1f);
-	p (110, 110);
-	pad.onMouseMoved (p, kLButton);
+	moveEvent.mousePosition = {110., 110.};
+	pad.dispatchEvent (moveEvent);
 	pad.calculateXY (pad.getValue (), x, y);
 	EXPECT (x == 1.f);
 	EXPECT (y == 1.f);
-	p (-10, -10);
-	pad.onMouseMoved (p, kLButton);
+	moveEvent.mousePosition = {-10., -10.};
+	pad.dispatchEvent (moveEvent);
 	pad.calculateXY (pad.getValue (), x, y);
 	EXPECT (x == 0.f);
 	EXPECT (y == 0.f);
-	pad.onMouseUp (p, kLButton);
+	MouseUpEvent upEvent ({-10., -10.}, {MouseEventButtonState::Left});
+	pad.dispatchEvent (upEvent);
 }
 
 TEST_CASE (CXYPadTest, CancelMouseInteraction)
 {
 	CXYPad pad (CRect (0, 0, 100, 100));
-	float startX;
-	float startY;
+
+	float startX {-1.f};
+	float startY {-1.f};
 	pad.calculateXY (pad.getValue (), startX, startY);
-	CPoint p (0, 0);
-	pad.onMouseDown (p, kLButton);
-	p (10, 10);
-	pad.onMouseMoved (p, kLButton);
-	float x;
-	float y;
+	MouseDownEvent downEvent ({0., 0.}, {MouseEventButtonState::Left});
+	pad.dispatchEvent (downEvent);
+	MouseMoveEvent moveEvent ({10., 10.}, {MouseEventButtonState::Left});
+	pad.dispatchEvent (moveEvent);
+	float x {-1.f};
+	float y {-1.f};
 	pad.calculateXY (pad.getValue (), x, y);
 	EXPECT (startX != x);
 	EXPECT (startY != y);
-	pad.onMouseCancel ();
+	MouseCancelEvent cancelEvent;
+	pad.dispatchEvent (cancelEvent);
 	pad.calculateXY (pad.getValue (), x, y);
 	EXPECT (startX == x);
 	EXPECT (startY == y);
@@ -84,10 +88,17 @@ TEST_CASE (CXYPadTest, CancelMouseInteraction)
 TEST_CASE (CXYPadTest, OtherMouseInteraction)
 {
 	CXYPad pad (CRect (0, 0, 100, 100));
-	CPoint p (0, 0);
-	EXPECT (pad.onMouseDown (p, kRButton) == kMouseEventNotHandled);
-	EXPECT (pad.onMouseMoved (p, kRButton) == kMouseEventNotHandled);
-	EXPECT (pad.onMouseUp (p, kRButton) == kMouseEventNotHandled);
+	
+	MouseDownEvent downEvent ({0., 0.}, {MouseEventButtonState::Right});
+	MouseMoveEvent moveEvent (downEvent.mousePosition, downEvent.buttonState);
+	MouseUpEvent upEvent (downEvent.mousePosition, downEvent.buttonState);
+
+	pad.dispatchEvent (downEvent);
+	EXPECT_FALSE (downEvent.consumed);
+	pad.dispatchEvent (moveEvent);
+	EXPECT_FALSE (moveEvent.consumed);
+	pad.dispatchEvent (upEvent);
+	EXPECT_FALSE (upEvent.consumed);
 }
 
 TEST_CASE (CXYPadTest, StopTrackingOnMouseExit)
@@ -95,15 +106,22 @@ TEST_CASE (CXYPadTest, StopTrackingOnMouseExit)
 	CXYPad pad (CRect (0, 0, 100, 100));
 	pad.setStopTrackingOnMouseExit (true);
 	pad.setRoundRectRadius (0.f);
-	CPoint p (0, 0);
-	EXPECT (pad.onMouseDown (p, kLButton) == kMouseEventHandled);
-	EXPECT (pad.isEditing ());
-	p (50, 50);
-	EXPECT (pad.onMouseMoved (p, kLButton) == kMouseEventHandled);
-	EXPECT (pad.isEditing ());
-	p (150, 150);
-	EXPECT (pad.onMouseMoved (p, kLButton) == kMouseMoveEventHandledButDontNeedMoreEvents);
-	EXPECT (pad.isEditing () == false);
+
+	MouseDownEvent downEvent ({0., 0.}, {MouseEventButtonState::Left});
+	MouseMoveEvent moveEvent (downEvent.mousePosition, downEvent.buttonState);
+	pad.dispatchEvent (downEvent);
+	EXPECT_TRUE (downEvent.consumed);
+	EXPECT_TRUE (pad.isEditing ());
+	moveEvent.mousePosition = {50., 50.};
+	pad.dispatchEvent (moveEvent);
+	EXPECT_TRUE (moveEvent.consumed);
+	EXPECT_TRUE (pad.isEditing ());
+	moveEvent.consumed.reset ();
+	moveEvent.mousePosition = {150., 150.};
+	pad.dispatchEvent (moveEvent);
+	EXPECT_TRUE (moveEvent.consumed);
+	EXPECT_TRUE (moveEvent.ignoreFollowUpMoveAndUpEvents ());
+	EXPECT_FALSE (pad.isEditing ());
 }
 
 TEST_CASE (CXYPadTest, MouseWheel)

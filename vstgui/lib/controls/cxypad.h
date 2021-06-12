@@ -25,10 +25,10 @@ public:
 	void draw (CDrawContext* context) override;
 	void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr) override;
 
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseCancel () override;
+	void onMouseDownEvent (MouseDownEvent& event) override;
+	void onMouseUpEvent (MouseUpEvent& event) override;
+	void onMouseMoveEvent (MouseMoveEvent& event) override;
+	void onMouseCancelEvent (MouseCancelEvent& event) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
@@ -46,6 +46,8 @@ public:
 	}
 	
 protected:
+	void onMouseMove (MouseDownUpMoveEvent& event);
+
 	void setMin (float val) override { }
 	void setMax (float val) override { }
 

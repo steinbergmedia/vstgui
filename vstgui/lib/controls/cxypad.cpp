@@ -68,34 +68,32 @@ void CXYPad::drawBack (CDrawContext* context, CBitmap* newBack)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CXYPad::onMouseDown (CPoint& where, const CButtonState& buttons)
+void CXYPad::onMouseDownEvent (MouseDownEvent& event)
 {
-	if (buttons.isLeftButton ())
+	if (event.buttonState.isLeft ())
 	{
 		invalidMouseWheelEditTimer (this);
 		mouseStartValue = getValue ();
-		mouseChangeStartPoint = where;
+		mouseChangeStartPoint = event.mousePosition;
 		mouseChangeStartPoint.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
 		                              -getViewSize ().top - getRoundRectRadius () / 2.);
 		beginEdit ();
-		return onMouseMoved (where, buttons);
+		onMouseMove (event);
 	}
-	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CXYPad::onMouseUp (CPoint& where, const CButtonState& buttons)
+void CXYPad::onMouseUpEvent (MouseUpEvent& event)
 {
 	if (isEditing ())
 	{
 		endEdit ();
-		return kMouseEventHandled;
+		event.consumed = true;
 	}
-	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CXYPad::onMouseCancel ()
+void CXYPad::onMouseCancelEvent (MouseCancelEvent &event)
 {
 	if (isEditing ())
 	{
@@ -106,43 +104,51 @@ CMouseEventResult CXYPad::onMouseCancel ()
 			invalid ();
 		}
 		endEdit ();
+		event.consumed = true;
 	}
-	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& buttons)
+void CXYPad::onMouseMoveEvent (MouseMoveEvent& event)
 {
-	if (buttons.isLeftButton () && isEditing ())
+	if (event.buttonState.isLeft () && isEditing ())
 	{
-		if (stopTrackingOnMouseExit)
-		{
-			if (!hitTest (where, buttons))
-			{
-				endEdit ();
-				return kMouseMoveEventHandledButDontNeedMoreEvents;
-			}
-		}
-		float x, y;
-		CCoord width = getWidth() - getRoundRectRadius ();
-		CCoord height = getHeight() - getRoundRectRadius ();
-		where.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
-		              -getViewSize ().top - getRoundRectRadius () / 2.);
-
-		x = (float)(where.x / width);
-		y = (float)(where.y / height);
-
-		boundValues (x, y);
-		setValue (calculateValue (x, y));
-		if (isDirty ())
-		{
-			valueChanged ();
-			invalid ();
-		}
-		lastMouseChangePoint = where;
-		return kMouseEventHandled;
+		onMouseMove (event);
 	}
-	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+void CXYPad::onMouseMove (MouseDownUpMoveEvent& event)
+{
+	auto where = event.mousePosition;
+	if (stopTrackingOnMouseExit)
+	{
+		if (!hitTest (where, event))
+		{
+			endEdit ();
+			event.ignoreFollowUpMoveAndUpEvents (true);
+			event.consumed = true;
+			return;
+		}
+	}
+	float x, y;
+	CCoord width = getWidth() - getRoundRectRadius ();
+	CCoord height = getHeight() - getRoundRectRadius ();
+	where.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
+				  -getViewSize ().top - getRoundRectRadius () / 2.);
+
+	x = (float)(where.x / width);
+	y = (float)(where.y / height);
+
+	boundValues (x, y);
+	setValue (calculateValue (x, y));
+	if (isDirty ())
+	{
+		valueChanged ();
+		invalid ();
+	}
+	lastMouseChangePoint = where;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
