@@ -3,8 +3,8 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../../lib/controls/cbuttons.h"
-#include "../../../../lib/events.h"
 #include "../../unittests.h"
+#include "../eventhelpers.h"
 
 namespace VSTGUI {
 
@@ -12,35 +12,45 @@ TEST_CASE (CCheckboxTest, MouseEvents)
 {
 	auto b = owned (new CCheckBox (CRect (10, 10, 50, 20)));
 	b->setValue (b->getMin ());
-	CPoint p (10, 10);
-	EXPECT (b->onMouseDown (p, kRButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
-	EXPECT (b->isEditing () == false);
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseEventHandled);
-	EXPECT (b->isEditing ());
-	EXPECT (b->onMouseMoved (p, kLButton) == kMouseEventHandled);
-	EXPECT (b->isEditing ());
-	EXPECT (b->onMouseUp (p, kLButton) == kMouseEventHandled);
-	EXPECT (b->isEditing () == false);
-	EXPECT (b->getValue () == b->getMax ());
 
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseEventHandled);
-	EXPECT (b->isEditing ());
-	EXPECT (b->onMouseUp (p, kLButton) == kMouseEventHandled);
-	EXPECT (b->isEditing () == false);
-	EXPECT (b->getValue () == b->getMin ());
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseEventButtonState::Right),
+	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+	EXPECT_FALSE (b->isEditing ());
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_TRUE (b->isEditing ());
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (b, {10., 10.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_TRUE (b->isEditing ());
+	EXPECT_EQ (dispatchMouseEvent<MouseUpEvent> (b, {10., 10.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_FALSE (b->isEditing ());
+	EXPECT_EQ (b->getValue (), b->getMax ());
 
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseEventHandled);
-	EXPECT (b->isEditing ());
-	p (0, 0);
-	EXPECT (b->onMouseUp (p, kLButton) == kMouseEventHandled);
-	EXPECT (b->isEditing () == false);
-	EXPECT (b->getValue () == b->getMin ());
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_TRUE (b->isEditing ());
+	EXPECT_EQ (dispatchMouseEvent<MouseUpEvent> (b, {10., 10.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_FALSE (b->isEditing ());
+	EXPECT_EQ (b->getValue (), b->getMin ());
 
-	p (10, 10);
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseEventHandled);
-	EXPECT (b->isEditing () == true);
-	EXPECT (b->onMouseCancel () == kMouseEventHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_TRUE (b->isEditing ());
+	EXPECT_EQ (dispatchMouseEvent<MouseUpEvent> (b, {0., 0.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_FALSE (b->isEditing ());
+	EXPECT_EQ (b->getValue (), b->getMin ());
+
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_TRUE (b->isEditing ());
+	MouseCancelEvent cancelEvent;
+	b->dispatchEvent (cancelEvent);
+	EXPECT_TRUE (cancelEvent.consumed);
 	EXPECT (b->isEditing () == false);
+	EXPECT_EQ (b->getValue (), b->getMin ());
 }
 
 TEST_CASE (CCheckboxTest, KeyEvents)

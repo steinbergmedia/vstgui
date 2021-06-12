@@ -33,6 +33,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/cview_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cviewcontainer_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/event_test.cpp"
+	"${VSTGUI_TEST_BASE}lib/eventhelpers.h"
 	"${VSTGUI_TEST_BASE}lib/idependency_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/pixelbufferconverter_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/platform_helper.h"

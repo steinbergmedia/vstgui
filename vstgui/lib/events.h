@@ -245,28 +245,29 @@ struct MouseDownUpMoveEvent : MouseEvent
 	void ignoreFollowUpMoveAndUpEvents (bool state)
 	{
 		if (state)
-			consumed.data |= IgnoreFollowUpEventsBit;
+			consumed.data |= IgnoreFollowUpEventsMask;
 		else
-			consumed.data &= ~IgnoreFollowUpEventsBit;
+			consumed.data &= ~IgnoreFollowUpEventsMask;
 	}
 
 	bool ignoreFollowUpMoveAndUpEvents ()
 	{
-		return consumed.data & IgnoreFollowUpEventsBit;
+		return consumed.data & IgnoreFollowUpEventsMask;
 	}
 
-protected:
-	MouseDownUpMoveEvent () = default;
-	MouseDownUpMoveEvent (const CPoint& pos, MouseEventButtonState buttons)
-	{
-		mousePosition = pos;
-		buttonState = buttons;
-	}
 	enum
 	{
 		IgnoreFollowUpEvents = EventConsumeState::Last,
-		IgnoreFollowUpEventsBit = 1 << IgnoreFollowUpEvents
+		IgnoreFollowUpEventsMask = 1 << IgnoreFollowUpEvents
 	};
+protected:
+	MouseDownUpMoveEvent () = default;
+	MouseDownUpMoveEvent (const CPoint& pos, MouseEventButtonState buttons, Modifiers mods = {})
+	{
+		mousePosition = pos;
+		buttonState = buttons;
+		modifiers = mods;
+	}
 };
 
 //------------------------------------------------------------------------
@@ -284,6 +285,20 @@ struct MouseDownEvent : MouseDownUpMoveEvent
 };
 
 //------------------------------------------------------------------------
+/** MouseUpEvent
+ *	@ingroup new_in_4_11
+ */
+struct MouseUpEvent : MouseDownUpMoveEvent
+{
+	MouseUpEvent () { type = EventType::MouseUp; }
+	MouseUpEvent (const CPoint& pos, MouseEventButtonState buttons)
+	: MouseDownUpMoveEvent (pos, buttons)
+	{
+		type = EventType::MouseUp;
+	}
+};
+
+//------------------------------------------------------------------------
 /** MouseMoveEvent
  *	@ingroup new_in_4_11
  */
@@ -295,19 +310,10 @@ struct MouseMoveEvent : MouseDownUpMoveEvent
 	{
 		type = EventType::MouseMove;
 	}
-};
-
-//------------------------------------------------------------------------
-/** MouseUpEvent
- *	@ingroup new_in_4_11
- */
-struct MouseUpEvent : MouseDownUpMoveEvent
-{
-	MouseUpEvent () { type = EventType::MouseUp; }
-	MouseUpEvent (const CPoint& pos, MouseEventButtonState buttons)
-	: MouseDownUpMoveEvent (pos, buttons)
+	MouseMoveEvent (const MouseDownUpMoveEvent& other)
+	: MouseDownUpMoveEvent (other.mousePosition, other.buttonState, other.modifiers)
 	{
-		type = EventType::MouseUp;
+		type = EventType::MouseMove;
 	}
 };
 
