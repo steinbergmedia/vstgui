@@ -19,6 +19,7 @@
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
 #import "../../common/genericoptionmenu.h"
+#import "../../common/generictextedit.h"
 #import "../../../cframe.h"
 #import "../../../events.h"
 
@@ -1050,6 +1051,8 @@ void NSViewFrame::drawRect (NSRect* rect)
 static MouseEventButtonState buttonStateFromNSEvent (NSEvent* theEvent)
 {
 	MouseEventButtonState state;
+	if (theEvent.type == MacEventType::MouseMoved)
+		return state;
 	switch (theEvent.buttonNumber)
 	{
 		case 0:
@@ -1346,7 +1349,8 @@ bool NSViewFrame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* them
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return makeOwned<CocoaTextEdit> (nsView, textEdit);
+	return makeOwned<GenericTextEdit> (textEdit);
+//	return makeOwned<CocoaTextEdit> (nsView, textEdit);
 }
 
 //-----------------------------------------------------------------------------
