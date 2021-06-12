@@ -739,7 +739,7 @@ bool Window::nonClientHitTest (LPARAM& lParam, LRESULT& result)
 				// TODO: add other edges
 			}
 			CPoint where {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
-			if (!frame->hitTestSubViews (where))
+			if (!frame->hitTestSubViews (where, noEvent ()))
 			{
 				result = HTCAPTION;
 				return true;
