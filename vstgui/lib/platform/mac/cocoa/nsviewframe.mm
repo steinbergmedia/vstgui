@@ -36,6 +36,7 @@
 using namespace VSTGUI;
 
 #if DEBUG
+
 //------------------------------------------------------------------------
 @interface DebugRedrawAnimDelegate : NSObject<CAAnimationDelegate>
 @property (retain, readwrite) CALayer* layer;
@@ -45,12 +46,19 @@ using namespace VSTGUI;
 @implementation DebugRedrawAnimDelegate
 
 //------------------------------------------------------------------------
+- (void)dealloc
+{
+	self.layer = nil;
+	[super dealloc];
+}
+
+//------------------------------------------------------------------------
 - (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag
 {
 	if (flag)
 	{
 		[self.layer removeFromSuperlayer];
-		[self.layer release];
+		self.layer = nil;
 	}
 }
 
@@ -959,7 +967,7 @@ void NSViewFrame::setNeedsDisplayInRect (NSRect r)
 void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 {
 #if DEBUG
-	if (visualizeDirtyRects && nsView.layer)
+	if (getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas () && nsView.layer)
 	{
 		auto delegate = [[DebugRedrawAnimDelegate new] autorelease];
 		auto anim = [CABasicAnimation animation];
