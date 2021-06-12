@@ -249,6 +249,7 @@ struct Event;
 struct ModifierEvent;
 struct MousePositionEvent;
 struct MouseEvent;
+struct MouseDownUpMoveEvent;
 struct MouseDownEvent;
 struct MouseMoveEvent;
 struct MouseUpEvent;

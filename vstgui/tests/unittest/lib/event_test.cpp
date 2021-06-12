@@ -45,10 +45,16 @@ TEST_CASE (EventTest, NoEventTest)
 
 TEST_CASE (EventTest, ConsumedTest)
 {
-	Event e;
-	EXPECT_FALSE (e.consumed);
-	e.consumed = true;
-	EXPECT_TRUE (e.consumed);
+	EventConsumeState consumed;
+	EXPECT_FALSE (consumed);
+	consumed = true;
+	EXPECT_TRUE (consumed);
+	consumed = false;
+	EXPECT_FALSE (consumed);
+	consumed = true;
+	EXPECT_TRUE (consumed);
+	consumed.reset ();
+	EXPECT_FALSE (consumed);
 }
 
 TEST_CASE (EventTest, CastMouseEnterEventTest)
@@ -183,5 +189,16 @@ TEST_CASE (EventTest, ButtonStateFromMouseEventTest)
 	EXPECT_EQ (buttonStateFromMouseEvent (event), kLButton | kDoubleClick | kShift);
 }
 
+TEST_CASE (EventTest, IgnoreFollowUpEvent)
+{
+	MouseDownEvent e;
+	EXPECT_FALSE (e.ignoreFollowUpMoveAndUpEvents ());
+	e.ignoreFollowUpMoveAndUpEvents (true);
+	EXPECT_TRUE (e.ignoreFollowUpMoveAndUpEvents ());
+	EXPECT_FALSE (e.consumed);
+	e.consumed = true;
+	EXPECT_TRUE (e.ignoreFollowUpMoveAndUpEvents ());
+	EXPECT_TRUE (e.consumed);
+}
 //------------------------------------------------------------------------
 } // VSTGUI
