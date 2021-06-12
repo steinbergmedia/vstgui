@@ -122,8 +122,8 @@ public:
 
 #define EXPECT_TRUE(condition) EXPECT(condition)
 #define EXPECT_FALSE(condition) EXPECT(!condition)
-#define EXPECT_EQ(var1, var2) EXPECT (var1 == var2)
-#define EXPECT_NE(var1, var2) EXPECT (var1 != var2)
+#define EXPECT_EQ(var1, var2) EXPECT ((var1) == (var2))
+#define EXPECT_NE(var1, var2) EXPECT ((var1) != (var2))
 
 //----------------------------------------------------------------------------------------------------
 class Context;
