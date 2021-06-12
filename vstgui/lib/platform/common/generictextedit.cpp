@@ -364,7 +364,7 @@ CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
 	if (auto parent = getParentView ())
 	{
 		where = translateToLocal (where, true);
-		if (buttons.isLeftButton () && hitTest (where, buttons))
+		if (buttons.isLeftButton () && hitTest (where, noEvent ()))
 		{
 			where.x -= getViewSize ().left;
 			where.y -= getViewSize ().top;
@@ -387,7 +387,7 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 	if (auto parent = getParentView ())
 	{
 		where = translateToLocal (where, true);
-		if (buttons.isLeftButton () && hitTest (where, buttons))
+		if (buttons.isLeftButton () && hitTest (where, noEvent ()))
 		{
 			where.x -= getViewSize ().left;
 			where.y -= getViewSize ().top;
