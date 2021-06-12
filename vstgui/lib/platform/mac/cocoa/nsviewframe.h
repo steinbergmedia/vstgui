@@ -112,9 +112,7 @@ protected:
 	bool trackingAreaInitialized;
 	bool inDraw;
 	bool useInvalidRects {false};
-#if DEBUG
-	bool visualizeDirtyRects {false};
-#endif
+
 	CCursorType cursor;
 	CButtonState mouseDownButtonState {};
 	CInvalidRectList invalidRectList;

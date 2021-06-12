@@ -22,6 +22,9 @@ public:
 	void setUseAsynchronousLayerDrawing (bool state) const noexcept;
 	bool getUseAsynchronousLayerDrawing () const noexcept;
 
+	void enableVisualizeRedrawAreas (bool state) const noexcept;
+	bool enableVisualizeRedrawAreas () const noexcept;
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */

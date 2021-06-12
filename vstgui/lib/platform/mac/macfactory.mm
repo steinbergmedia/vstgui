@@ -33,6 +33,7 @@ struct MacFactory::Impl
 	struct mach_timebase_info timebaseInfo;
 	CFBundleRef bundle {nullptr};
 	bool useAsynchronousLayerDrawing {true};
+	bool visualizeRedrawAreas {false};
 };
 
 //-----------------------------------------------------------------------------
@@ -59,6 +60,18 @@ void MacFactory::setUseAsynchronousLayerDrawing (bool state) const noexcept
 bool MacFactory::getUseAsynchronousLayerDrawing () const noexcept
 {
 	return impl->useAsynchronousLayerDrawing;
+}
+
+//-----------------------------------------------------------------------------
+void MacFactory::enableVisualizeRedrawAreas (bool state) const noexcept
+{
+	impl->visualizeRedrawAreas = state;
+}
+
+//-----------------------------------------------------------------------------
+bool MacFactory::enableVisualizeRedrawAreas () const noexcept
+{
+	return impl->visualizeRedrawAreas;
 }
 
 //-----------------------------------------------------------------------------

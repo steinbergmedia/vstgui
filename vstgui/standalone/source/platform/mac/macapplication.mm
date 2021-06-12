@@ -122,6 +122,10 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	{
 		return Detail::getApplicationPlatformAccess ()->canHandleCommand ([command command]);
 	}
+	else if (menuItem.action == @selector (visualizeRedrawAreas:) || menuItem.action == @selector (useAsynchronousCALayerDrawing:))
+	{
+		return YES;
+	}
 	return NO;
 }
 
@@ -402,15 +406,20 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	}
 
 	NSMenuItem* debugMenu = [mainMenu itemWithTitle:@"Debug"];
-	if (debugMenu && debugMenu.submenu)
+	if (debugMenu && debugMenu.submenu && [debugMenu.submenu itemWithTitle:@"Color Panel"] == nil)
 	{
-		if ([debugMenu.submenu itemWithTitle:@"Color Panel"] == nil)
-		{
-			[debugMenu.submenu addItem:[NSMenuItem separatorItem]];
-			[debugMenu.submenu addItemWithTitle:@"Color Panel"
-			                             action:@selector (orderFrontColorPanel:)
-			                      keyEquivalent:@""];
-		}
+		[debugMenu.submenu addItem:[NSMenuItem separatorItem]];
+		[debugMenu.submenu addItemWithTitle:@"Color Panel"
+		                             action:@selector (orderFrontColorPanel:)
+		                      keyEquivalent:@""];
+		[debugMenu.submenu addItem:[NSMenuItem separatorItem]];
+		[debugMenu.submenu addItemWithTitle:@"Use Asynchronous CALayer Drawing"
+		                             action:@selector (useAsynchronousCALayerDrawing:)
+		                      keyEquivalent:@""];
+		[debugMenu.submenu addItemWithTitle:@"Visualize Redraw Areas"
+		                             action:@selector (visualizeRedrawAreas:)
+		                      keyEquivalent:@""];
+		[self updateDebugMenuItems];
 	}
 
 	// move Windows menu to the end
@@ -434,6 +443,43 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 		[self setupMainMenu];
 		self.hasTriggeredSetupMainMenu = NO;
 	});
+}
+
+//------------------------------------------------------------------------
+- (void)visualizeRedrawAreas:(id)sender
+{
+	auto state = VSTGUI::getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas ();
+	VSTGUI::getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas (!state);
+	[self updateDebugMenuItems];
+}
+
+//------------------------------------------------------------------------
+- (void)useAsynchronousCALayerDrawing:(id)sender
+{
+	auto state = VSTGUI::getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ();
+	VSTGUI::getPlatformFactory ().asMacFactory ()->setUseAsynchronousLayerDrawing (!state);
+	[self updateDebugMenuItems];
+}
+
+//------------------------------------------------------------------------
+- (void)updateDebugMenuItems
+{
+	NSMenuItem* debugMenu = [NSApp.mainMenu itemWithTitle:@"Debug"];
+	if (debugMenu && debugMenu.submenu)
+	{
+		if (auto item = [debugMenu.submenu itemWithTitle:@"Visualize Redraw Areas"])
+		{
+			auto state =
+			    VSTGUI::getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas ();
+			item.state = state ? NSControlStateValueOn : NSControlStateValueOff;
+		}
+		if (auto item = [debugMenu.submenu itemWithTitle:@"Use Asynchronous CALayer Drawing"])
+		{
+			auto state =
+			    VSTGUI::getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ();
+			item.state = state ? NSControlStateValueOn : NSControlStateValueOff;
+		}
+	}
 }
 
 #if !VSTGUI_STANDALONE_USE_GENERIC_ALERTBOX_ON_MACOS
