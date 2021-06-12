@@ -4,8 +4,8 @@
 
 #include "../../../../lib/controls/csegmentbutton.h"
 #include "../../../../lib/cviewcontainer.h"
-#include "../../../../lib/events.h"
 #include "../../unittests.h"
+#include "../eventhelpers.h"
 
 namespace VSTGUI {
 
@@ -334,21 +334,21 @@ TEST_CASE (CSegmentButtonTest, MouseDownEvent)
 	root->addView (parent);
 	parent->addView (b);
 	parent->attached (root);
-	CPoint p (0, 0);
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
-	EXPECT (b->getSelectedSegment () == 0);
-	p (25, 0);
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
-	EXPECT (b->getSelectedSegment () == 1);
-	p (45, 0);
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
-	EXPECT (b->getSelectedSegment () == 2);
-	p (65, 0);
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
-	EXPECT (b->getSelectedSegment () == 3);
-	p (85, 0);
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
-	EXPECT (b->getSelectedSegment () == 4);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {0., 0.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+	EXPECT_EQ (b->getSelectedSegment (), 0);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {25., 0.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+	EXPECT_EQ (b->getSelectedSegment (), 1);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {45., 0.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+	EXPECT_EQ (b->getSelectedSegment (), 2);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {65., 0.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+	EXPECT_EQ (b->getSelectedSegment (), 3);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {85., 0.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+	EXPECT_EQ (b->getSelectedSegment (), 4);
 
 	parent->removed (root);
 }
@@ -363,7 +363,7 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventWithManySegments)
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
-		EXPECT (s.rect == CRect (0, 0, 0, 0));
+		EXPECT_EQ (s.rect, CRect (0, 0, 0, 0));
 	auto root = owned (new CViewContainer (r));
 	auto parent = new CViewContainer (r);
 	root->addView (parent);
@@ -372,10 +372,10 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventWithManySegments)
 
 	// Select the e.g. 20th segment
 	constexpr auto kSelectedSegment = 20;
-	CPoint p (0, 0);
-	p (20 * kSelectedSegment + 5, 0);
-	EXPECT (b->onMouseDown (p, kLButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
-	EXPECT (b->getSelectedSegment () == kSelectedSegment);
+	CPoint p (20 * kSelectedSegment + 5, 0);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, p, MouseEventButtonState::Left),
+	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+	EXPECT_EQ (b->getSelectedSegment (), kSelectedSegment);
 
 	parent->removed (root);
 }

@@ -4,8 +4,8 @@
 
 #include "../../../../lib/controls/clistcontrol.h"
 #include "../../../../lib/cscrollview.h"
-#include "../../../../lib/events.h"
 #include "../../unittests.h"
+#include "../eventhelpers.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -77,14 +77,14 @@ TEST_CASE (CListControlTest, MouseRowSelection)
 	constexpr auto rowHeight = 20;
 	auto listControl = createTestListControl (rowHeight);
 
-	CPoint where (0, rowHeight);
-	listControl->onMouseDown (where, kLButton);
-	listControl->onMouseUp (where, kLButton);
-	EXPECT (listControl->getValue () == 1.f);
-	where (0, rowHeight * 3);
-	listControl->onMouseDown (where, kLButton);
-	listControl->onMouseUp (where, kLButton);
-	EXPECT (listControl->getValue () == 3.f);
+	dispatchMouseEvent<MouseDownEvent> (listControl, {0., rowHeight}, MouseEventButtonState::Left);
+	dispatchMouseEvent<MouseUpEvent> (listControl, {0., rowHeight}, MouseEventButtonState::Left);
+	EXPECT_EQ (listControl->getValue (), 1.f);
+	dispatchMouseEvent<MouseDownEvent> (listControl, {0., rowHeight * 3.},
+	                                    MouseEventButtonState::Left);
+	dispatchMouseEvent<MouseUpEvent> (listControl, {0., rowHeight * 3.},
+	                                  MouseEventButtonState::Left);
+	EXPECT_EQ (listControl->getValue (), 3.f);
 }
 
 TEST_CASE (CListControlTest, Hovering)
@@ -93,19 +93,17 @@ TEST_CASE (CListControlTest, Hovering)
 	constexpr auto numRows = 5;
 	auto listControl = createTestListControl (rowHeight, numRows);
 
-	EXPECT (!listControl->getHoveredRow ());
-	CPoint where (10, 5);
-	listControl->onMouseMoved (where, 0);
-	EXPECT (listControl->getHoveredRow ());
-	EXPECT (*listControl->getHoveredRow () == 0);
+	EXPECT_FALSE (listControl->getHoveredRow ());
+	dispatchMouseEvent<MouseMoveEvent>(listControl, {10., 5.});
+	EXPECT_TRUE (listControl->getHoveredRow ());
+	EXPECT_EQ (*listControl->getHoveredRow (), 0);
 
-	where (10, 5 + rowHeight);
-	listControl->onMouseMoved (where, 0);
-	EXPECT (listControl->getHoveredRow ());
-	EXPECT (*listControl->getHoveredRow () == 1);
+	dispatchMouseEvent<MouseMoveEvent>(listControl, {10., 5. + rowHeight});
+	EXPECT_TRUE (listControl->getHoveredRow ());
+	EXPECT_EQ (*listControl->getHoveredRow (), 1);
 
-	listControl->onMouseExited (where, 0);
-	EXPECT (!listControl->getHoveredRow ());
+	dispatchMouseEvent<MouseExitEvent>(listControl, {10., 5. + rowHeight});
+	EXPECT_FALSE (listControl->getHoveredRow ());
 }
 
 TEST_CASE (CListControlTest, RowRect)

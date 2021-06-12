@@ -9,10 +9,13 @@ namespace VSTGUI {
 
 //------------------------------------------------------------------------
 template <typename EventType>
-inline uint32_t dispatchMouseEvent (CView* view, CPoint pos, MouseEventButtonState buttons,
+inline uint32_t dispatchMouseEvent (CView* view, CPoint pos, MouseEventButtonState buttons = {},
                                     Modifiers mods = {})
 {
-	EventType event (pos, buttons);
+	EventType event;
+	event.mousePosition = pos;
+	event.buttonState = buttons;
+	event.modifiers = mods;
 	view->dispatchEvent (event);
 	return event.consumed.data;
 }
@@ -37,5 +40,6 @@ inline uint32_t dispatchMouseWheelEvent (CView* view, CPoint pos, double deltaX,
 	view->dispatchEvent (event);
 	return event.consumed.data;
 }
+
 //------------------------------------------------------------------------
 } // VSTGUI
