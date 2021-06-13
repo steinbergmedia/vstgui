@@ -233,7 +233,7 @@ private:
 //------------------------------------------------------------------------
 struct DoubleClickDetector
 {
-	void onEvent (MouseDownEvent& event, xcb_timestamp_t time)
+	void onEvent (MouseDownUpMoveEvent& event, xcb_timestamp_t time)
 	{
 		if (event.type == EventType::MouseDown)
 			onMouseDown (event.mousePosition, event.buttonState, time);
