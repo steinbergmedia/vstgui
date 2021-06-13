@@ -350,7 +350,7 @@ void CFrame::clearMouseViews (const CPoint& where, Modifiers modifiers, bool cal
 			MouseExitEvent exitEvent;
 			exitEvent.modifiers = modifiers;
 			exitEvent.mousePosition = (*it)->translateToLocal (where, true);
-			(*it)->dispatchEvent (exitEvent);
+			dispatchEvent ((*it), exitEvent);
 		#if DEBUG_MOUSE_VIEWS
 			DebugPrint ("mouseExited : %p[%d,%d]\n", (*it), (int)lp.x, (int)lp.y);
 		#endif
@@ -420,7 +420,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 	{
 		MouseExitEvent exitEvent (event);
 		exitEvent.mousePosition = currentMouseView->translateToLocal (exitEvent.mousePosition, true);
-		currentMouseView->dispatchEvent (exitEvent);
+		dispatchEvent (currentMouseView, exitEvent);
 		callMouseObserverMouseExited (currentMouseView);
 	#if DEBUG_MOUSE_VIEWS
 		DebugPrint ("mouseExited : %p[%d,%d]\n", currentMouseView, (int)lp.x, (int)lp.y);
@@ -438,7 +438,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		{
 			MouseExitEvent exitEvent (event);
 			exitEvent.mousePosition = vc->translateToLocal (exitEvent.mousePosition, true);
-			vc->dispatchEvent (exitEvent);
+			dispatchEvent (vc, exitEvent);
 			callMouseObserverMouseExited (vc);
 		#if DEBUG_MOUSE_VIEWS
 			DebugPrint ("mouseExited : %p[%d,%d]\n", vc, (int)lp.x, (int)lp.y);
@@ -468,7 +468,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		{
 			MouseEnterEvent enterEvent (event);
 			enterEvent.mousePosition = (*it2)->translateToLocal (enterEvent.mousePosition, true);
-			(*it2)->dispatchEvent (enterEvent);
+			dispatchEvent ((*it2), enterEvent);
 			callMouseObserverMouseEntered ((*it2));
 		#if DEBUG_MOUSE_VIEWS
 			DebugPrint ("mouseEntered : %p[%d,%d]\n", (*it2), (int)lp.x, (int)lp.y);
@@ -493,7 +493,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		{
 			MouseEnterEvent enterEvent (event);
 			enterEvent.mousePosition = (*it2)->translateToLocal (enterEvent.mousePosition, true);
-			(*it2)->dispatchEvent (enterEvent);
+			dispatchEvent ((*it2), enterEvent);
 			callMouseObserverMouseEntered ((*it2));
 		#if DEBUG_MOUSE_VIEWS
 			DebugPrint ("mouseEntered : %p[%d,%d]\n", (*it2), (int)lp.x, (int)lp.y);
@@ -524,6 +524,18 @@ bool CFrame::hitTestSubViews (const CPoint& where, const Event& event)
 }
 
 //-----------------------------------------------------------------------------
+void CFrame::dispatchEvent (CView* view, Event& event)
+{
+	view->dispatchEvent (event);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::dispatchEventToChildren (Event& event)
+{
+	CView::dispatchEvent (event);
+}
+
+//-----------------------------------------------------------------------------
 void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 {
 	dispatchKeyboardEventToHooks (event);
@@ -534,7 +546,7 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 	{
 		CBaseObjectGuard og (pImpl->focusView);
 		if (pImpl->focusView->getMouseEnabled ())
-			pImpl->focusView->dispatchEvent (event);
+			dispatchEvent (pImpl->focusView, event);
 		if (event.consumed)
 			return;
 		CView* parent = pImpl->focusView->getParentView ();
@@ -542,7 +554,7 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 		{
 			if (parent->getMouseEnabled ())
 			{
-				parent->dispatchEvent (event);
+				dispatchEvent (parent, event);
 				if (event.consumed)
 					return;
 			}
@@ -552,7 +564,7 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 	if (auto modalView = getModalView ())
 	{
 		CBaseObjectGuard og (modalView);
-		modalView->dispatchEvent (event);
+		dispatchEvent (modalView, event);
 		if (event.consumed)
 			return;
 	}
@@ -599,13 +611,13 @@ void CFrame::dispatchMouseDownEvent (MouseDownEvent& event)
 				return;
 			}
 #endif
-			modalView->dispatchEvent (event);
+			dispatchEvent (modalView, event);
 			if (event.consumed)
 				setMouseDownView (modalView);
 		}
 		return;
 	}
-	CView::dispatchEvent (event);
+	dispatchEventToChildren (event);
 }
 
 //------------------------------------------------------------------------
@@ -639,11 +651,11 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 				return;
 			}
 #endif
-			modalView->dispatchEvent (event);
+			dispatchEvent (modalView, event);
 		}
 	}
 	else
-		CView::dispatchEvent (event);
+		dispatchEventToChildren (event);
 	if (event.consumed == false)
 	{
 		event.buttonState.clear ();
@@ -655,7 +667,7 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			if (auto parent = view->getParentView ())
 				parent->translateToLocal (p, true);
 			event.mousePosition = p;
-			view->dispatchEvent (event);
+			dispatchEvent (view, event);
 			if (event.consumed)
 				break;
 			++it;
@@ -686,11 +698,11 @@ void CFrame::dispatchMouseUpEvent (MouseUpEvent& event)
 				return;
 			}
 #endif
-			modalView->dispatchEvent (event);
+			dispatchEvent (modalView, event);
 		}
 		return;
 	}
-	CView::dispatchEvent (event);
+	dispatchEventToChildren (event);
 }
 
 //------------------------------------------------------------------------
@@ -747,9 +759,9 @@ void CFrame::dispatchEvent (Event& event)
 		getTransform ().inverse ().transform (mousePosEvent->mousePosition);
 
 	if (modalView)
-		modalView->dispatchEvent (event);
+		dispatchEvent (modalView, event);
 	else
-		CView::dispatchEvent (event);
+		dispatchEventToChildren (event);
 
 	if (mousePosEvent)
 	{
@@ -1784,7 +1796,7 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 					case ITouchEvent::kMoved:
 					{
 						MouseMoveEvent moveEvent (where, MouseEventButtonState::Left);
-						target->dispatchEvent (moveEvent);
+						dispatchEvent (target, moveEvent);
 						if (moveEvent.ignoreFollowUpMoveAndUpEvents ())
 						{
 							event.unsetTouchTarget (e.first, target);
@@ -1802,11 +1814,11 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 					case ITouchEvent::kCanceled:
 					{
 						MouseCancelEvent cancelEvent;
-						target->dispatchEvent (cancelEvent);
+						dispatchEvent (target, cancelEvent);
 						if (cancelEvent.consumed == false)
 						{
 							MouseUpEvent upEvent (where, MouseEventButtonState::Left);
-							target->dispatchEvent (upEvent);
+							dispatchEvent (target, upEvent);
 						}
 						event.unsetTouchTarget (e.first, target);
 						break;
@@ -1814,7 +1826,7 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 					case ITouchEvent::kEnded:
 					{
 						MouseUpEvent upEvent (where, MouseEventButtonState::Left);
-						target->dispatchEvent (upEvent);
+						dispatchEvent (target, upEvent);
 						event.unsetTouchTarget (e.first, target);
 						break;
 					}

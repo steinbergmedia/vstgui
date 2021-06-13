@@ -270,6 +270,8 @@ private:
 	void dispatchMouseDownEvent (MouseDownEvent& event);
 	void dispatchMouseMoveEvent (MouseMoveEvent& event);
 	void dispatchMouseUpEvent (MouseUpEvent& event);
+	void dispatchEvent (CView* view, Event& event);
+	void dispatchEventToChildren (Event& event);
 
 	struct Impl;
 	Impl* pImpl {nullptr};
