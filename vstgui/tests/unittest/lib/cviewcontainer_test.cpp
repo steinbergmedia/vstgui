@@ -8,6 +8,7 @@
 #include "../../../lib/dragging.h"
 #include "../../../lib/events.h"
 #include "../unittests.h"
+#include "eventhelpers.h"
 #include <vector>
 
 namespace VSTGUI {
@@ -433,25 +434,11 @@ TEST_CASE (CViewContainerTest, MouseEventsInEmptyContainer)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	CPoint p;
-	MouseDownEvent downEvent;
-	container->dispatchEvent (downEvent);
-	EXPECT (downEvent.consumed == false);
-	MouseMoveEvent moveEvent;
-	container->dispatchEvent (moveEvent);
-	EXPECT (moveEvent.consumed == false);
-	MouseUpEvent upEvent;
-	container->dispatchEvent (upEvent);
-	EXPECT (upEvent.consumed == false);
-	MouseCancelEvent cancelEvent;
-	container->dispatchEvent (cancelEvent);
-	EXPECT (cancelEvent.consumed == true);
-
-	MouseWheelEvent event;
-	event.mousePosition = p;
-	event.deltaX = 1.;
-	container->dispatchEvent (event);
-	EXPECT (event.consumed == false);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (container, {}), EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (container, {}), EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseUpEvent> (container, {}), EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseCancelEvent (container), EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseWheelEvent (container, {}, 1., 0.), EventConsumeState::NotHandled);
 }
 
 TEST_CASE (CViewContainerTest, MouseEvents)
@@ -469,28 +456,26 @@ TEST_CASE (CViewContainerTest, MouseEvents)
 	container->addView (v1);
 	container->addView (v2);
 
-	MouseDownEvent downEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
-	container->dispatchEvent (downEvent);
-	EXPECT (downEvent.consumed == true);
-	EXPECT (v1->mouseDownCalled);
-	EXPECT (v2->mouseDownCalled == false);
-	MouseMoveEvent moveEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
-	container->dispatchEvent (moveEvent);
-	EXPECT (moveEvent.consumed == true);
-	EXPECT (v1->mouseMovedCalled);
-	EXPECT (v2->mouseMovedCalled == false);
-	MouseUpEvent upEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
-	container->dispatchEvent (upEvent);
-	EXPECT (upEvent.consumed);
-	EXPECT (v1->mouseUpCalled);
-	EXPECT (v2->mouseUpCalled == false);
+	EXPECT_EQ (
+	    dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseEventButtonState::Left),
+	    EventConsumeState::Handled);
+	EXPECT_TRUE (v1->mouseDownCalled);
+	EXPECT_FALSE (v2->mouseDownCalled);
+	EXPECT_EQ (
+	    dispatchMouseEvent<MouseMoveEvent> (container, {10., 10.}, MouseEventButtonState::Left),
+	    EventConsumeState::Handled);
+	EXPECT_TRUE (v1->mouseMovedCalled);
+	EXPECT_FALSE (v2->mouseMovedCalled);
+	EXPECT_EQ (
+	    dispatchMouseEvent<MouseUpEvent> (container, {10., 10.}, MouseEventButtonState::Left),
+	    EventConsumeState::Handled);
+	EXPECT_TRUE (v1->mouseUpCalled);
+	EXPECT_FALSE (v2->mouseUpCalled);
 
-	MouseWheelEvent event;
-	event.mousePosition (60, 10);
-	event.deltaX = 0.5;
-	container->dispatchEvent (event);
-	EXPECT (v1->onWheelCalled == false);
-	EXPECT (v2->onWheelCalled);
+	EXPECT_EQ (dispatchMouseWheelEvent (container, {60., 10.}, 0.5, 0.),
+	           EventConsumeState::Handled);
+	EXPECT_FALSE (v1->onWheelCalled);
+	EXPECT_TRUE (v2->onWheelCalled);
 }
 
 TEST_CASE (CViewContainerTest, MouseCancel)
@@ -503,14 +488,12 @@ TEST_CASE (CViewContainerTest, MouseCancel)
 	v1->setMouseableArea (r1);
 	container->addView (v1);
 
-	MouseDownEvent downEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
-	container->dispatchEvent (downEvent);
-	EXPECT (downEvent.consumed == true);
-	EXPECT (v1->mouseDownCalled);
-	MouseCancelEvent cancelEvent;
-	container->dispatchEvent (cancelEvent);
-	EXPECT (cancelEvent.consumed == true);
-	EXPECT (v1->mouseCancelCalled);
+	EXPECT_EQ (
+	    dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseEventButtonState::Left),
+	    EventConsumeState::Handled);
+	EXPECT_TRUE (v1->mouseDownCalled);
+	EXPECT_EQ (dispatchMouseCancelEvent (container), EventConsumeState::Handled);
+	EXPECT_TRUE (v1->mouseCancelCalled);
 }
 
 TEST_CASE (CViewContainerTest, DragEvents)
@@ -588,20 +571,18 @@ TEST_CASE (CViewContainerTest,
 	v1->setMouseableArea (r1);
 	container->addView (v1);
 	container->addView (v2);
-	MouseDownEvent downEvent (CPoint (10, 10), MouseEventButtonState (MouseEventButtonState::Left));
-	container->dispatchEvent (downEvent);
-	EXPECT (downEvent.consumed == false);
-	EXPECT (v1->mouseDownCalled == false);
-	MouseMoveEvent moveEvent;
-	moveEvent.mousePosition = downEvent.mousePosition;
-	moveEvent.buttonState = downEvent.buttonState;
-	container->dispatchEvent (moveEvent);
-	EXPECT (moveEvent.consumed == false);
-	MouseUpEvent upEvent;
-	upEvent.mousePosition = downEvent.mousePosition;
-	upEvent.buttonState = downEvent.buttonState;
-	container->dispatchEvent (upEvent);
-	EXPECT (upEvent.consumed == false);
+	EXPECT_EQ (
+	    dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseEventButtonState::Left),
+	    EventConsumeState::NotHandled);
+	EXPECT_FALSE (v1->mouseDownCalled);
+	EXPECT_EQ (
+	    dispatchMouseEvent<MouseMoveEvent> (container, {10., 10.}, MouseEventButtonState::Left),
+	    EventConsumeState::NotHandled);
+	EXPECT_FALSE (v1->mouseMovedCalled);
+	EXPECT_EQ (
+	    dispatchMouseEvent<MouseUpEvent> (container, {10., 10.}, MouseEventButtonState::Left),
+	    EventConsumeState::NotHandled);
+	EXPECT_FALSE (v1->mouseUpCalled);
 }
 
 TEST_CASE (CViewContainerTest, GetViewsAt)

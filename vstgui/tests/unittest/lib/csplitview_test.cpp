@@ -3,9 +3,9 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../lib/csplitview.h"
-#include "../../../lib/events.h"
 #include "../../../uidescription/icontroller.h"
 #include "../unittests.h"
+#include "eventhelpers.h"
 #include <array>
 
 namespace VSTGUI {
@@ -290,26 +290,20 @@ TEST_CASE (CSplitViewTest, ControllerHorizontal)
 	EXPECT (view1->getViewSize () == CRect (0, 0, 20, 100));
 	EXPECT (view2->getViewSize () == CRect (30, 0, 100, 100));
 
-	MouseDownEvent downEvent ({25, 1}, MouseEventButtonState::Left);
-	sv->onMouseDownEvent (downEvent);
-	MouseMoveEvent moveEvent ({55, 1}, MouseEventButtonState::Left);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseDownEvent> (sv, {25., 1.}, MouseEventButtonState::Left);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {55., 1.}, MouseEventButtonState::Left);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 50, 100));
 	EXPECT (view2->getViewSize () == CRect (60, 0, 100, 100));
-	moveEvent.mousePosition (65, 1);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {65., 1.}, MouseEventButtonState::Left);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 50, 100));
 	EXPECT (view2->getViewSize () == CRect (60, 0, 100, 100));
-	moveEvent.mousePosition (15, 1);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {15., 1.}, MouseEventButtonState::Left);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 10, 100));
 	EXPECT (view2->getViewSize () == CRect (20, 0, 100, 100));
-	moveEvent.mousePosition (1, 1);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {1., 1.}, MouseEventButtonState::Left);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 10, 100));
 	EXPECT (view2->getViewSize () == CRect (20, 0, 100, 100));
-	MouseUpEvent upEvent (moveEvent.mousePosition, moveEvent.buttonState);
-	sv->onMouseUpEvent (upEvent);
+	dispatchMouseEvent<MouseUpEvent> (sv, {1., 1.}, MouseEventButtonState::Left);
 
 	sv->removed (container);
 	EXPECT (controller->sizes[0] == 10);
@@ -331,26 +325,20 @@ TEST_CASE (CSplitViewTest, ControllerVertical)
 	sv->attached (container);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 100, 20));
 	EXPECT (view2->getViewSize () == CRect (0, 30, 100, 100));
-	MouseDownEvent downEvent ({1, 25}, MouseEventButtonState::Left);
-	sv->onMouseDownEvent (downEvent);
-	MouseMoveEvent moveEvent ({1, 55}, MouseEventButtonState::Left);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseDownEvent> (sv, {1., 25.}, MouseEventButtonState::Left);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {1., 55.}, MouseEventButtonState::Left);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 100, 50));
 	EXPECT (view2->getViewSize () == CRect (0, 60, 100, 100));
-	moveEvent.mousePosition (1, 65);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {1., 65.}, MouseEventButtonState::Left);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 100, 50));
 	EXPECT (view2->getViewSize () == CRect (0, 60, 100, 100));
-	moveEvent.mousePosition (1, 15);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {1., 15.}, MouseEventButtonState::Left);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 100, 10));
 	EXPECT (view2->getViewSize () == CRect (00, 20, 100, 100));
-	moveEvent.mousePosition (1, 1);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {1., 1.}, MouseEventButtonState::Left);
 	EXPECT (view1->getViewSize () == CRect (0, 0, 100, 10));
 	EXPECT (view2->getViewSize () == CRect (0, 20, 100, 100));
-	MouseUpEvent upEvent (moveEvent.mousePosition, moveEvent.buttonState);
-	sv->onMouseUpEvent (upEvent);
+	dispatchMouseEvent<MouseUpEvent> (sv, {1., 1.}, MouseEventButtonState::Left);
 
 	sv->removed (container);
 	EXPECT (controller->sizes[0] == 10);
@@ -373,21 +361,16 @@ TEST_CASE (CSplitViewTest, SeparatorSubView)
 	sepView->setMouseableArea (CRect (0, 0, 10, 10));
 	sv->addViewToSeparator (0, sepView);
 	sv->attached (container);
-	MouseDownEvent downEvent ({41, 25}, MouseEventButtonState::Left);
-	sv->onMouseDownEvent (downEvent);
+	dispatchMouseEvent<MouseDownEvent> (sv, {41., 25.}, MouseEventButtonState::Left);
 	EXPECT (sepView->mouseDownCalled == false);
-	downEvent.mousePosition (41, 1);
-	sv->onMouseDownEvent (downEvent);
+	dispatchMouseEvent<MouseDownEvent> (sv, {41., 1.}, MouseEventButtonState::Left);
 	EXPECT (sepView->mouseDownCalled);
-	MouseMoveEvent moveEvent ({41, 3}, MouseEventButtonState::Left);
-	sv->onMouseMoveEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (sv, {41., 3.}, MouseEventButtonState::Left);
 	EXPECT (sepView->mouseMovedCalled);
-	MouseUpEvent upEvent ({41, 3}, MouseEventButtonState::Left);
-	sv->onMouseUpEvent (upEvent);
+	dispatchMouseEvent<MouseUpEvent> (sv, {41., 3.}, MouseEventButtonState::Left);
 	EXPECT (sepView->mouseUpCalled);
-	downEvent.mousePosition (41, 1);
-	sv->onMouseDownEvent (downEvent);
-	sv->onMouseCancel ();
+	dispatchMouseEvent<MouseDownEvent> (sv, {41., 1.}, MouseEventButtonState::Left);
+	dispatchMouseCancelEvent (sv);
 	EXPECT (sepView->mouseCancelCalled);
 	sv->removed (container);
 }
