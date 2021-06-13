@@ -6,6 +6,7 @@
 #include "../../../lib/cframe.h"
 #include "../../../lib/events.h"
 #include "../unittests.h"
+#include "eventhelpers.h"
 #include "platform_helper.h"
 #include <vector>
 
@@ -75,13 +76,13 @@ public:
 #endif
 };
 
-class Container : public CViewContainer
+class ContainerTestingKeyboardEvents : public CViewContainer
 {
 public:
 	bool onKeyDownCalled {false};
 	bool onKeyUpCalled {false};
 
-	Container () : CViewContainer (CRect (0, 0, 20, 20)) {}
+	ContainerTestingKeyboardEvents () : CViewContainer (CRect (0, 0, 20, 20)) {}
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	int32_t onKeyDown (VstKeyCode& key) override
@@ -186,22 +187,16 @@ TEST_CASE (CFrameTest, MouseEnterExit)
 	frame->addView (v1);
 	frame->addView (v2);
 	frame->attached (frame);
-	MouseMoveEvent moveEvent;
-	moveEvent.mousePosition (30, 30);
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {30., 30.});
 	EXPECT (observer.enteredViews.size () == 0);
 	EXPECT (observer.exitedViews.size () == 0);
 	observer.reset ();
-	moveEvent.mousePosition (19, 19);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {19., 19.});
 	EXPECT (observer.enteredViews.size () == 1);
 	EXPECT (contains (observer.enteredViews, v2));
 	EXPECT (observer.exitedViews.size () == 0);
 	observer.reset ();
-	moveEvent.mousePosition (9, 9);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {9., 9.});
 	EXPECT (observer.enteredViews.size () == 1);
 	EXPECT (contains (observer.enteredViews, v1));
 	EXPECT (observer.exitedViews.size () == 1);
@@ -226,90 +221,66 @@ TEST_CASE (CFrameTest, MouseEnterExitInContainer)
 	container2->addView (v1);
 	container2->addView (v2);
 	frame->attached (frame);
-	MouseMoveEvent moveEvent;
-	moveEvent.mousePosition (90, 90);
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {90., 90.});
 	EXPECT (observer.enteredViews.size () == 0);
 	EXPECT (observer.exitedViews.size () == 0);
 	observer.reset ();
-	moveEvent.mousePosition (79, 79);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {79., 79.});
 	EXPECT (observer.enteredViews.size () == 1);
 	EXPECT (contains (observer.enteredViews, container));
 	EXPECT (observer.exitedViews.size () == 0);
 	observer.reset ();
-	moveEvent.mousePosition (49, 49);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {49., 49.});
 	EXPECT (observer.enteredViews.size () == 1);
 	EXPECT (contains (observer.enteredViews, container2));
 	EXPECT (observer.exitedViews.size () == 0);
 	observer.reset ();
-	moveEvent.mousePosition (19, 19);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {19., 19.});
 	EXPECT (observer.enteredViews.size () == 1);
 	EXPECT (contains (observer.enteredViews, v2));
 	EXPECT (observer.exitedViews.size () == 0);
 	observer.reset ();
-	moveEvent.mousePosition (18, 18);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {18., 18.});
 	EXPECT (observer.enteredViews.size () == 0);
 	EXPECT (observer.exitedViews.size () == 0);
 	observer.reset ();
-	moveEvent.mousePosition (9, 9);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {9., 9.});
 	EXPECT (observer.enteredViews.size () == 1);
 	EXPECT (contains (observer.enteredViews, v1));
 	EXPECT (observer.exitedViews.size () == 1);
 	EXPECT (contains (observer.exitedViews, v2));
 	observer.reset ();
-	moveEvent.mousePosition (51, 51);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {51., 51.});
 	EXPECT (observer.enteredViews.size () == 0);
 	EXPECT (observer.exitedViews.size () == 2);
 	EXPECT (contains (observer.exitedViews, v1));
 	EXPECT (contains (observer.exitedViews, container2));
 	observer.reset ();
-	moveEvent.mousePosition (81, 81);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {81., 81.});
 	EXPECT (observer.enteredViews.size () == 0);
 	EXPECT (observer.exitedViews.size () == 1);
 	EXPECT (contains (observer.exitedViews, container));
 	observer.reset ();
-	moveEvent.mousePosition (9, 9);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {9., 9.});
 	EXPECT (observer.enteredViews.size () == 3);
 	EXPECT (observer.exitedViews.size () == 0);
 	EXPECT (contains (observer.enteredViews, container));
 	EXPECT (contains (observer.enteredViews, container2));
 	EXPECT (contains (observer.enteredViews, v1));
 	observer.reset ();
-	moveEvent.mousePosition (81, 81);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {81., 81.});
 	EXPECT (observer.enteredViews.size () == 0);
 	EXPECT (observer.exitedViews.size () == 3);
 	EXPECT (contains (observer.exitedViews, container));
 	EXPECT (contains (observer.exitedViews, container2));
 	EXPECT (contains (observer.exitedViews, v1));
 	observer.reset ();
-	moveEvent.mousePosition (79, 79);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {79., 79.});
 	EXPECT (observer.enteredViews.size () == 1);
 	EXPECT (observer.exitedViews.size () == 0);
 	EXPECT (contains (observer.enteredViews, container));
 	observer.reset ();
-	moveEvent.mousePosition (8, 8);
-	moveEvent.consumed.reset ();
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {8., 8.});
 	EXPECT (observer.enteredViews.size () == 2);
 	EXPECT (observer.exitedViews.size () == 0);
 	EXPECT (contains (observer.enteredViews, container2));
@@ -327,8 +298,7 @@ TEST_CASE (CFrameTest, RemoveViewWhileMouseInside)
 	auto v1 = new View ();
 	frame->addView (v1);
 	frame->attached (frame);
-	MouseMoveEvent moveEvent (CPoint (5, 5));
-	frame->dispatchEvent (moveEvent);
+	dispatchMouseEvent<MouseMoveEvent> (frame, {5., 5.});
 	EXPECT (contains (observer.enteredViews, v1));
 	observer.reset ();
 	frame->removeView (v1);
@@ -392,7 +362,7 @@ TEST_CASE (CFrameTest, KeyDownEvent)
 	event.consumed = false;
 	EXPECT (view->onKeyDownCalled);
 	frame->removeAll ();
-	auto container = new Container ();
+	auto container = new ContainerTestingKeyboardEvents ();
 	auto view2 = new CView (CRect (0, 0, 10, 10));
 	container->addView (view2);
 	frame->addView (container);
@@ -434,7 +404,7 @@ TEST_CASE (CFrameTest, KeyUpEvent)
 	event.consumed = false;
 	EXPECT (view->onKeyUpCalled);
 	frame->removeAll ();
-	auto container = new Container ();
+	auto container = new ContainerTestingKeyboardEvents ();
 	auto view2 = new CView (CRect (0, 0, 10, 10));
 	container->addView (view2);
 	frame->addView (container);
@@ -464,7 +434,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusView)
 	EXPECT (frame->getFocusView () == view);
 	frame->removeAll ();
 
-	auto container = new Container ();
+	auto container = new CViewContainer ({0., 0., 20., 20.});
 	auto view2 = new View ();
 	container->addView (view2);
 	frame->addView (container);
@@ -473,7 +443,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusView)
 	view2->setWantsFocus (true);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view2);
-	auto container2 = new Container ();
+	auto container2 = new CViewContainer ({0., 0., 20., 20.});
 	auto view3 = new View ();
 	container2->addView (view3);
 	container->addView (container2);
@@ -488,7 +458,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusView)
 	container2->addView (view4);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view4);
-	auto container3 = new Container ();
+	auto container3 = new CViewContainer ({0., 0., 20., 20.});
 	auto view5 = new View ();
 	view5->setWantsFocus (true);
 	container3->addView (view5);
@@ -514,7 +484,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusViewInModalView)
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view);
 	frame->endModalViewSession (*modalSession);
-	auto container = shared (new Container ());
+	auto container = shared (new CViewContainer ({0., 0., 20., 20.}));
 	auto view2 = new View ();
 	container->addView (view2);
 	modalSession = frame->beginModalViewSession (container);
@@ -522,7 +492,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusViewInModalView)
 	view2->setWantsFocus (true);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view2);
-	auto container2 = new Container ();
+	auto container2 = new CViewContainer ({0., 0., 20., 20.});
 	auto view3 = new View ();
 	container2->addView (view3);
 	container->addView (container2);
@@ -536,7 +506,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusViewInModalView)
 	container2->addView (view4);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view4);
-	auto container3 = new Container ();
+	auto container3 = new CViewContainer ({0., 0., 20., 20.});
 	auto view5 = new View ();
 	view5->setWantsFocus (true);
 	container3->addView (view5);
@@ -550,7 +520,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusViewInModalView)
 TEST_CASE (CFrameTest, GetViewAtModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto container = shared (new Container);
+	auto container = new CViewContainer ({0., 0., 20., 20.});
 	auto view = new View ();
 	container->addView (view);
 	frame->attached (frame);
@@ -564,11 +534,11 @@ TEST_CASE (CFrameTest, GetViewAtModalView)
 TEST_CASE (CFrameTest, GetContainerAtModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto container = shared (new Container ());
+	auto container = new CViewContainer ({0., 0., 20., 20.});
 	CRect r (0, 0, 50, 50);
 	container->setViewSize (r);
 	container->setMouseableArea (r);
-	auto container2 = new Container ();
+	auto container2 = new CViewContainer ({0., 0., 20., 20.});
 	container->addView (container2);
 	frame->attached (frame);
 	EXPECT (frame->getContainerAt (CPoint (1, 1)) == frame);
@@ -586,20 +556,17 @@ TEST_CASE (CFrameTest, GetContainerAtModalView)
 TEST_CASE (CFrameTest, MouseDownModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto container = shared (new Container ());
+	auto container = new CViewContainer ({0., 0., 20., 20.});
 	auto view1 = new View ();
 	container->addView (view1);
 	frame->attached (frame);
 	auto modalSession = frame->beginModalViewSession (container);
-	MouseDownEvent downEvent (CPoint (80, 80), MouseEventButtonState (MouseEventButtonState::Left));
-	frame->dispatchEvent (downEvent);
-	EXPECT (downEvent.consumed == false);
-	EXPECT (view1->onMouseDownCalled == false);
-	downEvent.consumed.reset ();
-	downEvent.mousePosition (1, 1);
-	frame->dispatchEvent (downEvent);
-	EXPECT (downEvent.consumed == true);
-	EXPECT (view1->onMouseDownCalled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (frame, {80., 80.}, MouseEventButtonState::Left),
+	           EventConsumeState::NotHandled);
+	EXPECT_FALSE (view1->onMouseDownCalled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (frame, {1., 1.}, MouseEventButtonState::Left),
+	           EventConsumeState::Handled);
+	EXPECT_TRUE (view1->onMouseDownCalled);
 
 	frame->endModalViewSession (*modalSession);
 }
