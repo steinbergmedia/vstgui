@@ -139,9 +139,9 @@ public:
 	void onMouseDownEvent (MouseDownEvent& event) override;
 	void onMouseMoveEvent (MouseMoveEvent& event) override;
 	void onMouseUpEvent (MouseUpEvent& event) override;
+	void onMouseCancelEvent (MouseCancelEvent& event) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void onZoomGestureEvent (ZoomGestureEvent& event) override;
-	CMouseEventResult onMouseCancel () override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

@@ -1149,7 +1149,7 @@ void CViewContainer::onMouseUpEvent (MouseUpEvent& event)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CViewContainer::onMouseCancel ()
+void CViewContainer::onMouseCancelEvent (MouseCancelEvent& event)
 {
 	if (auto mouseDownView = getMouseDownView ())
 	{
@@ -1157,11 +1157,9 @@ CMouseEventResult CViewContainer::onMouseCancel ()
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 		mouseDownView->callMouseListener (MouseListenerCall::MouseCancel, {}, 0);
 #endif
-		auto result = mouseDownView->onMouseCancel ();
+		mouseDownView->dispatchEvent (event);
 		clearMouseDownView ();
-		return result;
 	}
-	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------
