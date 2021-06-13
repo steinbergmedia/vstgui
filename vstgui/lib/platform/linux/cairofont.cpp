@@ -156,6 +156,12 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 		{
 			impl->ascent = pango_units_to_double (pango_font_metrics_get_ascent (metrics));
 			impl->descent = pango_units_to_double (pango_font_metrics_get_descent (metrics));
+#ifdef PANGO_AVAILABLE_IN_1_44
+			auto height = pango_units_to_double (pango_font_metrics_get_height (metrics));
+			impl->leading = height - (impl->ascent + impl->descent);
+#else
+			impl->leading = 0.;
+#endif
 			pango_font_metrics_unref (metrics);
 		}
 
@@ -210,7 +216,6 @@ double Font::getDescent () const
 //------------------------------------------------------------------------
 double Font::getLeading () const
 {
-#warning TODO: Implementation
 	return impl->leading;
 }
 
