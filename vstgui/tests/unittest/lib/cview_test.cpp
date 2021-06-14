@@ -3,6 +3,8 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../lib/cstring.h"
+#include "../../../lib/cgraphicspath.h"
+#include "../../../lib/coffscreencontext.h"
 #include "../../../lib/cview.h"
 #include "../../../lib/cviewcontainer.h"
 #include "../../../lib/dragging.h"
@@ -53,105 +55,105 @@ struct ViewListener : public IViewListener
 
 TEST_CASE (CViewTest, VisibleState)
 {
-	View v;
-	EXPECT (v.isVisible () == true);
-	v.setVisible (false);
-	EXPECT (v.isVisible () == false);
-	v.setVisible (true);
-	EXPECT (v.isVisible () == true);
-	v.setAlphaValue (0.f);
-	EXPECT (v.isVisible () == false);
+	auto v = owned (new View ());
+	EXPECT (v->isVisible () == true);
+	v->setVisible (false);
+	EXPECT (v->isVisible () == false);
+	v->setVisible (true);
+	EXPECT (v->isVisible () == true);
+	v->setAlphaValue (0.f);
+	EXPECT (v->isVisible () == false);
 }
 
 TEST_CASE (CViewTest, TransparencyState)
 {
-	View v;
-	EXPECT (v.getTransparency () == false);
-	v.setTransparency (true);
-	EXPECT (v.getTransparency () == true);
-	v.setTransparency (false);
-	EXPECT (v.getTransparency () == false);
+	auto v = owned (new View ());
+	EXPECT (v->getTransparency () == false);
+	v->setTransparency (true);
+	EXPECT (v->getTransparency () == true);
+	v->setTransparency (false);
+	EXPECT (v->getTransparency () == false);
 }
 
 TEST_CASE (CViewTest, FocusState)
 {
-	View v;
-	EXPECT (v.wantsFocus () == false);
-	v.setWantsFocus (true);
-	EXPECT (v.wantsFocus () == true);
-	v.setWantsFocus (false);
-	EXPECT (v.wantsFocus () == false);
+	auto v = owned (new View ());
+	EXPECT (v->wantsFocus () == false);
+	v->setWantsFocus (true);
+	EXPECT (v->wantsFocus () == true);
+	v->setWantsFocus (false);
+	EXPECT (v->wantsFocus () == false);
 }
 
 TEST_CASE (CViewTest, IdleState)
 {
-	View v;
-	EXPECT (v.wantsIdle () == false);
-	v.setWantsIdle (true);
-	EXPECT (v.wantsIdle () == true);
-	v.setWantsIdle (false);
-	EXPECT (v.wantsIdle () == false);
+	auto v = owned (new View ());
+	EXPECT (v->wantsIdle () == false);
+	v->setWantsIdle (true);
+	EXPECT (v->wantsIdle () == true);
+	v->setWantsIdle (false);
+	EXPECT (v->wantsIdle () == false);
 }
 
 TEST_CASE (CViewTest, MouseEnabledState)
 {
-	View v;
-	EXPECT (v.getMouseEnabled () == true);
-	v.setMouseEnabled (false);
-	EXPECT (v.getMouseEnabled () == false);
-	v.setMouseEnabled (true);
-	EXPECT (v.getMouseEnabled () == true);
+	auto v = owned (new View ());
+	EXPECT (v->getMouseEnabled () == true);
+	v->setMouseEnabled (false);
+	EXPECT (v->getMouseEnabled () == false);
+	v->setMouseEnabled (true);
+	EXPECT (v->getMouseEnabled () == true);
 }
 
 TEST_CASE (CViewTest, AutosizeFlags)
 {
-	View v;
-	EXPECT (v.getAutosizeFlags () == kAutosizeNone);
-	v.setAutosizeFlags (kAutosizeLeft);
-	EXPECT (v.getAutosizeFlags () == kAutosizeLeft);
-	v.setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
-	EXPECT (v.getAutosizeFlags () == (kAutosizeLeft | kAutosizeTop));
+	auto v = owned (new View ());
+	EXPECT (v->getAutosizeFlags () == kAutosizeNone);
+	v->setAutosizeFlags (kAutosizeLeft);
+	EXPECT (v->getAutosizeFlags () == kAutosizeLeft);
+	v->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
+	EXPECT (v->getAutosizeFlags () == (kAutosizeLeft | kAutosizeTop));
 }
 
 TEST_CASE (CViewTest, Attributes)
 {
-	View v;
+	auto v = owned (new View ());
 	uint32_t outSize;
 	void* outData = nullptr;
-	EXPECT (v.getAttribute (0, 10, outData, outSize) == false);
-	EXPECT (v.removeAttribute (0) == false);
+	EXPECT (v->getAttribute (0, 10, outData, outSize) == false);
+	EXPECT (v->removeAttribute (0) == false);
 	uint64_t myAttr = 500;
-	EXPECT (v.setAttribute (0, 0, &myAttr) == false);
-	EXPECT (v.setAttribute (0, sizeof (myAttr), nullptr) == false);
-	EXPECT (v.setAttribute ('myAt', sizeof (myAttr), &myAttr) == true);
+	EXPECT (v->setAttribute (0, 0, &myAttr) == false);
+	EXPECT (v->setAttribute (0, sizeof (myAttr), nullptr) == false);
+	EXPECT (v->setAttribute ('myAt', sizeof (myAttr), &myAttr) == true);
 	myAttr = 10;
-	EXPECT (v.getAttributeSize ('myAt', outSize) == true);
+	EXPECT (v->getAttributeSize ('myAt', outSize) == true);
 	EXPECT (outSize == sizeof (myAttr));
-	EXPECT (v.getAttribute ('myAt', sizeof (myAttr), &myAttr, outSize) == true);
+	EXPECT (v->getAttribute ('myAt', sizeof (myAttr), &myAttr, outSize) == true);
 	EXPECT (myAttr == 500);
 	myAttr = 100;
-	EXPECT (v.setAttribute ('myAt', sizeof (myAttr), &myAttr) == true);
+	EXPECT (v->setAttribute ('myAt', sizeof (myAttr), &myAttr) == true);
 	myAttr = 102;
-	EXPECT (v.getAttribute ('myAt', sizeof (myAttr), &myAttr, outSize) == true);
+	EXPECT (v->getAttribute ('myAt', sizeof (myAttr), &myAttr, outSize) == true);
 	EXPECT (myAttr == 100);
-	EXPECT (v.removeAttribute ('myAt') == true);
-	EXPECT (v.getAttribute ('myAt', sizeof (myAttr), &myAttr, outSize) == false);
+	EXPECT (v->removeAttribute ('myAt') == true);
+	EXPECT (v->getAttribute ('myAt', sizeof (myAttr), &myAttr, outSize) == false);
 }
 
 TEST_CASE (CViewTest, ResizeAttribute)
 {
-	View v;
+	auto v = owned (new View ());
 	uint32_t outSize;
 	uint8_t firstData = 8;
-	EXPECT (v.setAttribute (0, sizeof (firstData), &firstData));
+	EXPECT (v->setAttribute (0, sizeof (firstData), &firstData));
 	firstData = 0;
-	EXPECT (v.getAttribute (0, sizeof (firstData), &firstData, outSize));
+	EXPECT (v->getAttribute (0, sizeof (firstData), &firstData, outSize));
 	EXPECT (firstData == 8);
 	uint32_t secondData = 32;
-	EXPECT (v.setAttribute (0, sizeof (secondData), &secondData));
+	EXPECT (v->setAttribute (0, sizeof (secondData), &secondData));
 	secondData = 0;
-	EXPECT (v.getAttribute (0, sizeof (firstData), &firstData, outSize) == false);
-	EXPECT (v.getAttribute (0, sizeof (secondData), &secondData, outSize));
+	EXPECT (v->getAttribute (0, sizeof (firstData), &firstData, outSize) == false);
+	EXPECT (v->getAttribute (0, sizeof (secondData), &secondData, outSize));
 	EXPECT (secondData == 32);
 }
 
@@ -247,38 +249,52 @@ TEST_CASE (CViewTest, HitTest)
 
 TEST_CASE (CViewTest, DefaultHandling)
 {
-	View v;
+	auto v = makeOwned<View> ();
 	KeyboardEvent keyEvent;
-	v.dispatchEvent (keyEvent);
+	v->dispatchEvent (keyEvent);
 	EXPECT (keyEvent.consumed == false);
 	keyEvent.type = EventType::KeyUp;
-	v.dispatchEvent (keyEvent);
+	v->dispatchEvent (keyEvent);
 	EXPECT (keyEvent.consumed == false);
 	MouseWheelEvent event;
-	v.onMouseWheelEvent (event);
+	v->onMouseWheelEvent (event);
 	EXPECT (event.consumed == false);
 	CPoint p (0, 0);
-	EXPECT (v.onMouseDown (p, kLButton) == kMouseEventNotImplemented);
-	EXPECT (v.onMouseUp (p, kLButton) == kMouseEventNotImplemented);
-	EXPECT (v.onMouseMoved (p, kLButton) == kMouseEventNotImplemented);
-	EXPECT (v.onMouseCancel () == kMouseEventNotImplemented);
-	EXPECT (v.onMouseEntered (p, kLButton) == kMouseEventNotImplemented);
-	EXPECT (v.onMouseExited (p, kLButton) == kMouseEventNotImplemented);
-	EXPECT (v.notify (nullptr, nullptr) == kMessageUnknown);
+	EXPECT (v->onMouseDown (p, kLButton) == kMouseEventNotImplemented);
+	EXPECT (v->onMouseUp (p, kLButton) == kMouseEventNotImplemented);
+	EXPECT (v->onMouseMoved (p, kLButton) == kMouseEventNotImplemented);
+	EXPECT (v->onMouseCancel () == kMouseEventNotImplemented);
+	EXPECT (v->onMouseEntered (p, kLButton) == kMouseEventNotImplemented);
+	EXPECT (v->onMouseExited (p, kLButton) == kMouseEventNotImplemented);
+	EXPECT (v->notify (nullptr, nullptr) == kMessageUnknown);
 
-	EXPECT (v.doDrag (DragDescription (nullptr)) == false);
+	EXPECT (v->doDrag (DragDescription (nullptr)) == false);
 
-	EXPECT (v.getDropTarget () == nullptr);
-	EXPECT (v.getEditor () == nullptr);
-	EXPECT (v.isDirty () == false);
-	EXPECT (v.sizeToFit () == false);
-	EXPECT (v.getBackground () == nullptr);
-	EXPECT (v.getDisabledBackground () == nullptr);
-	EXPECT (v.getDrawBackground () == nullptr);
-	EXPECT (v.checkUpdate (CRect (0, 0, 5, 5)) == true);
-	EXPECT (v.getWidth () == 10);
-	EXPECT (v.getHeight () == 10);
-	EXPECT (v.getViewSize () == v.getMouseableArea ());
+	EXPECT (v->getDropTarget () == nullptr);
+	EXPECT (v->getEditor () == nullptr);
+	EXPECT (v->isDirty () == false);
+	EXPECT (v->sizeToFit () == false);
+	EXPECT (v->getBackground () == nullptr);
+	EXPECT (v->getDisabledBackground () == nullptr);
+	EXPECT (v->getDrawBackground () == nullptr);
+	EXPECT (v->checkUpdate (CRect (0, 0, 5, 5)) == true);
+	EXPECT (v->getWidth () == 10);
+	EXPECT (v->getHeight () == 10);
+	EXPECT (v->getViewSize () == v->getMouseableArea ());
+}
+
+TEST_CASE (CViewTest, PathHitTest)
+{
+	auto v = makeOwned<View> ();
+	v->setViewSize ({0., 0., 100., 100.});
+	{
+		auto drawContext = COffscreenContext::create ({100., 100.});
+		auto path = owned (drawContext->createGraphicsPath ());
+		path->addRect ({10., 10., 80., 80.});
+		v->setHitTestPath (path);
+	}
+	EXPECT_FALSE (v->hitTest ({5., 5.}, noEvent ()));
+	EXPECT_TRUE (v->hitTest ({15., 15.}, noEvent ()));
 }
 
 #if MAC // TODO: Make test work on other platforms too.
