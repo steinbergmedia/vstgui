@@ -19,7 +19,6 @@
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
 #import "../../common/genericoptionmenu.h"
-#import "../../common/generictextedit.h"
 #import "../../../cframe.h"
 #import "../../../events.h"
 
@@ -1349,8 +1348,7 @@ bool NSViewFrame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* them
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return makeOwned<GenericTextEdit> (textEdit);
-//	return makeOwned<CocoaTextEdit> (nsView, textEdit);
+	return makeOwned<CocoaTextEdit> (nsView, textEdit);
 }
 
 //-----------------------------------------------------------------------------
