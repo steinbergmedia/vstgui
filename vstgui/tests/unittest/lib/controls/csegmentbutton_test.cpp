@@ -329,6 +329,33 @@ TESTCASE(CSegmentButtonTest,
 		parent->removed (root);
 	);
 
+	TEST(mouseDownEventOnLastSegment,
+		// Create segment button with 31 segments and attach it.
+		// 31 segments causing rounding errors inside segment button.
+		const auto numSegments = 31;
+		CRect r(0, 0, 20 * numSegments, 100);
+		auto b = new CSegmentButton(r);
+		b->setStyle(CSegmentButton::Style::kHorizontal);
+		for (auto i = 0; i < numSegments; ++i)
+			b->addSegment({});
+		for (const auto& s : b->getSegments())
+			EXPECT(s.rect == CRect(0, 0, 0, 0));
+		auto root = owned(new CViewContainer(r));
+		auto parent = new CViewContainer(r);
+		root->addView(parent);
+		parent->addView(b);
+		parent->attached(root);
+
+		// Select the last segment
+		constexpr auto kSelectedSegment = numSegments - 1;
+		CPoint p(0, 0);
+		p(20 * kSelectedSegment + 5, 0);
+		EXPECT(b->onMouseDown(p, kLButton) == kMouseDownEventHandledButDontNeedMovedOrUpEvents);
+		EXPECT(b->getSelectedSegment() == kSelectedSegment);
+
+		parent->removed(root);
+	);
+
 	TEST(focusPathSetting,
 		CSegmentButton b (CRect (0, 0, 10, 10));
 		EXPECT (b.drawFocusOnTop () == false);
