@@ -350,6 +350,9 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 				break; // out of for loop
 			}
 			newValue += valueOffset;
+
+			// Last segment can lead to newValue > 1.0
+			newValue = std::min(newValue, 1.f);
 		}
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;

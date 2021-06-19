@@ -102,26 +102,26 @@ TEST_CASE (CSegmentButtonTest, RightKeyEvent)
 	KeyboardEvent event;
 	event.virt = VirtualKey::Right;
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 2);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 2);
 
 	b.setSelectedSegment (1);
 	b.setStyle (CSegmentButton::Style::kVertical);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 }
 
@@ -142,26 +142,26 @@ TEST_CASE (CSegmentButtonTest, LeftKeyEvent)
 	KeyboardEvent event;
 	event.virt = VirtualKey::Left;
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 0);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 0);
 
 	b.setSelectedSegment (1);
 	b.setStyle (CSegmentButton::Style::kVertical);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 }
 
@@ -178,30 +178,30 @@ TEST_CASE (CSegmentButtonTest, DownKeyEvent)
 
 	b.setStyle (CSegmentButton::Style::kVertical);
 	b.setSelectedSegment (0);
-	
+
 	KeyboardEvent event;
 	event.virt = VirtualKey::Down;
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 2);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 2);
 
 	b.setSelectedSegment (1);
 	b.setStyle (CSegmentButton::Style::kHorizontal);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 }
 
@@ -221,26 +221,26 @@ TEST_CASE (CSegmentButtonTest, UpKeyEvent)
 	KeyboardEvent event;
 	event.virt = VirtualKey::Up;
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 0);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 0);
 
 	b.setSelectedSegment (1);
 	b.setStyle (CSegmentButton::Style::kHorizontal);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 	event.consumed.reset ();
 	b.onKeyboardEvent (event);
-	EXPECT_TRUE(event.consumed);
+	EXPECT_TRUE (event.consumed);
 	EXPECT (b.getSelectedSegment () == 1);
 }
 
@@ -373,6 +373,35 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventWithManySegments)
 	// Select the e.g. 20th segment
 	constexpr auto kSelectedSegment = 20;
 	CPoint p (20 * kSelectedSegment + 5, 0);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, p, MouseEventButtonState::Left),
+	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+	EXPECT_EQ (b->getSelectedSegment (), kSelectedSegment);
+
+	parent->removed (root);
+}
+
+TEST_CASE (CSegmentButtonTest, MouseDownEventOnLastSegment)
+{
+	// Create segment button with 31 segments and attach it.
+	// 31 segments causing rounding errors inside segment button.
+	const auto numSegments = 31;
+	CRect r (0, 0, 20 * numSegments, 100);
+	auto b = new CSegmentButton (r);
+	b->setStyle (CSegmentButton::Style::kHorizontal);
+	for (auto i = 0; i < numSegments; ++i)
+		b->addSegment ({});
+	for (const auto& s : b->getSegments ())
+		EXPECT_EQ (s.rect, CRect (0, 0, 0, 0));
+	auto root = owned (new CViewContainer (r));
+	auto parent = new CViewContainer (r);
+	root->addView (parent);
+	parent->addView (b);
+	parent->attached (root);
+
+	// Select the last segment
+	constexpr auto kSelectedSegment = numSegments - 1;
+	CPoint p (0, 0);
+	p (20 * kSelectedSegment + 5, 0);
 	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, p, MouseEventButtonState::Left),
 	           EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
 	EXPECT_EQ (b->getSelectedSegment (), kSelectedSegment);
