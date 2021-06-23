@@ -156,7 +156,7 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 		{
 			impl->ascent = pango_units_to_double (pango_font_metrics_get_ascent (metrics));
 			impl->descent = pango_units_to_double (pango_font_metrics_get_descent (metrics));
-#ifdef PANGO_AVAILABLE_IN_1_44
+#if (PANGO_VERSION_MAJOR > 1) || ((PANGO_VERSION_MAJOR == 1) && PANGO_VERSION_MINOR >= 44)
 			auto height = pango_units_to_double (pango_font_metrics_get_height (metrics));
 			impl->leading = height - (impl->ascent + impl->descent);
 #else
