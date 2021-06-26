@@ -1,15 +1,15 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #pragma once
 
-#include "../../../../uidescription/uiviewfactory.h"
-#include "../../../../uidescription/uiviewcreator.h"
-#include "../../../../uidescription/uiattributes.h"
 #include "../../../../lib/cbitmap.h"
 #include "../../../../lib/cgradient.h"
 #include "../../../../lib/cstring.h"
+#include "../../../../uidescription/uiattributes.h"
+#include "../../../../uidescription/uiviewcreator.h"
+#include "../../../../uidescription/uiviewfactory.h"
 #include "../uidescriptionadapter.h"
 
 namespace VSTGUI {
@@ -25,7 +25,7 @@ class DummyUIDescription : public UIDescriptionAdapter
 public:
 	bool getColor (UTF8StringPtr name, CColor& c) const override
 	{
-		if (UTF8StringView(name) == kColorName)
+		if (UTF8StringView (name) == kColorName)
 		{
 			c = this->color;
 			return true;
@@ -42,11 +42,11 @@ public:
 
 	CFontRef getFont (UTF8StringPtr name) const override
 	{
-		if (UTF8StringView(name) == kFontName)
+		if (UTF8StringView (name) == kFontName)
 			return font;
 		return nullptr;
 	}
-	
+
 	UTF8StringPtr lookupFontName (const CFontRef f) const override
 	{
 		if (f == this->font)
@@ -70,11 +70,11 @@ public:
 
 	CGradient* getGradient (UTF8StringPtr name) const override
 	{
-		if (UTF8StringView(name) == kGradientName)
+		if (UTF8StringView (name) == kGradientName)
 			return gradient;
 		return nullptr;
 	}
-	
+
 	UTF8StringPtr lookupGradientName (const CGradient* g) const override
 	{
 		if (g == this->gradient)
@@ -105,41 +105,47 @@ public:
 	CColor color {20, 30, 50, 255};
 	SharedPointer<CFontDesc> font = owned (new CFontDesc ("Arial", 12));
 	SharedPointer<CBitmap> bitmap = owned (new CBitmap (1, 1));
-	SharedPointer<CGradient> gradient = owned (CGradient::create(0, 1, kBlackCColor, kWhiteCColor));
+	SharedPointer<CGradient> gradient =
+	    owned (CGradient::create (0, 1, kBlackCColor, kWhiteCColor));
 	IControlListener* listener {nullptr};
 };
 
-inline void testPossibleValues (const IdStringPtr className, const std::string& attrName, IUIDescription* desc, UIViewFactory::StringList expectedValues)
+inline void testPossibleValues (const IdStringPtr className, const std::string& attrName,
+                                IUIDescription* desc, UIViewFactory::StringList expectedValues)
 {
 	UIViewFactory factory;
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, className);
 	auto view = owned (factory.createView (a, desc));
 	UIViewFactory::StringPtrList values;
-	EXPECT(factory.getPossibleAttributeListValues (view, attrName, values));
+	EXPECT (factory.getPossibleAttributeListValues (view, attrName, values));
 	for (auto& v : expectedValues)
 	{
-		EXPECT(std::find_if (values.begin(), values.end(), [&] (const UIViewFactory::StringPtrList::value_type& value) {
-			return *value == v;
-		}) != values.end ());
+		EXPECT (std::find_if (values.begin (), values.end (),
+		                      [&] (const UIViewFactory::StringPtrList::value_type& value) {
+			                      return *value == v;
+		                      }) != values.end ());
 	}
-	EXPECT(values.size () == expectedValues.size ());
+	EXPECT (values.size () == expectedValues.size ());
 }
 
-inline void testMinMaxValues (const IdStringPtr className, const std::string& attrName, IUIDescription* desc, double minValue, double maxValue)
+inline void testMinMaxValues (const IdStringPtr className, const std::string& attrName,
+                              IUIDescription* desc, double minValue, double maxValue)
 {
 	UIViewFactory factory;
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, className);
 	auto view = owned (factory.createView (a, desc));
 	double min, max;
-	EXPECT (factory.getAttributeValueRange(view, attrName, min, max));
-	EXPECT(min == minValue);
-	EXPECT(max == maxValue);
+	EXPECT (factory.getAttributeValueRange (view, attrName, min, max));
+	EXPECT (min == minValue);
+	EXPECT (max == maxValue);
 }
 
-template<typename ViewClass, typename Proc>
-void testAttribute (const IdStringPtr viewName, const std::string& attrName, const IdStringPtr attrValue, IUIDescription* desc, const Proc& proc, bool disableRememberAttributes = false)
+template <typename ViewClass, typename Proc>
+void testAttribute (const IdStringPtr viewName, const std::string& attrName,
+                    const IdStringPtr attrValue, IUIDescription* desc, const Proc& proc,
+                    bool disableRememberAttributes = false)
 {
 	UIViewFactory factory;
 	factory.disableRememberAttributes = disableRememberAttributes;
@@ -149,18 +155,19 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, con
 
 	auto v = owned (factory.createView (a, desc));
 	auto view = v.cast<ViewClass> ();
-	EXPECT(view);
-	EXPECT(proc (view));
+	EXPECT (view);
+	EXPECT (proc (view));
 
 	UIAttributes a2;
 	factory.getAttributesForView (view, desc, a2);
 	auto str = a2.getAttributeValue (attrName);
-	EXPECT(str);
-	EXPECT(*str == attrValue);
+	EXPECT (str);
+	EXPECT (*str == attrValue);
 }
 
-template<typename ViewClass, typename Proc>
-void testAttribute (const IdStringPtr viewName, const std::string& attrName, int32_t attrValue, IUIDescription* desc, const Proc& proc)
+template <typename ViewClass, typename Proc>
+void testAttribute (const IdStringPtr viewName, const std::string& attrName, int32_t attrValue,
+                    IUIDescription* desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -169,18 +176,19 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, int
 
 	auto v = owned (factory.createView (a, desc));
 	auto view = v.cast<ViewClass> ();
-	EXPECT(view);
-	EXPECT(proc (view));
+	EXPECT (view);
+	EXPECT (proc (view));
 
 	UIAttributes a2;
 	factory.getAttributesForView (view, desc, a2);
 	int32_t value;
 	a2.getIntegerAttribute (attrName, value);
-	EXPECT(value == attrValue);
+	EXPECT (value == attrValue);
 }
 
-template<typename ViewClass, typename Proc>
-void testAttribute (const IdStringPtr viewName, const std::string& attrName, bool attrValue, IUIDescription* desc, const Proc& proc)
+template <typename ViewClass, typename Proc>
+void testAttribute (const IdStringPtr viewName, const std::string& attrName, bool attrValue,
+                    IUIDescription* desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -189,18 +197,19 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, boo
 
 	auto v = owned (factory.createView (a, desc));
 	auto view = v.cast<ViewClass> ();
-	EXPECT(view);
-	EXPECT(proc (view));
+	EXPECT (view);
+	EXPECT (proc (view));
 
 	UIAttributes a2;
 	factory.getAttributesForView (view, desc, a2);
 	bool value;
 	a2.getBooleanAttribute (attrName, value);
-	EXPECT(value == attrValue);
+	EXPECT (value == attrValue);
 }
 
-template<typename ViewClass, typename Proc>
-void testAttribute (const IdStringPtr viewName, const std::string& attrName, double attrValue, IUIDescription* desc, const Proc& proc)
+template <typename ViewClass, typename Proc>
+void testAttribute (const IdStringPtr viewName, const std::string& attrName, double attrValue,
+                    IUIDescription* desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -209,18 +218,19 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, dou
 
 	auto v = owned (factory.createView (a, desc));
 	auto view = v.cast<ViewClass> ();
-	EXPECT(view);
-	EXPECT(proc (view));
+	EXPECT (view);
+	EXPECT (proc (view));
 
 	UIAttributes a2;
 	factory.getAttributesForView (view, desc, a2);
 	double value;
 	a2.getDoubleAttribute (attrName, value);
-	EXPECT(value == attrValue);
+	EXPECT (value == attrValue);
 }
 
-template<typename ViewClass, typename Proc>
-void testAttribute (const IdStringPtr viewName, const std::string& attrName, const CRect& attrValue, IUIDescription* desc, const Proc& proc)
+template <typename ViewClass, typename Proc>
+void testAttribute (const IdStringPtr viewName, const std::string& attrName, const CRect& attrValue,
+                    IUIDescription* desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -229,18 +239,19 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, con
 
 	auto v = owned (factory.createView (a, desc));
 	auto view = v.cast<ViewClass> ();
-	EXPECT(view);
-	EXPECT(proc (view));
+	EXPECT (view);
+	EXPECT (proc (view));
 
 	UIAttributes a2;
 	factory.getAttributesForView (view, desc, a2);
 	CRect value;
 	a2.getRectAttribute (attrName, value);
-	EXPECT(value == attrValue);
+	EXPECT (value == attrValue);
 }
 
-template<typename ViewClass, typename Proc>
-void testAttribute (const IdStringPtr viewName, const std::string& attrName, const CPoint& attrValue, IUIDescription* desc, const Proc& proc)
+template <typename ViewClass, typename Proc>
+void testAttribute (const IdStringPtr viewName, const std::string& attrName,
+                    const CPoint& attrValue, IUIDescription* desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -249,14 +260,14 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, con
 
 	auto v = owned (factory.createView (a, desc));
 	auto view = v.cast<ViewClass> ();
-	EXPECT(view);
-	EXPECT(proc (view));
+	EXPECT (view);
+	EXPECT (proc (view));
 
 	UIAttributes a2;
 	factory.getAttributesForView (view, desc, a2);
 	CPoint value;
 	a2.getPointAttribute (attrName, value);
-	EXPECT(value == attrValue);
+	EXPECT (value == attrValue);
 }
 
 inline bool operator!= (const CGradient& g1, const CGradient& g2)
@@ -272,6 +283,5 @@ inline bool operator== (const CGradient& g1, const CGradient& g2)
 	auto cs2 = g2.getColorStops ();
 	return cs1 == cs2;
 }
-
 
 } // VSTGUI
