@@ -193,27 +193,4 @@ void Context::print (const char* fmt, ...)
 
 }} // namespaces
 
-TESTCASE(Example,
-		 
-	static int result;
-
-	SETUP(
-		result = 0;
-	);
-	 
-	TEST(OnePlusOneIsTwo,
-		result = 1+1;
-		EXPECT (result == 2)
-	);
-	 
-	TEST(ThreeMinusOneIsTwo,
-		result = 3-1;
-		if (result != 2)
-		{
-			FAIL ("result is not two")
-		}
-	);
-
-);
-
 #endif

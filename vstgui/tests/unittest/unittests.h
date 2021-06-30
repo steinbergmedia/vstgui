@@ -15,44 +15,45 @@
 #include <stdexcept>
 #include <any>
 
-/*
-	How-to write tests:
+/** @page How-to write tests
 
-	1) include this file
-	2) optional: put the test code into namespaces: namespace VSTGUI { namespace UnitTest {
-	3) open testcase : TESTCASE (MySuite,
-	4) optional : declare SETUP and TEARDOWN functions
-	5) declare tests : TEST (MyTest, testing code);
-	6) inside of "testing code" use EXPECT or FAIL macros
-	7) close testcase: );
-	8) optional: close namespaces: }}
+How-to write tests:
 
-	Complete Example:
+1) include this file
+2) optional: put the test code into namespaces: namespace VSTGUI { namespace UnitTest {
+3) write tests with the function macro TEST_CASE(SuiteName, TestName) { TESTCODE }
 
-		#include "unittests.h"
+Simple Example:
 
-		TESTCASE(Example,
+	#include "unittests.h"
 
-			int result;
+	TEST_CASE (Example, OnePlusOneIsTwo)
+	{
+		auto result = 1+1;
+		EXPECT_EQ (result, 2)
+	}
 
-			SETUP(
-				result = 0;
-			);
+Using a setup and teardown function and custom variable storage:
 
-			TEST(OnePlusOneIsTwo,
-				result = 1+1;
-				EXPECT (result == 2)
-			);
+	#include "unittests.h"
+	
+	TEST_SUITE_SETUP (CViewContainerTest)
+	{
+		SharedPointer<CViewContainer> container = makeOwned<CViewContainer> (CRect (0, 0, 200, 200));
+		TEST_SUITE_SET_STORAGE (SharedPointer<CViewContainer>, container);
+	}
 
-			TEST(ThreeMinusOneIsTwo,
-				result = 3-1;
-				if (result != 2)
-				{
-					FAIL ("result is not two")
-				}
-			);
-		);
+	TEST_SUITE_TEARDOWN (CViewContainerTest)
+	{
+		TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>) = nullptr;
+	}
 
+	TEST_CASE (CViewContainerTest, ChangeViewZOrder)
+	{
+		SharedPointer<CViewContainer>& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
+		...
+	}
+	
 */
 
 namespace VSTGUI {
@@ -99,12 +100,6 @@ public:
 #define TEST_SUITE_GET_STORAGE(Type) *std::any_cast<Type> (&context->storage ())
 
 //----------------------------------------------------------------------------------------------------
-#define TESTCASE(name,function) static VSTGUI::UnitTest::TestRegistrar name##TestRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestSuite* testSuite) { function })
-#define TEST(name,function) testSuite->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } });
-#define SETUP(function) testSuite->setSetupFunction ([](VSTGUI::UnitTest::Context* context) { function } )
-#define TEARDOWN(function) testSuite->setTeardownFunction ([](VSTGUI::UnitTest::Context* context) { function } )
-
-//------------------------------------------------------------------------
 #define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
 #define FAIL(reason) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Failure: " reason); }
 
