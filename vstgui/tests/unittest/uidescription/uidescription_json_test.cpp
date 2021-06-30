@@ -314,6 +314,7 @@ constexpr auto restoreViewUIDesc = R"(
 }
 )";
 
+#ifndef _MSC_VER
 constexpr auto completeExample = R"(
 {
 	"vstgui-ui-description": {
@@ -1104,6 +1105,7 @@ constexpr auto completeExample = R"(
 	}
 }
 )";
+#endif
 
 constexpr auto sharedResourcesUIDesc = R"(
 {
@@ -1620,6 +1622,7 @@ TEST_CASE (UIDescriptionJSONTests, CustomAttributes)
 	EXPECT (desc.setCustomAttributes ("Test", nullptr) == false);
 }
 
+#ifndef _MSC_VER
 TEST_CASE (UIDescriptionJSONTests, Listeners)
 {
 	MemoryContentProvider provider (completeExample,
@@ -1709,6 +1712,7 @@ TEST_CASE (UIDescriptionJSONTests, Listeners)
 
 	desc.unregisterListener (&mok);
 }
+#endif // _MSC_VER
 
 TEST_CASE (UIDescriptionJSONTests, FocusSettings)
 {
