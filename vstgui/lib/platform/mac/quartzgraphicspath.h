@@ -20,6 +20,7 @@
 namespace VSTGUI {
 class CoreTextFont;
 class CDrawContext;
+class CGGraphicsPath;
 
 //------------------------------------------------------------------------------------
 class QuartzGraphicsPath : public CGraphicsPath
@@ -43,9 +44,10 @@ public:
 
 //------------------------------------------------------------------------------------
 protected:
-	CGMutablePathRef path;
-	CGMutablePathRef originalTextPath;
-	bool isPixelAlligned;
+	void makeCGGraphicsPath ();
+	bool ensurePathValid ();
+	
+	std::unique_ptr<CGGraphicsPath> path;
 };
 
 //-----------------------------------------------------------------------------

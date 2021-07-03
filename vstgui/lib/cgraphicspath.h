@@ -142,8 +142,10 @@ protected:
 		} instruction;
 	};
 
-	inline void CRect2Rect (const CRect& rect, CGraphicsPath::Rect& r) const {r.left = rect.left;r.right = rect.right;r.top = rect.top;r.bottom = rect.bottom;}
-	inline void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) const {p.x = point.x;p.y = point.y;}
+	static void CRect2Rect (const CRect& rect, CGraphicsPath::Rect& r) {r.left = rect.left;r.right = rect.right;r.top = rect.top;r.bottom = rect.bottom;}
+	static void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) {p.x = point.x;p.y = point.y;}
+	static CRect rect2CRect (const Rect& r) { return CRect (r.left, r.top, r.right, r.bottom); }
+	static CPoint point2CPoint (const Point& p) { return CPoint (p.x, p.y); }
 	/// @endcond
 
 	using ElementList = std::vector<Element>;

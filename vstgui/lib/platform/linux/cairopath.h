@@ -11,6 +11,7 @@
 namespace VSTGUI {
 namespace Cairo {
 
+class GraphicsPath;
 //------------------------------------------------------------------------
 class Path : public CGraphicsPath
 {
@@ -33,8 +34,11 @@ public:
 
 //------------------------------------------------------------------------
 private:
+	bool ensurePathValid ();
+	void makeGraphicsPath ();
+
 	ContextHandle cr;
-	cairo_path_t* path {nullptr};
+	std::unique_ptr<GraphicsPath> path;
 };
 
 //------------------------------------------------------------------------

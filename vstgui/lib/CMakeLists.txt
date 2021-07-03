@@ -145,6 +145,7 @@ set(${target}_common_sources
     platform/iplatformfont.h
     platform/iplatformframe.h
     platform/iplatformframecallback.h
+    platform/iplatformgraphicspath.h
     platform/iplatformopenglview.h
     platform/iplatformoptionmenu.h
     platform/iplatformresourceinputstream.h
