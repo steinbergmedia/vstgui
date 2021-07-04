@@ -72,37 +72,6 @@ static CGMutablePathRef createTextPath (const CoreTextFont* font, UTF8StringPtr 
 }
 
 //-----------------------------------------------------------------------------
-class CGGraphicsPath : public IPlatformGraphicsPath
-{
-public:
-	CGGraphicsPath (CGMutablePathRef path = nullptr); // take ownership of path
-	~CGGraphicsPath () noexcept;
-
-	using PixelAlignPointFunc = CGPoint (*) (const CGPoint&, void* context);
-	void pixelAlign (const PixelAlignPointFunc& func, void* context);
-
-	CGPathRef getCGPathRef () const { return path; }
-
-	// IPlatformGraphicsPath
-	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
-	void addEllipse (const CRect& rect) override;
-	void addRect (const CRect& rect) override;
-	void addLine (const CPoint& to) override;
-	void addBezierCurve (const CPoint& control1, const CPoint& control2,
-	                     const CPoint& end) override;
-	void beginSubpath (const CPoint& start) override;
-	void closeSubpath () override;
-	void finishBuilding () override;
-	bool hitTest (const CPoint& p, bool evenOddFilled = false,
-	              CGraphicsTransform* transform = nullptr) const override;
-	CPoint getCurrentPosition () const override;
-	CRect getBoundingBox () const override;
-
-private:
-	CGMutablePathRef path {nullptr};
-};
-
-//-----------------------------------------------------------------------------
 IPlatformGraphicsPathFactoryPtr CGGraphicsPathFactory::instance ()
 {
 	static IPlatformGraphicsPathFactoryPtr factory = std::make_shared<CGGraphicsPathFactory> ();
@@ -396,6 +365,7 @@ void QuartzGraphicsPath::makeCGGraphicsPath ()
 			}
 		}
 	}
+	path->finishBuilding ();
 }
 
 //-----------------------------------------------------------------------------
@@ -409,14 +379,6 @@ bool QuartzGraphicsPath::ensurePathValid ()
 }
 
 //-----------------------------------------------------------------------------
-CGPathRef QuartzGraphicsPath::getCGPathRef ()
-{
-	ensurePathValid ();
-	auto cgPath = static_cast<CGGraphicsPath*> (path.get ());
-	return cgPath->getCGPathRef ();
-}
-
-//-----------------------------------------------------------------------------
 void QuartzGraphicsPath::dirty ()
 {
 	path = nullptr;
@@ -427,39 +389,21 @@ bool QuartzGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled,
                                   CGraphicsTransform* transform)
 {
 	ensurePathValid ();
-	return path->hitTest (p, evenOddFilled, transform);
+	return path ? path->hitTest (p, evenOddFilled, transform) : false;;
 }
 
 //-----------------------------------------------------------------------------
 CPoint QuartzGraphicsPath::getCurrentPosition ()
 {
 	ensurePathValid ();
-	return path->getCurrentPosition ();
+	return path ? path->getCurrentPosition () : CPoint ();
 }
 
 //-----------------------------------------------------------------------------
 CRect QuartzGraphicsPath::getBoundingBox ()
 {
 	ensurePathValid ();
-	return path->getBoundingBox ();
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
-{
-	CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-	if (cgDrawContext == nullptr)
-		return;
-
-	ensurePathValid ();
-	auto cgPath = static_cast<CGGraphicsPath*> (path.get ());
-
-	cgPath->pixelAlign (
-	    [] (const CGPoint& p, void* context) {
-		    auto cgDrawContext = reinterpret_cast<CGDrawContext*> (context);
-		    return cgDrawContext->pixelAlligned (p);
-	    },
-	    cgDrawContext);
+	return path ? path->getBoundingBox () : CRect ();
 }
 
 //-----------------------------------------------------------------------------

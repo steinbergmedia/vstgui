@@ -120,6 +120,13 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
 	if (path == nullptr)
 		return;
 
+	const auto& graphicsPath = path->getPlatformPath ();
+	if (!graphicsPath)
+		return;
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	if (!cgPath)
+		return;
+
 	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGPathDrawingMode cgMode;
@@ -153,12 +160,17 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
 			{
 				DoGraphicStateSave (context, [&] () {
 					applyLineWidthCTM (context);
-					path->pixelAlign (this);
+					cgPath->pixelAlign (
+					    [] (const CGPoint& p, void* context) {
+						    auto cgDrawContext = reinterpret_cast<CGDrawContext*> (context);
+						    return cgDrawContext->pixelAlligned (p);
+					    },
+					    this);
 				});
-				CGContextAddPath (context, path->getCGPathRef ());
+				CGContextAddPath (context, cgPath->getCGPathRef ());
 			}
 			else
-				CGContextAddPath (context, path->getCGPathRef ());
+				CGContextAddPath (context, cgPath->getCGPathRef ());
 
 		});
 		CGContextDrawPath (context, cgMode);
@@ -180,6 +192,13 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	if (cgGradient == nullptr)
 		return;
 
+	const auto& graphicsPath = path->getPlatformPath ();
+	if (!graphicsPath)
+		return;
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	if (!cgPath)
+		return;
+
 	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGPoint start = CGPointFromCPoint (startPoint);
@@ -196,9 +215,16 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 				CGContextConcatCTM (context, transform);
 			}
 			if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
-				path->pixelAlign (this);
+			{
+				cgPath->pixelAlign (
+					[] (const CGPoint& p, void* context) {
+						auto cgDrawContext = reinterpret_cast<CGDrawContext*> (context);
+						return cgDrawContext->pixelAlligned (p);
+					},
+					this);
+			}
 
-			CGContextAddPath (context, path->getCGPathRef ());
+			CGContextAddPath (context, cgPath->getCGPathRef ());
 		});
 
 		if (evenOdd)
@@ -228,6 +254,13 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 	if (cgGradient == nullptr)
 		return;
 
+	const auto& graphicsPath = path->getPlatformPath ();
+	if (!graphicsPath)
+		return;
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	if (!cgPath)
+		return;
+
 	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		DoGraphicStateSave (context, [&] () {
@@ -237,9 +270,16 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 				CGContextConcatCTM (context, transform);
 			}
 			if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
-				path->pixelAlign (this);
+			{
+				cgPath->pixelAlign (
+					[] (const CGPoint& p, void* context) {
+						auto cgDrawContext = reinterpret_cast<CGDrawContext*> (context);
+						return cgDrawContext->pixelAlligned (p);
+					},
+					this);
+			}
 
-			CGContextAddPath (context, path->getCGPathRef ());
+			CGContextAddPath (context, cgPath->getCGPathRef ());
 		});
 
 		if (evenOdd)

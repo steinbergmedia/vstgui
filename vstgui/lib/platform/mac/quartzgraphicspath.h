@@ -33,6 +33,37 @@ public:
 	IPlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font, UTF8StringPtr text) override;
 };
 
+//-----------------------------------------------------------------------------
+class CGGraphicsPath : public IPlatformGraphicsPath
+{
+public:
+	CGGraphicsPath (CGMutablePathRef path = nullptr); // take ownership of path
+	~CGGraphicsPath () noexcept;
+
+	using PixelAlignPointFunc = CGPoint (*) (const CGPoint&, void* context);
+	void pixelAlign (const PixelAlignPointFunc& func, void* context);
+
+	CGPathRef getCGPathRef () const { return path; }
+
+	// IPlatformGraphicsPath
+	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
+	void addEllipse (const CRect& rect) override;
+	void addRect (const CRect& rect) override;
+	void addLine (const CPoint& to) override;
+	void addBezierCurve (const CPoint& control1, const CPoint& control2,
+	                     const CPoint& end) override;
+	void beginSubpath (const CPoint& start) override;
+	void closeSubpath () override;
+	void finishBuilding () override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false,
+	              CGraphicsTransform* transform = nullptr) const override;
+	CPoint getCurrentPosition () const override;
+	CRect getBoundingBox () const override;
+
+private:
+	CGMutablePathRef path {nullptr};
+};
+
 
 //------------------------------------------------------------------------------------
 class QuartzGraphicsPath : public CGraphicsPath
@@ -42,8 +73,8 @@ public:
 	                    IPlatformGraphicsPathPtr&& path = nullptr);
 	~QuartzGraphicsPath () noexcept override;
 
-	void pixelAlign (CDrawContext* context);
-	CGPathRef getCGPathRef ();
+	const IPlatformGraphicsPathPtr& getPlatformPath () { return path; }
+	
 	void dirty () override;
 
 	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
