@@ -6,6 +6,7 @@
 
 #include "../../cgraphicspath.h"
 #include "../../cgradient.h"
+#include "../iplatformgraphicspath.h"
 
 #if MAC
 
@@ -22,12 +23,23 @@ class CoreTextFont;
 class CDrawContext;
 class CGGraphicsPath;
 
+//-----------------------------------------------------------------------------
+class CGGraphicsPathFactory : public IPlatformGraphicsPathFactory
+{
+public:
+	static IPlatformGraphicsPathFactoryPtr instance ();
+
+	IPlatformGraphicsPathPtr createPath () override;
+	IPlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font, UTF8StringPtr text) override;
+};
+
+
 //------------------------------------------------------------------------------------
 class QuartzGraphicsPath : public CGraphicsPath
 {
 public:
-	QuartzGraphicsPath ();
-	QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text);
+	QuartzGraphicsPath (const IPlatformGraphicsPathFactoryPtr& factory,
+	                    IPlatformGraphicsPathPtr&& path = nullptr);
 	~QuartzGraphicsPath () noexcept override;
 
 	void pixelAlign (CDrawContext* context);
@@ -46,8 +58,9 @@ public:
 protected:
 	void makeCGGraphicsPath ();
 	bool ensurePathValid ();
-	
-	std::unique_ptr<CGGraphicsPath> path;
+
+	IPlatformGraphicsPathFactoryPtr factory;
+	IPlatformGraphicsPathPtr path;
 };
 
 //-----------------------------------------------------------------------------

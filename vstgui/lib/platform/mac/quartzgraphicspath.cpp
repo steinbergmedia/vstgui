@@ -6,42 +6,10 @@
 
 #if MAC
 
-#include "../iplatformgraphicspath.h"
 #include "cfontmac.h"
 #include "cgdrawcontext.h"
 
 namespace VSTGUI {
-
-//-----------------------------------------------------------------------------
-class CGGraphicsPath : public IPlatformGraphicsPath
-{
-public:
-	CGGraphicsPath (CGMutablePathRef path = nullptr);
-	~CGGraphicsPath () noexcept;
-
-	using PixelAlignPointFunc = CGPoint (*) (const CGPoint&, void* context);
-	void pixelAlign (const PixelAlignPointFunc& func, void* context);
-
-	CGPathRef getCGPathRef () const { return path; }
-
-	// IPlatformGraphicsPath
-	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
-	void addEllipse (const CRect& rect) override;
-	void addRect (const CRect& rect) override;
-	void addLine (const CPoint& to) override;
-	void addBezierCurve (const CPoint& control1, const CPoint& control2,
-	                     const CPoint& end) override;
-	void beginSubpath (const CPoint& start) override;
-	void closeSubpath () override;
-	void finishBuilding () override;
-	bool hitTest (const CPoint& p, bool evenOddFilled = false,
-	              CGraphicsTransform* transform = nullptr) const override;
-	CPoint getCurrentPosition () const override;
-	CRect getBoundingBox () const override;
-
-private:
-	CGMutablePathRef path {nullptr};
-};
 
 //-----------------------------------------------------------------------------
 static CGAffineTransform convert (const CGraphicsTransform& t)
@@ -104,17 +72,67 @@ static CGMutablePathRef createTextPath (const CoreTextFont* font, UTF8StringPtr 
 }
 
 //-----------------------------------------------------------------------------
+class CGGraphicsPath : public IPlatformGraphicsPath
+{
+public:
+	CGGraphicsPath (CGMutablePathRef path = nullptr); // take ownership of path
+	~CGGraphicsPath () noexcept;
+
+	using PixelAlignPointFunc = CGPoint (*) (const CGPoint&, void* context);
+	void pixelAlign (const PixelAlignPointFunc& func, void* context);
+
+	CGPathRef getCGPathRef () const { return path; }
+
+	// IPlatformGraphicsPath
+	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
+	void addEllipse (const CRect& rect) override;
+	void addRect (const CRect& rect) override;
+	void addLine (const CPoint& to) override;
+	void addBezierCurve (const CPoint& control1, const CPoint& control2,
+	                     const CPoint& end) override;
+	void beginSubpath (const CPoint& start) override;
+	void closeSubpath () override;
+	void finishBuilding () override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false,
+	              CGraphicsTransform* transform = nullptr) const override;
+	CPoint getCurrentPosition () const override;
+	CRect getBoundingBox () const override;
+
+private:
+	CGMutablePathRef path {nullptr};
+};
+
+//-----------------------------------------------------------------------------
+IPlatformGraphicsPathFactoryPtr CGGraphicsPathFactory::instance ()
+{
+	static IPlatformGraphicsPathFactoryPtr factory = std::make_shared<CGGraphicsPathFactory> ();
+	return factory;
+}
+
+//-----------------------------------------------------------------------------
+IPlatformGraphicsPathPtr CGGraphicsPathFactory::createPath ()
+{
+	return std::make_unique<CGGraphicsPath> (CGPathCreateMutable ());
+}
+
+//-----------------------------------------------------------------------------
+IPlatformGraphicsPathPtr CGGraphicsPathFactory::createTextPath (const PlatformFontPtr& font,
+                                                                UTF8StringPtr text)
+{
+	if (auto ctFont = font.cast<CoreTextFont> ())
+	{
+		return std::make_unique<CGGraphicsPath> (VSTGUI::createTextPath (ctFont, text));
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
 CGGraphicsPath::CGGraphicsPath (CGMutablePathRef inPath)
 {
 	if (inPath)
-	{
 		path = inPath;
-		CFRetain (path);
-	}
 	else
-	{
 		path = CGPathCreateMutable ();
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -309,16 +327,11 @@ CGAffineTransform QuartzGraphicsPath::createCGAffineTransform (const CGraphicsTr
 }
 
 //-----------------------------------------------------------------------------
-QuartzGraphicsPath::QuartzGraphicsPath ()
+QuartzGraphicsPath::QuartzGraphicsPath (const IPlatformGraphicsPathFactoryPtr& factory,
+                                        IPlatformGraphicsPathPtr&& path)
+: factory (factory)
+, path (std::move (path))
 {
-}
-
-//-----------------------------------------------------------------------------
-QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text)
-
-{
-	auto textPath = createTextPath (font, text);
-	path = std::make_unique<CGGraphicsPath> (textPath);
 }
 
 //-----------------------------------------------------------------------------
@@ -336,7 +349,9 @@ CGradient* QuartzGraphicsPath::createGradient (double color1Start, double color2
 //-----------------------------------------------------------------------------
 void QuartzGraphicsPath::makeCGGraphicsPath ()
 {
-	path = std::make_unique<CGGraphicsPath> ();
+	path = factory->createPath ();
+	if (!path)
+		return;
 	for (const auto& e : elements)
 	{
 		switch (e.type)
@@ -397,7 +412,8 @@ bool QuartzGraphicsPath::ensurePathValid ()
 CGPathRef QuartzGraphicsPath::getCGPathRef ()
 {
 	ensurePathValid ();
-	return path->getCGPathRef ();
+	auto cgPath = static_cast<CGGraphicsPath*> (path.get ());
+	return cgPath->getCGPathRef ();
 }
 
 //-----------------------------------------------------------------------------
@@ -436,8 +452,9 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 		return;
 
 	ensurePathValid ();
+	auto cgPath = static_cast<CGGraphicsPath*> (path.get ());
 
-	path->pixelAlign (
+	cgPath->pixelAlign (
 	    [] (const CGPoint& p, void* context) {
 		    auto cgDrawContext = reinterpret_cast<CGDrawContext*> (context);
 		    return cgDrawContext->pixelAlligned (p);

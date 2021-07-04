@@ -4,7 +4,6 @@
 
 #include "../../cgradient.h"
 #include "../../cgraphicstransform.h"
-#include "../iplatformgraphicspath.h"
 #include "cairocontext.h"
 #include "cairopath.h"
 
@@ -41,6 +40,24 @@ private:
 	ContextHandle context;
 	cairo_path_t* path {nullptr};
 };
+
+//-----------------------------------------------------------------------------
+GraphicsPathFactory::GraphicsPathFactory (const ContextHandle& cr)
+: context (cr)
+{
+}
+
+//-----------------------------------------------------------------------------
+IPlatformGraphicsPathPtr GraphicsPathFactory::createPath ()
+{
+	return std::make_unique<GraphicsPath> (context);
+}
+
+//-----------------------------------------------------------------------------
+IPlatformGraphicsPathPtr GraphicsPathFactory::createTextPath (const PlatformFontPtr& font, UTF8StringPtr text)
+{
+	return nullptr;
+}
 
 //------------------------------------------------------------------------
 GraphicsPath::GraphicsPath (const ContextHandle& c) : context (c)
@@ -217,7 +234,10 @@ CRect GraphicsPath::getBoundingBox () const
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-Path::Path (const ContextHandle& cr) noexcept : cr (cr)
+Path::Path (const IPlatformGraphicsPathFactoryPtr& factory,
+	      IPlatformGraphicsPathPtr&& path) noexcept 
+: factory (factory)
+, path (std::move (path))
 {
 }
 
@@ -236,7 +256,9 @@ CGradient* Path::createGradient (double color1Start, double color2Start,
 //------------------------------------------------------------------------
 void Path::makeGraphicsPath ()
 {
-	path = std::make_unique<GraphicsPath> (cr);
+	path = factory->createPath ();
+	if (!path)
+		return;
 	for (const auto& e : elements)
 	{
 		switch (e.type)
@@ -325,9 +347,10 @@ void Path::dirty ()
 cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransform* alignTm)
 {
 	ensurePathValid ();
+	auto cairoPath = static_cast<GraphicsPath*> (path.get ());
 	if (alignTm)
-		path->pixelAlign (*alignTm);
-	return path->getCairoPath ();
+		cairoPath->pixelAlign (*alignTm);
+	return cairoPath->getCairoPath ();
 }
 
 //------------------------------------------------------------------------

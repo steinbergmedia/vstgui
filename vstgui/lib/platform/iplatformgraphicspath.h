@@ -4,11 +4,27 @@
 
 #pragma once
 
-#include "../crect.h"
-#include "../cpoint.h"
 #include "../cgraphicstransform.h"
+#include "../cpoint.h"
+#include "../crect.h"
 
 namespace VSTGUI {
+
+class IPlatformGraphicsPath;
+class IPlatformGraphicsPathFactory;
+using IPlatformGraphicsPathPtr = std::unique_ptr<IPlatformGraphicsPath>;
+using IPlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
+
+//------------------------------------------------------------------------
+class IPlatformGraphicsPathFactory
+{
+public:
+	virtual IPlatformGraphicsPathPtr createPath () = 0;
+	virtual IPlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
+	                                                 UTF8StringPtr text) = 0;
+
+	virtual ~IPlatformGraphicsPathFactory () noexcept = default;
+};
 
 //-----------------------------------------------------------------------------
 class IPlatformGraphicsPath
@@ -35,6 +51,8 @@ public:
 	                      CGraphicsTransform* transform = nullptr) const = 0;
 	virtual CPoint getCurrentPosition () const = 0;
 	virtual CRect getBoundingBox () const = 0;
+
+	virtual ~IPlatformGraphicsPath () noexcept = default;
 };
 
 } // VSTGUI

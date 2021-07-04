@@ -443,7 +443,9 @@ void Context::clearRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 CGraphicsPath* Context::createGraphicsPath ()
 {
-	return new Path (cr);
+	if (!graphicsPathFactory)
+		graphicsPathFactory = std::make_shared<GraphicsPathFactory> (cr);
+	return new Path (graphicsPathFactory, graphicsPathFactory->createPath ());
 }
 
 //-----------------------------------------------------------------------------

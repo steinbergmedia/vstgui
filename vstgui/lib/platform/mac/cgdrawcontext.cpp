@@ -99,14 +99,17 @@ void CGDrawContext::endDraw ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGDrawContext::createGraphicsPath ()
 {
-	return new QuartzGraphicsPath;
+	return new QuartzGraphicsPath (CGGraphicsPathFactory::instance ());
 }
 
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
-	const CoreTextFont* ctFont = font->getPlatformFont ().cast<const CoreTextFont> ();
-	return ctFont ? new QuartzGraphicsPath (ctFont, text) : nullptr;
+	if (auto path = CGGraphicsPathFactory::instance ()->createTextPath(font->getPlatformFont(), text))
+	{
+		return new QuartzGraphicsPath (CGGraphicsPathFactory::instance (), std::move (path));
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

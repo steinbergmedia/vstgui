@@ -5,18 +5,33 @@
 #pragma once
 
 #include "../../cgraphicspath.h"
+#include "../iplatformgraphicspath.h"
 #include "cairoutils.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Cairo {
 
+//------------------------------------------------------------------------
+class GraphicsPathFactory : public IPlatformGraphicsPathFactory
+{
+public:
+	GraphicsPathFactory (const ContextHandle& cr);
+
+	IPlatformGraphicsPathPtr createPath () override;
+	IPlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font, UTF8StringPtr text) override;
+
+private:
+	ContextHandle context;
+};
+
 class GraphicsPath;
 //------------------------------------------------------------------------
 class Path : public CGraphicsPath
 {
 public:
-	Path (const ContextHandle& cr) noexcept;
+	Path (const IPlatformGraphicsPathFactoryPtr& factory,
+	      IPlatformGraphicsPathPtr&& path = nullptr) noexcept;
 	~Path () noexcept;
 
 	cairo_path_t* getPath (const ContextHandle& handle,
@@ -37,8 +52,8 @@ private:
 	bool ensurePathValid ();
 	void makeGraphicsPath ();
 
-	ContextHandle cr;
-	std::unique_ptr<GraphicsPath> path;
+	IPlatformGraphicsPathFactoryPtr factory;
+	IPlatformGraphicsPathPtr path;
 };
 
 //------------------------------------------------------------------------
