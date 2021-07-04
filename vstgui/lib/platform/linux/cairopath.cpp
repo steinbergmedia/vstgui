@@ -12,36 +12,6 @@ namespace VSTGUI {
 namespace Cairo {
 
 //-----------------------------------------------------------------------------
-class GraphicsPath : public IPlatformGraphicsPath
-{
-public:
-	GraphicsPath (const ContextHandle& c);
-	~GraphicsPath () noexcept;
-
-	cairo_path_t* getCairoPath () const { return path; }
-	void pixelAlign (const CGraphicsTransform& tm);
-
-	// IPlatformGraphicsPath
-	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
-	void addEllipse (const CRect& rect) override;
-	void addRect (const CRect& rect) override;
-	void addLine (const CPoint& to) override;
-	void addBezierCurve (const CPoint& control1, const CPoint& control2,
-	                     const CPoint& end) override;
-	void beginSubpath (const CPoint& start) override;
-	void closeSubpath () override;
-	void finishBuilding () override;
-	bool hitTest (const CPoint& p, bool evenOddFilled = false,
-	              CGraphicsTransform* transform = nullptr) const override;
-	CPoint getCurrentPosition () const override;
-	CRect getBoundingBox () const override;
-
-private:
-	ContextHandle context;
-	cairo_path_t* path {nullptr};
-};
-
-//-----------------------------------------------------------------------------
 GraphicsPathFactory::GraphicsPathFactory (const ContextHandle& cr)
 : context (cr)
 {
@@ -150,17 +120,22 @@ void GraphicsPath::closeSubpath ()
 }
 
 //------------------------------------------------------------------------
-void GraphicsPath::pixelAlign (const CGraphicsTransform& tm)
+std::shared_ptr<GraphicsPath> GraphicsPath::copyPixelAlign (const CGraphicsTransform& tm)
 {
+	auto result = std::make_shared<GraphicsPath> (context);
+	cairo_append_path (context, path);
+	result->finishBuilding ();
+	auto rpath = result->path;
+
 	auto align = [] (_cairo_path_data_t* data, int index, const CGraphicsTransform& tm) {
 		CPoint input (data[index].point.x, data[index].point.y);
 		auto output = Cairo::pixelAlign (tm, input);
 		data[index].point.x = output.x;
 		data[index].point.y = output.y;
 	};
-	for (auto i = 0; i < path->num_data; i += path->data[i].header.length)
+	for (auto i = 0; i < rpath->num_data; i += rpath->data[i].header.length)
 	{
-		auto data = &path->data[i];
+		auto data = &rpath->data[i];
 		switch (data->header.type)
 		{
 			case CAIRO_PATH_MOVE_TO:
@@ -184,6 +159,7 @@ void GraphicsPath::pixelAlign (const CGraphicsTransform& tm)
 			}
 		}
 	}
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -235,9 +211,9 @@ CRect GraphicsPath::getBoundingBox () const
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 Path::Path (const IPlatformGraphicsPathFactoryPtr& factory,
-	      IPlatformGraphicsPathPtr&& path) noexcept 
+	    	const IPlatformGraphicsPathPtr& path) noexcept 
 : factory (factory)
-, path (std::move (path))
+, path (path)
 {
 }
 
@@ -344,13 +320,10 @@ void Path::dirty ()
 }
 
 //------------------------------------------------------------------------
-cairo_path_t* Path::getPath (const ContextHandle& handle, const CGraphicsTransform* alignTm)
+const IPlatformGraphicsPathPtr& Path::getPlatformPath ()
 {
 	ensurePathValid ();
-	auto cairoPath = static_cast<GraphicsPath*> (path.get ());
-	if (alignTm)
-		cairoPath->pixelAlign (*alignTm);
-	return cairoPath->getCairoPath ();
+	return path;
 }
 
 //------------------------------------------------------------------------

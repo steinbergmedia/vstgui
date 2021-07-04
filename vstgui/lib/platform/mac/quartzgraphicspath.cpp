@@ -12,7 +12,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-static CGAffineTransform convert (const CGraphicsTransform& t)
+CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t)
 {
 	CGAffineTransform transform;
 	transform.a = static_cast<CGFloat> (t.m11);
@@ -81,7 +81,7 @@ IPlatformGraphicsPathFactoryPtr CGGraphicsPathFactory::instance ()
 //-----------------------------------------------------------------------------
 IPlatformGraphicsPathPtr CGGraphicsPathFactory::createPath ()
 {
-	return std::make_unique<CGGraphicsPath> (CGPathCreateMutable ());
+	return std::make_shared<CGGraphicsPath> (CGPathCreateMutable ());
 }
 
 //-----------------------------------------------------------------------------
@@ -90,7 +90,7 @@ IPlatformGraphicsPathPtr CGGraphicsPathFactory::createTextPath (const PlatformFo
 {
 	if (auto ctFont = font.cast<CoreTextFont> ())
 	{
-		return std::make_unique<CGGraphicsPath> (VSTGUI::createTextPath (ctFont, text));
+		return std::make_shared<CGGraphicsPath> (VSTGUI::createTextPath (ctFont, text));
 	}
 	return nullptr;
 }
@@ -266,7 +266,7 @@ bool CGGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled,
 	auto cgPoint = CGPointFromCPoint (p);
 	CGAffineTransform cgTransform;
 	if (transform)
-		cgTransform = convert (*transform);
+		cgTransform = createCGAffineTransform (*transform);
 	return CGPathContainsPoint (path, transform ? &cgTransform : nullptr, cgPoint, evenOddFilled);
 }
 
@@ -290,14 +290,8 @@ CRect CGGraphicsPath::getBoundingBox () const
 }
 
 //-----------------------------------------------------------------------------
-CGAffineTransform QuartzGraphicsPath::createCGAffineTransform (const CGraphicsTransform& t)
-{
-	return convert (t);
-}
-
-//-----------------------------------------------------------------------------
 QuartzGraphicsPath::QuartzGraphicsPath (const IPlatformGraphicsPathFactoryPtr& factory,
-                                        IPlatformGraphicsPathPtr&& path)
+                                        const IPlatformGraphicsPathPtr& path)
 : factory (factory)
 , path (std::move (path))
 {
@@ -404,6 +398,13 @@ CRect QuartzGraphicsPath::getBoundingBox ()
 {
 	ensurePathValid ();
 	return path ? path->getBoundingBox () : CRect ();
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformGraphicsPathPtr& QuartzGraphicsPath::getPlatformPath ()
+{
+	ensurePathValid ();
+	return path;
 }
 
 //-----------------------------------------------------------------------------

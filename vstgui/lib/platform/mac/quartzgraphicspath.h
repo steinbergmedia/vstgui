@@ -19,9 +19,9 @@
 #endif
 
 namespace VSTGUI {
-class CoreTextFont;
-class CDrawContext;
-class CGGraphicsPath;
+
+//-----------------------------------------------------------------------------
+CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t);
 
 //-----------------------------------------------------------------------------
 class CGGraphicsPathFactory : public IPlatformGraphicsPathFactory
@@ -65,15 +65,16 @@ private:
 };
 
 
+
 //------------------------------------------------------------------------------------
 class QuartzGraphicsPath : public CGraphicsPath
 {
 public:
 	QuartzGraphicsPath (const IPlatformGraphicsPathFactoryPtr& factory,
-	                    IPlatformGraphicsPathPtr&& path = nullptr);
+	                    const IPlatformGraphicsPathPtr& path = nullptr);
 	~QuartzGraphicsPath () noexcept override;
 
-	const IPlatformGraphicsPathPtr& getPlatformPath () { return path; }
+	const IPlatformGraphicsPathPtr& getPlatformPath ();
 	
 	void dirty () override;
 
@@ -82,8 +83,6 @@ public:
 	CRect getBoundingBox () override;
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
-
-	static CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t);
 
 //------------------------------------------------------------------------------------
 protected:

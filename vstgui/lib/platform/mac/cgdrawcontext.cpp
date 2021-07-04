@@ -105,9 +105,10 @@ CGraphicsPath* CGDrawContext::createGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
-	if (auto path = CGGraphicsPathFactory::instance ()->createTextPath(font->getPlatformFont(), text))
+	if (auto path =
+	        CGGraphicsPathFactory::instance ()->createTextPath (font->getPlatformFont (), text))
 	{
-		return new QuartzGraphicsPath (CGGraphicsPathFactory::instance (), std::move (path));
+		return new QuartzGraphicsPath (CGGraphicsPathFactory::instance (), path);
 	}
 	return nullptr;
 }
@@ -123,7 +124,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
 	const auto& graphicsPath = path->getPlatformPath ();
 	if (!graphicsPath)
 		return;
-	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	auto cgPath = std::dynamic_pointer_cast<CGGraphicsPath> (graphicsPath);
 	if (!cgPath)
 		return;
 
@@ -153,7 +154,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
 		DoGraphicStateSave (context, [&] () {
 			if (t)
 			{
-				CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
+				CGAffineTransform transform = createCGAffineTransform (*t);
 				CGContextConcatCTM (context, transform);
 			}
 			if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
@@ -195,7 +196,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	const auto& graphicsPath = path->getPlatformPath ();
 	if (!graphicsPath)
 		return;
-	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	auto cgPath = std::dynamic_pointer_cast<CGGraphicsPath> (graphicsPath);
 	if (!cgPath)
 		return;
 
@@ -211,7 +212,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 			}
 			if (t)
 			{
-				CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
+				CGAffineTransform transform = createCGAffineTransform (*t);
 				CGContextConcatCTM (context, transform);
 			}
 			if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
@@ -257,7 +258,7 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 	const auto& graphicsPath = path->getPlatformPath ();
 	if (!graphicsPath)
 		return;
-	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	auto cgPath = std::dynamic_pointer_cast<CGGraphicsPath> (graphicsPath);
 	if (!cgPath)
 		return;
 
@@ -266,7 +267,7 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 		DoGraphicStateSave (context, [&] () {
 			if (t)
 			{
-				CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
+				CGAffineTransform transform = createCGAffineTransform (*t);
 				CGContextConcatCTM (context, transform);
 			}
 			if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
@@ -869,7 +870,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 				t.dx = p.x;
 				t.dy = p.y;
 			}
-			CGContextConcatCTM (cgContext, QuartzGraphicsPath::createCGAffineTransform (t));
+			CGContextConcatCTM (cgContext, createCGAffineTransform (t));
 		}
 
 		if (!swapYAxis)

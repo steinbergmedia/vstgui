@@ -12,7 +12,7 @@ namespace VSTGUI {
 
 class IPlatformGraphicsPath;
 class IPlatformGraphicsPathFactory;
-using IPlatformGraphicsPathPtr = std::unique_ptr<IPlatformGraphicsPath>;
+using IPlatformGraphicsPathPtr = std::shared_ptr<IPlatformGraphicsPath>;
 using IPlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
 
 //------------------------------------------------------------------------

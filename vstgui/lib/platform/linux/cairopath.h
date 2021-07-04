@@ -25,17 +25,45 @@ private:
 	ContextHandle context;
 };
 
-class GraphicsPath;
+//-----------------------------------------------------------------------------
+class GraphicsPath : public IPlatformGraphicsPath
+{
+public:
+	GraphicsPath (const ContextHandle& c);
+	~GraphicsPath () noexcept;
+
+	cairo_path_t* getCairoPath () const { return path; }
+	std::shared_ptr<GraphicsPath> copyPixelAlign (const CGraphicsTransform& tm);
+
+	// IPlatformGraphicsPath
+	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
+	void addEllipse (const CRect& rect) override;
+	void addRect (const CRect& rect) override;
+	void addLine (const CPoint& to) override;
+	void addBezierCurve (const CPoint& control1, const CPoint& control2,
+	                     const CPoint& end) override;
+	void beginSubpath (const CPoint& start) override;
+	void closeSubpath () override;
+	void finishBuilding () override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false,
+	              CGraphicsTransform* transform = nullptr) const override;
+	CPoint getCurrentPosition () const override;
+	CRect getBoundingBox () const override;
+
+private:
+	ContextHandle context;
+	cairo_path_t* path {nullptr};
+};
+
 //------------------------------------------------------------------------
 class Path : public CGraphicsPath
 {
 public:
 	Path (const IPlatformGraphicsPathFactoryPtr& factory,
-	      IPlatformGraphicsPathPtr&& path = nullptr) noexcept;
+	      const IPlatformGraphicsPathPtr& path = nullptr) noexcept;
 	~Path () noexcept;
 
-	cairo_path_t* getPath (const ContextHandle& handle,
-						   const CGraphicsTransform* alignTransform = nullptr);
+	const IPlatformGraphicsPathPtr& getPlatformPath ();
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1,
 							   const CColor& color2) override;
