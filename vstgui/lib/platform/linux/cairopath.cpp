@@ -181,18 +181,6 @@ bool GraphicsPath::hitTest (const CPoint& p, bool evenOddFilled,
 }
 
 //------------------------------------------------------------------------
-CPoint GraphicsPath::getCurrentPosition () const
-{
-	CPoint p;
-	cairo_save (context);
-	cairo_new_path (context);
-	cairo_append_path (context, path);
-	cairo_get_current_point (context, &p.x, &p.y);
-	cairo_restore (context);
-	return p;
-}
-
-//------------------------------------------------------------------------
 CRect GraphicsPath::getBoundingBox () const
 {
 	CRect r;
@@ -302,8 +290,52 @@ bool Path::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* tra
 //------------------------------------------------------------------------
 CPoint Path::getCurrentPosition ()
 {
-	ensurePathValid ();
-	return path->getCurrentPosition ();
+	CPoint res;
+	if (!elements.empty())
+	{
+		const auto& e = elements.back ();
+		switch (e.type)
+		{
+			case Element::kBeginSubpath:
+			{
+				res = point2CPoint (e.instruction.point);
+				break;
+			}
+			case Element::kCloseSubpath:
+			{
+				// TODO: find opening point
+				break;
+			}
+			case Element::kArc:
+			{
+				// TODO: calculate end point
+				break;
+			}
+			case Element::kEllipse:
+			{
+				res = {e.instruction.rect.left +
+				           (e.instruction.rect.right - e.instruction.rect.left) / 2.,
+				       e.instruction.rect.bottom};
+				break;
+			}
+			case Element::kRect:
+			{
+				res = rect2CRect (e.instruction.rect).getTopLeft ();
+				break;
+			}
+			case Element::kLine:
+			{
+				res = point2CPoint (e.instruction.point);
+				break;
+			}
+			case Element::kBezierCurve:
+			{
+				res = point2CPoint(e.instruction.curve.end);
+				break;
+			}
+		}
+	}
+	return res;
 }
 
 //------------------------------------------------------------------------

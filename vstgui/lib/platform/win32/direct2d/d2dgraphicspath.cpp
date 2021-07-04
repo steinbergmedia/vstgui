@@ -268,31 +268,510 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-D2DGraphicsPath::D2DGraphicsPath ()
-: path (nullptr)
-, currentPathFillMode (-1)
+D2DGraphicsPathLegacy::D2DGraphicsPathLegacy (const IPlatformGraphicsPathFactoryPtr& factory,
+                                              const IPlatformGraphicsPathPtr& path)
+: factory (factory), path (path)
 {
 }
 
 //-----------------------------------------------------------------------------
-D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
-: path (nullptr)
+D2DGraphicsPathLegacy::~D2DGraphicsPathLegacy ()
 {
+}
+
+// CGraphicsPath
+//-----------------------------------------------------------------------------
+CGradient* D2DGraphicsPathLegacy::createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
+{
+	return CGradient::create (color1Start, color2Start, color1, color2);
+}
+
+//-----------------------------------------------------------------------------
+CPoint D2DGraphicsPathLegacy::getCurrentPosition ()
+{
+	CPoint res;
+	if (!elements.empty())
+	{
+		const auto& e = elements.back ();
+		switch (e.type)
+		{
+			case Element::kBeginSubpath:
+			{
+				res = point2CPoint (e.instruction.point);
+				break;
+			}
+			case Element::kCloseSubpath:
+			{
+				// TODO: find opening point
+				break;
+			}
+			case Element::kArc:
+			{
+				// TODO: calculate end point
+				break;
+			}
+			case Element::kEllipse:
+			{
+				res = {e.instruction.rect.left +
+				           (e.instruction.rect.right - e.instruction.rect.left) / 2.,
+				       e.instruction.rect.bottom};
+				break;
+			}
+			case Element::kRect:
+			{
+				res = rect2CRect (e.instruction.rect).getTopLeft ();
+				break;
+			}
+			case Element::kLine:
+			{
+				res = point2CPoint (e.instruction.point);
+				break;
+			}
+			case Element::kBezierCurve:
+			{
+				res = point2CPoint(e.instruction.curve.end);
+				break;
+			}
+		}
+	}
+	return res;
+}
+
+//-----------------------------------------------------------------------------
+bool D2DGraphicsPathLegacy::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
+{
+	ensurePathValid ();
+	return path ? path->hitTest (p, evenOddFilled, transform) : false;
+}
+
+//-----------------------------------------------------------------------------
+CRect D2DGraphicsPathLegacy::getBoundingBox ()
+{
+	ensurePathValid ();
+	return path ? path->getBoundingBox () : CRect ();
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPathLegacy::dirty ()
+{
+	path = nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPathLegacy::makeCGGraphicsPath ()
+{
+	path = factory->createPath ();
+	if (!path)
+		return;
+	for (const auto& e : elements)
+	{
+		switch (e.type)
+		{
+			case Element::kArc:
+			{
+				path->addArc (rect2CRect (e.instruction.arc.rect), e.instruction.arc.startAngle,
+				              e.instruction.arc.endAngle, e.instruction.arc.clockwise);
+				break;
+			}
+			case Element::kEllipse:
+			{
+				path->addEllipse (rect2CRect (e.instruction.rect));
+				break;
+			}
+			case Element::kRect:
+			{
+				path->addRect (rect2CRect (e.instruction.rect));
+				break;
+			}
+			case Element::kLine:
+			{
+				path->addLine (point2CPoint (e.instruction.point));
+				break;
+			}
+			case Element::kBezierCurve:
+			{
+				path->addBezierCurve (point2CPoint (e.instruction.curve.control1),
+				                      point2CPoint (e.instruction.curve.control2),
+				                      point2CPoint (e.instruction.curve.end));
+				break;
+			}
+			case Element::kBeginSubpath:
+			{
+				path->beginSubpath (point2CPoint (e.instruction.point));
+				break;
+			}
+			case Element::kCloseSubpath:
+			{
+				path->closeSubpath ();
+				break;
+			}
+		}
+	}
+	path->finishBuilding ();
+}
+
+//-----------------------------------------------------------------------------
+bool D2DGraphicsPathLegacy::ensurePathValid ()
+{
+	if (path == nullptr)
+	{
+		makeCGGraphicsPath ();
+	}
+	return path != nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformGraphicsPathPtr& D2DGraphicsPathLegacy::getPlatformPath ()
+{
+	ensurePathValid ();
+	return path;
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+D2DGraphicsPath::D2DGraphicsPath (ID2D1PathGeometry* path, int32_t fillMode)
+: path (path), fillMode (fillMode)
+{
+}
+
+//-----------------------------------------------------------------------------
+D2DGraphicsPath::~D2DGraphicsPath () noexcept
+{
+	if (sinkInternal)
+		sinkInternal->Release ();
+	path->Release ();
+}
+
+//-----------------------------------------------------------------------------
+ID2D1Geometry* D2DGraphicsPath::createTransformedGeometry (ID2D1Factory* factory, const CGraphicsTransform& tm) const
+{
+	ID2D1TransformedGeometry* tg = nullptr;
+	if (!SUCCEEDED (factory->CreateTransformedGeometry (path, convert (tm), &tg)))
+		return nullptr;
+	return tg;;
+}
+
+//-----------------------------------------------------------------------------
+ID2D1Geometry* D2DGraphicsPath::createPixelAlignedGeometry (ID2D1Factory* factory, D2DDrawContext& context, const CGraphicsTransform* tm) const
+{
+	ID2D1Geometry* workingPath = path;
+	workingPath->AddRef ();
+	if (tm)
+		workingPath = createTransformedGeometry (factory, *tm);
+
+	AlignPixelSink alignSink (&context);
+	if (alignSink.init () == false)
+	{
+		workingPath->Release ();
+		return nullptr;
+	}
+	if (!SUCCEEDED (workingPath->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, nullptr, &alignSink)))
+	{
+		workingPath->Release ();
+		return nullptr;
+	}
+	workingPath->Release ();
+
+	return alignSink.get ();
+}
+
+//-----------------------------------------------------------------------------
+std::shared_ptr<D2DGraphicsPath> D2DGraphicsPath::copyAndChangeFillMode ()
+{
+	// TODO: Implement me!
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+ID2D1GeometrySink* D2DGraphicsPath::getSink ()
+{
+	if (!sinkInternal)
+	{
+		if (FAILED (path->Open (&sinkInternal)))
+		{
+			sinkInternal = nullptr;
+		}
+		else
+		{
+			sinkInternal->SetFillMode ((D2D1_FILL_MODE)fillMode);
+		}
+	}
+	return sinkInternal;
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise)
+{
+	if (auto sink = getSink ())
+	{
+		startAngle = radians (startAngle);
+		endAngle = radians (endAngle);
+		CRect o_r = rect;
+		CRect r (o_r);
+		o_r.originize ();
+		CPoint center = o_r.getCenter ();
+		if (center.x != center.y)
+		{
+			startAngle = atan2 (sin (startAngle) * center.x, cos (startAngle) * center.y);
+			endAngle = atan2 (sin (endAngle) * center.x, cos (endAngle) * center.y);
+		}
+		CPoint start;
+		start.x = r.left + center.x + center.x * cos (startAngle);
+		start.y = r.top + center.y + center.y * sin (startAngle);
+		if (!figureOpen)
+		{
+			sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
+			figureOpen = true;
+		}
+		else if (lastPos != start)
+		{
+			sink->AddLine (makeD2DPoint (start));
+		}
+
+		double sweepangle = endAngle - startAngle;
+		if (clockwise) {
+			// sweepangle positive
+			while (sweepangle < 0.0)
+				sweepangle += 2 * M_PI;
+			while (sweepangle > 2 * M_PI)
+				sweepangle -= 2 * M_PI;
+		} else {
+			// sweepangle negative
+			while (sweepangle > 0.0)
+				sweepangle -= 2 * M_PI;
+			while (sweepangle < -2 * M_PI)
+				sweepangle += 2 * M_PI;
+		}
+
+		CPoint endPoint;
+		endPoint.x = r.left + center.x + center.x * cos (endAngle);
+		endPoint.y = r.top + center.y + center.y * sin (endAngle);
+
+		D2D1_ARC_SEGMENT arc;
+		arc.size = makeD2DSize (r.getWidth ()/2., r.getHeight ()/2.);
+		arc.rotationAngle = 0;
+		arc.sweepDirection = clockwise ? D2D1_SWEEP_DIRECTION_CLOCKWISE : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE;
+		arc.point = makeD2DPoint (endPoint);
+		arc.arcSize = fabs(sweepangle) <= M_PI ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE;
+		sink->AddArc (arc);
+		lastPos = endPoint;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPath::addEllipse (const CRect& rect)
+{
+	if (auto sink = getSink ())
+	{
+		CPoint top (rect.getTopLeft ());
+		top.x += rect.getWidth () / 2.;
+		CPoint bottom (rect.getBottomLeft ());
+		bottom.x += rect.getWidth () / 2.;
+		if (figureOpen && lastPos != rect.getTopLeft ())
+		{
+			sink->EndFigure (D2D1_FIGURE_END_OPEN);
+			figureOpen = false;
+		}
+		if (!figureOpen)
+		{
+			sink->BeginFigure (makeD2DPoint (top), D2D1_FIGURE_BEGIN_FILLED);
+			figureOpen = true;
+		}
+		D2D1_ARC_SEGMENT arc =
+		    D2D1::ArcSegment (makeD2DPoint (bottom),
+		                      D2D1::SizeF (static_cast<FLOAT> (rect.getWidth () / 2.f),
+		                                   static_cast<FLOAT> (rect.getHeight () / 2.f)),
+		                      180.f, D2D1_SWEEP_DIRECTION_CLOCKWISE, D2D1_ARC_SIZE_SMALL);
+		sink->AddArc (arc);
+		arc.point = makeD2DPoint (top);
+		sink->AddArc (arc);
+		lastPos = top;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPath::addRect (const CRect& rect)
+{
+	if (auto sink = getSink ())
+	{
+		D2D1_POINT_2F points[4] = {
+			{(FLOAT)rect.right, (FLOAT)rect.top},
+			{(FLOAT)rect.right, (FLOAT)rect.bottom},
+			{(FLOAT)rect.left, (FLOAT)rect.bottom},
+			{(FLOAT)rect.left, (FLOAT)rect.top}
+		};
+		if (figureOpen && lastPos != rect.getTopLeft ())
+		{
+			sink->EndFigure (D2D1_FIGURE_END_OPEN);
+			figureOpen = false;
+		}
+		if (figureOpen == false)
+		{
+			sink->BeginFigure (points[3], D2D1_FIGURE_BEGIN_FILLED);
+			figureOpen = true;
+		}
+		sink->AddLine (points[0]);
+		sink->AddLine (points[1]);
+		sink->AddLine (points[2]);
+		sink->AddLine (points[3]);
+		lastPos = rect.getTopLeft ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPath::addLine (const CPoint& to)
+{
+	if (auto sink = getSink ())
+	{
+		if (figureOpen)
+		{
+			D2D1_POINT_2F end = {(FLOAT)to.x, (FLOAT)to.y};
+			sink->AddLine (end);
+			lastPos = to;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPath::addBezierCurve (const CPoint& control1, const CPoint& control2,
+	                    const CPoint& end)
+{
+	if (auto sink = getSink ())
+	{
+		if (figureOpen)
+		{
+			D2D1_POINT_2F d2dcontrol1 = {(FLOAT)control1.x, (FLOAT)control1.y};
+			D2D1_POINT_2F d2dcontrol2 = {(FLOAT)control2.x, (FLOAT)control2.y};
+			D2D1_POINT_2F d2dend = {(FLOAT)end.x, (FLOAT)end.y};
+			D2D1_BEZIER_SEGMENT bezier = D2D1::BezierSegment (d2dcontrol1, d2dcontrol2, d2dend);
+			sink->AddBezier (bezier);
+			lastPos = end;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPath::beginSubpath (const CPoint& start)
+{
+	if (auto sink = getSink ())
+	{
+		if (figureOpen)
+			sink->EndFigure (D2D1_FIGURE_END_OPEN);
+		D2D1_POINT_2F d2dstart = {(FLOAT)start.x, (FLOAT)start.y};
+		sink->BeginFigure (d2dstart, D2D1_FIGURE_BEGIN_FILLED);
+		figureOpen = true;
+		lastPos = start;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPath::closeSubpath ()
+{
+	if (auto sink = getSink ())
+	{
+		if (figureOpen)
+		{
+			sink->EndFigure (D2D1_FIGURE_END_CLOSED);
+			figureOpen = false;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DGraphicsPath::finishBuilding ()
+{
+	if (auto sink = getSink ())
+	{
+		if (figureOpen)
+			sink->EndFigure (D2D1_FIGURE_END_OPEN);
+		HRESULT res = sink->Close ();
+		assert (SUCCEEDED (res));
+		sink->Release ();
+		sinkInternal = nullptr;
+		figureOpen = false;
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform) const
+{
+	if (evenOddFilled && fillMode == D2D1_FILL_MODE_WINDING)
+	{
+		// TODO: make a temporary copy with fillMode = D2D1_FILL_MODE_ALTERNATE
+		return false;
+	}
+	D2D1::Matrix3x2F matrix = D2D1::Matrix3x2F::Identity ();
+	if (transform)
+	{
+		matrix._11 = (FLOAT)transform->m11;
+		matrix._12 = (FLOAT)transform->m12;
+		matrix._21 = (FLOAT)transform->m21;
+		matrix._22 = (FLOAT)transform->m22;
+		matrix._31 = (FLOAT)transform->dx;
+		matrix._32 = (FLOAT)transform->dy;
+			
+	}
+	BOOL result = false;
+	path->FillContainsPoint (makeD2DPoint (p), matrix, &result);
+	return result ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+CRect D2DGraphicsPath::getBoundingBox () const
+{
+	CRect r;
+	D2D1_RECT_F bounds;
+	if (SUCCEEDED (path->GetBounds (nullptr, &bounds)))
+	{
+		r.left = bounds.left;
+		r.top = bounds.top;
+		r.right = bounds.right;
+		r.bottom = bounds.bottom;
+	}
+	return r;
+}
+
+//-----------------------------------------------------------------------------
+IPlatformGraphicsPathFactoryPtr D2DGraphicsPathFactory::instance ()
+{
+	static IPlatformGraphicsPathFactoryPtr factory = std::make_shared<D2DGraphicsPathFactory> ();
+	return factory;
+}
+
+
+//-----------------------------------------------------------------------------
+IPlatformGraphicsPathPtr D2DGraphicsPathFactory::createPath ()
+{
+	ID2D1PathGeometry* path {nullptr};
+	if (FAILED (getD2DFactory ()->CreatePathGeometry (&path)))
+		return nullptr;
+	return std::make_shared<D2DGraphicsPath> (path);
+}
+
+//-----------------------------------------------------------------------------
+IPlatformGraphicsPathPtr D2DGraphicsPathFactory::createTextPath (const PlatformFontPtr& font,
+																 UTF8StringPtr text)
+{
+	auto d2dFont = font.cast<D2DFont> ();
+	if (!d2dFont)
+		return nullptr;
 	ID2D1PathGeometry* localPath = nullptr;
 	getD2DFactory ()->CreatePathGeometry (&localPath);
 	if (localPath == nullptr)
-		return;
+		return nullptr;
 
-	IDWriteTextLayout* layout = font->createTextLayout (UTF8String (text).getPlatformString ());
+	IDWriteTextLayout* layout = d2dFont->createTextLayout (UTF8String (text).getPlatformString ());
 	if (layout == nullptr)
-		return;
+		return nullptr;
 	
 	ID2D1PathGeometry* textPath = nullptr;
 	getD2DFactory ()->CreatePathGeometry (&textPath);
 	if (textPath == nullptr)
 	{
 		layout->Release ();
-		return;
+		return nullptr;
 	}
 	
 	ID2D1GeometrySink* sink = nullptr;
@@ -300,7 +779,7 @@ D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 	{
 		textPath->Release ();
 		layout->Release ();
-		return;
+		return nullptr;
 	}
 	
 	D2DPathTextRenderer renderer (sink);
@@ -313,7 +792,7 @@ D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 	if (!SUCCEEDED (localPath->Open (&sink)))
 	{
 		textPath->Release ();
-		return;
+		return nullptr;
 	}
 	
 	D2D1_RECT_F bounds = {};
@@ -325,321 +804,9 @@ D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 	textPath->Release ();
 	sink->Close ();
 	sink->Release ();
-	path = localPath;
+	return std::make_shared<D2DGraphicsPath> (localPath);
 }
 
-//-----------------------------------------------------------------------------
-D2DGraphicsPath::~D2DGraphicsPath ()
-{
-	if (path)
-	{
-		path->Release ();
-		path = nullptr;
-	}
-}
-
-// CGraphicsPath
-//-----------------------------------------------------------------------------
-CGradient* D2DGraphicsPath::createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
-{
-	return CGradient::create (color1Start, color2Start, color1, color2);
-}
-
-//-----------------------------------------------------------------------------
-CPoint D2DGraphicsPath::getCurrentPosition ()
-{
-	// TODO: D2DGraphicsPath::getCurrentPosition
-	CPoint p;
-#if DEBUG
-	DebugPrint ("D2DGraphicsPath::getCurrentPosition not implemented\n");
-#endif
-	return p;
-}
-
-//-----------------------------------------------------------------------------
-bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
-{
-	ID2D1Geometry* _path = createPath (evenOddFilled ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
-	if (_path)
-	{
-		D2D1::Matrix3x2F matrix = D2D1::Matrix3x2F::Identity ();
-		if (transform)
-		{
-			matrix._11 = (FLOAT)transform->m11;
-			matrix._12 = (FLOAT)transform->m12;
-			matrix._21 = (FLOAT)transform->m21;
-			matrix._22 = (FLOAT)transform->m22;
-			matrix._31 = (FLOAT)transform->dx;
-			matrix._32 = (FLOAT)transform->dy;
-			
-		}
-		BOOL result = false;
-		_path->FillContainsPoint (makeD2DPoint (p), matrix, &result);
-		_path->Release ();
-		return result ? true : false;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-CRect D2DGraphicsPath::getBoundingBox ()
-{
-	CRect r;
-	ID2D1Geometry* _path = createPath (currentPathFillMode);
-	if (_path)
-	{
-		D2D1_RECT_F bounds;
-		if (SUCCEEDED (_path->GetBounds (nullptr, &bounds)))
-		{
-			r.left = bounds.left;
-			r.top = bounds.top;
-			r.right = bounds.right;
-			r.bottom = bounds.bottom;
-		}
-		_path->Release ();
-	}
-	return r;
-}
-
-//-----------------------------------------------------------------------------
-void D2DGraphicsPath::dirty ()
-{
-	if (path)
-	{
-		path->Release ();
-		path = nullptr;
-	}
-}
-
-//-----------------------------------------------------------------------------
-ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* context, CGraphicsTransform* transform)
-{
-	if (!elements.empty () && (path == nullptr || fillMode != currentPathFillMode))
-	{
-		dirty ();
-		ID2D1PathGeometry* localPath = nullptr;
-		if (!SUCCEEDED (getD2DFactory ()->CreatePathGeometry (&localPath)))
-			return nullptr;
-		if (fillMode == -1)
-			fillMode = 0;
-		currentPathFillMode = fillMode;
-		
-		ID2D1GeometrySink* sink = nullptr;
-		if (!SUCCEEDED (localPath->Open (&sink)))
-		{
-			localPath->Release ();
-			return nullptr;
-		}
-
-		path = localPath;
-
-		sink->SetFillMode ((D2D1_FILL_MODE)fillMode);
-
-		bool figureOpen = false;
-		CPoint lastPos;
-		for (const CGraphicsPath::Element& e : elements)
-		{
-			switch (e.type)
-			{
-				case Element::kArc:
-				{
-					bool clockwise = e.instruction.arc.clockwise;
-					double startAngle = radians (e.instruction.arc.startAngle);
-					double endAngle = radians (e.instruction.arc.endAngle);
-					CRect o_r (e.instruction.arc.rect.left, e.instruction.arc.rect.top, e.instruction.arc.rect.right, e.instruction.arc.rect.bottom);
-					CRect r (o_r);
-					o_r.originize ();
-					CPoint center = o_r.getCenter ();
-					if (center.x != center.y)
-					{
-						startAngle = atan2 (sin (startAngle) * center.x, cos (startAngle) * center.y);
-						endAngle = atan2 (sin (endAngle) * center.x, cos (endAngle) * center.y);
-					}
-					CPoint start;
-					start.x = r.left + center.x + center.x * cos (startAngle);
-					start.y = r.top + center.y + center.y * sin (startAngle);
-					if (!figureOpen)
-					{
-						sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
-						figureOpen = true;
-					}
-					else if (lastPos != start)
-					{
-						sink->AddLine (makeD2DPoint (start));
-					}
-
-					double sweepangle = endAngle - startAngle;
-					if (clockwise) {
-						// sweepangle positive
-						while (sweepangle < 0.0)
-							sweepangle += 2 * M_PI;
-						while (sweepangle > 2 * M_PI)
-							sweepangle -= 2 * M_PI;
-					} else {
-						// sweepangle negative
-						while (sweepangle > 0.0)
-							sweepangle -= 2 * M_PI;
-						while (sweepangle < -2 * M_PI)
-							sweepangle += 2 * M_PI;
-					}
-
-					CPoint endPoint;
-					endPoint.x = r.left + center.x + center.x * cos (endAngle);
-					endPoint.y = r.top + center.y + center.y * sin (endAngle);
-
-					D2D1_ARC_SEGMENT arc;
-					arc.size = makeD2DSize (r.getWidth ()/2., r.getHeight ()/2.);
-					arc.rotationAngle = 0;
-					arc.sweepDirection = clockwise ? D2D1_SWEEP_DIRECTION_CLOCKWISE : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE;
-					arc.point = makeD2DPoint (endPoint);
-					arc.arcSize = fabs(sweepangle) <= M_PI ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE;
-					sink->AddArc (arc);
-					lastPos = endPoint;
-					break;
-				}
-				case Element::kEllipse:
-				{
-					CRect r (e.instruction.rect.left, e.instruction.rect.top, e.instruction.rect.right, e.instruction.rect.bottom);
-					CPoint top (r.getTopLeft ());
-					top.x += r.getWidth () / 2.;
-					CPoint bottom (r.getBottomLeft ());
-					bottom.x += r.getWidth () / 2.;
-					if (figureOpen && lastPos != CPoint (e.instruction.rect.left, e.instruction.rect.top))
-					{
-						sink->EndFigure (D2D1_FIGURE_END_OPEN);
-						figureOpen = false;
-					}
-					if (!figureOpen)
-					{
-						sink->BeginFigure (makeD2DPoint (top), D2D1_FIGURE_BEGIN_FILLED);
-						figureOpen = true;
-					}
-					D2D1_ARC_SEGMENT arc = D2D1::ArcSegment (makeD2DPoint (bottom), D2D1::SizeF ((FLOAT)r.getWidth ()/2.f, (FLOAT)r.getHeight ()/2.f), 180.f, D2D1_SWEEP_DIRECTION_CLOCKWISE, D2D1_ARC_SIZE_SMALL);
-					sink->AddArc (arc);
-					arc.point = makeD2DPoint (top);
-					sink->AddArc (arc);
-					lastPos = top;
-					break;
-				}
-				case Element::kRect:
-				{
-					CRect r (e.instruction.rect.left, e.instruction.rect.top, e.instruction.rect.right, e.instruction.rect.bottom);
-					D2D1_POINT_2F points[4] = {
-						{(FLOAT)r.right, (FLOAT)r.top},
-						{(FLOAT)r.right, (FLOAT)r.bottom},
-						{(FLOAT)r.left, (FLOAT)r.bottom},
-						{(FLOAT)r.left, (FLOAT)r.top}
-					};
-					if (figureOpen && lastPos != CPoint (r.left, r.top))
-					{
-						sink->EndFigure (D2D1_FIGURE_END_OPEN);
-						figureOpen = false;
-					}
-					if (figureOpen == false)
-					{
-						sink->BeginFigure (points[3], D2D1_FIGURE_BEGIN_FILLED);
-						figureOpen = true;
-					}
-					sink->AddLine (points[0]);
-					sink->AddLine (points[1]);
-					sink->AddLine (points[2]);
-					sink->AddLine (points[3]);
-					lastPos = CPoint (r.left, r.top);
-					break;
-				}
-				case Element::kLine:
-				{
-					if (figureOpen)
-					{
-						CPoint p (e.instruction.point.x, e.instruction.point.y);
-						D2D1_POINT_2F end = {(FLOAT)p.x, (FLOAT)p.y};
-						sink->AddLine (end);
-						lastPos = p;
-					}
-					break;
-				}
-				case Element::kBezierCurve:
-				{
-					if (figureOpen)
-					{
-						D2D1_POINT_2F control1 = {(FLOAT)e.instruction.curve.control1.x, (FLOAT)e.instruction.curve.control1.y};
-						D2D1_POINT_2F control2 = {(FLOAT)e.instruction.curve.control2.x, (FLOAT)e.instruction.curve.control2.y};
-						D2D1_POINT_2F end = {(FLOAT)e.instruction.curve.end.x, (FLOAT)e.instruction.curve.end.y};
-						D2D1_BEZIER_SEGMENT bezier = D2D1::BezierSegment (control1, control2, end);
-						sink->AddBezier (bezier);
-						lastPos = CPoint (e.instruction.curve.end.x, e.instruction.curve.end.y);
-					}
-					break;
-				}
-				case Element::kBeginSubpath:
-				{
-					if (figureOpen)
-						sink->EndFigure (D2D1_FIGURE_END_OPEN);
-					CPoint p (e.instruction.point.x, e.instruction.point.y);
-					D2D1_POINT_2F start = {(FLOAT)p.x, (FLOAT)p.y};
-					sink->BeginFigure (start, D2D1_FIGURE_BEGIN_FILLED);
-					figureOpen = true;
-					lastPos = p;
-					break;
-				}
-				case Element::kCloseSubpath:
-				{
-					if (figureOpen)
-					{
-						sink->EndFigure (D2D1_FIGURE_END_CLOSED);
-						figureOpen = false;
-					}
-					break;
-				}
-			}
-		}
-		if (figureOpen)
-			sink->EndFigure (D2D1_FIGURE_END_OPEN);
-		HRESULT res = sink->Close ();
-		if (!SUCCEEDED (res))
-		{
-			path->Release ();
-			path = nullptr;
-		}
-		sink->Release ();
-	}
-	if (path && (transform || context))
-	{
-		ID2D1Geometry* geometry = path;
-		if (transform)
-		{
-			ID2D1TransformedGeometry* tg = nullptr;
-			if (!SUCCEEDED (getD2DFactory ()->CreateTransformedGeometry (geometry, convert (*transform), &tg)))
-				return nullptr;
-			geometry = tg;
-		}
-		if (context)
-		{
-			AlignPixelSink sink (context);
-			if (sink.init () == false)
-			{
-				if (transform)
-					geometry->Release ();
-				return nullptr;
-			}
-			if (!SUCCEEDED (geometry->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, nullptr, &sink)))
-			{
-				if (transform)
-					geometry->Release ();
-				return nullptr;
-			}
-			
-			ID2D1PathGeometry* result = sink.get ();
-			if (transform)
-				geometry->Release ();
-			return result;
-		}
-		return geometry;
-	}
-	if (path)
-		path->AddRef ();
-	return path;
-}
 
 } // VSTGUI
 

@@ -271,18 +271,6 @@ bool CGGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled,
 }
 
 //-----------------------------------------------------------------------------
-CPoint CGGraphicsPath::getCurrentPosition () const
-{
-	CPoint p (0, 0);
-	if (!CGPathIsEmpty (path))
-	{
-		auto cgPoint = CGPathGetCurrentPoint (path);
-		p = CPointFromCGPoint (cgPoint);
-	}
-	return p;
-}
-
-//-----------------------------------------------------------------------------
 CRect CGGraphicsPath::getBoundingBox () const
 {
 	auto cgRect = CGPathGetBoundingBox (path);
@@ -389,8 +377,52 @@ bool QuartzGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled,
 //-----------------------------------------------------------------------------
 CPoint QuartzGraphicsPath::getCurrentPosition ()
 {
-	ensurePathValid ();
-	return path ? path->getCurrentPosition () : CPoint ();
+	CPoint res;
+	if (!elements.empty())
+	{
+		const auto& e = elements.back ();
+		switch (e.type)
+		{
+			case Element::kBeginSubpath:
+			{
+				res = point2CPoint (e.instruction.point);
+				break;
+			}
+			case Element::kCloseSubpath:
+			{
+				// TODO: find opening point
+				break;
+			}
+			case Element::kArc:
+			{
+				// TODO: calculate end point
+				break;
+			}
+			case Element::kEllipse:
+			{
+				res = {e.instruction.rect.left +
+				           (e.instruction.rect.right - e.instruction.rect.left) / 2.,
+				       e.instruction.rect.bottom};
+				break;
+			}
+			case Element::kRect:
+			{
+				res = rect2CRect (e.instruction.rect).getTopLeft ();
+				break;
+			}
+			case Element::kLine:
+			{
+				res = point2CPoint (e.instruction.point);
+				break;
+			}
+			case Element::kBezierCurve:
+			{
+				res = point2CPoint(e.instruction.curve.end);
+				break;
+			}
+		}
+	}
+	return res;
 }
 
 //-----------------------------------------------------------------------------

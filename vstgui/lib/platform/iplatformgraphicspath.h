@@ -49,7 +49,6 @@ public:
 
 	virtual bool hitTest (const CPoint& p, bool evenOddFilled = false,
 	                      CGraphicsTransform* transform = nullptr) const = 0;
-	virtual CPoint getCurrentPosition () const = 0;
 	virtual CRect getBoundingBox () const = 0;
 
 	virtual ~IPlatformGraphicsPath () noexcept = default;

@@ -47,7 +47,6 @@ public:
 	void finishBuilding () override;
 	bool hitTest (const CPoint& p, bool evenOddFilled = false,
 	              CGraphicsTransform* transform = nullptr) const override;
-	CPoint getCurrentPosition () const override;
 	CRect getBoundingBox () const override;
 
 private:

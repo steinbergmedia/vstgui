@@ -240,14 +240,18 @@ void D2DDrawContext::init ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* D2DDrawContext::createGraphicsPath ()
 {
-	return new D2DGraphicsPath ();
+	return new D2DGraphicsPathLegacy (D2DGraphicsPathFactory::instance ());
 }
 
 //-----------------------------------------------------------------------------
 CGraphicsPath* D2DDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
- 	auto ctFont = font->getPlatformFont ().cast<const D2DFont> ();
- 	return ctFont ? new D2DGraphicsPath (ctFont, text) : nullptr;
+	auto factory = D2DGraphicsPathFactory::instance ();
+	if (auto path = factory->createTextPath (font->getPlatformFont (), text))
+	{
+		return new D2DGraphicsPathLegacy (D2DGraphicsPathFactory::instance (), path);
+	}
+ 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -259,11 +263,27 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 	if (ac.isEmpty ())
 		return;
 
-	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto d2dPathLegacy = dynamic_cast<D2DGraphicsPathLegacy*> (_path);
+	if (d2dPathLegacy == nullptr)
+		return;
+	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (d2dPathLegacy->getPlatformPath ());
 	if (d2dPath == nullptr)
 		return;
 
-	ID2D1Geometry* path = d2dPath->createPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, nullptr, t);
+	ID2D1Geometry* path = nullptr;
+	if (d2dPath->getFillMode () != (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING))
+	{
+		d2dPath = d2dPath->copyAndChangeFillMode ();
+		if (!d2dPath)
+			return;
+	}
+	if (t)
+		path = d2dPath->createTransformedGeometry (getD2DFactory (), *t);
+	else
+	{
+		path = d2dPath->getPathGeometry ();
+		path->AddRef ();
+	}
 	if (path)
 	{
 		if (mode == kPathFilled || mode == kPathFilledEvenOdd)
@@ -300,14 +320,29 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 	if (ac.isEmpty ())
 		return;
 	
-	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto d2dPathLegacy = dynamic_cast<D2DGraphicsPathLegacy*> (_path);
+	if (d2dPathLegacy == nullptr)
+		return;
+	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (d2dPathLegacy->getPlatformPath ());
 	if (d2dPath == nullptr)
 		return;
+	if (d2dPath->getFillMode () != (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING))
+	{
+		d2dPath = d2dPath->copyAndChangeFillMode ();
+		if (!d2dPath)
+			return;
+	}
+	ID2D1Geometry* path = nullptr;
+	if (t)
+		path = d2dPath->createTransformedGeometry (getD2DFactory (), *t);
+	else
+	{
+		path = d2dPath->getPathGeometry ();
+		path->AddRef ();
+	}
 
-	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, nullptr, t);
 	if (path)
 	{
-
 		ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient);
 		if (collection)
 		{
@@ -336,46 +371,49 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 	if (ac.isEmpty ())
 		return;
 	
-	auto* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	auto d2dPathLegacy = dynamic_cast<D2DGraphicsPathLegacy*> (_path);
+	if (d2dPathLegacy == nullptr)
+		return;
+
+	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (d2dPathLegacy->getPlatformPath ());
 	if (d2dPath == nullptr)
 		return;
 
-	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
+	if (d2dPath->getFillMode () != (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING))
+	{
+		d2dPath = d2dPath->copyAndChangeFillMode ();
+		if (!d2dPath)
+			return;
+	}
+
+	ID2D1Geometry* path = nullptr;
+	if (t)
+		path = d2dPath->createTransformedGeometry (getD2DFactory (), *t);
+	else
+	{
+		path = d2dPath->getPathGeometry ();
+		path->AddRef ();
+	}
+
 	if (path)
 	{
-		ID2D1Geometry* geometry = nullptr;
-		if (t)
+		if (ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient))
 		{
-			ID2D1TransformedGeometry* tg = nullptr;
-			getD2DFactory ()->CreateTransformedGeometry (path, convert (*t), &tg);
-			geometry = tg;
-		}
-		else
-		{
-			geometry = path;
-			geometry->AddRef ();
-		}
-		if (geometry)
-		{
-			if (ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient))
-			{
-				// brush properties
-				ID2D1RadialGradientBrush* brush = nullptr;
-				D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES properties;
-				properties.center = makeD2DPoint (center);
-				properties.gradientOriginOffset = makeD2DPoint (originOffset);
-				properties.radiusX = (FLOAT)radius;
-				properties.radiusY = (FLOAT)radius;
+			// brush properties
+			ID2D1RadialGradientBrush* brush = nullptr;
+			D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES properties;
+			properties.center = makeD2DPoint (center);
+			properties.gradientOriginOffset = makeD2DPoint (originOffset);
+			properties.radiusX = (FLOAT)radius;
+			properties.radiusY = (FLOAT)radius;
 
-				if (SUCCEEDED (getRenderTarget ()->CreateRadialGradientBrush (properties,
-																			  collection, &brush)))
-				{
-					getRenderTarget ()->FillGeometry (geometry, brush);
-					brush->Release ();
-				}
-				collection->Release ();
+			if (SUCCEEDED (getRenderTarget ()->CreateRadialGradientBrush (properties,
+																			collection, &brush)))
+			{
+				getRenderTarget ()->FillGeometry (path, brush);
+				brush->Release ();
 			}
-			geometry->Release ();
+			collection->Release ();
 		}
 		path->Release ();
 	}
@@ -526,19 +564,19 @@ void D2DDrawContext::drawPolygon (const PointList& polygonPointList, const CDraw
 	if (ac.isEmpty ())
 		return;
 
-	D2DGraphicsPath path;
-	path.beginSubpath (polygonPointList[0]);
+	auto path = owned (createGraphicsPath ());
+	path->beginSubpath (polygonPointList[0]);
 	for (uint32_t i = 1; i < polygonPointList.size (); ++i)
 	{
-		path.addLine (polygonPointList[i]);
+		path->addLine (polygonPointList[i]);
 	}
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 	{
-		drawGraphicsPath (&path, kPathFilled);
+		drawGraphicsPath (path, kPathFilled);
 	}
 	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 	{
-		drawGraphicsPath (&path, kPathStroked);
+		drawGraphicsPath (path, kPathStroked);
 	}
 }
 
