@@ -9,6 +9,8 @@
 #include "cfontmac.h"
 #include "cgdrawcontext.h"
 
+#include "../../cgradient.h"
+
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -294,7 +296,7 @@ QuartzGraphicsPath::~QuartzGraphicsPath () noexcept
 CGradient* QuartzGraphicsPath::createGradient (double color1Start, double color2Start,
                                                const CColor& color1, const CColor& color2)
 {
-	return new QuartzGradient (color1Start, color2Start, color1, color2);
+	return CGradient::create (color1Start, color2Start, color1, color2);
 }
 
 //-----------------------------------------------------------------------------
@@ -442,46 +444,28 @@ const IPlatformGraphicsPathPtr& QuartzGraphicsPath::getPlatformPath ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-QuartzGradient::QuartzGradient (const ColorStopMap& map) : CGradient (map), gradient (nullptr)
-{
-}
-
-//-----------------------------------------------------------------------------
-QuartzGradient::QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1,
-                                const CColor& _color2)
-: CGradient (_color1Start, _color2Start, _color1, _color2), gradient (nullptr)
-{
-}
-
-//-----------------------------------------------------------------------------
 QuartzGradient::~QuartzGradient () noexcept
 {
 	releaseCGGradient ();
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGradient::addColorStop (const std::pair<double, CColor>& colorStop)
+void QuartzGradient::changed ()
 {
-	CGradient::addColorStop (colorStop);
-	releaseCGGradient ();
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGradient::addColorStop (std::pair<double, CColor>&& colorStop)
-{
-	CGradient::addColorStop (colorStop);
 	releaseCGGradient ();
 }
 
 //-----------------------------------------------------------------------------
 void QuartzGradient::createCGGradient () const
 {
-	CGFloat* locations = new CGFloat[colorStops.size ()];
-	CFMutableArrayRef colors = CFArrayCreateMutable (
-	    kCFAllocatorDefault, static_cast<CFIndex> (colorStops.size ()), &kCFTypeArrayCallBacks);
+	assert (gradient == nullptr);
+	auto locations = new CGFloat[getColorStops ().size ()];
+	auto colors =
+	    CFArrayCreateMutable (kCFAllocatorDefault, static_cast<CFIndex> (getColorStops ().size ()),
+	                          &kCFTypeArrayCallBacks);
 
 	uint32_t index = 0;
-	for (const auto& it : colorStops)
+	for (const auto& it : getColorStops ())
 	{
 		locations[index] = static_cast<CGFloat> (it.first);
 		CColor color = it.second;
@@ -513,12 +497,6 @@ QuartzGradient::operator CGGradientRef () const
 		createCGGradient ();
 	}
 	return gradient;
-}
-
-//-----------------------------------------------------------------------------
-CGradient* CGradient::create (const ColorStopMap& colorStopMap)
-{
-	return new QuartzGradient (colorStopMap);
 }
 
 } // VSTGUI

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../ccolor.h"
 #include "../cgraphicstransform.h"
 #include "../cpoint.h"
 #include "../crect.h"

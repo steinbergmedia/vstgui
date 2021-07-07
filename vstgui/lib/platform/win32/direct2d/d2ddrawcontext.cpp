@@ -12,16 +12,10 @@
 #include "d2dbitmap.h"
 #include "d2dgraphicspath.h"
 #include "d2dfont.h"
+#include "d2dgradient.h"
 #include <cassert>
 
 namespace VSTGUI {
-
-//-----------------------------------------------------------------------------
-inline D2D1::ColorF toColorF (CColor c, float alpha)
-{
-	return D2D1::ColorF (c.normRed<float> (), c.normGreen<float> (), c.normBlue<float> (),
-	                     c.normAlpha<float> () * alpha);
-}
 
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset)
@@ -295,19 +289,11 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 }
 
 //-----------------------------------------------------------------------------
-ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const CGradient& d2dGradient) const
+ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const CGradient& gradient) const
 {
-	ID2D1GradientStopCollection* collection = nullptr;
-	auto* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient.getColorStops ().size ()];
-	uint32_t index = 0;
-	for (CGradient::ColorStopMap::const_iterator it = d2dGradient.getColorStops ().begin (); it != d2dGradient.getColorStops ().end (); ++it, ++index)
-	{
-		gradientStops[index].position = (FLOAT)it->first;
-		gradientStops[index].color = toColorF (it->second, getCurrentState ().globalAlpha);
-	}
-	getRenderTarget ()->CreateGradientStopCollection (gradientStops, static_cast<UINT32> (d2dGradient.getColorStops ().size ()), &collection);
-	delete [] gradientStops;
-	return collection;
+	if (auto d2dGradient = dynamic_cast<D2DGradient*> (gradient.getPlatformGradient ().get ()))
+		return d2dGradient->create (getRenderTarget (), getCurrentState ().globalAlpha);
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

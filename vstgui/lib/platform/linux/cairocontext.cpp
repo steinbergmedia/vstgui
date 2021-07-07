@@ -4,6 +4,7 @@
 
 #include "cairocontext.h"
 #include "../../cbitmap.h"
+#include "../../cgradient.h"
 #include "cairobitmap.h"
 #include "cairogradient.h"
 #include "cairopath.h"
@@ -519,7 +520,7 @@ void Context::fillLinearGradient (CGraphicsPath* path, const CGradient& gradient
 			return;
 		if (needPixelAlignment (getDrawMode ()))
 			graphicsPath = graphicsPath->copyPixelAlign (getCurrentTransform ());
-		if (auto cairoGradient = dynamic_cast<const Gradient*> (&gradient))
+		if (auto cairoGradient = dynamic_cast<Gradient*> (gradient.getPlatformGradient ().get ()))
 		{
 			if (auto cd = DrawBlock::begin (*this))
 			{

@@ -14,6 +14,7 @@
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dfont.h"
+#include "direct2d/d2dgradient.h"
 #include "win32frame.h"
 #include "win32dragging.h"
 #include "win32resourcestream.h"
@@ -259,6 +260,12 @@ auto Win32Factory::createOffscreenContext (const CPoint& size, double scaleFacto
 		return owned<COffscreenContext> (new D2DDrawContext (bitmap));
 	}
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+PlatformGradientPtr Win32Factory::createGradient () const noexcept
+{
+	return std::make_unique<D2DGradient> ();
 }
 
 //-----------------------------------------------------------------------------

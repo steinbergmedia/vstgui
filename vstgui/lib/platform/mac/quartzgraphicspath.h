@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../../cgraphicspath.h"
-#include "../../cgradient.h"
+#include "../common/gradientbase.h"
 #include "../iplatformgraphicspath.h"
 
 #if MAC
@@ -93,23 +93,18 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class QuartzGradient : public CGradient
+class QuartzGradient : public PlatformGradientBase
 {
 public:
-	explicit QuartzGradient (const ColorStopMap& map);
-	QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2);
 	~QuartzGradient () noexcept override;
-
 	operator CGGradientRef () const;
 
-	void addColorStop (const std::pair<double, CColor>& colorStop) override;
-	void addColorStop (std::pair<double, CColor>&& colorStop) override;
-
+	void changed () override;
 protected:
 	void createCGGradient () const;
 	void releaseCGGradient ();
 
-	mutable CGGradientRef gradient;
+	mutable CGGradientRef gradient {nullptr};
 };
 
 } // VSTGUI

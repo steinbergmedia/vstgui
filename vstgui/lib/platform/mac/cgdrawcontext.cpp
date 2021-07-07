@@ -11,6 +11,7 @@
 #include "quartzgraphicspath.h"
 #include "cfontmac.h"
 #include "../../cbitmap.h"
+#include "../../cgradient.h"
 
 #ifndef CGFLOAT_DEFINED
 	#define CGFLOAT_DEFINED
@@ -189,7 +190,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	if (path == nullptr)
 		return;
 
-	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
+	auto cgGradient = dynamic_cast<QuartzGradient*> (gradient.getPlatformGradient ().get ());
 	if (cgGradient == nullptr)
 		return;
 
@@ -251,7 +252,7 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 	if (path == nullptr)
 		return;
 
-	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
+	auto cgGradient = dynamic_cast<QuartzGradient*> (gradient.getPlatformGradient ().get ());
 	if (cgGradient == nullptr)
 		return;
 
