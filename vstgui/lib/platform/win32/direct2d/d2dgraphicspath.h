@@ -46,7 +46,7 @@ public:
 											   const CGraphicsTransform* tm = nullptr) const;
 	int32_t getFillMode () const { return fillMode; }
 
-	std::shared_ptr<D2DGraphicsPath> copyAndChangeFillMode ();
+	std::unique_ptr<D2DGraphicsPath> copyAndChangeFillMode ();
 
 	// IPlatformGraphicsPath
 	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;

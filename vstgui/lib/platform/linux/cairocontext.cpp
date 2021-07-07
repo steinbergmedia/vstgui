@@ -462,14 +462,15 @@ void Context::drawGraphicsPath (CGraphicsPath* path, CDrawContext::PathDrawMode 
 {
 	if (path)
 	{
-		auto graphicsPath = std::dynamic_pointer_cast<GraphicsPath> (path->getPlatformPath ());
+		auto graphicsPath = dynamic_cast<GraphicsPath*> (path->getPlatformPath ().get ());
 		if (!graphicsPath)
 			return;
 		if (auto cd = DrawBlock::begin (*this))
 		{
+			std::unique_ptr<GraphicsPath> alignedPath;
 			if (needPixelAlignment (getDrawMode ()))
-				graphicsPath = graphicsPath->copyPixelAlign (getCurrentTransform ());
-			auto p = graphicsPath->getCairoPath ();
+				alignedPath = graphicsPath->copyPixelAlign (getCurrentTransform ());
+			auto p = alignedPath ? alignedPath->getCairoPath () : graphicsPath->getCairoPath ();
 			if (transformation)
 			{
 				cairo_matrix_t currentMatrix;
@@ -515,16 +516,17 @@ void Context::fillLinearGradient (CGraphicsPath* path, const CGradient& gradient
 {
 	if (path)
 	{
-		auto graphicsPath = std::dynamic_pointer_cast<GraphicsPath> (path->getPlatformPath ());
+		auto graphicsPath = dynamic_cast<GraphicsPath*> (path->getPlatformPath ().get ());
 		if (!graphicsPath)
 			return;
+		std::unique_ptr<GraphicsPath> alignedPath;
 		if (needPixelAlignment (getDrawMode ()))
-			graphicsPath = graphicsPath->copyPixelAlign (getCurrentTransform ());
+			alignedPath = graphicsPath->copyPixelAlign (getCurrentTransform ());
 		if (auto cairoGradient = dynamic_cast<Gradient*> (gradient.getPlatformGradient ().get ()))
 		{
 			if (auto cd = DrawBlock::begin (*this))
 			{
-				auto p = graphicsPath->getCairoPath ();
+				auto p = alignedPath ? alignedPath->getCairoPath () : graphicsPath->getCairoPath ();
 				cairo_append_path (cr, p);
 				cairo_set_source (cr, cairoGradient->getLinearGradient (startPoint, endPoint));
 				if (evenOdd)

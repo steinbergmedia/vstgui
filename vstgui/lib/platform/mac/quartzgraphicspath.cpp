@@ -83,7 +83,7 @@ PlatformGraphicsPathFactoryPtr CGGraphicsPathFactory::instance ()
 //-----------------------------------------------------------------------------
 PlatformGraphicsPathPtr CGGraphicsPathFactory::createPath ()
 {
-	return std::make_shared<CGGraphicsPath> (CGPathCreateMutable ());
+	return std::make_unique<CGGraphicsPath> (CGPathCreateMutable ());
 }
 
 //-----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ PlatformGraphicsPathPtr CGGraphicsPathFactory::createTextPath (const PlatformFon
 {
 	if (auto ctFont = font.cast<CoreTextFont> ())
 	{
-		return std::make_shared<CGGraphicsPath> (VSTGUI::createTextPath (ctFont, text));
+		return std::make_unique<CGGraphicsPath> (VSTGUI::createTextPath (ctFont, text));
 	}
 	return nullptr;
 }

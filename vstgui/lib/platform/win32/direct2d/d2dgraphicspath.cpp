@@ -283,7 +283,7 @@ ID2D1Geometry* D2DGraphicsPath::createPixelAlignedGeometry (ID2D1Factory* factor
 }
 
 //-----------------------------------------------------------------------------
-std::shared_ptr<D2DGraphicsPath> D2DGraphicsPath::copyAndChangeFillMode ()
+std::unique_ptr<D2DGraphicsPath> D2DGraphicsPath::copyAndChangeFillMode ()
 {
 	// TODO: Implement me!
 	return nullptr;
@@ -555,7 +555,7 @@ PlatformGraphicsPathPtr D2DGraphicsPathFactory::createPath ()
 	ID2D1PathGeometry* path {nullptr};
 	if (FAILED (getD2DFactory ()->CreatePathGeometry (&path)))
 		return nullptr;
-	return std::make_shared<D2DGraphicsPath> (path);
+	return std::make_unique<D2DGraphicsPath> (path);
 }
 
 //-----------------------------------------------------------------------------
@@ -613,7 +613,7 @@ PlatformGraphicsPathPtr D2DGraphicsPathFactory::createTextPath (const PlatformFo
 	textPath->Release ();
 	sink->Close ();
 	sink->Release ();
-	return std::make_shared<D2DGraphicsPath> (localPath);
+	return std::make_unique<D2DGraphicsPath> (localPath);
 }
 
 } // VSTGUI

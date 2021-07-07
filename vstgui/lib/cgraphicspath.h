@@ -93,7 +93,7 @@ public:
 	//@}
 
 	CGraphicsPath (const PlatformGraphicsPathFactoryPtr& factory,
-				   const PlatformGraphicsPathPtr& path = nullptr);
+				   PlatformGraphicsPathPtr&& path = nullptr);
 	~CGraphicsPath () noexcept override;
 
 	const PlatformGraphicsPathPtr& getPlatformPath ();

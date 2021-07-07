@@ -118,9 +118,9 @@ void GraphicsPath::closeSubpath ()
 }
 
 //------------------------------------------------------------------------
-std::shared_ptr<GraphicsPath> GraphicsPath::copyPixelAlign (const CGraphicsTransform& tm)
+std::unique_ptr<GraphicsPath> GraphicsPath::copyPixelAlign (const CGraphicsTransform& tm)
 {
-	auto result = std::make_shared<GraphicsPath> (context);
+	auto result = std::make_unique<GraphicsPath> (context);
 	cairo_append_path (context, path);
 	result->finishBuilding ();
 	auto rpath = result->path;

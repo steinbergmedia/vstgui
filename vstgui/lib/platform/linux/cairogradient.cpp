@@ -9,7 +9,7 @@ namespace VSTGUI {
 namespace Cairo {
 
 //------------------------------------------------------------------------
-Gradient::~Gradient ()
+Gradient::~Gradient () noexcept
 {
 	changed ();
 }

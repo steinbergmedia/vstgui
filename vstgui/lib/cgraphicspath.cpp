@@ -160,7 +160,7 @@ void CGraphicsPath::closeSubpath ()
 
 //-----------------------------------------------------------------------------
 CGraphicsPath::CGraphicsPath (const PlatformGraphicsPathFactoryPtr& factory,
-							  const PlatformGraphicsPathPtr& path)
+							  PlatformGraphicsPathPtr&& path)
 : factory (factory), path (std::move (path))
 {
 }

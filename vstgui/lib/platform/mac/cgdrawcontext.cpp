@@ -109,7 +109,7 @@ CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr
 	if (auto path =
 	        CGGraphicsPathFactory::instance ()->createTextPath (font->getPlatformFont (), text))
 	{
-		return new CGraphicsPath (CGGraphicsPathFactory::instance (), path);
+		return new CGraphicsPath (CGGraphicsPathFactory::instance (), std::move (path));
 	}
 	return nullptr;
 }
@@ -122,7 +122,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode, CG
 	const auto& graphicsPath = path->getPlatformPath ();
 	if (!graphicsPath)
 		return;
-	auto cgPath = std::dynamic_pointer_cast<CGGraphicsPath> (graphicsPath);
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
 	if (!cgPath)
 		return;
 
@@ -193,7 +193,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* path, const CGradient& gr
 	const auto& graphicsPath = path->getPlatformPath ();
 	if (!graphicsPath)
 		return;
-	auto cgPath = std::dynamic_pointer_cast<CGGraphicsPath> (graphicsPath);
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
 	if (!cgPath)
 		return;
 
@@ -254,7 +254,7 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gr
 	const auto& graphicsPath = path->getPlatformPath ();
 	if (!graphicsPath)
 		return;
-	auto cgPath = std::dynamic_pointer_cast<CGGraphicsPath> (graphicsPath);
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
 	if (!cgPath)
 		return;
 

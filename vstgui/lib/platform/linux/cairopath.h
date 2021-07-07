@@ -34,7 +34,7 @@ public:
 	~GraphicsPath () noexcept;
 
 	cairo_path_t* getCairoPath () const { return path; }
-	std::shared_ptr<GraphicsPath> copyPixelAlign (const CGraphicsTransform& tm);
+	std::unique_ptr<GraphicsPath> copyPixelAlign (const CGraphicsTransform& tm);
 
 	// IPlatformGraphicsPath
 	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
