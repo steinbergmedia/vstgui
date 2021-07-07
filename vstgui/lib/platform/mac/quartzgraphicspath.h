@@ -27,10 +27,11 @@ CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t);
 class CGGraphicsPathFactory : public IPlatformGraphicsPathFactory
 {
 public:
-	static IPlatformGraphicsPathFactoryPtr instance ();
+	static PlatformGraphicsPathFactoryPtr instance ();
 
-	IPlatformGraphicsPathPtr createPath () override;
-	IPlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font, UTF8StringPtr text) override;
+	PlatformGraphicsPathPtr createPath () override;
+	PlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
+											UTF8StringPtr text) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -61,35 +62,6 @@ public:
 
 private:
 	CGMutablePathRef path {nullptr};
-};
-
-
-
-//------------------------------------------------------------------------------------
-class QuartzGraphicsPath : public CGraphicsPath
-{
-public:
-	QuartzGraphicsPath (const IPlatformGraphicsPathFactoryPtr& factory,
-	                    const IPlatformGraphicsPathPtr& path = nullptr);
-	~QuartzGraphicsPath () noexcept override;
-
-	const IPlatformGraphicsPathPtr& getPlatformPath ();
-	
-	void dirty () override;
-
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
-	CPoint getCurrentPosition () override;
-	CRect getBoundingBox () override;
-
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
-
-//------------------------------------------------------------------------------------
-protected:
-	void makeCGGraphicsPath ();
-	bool ensurePathValid ();
-
-	IPlatformGraphicsPathFactoryPtr factory;
-	IPlatformGraphicsPathPtr path;
 };
 
 //-----------------------------------------------------------------------------

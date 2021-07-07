@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -25,11 +25,11 @@ class D2DDrawContext;
 class D2DGraphicsPathFactory : public IPlatformGraphicsPathFactory
 {
 public:
-	static IPlatformGraphicsPathFactoryPtr instance ();
+	static PlatformGraphicsPathFactoryPtr instance ();
 
-	IPlatformGraphicsPathPtr createPath () override;
-	IPlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
-	                                                 UTF8StringPtr text) override;
+	PlatformGraphicsPathPtr createPath () override;
+	PlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
+											UTF8StringPtr text) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -40,9 +40,11 @@ public:
 	~D2DGraphicsPath () noexcept override;
 
 	ID2D1PathGeometry* getPathGeometry () const { return path; }
-	ID2D1Geometry* createTransformedGeometry (ID2D1Factory* factory, const CGraphicsTransform& tm) const;
-	ID2D1Geometry* createPixelAlignedGeometry (ID2D1Factory* factory, D2DDrawContext& context, const CGraphicsTransform* tm = nullptr) const;
-	int32_t getFillMode () const { return fillMode; } 
+	ID2D1Geometry* createTransformedGeometry (ID2D1Factory* factory,
+											  const CGraphicsTransform& tm) const;
+	ID2D1Geometry* createPixelAlignedGeometry (ID2D1Factory* factory, D2DDrawContext& context,
+											   const CGraphicsTransform* tm = nullptr) const;
+	int32_t getFillMode () const { return fillMode; }
 
 	std::shared_ptr<D2DGraphicsPath> copyAndChangeFillMode ();
 
@@ -68,30 +70,6 @@ private:
 	int32_t fillMode {1};
 	bool figureOpen {false};
 	CPoint lastPos;
-};
-
-//-----------------------------------------------------------------------------
-class D2DGraphicsPathLegacy final : public CGraphicsPath
-{
-public:
-	D2DGraphicsPathLegacy (const IPlatformGraphicsPathFactoryPtr& factory,
-	                       const IPlatformGraphicsPathPtr& path = nullptr);
-	~D2DGraphicsPathLegacy ();
-
-	const IPlatformGraphicsPathPtr& getPlatformPath ();
-
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
-
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
-	CPoint getCurrentPosition () override;
-	CRect getBoundingBox () override;
-	void dirty () override;
-protected:
-	void makeCGGraphicsPath ();
-	bool ensurePathValid ();
-
-	IPlatformGraphicsPathFactoryPtr factory;
-	IPlatformGraphicsPathPtr path;
 };
 
 } // VSTGUI

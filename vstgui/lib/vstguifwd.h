@@ -287,6 +287,8 @@ class IPlatformFrame;
 class IPlatformBitmap;
 class IPlatformFont;
 class IPlatformGradient;
+class IPlatformGraphicsPath;
+class IPlatformGraphicsPathFactory;
 class IPlatformString;
 class IPlatformTimer;
 class IPlatformResourceInputStream;
@@ -304,5 +306,7 @@ using PlatformTimerPtr = SharedPointer<IPlatformTimer>;
 using PlatformResourceInputStreamPtr = std::unique_ptr<IPlatformResourceInputStream>;
 using PlatformFactoryPtr = std::unique_ptr<IPlatformFactory>;
 using PlatformGradientPtr = std::unique_ptr<IPlatformGradient>;
+using PlatformGraphicsPathPtr = std::shared_ptr<IPlatformGraphicsPath>;
+using PlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
 
 } // VSTGUI

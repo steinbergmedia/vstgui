@@ -30,7 +30,8 @@ public:
 	 * @param color2 the second color of the gradient
 	 * @return a new gradient object
 	*/
-	virtual CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) = 0;
+	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1,
+							   const CColor& color2);
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -38,21 +39,21 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** add an arc to the path. Begins a new subpath if no elements were added before. */
-	virtual void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise);
+	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise);
 	/** add an ellipse to the path. Begins a new subpath if no elements were added before. */
-	virtual void addEllipse (const CRect& rect);
+	void addEllipse (const CRect& rect);
 	/** add a rectangle to the path. Begins a new subpath if no elements were added before. */
-	virtual void addRect (const CRect& rect);
+	void addRect (const CRect& rect);
 	/** add another path to the path. Begins a new subpath if no elements were added before. */
-	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = nullptr);
+	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = nullptr);
 	/** add a line to the path. A subpath must begin before */
-	virtual void addLine (const CPoint& to);
+	void addLine (const CPoint& to);
 	/** add a bezier curve to the path. A subpath must begin before */
-	virtual void addBezierCurve (const CPoint& control1, const CPoint& control2, const CPoint& end);
+	void addBezierCurve (const CPoint& control1, const CPoint& control2, const CPoint& end);
 	/** begin a new subpath. */
-	virtual void beginSubpath (const CPoint& start);
+	void beginSubpath (const CPoint& start);
 	/** close a subpath. A straight line will be added from the current point to the start point. */
-	virtual void closeSubpath ();
+	void closeSubpath ();
 
 	inline void beginSubpath (CCoord x, CCoord y)
 	{
@@ -79,21 +80,29 @@ public:
 	/// @name Hit Testing
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) = 0;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false,
+				  CGraphicsTransform* transform = nullptr);
 	//@}
 	
 	//-----------------------------------------------------------------------------
 	/// @name States
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual CPoint getCurrentPosition () = 0;
-	virtual CRect getBoundingBox () = 0;
+	CPoint getCurrentPosition ();
+	CRect getBoundingBox ();
 	//@}
-	
-protected:
-	CGraphicsPath () {}
 
-	virtual void dirty () = 0; // platform object should be released
+	CGraphicsPath (const PlatformGraphicsPathFactoryPtr& factory,
+				   const PlatformGraphicsPathPtr& path = nullptr);
+	~CGraphicsPath () noexcept override;
+
+	const PlatformGraphicsPathPtr& getPlatformPath ();
+
+protected:
+	void makePlatformGraphicsPath ();
+	bool ensurePlatformGraphicsPathValid ();
+
+	void dirty ();
 
 	/// @cond ignore
 
@@ -150,6 +159,9 @@ protected:
 
 	using ElementList = std::vector<Element>;
 	ElementList elements;
+
+	PlatformGraphicsPathFactoryPtr factory;
+	PlatformGraphicsPathPtr path;
 };
 
 } // VSTGUI

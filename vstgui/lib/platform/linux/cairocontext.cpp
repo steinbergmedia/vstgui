@@ -446,7 +446,7 @@ CGraphicsPath* Context::createGraphicsPath ()
 {
 	if (!graphicsPathFactory)
 		graphicsPathFactory = std::make_shared<GraphicsPathFactory> (cr);
-	return new Path (graphicsPathFactory);
+	return new CGraphicsPath (graphicsPathFactory);
 }
 
 //-----------------------------------------------------------------------------
@@ -460,9 +460,9 @@ CGraphicsPath* Context::createTextPath (const CFontRef font, UTF8StringPtr text)
 void Context::drawGraphicsPath (CGraphicsPath* path, CDrawContext::PathDrawMode mode,
 								CGraphicsTransform* transformation)
 {
-	if (auto cairoPath = dynamic_cast<Path*> (path))
+	if (path)
 	{
-		auto graphicsPath = std::dynamic_pointer_cast<GraphicsPath> (cairoPath->getPlatformPath ());
+		auto graphicsPath = std::dynamic_pointer_cast<GraphicsPath> (path->getPlatformPath ());
 		if (!graphicsPath)
 			return;
 		if (auto cd = DrawBlock::begin (*this))
@@ -513,9 +513,9 @@ void Context::fillLinearGradient (CGraphicsPath* path, const CGradient& gradient
 								  const CPoint& startPoint, const CPoint& endPoint, bool evenOdd,
 								  CGraphicsTransform* transformation)
 {
-	if (auto cairoPath = dynamic_cast<Path*> (path))
+	if (path)
 	{
-		auto graphicsPath = std::dynamic_pointer_cast<GraphicsPath> (cairoPath->getPlatformPath ());
+		auto graphicsPath = std::dynamic_pointer_cast<GraphicsPath> (path->getPlatformPath ());
 		if (!graphicsPath)
 			return;
 		if (needPixelAlignment (getDrawMode ()))

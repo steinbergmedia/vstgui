@@ -234,7 +234,7 @@ void D2DDrawContext::init ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* D2DDrawContext::createGraphicsPath ()
 {
-	return new D2DGraphicsPathLegacy (D2DGraphicsPathFactory::instance ());
+	return new CGraphicsPath (D2DGraphicsPathFactory::instance ());
 }
 
 //-----------------------------------------------------------------------------
@@ -243,24 +243,22 @@ CGraphicsPath* D2DDrawContext::createTextPath (const CFontRef font, UTF8StringPt
 	auto factory = D2DGraphicsPathFactory::instance ();
 	if (auto path = factory->createTextPath (font->getPlatformFont (), text))
 	{
-		return new D2DGraphicsPathLegacy (D2DGraphicsPathFactory::instance (), path);
+		return new CGraphicsPath (D2DGraphicsPathFactory::instance (), path);
 	}
  	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
+void D2DDrawContext::drawGraphicsPath (CGraphicsPath* graphicsPath, PathDrawMode mode,
+									   CGraphicsTransform* t)
 {
-	if (renderTarget == nullptr)
+	if (renderTarget == nullptr || graphicsPath == nullptr)
 		return;
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
 		return;
 
-	auto d2dPathLegacy = dynamic_cast<D2DGraphicsPathLegacy*> (_path);
-	if (d2dPathLegacy == nullptr)
-		return;
-	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (d2dPathLegacy->getPlatformPath ());
+	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (graphicsPath->getPlatformPath ());
 	if (d2dPath == nullptr)
 		return;
 
@@ -297,19 +295,18 @@ ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
+void D2DDrawContext::fillLinearGradient (CGraphicsPath* graphicsPath, const CGradient& gradient,
+										 const CPoint& startPoint, const CPoint& endPoint,
+										 bool evenOdd, CGraphicsTransform* t)
 {
-	if (renderTarget == nullptr)
+	if (renderTarget == nullptr || graphicsPath == nullptr)
 		return;
 
 	D2DApplyClip ac (this, true);
 	if (ac.isEmpty ())
 		return;
-	
-	auto d2dPathLegacy = dynamic_cast<D2DGraphicsPathLegacy*> (_path);
-	if (d2dPathLegacy == nullptr)
-		return;
-	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (d2dPathLegacy->getPlatformPath ());
+
+	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (graphicsPath->getPlatformPath ());
 	if (d2dPath == nullptr)
 		return;
 	if (d2dPath->getFillMode () != (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING))
@@ -348,20 +345,19 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset, bool evenOdd, CGraphicsTransform* t)
+void D2DDrawContext::fillRadialGradient (CGraphicsPath* graphicsPath, const CGradient& gradient,
+										 const CPoint& center, CCoord radius,
+										 const CPoint& originOffset, bool evenOdd,
+										 CGraphicsTransform* t)
 {
-	if (renderTarget == nullptr)
+	if (renderTarget == nullptr || graphicsPath == nullptr)
 		return;
 
 	D2DApplyClip ac (this, true);
 	if (ac.isEmpty ())
 		return;
-	
-	auto d2dPathLegacy = dynamic_cast<D2DGraphicsPathLegacy*> (_path);
-	if (d2dPathLegacy == nullptr)
-		return;
 
-	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (d2dPathLegacy->getPlatformPath ());
+	auto d2dPath = std::dynamic_pointer_cast<D2DGraphicsPath> (graphicsPath->getPlatformPath ());
 	if (d2dPath == nullptr)
 		return;
 

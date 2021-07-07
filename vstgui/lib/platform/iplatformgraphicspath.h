@@ -11,18 +11,13 @@
 
 namespace VSTGUI {
 
-class IPlatformGraphicsPath;
-class IPlatformGraphicsPathFactory;
-using IPlatformGraphicsPathPtr = std::shared_ptr<IPlatformGraphicsPath>;
-using IPlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
-
 //------------------------------------------------------------------------
 class IPlatformGraphicsPathFactory
 {
 public:
-	virtual IPlatformGraphicsPathPtr createPath () = 0;
-	virtual IPlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
-	                                                 UTF8StringPtr text) = 0;
+	virtual PlatformGraphicsPathPtr createPath () = 0;
+	virtual PlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
+													UTF8StringPtr text) = 0;
 
 	virtual ~IPlatformGraphicsPathFactory () noexcept = default;
 };

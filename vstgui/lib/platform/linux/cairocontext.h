@@ -69,7 +69,7 @@ private:
 	SurfaceHandle surface;
 	ContextHandle cr;
 
-	IPlatformGraphicsPathFactoryPtr graphicsPathFactory;
+	PlatformGraphicsPathFactoryPtr graphicsPathFactory;
 };
 
 //------------------------------------------------------------------------

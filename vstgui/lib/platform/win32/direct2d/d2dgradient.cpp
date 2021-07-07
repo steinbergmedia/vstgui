@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -12,7 +12,8 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-ID2D1GradientStopCollection* D2DGradient::create (ID2D1RenderTarget* renderTarget, float globalAlpha) const
+ID2D1GradientStopCollection* D2DGradient::create (ID2D1RenderTarget* renderTarget,
+												  float globalAlpha) const
 {
 	std::vector<D2D1_GRADIENT_STOP> gradientStops;
 	gradientStops.resize (getColorStops ().size ());
@@ -23,7 +24,8 @@ ID2D1GradientStopCollection* D2DGradient::create (ID2D1RenderTarget* renderTarge
 		gradientStops[index].color = toColorF (it->second, globalAlpha);
 	}
 	ID2D1GradientStopCollection* collection = nullptr;
-	auto hr = renderTarget->CreateGradientStopCollection (gradientStops.data (), static_cast<UINT32> (getColorStops ().size ()), &collection);
+	auto hr = renderTarget->CreateGradientStopCollection (
+		gradientStops.data (), static_cast<UINT32> (getColorStops ().size ()), &collection);
 	if (SUCCEEDED (hr))
 		return collection;
 	return nullptr;

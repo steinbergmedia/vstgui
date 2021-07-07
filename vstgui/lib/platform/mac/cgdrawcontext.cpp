@@ -100,7 +100,7 @@ void CGDrawContext::endDraw ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGDrawContext::createGraphicsPath ()
 {
-	return new QuartzGraphicsPath (CGGraphicsPathFactory::instance ());
+	return new CGraphicsPath (CGGraphicsPathFactory::instance ());
 }
 
 //-----------------------------------------------------------------------------
@@ -109,19 +109,16 @@ CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr
 	if (auto path =
 	        CGGraphicsPathFactory::instance ()->createTextPath (font->getPlatformFont (), text))
 	{
-		return new QuartzGraphicsPath (CGGraphicsPathFactory::instance (), path);
+		return new CGraphicsPath (CGGraphicsPathFactory::instance (), path);
 	}
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
-                                      CGraphicsTransform* t)
+void CGDrawContext::drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode, CGraphicsTransform* t)
 {
-	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
-	if (path == nullptr)
+	if (!path)
 		return;
-
 	const auto& graphicsPath = path->getPlatformPath ();
 	if (!graphicsPath)
 		return;
@@ -182,11 +179,10 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient,
-                                        const CPoint& startPoint, const CPoint& endPoint,
-                                        bool evenOdd, CGraphicsTransform* t)
+void CGDrawContext::fillLinearGradient (CGraphicsPath* path, const CGradient& gradient,
+										const CPoint& startPoint, const CPoint& endPoint,
+										bool evenOdd, CGraphicsTransform* t)
 {
-	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
 	if (path == nullptr)
 		return;
 
@@ -243,12 +239,11 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient,
-                                        const CPoint& center, CCoord radius,
-                                        const CPoint& originOffset, bool evenOdd,
-                                        CGraphicsTransform* t)
+void CGDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gradient,
+										const CPoint& center, CCoord radius,
+										const CPoint& originOffset, bool evenOdd,
+										CGraphicsTransform* t)
 {
-	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
 	if (path == nullptr)
 		return;
 

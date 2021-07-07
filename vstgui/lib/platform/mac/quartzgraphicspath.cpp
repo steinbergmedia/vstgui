@@ -74,21 +74,21 @@ static CGMutablePathRef createTextPath (const CoreTextFont* font, UTF8StringPtr 
 }
 
 //-----------------------------------------------------------------------------
-IPlatformGraphicsPathFactoryPtr CGGraphicsPathFactory::instance ()
+PlatformGraphicsPathFactoryPtr CGGraphicsPathFactory::instance ()
 {
-	static IPlatformGraphicsPathFactoryPtr factory = std::make_shared<CGGraphicsPathFactory> ();
+	static PlatformGraphicsPathFactoryPtr factory = std::make_shared<CGGraphicsPathFactory> ();
 	return factory;
 }
 
 //-----------------------------------------------------------------------------
-IPlatformGraphicsPathPtr CGGraphicsPathFactory::createPath ()
+PlatformGraphicsPathPtr CGGraphicsPathFactory::createPath ()
 {
 	return std::make_shared<CGGraphicsPath> (CGPathCreateMutable ());
 }
 
 //-----------------------------------------------------------------------------
-IPlatformGraphicsPathPtr CGGraphicsPathFactory::createTextPath (const PlatformFontPtr& font,
-                                                                UTF8StringPtr text)
+PlatformGraphicsPathPtr CGGraphicsPathFactory::createTextPath (const PlatformFontPtr& font,
+															   UTF8StringPtr text)
 {
 	if (auto ctFont = font.cast<CoreTextFont> ())
 	{
@@ -277,168 +277,6 @@ CRect CGGraphicsPath::getBoundingBox () const
 {
 	auto cgRect = CGPathGetBoundingBox (path);
 	return CRectFromCGRect (cgRect);
-}
-
-//-----------------------------------------------------------------------------
-QuartzGraphicsPath::QuartzGraphicsPath (const IPlatformGraphicsPathFactoryPtr& factory,
-                                        const IPlatformGraphicsPathPtr& path)
-: factory (factory)
-, path (std::move (path))
-{
-}
-
-//-----------------------------------------------------------------------------
-QuartzGraphicsPath::~QuartzGraphicsPath () noexcept
-{
-}
-
-//-----------------------------------------------------------------------------
-CGradient* QuartzGraphicsPath::createGradient (double color1Start, double color2Start,
-                                               const CColor& color1, const CColor& color2)
-{
-	return CGradient::create (color1Start, color2Start, color1, color2);
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::makeCGGraphicsPath ()
-{
-	path = factory->createPath ();
-	if (!path)
-		return;
-	for (const auto& e : elements)
-	{
-		switch (e.type)
-		{
-			case Element::kArc:
-			{
-				path->addArc (rect2CRect (e.instruction.arc.rect), e.instruction.arc.startAngle,
-				              e.instruction.arc.endAngle, e.instruction.arc.clockwise);
-				break;
-			}
-			case Element::kEllipse:
-			{
-				path->addEllipse (rect2CRect (e.instruction.rect));
-				break;
-			}
-			case Element::kRect:
-			{
-				path->addRect (rect2CRect (e.instruction.rect));
-				break;
-			}
-			case Element::kLine:
-			{
-				path->addLine (point2CPoint (e.instruction.point));
-				break;
-			}
-			case Element::kBezierCurve:
-			{
-				path->addBezierCurve (point2CPoint (e.instruction.curve.control1),
-				                      point2CPoint (e.instruction.curve.control2),
-				                      point2CPoint (e.instruction.curve.end));
-				break;
-			}
-			case Element::kBeginSubpath:
-			{
-				path->beginSubpath (point2CPoint (e.instruction.point));
-				break;
-			}
-			case Element::kCloseSubpath:
-			{
-				path->closeSubpath ();
-				break;
-			}
-		}
-	}
-	path->finishBuilding ();
-}
-
-//-----------------------------------------------------------------------------
-bool QuartzGraphicsPath::ensurePathValid ()
-{
-	if (path == nullptr)
-	{
-		makeCGGraphicsPath ();
-	}
-	return path != nullptr;
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::dirty ()
-{
-	path = nullptr;
-}
-
-//-----------------------------------------------------------------------------
-bool QuartzGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled,
-                                  CGraphicsTransform* transform)
-{
-	ensurePathValid ();
-	return path ? path->hitTest (p, evenOddFilled, transform) : false;;
-}
-
-//-----------------------------------------------------------------------------
-CPoint QuartzGraphicsPath::getCurrentPosition ()
-{
-	CPoint res;
-	if (!elements.empty())
-	{
-		const auto& e = elements.back ();
-		switch (e.type)
-		{
-			case Element::kBeginSubpath:
-			{
-				res = point2CPoint (e.instruction.point);
-				break;
-			}
-			case Element::kCloseSubpath:
-			{
-				// TODO: find opening point
-				break;
-			}
-			case Element::kArc:
-			{
-				// TODO: calculate end point
-				break;
-			}
-			case Element::kEllipse:
-			{
-				res = {e.instruction.rect.left +
-				           (e.instruction.rect.right - e.instruction.rect.left) / 2.,
-				       e.instruction.rect.bottom};
-				break;
-			}
-			case Element::kRect:
-			{
-				res = rect2CRect (e.instruction.rect).getTopLeft ();
-				break;
-			}
-			case Element::kLine:
-			{
-				res = point2CPoint (e.instruction.point);
-				break;
-			}
-			case Element::kBezierCurve:
-			{
-				res = point2CPoint(e.instruction.curve.end);
-				break;
-			}
-		}
-	}
-	return res;
-}
-
-//-----------------------------------------------------------------------------
-CRect QuartzGraphicsPath::getBoundingBox ()
-{
-	ensurePathValid ();
-	return path ? path->getBoundingBox () : CRect ();
-}
-
-//-----------------------------------------------------------------------------
-const IPlatformGraphicsPathPtr& QuartzGraphicsPath::getPlatformPath ()
-{
-	ensurePathValid ();
-	return path;
 }
 
 //-----------------------------------------------------------------------------

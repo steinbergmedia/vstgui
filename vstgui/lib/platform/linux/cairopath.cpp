@@ -12,19 +12,17 @@ namespace VSTGUI {
 namespace Cairo {
 
 //-----------------------------------------------------------------------------
-GraphicsPathFactory::GraphicsPathFactory (const ContextHandle& cr)
-: context (cr)
-{
-}
+GraphicsPathFactory::GraphicsPathFactory (const ContextHandle& cr) : context (cr) {}
 
 //-----------------------------------------------------------------------------
-IPlatformGraphicsPathPtr GraphicsPathFactory::createPath ()
+PlatformGraphicsPathPtr GraphicsPathFactory::createPath ()
 {
 	return std::make_unique<GraphicsPath> (context);
 }
 
 //-----------------------------------------------------------------------------
-IPlatformGraphicsPathPtr GraphicsPathFactory::createTextPath (const PlatformFontPtr& font, UTF8StringPtr text)
+PlatformGraphicsPathPtr GraphicsPathFactory::createTextPath (const PlatformFontPtr& font,
+															 UTF8StringPtr text)
 {
 	return nullptr;
 }
@@ -193,169 +191,6 @@ CRect GraphicsPath::getBoundingBox () const
 	r.setTopLeft (p1);
 	r.setBottomRight (p2);
 	return r;
-}
-
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-Path::Path (const IPlatformGraphicsPathFactoryPtr& factory,
-	    	const IPlatformGraphicsPathPtr& path) noexcept 
-: factory (factory)
-, path (path)
-{
-}
-
-//------------------------------------------------------------------------
-Path::~Path () noexcept
-{
-}
-
-//------------------------------------------------------------------------
-CGradient* Path::createGradient (double color1Start, double color2Start,
-                                 const VSTGUI::CColor& color1, const VSTGUI::CColor& color2)
-{
-	return CGradient::create (color1Start, color2Start, color1, color2);
-}
-
-//------------------------------------------------------------------------
-void Path::makeGraphicsPath ()
-{
-	path = factory->createPath ();
-	if (!path)
-		return;
-	for (const auto& e : elements)
-	{
-		switch (e.type)
-		{
-			case Element::kArc:
-			{
-				path->addArc (rect2CRect (e.instruction.arc.rect), e.instruction.arc.startAngle,
-				              e.instruction.arc.endAngle, e.instruction.arc.clockwise);
-				break;
-			}
-			case Element::kEllipse:
-			{
-				path->addEllipse (rect2CRect (e.instruction.rect));
-				break;
-			}
-			case Element::kRect:
-			{
-				path->addRect (rect2CRect (e.instruction.rect));
-				break;
-			}
-			case Element::kLine:
-			{
-				path->addLine (point2CPoint (e.instruction.point));
-				break;
-			}
-			case Element::kBezierCurve:
-			{
-				path->addBezierCurve (point2CPoint (e.instruction.curve.control1),
-				                      point2CPoint (e.instruction.curve.control2),
-				                      point2CPoint (e.instruction.curve.end));
-				break;
-			}
-			case Element::kBeginSubpath:
-			{
-				path->beginSubpath (point2CPoint (e.instruction.point));
-				break;
-			}
-			case Element::kCloseSubpath:
-			{
-				path->closeSubpath ();
-				break;
-			}
-		}
-	}
-	path->finishBuilding ();
-}
-
-//------------------------------------------------------------------------
-bool Path::ensurePathValid ()
-{
-	if (path == nullptr)
-	{
-		makeGraphicsPath ();
-	}
-	return path != nullptr;
-}
-
-//------------------------------------------------------------------------
-bool Path::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
-{
-	ensurePathValid ();
-	return path->hitTest (p, evenOddFilled, transform);
-}
-
-//------------------------------------------------------------------------
-CPoint Path::getCurrentPosition ()
-{
-	CPoint res;
-	if (!elements.empty())
-	{
-		const auto& e = elements.back ();
-		switch (e.type)
-		{
-			case Element::kBeginSubpath:
-			{
-				res = point2CPoint (e.instruction.point);
-				break;
-			}
-			case Element::kCloseSubpath:
-			{
-				// TODO: find opening point
-				break;
-			}
-			case Element::kArc:
-			{
-				// TODO: calculate end point
-				break;
-			}
-			case Element::kEllipse:
-			{
-				res = {e.instruction.rect.left +
-				           (e.instruction.rect.right - e.instruction.rect.left) / 2.,
-				       e.instruction.rect.bottom};
-				break;
-			}
-			case Element::kRect:
-			{
-				res = rect2CRect (e.instruction.rect).getTopLeft ();
-				break;
-			}
-			case Element::kLine:
-			{
-				res = point2CPoint (e.instruction.point);
-				break;
-			}
-			case Element::kBezierCurve:
-			{
-				res = point2CPoint(e.instruction.curve.end);
-				break;
-			}
-		}
-	}
-	return res;
-}
-
-//------------------------------------------------------------------------
-CRect Path::getBoundingBox ()
-{
-	ensurePathValid ();
-	return path->getBoundingBox ();
-}
-
-//------------------------------------------------------------------------
-void Path::dirty ()
-{
-	path = nullptr;
-}
-
-//------------------------------------------------------------------------
-const IPlatformGraphicsPathPtr& Path::getPlatformPath ()
-{
-	ensurePathValid ();
-	return path;
 }
 
 //------------------------------------------------------------------------
