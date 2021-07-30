@@ -13,6 +13,7 @@
 #include "d2dfont.h"
 #include <dwrite.h>
 #include <winnt.h>
+#include <cassert>
 
 #if defined(__GNUC__) && !defined(__clang__)
 #define __maybenull
@@ -231,7 +232,7 @@ private:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-D2DGraphicsPath::D2DGraphicsPath (ID2D1PathGeometry* path, int32_t fillMode)
+D2DGraphicsPath::D2DGraphicsPath (ID2D1PathGeometry* path, PlatformGraphicsPathFillMode fillMode)
 : path (path), fillMode (fillMode)
 {
 }
@@ -283,13 +284,6 @@ ID2D1Geometry* D2DGraphicsPath::createPixelAlignedGeometry (ID2D1Factory* factor
 }
 
 //-----------------------------------------------------------------------------
-std::unique_ptr<D2DGraphicsPath> D2DGraphicsPath::copyAndChangeFillMode ()
-{
-	// TODO: Implement me!
-	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
 ID2D1GeometrySink* D2DGraphicsPath::getSink ()
 {
 	if (!sinkInternal)
@@ -300,7 +294,10 @@ ID2D1GeometrySink* D2DGraphicsPath::getSink ()
 		}
 		else
 		{
-			sinkInternal->SetFillMode ((D2D1_FILL_MODE)fillMode);
+			D2D1_FILL_MODE mode = fillMode == PlatformGraphicsPathFillMode::Alternate
+									  ? D2D1_FILL_MODE_ALTERNATE
+									  : D2D1_FILL_MODE_WINDING;
+			sinkInternal->SetFillMode (mode);
 		}
 	}
 	return sinkInternal;
@@ -505,11 +502,6 @@ void D2DGraphicsPath::finishBuilding ()
 bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled,
 							   CGraphicsTransform* transform) const
 {
-	if (evenOddFilled && fillMode == D2D1_FILL_MODE_WINDING)
-	{
-		// TODO: make a temporary copy with fillMode = D2D1_FILL_MODE_ALTERNATE
-		return false;
-	}
 	D2D1::Matrix3x2F matrix = D2D1::Matrix3x2F::Identity ();
 	if (transform)
 	{
@@ -550,12 +542,12 @@ PlatformGraphicsPathFactoryPtr D2DGraphicsPathFactory::instance ()
 }
 
 //-----------------------------------------------------------------------------
-PlatformGraphicsPathPtr D2DGraphicsPathFactory::createPath ()
+PlatformGraphicsPathPtr D2DGraphicsPathFactory::createPath (PlatformGraphicsPathFillMode fillMode)
 {
 	ID2D1PathGeometry* path {nullptr};
 	if (FAILED (getD2DFactory ()->CreatePathGeometry (&path)))
 		return nullptr;
-	return std::make_unique<D2DGraphicsPath> (path);
+	return std::make_unique<D2DGraphicsPath> (path, fillMode);
 }
 
 //-----------------------------------------------------------------------------
@@ -613,7 +605,7 @@ PlatformGraphicsPathPtr D2DGraphicsPathFactory::createTextPath (const PlatformFo
 	textPath->Release ();
 	sink->Close ();
 	sink->Release ();
-	return std::make_unique<D2DGraphicsPath> (localPath);
+	return std::make_unique<D2DGraphicsPath> (localPath, PlatformGraphicsPathFillMode::Ignored);
 }
 
 } // VSTGUI

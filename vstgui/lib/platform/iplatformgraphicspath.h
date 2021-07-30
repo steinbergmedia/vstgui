@@ -12,10 +12,19 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+enum class PlatformGraphicsPathFillMode : int32_t
+{
+	Winding,
+	Alternate,
+	Ignored
+};
+
+//------------------------------------------------------------------------
 class IPlatformGraphicsPathFactory
 {
 public:
-	virtual PlatformGraphicsPathPtr createPath () = 0;
+	virtual PlatformGraphicsPathPtr createPath (
+		PlatformGraphicsPathFillMode fillMode = PlatformGraphicsPathFillMode::Winding) = 0;
 	virtual PlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
 													UTF8StringPtr text) = 0;
 
@@ -46,6 +55,8 @@ public:
 	virtual bool hitTest (const CPoint& p, bool evenOddFilled = false,
 	                      CGraphicsTransform* transform = nullptr) const = 0;
 	virtual CRect getBoundingBox () const = 0;
+
+	virtual PlatformGraphicsPathFillMode getFillMode () const = 0;
 
 	virtual ~IPlatformGraphicsPath () noexcept = default;
 };

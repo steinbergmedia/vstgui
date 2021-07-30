@@ -27,7 +27,7 @@ class D2DGraphicsPathFactory : public IPlatformGraphicsPathFactory
 public:
 	static PlatformGraphicsPathFactoryPtr instance ();
 
-	PlatformGraphicsPathPtr createPath () override;
+	PlatformGraphicsPathPtr createPath (PlatformGraphicsPathFillMode fillMode) override;
 	PlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
 											UTF8StringPtr text) override;
 };
@@ -36,7 +36,7 @@ public:
 class D2DGraphicsPath : public IPlatformGraphicsPath
 {
 public:
-	D2DGraphicsPath (ID2D1PathGeometry* path, int32_t fillMode = 1);
+	D2DGraphicsPath (ID2D1PathGeometry* path, PlatformGraphicsPathFillMode fillMode);
 	~D2DGraphicsPath () noexcept override;
 
 	ID2D1PathGeometry* getPathGeometry () const { return path; }
@@ -44,9 +44,6 @@ public:
 											  const CGraphicsTransform& tm) const;
 	ID2D1Geometry* createPixelAlignedGeometry (ID2D1Factory* factory, D2DDrawContext& context,
 											   const CGraphicsTransform* tm = nullptr) const;
-	int32_t getFillMode () const { return fillMode; }
-
-	std::unique_ptr<D2DGraphicsPath> copyAndChangeFillMode ();
 
 	// IPlatformGraphicsPath
 	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
@@ -61,13 +58,14 @@ public:
 	bool hitTest (const CPoint& p, bool evenOddFilled = false,
 	              CGraphicsTransform* transform = nullptr) const override;
 	CRect getBoundingBox () const override;
+	PlatformGraphicsPathFillMode getFillMode () const override { return fillMode; }
 
 private:
 	ID2D1GeometrySink* getSink ();
 
 	ID2D1PathGeometry* path {nullptr};
 	ID2D1GeometrySink* sinkInternal {nullptr};
-	int32_t fillMode {1};
+	PlatformGraphicsPathFillMode fillMode {PlatformGraphicsPathFillMode::Winding};
 	bool figureOpen {false};
 	CPoint lastPos;
 };

@@ -119,7 +119,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode, CG
 {
 	if (!path)
 		return;
-	const auto& graphicsPath = path->getPlatformPath ();
+	const auto& graphicsPath = path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored);
 	if (!graphicsPath)
 		return;
 	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
@@ -190,7 +190,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* path, const CGradient& gr
 	if (cgGradient == nullptr)
 		return;
 
-	const auto& graphicsPath = path->getPlatformPath ();
+	const auto& graphicsPath = path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored);
 	if (!graphicsPath)
 		return;
 	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
@@ -251,7 +251,7 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gr
 	if (cgGradient == nullptr)
 		return;
 
-	const auto& graphicsPath = path->getPlatformPath ();
+	const auto& graphicsPath = path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored);
 	if (!graphicsPath)
 		return;
 	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());

@@ -29,7 +29,7 @@ class CGGraphicsPathFactory : public IPlatformGraphicsPathFactory
 public:
 	static PlatformGraphicsPathFactoryPtr instance ();
 
-	PlatformGraphicsPathPtr createPath () override;
+	PlatformGraphicsPathPtr createPath (PlatformGraphicsPathFillMode fillMode) override;
 	PlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
 											UTF8StringPtr text) override;
 };
@@ -59,6 +59,10 @@ public:
 	bool hitTest (const CPoint& p, bool evenOddFilled = false,
 	              CGraphicsTransform* transform = nullptr) const override;
 	CRect getBoundingBox () const override;
+	PlatformGraphicsPathFillMode getFillMode () const override
+	{
+		return PlatformGraphicsPathFillMode::Ignored;
+	}
 
 private:
 	CGMutablePathRef path {nullptr};

@@ -176,9 +176,9 @@ CGradient* CGraphicsPath::createGradient (double color1Start, double color2Start
 }
 
 //-----------------------------------------------------------------------------
-void CGraphicsPath::makePlatformGraphicsPath ()
+void CGraphicsPath::makePlatformGraphicsPath (PlatformGraphicsPathFillMode fillMode)
 {
-	path = factory->createPath ();
+	path = factory->createPath (fillMode);
 	if (!path)
 		return;
 	for (const auto& e : elements)
@@ -229,11 +229,12 @@ void CGraphicsPath::makePlatformGraphicsPath ()
 }
 
 //-----------------------------------------------------------------------------
-bool CGraphicsPath::ensurePlatformGraphicsPathValid ()
+bool CGraphicsPath::ensurePlatformGraphicsPathValid (PlatformGraphicsPathFillMode fillMode)
 {
-	if (path == nullptr)
+	if (path == nullptr || (path->getFillMode () != PlatformGraphicsPathFillMode::Ignored &&
+							path->getFillMode () != fillMode))
 	{
-		makePlatformGraphicsPath ();
+		makePlatformGraphicsPath (fillMode);
 	}
 	return path != nullptr;
 }
@@ -247,9 +248,9 @@ void CGraphicsPath::dirty ()
 //-----------------------------------------------------------------------------
 bool CGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
 {
-	ensurePlatformGraphicsPathValid ();
+	ensurePlatformGraphicsPathValid (evenOddFilled ? PlatformGraphicsPathFillMode::Alternate
+												   : PlatformGraphicsPathFillMode::Winding);
 	return path ? path->hitTest (p, evenOddFilled, transform) : false;
-	;
 }
 
 //-----------------------------------------------------------------------------
@@ -306,14 +307,16 @@ CPoint CGraphicsPath::getCurrentPosition ()
 //-----------------------------------------------------------------------------
 CRect CGraphicsPath::getBoundingBox ()
 {
-	ensurePlatformGraphicsPathValid ();
+	ensurePlatformGraphicsPathValid (path ? path->getFillMode ()
+										  : PlatformGraphicsPathFillMode::Winding);
 	return path ? path->getBoundingBox () : CRect ();
 }
 
 //-----------------------------------------------------------------------------
-const PlatformGraphicsPathPtr& CGraphicsPath::getPlatformPath ()
+const PlatformGraphicsPathPtr&
+	CGraphicsPath::getPlatformPath (PlatformGraphicsPathFillMode fillMode)
 {
-	ensurePlatformGraphicsPathValid ();
+	ensurePlatformGraphicsPathValid (fillMode);
 	return path;
 }
 

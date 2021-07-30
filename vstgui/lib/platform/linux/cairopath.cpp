@@ -15,7 +15,8 @@ namespace Cairo {
 GraphicsPathFactory::GraphicsPathFactory (const ContextHandle& cr) : context (cr) {}
 
 //-----------------------------------------------------------------------------
-PlatformGraphicsPathPtr GraphicsPathFactory::createPath ()
+PlatformGraphicsPathPtr
+	GraphicsPathFactory::createPath ([[maybe_unused]] PlatformGraphicsPathFillMode fillMode)
 {
 	return std::make_unique<GraphicsPath> (context);
 }

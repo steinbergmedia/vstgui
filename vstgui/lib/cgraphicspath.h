@@ -96,11 +96,11 @@ public:
 				   PlatformGraphicsPathPtr&& path = nullptr);
 	~CGraphicsPath () noexcept override;
 
-	const PlatformGraphicsPathPtr& getPlatformPath ();
+	const PlatformGraphicsPathPtr& getPlatformPath (PlatformGraphicsPathFillMode fillMode);
 
 protected:
-	void makePlatformGraphicsPath ();
-	bool ensurePlatformGraphicsPathValid ();
+	void makePlatformGraphicsPath (PlatformGraphicsPathFillMode fillMode);
+	bool ensurePlatformGraphicsPathValid (PlatformGraphicsPathFillMode fillMode);
 
 	void dirty ();
 

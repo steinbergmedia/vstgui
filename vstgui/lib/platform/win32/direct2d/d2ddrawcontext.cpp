@@ -258,19 +258,15 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* graphicsPath, PathDrawMode
 	if (ac.isEmpty ())
 		return;
 
-	auto d2dPath = dynamic_cast<D2DGraphicsPath*> (graphicsPath->getPlatformPath ().get ());
+	auto d2dPath = dynamic_cast<D2DGraphicsPath*> (
+		graphicsPath
+			->getPlatformPath (mode == kPathFilledEvenOdd ? PlatformGraphicsPathFillMode::Alternate
+														  : PlatformGraphicsPathFillMode::Winding)
+			.get ());
 	if (d2dPath == nullptr)
 		return;
 
-	std::unique_ptr<D2DGraphicsPath> altPath;
 	ID2D1Geometry* path = nullptr;
-	if (d2dPath->getFillMode () != (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING))
-	{
-		altPath = d2dPath->copyAndChangeFillMode ();
-		if (!altPath)
-			return;
-		d2dPath = altPath.get ();
-	}
 	if (t)
 		path = d2dPath->createTransformedGeometry (getD2DFactory (), *t);
 	else
@@ -308,17 +304,13 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* graphicsPath, const CGra
 	if (ac.isEmpty ())
 		return;
 
-	auto d2dPath = dynamic_cast<D2DGraphicsPath*> (graphicsPath->getPlatformPath ().get ());
+	auto d2dPath = dynamic_cast<D2DGraphicsPath*> (
+		graphicsPath
+			->getPlatformPath (evenOdd ? PlatformGraphicsPathFillMode::Alternate
+									   : PlatformGraphicsPathFillMode::Winding)
+			.get ());
 	if (d2dPath == nullptr)
 		return;
-	std::unique_ptr<D2DGraphicsPath> altPath;
-	if (d2dPath->getFillMode () != (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING))
-	{
-		altPath = d2dPath->copyAndChangeFillMode ();
-		if (!altPath)
-			return;
-		d2dPath = altPath.get ();
-	}
 	ID2D1Geometry* path = nullptr;
 	if (t)
 		path = d2dPath->createTransformedGeometry (getD2DFactory (), *t);
@@ -361,18 +353,13 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* graphicsPath, const CGra
 	if (ac.isEmpty ())
 		return;
 
-	auto d2dPath = dynamic_cast<D2DGraphicsPath*> (graphicsPath->getPlatformPath ().get ());
+	auto d2dPath = dynamic_cast<D2DGraphicsPath*> (
+		graphicsPath
+			->getPlatformPath (evenOdd ? PlatformGraphicsPathFillMode::Alternate
+									   : PlatformGraphicsPathFillMode::Winding)
+			.get ());
 	if (d2dPath == nullptr)
 		return;
-
-	std::unique_ptr<D2DGraphicsPath> altPath;
-	if (d2dPath->getFillMode () != (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING))
-	{
-		altPath = d2dPath->copyAndChangeFillMode ();
-		if (!altPath)
-			return;
-		d2dPath = altPath.get ();
-	}
 
 	ID2D1Geometry* path = nullptr;
 	if (t)

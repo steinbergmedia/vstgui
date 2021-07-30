@@ -297,6 +297,7 @@ class IPlatformFrameCallback;
 class IPlatformTimerCallback;
 
 enum class PlatformType : int32_t;
+enum class PlatformGraphicsPathFillMode : int32_t;
 
 using PlatformFramePtr = SharedPointer<IPlatformFrame>;
 using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;

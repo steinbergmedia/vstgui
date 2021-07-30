@@ -81,7 +81,8 @@ PlatformGraphicsPathFactoryPtr CGGraphicsPathFactory::instance ()
 }
 
 //-----------------------------------------------------------------------------
-PlatformGraphicsPathPtr CGGraphicsPathFactory::createPath ()
+PlatformGraphicsPathPtr
+	CGGraphicsPathFactory::createPath ([[maybe_unused]] PlatformGraphicsPathFillMode fillMode)
 {
 	return std::make_unique<CGGraphicsPath> (CGPathCreateMutable ());
 }

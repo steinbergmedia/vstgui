@@ -462,7 +462,8 @@ void Context::drawGraphicsPath (CGraphicsPath* path, CDrawContext::PathDrawMode 
 {
 	if (path)
 	{
-		auto graphicsPath = dynamic_cast<GraphicsPath*> (path->getPlatformPath ().get ());
+		auto graphicsPath = dynamic_cast<GraphicsPath*> (
+			path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored).get ());
 		if (!graphicsPath)
 			return;
 		if (auto cd = DrawBlock::begin (*this))
@@ -516,7 +517,8 @@ void Context::fillLinearGradient (CGraphicsPath* path, const CGradient& gradient
 {
 	if (path)
 	{
-		auto graphicsPath = dynamic_cast<GraphicsPath*> (path->getPlatformPath ().get ());
+		auto graphicsPath = dynamic_cast<GraphicsPath*> (
+			path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored).get ());
 		if (!graphicsPath)
 			return;
 		std::unique_ptr<GraphicsPath> alignedPath;
