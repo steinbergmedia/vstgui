@@ -177,7 +177,6 @@ struct DrawHandler
 
 	~DrawHandler ()
 	{
-		cairo_device_finish (device);
 		cairo_device_destroy (device);
 	}
 
