@@ -46,8 +46,18 @@ HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, KeyboardEvent& ev
     NSString *s = [theEvent charactersIgnoringModifiers];
     if ([s length] == 1)
 	{
-		unichar c = [s characterAtIndex:0];
-		switch (c)
+		char32_t utf32Char = {};
+		if (![s getBytes:&utf32Char
+		             maxLength:sizeof (utf32Char)
+		            usedLength:nullptr
+		              encoding:NSUTF32StringEncoding
+		               options:0
+		                 range:NSMakeRange (0, 1)
+		        remainingRange:nullptr])
+		{
+			utf32Char = [s characterAtIndex:0];
+		}
+		switch (utf32Char)
 		{
 			case 8: case 0x7f:				event.virt = VirtualKey::Back; break;
 			case 9:	case 0x19:				event.virt = VirtualKey::Tab; break;
@@ -110,11 +120,11 @@ HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, KeyboardEvent& ev
 					case 76:				event.virt = VirtualKey::Enter; break;
 					default:
 					{
-						if ((c >= 'A') && (c <= 'Z'))
-							c += ('a' - 'A');
+						if ((utf32Char >= 'A') && (utf32Char <= 'Z'))
+							utf32Char += ('a' - 'A');
 						else
-							c = static_cast<unichar> (tolower (c));
-						event.character = c;
+							utf32Char = static_cast<char32_t> (tolower (utf32Char));
+						event.character = utf32Char;
 						break;
 					}
 				}

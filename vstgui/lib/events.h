@@ -470,8 +470,8 @@ enum class ModifierKey : uint32_t
  */
 struct KeyboardEvent : ModifierEvent
 {
-	/** UTF-16 character */
-	uint32_t character {0};
+	/** UTF-32 character */
+	char32_t character {0};
 	/** virtual key */
 	VirtualKey virt {VirtualKey::None};
 	/** indicates for a key down event if this is a repeated key down */
