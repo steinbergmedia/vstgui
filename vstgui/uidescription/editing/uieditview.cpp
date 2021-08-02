@@ -484,9 +484,7 @@ bool UIEditView::advanceNextFocusView (CView* oldFocus, bool reverse)
 //----------------------------------------------------------------------------------------------------
 void UIEditView::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (editing)
-		event.consumed = true;
-	else
+	if (!editing)
 		CViewContainer::onMouseWheelEvent (event);
 }
 
