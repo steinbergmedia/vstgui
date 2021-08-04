@@ -240,8 +240,7 @@ protected:
 	// mouse observers
 	void callMouseObserverMouseEntered (CView* view);
 	void callMouseObserverMouseExited (CView* view);
-	CMouseEventResult callMouseObserverMouseDown (const CPoint& where, const CButtonState& buttons);
-	CMouseEventResult callMouseObserverMouseMoved (const CPoint& where, const CButtonState& buttons);
+	void callMouseObserverOtherMouseEvent (MouseEvent& event);
 
 	void dispatchNewScaleFactor (double newScaleFactor);
 
@@ -308,11 +307,21 @@ public:
 	virtual ~IMouseObserver() noexcept = default;
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
-	/** a mouse move event happend on the frame at position where. If the observer handles this, the event won't be propagated further */
-	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
-	/** a mouse down event happend on the frame at position where. If the observer handles this, the event won't be propagated further */
-	virtual CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
+	virtual void onMouseEvent (MouseEvent& event, CFrame* frame) = 0;
 };
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+class OldMouseObserverAdapter : public IMouseObserver
+{
+public:
+	void onMouseEntered (CView* view, CFrame* frame) override {}
+	void onMouseExited (CView* view, CFrame* frame) override {}
+	void onMouseEvent (MouseEvent& event, CFrame* frame) override;
+	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons);
+};
+#endif
 
 //-----------------------------------------------------------------------------
 // IKeyboardHook Declaration

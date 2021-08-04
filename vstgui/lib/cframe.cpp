@@ -587,13 +587,12 @@ void CFrame::dispatchMouseDownEvent (MouseDownEvent& event)
 	if (auto tooltips = pImpl->tooltips)
 		tooltips->onMouseDown (transformedMousePosition);
 
-	auto buttonState = buttonStateFromMouseEvent (event);
-
-	if (callMouseObserverMouseDown (event.mousePosition, buttonState) != kMouseEventNotHandled)
-	{
-		event.consumed = true;
+	event.mousePosition = transformedMousePosition;
+	callMouseObserverOtherMouseEvent (event);
+	if (event.consumed)
 		return;
-	}
+	event.mousePosition = originMousePosition;
+
 	setMouseDownView (nullptr);
 	if (pImpl->focusView && dynamic_cast<CTextEdit*> (pImpl->focusView))
 		setFocusView (nullptr);
@@ -604,6 +603,7 @@ void CFrame::dispatchMouseDownEvent (MouseDownEvent& event)
 		{
 			event.mousePosition = transformedMousePosition;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+			auto buttonState = buttonStateFromMouseEvent (event);
 			auto result = modalView->callMouseListener (MouseListenerCall::MouseDown, event.mousePosition, buttonState);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
@@ -630,20 +630,21 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 	if (auto tooltips = pImpl->tooltips)
 		tooltips->onMouseMoved (transformedMousePosition);
 
-	auto buttonState = buttonStateFromMouseEvent (event);
 	checkMouseViews (event);
 
-	if (callMouseObserverMouseMoved (event.mousePosition, buttonState) == kMouseEventHandled)
-	{
-		event.consumed = true;
+	event.mousePosition = transformedMousePosition;
+	callMouseObserverOtherMouseEvent (event);
+	if (event.consumed)
 		return;
-	}
+	event.mousePosition = originMousePosition;
+
 	if (auto modalView = shared (getModalView ()))
 	{
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			event.mousePosition = transformedMousePosition;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+			auto buttonState = buttonStateFromMouseEvent (event);
 			auto result = modalView->callMouseListener (MouseListenerCall::MouseMoved, event.mousePosition, buttonState);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
@@ -684,13 +685,17 @@ void CFrame::dispatchMouseUpEvent (MouseUpEvent& event)
 	
 	auto f = finally ([this] () { setMouseDownView (nullptr); });
 
-	auto buttonState = buttonStateFromMouseEvent (event);
+	callMouseObserverOtherMouseEvent (event);
+	if (event.consumed)
+		return;
+
 	if (auto modalView = shared (getModalView ()))
 	{
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			event.mousePosition = transformedMousePosition;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+			auto buttonState = buttonStateFromMouseEvent (event);
 			auto result = modalView->callMouseListener (MouseListenerCall::MouseUp, event.mousePosition, buttonState);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
@@ -1610,41 +1615,10 @@ void CFrame::callMouseObserverMouseExited (CView* view)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& _where, const CButtonState& buttons)
+void CFrame::callMouseObserverOtherMouseEvent (MouseEvent& event)
 {
-	CMouseEventResult eventResult = kMouseEventNotHandled;
-	if (pImpl->mouseObservers.empty ())
-		return eventResult;
-	
-	CPoint where (_where);
-	getTransform ().inverse ().transform (where);
-
-	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
-		CMouseEventResult result2 = observer->onMouseDown (this, where, buttons);
-		if (result2 != kMouseEventNotHandled)
-			eventResult = result2;
-	});
-
-	return eventResult;
-}
-
-//-----------------------------------------------------------------------------
-CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& _where, const CButtonState& buttons)
-{
-	CMouseEventResult eventResult = kMouseEventNotHandled;
-	if (pImpl->mouseObservers.empty ())
-		return eventResult;
-	
-	CPoint where (_where);
-	getTransform ().inverse ().transform (where);
-	
-	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
-		CMouseEventResult result2 = observer->onMouseMoved (this, where, buttons);
-		if (result2 == kMouseEventHandled)
-			eventResult = kMouseEventHandled;
-	});
-	
-	return eventResult;
+	pImpl->mouseObservers.forEach (
+	    [&] (IMouseObserver* observer) { observer->onMouseEvent (event, this); });
 }
 
 //------------------------------------------------------------------------
@@ -1963,6 +1937,45 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+void OldMouseObserverAdapter::onMouseEvent (MouseEvent& event, CFrame* frame)
+{
+	if (event.type == EventType::MouseDown)
+	{
+		auto res = onMouseDown (frame, event.mousePosition, buttonStateFromMouseEvent (event));
+		if (res == kMouseEventHandled)
+			event.consumed = true;
+		if (res == kMouseDownEventHandledButDontNeedMovedOrUpEvents)
+		{
+			event.consumed = true;
+			castMouseDownEvent (event).ignoreFollowUpMoveAndUpEvents (true);
+		}
+	}
+	else if (event.type == EventType::MouseMove)
+	{
+		auto res = onMouseMoved (frame, event.mousePosition, buttonStateFromMouseEvent (event));
+		if (res == kMouseEventHandled)
+			event.consumed = true;
+		if (res == kMouseMoveEventHandledButDontNeedMoreEvents)
+		{
+			event.consumed = true;
+			castMouseMoveEvent (event).ignoreFollowUpMoveAndUpEvents (true);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult OldMouseObserverAdapter::onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons)
+{
+	return kMouseEventNotHandled;
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult OldMouseObserverAdapter::onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons)
+{
+	return kMouseEventNotHandled;
+}
+
 //-----------------------------------------------------------------------------
 void OldKeyboardHookAdapter::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
 {

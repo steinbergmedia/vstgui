@@ -24,6 +24,7 @@ public:
 	}
 	void onMouseEntered (CView* view, CFrame* frame) override { enteredViews.push_back (view); }
 	void onMouseExited (CView* view, CFrame* frame) override { exitedViews.push_back (view); }
+	void onMouseEvent (MouseEvent&, CFrame*) override {}
 
 	std::vector<CView*> enteredViews;
 	std::vector<CView*> exitedViews;

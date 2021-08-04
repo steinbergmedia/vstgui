@@ -34,7 +34,7 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 
 //------------------------------------------------------------------------
 class DataSource : public DataBrowserDelegateAdapter,
-                   public IMouseObserver,
+                   public OldMouseObserverAdapter,
                    public NonAtomicReferenceCounted
 {
 public:

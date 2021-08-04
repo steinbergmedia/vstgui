@@ -118,6 +118,7 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 Changes due to event handling rework:
 - IKeyboardHook changed its methods. If you inherit from it, you need to adopt to the new methods or use OldKeyboardHookAdapter
+- IMouseObserver changed a few of its methods. If you inherit from it, you need to adopt to the new methods or use OldMouseObserverAdapter
 - CViewContainer::onWheel is now marked final, you cannot inherit this method, please override the new CView::onMouseWheelEvent instead if you need to handle mouse wheel events in a custom view container
 
 CView has the following new methods:

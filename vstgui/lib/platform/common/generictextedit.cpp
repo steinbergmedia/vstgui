@@ -46,7 +46,7 @@ using STB_CharT = char;
 class STBTextEditView
 	: public CTextLabel
 	, public IKeyboardHook
-	, public IMouseObserver
+	, public OldMouseObserverAdapter
 {
 public:
 	STBTextEditView (IPlatformTextEditCallback* callback);
