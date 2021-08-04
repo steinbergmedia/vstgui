@@ -127,25 +127,18 @@ endif()
 ##########################################################################################
 
 if(XCODE)
+	include(FindXCTest REQUIRED)
+
 	set(${target}_sources
 		"${${target}_sources}"
 		"${VSTGUI_TEST_BASE}xcodetestintegration.mm"
 	)
 
-	add_library(${target} MODULE ${${target}_sources})
+	xctest_add_bundle(${target} vstgui ${${target}_sources})
 	vstgui_set_cxx_version(${target} 14)
 	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
-	target_link_libraries(${target}
+	target_link_libraries(${target} PRIVATE
 		${${target}_PLATFORM_LIBS}
-		"-framework XCTest"
-	)
-
-	set_target_properties(${target}
-		PROPERTIES 
-            BUNDLE TRUE
-			XCODE_ATTRIBUTE_GENERATE_PKGINFO_FILE           YES
-			XCODE_ATTRIBUTE_WRAPPER_EXTENSION               xctest
-			XCODE_ATTRIBUTE_ENABLE_TESTABILITY				YES
 	)
 
 	vstgui_source_group_by_folder(${target})
