@@ -53,7 +53,6 @@ CVSTGUITimer::~CVSTGUITimer () noexcept = default;
 void CVSTGUITimer::beforeDelete ()
 {
 	stop ();
-	CBaseObject::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------

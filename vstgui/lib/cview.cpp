@@ -270,7 +270,6 @@ void CView::beforeDelete ()
 	CViewInternal::gNbCView--;
 	CViewInternal::gViewList.remove (this);
 #endif
-	CBaseObject::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------

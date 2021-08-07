@@ -274,9 +274,10 @@ public:
 	void remember () override { nbReference++; }
 	/** get refcount */
 	virtual int32_t getNbReference () const { return nbReference; }
-	virtual void beforeDelete () {}
 	//@}
 private:
+	virtual void beforeDelete () {}
+
 	T nbReference {1};
 };
 
