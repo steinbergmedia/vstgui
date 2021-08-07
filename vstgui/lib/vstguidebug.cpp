@@ -6,6 +6,10 @@
 #include <cstdarg>
 #include <exception>
 
+#if !defined(NDEBUG) && !defined(DEBUG)
+#error VSTGUI expects either NDEBUG or DEBUG to be defined
+#endif
+
 #if DEBUG
 
 #include "cstring.h"
@@ -96,7 +100,8 @@ bool hasAssertionHandler ()
 }
 
 //------------------------------------------------------------------------
-void doAssert (const char* filename, const char* line, const char* desc) noexcept (false)
+void doAssert (const char* filename, const char* line, const char* condition,
+			   const char* desc) noexcept (false)
 {
 #if NDEBUG
 	if (!hasAssertionHandler ())
@@ -105,7 +110,7 @@ void doAssert (const char* filename, const char* line, const char* desc) noexcep
 	if (hasAssertionHandler ())
 	{
 		try {
-			assertionHandler (filename, line, desc);
+			assertionHandler (filename, line, condition, desc);
 		} catch (...)
 		{
 			std::rethrow_exception (std::current_exception ());
@@ -114,7 +119,8 @@ void doAssert (const char* filename, const char* line, const char* desc) noexcep
 #if DEBUG
 	else
 	{
-		DebugPrint ("\nassert at %s:%s: %s\n", filename, line, desc ? desc : "unknown");
+		DebugPrint ("%s:%s: Assertion '%s' failed. %s\n", filename, line, condition,
+					desc ? desc : "");
 		assert (false);
 	}
 #endif // DEBUG

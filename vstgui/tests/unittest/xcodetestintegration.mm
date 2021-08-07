@@ -115,16 +115,28 @@ void testFunc (id self, SEL _cmd)
 //------------------------------------------------------------------------
 + (void)initialize
 {
+	VSTGUI::setAssertionHandler (
+		[] (const char* file, const char* line, const char* condition, const char* desc) {
+			size_t lineNo = 0;
+			if (line)
+			{
+				if (auto l = VSTGUI::UTF8StringView (line).toNumber<size_t> ())
+					lineNo = *l;
+			}
+			std::string text;
+			if (desc)
+			{
+				text = desc;
+			}
+			else
+			{
+				text = "Assertion: '";
+				text += condition;
+				text += "' failed.";
+			}
+			throw VSTGUI::UnitTest::error (file, lineNo, text.data ());
+		});
 	VSTGUI::init (CFBundleGetMainBundle ());
-	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
-		size_t lineNo = 0;
-		if (line)
-		{
-			if (auto l = VSTGUI::UTF8StringView (line).toNumber<size_t>())
-				lineNo = *l;
-		}
-		throw VSTGUI::UnitTest::error (file, lineNo, desc ? desc : "assert");
-	});
 
 	auto baseClass = objc_getClass ("XCTestCase");
 	for (auto& testCase : UnitTestRegistry::instance ())

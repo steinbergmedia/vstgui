@@ -7,6 +7,7 @@
 #if ENABLE_UNIT_TESTS
 #include "../../lib/vstguidebug.h"
 #include "../../lib/vstguiinit.h"
+#include "../../lib/cstring.h"
 
 #include <chrono>
 #include <cstdarg>
@@ -164,9 +165,16 @@ static int RunTests ()
 
 int main ()
 {
-	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
-		throw std::logic_error (desc ? desc : "unknown");
-	});
+	VSTGUI::setAssertionHandler (
+		[] (const char* file, const char* line, const char* condition, const char* desc) {
+			size_t lineNo = 0;
+			if (line)
+			{
+				if (auto l = VSTGUI::UTF8StringView (line).toNumber<size_t> ())
+					lineNo = *l;
+			}
+			throw VSTGUI::UnitTest::error (file, lineNo, desc ? desc : condition);
+		});
 #if MAC
 	VSTGUI::init (CFBundleGetMainBundle ());
 #elif WINDOWS

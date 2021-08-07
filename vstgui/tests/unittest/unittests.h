@@ -8,6 +8,7 @@
 
 #include "../../lib/vstguifwd.h"
 #include <string>
+#include <string_view>
 #include <list>
 #include <functional>
 #include <cstdio>
@@ -103,17 +104,20 @@ public:
 #define EXPECT(condition) if (!(condition)) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition)); }
 #define FAIL(reason) { throw VSTGUI::UnitTest::error (__FILE__, __LINE__, "Failure: " reason); }
 
-#define EXPECT_EXCEPTION(call, name) \
-{ \
-	bool b = false; \
-	try { \
-		call; \
-	} catch (const std::exception& error) {\
-		EXPECT(error.what() == std::string(name));\
-		b = true;\
-	} \
-	EXPECT(b);\
-}
+#define EXPECT_EXCEPTION(call, name)                                                               \
+	{                                                                                              \
+		bool b = false;                                                                            \
+		try                                                                                        \
+		{                                                                                          \
+			call;                                                                                  \
+		}                                                                                          \
+		catch (const std::exception& error)                                                        \
+		{                                                                                          \
+			EXPECT (std::string_view (error.what ()) == std::string_view (name));                  \
+			b = true;                                                                              \
+		}                                                                                          \
+		EXPECT (b);                                                                                \
+	}
 
 #define EXPECT_TRUE(condition) EXPECT(condition)
 #define EXPECT_FALSE(condition) EXPECT(!condition)
