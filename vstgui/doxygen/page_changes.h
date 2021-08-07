@@ -26,6 +26,7 @@ It's recommended to start new projects with version 4 while old projects should 
 @subsection version4_11 Version 4.11
 
 - Reworked event handling, please see @ref code_changes_4_10_to_4_11
+- Reworked unit test framework to be able to debug the tests
 
 @subsection version4_10 Version 4.10
 
@@ -120,20 +121,27 @@ Changes due to event handling rework:
 - IKeyboardHook changed its methods. If you inherit from it, you need to adopt to the new methods or use OldKeyboardHookAdapter
 - IMouseObserver changed a few of its methods. If you inherit from it, you need to adopt to the new methods or use OldMouseObserverAdapter
 - CViewContainer::onWheel is now marked final, you cannot inherit this method, please override the new CView::onMouseWheelEvent instead if you need to handle mouse wheel events in a custom view container
+- DragEventData has changed it's modifiers type from CButtonState to Modifiers
+- CView::hitTest uses an Event now instead of a CButtonState (the method with a CButtonState still works but is deprecated)
 
 CView has the following new methods:
 - dispatchEvent
-- onKeyboardEvent
+- onMouseDownEvent
+- onMouseMoveEvent
+- onMouseUpEvent
+- onMouseCancelEvent
+- onMouseEnterEvent
+- onMouseExitEvent
 - onMouseWheelEvent
 - onZoomGestureEvent
-- ...
+- onKeyboardEvent
+
 Which replaces the following old methods:
 - onKeyDown
 - onKeyUp
 - onWheel
-- ...
 
-- DragEventData has changed it's modifiers type from CButtonState to Modifiers
+The old mouse methods (onMouseDown, onMouseUp, onMouseMoved, etc) are still supported but should be replaced with the new methods in the long run.
 
 @subsection code_changes_4_9_to_4_10 VSTGUI 4.9 -> VSTGUI 4.10
 
