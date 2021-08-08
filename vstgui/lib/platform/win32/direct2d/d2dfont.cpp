@@ -12,6 +12,7 @@
 #include "../winstring.h"
 #include "../comptr.h"
 #include "d2ddrawcontext.h"
+#include <mutex>
 #include <dwrite.h>
 #include <d2d1.h>
 
@@ -114,12 +115,14 @@ private:
 
 //-----------------------------------------------------------------------------
 static std::unique_ptr<CustomFonts> customFonts;
+static std::once_flag customFontsOnceFlag;
 
 //-----------------------------------------------------------------------------
 static CustomFonts* getCustomFonts ()
 {
-	if (!customFonts)
+	std::call_once (customFontsOnceFlag, [] () {
 		customFonts = std::make_unique<CustomFonts> ();
+	});
 	return customFonts.get ();
 }
 
