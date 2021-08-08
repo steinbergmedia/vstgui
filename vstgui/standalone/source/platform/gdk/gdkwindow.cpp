@@ -13,6 +13,8 @@
 #include <cassert>
 #include <vector>
 
+#define VSTGUI_LOG_X11_WINDOW (DEBUG && 1)
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
@@ -56,6 +58,7 @@ void sendXEmbedProtocolMessage (::Window receiver, ::Window parentWindow, XEmbed
 	ev.xclient.window = receiver;
 	ev.xclient.message_type = xEmbedAtom;
 	ev.xclient.format = 32;
+	ev.xclient.display = xDisplay;
 	ev.xclient.data.l[0] = CurrentTime;
 	ev.xclient.data.l[1] = static_cast<long> (message);
 	ev.xclient.data.l[2] = detail;
@@ -108,6 +111,7 @@ private:
 
 	CPoint lastPos;
 	CPoint lastSize;
+	bool isShown {false};
 
 	WindowStyle style;
 	WindowType type;
@@ -240,40 +244,66 @@ void Window::updateGeometryHints () {}
 //------------------------------------------------------------------------
 CPoint Window::getSize () const
 {
+	if (!isShown)
+		return lastSize;
 	auto scaleFactor = getScaleFactor ();
 	CPoint size;
 	size.x = gtkWindow.get_width () / scaleFactor;
 	size.y = gtkWindow.get_height () / scaleFactor;
+#if VSTGUI_LOG_X11_WINDOW
+	DebugPrint ("Window::getSize (): %d, %d\n", static_cast<int> (size.x), static_cast<int> (size.y));
+#endif
 	return size;
 }
 
 //------------------------------------------------------------------------
 CPoint Window::getPosition () const
 {
+	if (!isShown)
+		return lastPos;
 	auto scaleFactor = getScaleFactor ();
 	int x, y;
 	gtkWindow.get_position (x, y);
-	return CPoint (x / scaleFactor, y / scaleFactor);
+	CPoint result (x / scaleFactor, y / scaleFactor);
+#if VSTGUI_LOG_X11_WINDOW
+	DebugPrint ("Window::getPosition (): %d, %d\n", static_cast<int> (result.x), static_cast<int> (result.y));
+#endif
+	return result;
 }
 
 //------------------------------------------------------------------------
 double Window::getScaleFactor () const
 {
-	return static_cast<double> (gtkWindow.get_scale_factor ());
+	auto factor = static_cast<double> (gtkWindow.get_scale_factor ());
+	return factor;
 }
 
 //------------------------------------------------------------------------
 void Window::setSize (const CPoint& newSize)
 {
 	auto scaleFactor = getScaleFactor ();
-	gtkWindow.resize (newSize.x * scaleFactor, newSize.y * scaleFactor);
+	auto width = static_cast<int> (std::ceil (newSize.x * scaleFactor));
+	auto height = static_cast<int> (std::ceil (newSize.y * scaleFactor));
+#if VSTGUI_LOG_X11_WINDOW
+	DebugPrint ("Window::setSize (): %d - %d\n", width, height);
+#endif
+	gtkWindow.resize (width, height);
+	if (!isShown)
+		lastSize = newSize;
 }
 
 //------------------------------------------------------------------------
 void Window::setPosition (const CPoint& newPosition)
 {
 	auto scaleFactor = getScaleFactor ();
-	gtkWindow.move (newPosition.x * scaleFactor, newPosition.y * scaleFactor);
+	auto x = static_cast<int> (std::floor (newPosition.x * scaleFactor));
+	auto y = static_cast<int> (std::floor (newPosition.y * scaleFactor));
+#if VSTGUI_LOG_X11_WINDOW
+	DebugPrint ("Window::setPosition (): %d - %d\n", x, y);
+#endif
+	gtkWindow.move (x, y);
+	if (!isShown)
+		lastPos = newPosition;
 }
 
 //------------------------------------------------------------------------
@@ -295,6 +325,8 @@ WindowStyle Window::changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRe
 //------------------------------------------------------------------------
 void Window::show ()
 {
+	isShown = true;
+	lastPos = lastSize = {};
 	updateGeometryHints ();
 	gtkWindow.show_all ();
 	activate ();
@@ -307,6 +339,7 @@ void Window::show ()
 //------------------------------------------------------------------------
 void Window::hide ()
 {
+	isShown = false;
 	gtkWindow.hide ();
 }
 
@@ -394,11 +427,17 @@ void Window::handleEventConfigure (GdkEventConfigure* event)
 	if (newPos != lastPos)
 	{
 		lastPos = newPos;
+#if VSTGUI_LOG_X11_WINDOW
+		DebugPrint ("Window::onPositionChanged (): %d - %d\n", static_cast<int> (newPos.x), static_cast<int> (newPos.y));
+#endif
 		delegate->onPositionChanged (newPos);
 	}
 	if (newSize != lastSize)
 	{
 		lastSize = newSize;
+#if VSTGUI_LOG_X11_WINDOW
+		DebugPrint ("Window::onSizeChanged (): %d - %d\n", static_cast<int> (newSize.x), static_cast<int> (newSize.y));
+#endif
 		delegate->onSizeChanged (newSize);
 		if (contentView)
 		{
