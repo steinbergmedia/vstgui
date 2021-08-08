@@ -27,6 +27,9 @@ public:
 	bool asLogFont (LOGFONTW& logfont) const;
 
 	static bool getAllFontFamilies (const FontFamilyCallback& callback);
+
+	static void terminate ();
+
 protected:
 	~D2DFont ();
 	
