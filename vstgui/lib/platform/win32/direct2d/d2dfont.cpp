@@ -132,23 +132,22 @@ static void gatherFonts (const FontFamilyCallback& callback, IDWriteFontCollecti
 	UINT32 numFonts = collection->GetFontFamilyCount ();
 	for (UINT32 i = 0; i < numFonts; ++i)
 	{
-		IDWriteFontFamily* fontFamily = nullptr;
-		if (!SUCCEEDED (collection->GetFontFamily (i, &fontFamily)))
+		COM::Ptr<IDWriteFontFamily> fontFamily;
+		if (!SUCCEEDED (collection->GetFontFamily (i, fontFamily.adoptPtr ())))
 			continue;
-		IDWriteLocalizedStrings* names = nullptr;
-		if (!SUCCEEDED (fontFamily->GetFamilyNames (&names)))
+		COM::Ptr<IDWriteLocalizedStrings> names;
+		if (!SUCCEEDED (fontFamily->GetFamilyNames (names.adoptPtr ())))
 			continue;
 		UINT32 nameLength = 0;
 		if (!SUCCEEDED (names->GetStringLength (0, &nameLength)) || nameLength < 1)
 			continue;
 		nameLength++;
-		WCHAR* name = new WCHAR[nameLength];
-		if (SUCCEEDED (names->GetString (0, name, nameLength)))
+		auto name = std::unique_ptr<WCHAR[]> (new WCHAR[nameLength]);
+		if (SUCCEEDED (names->GetString (0, name.get (), nameLength)))
 		{
-			UTF8StringHelper str (name);
+			UTF8StringHelper str (name.get ());
 			callback (str.getUTF8String ());
 		}
-		delete [] name;
 	}
 }
 
