@@ -8,6 +8,10 @@
 #include "../../optional.h"
 #include "../../cstring.h"
 
+struct ID2D1Factory;
+struct IDWriteFactory;
+struct IWICImagingFactory;
+
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -16,6 +20,7 @@ class Win32Factory final : public IPlatformFactory
 {
 public:
 	Win32Factory (HINSTANCE instance);
+	~Win32Factory () noexcept override;
 
 	HINSTANCE getInstance () const noexcept;
 	void setResourceBasePath (const UTF8String& path) const noexcept;
@@ -26,6 +31,10 @@ public:
 
 	void useGenericTextEdit (bool state) const noexcept;
 	bool useGenericTextEdit () const noexcept;
+
+	ID2D1Factory* getD2DFactory () const noexcept;
+	IWICImagingFactory* getWICImagingFactory () const noexcept;
+	IDWriteFactory* getDirectWriteFactory () const noexcept;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks

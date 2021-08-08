@@ -20,10 +20,20 @@
 #include "win32resourcestream.h"
 #include "winstring.h"
 #include "wintimer.h"
+#include "comptr.h"
 #include <cassert>
 #include <list>
 #include <memory>
 #include <shlwapi.h>
+#include <d2d1.h>
+#include <dwrite.h>
+#include <wincodec.h>
+
+#ifdef _MSC_VER
+#pragma comment(lib, "windowscodecs.lib")
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
+#endif
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -32,6 +42,10 @@ namespace VSTGUI {
 struct Win32Factory::Impl
 {
 	HINSTANCE instance {nullptr};
+	COM::Ptr<ID2D1Factory> d2dFactory;
+	COM::Ptr<IDWriteFactory> directWriteFactory;
+	COM::Ptr<IWICImagingFactory> wicImagingFactory;
+
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
 	bool useGenericTextEdit {false};
@@ -69,6 +83,31 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->instance = instance;
+
+	D2D1_FACTORY_OPTIONS* options = nullptr;
+#if 0 // DEBUG
+	D2D1_FACTORY_OPTIONS debugOptions;
+	debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+	options = &debugOptions;
+#endif
+	D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options,
+					   (void**)impl->d2dFactory.adoptPtr ());
+	DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+						 (IUnknown**)impl->directWriteFactory.adoptPtr ());
+#if _WIN32_WINNT > 0x601
+// make sure when building with the Win 8.0 SDK we work on Win7
+#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory1
+#else
+#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory
+#endif
+	CoCreateInstance (VSTGUI_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
+					  IID_IWICImagingFactory, (void**)impl->wicImagingFactory.adoptPtr ());
+}
+
+//-----------------------------------------------------------------------------
+Win32Factory::~Win32Factory () noexcept
+{
+	D2DFont::terminate ();
 }
 
 //-----------------------------------------------------------------------------
@@ -112,6 +151,24 @@ void Win32Factory::useGenericTextEdit (bool state) const noexcept
 bool Win32Factory::useGenericTextEdit () const noexcept
 {
 	return impl->useGenericTextEdit;
+}
+
+//-----------------------------------------------------------------------------
+ID2D1Factory* Win32Factory::getD2DFactory () const noexcept
+{
+	return impl->d2dFactory.get ();
+}
+
+//-----------------------------------------------------------------------------
+IWICImagingFactory* Win32Factory::getWICImagingFactory () const noexcept
+{
+	return impl->wicImagingFactory.get ();
+}
+
+//-----------------------------------------------------------------------------
+IDWriteFactory* Win32Factory::getDirectWriteFactory () const noexcept
+{
+	return impl->directWriteFactory.get ();
 }
 
 //-----------------------------------------------------------------------------
