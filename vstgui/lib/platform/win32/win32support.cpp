@@ -11,20 +11,8 @@
 #include "../platform_win32.h"
 #include "win32factory.h"
 
-#include <d2d1.h>
-#include <dwrite.h>
-#include <wincodec.h>
-
 #include <shlwapi.h>
 #include "direct2d/d2ddrawcontext.h"
-#include "direct2d/d2dbitmap.h"
-#include "direct2d/d2dfont.h"
-
-#ifdef _MSC_VER
-#pragma comment (lib,"windowscodecs.lib")
-#pragma comment (lib,"d2d1.lib")
-#pragma comment (lib,"dwrite.lib")
-#endif
 
 namespace VSTGUI {
 
@@ -37,123 +25,28 @@ HINSTANCE GetInstance ()
 }
 
 //-----------------------------------------------------------------------------
-class D2DFactory
-{
-public:
-	D2DFactory ()
-	{
-	}
-
-	~D2DFactory () noexcept
-	{
-		CFontDesc::cleanup ();
-		releaseFactory ();
-	}
-	ID2D1Factory* getFactory () const
-	{
-		if (factory == nullptr)
-		{
-			D2D1_FACTORY_OPTIONS* options = nullptr;
-		#if 0 //DEBUG
-			D2D1_FACTORY_OPTIONS debugOptions;
-			debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
-			options = &debugOptions;
-		#endif
-			D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
-		}
-		return factory;
-	}
-	
-	IDWriteFactory* getWriteFactory ()
-	{
-		if (!writeFactory)
-			DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&writeFactory);
-		return writeFactory;
-	}
-
-	IWICImagingFactory* getImagingFactory ()
-	{
-		if (imagingFactory == nullptr)
-		{
-#if _WIN32_WINNT > 0x601
-// make sure when building with the Win 8.0 SDK we work on Win7
-#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory1
-#else
-#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory
-#endif
-			CoCreateInstance (VSTGUI_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&imagingFactory);
-		}
-		return imagingFactory;
-	}
-
-	void use ()
-	{
-		++useCount;
-	}
-
-	void unuse ()
-	{
-		vstgui_assert (useCount > 0);
-		if (--useCount == 0)
-			releaseFactory ();
-	}
-
-private:
-	void releaseFactory ()
-	{
-		if (writeFactory)
-			writeFactory->Release ();
-		writeFactory = nullptr;
-		if (imagingFactory)
-			imagingFactory->Release ();
-		imagingFactory = nullptr;
-		if (factory)
-			factory->Release ();
-		factory = nullptr;
-	}
-
-	ID2D1Factory* factory {nullptr};
-	IDWriteFactory* writeFactory {nullptr};
-	IWICImagingFactory* imagingFactory {nullptr};
-	int32_t useCount {0};
-};
-
-//-----------------------------------------------------------------------------
-D2DFactory& getD2DFactoryInstance ()
-{
-	static D2DFactory d2dFactory;
-	return d2dFactory;
-}
-
-//-----------------------------------------------------------------------------
 ID2D1Factory* getD2DFactory ()
 {
-	return getD2DFactoryInstance ().getFactory ();
+	return getPlatformFactory ().asWin32Factory ()->getD2DFactory ();
 }
 
 //-----------------------------------------------------------------------------
 IWICImagingFactory* getWICImageingFactory ()
 {
-	return getD2DFactoryInstance ().getImagingFactory ();
-}
-
-//-----------------------------------------------------------------------------
-void useD2D ()
-{
-	getD2DFactoryInstance ().use ();
-}
-
-//-----------------------------------------------------------------------------
-void unuseD2D ()
-{
-	getD2DFactoryInstance ().unuse ();
+	return getPlatformFactory ().asWin32Factory ()->getWICImagingFactory ();
 }
 
 //-----------------------------------------------------------------------------
 IDWriteFactory* getDWriteFactory ()
 {
-	return getD2DFactoryInstance ().getWriteFactory ();
+	return getPlatformFactory ().asWin32Factory ()->getDirectWriteFactory ();
 }
+
+//-----------------------------------------------------------------------------
+void useD2D () {}
+
+//-----------------------------------------------------------------------------
+void unuseD2D () {}
 
 //-----------------------------------------------------------------------------
 CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect)

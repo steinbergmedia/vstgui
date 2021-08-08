@@ -28,37 +28,25 @@
 #endif
 
 namespace VSTGUI {
-
+namespace D2DFontPrivate {
 //-----------------------------------------------------------------------------
 struct CustomFonts
 {
 #if VSTGUI_WIN32_CUSTOMFONT_SUPPORT
-	static IDWriteFontCollection1* getFontCollection ()
+	IDWriteFontCollection1* getFontCollection () { return fontCollection.get (); }
+	bool contains (const WCHAR* name, DWRITE_FONT_WEIGHT fontWeight,
+				   DWRITE_FONT_STRETCH fontStretch, DWRITE_FONT_STYLE fontStyle)
 	{
-		return instance ().fontCollection.get ();
-	}
-	static bool contains (const WCHAR* name, DWRITE_FONT_WEIGHT fontWeight,
-	                      DWRITE_FONT_STRETCH fontStretch, DWRITE_FONT_STYLE fontStyle)
-	{
-		if (auto fontSet = instance ().fontSet.get ())
+		if (auto fs = fontSet.get ())
 		{
 			COM::Ptr<IDWriteFontSet> matchingFonts;
-			if (SUCCEEDED (fontSet->GetMatchingFonts (name, fontWeight, fontStretch, fontStyle,
-			                                          matchingFonts.adoptPtr ())))
+			if (SUCCEEDED (fs->GetMatchingFonts (name, fontWeight, fontStretch, fontStyle,
+												 matchingFonts.adoptPtr ())))
 				return matchingFonts->GetFontCount () > 0;
 		}
 		return false;
 	}
 
-private:
-	COM::Ptr<IDWriteFontSet> fontSet;
-	COM::Ptr<IDWriteFontCollection1> fontCollection;
-
-	static CustomFonts& instance ()
-	{
-		static CustomFonts gInstance;
-		return gInstance;
-	}
 	CustomFonts ()
 	{
 		auto winFactory = getPlatformFactory ().asWin32Factory ();
@@ -91,6 +79,10 @@ private:
 		factory5->CreateFontCollectionFromFontSet (fontSet.get (), fontCollection.adoptPtr ());
 	}
 
+private:
+	COM::Ptr<IDWriteFontSet> fontSet;
+	COM::Ptr<IDWriteFontCollection1> fontCollection;
+
 	std::vector<std::wstring> getDirectoryContents (const UTF8String& path) const
 	{
 		std::vector<std::wstring> result;
@@ -112,13 +104,24 @@ private:
 		return result;
 	}
 #else
-	static IDWriteFontCollection* getFontCollection () { return nullptr; }
-	static bool contains (const WCHAR*, DWRITE_FONT_WEIGHT, DWRITE_FONT_STRETCH, DWRITE_FONT_STYLE)
+	IDWriteFontCollection* getFontCollection () { return nullptr; }
+	bool contains (const WCHAR*, DWRITE_FONT_WEIGHT, DWRITE_FONT_STRETCH, DWRITE_FONT_STYLE)
 	{
 		return false;
 	}
 #endif
 };
+
+//-----------------------------------------------------------------------------
+static std::unique_ptr<CustomFonts> customFonts;
+
+//-----------------------------------------------------------------------------
+static CustomFonts* getCustomFonts ()
+{
+	if (!customFonts)
+		customFonts = std::make_unique<CustomFonts> ();
+	return customFonts.get ();
+}
 
 //-----------------------------------------------------------------------------
 static void gatherFonts (const FontFamilyCallback& callback, IDWriteFontCollection* collection)
@@ -144,17 +147,6 @@ static void gatherFonts (const FontFamilyCallback& callback, IDWriteFontCollecti
 		}
 		delete [] name;
 	}
-}
-
-//-----------------------------------------------------------------------------
-bool D2DFont::getAllFontFamilies (const FontFamilyCallback& callback)
-{
-	IDWriteFontCollection* collection = nullptr;
-	if (SUCCEEDED (getDWriteFactory ()->GetSystemFontCollection (&collection, true)))
-		gatherFonts (callback, collection);
-	if (auto customFontCollection = CustomFonts::getFontCollection ())
-		gatherFonts (callback, customFontCollection);
-	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -186,6 +178,29 @@ static COM::Ptr<IDWriteFont> getFont (IDWriteTextFormat* format, int32_t style)
 }
 
 //-----------------------------------------------------------------------------
+} // D2DFontPrivate
+
+//-----------------------------------------------------------------------------
+bool D2DFont::getAllFontFamilies (const FontFamilyCallback& callback)
+{
+	IDWriteFontCollection* collection = nullptr;
+	if (SUCCEEDED (getDWriteFactory ()->GetSystemFontCollection (&collection, true)))
+		D2DFontPrivate::gatherFonts (callback, collection);
+	if (D2DFontPrivate::customFonts)
+	{
+		if (auto customFontCollection = D2DFontPrivate::customFonts->getFontCollection ())
+			D2DFontPrivate::gatherFonts (callback, customFontCollection);
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+void D2DFont::terminate ()
+{
+	D2DFontPrivate::customFonts = nullptr;
+}
+
+//-----------------------------------------------------------------------------
 D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style)
 : textFormat (nullptr)
 , ascent (-1)
@@ -199,16 +214,17 @@ D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& sty
 	UTF8StringHelper nameStr (name.data ());
 
 	IDWriteFontCollection* fontCollection = nullptr;
-	if (CustomFonts::contains (nameStr.getWideString (), fontWeight, DWRITE_FONT_STRETCH_NORMAL,
-	                           fontStyle))
-		fontCollection = CustomFonts::getFontCollection ();
+	auto customFonts = D2DFontPrivate::getCustomFonts ();
+	if (customFonts && customFonts->contains (nameStr.getWideString (), fontWeight,
+											  DWRITE_FONT_STRETCH_NORMAL, fontStyle))
+		fontCollection = customFonts->getFontCollection ();
 
 	getDWriteFactory ()->CreateTextFormat (nameStr, fontCollection, fontWeight, fontStyle,
 	                                       DWRITE_FONT_STRETCH_NORMAL, (FLOAT)size, L"en-us",
 	                                       &textFormat);
 	if (textFormat)
 	{
-		if (auto font = getFont (textFormat, style))
+		if (auto font = D2DFontPrivate::getFont (textFormat, style))
 		{
 			DWRITE_FONT_METRICS fontMetrics;
 			font->GetMetrics (&fontMetrics);
@@ -235,7 +251,7 @@ bool D2DFont::asLogFont (LOGFONTW& logfont) const
 	COM::Ptr<IDWriteGdiInterop> interOp;
 	if (FAILED (getDWriteFactory ()->GetGdiInterop (interOp.adoptPtr ())))
 		return false;
-	if (auto font = getFont (textFormat, style))
+	if (auto font = D2DFontPrivate::getFont (textFormat, style))
 	{
 		BOOL isSystemFont;
 		if (SUCCEEDED (interOp->ConvertFontToLOGFONT (font.get (), &logfont, &isSystemFont)))
