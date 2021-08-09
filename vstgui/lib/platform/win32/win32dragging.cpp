@@ -236,7 +236,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObjec
 		DragEventData data;
 		data.drag = dragData;
 		pFrame->getCurrentMousePosition (data.pos);
-		pFrame->getCurrentMouseButtons (data.modifiers);
+		pFrame->getCurrentModifiers (data.modifiers);
 		auto result = pFrame->getFrame ()->platformOnDragEnter (data);
 		if (result == DragOperation::Copy)
 			*effect = DROPEFFECT_COPY;
@@ -258,7 +258,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL 
 		DragEventData data;
 		data.drag = dragData;
 		pFrame->getCurrentMousePosition (data.pos);
-		pFrame->getCurrentMouseButtons (data.modifiers);
+		pFrame->getCurrentModifiers (data.modifiers);
 		auto result = pFrame->getFrame ()->platformOnDragMove (data);
 		if (result == DragOperation::Copy)
 			*effect = DROPEFFECT_COPY;
@@ -278,7 +278,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragLeave ()
 		DragEventData data;
 		data.drag = dragData;
 		pFrame->getCurrentMousePosition (data.pos);
-		pFrame->getCurrentMouseButtons (data.modifiers);
+		pFrame->getCurrentModifiers (data.modifiers);
 		pFrame->getFrame ()->platformOnDragLeave (data);
 		dragData->forget ();
 		dragData = nullptr;
@@ -294,7 +294,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DW
 		DragEventData data;
 		data.drag = dragData;
 		pFrame->getCurrentMousePosition (data.pos);
-		pFrame->getCurrentMouseButtons (data.modifiers);
+		pFrame->getCurrentModifiers (data.modifiers);
 		pFrame->getFrame ()->platformOnDrop (data);
 		dragData->forget ();
 		dragData = nullptr;

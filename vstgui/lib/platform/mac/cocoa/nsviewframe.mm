@@ -20,6 +20,7 @@
 #import "../../../cvstguitimer.h"
 #import "../../common/genericoptionmenu.h"
 #import "../../../cframe.h"
+#import "../../../events.h"
 
 #if MAC_CARBON
 	#import "../carbon/hiviewframe.h"
@@ -101,6 +102,21 @@ static void mapModifiers (NSUInteger nsEventModifiers, CButtonState& buttonState
 		buttonState |= kAlt;
 	if (nsEventModifiers & MacEventModifier::ControlKeyMask)
 		buttonState |= kApple;
+}
+
+//------------------------------------------------------------------------------------
+static Modifiers modifiersFromModifierFlags (NSUInteger nsEventModifiers)
+{
+	Modifiers mods;
+	if (nsEventModifiers & MacEventModifier::ShiftKeyMask)
+		mods.add (ModifierKey::Shift);
+	if (nsEventModifiers & MacEventModifier::CommandKeyMask)
+		mods.add (ModifierKey::Control);
+	if (nsEventModifiers & MacEventModifier::AlternateKeyMask)
+		mods.add (ModifierKey::Alt);
+	if (nsEventModifiers & MacEventModifier::ControlKeyMask)
+		mods.add (ModifierKey::Super);
+	return mods;
 }
 
 //------------------------------------------------------------------------------------
@@ -366,29 +382,36 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 
-	CButtonState buttons = 0;
+	auto distanceX = [theEvent scrollingDeltaX];
+	auto distanceY = [theEvent scrollingDeltaY];
+	if (std::abs (distanceX) == 0. && std::abs (distanceY) == 0.)
+		return;
+
+	MouseWheelEvent event;
+
 	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	auto distanceX = [theEvent scrollingDeltaX];
-	auto distanceY = [theEvent scrollingDeltaY];
+
 	if ([theEvent hasPreciseScrollingDeltas])
 	{
 		distanceX *= 0.1;
 		distanceY *= 0.1;
+		event.flags |= MouseWheelEvent::PreciseDeltas;
 	}
 	if ([theEvent isDirectionInvertedFromDevice])
 	{
 		distanceX *= -1;
 		distanceY *= -1;
-		buttons |= kMouseWheelInverted;
+		event.flags |= MouseWheelEvent::DirectionInvertedFromDevice;
 	}
-	CPoint p = pointFromNSPoint (nsPoint);
-	if (distanceX != 0.)
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, static_cast<float> (distanceX), buttons);
-	if (distanceY != 0.)
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, static_cast<float> (distanceY), buttons);
+
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	event.modifiers = modifiersFromModifierFlags ([theEvent modifierFlags]);
+	event.deltaX = distanceX;
+	event.deltaY = distanceY;
+
+	_vstguiframe->platformOnEvent (event);
 }
 
 //------------------------------------------------------------------------------------
@@ -406,12 +429,12 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
-	CButtonState buttons = 0; //eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	CPoint p = pointFromNSPoint (getGlobalMouseLocation (self));
 
-	mapModifiers (modifiers, buttons);
-	_vstguiframe->platformOnMouseMoved (p, buttons);
+	MouseMoveEvent event;
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.mousePosition = pointFromNSPoint (getGlobalMouseLocation (self));
+
+	_vstguiframe->platformOnEvent (event);
 }
 
 //------------------------------------------------------------------------------------
@@ -420,11 +443,10 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
-	CButtonState buttons = 0; //eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	mapModifiers (modifiers, buttons);
-	CPoint p = pointFromNSPoint (getGlobalMouseLocation (self));
-	_vstguiframe->platformOnMouseExited (p, buttons);
+	MouseExitEvent event;
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.mousePosition = pointFromNSPoint (getGlobalMouseLocation (self));
+	_vstguiframe->platformOnEvent (event);
 }
 
 //------------------------------------------------------------------------------------
@@ -455,12 +477,14 @@ static BOOL VSTGUI_NSView_performKeyEquivalent (id self, SEL _cmd, NSEvent* theE
 			firstResponder = [firstResponder superview];
 		if (firstResponder == self)
 		{
-			IPlatformFrameCallback* frame = getFrame (self);
-			if (frame)
+			if (auto _vstguiframe = getFrame (self))
 			{
-				VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
-				if (frame->platformOnKeyDown (keyCode))
-					return YES;
+				KeyboardEvent keyEvent;
+				if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
+				{
+					_vstguiframe->platformOnEvent (keyEvent);
+					return keyEvent.consumed ? YES: NO;
+				}
 			}
 		}
 	}
@@ -474,18 +498,22 @@ static void VSTGUI_NSView_keyDown (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 
-	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
-	
-	bool res = _vstguiframe->platformOnKeyDown (keyCode);
-	if (!res&& keyCode.virt == VKEY_TAB)
+	KeyboardEvent keyEvent;
+	if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
 	{
-		if (keyCode.modifier & kShift)
-			[[self window] selectKeyViewPrecedingView:self];
-		else
-			[[self window] selectKeyViewFollowingView:self];
+		_vstguiframe->platformOnEvent (keyEvent);
+		if (keyEvent.consumed)
+			return;
+		if (keyEvent.virt == VirtualKey::Tab)
+		{
+			if (keyEvent.modifiers.has (ModifierKey::Shift))
+				[[self window] selectKeyViewPrecedingView:self];
+			else
+				[[self window] selectKeyViewFollowingView:self];
+			return;
+		}
 	}
-	else if (!res)
-		[[self nextResponder] keyDown:theEvent];
+	[[self nextResponder] keyDown:theEvent];
 }
 
 //------------------------------------------------------------------------------------
@@ -495,11 +523,41 @@ static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 
-	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
+	KeyboardEvent keyEvent;
+	if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
+	{
+		_vstguiframe->platformOnEvent (keyEvent);
+		if (keyEvent.consumed)
+			return;
+	}
+	[[self nextResponder] keyUp:theEvent];
+}
 
-	bool res = _vstguiframe->platformOnKeyUp (keyCode);
-	if (!res)
-		[[self nextResponder] keyUp:theEvent];
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_magnifyWithEvent (id self, SEL _cmd, NSEvent* theEvent)
+{
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
+	if (!_vstguiframe)
+		return;
+
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [self convertPoint:nsPoint fromView:nil];
+
+	ZoomGestureEvent event;
+	switch (theEvent.phase)
+	{
+		case NSEventPhaseBegan: event.phase = ZoomGestureEvent::Phase::Begin; break;
+		case NSEventPhaseChanged: event.phase = ZoomGestureEvent::Phase::Changed; break;
+		case NSEventPhaseCancelled: [[fallthrough]];
+		case NSEventPhaseEnded: event.phase = ZoomGestureEvent::Phase::End; break;
+		default: return;
+	}
+
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.zoom = theEvent.magnification;
+	
+	_vstguiframe->platformOnEvent (event);
 }
 
 //------------------------------------------------------------------------------------
@@ -515,11 +573,9 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	NSUInteger modifiers = [NSEvent modifierFlags];
-	CButtonState buttons = 0;
-	mapModifiers (modifiers, buttons);
+	auto modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 
-	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	DragEventData data {frame->getDragDataPackage (), where, modifiers};
 	auto result = frame->getFrame ()->platformOnDragEnter (data);
 	if (result == DragOperation::Copy)
 		return NSDragOperationCopy;
@@ -538,11 +594,9 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	NSUInteger modifiers = [NSEvent modifierFlags];
-	CButtonState buttons = 0;
-	mapModifiers (modifiers, buttons);
+	auto modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 
-	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	DragEventData data {frame->getDragDataPackage (), where, modifiers};
 	auto result = frame->getFrame ()->platformOnDragMove (data);
 	if (result == DragOperation::Copy)
 		return NSDragOperationCopy;
@@ -561,11 +615,9 @@ static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	NSUInteger modifiers = [NSEvent modifierFlags];
-	CButtonState buttons = 0;
-	mapModifiers (modifiers, buttons);
+	auto modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 
-	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	DragEventData data {frame->getDragDataPackage (), where, modifiers};
 	frame->getFrame ()->platformOnDragLeave (data);
 	frame->setDragDataPackage (nullptr);
 
@@ -581,11 +633,9 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	NSUInteger modifiers = [NSEvent modifierFlags];
-	CButtonState buttons = 0;
-	mapModifiers (modifiers, buttons);
+	auto modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 
-	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	DragEventData data {frame->getDragDataPackage (), where, modifiers};
 	bool result = frame->getFrame ()->platformOnDrop (data);
 	frame->setMouseCursor (kCursorDefault);
 	frame->setDragDataPackage (nullptr);
@@ -772,6 +822,8 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(keyDown:), IMP (VSTGUI_NSView_keyDown), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(keyUp:), IMP (VSTGUI_NSView_keyUp), "v@:@:^:"))
 
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(magnifyWithEvent:), IMP (VSTGUI_NSView_magnifyWithEvent), "v@:@:^:"))
+
 		sprintf (funcSig, "%s@:@:", @encode(NSFocusRingType));
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(focusRingType), IMP (VSTGUI_NSView_focusRingType), funcSig))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(makeSubViewFirstResponder:), IMP (VSTGUI_NSView_makeSubViewFirstResponder), "v@:@:^:"))
@@ -887,8 +939,10 @@ void NSViewFrame::initTrackingArea ()
 		if ([nsView hitTest:p])
 		{
 			options |= NSTrackingAssumeInside;
-			CPoint cp = pointFromNSPoint (p);
-			frame->platformOnMouseMoved (cp, 0);
+
+			MouseMoveEvent event;
+			event.mousePosition = pointFromNSPoint (p);
+			frame->platformOnEvent (event);
 		}
 		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[nsView frame] options:options owner:nsView userInfo:nil] autorelease];
 		[nsView addTrackingArea: trackingArea];
@@ -992,47 +1046,70 @@ void NSViewFrame::drawRect (NSRect* rect)
 	inDraw = false;
 }
 
+//------------------------------------------------------------------------
+static MouseEventButtonState buttonStateFromNSEvent (NSEvent* theEvent)
+{
+	MouseEventButtonState state;
+	if (theEvent.type == MacEventType::MouseMoved)
+		return state;
+	switch (theEvent.buttonNumber)
+	{
+		case 0:
+		{
+			if (theEvent.modifierFlags & NSControlKeyMask)
+				state.add (MouseEventButtonState::Right);
+			else
+				state.add (MouseEventButtonState::Left);
+			break;
+		}
+		case 1: state.add (MouseEventButtonState::Right); break;
+		case 2: state.add (MouseEventButtonState::Middle); break;
+		case 3: state.add (MouseEventButtonState::Fourth); break;
+		case 4: state.add (MouseEventButtonState::Fifth); break;
+	}
+	return state;
+}
+
 //-----------------------------------------------------------------------------
 bool NSViewFrame::onMouseDown (NSEvent* theEvent)
 {
-	CButtonState buttons = eventButton (theEvent);
-	mouseDownButtonState = buttons.getButtonState ();
-	[nsView.window makeFirstResponder:nsView];
-	NSUInteger modifiers = [theEvent modifierFlags];
+	MouseDownEvent event;
+	event.buttonState = buttonStateFromNSEvent (theEvent);
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.clickCount = theEvent.clickCount;
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
-	mapModifiers (modifiers, buttons);
-	if ([theEvent clickCount] == 2)
-		buttons |= kDoubleClick;
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = frame->platformOnMouseDown (p, buttons);
-	return (result != kMouseEventNotHandled) ? true : false;
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	frame->platformOnEvent (event);
+	return event.consumed;
 }
 
 //-----------------------------------------------------------------------------
 bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 {
-	CButtonState buttons = eventButton (theEvent);
-	NSUInteger modifiers = [theEvent modifierFlags];
-	mapModifiers (modifiers, buttons);
+	MouseUpEvent event;
+	event.buttonState = buttonStateFromNSEvent (theEvent);
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.clickCount = theEvent.clickCount;
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = frame->platformOnMouseUp (p, buttons);
-	return (result != kMouseEventNotHandled) ? true : false;
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	frame->platformOnEvent (event);
+	return event.consumed;
 }
 
 //-----------------------------------------------------------------------------
 bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
 {
-	NSUInteger modifiers = [theEvent modifierFlags];
-	CButtonState buttons = theEvent.type == MacEventType::MouseMoved ? 0 : mouseDownButtonState;
-	mapModifiers (modifiers, buttons);
+	MouseMoveEvent event;
+	event.buttonState = buttonStateFromNSEvent (theEvent);
+	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
+	event.clickCount = theEvent.clickCount;
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = frame->platformOnMouseMoved (p, buttons);
-	return (result != kMouseEventNotHandled) ? true : false;
+	event.mousePosition = pointFromNSPoint (nsPoint);
+	frame->platformOnEvent (event);
+	return event.consumed;
 }
 
 // IPlatformFrame
@@ -1112,6 +1189,13 @@ bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 	if (mouseButtons & (1 << 4))
 		buttons |= kButton5;
 	
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::getCurrentModifiers (Modifiers& modifiers) const
+{
+	modifiers = modifiersFromModifierFlags (NSEvent.modifierFlags);
 	return true;
 }
 
@@ -1272,9 +1356,10 @@ SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 {
 	if (genericOptionMenuTheme)
 	{
-		CButtonState buttons;
-		getCurrentMouseButtons (buttons);
-		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttons,
+		MouseEventButtonState buttonState;
+		if (auto event = [NSApp currentEvent])
+			buttonState = buttonStateFromNSEvent (event);
+		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
 		                                     *genericOptionMenuTheme.get ());
 	}
 	return makeOwned<NSViewOptionMenu> ();

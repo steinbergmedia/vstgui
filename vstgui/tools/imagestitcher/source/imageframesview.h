@@ -53,7 +53,7 @@ private:
 	DragOperation onDragMove (DragEventData eventData) override;
 	void onDragLeave (DragEventData eventData) override;
 	bool onDrop (DragEventData eventData) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	CColor activeSelectionColor;
 	CColor inactiveSelectionColor;

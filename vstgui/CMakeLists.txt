@@ -95,7 +95,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 if(VSTGUI_MAIN_PROJECT_BUILD)
-    message("Building only vstgui")
+    message(STATUS "Building only vstgui")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
         $<$<CONFIG:Debug>:${CMAKE_BINARY_DIR}/Debug/>$<$<CONFIG:Release>:${CMAKE_BINARY_DIR}/Release/>$<$<CONFIG:ReleaseLTO>:${CMAKE_BINARY_DIR}/ReleaseLTO/>
     )
@@ -126,10 +126,6 @@ if(NOT VSTGUI_STANDALONE AND VSTGUI_STANDALONE_EXAMPLES)
     set(VSTGUI_STANDALONE_EXAMPLES OFF)
 endif()
 
-if(NOT DEFINED VSTGUI_ENABLE_DEPRECATED_METHODS)
-    option(VSTGUI_ENABLE_DEPRECATED_METHODS "Enable VSTGUI deprecated methods" ON)
-endif()
-
 if(NOT DEFINED VSTGUI_TOOLS)
     option(VSTGUI_TOOLS "Build VSTGUI Tools" ON)
 endif()
@@ -152,10 +148,4 @@ get_directory_property(hasParent PARENT_DIRECTORY)
 if(hasParent)
     set(VSTGUI_COMPILE_DEFINITIONS ${VSTGUI_COMPILE_DEFINITIONS} PARENT_SCOPE)
     set(VSTGUI_LTO_COMPILER_FLAGS ${VSTGUI_LTO_COMPILER_FLAGS} PARENT_SCOPE)
-endif()
-
-if(VSTGUI_ENABLE_DEPRECATED_METHODS)
-    target_compile_definitions(vstgui PUBLIC VSTGUI_ENABLE_DEPRECATED_METHODS=1)
-else()
-    target_compile_definitions(vstgui PUBLIC VSTGUI_ENABLE_DEPRECATED_METHODS=0)
 endif()

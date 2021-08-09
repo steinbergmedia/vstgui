@@ -78,13 +78,13 @@ protected:
 	void updateSize ();
 	void invalidSelection ();
 	MouseSizeMode selectionHitTest (const CPoint& where, CView** resultView);
-	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
+	bool hitTestSubViews (const CPoint& where, const Event& event) override;
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	std::vector<CView*> findChildsInArea (CViewContainer* view, CRect r) const;
 
@@ -106,7 +106,8 @@ protected:
 	CView* getViewAt (const CPoint& p, const GetViewOptions& options = GetViewOptions ()) const override;
 	CViewContainer* getContainerAt (const CPoint& p, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool advanceNextFocusView (CView* oldFocus, bool reverse) override;
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) override;
+	void onMouseWheelEvent (MouseWheelEvent& event) override;
+	void onZoomGestureEvent (ZoomGestureEvent& event) override;
 
 	void looseFocus () override;
 	void takeFocus () override;

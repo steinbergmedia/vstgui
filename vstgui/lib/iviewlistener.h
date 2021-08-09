@@ -25,6 +25,10 @@ public:
 	virtual void viewLostFocus (CView* view) = 0;
 	virtual void viewTookFocus (CView* view) = 0;
 	virtual void viewWillDelete (CView* view) = 0;
+	/** @ingroup new_in_4_11 */
+	virtual void viewOnEvent (CView* view, Event& event) = 0;
+	/** @ingroup new_in_4_11 */
+	virtual void viewOnMouseEnabled (CView* view, bool state) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -43,26 +47,6 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-/** @brief View Mouse Listener Interface
- *
- *	@ingroup new_in_4_7
- */
-//-----------------------------------------------------------------------------
-class IViewMouseListener
-{
-public:
-	virtual ~IViewMouseListener () noexcept = default;
-
-	virtual CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) = 0;
-	virtual CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) = 0;
-	virtual CMouseEventResult viewOnMouseMoved (CView* view, CPoint pos, CButtonState buttons) = 0;
-	virtual CMouseEventResult viewOnMouseCancel (CView* view) = 0;
-	virtual void viewOnMouseEntered (CView* view) = 0;
-	virtual void viewOnMouseExited (CView* view) = 0;
-	virtual void viewOnMouseEnabled (CView* view, bool state) = 0;
-};
-
-//-----------------------------------------------------------------------------
 /** @brief View Listener Interface Adapter
  */
 //-----------------------------------------------------------------------------
@@ -75,6 +59,8 @@ public:
 	void viewLostFocus (CView* view) override {}
 	void viewTookFocus (CView* view) override {}
 	void viewWillDelete (CView* view) override {}
+	void viewOnEvent (CView* view, Event& event) override {}
+	void viewOnMouseEnabled (CView* view, bool state) override {}
 };
 
 //-----------------------------------------------------------------------------
@@ -90,13 +76,36 @@ public:
 	void viewContainerTransformChanged (CViewContainer* container) override {}
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+/** @brief View Mouse Listener Interface
+ *
+ *	@ingroup new_in_4_7
+ */
+//-----------------------------------------------------------------------------
+class [[deprecated("Use IViewListener instead")]] IViewMouseListener
+{
+public:
+	virtual ~IViewMouseListener () noexcept = default;
+
+	virtual CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) = 0;
+	virtual CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) = 0;
+	virtual CMouseEventResult viewOnMouseMoved (CView* view, CPoint pos, CButtonState buttons) = 0;
+	virtual CMouseEventResult viewOnMouseCancel (CView* view) = 0;
+	virtual void viewOnMouseEntered (CView* view) = 0;
+	virtual void viewOnMouseExited (CView* view) = 0;
+	virtual void viewOnMouseEnabled (CView* view, bool state) = 0;
+};
+
+#include "private/disabledeprecatedmessage.h"
 //-----------------------------------------------------------------------------
 /** @brief View Mouse Listener Interface Adapter
  *
  *	@ingroup new_in_4_7
  */
 //-----------------------------------------------------------------------------
-class ViewMouseListenerAdapter : public IViewMouseListener
+class [[deprecated("Use ViewListenerAdapter instead")]] ViewMouseListenerAdapter
+: public IViewMouseListener
 {
 public:
 	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override
@@ -116,5 +125,7 @@ public:
 	void viewOnMouseExited (CView* view) override {}
 	void viewOnMouseEnabled (CView* view, bool state) override {}
 };
+#include "private/enabledeprecatedmessage.h"
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 } // VSTGUI

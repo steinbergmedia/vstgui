@@ -31,6 +31,8 @@ public:
 	virtual bool getCurrentMousePosition (CPoint& mousePosition) const = 0;
 	/** get current mouse buttons out of event stream */
 	virtual bool getCurrentMouseButtons (CButtonState& buttons) const = 0;
+	/** get current hardware modifier key state */
+	virtual bool getCurrentModifiers (Modifiers& modifiers) const = 0;
 	/** set mouse cursor shape */
 	virtual bool setMouseCursor (CCursorType type) = 0;
 

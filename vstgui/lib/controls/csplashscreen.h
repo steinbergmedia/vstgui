@@ -23,7 +23,7 @@ public:
 	CSplashScreen (const CSplashScreen& splashScreen);
 
 	void draw (CDrawContext*) override;
-	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
+	bool hitTest (const CPoint& where, const Event& event) override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplashScreen Methods

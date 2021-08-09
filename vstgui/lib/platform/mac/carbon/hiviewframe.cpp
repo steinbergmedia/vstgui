@@ -13,6 +13,7 @@
 #include "../../../cbitmap.h"
 #include "../../../cdrawcontext.h"
 #include "../../../cdropsource.h"
+#include "../../../events.h"
 #include "hiviewtextedit.h"
 #include "hiviewoptionmenu.h"
 #include "../cgdrawcontext.h"
@@ -1082,6 +1083,8 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 			{
 				case kEventMouseWheelMoved:
 				{
+					MouseWheelEvent event;
+
 					UInt32 modifiers;
 					HIPoint windowHIPoint;
 					SInt32 wheelDelta;
@@ -1092,15 +1095,14 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeSInt32, NULL, sizeof (SInt32), NULL, &wheelDelta);
 					GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &windowHIPoint);
 					GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
-					CButtonState buttons = 0;
 					if (modifiers & cmdKey)
-						buttons |= kControl;
+						event.modifiers.add (ModifierKey::Control);
 					if (modifiers & shiftKey)
-						buttons |= kShift;
+						event.modifiers.add (ModifierKey::Shift);
 					if (modifiers & optionKey)
-						buttons |= kAlt;
+						event.modifiers.add (ModifierKey::Alt);
 					if (modifiers & controlKey)
-						buttons |= kApple;
+						event.modifiers.add (ModifierKey::Super);
 					
 					HIPointConvert (&windowHIPoint, kHICoordSpaceWindow, windowRef, kHICoordSpaceView, hiviewframe->controlRef);
 					
@@ -1112,14 +1114,16 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 						windowHIPoint.x -= viewRect.origin.x;
 						windowHIPoint.y -= viewRect.origin.y;
 					}
-					
-					CPoint p ((CCoord)windowHIPoint.x, (CCoord)windowHIPoint.y);
-					float distance = wheelDelta;
-					CMouseWheelAxis axis = kMouseWheelAxisY;
+
+					event.mousePosition = {(CCoord)windowHIPoint.x, (CCoord)windowHIPoint.y};
 					if (wheelAxis == kEventMouseWheelAxisX)
-						axis = kMouseWheelAxisX;
-					frame->platformOnMouseWheel (p, axis, distance, buttons);
-					result = noErr;
+						event.deltaX = distance;
+					else
+						event.deltaY = distance;
+					
+					frame->platformOnEvent (event);
+					result = event.consumed ? noErr: eventPassToNextTargetErr;
+
 					break;
 				}
 			}

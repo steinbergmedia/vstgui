@@ -7,6 +7,7 @@
 #include "../cframe.h"
 #include "../cgraphicspath.h"
 #include "../cscrollview.h"
+#include "../events.h"
 #include "clistcontrol.h"
 #include <vector>
 
@@ -351,48 +352,51 @@ bool CListControl::rowSelectable (int32_t row) const
 }
 
 //------------------------------------------------------------------------
-int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
+void CListControl::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (getMouseEnabled () && keyCode.character == 0)
+	if (event.type != EventType::KeyDown)
+		return;
+	if (getMouseEnabled () && event.character == 0)
 	{
 		int32_t newRow = getIntValue ();
-		switch (keyCode.virt)
+		switch (event.virt)
 		{
-			case VKEY_HOME:
+			default: return;
+			case VirtualKey::Home:
 			{
-				if (keyCode.modifier != 0)
+				if (!event.modifiers.empty ())
 					break;
 				newRow = getMinRowIndex ();
 				if (!rowSelectable (newRow))
 					newRow = getNextSelectableRow (newRow, 1);
 				break;
 			}
-			case VKEY_END:
+			case VirtualKey::End:
 			{
-				if (keyCode.modifier != 0)
+				if (!event.modifiers.empty ())
 					break;
 				newRow = getMaxRowIndex ();
 				if (!rowSelectable (newRow))
 					newRow = getNextSelectableRow (newRow, -1);
 				break;
 			}
-			case VKEY_UP:
+			case VirtualKey::Up:
 			{
-				if (keyCode.modifier != 0)
+				if (!event.modifiers.empty ())
 					break;
 				newRow = getNextSelectableRow (newRow, -1);
 				break;
 			}
-			case VKEY_DOWN:
+			case VirtualKey::Down:
 			{
-				if (keyCode.modifier != 0)
+				if (!event.modifiers.empty ())
 					break;
 				newRow = getNextSelectableRow (newRow, 1);
 				break;
 			}
-			case VKEY_PAGEUP:
+			case VirtualKey::PageUp:
 			{
-				if (keyCode.modifier != 0)
+				if (!event.modifiers.empty ())
 					break;
 				auto vr = getVisibleViewSize ();
 				auto rr = getRowRect (newRow);
@@ -403,13 +407,16 @@ int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
 						if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
 						{
 							scrollView->makeRectVisible (*rr);
-							return onKeyDown (keyCode);
+							onKeyboardEvent (event);
+							return;
 						}
 					}
 				}
 				vr.top += 2;
 				if (auto firstVisibleRow = getRowAtPoint (vr.getTopLeft ()))
 				{
+					while (!rowSelectable (*firstVisibleRow))
+						*firstVisibleRow += 1;
 					if (*firstVisibleRow == getIntValue ())
 					{
 						vr.offset (0, -vr.getHeight ());
@@ -427,9 +434,9 @@ int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
 					newRow = getNextSelectableRow (newRow, -1);
 				break;
 			}
-			case VKEY_PAGEDOWN:
+			case VirtualKey::PageDown:
 			{
-				if (keyCode.modifier != 0)
+				if (!event.modifiers.empty ())
 					break;
 				auto vr = getVisibleViewSize ();
 				auto rr = getRowRect (newRow);
@@ -440,13 +447,16 @@ int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
 						if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
 						{
 							scrollView->makeRectVisible (*rr);
-							return onKeyDown (keyCode);
+							onKeyboardEvent (event);
+							return;
 						}
 					}
 				}
 				vr.bottom -= 2;
 				if (auto lastVisibleRow = getRowAtPoint (vr.getBottomLeft ()))
 				{
+					while (!rowSelectable (*lastVisibleRow))
+						*lastVisibleRow -= 1;
 					if (*lastVisibleRow == getIntValue ())
 					{
 						vr.offset (0, vr.getHeight ());
@@ -481,10 +491,9 @@ int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
 						scrollView->makeRectVisible (*rowRect);
 				}
 			}
-			return 1;
+			event.consumed = true;
 		}
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------

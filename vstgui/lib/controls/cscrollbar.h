@@ -53,7 +53,7 @@ public:
 	
 	// overwrite
 	void draw (CDrawContext* pContext) override;
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;

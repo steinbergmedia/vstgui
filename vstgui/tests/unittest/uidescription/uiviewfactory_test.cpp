@@ -1,13 +1,13 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "../unittests.h"
 #include "../../../lib/cview.h"
 #include "../../../lib/cviewcontainer.h"
-#include "../../../uidescription/uiviewfactory.h"
-#include "../../../uidescription/uiattributes.h"
 #include "../../../uidescription/detail/uiviewcreatorattributes.h"
+#include "../../../uidescription/uiattributes.h"
+#include "../../../uidescription/uiviewfactory.h"
+#include "../unittests.h"
 #include <algorithm>
 
 namespace VSTGUI {
@@ -49,10 +49,13 @@ struct BaseViewCreator : public ViewCreatorAdapter
 	UTF8StringPtr getDisplayName () const override { return "Base View"; }
 	IdStringPtr getBaseViewName () const override { return nullptr; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
-	{ return new BaseView (); }
-	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		auto v = dynamic_cast<BaseView*>(view);
+		return new BaseView ();
+	}
+	bool apply (CView* view, const UIAttributes& attributes,
+	            const IUIDescription* description) const override
+	{
+		auto v = dynamic_cast<BaseView*> (view);
 		if (!v)
 			return false;
 		auto attr = attributes.getAttributeValue (baseViewAttr);
@@ -78,9 +81,10 @@ struct BaseViewCreator : public ViewCreatorAdapter
 			return kListType;
 		return kUnknownType;
 	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	                        const IUIDescription* desc) const override
 	{
-		auto v = dynamic_cast<BaseView*>(view);
+		auto v = dynamic_cast<BaseView*> (view);
 		if (!v)
 			return false;
 		if (attributeName == baseViewAttr)
@@ -95,7 +99,8 @@ struct BaseViewCreator : public ViewCreatorAdapter
 		}
 		return false;
 	}
-	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const override
+	bool getPossibleListValues (const std::string& attributeName,
+	                            std::list<const std::string*>& values) const override
 	{
 		if (attributeName != baseViewAttr)
 			return false;
@@ -107,7 +112,11 @@ struct BaseViewCreator : public ViewCreatorAdapter
 		values.push_back (&v3);
 		return true;
 	}
-	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const override { return false; }
+	bool getAttributeValueRange (const std::string& attributeName, double& minValue,
+	                             double& maxValue) const override
+	{
+		return false;
+	}
 };
 BaseViewCreator baseViewCreator;
 
@@ -119,14 +128,17 @@ struct ViewCreator : public ViewCreatorAdapter
 	UTF8StringPtr getDisplayName () const override { return "Test View"; }
 	IdStringPtr getBaseViewName () const override { return "BaseView"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
-	{ return new View (); }
-	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		auto v = dynamic_cast<View*>(view);
+		return new View ();
+	}
+	bool apply (CView* view, const UIAttributes& attributes,
+	            const IUIDescription* description) const override
+	{
+		auto v = dynamic_cast<View*> (view);
 		if (!v)
 			return false;
 		int32_t value;
-		if (attributes.getIntegerAttribute(viewAttr, value))
+		if (attributes.getIntegerAttribute (viewAttr, value))
 			v->value = value;
 		return true;
 	}
@@ -141,9 +153,10 @@ struct ViewCreator : public ViewCreatorAdapter
 			return kTagType;
 		return kUnknownType;
 	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	                        const IUIDescription* desc) const override
 	{
-		auto v = dynamic_cast<View*>(view);
+		auto v = dynamic_cast<View*> (view);
 		if (!v)
 			return false;
 		if (attributeName == viewAttr)
@@ -153,8 +166,13 @@ struct ViewCreator : public ViewCreatorAdapter
 		}
 		return false;
 	}
-	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const override { return false; }
-	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const override
+	bool getPossibleListValues (const std::string& attributeName,
+	                            std::list<const std::string*>& values) const override
+	{
+		return false;
+	}
+	bool getAttributeValueRange (const std::string& attributeName, double& minValue,
+	                             double& maxValue) const override
 	{
 		if (attributeName != viewAttr)
 			return false;
@@ -175,122 +193,159 @@ static SharedPointer<CView> createView (IViewFactory* factory)
 
 } // anonymous
 
-TESTCASE(UIViewFactoryTests,
+TEST_SUITE_SETUP (UIViewFactoryTest)
+{
+	auto factory = makeOwned<UIViewFactory> ();
+	factory->registerViewCreator (baseViewCreator);
+	factory->registerViewCreator (viewCreator);
+	TEST_SUITE_SET_STORAGE (SharedPointer<UIViewFactory>, factory);
+}
 
-	static SharedPointer<UIViewFactory> factory;
-	
-	SETUP(
-		factory = owned (new UIViewFactory ());
-		factory->registerViewCreator (baseViewCreator);
-		factory->registerViewCreator (viewCreator);
-	);
+TEST_SUITE_TEARDOWN (UIViewFactoryTest)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	factory->unregisterViewCreator (baseViewCreator);
+	factory->unregisterViewCreator (viewCreator);
+	factory = nullptr;
+}
 
-	TEARDOWN(
-		factory->unregisterViewCreator (baseViewCreator);
-		factory->unregisterViewCreator (viewCreator);
-		factory = nullptr;
-	);
+TEST_CASE (UIViewFactoryTest, RegisterViewCreator)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
 
-	TEST(registerViewCreator,
-		UIViewFactory::StringPtrList registeredViews;
-		factory->collectRegisteredViewNames (registeredViews);
-		auto found = std::find_if (registeredViews.begin(), registeredViews.end(), [&] (const std::string*& str) {
-			return *str == viewCreator.getViewName ();
-		});
-		EXPECT(found != registeredViews.end ());
-	);
-	
-	TEST(collectFilteredViewNames,
-		UIViewFactory::StringPtrList registeredViews;
-		factory->collectRegisteredViewNames (registeredViews, "BaseView");
-		EXPECT(registeredViews.size() == 1);
-	);
-	
-	TEST (collectRegisteredViewAndDisplayNames,
-		auto list = factory->collectRegisteredViewAndDisplayNames ();
-		auto it = std::find_if (list.begin (), list.end (), [] (const auto& value) {
-			return *value.first == "BaseView";
-		});
-		EXPECT(it != list.end ());
-		EXPECT(UTF8StringView (it->second) == UTF8StringView ("Base View"));
-	);
-	
-	TEST(createView,
-		auto v = createView (factory);
-		EXPECT(v != nullptr);
-		EXPECT(v.cast<View> () != nullptr);
-	);
-	
-	TEST(createUnknownView,
-		UIAttributes a;
-		a.setAttribute (UIViewCreator::kAttrClass, "Unknown");
-		auto view = owned (factory->createView (a, nullptr));
-		EXPECT(view == nullptr);
-	);
-	
-	TEST(applyAttributes,
-		auto v = createView (factory);
-		auto view = v.cast<View>();
-		EXPECT(view->value == 0);
-		UIAttributes a;
-		a.setIntegerAttribute (viewAttr, 1);
-		factory->applyAttributeValues (v, a, nullptr);
-		EXPECT(view->value == 1);
-	);
+	UIViewFactory::StringPtrList registeredViews;
+	factory->collectRegisteredViewNames (registeredViews);
+	auto found =
+	    std::find_if (registeredViews.begin (), registeredViews.end (),
+	                  [&] (const std::string*& str) { return *str == viewCreator.getViewName (); });
+	EXPECT (found != registeredViews.end ());
+}
 
-	TEST(getAttributeValue,
-		auto v = createView (factory);
-		std::string value;
-		factory->getAttributeValue (v, viewAttr, value, nullptr);
-		EXPECT(value == "0");
-	);
+TEST_CASE (UIViewFactoryTest, CollectFilteredViewNames)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
 
-	TEST(getAttributeNames,
-		auto v = createView (factory);
-		UIViewFactory::StringList attributeNames;
-		EXPECT(factory->getAttributeNamesForView (v, attributeNames) == true);
-		EXPECT(attributeNames.size () == 2);
-		EXPECT(attributeNames.front() == viewAttr);
-	);
-	
-	TEST(getAttributesForView,
-		auto v = createView (factory);
-		UIAttributes a;
-		factory->getAttributesForView (v, nullptr, a);
-		EXPECT(a.hasAttribute (viewAttr) == true);
-		EXPECT(a.hasAttribute (baseViewAttr) == true);
-	);
+	UIViewFactory::StringPtrList registeredViews;
+	factory->collectRegisteredViewNames (registeredViews, "BaseView");
+	EXPECT (registeredViews.size () == 1);
+}
 
-	TEST(getPossibleListValues,
-		auto v = createView (factory);
-		UIViewFactory::StringPtrList values;
-		EXPECT(factory->getPossibleAttributeListValues (v, baseViewAttr, values) == true);
-		EXPECT(values.size () == 3);
-	);
+TEST_CASE (UIViewFactoryTest, CollectRegisteredViewAndDisplayNames)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
 
-	TEST(getAttributeValueRange,
-		auto v = createView (factory);
-		double minValue;
-		double maxValue;
-		EXPECT (factory->getAttributeValueRange (v, viewAttr, minValue, maxValue) == true);
-		EXPECT(minValue == -10.);
-		EXPECT(maxValue == 10.);
-		EXPECT (factory->getAttributeValueRange (v, baseViewAttr, minValue, maxValue) == false);
-	);
-	
-	TEST(defaultViewCreation,
-		UIAttributes a;
-		auto v = owned (factory->createView (a, nullptr));
-		EXPECT(v.cast<CViewContainer> ());
-	);
+	auto list = factory->collectRegisteredViewAndDisplayNames ();
+	auto it = std::find_if (list.begin (), list.end (),
+	                        [] (const auto& value) { return *value.first == "BaseView"; });
+	EXPECT (it != list.end ());
+	EXPECT (UTF8StringView (it->second) == UTF8StringView ("Base View"));
+}
 
-	TEST(applyCustomViewAttributes,
-		auto view = owned (new CustomView ());
-		UIAttributes a;
-		a.setAttribute (baseViewAttr, "3");
-		EXPECT(factory->applyCustomViewAttributeValues (view, "TestView", a, nullptr));
-		EXPECT(view->baseState == BaseView::State::kState3);
-	);
-);
+TEST_CASE (UIViewFactoryTest, CreateView)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	auto v = createView (factory);
+	EXPECT (v != nullptr);
+	EXPECT (v.cast<View> () != nullptr);
+}
+
+TEST_CASE (UIViewFactoryTest, CreateUnknownView)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	UIAttributes a;
+	a.setAttribute (UIViewCreator::kAttrClass, "Unknown");
+	auto view = owned (factory->createView (a, nullptr));
+	EXPECT (view == nullptr);
+}
+
+TEST_CASE (UIViewFactoryTest, ApplyAttributes)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	auto v = createView (factory);
+	auto view = v.cast<View> ();
+	EXPECT (view->value == 0);
+	UIAttributes a;
+	a.setIntegerAttribute (viewAttr, 1);
+	factory->applyAttributeValues (v, a, nullptr);
+	EXPECT (view->value == 1);
+}
+
+TEST_CASE (UIViewFactoryTest, GetAttributeValue)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	auto v = createView (factory);
+	std::string value;
+	factory->getAttributeValue (v, viewAttr, value, nullptr);
+	EXPECT (value == "0");
+}
+
+TEST_CASE (UIViewFactoryTest, GetAttributeNames)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	auto v = createView (factory);
+	UIViewFactory::StringList attributeNames;
+	EXPECT (factory->getAttributeNamesForView (v, attributeNames) == true);
+	EXPECT (attributeNames.size () == 2);
+	EXPECT (attributeNames.front () == viewAttr);
+}
+
+TEST_CASE (UIViewFactoryTest, GetAttributesForView)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	auto v = createView (factory);
+	UIAttributes a;
+	factory->getAttributesForView (v, nullptr, a);
+	EXPECT (a.hasAttribute (viewAttr) == true);
+	EXPECT (a.hasAttribute (baseViewAttr) == true);
+}
+
+TEST_CASE (UIViewFactoryTest, GetPossibleListValues)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	auto v = createView (factory);
+	UIViewFactory::StringPtrList values;
+	EXPECT (factory->getPossibleAttributeListValues (v, baseViewAttr, values) == true);
+	EXPECT (values.size () == 3);
+}
+
+TEST_CASE (UIViewFactoryTest, GetAttributeValueRange)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	auto v = createView (factory);
+	double minValue;
+	double maxValue;
+	EXPECT (factory->getAttributeValueRange (v, viewAttr, minValue, maxValue) == true);
+	EXPECT (minValue == -10.);
+	EXPECT (maxValue == 10.);
+	EXPECT (factory->getAttributeValueRange (v, baseViewAttr, minValue, maxValue) == false);
+}
+
+TEST_CASE (UIViewFactoryTest, DefaultViewCreation)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	UIAttributes a;
+	auto v = owned (factory->createView (a, nullptr));
+	EXPECT (v.cast<CViewContainer> ());
+}
+
+TEST_CASE (UIViewFactoryTest, ApplyCustomViewAttributes)
+{
+	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+
+	auto view = owned (new CustomView ());
+	UIAttributes a;
+	a.setAttribute (baseViewAttr, "3");
+	EXPECT (factory->applyCustomViewAttributeValues (view, "TestView", a, nullptr));
+	EXPECT (view->baseState == BaseView::State::kState3);
+}
 
 } // VSTGUI

@@ -7,6 +7,7 @@
 #include "../../lib/cframe.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/dispatchlist.h"
+#include "../../lib/events.h"
 #include "../../uidescription/icontroller.h"
 #include "../include/iapplication.h"
 #include "../include/icommand.h"
@@ -123,12 +124,7 @@ public:
 	// IMouseObserver
 	void onMouseEntered (CView*, CFrame* ) override {};
 	void onMouseExited (CView*, CFrame* ) override {};
-	CMouseEventResult onMouseMoved (CFrame*, const CPoint&, const CButtonState&) override
-	{
-		return kMouseEventNotHandled;
-	}
-	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where,
-	                               const CButtonState& buttons) override;
+	void onMouseEvent (MouseEvent& event, CFrame*) override;
 
 private:
 	WindowControllerPtr controller;
@@ -395,16 +391,16 @@ struct WindowContextMenuCommandHandler : ICommandMenuItemTarget, NonAtomicRefere
 	Window* window;
 };
 
+
 //------------------------------------------------------------------------
-CMouseEventResult Window::onMouseDown (CFrame* inFrame, const CPoint& _where,
-                                       const CButtonState& buttons)
+void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
 {
-	if (!buttons.isRightButton ())
-		return kMouseEventNotHandled;
+	if (event.type != EventType::MouseDown || !event.buttonState.isRight ())
+		return;
 
 	auto contextMenu = makeOwned<COptionMenu> ();
 
-	CPoint where (_where);
+	CPoint where (event.mousePosition);
 	inFrame->getTransform ().transform (where);
 
 	CViewContainer::ViewList views;
@@ -419,7 +415,7 @@ CMouseEventResult Window::onMouseDown (CFrame* inFrame, const CPoint& _where,
 				continue;
 			if (contextMenu->getNbEntries () != 0)
 				contextMenu->addSeparator ();
-			CPoint p (_where);
+			CPoint p (event.mousePosition);
 			view->frameToLocal (p);
 			if (contextMenuController2)
 				contextMenuController2->appendContextMenuItems (*contextMenu, view, p);
@@ -465,11 +461,10 @@ CMouseEventResult Window::onMouseDown (CFrame* inFrame, const CPoint& _where,
 	{
 		contextMenu->cleanupSeparators (true);
 		contextMenu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
-		contextMenu->popup (inFrame, _where);
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		contextMenu->popup (inFrame, event.mousePosition);
+		event.consumed = true;
+		castMouseDownEvent (event).ignoreFollowUpMoveAndUpEvents (true);
 	}
-
-	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------

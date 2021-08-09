@@ -37,6 +37,7 @@
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/iviewlistener.h"
 #include "../../lib/cvstguitimer.h"
+#include "../../lib/events.h"
 
 #include <sstream>
 #include <algorithm>
@@ -212,7 +213,6 @@ protected:
 //----------------------------------------------------------------------------------------------------
 class UIZoomSettingController : public IController,
                                 public IContextMenuController2,
-                                public ViewMouseListenerAdapter,
                                 public ViewListenerAdapter,
                                 public NonAtomicReferenceCounted
 {
@@ -311,7 +311,6 @@ public:
 				zoomValueControl->setFrameWidth (-1);
 				zoomValueControl->setTooltipText ("Editor Zoom");
 				zoomValueControl->registerViewListener (this);
-				zoomValueControl->registerViewMouseListener (this);
 				zoomValueControl->setStyle (zoomValueControl->getStyle () | CTextEdit::kDoubleClickStyle);
 			}
 		}
@@ -341,12 +340,15 @@ public:
 		}
 	}
 
-	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override
+	void viewOnEvent (CView* view, Event& event) override
 	{
 		vstgui_assert (view == zoomValueControl);
-		if (buttons.isDoubleClick ())
+		if (event.type != EventType::MouseDown)
+			return;
+		auto& downEvent = castMouseDownEvent (event);
+		if (downEvent.clickCount > 1)
 			popupTimer = nullptr;
-		else if (buttons.isLeftButton () && buttons.getModifierState () == 0)
+		else if (downEvent.buttonState.isLeft () && downEvent.modifiers.empty ())
 		{
 			popupTimer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) {
 				popupTimer = nullptr;
@@ -358,14 +360,12 @@ public:
 				                 zoomValueControl->getViewSize ().getTopLeft (), true));
 			}, 250);
 		}
-		return kMouseEventNotHandled;
 	}
 
 	void viewWillDelete (CView* view) override
 	{
 		vstgui_assert (view == zoomValueControl);
 		view->unregisterViewListener (this);
-		view->unregisterViewMouseListener (this);
 		zoomValueControl = nullptr;
 	}
 
@@ -1344,25 +1344,20 @@ void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
+void UIEditController::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
 {
+	if (event.type == EventType::KeyUp)
+		return;
 	if (frame->getModalView () == nullptr)
 	{
 		if (frame->getFocusView ())
 		{
 			auto* edit = dynamic_cast<CTextEdit*>(frame->getFocusView ());
 			if (edit && edit->getPlatformTextEdit ())
-				return -1;
+				return;
 		}
-		return menuController->processKeyCommand (code);
+		menuController->processKeyCommand (event);
 	}
-	return -1;
-}
-
-//----------------------------------------------------------------------------------------------------
-int32_t UIEditController::onKeyUp (const VstKeyCode& code, CFrame* frame)
-{
-	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------

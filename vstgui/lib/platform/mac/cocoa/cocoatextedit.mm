@@ -10,7 +10,7 @@
 #import "autoreleasepool.h"
 #import "../cfontmac.h"
 #import "../macstring.h"
-#import "../../../vstkeycode.h"
+#import "../../../events.h"
 
 using namespace VSTGUI;
 
@@ -218,40 +218,40 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	IPlatformTextEditCallback* tec = te->getTextEdit ();
 	if (commandSelector == @selector (insertNewline:))
 	{
-		VstKeyCode keyCode = {};
-		keyCode.virt = VKEY_RETURN;
-		if (tec->platformOnKeyDown (keyCode))
-		{
+		KeyboardEvent event;
+		event.type = EventType::KeyDown;
+		event.virt = VirtualKey::Return;
+		tec->platformOnKeyboardEvent (event);
+		if (event.consumed)
 			return YES;
-		}
 	}
 	else if (commandSelector == @selector (insertTab:))
 	{
-		VstKeyCode keyCode = {};
-		keyCode.virt = VKEY_TAB;
-		if (tec->platformOnKeyDown (keyCode))
-		{
+		KeyboardEvent event;
+		event.type = EventType::KeyDown;
+		event.virt = VirtualKey::Tab;
+		tec->platformOnKeyboardEvent (event);
+		if (event.consumed)
 			return YES;
-		}
 	}
 	else if (commandSelector == @selector (insertBacktab:))
 	{
-		VstKeyCode keyCode = {};
-		keyCode.virt = VKEY_TAB;
-		keyCode.modifier = MODIFIER_SHIFT;
-		if (tec->platformOnKeyDown (keyCode))
-		{
+		KeyboardEvent event;
+		event.type = EventType::KeyDown;
+		event.virt = VirtualKey::Tab;
+		event.modifiers.add (ModifierKey::Shift);
+		tec->platformOnKeyboardEvent (event);
+		if (event.consumed)
 			return YES;
-		}
 	}
 	else if (commandSelector == @selector (cancelOperation:))
 	{
-		VstKeyCode keyCode = {};
-		keyCode.virt = VKEY_ESCAPE;
-		if (tec->platformOnKeyDown (keyCode))
-		{
+		KeyboardEvent event;
+		event.type = EventType::KeyDown;
+		event.virt = VirtualKey::Escape;
+		tec->platformOnKeyboardEvent (event);
+		if (event.consumed)
 			return YES;
-		}
 	}
 	return NO;
 }

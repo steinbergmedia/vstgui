@@ -27,7 +27,7 @@ template <typename Iter, typename Proc, typename ResultType = int32_t>
 Optional<ResultType> indexOfTest (Iter first, Iter last, Proc p)
 {
 	auto it = std::find_if (first, last, p);
-	if (first == last)
+	if (it == last)
 		return {};
 	return {static_cast<ResultType> (std::distance (first, it))};
 }

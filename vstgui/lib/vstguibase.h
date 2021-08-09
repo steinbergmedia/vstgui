@@ -12,8 +12,8 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  10
-#define VSTGUI_VERSION_PATCHLEVEL  1
+#define VSTGUI_VERSION_MINOR  11
+#define VSTGUI_VERSION_PATCHLEVEL  0
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -66,8 +66,6 @@
 	#endif
 	#include <type_traits>
 
-	#define VSTGUI_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
-
 	#if defined (__clang__) && __clang_major__ > 4
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
 			#pragma clang diagnostic warning "-Weverything"
@@ -119,15 +117,12 @@
 	#endif
 
 	#if defined (__clang__) && __clang__
-		#define VSTGUI_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
 			#pragma clang diagnostic warning "-Wconversion"
 			#pragma clang diagnostic ignored "-Wreorder"
 		#else
 			#pragma clang diagnostic warning "-Wunreachable-code"
 		#endif
-	#else
-		#define VSTGUI_DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#endif
 
 	#include <algorithm>
@@ -163,14 +158,12 @@
 	#define VSTGUI_ENABLE_DEPRECATED_METHODS 1
 #endif
 
-#ifndef VSTGUI_DEPRECATED_ATTRIBUTE
-	#define VSTGUI_DEPRECATED_ATTRIBUTE
-#endif
-
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	#define VSTGUI_DEPRECATED(x)	VSTGUI_DEPRECATED_ATTRIBUTE	x
+	#define VSTGUI_DEPRECATED(x)			[[deprecated]]	x
+	#define VSTGUI_DEPRECATED_MSG(x, msg)	[[deprecated(msg)]]	x
 #else
 	#define VSTGUI_DEPRECATED(x)
+	#define VSTGUI_DEPRECATED_MSG(x, msg)
 #endif
 
 //----------------------------------------------------
@@ -281,9 +274,10 @@ public:
 	void remember () override { nbReference++; }
 	/** get refcount */
 	virtual int32_t getNbReference () const { return nbReference; }
-	virtual void beforeDelete () {}
 	//@}
 private:
+	virtual void beforeDelete () {}
+
 	T nbReference {1};
 };
 
@@ -546,9 +540,10 @@ private:
 
 //-----------------------------------------------------------------------------
 #define VSTGUI_NEWER_THAN(major, minor) \
-	(VSTGUI_VERSION > major || VSTGUI_VERSION_MAJOR == major && VSTGUI_VERSION_MINOR > minor)
+	(VSTGUI_VERSION > major || (VSTGUI_VERSION_MAJOR == major && VSTGUI_VERSION_MINOR > minor))
 
 #define VSTGUI_NEWER_THAN_4_10 VSTGUI_NEWER_THAN (4, 10)
+#define VSTGUI_NEWER_THAN_4_11 VSTGUI_NEWER_THAN (4, 11)
 
 } // VSTGUI
 

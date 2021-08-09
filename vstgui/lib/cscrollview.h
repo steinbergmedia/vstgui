@@ -92,7 +92,7 @@ public:
 	CView* getView (uint32_t index) const override;
 	bool changeViewZOrder (CView* view, uint32_t newIndex) override;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) override;
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void valueChanged (CControl* pControl) override;
 	void setTransparency (bool val) override;
 	void setBackgroundColor (const CColor& color) override;

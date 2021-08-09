@@ -6,6 +6,7 @@
 #include "../cdrawcontext.h"
 #include "../cframe.h"
 #include "../cgraphicspath.h"
+#include "../events.h"
 #include <algorithm>
 
 namespace VSTGUI {
@@ -358,59 +359,60 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 }
 
 //-----------------------------------------------------------------------------
-int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
+void CSegmentButton::onKeyboardEvent (KeyboardEvent& event)
 {
-	int32_t result = -1;
-	if (selectionMode != SelectionMode::kMultiple && keyCode.modifier == 0 &&
-	    keyCode.character == 0)
+	if (event.type != EventType::KeyDown || event.modifiers.empty () == false ||
+	    event.character != 0)
+		return;
+	if (selectionMode != SelectionMode::kMultiple)
 	{
 		uint32_t newIndex = getSegmentIndex (getValueNormalized ());
 		uint32_t oldIndex = newIndex;
-		switch (keyCode.virt)
+		switch (event.virt)
 		{
-			case VKEY_LEFT:
+			case VirtualKey::Left:
 			{
 				if (style == Style::kHorizontal && newIndex > 0)
 					newIndex--;
 				else if (style == Style::kHorizontalInverse && newIndex < segments.size () - 1)
 					newIndex++;
-				result = 1;
+				event.consumed = true;
 				break;
 			}
-			case VKEY_RIGHT:
+			case VirtualKey::Right:
 			{
 				if (style == Style::kHorizontal && newIndex < segments.size () - 1)
 					newIndex++;
 				else if (style == Style::kHorizontalInverse && newIndex > 0)
 					newIndex--;
-				result = 1;
+				event.consumed = true;
 				break;
 			}
-			case VKEY_UP:
+			case VirtualKey::Up:
 			{
 				if (style == Style::kVertical && newIndex > 0)
 					newIndex--;
 				else if (style == Style::kVerticalInverse && newIndex < segments.size () - 1)
 					newIndex++;
-				result = 1;
+				event.consumed = true;
 				break;
 			}
-			case VKEY_DOWN:
+			case VirtualKey::Down:
 			{
 				if (style == Style::kVertical && newIndex < segments.size () - 1)
 					newIndex++;
 				else if (style == Style::kVerticalInverse && newIndex > 0)
 					newIndex--;
-				result = 1;
+				event.consumed = true;
 				break;
 			}
+			default: return;
 		}
 		if (newIndex != oldIndex)
 		{
 			setSelectedSegment (newIndex);
 		}
 	}
-	return result;
 }
 
 //-----------------------------------------------------------------------------

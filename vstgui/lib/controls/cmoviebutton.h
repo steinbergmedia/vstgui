@@ -26,7 +26,7 @@ public:
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 	bool sizeToFit () override;
 
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }

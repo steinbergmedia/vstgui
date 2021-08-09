@@ -35,8 +35,8 @@ public:
 	//@}
 
 	// overrides
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onMouseWheelEvent (MouseWheelEvent& event) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 	void setViewSize (const CRect &rect, bool invalid = true) override;
 	bool sizeToFit () override;
 	void setMin (float val) override;

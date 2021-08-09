@@ -27,12 +27,14 @@ public:
 	
 	CCursorType getLastSetCursor () const { return lastSetCursor; }
 
+
 	// IPlatformFrame
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;
 	bool getSize (CRect& size) const override;
 	bool getCurrentMousePosition (CPoint& mousePosition) const override;
 	bool getCurrentMouseButtons (CButtonState& buttons) const override;
+	bool getCurrentModifiers (Modifiers& modifiers) const override;
 	bool setMouseCursor (CCursorType type) override;
 	bool invalidRect (const CRect& rect) override;
 	bool scrollRect (const CRect& src, const CPoint& distance) override;
@@ -52,7 +54,7 @@ public:
 
 	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
 	void onFrameClosed () override;
-	Optional<UTF8String> convertCurrentKeyEventToText () override { return {}; }
+	Optional<UTF8String> convertCurrentKeyEventToText () override;
 	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override;
 
 	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -74,6 +76,7 @@ protected:
 	SharedPointer<COffscreenContext> backBuffer;
 	CDrawContext* deviceContext;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
+	Optional<MSG> currentEvent;
 
 	bool inPaint;
 	bool mouseInside;

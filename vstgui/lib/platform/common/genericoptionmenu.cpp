@@ -15,6 +15,7 @@
 #include "../../controls/coptionmenu.h"
 #include "../../controls/cscrollbar.h"
 #include "../../cvstguitimer.h"
+#include "../../events.h"
 #include "../../idatabrowserdelegate.h"
 
 //------------------------------------------------------------------------
@@ -33,7 +34,7 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 
 //------------------------------------------------------------------------
 class DataSource : public DataBrowserDelegateAdapter,
-                   public IMouseObserver,
+                   public OldMouseObserverAdapter,
                    public NonAtomicReferenceCounted
 {
 public:
@@ -169,60 +170,63 @@ private:
 		}
 	}
 
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override
 	{
-		if (key.character == 0 && key.modifier == 0)
+		if (event.type != EventType::KeyDown || event.character != 0 || !event.modifiers.empty ())
+			return;
+		switch (event.virt)
 		{
-			switch (key.virt)
+			default: return;
+			case VirtualKey::Down:
 			{
-				case VKEY_DOWN:
+				alterSelection (browser->getSelectedRow (), 1);
+				event.consumed = true;
+				return;
+			}
+			case VirtualKey::Up:
+			{
+				alterSelection (browser->getSelectedRow (), -1);
+				event.consumed = true;
+				return;
+			}
+			case VirtualKey::Escape:
+			{
+				clickCallback (menu, CDataBrowser::kNoSelection);
+				event.consumed = true;
+				return;
+			}
+			case VirtualKey::Return:
+			case VirtualKey::Enter:
+			{
+				if (clickCallback)
+					clickCallback (menu, browser->getSelectedRow ());
+				event.consumed = true;
+				return;
+			}
+			case VirtualKey::Left:
+			{
+				if (parentDataSource)
 				{
-					alterSelection (browser->getSelectedRow (), 1);
-					return 1;
+					parentDataSource->closeSubMenu ();
+					event.consumed = true;
 				}
-				case VKEY_UP:
+				return;
+			}
+			case VirtualKey::Right:
+			{
+				auto row = db->getSelectedRow ();
+				if (auto item = menu->getEntry (row))
 				{
-					alterSelection (browser->getSelectedRow (), -1);
-					return 1;
-				}
-				case VKEY_ESCAPE:
-				{
-					clickCallback (menu, CDataBrowser::kNoSelection);
-					return 1;
-				}
-				case VKEY_RETURN:
-				case VKEY_ENTER:
-				{
-					if (clickCallback)
-						clickCallback (menu, browser->getSelectedRow ());
-					return 1;
-				}
-				case VKEY_LEFT:
-				{
-					if (parentDataSource)
+					if (auto subMenu = item->getSubmenu ())
 					{
-						parentDataSource->closeSubMenu ();
-						return 1;
-					}
-					break;
-				}
-				case VKEY_RIGHT:
-				{
-					auto row = db->getSelectedRow ();
-					if (auto item = menu->getEntry (row))
-					{
-						if (auto subMenu = item->getSubmenu ())
-						{
-							auto r = db->getCellBounds ({row, 0});
-							openSubMenu (item, r);
-							return 1;
-						}
+						auto r = db->getCellBounds ({row, 0});
+						openSubMenu (item, r);
+						event.consumed = true;
 					}
 				}
-				default: break;
+				return;
 			}
 		}
-		return -1;
 	}
 
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
@@ -568,12 +572,12 @@ struct GenericOptionMenu::Impl
 	IGenericOptionMenuListener* listener {nullptr};
 	GenericOptionMenuTheme theme;
 	Callback callback;
-	CButtonState initialButtons;
+	MouseEventButtonState initialButtonState;
 	bool focusDrawingWasEnabled {false};
 };
 
 //------------------------------------------------------------------------
-GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
+GenericOptionMenu::GenericOptionMenu (CFrame* frame, MouseEventButtonState initialButtons,
                                       GenericOptionMenuTheme theme)
 {
 	auto frameSize = frame->getViewSize ();
@@ -582,15 +586,15 @@ GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons
 
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->frame = frame;
-	impl->initialButtons = initialButtons;
 	impl->theme = theme;
 	impl->container = new Impl::ContainerT (frameSize);
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
-	impl->container->registerViewMouseListener (this);
+	impl->container->registerViewListener (this);
 	impl->modalViewSession = impl->frame->beginModalViewSession (impl->container);
 	impl->focusDrawingWasEnabled = impl->frame->focusDrawingEnabled ();
 	impl->frame->setFocusDrawingEnabled (false);
+	impl->initialButtonState = initialButtons;
 }
 
 //------------------------------------------------------------------------
@@ -624,7 +628,7 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 				    return;
 			    auto callback = std::move (self->impl->callback);
 			    self->impl->callback = nullptr;
-			    self->impl->container->unregisterViewMouseListener (self);
+			    self->impl->container->unregisterViewListener (self);
 			    if (self->impl->modalViewSession)
 			    {
 					self->impl->frame->endModalViewSession (*self->impl->modalViewSession);
@@ -638,44 +642,66 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult GenericOptionMenu::viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons)
+void GenericOptionMenu::viewOnEvent (CView* view, Event& event)
 {
-	if (auto container = view->asViewContainer ())
-	{
-		CViewContainer::ViewList views;
-		if (container->getViewsAt (pos, views, GetViewOptions ().deep ().includeInvisible ()))
-		{
-			return kMouseEventNotHandled;
-		}
-		auto self = shared (this);
-		self->removeModalView ({nullptr, -1});
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-	}
-	return kMouseEventNotHandled;
-}
-
-//------------------------------------------------------------------------
-CMouseEventResult GenericOptionMenu::viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons)
-{
-	if (impl->initialButtons.isLeftButton () && buttons.isLeftButton ())
+	if (event.type == EventType::MouseDown)
 	{
 		if (auto container = view->asViewContainer ())
 		{
+			auto& downEvent = castMouseDownEvent (event);
 			CViewContainer::ViewList views;
-			if (container->getViewsAt (pos, views, GetViewOptions ().deep ().includeInvisible ()))
+			if (container->getViewsAt (downEvent.mousePosition, views, GetViewOptions ().deep ().includeInvisible ()))
 			{
-				if (view->onMouseDown (pos, buttons) == kMouseEventHandled)
-					view->onMouseUp (pos, buttons);
+				return;
 			}
-			else
+			auto self = shared (this);
+			self->removeModalView ({nullptr, -1});
+			downEvent.ignoreFollowUpMoveAndUpEvents (true);
+			downEvent.consumed = true;
+			return;
+		}
+	}
+	else if (event.type == EventType::MouseUp)
+	{
+		auto& upEvent = castMouseUpEvent (event);
+		if (impl->initialButtonState == upEvent.buttonState && !impl->mouseUpTimer)
+		{
+			if (auto container = view->asViewContainer ())
 			{
-				auto self = shared (this);
-				self->removeModalView ({nullptr, -1});
-				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+				CViewContainer::ViewList views;
+				if (container->getViewsAt (upEvent.mousePosition, views, GetViewOptions ().deep ().includeInvisible ()))
+				{
+					auto pos = upEvent.mousePosition;
+					view->translateToGlobal (pos);
+					MouseDownEvent downEvent;
+					downEvent.buttonState = upEvent.buttonState;
+					downEvent.clickCount = 1;
+					for (auto& v : views)
+					{
+						downEvent.mousePosition = pos;
+						v->translateToLocal (downEvent.mousePosition);
+						v->dispatchEvent (downEvent);
+						if (downEvent.consumed)
+						{
+							upEvent.mousePosition = downEvent.mousePosition;
+							v->dispatchEvent (upEvent);
+							break;
+						}
+					}
+					event.consumed = true;
+					return;
+				}
+				else
+				{
+					auto self = shared (this);
+					self->removeModalView ({nullptr, -1});
+					upEvent.ignoreFollowUpMoveAndUpEvents (true);
+					upEvent.consumed = true;
+					return;
+				}
 			}
 		}
 	}
-	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
@@ -686,7 +712,7 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 
 	auto self = shared (this);
 	auto clickCallback = [self] (COptionMenu* menu, int32_t index) {
-		self->impl->container->unregisterViewMouseListener (self);
+		self->impl->container->unregisterViewListener (self);
 		self->removeModalView ({menu, index});
 	};
 
@@ -698,24 +724,25 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 
 	if (auto view = impl->frame->getViewAt (where, GetViewOptions ().deep ().includeInvisible ()))
 	{
-		if (impl->initialButtons.getButtonState () != 0)
+		if (!impl->initialButtonState.empty ())
 		{
-			impl->frame->getCurrentMouseLocation (where);
-			view->translateToLocal (where);
-			view->onMouseMoved (where, impl->initialButtons);
-			impl->mouseUpTimer = makeOwned<CVSTGUITimer> (
-			    [this, where, view] (CVSTGUITimer* timer) {
-				    timer->stop ();
-				    if (!impl->container ||
-				        impl->frame->getCurrentMouseButtons ().getButtonState () == 0)
-					    return;
-				    impl->container->registerViewMouseListener (this);
-				    CPoint p (where);
-				    view->translateToGlobal (p);
-				    impl->frame->onMouseDown (p, impl->initialButtons);
-			    },
-			    200);
+			MouseMoveEvent moveEvent;
+			moveEvent.buttonState = impl->initialButtonState;
+			impl->frame->getCurrentMouseLocation (moveEvent.mousePosition);
+			view->translateToLocal (moveEvent.mousePosition);
+			view->dispatchEvent (moveEvent);
 		}
+	}
+	if (!impl->initialButtonState.empty ())
+	{
+		impl->mouseUpTimer = makeOwned<CVSTGUITimer> (
+			[this] (CVSTGUITimer*) {
+				impl->mouseUpTimer = nullptr;
+				if (!impl->container ||
+					impl->frame->getCurrentMouseButtons ().getButtonState () == 0)
+					return;
+			},
+			200);
 	}
 	if (impl->listener)
 		impl->listener->optionMenuPopupStarted ();

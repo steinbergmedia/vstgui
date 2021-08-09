@@ -9,6 +9,7 @@
 #include "../cframe.h"
 #include "../cgraphicspath.h"
 #include "../cdrawcontext.h"
+#include "../events.h"
 
 namespace VSTGUI {
 
@@ -304,27 +305,28 @@ void CScrollbar::onVisualChange ()
 }
 
 //------------------------------------------------------------------------
-bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &_distance, const CButtonState &buttons)
+void CScrollbar::onMouseWheelEvent (MouseWheelEvent& event)
 {
 	if (scrollerLength == 0 || !getMouseEnabled ())
-		return false;
+		return;
 
-	if (buttons != 0 && !(buttons & (kShift|kMouseWheelInverted)))
-		return false;
+	if (!event.modifiers.empty () && !(event.modifiers.has (ModifierKey::Shift) &&
+	                                   event.flags & MouseWheelEvent::DirectionInvertedFromDevice))
+		return;
 
-	if (direction == kHorizontal && axis == kMouseWheelAxisY)
-		return false;
+	float distance = 0.f;
+	if (direction == kHorizontal)
+		distance = static_cast<float> (event.deltaX);
+	else
+		distance = static_cast<float> (event.deltaY);
 
-	if (direction == kVertical && axis == kMouseWheelAxisX)
-		return false;
+	if (distance == 0.f)
+		return;
 
-	float distance = _distance;
-	if (direction == kHorizontal && axis == kMouseWheelAxisY)
+	if (event.flags & MouseWheelEvent::DirectionInvertedFromDevice)
 		distance *= -1;
-	if (buttons & kMouseWheelInverted)
-		distance *= -1;
 
-	if (buttons & kShift)
+	if (event.modifiers.has (ModifierKey::Shift))
 		value -= 0.1f * distance * getWheelInc ();
 	else
 		value -= distance * getWheelInc ();
@@ -336,7 +338,7 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 		valueChanged ();
 		invalid ();
 	}
-	return true;
+	event.consumed = true;
 }
 
 //-----------------------------------------------------------------------------

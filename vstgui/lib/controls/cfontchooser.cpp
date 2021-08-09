@@ -293,9 +293,9 @@ bool CFontChooser::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-int32_t CFontChooser::onKeyDown (VstKeyCode& keyCode)
+void CFontChooser::onKeyboardEvent (KeyboardEvent& event)
 {
-	return fontBrowser->onKeyDown (keyCode);
+	fontBrowser->onKeyboardEvent (event);
 }
 
 } // VSTGUI

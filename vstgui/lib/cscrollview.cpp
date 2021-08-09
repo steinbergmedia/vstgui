@@ -8,6 +8,7 @@
 #include "cframe.h"
 #include "dragging.h"
 #include "controls/cscrollbar.h"
+#include "events.h"
 #include <cmath>
 
 /// @cond ignore
@@ -746,17 +747,15 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _upda
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
+void CScrollView::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	bool result = CViewContainer::onWheel (where, axis, distance, buttons);
-	if (!result)
-	{
-		if (vsb && axis == kMouseWheelAxisY)
-			result = vsb->onWheel (where, axis, distance, buttons);
-		else if (hsb && axis == kMouseWheelAxisX)
-			result = hsb->onWheel (where, axis, distance, buttons);
-	}
-	return result;
+	CViewContainer::onMouseWheelEvent (event);
+	if (event.consumed)
+		return;
+	if (vsb && event.deltaY != 0.)
+		vsb->onMouseWheelEvent (event);
+	if (hsb && event.deltaX != 0.)
+		hsb->onMouseWheelEvent (event);
 }
 
 //-----------------------------------------------------------------------------

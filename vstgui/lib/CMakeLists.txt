@@ -129,6 +129,9 @@ set(${target}_common_sources
     cvstguitimer.h
     dragging.h
     dispatchlist.h
+    events.cpp
+    events.h
+    finally.h
     genericstringlistdatabrowsersource.cpp
     genericstringlistdatabrowsersource.h
     idatabrowserdelegate.h
@@ -317,7 +320,7 @@ endif()
 add_library(${target} STATIC ${${target}_sources})
 
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 14)
+vstgui_set_cxx_version(${target} 17)
 vstgui_source_group_by_folder(${target})
 
 if(LINUX)

@@ -6,6 +6,7 @@
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
 #include "../cvstguitimer.h"
+#include "../events.h"
 
 namespace VSTGUI {
 
@@ -212,36 +213,34 @@ float CVerticalSwitch::calcNormFromPoint (const CPoint& where) const
 }
 
 //------------------------------------------------------------------------
-int32_t CVerticalSwitch::onKeyDown (VstKeyCode& keyCode)
+void CVerticalSwitch::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.modifier == 0)
+	if (event.type != EventType::KeyDown || event.modifiers.empty () == false)
+		return;
+	float norm = getValueNormalized ();
+	int32_t currentIndex = normalizedToIndex (norm);
+	if (event.virt == VirtualKey::Up && currentIndex > 0)
 	{
-		float norm = getValueNormalized ();
-		int32_t currentIndex = normalizedToIndex (norm);
-		if (keyCode.virt == VKEY_UP && currentIndex > 0)
-		{
-			--currentIndex;
-			norm = indexToNormalized (currentIndex);
-			value = (getMax () - getMin ()) * norm + getMin ();
-			bounceValue ();
-		}
-		if (keyCode.virt == VKEY_DOWN && currentIndex < (getNumSubPixmaps () - 1))
-		{
-			++currentIndex;
-			norm = indexToNormalized (currentIndex);
-			value = (getMax () - getMin ()) * norm + getMin ();
-			bounceValue ();
-		}
-		if (isDirty ())
-		{
-			invalid ();
-			beginEdit ();
-			valueChanged ();
-			endEdit ();
-			return 1;
-		}
+		--currentIndex;
+		norm = indexToNormalized (currentIndex);
+		value = (getMax () - getMin ()) * norm + getMin ();
+		bounceValue ();
 	}
-	return -1;
+	if (event.virt == VirtualKey::Down && currentIndex < (getNumSubPixmaps () - 1))
+	{
+		++currentIndex;
+		norm = indexToNormalized (currentIndex);
+		value = (getMax () - getMin ()) * norm + getMin ();
+		bounceValue ();
+	}
+	if (isDirty ())
+	{
+		invalid ();
+		beginEdit ();
+		valueChanged ();
+		endEdit ();
+		event.consumed = true;
+	}
 }
 
 //------------------------------------------------------------------------
@@ -308,37 +307,34 @@ float CHorizontalSwitch::calcNormFromPoint (const CPoint& where) const
 	       static_cast<float> (getNumSubPixmaps () - 1);
 }
 
-//------------------------------------------------------------------------
-int32_t CHorizontalSwitch::onKeyDown (VstKeyCode& keyCode)
+void CHorizontalSwitch::onKeyboardEvent(KeyboardEvent &event)
 {
-	if (keyCode.modifier == 0)
+	if (event.type != EventType::KeyDown || event.modifiers.empty () == false)
+		return;
+	float norm = getValueNormalized ();
+	int32_t currentIndex = normalizedToIndex (norm);
+	if (event.virt == VirtualKey::Left && currentIndex > 0)
 	{
-		float norm = getValueNormalized ();
-		int32_t currentIndex = normalizedToIndex (norm);
-		if (keyCode.virt == VKEY_LEFT && currentIndex > 0)
-		{
-			--currentIndex;
-			norm = indexToNormalized (currentIndex);
-			value = (getMax () - getMin ()) * norm + getMin ();
-			bounceValue ();
-		}
-		if (keyCode.virt == VKEY_RIGHT && currentIndex < (getNumSubPixmaps () - 1))
-		{
-			++currentIndex;
-			norm = indexToNormalized (currentIndex);
-			value = (getMax () - getMin ()) * norm + getMin ();
-			bounceValue ();
-		}
-		if (isDirty ())
-		{
-			invalid ();
-			beginEdit ();
-			valueChanged ();
-			endEdit ();
-			return 1;
-		}
+		--currentIndex;
+		norm = indexToNormalized (currentIndex);
+		value = (getMax () - getMin ()) * norm + getMin ();
+		bounceValue ();
 	}
-	return -1;
+	if (event.virt == VirtualKey::Right && currentIndex < (getNumSubPixmaps () - 1))
+	{
+		++currentIndex;
+		norm = indexToNormalized (currentIndex);
+		value = (getMax () - getMin ()) * norm + getMin ();
+		bounceValue ();
+	}
+	if (isDirty ())
+	{
+		invalid ();
+		beginEdit ();
+		valueChanged ();
+		endEdit ();
+		event.consumed = true;
+	}
 }
 
 //------------------------------------------------------------------------
@@ -515,54 +511,51 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 }
 
 //------------------------------------------------------------------------
-int32_t CRockerSwitch::onKeyDown (VstKeyCode& keyCode)
+void CRockerSwitch::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.modifier == 0)
+	if (event.modifiers.empty () == false)
+		return;
+	if (event.type == EventType::KeyDown)
 	{
-		if (style & kHorizontal && (keyCode.virt == VKEY_LEFT || keyCode.virt == VKEY_RIGHT))
+		if (style & kHorizontal &&
+		    (event.virt == VirtualKey::Left || event.virt == VirtualKey::Right))
 		{
-			value = keyCode.virt == VKEY_LEFT ? getMin () : getMax ();
+			value = event.virt == VirtualKey::Left ? getMin () : getMax ();
 			invalid ();
 			beginEdit ();
 			valueChanged ();
-			return 1;
+			event.consumed = true;
 		}
-		if (style & kVertical && (keyCode.virt == VKEY_UP || keyCode.virt == VKEY_DOWN))
+		if (style & kVertical && (event.virt == VirtualKey::Up || event.virt == VirtualKey::Down))
 		{
-			value = keyCode.virt == VKEY_UP ? getMin () : getMax ();
+			value = event.virt == VirtualKey::Up ? getMin () : getMax ();
 			invalid ();
 			beginEdit ();
 			valueChanged ();
-			return 1;
+			event.consumed = true;
 		}
 	}
-	return -1;
-}
-
-//------------------------------------------------------------------------
-int32_t CRockerSwitch::onKeyUp (VstKeyCode& keyCode)
-{
-	if (keyCode.modifier == 0)
+	else if (event.type == EventType::KeyUp)
 	{
-		if (keyCode.virt == VKEY_LEFT || keyCode.virt == VKEY_RIGHT)
+		if ((style & kHorizontal &&
+		     (event.virt == VirtualKey::Left || event.virt == VirtualKey::Right)) ||
+		    (style & kVertical && (event.virt == VirtualKey::Up || event.virt == VirtualKey::Down)))
 		{
 			value = (getMax () - getMin ()) / 2.f + getMin ();
 			invalid ();
 			valueChanged ();
 			endEdit ();
-
-			return 1;
+			event.consumed = true;
 		}
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------
-bool CRockerSwitch::onWheel (const CPoint& where, const CMouseWheelAxis& axis,
-                             const float& distance, const CButtonState& buttons)
+void CRockerSwitch::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (!getMouseEnabled ())
-		return false;
+	auto distance = event.deltaY;
+	if (distance == 0.)
+		return;
 
 	if (distance > 0)
 		value = getMin ();
@@ -582,7 +575,7 @@ bool CRockerSwitch::onWheel (const CPoint& where, const CMouseWheelAxis& axis,
 	resetValueTimer->stop ();
 	resetValueTimer->start ();
 
-	return true;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------

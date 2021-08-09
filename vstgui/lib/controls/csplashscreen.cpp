@@ -8,6 +8,7 @@
 #include "../cframe.h"
 #include "../animation/animations.h"
 #include "../animation/timingfunctions.h"
+#include "../events.h"
 
 namespace VSTGUI {
 
@@ -109,11 +110,17 @@ void CSplashScreen::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-bool CSplashScreen::hitTest (const CPoint& where, const CButtonState& buttons)
+bool CSplashScreen::hitTest (const CPoint& where, const Event& event)
 {
-	bool result = CView::hitTest (where, buttons);
-	if (result && !(buttons & kLButton))
-		return false;
+	bool result = CView::hitTest (where, event);
+	if (result)
+	{
+		if (auto mouseEvent = asMouseEvent (event))
+		{
+			if (!mouseEvent->buttonState.isLeft ())
+				return false;
+		}
+	}
 	return result;
 }
 

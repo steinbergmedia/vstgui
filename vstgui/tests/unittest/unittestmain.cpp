@@ -7,6 +7,7 @@
 #if ENABLE_UNIT_TESTS
 #include "../../lib/vstguidebug.h"
 #include "../../lib/vstguiinit.h"
+#include "../../lib/cstring.h"
 
 #include <chrono>
 #include <cstdarg>
@@ -66,17 +67,18 @@ public:
 		for (int i = 0; i < intend; i++) printf ("\t");
 	}
 
-	Result runTestCase (const TestCase& testCase)
+	Result runTestSuite (const TestSuite& testSuite)
 	{
+		currentTestSuite = &testSuite;
 		Result result;
-		printf ("%s\n", testCase.getName ().c_str());
+		printf ("%s\n", testSuite.getName ().c_str());
 		intend++;
-		for (auto& it : testCase)
+		for (auto& it : testSuite)
 		{
 			try {
-				if (testCase.setup ())
+				if (testSuite.setup ())
 				{
-					testCase.setup () (this);
+					testSuite.setup () (this);
 				}
 				if (runTest (it.first, it.second))
 				{
@@ -86,9 +88,9 @@ public:
 				{
 					result.failed++;
 				}
-				if (testCase.teardown ())
+				if (testSuite.teardown ())
 				{
-					testCase.teardown () (this);
+					testSuite.teardown () (this);
 				}
 			} catch (const std::exception&)
 			{
@@ -106,9 +108,9 @@ public:
 		printf ("%s", testName.c_str());
 		intend++;
 		start = system_clock::now ();
-		bool result;
+		bool result = true;
 		try {
-			result = f (this);
+			f (this);
 		} catch (const error& exc)
 		{
 			result = false;
@@ -132,16 +134,23 @@ public:
 		start = system_clock::now ();
 		for (auto& it : UnitTestRegistry::instance ())
 		{
-			result += runTestCase (std::move (it));
+			result += runTestSuite (it);
 		}
 		end = system_clock::now ();
 		print ("\nDone running %d tests in %lldms. [%d Failed]\n", result.succeded+result.failed, duration_cast<milliseconds> (end-start).count (), result.failed);
 		printOutput ();
 		return result.failed;
 	}
+	
+	std::any& storage () override
+	{
+		return currentTestSuite->getStorage ();
+	}
+
 private:
 	int intend;
 	std::string testOutput;
+	const TestSuite* currentTestSuite {nullptr};
 };
 
 static int RunTests ()
@@ -156,9 +165,16 @@ static int RunTests ()
 
 int main ()
 {
-	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
-		throw std::logic_error (desc ? desc : "unknown");
-	});
+	VSTGUI::setAssertionHandler (
+		[] (const char* file, const char* line, const char* condition, const char* desc) {
+			size_t lineNo = 0;
+			if (line)
+			{
+				if (auto l = VSTGUI::UTF8StringView (line).toNumber<size_t> ())
+					lineNo = *l;
+			}
+			throw VSTGUI::UnitTest::error (file, lineNo, desc ? desc : condition);
+		});
 #if MAC
 	VSTGUI::init (CFBundleGetMainBundle ());
 #elif WINDOWS

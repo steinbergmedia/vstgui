@@ -8,6 +8,7 @@
 #include "../cframe.h"
 #include "../cgraphicspath.h"
 #include "../cvstguitimer.h"
+#include "../events.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -232,18 +233,15 @@ CMouseEventResult CKnobBase::onMouseMoved (CPoint& where, const CButtonState& bu
 }
 
 //------------------------------------------------------------------------
-bool CKnobBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float &distance, const CButtonState &buttons)
+void CKnobBase::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (!getMouseEnabled ())
-		return false;
-
 	onMouseWheelEditing (this);
 
 	float v = getValueNormalized ();
-	if (buttons & kZoomModifier)
-		v += 0.1f * distance * getWheelInc ();
+	if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
+		v += 0.1f * static_cast<float> (event.deltaY) * getWheelInc ();
 	else
-		v += distance * getWheelInc ();
+		v += static_cast<float> (event.deltaY) * getWheelInc ();
 	setValueNormalized (v);
 
 	if (isDirty ())
@@ -251,25 +249,27 @@ bool CKnobBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const
 		invalid ();
 		valueChanged ();
 	}
-	return true;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
-int32_t CKnobBase::onKeyDown (VstKeyCode& keyCode)
+void CKnobBase::onKeyboardEvent (KeyboardEvent& event)
 {
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown)
+		return;
+	switch (event.virt)
 	{
-		case VKEY_UP :
-		case VKEY_RIGHT :
-		case VKEY_DOWN :
-		case VKEY_LEFT :
+		case VirtualKey::Up :
+		case VirtualKey::Right :
+		case VirtualKey::Down :
+		case VirtualKey::Left :
 		{
 			float distance = 1.f;
-			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
+			if (event.virt == VirtualKey::Down || event.virt == VirtualKey::Left)
 				distance = -distance;
 
 			float v = getValueNormalized ();
-			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
+			if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
 				v += 0.1f * distance * getWheelInc ();
 			else
 				v += distance * getWheelInc ();
@@ -278,28 +278,23 @@ int32_t CKnobBase::onKeyDown (VstKeyCode& keyCode)
 			if (isDirty ())
 			{
 				invalid ();
-
-				// begin of edit parameter
 				beginEdit ();
-				
 				valueChanged ();
-			
-				// end of edit parameter
 				endEdit ();
 			}
-			return 1;
+			event.consumed = true;
 		}
-		case VKEY_ESCAPE:
+		case VirtualKey::Escape:
 		{
 			if (isEditing ())
 			{
 				onMouseCancel ();
-				return 1;
+				event.consumed = true;
 			}
 			break;
 		}
+		default: return;
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------

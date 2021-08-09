@@ -74,7 +74,7 @@ public:
 
 	void draw (CDrawContext* pContext) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	void takeFocus () override;
 	void looseFocus () override;
@@ -104,7 +104,7 @@ protected:
 	CRect platformGetVisibleSize () const override;
 	CPoint platformGetTextInset () const override { return getTextInset (); }
 	void platformLooseFocus (bool returnPressed) override;
-	bool platformOnKeyDown (const VstKeyCode& key) override;
+	void platformOnKeyboardEvent (KeyboardEvent& event) override;
 	void platformTextDidChange () override;
 	bool platformIsSecureTextEdit () override;
 

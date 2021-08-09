@@ -6,6 +6,7 @@
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/cdrawcontext.h"
 #include "vstgui/lib/cframe.h"
+#include "vstgui/lib/events.h"
 
 //------------------------------------------------------------------------
 namespace Mandelbrot {
@@ -70,14 +71,14 @@ CMouseEventResult View::onMouseCancel ()
 }
 
 //------------------------------------------------------------------------
-int32_t View::onKeyDown (VstKeyCode& keyCode)
+void View::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.virt == VKEY_ESCAPE)
+	if (event.type == EventType::KeyDown && event.virt == VirtualKey::Escape)
 	{
 		onMouseCancel ();
-		return 1;
+		event.consumed = true;
+		return;
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------

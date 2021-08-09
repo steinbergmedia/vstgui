@@ -8,6 +8,7 @@
 
 #include "../lib/vstguifwd.h"
 #include <string>
+#include <list>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

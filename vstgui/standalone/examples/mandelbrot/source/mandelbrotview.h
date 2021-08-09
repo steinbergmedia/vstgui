@@ -20,11 +20,12 @@ struct View : public VSTGUI::CView, public VSTGUI::IFocusDrawing
 	using CButtonState = VSTGUI::CButtonState;
 	using CDrawContext = VSTGUI::CDrawContext;
 	using CGraphicsPath = VSTGUI::CGraphicsPath;
+	using KeyboardEvent = VSTGUI::KeyboardEvent;
 	using ChangedFunc = std::function<void (CRect box)>;
 
 	View (ChangedFunc&& func);
 
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
