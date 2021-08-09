@@ -13,6 +13,7 @@
 #include "cfontmac.h"
 #include "cgbitmap.h"
 #include "cgdrawcontext.h"
+#include "quartzgraphicspath.h"
 #include "cocoa/nsviewframe.h"
 #include "ios/uiviewframe.h"
 #include "macclipboard.h"
@@ -223,6 +224,12 @@ auto MacFactory::createOffscreenContext (const CPoint& size, double scaleFactor)
 	if (context->getCGContext ())
 		return std::move (context);
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+PlatformGradientPtr MacFactory::createGradient () const noexcept
+{
+	return std::make_unique<QuartzGradient> ();
 }
 
 //-----------------------------------------------------------------------------

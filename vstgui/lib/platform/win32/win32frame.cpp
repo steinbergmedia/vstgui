@@ -956,12 +956,6 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
-//-----------------------------------------------------------------------------
-CGradient* CGradient::create (const ColorStopMap& colorStopMap)
-{
-	return new CGradient (colorStopMap);
-}
-
 } // VSTGUI
 
 #endif // WINDOWS

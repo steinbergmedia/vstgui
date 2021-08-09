@@ -23,4 +23,5 @@
 #include "lib/platform/win32/direct2d/d2dbitmap.cpp"
 #include "lib/platform/win32/direct2d/d2ddrawcontext.cpp"
 #include "lib/platform/win32/direct2d/d2dfont.cpp"
+#include "lib/platform/win32/direct2d/d2dgradient.cpp"
 #include "lib/platform/win32/direct2d/d2dgraphicspath.cpp"

@@ -657,7 +657,7 @@ CGradient* UIGradientNode::getGradient ()
 {
 	if (gradient == nullptr)
 	{
-		CGradient::ColorStopMap colorStops;
+		GradientColorStopMap colorStops;
 		double start;
 		CColor color;
 		for (auto& colorNode : getChildren ())
@@ -687,7 +687,7 @@ void UIGradientNode::setGradient (CGradient* g)
 	if (gradient == nullptr)
 		return;
 
-	const CGradient::ColorStopMap colorStops = gradient->getColorStops ();
+	const GradientColorStopMap colorStops = gradient->getColorStops ();
 	for (const auto& colorStop : colorStops)
 	{
 		UINode* node = new UINode ("color-stop");
