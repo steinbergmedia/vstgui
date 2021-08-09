@@ -138,6 +138,11 @@ public:
 	virtual COffscreenContextPtr
 		createOffscreenContext (const CPoint& size, double scaleFactor = 1.) const noexcept = 0;
 
+	/** Create a platform gradient object
+	 *	@return platform gradient object or nullptr on failure
+	 */
+	virtual PlatformGradientPtr createGradient () const noexcept = 0;
+
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;
 	virtual const Win32Factory* asWin32Factory () const noexcept = 0;

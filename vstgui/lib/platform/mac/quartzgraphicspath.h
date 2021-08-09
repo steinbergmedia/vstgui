@@ -5,7 +5,8 @@
 #pragma once
 
 #include "../../cgraphicspath.h"
-#include "../../cgradient.h"
+#include "../common/gradientbase.h"
+#include "../iplatformgraphicspath.h"
 
 #if MAC
 
@@ -18,54 +19,68 @@
 #endif
 
 namespace VSTGUI {
-class CoreTextFont;
-class CDrawContext;
 
-//------------------------------------------------------------------------------------
-class QuartzGraphicsPath : public CGraphicsPath
+//-----------------------------------------------------------------------------
+CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t);
+
+//-----------------------------------------------------------------------------
+class CGGraphicsPathFactory : public IPlatformGraphicsPathFactory
 {
 public:
-	QuartzGraphicsPath ();
-	QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text);
-	~QuartzGraphicsPath () noexcept override;
+	static PlatformGraphicsPathFactoryPtr instance ();
 
-	void pixelAlign (CDrawContext* context);
-	CGPathRef getCGPathRef ();
-	void dirty () override;
-
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
-	CPoint getCurrentPosition () override;
-	CRect getBoundingBox () override;
-
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
-
-	static CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t);
-
-//------------------------------------------------------------------------------------
-protected:
-	CGMutablePathRef path;
-	CGMutablePathRef originalTextPath;
-	bool isPixelAlligned;
+	PlatformGraphicsPathPtr createPath (PlatformGraphicsPathFillMode fillMode) override;
+	PlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
+											UTF8StringPtr text) override;
 };
 
 //-----------------------------------------------------------------------------
-class QuartzGradient : public CGradient
+class CGGraphicsPath : public IPlatformGraphicsPath
 {
 public:
-	explicit QuartzGradient (const ColorStopMap& map);
-	QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2);
-	~QuartzGradient () noexcept override;
+	CGGraphicsPath (CGMutablePathRef path = nullptr); // take ownership of path
+	~CGGraphicsPath () noexcept;
 
+	using PixelAlignPointFunc = CGPoint (*) (const CGPoint&, void* context);
+	void pixelAlign (const PixelAlignPointFunc& func, void* context);
+
+	CGPathRef getCGPathRef () const { return path; }
+
+	// IPlatformGraphicsPath
+	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
+	void addEllipse (const CRect& rect) override;
+	void addRect (const CRect& rect) override;
+	void addLine (const CPoint& to) override;
+	void addBezierCurve (const CPoint& control1, const CPoint& control2,
+	                     const CPoint& end) override;
+	void beginSubpath (const CPoint& start) override;
+	void closeSubpath () override;
+	void finishBuilding () override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false,
+	              CGraphicsTransform* transform = nullptr) const override;
+	CRect getBoundingBox () const override;
+	PlatformGraphicsPathFillMode getFillMode () const override
+	{
+		return PlatformGraphicsPathFillMode::Ignored;
+	}
+
+private:
+	CGMutablePathRef path {nullptr};
+};
+
+//-----------------------------------------------------------------------------
+class QuartzGradient : public PlatformGradientBase
+{
+public:
+	~QuartzGradient () noexcept override;
 	operator CGGradientRef () const;
 
-	void addColorStop (const std::pair<double, CColor>& colorStop) override;
-	void addColorStop (std::pair<double, CColor>&& colorStop) override;
-
+	void changed () override;
 protected:
 	void createCGGradient () const;
 	void releaseCGGradient ();
 
-	mutable CGGradientRef gradient;
+	mutable CGGradientRef gradient {nullptr};
 };
 
 } // VSTGUI

@@ -4,6 +4,7 @@
 
 #include "cairobitmap.h"
 #include "cairofont.h"
+#include "cairogradient.h"
 #include "cairocontext.h"
 #include "x11frame.h"
 #include "../iplatformframecallback.h"
@@ -196,6 +197,12 @@ auto LinuxFactory::createOffscreenContext (const CPoint& size, double scaleFacto
 	if (context->valid ())
 		return context;
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+PlatformGradientPtr LinuxFactory::createGradient () const noexcept
+{
+	return std::make_unique<Cairo::Gradient> ();
 }
 
 //-----------------------------------------------------------------------------

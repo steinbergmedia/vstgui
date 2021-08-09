@@ -149,6 +149,14 @@ static inline D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
 	return matrix;
 }
 
+//-----------------------------------------------------------------------------
+static inline D2D1::ColorF toColorF (CColor c, float alpha)
+{
+	return D2D1::ColorF (c.normRed<float> (), c.normGreen<float> (), c.normBlue<float> (),
+	                     c.normAlpha<float> () * alpha);
+}
+
+
 } // VSTGUI
 
 #endif // WINDOWS

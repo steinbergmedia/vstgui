@@ -8,6 +8,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <map>
 
 namespace VSTGUI {
 
@@ -135,6 +136,9 @@ struct DragEventData;
 struct ModalViewSession;
 struct CListControlRowDesc;
 struct CNinePartTiledDescription;
+
+using GradientColorStop = std::pair<double, CColor>;
+using GradientColorStopMap = std::multimap<double, CColor>;
 
 // interfaces
 class IViewListener;
@@ -305,6 +309,9 @@ class IPlatformFactory;
 class IPlatformFrame;
 class IPlatformBitmap;
 class IPlatformFont;
+class IPlatformGradient;
+class IPlatformGraphicsPath;
+class IPlatformGraphicsPathFactory;
 class IPlatformString;
 class IPlatformTimer;
 class IPlatformResourceInputStream;
@@ -313,6 +320,7 @@ class IPlatformFrameCallback;
 class IPlatformTimerCallback;
 
 enum class PlatformType : int32_t;
+enum class PlatformGraphicsPathFillMode : int32_t;
 
 using PlatformFramePtr = SharedPointer<IPlatformFrame>;
 using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
@@ -321,6 +329,8 @@ using PlatformStringPtr = SharedPointer<IPlatformString>;
 using PlatformTimerPtr = SharedPointer<IPlatformTimer>;
 using PlatformResourceInputStreamPtr = std::unique_ptr<IPlatformResourceInputStream>;
 using PlatformFactoryPtr = std::unique_ptr<IPlatformFactory>;
-
+using PlatformGradientPtr = std::unique_ptr<IPlatformGradient>;
+using PlatformGraphicsPathPtr = std::unique_ptr<IPlatformGraphicsPath>;
+using PlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
 
 } // VSTGUI

@@ -42,7 +42,7 @@ public:
 	
 	void setCurrentStartOffset (double startOffset);
 	double getSelectedColorStart () const { return editStartOffset; }
-	const CGradient::ColorStopMap& getColorStopMap () const { return colorStopMap; }
+	const GradientColorStopMap& getColorStopMap () const { return colorStopMap; }
 
 	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::registerListener;
 	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::unregisterListener;
@@ -65,7 +65,7 @@ private:
 
 	SharedPointer<UIColor> editColor;
 	SharedPointer<CGradient> gradient;
-	CGradient::ColorStopMap colorStopMap;
+	GradientColorStopMap colorStopMap;
 	double editStartOffset;
 	CCoord stopWidth;
 	
@@ -93,7 +93,7 @@ UIColorStopEditView::~UIColorStopEditView ()
 //----------------------------------------------------------------------------------------------------
 void UIColorStopEditView::selectNextColorStop ()
 {
-	CGradient::ColorStopMap::const_iterator pos = colorStopMap.find (getSelectedColorStart ());
+	auto pos = colorStopMap.find (getSelectedColorStart ());
 	pos++;
 	if (pos == colorStopMap.end ())
 	{
@@ -108,7 +108,7 @@ void UIColorStopEditView::selectNextColorStop ()
 //----------------------------------------------------------------------------------------------------
 void UIColorStopEditView::selectPrevColorStop ()
 {
-	CGradient::ColorStopMap::const_iterator pos = colorStopMap.find (getSelectedColorStart ());
+	auto pos = colorStopMap.find (getSelectedColorStart ());
 	if (pos == colorStopMap.begin ())
 		pos = colorStopMap.end ();
 	pos--;
@@ -125,7 +125,7 @@ void UIColorStopEditView::setCurrentStartOffset (double startOffset)
 		startOffset = 0.;
 	else if (startOffset > 1.)
 		startOffset = 1.;
-	CGradient::ColorStopMap::iterator pos = colorStopMap.find (getSelectedColorStart ());
+	auto pos = colorStopMap.find (getSelectedColorStart ());
 	if (pos != colorStopMap.end () && pos->first != startOffset)
 	{
 		CColor color = pos->second;
@@ -281,7 +281,7 @@ void UIColorStopEditView::uiColorChanged (UIColor* c)
 void UIColorStopEditView::setGradient (CGradient* inGradient)
 {
 	colorStopMap = inGradient->getColorStops ();
-	CGradient::ColorStopMap::const_iterator it = colorStopMap.find (editStartOffset);
+	auto it = colorStopMap.find (editStartOffset);
 	if (it == colorStopMap.end ())
 		editStartOffset = colorStopMap.begin ()->first;
 	gradient = inGradient;
@@ -440,8 +440,8 @@ void UIGradientEditorController::updatePositionEdit ()
 //----------------------------------------------------------------------------------------------------
 void UIGradientEditorController::uiColorChanged (UIColor* c)
 {
-	CGradient::ColorStopMap colorStopMap = gradient->getColorStops ();
-	CGradient::ColorStopMap::iterator it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
+	auto colorStopMap = gradient->getColorStops (); // create a copy
+	auto it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
 	if (it != colorStopMap.end () && it->second != editColor->base ())
 	{
 		it->second = editColor->base ();

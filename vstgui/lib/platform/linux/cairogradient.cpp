@@ -6,45 +6,32 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-
-//------------------------------------------------------------------------
-CGradient* CGradient::create (const ColorStopMap& colorStopMap)
-{
-	return new Cairo::Gradient (colorStopMap);
-}
-
-//------------------------------------------------------------------------
 namespace Cairo {
 
 //------------------------------------------------------------------------
-Gradient::Gradient (const ColorStopMap& colorStopMap) : CGradient (colorStopMap)
+Gradient::~Gradient () noexcept
 {
+	changed ();
 }
 
 //------------------------------------------------------------------------
-Gradient::~Gradient ()
-{
-	destroy ();
-}
-
-//------------------------------------------------------------------------
-void Gradient::destroy () const
+void Gradient::changed ()
 {
 	linearGradient.reset ();
 	radialGradient.reset ();
 }
 
 //------------------------------------------------------------------------
-const PatternHandle& Gradient::getLinearGradient (CPoint start, CPoint end) const
+const PatternHandle& Gradient::getLinearGradient (CPoint start, CPoint end)
 {
 	if (!linearGradient || start != linearGradientStart || end != linearGradientEnd)
 	{
-		destroy ();
+		changed ();
 		linearGradientStart = start;
 		linearGradientEnd = end;
 		linearGradient =
 			PatternHandle (cairo_pattern_create_linear (start.x, start.y, end.x, end.y));
-		for (auto& it : this->colorStops)
+		for (auto& it : getColorStops ())
 		{
 			cairo_pattern_add_color_stop_rgba (
 			    linearGradient, it.first, it.second.normRed<double> (),
@@ -56,12 +43,12 @@ const PatternHandle& Gradient::getLinearGradient (CPoint start, CPoint end) cons
 }
 
 //------------------------------------------------------------------------
-const PatternHandle& Gradient::getRadialGradient () const
+const PatternHandle& Gradient::getRadialGradient ()
 {
 	if (!radialGradient)
 	{
 		radialGradient = PatternHandle (cairo_pattern_create_radial (0, 0, 1, 0, 0, 1));
-		for (auto& it : this->colorStops)
+		for (auto& it : getColorStops ())
 		{
 			cairo_pattern_add_color_stop_rgba (
 			    radialGradient, it.first, it.second.normRed<double> (),

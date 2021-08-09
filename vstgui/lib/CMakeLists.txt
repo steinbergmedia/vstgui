@@ -35,6 +35,7 @@ set(${target}_common_sources
     cfont.h
     cframe.cpp
     cframe.h
+    cgradient.cpp
     cgradient.h
     cgradientview.cpp
     cgradientview.h
@@ -148,6 +149,8 @@ set(${target}_common_sources
     platform/iplatformfont.h
     platform/iplatformframe.h
     platform/iplatformframecallback.h
+    platform/iplatformgradient.h
+    platform/iplatformgraphicspath.h
     platform/iplatformopenglview.h
     platform/iplatformoptionmenu.h
     platform/iplatformresourceinputstream.h
@@ -168,6 +171,7 @@ set(${target}_common_sources
     platform/common/genericoptionmenu.h
     platform/common/generictextedit.cpp
     platform/common/generictextedit.h
+    platform/common/gradientbase.h
     platform/common/stb_textedit.h
     vstguibase.h
     vstguidebug.cpp
@@ -235,6 +239,8 @@ set(${target}_win32_sources
     platform/win32/direct2d/d2ddrawcontext.h
     platform/win32/direct2d/d2dfont.cpp
     platform/win32/direct2d/d2dfont.h
+    platform/win32/direct2d/d2dgradient.cpp
+    platform/win32/direct2d/d2dgradient.h
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
     platform/win32/win32bitmapbase.h
