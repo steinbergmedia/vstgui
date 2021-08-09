@@ -91,7 +91,7 @@ TESTCASE(CRectTest,
 		EXPECT(r.getWidth () == 100.);
 	);
 
-	TEST(setWidth,
+	TEST(setHeight,
 		CRect r (0., 0., 0., 0.);
 		EXPECT(r.getHeight () == 0.);
 		r.setHeight (100.);

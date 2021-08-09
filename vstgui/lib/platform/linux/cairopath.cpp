@@ -30,11 +30,21 @@ CGradient* Path::createGradient (double color1Start, double color2Start,
 //------------------------------------------------------------------------
 bool Path::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
 {
-#warning TODO: Implementation (use cairo_in_fill)
-	(void)p;
-	(void)evenOddFilled;
-	(void)transform;
-	return false;
+	auto result = false;
+	if (auto cPath = getPath (cr))
+	{
+		auto tp = p;
+		if (transform)
+			transform->transform (tp);
+		cairo_save (cr);
+		cairo_new_path (cr);
+		cairo_append_path (cr, cPath);
+		cairo_set_fill_rule (cr, evenOddFilled ? CAIRO_FILL_RULE_EVEN_ODD : CAIRO_FILL_RULE_WINDING);
+		cairo_clip (cr);
+		result = cairo_in_clip (cr, tp.x, tp.y);
+		cairo_restore (cr);
+	}
+	return result;
 }
 
 //------------------------------------------------------------------------

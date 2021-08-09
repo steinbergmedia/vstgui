@@ -196,6 +196,9 @@ bool UIAttributes::stringToRect (const std::string& str, CRect& r)
 //-----------------------------------------------------------------------------
 std::string UIAttributes::stringArrayToString (const StringArray& values)
 {
+	if (values.empty())
+		return {};
+
 	std::string value;
 	size_t numValues = values.size ();
 	for (size_t i = 0; i < numValues - 1; i++)

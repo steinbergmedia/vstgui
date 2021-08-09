@@ -5,6 +5,8 @@
 #include "../../cfileselector.h"
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <signal.h>
 #include <string>
 #include <vector>
 #include <memory>

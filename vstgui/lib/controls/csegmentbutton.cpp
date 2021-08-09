@@ -349,6 +349,9 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 				break; // out of for loop
 			}
 			newValue += valueOffset;
+
+			// Last segment can lead to newValue > 1.0
+			newValue = std::min(newValue, 1.f);
 		}
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -517,7 +520,10 @@ uint32_t CSegmentButton::getSegmentIndex (float value) const
 {
 	if (value < 0.f || value > 1.f)
 		return kPushBack;
-	return static_cast<uint32_t> (static_cast<float> (segments.size () - 1) * value);
+
+	const auto segmentIndex = static_cast<float> (segments.size () - 1) * value;
+	const auto segmentIndexRounded = static_cast<uint32_t> (segmentIndex + 0.5f);
+	return segmentIndexRounded;
 }
 
 //-----------------------------------------------------------------------------

@@ -35,6 +35,7 @@
 using namespace VSTGUI;
 
 #if DEBUG
+
 //------------------------------------------------------------------------
 @interface DebugRedrawAnimDelegate : NSObject<CAAnimationDelegate>
 @property (retain, readwrite) CALayer* layer;
@@ -44,12 +45,19 @@ using namespace VSTGUI;
 @implementation DebugRedrawAnimDelegate
 
 //------------------------------------------------------------------------
+- (void)dealloc
+{
+	self.layer = nil;
+	[super dealloc];
+}
+
+//------------------------------------------------------------------------
 - (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag
 {
 	if (flag)
 	{
 		[self.layer removeFromSuperlayer];
-		[self.layer release];
+		self.layer = nil;
 	}
 }
 
@@ -905,7 +913,7 @@ void NSViewFrame::setNeedsDisplayInRect (NSRect r)
 void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 {
 #if DEBUG
-	if (visualizeDirtyRects && nsView.layer)
+	if (getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas () && nsView.layer)
 	{
 		auto delegate = [[DebugRedrawAnimDelegate new] autorelease];
 		auto anim = [CABasicAnimation animation];
@@ -1307,8 +1315,6 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 	lastDragOperationResult = kDragError;
 	if (nsView)
 	{
-		CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ().get ()) : nullptr;
-		CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 		NSPoint bitmapOffset = { static_cast<CGFloat>(offset.x), static_cast<CGFloat>(offset.y) };
 
 		NSEvent* event = [NSApp currentEvent];
@@ -1316,10 +1322,9 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 		                          [event type] == MacEventType::LeftMouseDragged))
 			return kDragRefused;
 		NSPoint nsLocation = [event locationInWindow];
-		NSImage* nsImage = nil;
-		if (cgImage)
+		NSImage* nsImage = bitmapToNSImage (dragBitmap);
+		if (nsImage)
 		{
-			nsImage = [imageFromCGImageRef (cgImage) autorelease];
 			nsLocation = [nsView convertPoint:nsLocation fromView:nil];
 			bitmapOffset.x += nsLocation.x;
 			bitmapOffset.y += nsLocation.y + [nsImage size].height;

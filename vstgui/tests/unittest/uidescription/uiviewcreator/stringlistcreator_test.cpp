@@ -114,7 +114,7 @@ TESTCASE(StringListControlCreatorTest,
 		});
 	);
 
-	TEST(lineWidth,
+	TEST(textInset,
 		DummyUIDescription uidesc;
 		testAttribute<CListControl>(kCStringListControl, kAttrTextInset, 14., &uidesc, [&] (CListControl* v) {
 			return getDrawer (v)->getTextInset () == 14.;

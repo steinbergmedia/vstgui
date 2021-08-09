@@ -259,19 +259,7 @@ void NSViewDraggingSession::dragEnded (CPoint pos, DragOperation result)
 //-----------------------------------------------------------------------------
 NSImage* NSViewDraggingSession::nsImageForDragOperation (CBitmap* bitmap)
 {
-	if (!bitmap)
-		return nil;
-	auto platformBitmap = bitmap->getPlatformBitmap ();
-	if (!platformBitmap)
-		return nil;
-	auto cgBitmap = platformBitmap.cast<CGBitmap> ();
-	if (!cgBitmap)
-		return nil;
-	auto cgImage = cgBitmap->getCGImage ();
-	if (!cgImage)
-		return nil;
-	auto scaleFactor = platformBitmap->getScaleFactor ();
-	return [imageFromCGImageRef (cgImage, scaleFactor) autorelease];
+	return bitmapToNSImage (bitmap);
 }
 
 //------------------------------------------------------------------------

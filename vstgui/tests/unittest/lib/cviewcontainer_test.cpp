@@ -143,6 +143,7 @@ TESTCASE(CViewContainerTest,
 	);
 
 	TEST(addView,
+		assert (container);
 		CView* view = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		

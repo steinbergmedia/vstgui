@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
 #define VSTGUI_VERSION_MINOR  10
+#define VSTGUI_VERSION_PATCHLEVEL  1
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -542,6 +543,12 @@ private:
 	T& storage;
 	B bit;
 };
+
+//-----------------------------------------------------------------------------
+#define VSTGUI_NEWER_THAN(major, minor) \
+	(VSTGUI_VERSION > major || VSTGUI_VERSION_MAJOR == major && VSTGUI_VERSION_MINOR > minor)
+
+#define VSTGUI_NEWER_THAN_4_10 VSTGUI_NEWER_THAN (4, 10)
 
 } // VSTGUI
 

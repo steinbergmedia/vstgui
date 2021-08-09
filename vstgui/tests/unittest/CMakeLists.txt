@@ -125,45 +125,77 @@ if(UNIX AND NOT CMAKE_HOST_APPLE)
 endif()
 
 ##########################################################################################
-#include_directories(../)
-add_executable(${target} ${${target}_sources})
-target_link_libraries(${target}
-	${${target}_PLATFORM_LIBS}
-)
 
-vstgui_set_cxx_version(${target} 14)
-target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
-vstgui_source_group_by_folder(${target})
+if(XCODE)
+	set(${target}_sources
+		"${${target}_sources}"
+		"${VSTGUI_TEST_BASE}xcodetestintegration.mm"
+	)
 
-add_custom_command(TARGET ${target} POST_BUILD COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unittests")
+	add_library(${target} MODULE ${${target}_sources})
+	vstgui_set_cxx_version(${target} 14)
+	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
+	target_link_libraries(${target}
+		${${target}_PLATFORM_LIBS}
+		"-framework XCTest"
+	)
 
-##########################################################################################
-if(UNIX AND NOT CMAKE_HOST_APPLE)
-	target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
-    target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
-    target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
-	target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
-endif()
+	set_target_properties(${target}
+		PROPERTIES 
+            BUNDLE TRUE
+			XCODE_ATTRIBUTE_GENERATE_PKGINFO_FILE           YES
+			XCODE_ATTRIBUTE_WRAPPER_EXTENSION               xctest
+			XCODE_ATTRIBUTE_ENABLE_TESTABILITY				YES
+	)
 
-if(CMAKE_HOST_APPLE)
-  option(VSTGUI_ENABLE_CODECOVERAGE "Generate Code Coverage Data" OFF)
-  if(VSTGUI_ENABLE_CODECOVERAGE)
-    add_executable(codecoverage ${${target}_sources})
+	vstgui_source_group_by_folder(${target})
 
-    set(target codecoverage)
+else()
+	set(${target}_sources
+		${${target}_sources}
+		"${VSTGUI_TEST_BASE}unittestmain.cpp"
+	)
 
-    target_link_libraries(${target}
-  		"-framework Cocoa"
-  		"-framework OpenGL"
-  		"-framework QuartzCore"
-  		"-framework Accelerate"
-      "--coverage"
-    )
+	add_executable(${target} ${${target}_sources})
+	target_link_libraries(${target}
+		${${target}_PLATFORM_LIBS}
+	)
 
-    vstgui_set_cxx_version(${target} 14)
-    target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1 VSTGUI_ENABLE_DEPRECATED_METHODS=0)
-    vstgui_source_group_by_folder(${target})
-    target_compile_options(${target} PUBLIC "--coverage")
-    add_custom_command(TARGET ${target} POST_BUILD COMMAND "/usr/bin/ruby" "${CMAKE_CURRENT_SOURCE_DIR}/lcov/generate.rb" "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/vstgui.build/Debug/codecoverage.build/Objects-normal/x86_64" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${target}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/coverage_output" VERBATIM)
-  endif()
-endif()
+	vstgui_set_cxx_version(${target} 14)
+	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
+	vstgui_source_group_by_folder(${target})
+
+	add_custom_command(TARGET ${target} POST_BUILD COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unittests")
+
+	##########################################################################################
+	if(UNIX AND NOT CMAKE_HOST_APPLE)
+		target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
+		target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
+		target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
+		target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
+	endif()
+
+endif(XCODE)
+
+#if(CMAKE_HOST_APPLE)
+#  option(VSTGUI_ENABLE_CODECOVERAGE "Generate Code Coverage Data" OFF)
+#  if(VSTGUI_ENABLE_CODECOVERAGE)
+#    add_executable(codecoverage ${${target}_sources})
+#
+#    set(target codecoverage)
+#
+#    target_link_libraries(${target}
+#  		"-framework Cocoa"
+#  		"-framework OpenGL"
+#  		"-framework QuartzCore"
+#  		"-framework Accelerate"
+#      "--coverage"
+#    )
+#
+#    vstgui_set_cxx_version(${target} 14)
+#    target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1 VSTGUI_ENABLE_DEPRECATED_METHODS=0)
+#    vstgui_source_group_by_folder(${target})
+#    target_compile_options(${target} PUBLIC "--coverage")
+#    add_custom_command(TARGET ${target} POST_BUILD COMMAND "/usr/bin/ruby" "${CMAKE_CURRENT_SOURCE_DIR}/lcov/generate.rb" "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/vstgui.build/Debug/codecoverage.build/Objects-normal/x86_64" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${target}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/coverage_output" VERBATIM)
+#  endif()
+#endif()
