@@ -77,13 +77,11 @@ TEST_CASE (CListControlTest, MouseRowSelection)
 	constexpr auto rowHeight = 20;
 	auto listControl = createTestListControl (rowHeight);
 
-	dispatchMouseEvent<MouseDownEvent> (listControl, {0., rowHeight}, MouseEventButtonState::Left);
-	dispatchMouseEvent<MouseUpEvent> (listControl, {0., rowHeight}, MouseEventButtonState::Left);
+	dispatchMouseEvent<MouseDownEvent> (listControl, {0., rowHeight}, MouseButton::Left);
+	dispatchMouseEvent<MouseUpEvent> (listControl, {0., rowHeight}, MouseButton::Left);
 	EXPECT_EQ (listControl->getValue (), 1.f);
-	dispatchMouseEvent<MouseDownEvent> (listControl, {0., rowHeight * 3.},
-	                                    MouseEventButtonState::Left);
-	dispatchMouseEvent<MouseUpEvent> (listControl, {0., rowHeight * 3.},
-	                                  MouseEventButtonState::Left);
+	dispatchMouseEvent<MouseDownEvent> (listControl, {0., rowHeight * 3.}, MouseButton::Left);
+	dispatchMouseEvent<MouseUpEvent> (listControl, {0., rowHeight * 3.}, MouseButton::Left);
 	EXPECT_EQ (listControl->getValue (), 3.f);
 }
 

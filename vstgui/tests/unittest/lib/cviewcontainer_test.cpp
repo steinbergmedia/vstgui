@@ -456,19 +456,16 @@ TEST_CASE (CViewContainerTest, MouseEvents)
 	container->addView (v1);
 	container->addView (v2);
 
-	EXPECT_EQ (
-	    dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseEventButtonState::Left),
-	    EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_TRUE (v1->mouseDownCalled);
 	EXPECT_FALSE (v2->mouseDownCalled);
-	EXPECT_EQ (
-	    dispatchMouseEvent<MouseMoveEvent> (container, {10., 10.}, MouseEventButtonState::Left),
-	    EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (container, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_TRUE (v1->mouseMovedCalled);
 	EXPECT_FALSE (v2->mouseMovedCalled);
-	EXPECT_EQ (
-	    dispatchMouseEvent<MouseUpEvent> (container, {10., 10.}, MouseEventButtonState::Left),
-	    EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseUpEvent> (container, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_TRUE (v1->mouseUpCalled);
 	EXPECT_FALSE (v2->mouseUpCalled);
 
@@ -488,9 +485,8 @@ TEST_CASE (CViewContainerTest, MouseCancel)
 	v1->setMouseableArea (r1);
 	container->addView (v1);
 
-	EXPECT_EQ (
-	    dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseEventButtonState::Left),
-	    EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_TRUE (v1->mouseDownCalled);
 	EXPECT_EQ (dispatchMouseCancelEvent (container), EventConsumeState::Handled);
 	EXPECT_TRUE (v1->mouseCancelCalled);
@@ -571,17 +567,14 @@ TEST_CASE (CViewContainerTest,
 	v1->setMouseableArea (r1);
 	container->addView (v1);
 	container->addView (v2);
-	EXPECT_EQ (
-	    dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseEventButtonState::Left),
-	    EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (container, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::NotHandled);
 	EXPECT_FALSE (v1->mouseDownCalled);
-	EXPECT_EQ (
-	    dispatchMouseEvent<MouseMoveEvent> (container, {10., 10.}, MouseEventButtonState::Left),
-	    EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (container, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::NotHandled);
 	EXPECT_FALSE (v1->mouseMovedCalled);
-	EXPECT_EQ (
-	    dispatchMouseEvent<MouseUpEvent> (container, {10., 10.}, MouseEventButtonState::Left),
-	    EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseUpEvent> (container, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::NotHandled);
 	EXPECT_FALSE (v1->mouseUpCalled);
 }
 

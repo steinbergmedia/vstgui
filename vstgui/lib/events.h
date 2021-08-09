@@ -35,6 +35,9 @@ enum class EventType : uint32_t
 };
 
 //------------------------------------------------------------------------
+/** EventConsumeState
+ *	@ingroup new_in_4_11
+ */
 struct EventConsumeState
 {
 	enum
@@ -153,36 +156,53 @@ struct MousePositionEvent : ModifierEvent
 };
 
 //------------------------------------------------------------------------
+/** MouseButton
+ *	@ingroup new_in_4_11
+ */
+enum class MouseButton : uint32_t
+{
+	None = 0,
+	Left = 1 << 1,
+	Middle = 1 << 2,
+	Right = 1 << 3,
+	Fourth = 1 << 4,
+	Fifth = 1 << 5,
+};
+
+//------------------------------------------------------------------------
+/** MouseEventButtonState
+ *	@ingroup new_in_4_11
+ */
 struct MouseEventButtonState
 {
-	enum Position : uint32_t
+	bool isLeft () const { return data == MouseButton::Left; }
+	bool isMiddle () const { return data == MouseButton::Middle; }
+	bool isRight () const { return data == MouseButton::Right; }
+	bool is (MouseButton pos) const { return data == pos; }
+	bool isOther (uint32_t index) const { return data == static_cast<MouseButton> (1 << index); }
+	bool has (MouseButton pos) const
 	{
-		Left = 1 << 1,
-		Middle = 1 << 2,
-		Right = 1 << 3,
-		Fourth = 1 << 4,
-		Fifth = 1 << 5,
-	};
+		return static_cast<bool> (static_cast<uint32_t> (data) & static_cast<uint32_t> (pos));
+	}
+	bool empty () const { return data == MouseButton::None; }
 
-	bool isLeft () const { return data == Left; }
-	bool isMiddle () const { return data == Middle; }
-	bool isRight () const { return data == Right; }
-	bool is (Position pos) const { return data == pos; }
-	bool isOther (uint32_t index) const { return data == (1 << index); }
-	bool has (Position pos) const { return data & pos; }
-	bool empty () const { return data == 0; }
-
-	void add (Position pos) { data |= pos; }
-	void set (Position pos) { data = pos; }
-	void clear () { data = 0; }
+	void add (MouseButton pos)
+	{
+		data =
+			static_cast<MouseButton> (static_cast<uint32_t> (data) | static_cast<uint32_t> (pos));
+	}
+	void set (MouseButton pos) { data = pos; }
+	void clear () { data = MouseButton::None; }
 
 	MouseEventButtonState () = default;
-	MouseEventButtonState (Position pos) { set (pos); }
+	MouseEventButtonState (const MouseEventButtonState&) = default;
+	MouseEventButtonState (MouseButton pos) { set (pos); }
 
 	bool operator== (const MouseEventButtonState& other) const { return data == other.data; }
 	bool operator!= (const MouseEventButtonState& other) const { return data != other.data; }
+
 private:
-	uint32_t data {0};
+	MouseButton data {MouseButton::None};
 };
 
 //------------------------------------------------------------------------
@@ -318,6 +338,9 @@ struct MouseMoveEvent : MouseDownUpMoveEvent
 };
 
 //------------------------------------------------------------------------
+/** MouseCancelEvent
+ *	@ingroup new_in_4_11
+ */
 struct MouseCancelEvent : Event
 {
 	MouseCancelEvent () { type = EventType::MouseCancel; }
@@ -347,6 +370,9 @@ struct MouseWheelEvent : MousePositionEvent
 };
 
 //------------------------------------------------------------------------
+/** GestureEvent
+ *	@ingroup new_in_4_11
+ */
 struct GestureEvent : MousePositionEvent
 {
 	enum class Phase : uint32_t
@@ -361,6 +387,9 @@ struct GestureEvent : MousePositionEvent
 };
 
 //------------------------------------------------------------------------
+/** ZoomGestureEvent
+ *	@ingroup new_in_4_11
+ */
 struct ZoomGestureEvent : GestureEvent
 {
 	double zoom;
@@ -586,7 +615,7 @@ inline KeyboardEventT* asKeyboardEvent (EventT& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse position event
+/** cast event to a mouse position event
  *	@ingroup new_in_4_11
  */
 inline MousePositionEvent& castMousePositionEvent (Event& event)
@@ -596,7 +625,7 @@ inline MousePositionEvent& castMousePositionEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse event
+/** cast event to a mouse event
  *	@ingroup new_in_4_11
  */
 inline MouseEvent& castMouseEvent (Event& event)
@@ -606,7 +635,7 @@ inline MouseEvent& castMouseEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse down event
+/** cast event to a mouse down event
  *	@ingroup new_in_4_11
  */
 inline MouseDownEvent& castMouseDownEvent (Event& event)
@@ -616,7 +645,7 @@ inline MouseDownEvent& castMouseDownEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse move event
+/** cast event to a mouse move event
  *	@ingroup new_in_4_11
  */
 inline MouseMoveEvent& castMouseMoveEvent (Event& event)
@@ -626,7 +655,7 @@ inline MouseMoveEvent& castMouseMoveEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse up event
+/** cast event to a mouse up event
  *	@ingroup new_in_4_11
  */
 inline MouseUpEvent& castMouseUpEvent (Event& event)
@@ -636,7 +665,7 @@ inline MouseUpEvent& castMouseUpEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse enter event
+/** cast event to a mouse enter event
  *	@ingroup new_in_4_11
  */
 inline MouseEnterEvent& castMouseEnterEvent (Event& event)
@@ -646,7 +675,7 @@ inline MouseEnterEvent& castMouseEnterEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse exit event
+/** cast event to a mouse exit event
  *	@ingroup new_in_4_11
  */
 inline MouseExitEvent& castMouseExitEvent (Event& event)
@@ -656,7 +685,7 @@ inline MouseExitEvent& castMouseExitEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse cancel event
+/** cast event to a mouse cancel event
  *	@ingroup new_in_4_11
  */
 inline MouseCancelEvent& castMouseCancelEvent (Event& event)
@@ -666,7 +695,7 @@ inline MouseCancelEvent& castMouseCancelEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse wheel event
+/** cast event to a mouse wheel event
  *	@ingroup new_in_4_11
  */
 inline MouseWheelEvent& castMouseWheelEvent (Event& event)
@@ -676,7 +705,7 @@ inline MouseWheelEvent& castMouseWheelEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a zoom gesture event
+/** cast event to a zoom gesture event
  *	@ingroup new_in_4_11
  */
 inline ZoomGestureEvent& castZoomGestureEvent (Event& event)
@@ -686,7 +715,7 @@ inline ZoomGestureEvent& castZoomGestureEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** cast to a mouse wheel event
+/** cast event to a mouse wheel event
  *	@ingroup new_in_4_11
  */
 inline KeyboardEvent& castKeyboardEvent (Event& event)
@@ -696,13 +725,13 @@ inline KeyboardEvent& castKeyboardEvent (Event& event)
 }
 
 //------------------------------------------------------------------------
-/** helper function to convert from new Modifiers to old CButtonState
+/** convert from new Modifiers to old CButtonState
  *	@ingroup new_in_4_11
  */
 CButtonState buttonStateFromEventModifiers (const Modifiers& mods);
 
 //------------------------------------------------------------------------
-/** helper function to convert from new MouseEvent to old CButtonState
+/** convert from new MouseEvent to old CButtonState
  *	@ingroup new_in_4_11
  */
 CButtonState buttonStateFromMouseEvent (const MouseEvent& event);

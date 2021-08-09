@@ -172,18 +172,18 @@ TEST_CASE (EventTest, ButtonStateFromMouseEventTest)
 {
 	MouseDownEvent event;
 	EXPECT_EQ (buttonStateFromMouseEvent (event), 0);
-	event.buttonState.set (MouseEventButtonState::Left);
+	event.buttonState.set (MouseButton::Left);
 	EXPECT_EQ (buttonStateFromMouseEvent (event), kLButton);
-	event.buttonState.set (MouseEventButtonState::Right);
+	event.buttonState.set (MouseButton::Right);
 	EXPECT_EQ (buttonStateFromMouseEvent (event), kRButton);
-	event.buttonState.set (MouseEventButtonState::Middle);
+	event.buttonState.set (MouseButton::Middle);
 	EXPECT_EQ (buttonStateFromMouseEvent (event), kMButton);
-	event.buttonState.set (MouseEventButtonState::Fourth);
+	event.buttonState.set (MouseButton::Fourth);
 	EXPECT_EQ (buttonStateFromMouseEvent (event), kButton4);
-	event.buttonState.set (MouseEventButtonState::Fifth);
+	event.buttonState.set (MouseButton::Fifth);
 	EXPECT_EQ (buttonStateFromMouseEvent (event), kButton5);
 	event.clickCount = 2;
-	event.buttonState.set (MouseEventButtonState::Left);
+	event.buttonState.set (MouseButton::Left);
 	EXPECT_EQ (buttonStateFromMouseEvent (event), kLButton | kDoubleClick);
 	event.modifiers.add (ModifierKey::Shift);
 	EXPECT_EQ (buttonStateFromMouseEvent (event), kLButton | kDoubleClick | kShift);

@@ -12,30 +12,30 @@ TEST_CASE (CKickButtonTest, MouseEvents)
 {
 	auto b = owned (new CKickButton (CRect (10, 10, 50, 20), nullptr, 0, nullptr));
 	b->setValue (b->getMin ());
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseEventButtonState::Right),
-	           EventConsumeState::NotHandled);
-	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (b, {10., 10.}, MouseEventButtonState::Left),
-	           EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseButton::Right),
+			   EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (b, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::NotHandled);
 	EXPECT_FALSE (b->isEditing ());
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseEventButtonState::Left),
-	           EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_TRUE (b->isEditing ());
 	EXPECT_EQ (b->getValue (), b->getMax ());
-	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (b, {0., 0.}, MouseEventButtonState::Left),
-	           EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (b, {0., 0.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_TRUE (b->isEditing ());
 	EXPECT_EQ (b->getValue (), b->getMin ());
-	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (b, {10., 10.}, MouseEventButtonState::Left),
-	           EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (b, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_TRUE (b->isEditing ());
 	EXPECT_EQ (b->getValue (), b->getMax ());
-	EXPECT_EQ (dispatchMouseEvent<MouseUpEvent> (b, {10., 10.}, MouseEventButtonState::Left),
-	           EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseUpEvent> (b, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_FALSE (b->isEditing ());
 	EXPECT_EQ (b->getValue (), b->getMin ());
 
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseEventButtonState::Left),
-	           EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {10., 10.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_EQ (b->getValue (), b->getMax ());
 	EXPECT_TRUE (b->isEditing ());
 	EXPECT_EQ (dispatchMouseCancelEvent (b), EventConsumeState::Handled);

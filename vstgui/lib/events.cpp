@@ -34,15 +34,15 @@ CButtonState buttonStateFromEventModifiers (const Modifiers& mods)
 CButtonState buttonStateFromMouseEvent (const MouseEvent& event)
 {
 	CButtonState state = buttonStateFromEventModifiers (event.modifiers);
-	if (event.buttonState.has (MouseEventButtonState::Left))
+	if (event.buttonState.has (MouseButton::Left))
 		state |= kLButton;
-	if (event.buttonState.has (MouseEventButtonState::Right))
+	if (event.buttonState.has (MouseButton::Right))
 		state |= kRButton;
-	if (event.buttonState.has (MouseEventButtonState::Middle))
+	if (event.buttonState.has (MouseButton::Middle))
 		state |= kMButton;
-	if (event.buttonState.has (MouseEventButtonState::Fourth))
+	if (event.buttonState.has (MouseButton::Fourth))
 		state |= kButton4;
-	if (event.buttonState.has (MouseEventButtonState::Fifth))
+	if (event.buttonState.has (MouseButton::Fifth))
 		state |= kButton5;
 	if (auto downEvent = asMouseDownEvent (event))
 	{

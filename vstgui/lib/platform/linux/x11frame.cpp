@@ -47,13 +47,13 @@ inline void setupMouseEventButtons (MouseEvent& event, xcb_button_t value)
 	switch (value)
 	{
 		case 1:
-			event.buttonState.add (MouseEventButtonState::Left);
+			event.buttonState.add (MouseButton::Left);
 			break;
 		case 2:
-			event.buttonState.add (MouseEventButtonState::Middle);
+			event.buttonState.add (MouseButton::Middle);
 			break;
 		case 3:
-			event.buttonState.add (MouseEventButtonState::Right);
+			event.buttonState.add (MouseButton::Right);
 			break;
 	}
 }
@@ -62,11 +62,11 @@ inline void setupMouseEventButtons (MouseEvent& event, xcb_button_t value)
 inline void setupMouseEventButtons (MouseEvent& event, int state)
 {
 	if (state & XCB_BUTTON_MASK_1)
-		event.buttonState.add (MouseEventButtonState::Left);
+		event.buttonState.add (MouseButton::Left);
 	if (state & XCB_BUTTON_MASK_2)
-		event.buttonState.add (MouseEventButtonState::Right);
+		event.buttonState.add (MouseButton::Right);
 	if (state & XCB_BUTTON_MASK_3)
-		event.buttonState.add (MouseEventButtonState::Middle);
+		event.buttonState.add (MouseButton::Middle);
 }
 
 //------------------------------------------------------------------------
@@ -783,8 +783,8 @@ SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 	GenericOptionMenuTheme theme;
 	if (impl->genericOptionMenuTheme)
 		theme = *impl->genericOptionMenuTheme.get ();
-	auto optionMenu = makeOwned<GenericOptionMenu> (
-	    cFrame, MouseEventButtonState (MouseEventButtonState::Left), theme);
+	auto optionMenu =
+		makeOwned<GenericOptionMenu> (cFrame, MouseEventButtonState (MouseButton::Left), theme);
 	optionMenu->setListener (this);
 	return optionMenu;
 }

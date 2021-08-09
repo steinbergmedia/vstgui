@@ -476,9 +476,9 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 		getCurrentMouseButtons (buttons);
 		MouseEventButtonState buttonState;
 		if (buttons.isLeftButton ())
-			buttonState.set (MouseEventButtonState::Left);
+			buttonState.set (MouseButton::Left);
 		else if (buttons.isRightButton ())
-			buttonState.set (MouseEventButtonState::Right);
+			buttonState.set (MouseButton::Right);
 		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
 		                                     *genericOptionMenuTheme);
 	}
@@ -632,15 +632,15 @@ void Win32Frame::paint (HWND hwnd)
 static void setupMouseEventFromWParam (MouseEvent& event, WPARAM wParam)
 {
 	if (wParam & MK_LBUTTON)
-		event.buttonState.add (MouseEventButtonState::Left);
+		event.buttonState.add (MouseButton::Left);
 	if (wParam & MK_RBUTTON)
-		event.buttonState.add (MouseEventButtonState::Right);
+		event.buttonState.add (MouseButton::Right);
 	if (wParam & MK_MBUTTON)
-		event.buttonState.add (MouseEventButtonState::Middle);
+		event.buttonState.add (MouseButton::Middle);
 	if (wParam & MK_XBUTTON1)
-		event.buttonState.add (MouseEventButtonState::Fourth);
+		event.buttonState.add (MouseButton::Fourth);
 	if (wParam & MK_XBUTTON2)
-		event.buttonState.add (MouseEventButtonState::Fifth);
+		event.buttonState.add (MouseButton::Fifth);
 	if (wParam & MK_CONTROL)
 		event.modifiers.add (ModifierKey::Control);
 	if (wParam & MK_SHIFT)
@@ -773,11 +773,11 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			setupMouseEventFromWParam (event, wParam);
 			
 			if (message == WM_LBUTTONUP)
-				event.buttonState.add (MouseEventButtonState::Left);
+				event.buttonState.add (MouseButton::Left);
 			else if (message == WM_RBUTTONUP)
-				event.buttonState.add (MouseEventButtonState::Right);
+				event.buttonState.add (MouseButton::Right);
 			else if (message == WM_MBUTTONUP)
-				event.buttonState.add (MouseEventButtonState::Middle);
+				event.buttonState.add (MouseButton::Middle);
 
 			event.mousePosition (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
 			pFrame->platformOnEvent (event);

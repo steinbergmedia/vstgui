@@ -1057,15 +1057,23 @@ static MouseEventButtonState buttonStateFromNSEvent (NSEvent* theEvent)
 		case 0:
 		{
 			if (theEvent.modifierFlags & NSControlKeyMask)
-				state.add (MouseEventButtonState::Right);
+				state.add (MouseButton::Right);
 			else
-				state.add (MouseEventButtonState::Left);
+				state.add (MouseButton::Left);
 			break;
 		}
-		case 1: state.add (MouseEventButtonState::Right); break;
-		case 2: state.add (MouseEventButtonState::Middle); break;
-		case 3: state.add (MouseEventButtonState::Fourth); break;
-		case 4: state.add (MouseEventButtonState::Fifth); break;
+		case 1:
+			state.add (MouseButton::Right);
+			break;
+		case 2:
+			state.add (MouseButton::Middle);
+			break;
+		case 3:
+			state.add (MouseButton::Fourth);
+			break;
+		case 4:
+			state.add (MouseButton::Fifth);
+			break;
 	}
 	return state;
 }

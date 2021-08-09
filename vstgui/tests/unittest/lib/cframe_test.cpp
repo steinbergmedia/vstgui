@@ -562,11 +562,11 @@ TEST_CASE (CFrameTest, MouseDownModalView)
 	container->addView (view1);
 	frame->attached (frame);
 	auto modalSession = frame->beginModalViewSession (container);
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (frame, {80., 80.}, MouseEventButtonState::Left),
-	           EventConsumeState::NotHandled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (frame, {80., 80.}, MouseButton::Left),
+			   EventConsumeState::NotHandled);
 	EXPECT_FALSE (view1->onMouseDownCalled);
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (frame, {1., 1.}, MouseEventButtonState::Left),
-	           EventConsumeState::Handled);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (frame, {1., 1.}, MouseButton::Left),
+			   EventConsumeState::Handled);
 	EXPECT_TRUE (view1->onMouseDownCalled);
 
 	frame->endModalViewSession (*modalSession);
@@ -651,7 +651,7 @@ TEST_CASE (CFrameTest, CollectInvalidRectsOnMouseDown)
 	EXPECT (view->redrawRect == view->getViewSize ());
 
 	auto platformFrameCallback = dynamic_cast<IPlatformFrameCallback*> (frame);
-	MouseDownEvent downEvent (CPoint (), MouseEventButtonState::Left);
+	MouseDownEvent downEvent (CPoint (), MouseButton::Left);
 	platformFrameCallback->platformOnEvent (downEvent);
 	platformHandle->forceRedraw ();
 	EXPECT (view->redrawRect == CRect (0, 0, 8, 8));
