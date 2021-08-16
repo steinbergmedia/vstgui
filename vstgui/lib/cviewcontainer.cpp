@@ -1031,7 +1031,6 @@ void CViewContainer::onMouseDownEvent (MouseDownEvent& event)
 	}
 
 	auto f = finally ([&, pos = event.mousePosition] () { event.mousePosition = pos; });
-	auto mousePos = event.mousePosition;
 	event.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
 	getTransform ().inverse ().transform (event.mousePosition);
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)

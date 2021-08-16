@@ -389,7 +389,6 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 
 	MouseWheelEvent event;
 
-	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 

@@ -25,7 +25,7 @@ namespace VSTGUI {
 IdStringPtr kMsgNewFocusView = "kMsgNewFocusView";
 IdStringPtr kMsgOldFocusView = "kMsgOldFocusView";
 
-#define DEBUG_MOUSE_VIEWS	0//DEBUG
+#define DEBUG_MOUSE_VIEWS (DEBUG && 0)
 
 //------------------------------------------------------------------------
 struct CFrame::CollectInvalidRects
@@ -341,7 +341,6 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 //-----------------------------------------------------------------------------
 void CFrame::clearMouseViews (const CPoint& where, Modifiers modifiers, bool callMouseExit)
 {
-	CPoint lp;
 	auto it = pImpl->mouseViews.rbegin ();
 	while (it != pImpl->mouseViews.rend ())
 	{
@@ -352,8 +351,9 @@ void CFrame::clearMouseViews (const CPoint& where, Modifiers modifiers, bool cal
 			exitEvent.mousePosition = (*it)->translateToLocal (where, true);
 			dispatchEvent ((*it), exitEvent);
 		#if DEBUG_MOUSE_VIEWS
-			DebugPrint ("mouseExited : %p[%d,%d]\n", (*it), (int)lp.x, (int)lp.y);
-		#endif
+			DebugPrint ("mouseExited : %p[%d,%d]\n", (*it), (int)exitEvent.mousePosition.x,
+						(int)exitEvent.mousePosition.y);
+#endif
 		}
 		if (pImpl->tooltips)
 			pImpl->tooltips->onMouseExited ((*it));
@@ -394,7 +394,6 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 {
 	if (getMouseDownView ())
 		return;
-	CPoint lp;
 	CView* mouseView = getViewAt (event.mousePosition, GetViewOptions ().deep ().mouseEnabled ().includeViewContainer ());
 	CView* currentMouseView = pImpl->mouseViews.empty () == false ? pImpl->mouseViews.back () : nullptr;
 	if (currentMouseView == mouseView)
@@ -423,8 +422,9 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		dispatchEvent (currentMouseView, exitEvent);
 		callMouseObserverMouseExited (currentMouseView);
 	#if DEBUG_MOUSE_VIEWS
-		DebugPrint ("mouseExited : %p[%d,%d]\n", currentMouseView, (int)lp.x, (int)lp.y);
-	#endif
+		DebugPrint ("mouseExited : %p[%d,%d]\n", currentMouseView, (int)exitEvent.mousePosition.x,
+					(int)exitEvent.mousePosition.y);
+#endif
 		currentMouseView->forget ();
 		pImpl->mouseViews.remove (currentMouseView);
 	}
@@ -441,8 +441,9 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 			dispatchEvent (vc, exitEvent);
 			callMouseObserverMouseExited (vc);
 		#if DEBUG_MOUSE_VIEWS
-			DebugPrint ("mouseExited : %p[%d,%d]\n", vc, (int)lp.x, (int)lp.y);
-		#endif
+			DebugPrint ("mouseExited : %p[%d,%d]\n", vc, (int)exitEvent.mousePosition.x,
+						(int)exitEvent.mousePosition.y);
+#endif
 			vc->forget ();
 			pImpl->mouseViews.erase (--it.base ());
 		}
@@ -471,8 +472,9 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 			dispatchEvent ((*it2), enterEvent);
 			callMouseObserverMouseEntered ((*it2));
 		#if DEBUG_MOUSE_VIEWS
-			DebugPrint ("mouseEntered : %p[%d,%d]\n", (*it2), (int)lp.x, (int)lp.y);
-		#endif
+			DebugPrint ("mouseEntered : %p[%d,%d]\n", (*it2), (int)enterEvent.mousePosition.x,
+						(int)enterEvent.mousePosition.y);
+#endif
 			++it2;
 		}
 	}
@@ -496,8 +498,9 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 			dispatchEvent ((*it2), enterEvent);
 			callMouseObserverMouseEntered ((*it2));
 		#if DEBUG_MOUSE_VIEWS
-			DebugPrint ("mouseEntered : %p[%d,%d]\n", (*it2), (int)lp.x, (int)lp.y);
-		#endif
+			DebugPrint ("mouseEntered : %p[%d,%d]\n", (*it2), (int)enterEvent.mousePosition.x,
+						(int)enterEvent.mousePosition.y);
+#endif
 			++it2;
 		}
 	}
@@ -679,7 +682,6 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 //------------------------------------------------------------------------
 void CFrame::dispatchMouseUpEvent (MouseUpEvent& event)
 {
-	auto originMousePosition = event.mousePosition;
 	auto transformedMousePosition = event.mousePosition;
 	getTransform ().inverse ().transform (transformedMousePosition);
 	
