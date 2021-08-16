@@ -598,7 +598,7 @@ void CView::onMouseWheelEvent (MouseWheelEvent& event)
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 #include "private/disabledeprecatedmessage.h"
 	auto buttons = buttonStateFromEventModifiers (event.modifiers);
-	if (event.flags | MouseWheelEvent::DirectionInvertedFromDevice)
+	if (event.flags & MouseWheelEvent::DirectionInvertedFromDevice)
 		buttons |= kMouseWheelInverted;
 	if (event.deltaX != 0.)
 	{
