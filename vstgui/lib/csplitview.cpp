@@ -24,7 +24,7 @@ public:
 	void onMouseUpEvent (MouseUpEvent& event) override;
 	void onMouseMoveEvent (MouseMoveEvent& event) override;
 
-	void onMouseMoved (MouseEvent& event);
+	void mouseMoved (MouseEvent& event);
 
 	void onMouseEnterEvent (MouseEnterEvent& event) override;
 	void onMouseExitEvent (MouseExitEvent& event) override;
@@ -779,7 +779,7 @@ void CSplitViewSeparatorView::onMouseDownEvent (MouseDownEvent& event)
 		lastMousePos = event.mousePosition;
 		startSize = getViewSize ();
 		invalid ();
-		onMouseMoved (event);
+		mouseMoved (event);
 	}
 }
 
@@ -802,11 +802,11 @@ void CSplitViewSeparatorView::onMouseMoveEvent (MouseMoveEvent& event)
 	if (getMouseDownView ())
 		CViewContainer::onMouseMoveEvent (event);
 	else
-		onMouseMoved (event);
+		mouseMoved (event);
 }
 
 //-----------------------------------------------------------------------------
-void CSplitViewSeparatorView::onMouseMoved (MouseEvent& event)
+void CSplitViewSeparatorView::mouseMoved (MouseEvent& event)
 {
 	if (hasBit (flags, ISplitViewSeparatorDrawer::kMouseDown))
 	{
