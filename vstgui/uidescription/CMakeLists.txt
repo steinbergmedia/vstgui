@@ -213,3 +213,7 @@ if(EXPAT_FOUND)
 else()
     message(STATUS "VSTGUI will use the embedded Expat package!")
 endif()
+
+if(CMAKE_HOST_APPLE)
+  target_compile_options(${target} PRIVATE -Wall -Werror)
+endif()

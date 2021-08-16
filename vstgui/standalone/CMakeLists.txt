@@ -136,3 +136,7 @@ if(LINUX)
     target_include_directories(${target} PRIVATE ${SQLITE3_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE vstgui_uidescription ${LINUX_LIBRARIES} dl ${SQLITE3_LIBRARIES})
 endif()
+
+if(CMAKE_HOST_APPLE)
+  target_compile_options(${target} PRIVATE -Wall -Werror)
+endif()
