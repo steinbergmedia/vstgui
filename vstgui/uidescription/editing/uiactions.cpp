@@ -198,7 +198,6 @@ void EmbedViewOperation::perform ()
 void EmbedViewOperation::undo ()
 {
 	selection->clear ();
-	CRect parentRect = newContainer->getViewSize ();
 	const_reverse_iterator it = rbegin ();
 	while (it != rend ())
 	{
