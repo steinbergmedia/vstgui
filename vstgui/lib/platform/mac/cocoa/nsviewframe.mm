@@ -1056,7 +1056,7 @@ static MouseEventButtonState buttonStateFromNSEvent (NSEvent* theEvent)
 	{
 		case 0:
 		{
-			if (theEvent.modifierFlags & NSControlKeyMask)
+			if (theEvent.modifierFlags & MacEventModifier::ControlKeyMask)
 				state.add (MouseButton::Right);
 			else
 				state.add (MouseButton::Left);
