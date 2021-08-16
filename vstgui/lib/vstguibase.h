@@ -294,14 +294,18 @@ public:
 	CBaseObject () = default;
 	~CBaseObject () noexcept override = default;
 
-	CBaseObject (const CBaseObject& o) {};
-	CBaseObject& operator= (const CBaseObject& obj) { return *this; }
-	
+	CBaseObject (const CBaseObject&) {};
+	CBaseObject& operator= (const CBaseObject&) { return *this; }
+
 	//-----------------------------------------------------------------------------
 	/// @name Message Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) { return kMessageUnknown; }
+	virtual CMessageResult notify ([[maybe_unused]] CBaseObject* sender,
+								   [[maybe_unused]] IdStringPtr message)
+	{
+		return kMessageUnknown;
+	}
 	//@}
 
 	/// @cond ignore
