@@ -751,6 +751,14 @@ inline unsigned char toVstVirtualKey (VirtualKey key)
 	return 0;
 }
 
+inline VirtualKey fromVstVirtualKey (uint32_t key)
+{
+	auto k = static_cast<VirtualKey> (key);
+	if (k <= VirtualKey::Equals)
+		return k;
+	return VirtualKey::None;
+}
+
 VstKeyCode toVstKeyCode (const KeyboardEvent& event);
 #endif
 

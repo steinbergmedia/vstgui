@@ -49,8 +49,8 @@ public:
 	virtual void setSubmenu (COptionMenu* submenu);
 	/** set keycode and key modifiers of menu item */
 	virtual void setKey (const UTF8String& keyCode, int32_t keyModifiers = 0);
-	/** set virtual keycode and key modifiers of menu item */
-	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);
+	/** set virtual key and key modifiers of menu item */
+	virtual void setVirtualKey (VirtualKey virtualKey, int32_t keyModifiers = 0);
 	/** set menu item enabled state */
 	virtual void setEnabled (bool state = true);
 	/** set menu item checked state */
@@ -79,8 +79,8 @@ public:
 	int32_t getKeyModifiers () const;
 	/** returns the keycode of the item */
 	const UTF8String& getKeycode () const;
-	/** returns the virtual keycode of the item */
-	int32_t getVirtualKeyCode () const;
+	/** returns the virtual key of the item */
+	VirtualKey getVirtualKey () const;
 	/** returns the submenu of the item */
 	COptionMenu* getSubmenu () const;
 	/** returns the icon of the item */
@@ -89,6 +89,10 @@ public:
 	int32_t getTag () const;
 	//@}
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	int32_t getVirtualKeyCode () const;
+	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);
+#endif
 //------------------------------------------------------------------------
 protected:
 	CMenuItem ();

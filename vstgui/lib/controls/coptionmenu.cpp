@@ -22,7 +22,7 @@ struct CMenuItem::Impl
 	SharedPointer<CBitmap> icon;
 	int32_t flags {0};
 	int32_t keyModifiers {0};
-	int32_t virtualKeyCode {0};
+	VirtualKey virtualKey {VirtualKey::None};
 	int32_t tag {-1};
 };
 
@@ -103,8 +103,8 @@ CMenuItem::CMenuItem (const CMenuItem& item)
 	impl->flags = item.impl->flags;
 	setTitle (item.getTitle ());
 	setIcon (item.getIcon ());
-	if (item.getVirtualKeyCode ())
-		setVirtualKey (item.getVirtualKeyCode (), item.getKeyModifiers ());
+	if (item.getVirtualKey () != VirtualKey::None)
+		setVirtualKey (item.getVirtualKey (), item.getKeyModifiers ());
 	else
 		setKey (item.getKeycode (), item.getKeyModifiers ());
 	setTag (item.getTag ());
@@ -122,14 +122,29 @@ void CMenuItem::setKey (const UTF8String& inKeycode, int32_t inKeyModifiers)
 {
 	impl->keyCode = inKeycode;
 	impl->keyModifiers = inKeyModifiers;
-	impl->virtualKeyCode = 0;
+	impl->virtualKey = VirtualKey::None;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 void CMenuItem::setVirtualKey (int32_t inVirtualKeyCode, int32_t inKeyModifiers)
 {
 	setKey (nullptr, inKeyModifiers);
-	impl->virtualKeyCode = inVirtualKeyCode;
+	impl->virtualKey = fromVstVirtualKey (inVirtualKeyCode);
+}
+
+//------------------------------------------------------------------------
+int32_t CMenuItem::getVirtualKeyCode () const
+{
+	return toVstVirtualKey (impl->virtualKey);
+}
+#endif
+
+//------------------------------------------------------------------------
+void CMenuItem::setVirtualKey (VirtualKey inVirtualKey, int32_t inKeyModifiers)
+{
+	setKey (nullptr, inKeyModifiers);
+	impl->virtualKey = inVirtualKey;
 }
 
 //------------------------------------------------------------------------
@@ -217,9 +232,9 @@ const UTF8String& CMenuItem::getKeycode () const
 }
 
 //------------------------------------------------------------------------
-int32_t CMenuItem::getVirtualKeyCode () const
+VirtualKey CMenuItem::getVirtualKey () const
 {
-	return impl->virtualKeyCode;
+	return impl->virtualKey;
 }
 
 //------------------------------------------------------------------------

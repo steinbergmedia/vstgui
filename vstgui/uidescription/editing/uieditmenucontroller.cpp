@@ -57,7 +57,7 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 			{
 				item->setKey (entries[index].key, entries[index].modifier);
 			}
-			else if (entries[index].virtualKey)
+			else if (entries[index].virtualKey != VirtualKey::None)
 			{
 				item->setVirtualKey (entries[index].virtualKey, entries[index].modifier);
 			}
@@ -398,7 +398,7 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 				modifier |= kApple;
 			if (result->getKeyModifiers () == modifier)
 			{
-				if (event.virt != VirtualKey::None && toVstVirtualKey (event.virt) == result->getVirtualKeyCode ())
+				if (event.virt != VirtualKey::None && event.virt == result->getVirtualKey ())
 					return result;
 				else if (!result->getKeycode ().empty () && result->getKeycode ().getString ()[0] == event.character)
 					return result;

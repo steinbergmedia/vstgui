@@ -146,65 +146,69 @@ HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, KeyboardEvent& ev
 }
 
 //------------------------------------------------------------------------------------
-HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode)
+HIDDEN NSString* GetVirtualKeyCodeString (VirtualKey virtualKey)
 {
 	unichar character = 0;
-	switch (virtualKeyCode)
+	switch (virtualKey)
 	{
-		case VKEY_BACK: character = NSDeleteCharacter; break;
-		case VKEY_TAB: character = NSTabCharacter; break;
-		case VKEY_CLEAR: character = NSClearLineFunctionKey; break;
-		case VKEY_RETURN: character = NSCarriageReturnCharacter; break;
-		case VKEY_PAUSE: character = NSPauseFunctionKey; break;
-		case VKEY_ESCAPE: character = 0x1b; break;
-		case VKEY_SPACE: character = ' '; break;
-		case VKEY_NEXT: character = NSNextFunctionKey; break;
-		case VKEY_END: character = NSEndFunctionKey; break;
-		case VKEY_HOME: character = NSHomeFunctionKey; break;
-		case VKEY_LEFT: character = NSLeftArrowFunctionKey; break;
-		case VKEY_UP: character = NSUpArrowFunctionKey; break;
-		case VKEY_RIGHT: character = NSRightArrowFunctionKey; break;
-		case VKEY_DOWN: character = NSDownArrowFunctionKey; break;
-		case VKEY_PAGEUP: character = NSPageUpFunctionKey; break;
-		case VKEY_PAGEDOWN: character = NSPageDownFunctionKey; break;
-		case VKEY_SELECT: character = NSSelectFunctionKey; break;
-		case VKEY_PRINT: character = NSPrintFunctionKey; break;
-		case VKEY_ENTER: character = NSEnterCharacter; break;
-		case VKEY_SNAPSHOT: break;
-		case VKEY_INSERT: character = NSInsertFunctionKey; break;
-		case VKEY_DELETE: character = NSDeleteFunctionKey; break;
-		case VKEY_HELP: character = NSHelpFunctionKey; break;
-		case VKEY_NUMPAD0: break;
-		case VKEY_NUMPAD1: break;
-		case VKEY_NUMPAD2: break;
-		case VKEY_NUMPAD3: break;
-		case VKEY_NUMPAD4: break;
-		case VKEY_NUMPAD5: break;
-		case VKEY_NUMPAD6: break;
-		case VKEY_NUMPAD7: break;
-		case VKEY_NUMPAD8: break;
-		case VKEY_NUMPAD9: break;
-		case VKEY_MULTIPLY: break;
-		case VKEY_ADD: break;
-		case VKEY_SEPARATOR: break;
-		case VKEY_SUBTRACT: break;
-		case VKEY_DECIMAL: break;
-		case VKEY_DIVIDE: break;
-		case VKEY_F1: character = NSF1FunctionKey; break;
-		case VKEY_F2: character = NSF2FunctionKey; break;
-		case VKEY_F3: character = NSF3FunctionKey; break;
-		case VKEY_F4: character = NSF4FunctionKey; break;
-		case VKEY_F5: character = NSF5FunctionKey; break;
-		case VKEY_F6: character = NSF6FunctionKey; break;
-		case VKEY_F7: character = NSF7FunctionKey; break;
-		case VKEY_F8: character = NSF8FunctionKey; break;
-		case VKEY_F9: character = NSF9FunctionKey; break;
-		case VKEY_F10: character = NSF10FunctionKey; break;
-		case VKEY_F11: character = NSF11FunctionKey; break;
-		case VKEY_F12: character = NSF12FunctionKey; break;
-		case VKEY_NUMLOCK: break;
-		case VKEY_SCROLL: break;
-		case VKEY_EQUALS: break;
+		case VirtualKey::Back: character = NSDeleteCharacter; break;
+		case VirtualKey::Tab: character = NSTabCharacter; break;
+		case VirtualKey::Clear: character = NSClearLineFunctionKey; break;
+		case VirtualKey::Return: character = NSCarriageReturnCharacter; break;
+		case VirtualKey::Pause: character = NSPauseFunctionKey; break;
+		case VirtualKey::Escape: character = 0x1b; break;
+		case VirtualKey::Space: character = ' '; break;
+		case VirtualKey::Next: character = NSNextFunctionKey; break;
+		case VirtualKey::End: character = NSEndFunctionKey; break;
+		case VirtualKey::Home: character = NSHomeFunctionKey; break;
+		case VirtualKey::Left: character = NSLeftArrowFunctionKey; break;
+		case VirtualKey::Up: character = NSUpArrowFunctionKey; break;
+		case VirtualKey::Right: character = NSRightArrowFunctionKey; break;
+		case VirtualKey::Down: character = NSDownArrowFunctionKey; break;
+		case VirtualKey::PageUp: character = NSPageUpFunctionKey; break;
+		case VirtualKey::PageDown: character = NSPageDownFunctionKey; break;
+		case VirtualKey::Select: character = NSSelectFunctionKey; break;
+		case VirtualKey::Print: character = NSPrintFunctionKey; break;
+		case VirtualKey::Enter: character = NSEnterCharacter; break;
+		case VirtualKey::Snapshot: break;
+		case VirtualKey::Insert: character = NSInsertFunctionKey; break;
+		case VirtualKey::Delete: character = NSDeleteFunctionKey; break;
+		case VirtualKey::Help: character = NSHelpFunctionKey; break;
+		case VirtualKey::NumPad0: break;
+		case VirtualKey::NumPad1: break;
+		case VirtualKey::NumPad2: break;
+		case VirtualKey::NumPad3: break;
+		case VirtualKey::NumPad4: break;
+		case VirtualKey::NumPad5: break;
+		case VirtualKey::NumPad6: break;
+		case VirtualKey::NumPad7: break;
+		case VirtualKey::NumPad8: break;
+		case VirtualKey::NumPad9: break;
+		case VirtualKey::Multiply: break;
+		case VirtualKey::Add: break;
+		case VirtualKey::Separator: break;
+		case VirtualKey::Subtract: break;
+		case VirtualKey::Decimal: break;
+		case VirtualKey::Divide: break;
+		case VirtualKey::F1: character = NSF1FunctionKey; break;
+		case VirtualKey::F2: character = NSF2FunctionKey; break;
+		case VirtualKey::F3: character = NSF3FunctionKey; break;
+		case VirtualKey::F4: character = NSF4FunctionKey; break;
+		case VirtualKey::F5: character = NSF5FunctionKey; break;
+		case VirtualKey::F6: character = NSF6FunctionKey; break;
+		case VirtualKey::F7: character = NSF7FunctionKey; break;
+		case VirtualKey::F8: character = NSF8FunctionKey; break;
+		case VirtualKey::F9: character = NSF9FunctionKey; break;
+		case VirtualKey::F10: character = NSF10FunctionKey; break;
+		case VirtualKey::F11: character = NSF11FunctionKey; break;
+		case VirtualKey::F12: character = NSF12FunctionKey; break;
+		case VirtualKey::NumLock: break;
+		case VirtualKey::Scroll: break;
+		case VirtualKey::Equals: break;
+		case VirtualKey::ShiftModifier: break;
+		case VirtualKey::ControlModifier: break;
+		case VirtualKey::AltModifier: break;
+		case VirtualKey::None: break;
 	}
 	if (character != 0)
 		return [NSString stringWithFormat:@"%C", character];

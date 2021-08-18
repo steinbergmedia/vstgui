@@ -65,7 +65,7 @@ static void (*SuperViewWillRedraw) (id, SEL) = SuperDealloc;
 //------------------------------------------------------------------------------------
 extern HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass);
 extern HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, VSTGUI::KeyboardEvent& event);
-extern HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode);
+extern HIDDEN NSString* GetVirtualKeyCodeString (VSTGUI::VirtualKey virtualKey);
 extern HIDDEN int32_t eventButton (NSEvent* theEvent);
 extern HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p);
 extern HIDDEN NSImage* bitmapToNSImage (VSTGUI::CBitmap* bitmap);

@@ -114,9 +114,9 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				{
 					keyEquivalent = fromUTF8String<NSString*> (item->getKeycode ());
 				}
-				else if (item->getVirtualKeyCode ())
+				else if (item->getVirtualKey () != VirtualKey::None)
 				{
-					keyEquivalent = GetVirtualKeyCodeString (item->getVirtualKeyCode ());
+					keyEquivalent = GetVirtualKeyCodeString (item->getVirtualKey ());
 				}
 				if (keyEquivalent)
 				{
