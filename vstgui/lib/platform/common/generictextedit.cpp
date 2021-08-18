@@ -354,11 +354,11 @@ void STBTextEditView::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::onMouseEvent (MouseEvent &event, CFrame *frame)
+void STBTextEditView::onMouseEvent (MouseEvent& event, CFrame* frame)
 {
 	if (event.buttonState.isLeft () == false)
 		return;
-	
+
 	if (auto parent = getParentView ())
 	{
 		auto where = event.mousePosition;
@@ -372,7 +372,7 @@ void STBTextEditView::onMouseEvent (MouseEvent &event, CFrame *frame)
 				case EventType::MouseDown:
 				{
 					setMouseDownHandling (true);
-					callSTB ([&]() {
+					callSTB ([&] () {
 						stb_textedit_click (this, &editState, static_cast<float> (where.x),
 											static_cast<float> (where.y));
 					});
@@ -383,20 +383,20 @@ void STBTextEditView::onMouseEvent (MouseEvent &event, CFrame *frame)
 				{
 					if (mouseDownHandling ())
 					{
-					callSTB ([&]() {
-						stb_textedit_drag (this, &editState, static_cast<float> (where.x),
-										   static_cast<float> (where.y));
-					});
-					event.consumed = true;
+						callSTB ([&] () {
+							stb_textedit_drag (this, &editState, static_cast<float> (where.x),
+											   static_cast<float> (where.y));
+						});
+						event.consumed = true;
 					}
 					break;
 				}
 				case EventType::MouseUp:
 				{
-					if (mouseDownHandling())
+					if (mouseDownHandling ())
 					{
 						event.consumed = true;
-						setMouseDownHandling(false);
+						setMouseDownHandling (false);
 					}
 					break;
 				}
