@@ -41,13 +41,13 @@ void CFontDesc::init ()
 #if MAC
 #if TARGET_OS_IPHONE
 	globalFonts.systemFont = makeOwned<CFontDesc> ("Helvetica", 12);
-	globalFonts.NormalFontVeryBig = makeOwned<CFontDesc> ("ArialMT", 18);
-	globalFonts.NormalFontBig = makeOwned<CFontDesc> ("ArialMT", 14);
-	globalFonts.NormalFont = makeOwned<CFontDesc> ("ArialMT", 12);
-	globalFonts.NormalFontSmall = makeOwned<CFontDesc> ("ArialMT", 11);
-	globalFonts.NormalFontSmaller = makeOwned<CFontDesc> ("ArialMT", 10);
-	globalFonts.NormalFontVerySmall = makeOwned<CFontDesc> ("ArialMT", 9);
-	globalFonts.SymbolFont = makeOwned<CFontDesc> ("Symbol", 12);
+	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("ArialMT", 18);
+	globalFonts.normalFontBig = makeOwned<CFontDesc> ("ArialMT", 14);
+	globalFonts.normalFont = makeOwned<CFontDesc> ("ArialMT", 12);
+	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("ArialMT", 11);
+	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("ArialMT", 10);
+	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("ArialMT", 9);
+	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 12);
 #else
 	globalFonts.systemFont = makeOwned<CFontDesc> ("Lucida Grande", 12);
 	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("Arial", 18);

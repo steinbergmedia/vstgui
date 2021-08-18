@@ -1196,7 +1196,7 @@ void CViewContainer::onTouchEvent (ITouchEvent& event)
 				{
 					CPoint where (e.second.location);
 					frameToLocal (where);
-					MouseDownEvent downEvent (where, MouseEventButtonState::Left);
+					MouseDownEvent downEvent (where, MouseButton::Left);
 					downEvent.clickCount = e.second.tapCount;
 					if (view->hitTest (where, downEvent))
 					{
@@ -1219,7 +1219,7 @@ bool CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 	CPoint where (event.location);
 	frameToLocal (where);
 
-	MouseDownEvent downEvent (where, MouseEventButtonState::Left);
+	MouseDownEvent downEvent (where, MouseButton::Left);
 	downEvent.clickCount = event.tapCount;
 
 	ReverseViewIterator it (this);

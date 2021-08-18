@@ -1771,12 +1771,12 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 				{
 					case ITouchEvent::kMoved:
 					{
-						MouseMoveEvent moveEvent (where, MouseEventButtonState::Left);
+						MouseMoveEvent moveEvent (where, MouseButton::Left);
 						dispatchEvent (target, moveEvent);
 						if (moveEvent.ignoreFollowUpMoveAndUpEvents ())
 						{
 							event.unsetTouchTarget (e.first, target);
-							MouseMoveEvent mouseMoveEvent (where, MouseEventButtonState::Left);
+							MouseMoveEvent mouseMoveEvent (where, MouseButton::Left);
 							if (target->hitTest (where, mouseMoveEvent) == false)
 							{
 								// when the touch goes out of the target and it tells us to
@@ -1793,7 +1793,7 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 						dispatchEvent (target, cancelEvent);
 						if (cancelEvent.consumed == false)
 						{
-							MouseUpEvent upEvent (where, MouseEventButtonState::Left);
+							MouseUpEvent upEvent (where, MouseButton::Left);
 							dispatchEvent (target, upEvent);
 						}
 						event.unsetTouchTarget (e.first, target);
@@ -1801,7 +1801,7 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 					}
 					case ITouchEvent::kEnded:
 					{
-						MouseUpEvent upEvent (where, MouseEventButtonState::Left);
+						MouseUpEvent upEvent (where, MouseButton::Left);
 						dispatchEvent (target, upEvent);
 						event.unsetTouchTarget (e.first, target);
 						break;
