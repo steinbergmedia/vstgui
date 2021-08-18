@@ -34,10 +34,15 @@ function(vstgui_add_executable target sources)
     add_executable(${target} ${sources} ${PkgInfoResource})
     set(PLATFORM_LIBRARIES
       "-framework Cocoa"
-      "-framework OpenGL"
       "-framework QuartzCore"
       "-framework Accelerate"
     )
+    if(VSTGUI_ENABLE_OPENGL_SUPPORT)
+      set(PLATFORM_LIBRARIES
+        ${PLATFORM_LIBRARIES}
+        "-framework OpenGL"
+      )
+    endif()
     set_target_properties(${target} PROPERTIES
       MACOSX_BUNDLE TRUE
       XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT $<$<CONFIG:Debug>:dwarf>$<$<NOT:$<CONFIG:Debug>>:dwarf-with-dsym>
