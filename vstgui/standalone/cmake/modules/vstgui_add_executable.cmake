@@ -102,6 +102,15 @@ function(vstgui_add_resources target resources)
 endfunction()
 
 ###########################################################################################
+function(vstgui_set_target_bundle_id target identifier)
+  if(CMAKE_HOST_APPLE)
+    set_target_properties(${target} PROPERTIES
+      XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER ${identifier}
+    )
+  endif(CMAKE_HOST_APPLE)
+endfunction()
+
+###########################################################################################
 function(vstgui_set_target_infoplist target infoplist)
   if(CMAKE_HOST_APPLE)
     get_filename_component(InfoPlistFile "${infoplist}" ABSOLUTE)

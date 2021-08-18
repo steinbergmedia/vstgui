@@ -30,6 +30,7 @@ set(standalone_font
 vstgui_add_executable(${target} "${standalone_sources}")
 vstgui_add_resources(${target} "${standalone_resources}")
 vstgui_add_resources(${target} "${standalone_font}" "Fonts")
+vstgui_set_target_bundle_id(${target} "vstgui.examples.standalone")
 vstgui_set_target_infoplist(${target} "resource/Info.plist")
 vstgui_set_target_rcfile(${target} "resource/standalone.rc")
 vstgui_set_cxx_version(${target} 17)

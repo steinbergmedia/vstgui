@@ -34,6 +34,7 @@ set(${TargetName}_RESOURCES
 
 vstgui_add_executable(${TargetName} "${${TargetName}_sources}")
 vstgui_add_resources(${TargetName} "${${TargetName}_RESOURCES}")
+vstgui_set_target_bundle_id(${TargetName} "com.steinberg.vstgui.imagestitcher")
 vstgui_set_target_infoplist(${TargetName} "resource/Info.plist")
 vstgui_set_target_rcfile(${TargetName} "resource/imagestitcher.rc")
 vstgui_set_cxx_version(${TargetName} 17)
