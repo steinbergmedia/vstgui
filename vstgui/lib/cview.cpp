@@ -784,6 +784,7 @@ bool CView::hitTest (const CPoint& where, const Event& event)
 #endif
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 /**
  * @param where location
@@ -800,6 +801,7 @@ bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
 	}
 	return getMouseableArea ().pointInside (where);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 /**

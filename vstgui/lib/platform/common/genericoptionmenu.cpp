@@ -34,7 +34,7 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 
 //------------------------------------------------------------------------
 class DataSource : public DataBrowserDelegateAdapter,
-                   public OldMouseObserverAdapter,
+                   public IMouseObserver,
                    public NonAtomicReferenceCounted
 {
 public:
@@ -138,6 +138,7 @@ private:
 			}
 		});
 	}
+	void onMouseEvent (MouseEvent& event, CFrame* frame) override {}
 
 	int32_t dbGetNumRows (CDataBrowser* browser) override { return menu->getNbEntries (); }
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 1; }
