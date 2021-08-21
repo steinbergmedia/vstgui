@@ -104,6 +104,9 @@
 		#define WINDOWS 1
 	#endif
 	#if (defined(_M_ARM64) || defined(_M_ARM))
+		#if defined(VSTGUI_OPENGL_SUPPORT)
+			#undef VSTGUI_OPENGL_SUPPORT
+		#endif
 		#define VSTGUI_OPENGL_SUPPORT 0	
 	#endif
 	#ifdef _MSC_VER
