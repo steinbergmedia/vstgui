@@ -15,7 +15,7 @@ set(${target}_resources
 )
 
 vstgui_add_executable(${target} "${${target}_sources}")
-vstgui_add_resources(${target} "${target_resources}")
+vstgui_add_resources(${target} "${${target}_resources}")
 vstgui_set_target_bundle_id(${target} "vstgui.tests.gfxtest")
 vstgui_set_target_infoplist(${target} "resource/Info.plist")
 vstgui_set_target_rcfile(${target} "resource/gfxtest.rc")
