@@ -268,6 +268,7 @@ CCommandMenuItem::CCommandMenuItem (Desc&& args)
 , commandName (std::move (args.commandName))
 , itemTarget (std::move (args.target))
 {
+	setTag (args.tag);
 }
 
 //------------------------------------------------------------------------
@@ -277,6 +278,7 @@ CCommandMenuItem::CCommandMenuItem (const Desc& args)
 , commandName (args.commandName)
 , itemTarget (args.target)
 {
+	setTag (args.tag);
 }
 
 //------------------------------------------------------------------------

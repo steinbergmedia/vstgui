@@ -120,7 +120,8 @@ public:
 		SharedPointer<CBitmap> icon;
 		int32_t keyModifiers {0};
 		int32_t flags {kNoFlags};
-		
+		int32_t tag {-1};
+
 		Desc () = default;
 		~Desc () noexcept = default;
 
@@ -140,14 +141,13 @@ public:
 		{
 		}
 
-		Desc (const UTF8String& title, int32_t tag,
-		                 ICommandMenuItemTarget* target = nullptr,
-		                 const UTF8String& commandCategory = nullptr,
-		                 const UTF8String& commandName = nullptr)
+		Desc (const UTF8String& title, int32_t tag, ICommandMenuItemTarget* target = nullptr,
+			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
 		: title (title)
 		, commandCategory (commandCategory)
 		, commandName (commandName)
 		, target (target)
+		, tag (tag)
 		{
 		}
 

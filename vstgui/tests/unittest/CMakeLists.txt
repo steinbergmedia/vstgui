@@ -18,6 +18,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/controls/ckickbutton_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/controls/clistcontrol_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/controls/conoffbutton_test.cpp"
+	"${VSTGUI_TEST_BASE}lib/controls/coptionmenu_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/controls/csegmentbutton_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/controls/ctextbutton_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/controls/cxypad_test.cpp"
