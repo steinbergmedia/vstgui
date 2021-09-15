@@ -79,6 +79,7 @@ protected:
 	SharedPointer<CTextEdit> searchField;
 	CTextLabel* viewNameLabel;
 	CRowColumnView* attributeView;
+	CColor attributeNameColor {kBlackCColor};
 
 	std::string filterString;
 

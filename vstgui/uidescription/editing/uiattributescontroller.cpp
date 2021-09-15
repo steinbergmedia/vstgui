@@ -760,6 +760,8 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 	selection->registerListener (this);
 	undoManager->registerListener (this);
 	description->registerListener (this);
+
+	UIEditController::getEditorDescription ()->getColor ("control.font", attributeNameColor);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1080,7 +1082,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	label->setTextTruncateMode (CTextLabel::kTruncateHead);
 	label->setTransparency (true);
 	label->setHoriAlign (kRightText);
-	label->setFontColor (kBlackCColor);
+	label->setFontColor (attributeNameColor);
 	label->setFont (kNormalFontSmall);
 	label->setAutosizeFlags (kAutosizeAll);
 
