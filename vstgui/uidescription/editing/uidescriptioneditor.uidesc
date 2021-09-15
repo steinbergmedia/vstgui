@@ -1367,7 +1367,7 @@
 											"opacity": "1",
 											"origin": "0, 229",
 											"size": "175, 245",
-											"transparent": "true",
+											"transparent": "false",
 											"wants-focus": "false"
 										},
 										"children": {
