@@ -565,11 +565,13 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			splitView->addViewToSeparator (0, backSelectControl);
 
 			// Add Title
+			CColor labelColor = kBlackCColor;
+			description->getColor ("control.font", labelColor);
 			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
 			label->setFont (font);
-			label->setFontColor (kBlackCColor);
+			label->setFontColor (labelColor);
 			label->setAutosizeFlags (kAutosizeAll);
 			splitView->addViewToSeparator (0, label);
 
