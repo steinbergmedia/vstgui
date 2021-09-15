@@ -350,8 +350,8 @@ void CFrame::clearMouseViews (const CPoint& where, Modifiers modifiers, bool cal
 			exitEvent.modifiers = modifiers;
 			exitEvent.mousePosition = (*it)->translateToLocal (where, true);
 			dispatchEvent ((*it), exitEvent);
-		#if DEBUG_MOUSE_VIEWS
-			DebugPrint ("mouseExited : %p[%d,%d]\n", (*it), (int)exitEvent.mousePosition.x,
+#if DEBUG_MOUSE_VIEWS
+			DebugPrint ("mouseExited  : %p[%d,%d]\n", (*it), (int)exitEvent.mousePosition.x,
 						(int)exitEvent.mousePosition.y);
 #endif
 		}
@@ -412,19 +412,35 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		clearMouseViews (event.mousePosition, event.modifiers);
 		return;
 	}
+
+	auto callMouseExitForView = [this, &event] (CView* view) {
+		MouseExitEvent exitEvent (event);
+		exitEvent.mousePosition = view->translateToLocal (exitEvent.mousePosition, true);
+		dispatchEvent (view, exitEvent);
+		callMouseObserverMouseExited (view);
+#if DEBUG_MOUSE_VIEWS
+		DebugPrint ("mouseExited  : %p[%d,%d]\n", view, (int)exitEvent.mousePosition.x,
+					(int)exitEvent.mousePosition.y);
+#endif
+	};
+
+	auto callMouseEnterForView = [this, &event] (CView* view) {
+		MouseEnterEvent enterEvent (event);
+		enterEvent.mousePosition = view->translateToLocal (enterEvent.mousePosition, true);
+		dispatchEvent (view, enterEvent);
+		callMouseObserverMouseEntered (view);
+#if DEBUG_MOUSE_VIEWS
+		DebugPrint ("mouseEntered : %p[%d,%d]\n", view, (int)enterEvent.mousePosition.x,
+					(int)enterEvent.mousePosition.y);
+#endif
+	};
+
 	CViewContainer* vc = currentMouseView ? currentMouseView->asViewContainer () : nullptr;
 	// if the currentMouseView is not a view container, we know that the new mouseView won't be a child of it and that all other
 	// views in the list are viewcontainers
 	if (vc == nullptr && currentMouseView)
 	{
-		MouseExitEvent exitEvent (event);
-		exitEvent.mousePosition = currentMouseView->translateToLocal (exitEvent.mousePosition, true);
-		dispatchEvent (currentMouseView, exitEvent);
-		callMouseObserverMouseExited (currentMouseView);
-	#if DEBUG_MOUSE_VIEWS
-		DebugPrint ("mouseExited : %p[%d,%d]\n", currentMouseView, (int)exitEvent.mousePosition.x,
-					(int)exitEvent.mousePosition.y);
-#endif
+		callMouseExitForView (currentMouseView);
 		currentMouseView->forget ();
 		pImpl->mouseViews.remove (currentMouseView);
 	}
@@ -436,14 +452,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 			return;
 		if (vc->isChild (mouseView, true) == false)
 		{
-			MouseExitEvent exitEvent (event);
-			exitEvent.mousePosition = vc->translateToLocal (exitEvent.mousePosition, true);
-			dispatchEvent (vc, exitEvent);
-			callMouseObserverMouseExited (vc);
-		#if DEBUG_MOUSE_VIEWS
-			DebugPrint ("mouseExited : %p[%d,%d]\n", vc, (int)exitEvent.mousePosition.x,
-						(int)exitEvent.mousePosition.y);
-#endif
+			callMouseExitForView (vc);
 			vc->forget ();
 			pImpl->mouseViews.erase (--it.base ());
 		}
@@ -467,14 +476,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		++it2;
 		while (it2 != pImpl->mouseViews.end ())
 		{
-			MouseEnterEvent enterEvent (event);
-			enterEvent.mousePosition = (*it2)->translateToLocal (enterEvent.mousePosition, true);
-			dispatchEvent ((*it2), enterEvent);
-			callMouseObserverMouseEntered ((*it2));
-		#if DEBUG_MOUSE_VIEWS
-			DebugPrint ("mouseEntered : %p[%d,%d]\n", (*it2), (int)enterEvent.mousePosition.x,
-						(int)enterEvent.mousePosition.y);
-#endif
+			callMouseEnterForView (*it2);
 			++it2;
 		}
 	}
@@ -493,14 +495,7 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 		auto it2 = pImpl->mouseViews.begin ();
 		while (it2 != pImpl->mouseViews.end ())
 		{
-			MouseEnterEvent enterEvent (event);
-			enterEvent.mousePosition = (*it2)->translateToLocal (enterEvent.mousePosition, true);
-			dispatchEvent ((*it2), enterEvent);
-			callMouseObserverMouseEntered ((*it2));
-		#if DEBUG_MOUSE_VIEWS
-			DebugPrint ("mouseEntered : %p[%d,%d]\n", (*it2), (int)enterEvent.mousePosition.x,
-						(int)enterEvent.mousePosition.y);
-#endif
+			callMouseEnterForView (*it2);
 			++it2;
 		}
 	}
