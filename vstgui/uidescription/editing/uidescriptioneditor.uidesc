@@ -1367,7 +1367,7 @@
 											"opacity": "1",
 											"origin": "0, 229",
 											"size": "175, 245",
-											"transparent": "false",
+											"transparent": "true",
 											"wants-focus": "false"
 										},
 										"children": {
@@ -1440,7 +1440,7 @@
 					"origin": "0, 0",
 					"size": "170, 223",
 					"sub-controller": "ViewCreatorController",
-					"transparent": "false",
+					"transparent": "true",
 					"wants-focus": "false"
 				},
 				"children": {
@@ -1541,7 +1541,7 @@
 					"origin": "0, 0",
 					"size": "170, 223",
 					"sub-controller": "TagEditController",
-					"transparent": "false",
+					"transparent": "true",
 					"wants-focus": "false"
 				},
 				"children": {
@@ -1706,7 +1706,7 @@
 					"origin": "0, 0",
 					"size": "170, 223",
 					"sub-controller": "ColorEditController",
-					"transparent": "false",
+					"transparent": "true",
 					"wants-focus": "false"
 				},
 				"children": {
@@ -2208,7 +2208,7 @@
 					"origin": "0, 0",
 					"size": "170, 223",
 					"sub-controller": "BitmapEditController",
-					"transparent": "false",
+					"transparent": "true",
 					"wants-focus": "false"
 				},
 				"children": {
@@ -2691,7 +2691,7 @@
 					"origin": "0, 0",
 					"size": "170, 223",
 					"sub-controller": "FontEditController",
-					"transparent": "false",
+					"transparent": "true",
 					"wants-focus": "false"
 				},
 				"children": {
@@ -6365,7 +6365,7 @@
 					"origin": "0, 0",
 					"size": "170, 223",
 					"sub-controller": "GradientEditController",
-					"transparent": "false",
+					"transparent": "true",
 					"wants-focus": "false"
 				},
 				"children": {
@@ -6639,6 +6639,7 @@
 							"title": "Use double click to add and ALT-Click to remove a color stop.\\nA single click selects a color stop.",
 							"transparent": "true",
 							"value-precision": "2",
+							"vertical-centered": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
 						}
