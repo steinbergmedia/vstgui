@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -107,7 +107,7 @@
 		#if defined(VSTGUI_OPENGL_SUPPORT)
 			#undef VSTGUI_OPENGL_SUPPORT
 		#endif
-		#define VSTGUI_OPENGL_SUPPORT 0	
+		#define VSTGUI_OPENGL_SUPPORT 0
 	#endif
 	#ifdef _MSC_VER
 		#pragma warning(3 : 4189) // local variable is initialized but not referenced
@@ -216,7 +216,7 @@
 
 //----------------------------------------------------
 namespace VSTGUI {
-	
+
 /** coordinate type */
 using CCoord = double;
 /** ID String pointer */
@@ -265,7 +265,7 @@ class ReferenceCounted : virtual public IReference
 public:
 	ReferenceCounted () = default;
 	virtual ~ReferenceCounted () noexcept = default;
-	
+
 	ReferenceCounted (const ReferenceCounted&) {};
 	ReferenceCounted& operator= (const ReferenceCounted&) { return *this; }
 
@@ -352,7 +352,7 @@ public:
 		*this = static_cast<I*> (op.get ());
 		return *this;
 	}
-	
+
 	template<typename T>
 	inline SharedPointer (SharedPointer<T>&& op) noexcept
 	{
@@ -368,7 +368,7 @@ public:
 		op.ptr = nullptr;
 		return *this;
 	}
-	
+
 //------------------------------------------------------------------------
 protected:
 	template<typename T>

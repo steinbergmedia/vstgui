@@ -300,9 +300,12 @@ static void VSTGUI_NSView_drawRect (id self, SEL _cmd, NSRect rect)
 //------------------------------------------------------------------------
 static void VSTGUI_NSView_viewWillDraw (id self, SEL _cmd)
 {
-	if (auto layer = [self layer])
+	if (@available (macOS 10.12, *))
 	{
-		layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+		if (auto layer = [self layer])
+		{
+			layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+		}
 	}
 	__OBJC_SUPER (self)
 	SuperViewWillRedraw (SUPER, _cmd);
@@ -885,15 +888,14 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	auto processInfo = [NSProcessInfo processInfo];
 	if ([processInfo respondsToSelector:@selector(operatingSystemVersion)])
 	{
-		auto systemVersion = processInfo.operatingSystemVersion;
 		// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
 		// few parts of a window are updated permanently when scrolling or manipulating a control
 		// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
 		// are drawn incorrectly when scaled.
-		if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion > 10))
+		if (@available (macOS 10.11, *))
 		{
 			[nsView setWantsLayer:YES];
-			if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion >= 13))
+			if (@available (macOS 10.13, *))
 			{
 				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
 				// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
