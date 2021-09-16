@@ -70,12 +70,12 @@ public:
 				uiDesc = editorDesc;
 			}
 #else
-			std::string descPath (__FILE__);
-			unixfyPath (descPath);
-			if (removeLastPathComponent (descPath))
+			std::string basePath (__FILE__);
+			unixfyPath (basePath);
+			if (removeLastPathComponent (basePath))
 			{
-				descPath += "/uidescriptioneditor.uidesc";
-				auto editorDesc = makeOwned<UIDescription> (descPath.c_str ());
+				auto descPath = basePath + "/uidescriptioneditor.uidesc";
+				auto editorDesc = makeOwned<UIDescription> (descPath.data ());
 				if (editorDesc->parse ())
 				{
 					uiDesc = std::move (editorDesc);
@@ -83,6 +83,23 @@ public:
 				else
 				{
 					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
+				}
+				descPath = basePath + "/uidescriptioneditor_res_light.uidesc";
+				auto resDesc = makeOwned<UIDescription> (descPath.data ());
+				if (resDesc->parse ())
+				{
+					lightResourceDesc = std::move (resDesc);
+					uiDesc->setSharedResources (lightResourceDesc);
+				}
+				else
+				{
+					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
+				}
+				descPath = basePath + "/uidescriptioneditor_res_dark.uidesc";
+				resDesc = makeOwned<UIDescription> (descPath.data ());
+				if (resDesc->parse ())
+				{
+					darkResourceDesc = std::move (resDesc);
 				}
 			}
 #endif
@@ -98,6 +115,8 @@ public:
 
 private:
 	mutable SharedPointer<UIDescription> uiDesc;
+	mutable SharedPointer<UIDescription> lightResourceDesc;
+	mutable SharedPointer<UIDescription> darkResourceDesc;
 };
 
 static UIEditControllerDescription gUIDescription;
