@@ -251,6 +251,8 @@ UITemplateController::UITemplateController (IController* baseController, UIDescr
 //----------------------------------------------------------------------------------------------------
 UITemplateController::~UITemplateController ()
 {
+	if (templateDataBrowser)
+		templateDataBrowser->unregisterViewListener (this);
 	if (mainViewDataSource)
 		mainViewDataSource->forget ();
 	editDescription->unregisterListener (this);
@@ -290,6 +292,11 @@ void UITemplateController::selectTemplate (UTF8StringPtr name)
 {
 	if (templateDataBrowser)
 	{
+		if (name == nullptr)
+		{
+			templateDataBrowser->unselectAll ();
+			return;
+		}
 		int32_t index = 0;
 		for (auto& templName : templateNames)
 		{
@@ -429,6 +436,16 @@ void UITemplateController::navigateTo (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UITemplateController::viewWillDelete (CView* view)
+{
+	if (view == templateDataBrowser)
+	{
+		templateDataBrowser->unregisterViewListener (this);
+		templateDataBrowser = nullptr;
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 CView* UITemplateController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
@@ -450,6 +467,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 			UIEditController::setupDataSource (dataSource);
 			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kAutoHideScrollbars|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar|CDataBrowser::kDrawHeader);
 			dataSource->forget ();
+			templateDataBrowser->registerViewListener (this);
 			return templateDataBrowser;
 		}
 	}

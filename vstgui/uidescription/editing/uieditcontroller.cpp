@@ -160,6 +160,10 @@ public:
 		gUIEditorControllerResources.init (*uiDesc.get ());
 	}
 
+	bool usesDarkTheme () const
+	{
+		return uiDesc ? (uiDesc->getSharedResources () == darkResourceDesc) : false;
+	}
 private:
 	mutable SharedPointer<UIDescription> uiDesc;
 	mutable SharedPointer<UIDescription> lightResourceDesc;
@@ -189,6 +193,32 @@ void UIEditController::setupDataSource (GenericStringListDataBrowserSource* sour
 void UIEditController::setDarkTheme (bool state)
 {
 	gUIDescription.setDarkTheme (state);
+	getSettings ()->setAttribute ("UI Theme", usesDarkTheme () ? "Dark" : "Light");
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditController::usesDarkTheme () const
+{
+	return gUIDescription.usesDarkTheme ();
+}
+
+//------------------------------------------------------------------------
+void UIEditController::doChangeTheme (bool dark)
+{
+	setDarkTheme (dark);
+	if (baseView)
+	{
+		auto templateName = std::move (editTemplateName);
+		templateController->selectTemplate (nullptr);
+
+		auto parent = baseView->getParentView ()->asViewContainer ();
+		vstgui_assert (parent);
+		remember ();
+		parent->removeView (baseView);
+		editView = nullptr;
+		parent->addView (createEditView ());
+		templateController->selectTemplate (templateName.data ());
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -455,8 +485,15 @@ UIEditController::UIEditController (UIDescription* description)
 	editorDesc = getEditorDescription ();
 	undoManager->registerListener (this);
 	editDescription->registerListener (this);
-	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
+	menuController = makeOwned<UIEditMenuController> (this, selection, undoManager, editDescription, this);
 	onTemplatesChanged ();
+	if (auto theme = getSettings ()->getAttributeValue ("UI Theme"))
+	{
+		if (*theme == "Dark")
+			setDarkTheme (true);
+		else if (*theme == "Light")
+			setDarkTheme (false);
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -489,6 +526,7 @@ CView* UIEditController::createEditView ()
 				view->setViewSize (r);
 				view->setMouseableArea (r);
 			}
+			baseView = view;
 			return view;
 		}
 	}
@@ -709,13 +747,14 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	UTF8StringView subControllerName (name);
 	if (subControllerName == "TemplatesController")
 	{
-		vstgui_assert (templateController == nullptr);
+//		vstgui_assert (templateController == nullptr);
 		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
 		templateController->registerListener (this);
 		return templateController;
 	}
 	else if (subControllerName == "MenuController")
 	{
+		menuController->remember ();
 		return menuController;
 	}
 	else if (subControllerName == "ViewCreatorController")
@@ -1054,6 +1093,11 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 			showFocusSettings ();
 			return kMessageNotified;
 		}
+		else if (cmdName == "Toggle UI Theme (Dark/Light)...")
+		{
+			doChangeTheme (!usesDarkTheme ());
+			return kMessageNotified;
+		}
 	}
 	else if (cmdCategory == "File")
 	{
@@ -1166,6 +1210,10 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 						item->setEnabled (true);
 				}
 			}
+			return kMessageNotified;
+		}
+		else if (cmdName == "Toggle UI Theme (Dark/Light)...")
+		{
 			return kMessageNotified;
 		}
 	}

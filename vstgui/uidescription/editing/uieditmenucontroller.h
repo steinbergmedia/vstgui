@@ -126,6 +126,8 @@ static const MenuEntry editMenu[] = {
 	kMenuSeparator,
 	{ "Edit", "Template Settings..." , 0, kControl, VirtualKey::Enter },
 	{ "Edit", "Focus Drawing Settings..." , 0, 0, VirtualKey::None },
+	kMenuSeparator,
+	{ "Edit", "Toggle UI Theme (Dark/Light)..." , 0, 0, VirtualKey::None },
 	{0}
 };
 

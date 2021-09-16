@@ -16,6 +16,7 @@
 #include "../../lib/cdatabrowser.h"
 #include "../../lib/dispatchlist.h"
 #include "../../lib/genericstringlistdatabrowsersource.h"
+#include "../../lib/iviewlistener.h"
 #include <vector>
 #include <list>
 
@@ -38,6 +39,7 @@ class UITemplateController
   public IContextMenuController2,
   public GenericStringListDataBrowserSourceSelectionChanged,
   public UIDescriptionListenerAdapter,
+  public ViewListenerAdapter,
   public ListenerProvider<UITemplateController, IUITemplateControllerListener>
 {
 public:
@@ -61,6 +63,7 @@ protected:
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 
 	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
+	void viewWillDelete (CView* view) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UISelection> selection;
