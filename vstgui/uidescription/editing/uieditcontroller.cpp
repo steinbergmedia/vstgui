@@ -208,15 +208,18 @@ void UIEditController::doChangeTheme (bool dark)
 	setDarkTheme (dark);
 	if (baseView)
 	{
+		vstgui_assert (templateController);
 		auto templateName = std::move (editTemplateName);
 		templateController->selectTemplate (nullptr);
-
+		auto viewSize = baseView->getViewSize ();
 		auto parent = baseView->getParentView ()->asViewContainer ();
 		vstgui_assert (parent);
 		remember ();
 		parent->removeView (baseView);
 		editView = nullptr;
-		parent->addView (createEditView ());
+		auto view = createEditView ();
+		view->setViewSize (viewSize);
+		parent->addView (view);
 		templateController->selectTemplate (templateName.data ());
 	}
 }
