@@ -183,8 +183,8 @@ protected:
 	SharedPointer<CVSTGUITimer> highlightTimer;
 	IActionPerformer* actionPerformer;
 
-	COptionMenu* fileMenu {nullptr};
-	COptionMenu* editMenu {nullptr};
+	SharedPointer<COptionMenu> fileMenu;
+	SharedPointer<COptionMenu> editMenu;
 	SharedPointer<CTextLabel> fileLabel;
 	SharedPointer<CTextLabel> editLabel;
 	
