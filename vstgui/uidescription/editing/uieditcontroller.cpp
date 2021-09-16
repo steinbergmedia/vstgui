@@ -1093,7 +1093,7 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 			showFocusSettings ();
 			return kMessageNotified;
 		}
-		else if (cmdName == "Toggle UI Theme (Dark/Light)...")
+		else if (cmdName == "Toggle UI Theme (Dark/Light)")
 		{
 			doChangeTheme (!usesDarkTheme ());
 			return kMessageNotified;
@@ -1212,7 +1212,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			}
 			return kMessageNotified;
 		}
-		else if (cmdName == "Toggle UI Theme (Dark/Light)...")
+		else if (cmdName == "Toggle UI Theme (Dark/Light)")
 		{
 			return kMessageNotified;
 		}
