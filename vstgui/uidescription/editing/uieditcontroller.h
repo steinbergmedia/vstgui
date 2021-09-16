@@ -45,7 +45,7 @@ class UIEditController : public CBaseObject,
 {
 public:
 	UIEditController (UIDescription* description);
-
+	void setDarkTheme (bool state); // must be called before createEditView
 	CView* createEditView ();
 	UIEditMenuController* getMenuController () const { return menuController; }
 	UIUndoManager* getUndoManager () const { return undoManager; }

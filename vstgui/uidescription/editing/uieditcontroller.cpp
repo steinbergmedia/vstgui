@@ -55,6 +55,30 @@ namespace VSTGUI {
 #endif
 
 //----------------------------------------------------------------------------------------------------
+struct UIEditControllerGlobalResources
+{
+	CColor dataSourceSelectionColor;
+	CColor dataSourceFontColor;
+	CColor dataSourceRowlineColor;
+	CColor dataSourceRowBackColor;
+	CColor dataSourceRowAlternateBackColor;
+	CColor shadingLineColor;
+	CFontRef dataSourceFont;
+
+	void init (const IUIDescription& desc)
+	{
+		desc.getColor ("db.selection", dataSourceSelectionColor);
+		desc.getColor ("db.font", dataSourceFontColor);
+		desc.getColor ("db.row.line", dataSourceRowlineColor);
+		desc.getColor ("db.row.back", dataSourceRowBackColor);
+		desc.getColor ("db.row.alternate.back", dataSourceRowAlternateBackColor);
+		desc.getColor ("shading.light.frame", shadingLineColor);
+		dataSourceFont = desc.getFont ("db.font");
+	}
+};
+static UIEditControllerGlobalResources gUIEditorControllerResources;
+
+//----------------------------------------------------------------------------------------------------
 class UIEditControllerDescription
 {
 public:
@@ -103,6 +127,7 @@ public:
 				}
 			}
 #endif
+			gUIEditorControllerResources.init (*uiDesc.get ());
 		}
 		return uiDesc;
 	}
@@ -111,6 +136,15 @@ public:
 	{
 		if (uiDesc->getNbReference () == 1)
 			uiDesc = nullptr;
+	}
+
+	void setDarkTheme (bool state)
+	{
+		auto res = state ? darkResourceDesc : lightResourceDesc;
+		if (res == nullptr || uiDesc == nullptr)
+			return;
+		uiDesc->setSharedResources (res);
+		gUIEditorControllerResources.init (*uiDesc.get ());
 	}
 
 private:
@@ -130,24 +164,18 @@ SharedPointer<UIDescription> UIEditController::getEditorDescription ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::setupDataSource (GenericStringListDataBrowserSource* source)
 {
-	static CColor selectionColor;
-	static CColor fontColor;
-	static CColor rowlineColor;
-	static CColor rowBackColor;
-	static CColor rowAlternateBackColor;
-	static bool once = true;
-	auto editorDescription = UIEditController::getEditorDescription ();
-	if (once)
-	{
-		editorDescription->getColor ("db.selection", selectionColor);
-		editorDescription->getColor ("db.font", fontColor);
-		editorDescription->getColor ("db.row.line", rowlineColor);
-		editorDescription->getColor ("db.row.back", rowBackColor);
-		editorDescription->getColor ("db.row.alternate.back", rowAlternateBackColor);
-		once = false;
-	}
-	CFontRef font = editorDescription->getFont ("db.font");
-	source->setupUI (selectionColor, fontColor, rowlineColor, rowBackColor, rowAlternateBackColor, font);
+	source->setupUI (gUIEditorControllerResources.dataSourceSelectionColor,
+					 gUIEditorControllerResources.dataSourceFontColor,
+					 gUIEditorControllerResources.dataSourceRowlineColor,
+					 gUIEditorControllerResources.dataSourceRowBackColor,
+					 gUIEditorControllerResources.dataSourceRowAlternateBackColor,
+					 gUIEditorControllerResources.dataSourceFont);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::setDarkTheme (bool state)
+{
+	gUIDescription.setDarkTheme (state);
 }
 
 //-----------------------------------------------------------------------------
@@ -187,17 +215,13 @@ public:
 		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
 		if (path)
 		{
-			static CColor lineColor = kBlackCColor;
-			if (lineColor == kBlackCColor)
-				UIEditController::getEditorDescription ()->getColor ("shading.light.frame", lineColor);
-
 			auto lineWidth = 1.;
 
 			CRect size (_size);
 			context->setDrawMode (kAliasing);
 			context->setLineStyle (kLineSolid);
 			context->setLineWidth (lineWidth);
-			context->setFrameColor (lineColor);
+			context->setFrameColor (gUIEditorControllerResources.shadingLineColor);
 
 			CGradient* shading = UIEditController::getEditorDescription ()->getGradient ("shading.light");
 			if (shading)

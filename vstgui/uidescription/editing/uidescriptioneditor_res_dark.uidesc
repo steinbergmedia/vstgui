@@ -284,44 +284,53 @@
 			}
 		},
 		"colors": {
-			"background": "#edededff",
-			"background.high": "#d5d5d5ff",
-			"checkmark.color": "#010000ff",
-			"checkmark.color.header": "#ffffffff",
-			"checkmark.fill": "#00000011",
-			"control.back": "#f7f7f7ff",
-			"control.font": "#000000ff",
-			"control.frame": "#0000003d",
+			"background": "#1f1f1fff",
+			"checkmark.color": "#999999ff",
+			"checkmark.color.header": "#999999ff",
+			"checkmark.fill": "#67676711",
+			"control.back": "#1d1d1dff",
+			"control.font": "#d6d6d6ff",
+			"control.frame": "#c2c2c23d",
 			"control.value": "#676767ff",
-			"db.background": "#fafafaff",
+			"db.background": "#1f1f1fff",
 			"db.drag.indicator": "#df0000ff",
-			"db.font": "#000000ff",
-			"db.row.alternate.back": "#bcc9d919",
-			"db.row.back": "#f3f3f319",
-			"db.row.line": "#d5d5d5ff",
-			"db.selection": "#81b9ffff",
-			"editView.backgrund": "#f2f2f2ff",
+			"db.font": "#d4d4d4ff",
+			"db.row.alternate.back": "#ffffff08",
+			"db.row.back": "#f3f3f305",
+			"db.row.line": "#333333ff",
+			"db.selection": "#117bffad",
+			"editView.backgrund": "#1f1f1fff",
 			"editView.crosslines.background": "#ffffff96",
 			"editView.crosslines.foreground": "#00000096",
 			"editView.lasso.fill": "#0000d814",
 			"editView.lasso.frame": "#ffffffdc",
 			"editView.view.highlight": "#ffffff5a",
 			"editView.view.selection": "#ff0000c8",
-			"focus": "#b4d5ffff",
-			"gradient.editor.back": "#ffffff46",
-			"groupframe": "#00000008",
-			"header.text": "#ffffffff",
+			"focus": "#4c9bffff",
+			"gradient.editor.back": "#ffffff0a",
+			"groupframe": "#ffffff05",
+			"header.text": "#d4d4d4ff",
 			"menu.selected": "#0f79ffff",
-			"scrollbar.background": "#fafafaff",
+			"scrollbar.background": "#1a1a1aff",
 			"scrollbar.frame": "#9b9b9b1e",
-			"scrollbar.scroller": "#909090ff",
-			"shading.light.bottom": "#bfbfbfff",
-			"shading.light.frame": "#a6a6a6ff",
-			"textbutton.text": "#000000ff",
-			"textbutton.text.highlighted": "#ffffffff"
+			"scrollbar.scroller": "#595959ff",
+			"shading.light.bottom": "#292929ff",
+			"shading.light.frame": "#2e2e2eff",
+			"textbutton.text": "#d5d5d5ff",
+			"textbutton.text.highlighted": "#d4d4d4ff"
 		},
 		"gradients": {
 			"Default TextButton Gradient": [
+				{
+					"rgba": "#3f3f3fff",
+					"start": "0"
+				},
+				{
+					"rgba": "#212121ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient 2": [
 				{
 					"rgba": "#dcdcdcff",
 					"start": "0"
@@ -333,6 +342,16 @@
 			],
 			"Default TextButton Gradient Highlighted": [
 				{
+					"rgba": "#4f4f4fff",
+					"start": "0"
+				},
+				{
+					"rgba": "#4a4a4aff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient Highlighted 2": [
+				{
 					"rgba": "#b4b4b4ff",
 					"start": "0"
 				},
@@ -343,25 +362,25 @@
 			],
 			"GradientView": [
 				{
-					"rgba": "#cdcdcdff",
+					"rgba": "#282828ff",
 					"start": "0"
 				},
 				{
-					"rgba": "#d2d2d2ff",
+					"rgba": "#202020ff",
 					"start": "1"
 				}
 			],
 			"Toolbar": [
 				{
-					"rgba": "#525964ff",
+					"rgba": "#3e3f41ff",
 					"start": "0"
 				},
 				{
-					"rgba": "#3f444bff",
+					"rgba": "#2b2b2cff",
 					"start": "0.5"
 				},
 				{
-					"rgba": "#464d54ff",
+					"rgba": "#323334ff",
 					"start": "1"
 				}
 			],
@@ -377,29 +396,29 @@
 			],
 			"shading.light": [
 				{
-					"rgba": "#edededff",
+					"rgba": "#262626ff",
 					"start": "0"
 				},
 				{
-					"rgba": "#cacacaff",
+					"rgba": "#292929ff",
 					"start": "0.5"
 				},
 				{
-					"rgba": "#bfbfbfff",
+					"rgba": "#2b2b2bff",
 					"start": "1"
 				}
 			],
 			"tabswitch.selected": [
 				{
-					"rgba": "#32c3ffff",
+					"rgba": "#008dc7ff",
 					"start": "0"
 				},
 				{
-					"rgba": "#0f79ffff",
+					"rgba": "#00469eff",
 					"start": "0.689999997615814208984375"
 				},
 				{
-					"rgba": "#3991ffff",
+					"rgba": "#005bccff",
 					"start": "1"
 				}
 			]

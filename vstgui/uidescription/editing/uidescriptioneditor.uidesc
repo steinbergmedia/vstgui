@@ -1,6 +1,8 @@
 {
 	"vstgui-ui-description": {
 		"version": "1",
+		"fonts": {},
+		"colors": {},
 		"control-tags": {
 			"attributes.boolean": "0",
 			"attributes.editfield": "0",
@@ -98,15 +100,15 @@
 		"custom": {
 			"UIEditController": {
 				"EditViewScale": "1",
-				"EditorSize": "0, 0, 1124, 884",
+				"EditorSize": "0, 0, 1084, 997",
 				"EncodeBitmaps": "true",
-				"SplitViewSize_0_0": "0.6363636363636363535434270488622132688761",
-				"SplitViewSize_0_1": "0.3403263403263403485965454819961450994015",
-				"SplitViewSize_1_0": "0.4696969696969697238841945363674312829971",
-				"SplitViewSize_1_1": "0.524475524475524479406374211976071819663",
-				"SplitViewSize_2_0": "0.6814946619217081558161908105830661952496",
-				"SplitViewSize_2_1": "0.3140569395017793752344914537388831377029",
-				"TabSwitchValue": "1",
+				"SplitViewSize_0_0": "0.6786817713697219645041514013428241014481",
+				"SplitViewSize_0_1": "0.3007209062821833422951556258340133354068",
+				"SplitViewSize_1_0": "0.4732234809474768488790630271978443488479",
+				"SplitViewSize_1_1": "0.5216271884654994916985515374108217656612",
+				"SplitViewSize_2_0": "0.6697416974169742021061324521724600344896",
+				"SplitViewSize_2_1": "0.3256457564575645502458201008266769349575",
+				"TabSwitchValue": "2",
 				"Version": "1"
 			},
 			"UIViewCreatorController": {},
@@ -119,8 +121,7 @@
 			},
 			"UIAttributesController": {},
 			"UIColorsDataSource": {
-				"FilterString": "db.",
-				"SelectedRow": "1"
+				"SelectedRow": "6"
 			},
 			"UITagsDataSource": {
 				"FilterString": "grid.",

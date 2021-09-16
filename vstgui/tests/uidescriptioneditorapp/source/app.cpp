@@ -34,7 +34,7 @@ using namespace Application;
 
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
-static void makeAndOpenWindow ();
+static void makeAndOpenWindow (bool darkTheme);
 
 static constexpr IdStringPtr RunJSONXMLBenchmark = "Run JSON/XML Benchmark";
 static const Command BenchmarkCommand {CommandGroup::File, RunJSONXMLBenchmark};
@@ -49,8 +49,16 @@ static const Command CommandDarkTheme {CommandCategoryTheme, CommandNameDarkThem
 class Controller : public WindowControllerAdapter, public ICommandHandler
 {
 public:
-	Controller ()
+	Controller (bool darkTheme = false) : useDarkTheme (darkTheme)
 	{
+		IApplication::instance ().registerCommand (Commands::SaveDocument, 's');
+		IApplication::instance ().registerCommand (Commands::RevertDocument, 0);
+		IApplication::instance ().registerCommand (CommandLightTheme, 0);
+		IApplication::instance ().registerCommand (CommandDarkTheme, 0);
+#if VSTGUI_ENABLE_XML_PARSER
+		IApplication::instance ().registerCommand (BenchmarkCommand, 0);
+#endif
+
 		std::string basePath = __FILE__;
 		unixfyPath (basePath);
 		removeLastPathComponent (basePath);
@@ -85,23 +93,34 @@ public:
 		{
 			darkResDesc = nullptr;
 		}
-		uidesc->setSharedResources (lightResDesc);
 
+		if (useDarkTheme && darkResDesc)
+		{
+			uidesc->setSharedResources (darkResDesc);
+		}
+		else
+		{
+			uidesc->setSharedResources (lightResDesc);
+		}
 		editController = makeOwned<UIEditController> (uidesc);
 
-		IApplication::instance ().registerCommand (Commands::SaveDocument, 's');
-		IApplication::instance ().registerCommand (Commands::RevertDocument, 0);
-		IApplication::instance ().registerCommand (CommandLightTheme, 0);
-		IApplication::instance ().registerCommand (CommandDarkTheme, 0);
-#if VSTGUI_ENABLE_XML_PARSER
-		IApplication::instance ().registerCommand (BenchmarkCommand, 0);
-#endif
 		return true;
 	}
 
 	bool save ()
 	{
-		return uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoUIDescFile);
+		if (uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoUIDescFile))
+		{
+			if (useDarkTheme && darkResDesc)
+			{
+				darkResDesc->save (darkResPath.data (), UIDescription::kWriteImagesIntoUIDescFile);
+			}
+			else if (lightResDesc)
+			{
+				lightResDesc->save (lightResPath.data (),
+									UIDescription::kWriteImagesIntoUIDescFile);
+			}
+		}
 	}
 
 	void beforeShow (IWindow& window) override
@@ -111,6 +130,7 @@ public:
 		r.setSize (window.getSize ());
 		auto frame = makeOwned<CFrame> (r, nullptr);
 		frame->enableTooltips (true);
+		editController->setDarkTheme (useDarkTheme);
 		if (auto view = editController->createEditView ())
 		{
 			editController->remember (); // view will forget it too
@@ -209,7 +229,7 @@ public:
 
 	void reopenWindow ()
 	{
-		makeAndOpenWindow ();
+		makeAndOpenWindow (useDarkTheme);
 		if (auto window = win)
 		{
 			win = nullptr;
@@ -234,7 +254,7 @@ public:
 		{
 			if (!checkSaveChanges ())
 				return true;
-			uidesc->setSharedResources (lightResDesc);
+			useDarkTheme = false;
 			reopenWindow ();
 			return true;
 		}
@@ -242,7 +262,7 @@ public:
 		{
 			if (!checkSaveChanges ())
 				return true;
-			uidesc->setSharedResources (darkResDesc);
+			useDarkTheme = true;
 			reopenWindow ();
 			return true;
 		}
@@ -329,12 +349,13 @@ public:
 	SharedPointer<UIDescription> darkResDesc;
 	SharedPointer<UIEditController> editController;
 	IWindow* win {nullptr};
+	bool useDarkTheme {false};
 };
 
 //------------------------------------------------------------------------
-void makeAndOpenWindow ()
+void makeAndOpenWindow (bool darkTheme)
 {
-	auto controller = std::make_shared<Controller> ();
+	auto controller = std::make_shared<Controller> (darkTheme);
 	if (controller->init ())
 	{
 		WindowConfiguration config;
@@ -388,7 +409,7 @@ public:
 	void finishLaunching () override
 	{
 #if VSTGUI_LIVE_EDITING
-		makeAndOpenWindow ();
+		makeAndOpenWindow (false);
 #else
 		IApplication::instance ().quit ();
 		AlertBoxConfig config;
