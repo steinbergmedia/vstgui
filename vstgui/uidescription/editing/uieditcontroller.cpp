@@ -93,6 +93,19 @@ public:
 			{
 				uiDesc = editorDesc;
 			}
+			MemoryContentProvider lightUIProvider (editorUILightDesc, strlen (editorUILightDesc));
+			SharedPointer<UIDescription> lightUIDesc = owned (new UIDescription (&lightUIProvider));
+			if (lightUIDesc->parse ())
+			{
+				lightResourceDesc = std::move (lightUIDesc);
+				uiDesc->setSharedResources (lightResourceDesc);
+			}
+			MemoryContentProvider darkUIProvider (editorUIDarkDesc, strlen (editorUIDarkDesc));
+			SharedPointer<UIDescription> darkUIDesc = owned (new UIDescription (&darkUIProvider));
+			if (darkUIDesc->parse ())
+			{
+				darkResourceDesc = std::move (darkUIDesc);
+			}
 #else
 			std::string basePath (__FILE__);
 			unixfyPath (basePath);
