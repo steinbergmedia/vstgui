@@ -148,7 +148,11 @@ public:
 	void tryFree ()
 	{
 		if (uiDesc->getNbReference () == 1)
+		{
 			uiDesc = nullptr;
+			lightResourceDesc = nullptr;
+			darkResourceDesc = nullptr;
+		}
 	}
 
 	void setDarkTheme (bool state)
