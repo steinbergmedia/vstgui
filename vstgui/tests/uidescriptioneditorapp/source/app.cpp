@@ -6,8 +6,8 @@
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/malloc.h"
-#include "vstgui/lib/platform/iplatformframe.h"
 #include "vstgui/lib/platform/common/genericoptionmenu.h"
+#include "vstgui/lib/platform/iplatformframe.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
 #include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
@@ -17,13 +17,13 @@
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/icommand.h"
 #include "vstgui/uidescription/cstream.h"
+#include "vstgui/uidescription/detail/uijsonpersistence.h"
+#include "vstgui/uidescription/detail/uixmlpersistence.h"
 #include "vstgui/uidescription/editing/uieditcontroller.h"
 #include "vstgui/uidescription/editing/uieditmenucontroller.h"
 #include "vstgui/uidescription/editing/uiundomanager.h"
-#include "vstgui/uidescription/uidescription.h"
 #include "vstgui/uidescription/uicontentprovider.h"
-#include "vstgui/uidescription/detail/uijsonpersistence.h"
-#include "vstgui/uidescription/detail/uixmlpersistence.h"
+#include "vstgui/uidescription/uidescription.h"
 #include <chrono>
 
 //------------------------------------------------------------------------
@@ -34,24 +34,41 @@ using namespace Application;
 
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
-static void makeAndOpenWindow ();
+static void makeAndOpenWindow (bool darkTheme);
 
-static const IdStringPtr RunJSONXMLBenchmark = "Run JSON/XML Benchmark";
+static constexpr IdStringPtr RunJSONXMLBenchmark = "Run JSON/XML Benchmark";
 static const Command BenchmarkCommand {CommandGroup::File, RunJSONXMLBenchmark};
+
+static constexpr IdStringPtr CommandNameLightTheme = "Light Theme";
+static constexpr IdStringPtr CommandNameDarkTheme = "Dark Theme";
+static constexpr IdStringPtr CommandCategoryTheme = "Theme";
+static const Command CommandLightTheme {CommandCategoryTheme, CommandNameLightTheme};
+static const Command CommandDarkTheme {CommandCategoryTheme, CommandNameDarkTheme};
 
 //------------------------------------------------------------------------
 class Controller : public WindowControllerAdapter, public ICommandHandler
 {
 public:
-	Controller ()
+	Controller (bool darkTheme = false) : useDarkTheme (darkTheme)
 	{
-		descPath = __FILE__;
-		unixfyPath (descPath);
-		removeLastPathComponent (descPath);
-		removeLastPathComponent (descPath);
-		removeLastPathComponent (descPath);
-		removeLastPathComponent (descPath);
-		descPath += "/uidescription/editing/uidescriptioneditor.uidesc";
+		IApplication::instance ().registerCommand (Commands::SaveDocument, 's');
+		IApplication::instance ().registerCommand (Commands::RevertDocument, 0);
+		IApplication::instance ().registerCommand (CommandLightTheme, 0);
+		IApplication::instance ().registerCommand (CommandDarkTheme, 0);
+#if VSTGUI_ENABLE_XML_PARSER
+		IApplication::instance ().registerCommand (BenchmarkCommand, 0);
+#endif
+
+		std::string basePath = __FILE__;
+		unixfyPath (basePath);
+		removeLastPathComponent (basePath);
+		removeLastPathComponent (basePath);
+		removeLastPathComponent (basePath);
+		removeLastPathComponent (basePath);
+		basePath += "/uidescription/editing/";
+		descPath = basePath + "uidescriptioneditor.uidesc";
+		lightResPath = basePath + "uidescriptioneditor_res_light.uidesc";
+		darkResPath = basePath + "uidescriptioneditor_res_dark.uidesc";
 	}
 
 	bool init ()
@@ -64,19 +81,46 @@ public:
 			return false;
 		}
 		uidesc->setFilePath (descPath.data ());
+		lightResDesc = makeOwned<UIDescription> (lightResPath.data ());
+		if (!lightResDesc->parse ())
+		{
+			// TODO: show alert about error
+			IApplication::instance ().quit ();
+			return false;
+		}
+		darkResDesc = makeOwned<UIDescription> (darkResPath.data ());
+		if (!darkResDesc->parse ())
+		{
+			darkResDesc = nullptr;
+		}
+
+		if (useDarkTheme && darkResDesc)
+		{
+			uidesc->setSharedResources (darkResDesc);
+		}
+		else
+		{
+			uidesc->setSharedResources (lightResDesc);
+		}
 		editController = makeOwned<UIEditController> (uidesc);
 
-		IApplication::instance ().registerCommand (Commands::SaveDocument, 's');
-		IApplication::instance ().registerCommand (Commands::RevertDocument, 0);
-#if VSTGUI_ENABLE_XML_PARSER
-		IApplication::instance ().registerCommand (BenchmarkCommand, 0);
-#endif
 		return true;
 	}
 
 	bool save ()
 	{
-		return uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoUIDescFile);
+		if (uidesc->save (descPath.data (), UIDescription::kWriteImagesIntoUIDescFile))
+		{
+			if (useDarkTheme && darkResDesc)
+			{
+				darkResDesc->save (darkResPath.data (), UIDescription::kWriteImagesIntoUIDescFile);
+			}
+			else if (lightResDesc)
+			{
+				lightResDesc->save (lightResPath.data (),
+									UIDescription::kWriteImagesIntoUIDescFile);
+			}
+		}
 	}
 
 	void beforeShow (IWindow& window) override
@@ -86,6 +130,7 @@ public:
 		r.setSize (window.getSize ());
 		auto frame = makeOwned<CFrame> (r, nullptr);
 		frame->enableTooltips (true);
+		editController->setDarkTheme (useDarkTheme);
 		if (auto view = editController->createEditView ())
 		{
 			editController->remember (); // view will forget it too
@@ -105,7 +150,14 @@ public:
 		}
 	}
 
-	bool canClose (const IWindow& window) override
+	enum class SaveChanges
+	{
+		Save,
+		Cancel,
+		DontSave,
+	};
+
+	SaveChanges askSaveChanges ()
 	{
 		if (win && !editController->getUndoManager ()->isSavePosition ())
 		{
@@ -121,13 +173,33 @@ public:
 				case AlertResult::DefaultButton:
 				{
 					save ();
-					return true;
+					return SaveChanges::Save;
 				}
-				case AlertResult::SecondButton: return false;
-				default: return true;
+				case AlertResult::SecondButton: return SaveChanges::Cancel;
+				default: break;
 			}
 		}
+		return SaveChanges::DontSave;
+	}
+
+	bool checkSaveChanges ()
+	{
+		switch (askSaveChanges ())
+		{
+			case SaveChanges::Save:
+			{
+				save ();
+				return true;
+			}
+			case SaveChanges::Cancel: return false;
+			default: return true;
+		}
 		return true;
+	}
+
+	bool canClose (const IWindow& window) override
+	{
+		return checkSaveChanges ();
 	}
 
 	void onClosed (const IWindow& window) override
@@ -146,9 +218,23 @@ public:
 			return editController->getUndoManager ()->canRedo ();
 		if (command == Commands::RevertDocument)
 			return !editController->getUndoManager ()->isSavePosition ();
+		if (command == CommandLightTheme && lightResDesc)
+			return uidesc->getSharedResources () != lightResDesc;
+		if (command == CommandDarkTheme && darkResDesc)
+			return uidesc->getSharedResources () != darkResDesc;
 		if (command == BenchmarkCommand)
 			return true;
 		return false;
+	}
+
+	void reopenWindow ()
+	{
+		makeAndOpenWindow (useDarkTheme);
+		if (auto window = win)
+		{
+			win = nullptr;
+			window->close ();
+		}
 	}
 
 	bool handleCommand (const Command& command) override
@@ -161,12 +247,24 @@ public:
 			return editController->getMenuController ()->handleCommand ("Edit", "Redo");
 		if (command == Commands::RevertDocument)
 		{
-			makeAndOpenWindow ();
-			if (auto window = win)
-			{
-				win = nullptr;
-				window->close ();
-			}
+			reopenWindow ();
+			return true;
+		}
+		if (command == CommandLightTheme)
+		{
+			if (!checkSaveChanges ())
+				return true;
+			useDarkTheme = false;
+			reopenWindow ();
+			return true;
+		}
+		if (command == CommandDarkTheme)
+		{
+			if (!checkSaveChanges ())
+				return true;
+			useDarkTheme = true;
+			reopenWindow ();
+			return true;
 		}
 		if (command == BenchmarkCommand)
 		{
@@ -209,7 +307,7 @@ public:
 		jsonData.rewind ();
 
 		InputStreamContentProvider xmlContentProvider (xmlData);
-		
+
 		auto xmlStartTime = std::chrono::high_resolution_clock::now ();
 		for (auto i = 0u; i < iterations; ++i)
 		{
@@ -244,15 +342,20 @@ public:
 	}
 
 	std::string descPath;
+	std::string lightResPath;
+	std::string darkResPath;
 	SharedPointer<UIDescription> uidesc;
+	SharedPointer<UIDescription> lightResDesc;
+	SharedPointer<UIDescription> darkResDesc;
 	SharedPointer<UIEditController> editController;
 	IWindow* win {nullptr};
+	bool useDarkTheme {false};
 };
 
 //------------------------------------------------------------------------
-void makeAndOpenWindow ()
+void makeAndOpenWindow (bool darkTheme)
 {
-	auto controller = std::make_shared<Controller> ();
+	auto controller = std::make_shared<Controller> (darkTheme);
 	if (controller->init ())
 	{
 		WindowConfiguration config;
@@ -306,7 +409,7 @@ public:
 	void finishLaunching () override
 	{
 #if VSTGUI_LIVE_EDITING
-		makeAndOpenWindow ();
+		makeAndOpenWindow (false);
 #else
 		IApplication::instance ().quit ();
 		AlertBoxConfig config;
@@ -314,7 +417,6 @@ public:
 		IApplication::instance ().showAlertBox (config);
 #endif
 	}
-
 };
 
 static Init gAppDelegate (std::make_unique<UIDescriptionEditorApp> ());

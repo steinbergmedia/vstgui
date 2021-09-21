@@ -55,6 +55,30 @@ namespace VSTGUI {
 #endif
 
 //----------------------------------------------------------------------------------------------------
+struct UIEditControllerGlobalResources
+{
+	CColor dataSourceSelectionColor;
+	CColor dataSourceFontColor;
+	CColor dataSourceRowlineColor;
+	CColor dataSourceRowBackColor;
+	CColor dataSourceRowAlternateBackColor;
+	CColor shadingLineColor;
+	CFontRef dataSourceFont;
+
+	void init (const IUIDescription& desc)
+	{
+		desc.getColor ("db.selection", dataSourceSelectionColor);
+		desc.getColor ("db.font", dataSourceFontColor);
+		desc.getColor ("db.row.line", dataSourceRowlineColor);
+		desc.getColor ("db.row.back", dataSourceRowBackColor);
+		desc.getColor ("db.row.alternate.back", dataSourceRowAlternateBackColor);
+		desc.getColor ("shading.light.frame", shadingLineColor);
+		dataSourceFont = desc.getFont ("db.font");
+	}
+};
+static UIEditControllerGlobalResources gUIEditorControllerResources;
+
+//----------------------------------------------------------------------------------------------------
 class UIEditControllerDescription
 {
 public:
@@ -69,13 +93,26 @@ public:
 			{
 				uiDesc = editorDesc;
 			}
-#else
-			std::string descPath (__FILE__);
-			unixfyPath (descPath);
-			if (removeLastPathComponent (descPath))
+			MemoryContentProvider lightUIProvider (editorUILightDesc, strlen (editorUILightDesc));
+			SharedPointer<UIDescription> lightUIDesc = owned (new UIDescription (&lightUIProvider));
+			if (lightUIDesc->parse ())
 			{
-				descPath += "/uidescriptioneditor.uidesc";
-				auto editorDesc = makeOwned<UIDescription> (descPath.c_str ());
+				lightResourceDesc = std::move (lightUIDesc);
+				uiDesc->setSharedResources (lightResourceDesc);
+			}
+			MemoryContentProvider darkUIProvider (editorUIDarkDesc, strlen (editorUIDarkDesc));
+			SharedPointer<UIDescription> darkUIDesc = owned (new UIDescription (&darkUIProvider));
+			if (darkUIDesc->parse ())
+			{
+				darkResourceDesc = std::move (darkUIDesc);
+			}
+#else
+			std::string basePath (__FILE__);
+			unixfyPath (basePath);
+			if (removeLastPathComponent (basePath))
+			{
+				auto descPath = basePath + "/uidescriptioneditor.uidesc";
+				auto editorDesc = makeOwned<UIDescription> (descPath.data ());
 				if (editorDesc->parse ())
 				{
 					uiDesc = std::move (editorDesc);
@@ -84,8 +121,26 @@ public:
 				{
 					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
 				}
+				descPath = basePath + "/uidescriptioneditor_res_light.uidesc";
+				auto resDesc = makeOwned<UIDescription> (descPath.data ());
+				if (resDesc->parse ())
+				{
+					lightResourceDesc = std::move (resDesc);
+					uiDesc->setSharedResources (lightResourceDesc);
+				}
+				else
+				{
+					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
+				}
+				descPath = basePath + "/uidescriptioneditor_res_dark.uidesc";
+				resDesc = makeOwned<UIDescription> (descPath.data ());
+				if (resDesc->parse ())
+				{
+					darkResourceDesc = std::move (resDesc);
+				}
 			}
 #endif
+			gUIEditorControllerResources.init (*uiDesc.get ());
 		}
 		return uiDesc;
 	}
@@ -93,11 +148,30 @@ public:
 	void tryFree ()
 	{
 		if (uiDesc->getNbReference () == 1)
+		{
 			uiDesc = nullptr;
+			lightResourceDesc = nullptr;
+			darkResourceDesc = nullptr;
+		}
 	}
 
+	void setDarkTheme (bool state)
+	{
+		auto res = state ? darkResourceDesc : lightResourceDesc;
+		if (res == nullptr || uiDesc == nullptr)
+			return;
+		uiDesc->setSharedResources (res);
+		gUIEditorControllerResources.init (*uiDesc.get ());
+	}
+
+	bool usesDarkTheme () const
+	{
+		return uiDesc ? (uiDesc->getSharedResources () == darkResourceDesc) : false;
+	}
 private:
 	mutable SharedPointer<UIDescription> uiDesc;
+	mutable SharedPointer<UIDescription> lightResourceDesc;
+	mutable SharedPointer<UIDescription> darkResourceDesc;
 };
 
 static UIEditControllerDescription gUIDescription;
@@ -111,24 +185,47 @@ SharedPointer<UIDescription> UIEditController::getEditorDescription ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::setupDataSource (GenericStringListDataBrowserSource* source)
 {
-	static CColor selectionColor;
-	static CColor fontColor;
-	static CColor rowlineColor;
-	static CColor rowBackColor;
-	static CColor rowAlternateBackColor;
-	static bool once = true;
-	auto editorDescription = UIEditController::getEditorDescription ();
-	if (once)
+	source->setupUI (gUIEditorControllerResources.dataSourceSelectionColor,
+					 gUIEditorControllerResources.dataSourceFontColor,
+					 gUIEditorControllerResources.dataSourceRowlineColor,
+					 gUIEditorControllerResources.dataSourceRowBackColor,
+					 gUIEditorControllerResources.dataSourceRowAlternateBackColor,
+					 gUIEditorControllerResources.dataSourceFont);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::setDarkTheme (bool state)
+{
+	gUIDescription.setDarkTheme (state);
+	getSettings ()->setAttribute ("UI Theme", usesDarkTheme () ? "Dark" : "Light");
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditController::usesDarkTheme () const
+{
+	return gUIDescription.usesDarkTheme ();
+}
+
+//------------------------------------------------------------------------
+void UIEditController::doChangeTheme (bool dark)
+{
+	setDarkTheme (dark);
+	if (baseView)
 	{
-		editorDescription->getColor ("db.selection", selectionColor);
-		editorDescription->getColor ("db.font", fontColor);
-		editorDescription->getColor ("db.row.line", rowlineColor);
-		editorDescription->getColor ("db.row.back", rowBackColor);
-		editorDescription->getColor ("db.row.alternate.back", rowAlternateBackColor);
-		once = false;
+		vstgui_assert (templateController);
+		auto templateName = std::move (editTemplateName);
+		templateController->selectTemplate (nullptr);
+		auto viewSize = baseView->getViewSize ();
+		auto parent = baseView->getParentView ()->asViewContainer ();
+		vstgui_assert (parent);
+		remember ();
+		parent->removeView (baseView);
+		editView = nullptr;
+		auto view = createEditView ();
+		view->setViewSize (viewSize);
+		parent->addView (view);
+		templateController->selectTemplate (templateName.data ());
 	}
-	CFontRef font = editorDescription->getFont ("db.font");
-	source->setupUI (selectionColor, fontColor, rowlineColor, rowBackColor, rowAlternateBackColor, font);
 }
 
 //-----------------------------------------------------------------------------
@@ -168,17 +265,13 @@ public:
 		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
 		if (path)
 		{
-			static CColor lineColor = kBlackCColor;
-			if (lineColor == kBlackCColor)
-				UIEditController::getEditorDescription ()->getColor ("shading.light.frame", lineColor);
-
 			auto lineWidth = 1.;
 
 			CRect size (_size);
 			context->setDrawMode (kAliasing);
 			context->setLineStyle (kLineSolid);
 			context->setLineWidth (lineWidth);
-			context->setFrameColor (lineColor);
+			context->setFrameColor (gUIEditorControllerResources.shadingLineColor);
 
 			CGradient* shading = UIEditController::getEditorDescription ()->getGradient ("shading.light");
 			if (shading)
@@ -399,8 +492,15 @@ UIEditController::UIEditController (UIDescription* description)
 	editorDesc = getEditorDescription ();
 	undoManager->registerListener (this);
 	editDescription->registerListener (this);
-	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
+	menuController = makeOwned<UIEditMenuController> (this, selection, undoManager, editDescription, this);
 	onTemplatesChanged ();
+	if (auto theme = getSettings ()->getAttributeValue ("UI Theme"))
+	{
+		if (*theme == "Dark")
+			setDarkTheme (true);
+		else if (*theme == "Light")
+			setDarkTheme (false);
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -433,6 +533,7 @@ CView* UIEditController::createEditView ()
 				view->setViewSize (r);
 				view->setMouseableArea (r);
 			}
+			baseView = view;
 			return view;
 		}
 	}
@@ -653,13 +754,14 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	UTF8StringView subControllerName (name);
 	if (subControllerName == "TemplatesController")
 	{
-		vstgui_assert (templateController == nullptr);
+//		vstgui_assert (templateController == nullptr);
 		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
 		templateController->registerListener (this);
 		return templateController;
 	}
 	else if (subControllerName == "MenuController")
 	{
+		menuController->remember ();
 		return menuController;
 	}
 	else if (subControllerName == "ViewCreatorController")
@@ -998,6 +1100,11 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 			showFocusSettings ();
 			return kMessageNotified;
 		}
+		else if (cmdName == "Toggle UI Theme (Dark/Light)")
+		{
+			doChangeTheme (!usesDarkTheme ());
+			return kMessageNotified;
+		}
 	}
 	else if (cmdCategory == "File")
 	{
@@ -1110,6 +1217,10 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 						item->setEnabled (true);
 				}
 			}
+			return kMessageNotified;
+		}
+		else if (cmdName == "Toggle UI Theme (Dark/Light)")
+		{
 			return kMessageNotified;
 		}
 	}

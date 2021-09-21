@@ -597,6 +597,19 @@ void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 }
 
 //----------------------------------------------------------------------------------------------------
+static void copyMenuItems (COptionMenu* src, COptionMenu* dst)
+{
+	auto srcItems = src->getItems ();
+	if (!srcItems)
+		return;
+	for (auto& item : *srcItems)
+	{
+		item->remember ();
+		dst->addEntry (item);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*)
 {
 	COptionMenu* menu = dynamic_cast<COptionMenu*>(view);
@@ -606,13 +619,19 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 		{
 			case kMenuEditTag:
 			{
-				createEditMenu (menu);
+				if (editMenu)
+					copyMenuItems (editMenu, menu);
+				else
+					createEditMenu (menu);
 				editMenu = menu;
 				break;
 			}
 			case kMenuFileTag:
 			{
-				createFileMenu (menu);
+				if (fileMenu)
+					copyMenuItems (fileMenu, menu);
+				else
+					createFileMenu (menu);
 				fileMenu = menu;
 				break;
 			}

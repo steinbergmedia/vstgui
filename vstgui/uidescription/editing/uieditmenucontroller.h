@@ -126,6 +126,8 @@ static const MenuEntry editMenu[] = {
 	kMenuSeparator,
 	{ "Edit", "Template Settings..." , 0, kControl, VirtualKey::Enter },
 	{ "Edit", "Focus Drawing Settings..." , 0, 0, VirtualKey::None },
+	kMenuSeparator,
+	{ "Edit", "Toggle UI Theme (Dark/Light)" , 0, 0, VirtualKey::None },
 	{0}
 };
 
@@ -181,8 +183,8 @@ protected:
 	SharedPointer<CVSTGUITimer> highlightTimer;
 	IActionPerformer* actionPerformer;
 
-	COptionMenu* fileMenu {nullptr};
-	COptionMenu* editMenu {nullptr};
+	SharedPointer<COptionMenu> fileMenu;
+	SharedPointer<COptionMenu> editMenu;
 	SharedPointer<CTextLabel> fileLabel;
 	SharedPointer<CTextLabel> editLabel;
 	
