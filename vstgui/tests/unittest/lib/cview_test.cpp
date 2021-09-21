@@ -17,6 +17,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include <array>
+
 namespace VSTGUI {
 namespace {
 class View : public CView
@@ -294,6 +296,191 @@ TEST_CASE (CViewTest, PathHitTest)
 	}
 	EXPECT_FALSE (v->hitTest ({5., 5.}, noEvent ()));
 	EXPECT_TRUE (v->hitTest ({15., 15.}, noEvent ()));
+}
+
+namespace {
+
+class TestView : public CView
+{
+public:
+	TestView () : CView (CRect (0, 0, 10, 10))
+	{
+		std::fill (called.begin (), called.end (), false);
+	}
+
+	void onMouseDownEvent (MouseDownEvent& event) override
+	{
+		called[e2p (EventType::MouseDown)] = true;
+	}
+	void onMouseMoveEvent (MouseMoveEvent& event) override
+	{
+		called[e2p (EventType::MouseMove)] = true;
+	}
+	void onMouseUpEvent (MouseUpEvent& event) override { called[e2p (EventType::MouseUp)] = true; }
+	void onMouseCancelEvent (MouseCancelEvent& event) override
+	{
+		called[e2p (EventType::MouseCancel)] = true;
+	}
+	void onMouseEnterEvent (MouseEnterEvent& event) override
+	{
+		called[e2p (EventType::MouseEnter)] = true;
+	}
+	void onMouseExitEvent (MouseExitEvent& event) override
+	{
+		called[e2p (EventType::MouseExit)] = true;
+	}
+	void onMouseWheelEvent (MouseWheelEvent& event) override
+	{
+		called[e2p (EventType::MouseWheel)] = true;
+	}
+	void onZoomGestureEvent (ZoomGestureEvent& event) override
+	{
+		called[e2p (EventType::ZoomGesture)] = true;
+	}
+	void onKeyboardEvent (KeyboardEvent& event) override { called[e2p (EventType::KeyUp)] = true; }
+
+	bool eventCalled (EventType t) const { return called[e2p (t)]; }
+
+private:
+	static constexpr size_t e2p (EventType t) { return static_cast<size_t> (t); }
+	std::array<bool, static_cast<size_t> (EventType::KeyDown)> called;
+};
+
+struct TestViewEventHandler : IViewEventListener
+{
+	using Func = std::function<void (CView*, Event&)>;
+	TestViewEventHandler (Func&& func) : func (std::move (func)) {}
+	void viewOnEvent (CView* view, Event& event) override { func (view, event); }
+
+	Func func;
+};
+
+} // anonymous
+
+TEST_CASE (CViewTest, ViewEventListenerMouseDownEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	MouseDownEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::MouseDown));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::MouseDown));
+}
+
+TEST_CASE (CViewTest, ViewEventListenerMouseMoveEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	MouseMoveEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::MouseMove));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::MouseMove));
+}
+
+TEST_CASE (CViewTest, ViewEventListenerMouseUpEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	MouseUpEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::MouseUp));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::MouseUp));
+}
+
+TEST_CASE (CViewTest, ViewEventListenerMouseCancelEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	MouseCancelEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::MouseCancel));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::MouseCancel));
+}
+
+TEST_CASE (CViewTest, ViewEventListenerMouseEnterEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	MouseEnterEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::MouseEnter));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::MouseEnter));
+}
+
+TEST_CASE (CViewTest, ViewEventListenerMouseExitEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	MouseExitEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::MouseExit));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::MouseExit));
+}
+
+TEST_CASE (CViewTest, ViewEventListenerMouseWheelEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	MouseWheelEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::MouseWheel));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::MouseWheel));
+}
+
+TEST_CASE (CViewTest, ViewEventListenerZoomGestureEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	ZoomGestureEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::ZoomGesture));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::ZoomGesture));
+}
+
+TEST_CASE (CViewTest, ViewEventListenerKeyEvent)
+{
+	auto v = makeOwned<TestView> ();
+	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	v->registerViewEventListener (&listener);
+	KeyboardEvent event;
+	v->dispatchEvent (event);
+	EXPECT_FALSE (v->eventCalled (EventType::KeyUp));
+	v->unregisterViewEventListener (&listener);
+	event.consumed.reset ();
+	v->dispatchEvent (event);
+	EXPECT_TRUE (v->eventCalled (EventType::KeyUp));
 }
 
 #if MAC // TODO: Make test work on other platforms too.
