@@ -591,7 +591,7 @@ GenericOptionMenu::GenericOptionMenu (CFrame* frame, MouseEventButtonState initi
 	impl->container = new Impl::ContainerT (frameSize);
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
-	impl->container->registerViewListener (this);
+	impl->container->registerViewEventListener (this);
 	impl->modalViewSession = impl->frame->beginModalViewSession (impl->container);
 	impl->focusDrawingWasEnabled = impl->frame->focusDrawingEnabled ();
 	impl->frame->setFocusDrawingEnabled (false);
@@ -621,24 +621,24 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 
 		auto self = shared (this);
 		impl->container->addAnimation (
-		    "OptionMenuDone", new AlphaValueAnimation (0.f, true),
-		    new CubicBezierTimingFunction (
-		        CubicBezierTimingFunction::easyOut (impl->theme.menuAnimationTime)),
-		    [self, result] (CView*, const IdStringPtr, IAnimationTarget*) {
-			    if (!self->impl->container)
-				    return;
-			    auto callback = std::move (self->impl->callback);
-			    self->impl->callback = nullptr;
-			    self->impl->container->unregisterViewListener (self);
-			    if (self->impl->modalViewSession)
-			    {
+			"OptionMenuDone", new AlphaValueAnimation (0.f, true),
+			new CubicBezierTimingFunction (
+				CubicBezierTimingFunction::easyOut (impl->theme.menuAnimationTime)),
+			[self, result] (CView*, const IdStringPtr, IAnimationTarget*) {
+				if (!self->impl->container)
+					return;
+				auto callback = std::move (self->impl->callback);
+				self->impl->callback = nullptr;
+				self->impl->container->unregisterViewEventListener (self);
+				if (self->impl->modalViewSession)
+				{
 					self->impl->frame->endModalViewSession (*self->impl->modalViewSession);
 					self->impl->modalViewSession = {};
 				}
-			    callback (self->impl->menu, result);
-			    self->impl->frame->setFocusView (self->impl->menu);
-			    self->impl->container = nullptr;
-		    });
+				callback (self->impl->menu, result);
+				self->impl->frame->setFocusView (self->impl->menu);
+				self->impl->container = nullptr;
+			});
 	}
 }
 
@@ -713,7 +713,7 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 
 	auto self = shared (this);
 	auto clickCallback = [self] (COptionMenu* menu, int32_t index) {
-		self->impl->container->unregisterViewListener (self);
+		self->impl->container->unregisterViewEventListener (self);
 		self->removeModalView ({menu, index});
 	};
 

@@ -142,6 +142,7 @@ using GradientColorStopMap = std::multimap<double, CColor>;
 
 // interfaces
 class IViewListener;
+class IViewEventListener;
 class IViewContainerListener;
 class IViewMouseListener;
 class IDataPackage;

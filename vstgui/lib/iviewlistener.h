@@ -26,9 +26,21 @@ public:
 	virtual void viewTookFocus (CView* view) = 0;
 	virtual void viewWillDelete (CView* view) = 0;
 	/** @ingroup new_in_4_11 */
-	virtual void viewOnEvent (CView* view, Event& event) = 0;
-	/** @ingroup new_in_4_11 */
 	virtual void viewOnMouseEnabled (CView* view, bool state) = 0;
+};
+
+//-----------------------------------------------------------------------------
+/** @brief View Event Listener Interface
+ *
+ *	@ingroup new_in_4_11
+ */
+//-----------------------------------------------------------------------------
+class IViewEventListener
+{
+public:
+	virtual ~IViewEventListener () noexcept = default;
+
+	virtual void viewOnEvent (CView* view, Event& event) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -59,8 +71,14 @@ public:
 	void viewLostFocus (CView* view) override {}
 	void viewTookFocus (CView* view) override {}
 	void viewWillDelete (CView* view) override {}
-	void viewOnEvent (CView* view, Event& event) override {}
 	void viewOnMouseEnabled (CView* view, bool state) override {}
+};
+
+//------------------------------------------------------------------------
+class ViewEventListenerAdapter : public IViewEventListener
+{
+public:
+	void viewOnEvent (CView* view, Event& event) override {}
 };
 
 //-----------------------------------------------------------------------------
@@ -83,7 +101,7 @@ public:
  *	@ingroup new_in_4_7
  */
 //-----------------------------------------------------------------------------
-class [[deprecated("Use IViewListener instead")]] IViewMouseListener
+class [[deprecated ("Use IViewListener/IViewEventListener instead")]] IViewMouseListener
 {
 public:
 	virtual ~IViewMouseListener () noexcept = default;
@@ -104,13 +122,10 @@ public:
  *	@ingroup new_in_4_7
  */
 //-----------------------------------------------------------------------------
-class [[deprecated("Use ViewListenerAdapter instead")]] ViewMouseListenerAdapter
-: public IViewMouseListener
-{
-public:
-	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override
-	{
-		return kMouseEventNotImplemented;
+class [[deprecated (
+	"Use ViewListenerAdapter/ViewEventListenerAdapter instead")]] ViewMouseListenerAdapter
+: public IViewMouseListener {public: CMouseEventResult viewOnMouseDown (
+	  CView * view, CPoint pos, CButtonState buttons) override {return kMouseEventNotImplemented;
 	}
 	CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) override
 	{
