@@ -129,8 +129,7 @@ protected:
 	// IMouseObserver
 	void onMouseEntered (CView* view, CFrame* frame) override {}
 	void onMouseExited (CView* view, CFrame* frame) override {}
-	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) override { return kMouseEventNotHandled; }
-	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) override;
+	void onMouseEvent (MouseEvent& event, CFrame* frame) override;
 
 	// CommandMenuItemTargetAdapter
 	bool validateCommandMenuItem (CCommandMenuItem* item) override;

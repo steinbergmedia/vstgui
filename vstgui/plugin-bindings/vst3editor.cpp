@@ -819,9 +819,11 @@ static void addCOptionMenuEntriesToIContextMenu (VST3Editor* editor, COptionMenu
 #endif
 
 //-----------------------------------------------------------------------------
-CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons)
+void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 {
-	CMouseEventResult result = kMouseEventNotHandled;
+	if (event.type != EventType::MouseDown)
+		return;
+
 	if (buttons.isRightButton ())
 	{
 		COptionMenu* controllerMenu = (delegate && editingEnabled == false) ? delegate->createContextMenu (where, this) : nullptr;
@@ -894,10 +896,10 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 					                    static_cast<Steinberg::UCoord> (where2.y));
 					contextMenu->release ();
 				});
-				result = kMouseEventHandled;
+				event.consumed = true;
 			}
 		}
-		if (result == kMouseEventNotHandled)
+		if (!event.consumed)
 		{
 	#endif
 			if (controllerMenu)
@@ -910,13 +912,12 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 					controllerMenu->popup (blockFrame, where);
 					controllerMenu->forget ();
 				});
-				result = kMouseEventHandled;
+				event.consumed = true;
 			}
 		}
 		if (controllerMenu)
 			controllerMenu->forget ();
 	}
-	return result;
 }
 
 //-----------------------------------------------------------------------------
