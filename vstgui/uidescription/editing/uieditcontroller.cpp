@@ -304,10 +304,12 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIZoomSettingController : public IController,
-                                public IContextMenuController2,
-                                public ViewListenerAdapter,
-                                public NonAtomicReferenceCounted
+class UIZoomSettingController
+: public IController
+, public IContextMenuController2
+, public ViewListenerAdapter
+, public ViewEventListenerAdapter
+, public NonAtomicReferenceCounted
 {
 public:
 	UIZoomSettingController (UIEditController* editController)
@@ -404,6 +406,7 @@ public:
 				zoomValueControl->setFrameWidth (-1);
 				zoomValueControl->setTooltipText ("Editor Zoom");
 				zoomValueControl->registerViewListener (this);
+				zoomValueControl->registerViewEventListener (this);
 				zoomValueControl->setStyle (zoomValueControl->getStyle () | CTextEdit::kDoubleClickStyle);
 			}
 		}
@@ -459,6 +462,7 @@ public:
 	{
 		vstgui_assert (view == zoomValueControl);
 		view->unregisterViewListener (this);
+		view->unregisterViewEventListener (this);
 		zoomValueControl = nullptr;
 	}
 

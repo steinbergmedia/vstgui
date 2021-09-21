@@ -179,9 +179,11 @@ struct CView::Impl
 {
 	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
-	
+	using ViewEventListenerDispatcher = DispatchList<IViewEventListener*>;
+
 	ViewAttributes attributes;
 	std::unique_ptr<ViewListenerDispatcher> viewListeners;
+	std::unique_ptr<ViewEventListenerDispatcher> viewEventListeners;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 #include "private/disabledeprecatedmessage.h"
 	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
@@ -653,14 +655,14 @@ void CView::onZoomGestureEvent (ZoomGestureEvent& event)
 //------------------------------------------------------------------------
 void CView::dispatchEvent (Event& event)
 {
-	if (pImpl->viewListeners)
+	if (pImpl->viewEventListeners)
 	{
-		pImpl->viewListeners->forEachReverse (
-		    [&] (IViewListener* listener) {
-			    listener->viewOnEvent (this, event);
-			    return event.consumed;
-		    },
-		    [] (bool consumed) { return consumed; });
+		pImpl->viewEventListeners->forEachReverse (
+			[&] (IViewEventListener* listener) {
+				listener->viewOnEvent (this, event);
+				return event.consumed;
+			},
+			[] (bool consumed) { return consumed; });
 		if (event.consumed)
 			return;
 	}
@@ -1346,8 +1348,10 @@ void CView::dumpInfo ()
 void CView::registerViewListener (IViewListener* listener)
 {
 	if (!pImpl->viewListeners)
+	{
 		pImpl->viewListeners =
 		    std::unique_ptr<Impl::ViewListenerDispatcher> (new Impl::ViewListenerDispatcher);
+	}
 	pImpl->viewListeners->add (listener);
 }
 
@@ -1357,6 +1361,25 @@ void CView::unregisterViewListener (IViewListener* listener)
 	if (!pImpl->viewListeners)
 		return;
 	pImpl->viewListeners->remove (listener);
+}
+
+//-----------------------------------------------------------------------------
+void CView::registerViewEventListener (IViewEventListener* listener)
+{
+	if (!pImpl->viewEventListeners)
+	{
+		pImpl->viewEventListeners = std::unique_ptr<Impl::ViewEventListenerDispatcher> (
+			new Impl::ViewEventListenerDispatcher);
+	}
+	pImpl->viewEventListeners->add (listener);
+}
+
+//-----------------------------------------------------------------------------
+void CView::unregisterViewEventListener (IViewEventListener* listener)
+{
+	if (!pImpl->viewEventListeners)
+		return;
+	pImpl->viewEventListeners->remove (listener);
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
