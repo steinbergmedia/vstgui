@@ -51,7 +51,6 @@ const VirtMap keyMap = {{XKB_KEY_BackSpace, VirtualKey::Back},
 						{XKB_KEY_Pause, VirtualKey::Pause},
 						{XKB_KEY_Escape, VirtualKey::Escape},
 						{XKB_KEY_space, VirtualKey::Space},
-						{XKB_KEY_KP_Next, VirtualKey::Next},
 						{XKB_KEY_End, VirtualKey::End},
 						{XKB_KEY_Home, VirtualKey::Home},
 
@@ -61,8 +60,6 @@ const VirtMap keyMap = {{XKB_KEY_BackSpace, VirtualKey::Back},
 						{XKB_KEY_Down, VirtualKey::Down},
 						{XKB_KEY_Page_Up, VirtualKey::PageUp},
 						{XKB_KEY_Page_Down, VirtualKey::PageDown},
-						{XKB_KEY_KP_Page_Up, VirtualKey::PageUp},
-						{XKB_KEY_KP_Page_Down, VirtualKey::PageDown},
 
 						{XKB_KEY_Select, VirtualKey::Select},
 						{XKB_KEY_Print, VirtualKey::Print},
@@ -100,6 +97,10 @@ const VirtMap keyMap = {{XKB_KEY_BackSpace, VirtualKey::Back},
 						{XKB_KEY_Alt_R, VirtualKey::ALT},
 #endif
 						{XKB_KEY_VoidSymbol, VirtualKey::None}};
+const VirtMap shiftKeyMap = {{XKB_KEY_KP_Page_Up, VirtualKey::PageUp},
+							 {XKB_KEY_KP_Page_Down, VirtualKey::PageDown},
+							 {XKB_KEY_KP_Home, VirtualKey::Home},
+							 {XKB_KEY_KP_End, VirtualKey::End}};
 
 //------------------------------------------------------------------------
 } // anonymous
@@ -144,6 +145,20 @@ struct RunLoop::Impl : IEventHandler
 														XKB_KEYMAP_COMPILE_NO_FLAGS);
 			xkbState = xkb_state_new (xkbKeymap);
 			xkbUnprocessedState = xkb_state_new (xkbKeymap);
+
+			auto xkbStateCookie = xcb_xkb_get_state (xcbConnection, deviceId);
+			auto* xkbStateReply = xcb_xkb_get_state_reply (xcbConnection, xkbStateCookie, nullptr);
+			if (xkbStateReply)
+			{
+				xkb_state_update_mask (xkbState,
+									   xkbStateReply->baseMods,
+									   xkbStateReply->latchedMods,
+									   xkbStateReply->lockedMods,
+									   xkbStateReply->baseGroup,
+									   xkbStateReply->latchedGroup,
+									   xkbStateReply->lockedGroup);
+				free (xkbStateReply);
+			}
 		}
 	}
 
@@ -227,14 +242,32 @@ struct RunLoop::Impl : IEventHandler
 			keyEvent.modifiers.add (ModifierKey::Alt);
 
 		auto ksym = xkb_state_key_get_one_sym (xkbUnprocessedState, event.detail);
-		auto it = keyMap.find (ksym);
-		if (it != keyMap.end ())
-			keyEvent.virt = it->second;
-		else
-			keyEvent.character = xkb_keysym_to_utf32 (ksym);
-
 		xkb_state_update_key (xkbState, event.detail, isKeyDown ? XKB_KEY_DOWN : XKB_KEY_UP);
-		lastUtf32KeyEventChar = xkb_state_key_get_utf32 (xkbState, event.detail);
+
+		VirtMap::const_iterator it;
+		bool ksymMapped = false;
+		if (!ksymMapped && keyEvent.modifiers.has(ModifierKey::Shift))
+		{
+			it = shiftKeyMap.find (ksym);
+			ksymMapped = it != shiftKeyMap.end ();
+		}
+		if (!ksymMapped)
+		{
+			it = keyMap.find (ksym);
+			ksymMapped = it != keyMap.end ();
+		}
+
+		if (ksymMapped)
+		{
+			keyEvent.virt = it->second;
+			lastUtf32KeyEventChar = 0;
+		}
+		else
+		{
+			keyEvent.character = xkb_state_key_get_utf32 (xkbState, event.detail);
+			lastUtf32KeyEventChar = keyEvent.character;
+		}
+
 		lastUnprocessedKeyEvent = std::move (keyEvent);
 	}
 
