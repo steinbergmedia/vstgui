@@ -183,48 +183,49 @@ public:
 	class Iterator
 	{
 	public:
-		explicit Iterator<reverse> (const CViewContainer* container) : children (container->getChildren ()) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
-		Iterator<reverse> (const Iterator& vi) : children (vi.children), iterator (vi.iterator), riterator (vi.riterator) {}
-		
+		using IteratorType = typename std::conditional<reverse, ChildViewConstReverseIterator,
+													   ChildViewConstIterator>::type;
+
+		explicit Iterator<reverse> (const CViewContainer* container)
+		: children (container->getChildren ())
+		{
+			if constexpr (reverse)
+				iterator = children.rbegin ();
+			else
+				iterator = children.begin ();
+		}
+		Iterator<reverse> (const Iterator& vi) : children (vi.children), iterator (vi.iterator) {}
+
 		Iterator<reverse>& operator++ ()
 		{
-			if (reverse)
-				++riterator;
-			else
-				++iterator;
+			++iterator;
 			return *this;
 		}
-		
+
 		Iterator<reverse> operator++ (int)
 		{
 			Iterator<reverse> old (*this);
-			if (reverse)
-				++riterator;
-			else
-				++iterator;
+			++iterator;
 			return old;
 		}
 		
 		Iterator<reverse>& operator-- ()
 		{
-			if (reverse)
-				--riterator;
-			else
-				--iterator;
+			--iterator;
 			return *this;
 		}
 		
 		CView* operator* () const
 		{
-			if (reverse)
-				return riterator != children.rend () ? *riterator : nullptr;
-			return iterator != children.end () ? *iterator : nullptr;
+			if constexpr (reverse)
+				return (iterator == children.rend ()) ? nullptr : *iterator;
+			else
+				return (iterator == children.end ()) ? nullptr : *iterator;
 		}
 		
 	protected:
 		const ViewList& children;
-		ChildViewConstIterator iterator;
-		ChildViewConstReverseIterator riterator;
+		IteratorType iterator;
 	};
 
 	//-------------------------------------------
