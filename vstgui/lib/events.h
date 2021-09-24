@@ -40,12 +40,9 @@ enum class EventType : uint32_t
  */
 struct EventConsumeState
 {
-	enum
-	{
-		NotHandled = 0,
-		Handled,
-		Last,
-	};
+	static constexpr uint32_t NotHandled = 0;
+	static constexpr uint32_t Handled = 1;
+	static constexpr uint32_t Last = 2;
 
 	void operator= (bool state)
 	{
@@ -275,11 +272,9 @@ struct MouseDownUpMoveEvent : MouseEvent
 		return consumed.data & IgnoreFollowUpEventsMask;
 	}
 
-	enum
-	{
-		IgnoreFollowUpEvents = EventConsumeState::Last,
-		IgnoreFollowUpEventsMask = 1 << IgnoreFollowUpEvents
-	};
+	static constexpr uint32_t IgnoreFollowUpEvents = EventConsumeState::Last;
+	static constexpr uint32_t IgnoreFollowUpEventsMask = 1 << IgnoreFollowUpEvents;
+
 protected:
 	MouseDownUpMoveEvent () = default;
 	MouseDownUpMoveEvent (const CPoint& pos, MouseEventButtonState buttons, Modifiers mods = {})
