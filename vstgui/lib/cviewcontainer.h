@@ -194,7 +194,11 @@ public:
 			else
 				iterator = children.begin ();
 		}
-		Iterator<reverse> (const Iterator& vi) : children (vi.children), iterator (vi.iterator) {}
+
+		Iterator<reverse> (const Iterator<reverse>& vi)
+		: children (vi.children), iterator (vi.iterator)
+		{
+		}
 
 		Iterator<reverse>& operator++ ()
 		{
