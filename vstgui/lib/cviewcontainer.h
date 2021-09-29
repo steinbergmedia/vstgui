@@ -186,8 +186,7 @@ public:
 		using IteratorType = typename std::conditional<reverse, ChildViewConstReverseIterator,
 													   ChildViewConstIterator>::type;
 
-		explicit Iterator<reverse> (const CViewContainer* container)
-		: children (container->getChildren ())
+		explicit Iterator (const CViewContainer* container) : children (container->getChildren ())
 		{
 			if constexpr (reverse)
 				iterator = children.rbegin ();
@@ -195,8 +194,12 @@ public:
 				iterator = children.begin ();
 		}
 
-		Iterator<reverse> (const Iterator<reverse>& vi)
+		explicit Iterator (const Iterator<reverse>& vi)
 		: children (vi.children), iterator (vi.iterator)
+		{
+		}
+
+		Iterator (Iterator<reverse>&& o) : children (o.children), iterator (std::move (o.iterator))
 		{
 		}
 
