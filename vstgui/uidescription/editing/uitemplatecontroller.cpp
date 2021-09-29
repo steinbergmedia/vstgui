@@ -575,7 +575,7 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 					return true;
 				}
 			}
-			it++;
+			++it;
 		}
 		inUpdate = false;
 		return false;

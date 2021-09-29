@@ -1256,7 +1256,7 @@ void HierarchyMoveViewOperation::perform ()
 	ViewIterator it (parent);
 	while (*it && *it != view)
 	{
-		it++;
+		++it;
 		currentIndex++;
 	}
 	selection->willChange ();
