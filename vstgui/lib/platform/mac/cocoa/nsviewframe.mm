@@ -391,6 +391,7 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 		return;
 
 	MouseWheelEvent event;
+	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
@@ -433,6 +434,7 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 		return;
 
 	MouseMoveEvent event;
+	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
 	event.mousePosition = pointFromNSPoint (getGlobalMouseLocation (self));
 
@@ -446,6 +448,7 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 	MouseExitEvent event;
+	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
 	event.mousePosition = pointFromNSPoint (getGlobalMouseLocation (self));
 	_vstguiframe->platformOnEvent (event);
@@ -482,6 +485,7 @@ static BOOL VSTGUI_NSView_performKeyEquivalent (id self, SEL _cmd, NSEvent* theE
 			if (auto _vstguiframe = getFrame (self))
 			{
 				KeyboardEvent keyEvent;
+				keyEvent.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 				if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
 				{
 					_vstguiframe->platformOnEvent (keyEvent);
@@ -501,6 +505,7 @@ static void VSTGUI_NSView_keyDown (id self, SEL _cmd, NSEvent* theEvent)
 		return;
 
 	KeyboardEvent keyEvent;
+	keyEvent.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
 	{
 		_vstguiframe->platformOnEvent (keyEvent);
@@ -526,6 +531,7 @@ static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 		return;
 
 	KeyboardEvent keyEvent;
+	keyEvent.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
 	{
 		_vstguiframe->platformOnEvent (keyEvent);
@@ -546,6 +552,7 @@ static void VSTGUI_NSView_magnifyWithEvent (id self, SEL _cmd, NSEvent* theEvent
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 
 	ZoomGestureEvent event;
+	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	switch (theEvent.phase)
 	{
 		case NSEventPhaseBegan: event.phase = ZoomGestureEvent::Phase::Begin; break;
@@ -1083,6 +1090,7 @@ static MouseEventButtonState buttonStateFromNSEvent (NSEvent* theEvent)
 bool NSViewFrame::onMouseDown (NSEvent* theEvent)
 {
 	MouseDownEvent event;
+	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
 	event.clickCount = theEvent.clickCount;
@@ -1097,6 +1105,7 @@ bool NSViewFrame::onMouseDown (NSEvent* theEvent)
 bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 {
 	MouseUpEvent event;
+	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
 	event.clickCount = theEvent.clickCount;
@@ -1111,6 +1120,7 @@ bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
 {
 	MouseMoveEvent event;
+	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
 	event.clickCount = theEvent.clickCount;
