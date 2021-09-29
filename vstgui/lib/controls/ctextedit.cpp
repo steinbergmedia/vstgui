@@ -381,8 +381,7 @@ void CTextEdit::looseFocus ()
 
 	CBaseObjectGuard guard (this);
 
-	auto _platformControl = platformControl;
-	platformControl = nullptr;
+	auto _platformControl = std::move (platformControl);
 	updateText (_platformControl);
 	
 	_platformControl = nullptr;
