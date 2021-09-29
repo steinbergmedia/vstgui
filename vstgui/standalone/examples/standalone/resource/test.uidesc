@@ -32,7 +32,9 @@
 				"SplitViewSize_2_0": "0.6424870466321243034357735268713440746069",
 				"SplitViewSize_2_1": "0.3531951640759931065893795221199980005622",
 				"TabSwitchValue": "2",
-				"Version": "1"
+				"UI Theme": "Dark",
+				"Version": "1",
+				"ViewBackground": "3"
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
@@ -666,6 +668,7 @@
 							"tooltip": "Mutliline Label",
 							"transparent": "false",
 							"value-precision": "2",
+							"vertical-centered": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
 						}

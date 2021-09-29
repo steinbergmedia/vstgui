@@ -668,6 +668,11 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			}
 			backSelectControl->setTooltipText ("Editor Background Color");
 			splitView->addViewToSeparator (0, backSelectControl);
+			int32_t selectedBackground = 0;
+			if (getSettings ()->getIntegerAttribute ("ViewBackground", selectedBackground))
+			{
+				backSelectControl->setSelectedSegment (selectedBackground);
+			}
 
 			// Add Title
 			CColor labelColor = kBlackCColor;
@@ -828,8 +833,10 @@ void UIEditController::valueChanged (CControl* control)
 			{
 				if (auto seg = dynamic_cast<CSegmentButton*> (control))
 				{
-					CColor color = editViewBackgroundColors ()[seg->getSelectedSegment ()];
+					auto selectedSegment = seg->getSelectedSegment ();
+					CColor color = editViewBackgroundColors ()[selectedSegment];
 					editView->setBackgroundColor (color);
+					getSettings ()->setIntegerAttribute ("ViewBackground", selectedSegment);
 				}
 				break;
 			}
