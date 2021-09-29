@@ -88,7 +88,7 @@ public:
 	
 	/** dispatch an event
 	 *
-	 *	the event is then dispatched to one of the event methods.
+	 *	the event is then dispatched to the event listeners and then to one of the event methods.
 	 */
 	virtual void dispatchEvent (Event& event);
 
