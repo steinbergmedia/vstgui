@@ -89,6 +89,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	IContentProvider* contentProvider {nullptr};
 	IBitmapCreator* bitmapCreator { nullptr};
 	IBitmapCreator2* bitmapCreator2 { nullptr};
+	AttributeSaveFilterFunc attributeSaveFilterFunc {nullptr};
 
 	SharedPointer<UINode> nodes;
 	SharedPointer<UIDescription> sharedResources;
@@ -413,14 +414,14 @@ static std::string moveOldFile (UTF8StringPtr filename)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
+bool UIDescription::save (UTF8StringPtr filename, int32_t flags, AttributeSaveFilterFunc func)
 {
 	std::string oldName = moveOldFile (filename);
 	bool result = false;
 	CFileStream stream;
 	if (stream.open (filename, CFileStream::kWriteMode|CFileStream::kTruncateMode))
 	{
-		result = saveToStream (stream, flags);
+		result = saveToStream (stream, flags, func);
 	}
 	if (result && flags & kWriteWindowsResourceFile)
 	{
@@ -440,11 +441,13 @@ bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
+bool UIDescription::saveToStream (OutputStream& stream, int32_t flags, AttributeSaveFilterFunc func)
 {
+	impl->attributeSaveFilterFunc = func;
 	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->beforeUIDescSave (this);
 	});
+	impl->attributeSaveFilterFunc = nullptr;
 	if (!impl->sharedResources)
 	{
 		UINode* bitmapNodes = getBaseNode (Detail::MainNodeNames::kBitmap);
@@ -1584,6 +1587,9 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 	{
 		for (auto& name : attributeNames)
 		{
+			if (impl->attributeSaveFilterFunc &&
+				impl->attributeSaveFilterFunc (view, name) == false)
+				continue;
 			std::string value;
 			if (factory->getAttributeValue (view, name, value, this))
 				node->getAttributes ()->setAttribute (name, std::move (value));

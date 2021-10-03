@@ -163,7 +163,8 @@ bool CompressedUIDescription::parse ()
 }
 
 //-----------------------------------------------------------------------------
-bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
+bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags,
+									AttributeSaveFilterFunc func)
 {
 	bool result = false;
 	if (originalIsCompressed || (flags & kForceWriteCompressedDesc))
@@ -178,7 +179,7 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 			ZLibOutputStream zout;
 			if (zout.open (fileStream, compressionLevel))
 			{
-				if (saveToStream (zout, flags))
+				if (saveToStream (zout, flags, func))
 				{
 					result = zout.close ();
 				}
@@ -201,7 +202,7 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 		                        CFileStream::kWriteMode | CFileStream::kTruncateMode,
 		                        kLittleEndianByteOrder))
 		{
-			result = saveToStream (xmlFileStream, flags);
+			result = saveToStream (xmlFileStream, flags, func);
 		}
 	}
 	return result;
