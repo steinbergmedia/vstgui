@@ -563,7 +563,7 @@ TEST_CASE (UIDescriptionXMLTests, WriteToStream)
 	SaveUIDescription desc (&provider);
 	EXPECT (desc.parse () == true);
 	CMemoryStream outputStream (1024, 1024, false);
-	EXPECT (desc.saveToStream (outputStream, defaultSafeFlags));
+	EXPECT (desc.saveToStream (outputStream, defaultSafeFlags, nullptr));
 	outputStream.end ();
 	std::string result (reinterpret_cast<const char*> (outputStream.getBuffer ()));
 	EXPECT (result.size () == str.size ());
