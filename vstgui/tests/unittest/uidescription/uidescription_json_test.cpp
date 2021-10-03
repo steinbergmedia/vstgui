@@ -1427,7 +1427,7 @@ TEST_CASE (UIDescriptionJSONTests, WriteToStream)
 	SaveUIDescription desc (&provider);
 	EXPECT (desc.parse () == true);
 	CMemoryStream outputStream (1024, 1024, false);
-	EXPECT (desc.saveToStream (outputStream, defaultSafeFlags));
+	EXPECT (desc.saveToStream (outputStream, defaultSafeFlags, nullptr));
 	outputStream.end ();
 	std::string result (reinterpret_cast<const char*> (outputStream.getBuffer ()));
 	EXPECT (result.size () == str.size ());
@@ -1773,7 +1773,7 @@ TEST_CASE (UIDescriptionJSONTests, CompleteExample)
 	view = owned (desc.createView ("tab1", nullptr));
 	view = owned (desc.createView ("tab2", nullptr));
 	CMemoryStream outputStream (1024, 1024, false);
-	EXPECT (desc.saveToStream (outputStream, SaveUIDescription::kWriteImagesIntoXMLFile));
+	EXPECT (desc.saveToStream (outputStream, SaveUIDescription::kWriteImagesIntoXMLFile, nullptr));
 }
 #endif
 
