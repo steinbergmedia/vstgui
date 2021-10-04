@@ -363,8 +363,9 @@ public:
 	//@{
 	VSTGUI_DEPRECATED(void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject);)
 	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
-	                   Animation::ITimingFunction* timingFunction,
-	                   const Animation::DoneFunction& doneFunc = nullptr);
+					   Animation::ITimingFunction* timingFunction,
+					   const Animation::DoneFunction& doneFunc = nullptr,
+					   bool callDoneOnCancel = false);
 	void removeAnimation (IdStringPtr name);
 	void removeAllAnimations ();
 	//@}

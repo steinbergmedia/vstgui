@@ -34,10 +34,12 @@ public:
 	/** adds an animation.
 		Animation and timingFunction is now owned by the animator.
 		An already running animation for view with name will be canceled.
-		The notification function will be called when the animation has finished.
+		The notification function will be called when the animation has finished or on cancelation
+		of the animation if notifyOnCancel is true (new in 4.11)
 	*/
 	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target,
-	                   ITimingFunction* timingFunction, DoneFunction notification = nullptr);
+					   ITimingFunction* timingFunction, DoneFunction notification = nullptr,
+					   bool notifyOnCancel = false);
 
 	/** removes an animation.
 		If animation has the IReference interface forget() will be called otherwise it is deleted.

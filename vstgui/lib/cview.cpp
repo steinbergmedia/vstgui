@@ -1301,12 +1301,15 @@ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
 #endif
 
 //-----------------------------------------------------------------------------
-void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc)
+void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
+						  Animation::ITimingFunction* timingFunction,
+						  const Animation::DoneFunction& doneFunc, bool callDoneOnCancel)
 {
 	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
 	if (auto frame = getFrame ())
 	{
-		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc);
+		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc,
+											 callDoneOnCancel);
 	}
 }
 

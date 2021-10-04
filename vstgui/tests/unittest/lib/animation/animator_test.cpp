@@ -56,6 +56,25 @@ TEST_CASE (AnimatorTest, CancelAnimation)
 	EXPECT (view->getAlphaValue () != 0.f);
 }
 
+TEST_CASE (AnimatorTest, CancelAnimationWithCallback)
+{
+	auto a = owned (new Animator ());
+	auto view = owned (new CView (CRect (0, 0, 0, 0)));
+	bool cancelDoneFunctionCalled = false;
+	auto doneFunc = [&] (auto, auto, auto) { cancelDoneFunctionCalled = true; };
+	a->addAnimation (view, "Test", new AlphaValueAnimation (0.f), new LinearTimingFunction (2000),
+					 doneFunc, false);
+	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
+	a->removeAnimation (view, "Test");
+	EXPECT_FALSE (cancelDoneFunctionCalled);
+	EXPECT (view->getAlphaValue () != 0.f);
+	a->addAnimation (view, "Test", new AlphaValueAnimation (0.f), new LinearTimingFunction (2000),
+					 doneFunc, true);
+	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
+	a->removeAnimation (view, "Test");
+	EXPECT_TRUE (cancelDoneFunctionCalled);
+}
+
 TEST_CASE (AnimatorTest, RemoveAnimationInCallback)
 {
 	auto a = owned (new Animator ());
