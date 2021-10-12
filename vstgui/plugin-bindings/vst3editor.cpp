@@ -325,6 +325,7 @@ protected:
 				}
 				else
 					c->setValueNormalized ((float)value);
+				c->valueChanged ();
 			}
 			c->invalid ();
 		}
@@ -627,6 +628,8 @@ ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag) co
 void VST3Editor::valueChanged (CControl* pControl)
 {
 	using namespace Steinberg;
+	if (!pControl->isEditing ())
+		return;
 
 	ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
 	if (pcl)
