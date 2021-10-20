@@ -50,10 +50,9 @@ to your IDE project and add a search path to the parent of the root folder of vs
 \par On macOS, you need to link to the following Frameworks:
 
 - Accelerate
-- Carbon
 - Cocoa
-- OpenGL
 - QuartzCore
+- OpenGL (Optional)
 
 \par On iOS, you need to link to the following Frameworks:
 

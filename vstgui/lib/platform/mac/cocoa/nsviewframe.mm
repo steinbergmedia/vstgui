@@ -22,11 +22,6 @@
 #import "../../../cframe.h"
 #import "../../../events.h"
 
-#if MAC_CARBON
-	#import "../carbon/hiviewframe.h"
-	#import <Carbon/Carbon.h>
-#endif
-
 #include <QuartzCore/QuartzCore.h>
 
 #ifndef MAC_OS_X_VERSION_10_14

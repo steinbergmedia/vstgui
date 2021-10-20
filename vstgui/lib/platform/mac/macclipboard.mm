@@ -9,10 +9,6 @@
 #import <vector>
 #import <string>
 
-#if MAC_CARBON
-#import <Carbon/Carbon.h>
-#endif
-
 #ifndef MAC_OS_X_VERSION_10_14
 #define MAC_OS_X_VERSION_10_14      101400
 #endif
@@ -287,24 +283,6 @@ SharedPointer<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard)
 {
 	return makeOwned<Pasteboard> (pasteboard);
 }
-
-#if MAC_CARBON
-//-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> createCarbonDragDataPackage (DragRef drag)
-{
-	PasteboardRef pr;
-	if (GetDragPasteboard (drag, &pr) == noErr)
-	{
-		CFStringRef pasteboardName;
-		if (PasteboardCopyName (pr, &pasteboardName) == noErr)
-		{
-			[(NSString*)pasteboardName autorelease];
-			return makeOwned<Pasteboard> ([NSPasteboard pasteboardWithName:(NSString*)pasteboardName]);
-		}
-	}
-	return nullptr;
-}
-#endif
 
 //-----------------------------------------------------------------------------
 void setClipboard (const SharedPointer<IDataPackage>& dataSource)

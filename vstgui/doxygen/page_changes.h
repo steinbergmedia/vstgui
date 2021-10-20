@@ -11,7 +11,6 @@
 - @ref new_stuff @n
 - @ref code_changes @n
 - @ref hidpi_support @n
-- @ref cocoa_support @n
 - @ref ios_support @n
 - @subpage page_previous_new_stuff
 
@@ -25,6 +24,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_11 Version 4.11
 
+- Removed 32-bit Carbon support
 - Reworked event handling, please see @ref code_changes_4_10_to_4_11
 - Reworked unit test framework to be able to debug the tests
 
@@ -232,13 +232,6 @@ The old mouse methods (onMouseDown, onMouseUp, onMouseMoved, etc) are still supp
 - HiDPI is supported on OSX, iOS and Windows (with Direct2D backend)
 - Due to platform differences one need to call frame->setZoom (scaleFactor) on Windows, while on OSX and iOS this is not needed.
  
-@section cocoa_support Cocoa notes
-
-- To get cocoa support your minimum required Mac OS X version is 10.6.
-- In 32 bit Cocoa and Carbon are available. You can switch between them with CFrame::setCocoaMode(bool state). You must do this before creating the CFrame.
-- In 64 bit only Cocoa is available.
-- The pSystemWindow pointer in the CFrame constructor must be a NSView not a NSWindow.
-
 @section ios_support iOS support notes
 
 - VSTGUI supports iOS 7 and later

@@ -8,7 +8,6 @@
 #import "../../cstring.h"
 #import "../../cframe.h"
 
-// the cocoa fileselector is also used for carbon
 #import <Cocoa/Cocoa.h>
 #import "cocoa/cocoahelpers.h"
 #import "macstring.h"
