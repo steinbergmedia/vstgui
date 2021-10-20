@@ -184,12 +184,6 @@ set(${target}_common_sources
 
   ##########################################################################################
 set(${target}_mac_sources
-    platform/mac/carbon/hiviewframe.cpp
-    platform/mac/carbon/hiviewframe.h
-    platform/mac/carbon/hiviewoptionmenu.cpp
-    platform/mac/carbon/hiviewoptionmenu.h
-    platform/mac/carbon/hiviewtextedit.cpp
-    platform/mac/carbon/hiviewtextedit.h
     platform/mac/caviewlayer.h
     platform/mac/caviewlayer.mm
     platform/mac/cfontmac.h

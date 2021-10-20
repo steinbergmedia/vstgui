@@ -9,7 +9,6 @@
 #include "../iplatformresourceinputstream.h"
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
-#include "carbon/hiviewframe.h"
 #include "cfontmac.h"
 #include "cgbitmap.h"
 #include "cgdrawcontext.h"
@@ -91,10 +90,6 @@ PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const C
 #if TARGET_OS_IPHONE
 	return makeOwned<UIViewFrame> (frame, size, (__bridge UIView*)parent);
 #else
-#if MAC_CARBON
-	if (platformType == PlatformType::kWindowRef || platformType == PlatformType::kDefaultNative)
-		return makeOwned<HIViewFrame> (frame, size, reinterpret_cast<WindowRef> (parent));
-#endif // MAC_CARBON
 	return makeOwned<NSViewFrame> (frame, size, reinterpret_cast<NSView*> (parent), config);
 #endif
 }

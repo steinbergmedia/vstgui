@@ -12,10 +12,6 @@
 struct NSPasteboard;
 #endif
 
-#if MAC_CARBON
-using DragRef = struct OpaqueDragRef*;
-#endif
-
 namespace VSTGUI {
 class IDataPackage;
 
@@ -25,9 +21,5 @@ extern SharedPointer<IDataPackage> createClipboardDataPackage ();
 extern SharedPointer<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard);
 extern void setClipboard (const SharedPointer<IDataPackage>& data);
 extern const char* getPasteboardBinaryType ();
-
-#if MAC_CARBON
-extern SharedPointer<IDataPackage> createCarbonDragDataPackage (DragRef drag);
-#endif
 
 }} // namespaces

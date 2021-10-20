@@ -15,10 +15,6 @@
 	#include <ApplicationServices/ApplicationServices.h>
 #endif
 
-#if MAC_CARBON
-#include <Carbon/Carbon.h>
-#endif
-
 #include <map>
 
 namespace VSTGUI {

@@ -44,15 +44,6 @@
 		#ifndef MAC
 			#define MAC 1
 		#endif
-		#if !__LP64__ && !defined (MAC_CARBON)
-			#define MAC_CARBON 1
-			#ifndef TARGET_API_MAC_CARBON
-				#define TARGET_API_MAC_CARBON 1
-			#endif
-			#ifndef __CF_USE_FRAMEWORK_INCLUDES__
-				#define __CF_USE_FRAMEWORK_INCLUDES__ 1
-			#endif
-		#endif
 	#endif
 
 	#ifndef __has_feature

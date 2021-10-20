@@ -15,7 +15,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 enum class PlatformType : int32_t {
 	kHWND,		// Windows HWND
-	kWindowRef,	// macOS WindowRef (Carbon)
 	kNSView,	// macOS NSView
 	kUIView,	// iOS UIView
 	kHWNDTopLevel,	// Windows HWDN Top Level (non child)
