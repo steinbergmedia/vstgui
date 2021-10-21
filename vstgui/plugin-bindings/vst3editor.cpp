@@ -827,9 +827,9 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 	if (event.type != EventType::MouseDown)
 		return;
 
-	if (buttons.isRightButton ())
+	if (event.buttonState.isRight ())
 	{
-		COptionMenu* controllerMenu = (delegate && editingEnabled == false) ? delegate->createContextMenu (where, this) : nullptr;
+		COptionMenu* controllerMenu = (delegate && editingEnabled == false) ? delegate->createContextMenu (event.mousePosition, this) : nullptr;
 		if (allowedZoomFactors.empty () == false && editingEnabled == false)
 		{
 			if (controllerMenu == nullptr)
@@ -864,7 +864,7 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 		}
 	#endif
 		CViewContainer::ViewList views;
-		if (editingEnabled == false && getFrame ()->getViewsAt (where, views, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer)))
+		if (editingEnabled == false && getFrame ()->getViewsAt (event.mousePosition, views, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer)))
 		{
 			for (const auto& view : views)
 			{
@@ -875,7 +875,7 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 					controllerMenu = new COptionMenu ();
 				else
 					controllerMenu->addSeparator ();
-				CPoint p (where);
+				CPoint p (event.mousePosition);
 				view->frameToLocal (p);
 				contextMenuController->appendContextMenuItems (*controllerMenu, p);
 			}
@@ -885,7 +885,7 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 		Steinberg::Vst::ParamID paramID;
 		if (handler)
 		{
-			CPoint where2 (where);
+			CPoint where2 (event.mousePosition);
 			getFrame ()->getTransform ().transform (where2);
 			bool paramFound = findParameter ((Steinberg::int32)where2.x, (Steinberg::int32)where2.y, paramID) == Steinberg::kResultTrue;
 			Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, paramFound ? &paramID : nullptr);
@@ -909,10 +909,10 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 			{
 				controllerMenu->remember ();
 				SharedPointer<CFrame> blockFrame = getFrame ();
-				getFrame ()->doAfterEventProcessing ([=] () {
+				getFrame ()->doAfterEventProcessing ([=, mousePosition = event.mousePosition] () {
 					controllerMenu->setStyle (COptionMenu::kPopupStyle |
 					                          COptionMenu::kMultipleCheckStyle);
-					controllerMenu->popup (blockFrame, where);
+					controllerMenu->popup (blockFrame, mousePosition);
 					controllerMenu->forget ();
 				});
 				event.consumed = true;
@@ -1133,7 +1133,7 @@ private:
 struct VST3Editor::KeyboardHook : public IKeyboardHook
 {
 public:
-	using Func = std::function<int32_t (const VstKeyCode& code, CFrame* frame)>;
+	using Func = std::function<void (KeyboardEvent& event, CFrame* frame)>;
 
 	KeyboardHook (Func&& keyDown, Func&& keyUp)
 	: onKeyDownFunc (std::move (keyDown)), onKeyUpFunc (std::move (keyUp))
@@ -1141,13 +1141,16 @@ public:
 	}
 
 private:
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override
+	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override
 	{
-		return onKeyDownFunc (code, frame);
-	}
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override
-	{
-		return onKeyUpFunc (code, frame);
+		if (event.type == EventType::KeyDown)
+		{
+			onKeyDownFunc (event, frame);
+		}
+		else if (event.type == EventType::KeyUp)
+		{
+			onKeyUpFunc (event, frame);
+		}
 	}
 
 	Func onKeyDownFunc;
@@ -1167,18 +1170,17 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 #if VSTGUI_LIVE_EDITING
 	// will delete itself when the frame will be destroyed
 	keyboardHook = new KeyboardHook (
-	    [this] (const VstKeyCode& code, CFrame* frame) {
-		    if (code.modifier == MODIFIER_CONTROL && frame->getModalView () == nullptr)
+	    [this] (KeyboardEvent& event, CFrame* frame) {
+		    if (event.modifiers.is (ModifierKey::Control) && frame->getModalView () == nullptr)
 		    {
-			    if (code.character == 'e')
+			    if (event.character == 'e')
 			    {
 				    enableEditing (!editingEnabled);
-				    return 1;
+				    event.consumed = true;
 			    }
 		    }
-		    return -1;
 	    },
-	    [] (const VstKeyCode&, CFrame*) { return -1; });
+	    [] (KeyboardEvent&, CFrame*) { });
 	getFrame ()->registerKeyboardHook (keyboardHook);
 #endif
 	getFrame ()->enableTooltips (tooltipsEnabled);
