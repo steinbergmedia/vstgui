@@ -137,10 +137,6 @@ float CControl::getDefaultValue (void) const
 }
 
 //------------------------------------------------------------------------
-int32_t CControl::kZoomModifier = kShift;
-int32_t CControl::kDefaultValueModifier = kControl;
-
-//------------------------------------------------------------------------
 void CControl::setTag (int32_t val)
 {
 	if (listener)

@@ -147,8 +147,6 @@ std::unique_ptr<IdleViewUpdater> IdleViewUpdater::gInstance;
 
 } // CViewInternal
 
-uint32_t CView::idleRate = 30;
-
 /// @endcond
 
 UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";

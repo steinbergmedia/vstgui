@@ -97,9 +97,9 @@ public:
 	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	/** zoom modifier key, per default is the shift key */
-	static int32_t kZoomModifier;
+	inline static int32_t kZoomModifier = kShift;
 	/** default value modifier key, per default is the control key */
-	static int32_t kDefaultValueModifier;
+	inline static int32_t kDefaultValueModifier = kControl;
 
 	using CheckDefaultValueFuncT = bool (*) (CControl*, CButtonState);
 	/** Function to check if the button state is the state to set the control value to its default

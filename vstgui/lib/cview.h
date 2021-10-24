@@ -383,7 +383,7 @@ public:
 	/** returns if the view wants idle callback or not */
 	bool wantsIdle () const { return hasViewFlag (kWantsIdle); }
 	/** global idle rate in Hz, defaults to 30 Hz*/
-	static uint32_t idleRate;
+	inline static uint32_t idleRate = 30;
 	//@}
 
 	/** whether this view wants to be informed if the window's active state changes */
