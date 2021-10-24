@@ -14,7 +14,16 @@ struct MacParentHandle : PlatformParentHandle
 
 	MacParentHandle ()
 	{
-		window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100) styleMask:NSTitledWindowMask backing:NSBackingStoreBuffered defer:NO];
+		NSWindowStyleMask style;
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12
+		style = NSWindowStyleMaskTitled;
+#else
+		style = NSTitledWindowMask;
+#endif
+		window = [[NSWindow alloc] initWithContentRect:NSMakeRect (0, 0, 100, 100)
+											 styleMask:style
+											   backing:NSBackingStoreBuffered
+												 defer:NO];
 	}
 	
 	~MacParentHandle () override
