@@ -12,6 +12,7 @@ struct IUnknown;
 
 #include "../../cbitmap.h"
 #include "../../optional.h"
+#include "../../crect.h"
 #include "../iplatformresourceinputstream.h"
 #include <algorithm>
 #include <windows.h>
@@ -115,6 +116,17 @@ protected:
 	bool allocStrIsWide;
 	int numCharacters {-1};
 };
+
+inline CRect rectFromRECT (const RECT& r)
+{
+	return CRect (r.left, r.top, r.right, r.bottom);
+}
+
+inline RECT RECTfromRect (const CRect& rect)
+{
+	return {static_cast<LONG> (rect.left), static_cast<LONG> (rect.top),
+			static_cast<LONG> (rect.right), static_cast<LONG> (rect.bottom)};
+}
 
 /// @endcond
 

@@ -171,6 +171,9 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 	style = config.style;
 
+	bool directComposition =
+		getPlatformFactory ().asWin32Factory ()->getDirectCompositionSupport () != nullptr;
+
 	if (config.type == WindowType::Popup)
 	{
 		isPopup = true;
@@ -204,7 +207,17 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		}
 	}
 	if (style.isTransparent ())
-		exStyle |= WS_EX_LAYERED;
+	{
+		if (directComposition)
+		{
+			exStyle = WS_EX_NOREDIRECTIONBITMAP;
+			exStyle &= ~WS_EX_COMPOSITED;
+		}
+		else
+		{
+			exStyle |= WS_EX_LAYERED;
+		}
+	}
 	initialSize = config.size;
 	auto winStr = dynamic_cast<WinString*> (config.title.getPlatformString ());
 	hwnd = CreateWindowEx (exStyle, gWindowClassName, winStr ? winStr->getWideString () : nullptr,

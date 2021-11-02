@@ -109,6 +109,21 @@ D2DDrawContext::D2DDrawContext (D2DBitmap* inBitmap)
 }
 
 //-----------------------------------------------------------------------------
+D2DDrawContext::D2DDrawContext (ID2D1DeviceContext* deviceContext, const CRect& drawSurface)
+: COffscreenContext (drawSurface)
+, window (nullptr)
+, renderTarget (nullptr)
+, fillBrush (nullptr)
+, strokeBrush (nullptr)
+, fontBrush (nullptr)
+, strokeStyle (nullptr)
+{
+	renderTarget = deviceContext;
+	renderTarget->AddRef ();
+	init ();
+}
+
+//-----------------------------------------------------------------------------
 D2DDrawContext::~D2DDrawContext ()
 {
 	releaseRenderTarget ();

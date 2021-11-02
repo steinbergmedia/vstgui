@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "win32factory.h"
+#include "win32directcomposition.h"
 #include "../iplatformbitmap.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
@@ -38,6 +39,7 @@
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
+
 //-----------------------------------------------------------------------------
 struct Win32Factory::Impl
 {
@@ -45,6 +47,8 @@ struct Win32Factory::Impl
 	COM::Ptr<ID2D1Factory> d2dFactory;
 	COM::Ptr<IDWriteFactory> directWriteFactory;
 	COM::Ptr<IWICImagingFactory> wicImagingFactory;
+
+	std::unique_ptr<DirectCompositionSupport> directCompositionSupport;
 
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
@@ -102,6 +106,8 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 #endif
 	CoCreateInstance (VSTGUI_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
 					  IID_IWICImagingFactory, (void**)impl->wicImagingFactory.adoptPtr ());
+
+	impl->directCompositionSupport = DirectCompositionSupport::create (impl->d2dFactory.get ());
 }
 
 //-----------------------------------------------------------------------------
@@ -169,6 +175,12 @@ IWICImagingFactory* Win32Factory::getWICImagingFactory () const noexcept
 IDWriteFactory* Win32Factory::getDirectWriteFactory () const noexcept
 {
 	return impl->directWriteFactory.get ();
+}
+
+//-----------------------------------------------------------------------------
+DirectCompositionSupport* Win32Factory::getDirectCompositionSupport () const noexcept
+{
+	return impl->directCompositionSupport.get ();
 }
 
 //-----------------------------------------------------------------------------

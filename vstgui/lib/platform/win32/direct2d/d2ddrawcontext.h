@@ -8,10 +8,11 @@
 
 #if WINDOWS
 struct IUnknown;
+struct ID2D1DeviceContext;
 
 #include "d2dbitmap.h"
 #include <windows.h>
-#include <d2d1.h>
+#include <d2d1_1.h>
 #include <stack>
 
 namespace VSTGUI {
@@ -22,6 +23,7 @@ class D2DDrawContext final : public COffscreenContext
 {
 public:
 	D2DDrawContext (HWND window, const CRect& drawSurface);
+	D2DDrawContext (ID2D1DeviceContext* deviceContext, const CRect& drawSurface);
 	D2DDrawContext (D2DBitmap* bitmap);
 	~D2DDrawContext ();
 

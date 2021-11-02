@@ -12,6 +12,8 @@
 
 namespace VSTGUI {
 
+struct DirectCompositionSurface;
+
 //-----------------------------------------------------------------------------
 class Win32Frame final : public IPlatformFrame, public IWin32PlatformFrame
 {
@@ -63,6 +65,9 @@ protected:
 	void initTooltip ();
 	void paint (HWND hwnd);
 
+	template<typename Proc>
+	void iterateRegion (HRGN rgn, Proc func);
+
 	static void initWindowClass ();
 	static void destroyWindowClass ();
 	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -76,6 +81,7 @@ protected:
 	SharedPointer<COffscreenContext> backBuffer;
 	CDrawContext* deviceContext;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
+	std::unique_ptr<DirectCompositionSurface> directCompositionSurface;
 	Optional<MSG> currentEvent;
 
 	bool inPaint;

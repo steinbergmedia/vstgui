@@ -18,6 +18,7 @@
 #include "win32support.h"
 #include "win32datapackage.h"
 #include "win32dragging.h"
+#include "win32directcomposition.h"
 #include "../common/genericoptionmenu.h"
 #include "../common/generictextedit.h"
 #include "../../cdropsource.h"
@@ -80,6 +81,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , updateRegionListSize (0)
 {
 	useD2D ();
+	auto directComposition = getPlatformFactory ().asWin32Factory ()->getDirectCompositionSupport ();
 	if (parentType == PlatformType::kHWNDTopLevel)
 	{
 		windowHandle = parent;
@@ -90,11 +92,14 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 	{
 		initWindowClass ();
 
-		DWORD style = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
-		windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
-										WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
-										0, 0, (int)size.getWidth (), (int)size.getHeight (), 
-										parentWindow, nullptr, GetInstance (), nullptr);
+		DWORD exStyle = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
+		DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+		if (directComposition)
+			exStyle = WS_EX_NOREDIRECTIONBITMAP;
+
+		windowHandle = CreateWindowEx (exStyle, gClassName, TEXT ("Window"), style, 0, 0,
+									   (int)size.getWidth (), (int)size.getHeight (), parentWindow,
+									   nullptr, GetInstance (), nullptr);
 
 		if (windowHandle)
 		{
@@ -103,11 +108,19 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 		}
 	}
 	setMouseCursor (kCursorDefault);
+	if (directComposition)
+	{
+		directCompositionSurface = DirectCompositionSurface::create (
+			windowHandle, directComposition->getCompositionDesktopDevice (),
+			directComposition->getD2D1Device ());
+	}
 }
 
 //-----------------------------------------------------------------------------
 Win32Frame::~Win32Frame () noexcept
 {
+	directCompositionSurface = nullptr;
+
 	if (updateRegionList)
 		std::free (updateRegionList);
 	if (deviceContext)
@@ -275,6 +288,8 @@ bool Win32Frame::setSize (const CRect& newSize)
 	{
 		backBuffer = getPlatformFactory ().createOffscreenContext (newSize.getSize ());
 	}
+	if (directCompositionSurface)
+		directCompositionSurface->onResize ();
 	if (!parentWindow)
 		return true;
 	SetWindowPos (windowHandle, HWND_TOP, (int)newSize.left, (int)newSize.top, (int)newSize.getWidth (), (int)newSize.getHeight (), SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOREDRAW|SWP_DEFERERASE);
@@ -419,11 +434,7 @@ bool Win32Frame::showTooltip (const CRect& rect, const char* utf8Text)
 			str.insert (pos, "\r\n");
 		}
 		UTF8StringHelper tooltipText (str.data ());
-		RECT rc;
-		rc.left = (LONG)rect.left;
-		rc.top = (LONG)rect.top;
-		rc.right = (LONG)rect.right;
-		rc.bottom = (LONG)rect.bottom;
+		RECT rc = RECTfromRect (rect);
 		TOOLINFO ti = {};
 		ti.cbSize = sizeof(TOOLINFO);
 		ti.hwnd = windowHandle;
@@ -551,6 +562,45 @@ bool Win32Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme
 }
 
 //-----------------------------------------------------------------------------
+template<typename Proc>
+void Win32Frame::iterateRegion (HRGN rgn, Proc func)
+{
+	DWORD len = GetRegionData (rgn, 0, nullptr);
+	if (len)
+	{
+		if (len > updateRegionListSize)
+		{
+			if (updateRegionList)
+				std::free (updateRegionList);
+			updateRegionListSize = len;
+			updateRegionList = (RGNDATA*)std::malloc (updateRegionListSize);
+		}
+		GetRegionData (rgn, len, updateRegionList);
+		if (updateRegionList->rdh.nCount > 0)
+		{
+			CInvalidRectList dirtyRects;
+			auto* rp = reinterpret_cast<RECT*> (updateRegionList->Buffer);
+			for (uint32_t i = 0; i < updateRegionList->rdh.nCount; ++i, ++rp)
+			{
+				CRect ur (rp->left, rp->top, rp->right, rp->bottom);
+				dirtyRects.add (ur);
+			}
+			for (auto& _updateRect : dirtyRects)
+			{
+				func (_updateRect);
+			}
+		}
+		else
+		{
+			RECT r;
+			GetRgnBox (rgn, &r);
+			auto updateRect = rectFromRECT (r);
+			func (updateRect);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void Win32Frame::paint (HWND hwnd)
 {
 	HRGN rgn = CreateRectRgn (0, 0, 0, 0);
@@ -567,57 +617,61 @@ void Win32Frame::paint (HWND hwnd)
 
 	if (hdc)
 	{
-		CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top, (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
-		CRect frameSize;
-		getSize (frameSize);
-		frameSize.offset (-frameSize.left, -frameSize.top);
-		if (deviceContext == nullptr)
-			deviceContext = createDrawContext (hwnd, hdc, frameSize);
-		if (deviceContext)
+		RECT clientRect;
+		GetClientRect (windowHandle, &clientRect);
+		CRect frameSize = rectFromRECT (clientRect);
+		if (directCompositionSurface)
 		{
-			deviceContext->setClipRect (updateRect);
+			iterateRegion (rgn, [&] (const auto& rect) {
+				directCompositionSurface->update (
+					rect, [&] (auto deviceContext, auto rect, auto offset) {
+						D2DDrawContext drawContext (deviceContext, frameSize);
+						drawContext.setClipRect (rect);
+						CGraphicsTransform tm;
+						tm.translate (offset.x - rect.left, offset.y - rect.top);
+						CDrawContext::Transform transform (drawContext, tm);
+						{
+							drawContext.saveGlobalState ();
+							drawContext.clearRect (rect);
+							getFrame ()->platformDrawRect (&drawContext, rect);
+							drawContext.restoreGlobalState ();
+						}
+					});
+			});
+			getPlatformFactory ()
+				.asWin32Factory ()
+				->getDirectCompositionSupport ()
+				->getCompositionDesktopDevice ()
+				->Commit ();
+		}
+		else
+		{
+			if (deviceContext == nullptr)
+				deviceContext = createDrawContext (hwnd, hdc, frameSize);
+			if (deviceContext)
+			{
+				GetRgnBox (rgn, &ps.rcPaint);
+				CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top,
+								  (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
+				deviceContext->setClipRect (updateRect);
 
-			CDrawContext* drawContext = backBuffer ? backBuffer : deviceContext;
-			drawContext->beginDraw ();
-			DWORD len = GetRegionData (rgn, 0, nullptr);
-			if (len)
-			{
-				if (len > updateRegionListSize)
+				CDrawContext* drawContext = backBuffer ? backBuffer : deviceContext;
+				drawContext->beginDraw ();
+
+				iterateRegion (rgn, [&] (const auto& rect) {
+					drawContext->clearRect (rect);
+					getFrame ()->platformDrawRect (drawContext, rect);
+				});
+
+				drawContext->endDraw ();
+				if (backBuffer)
 				{
-					if (updateRegionList)
-						std::free (updateRegionList);
-					updateRegionListSize = len;
-					updateRegionList = (RGNDATA*) std::malloc (updateRegionListSize);
+					deviceContext->beginDraw ();
+					deviceContext->clearRect (updateRect);
+					backBuffer->copyFrom (deviceContext, updateRect,
+										  CPoint (updateRect.left, updateRect.top));
+					deviceContext->endDraw ();
 				}
-				GetRegionData (rgn, len, updateRegionList);
-				if (updateRegionList->rdh.nCount > 0)
-				{
-					CInvalidRectList dirtyRects;
-					auto* rp = reinterpret_cast<RECT*> (updateRegionList->Buffer);
-					for (uint32_t i = 0; i < updateRegionList->rdh.nCount; ++i, ++rp)
-					{
-						CRect ur (rp->left, rp->top, rp->right, rp->bottom);
-						dirtyRects.add (ur);
-					}
-					for (auto& _updateRect : dirtyRects)
-					{
-						drawContext->clearRect (_updateRect);
-						getFrame ()->platformDrawRect (drawContext, _updateRect);
-					}
-				}
-				else
-				{
-					drawContext->clearRect (updateRect);
-					getFrame ()->platformDrawRect (drawContext, updateRect);
-				}
-			}
-			drawContext->endDraw ();
-			if (backBuffer)
-			{
-				deviceContext->beginDraw ();
-				deviceContext->clearRect (updateRect);
-				backBuffer->copyFrom (deviceContext, updateRect, CPoint (updateRect.left, updateRect.top));
-				deviceContext->endDraw ();
 			}
 		}
 	}
