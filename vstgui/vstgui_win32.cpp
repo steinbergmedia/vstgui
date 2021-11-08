@@ -9,6 +9,7 @@
 #include "vstgui.cpp"
 
 #include "lib/platform/win32/win32datapackage.cpp"
+#include "lib/platform/win32/win32directcomposition.cpp"
 #include "lib/platform/win32/win32dragging.cpp"
 #include "lib/platform/win32/win32factory.cpp"
 #include "lib/platform/win32/win32frame.cpp"
