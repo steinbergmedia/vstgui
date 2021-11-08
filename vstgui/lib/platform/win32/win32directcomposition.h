@@ -27,6 +27,7 @@ public:
 	void onResize ();
 	bool update (CRect updateRect, const DrawCallback& drawCallback);
 
+	bool enableVisualizeRedrawAreas (bool state);
 	~Surface () noexcept;
 
 private:
