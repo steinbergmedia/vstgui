@@ -110,7 +110,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 	setMouseCursor (kCursorDefault);
 	if (directComposition)
 	{
-		directCompositionSurface = DirectCompositionSurface::create (
+		directCompositionSurface = DirectComposition::Surface::create (
 			windowHandle, directComposition->getCompositionDesktopDevice (),
 			directComposition->getD2D1Device ());
 	}

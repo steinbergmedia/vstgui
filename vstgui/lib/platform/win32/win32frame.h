@@ -12,7 +12,9 @@
 
 namespace VSTGUI {
 
-struct DirectCompositionSurface;
+namespace DirectComposition {
+struct Surface;
+}
 
 //-----------------------------------------------------------------------------
 class Win32Frame final : public IPlatformFrame, public IWin32PlatformFrame
@@ -81,7 +83,7 @@ protected:
 	SharedPointer<COffscreenContext> backBuffer;
 	CDrawContext* deviceContext;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
-	std::unique_ptr<DirectCompositionSurface> directCompositionSurface;
+	std::unique_ptr<DirectComposition::Surface> directCompositionSurface;
 	Optional<MSG> currentEvent;
 
 	bool inPaint;

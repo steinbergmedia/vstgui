@@ -6,12 +6,16 @@
 #include "win32support.h"
 #include "win32dll.h"
 
+#include <vector>
+
 #ifdef _MSC_VER
 #pragma comment(lib, "d3d11.lib")
 #endif
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
+namespace DirectComposition {
+namespace {
 
 //-----------------------------------------------------------------------------
 struct DirectCompositionSupportDll : DllBase
@@ -40,36 +44,61 @@ private:
 
 	DCompositionCreateDevice2Func createDevice2Func {nullptr};
 };
+//------------------------------------------------------------------------
+} // anonymous
 
 //-----------------------------------------------------------------------------
-std::unique_ptr<DirectCompositionSurface> DirectCompositionSurface::create (
-	HWND window, IDCompositionDesktopDevice* compDevice, ID2D1Device* d2dDevice)
+struct Surface::Impl
 {
-	auto surface = std::make_unique<DirectCompositionSurface> ();
+	HWND window {nullptr};
+	IDCompositionDesktopDevice* compDevice {nullptr};
+	COM::Ptr<IDCompositionTarget> compositionTarget;
+	COM::Ptr<IDCompositionVisual2> compositionVisual;
+	COM::Ptr<IDCompositionVirtualSurface> compositionSurface;
+	COM::Ptr<IDCompositionSurfaceFactory> compositionSurfaceFactory;
+	POINT size {};
+	bool needResize {false};
+};
+
+//-----------------------------------------------------------------------------
+Surface::Surface ()
+{
+	impl = std::make_unique<Impl> ();
+}
+
+//-----------------------------------------------------------------------------
+Surface::~Surface () noexcept = default;
+
+//-----------------------------------------------------------------------------
+std::unique_ptr<Surface> Surface::create (HWND window, IDCompositionDesktopDevice* compDevice,
+										  ID2D1Device* d2dDevice)
+{
+	auto surface = std::unique_ptr<Surface> (new Surface);
 	if (!surface)
 		return {};
-	surface->window = window;
-	auto hr =
-		compDevice->CreateTargetForHwnd (window, false, surface->compositionTarget.adoptPtr ());
+	surface->impl->compDevice = compDevice;
+	surface->impl->window = window;
+	auto hr = compDevice->CreateTargetForHwnd (window, false,
+											   surface->impl->compositionTarget.adoptPtr ());
 	if (FAILED (hr))
 		return {};
-	hr = compDevice->CreateVisual (surface->compositionVisual.adoptPtr ());
+	hr = compDevice->CreateVisual (surface->impl->compositionVisual.adoptPtr ());
 	if (FAILED (hr))
 		return {};
 	hr = compDevice->CreateSurfaceFactory (d2dDevice,
-										   surface->compositionSurfaceFactory.adoptPtr ());
+										   surface->impl->compositionSurfaceFactory.adoptPtr ());
 	if (FAILED (hr))
 		return {};
-	surface->size = surface->getWindowSize ();
-	hr = surface->compositionSurfaceFactory->CreateVirtualSurface (
-		surface->size.x, surface->size.y, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_ALPHA_MODE_PREMULTIPLIED,
-		surface->compositionSurface.adoptPtr ());
+	surface->impl->size = surface->getWindowSize ();
+	hr = surface->impl->compositionSurfaceFactory->CreateVirtualSurface (
+		surface->impl->size.x, surface->impl->size.y, DXGI_FORMAT_B8G8R8A8_UNORM,
+		DXGI_ALPHA_MODE_PREMULTIPLIED, surface->impl->compositionSurface.adoptPtr ());
 	if (FAILED (hr))
 		return {};
-	hr = surface->compositionVisual->SetContent (surface->compositionSurface.get ());
+	hr = surface->impl->compositionVisual->SetContent (surface->impl->compositionSurface.get ());
 	if (FAILED (hr))
 		return {};
-	hr = surface->compositionTarget->SetRoot (surface->compositionVisual.get ());
+	hr = surface->impl->compositionTarget->SetRoot (surface->impl->compositionVisual.get ());
 	if (FAILED (hr))
 		return {};
 	hr = compDevice->Commit ();
@@ -79,10 +108,10 @@ std::unique_ptr<DirectCompositionSurface> DirectCompositionSurface::create (
 }
 
 //-----------------------------------------------------------------------------
-POINT DirectCompositionSurface::getWindowSize () const
+POINT Surface::getWindowSize () const
 {
 	RECT clientRect {};
-	if (!GetClientRect (window, &clientRect))
+	if (!GetClientRect (impl->window, &clientRect))
 		return {};
 	auto width = clientRect.right - clientRect.left;
 	auto height = clientRect.bottom - clientRect.top;
@@ -90,23 +119,23 @@ POINT DirectCompositionSurface::getWindowSize () const
 }
 
 //-----------------------------------------------------------------------------
-void DirectCompositionSurface::onResize ()
+void Surface::onResize ()
 {
-	needResize = true;
+	impl->needResize = true;
 }
 
 //-----------------------------------------------------------------------------
-bool DirectCompositionSurface::update (CRect inUpdateRect, const DrawCallback& drawCallback)
+bool Surface::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 {
 	if (!drawCallback)
 		return false;
-	if (needResize)
+	if (impl->needResize)
 	{
 		auto windowSize = getWindowSize ();
-		if (size.x != windowSize.x || size.y != windowSize.y)
+		if (impl->size.x != windowSize.x || impl->size.y != windowSize.y)
 		{
-			size = windowSize;
-			compositionSurface->Resize (size.x, size.y);
+			impl->size = windowSize;
+			impl->compositionSurface->Resize (impl->size.x, impl->size.y);
 		}
 	}
 
@@ -123,7 +152,7 @@ bool DirectCompositionSurface::update (CRect inUpdateRect, const DrawCallback& d
 	}
 	POINT offset {};
 	COM::Ptr<ID2D1DeviceContext> d2dDeviceContext;
-	auto hr = compositionSurface->BeginDraw (
+	auto hr = impl->compositionSurface->BeginDraw (
 		&updateRect, __uuidof(ID2D1DeviceContext),
 		reinterpret_cast<void**> (d2dDeviceContext.adoptPtr ()), &offset);
 	if (FAILED (hr))
@@ -131,7 +160,7 @@ bool DirectCompositionSurface::update (CRect inUpdateRect, const DrawCallback& d
 
 	inUpdateRect = rectFromRECT (updateRect);
 	drawCallback (d2dDeviceContext.get (), inUpdateRect, offset);
-	hr = compositionSurface->EndDraw ();
+	hr = impl->compositionSurface->EndDraw ();
 	if (FAILED (hr))
 		return false;
 
@@ -141,20 +170,19 @@ bool DirectCompositionSurface::update (CRect inUpdateRect, const DrawCallback& d
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-DirectCompositionSupport::~DirectCompositionSupport () noexcept {}
+Support::~Support () noexcept {}
 
 //-----------------------------------------------------------------------------
-std::unique_ptr<DirectCompositionSupport>
-	DirectCompositionSupport::create (ID2D1Factory* d2dFactory)
+std::unique_ptr<Support> Support::create (ID2D1Factory* d2dFactory)
 {
-	auto obj = std::unique_ptr<DirectCompositionSupport> (new DirectCompositionSupport);
+	auto obj = std::unique_ptr<Support> (new Support);
 	if (obj->init (d2dFactory))
 		return std::move (obj);
 	return {};
 }
 
 //-----------------------------------------------------------------------------
-bool DirectCompositionSupport::init (ID2D1Factory* _d2dFactory)
+bool Support::init (ID2D1Factory* _d2dFactory)
 {
 	if (DirectCompositionSupportDll::instance ().loaded () == false)
 		return false;
@@ -187,7 +215,7 @@ bool DirectCompositionSupport::init (ID2D1Factory* _d2dFactory)
 }
 
 //-----------------------------------------------------------------------------
-bool DirectCompositionSupport::createD3D11Device ()
+bool Support::createD3D11Device ()
 {
 	D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
 										 D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
@@ -220,16 +248,17 @@ bool DirectCompositionSupport::createD3D11Device ()
 }
 
 //-----------------------------------------------------------------------------
-IDCompositionDesktopDevice* DirectCompositionSupport::getCompositionDesktopDevice () const
+IDCompositionDesktopDevice* Support::getCompositionDesktopDevice () const
 {
 	return compositionDesktopDevice.get ();
 }
 
 //-----------------------------------------------------------------------------
-ID2D1Device* DirectCompositionSupport::getD2D1Device () const
+ID2D1Device* Support::getD2D1Device () const
 {
 	return d2dDevice.get ();
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
+} // DirectComposition
 } // VSTGUI

@@ -13,44 +13,43 @@
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
+namespace DirectComposition {
 
 //-----------------------------------------------------------------------------
-struct DirectCompositionSurface
+struct Surface
 {
 public:
 	using DrawCallback =
 		std::function<void (ID2D1DeviceContext* deviceContext, CRect updateRect, POINT offset)>;
 
-	static std::unique_ptr<DirectCompositionSurface> create (HWND window,
-															 IDCompositionDesktopDevice* compDevice,
-															 ID2D1Device* d2dDevice);
+	static std::unique_ptr<Surface> create (HWND window, IDCompositionDesktopDevice* compDevice,
+											ID2D1Device* d2dDevice);
 	void onResize ();
 	bool update (CRect updateRect, const DrawCallback& drawCallback);
 
+	~Surface () noexcept;
+
 private:
+	Surface ();
+
 	POINT getWindowSize () const;
 
-	HWND window {nullptr};
-	COM::Ptr<IDCompositionTarget> compositionTarget;
-	COM::Ptr<IDCompositionVisual2> compositionVisual;
-	COM::Ptr<IDCompositionVirtualSurface> compositionSurface;
-	COM::Ptr<IDCompositionSurfaceFactory> compositionSurfaceFactory;
-	POINT size {};
-	bool needResize {false};
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //-----------------------------------------------------------------------------
-struct DirectCompositionSupport
+struct Support
 {
-	static std::unique_ptr<DirectCompositionSupport> create (ID2D1Factory* d2dFactory);
+	static std::unique_ptr<Support> create (ID2D1Factory* d2dFactory);
 
 	IDCompositionDesktopDevice* getCompositionDesktopDevice () const;
 	ID2D1Device* getD2D1Device () const;
 
-	~DirectCompositionSupport () noexcept;
+	~Support () noexcept;
 
 private:
-	DirectCompositionSupport () = default;
+	Support () = default;
 
 	bool init (ID2D1Factory* _d2dFactory);
 	bool createD3D11Device ();
@@ -62,5 +61,6 @@ private:
 	COM::Ptr<IDCompositionDesktopDevice> compositionDesktopDevice;
 };
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
+} // DirectComposition
 } // VSTGUI
