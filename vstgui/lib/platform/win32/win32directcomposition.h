@@ -8,8 +8,13 @@
 #include "../../crect.h"
 #include <functional>
 #include <memory>
-#include <d3d11_4.h>
-#include <dcomp.h>
+#include <windows.h>
+#include <combaseapi.h>
+
+interface ID2D1DeviceContext;
+interface IDCompositionDesktopDevice;
+interface ID2D1Device;
+interface ID2D1Factory;
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -19,21 +24,24 @@ namespace DirectComposition {
 struct Surface
 {
 public:
-	using DrawCallback =
-		std::function<void (ID2D1DeviceContext* deviceContext, CRect updateRect, POINT offset)>;
+	using DrawCallback = std::function<void (ID2D1DeviceContext* deviceContext, CRect updateRect,
+											 int32_t offsetX, int32_t offsetY)>;
 
-	static std::unique_ptr<Surface> create (HWND window, IDCompositionDesktopDevice* compDevice,
-											ID2D1Device* d2dDevice);
-	void onResize ();
+	void resize (uint32_t width, uint32_t height);
 	bool update (CRect updateRect, const DrawCallback& drawCallback);
+	bool commit ();
 
-	bool enableVisualizeRedrawAreas (bool state);
 	~Surface () noexcept;
 
 private:
-	Surface ();
+	friend struct Support;
 
-	POINT getWindowSize () const;
+	using DestroyCallback = std::function<void (Surface*)>;
+
+	static std::unique_ptr<Surface> create (HWND window, IDCompositionDesktopDevice* compDevice,
+											ID2D1Device* d2dDevice, DestroyCallback&& destroy);
+	Surface ();
+	bool enableVisualizeRedrawAreas (bool state);
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;
@@ -46,20 +54,18 @@ struct Support
 
 	IDCompositionDesktopDevice* getCompositionDesktopDevice () const;
 	ID2D1Device* getD2D1Device () const;
+	bool enableVisualizeRedrawAreas (bool state);
+	bool isVisualRedrawAreasEnabled () const;
+
+	std::unique_ptr<Surface> createSurface (HWND hwnd);
 
 	~Support () noexcept;
 
 private:
-	Support () = default;
+	Support ();
 
-	bool init (ID2D1Factory* _d2dFactory);
-	bool createD3D11Device ();
-
-	COM::Ptr<ID3D11Device1> d3dDevice;
-	COM::Ptr<ID3D11DeviceContext1> d3dDeviceContext;
-	COM::Ptr<IDXGIDevice> dxgiDevice;
-	COM::Ptr<ID2D1Device> d2dDevice;
-	COM::Ptr<IDCompositionDesktopDevice> compositionDesktopDevice;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

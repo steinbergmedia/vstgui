@@ -7,6 +7,7 @@
 #include "win32async.h"
 
 #include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
+#include "../../../../lib/platform/win32/win32directcomposition.h"
 #include "../../../../lib/platform/win32/win32factory.h"
 #include "../../../../lib/platform/win32/win32frame.h"
 #include "../../../../lib/platform/win32/win32dll.h"
@@ -294,6 +295,7 @@ void Window::updateCommands () const
 	mainMenu = std::make_shared<Win32Menu> ("");
 
 	std::shared_ptr<Win32Menu> fileMenu = nullptr;
+	std::shared_ptr<Win32Menu> debugMenu = nullptr;
 	const Detail::IPlatformApplication::CommandWithKeyList* appCommands = nullptr;
 
 	for (auto& e : menuCommandList)
@@ -309,6 +311,8 @@ void Window::updateCommands () const
 			mainMenu->addSubMenu (subMenu);
 			if (e.first == CommandGroup::File)
 				fileMenu = subMenu;
+			else if (e.first == CommandGroup::Debug)
+				debugMenu = subMenu;
 		}
 	}
 	if (appCommands)
@@ -341,6 +345,11 @@ void Window::updateCommands () const
 			}
 		}
 		mainMenu->addSubMenu (menu);
+	}
+	if (debugMenu)
+	{
+		if (getPlatformFactory ().asWin32Factory ()->getDirectCompositionSupport ())
+			debugMenu->addItem ("Visualize Redraw Areas");
 	}
 	SetMenu (hwnd, *mainMenu);
 }
@@ -402,15 +411,27 @@ void Window::validateMenu (Win32Menu* menu)
 //------------------------------------------------------------------------
 void Window::handleMenuCommand (const UTF8String& group, const UTF8String& name)
 {
+	bool commandHandled = false;
 	Command command = mapCommand ({group, name});
 	if (delegate->canHandleCommand (command))
-		delegate->handleCommand (command);
+		commandHandled = delegate->handleCommand (command);
 	else
 	{
 		if (auto commandHandler = Detail::getApplicationPlatformAccess ())
 		{
 			if (commandHandler->canHandleCommand (command))
-				commandHandler->handleCommand (command);
+				commandHandled = commandHandler->handleCommand (command);
+		}
+	}
+	if (!commandHandled)
+	{
+		if (group == CommandGroup::Debug && name == "Visualize Redraw Areas")
+		{
+			if (auto dcSupport =
+					getPlatformFactory ().asWin32Factory ()->getDirectCompositionSupport ())
+			{
+				dcSupport->enableVisualizeRedrawAreas (!dcSupport->isVisualRedrawAreasEnabled ());
+			}
 		}
 	}
 }

@@ -8,6 +8,8 @@
 #include "wintimer.h"
 #include "win32factory.h"
 
+#include <d3d11_4.h>
+#include <dcomp.h>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -73,7 +75,7 @@ bool VisualSurfacePair::update (RECT updateRect, const Surface::DrawCallback& ca
 	if (FAILED (hr))
 		return false;
 
-	callback (d2dDeviceContext.get (), rectFromRECT (updateRect), offset);
+	callback (d2dDeviceContext.get (), rectFromRECT (updateRect), offset.x, offset.y);
 	hr = surface->EndDraw ();
 	if (FAILED (hr))
 		return false;
@@ -106,20 +108,25 @@ struct SurfaceRedrawArea : IPlatformTimerCallback
 	{
 		surface->visual->SetOffsetX (static_cast<float> (r.left));
 		surface->visual->SetOffsetY (static_cast<float> (r.top));
+		auto tm = D2D1::Matrix3x2F::Scale (static_cast<float> (r.getWidth ()),
+										   static_cast<float> (r.getHeight ()));
+		surface->visual->SetTransform (tm);
+		r.setSize ({1., 1.});
 		surface->surface->Resize (static_cast<UINT> (r.getWidth ()),
 								  static_cast<UINT> (r.getHeight ()));
 		r.originize ();
-		s->update (RECTfromRect (r), [] (auto deviceContext, auto r, auto offset) {
-			COM::Ptr<ID2D1SolidColorBrush> brush;
-			D2D1_COLOR_F color = {1.f, 1.f, 0.f, 1.f};
-			deviceContext->CreateSolidColorBrush (&color, nullptr, brush.adoptPtr ());
-			D2D1_RECT_F rect;
-			rect.left = static_cast<FLOAT> (r.left) + offset.x;
-			rect.top = static_cast<FLOAT> (r.top) + offset.y;
-			rect.right = static_cast<FLOAT> (r.right) + offset.x;
-			rect.bottom = static_cast<FLOAT> (r.bottom) + offset.y;
-			deviceContext->FillRectangle (&rect, brush.get ());
-		});
+		s->update (RECTfromRect (r),
+				   [] (auto deviceContext, auto r, int32_t offsetX, int32_t offsetY) {
+					   COM::Ptr<ID2D1SolidColorBrush> brush;
+					   D2D1_COLOR_F color = {1.f, 1.f, 0.f, 1.f};
+					   deviceContext->CreateSolidColorBrush (&color, nullptr, brush.adoptPtr ());
+					   D2D1_RECT_F rect;
+					   rect.left = static_cast<FLOAT> (r.left) + offsetX;
+					   rect.top = static_cast<FLOAT> (r.top) + offsetY;
+					   rect.right = static_cast<FLOAT> (r.right) + offsetX;
+					   rect.bottom = static_cast<FLOAT> (r.bottom) + offsetY;
+					   deviceContext->FillRectangle (&rect, brush.get ());
+				   });
 		compDevice->CreateAnimation (animation.adoptPtr ());
 
 		restart ();
@@ -173,6 +180,7 @@ struct Surface::Impl
 	using Children = std::vector<VisualSurfacePairPtr>;
 	using RedrawAreaVector = std::vector<SurfaceRedrawAreaPtr>;
 
+	DestroyCallback destroyCallback;
 	HWND window {nullptr};
 	IDCompositionDesktopDevice* compDevice {nullptr};
 	COM::Ptr<IDCompositionTarget> compositionTarget;
@@ -181,9 +189,9 @@ struct Surface::Impl
 	VisualSurfacePairPtr redrawAreaPlane;
 	Children children;
 	RedrawAreaVector redrawAreas;
-	bool needResize {false};
 	bool showUpdateRects {true};
 
+	POINT getWindowSize () const;
 	VisualSurfacePairPtr createVisualSurfacePair (uint32_t width, uint32_t height) const;
 	void addChild (const VisualSurfacePairPtr& child);
 	void removeChild (const VisualSurfacePairPtr& child);
@@ -191,6 +199,17 @@ struct Surface::Impl
 	bool enableVisualizeRedrawAreas (bool state);
 	void addRedrawArea (CRect r);
 };
+
+//-----------------------------------------------------------------------------
+POINT Surface::Impl::getWindowSize () const
+{
+	RECT clientRect {};
+	if (!GetClientRect (window, &clientRect))
+		return {};
+	auto width = clientRect.right - clientRect.left;
+	auto height = clientRect.bottom - clientRect.top;
+	return {width, height};
+}
 
 //-----------------------------------------------------------------------------
 VisualSurfacePairPtr Surface::Impl::createVisualSurfacePair (uint32_t width, uint32_t height) const
@@ -295,11 +314,12 @@ Surface::~Surface () noexcept
 {
 	impl->enableVisualizeRedrawAreas (false);
 	vstgui_assert (impl->children.empty ());
+	impl->destroyCallback (this);
 }
 
 //-----------------------------------------------------------------------------
 std::unique_ptr<Surface> Surface::create (HWND window, IDCompositionDesktopDevice* compDevice,
-										  ID2D1Device* d2dDevice)
+										  ID2D1Device* d2dDevice, DestroyCallback&& destroy)
 {
 	auto surface = std::unique_ptr<Surface> (new Surface);
 	if (!surface)
@@ -317,7 +337,7 @@ std::unique_ptr<Surface> Surface::create (HWND window, IDCompositionDesktopDevic
 										   surface->impl->compositionSurfaceFactory.adoptPtr ());
 	if (FAILED (hr))
 		return {};
-	auto windowSize = surface->getWindowSize ();
+	auto windowSize = surface->impl->getWindowSize ();
 	surface->impl->rootPlane.width = windowSize.x;
 	surface->impl->rootPlane.height = windowSize.y;
 
@@ -335,24 +355,14 @@ std::unique_ptr<Surface> Surface::create (HWND window, IDCompositionDesktopDevic
 	hr = compDevice->Commit ();
 	if (FAILED (hr))
 		return {};
+	surface->impl->destroyCallback = std::move (destroy);
 	return surface;
 }
 
 //-----------------------------------------------------------------------------
-POINT Surface::getWindowSize () const
+void Surface::resize (uint32_t width, uint32_t height)
 {
-	RECT clientRect {};
-	if (!GetClientRect (impl->window, &clientRect))
-		return {};
-	auto width = clientRect.right - clientRect.left;
-	auto height = clientRect.bottom - clientRect.top;
-	return {width, height};
-}
-
-//-----------------------------------------------------------------------------
-void Surface::onResize ()
-{
-	impl->needResize = true;
+	impl->rootPlane.setSize (width, height);
 }
 
 //-----------------------------------------------------------------------------
@@ -360,18 +370,11 @@ bool Surface::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 {
 	if (!drawCallback)
 		return false;
-	if (impl->needResize)
-	{
-		auto windowSize = getWindowSize ();
-		impl->rootPlane.setSize (windowSize.x, windowSize.y);
-		if (impl->redrawAreaPlane)
-			impl->redrawAreaPlane->setSize (windowSize.x, windowSize.y);
-	}
 
 	RECT updateRect {};
 	if (inUpdateRect.isEmpty ())
 	{
-		auto size = getWindowSize ();
+		auto size = impl->getWindowSize ();
 		updateRect.right = size.x;
 		updateRect.bottom = size.y;
 	}
@@ -388,6 +391,14 @@ bool Surface::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 }
 
 //-----------------------------------------------------------------------------
+bool Surface::commit ()
+{
+	if (impl->compDevice)
+		return SUCCEEDED (impl->compDevice->Commit ());
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 bool Surface::enableVisualizeRedrawAreas (bool state)
 {
 	return impl->enableVisualizeRedrawAreas (state);
@@ -395,20 +406,43 @@ bool Surface::enableVisualizeRedrawAreas (bool state)
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+struct Support::Impl
+{
+	COM::Ptr<ID3D11Device1> d3dDevice;
+	COM::Ptr<ID3D11DeviceContext1> d3dDeviceContext;
+	COM::Ptr<IDXGIDevice> dxgiDevice;
+	COM::Ptr<ID2D1Device> d2dDevice;
+	COM::Ptr<IDCompositionDesktopDevice> compositionDesktopDevice;
+	std::vector<Surface*> surfaces;
+	bool visualizeRedrawAreas {false};
+
+	bool init (ID2D1Factory* _d2dFactory);
+	bool createD3D11Device ();
+};
+
 //-----------------------------------------------------------------------------
-Support::~Support () noexcept {}
+Support::Support ()
+{
+	impl = std::make_unique<Impl> ();
+}
+
+//-----------------------------------------------------------------------------
+Support::~Support () noexcept
+{
+	vstgui_assert (impl->surfaces.empty ());
+}
 
 //-----------------------------------------------------------------------------
 std::unique_ptr<Support> Support::create (ID2D1Factory* d2dFactory)
 {
 	auto obj = std::unique_ptr<Support> (new Support);
-	if (obj->init (d2dFactory))
+	if (obj->impl->init (d2dFactory))
 		return std::move (obj);
 	return {};
 }
 
 //-----------------------------------------------------------------------------
-bool Support::init (ID2D1Factory* _d2dFactory)
+bool Support::Impl::init (ID2D1Factory* _d2dFactory)
 {
 	if (DirectCompositionSupportDll::instance ().loaded () == false)
 		return false;
@@ -441,7 +475,7 @@ bool Support::init (ID2D1Factory* _d2dFactory)
 }
 
 //-----------------------------------------------------------------------------
-bool Support::createD3D11Device ()
+bool Support::Impl::createD3D11Device ()
 {
 	D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
 										 D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
@@ -476,13 +510,50 @@ bool Support::createD3D11Device ()
 //-----------------------------------------------------------------------------
 IDCompositionDesktopDevice* Support::getCompositionDesktopDevice () const
 {
-	return compositionDesktopDevice.get ();
+	return impl->compositionDesktopDevice.get ();
 }
 
 //-----------------------------------------------------------------------------
 ID2D1Device* Support::getD2D1Device () const
 {
-	return d2dDevice.get ();
+	return impl->d2dDevice.get ();
+}
+
+//-----------------------------------------------------------------------------
+bool Support::enableVisualizeRedrawAreas (bool state)
+{
+	if (impl->visualizeRedrawAreas == state)
+		return true;
+
+	impl->visualizeRedrawAreas = state;
+	for (auto& s : impl->surfaces)
+	{
+		s->enableVisualizeRedrawAreas (state);
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool Support::isVisualRedrawAreasEnabled () const
+{
+	return impl->visualizeRedrawAreas;
+}
+
+//-----------------------------------------------------------------------------
+std::unique_ptr<Surface> Support::createSurface (HWND hwnd)
+{
+	if (auto surface = Surface::create (
+			hwnd, getCompositionDesktopDevice (), getD2D1Device (), [this] (auto surface) {
+				auto it = std::find (impl->surfaces.begin (), impl->surfaces.end (), surface);
+				vstgui_assert (it != impl->surfaces.end ());
+				impl->surfaces.erase (it);
+			}))
+	{
+		surface->enableVisualizeRedrawAreas (impl->visualizeRedrawAreas);
+		impl->surfaces.push_back (surface.get ());
+		return surface;
+	}
+	return nullptr;
 }
 
 //------------------------------------------------------------------------

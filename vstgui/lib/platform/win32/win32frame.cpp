@@ -27,6 +27,8 @@
 #include "../../events.h"
 #include "../../finally.h"
 
+#include <d2d1_1.h>
+
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"
 #endif
@@ -110,9 +112,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 	setMouseCursor (kCursorDefault);
 	if (directComposition)
 	{
-		directCompositionSurface = DirectComposition::Surface::create (
-			windowHandle, directComposition->getCompositionDesktopDevice (),
-			directComposition->getD2D1Device ());
+		directCompositionSurface = directComposition->createSurface (windowHandle);
 	}
 }
 
@@ -288,8 +288,6 @@ bool Win32Frame::setSize (const CRect& newSize)
 	{
 		backBuffer = getPlatformFactory ().createOffscreenContext (newSize.getSize ());
 	}
-	if (directCompositionSurface)
-		directCompositionSurface->onResize ();
 	if (!parentWindow)
 		return true;
 	SetWindowPos (windowHandle, HWND_TOP, (int)newSize.left, (int)newSize.top, (int)newSize.getWidth (), (int)newSize.getHeight (), SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOREDRAW|SWP_DEFERERASE);
@@ -613,22 +611,22 @@ void Win32Frame::paint (HWND hwnd)
 	inPaint = true;
 	
 	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint (hwnd, &ps);
-
-	if (hdc)
+	if (HDC hdc = BeginPaint (hwnd, &ps))
 	{
 		RECT clientRect;
 		GetClientRect (windowHandle, &clientRect);
 		CRect frameSize = rectFromRECT (clientRect);
 		if (directCompositionSurface)
 		{
+			directCompositionSurface->resize (static_cast<uint32_t> (frameSize.getWidth ()),
+											  static_cast<uint32_t> (frameSize.getHeight ()));
 			iterateRegion (rgn, [&] (const auto& rect) {
 				directCompositionSurface->update (
-					rect, [&] (auto deviceContext, auto rect, auto offset) {
+					rect, [&] (auto deviceContext, auto rect, auto offsetX, auto offsetY) {
 						D2DDrawContext drawContext (deviceContext, frameSize);
 						drawContext.setClipRect (rect);
 						CGraphicsTransform tm;
-						tm.translate (offset.x - rect.left, offset.y - rect.top);
+						tm.translate (offsetX - rect.left, offsetY - rect.top);
 						CDrawContext::Transform transform (drawContext, tm);
 						{
 							drawContext.saveGlobalState ();
@@ -638,11 +636,7 @@ void Win32Frame::paint (HWND hwnd)
 						}
 					});
 			});
-			getPlatformFactory ()
-				.asWin32Factory ()
-				->getDirectCompositionSupport ()
-				->getCompositionDesktopDevice ()
-				->Commit ();
+			directCompositionSurface->commit ();
 		}
 		else
 		{
