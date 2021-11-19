@@ -173,7 +173,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	style = config.style;
 
 	bool directComposition =
-		getPlatformFactory ().asWin32Factory ()->getDirectCompositionSupport () != nullptr;
+		getPlatformFactory ().asWin32Factory ()->getDirectCompositionFactory () != nullptr;
 
 	if (config.type == WindowType::Popup)
 	{
@@ -348,7 +348,7 @@ void Window::updateCommands () const
 	}
 	if (debugMenu)
 	{
-		if (getPlatformFactory ().asWin32Factory ()->getDirectCompositionSupport ())
+		if (getPlatformFactory ().asWin32Factory ()->getDirectCompositionFactory ())
 			debugMenu->addItem ("Visualize Redraw Areas");
 	}
 	SetMenu (hwnd, *mainMenu);
@@ -428,7 +428,7 @@ void Window::handleMenuCommand (const UTF8String& group, const UTF8String& name)
 		if (group == CommandGroup::Debug && name == "Visualize Redraw Areas")
 		{
 			if (auto dcSupport =
-					getPlatformFactory ().asWin32Factory ()->getDirectCompositionSupport ())
+					getPlatformFactory ().asWin32Factory ()->getDirectCompositionFactory ())
 			{
 				dcSupport->enableVisualizeRedrawAreas (!dcSupport->isVisualRedrawAreasEnabled ());
 			}

@@ -49,7 +49,7 @@ struct Win32Factory::Impl
 	COM::Ptr<IDWriteFactory> directWriteFactory;
 	COM::Ptr<IWICImagingFactory> wicImagingFactory;
 
-	std::unique_ptr<DirectComposition::Support> directCompositionSupport;
+	std::unique_ptr<DirectComposition::Factory> directCompositionFactory;
 
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
@@ -108,7 +108,7 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 	CoCreateInstance (VSTGUI_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
 					  IID_IWICImagingFactory, (void**)impl->wicImagingFactory.adoptPtr ());
 
-	impl->directCompositionSupport = DirectComposition::Support::create (impl->d2dFactory.get ());
+	impl->directCompositionFactory = DirectComposition::Factory::create (impl->d2dFactory.get ());
 }
 
 //-----------------------------------------------------------------------------
@@ -179,9 +179,9 @@ IDWriteFactory* Win32Factory::getDirectWriteFactory () const noexcept
 }
 
 //-----------------------------------------------------------------------------
-DirectComposition::Support* Win32Factory::getDirectCompositionSupport () const noexcept
+DirectComposition::Factory* Win32Factory::getDirectCompositionFactory () const noexcept
 {
-	return impl->directCompositionSupport.get ();
+	return impl->directCompositionFactory.get ();
 }
 
 //-----------------------------------------------------------------------------

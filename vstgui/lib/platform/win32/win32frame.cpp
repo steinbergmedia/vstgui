@@ -83,7 +83,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , updateRegionListSize (0)
 {
 	useD2D ();
-	auto directComposition = getPlatformFactory ().asWin32Factory ()->getDirectCompositionSupport ();
+	auto dcFactory = getPlatformFactory ().asWin32Factory ()->getDirectCompositionFactory ();
 	if (parentType == PlatformType::kHWNDTopLevel)
 	{
 		windowHandle = parent;
@@ -96,7 +96,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 
 		DWORD exStyle = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
 		DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-		if (directComposition)
+		if (dcFactory)
 			exStyle = WS_EX_NOREDIRECTIONBITMAP;
 
 		windowHandle = CreateWindowEx (exStyle, gClassName, TEXT ("Window"), style, 0, 0,
@@ -110,16 +110,16 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 		}
 	}
 	setMouseCursor (kCursorDefault);
-	if (directComposition)
+	if (dcFactory)
 	{
-		directCompositionSurface = directComposition->createSurface (windowHandle);
+		directCompositionVisual = dcFactory->createVisualForHWND (windowHandle);
 	}
 }
 
 //-----------------------------------------------------------------------------
 Win32Frame::~Win32Frame () noexcept
 {
-	directCompositionSurface = nullptr;
+	directCompositionVisual = nullptr;
 
 	if (updateRegionList)
 		std::free (updateRegionList);
@@ -494,6 +494,16 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
 }
 
+//------------------------------------------------------------------------
+SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
+	IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+{
+	if (directCompositionVisual)
+	{
+	}
+	return nullptr;
+}
+
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
@@ -616,12 +626,12 @@ void Win32Frame::paint (HWND hwnd)
 		RECT clientRect;
 		GetClientRect (windowHandle, &clientRect);
 		CRect frameSize = rectFromRECT (clientRect);
-		if (directCompositionSurface)
+		if (directCompositionVisual)
 		{
-			directCompositionSurface->resize (static_cast<uint32_t> (frameSize.getWidth ()),
-											  static_cast<uint32_t> (frameSize.getHeight ()));
+			directCompositionVisual->resize (static_cast<uint32_t> (frameSize.getWidth ()),
+											 static_cast<uint32_t> (frameSize.getHeight ()));
 			iterateRegion (rgn, [&] (const auto& rect) {
-				directCompositionSurface->update (
+				directCompositionVisual->update (
 					rect, [&] (auto deviceContext, auto rect, auto offsetX, auto offsetY) {
 						D2DDrawContext drawContext (deviceContext, frameSize);
 						drawContext.setClipRect (rect);
@@ -636,7 +646,7 @@ void Win32Frame::paint (HWND hwnd)
 						}
 					});
 			});
-			directCompositionSurface->commit ();
+			directCompositionVisual->commit ();
 		}
 		else
 		{

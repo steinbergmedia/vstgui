@@ -12,57 +12,41 @@
 #include <combaseapi.h>
 
 interface ID2D1DeviceContext;
-interface IDCompositionDesktopDevice;
-interface ID2D1Device;
-interface ID2D1Factory;
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 namespace DirectComposition {
 
 //-----------------------------------------------------------------------------
-struct Surface
+struct IVisual
 {
-public:
 	using DrawCallback = std::function<void (ID2D1DeviceContext* deviceContext, CRect updateRect,
 											 int32_t offsetX, int32_t offsetY)>;
 
-	void resize (uint32_t width, uint32_t height);
-	bool update (CRect updateRect, const DrawCallback& drawCallback);
-	bool commit ();
+	virtual bool setPosition (uint32_t left, uint32_t top) = 0;
+	virtual bool resize (uint32_t width, uint32_t height) = 0;
+	virtual bool update (CRect updateRect, const DrawCallback& drawCallback) = 0;
+	virtual bool commit () = 0;
 
-	~Surface () noexcept;
-
-private:
-	friend struct Support;
-
-	using DestroyCallback = std::function<void (Surface*)>;
-
-	static std::unique_ptr<Surface> create (HWND window, IDCompositionDesktopDevice* compDevice,
-											ID2D1Device* d2dDevice, DestroyCallback&& destroy);
-	Surface ();
-	bool enableVisualizeRedrawAreas (bool state);
-
-	struct Impl;
-	std::unique_ptr<Impl> impl;
+	virtual ~IVisual () noexcept = default;
 };
 
-//-----------------------------------------------------------------------------
-struct Support
-{
-	static std::unique_ptr<Support> create (ID2D1Factory* d2dFactory);
+using VisualPtr = std::shared_ptr<IVisual>;
 
-	IDCompositionDesktopDevice* getCompositionDesktopDevice () const;
-	ID2D1Device* getD2D1Device () const;
+//-----------------------------------------------------------------------------
+struct Factory
+{
+	static std::unique_ptr<Factory> create (IUnknown* d2dFactory);
+
 	bool enableVisualizeRedrawAreas (bool state);
 	bool isVisualRedrawAreasEnabled () const;
 
-	std::unique_ptr<Surface> createSurface (HWND hwnd);
+	VisualPtr createVisualForHWND (HWND hwnd);
 
-	~Support () noexcept;
+	~Factory () noexcept;
 
 private:
-	Support ();
+	Factory ();
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

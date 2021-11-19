@@ -17,7 +17,7 @@ namespace VSTGUI {
 
 //------------------------------------------------------------------------
 namespace DirectComposition {
-struct Support;
+struct Factory;
 }
 //-----------------------------------------------------------------------------
 class Win32Factory final : public IPlatformFactory
@@ -40,7 +40,7 @@ public:
 	IWICImagingFactory* getWICImagingFactory () const noexcept;
 	IDWriteFactory* getDirectWriteFactory () const noexcept;
 
-	DirectComposition::Support* getDirectCompositionSupport () const noexcept;
+	DirectComposition::Factory* getDirectCompositionFactory () const noexcept;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks

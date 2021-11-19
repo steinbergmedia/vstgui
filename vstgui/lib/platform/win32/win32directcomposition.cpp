@@ -49,8 +49,30 @@ private:
 	DCompositionCreateDevice2Func createDevice2Func {nullptr};
 };
 
-//------------------------------------------------------------------------
-} // anonymous
+//-----------------------------------------------------------------------------
+struct RootVisual : IVisual
+{
+public:
+	bool setPosition (uint32_t left, uint32_t top) override;
+	bool resize (uint32_t width, uint32_t height) override;
+	bool update (CRect updateRect, const DrawCallback& drawCallback) override;
+	bool commit () override;
+
+	~RootVisual () noexcept;
+
+private:
+	friend struct Factory;
+
+	using DestroyCallback = std::function<void (RootVisual*)>;
+
+	static std::unique_ptr<RootVisual> create (HWND window, IDCompositionDesktopDevice* compDevice,
+											   ID2D1Device* d2dDevice, DestroyCallback&& destroy);
+	RootVisual ();
+	bool enableVisualizeRedrawAreas (bool state);
+
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+};
 
 //-----------------------------------------------------------------------------
 struct VisualSurfacePair
@@ -60,13 +82,13 @@ struct VisualSurfacePair
 	UINT width {};
 	UINT height {};
 
-	bool update (RECT updateRect, const Surface::DrawCallback& callback);
-	void setSize (uint32_t width, uint32_t height);
+	bool update (RECT updateRect, const IVisual::DrawCallback& callback);
+	bool setSize (uint32_t width, uint32_t height);
 };
 using VisualSurfacePairPtr = std::shared_ptr<VisualSurfacePair>;
 
 //-----------------------------------------------------------------------------
-bool VisualSurfacePair::update (RECT updateRect, const Surface::DrawCallback& callback)
+bool VisualSurfacePair::update (RECT updateRect, const IVisual::DrawCallback& callback)
 {
 	POINT offset {};
 	COM::Ptr<ID2D1DeviceContext> d2dDeviceContext;
@@ -83,14 +105,21 @@ bool VisualSurfacePair::update (RECT updateRect, const Surface::DrawCallback& ca
 }
 
 //-----------------------------------------------------------------------------
-void VisualSurfacePair::setSize (uint32_t w, uint32_t h)
+bool VisualSurfacePair::setSize (uint32_t w, uint32_t h)
 {
 	if (w != width || h != height)
 	{
-		width = w;
-		height = h;
-		surface->Resize (width, height);
+		if (SUCCEEDED (surface->Resize (w, h)))
+		{
+			width = w;
+			height = h;
+		}
+		else
+		{
+			return false;
+		}
 	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -175,7 +204,7 @@ private:
 using SurfaceRedrawAreaPtr = std::shared_ptr<SurfaceRedrawArea>;
 
 //-----------------------------------------------------------------------------
-struct Surface::Impl
+struct RootVisual::Impl
 {
 	using Children = std::vector<VisualSurfacePairPtr>;
 	using RedrawAreaVector = std::vector<SurfaceRedrawAreaPtr>;
@@ -201,7 +230,7 @@ struct Surface::Impl
 };
 
 //-----------------------------------------------------------------------------
-POINT Surface::Impl::getWindowSize () const
+POINT RootVisual::Impl::getWindowSize () const
 {
 	RECT clientRect {};
 	if (!GetClientRect (window, &clientRect))
@@ -212,7 +241,8 @@ POINT Surface::Impl::getWindowSize () const
 }
 
 //-----------------------------------------------------------------------------
-VisualSurfacePairPtr Surface::Impl::createVisualSurfacePair (uint32_t width, uint32_t height) const
+VisualSurfacePairPtr RootVisual::Impl::createVisualSurfacePair (uint32_t width,
+																uint32_t height) const
 {
 	auto child = std::make_shared<VisualSurfacePair> ();
 	auto hr = compDevice->CreateVisual (child->visual.adoptPtr ());
@@ -230,14 +260,14 @@ VisualSurfacePairPtr Surface::Impl::createVisualSurfacePair (uint32_t width, uin
 }
 
 //-----------------------------------------------------------------------------
-void Surface::Impl::addChild (const VisualSurfacePairPtr& child)
+void RootVisual::Impl::addChild (const VisualSurfacePairPtr& child)
 {
 	rootPlane.visual->AddVisual (child->visual.get (), TRUE, nullptr);
 	children.push_back (child);
 }
 
 //-----------------------------------------------------------------------------
-void Surface::Impl::removeChild (const VisualSurfacePairPtr& child)
+void RootVisual::Impl::removeChild (const VisualSurfacePairPtr& child)
 {
 	auto it = std::find_if (children.begin (), children.end (), [&] (const auto& el) {
 		return el->visual.get () == child->visual.get ();
@@ -249,7 +279,7 @@ void Surface::Impl::removeChild (const VisualSurfacePairPtr& child)
 }
 
 //-----------------------------------------------------------------------------
-bool Surface::Impl::enableVisualizeRedrawAreas (bool state)
+bool RootVisual::Impl::enableVisualizeRedrawAreas (bool state)
 {
 	if (state)
 	{
@@ -273,7 +303,7 @@ bool Surface::Impl::enableVisualizeRedrawAreas (bool state)
 }
 
 //-----------------------------------------------------------------------------
-void Surface::Impl::addRedrawArea (CRect r)
+void RootVisual::Impl::addRedrawArea (CRect r)
 {
 	if (!redrawAreaPlane)
 		return;
@@ -304,13 +334,13 @@ void Surface::Impl::addRedrawArea (CRect r)
 }
 
 //-----------------------------------------------------------------------------
-Surface::Surface ()
+RootVisual::RootVisual ()
 {
 	impl = std::make_unique<Impl> ();
 }
 
 //-----------------------------------------------------------------------------
-Surface::~Surface () noexcept
+RootVisual::~RootVisual () noexcept
 {
 	impl->enableVisualizeRedrawAreas (false);
 	vstgui_assert (impl->children.empty ());
@@ -318,10 +348,10 @@ Surface::~Surface () noexcept
 }
 
 //-----------------------------------------------------------------------------
-std::unique_ptr<Surface> Surface::create (HWND window, IDCompositionDesktopDevice* compDevice,
-										  ID2D1Device* d2dDevice, DestroyCallback&& destroy)
+std::unique_ptr<RootVisual> RootVisual::create (HWND window, IDCompositionDesktopDevice* compDevice,
+												ID2D1Device* d2dDevice, DestroyCallback&& destroy)
 {
-	auto surface = std::unique_ptr<Surface> (new Surface);
+	auto surface = std::unique_ptr<RootVisual> (new RootVisual);
 	if (!surface)
 		return {};
 	surface->impl->compDevice = compDevice;
@@ -360,13 +390,20 @@ std::unique_ptr<Surface> Surface::create (HWND window, IDCompositionDesktopDevic
 }
 
 //-----------------------------------------------------------------------------
-void Surface::resize (uint32_t width, uint32_t height)
+bool RootVisual::setPosition (uint32_t left, uint32_t top)
 {
-	impl->rootPlane.setSize (width, height);
+	// the root visual is always at (0, 0)
+	return false;
 }
 
 //-----------------------------------------------------------------------------
-bool Surface::update (CRect inUpdateRect, const DrawCallback& drawCallback)
+bool RootVisual::resize (uint32_t width, uint32_t height)
+{
+	return impl->rootPlane.setSize (width, height);
+}
+
+//-----------------------------------------------------------------------------
+bool RootVisual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 {
 	if (!drawCallback)
 		return false;
@@ -391,7 +428,7 @@ bool Surface::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 }
 
 //-----------------------------------------------------------------------------
-bool Surface::commit ()
+bool RootVisual::commit ()
 {
 	if (impl->compDevice)
 		return SUCCEEDED (impl->compDevice->Commit ());
@@ -399,50 +436,53 @@ bool Surface::commit ()
 }
 
 //-----------------------------------------------------------------------------
-bool Surface::enableVisualizeRedrawAreas (bool state)
+bool RootVisual::enableVisualizeRedrawAreas (bool state)
 {
 	return impl->enableVisualizeRedrawAreas (state);
 }
 
+//------------------------------------------------------------------------
+} // anonymous
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-struct Support::Impl
+struct Factory::Impl
 {
 	COM::Ptr<ID3D11Device1> d3dDevice;
 	COM::Ptr<ID3D11DeviceContext1> d3dDeviceContext;
 	COM::Ptr<IDXGIDevice> dxgiDevice;
 	COM::Ptr<ID2D1Device> d2dDevice;
 	COM::Ptr<IDCompositionDesktopDevice> compositionDesktopDevice;
-	std::vector<Surface*> surfaces;
+	std::vector<RootVisual*> surfaces;
 	bool visualizeRedrawAreas {false};
 
-	bool init (ID2D1Factory* _d2dFactory);
+	bool init (IUnknown* _d2dFactory);
 	bool createD3D11Device ();
 };
 
 //-----------------------------------------------------------------------------
-Support::Support ()
+Factory::Factory ()
 {
 	impl = std::make_unique<Impl> ();
 }
 
 //-----------------------------------------------------------------------------
-Support::~Support () noexcept
+Factory::~Factory () noexcept
 {
 	vstgui_assert (impl->surfaces.empty ());
 }
 
 //-----------------------------------------------------------------------------
-std::unique_ptr<Support> Support::create (ID2D1Factory* d2dFactory)
+std::unique_ptr<Factory> Factory::create (IUnknown* d2dFactory)
 {
-	auto obj = std::unique_ptr<Support> (new Support);
+	auto obj = std::unique_ptr<Factory> (new Factory);
 	if (obj->impl->init (d2dFactory))
 		return std::move (obj);
 	return {};
 }
 
 //-----------------------------------------------------------------------------
-bool Support::Impl::init (ID2D1Factory* _d2dFactory)
+bool Factory::Impl::init (IUnknown* _d2dFactory)
 {
 	if (DirectCompositionSupportDll::instance ().loaded () == false)
 		return false;
@@ -475,7 +515,7 @@ bool Support::Impl::init (ID2D1Factory* _d2dFactory)
 }
 
 //-----------------------------------------------------------------------------
-bool Support::Impl::createD3D11Device ()
+bool Factory::Impl::createD3D11Device ()
 {
 	D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
 										 D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
@@ -508,19 +548,7 @@ bool Support::Impl::createD3D11Device ()
 }
 
 //-----------------------------------------------------------------------------
-IDCompositionDesktopDevice* Support::getCompositionDesktopDevice () const
-{
-	return impl->compositionDesktopDevice.get ();
-}
-
-//-----------------------------------------------------------------------------
-ID2D1Device* Support::getD2D1Device () const
-{
-	return impl->d2dDevice.get ();
-}
-
-//-----------------------------------------------------------------------------
-bool Support::enableVisualizeRedrawAreas (bool state)
+bool Factory::enableVisualizeRedrawAreas (bool state)
 {
 	if (impl->visualizeRedrawAreas == state)
 		return true;
@@ -534,20 +562,21 @@ bool Support::enableVisualizeRedrawAreas (bool state)
 }
 
 //-----------------------------------------------------------------------------
-bool Support::isVisualRedrawAreasEnabled () const
+bool Factory::isVisualRedrawAreasEnabled () const
 {
 	return impl->visualizeRedrawAreas;
 }
 
 //-----------------------------------------------------------------------------
-std::unique_ptr<Surface> Support::createSurface (HWND hwnd)
+VisualPtr Factory::createVisualForHWND (HWND hwnd)
 {
-	if (auto surface = Surface::create (
-			hwnd, getCompositionDesktopDevice (), getD2D1Device (), [this] (auto surface) {
-				auto it = std::find (impl->surfaces.begin (), impl->surfaces.end (), surface);
-				vstgui_assert (it != impl->surfaces.end ());
-				impl->surfaces.erase (it);
-			}))
+	if (auto surface = RootVisual::create (hwnd, impl->compositionDesktopDevice.get (),
+										   impl->d2dDevice.get (), [this] (auto surface) {
+											   auto it = std::find (impl->surfaces.begin (),
+																	impl->surfaces.end (), surface);
+											   vstgui_assert (it != impl->surfaces.end ());
+											   impl->surfaces.erase (it);
+										   }))
 	{
 		surface->enableVisualizeRedrawAreas (impl->visualizeRedrawAreas);
 		impl->surfaces.push_back (surface.get ());

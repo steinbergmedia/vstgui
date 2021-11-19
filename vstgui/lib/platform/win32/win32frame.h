@@ -9,12 +9,9 @@
 #if WINDOWS
 
 #include "../../cframe.h"
+#include "win32directcomposition.h"
 
 namespace VSTGUI {
-
-namespace DirectComposition {
-struct Surface;
-}
 
 //-----------------------------------------------------------------------------
 class Win32Frame final : public IPlatformFrame, public IWin32PlatformFrame
@@ -50,7 +47,7 @@ public:
 #if VSTGUI_OPENGL_SUPPORT
 	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
-	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return nullptr; } // not yet supported
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 #endif
@@ -83,7 +80,7 @@ protected:
 	SharedPointer<COffscreenContext> backBuffer;
 	CDrawContext* deviceContext;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
-	std::unique_ptr<DirectComposition::Surface> directCompositionSurface;
+	DirectComposition::VisualPtr directCompositionVisual;
 	Optional<MSG> currentEvent;
 
 	bool inPaint;
