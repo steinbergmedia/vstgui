@@ -26,6 +26,7 @@ struct IVisual
 	virtual bool setPosition (uint32_t left, uint32_t top) = 0;
 	virtual bool resize (uint32_t width, uint32_t height) = 0;
 	virtual bool update (CRect updateRect, const DrawCallback& drawCallback) = 0;
+	virtual bool setOpacity (float opacity) = 0;
 	virtual bool commit () = 0;
 
 	virtual ~IVisual () noexcept = default;

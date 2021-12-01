@@ -56,6 +56,7 @@ public:
 	bool setPosition (uint32_t left, uint32_t top) override;
 	bool resize (uint32_t width, uint32_t height) override;
 	bool update (CRect updateRect, const DrawCallback& drawCallback) override;
+	bool setOpacity (float opacity) override;
 	bool commit () override;
 
 	~RootVisual () noexcept;
@@ -84,6 +85,7 @@ struct VisualSurfacePair
 
 	bool update (RECT updateRect, const IVisual::DrawCallback& callback);
 	bool setSize (uint32_t width, uint32_t height);
+	bool setOpacity (float o);
 };
 using VisualSurfacePairPtr = std::shared_ptr<VisualSurfacePair>;
 
@@ -120,6 +122,19 @@ bool VisualSurfacePair::setSize (uint32_t w, uint32_t h)
 		}
 	}
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool VisualSurfacePair::setOpacity (float o)
+{
+	COM::Ptr<IDCompositionVisual3> vis3;
+	auto hr = visual->QueryInterface (__uuidof(IDCompositionVisual3),
+									  reinterpret_cast<void**> (vis3.adoptPtr ()));
+	if (SUCCEEDED (hr) && vis3)
+	{
+		hr = vis3->SetOpacity (o);
+	}
+	return SUCCEEDED (hr);
 }
 
 //-----------------------------------------------------------------------------
@@ -425,6 +440,12 @@ bool RootVisual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 	impl->addRedrawArea (rectFromRECT (updateRect));
 
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool RootVisual::setOpacity (float opacity)
+{
+	return impl->rootPlane.setOpacity (opacity);
 }
 
 //-----------------------------------------------------------------------------
