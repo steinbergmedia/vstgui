@@ -19,6 +19,7 @@
 #include "win32datapackage.h"
 #include "win32dragging.h"
 #include "win32directcomposition.h"
+#include "win32viewlayer.h"
 #include "../common/genericoptionmenu.h"
 #include "../common/generictextedit.h"
 #include "../../cdropsource.h"
@@ -503,8 +504,19 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
 	IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
-	if (directCompositionVisual)
+	if (!directCompositionVisual)
+		return nullptr; // not supported when not using DirectComposition
+	if (parentLayer == nullptr)
 	{
+		auto visual = getPlatformFactory ()
+						  .asWin32Factory ()
+						  ->getDirectCompositionFactory ()
+						  ->createChildVisual (*directCompositionVisual.get (), 100, 100);
+		return makeOwned<Win32ViewLayer> (visual, drawDelegate);
+	}
+	else if (auto pl = dynamic_cast<Win32ViewLayer*> (parentLayer))
+	{
+
 	}
 	return nullptr;
 }

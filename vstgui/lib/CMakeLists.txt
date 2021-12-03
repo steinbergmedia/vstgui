@@ -259,6 +259,8 @@ set(${target}_win32_sources
     platform/win32/win32support.h
     platform/win32/win32textedit.cpp
     platform/win32/win32textedit.h
+    platform/win32/win32viewlayer.cpp
+    platform/win32/win32viewlayer.h
     platform/win32/winfileselector.cpp
     platform/win32/winstring.cpp
     platform/win32/winstring.h
