@@ -43,6 +43,8 @@ struct Factory
 	bool isVisualRedrawAreasEnabled () const;
 
 	VisualPtr createVisualForHWND (HWND hwnd);
+	VisualPtr createChildVisual (IVisual& parent, uint32_t width, uint32_t height);
+	bool removeVisual (const VisualPtr& visual);
 
 	~Factory () noexcept;
 

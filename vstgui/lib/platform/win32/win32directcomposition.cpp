@@ -50,32 +50,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-struct RootVisual : IVisual
-{
-public:
-	bool setPosition (uint32_t left, uint32_t top) override;
-	bool resize (uint32_t width, uint32_t height) override;
-	bool update (CRect updateRect, const DrawCallback& drawCallback) override;
-	bool setOpacity (float opacity) override;
-	bool commit () override;
-
-	~RootVisual () noexcept;
-
-private:
-	friend struct Factory;
-
-	using DestroyCallback = std::function<void (RootVisual*)>;
-
-	static std::unique_ptr<RootVisual> create (HWND window, IDCompositionDesktopDevice* compDevice,
-											   ID2D1Device* d2dDevice, DestroyCallback&& destroy);
-	RootVisual ();
-	bool enableVisualizeRedrawAreas (bool state);
-
-	struct Impl;
-	std::unique_ptr<Impl> impl;
-};
-
-//-----------------------------------------------------------------------------
 struct VisualSurfacePair
 {
 	COM::Ptr<IDCompositionVisual2> visual;
@@ -84,58 +58,11 @@ struct VisualSurfacePair
 	UINT height {};
 
 	bool update (RECT updateRect, const IVisual::DrawCallback& callback);
+	bool setOffset (uint32_t left, uint32_t top);
 	bool setSize (uint32_t width, uint32_t height);
 	bool setOpacity (float o);
 };
 using VisualSurfacePairPtr = std::shared_ptr<VisualSurfacePair>;
-
-//-----------------------------------------------------------------------------
-bool VisualSurfacePair::update (RECT updateRect, const IVisual::DrawCallback& callback)
-{
-	POINT offset {};
-	COM::Ptr<ID2D1DeviceContext> d2dDeviceContext;
-	auto hr = surface->BeginDraw (&updateRect, __uuidof(ID2D1DeviceContext),
-								  reinterpret_cast<void**> (d2dDeviceContext.adoptPtr ()), &offset);
-	if (FAILED (hr))
-		return false;
-
-	callback (d2dDeviceContext.get (), rectFromRECT (updateRect), offset.x, offset.y);
-	hr = surface->EndDraw ();
-	if (FAILED (hr))
-		return false;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool VisualSurfacePair::setSize (uint32_t w, uint32_t h)
-{
-	if (w != width || h != height)
-	{
-		if (SUCCEEDED (surface->Resize (w, h)))
-		{
-			width = w;
-			height = h;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool VisualSurfacePair::setOpacity (float o)
-{
-	COM::Ptr<IDCompositionVisual3> vis3;
-	auto hr = visual->QueryInterface (__uuidof(IDCompositionVisual3),
-									  reinterpret_cast<void**> (vis3.adoptPtr ()));
-	if (SUCCEEDED (hr) && vis3)
-	{
-		hr = vis3->SetOpacity (o);
-	}
-	return SUCCEEDED (hr);
-}
 
 //-----------------------------------------------------------------------------
 struct SurfaceRedrawArea : IPlatformTimerCallback
@@ -218,34 +145,221 @@ private:
 };
 using SurfaceRedrawAreaPtr = std::shared_ptr<SurfaceRedrawArea>;
 
+struct RootVisual;
 //-----------------------------------------------------------------------------
-struct RootVisual::Impl
+struct Visual : IVisual
 {
+	Visual () = default;
+	Visual (VisualSurfacePairPtr vsPair, Visual* parent);
+	~Visual () noexcept;
+
+	bool setPosition (uint32_t left, uint32_t top) override;
+	bool resize (uint32_t width, uint32_t height) override;
+	bool update (CRect updateRect, const DrawCallback& drawCallback) override;
+	bool setOpacity (float opacity) override;
+	bool commit () override;
+
+	void addChild (Visual* child);
+	void removeChild (Visual* child);
+	Visual* getParent () const { return parent; }
+	virtual bool removeFromParent ();
+	virtual RootVisual* getRootVisual ();
+protected:
+	using Children = std::vector<Visual*>;
+
+	Visual* parent {nullptr};
+	VisualSurfacePairPtr root;
+	Children children;
+};
+
+//-----------------------------------------------------------------------------
+struct RootVisual : Visual
+{
+	bool setPosition (uint32_t left, uint32_t top) override;
+	bool update (CRect updateRect, const DrawCallback& drawCallback) override;
+	bool commit () override;
+
+	~RootVisual () noexcept;
+
+	bool removeFromParent () final { return true; }
+	RootVisual* getRootVisual () final { return this; }
+	VisualSurfacePairPtr createVisualSurfacePair (uint32_t width, uint32_t height) const;
+private:
+	friend struct Factory;
+
+	using DestroyCallback = std::function<void (RootVisual*)>;
 	using Children = std::vector<VisualSurfacePairPtr>;
 	using RedrawAreaVector = std::vector<SurfaceRedrawAreaPtr>;
+
+	static std::shared_ptr<RootVisual> create (HWND window, IDCompositionDesktopDevice* compDevice,
+											   ID2D1Device* d2dDevice, DestroyCallback&& destroy);
+	RootVisual ();
+	bool enableVisualizeRedrawAreas (bool state);
+	POINT getWindowSize () const;
+	void addRedrawArea (CRect r);
 
 	DestroyCallback destroyCallback;
 	HWND window {nullptr};
 	IDCompositionDesktopDevice* compDevice {nullptr};
 	COM::Ptr<IDCompositionTarget> compositionTarget;
 	COM::Ptr<IDCompositionSurfaceFactory> compositionSurfaceFactory;
-	VisualSurfacePair rootPlane;
 	VisualSurfacePairPtr redrawAreaPlane;
-	Children children;
 	RedrawAreaVector redrawAreas;
 	bool showUpdateRects {true};
-
-	POINT getWindowSize () const;
-	VisualSurfacePairPtr createVisualSurfacePair (uint32_t width, uint32_t height) const;
-	void addChild (const VisualSurfacePairPtr& child);
-	void removeChild (const VisualSurfacePairPtr& child);
-
-	bool enableVisualizeRedrawAreas (bool state);
-	void addRedrawArea (CRect r);
 };
 
 //-----------------------------------------------------------------------------
-POINT RootVisual::Impl::getWindowSize () const
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+Visual::Visual (VisualSurfacePairPtr vsPair, Visual* inParent)
+{
+	root = vsPair;
+	parent = inParent;
+	parent->addChild (this);
+}
+
+//-----------------------------------------------------------------------------
+Visual::~Visual () noexcept
+{
+	vstgui_assert (parent == nullptr);
+}
+
+//-----------------------------------------------------------------------------
+void Visual::addChild (Visual* child)
+{
+	IDCompositionVisual* referenceVis = nullptr;
+	if (!children.empty ())
+		referenceVis = children.back ()->root->visual.get ();
+	root->visual->AddVisual (child->root->visual.get (), TRUE, referenceVis);
+	children.push_back (child);
+}
+
+//-----------------------------------------------------------------------------
+void Visual::removeChild (Visual* child)
+{
+	auto it = std::find (children.begin (), children.end (), child);
+	if (it == children.end ())
+		return;
+	root->visual->RemoveVisual (child->root->visual.get ());
+	children.erase (it);
+}
+
+//-----------------------------------------------------------------------------
+bool Visual::resize (uint32_t width, uint32_t height)
+{
+	return root->setSize (width, height);
+}
+
+//-----------------------------------------------------------------------------
+bool Visual::setPosition (uint32_t left, uint32_t top)
+{
+	return root->setOffset (left, top);
+}
+
+//-----------------------------------------------------------------------------
+bool Visual::setOpacity (float opacity)
+{
+	return root->setOpacity (opacity);
+}
+
+//-----------------------------------------------------------------------------
+bool Visual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
+{
+	if (!drawCallback || inUpdateRect.isEmpty ())
+		return false;
+
+	RECT updateRect = RECTfromRect (inUpdateRect);
+	root->update (updateRect, drawCallback);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool Visual::commit ()
+{
+	if (parent)
+		return parent->commit ();
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+RootVisual* Visual::getRootVisual ()
+{
+	if (parent)
+		return parent->getRootVisual ();
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+bool Visual::removeFromParent ()
+{
+	vstgui_assert (parent);
+	if (parent)
+	{
+		parent->removeChild (this);
+		parent = nullptr;
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+RootVisual::RootVisual () {}
+
+//-----------------------------------------------------------------------------
+RootVisual::~RootVisual () noexcept
+{
+	enableVisualizeRedrawAreas (false);
+	vstgui_assert (children.empty ());
+	destroyCallback (this);
+}
+
+//-----------------------------------------------------------------------------
+std::shared_ptr<RootVisual> RootVisual::create (HWND window, IDCompositionDesktopDevice* compDevice,
+												ID2D1Device* d2dDevice, DestroyCallback&& destroy)
+{
+	auto surface = std::shared_ptr<RootVisual> (new RootVisual);
+	if (!surface)
+		return {};
+	surface->compDevice = compDevice;
+	surface->window = window;
+	auto hr =
+		compDevice->CreateTargetForHwnd (window, false, surface->compositionTarget.adoptPtr ());
+	if (FAILED (hr))
+		return {};
+	surface->root = std::make_shared<VisualSurfacePair> ();
+	hr = compDevice->CreateVisual (surface->root->visual.adoptPtr ());
+	if (FAILED (hr))
+		return {};
+	hr = compDevice->CreateSurfaceFactory (d2dDevice,
+										   surface->compositionSurfaceFactory.adoptPtr ());
+	if (FAILED (hr))
+		return {};
+	auto windowSize = surface->getWindowSize ();
+	surface->root->width = windowSize.x;
+	surface->root->height = windowSize.y;
+
+	hr = surface->compositionSurfaceFactory->CreateVirtualSurface (
+		surface->root->width, surface->root->height, DXGI_FORMAT_B8G8R8A8_UNORM,
+		DXGI_ALPHA_MODE_PREMULTIPLIED, surface->root->surface.adoptPtr ());
+	if (FAILED (hr))
+		return {};
+	hr = surface->root->visual->SetContent (surface->root->surface.get ());
+	if (FAILED (hr))
+		return {};
+	hr = surface->compositionTarget->SetRoot (surface->root->visual.get ());
+	if (FAILED (hr))
+		return {};
+	hr = compDevice->Commit ();
+	if (FAILED (hr))
+		return {};
+	surface->destroyCallback = std::move (destroy);
+	return surface;
+}
+
+//-----------------------------------------------------------------------------
+POINT RootVisual::getWindowSize () const
 {
 	RECT clientRect {};
 	if (!GetClientRect (window, &clientRect))
@@ -256,8 +370,7 @@ POINT RootVisual::Impl::getWindowSize () const
 }
 
 //-----------------------------------------------------------------------------
-VisualSurfacePairPtr RootVisual::Impl::createVisualSurfacePair (uint32_t width,
-																uint32_t height) const
+VisualSurfacePairPtr RootVisual::createVisualSurfacePair (uint32_t width, uint32_t height) const
 {
 	auto child = std::make_shared<VisualSurfacePair> ();
 	auto hr = compDevice->CreateVisual (child->visual.adoptPtr ());
@@ -275,34 +388,58 @@ VisualSurfacePairPtr RootVisual::Impl::createVisualSurfacePair (uint32_t width,
 }
 
 //-----------------------------------------------------------------------------
-void RootVisual::Impl::addChild (const VisualSurfacePairPtr& child)
+bool RootVisual::setPosition (uint32_t left, uint32_t top)
 {
-	rootPlane.visual->AddVisual (child->visual.get (), TRUE, nullptr);
-	children.push_back (child);
+	// the root visual is always at (0, 0)
+	return false;
 }
 
 //-----------------------------------------------------------------------------
-void RootVisual::Impl::removeChild (const VisualSurfacePairPtr& child)
+bool RootVisual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 {
-	auto it = std::find_if (children.begin (), children.end (), [&] (const auto& el) {
-		return el->visual.get () == child->visual.get ();
-	});
-	if (it == children.end ())
-		return;
-	rootPlane.visual->RemoveVisual (child->visual.get ());
-	children.erase (it);
+	if (!drawCallback)
+		return false;
+
+	RECT updateRect {};
+	if (inUpdateRect.isEmpty ())
+	{
+		auto size = getWindowSize ();
+		updateRect.right = size.x;
+		updateRect.bottom = size.y;
+	}
+	else
+	{
+		updateRect = RECTfromRect (inUpdateRect);
+	}
+
+	root->update (updateRect, drawCallback);
+
+	addRedrawArea (rectFromRECT (updateRect));
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-bool RootVisual::Impl::enableVisualizeRedrawAreas (bool state)
+bool RootVisual::commit ()
+{
+	if (compDevice)
+	{
+		auto hr = compDevice->Commit ();
+		return SUCCEEDED (hr);
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool RootVisual::enableVisualizeRedrawAreas (bool state)
 {
 	if (state)
 	{
 		if (redrawAreaPlane)
 			return true;
 
-		redrawAreaPlane = createVisualSurfacePair (rootPlane.width, rootPlane.height);
-		rootPlane.visual->AddVisual (redrawAreaPlane->visual.get (), TRUE, nullptr);
+		redrawAreaPlane = createVisualSurfacePair (root->width, root->height);
+		root->visual->AddVisual (redrawAreaPlane->visual.get (), TRUE, nullptr);
 	}
 	else
 	{
@@ -310,7 +447,7 @@ bool RootVisual::Impl::enableVisualizeRedrawAreas (bool state)
 			return true;
 
 		redrawAreas.clear ();
-		rootPlane.visual->RemoveVisual (redrawAreaPlane->visual.get ());
+		root->visual->RemoveVisual (redrawAreaPlane->visual.get ());
 		redrawAreaPlane = nullptr;
 	}
 
@@ -318,7 +455,7 @@ bool RootVisual::Impl::enableVisualizeRedrawAreas (bool state)
 }
 
 //-----------------------------------------------------------------------------
-void RootVisual::Impl::addRedrawArea (CRect r)
+void RootVisual::addRedrawArea (CRect r)
 {
 	if (!redrawAreaPlane)
 		return;
@@ -346,120 +483,6 @@ void RootVisual::Impl::addRedrawArea (CRect r)
 	});
 	redrawAreaPlane->visual->AddVisual (vis->visual.get (), TRUE, nullptr);
 	redrawAreas.emplace_back (std::move (redrawArea));
-}
-
-//-----------------------------------------------------------------------------
-RootVisual::RootVisual ()
-{
-	impl = std::make_unique<Impl> ();
-}
-
-//-----------------------------------------------------------------------------
-RootVisual::~RootVisual () noexcept
-{
-	impl->enableVisualizeRedrawAreas (false);
-	vstgui_assert (impl->children.empty ());
-	impl->destroyCallback (this);
-}
-
-//-----------------------------------------------------------------------------
-std::unique_ptr<RootVisual> RootVisual::create (HWND window, IDCompositionDesktopDevice* compDevice,
-												ID2D1Device* d2dDevice, DestroyCallback&& destroy)
-{
-	auto surface = std::unique_ptr<RootVisual> (new RootVisual);
-	if (!surface)
-		return {};
-	surface->impl->compDevice = compDevice;
-	surface->impl->window = window;
-	auto hr = compDevice->CreateTargetForHwnd (window, false,
-											   surface->impl->compositionTarget.adoptPtr ());
-	if (FAILED (hr))
-		return {};
-	hr = compDevice->CreateVisual (surface->impl->rootPlane.visual.adoptPtr ());
-	if (FAILED (hr))
-		return {};
-	hr = compDevice->CreateSurfaceFactory (d2dDevice,
-										   surface->impl->compositionSurfaceFactory.adoptPtr ());
-	if (FAILED (hr))
-		return {};
-	auto windowSize = surface->impl->getWindowSize ();
-	surface->impl->rootPlane.width = windowSize.x;
-	surface->impl->rootPlane.height = windowSize.y;
-
-	hr = surface->impl->compositionSurfaceFactory->CreateVirtualSurface (
-		surface->impl->rootPlane.width, surface->impl->rootPlane.height, DXGI_FORMAT_B8G8R8A8_UNORM,
-		DXGI_ALPHA_MODE_PREMULTIPLIED, surface->impl->rootPlane.surface.adoptPtr ());
-	if (FAILED (hr))
-		return {};
-	hr = surface->impl->rootPlane.visual->SetContent (surface->impl->rootPlane.surface.get ());
-	if (FAILED (hr))
-		return {};
-	hr = surface->impl->compositionTarget->SetRoot (surface->impl->rootPlane.visual.get ());
-	if (FAILED (hr))
-		return {};
-	hr = compDevice->Commit ();
-	if (FAILED (hr))
-		return {};
-	surface->impl->destroyCallback = std::move (destroy);
-	return surface;
-}
-
-//-----------------------------------------------------------------------------
-bool RootVisual::setPosition (uint32_t left, uint32_t top)
-{
-	// the root visual is always at (0, 0)
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool RootVisual::resize (uint32_t width, uint32_t height)
-{
-	return impl->rootPlane.setSize (width, height);
-}
-
-//-----------------------------------------------------------------------------
-bool RootVisual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
-{
-	if (!drawCallback)
-		return false;
-
-	RECT updateRect {};
-	if (inUpdateRect.isEmpty ())
-	{
-		auto size = impl->getWindowSize ();
-		updateRect.right = size.x;
-		updateRect.bottom = size.y;
-	}
-	else
-	{
-		updateRect = RECTfromRect (inUpdateRect);
-	}
-
-	impl->rootPlane.update (updateRect, drawCallback);
-
-	impl->addRedrawArea (rectFromRECT (updateRect));
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool RootVisual::setOpacity (float opacity)
-{
-	return impl->rootPlane.setOpacity (opacity);
-}
-
-//-----------------------------------------------------------------------------
-bool RootVisual::commit ()
-{
-	if (impl->compDevice)
-		return SUCCEEDED (impl->compDevice->Commit ());
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool RootVisual::enableVisualizeRedrawAreas (bool state)
-{
-	return impl->enableVisualizeRedrawAreas (state);
 }
 
 //------------------------------------------------------------------------
@@ -604,6 +627,92 @@ VisualPtr Factory::createVisualForHWND (HWND hwnd)
 		return surface;
 	}
 	return nullptr;
+}
+
+//------------------------------------------------------------------------
+VisualPtr Factory::createChildVisual (IVisual& parent, uint32_t width, uint32_t height)
+{
+	if (auto visual = dynamic_cast<Visual*> (&parent))
+	{
+		if (auto root = visual->getRootVisual ())
+		{
+			auto vsPair = root->createVisualSurfacePair (width, height);
+			auto childVisual = std::make_shared<Visual> (vsPair, visual);
+			return childVisual;
+		}
+	}
+
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+bool Factory::removeVisual (const VisualPtr& visualPtr)
+{
+	if (auto visual = dynamic_cast<Visual*> (visualPtr.get ()))
+	{
+		return visual->removeFromParent ();
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+bool VisualSurfacePair::update (RECT updateRect, const IVisual::DrawCallback& callback)
+{
+	POINT offset {};
+	COM::Ptr<ID2D1DeviceContext> d2dDeviceContext;
+	auto hr = surface->BeginDraw (&updateRect, __uuidof(ID2D1DeviceContext),
+								  reinterpret_cast<void**> (d2dDeviceContext.adoptPtr ()), &offset);
+	if (FAILED (hr))
+		return false;
+
+	callback (d2dDeviceContext.get (), rectFromRECT (updateRect), offset.x, offset.y);
+	hr = surface->EndDraw ();
+	if (FAILED (hr))
+		return false;
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool VisualSurfacePair::setOffset (uint32_t left, uint32_t top)
+{
+	auto hr = visual->SetOffsetX (static_cast<float> (left));
+	if (FAILED (hr))
+		return false;
+	hr = visual->SetOffsetY (static_cast<float> (top));
+	return SUCCEEDED (hr);
+}
+
+//-----------------------------------------------------------------------------
+bool VisualSurfacePair::setSize (uint32_t w, uint32_t h)
+{
+	if (w != width || h != height)
+	{
+		if (SUCCEEDED (surface->Resize (w, h)))
+		{
+			width = w;
+			height = h;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool VisualSurfacePair::setOpacity (float o)
+{
+	COM::Ptr<IDCompositionVisual3> vis3;
+	auto hr = visual->QueryInterface (__uuidof(IDCompositionVisual3),
+									  reinterpret_cast<void**> (vis3.adoptPtr ()));
+	if (SUCCEEDED (hr) && vis3)
+	{
+		hr = vis3->SetOpacity (o);
+	}
+	return SUCCEEDED (hr);
 }
 
 //------------------------------------------------------------------------

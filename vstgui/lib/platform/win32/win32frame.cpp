@@ -119,7 +119,12 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 //-----------------------------------------------------------------------------
 Win32Frame::~Win32Frame () noexcept
 {
-	directCompositionVisual = nullptr;
+	if (directCompositionVisual)
+	{
+		if (auto dcFactory = getPlatformFactory ().asWin32Factory ()->getDirectCompositionFactory ())
+			dcFactory->removeVisual (directCompositionVisual);
+		directCompositionVisual = nullptr;
+	}
 
 	if (updateRegionList)
 		std::free (updateRegionList);
