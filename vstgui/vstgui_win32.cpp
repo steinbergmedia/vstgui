@@ -18,6 +18,7 @@
 #include "lib/platform/win32/win32resourcestream.cpp"
 #include "lib/platform/win32/win32support.cpp"
 #include "lib/platform/win32/win32textedit.cpp"
+#include "lib/platform/win32/win32viewlayer.cpp"
 #include "lib/platform/win32/winfileselector.cpp"
 #include "lib/platform/win32/winstring.cpp"
 #include "lib/platform/win32/wintimer.cpp"

@@ -5,13 +5,16 @@
 #pragma once
 
 #include "../iplatformviewlayer.h"
+#include "../../cinvalidrectlist.h"
 #include "win32directcomposition.h"
+#include "wintimer.h"
+#include <limits>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class Win32ViewLayer : public IPlatformViewLayer
+class Win32ViewLayer : public IPlatformViewLayer, public IPlatformTimerCallback
 {
 public:
 	Win32ViewLayer (const DirectComposition::VisualPtr& visual, IPlatformViewLayerDelegate* inDelegate);
@@ -26,9 +29,15 @@ public:
 
 	const DirectComposition::VisualPtr& getVisual () const;
 private:
+	void fire () override;
+	void drawInvalidRects ();
+
 	DirectComposition::VisualPtr visual;
 	IPlatformViewLayerDelegate* delegate {nullptr};
 	CRect viewSize;
+	uint64_t lastDrawTime {0u};
+	CInvalidRectList invalidRectList;
+	SharedPointer<WinTimer> timer;
 };
 
 //------------------------------------------------------------------------
