@@ -511,12 +511,17 @@ SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
 		auto visual = getPlatformFactory ()
 						  .asWin32Factory ()
 						  ->getDirectCompositionFactory ()
-						  ->createChildVisual (*directCompositionVisual.get (), 100, 100);
+						  ->createChildVisual (directCompositionVisual, 100, 100);
 		return makeOwned<Win32ViewLayer> (visual, drawDelegate);
 	}
 	else if (auto pl = dynamic_cast<Win32ViewLayer*> (parentLayer))
 	{
-
+		auto parent = pl->getVisual ();
+		auto visual = getPlatformFactory ()
+						  .asWin32Factory ()
+						  ->getDirectCompositionFactory ()
+						  ->createChildVisual (parent, 100, 100);
+		return makeOwned<Win32ViewLayer> (visual, drawDelegate);
 	}
 	return nullptr;
 }

@@ -28,6 +28,7 @@ struct IVisual
 	virtual bool update (CRect updateRect, const DrawCallback& drawCallback) = 0;
 	virtual bool setOpacity (float opacity) = 0;
 	virtual bool commit () = 0;
+	virtual bool setZIndex (uint32_t zIndex) = 0;
 
 	virtual ~IVisual () noexcept = default;
 };
@@ -43,7 +44,7 @@ struct Factory
 	bool isVisualRedrawAreasEnabled () const;
 
 	VisualPtr createVisualForHWND (HWND hwnd);
-	VisualPtr createChildVisual (IVisual& parent, uint32_t width, uint32_t height);
+	VisualPtr createChildVisual (const VisualPtr& parent, uint32_t width, uint32_t height);
 	bool removeVisual (const VisualPtr& visual);
 
 	~Factory () noexcept;

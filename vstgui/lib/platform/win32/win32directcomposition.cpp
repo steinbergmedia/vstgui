@@ -11,6 +11,7 @@
 #include <d3d11_4.h>
 #include <dcomp.h>
 #include <vector>
+#include <array>
 
 #ifdef _MSC_VER
 #pragma comment(lib, "d3d11.lib")
@@ -54,6 +55,8 @@ struct VisualSurfacePair
 {
 	COM::Ptr<IDCompositionVisual2> visual;
 	COM::Ptr<IDCompositionVirtualSurface> surface;
+	UINT left {};
+	UINT top {};
 	UINT width {};
 	UINT height {};
 
@@ -73,8 +76,16 @@ struct SurfaceRedrawArea : IPlatformTimerCallback
 	static constexpr float animationTimeSeconds = animationTime / 1000.f;
 	static constexpr float startOpacity = 0.8f;
 
+	static constexpr std::array<D2D1_COLOR_F, 5> colors = {{
+		{1.f, 1.f, 0.f, 1.f},
+		{1.f, 0.f, 0.f, 1.f},
+		{1.f, 0.f, 1.f, 1.f},
+		{0.f, 1.f, 1.f, 1.f},
+		{0.f, 1.f, 0.f, 1.f},
+	}};
+
 	SurfaceRedrawArea (IDCompositionDesktopDevice* compDevice, const VisualSurfacePairPtr& s,
-					   CRect r, DoneCallback&& cb)
+					   CRect r, uint32_t depth, DoneCallback&& cb)
 	: surface (s), callback (std::move (cb)), rect (r)
 	{
 		surface->visual->SetOffsetX (static_cast<float> (r.left));
@@ -86,10 +97,13 @@ struct SurfaceRedrawArea : IPlatformTimerCallback
 		surface->surface->Resize (static_cast<UINT> (r.getWidth ()),
 								  static_cast<UINT> (r.getHeight ()));
 		r.originize ();
+		if (depth >= colors.size ())
+			depth = static_cast<uint32_t> (colors.size () - 1u);
+
 		s->update (RECTfromRect (r),
-				   [] (auto deviceContext, auto r, int32_t offsetX, int32_t offsetY) {
+				   [depth] (auto deviceContext, auto r, int32_t offsetX, int32_t offsetY) {
 					   COM::Ptr<ID2D1SolidColorBrush> brush;
-					   D2D1_COLOR_F color = {1.f, 1.f, 0.f, 1.f};
+					   D2D1_COLOR_F color = colors[depth]; //{1.f, 1.f, 0.f, 1.f};
 					   deviceContext->CreateSolidColorBrush (&color, nullptr, brush.adoptPtr ());
 					   D2D1_RECT_F rect;
 					   rect.left = static_cast<FLOAT> (r.left) + offsetX;
@@ -150,7 +164,7 @@ struct RootVisual;
 struct Visual : IVisual
 {
 	Visual () = default;
-	Visual (VisualSurfacePairPtr vsPair, Visual* parent);
+	Visual (VisualSurfacePairPtr vsPair, const std::shared_ptr<Visual>& parent);
 	~Visual () noexcept;
 
 	bool setPosition (uint32_t left, uint32_t top) override;
@@ -158,18 +172,26 @@ struct Visual : IVisual
 	bool update (CRect updateRect, const DrawCallback& drawCallback) override;
 	bool setOpacity (float opacity) override;
 	bool commit () override;
+	bool setZIndex (uint32_t index) override;
 
 	void addChild (Visual* child);
-	void removeChild (Visual* child);
-	Visual* getParent () const { return parent; }
+	bool removeChild (Visual* child);
+	void onZIndexChanged (Visual* child);
+
+	uint32_t getZIndex () const { return zIndex; }
+	Visual* getParent () const { return parent.get (); }
 	virtual bool removeFromParent ();
 	virtual RootVisual* getRootVisual ();
+	virtual void addRedrawArea (CRect r, uint32_t depth = 0);
+	virtual IDCompositionVisual* getTopVisual () const { return nullptr; }
+
 protected:
 	using Children = std::vector<Visual*>;
 
-	Visual* parent {nullptr};
+	std::shared_ptr<Visual> parent;
 	VisualSurfacePairPtr root;
 	Children children;
+	uint32_t zIndex {0};
 };
 
 //-----------------------------------------------------------------------------
@@ -178,12 +200,14 @@ struct RootVisual : Visual
 	bool setPosition (uint32_t left, uint32_t top) override;
 	bool update (CRect updateRect, const DrawCallback& drawCallback) override;
 	bool commit () override;
+	bool setZIndex (uint32_t zIndex) override { return false; }
 
 	~RootVisual () noexcept;
 
 	bool removeFromParent () final { return true; }
 	RootVisual* getRootVisual () final { return this; }
 	VisualSurfacePairPtr createVisualSurfacePair (uint32_t width, uint32_t height) const;
+
 private:
 	friend struct Factory;
 
@@ -196,7 +220,8 @@ private:
 	RootVisual ();
 	bool enableVisualizeRedrawAreas (bool state);
 	POINT getWindowSize () const;
-	void addRedrawArea (CRect r);
+	void addRedrawArea (CRect r, uint32_t depth = 0) final;
+	IDCompositionVisual* getTopVisual () const final;
 
 	DestroyCallback destroyCallback;
 	HWND window {nullptr};
@@ -211,7 +236,7 @@ private:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-Visual::Visual (VisualSurfacePairPtr vsPair, Visual* inParent)
+Visual::Visual (VisualSurfacePairPtr vsPair, const std::shared_ptr<Visual>& inParent)
 {
 	root = vsPair;
 	parent = inParent;
@@ -221,27 +246,46 @@ Visual::Visual (VisualSurfacePairPtr vsPair, Visual* inParent)
 //-----------------------------------------------------------------------------
 Visual::~Visual () noexcept
 {
+	vstgui_assert (children.empty ());
 	vstgui_assert (parent == nullptr);
 }
 
 //-----------------------------------------------------------------------------
 void Visual::addChild (Visual* child)
 {
-	IDCompositionVisual* referenceVis = nullptr;
+	IDCompositionVisual* referenceVis = getTopVisual ();
 	if (!children.empty ())
-		referenceVis = children.back ()->root->visual.get ();
-	root->visual->AddVisual (child->root->visual.get (), TRUE, referenceVis);
+	{
+		auto it = std::find_if (
+			children.begin (), children.end (),
+			[zIndex = child->getZIndex ()] (const auto& c) { return c->getZIndex () >= zIndex; });
+		if (it != children.end ())
+			referenceVis = (*it)->root->visual.get ();
+	}
+	root->visual->AddVisual (child->root->visual.get (), FALSE, referenceVis);
 	children.push_back (child);
 }
 
 //-----------------------------------------------------------------------------
-void Visual::removeChild (Visual* child)
+bool Visual::removeChild (Visual* child)
 {
 	auto it = std::find (children.begin (), children.end (), child);
 	if (it == children.end ())
-		return;
+		return true;
 	root->visual->RemoveVisual (child->root->visual.get ());
 	children.erase (it);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+void Visual::onZIndexChanged (Visual* child)
+{
+	if (children.size () == 1)
+		return;
+	if (!removeChild (child))
+		return;
+	addChild (child);
+	commit ();
 }
 
 //-----------------------------------------------------------------------------
@@ -270,7 +314,15 @@ bool Visual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 
 	RECT updateRect = RECTfromRect (inUpdateRect);
 	root->update (updateRect, drawCallback);
+	addRedrawArea (inUpdateRect);
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+void Visual::addRedrawArea (CRect r, uint32_t depth)
+{
+	r.offset (root->left, root->top);
+	getParent ()->addRedrawArea (r, ++depth);
 }
 
 //-----------------------------------------------------------------------------
@@ -279,6 +331,17 @@ bool Visual::commit ()
 	if (parent)
 		return parent->commit ();
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool Visual::setZIndex (uint32_t index)
+{
+	if (zIndex == index)
+		return true;
+	zIndex = index;
+	vstgui_assert (getParent ());
+	getParent ()->onZIndexChanged (this);
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -439,7 +502,7 @@ bool RootVisual::enableVisualizeRedrawAreas (bool state)
 			return true;
 
 		redrawAreaPlane = createVisualSurfacePair (root->width, root->height);
-		root->visual->AddVisual (redrawAreaPlane->visual.get (), TRUE, nullptr);
+		root->visual->AddVisual (redrawAreaPlane->visual.get (), FALSE, nullptr);
 	}
 	else
 	{
@@ -455,7 +518,7 @@ bool RootVisual::enableVisualizeRedrawAreas (bool state)
 }
 
 //-----------------------------------------------------------------------------
-void RootVisual::addRedrawArea (CRect r)
+void RootVisual::addRedrawArea (CRect r, uint32_t depth)
 {
 	if (!redrawAreaPlane)
 		return;
@@ -471,18 +534,27 @@ void RootVisual::addRedrawArea (CRect r)
 
 	auto vis = createVisualSurfacePair (static_cast<uint32_t> (r.getWidth ()),
 										static_cast<uint32_t> (r.getHeight ()));
-	auto redrawArea = std::make_shared<SurfaceRedrawArea> (compDevice, vis, r, [this] (auto area) {
-		auto it = std::find_if (redrawAreas.begin (), redrawAreas.end (),
-								[&] (const auto& el) { return el.get () == area; });
-		if (it != redrawAreas.end ())
-		{
-			redrawAreaPlane->visual->RemoveVisual (area->getVisual ());
-			redrawAreas.erase (it);
-			compDevice->Commit ();
-		}
-	});
+	auto redrawArea =
+		std::make_shared<SurfaceRedrawArea> (compDevice, vis, r, depth, [this] (auto area) {
+			auto it = std::find_if (redrawAreas.begin (), redrawAreas.end (),
+									[&] (const auto& el) { return el.get () == area; });
+			if (it != redrawAreas.end ())
+			{
+				redrawAreaPlane->visual->RemoveVisual (area->getVisual ());
+				redrawAreas.erase (it);
+				compDevice->Commit ();
+			}
+		});
 	redrawAreaPlane->visual->AddVisual (vis->visual.get (), TRUE, nullptr);
 	redrawAreas.emplace_back (std::move (redrawArea));
+}
+
+//------------------------------------------------------------------------
+IDCompositionVisual* RootVisual::getTopVisual () const
+{
+	if (redrawAreaPlane)
+		return redrawAreaPlane->visual.get ();
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -630,9 +702,9 @@ VisualPtr Factory::createVisualForHWND (HWND hwnd)
 }
 
 //------------------------------------------------------------------------
-VisualPtr Factory::createChildVisual (IVisual& parent, uint32_t width, uint32_t height)
+VisualPtr Factory::createChildVisual (const VisualPtr& parent, uint32_t width, uint32_t height)
 {
-	if (auto visual = dynamic_cast<Visual*> (&parent))
+	if (auto visual = std::dynamic_pointer_cast<Visual> (parent))
 	{
 		if (auto root = visual->getRootVisual ())
 		{
@@ -675,8 +747,12 @@ bool VisualSurfacePair::update (RECT updateRect, const IVisual::DrawCallback& ca
 }
 
 //-----------------------------------------------------------------------------
-bool VisualSurfacePair::setOffset (uint32_t left, uint32_t top)
+bool VisualSurfacePair::setOffset (uint32_t inLeft, uint32_t inTop)
 {
+	if (left == inLeft && top == inTop)
+		return true;
+	left = inLeft;
+	top = inTop;
 	auto hr = visual->SetOffsetX (static_cast<float> (left));
 	if (FAILED (hr))
 		return false;

@@ -86,7 +86,10 @@ void Win32ViewLayer::setSize (const CRect& size)
 }
 
 //------------------------------------------------------------------------
-void Win32ViewLayer::setZIndex (uint32_t zIndex) {}
+void Win32ViewLayer::setZIndex (uint32_t zIndex)
+{
+	visual->setZIndex (zIndex);
+}
 
 //------------------------------------------------------------------------
 void Win32ViewLayer::setAlpha (float alpha)
