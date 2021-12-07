@@ -10,6 +10,7 @@
 #include "cstream.h"
 #include "base64codec.h"
 #include "uicontentprovider.h"
+#include "uiviewswitchcontainer.h"
 #include "icontroller.h"
 #include "xmlparser.h"
 #include "../lib/cfont.h"
@@ -1591,7 +1592,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass, factory->getViewName (view));
 		result = true;
 	}
-	if (deep && container)
+	if (deep && container && dynamic_cast<UIViewSwitchContainer*> (container) == nullptr)
 	{
 		ViewIterator it (container);
 		while (*it)

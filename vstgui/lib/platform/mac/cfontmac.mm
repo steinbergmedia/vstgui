@@ -104,23 +104,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-struct CTVersionCheck
-{
-	CTVersionCheck ()
-	{
-		version = CTGetCoreTextVersion ();
-	}
-	uint32_t version;
-};
-
-//-----------------------------------------------------------------------------
-static uint32_t getCTVersion ()
-{
-	static CTVersionCheck gInstance;
-	return gInstance.version;
-}
-
-//-----------------------------------------------------------------------------
 bool CoreTextFont::getAllFontFamilies (const FontFamilyCallback& callback) noexcept
 {
 	RegisterBundleFonts::init ();
@@ -177,7 +160,7 @@ CoreTextFont::CoreTextFont (const UTF8String& name, const CCoord& size, const in
 	CFStringRef fontNameRef = fromUTF8String<CFStringRef> (name);
 	if (fontNameRef)
 	{
-		if (getCTVersion () >= 0x00060000)
+		if (@available (macOS 10.10, *))
 		{
 			CFMutableDictionaryRef attributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 			CFDictionaryAddValue (attributes, kCTFontFamilyNameAttribute, fontNameRef);
