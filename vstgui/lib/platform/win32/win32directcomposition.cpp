@@ -502,19 +502,16 @@ bool RootVisual::enableVisualizeRedrawAreas (bool state)
 			return true;
 
 		redrawAreaPlane = createVisualSurfacePair (root->width, root->height);
-		root->visual->AddVisual (redrawAreaPlane->visual.get (), FALSE, nullptr);
+		auto hr = root->visual->AddVisual (redrawAreaPlane->visual.get (), FALSE, nullptr);
+		return SUCCEEDED (hr);
 	}
-	else
-	{
-		if (!redrawAreaPlane)
-			return true;
+	if (!redrawAreaPlane)
+		return true;
 
-		redrawAreas.clear ();
-		root->visual->RemoveVisual (redrawAreaPlane->visual.get ());
-		redrawAreaPlane = nullptr;
-	}
-
-	return false;
+	redrawAreas.clear ();
+	auto hr = root->visual->RemoveVisual (redrawAreaPlane->visual.get ());
+	redrawAreaPlane = nullptr;
+	return SUCCEEDED (hr);
 }
 
 //-----------------------------------------------------------------------------
