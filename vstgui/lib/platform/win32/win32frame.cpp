@@ -641,13 +641,15 @@ void Win32Frame::paint (HWND hwnd)
 	}
 
 	inPaint = true;
-	
+	bool needsInvalidation = false;
+	CRect frameSize;
+
 	PAINTSTRUCT ps;
 	if (HDC hdc = BeginPaint (hwnd, &ps))
 	{
 		RECT clientRect;
 		GetClientRect (windowHandle, &clientRect);
-		CRect frameSize = rectFromRECT (clientRect);
+		frameSize = rectFromRECT (clientRect);
 		if (directCompositionVisual)
 		{
 			directCompositionVisual->resize (static_cast<uint32_t> (frameSize.getWidth ()),
@@ -668,7 +670,8 @@ void Win32Frame::paint (HWND hwnd)
 						}
 					});
 			});
-			directCompositionVisual->commit ();
+			if (!directCompositionVisual->commit ())
+				needsInvalidation = true;
 		}
 		else
 		{
@@ -706,6 +709,8 @@ void Win32Frame::paint (HWND hwnd)
 	DeleteObject (rgn);
 	
 	inPaint = false;
+	if (needsInvalidation && !frameSize.isEmpty ())
+		invalidRect (frameSize);
 }
 
 //-----------------------------------------------------------------------------

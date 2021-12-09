@@ -21,6 +21,31 @@
 namespace VSTGUI {
 namespace DirectComposition {
 namespace {
+struct RootVisual;
+}
+
+//-----------------------------------------------------------------------------
+struct Factory::Impl
+{
+	COM::Ptr<ID2D1Factory1> d2dFactory;
+	COM::Ptr<ID3D11Device1> d3dDevice;
+	COM::Ptr<ID3D11DeviceContext1> d3dDeviceContext;
+	COM::Ptr<IDXGIDevice> dxgiDevice;
+	COM::Ptr<ID2D1Device> d2dDevice;
+	COM::Ptr<IDCompositionDesktopDevice> compositionDesktopDevice;
+	std::vector<RootVisual*> surfaces;
+	bool visualizeRedrawAreas {false};
+
+	bool init (IUnknown* _d2dFactory);
+	bool recreate ();
+
+private:
+	bool createObjects ();
+	bool createD3D11Device ();
+};
+
+//-----------------------------------------------------------------------------
+namespace {
 
 //-----------------------------------------------------------------------------
 struct DirectCompositionSupportDll : DllBase
@@ -60,7 +85,7 @@ struct VisualSurfacePair
 	UINT width {};
 	UINT height {};
 
-	bool update (RECT updateRect, const IVisual::DrawCallback& callback);
+	HRESULT update (RECT updateRect, const IVisual::DrawCallback& callback);
 	bool setOffset (uint32_t left, uint32_t top);
 	bool setSize (uint32_t width, uint32_t height);
 	bool setOpacity (float o);
@@ -184,8 +209,9 @@ struct Visual : IVisual
 	virtual RootVisual* getRootVisual ();
 	virtual void addRedrawArea (CRect r, uint32_t depth = 0);
 	virtual IDCompositionVisual* getTopVisual () const { return nullptr; }
+	virtual void onDriverFailure ();
 
-protected:
+	// protected:
 	using Children = std::vector<Visual*>;
 
 	std::shared_ptr<Visual> parent;
@@ -197,35 +223,39 @@ protected:
 //-----------------------------------------------------------------------------
 struct RootVisual : Visual
 {
+	using DestroyCallback = std::function<void (RootVisual*)>;
+
+	static std::shared_ptr<RootVisual> create (HWND window, Factory::Impl* factory,
+											   DestroyCallback&& destroy);
+	~RootVisual () noexcept;
+
 	bool setPosition (uint32_t left, uint32_t top) override;
 	bool update (CRect updateRect, const DrawCallback& drawCallback) override;
 	bool commit () override;
 	bool setZIndex (uint32_t zIndex) override { return false; }
 
-	~RootVisual () noexcept;
-
 	bool removeFromParent () final { return true; }
 	RootVisual* getRootVisual () final { return this; }
+	void onDriverFailure () final;
+
 	VisualSurfacePairPtr createVisualSurfacePair (uint32_t width, uint32_t height) const;
+	bool enableVisualizeRedrawAreas (bool state);
 
 private:
-	friend struct Factory;
-
-	using DestroyCallback = std::function<void (RootVisual*)>;
-	using Children = std::vector<VisualSurfacePairPtr>;
 	using RedrawAreaVector = std::vector<SurfaceRedrawAreaPtr>;
 
-	static std::shared_ptr<RootVisual> create (HWND window, IDCompositionDesktopDevice* compDevice,
-											   ID2D1Device* d2dDevice, DestroyCallback&& destroy);
 	RootVisual ();
-	bool enableVisualizeRedrawAreas (bool state);
+
+	bool create ();
+
 	POINT getWindowSize () const;
 	void addRedrawArea (CRect r, uint32_t depth = 0) final;
 	IDCompositionVisual* getTopVisual () const final;
+	void recreateVisuals (Visual* visual);
 
+	Factory::Impl* factory {nullptr};
 	DestroyCallback destroyCallback;
 	HWND window {nullptr};
-	IDCompositionDesktopDevice* compDevice {nullptr};
 	COM::Ptr<IDCompositionTarget> compositionTarget;
 	COM::Ptr<IDCompositionSurfaceFactory> compositionSurfaceFactory;
 	VisualSurfacePairPtr redrawAreaPlane;
@@ -313,7 +343,12 @@ bool Visual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 		return false;
 
 	RECT updateRect = RECTfromRect (inUpdateRect);
-	root->update (updateRect, drawCallback);
+	auto hr = root->update (updateRect, drawCallback);
+	if (FAILED (hr))
+	{
+		onDriverFailure ();
+		return false;
+	}
 	addRedrawArea (inUpdateRect);
 	return true;
 }
@@ -366,9 +401,16 @@ bool Visual::removeFromParent ()
 }
 
 //-----------------------------------------------------------------------------
+void Visual::onDriverFailure ()
+{
+	if (parent)
+		parent->onDriverFailure ();
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-RootVisual::RootVisual () {}
+//-----------------------------------------------------------------------------
+RootVisual::RootVisual () = default;
 
 //-----------------------------------------------------------------------------
 RootVisual::~RootVisual () noexcept
@@ -379,46 +421,52 @@ RootVisual::~RootVisual () noexcept
 }
 
 //-----------------------------------------------------------------------------
-std::shared_ptr<RootVisual> RootVisual::create (HWND window, IDCompositionDesktopDevice* compDevice,
-												ID2D1Device* d2dDevice, DestroyCallback&& destroy)
+std::shared_ptr<RootVisual> RootVisual::create (HWND window, Factory::Impl* factory,
+												DestroyCallback&& destroy)
 {
 	auto surface = std::shared_ptr<RootVisual> (new RootVisual);
 	if (!surface)
 		return {};
-	surface->compDevice = compDevice;
+	surface->factory = factory;
 	surface->window = window;
-	auto hr =
-		compDevice->CreateTargetForHwnd (window, false, surface->compositionTarget.adoptPtr ());
-	if (FAILED (hr))
-		return {};
-	surface->root = std::make_shared<VisualSurfacePair> ();
-	hr = compDevice->CreateVisual (surface->root->visual.adoptPtr ());
-	if (FAILED (hr))
-		return {};
-	hr = compDevice->CreateSurfaceFactory (d2dDevice,
-										   surface->compositionSurfaceFactory.adoptPtr ());
-	if (FAILED (hr))
-		return {};
-	auto windowSize = surface->getWindowSize ();
-	surface->root->width = windowSize.x;
-	surface->root->height = windowSize.y;
-
-	hr = surface->compositionSurfaceFactory->CreateVirtualSurface (
-		surface->root->width, surface->root->height, DXGI_FORMAT_B8G8R8A8_UNORM,
-		DXGI_ALPHA_MODE_PREMULTIPLIED, surface->root->surface.adoptPtr ());
-	if (FAILED (hr))
-		return {};
-	hr = surface->root->visual->SetContent (surface->root->surface.get ());
-	if (FAILED (hr))
-		return {};
-	hr = surface->compositionTarget->SetRoot (surface->root->visual.get ());
-	if (FAILED (hr))
-		return {};
-	hr = compDevice->Commit ();
-	if (FAILED (hr))
+	if (!surface->create ())
 		return {};
 	surface->destroyCallback = std::move (destroy);
 	return surface;
+}
+
+//-----------------------------------------------------------------------------
+bool RootVisual::create ()
+{
+	auto compDevice = factory->compositionDesktopDevice.get ();
+	auto hr = compDevice->CreateTargetForHwnd (window, false, compositionTarget.adoptPtr ());
+	if (FAILED (hr))
+		return false;
+	root = std::make_shared<VisualSurfacePair> ();
+	hr = compDevice->CreateVisual (root->visual.adoptPtr ());
+	if (FAILED (hr))
+		return false;
+	hr = compDevice->CreateSurfaceFactory (factory->d2dDevice.get (),
+										   compositionSurfaceFactory.adoptPtr ());
+	if (FAILED (hr))
+		return false;
+	auto windowSize = getWindowSize ();
+	root->width = windowSize.x;
+	root->height = windowSize.y;
+
+	hr = compositionSurfaceFactory->CreateVirtualSurface (
+		root->width, root->height, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_ALPHA_MODE_PREMULTIPLIED,
+		root->surface.adoptPtr ());
+	if (FAILED (hr))
+		return false;
+	hr = root->visual->SetContent (root->surface.get ());
+	if (FAILED (hr))
+		return false;
+	hr = compositionTarget->SetRoot (root->visual.get ());
+	if (FAILED (hr))
+		return false;
+	hr = compDevice->Commit ();
+	return SUCCEEDED (hr);
 }
 
 //-----------------------------------------------------------------------------
@@ -436,7 +484,7 @@ POINT RootVisual::getWindowSize () const
 VisualSurfacePairPtr RootVisual::createVisualSurfacePair (uint32_t width, uint32_t height) const
 {
 	auto child = std::make_shared<VisualSurfacePair> ();
-	auto hr = compDevice->CreateVisual (child->visual.adoptPtr ());
+	auto hr = factory->compositionDesktopDevice->CreateVisual (child->visual.adoptPtr ());
 	if (FAILED (hr))
 		return {};
 	hr = compositionSurfaceFactory->CreateVirtualSurface (width, height, DXGI_FORMAT_B8G8R8A8_UNORM,
@@ -485,12 +533,47 @@ bool RootVisual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 //-----------------------------------------------------------------------------
 bool RootVisual::commit ()
 {
-	if (compDevice)
+	if (factory->compositionDesktopDevice)
 	{
-		auto hr = compDevice->Commit ();
+		auto hr = factory->compositionDesktopDevice->Commit ();
+		if (FAILED (hr))
+		{
+			onDriverFailure ();
+			return false;
+		}
 		return SUCCEEDED (hr);
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+void RootVisual::onDriverFailure ()
+{
+	// testing device failure with: dxcap.exe -forcetdr
+	if (!factory->recreate ())
+		return;
+
+	auto reEnableVisRedrawAreas = redrawAreaPlane != nullptr;
+	enableVisualizeRedrawAreas (false);
+	create ();
+	recreateVisuals (this);
+	enableVisualizeRedrawAreas (reEnableVisRedrawAreas);
+}
+
+//-----------------------------------------------------------------------------
+void RootVisual::recreateVisuals (Visual* visual)
+{
+	auto childrenCopy = visual->children;
+	visual->children.clear ();
+	for (auto& child : childrenCopy)
+	{
+		auto left = child->root->left;
+		auto top = child->root->top;
+		child->root = createVisualSurfacePair (child->root->width, child->root->height);
+		child->root->setOffset (left, top);
+		visual->addChild (child);
+		recreateVisuals (child);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -531,8 +614,9 @@ void RootVisual::addRedrawArea (CRect r, uint32_t depth)
 
 	auto vis = createVisualSurfacePair (static_cast<uint32_t> (r.getWidth ()),
 										static_cast<uint32_t> (r.getHeight ()));
-	auto redrawArea =
-		std::make_shared<SurfaceRedrawArea> (compDevice, vis, r, depth, [this] (auto area) {
+	auto compDevice = factory->compositionDesktopDevice.get ();
+	auto redrawArea = std::make_shared<SurfaceRedrawArea> (
+		compDevice, vis, r, depth, [this, compDevice] (auto area) {
 			auto it = std::find_if (redrawAreas.begin (), redrawAreas.end (),
 									[&] (const auto& el) { return el.get () == area; });
 			if (it != redrawAreas.end ())
@@ -556,22 +640,6 @@ IDCompositionVisual* RootVisual::getTopVisual () const
 
 //------------------------------------------------------------------------
 } // anonymous
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-struct Factory::Impl
-{
-	COM::Ptr<ID3D11Device1> d3dDevice;
-	COM::Ptr<ID3D11DeviceContext1> d3dDeviceContext;
-	COM::Ptr<IDXGIDevice> dxgiDevice;
-	COM::Ptr<ID2D1Device> d2dDevice;
-	COM::Ptr<IDCompositionDesktopDevice> compositionDesktopDevice;
-	std::vector<RootVisual*> surfaces;
-	bool visualizeRedrawAreas {false};
-
-	bool init (IUnknown* _d2dFactory);
-	bool createD3D11Device ();
-};
 
 //-----------------------------------------------------------------------------
 Factory::Factory ()
@@ -600,31 +668,12 @@ bool Factory::Impl::init (IUnknown* _d2dFactory)
 	if (DirectCompositionSupportDll::instance ().loaded () == false)
 		return false;
 
-	COM::Ptr<ID2D1Factory1> d2dFactory;
 	auto hr = _d2dFactory->QueryInterface (__uuidof(ID2D1Factory1),
 										   reinterpret_cast<void**> (d2dFactory.adoptPtr ()));
 	if (FAILED (hr))
 		return false;
 
-	if (!createD3D11Device ())
-		return false;
-
-	hr = d3dDevice->QueryInterface (__uuidof(IDXGIDevice),
-									reinterpret_cast<void**> (dxgiDevice.adoptPtr ()));
-	if (FAILED (hr))
-		return false;
-
-	hr = d2dFactory->CreateDevice (dxgiDevice.get (), d2dDevice.adoptPtr ());
-
-	if (FAILED (hr))
-		return false;
-
-	hr = DirectCompositionSupportDll::instance ().createDevice2 (
-		d2dDevice.get (), IID_PPV_ARGS (compositionDesktopDevice.adoptPtr ()));
-	if (FAILED (hr))
-		return false;
-
-	return true;
+	return createObjects ();
 }
 
 //-----------------------------------------------------------------------------
@@ -661,6 +710,43 @@ bool Factory::Impl::createD3D11Device ()
 }
 
 //-----------------------------------------------------------------------------
+bool Factory::Impl::createObjects ()
+{
+	if (!createD3D11Device ())
+		return false;
+
+	auto hr = d3dDevice->QueryInterface (__uuidof(IDXGIDevice),
+										 reinterpret_cast<void**> (dxgiDevice.adoptPtr ()));
+	if (FAILED (hr))
+		return false;
+
+	hr = d2dFactory->CreateDevice (dxgiDevice.get (), d2dDevice.adoptPtr ());
+
+	if (FAILED (hr))
+		return false;
+
+	hr = DirectCompositionSupportDll::instance ().createDevice2 (
+		d2dDevice.get (), IID_PPV_ARGS (compositionDesktopDevice.adoptPtr ()));
+	if (FAILED (hr))
+		return false;
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool Factory::Impl::recreate ()
+{
+	if (d3dDevice->GetDeviceRemovedReason () == S_OK)
+		return true;
+
+	d3dDeviceContext.reset ();
+	d3dDevice.reset ();
+	compositionDesktopDevice.reset ();
+
+	return createObjects ();
+}
+
+//-----------------------------------------------------------------------------
 bool Factory::enableVisualizeRedrawAreas (bool state)
 {
 	if (impl->visualizeRedrawAreas == state)
@@ -683,13 +769,11 @@ bool Factory::isVisualRedrawAreasEnabled () const
 //-----------------------------------------------------------------------------
 VisualPtr Factory::createVisualForHWND (HWND hwnd)
 {
-	if (auto surface = RootVisual::create (hwnd, impl->compositionDesktopDevice.get (),
-										   impl->d2dDevice.get (), [this] (auto surface) {
-											   auto it = std::find (impl->surfaces.begin (),
-																	impl->surfaces.end (), surface);
-											   vstgui_assert (it != impl->surfaces.end ());
-											   impl->surfaces.erase (it);
-										   }))
+	if (auto surface = RootVisual::create (hwnd, impl.get (), [this] (auto surface) {
+			auto it = std::find (impl->surfaces.begin (), impl->surfaces.end (), surface);
+			vstgui_assert (it != impl->surfaces.end ());
+			impl->surfaces.erase (it);
+		}))
 	{
 		surface->enableVisualizeRedrawAreas (impl->visualizeRedrawAreas);
 		impl->surfaces.push_back (surface.get ());
@@ -727,20 +811,18 @@ bool Factory::removeVisual (const VisualPtr& visualPtr)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool VisualSurfacePair::update (RECT updateRect, const IVisual::DrawCallback& callback)
+HRESULT VisualSurfacePair::update (RECT updateRect, const IVisual::DrawCallback& callback)
 {
 	POINT offset {};
 	COM::Ptr<ID2D1DeviceContext> d2dDeviceContext;
 	auto hr = surface->BeginDraw (&updateRect, __uuidof(ID2D1DeviceContext),
 								  reinterpret_cast<void**> (d2dDeviceContext.adoptPtr ()), &offset);
 	if (FAILED (hr))
-		return false;
+		return hr;
 
 	callback (d2dDeviceContext.get (), rectFromRECT (updateRect), offset.x, offset.y);
 	hr = surface->EndDraw ();
-	if (FAILED (hr))
-		return false;
-	return true;
+	return hr;
 }
 
 //-----------------------------------------------------------------------------

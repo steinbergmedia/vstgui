@@ -49,10 +49,11 @@ struct Factory
 
 	~Factory () noexcept;
 
+	struct Impl;
+
 private:
 	Factory ();
 
-	struct Impl;
 	std::unique_ptr<Impl> impl;
 };
 

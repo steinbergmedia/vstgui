@@ -51,7 +51,8 @@ void Win32ViewLayer::drawInvalidRects ()
 	}
 	lastDrawTime = getPlatformFactory ().getTicks ();
 	invalidRectList.clear ();
-	visual->commit ();
+	if (!visual->commit ())
+		invalidRect (viewSize);
 }
 
 //------------------------------------------------------------------------
