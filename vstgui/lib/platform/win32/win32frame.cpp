@@ -672,6 +672,8 @@ void Win32Frame::paint (HWND hwnd)
 						}
 					});
 			});
+			for (auto& vl : viewLayers)
+				vl->drawInvalidRects ();
 			if (!directCompositionVisual->commit ())
 				needsInvalidation = true;
 		}

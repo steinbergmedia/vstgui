@@ -28,13 +28,19 @@ Win32ViewLayer::~Win32ViewLayer () noexcept
 //------------------------------------------------------------------------
 void Win32ViewLayer::fire ()
 {
-	drawInvalidRects ();
+	if (drawInvalidRects ())
+	{
+		if (!visual->commit ())
+			invalidRect (viewSize);
+	}
 	timer = nullptr;
 }
 
 //------------------------------------------------------------------------
-void Win32ViewLayer::drawInvalidRects ()
+bool Win32ViewLayer::drawInvalidRects ()
 {
+	if (invalidRectList.empty ())
+		return false;
 	for (const auto& r : invalidRectList)
 	{
 		visual->update (r, [&] (auto deviceContext, auto updateRect, auto offsetX, auto offsetY) {
@@ -53,8 +59,7 @@ void Win32ViewLayer::drawInvalidRects ()
 	}
 	lastDrawTime = getPlatformFactory ().getTicks ();
 	invalidRectList.clear ();
-	if (!visual->commit ())
-		invalidRect (viewSize);
+	return true;
 }
 
 //------------------------------------------------------------------------
@@ -78,6 +83,8 @@ void Win32ViewLayer::invalidRect (const CRect& size)
 //------------------------------------------------------------------------
 void Win32ViewLayer::setSize (const CRect& size)
 {
+	invalidRectList.clear ();
+
 	auto r = size;
 	r.normalize ();
 	r.makeIntegral ();

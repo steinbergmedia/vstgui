@@ -39,6 +39,8 @@ struct Factory::Impl
 	bool init (IUnknown* _d2dFactory);
 	bool recreate ();
 
+	bool commit ();
+
 private:
 	bool createObjects ();
 	bool createD3D11Device ();
@@ -209,7 +211,6 @@ struct Visual : IVisual
 	virtual RootVisual* getRootVisual ();
 	virtual void addRedrawArea (CRect r, uint32_t depth = 0);
 	virtual IDCompositionVisual* getTopVisual () const { return nullptr; }
-	virtual void onDriverFailure ();
 
 	// protected:
 	using Children = std::vector<Visual*>;
@@ -236,7 +237,7 @@ struct RootVisual : Visual
 
 	bool removeFromParent () final { return true; }
 	RootVisual* getRootVisual () final { return this; }
-	void onDriverFailure () final;
+	void onDriverFailure ();
 
 	VisualSurfacePairPtr createVisualSurfacePair (uint32_t width, uint32_t height) const;
 	bool enableVisualizeRedrawAreas (bool state);
@@ -346,7 +347,6 @@ bool Visual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 	auto hr = root->update (updateRect, drawCallback);
 	if (FAILED (hr))
 	{
-		onDriverFailure ();
 		return false;
 	}
 	addRedrawArea (inUpdateRect);
@@ -398,13 +398,6 @@ bool Visual::removeFromParent ()
 		return true;
 	}
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-void Visual::onDriverFailure ()
-{
-	if (parent)
-		parent->onDriverFailure ();
 }
 
 //-----------------------------------------------------------------------------
@@ -465,7 +458,7 @@ bool RootVisual::create ()
 	hr = compositionTarget->SetRoot (root->visual.get ());
 	if (FAILED (hr))
 		return false;
-	hr = compDevice->Commit ();
+	commit ();
 	return SUCCEEDED (hr);
 }
 
@@ -533,26 +526,12 @@ bool RootVisual::update (CRect inUpdateRect, const DrawCallback& drawCallback)
 //-----------------------------------------------------------------------------
 bool RootVisual::commit ()
 {
-	if (factory->compositionDesktopDevice)
-	{
-		auto hr = factory->compositionDesktopDevice->Commit ();
-		if (FAILED (hr))
-		{
-			onDriverFailure ();
-			return false;
-		}
-		return SUCCEEDED (hr);
-	}
-	return false;
+	return factory->commit ();
 }
 
 //-----------------------------------------------------------------------------
 void RootVisual::onDriverFailure ()
 {
-	// testing device failure with: dxcap.exe -forcetdr
-	if (!factory->recreate ())
-		return;
-
 	auto reEnableVisRedrawAreas = redrawAreaPlane != nullptr;
 	enableVisualizeRedrawAreas (false);
 	create ();
@@ -623,7 +602,7 @@ void RootVisual::addRedrawArea (CRect r, uint32_t depth)
 			{
 				redrawAreaPlane->visual->RemoveVisual (area->getVisual ());
 				redrawAreas.erase (it);
-				compDevice->Commit ();
+				commit ();
 			}
 		});
 	redrawAreaPlane->visual->AddVisual (vis->visual.get (), TRUE, nullptr);
@@ -744,6 +723,22 @@ bool Factory::Impl::recreate ()
 	compositionDesktopDevice.reset ();
 
 	return createObjects ();
+}
+
+//-----------------------------------------------------------------------------
+bool Factory::Impl::commit ()
+{
+	auto hr = compositionDesktopDevice->Commit ();
+	if (FAILED (hr))
+	{
+		recreate ();
+		for (auto& surface : surfaces)
+		{
+			surface->onDriverFailure ();
+		}
+		return false;
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------

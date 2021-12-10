@@ -31,12 +31,12 @@ public:
 	void draw (CDrawContext* context, const CRect& updateRect) override;
 	void onScaleFactorChanged (double newScaleFactor) override;
 
+	bool drawInvalidRects ();
 	const DirectComposition::VisualPtr& getVisual () const;
 	const CRect& getViewSize () const { return viewSize; }
 
 private:
 	void fire () override;
-	void drawInvalidRects ();
 
 	DirectComposition::VisualPtr visual;
 	DestroyCallback destroyCallback;
