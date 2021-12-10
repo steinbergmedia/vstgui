@@ -515,7 +515,15 @@ SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
 						  .asWin32Factory ()
 						  ->getDirectCompositionFactory ()
 						  ->createChildVisual (parent, 100, 100);
-		return makeOwned<Win32ViewLayer> (visual, drawDelegate);
+		auto newLayer =
+			makeOwned<Win32ViewLayer> (visual, drawDelegate, [this] (Win32ViewLayer* layer) {
+				auto it = std::find (viewLayers.begin (), viewLayers.end (), layer);
+				vstgui_assert (it != viewLayers.end ());
+				if (it != viewLayers.end ())
+					viewLayers.erase (it);
+			});
+		viewLayers.push_back (newLayer);
+		return newLayer;
 	}
 	return nullptr;
 }
@@ -704,7 +712,13 @@ void Win32Frame::paint (HWND hwnd)
 	
 	inPaint = false;
 	if (needsInvalidation && !frameSize.isEmpty ())
+	{
 		invalidRect (frameSize);
+		for (auto& vl : viewLayers)
+		{
+			vl->invalidRect (vl->getViewSize ());
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

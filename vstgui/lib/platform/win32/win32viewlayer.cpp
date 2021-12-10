@@ -12,8 +12,9 @@ namespace VSTGUI {
 
 //------------------------------------------------------------------------
 Win32ViewLayer::Win32ViewLayer (const DirectComposition::VisualPtr& visual,
-								IPlatformViewLayerDelegate* inDelegate)
-: visual (visual), delegate (inDelegate)
+								IPlatformViewLayerDelegate* inDelegate,
+								DestroyCallback&& destroyCallback)
+: visual (visual), delegate (inDelegate), destroyCallback (std::move (destroyCallback))
 {
 }
 
@@ -21,6 +22,7 @@ Win32ViewLayer::Win32ViewLayer (const DirectComposition::VisualPtr& visual,
 Win32ViewLayer::~Win32ViewLayer () noexcept
 {
 	getPlatformFactory ().asWin32Factory ()->getDirectCompositionFactory ()->removeVisual (visual);
+	destroyCallback (this);
 }
 
 //------------------------------------------------------------------------

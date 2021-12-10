@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -14,10 +14,14 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class Win32ViewLayer : public IPlatformViewLayer, public IPlatformTimerCallback
+class Win32ViewLayer
+: public IPlatformViewLayer
+, public IPlatformTimerCallback
 {
 public:
-	Win32ViewLayer (const DirectComposition::VisualPtr& visual, IPlatformViewLayerDelegate* inDelegate);
+	using DestroyCallback = std::function<void (Win32ViewLayer*)>;
+	Win32ViewLayer (const DirectComposition::VisualPtr& visual,
+					IPlatformViewLayerDelegate* inDelegate, DestroyCallback&& destroyCallback);
 	~Win32ViewLayer () noexcept;
 
 	void invalidRect (const CRect& size) override;
@@ -28,11 +32,14 @@ public:
 	void onScaleFactorChanged (double newScaleFactor) override;
 
 	const DirectComposition::VisualPtr& getVisual () const;
+	const CRect& getViewSize () const { return viewSize; }
+
 private:
 	void fire () override;
 	void drawInvalidRects ();
 
 	DirectComposition::VisualPtr visual;
+	DestroyCallback destroyCallback;
 	IPlatformViewLayerDelegate* delegate {nullptr};
 	CRect viewSize;
 	uint64_t lastDrawTime {0u};

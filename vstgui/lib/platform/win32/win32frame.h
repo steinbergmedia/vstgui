@@ -12,6 +12,7 @@
 #include "win32directcomposition.h"
 
 namespace VSTGUI {
+class Win32ViewLayer;
 
 //-----------------------------------------------------------------------------
 class Win32Frame final : public IPlatformFrame, public IWin32PlatformFrame
@@ -61,6 +62,8 @@ public:
 	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------
 protected:
+	using ViewLayers = std::vector<Win32ViewLayer*>;
+
 	void initTooltip ();
 	void paint (HWND hwnd);
 
@@ -82,6 +85,7 @@ protected:
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
 	DirectComposition::VisualPtr directCompositionVisual;
 	Optional<MSG> currentEvent;
+	ViewLayers viewLayers;
 
 	bool inPaint;
 	bool mouseInside;
