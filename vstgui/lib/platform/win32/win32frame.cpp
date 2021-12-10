@@ -506,17 +506,11 @@ SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
 {
 	if (!directCompositionVisual)
 		return nullptr; // not supported when not using DirectComposition
-	if (parentLayer == nullptr)
+	auto parentWin32ViewLayer = dynamic_cast<Win32ViewLayer*> (parentLayer);
+	auto parent =
+		parentWin32ViewLayer ? parentWin32ViewLayer->getVisual () : directCompositionVisual;
+	if (parent)
 	{
-		auto visual = getPlatformFactory ()
-						  .asWin32Factory ()
-						  ->getDirectCompositionFactory ()
-						  ->createChildVisual (directCompositionVisual, 100, 100);
-		return makeOwned<Win32ViewLayer> (visual, drawDelegate);
-	}
-	else if (auto pl = dynamic_cast<Win32ViewLayer*> (parentLayer))
-	{
-		auto parent = pl->getVisual ();
 		auto visual = getPlatformFactory ()
 						  .asWin32Factory ()
 						  ->getDirectCompositionFactory ()
