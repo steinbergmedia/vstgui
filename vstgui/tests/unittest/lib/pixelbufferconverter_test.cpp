@@ -68,7 +68,7 @@ TEST_CASE (PixelBufferTest, RGBA_2_BGRA)
 {
 	uint32_t pixel = 0x11223344;
 	convert (Format::RGBA, Format::BGRA, reinterpret_cast<uint8_t*> (&pixel), 4, 1, 1);
-	EXPECT (pixel == 0x33221144);
+	EXPECT (pixel == 0x11443322);
 }
 
 TEST_CASE (PixelBufferTest, BGRA_2_RGBA)
