@@ -439,44 +439,41 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 		transformedScaleFactor *= t.m11;
 	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
 	D2DBitmap* d2dBitmap = platformBitmap ? dynamic_cast<D2DBitmap*> (platformBitmap) : nullptr;
-	if (d2dBitmap)
+	if (d2dBitmap && d2dBitmap->getSource ())
 	{
-		if (d2dBitmap->getSource ())
+		ID2D1Bitmap* d2d1Bitmap = D2DBitmapCache::instance ()->getBitmap (d2dBitmap, renderTarget);
+		if (d2d1Bitmap)
 		{
-			ID2D1Bitmap* d2d1Bitmap = D2DBitmapCache::instance ()->getBitmap (d2dBitmap, renderTarget);
-			if (d2d1Bitmap)
+			double bitmapScaleFactor = platformBitmap->getScaleFactor ();
+			CGraphicsTransform bitmapTransform;
+			bitmapTransform.scale (1./bitmapScaleFactor, 1./bitmapScaleFactor);
+			Transform transform (*this, bitmapTransform);
+
+			CRect d (dest);
+			d.setWidth (bitmap->getWidth ());
+			d.setHeight (bitmap->getHeight ());
+			d.offset (-offset.x, -offset.y);
+			d.makeIntegral ();
+			CRect source;
+			source.setWidth (d2d1Bitmap->GetSize ().width);
+			source.setHeight (d2d1Bitmap->GetSize ().height);
+
+			D2D1_BITMAP_INTERPOLATION_MODE mode;
+			switch (getCurrentState ().bitmapQuality)
 			{
-				double bitmapScaleFactor = platformBitmap->getScaleFactor ();
-				CGraphicsTransform bitmapTransform;
-				bitmapTransform.scale (1./bitmapScaleFactor, 1./bitmapScaleFactor);
-				Transform transform (*this, bitmapTransform);
+				case BitmapInterpolationQuality::kLow:
+					mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+					break;
 
-				CRect d (dest);
-				d.setWidth (bitmap->getWidth ());
-				d.setHeight (bitmap->getHeight ());
-				d.offset (-offset.x, -offset.y);
-				d.makeIntegral ();
-				CRect source;
-				source.setWidth (d2d1Bitmap->GetSize ().width);
-				source.setHeight (d2d1Bitmap->GetSize ().height);
-
-				D2D1_BITMAP_INTERPOLATION_MODE mode;
-				switch (getCurrentState ().bitmapQuality)
-				{
-					case BitmapInterpolationQuality::kLow:
-						mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
-						break;
-
-					case BitmapInterpolationQuality::kMedium:
-					case BitmapInterpolationQuality::kHigh:
-					default:
-						mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
-						break;
-				}
-
-				D2D1_RECT_F sourceRect = makeD2DRect (source);
-				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * getCurrentState ().globalAlpha, mode, &sourceRect);
+				case BitmapInterpolationQuality::kMedium:
+				case BitmapInterpolationQuality::kHigh:
+				default:
+					mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
+					break;
 			}
+
+			D2D1_RECT_F sourceRect = makeD2DRect (source);
+			renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * getCurrentState ().globalAlpha, mode, &sourceRect);
 		}
 	}
 }
