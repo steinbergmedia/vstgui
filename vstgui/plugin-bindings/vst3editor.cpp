@@ -302,25 +302,40 @@ protected:
 				{
 					c->setMin (minValue);
 					c->setMax (maxValue);
-					auto* optMenu = dynamic_cast<COptionMenu*>(c);
-					if (optMenu)
+
+					auto getParamStringByIndex = [&] (int32_t i) {
+						Steinberg::Vst::String128 utf16Str;
+						editController->getParamStringByValue (
+							getParameterID (),
+							(Steinberg::Vst::ParamValue)i /
+								(Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount,
+							utf16Str);
+						Steinberg::String utf8Str (utf16Str);
+						utf8Str.toMultiByte (Steinberg::kCP_Utf8);
+						return utf8Str;
+					};
+
+					if (auto optMenu = dynamic_cast<COptionMenu*> (c))
 					{
 						optMenu->removeAllEntry ();
 						for (Steinberg::int32 i = 0; i <= parameter->getInfo ().stepCount; i++)
+							optMenu->addEntry (getParamStringByIndex (i).text8 ());
+						c->setValue ((float)value - minValue);
+					}
+					else if (auto segmentButton = dynamic_cast<CSegmentButton*> (c))
+					{
+						segmentButton->removeAllSegments ();
+						for (Steinberg::int32 i = 0; i <= parameter->getInfo ().stepCount; i++)
 						{
-							Steinberg::Vst::String128 utf16Str;
-							editController->getParamStringByValue (getParameterID (), (Steinberg::Vst::ParamValue)i / (Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount, utf16Str);
-							Steinberg::String utf8Str (utf16Str);
-							utf8Str.toMultiByte (Steinberg::kCP_Utf8);
-							optMenu->addEntry (utf8Str.text8 ());
+							CSegmentButton::Segment segment;
+							segment.name = getParamStringByIndex (i).text8 ();
+							segmentButton->addSegment (std::move (segment));
 						}
 						c->setValue ((float)value - minValue);
 					}
 					else
 					{
 						c->setValue ((float)value);
-						if (c->isDirty ())
-							c->valueChanged ();
 					}
 				}
 				else
