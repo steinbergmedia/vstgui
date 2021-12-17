@@ -9,12 +9,36 @@
 #include <d2d1.h>
 
 namespace VSTGUI {
+//------------------------------------------------------------------------
+namespace D2DBitmapCache {
+//------------------------------------------------------------------------
+namespace {
+
+struct Cache
+{
+	ID2D1Bitmap* getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget);
+	void removeBitmap (D2DBitmap* bitmap);
+	void removeRenderTarget (ID2D1RenderTarget* renderTarget);
+	static Cache* instance ()
+	{
+		static Cache gInstance;
+		return &gInstance;
+	}
+
+private:
+	Cache ();
+	~Cache ();
+	ID2D1Bitmap* createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget);
+	using RenderTargetBitmapMap = std::map<ID2D1RenderTarget*, ID2D1Bitmap*>;
+	using BitmapMap = std::map<D2DBitmap*, RenderTargetBitmapMap>;
+	BitmapMap map;
+};
 
 //-----------------------------------------------------------------------------
-ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
+ID2D1Bitmap* Cache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
 {
-	BitmapCache::iterator it = cache.find (bitmap);
-	if (it != cache.end ())
+	BitmapMap::iterator it = map.find (bitmap);
+	if (it != map.end ())
 	{
 		RenderTargetBitmapMap::iterator it2 = it->second.find (renderTarget);
 		if (it2 != it->second.end ())
@@ -26,7 +50,7 @@ ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* re
 			it->second.emplace (renderTarget, b);
 		return b;
 	}
-	auto insertSuccess = cache.emplace (bitmap, RenderTargetBitmapMap ());
+	auto insertSuccess = map.emplace (bitmap, RenderTargetBitmapMap ());
 	if (insertSuccess.second == true)
 	{
 		ID2D1Bitmap* b = createBitmap (bitmap, renderTarget);
@@ -40,10 +64,10 @@ ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* re
 }
 
 //-----------------------------------------------------------------------------
-void D2DBitmapCache::removeBitmap (D2DBitmap* bitmap)
+void Cache::removeBitmap (D2DBitmap* bitmap)
 {
-	BitmapCache::iterator it = cache.find (bitmap);
-	if (it != cache.end ())
+	BitmapMap::iterator it = map.find (bitmap);
+	if (it != map.end ())
 	{
 		RenderTargetBitmapMap::iterator it2 = it->second.begin ();
 		while (it2 != it->second.end ())
@@ -51,15 +75,15 @@ void D2DBitmapCache::removeBitmap (D2DBitmap* bitmap)
 			it2->second->Release ();
 			it2++;
 		}
-		cache.erase (it);
+		map.erase (it);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void D2DBitmapCache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
+void Cache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
 {
-	BitmapCache::iterator it = cache.begin ();
-	while (it != cache.end ())
+	BitmapMap::iterator it = map.begin ();
+	while (it != map.end ())
 	{
 		RenderTargetBitmapMap::iterator it2 = it->second.begin ();
 		while (it2 != it->second.end ())
@@ -77,7 +101,7 @@ void D2DBitmapCache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
 }
 
 //-----------------------------------------------------------------------------
-ID2D1Bitmap* D2DBitmapCache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
+ID2D1Bitmap* Cache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
 {
 	if (bitmap->getSource () == nullptr)
 		return nullptr;
@@ -86,32 +110,43 @@ ID2D1Bitmap* D2DBitmapCache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget*
 	return d2d1Bitmap;
 }
 
-static D2DBitmapCache* gD2DBitmapCache = nullptr;
 //-----------------------------------------------------------------------------
-D2DBitmapCache::D2DBitmapCache ()
-{
-	gD2DBitmapCache = this;
-}
+Cache::Cache () {}
 
 //-----------------------------------------------------------------------------
-D2DBitmapCache::~D2DBitmapCache ()
+Cache::~Cache ()
 {
 #if DEBUG
-	for (BitmapCache::const_iterator it = cache.begin (); it != cache.end (); it++)
+	for (BitmapMap::const_iterator it = map.begin (); it != map.end (); it++)
 	{
 		vstgui_assert (it->second.empty ());
 	}
 #endif
-	gD2DBitmapCache = nullptr;
 }
 
 //-----------------------------------------------------------------------------
-D2DBitmapCache* D2DBitmapCache::instance ()
+} // anonymous
+
+//-----------------------------------------------------------------------------
+ID2D1Bitmap* getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
 {
-	static D2DBitmapCache gInstance;
-	return gD2DBitmapCache;
+	return Cache::instance ()->getBitmap (bitmap, renderTarget);
 }
 
+//-----------------------------------------------------------------------------
+void removeBitmap (D2DBitmap* bitmap)
+{
+	Cache::instance ()->removeBitmap (bitmap);
+}
+
+//-----------------------------------------------------------------------------
+void removeRenderTarget (ID2D1RenderTarget* renderTarget)
+{
+	Cache::instance ()->removeRenderTarget (renderTarget);
+}
+
+//-----------------------------------------------------------------------------
+} // D2DBitmapCache
 } // VSTGUI
 
 #endif // WINDOWS

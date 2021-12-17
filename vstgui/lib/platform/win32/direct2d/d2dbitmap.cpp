@@ -52,9 +52,7 @@ D2DBitmap::~D2DBitmap ()
 {
 	if (source)
 	{
-		D2DBitmapCache* gCache = D2DBitmapCache::instance ();
-		vstgui_assert (gCache, "D2D resources are already freed");
-		gCache->removeBitmap (this);
+		D2DBitmapCache::removeBitmap (this);
 		if (source)
 			source->Release ();
 	}
@@ -255,7 +253,7 @@ void D2DBitmap::replaceBitmapSource (IWICBitmapSource* newSourceBitmap)
 {
 	if (source)
 	{
-		D2DBitmapCache::instance ()->removeBitmap (this);
+		D2DBitmapCache::removeBitmap (this);
 		source->Release ();
 	}
 	source = newSourceBitmap;
@@ -294,7 +292,7 @@ D2DBitmap::PixelAccess::~PixelAccess ()
 	}
 	if (bitmap)
 	{
-		D2DBitmapCache::instance ()->removeBitmap (bitmap);
+		D2DBitmapCache::removeBitmap (bitmap);
 		bitmap->forget ();
 	}
 }

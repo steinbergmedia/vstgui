@@ -193,7 +193,7 @@ void D2DDrawContext::releaseRenderTarget ()
 	}
 	if (renderTarget)
 	{
-		D2DBitmapCache::instance ()->removeRenderTarget (renderTarget);
+		D2DBitmapCache::removeRenderTarget (renderTarget);
 		renderTarget->Release ();
 		renderTarget = nullptr;
 	}
@@ -236,7 +236,7 @@ void D2DDrawContext::endDraw ()
 		if (bitmap)
 		{
 			D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ().get ());
-			D2DBitmapCache::instance ()->removeBitmap (d2dBitmap);
+			D2DBitmapCache::removeBitmap (d2dBitmap);
 		}
 	}
 }
@@ -441,7 +441,7 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 	D2DBitmap* d2dBitmap = platformBitmap ? dynamic_cast<D2DBitmap*> (platformBitmap) : nullptr;
 	if (d2dBitmap && d2dBitmap->getSource ())
 	{
-		ID2D1Bitmap* d2d1Bitmap = D2DBitmapCache::instance ()->getBitmap (d2dBitmap, renderTarget);
+		ID2D1Bitmap* d2d1Bitmap = D2DBitmapCache::getBitmap (d2dBitmap, renderTarget);
 		if (d2d1Bitmap)
 		{
 			double bitmapScaleFactor = platformBitmap->getScaleFactor ();
