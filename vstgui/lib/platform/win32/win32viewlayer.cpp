@@ -44,7 +44,9 @@ bool Win32ViewLayer::drawInvalidRects ()
 	for (const auto& r : invalidRectList)
 	{
 		visual->update (r, [&] (auto deviceContext, auto updateRect, auto offsetX, auto offsetY) {
-			D2DDrawContext drawContext (deviceContext, viewSize);
+			COM::Ptr<ID2D1Device> device;
+			deviceContext->GetDevice (device.adoptPtr ());
+			D2DDrawContext drawContext (deviceContext, viewSize, device.get ());
 			drawContext.setClipRect (updateRect);
 			CGraphicsTransform tm;
 			tm.translate (offsetX - updateRect.left, offsetY - updateRect.top);
