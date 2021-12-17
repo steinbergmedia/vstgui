@@ -23,7 +23,8 @@ class D2DDrawContext final : public COffscreenContext
 {
 public:
 	D2DDrawContext (HWND window, const CRect& drawSurface);
-	D2DDrawContext (ID2D1DeviceContext* deviceContext, const CRect& drawSurface);
+	D2DDrawContext (ID2D1DeviceContext* deviceContext, const CRect& drawSurface,
+					ID2D1Device* device = nullptr);
 	D2DDrawContext (D2DBitmap* bitmap);
 	~D2DDrawContext ();
 
@@ -99,6 +100,7 @@ protected:
 	bool needsHalfPointOffset () const;
 
 	HWND window;
+	ID2D1Device* device {nullptr};
 	ID2D1RenderTarget* renderTarget;
 	ID2D1SolidColorBrush* fillBrush;
 	ID2D1SolidColorBrush* strokeBrush;

@@ -13,6 +13,7 @@
 #include "../iplatformtimer.h"
 #include "../common/fileresourceinputstream.h"
 #include "direct2d/d2dbitmap.h"
+#include "direct2d/d2dbitmapcache.h"
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dfont.h"
 #include "direct2d/d2dgradient.h"
@@ -109,11 +110,13 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 					  IID_IWICImagingFactory, (void**)impl->wicImagingFactory.adoptPtr ());
 
 	impl->directCompositionFactory = DirectComposition::Factory::create (impl->d2dFactory.get ());
+	D2DBitmapCache::init ();
 }
 
 //-----------------------------------------------------------------------------
 Win32Factory::~Win32Factory () noexcept
 {
+	D2DBitmapCache::terminate ();
 	D2DFont::terminate ();
 }
 

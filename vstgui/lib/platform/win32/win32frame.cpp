@@ -659,7 +659,9 @@ void Win32Frame::paint (HWND hwnd)
 			iterateRegion (rgn, [&] (const auto& rect) {
 				directCompositionVisual->update (
 					rect, [&] (auto deviceContext, auto rect, auto offsetX, auto offsetY) {
-						D2DDrawContext drawContext (deviceContext, frameSize);
+						COM::Ptr<ID2D1Device> device;
+						deviceContext->GetDevice (device.adoptPtr ());
+						D2DDrawContext drawContext (deviceContext, frameSize, device.get ());
 						drawContext.setClipRect (rect);
 						CGraphicsTransform tm;
 						tm.translate (offsetX - rect.left, offsetY - rect.top);

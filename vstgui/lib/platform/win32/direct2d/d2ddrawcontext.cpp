@@ -110,9 +110,11 @@ D2DDrawContext::D2DDrawContext (D2DBitmap* inBitmap)
 }
 
 //-----------------------------------------------------------------------------
-D2DDrawContext::D2DDrawContext (ID2D1DeviceContext* deviceContext, const CRect& drawSurface)
+D2DDrawContext::D2DDrawContext (ID2D1DeviceContext* deviceContext, const CRect& drawSurface,
+								ID2D1Device* device)
 : COffscreenContext (drawSurface)
 , window (nullptr)
+, device (device)
 , renderTarget (nullptr)
 , fillBrush (nullptr)
 , strokeBrush (nullptr)
@@ -193,7 +195,8 @@ void D2DDrawContext::releaseRenderTarget ()
 	}
 	if (renderTarget)
 	{
-		D2DBitmapCache::removeRenderTarget (renderTarget);
+		if (!device)
+			D2DBitmapCache::removeRenderTarget (renderTarget);
 		renderTarget->Release ();
 		renderTarget = nullptr;
 	}
@@ -441,8 +444,7 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 	D2DBitmap* d2dBitmap = platformBitmap ? dynamic_cast<D2DBitmap*> (platformBitmap) : nullptr;
 	if (d2dBitmap && d2dBitmap->getSource ())
 	{
-		ID2D1Bitmap* d2d1Bitmap = D2DBitmapCache::getBitmap (d2dBitmap, renderTarget);
-		if (d2d1Bitmap)
+		if (auto d2d1Bitmap = D2DBitmapCache::getBitmap (d2dBitmap, renderTarget, device))
 		{
 			double bitmapScaleFactor = platformBitmap->getScaleFactor ();
 			CGraphicsTransform bitmapTransform;

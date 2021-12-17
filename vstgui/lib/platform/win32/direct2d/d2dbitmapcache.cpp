@@ -6,57 +6,73 @@
 
 #if WINDOWS
 
+#include <algorithm>
 #include <d2d1.h>
+#include <vector>
 
 namespace VSTGUI {
-//------------------------------------------------------------------------
 namespace D2DBitmapCache {
-//------------------------------------------------------------------------
 namespace {
 
+//-----------------------------------------------------------------------------
 struct Cache
 {
-	ID2D1Bitmap* getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget);
-	void removeBitmap (D2DBitmap* bitmap);
-	void removeRenderTarget (ID2D1RenderTarget* renderTarget);
-	static Cache* instance ()
-	{
-		static Cache gInstance;
-		return &gInstance;
-	}
-
-private:
 	Cache ();
 	~Cache ();
-	ID2D1Bitmap* createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget);
-	using RenderTargetBitmapMap = std::map<ID2D1RenderTarget*, ID2D1Bitmap*>;
-	using BitmapMap = std::map<D2DBitmap*, RenderTargetBitmapMap>;
-	BitmapMap map;
+
+	ID2D1Bitmap* getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget,
+							ID2D1Device* device);
+	void removeBitmap (D2DBitmap* bitmap);
+	void removeRenderTarget (ID2D1RenderTarget* renderTarget);
+	void removeDevice (ID2D1Device* device);
+
+private:
+	ID2D1Bitmap* createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget) const;
+
+	struct ResourceLocation
+	{
+		ID2D1Device* device {nullptr};
+		ID2D1RenderTarget* renderTarget {nullptr};
+
+		bool operator== (const ResourceLocation& o) const
+		{
+			return o.device == device && o.renderTarget == renderTarget;
+		}
+	};
+
+	using ResourceLocationList = std::vector<std::pair<ResourceLocation, ID2D1Bitmap*>>;
+	using BitmapMap = std::map<D2DBitmap*, ResourceLocationList>;
+	BitmapMap bitmaps;
 };
 
 //-----------------------------------------------------------------------------
-ID2D1Bitmap* Cache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
+ID2D1Bitmap* Cache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget,
+							   ID2D1Device* device)
 {
-	BitmapMap::iterator it = map.find (bitmap);
-	if (it != map.end ())
+	ResourceLocation resLoc {device, device ? nullptr : renderTarget};
+
+	auto bitmapIt = bitmaps.find (bitmap);
+	if (bitmapIt != bitmaps.end ())
 	{
-		RenderTargetBitmapMap::iterator it2 = it->second.find (renderTarget);
-		if (it2 != it->second.end ())
+
+		auto resLocIt = std::find_if (bitmapIt->second.begin (), bitmapIt->second.end (),
+									  [&] (const auto& loc) { return loc.first == resLoc; });
+		if (resLocIt != bitmapIt->second.end ())
 		{
-			return it2->second;
+			return resLocIt->second;
 		}
 		ID2D1Bitmap* b = createBitmap (bitmap, renderTarget);
 		if (b)
-			it->second.emplace (renderTarget, b);
+			bitmapIt->second.emplace_back (std::make_pair (resLoc, b));
 		return b;
 	}
-	auto insertSuccess = map.emplace (bitmap, RenderTargetBitmapMap ());
+	auto insertSuccess = bitmaps.emplace (bitmap, ResourceLocationList ());
 	if (insertSuccess.second == true)
 	{
 		ID2D1Bitmap* b = createBitmap (bitmap, renderTarget);
 		if (b)
 		{
-			insertSuccess.first->second.emplace (renderTarget, b);
+			insertSuccess.first->second.emplace_back (std::make_pair (resLoc, b));
 			return b;
 		}
 	}
@@ -66,42 +82,48 @@ ID2D1Bitmap* Cache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarge
 //-----------------------------------------------------------------------------
 void Cache::removeBitmap (D2DBitmap* bitmap)
 {
-	BitmapMap::iterator it = map.find (bitmap);
-	if (it != map.end ())
+	auto bitmapIt = bitmaps.find (bitmap);
+	if (bitmapIt != bitmaps.end ())
 	{
-		RenderTargetBitmapMap::iterator it2 = it->second.begin ();
-		while (it2 != it->second.end ())
-		{
-			it2->second->Release ();
-			it2++;
-		}
-		map.erase (it);
+		for (auto& el : bitmapIt->second)
+			el.second->Release ();
+		bitmaps.erase (bitmapIt);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void Cache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
 {
-	BitmapMap::iterator it = map.begin ();
-	while (it != map.end ())
+	auto bitmapIt = bitmaps.begin ();
+	while (bitmapIt != bitmaps.end ())
 	{
-		RenderTargetBitmapMap::iterator it2 = it->second.begin ();
-		while (it2 != it->second.end ())
-		{
-			if (it2->first == renderTarget)
-			{
-				it2->second->Release ();
-				it->second.erase (it2++);
-			}
-			else
-				it2++;
-		}
-		it++;
+		auto end =
+			std::remove_if (bitmapIt->second.begin (), bitmapIt->second.end (),
+							[&] (const auto& el) { return el.first.renderTarget == renderTarget; });
+
+		bitmapIt->second.erase (end, bitmapIt->second.end ());
+
+		bitmapIt++;
 	}
 }
 
 //-----------------------------------------------------------------------------
-ID2D1Bitmap* Cache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
+void Cache::removeDevice (ID2D1Device* device)
+{
+	auto bitmapIt = bitmaps.begin ();
+	while (bitmapIt != bitmaps.end ())
+	{
+		auto end = std::remove_if (bitmapIt->second.begin (), bitmapIt->second.end (),
+								   [&] (const auto& el) { return el.first.device == device; });
+
+		bitmapIt->second.erase (end, bitmapIt->second.end ());
+
+		bitmapIt++;
+	}
+}
+
+//-----------------------------------------------------------------------------
+ID2D1Bitmap* Cache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget) const
 {
 	if (bitmap->getSource () == nullptr)
 		return nullptr;
@@ -117,32 +139,60 @@ Cache::Cache () {}
 Cache::~Cache ()
 {
 #if DEBUG
-	for (BitmapMap::const_iterator it = map.begin (); it != map.end (); it++)
+	for (BitmapMap::const_iterator it = bitmaps.begin (); it != bitmaps.end (); it++)
 	{
 		vstgui_assert (it->second.empty ());
 	}
 #endif
 }
 
+std::unique_ptr<Cache> gCache;
+
 //-----------------------------------------------------------------------------
 } // anonymous
 
 //-----------------------------------------------------------------------------
-ID2D1Bitmap* getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
+void init ()
 {
-	return Cache::instance ()->getBitmap (bitmap, renderTarget);
+	gCache = std::make_unique<Cache> ();
+}
+
+//-----------------------------------------------------------------------------
+void terminate ()
+{
+	gCache.reset ();
+}
+
+//-----------------------------------------------------------------------------
+ID2D1Bitmap* getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget, ID2D1Device* device)
+{
+	if (!gCache)
+		return nullptr;
+	return gCache->getBitmap (bitmap, renderTarget, device);
 }
 
 //-----------------------------------------------------------------------------
 void removeBitmap (D2DBitmap* bitmap)
 {
-	Cache::instance ()->removeBitmap (bitmap);
+	if (!gCache)
+		return;
+	gCache->removeBitmap (bitmap);
 }
 
 //-----------------------------------------------------------------------------
 void removeRenderTarget (ID2D1RenderTarget* renderTarget)
 {
-	Cache::instance ()->removeRenderTarget (renderTarget);
+	if (!gCache)
+		return;
+	gCache->removeRenderTarget (renderTarget);
+}
+
+//-----------------------------------------------------------------------------
+void removeDevice (ID2D1Device* device)
+{
+	if (!gCache)
+		return;
+	gCache->removeDevice (device);
 }
 
 //-----------------------------------------------------------------------------

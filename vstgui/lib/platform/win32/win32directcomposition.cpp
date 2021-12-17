@@ -7,6 +7,7 @@
 #include "win32dll.h"
 #include "wintimer.h"
 #include "win32factory.h"
+#include "direct2d/d2dbitmapcache.h"
 
 #include <d3d11_4.h>
 #include <dcomp.h>
@@ -717,6 +718,9 @@ bool Factory::Impl::recreate ()
 {
 	if (d3dDevice->GetDeviceRemovedReason () == S_OK)
 		return true;
+
+	if (d2dDevice)
+		D2DBitmapCache::removeDevice (d2dDevice.get ());
 
 	d3dDeviceContext.reset ();
 	d3dDevice.reset ();
