@@ -10,6 +10,7 @@
 #include "../win32factory.h"
 #include "../../../cgradient.h"
 #include "d2dbitmap.h"
+#include "d2dbitmapcache.h"
 #include "d2dgraphicspath.h"
 #include "d2dfont.h"
 #include "d2dgradient.h"
