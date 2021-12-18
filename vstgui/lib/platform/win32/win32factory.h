@@ -18,7 +18,8 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 namespace DirectComposition {
 struct Factory;
-}
+}
+
 //-----------------------------------------------------------------------------
 class Win32Factory final : public IPlatformFactory
 {
