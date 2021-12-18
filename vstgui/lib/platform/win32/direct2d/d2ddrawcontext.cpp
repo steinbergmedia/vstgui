@@ -10,6 +10,7 @@
 #include "../win32factory.h"
 #include "../../../cgradient.h"
 #include "d2dbitmap.h"
+#include "d2dbitmapcache.h"
 #include "d2dgraphicspath.h"
 #include "d2dfont.h"
 #include "d2dgradient.h"
@@ -109,6 +110,23 @@ D2DDrawContext::D2DDrawContext (D2DBitmap* inBitmap)
 }
 
 //-----------------------------------------------------------------------------
+D2DDrawContext::D2DDrawContext (ID2D1DeviceContext* deviceContext, const CRect& drawSurface,
+								ID2D1Device* device)
+: COffscreenContext (drawSurface)
+, window (nullptr)
+, device (device)
+, renderTarget (nullptr)
+, fillBrush (nullptr)
+, strokeBrush (nullptr)
+, fontBrush (nullptr)
+, strokeStyle (nullptr)
+{
+	renderTarget = deviceContext;
+	renderTarget->AddRef ();
+	init ();
+}
+
+//-----------------------------------------------------------------------------
 D2DDrawContext::~D2DDrawContext ()
 {
 	releaseRenderTarget ();
@@ -177,7 +195,8 @@ void D2DDrawContext::releaseRenderTarget ()
 	}
 	if (renderTarget)
 	{
-		D2DBitmapCache::instance ()->removeRenderTarget (renderTarget);
+		if (!device)
+			D2DBitmapCache::removeRenderTarget (renderTarget);
 		renderTarget->Release ();
 		renderTarget = nullptr;
 	}
@@ -220,7 +239,7 @@ void D2DDrawContext::endDraw ()
 		if (bitmap)
 		{
 			D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ().get ());
-			D2DBitmapCache::instance ()->removeBitmap (d2dBitmap);
+			D2DBitmapCache::removeBitmap (d2dBitmap);
 		}
 	}
 }
@@ -423,44 +442,40 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 		transformedScaleFactor *= t.m11;
 	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
 	D2DBitmap* d2dBitmap = platformBitmap ? dynamic_cast<D2DBitmap*> (platformBitmap) : nullptr;
-	if (d2dBitmap)
+	if (d2dBitmap && d2dBitmap->getSource ())
 	{
-		if (d2dBitmap->getSource ())
+		if (auto d2d1Bitmap = D2DBitmapCache::getBitmap (d2dBitmap, renderTarget, device))
 		{
-			ID2D1Bitmap* d2d1Bitmap = D2DBitmapCache::instance ()->getBitmap (d2dBitmap, renderTarget);
-			if (d2d1Bitmap)
+			double bitmapScaleFactor = platformBitmap->getScaleFactor ();
+			CGraphicsTransform bitmapTransform;
+			bitmapTransform.scale (1./bitmapScaleFactor, 1./bitmapScaleFactor);
+			Transform transform (*this, bitmapTransform);
+
+			CRect d (dest);
+			d.setWidth (bitmap->getWidth ());
+			d.setHeight (bitmap->getHeight ());
+			d.offset (-offset.x, -offset.y);
+			d.makeIntegral ();
+			CRect source;
+			source.setWidth (d2d1Bitmap->GetSize ().width);
+			source.setHeight (d2d1Bitmap->GetSize ().height);
+
+			D2D1_BITMAP_INTERPOLATION_MODE mode;
+			switch (getCurrentState ().bitmapQuality)
 			{
-				double bitmapScaleFactor = platformBitmap->getScaleFactor ();
-				CGraphicsTransform bitmapTransform;
-				bitmapTransform.scale (1./bitmapScaleFactor, 1./bitmapScaleFactor);
-				Transform transform (*this, bitmapTransform);
+				case BitmapInterpolationQuality::kLow:
+					mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+					break;
 
-				CRect d (dest);
-				d.setWidth (bitmap->getWidth ());
-				d.setHeight (bitmap->getHeight ());
-				d.offset (-offset.x, -offset.y);
-				d.makeIntegral ();
-				CRect source;
-				source.setWidth (d2d1Bitmap->GetSize ().width);
-				source.setHeight (d2d1Bitmap->GetSize ().height);
-
-				D2D1_BITMAP_INTERPOLATION_MODE mode;
-				switch (getCurrentState ().bitmapQuality)
-				{
-					case BitmapInterpolationQuality::kLow:
-						mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
-						break;
-
-					case BitmapInterpolationQuality::kMedium:
-					case BitmapInterpolationQuality::kHigh:
-					default:
-						mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
-						break;
-				}
-
-				D2D1_RECT_F sourceRect = makeD2DRect (source);
-				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * getCurrentState ().globalAlpha, mode, &sourceRect);
+				case BitmapInterpolationQuality::kMedium:
+				case BitmapInterpolationQuality::kHigh:
+				default:
+					mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
+					break;
 			}
+
+			D2D1_RECT_F sourceRect = makeD2DRect (source);
+			renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * getCurrentState ().globalAlpha, mode, &sourceRect);
 		}
 	}
 }

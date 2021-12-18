@@ -47,7 +47,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	{
 		auto* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
 		if (layeredView)
-			layeredView->setZIndex (10);
+			layeredView->setZIndex (std::numeric_limits<uint32_t>::max ());
 
 		CRect size = view->getViewSize ();
 		size.right += sizeDiff.x;

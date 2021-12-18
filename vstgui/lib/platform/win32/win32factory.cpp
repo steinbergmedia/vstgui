@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "win32factory.h"
+#include "win32directcomposition.h"
 #include "../iplatformbitmap.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
@@ -12,6 +13,7 @@
 #include "../iplatformtimer.h"
 #include "../common/fileresourceinputstream.h"
 #include "direct2d/d2dbitmap.h"
+#include "direct2d/d2dbitmapcache.h"
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dfont.h"
 #include "direct2d/d2dgradient.h"
@@ -26,6 +28,7 @@
 #include <memory>
 #include <shlwapi.h>
 #include <d2d1.h>
+#include <d2d1_1.h>
 #include <dwrite.h>
 #include <wincodec.h>
 
@@ -38,6 +41,7 @@
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
+
 //-----------------------------------------------------------------------------
 struct Win32Factory::Impl
 {
@@ -45,6 +49,8 @@ struct Win32Factory::Impl
 	COM::Ptr<ID2D1Factory> d2dFactory;
 	COM::Ptr<IDWriteFactory> directWriteFactory;
 	COM::Ptr<IWICImagingFactory> wicImagingFactory;
+
+	std::unique_ptr<DirectComposition::Factory> directCompositionFactory;
 
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
@@ -102,11 +108,15 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 #endif
 	CoCreateInstance (VSTGUI_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
 					  IID_IWICImagingFactory, (void**)impl->wicImagingFactory.adoptPtr ());
+
+	impl->directCompositionFactory = DirectComposition::Factory::create (impl->d2dFactory.get ());
+	D2DBitmapCache::init ();
 }
 
 //-----------------------------------------------------------------------------
 Win32Factory::~Win32Factory () noexcept
 {
+	D2DBitmapCache::terminate ();
 	D2DFont::terminate ();
 }
 
@@ -169,6 +179,12 @@ IWICImagingFactory* Win32Factory::getWICImagingFactory () const noexcept
 IDWriteFactory* Win32Factory::getDirectWriteFactory () const noexcept
 {
 	return impl->directWriteFactory.get ();
+}
+
+//-----------------------------------------------------------------------------
+DirectComposition::Factory* Win32Factory::getDirectCompositionFactory () const noexcept
+{
+	return impl->directCompositionFactory.get ();
 }
 
 //-----------------------------------------------------------------------------

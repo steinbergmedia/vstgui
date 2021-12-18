@@ -9,8 +9,10 @@
 #if WINDOWS
 
 #include "../../cframe.h"
+#include "win32directcomposition.h"
 
 namespace VSTGUI {
+class Win32ViewLayer;
 
 //-----------------------------------------------------------------------------
 class Win32Frame final : public IPlatformFrame, public IWin32PlatformFrame
@@ -46,7 +48,7 @@ public:
 #if VSTGUI_OPENGL_SUPPORT
 	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
-	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return nullptr; } // not yet supported
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 #endif
@@ -60,8 +62,13 @@ public:
 	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------
 protected:
+	using ViewLayers = std::vector<Win32ViewLayer*>;
+
 	void initTooltip ();
 	void paint (HWND hwnd);
+
+	template<typename Proc>
+	void iterateRegion (HRGN rgn, Proc func);
 
 	static void initWindowClass ();
 	static void destroyWindowClass ();
@@ -76,7 +83,9 @@ protected:
 	SharedPointer<COffscreenContext> backBuffer;
 	CDrawContext* deviceContext;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
+	DirectComposition::VisualPtr directCompositionVisual;
 	Optional<MSG> currentEvent;
+	ViewLayers viewLayers;
 
 	bool inPaint;
 	bool mouseInside;

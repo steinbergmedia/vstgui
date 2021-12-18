@@ -19,10 +19,10 @@ inline uint32_t shuffle (uint32_t input)
 	static constexpr auto s3 = bs3 * 8;
 	static constexpr auto s4 = bs4 * 8;
 
-	uint32_t b1 = (input & 0xFF000000);
-	uint32_t b2 = (input & 0x00FF0000);
-	uint32_t b3 = (input & 0x0000FF00);
-	uint32_t b4 = (input & 0x000000FF);
+	int32_t b1 = (input & 0xFF000000);
+	int32_t b2 = (input & 0x00FF0000);
+	int32_t b3 = (input & 0x0000FF00);
+	int32_t b4 = (input & 0x000000FF);
 
 #ifdef _MSC_VER
 #pragma warning(push)
