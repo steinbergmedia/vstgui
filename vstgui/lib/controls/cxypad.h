@@ -32,6 +32,11 @@ public:
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
+	/** set default value so that x and y default to val */
+	void setDefaultValue (float val) override;
+	/** set default value for x and y */
+	void setDefaultValues (float x, float y);
+
 	static float calculateValue (float x, float y)
 	{
 		x = std::floor (x * 1000.f + 0.5f) * 0.001f;

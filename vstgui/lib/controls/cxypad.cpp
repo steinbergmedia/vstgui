@@ -210,4 +210,16 @@ void CXYPad::boundValues (float& x, float& y)
 		y = 1.f;
 }
 
+//------------------------------------------------------------------------
+void CXYPad::setDefaultValue (float val)
+{
+	CControl::setDefaultValue (calculateValue (val, val));
+}
+
+//------------------------------------------------------------------------
+void CXYPad::setDefaultValues (float x, float y)
+{
+	CControl::setDefaultValue (calculateValue (x, y));
+}
+
 } // VSTGUI
