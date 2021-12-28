@@ -5,6 +5,7 @@
 #include "../../../../lib/controls/ccontrol.h"
 #include "../../../../lib/controls/icontrollistener.h"
 #include "../../unittests.h"
+#include "../eventhelpers.h"
 
 namespace VSTGUI {
 
@@ -112,12 +113,31 @@ TEST_CASE (CControlTest, SetValueNormalized)
 
 TEST_CASE (CControlTest, CheckDefaultValue)
 {
-	CButtonState buttons = kLButton | CControl::kDefaultValueModifier;
 	Control c;
 	c.setValue (c.getDefaultValue () + 0.1f);
-	EXPECT (c.checkDefaultValue (buttons));
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (&c, {0., 0.}, MouseButton::Left,
+												   Modifiers (ModifierKey::Control)),
+			   EventConsumeState::Handled + MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
 	EXPECT (c.getValue () == c.getDefaultValue ());
-	EXPECT (c.checkDefaultValue (kRButton) == false);
+	c.setValue (c.getDefaultValue () + 0.1f);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (&c, {0., 0.}, MouseButton::Right,
+												   Modifiers (ModifierKey::Control)),
+			   0);
+	EXPECT (c.getValue () == c.getDefaultValue () + 0.1f);
+
+	auto oldCheckDefaultValueFunc = CControl::CheckDefaultValueEventFunc;
+	CControl::CheckDefaultValueEventFunc = [] (CControl*, MouseDownEvent& event) {
+		return (event.buttonState.isMiddle () && event.modifiers.is (ModifierKey::Shift));
+	};
+
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (&c, {0., 0.}, MouseButton::Left,
+												   Modifiers (ModifierKey::Control)),
+			   0);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (&c, {0., 0.}, MouseButton::Middle,
+												   Modifiers (ModifierKey::Shift)),
+			   EventConsumeState::Handled + MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
+
+	CControl::CheckDefaultValueEventFunc = oldCheckDefaultValueFunc;
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

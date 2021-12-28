@@ -52,7 +52,6 @@ public:
 	virtual	float getDefaultValue () const;
 
 	virtual void bounceValue ();
-	virtual bool checkDefaultValue (CButtonState button);
 	
 	/** notifies listener and dependent objects */
 	virtual void valueChanged ();
@@ -96,17 +95,25 @@ public:
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
 
+	using CheckDefaultValueEventFuncT = bool (*) (CControl*, MouseDownEvent&);
+	/** Function to check if a mouse down event should reset the value to its default value for a
+	 *control. Per default this checks for a left mouse down button and the control modifier key. */
+	static CheckDefaultValueEventFuncT CheckDefaultValueEventFunc;
+
 	/** zoom modifier key, per default is the shift key */
 	inline static int32_t kZoomModifier = kShift;
-	/** default value modifier key, per default is the control key */
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	/** \deprecated default value modifier key, per default is the control key */
 	inline static int32_t kDefaultValueModifier = kControl;
 
 	using CheckDefaultValueFuncT = bool (*) (CControl*, CButtonState);
-	/** Function to check if the button state is the state to set the control value to its default
-	 * value. The default implementation uses the kDefaultValueModifier (see above). Use this to
-	 * change this to double click per example. But consider to change this to the same behaviour as
-	 * the host you are running in for best user experience. */
+	/** \deprecated Function to check if the button state is the state to set the control value to
+	 * its default value. The default implementation uses the kDefaultValueModifier (see above). Use
+	 * this to change this to double click per example. But consider to change this to the same
+	 * behaviour as the host you are running in for best user experience. */
 	static CheckDefaultValueFuncT CheckDefaultValueFunc;
+#endif
 
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:

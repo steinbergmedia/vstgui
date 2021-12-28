@@ -105,12 +105,6 @@ CMouseEventResult CKnobBase::onMouseDown (CPoint& where, const CButtonState& but
 	invalidMouseWheelEditTimer (this);
 	beginEdit ();
 
-	if (checkDefaultValue (buttons))
-	{
-		endEdit ();
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-	}
-
 	auto& mouseState = getMouseEditingState ();
 	mouseState.firstPoint = where;
 	mouseState.lastPoint (-1, -1);

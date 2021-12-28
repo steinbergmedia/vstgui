@@ -381,16 +381,6 @@ CMouseEventResult CSliderBase::onMouseDown (CPoint& where, const CButtonState& b
 	impl->mePreviousVal = getMin () - 1;
 	impl->meOldButton = buttons;
 
-	if ((getEffectiveSliderMode () == CSliderMode::RelativeTouch &&
-	     handleRect.pointInside (where)) ||
-	    getEffectiveSliderMode () != CSliderMode::RelativeTouch)
-	{
-		if (checkDefaultValue (buttons))
-		{
-			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-		}
-	}
-
 	if (getEffectiveSliderMode () == CSliderMode::Ramp && !handleRect.pointInside (where))
 	{
 		impl->rampTimer = owned (new CVSTGUITimer ([this] (CVSTGUITimer*) { doRamping (); }, 16));

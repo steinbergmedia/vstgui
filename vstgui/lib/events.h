@@ -95,6 +95,7 @@ struct Modifiers
 {
 	Modifiers () = default;
 	Modifiers (const Modifiers&) = default;
+	explicit Modifiers (ModifierKey modifier) : data (cast (modifier)) {}
 
 	/** test if no modifier key is set */
 	bool empty () const { return data == 0; }

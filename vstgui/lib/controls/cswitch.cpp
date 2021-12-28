@@ -82,11 +82,6 @@ CMouseEventResult CSwitchBase::onMouseDown (CPoint& where, const CButtonState& b
 
 	beginEdit ();
 
-	if (checkDefaultValue (buttons))
-	{
-		endEdit ();
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-	}
 	mouseStartValue = getValue ();
 	return onMouseMoved (where, buttons);
 }

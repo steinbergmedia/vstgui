@@ -24,6 +24,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_11 Version 4.11
 
+- Using DirectComposition on Windows now with support for CLayeredViewContainer
 - Removed 32-bit Carbon support
 - Reworked event handling, please see @ref code_changes_4_10_to_4_11
 - Reworked unit test framework to be able to debug the tests
@@ -123,6 +124,8 @@ Changes due to event handling rework:
 - CViewContainer::onWheel is now marked final, you cannot inherit this method, please override the new CView::onMouseWheelEvent instead if you need to handle mouse wheel events in a custom view container
 - DragEventData has changed it's modifiers type from CButtonState to Modifiers
 - CView::hitTest uses an Event now instead of a CButtonState (the method with a CButtonState still works but is deprecated)
+- CControl::checkDefaultValue(CButtonState) was removed and replaced by a generic method which uses
+the static function CControl::CheckDefaultValueEventFunc to reset a control to its default value
 
 CView has the following new methods:
 - dispatchEvent
