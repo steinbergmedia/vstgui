@@ -443,6 +443,18 @@ static CPoint getRectSize (const RECT& r)
 }
 
 //------------------------------------------------------------------------
+static CPoint mapPOINT (const POINT& p)
+{
+	return {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
+}
+
+//------------------------------------------------------------------------
+static POINT mapCPoint (const CPoint& p)
+{
+	return {static_cast<LONG> (p.x), static_cast<LONG> (p.y)};
+}
+
+//------------------------------------------------------------------------
 void Window::makeTransparent ()
 {
 	MARGINS margin = {-1};
@@ -461,6 +473,24 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_MOVE:
 		{
 			delegate->onPositionChanged (getPosition ());
+			break;
+		}
+		case WM_GETMINMAXINFO:
+		{
+			if (auto minmaxInfo = reinterpret_cast<MINMAXINFO*> (lParam))
+			{
+				auto p = mapPOINT (minmaxInfo->ptMinTrackSize);
+				frame->getTransform ().inverse ().transform (p);
+				p = delegate->constraintSize (p);
+				frame->getTransform ().transform (p);
+				minmaxInfo->ptMinTrackSize = mapCPoint (p);
+				p = mapPOINT (minmaxInfo->ptMaxTrackSize);
+				frame->getTransform ().inverse ().transform (p);
+				p = delegate->constraintSize (p);
+				frame->getTransform ().transform (p);
+				minmaxInfo->ptMaxTrackSize = mapCPoint (p);
+				return 0;
+			}
 			break;
 		}
 		case WM_SIZE:
