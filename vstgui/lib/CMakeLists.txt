@@ -146,6 +146,7 @@ set(${target}_common_sources
     pixelbuffer.h
     pixelbuffer.cpp
     platform/iplatformbitmap.h
+    platform/iplatformfileselector.h
     platform/iplatformfont.h
     platform/iplatformframe.h
     platform/iplatformframecallback.h
@@ -211,6 +212,7 @@ set(${target}_mac_sources
     platform/mac/macfactory.h
     platform/mac/macfactory.mm
     platform/mac/macfileselector.mm
+    platform/mac/macfileselector.h
     platform/mac/macglobals.cpp
     platform/mac/macglobals.h
     platform/mac/macstring.h
@@ -264,6 +266,7 @@ set(${target}_win32_sources
     platform/win32/win32viewlayer.cpp
     platform/win32/win32viewlayer.h
     platform/win32/winfileselector.cpp
+    platform/win32/winfileselector.h
     platform/win32/winstring.cpp
     platform/win32/winstring.h
     platform/win32/wintimer.cpp
@@ -288,6 +291,7 @@ set(${target}_linux_sources
     platform/linux/x11dragging.cpp
     platform/linux/x11dragging.h
     platform/linux/x11fileselector.cpp
+    platform/linux/x11fileselector.h
     platform/linux/x11frame.cpp
     platform/linux/x11frame.h
     platform/linux/x11platform.cpp

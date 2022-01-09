@@ -143,6 +143,14 @@ public:
 	 */
 	virtual PlatformGradientPtr createGradient () const noexcept = 0;
 
+	/** Create a platform file selector
+	 *	@param style file selector style
+	 *	@param frame frame
+	 *	@return platform file selector or nullptr on failure
+	 */
+	virtual PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style,
+														IPlatformFrame* frame) const noexcept = 0;
+
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;
 	virtual const Win32Factory* asWin32Factory () const noexcept = 0;

@@ -2,7 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "../../cfileselector.h"
+#include "x11fileselector.h"
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -22,38 +22,35 @@ static constexpr auto kdialogpath = "/usr/bin/kdialog";
 static constexpr auto zenitypath = "/usr/bin/zenity";
 
 //------------------------------------------------------------------------
-struct FileSelector : CNewFileSelector
+struct FileSelector : IPlatformFileSelector
 {
-	FileSelector (CFrame* parent, Style style) : CNewFileSelector (parent), style (style)
+	FileSelector (PlatformFileSelectorStyle style) : style (style) { identifiyExDialogType (); }
+
+	~FileSelector () noexcept { closeProcess (); }
+
+	bool cancel () override
 	{
-		identifiyExDialogType ();
+		closeProcess ();
+		return false;
 	}
 
-	~FileSelector ()
+	bool runDialog (const PlatformFileSelectorConfig& config)
 	{
-        closeProcess ();
-	}
-
-	bool runInternal (CBaseObject* delegate) override
-	{
-		this->delegate = delegate;
 		switch (exDialogType)
 		{
 			case ExDialogType::kdialog:
-				return runKDialog ();
+				return runKDialog (config);
 			case ExDialogType::zenity:
-				return runZenity ();
+				return runZenity (config);
 			case ExDialogType::none:
 				break;
 		}
 		return false;
 	}
 
-	void cancelInternal () override { closeProcess (); }
-
-	bool runModalInternal () override
+	bool run (const PlatformFileSelectorConfig& config) override
 	{
-		if (runInternal (nullptr))
+		if (runDialog (config))
 		{
 			std::string path;
 			path.reserve (1024);
@@ -67,6 +64,7 @@ struct FileSelector : CNewFileSelector
 					path.append (buffer, count);
 			}
 
+			std::vector<UTF8String> result;
 			if (count != -1)
 			{
 				if (! path.empty () && path[0] == '/')
@@ -76,8 +74,11 @@ struct FileSelector : CNewFileSelector
 					result.emplace_back (path);
 				}
 			}
+			if (config.doneCallback)
+				config.doneCallback (std::move (result));
+			return true;
 		}
-		return !result.empty ();
+		return false;
 	}
 
 private:
@@ -96,27 +97,29 @@ private:
 			exDialogType = ExDialogType::kdialog;
 	}
 
-	bool runKDialog ()
+	bool runKDialog (const PlatformFileSelectorConfig& config)
 	{
 		std::vector<std::string> args;
 		args.reserve (16);
 		args.push_back (kdialogpath);
-		if (style == Style::kSelectFile) {
+		if (style == PlatformFileSelectorStyle::SelectFile)
+		{
 			args.push_back ("--getopenfilename");
 			args.push_back ("--separate-output");
 		}
-		else if (style == Style::kSelectSaveFile)
+		else if (style == PlatformFileSelectorStyle::SelectSaveFile)
 			args.push_back ("--getsavefilename");
-		else if (style == Style::kSelectDirectory)
+		else if (style == PlatformFileSelectorStyle::SelectDirectory)
 			args.push_back ("--getexistingdirectory");
-		if (allowMultiFileSelection)
+		if (hasBit (config.flags, PlatformFileSelectorFlags::MultiFileSelection))
 			args.push_back ("--multiple");
-		if (!title.empty ()) {
+		if (!config.title.empty ())
+		{
 			args.push_back ("--title");
-			args.push_back (title.getString ());
+			args.push_back (config.title.getString ());
 		}
-		if (!initialPath.empty ())
-			args.push_back (initialPath.getString ());
+		if (!config.initialPath.empty ())
+			args.push_back (config.initialPath.getString ());
 		if (startProcess (convertToArgv (args).data ()))
 		{
 			return true;
@@ -124,23 +127,23 @@ private:
 		return false;
 	}
 
-	bool runZenity ()
+	bool runZenity (const PlatformFileSelectorConfig& config)
 	{
 		std::vector<std::string> args;
 		args.reserve (16);
 		args.push_back (zenitypath);
 		args.push_back ("--file-selection");
-		if (style == Style::kSelectDirectory)
+		if (style == PlatformFileSelectorStyle::SelectDirectory)
 			args.push_back ("--directory");
-		else if (style == Style::kSelectSaveFile)
+		else if (style == PlatformFileSelectorStyle::SelectSaveFile)
 		{
 			args.push_back ("--save");
 			args.push_back ("--confirm-overwrite");
 		}
-		if (!title.empty ())
-			args.push_back ("--title=" + title.getString ());
-		if (!initialPath.empty ())
-			args.push_back ("--filename=" + initialPath.getString ());
+		if (!config.title.empty ())
+			args.push_back ("--title=" + config.title.getString ());
+		if (!config.initialPath.empty ())
+			args.push_back ("--filename=" + config.initialPath.getString ());
 		if (startProcess (convertToArgv (args).data ()))
 		{
 			return true;
@@ -240,21 +243,18 @@ private:
 		}
 	}
 
-	Style style;
-	SharedPointer<CBaseObject> delegate;
+	PlatformFileSelectorStyle style;
 	ExDialogType exDialogType{ExDialogType::none};
 	pid_t spawnPid = -1;
 	int readerFd = -1;
 };
 
 //------------------------------------------------------------------------
-} // X11
-
-//------------------------------------------------------------------------
-CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
+PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style, Frame* frame)
 {
-	return new X11::FileSelector (parent, style);
+	return std::make_shared<FileSelector> (style);
 }
 
 //------------------------------------------------------------------------
+} // X11
 } // VSTGUI

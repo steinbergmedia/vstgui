@@ -319,9 +319,15 @@ class IPlatformResourceInputStream;
 class IPlatformFrameConfig;
 class IPlatformFrameCallback;
 class IPlatformTimerCallback;
+class IPlatformFileSelector;
+
+struct PlatformFileExtension;
+struct PlatformFileSelectorConfig;
 
 enum class PlatformType : int32_t;
 enum class PlatformGraphicsPathFillMode : int32_t;
+enum class PlatformFileSelectorStyle : uint32_t;
+enum class PlatformFileSelectorFlags : uint32_t;
 
 using PlatformFramePtr = SharedPointer<IPlatformFrame>;
 using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
@@ -333,5 +339,6 @@ using PlatformFactoryPtr = std::unique_ptr<IPlatformFactory>;
 using PlatformGradientPtr = std::unique_ptr<IPlatformGradient>;
 using PlatformGraphicsPathPtr = std::unique_ptr<IPlatformGraphicsPath>;
 using PlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
+using PlatformFileSelectorPtr = std::shared_ptr<IPlatformFileSelector>;
 
 } // VSTGUI
