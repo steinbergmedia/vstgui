@@ -17,6 +17,7 @@
 #include "ios/uiviewframe.h"
 #include "macclipboard.h"
 #include "macfactory.h"
+#include "macfileselector.h"
 #include "macglobals.h"
 #include "macstring.h"
 #include "mactimer.h"
@@ -225,6 +226,17 @@ auto MacFactory::createOffscreenContext (const CPoint& size, double scaleFactor)
 PlatformGradientPtr MacFactory::createGradient () const noexcept
 {
 	return std::make_unique<QuartzGradient> ();
+}
+
+//-----------------------------------------------------------------------------
+PlatformFileSelectorPtr MacFactory::createFileSelector (PlatformFileSelectorStyle style,
+														IPlatformFrame* frame) const noexcept
+{
+#if !TARGET_OS_IPHONE
+	if (auto nsViewFrame = dynamic_cast<NSViewFrame*> (frame))
+		return createCocoaFileSelector (style, nsViewFrame);
+#endif
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

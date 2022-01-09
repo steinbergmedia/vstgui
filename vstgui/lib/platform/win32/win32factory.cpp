@@ -20,6 +20,7 @@
 #include "win32frame.h"
 #include "win32dragging.h"
 #include "win32resourcestream.h"
+#include "winfileselector.h"
 #include "winstring.h"
 #include "wintimer.h"
 #include "comptr.h"
@@ -339,6 +340,17 @@ auto Win32Factory::createOffscreenContext (const CPoint& size, double scaleFacto
 PlatformGradientPtr Win32Factory::createGradient () const noexcept
 {
 	return std::make_unique<D2DGradient> ();
+}
+
+//-----------------------------------------------------------------------------
+PlatformFileSelectorPtr Win32Factory::createFileSelector (PlatformFileSelectorStyle style,
+														  IPlatformFrame* frame) const noexcept
+{
+	if (auto win32Frame = dynamic_cast<Win32Frame*> (frame))
+	{
+		return createWinFileSelector (style, win32Frame->getHWND ());
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
