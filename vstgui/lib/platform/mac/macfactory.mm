@@ -233,8 +233,8 @@ PlatformFileSelectorPtr MacFactory::createFileSelector (PlatformFileSelectorStyl
 														IPlatformFrame* frame) const noexcept
 {
 #if !TARGET_OS_IPHONE
-	if (auto nsViewFrame = dynamic_cast<NSViewFrame*> (frame))
-		return createCocoaFileSelector (style, nsViewFrame);
+	auto nsViewFrame = dynamic_cast<NSViewFrame*> (frame);
+	return createCocoaFileSelector (style, nsViewFrame);
 #endif
 	return nullptr;
 }

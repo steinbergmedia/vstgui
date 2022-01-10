@@ -167,6 +167,8 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 	}
 	if (!config.title.empty () && savePanel)
 	{
+#if 0 // Apple broke this again with macOS 12. Disable this now and always use the message to
+	  // display the title.
 		if (@available (macOS 11, *))
 		{
 			if (parentWindow)
@@ -174,7 +176,9 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 			else
 				[savePanel setTitle:fromUTF8String<NSString*> (config.title)];
 		}
-		else if (@available (macOS 10.11, *))
+		else
+#endif
+		if (@available (macOS 10.11, *))
 		{
 			[savePanel setMessage:fromUTF8String<NSString*> (config.title)];
 		}
