@@ -112,6 +112,8 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 	if (!hasBit (config.flags, PlatformFileSelectorFlags::RunModal))
 		parentWindow = [(frame->getNSView ()) window];
 
+	callback = config.doneCallback;
+
 	NSOpenPanel* openPanel = nil;
 	NSMutableArray* typesArray = nil;
 	if (config.extensions.empty () == false)

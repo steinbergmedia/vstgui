@@ -211,6 +211,10 @@ bool CNewFileSelector::runModal ()
 	if (impl->frame)
 		impl->frame->onStartLocalEventLoop ();
 	setBit (impl->flags, PlatformFileSelectorFlags::RunModal, true);
+	impl->doneCallback = [&] (std::vector<UTF8String>&& files) {
+		impl->result = std::move (files);
+	};
+
 	return impl->platformFileSelector->run (*impl);
 }
 
