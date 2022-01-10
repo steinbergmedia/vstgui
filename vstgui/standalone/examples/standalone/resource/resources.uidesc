@@ -118,7 +118,7 @@
 		},
 		"custom": {
 			"UIDescFilePath": {
-				"path": "/Users/scheffle/Source/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"
+				"path": "/Volumes/vst3/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"
 			}
 		}
 	}

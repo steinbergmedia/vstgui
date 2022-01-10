@@ -5,6 +5,7 @@
 #include "clayeredviewcontainer.h"
 #include "cframe.h"
 #include "cdrawcontext.h"
+#include "coffscreencontext.h"
 #include "platform/iplatformframe.h"
 
 namespace VSTGUI {
@@ -187,7 +188,10 @@ void CLayeredViewContainer::setAlphaValue (float alpha)
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	if (layer)
+	auto drawsIntoBitmap = false;
+	if (auto offscreenContext = dynamic_cast<COffscreenContext*> (pContext))
+		drawsIntoBitmap = offscreenContext->getBitmap () != nullptr;
+	if (layer && !drawsIntoBitmap)
 		layer->draw (pContext, updateRect);
 	else
 		CViewContainer::drawRect (pContext, updateRect);
