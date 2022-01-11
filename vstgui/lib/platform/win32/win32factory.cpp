@@ -346,11 +346,8 @@ PlatformGradientPtr Win32Factory::createGradient () const noexcept
 PlatformFileSelectorPtr Win32Factory::createFileSelector (PlatformFileSelectorStyle style,
 														  IPlatformFrame* frame) const noexcept
 {
-	if (auto win32Frame = dynamic_cast<Win32Frame*> (frame))
-	{
-		return createWinFileSelector (style, win32Frame->getHWND ());
-	}
-	return nullptr;
+	auto win32Frame = dynamic_cast<Win32Frame*> (frame);
+	return createWinFileSelector (style, win32Frame ? win32Frame->getHWND () : nullptr);
 }
 
 //-----------------------------------------------------------------------------
