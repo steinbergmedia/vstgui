@@ -210,11 +210,8 @@ PlatformGradientPtr LinuxFactory::createGradient () const noexcept
 PlatformFileSelectorPtr LinuxFactory::createFileSelector (PlatformFileSelectorStyle style,
 														  IPlatformFrame* frame) const noexcept
 {
-	if (auto x11Frame = dynamic_cast<X11::Frame*> (frame))
-	{
-		return X11::createFileSelector (style, x11Frame);
-	}
-	return nullptr;
+	auto x11Frame = dynamic_cast<X11::Frame*> (frame);
+	return X11::createFileSelector (style, x11Frame);
 }
 
 //-----------------------------------------------------------------------------
