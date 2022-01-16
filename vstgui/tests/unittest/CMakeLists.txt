@@ -24,6 +24,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/controls/cxypad_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cbitmap_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cbuttonstate_test.cpp"
+	"${VSTGUI_TEST_BASE}lib/cclipboard_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/ccolor_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cframe_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cinvalidrectlist_test.cpp"

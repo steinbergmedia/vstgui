@@ -18,6 +18,8 @@ set(${target}_common_sources
     cbitmapfilter.cpp
     cbitmapfilter.h
     cbuttonstate.h
+    cclipboard.cpp
+    cclipboard.h
     ccolor.cpp
     ccolor.h
     cdatabrowser.cpp
