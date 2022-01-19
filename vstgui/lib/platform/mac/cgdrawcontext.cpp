@@ -394,7 +394,14 @@ void CGDrawContext::drawLines (const LineList& lines)
 	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		applyLineStyle (context);
-		auto cgPoints = std::unique_ptr<CGPoint[]> (new CGPoint[lines.size () * 2]);
+
+		static constexpr auto numStackPoints = 32;
+		CGPoint stackPoints[numStackPoints];
+
+		auto cgPointsPtr = (lines.size () * 2) < numStackPoints
+							   ? nullptr
+							   : std::unique_ptr<CGPoint[]> (new CGPoint[lines.size () * 2]);
+		auto cgPoints = cgPointsPtr ? cgPointsPtr.get () : stackPoints;
 		uint32_t index = 0;
 		if (getDrawMode ().integralMode ())
 		{
@@ -419,7 +426,7 @@ void CGDrawContext::drawLines (const LineList& lines)
 			applyLineWidthCTM (context);
 
 		const size_t maxPointsPerIteration = 16;
-		const CGPoint* pointPtr = cgPoints.get ();
+		const CGPoint* pointPtr = cgPoints;
 		size_t numPoints = lines.size () * 2;
 		while (numPoints)
 		{
