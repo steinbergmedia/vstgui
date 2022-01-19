@@ -83,7 +83,7 @@ public:
 		sstream.precision (stringPrecision);
 		sstream >> value;
 		value = plainToNormalized (value);
-		if (value < 0. || value > 1.)
+		if (sstream.fail () || value < 0. || value > 1.)
 			return IValue::InvalidValue;
 		return value;
 	}
@@ -466,7 +466,7 @@ IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 	std::istringstream sstream (string.getString ());
 	sstream.imbue (std::locale::classic ());
 	sstream >> v;
-	if (v > steps)
+	if (sstream.fail () || v > steps)
 		return IValue::InvalidValue;
 	return stepToValue (v);
 }
