@@ -77,6 +77,8 @@ public:
 	{
 		if (auto p = get (key))
 		{
+			if constexpr (std::is_floating_point<T>::value)
+				return UTF8StringView (*p).toFloat ();
 			return UTF8StringView (*p).toNumber<T> ();
 		}
 		return {};
