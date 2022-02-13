@@ -109,7 +109,7 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 {
 	NSWindow* parentWindow = nil;
 
-	if (!hasBit (config.flags, PlatformFileSelectorFlags::RunModal))
+	if (!hasBit (config.flags, PlatformFileSelectorFlags::RunModal) && frame)
 		parentWindow = [(frame->getNSView ()) window];
 
 	callback = config.doneCallback;
