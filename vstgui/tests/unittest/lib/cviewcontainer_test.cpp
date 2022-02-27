@@ -10,6 +10,7 @@
 #include "../unittests.h"
 #include "eventhelpers.h"
 #include <vector>
+#include <cassert>
 
 namespace VSTGUI {
 
