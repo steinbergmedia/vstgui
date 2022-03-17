@@ -864,20 +864,31 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 		}
 	#endif
 		CViewContainer::ViewList views;
-		if (editingEnabled == false && getFrame ()->getViewsAt (event.mousePosition, views, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer)))
+		auto nonScaledPos = event.mousePosition;
+		frame->getTransform ().transform (nonScaledPos);
+		if (getFrame ()->getViewsAt (nonScaledPos, views, GetViewOptions ().deep ().includeViewContainer ()))
 		{
-			for (const auto& view : views)
-			{
-				auto* contextMenuController = dynamic_cast<IContextMenuController*> (getViewController (view));
-				if (contextMenuController == nullptr)
-					continue;
+			auto createOrPrepareMenu = [&] () {
 				if (controllerMenu == nullptr)
 					controllerMenu = new COptionMenu ();
 				else
 					controllerMenu->addSeparator ();
-				CPoint p (event.mousePosition);
-				view->frameToLocal (p);
-				contextMenuController->appendContextMenuItems (*controllerMenu, p);
+			};
+			for (const auto& view : views)
+			{
+				auto viewController = getViewController (view);
+				if (!viewController)
+					continue;
+				if (auto ctrler = dynamic_cast<IContextMenuController2*> (viewController))
+				{
+					createOrPrepareMenu ();
+					ctrler->appendContextMenuItems (*controllerMenu, view, view->translateToLocal (nonScaledPos));
+				}
+				else if (auto contextMenuController = dynamic_cast<IContextMenuController*> (viewController))
+				{
+					createOrPrepareMenu ();
+					contextMenuController->appendContextMenuItems (*controllerMenu, view->translateToLocal (nonScaledPos));
+				}
 			}
 		}
 	#if VST3_SUPPORTS_CONTEXTMENU
@@ -905,7 +916,7 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 		if (!event.consumed)
 		{
 	#endif
-			if (controllerMenu)
+			if (controllerMenu && controllerMenu->getNbEntries () > 0)
 			{
 				controllerMenu->remember ();
 				SharedPointer<CFrame> blockFrame = getFrame ();
