@@ -53,7 +53,7 @@ namespace {
 //-----------------------------------------------------------------------------
 struct DirectCompositionSupportDll : DllBase
 {
-	using DCompositionCreateDevice2Func = HRESULT (*) (IUnknown*, REFIID, void**);
+	using DCompositionCreateDevice2Func = HRESULT (STDAPICALLTYPE*) (IUnknown*, REFIID, void**);
 
 	static DirectCompositionSupportDll& instance ()
 	{
