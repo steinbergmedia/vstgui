@@ -411,6 +411,20 @@ RootVisual::~RootVisual () noexcept
 {
 	enableVisualizeRedrawAreas (false);
 	vstgui_assert (children.empty ());
+	if (compositionTarget)
+		compositionTarget->SetRoot (nullptr);
+	if (root->visual)
+		root->visual->SetContent (nullptr);
+	if (root->surface)
+		root->surface.reset ();
+	if (compositionSurfaceFactory)
+		compositionSurfaceFactory.reset ();
+	if (root->visual)
+		root->visual.reset ();
+	if (compositionTarget)
+		compositionTarget.reset ();
+	commit ();
+
 	destroyCallback (this);
 }
 
