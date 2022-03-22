@@ -4,6 +4,7 @@
 
 #include "vstgui/lib/cresourcedescription.h"
 #include "vstgui/lib/cstring.h"
+#include "vstgui/lib/finally.h"
 #include "vstgui/uidescription/compresseduidescription.h"
 #include "vstgui/lib/vstguiinit.h"
 #include <string>
@@ -39,6 +40,8 @@ int main (int argv, char* argc[])
 #elif LINUX
 	VSTGUI::init (nullptr);
 #endif
+	auto cleanup = finally ([] () {VSTGUI::exit (); });
+
 	std::string inputPath;
 	std::string outputPath;
 	bool noCompression = false;
@@ -106,6 +109,5 @@ int main (int argv, char* argc[])
 			printAndTerminate ("saving failed");
 		}
 	}
-	VSTGUI::exit ();
 	return 0;
 }
