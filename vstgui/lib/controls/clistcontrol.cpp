@@ -229,7 +229,7 @@ bool CListControl::attached (CView* parent)
 			}
 			void viewWillDelete (CView* view) override
 			{
-				if (view == control)
+				if (view == control || view == scrollView)
 					delete this;
 			}
 			void viewAttached (CView* view) override {}
