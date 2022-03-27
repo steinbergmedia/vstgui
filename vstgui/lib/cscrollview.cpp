@@ -342,6 +342,24 @@ CScrollView::CScrollView (const CScrollView& v)
 }
 
 //-----------------------------------------------------------------------------
+CRect CScrollView::calculateOptimalContainerSize () const
+{
+	auto size = getViewSize ();
+	size.originize ();
+	if (!(style & kDontDrawFrame))
+		size.inset (1, 1);
+	if (!(style & kAutoHideScrollbars) && !(style & kOverlayScrollbars))
+	{
+		if (style & kHorizontalScrollbar)
+			size.right -= scrollbarWidth;
+		if (style & kVerticalScrollbar)
+			size.bottom -= scrollbarWidth;
+	}
+	size.originize ();
+	return size;
+}
+
+//-----------------------------------------------------------------------------
 void CScrollView::recalculateSubViews ()
 {
 	if (recalculateSubViewsRecursionGard)

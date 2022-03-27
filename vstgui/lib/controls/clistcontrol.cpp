@@ -23,6 +23,7 @@ struct CListControl::Impl
 	std::vector<CListControlRowDesc> rowDescriptions;
 	Optional<int32_t> hoveredRow {};
 	bool doHoverCheck {false};
+	CCoord minHeight {0.};
 };
 
 //------------------------------------------------------------------------
@@ -98,6 +99,9 @@ void CListControl::recalculateLayout ()
 		height += impl->rowDescriptions[row].height;
 		impl->doHoverCheck |= (impl->rowDescriptions[row].flags & CListControlRowDesc::Hoverable) != 0;
 	}
+
+	if (impl->minHeight > 0 && height < impl->minHeight)
+		height = impl->minHeight;
 
 	auto viewSize = getViewSize ();
 	if (viewSize.getHeight () != height)
@@ -199,6 +203,43 @@ void CListControl::drawRect (CDrawContext* context, const CRect& updateRect)
 //------------------------------------------------------------------------
 bool CListControl::attached (CView* parent)
 {
+	if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
+	{
+		impl->minHeight = scrollView->calculateOptimalContainerSize ().getHeight ();
+		struct SizeListener : ViewListenerAdapter
+		{
+			SizeListener (CListControl* listControl, CScrollView* scrollView)
+			: control (listControl), scrollView (scrollView)
+			{
+				listControl->registerViewListener (this);
+				scrollView->registerViewListener (this);
+			}
+			~SizeListener () noexcept
+			{
+				control->unregisterViewListener (this);
+				scrollView->unregisterViewListener (this);
+			}
+			void viewSizeChanged (CView* view, const CRect& oldSize) override
+			{
+				if (view != scrollView)
+					return;
+				control->impl->minHeight =
+					scrollView->calculateOptimalContainerSize ().getHeight ();
+				control->recalculateLayout ();
+			}
+			void viewWillDelete (CView* view) override
+			{
+				if (view == control)
+					delete this;
+			}
+			void viewAttached (CView* view) override {}
+			void viewRemoved (CView* view) override {}
+
+			CListControl* control {nullptr};
+			CScrollView* scrollView {nullptr};
+		};
+		new SizeListener (this, scrollView);
+	}
 	recalculateLayout ();
 	return CControl::attached (parent);
 }

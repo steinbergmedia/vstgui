@@ -82,6 +82,9 @@ public:
 
 	/** set scrollview to show rect */
 	virtual void makeRectVisible (const CRect& rect);
+
+	/** calculate the maximum rect where the scrollbars are inactive */
+	CRect calculateOptimalContainerSize () const;
 	//@}
 
 	// overwrite
