@@ -16,10 +16,13 @@ struct StringDataPackage : IDataPackage
 {
 	StringDataPackage (std::string_view str) : str (str) {}
 
-	uint32_t getCount () const { return 1; }
-	uint32_t getDataSize (uint32_t index) const { return static_cast<uint32_t> (str.size ()); }
-	Type getDataType (uint32_t index) const { return AsFile ? Type::kFilePath : Type::kText; }
-	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const
+	uint32_t getCount () const final { return 1; }
+	uint32_t getDataSize (uint32_t index) const final
+	{
+		return static_cast<uint32_t> (str.size ());
+	}
+	Type getDataType (uint32_t index) const final { return AsFile ? Type::kFilePath : Type::kText; }
+	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const final
 	{
 		buffer = str.data ();
 		type = getDataType (index);
@@ -33,7 +36,7 @@ struct StringDataPackage : IDataPackage
 template<bool AsFile>
 Optional<UTF8String> getString (IDataPackage* cb)
 {
-	for (auto i = 0u; i < cb->getCount (); i++)
+	for (auto i = 0u, count = cb->getCount (); i < count; i++)
 	{
 		if (cb->getDataType (i) == (AsFile ? IDataPackage::Type::kFilePath
 										   : IDataPackage::Type::kText))
