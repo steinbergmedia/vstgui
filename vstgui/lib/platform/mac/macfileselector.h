@@ -4,6 +4,8 @@
 
 #pragma once
 
+#if !TARGET_OS_IPHONE
+
 #include "../iplatformfileselector.h"
 #include "cocoa/nsviewframe.h"
 
@@ -14,3 +16,6 @@ PlatformFileSelectorPtr createCocoaFileSelector (PlatformFileSelectorStyle style
 												 NSViewFrame* frame);
 
 } // VSTGUI
+
+#endif
+
