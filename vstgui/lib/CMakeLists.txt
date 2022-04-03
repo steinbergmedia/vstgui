@@ -341,4 +341,19 @@ endif()
 
 if(CMAKE_HOST_APPLE)
   target_compile_options(${target} PRIVATE -Wall -Werror)
+  set(PLATFORM_LIBRARIES
+	"-framework Cocoa"
+	"-framework QuartzCore"
+	"-framework Accelerate"
+  )
+  if(VSTGUI_ENABLE_OPENGL_SUPPORT)
+	set(PLATFORM_LIBRARIES
+	  ${PLATFORM_LIBRARIES}
+	  "-framework OpenGL"
+	)
+  endif()
+  target_link_libraries(${target}
+    PUBLIC
+      ${PLATFORM_LIBRARIES}
+  )
 endif()

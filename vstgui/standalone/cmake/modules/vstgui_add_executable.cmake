@@ -32,17 +32,25 @@ function(vstgui_add_executable target sources)
       MACOSX_PACKAGE_LOCATION "."
     )
     add_executable(${target} ${sources} ${PkgInfoResource})
-    set(PLATFORM_LIBRARIES
-      "-framework Cocoa"
-      "-framework QuartzCore"
-      "-framework Accelerate"
-    )
-    if(VSTGUI_ENABLE_OPENGL_SUPPORT)
-      set(PLATFORM_LIBRARIES
-        ${PLATFORM_LIBRARIES}
-        "-framework OpenGL"
-      )
-    endif()
+#    set(PLATFORM_LIBRARIES
+#      "-framework Cocoa"
+#      "-framework QuartzCore"
+#      "-framework Accelerate"
+#    )
+#    find_library(UTIFramework "UniformTypeIdentifiers")
+#	if(UTIFramework)
+#      set(PLATFORM_LIBRARIES
+#      	${PLATFORM_LIBRARIES}
+#      	"${UTIFramework}"
+#      )
+#    endif()
+#	message(${PLATFORM_LIBRARIES})
+#    if(VSTGUI_ENABLE_OPENGL_SUPPORT)
+#      set(PLATFORM_LIBRARIES
+#        ${PLATFORM_LIBRARIES}
+#        "-framework OpenGL"
+#      )
+#    endif()
     set_target_properties(${target} PROPERTIES
       MACOSX_BUNDLE TRUE
       XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT $<$<CONFIG:Debug>:dwarf>$<$<NOT:$<CONFIG:Debug>>:dwarf-with-dsym>
