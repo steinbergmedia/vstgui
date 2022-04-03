@@ -9,6 +9,11 @@
 #import "macfileselector.h"
 #import "macstring.h"
 
+#if defined(MAC_OS_VERSION_11_0) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_VERSION_11_0)
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#define VSTGUI_USE_OBJC_UTTYPE
+#endif
+
 namespace VSTGUI {
 
 //------------------------------------------------------------------------------------
@@ -121,6 +126,17 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 		typesArray = [[[NSMutableArray alloc] init] autorelease];
 		for (auto& ext : config.extensions)
 		{
+#ifdef VSTGUI_USE_OBJC_UTTYPE
+			UTType* uti = nullptr;
+			if (ext.uti.empty () == false)
+				uti = [UTType typeWithIdentifier:fromUTF8String<NSString*> (ext.uti)];
+			if (uti == nullptr && ext.mimeType.empty() == false)
+				uti = [UTType typeWithMIMEType:fromUTF8String<NSString*> (ext.mimeType)];
+			if (uti == nullptr && ext.extension.empty () == false)
+				uti = [UTType typeWithFilenameExtension:fromUTF8String<NSString*> (ext.extension)];
+			if (uti)
+				[typesArray addObject:uti];
+#else
 			NSString* uti = nullptr;
 			if (ext.uti.empty () == false)
 				uti = [fromUTF8String<NSString*> (ext.uti) retain];
@@ -145,13 +161,20 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 				[typesArray addObject:uti];
 				[uti release];
 			}
+#endif
 		}
 	}
 	if (style == PlatformFileSelectorStyle::SelectSaveFile)
 	{
 		savePanel = [NSSavePanel savePanel];
 		if (typesArray)
+		{
+#ifdef VSTGUI_USE_OBJC_UTTYPE
+			[savePanel setAllowedContentTypes:typesArray];
+#else
 			[savePanel setAllowedFileTypes:typesArray];
+#endif
+		}
 	}
 	else
 	{
@@ -191,10 +214,14 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 	}
 	if (openPanel)
 	{
+#ifdef VSTGUI_USE_OBJC_UTTYPE
+		openPanel.allowedContentTypes = typesArray;
+#else
+		openPanel.allowedFileTypes = typesArray;
+#endif
 		if (parentWindow)
 		{
 			setupInitalDir (config);
-			openPanel.allowedFileTypes = typesArray;
 			auto This = shared_from_this ();
 			[openPanel beginSheetModalForWindow:parentWindow
 							  completionHandler:^(NSInteger result) {
@@ -204,7 +231,6 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 		else
 		{
 			setupInitalDir (config);
-			openPanel.allowedFileTypes = typesArray;
 			NSInteger res = [openPanel runModal];
 			openPanelDidEnd (openPanel, res);
 			return res == NSModalResponseOK;
@@ -212,10 +238,14 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 	}
 	else if (savePanel)
 	{
+#ifdef VSTGUI_USE_OBJC_UTTYPE
+		savePanel.allowedContentTypes = typesArray;
+#else
+		savePanel.allowedFileTypes = typesArray;
+#endif
 		if (parentWindow)
 		{
 			setupInitalDir (config);
-			savePanel.allowedFileTypes = typesArray;
 			auto This = shared_from_this ();
 			[savePanel beginSheetModalForWindow:parentWindow
 							  completionHandler:^(NSInteger result) {
@@ -225,7 +255,6 @@ bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 		else
 		{
 			setupInitalDir (config);
-			savePanel.allowedFileTypes = typesArray;
 			NSInteger res = [savePanel runModal];
 			openPanelDidEnd (savePanel, res);
 			return res == NSModalResponseOK;
