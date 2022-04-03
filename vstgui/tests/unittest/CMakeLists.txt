@@ -102,12 +102,11 @@ if(CMAKE_HOST_APPLE)
 		"-framework QuartzCore"
 		"-framework Accelerate"
 	)
-	find_library(UTIFramework "UniformTypeIdentifiers")
-	if(UTIFramework)
+	if(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER_EQUAL 11.0)
 		set(${target}_PLATFORM_LIBS
 			${${target}_PLATFORM_LIBS}
-			"${UTIFramework}"
-	)
+			"-framework UniformTypeIdentifiers"
+		)
 	endif()
 endif()
 
