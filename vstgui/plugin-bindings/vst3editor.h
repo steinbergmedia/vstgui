@@ -55,6 +55,8 @@ public:
 	   closed. */
 	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description,
 											  VST3Editor* editor) = 0;
+	/** called when the user zoom factor of the editor was changed */
+	virtual void onZoomChanged (VST3Editor* editor, double newZoom) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -89,6 +91,7 @@ public:
 	{
 		return nullptr;
 	}
+	void onZoomChanged (VST3Editor* editor, double newZoom) override {}
 };
 
 //-----------------------------------------------------------------------------

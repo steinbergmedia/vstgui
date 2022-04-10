@@ -571,6 +571,9 @@ void VST3Editor::setZoomFactor (double factor)
 		return;
 
 	getFrame ()->setZoom (getAbsScaleFactor ());
+
+	if (delegate)
+		delegate->onZoomChanged (this, zoomFactor);
 }
 
 //-----------------------------------------------------------------------------
