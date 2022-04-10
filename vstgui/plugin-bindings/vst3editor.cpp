@@ -1743,4 +1743,23 @@ bool VST3Editor::enableEditing (bool state)
 	return false;
 }
 
-} // namespace
+//------------------------------------------------------------------------
+void VST3Editor::setDelegate (IVST3EditorDelegate* inDelegate)
+{
+	delegate = inDelegate;
+}
+
+//------------------------------------------------------------------------
+IVST3EditorDelegate* VST3Editor::getDelegate () const
+{
+	return delegate;
+}
+
+//------------------------------------------------------------------------
+UIDescription* VST3Editor::getUIDescription () const
+{
+	return description;
+}
+
+//------------------------------------------------------------------------
+} // VSTGUI

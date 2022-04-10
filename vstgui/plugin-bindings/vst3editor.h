@@ -24,7 +24,12 @@ class ParameterChangeListener;
 class VST3Editor;
 
 //-----------------------------------------------------------------------------
-//! @brief delegate extension to Steinberg::Vst::EditController for a VST3 Editor
+//! @brief delegate interface for a VST3Editor.
+//!
+//! You either extend Steinberg::Vst::EditController with this interface and pass the editor
+//! controller to the constructor of the VST3Editor class, or you create a delegate without
+//! extending Steinberg::Vst::EditController and explicitly set the delegate of the VST3Editor.
+//!
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class IVST3EditorDelegate
@@ -124,7 +129,12 @@ public:
 	
 	void setAllowedZoomFactors (std::vector<double> zoomFactors) { allowedZoomFactors = zoomFactors; }
 
-//-----------------------------------------------------------------------------
+	/** set the delegate of the editor. no reference counting is happening here. */
+	void setDelegate (IVST3EditorDelegate* delegate);
+	IVST3EditorDelegate* getDelegate () const;
+	UIDescription* getUIDescription () const;
+
+	//-----------------------------------------------------------------------------
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
 	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj) override;
 protected:
