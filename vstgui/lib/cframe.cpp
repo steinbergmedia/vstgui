@@ -251,8 +251,8 @@ bool CFrame::setZoom (double zoomFactor)
 	CGraphicsTransform currentTransform = getTransform ();
 	CCoord origWidth = getWidth () / currentTransform.m11;
 	CCoord origHeight = getHeight () / currentTransform.m22;
-	CCoord newWidth = std::round (origWidth * zoomFactor);
-	CCoord newHeight = std::round (origHeight * zoomFactor);
+	CCoord newWidth = origWidth * zoomFactor;
+	CCoord newHeight = origHeight * zoomFactor;
 	setAutosizingEnabled (false);
 	setTransform (CGraphicsTransform ().scale (zoomFactor, zoomFactor));
 	if (!setSize (newWidth, newHeight))

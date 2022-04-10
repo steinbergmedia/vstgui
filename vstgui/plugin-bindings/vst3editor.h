@@ -9,6 +9,7 @@
 #include "../uidescription/uidescription.h"
 #include "../uidescription/icontroller.h"
 #include "../lib/controls/icommandmenuitemtarget.h"
+#include "../lib/optional.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -151,7 +152,6 @@ protected:
 	bool tooltipsEnabled {true};
 	bool doCreateView {false};
 	bool editingEnabled {false};
-	bool requestResizeGuard {false};
 
 	double contentScaleFactor {1.};
 	double zoomFactor {1.};
@@ -160,6 +160,8 @@ protected:
 	CPoint minSize;
 	CPoint maxSize;
 	CRect nonEditRect;
+
+	Optional<CPoint> sizeRequest;
 };
 
 } // namespace

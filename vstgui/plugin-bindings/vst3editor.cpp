@@ -576,11 +576,11 @@ void VST3Editor::setZoomFactor (double factor)
 //-----------------------------------------------------------------------------
 bool VST3Editor::beforeSizeChange (const CRect& newSize, const CRect& oldSize)
 {
-	if (requestResizeGuard)
+	if (sizeRequest)
 		return true;
-	requestResizeGuard = true;
-	bool result = requestResize (newSize.getSize ());
-	requestResizeGuard = false;
+	sizeRequest = {newSize.getSize ()};
+	bool result = requestResize (*sizeRequest);
+	sizeRequest = {};
 	return result;
 }
 
@@ -592,12 +592,12 @@ bool VST3Editor::requestResize (const CPoint& newSize)
 	CCoord width = newSize.x;
 	CCoord height = newSize.y;
 	double scaleFactor = getAbsScaleFactor ();
-	if (editingEnabled || (width >= std::round (minSize.x * scaleFactor) && width <= std::round (maxSize.x * scaleFactor)
-                        && height >= std::round (minSize.y * scaleFactor) && height <= std::round (maxSize.y * scaleFactor)))
+	if (editingEnabled || (width >= minSize.x * scaleFactor && width <= maxSize.x * scaleFactor
+                        && height >= minSize.y * scaleFactor && height <= maxSize.y * scaleFactor))
 	{
 		Steinberg::ViewRect vr;
-		vr.right = static_cast<Steinberg::int32> (width);
-		vr.bottom = static_cast<Steinberg::int32> (height);
+		vr.right = static_cast<Steinberg::int32> (std::floor (width));
+		vr.bottom = static_cast<Steinberg::int32> (std::floor (height));
 		return plugFrame->resizeView (this, &vr) == Steinberg::kResultTrue ? true : false;
 	}
 	return false;
@@ -1260,6 +1260,14 @@ void PLUGIN_API VST3Editor::close ()
 //------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 {
+	if (sizeRequest)
+	{
+		auto width = static_cast<int32_t> (std::floor (sizeRequest->x));
+		auto height = static_cast<int32_t> (std::floor (sizeRequest->y));
+		return (width == newSize->getWidth () && height == newSize->getHeight ()) ?
+		           Steinberg::kResultTrue :
+		           Steinberg::kResultFalse;
+	}
 	if (getFrame ())
 	{
 		CRect r (newSize->left, newSize->top, newSize->right, newSize->bottom);
@@ -1268,10 +1276,9 @@ Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 		if (r == currentSize)
 			return Steinberg::kResultTrue;
 	}
-	auto oldState = requestResizeGuard;
-	requestResizeGuard = true;
+	sizeRequest = {CPoint (newSize->getWidth (), newSize->getHeight ())};
 	auto result = VSTGUIEditor::onSize (newSize);
-	requestResizeGuard = oldState;
+	sizeRequest = {};
 	return result;
 }
 
