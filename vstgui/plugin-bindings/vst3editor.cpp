@@ -387,9 +387,9 @@ Now you can define tags, colors, fonts, bitmaps and add views to your editor.
 See @ref page_uidescription_editor @n
 */
 //-----------------------------------------------------------------------------
-VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
-: VSTGUIEditor (controller)
-, delegate (dynamic_cast<VST3EditorDelegate*> (controller))
+VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName,
+						UTF8StringPtr _xmlFile)
+: VSTGUIEditor (controller), delegate (dynamic_cast<IVST3EditorDelegate*> (controller))
 {
 	description = new UIDescription (_xmlFile);
 	viewName = _viewName;
@@ -398,9 +398,9 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPt
 }
 
 //-----------------------------------------------------------------------------
-VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
-: VSTGUIEditor (controller)
-, delegate (dynamic_cast<VST3EditorDelegate*> (controller))
+VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller,
+						UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
+: VSTGUIEditor (controller), delegate (dynamic_cast<IVST3EditorDelegate*> (controller))
 {
 	description = desc;
 	description->remember ();

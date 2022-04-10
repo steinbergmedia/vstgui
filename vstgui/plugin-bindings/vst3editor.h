@@ -27,28 +27,68 @@ class VST3Editor;
 //! @brief delegate extension to Steinberg::Vst::EditController for a VST3 Editor
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class VST3EditorDelegate
+class IVST3EditorDelegate
 {
 public:
-	virtual ~VST3EditorDelegate () {}
-	
-	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) { return nullptr; } ///< create a custom view
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) { return view; } ///< verify a view after it was created
-	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; } ///< find a parameter
-	virtual bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) { return false; } ///< check if parameter ID is private and should not be exposed to the host
-	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened
-	virtual void willClose (VST3Editor* editor) {}	///< called before the editor will close
-	virtual COptionMenu* createContextMenu (const CPoint& pos, VST3Editor* editor) { return nullptr; }	///< create the context menu for the editor, will be added to the host menu
+	virtual ~IVST3EditorDelegate () = default;
 
+	/** create a custom view */
+	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes,
+									 const IUIDescription* description, VST3Editor* editor) = 0;
+	/** verify a view after it was created */
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes,
+							   const IUIDescription* description, VST3Editor* editor) = 0;
+	/** find a parameter */
+	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID,
+								VST3Editor* editor) = 0;
+	/** check if parameter ID is private and should not be exposed to the host */
+	virtual bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) = 0;
+	/** called after the editor was opened */
+	virtual void didOpen (VST3Editor* editor) = 0;
+	/** called before the editor will close */
+	virtual void willClose (VST3Editor* editor) = 0;
+	/** create the context menu for the editor, will be added to the host menu */
+	virtual COptionMenu* createContextMenu (const CPoint& pos, VST3Editor* editor) = 0;
 	/** called when a sub controller should be created.
 	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject,
 	   release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets
 	   closed. */
 	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description,
-	                                          VST3Editor* editor)
+											  VST3Editor* editor) = 0;
+};
+
+//------------------------------------------------------------------------
+/** Default adapter implementation for IVST3EditorDelegate */
+class VST3EditorDelegate : public IVST3EditorDelegate
+{
+public:
+	CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes,
+							 const IUIDescription* description, VST3Editor* editor) override
 	{
 		return nullptr;
-	} ///< create a sub controller
+	}
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription* description, VST3Editor* editor) override
+	{
+		return view;
+	}
+	bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID,
+						VST3Editor* editor) override
+	{
+		return false;
+	}
+	bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) override { return false; }
+	void didOpen (VST3Editor* editor) override {}
+	void willClose (VST3Editor* editor) override {}
+	COptionMenu* createContextMenu (const CPoint& pos, VST3Editor* editor) override
+	{
+		return nullptr;
+	}
+	IController* createSubController (UTF8StringPtr name, const IUIDescription* description,
+									  VST3Editor* editor) override
+	{
+		return nullptr;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -143,7 +183,7 @@ protected:
 	struct KeyboardHook;
 	KeyboardHook* keyboardHook {nullptr};
 	UIDescription* description {nullptr};
-	VST3EditorDelegate* delegate {nullptr};
+	IVST3EditorDelegate* delegate {nullptr};
 	IController* originalController {nullptr};
 	using ParameterChangeListenerMap = std::map<int32_t, ParameterChangeListener*>;
 	ParameterChangeListenerMap paramChangeListeners;
@@ -164,4 +204,5 @@ protected:
 	Optional<CPoint> sizeRequest;
 };
 
-} // namespace
+//------------------------------------------------------------------------
+} // VSTGUI
