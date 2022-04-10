@@ -133,6 +133,7 @@ protected:
 	double getAbsScaleFactor () const;
 	ParameterChangeListener* getParameterChangeListener (int32_t tag) const;
 	void recreateView ();
+	void requestRecreateView ();
 
 	void syncParameterTags ();
 	void save (bool saveAs = false);
@@ -147,8 +148,6 @@ protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
-
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) override;
 

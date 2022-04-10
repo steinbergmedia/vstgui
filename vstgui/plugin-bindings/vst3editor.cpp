@@ -494,7 +494,7 @@ bool VST3Editor::exchangeView (UTF8StringPtr newViewName)
 	if (attr)
 	{
 		viewName = newViewName;
-		doCreateView = true;
+		requestRecreateView ();
 		return true;
 	}
 	return false;
@@ -1033,6 +1033,26 @@ void VST3Editor::recreateView ()
 	enableEditing (editingEnabled);
 }
 
+//------------------------------------------------------------------------
+void VST3Editor::requestRecreateView ()
+{
+	if (doCreateView || !frame)
+		return;
+	doCreateView = true;
+	auto task = [Self = Steinberg::IPtr<VST3Editor> (this)] () {
+		if (Self->frame)
+			Self->recreateView ();
+	};
+	if (frame->inEventProcessing ())
+	{
+		frame->doAfterEventProcessing (std::move (task));
+	}
+	else
+	{
+		task ();
+	}
+}
+
 #if LINUX
 // Map Steinberg Vst Interface to VSTGUI Interface
 class RunLoop : public X11::IRunLoop, public AtomicReferenceCounted
@@ -1189,8 +1209,9 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 		    {
 			    if (event.character == 'e')
 			    {
-				    enableEditing (!editingEnabled);
-				    event.consumed = true;
+					editingEnabled = !editingEnabled;
+					requestRecreateView ();
+					event.consumed = true;
 			    }
 		    }
 	    },
@@ -1363,13 +1384,13 @@ bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
 		if (cmdName == "Open UIDescription Editor")
 		{
 			editingEnabled = true;
-			doCreateView = true;
+			requestRecreateView ();
 			return true;
 		}
 		else if (cmdName == "Close UIDescription Editor")
 		{
 			editingEnabled = false;
-			doCreateView = true;
+			requestRecreateView ();
 			return true;
 		}
 		else if (cmdName == "Save")
@@ -1397,17 +1418,6 @@ bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
 		return true;
 	}
 	return false;
-}
-
-//------------------------------------------------------------------------
-CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
-{
-	if (message == CVSTGUITimer::kMsgTimer)
-	{
-		if (doCreateView)
-			recreateView ();
- 	}
- 	return VSTGUIEditor::notify (sender, message);
 }
 
 namespace VST3EditorInternal {
