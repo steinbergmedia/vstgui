@@ -301,12 +301,19 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 					textLayout->SetStrikethrough (true, range);
 				}
 				renderTarget->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+
 				CPoint pos (p);
-				pos.y -= textFormat->GetFontSize ();
+				DWRITE_LINE_METRICS lm;
+				UINT lineCount;
+				if (SUCCEEDED (textLayout->GetLineMetrics (&lm, 1, &lineCount)))
+					pos.y -= lm.baseline;
+				else
+					pos.y -= textFormat->GetFontSize ();
+
 				if (context->getDrawMode ().integralMode ())
 					pos.makeIntegral ();
 				pos.y += 0.5;
-				
+
 				D2D1_POINT_2F origin = {(FLOAT)(p.x), (FLOAT)(pos.y)};
 				d2dContext->getRenderTarget ()->DrawTextLayout (origin, textLayout, d2dContext->getFontBrush ());
 				textLayout->Release ();
