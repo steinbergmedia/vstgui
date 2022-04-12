@@ -607,19 +607,12 @@ bool VST3Editor::requestResize (const CPoint& newSize)
 {
 	if (!plugFrame)
 		return false;
-	CCoord width = newSize.x;
-	CCoord height = newSize.y;
-	double scaleFactor = getAbsScaleFactor ();
-	if (editingEnabled ||
-		(width >= (minSize.x * scaleFactor) && width <= (maxSize.x * scaleFactor) &&
-		 height >= (minSize.y * scaleFactor) && height <= (maxSize.y * scaleFactor)))
-	{
-		Steinberg::ViewRect vr;
-		vr.right = static_cast<Steinberg::int32> (std::floor (width));
-		vr.bottom = static_cast<Steinberg::int32> (std::floor (height));
-		return plugFrame->resizeView (this, &vr) == Steinberg::kResultTrue ? true : false;
-	}
-	return false;
+
+	Steinberg::ViewRect vr;
+	vr.right = static_cast<Steinberg::int32> (std::floor (newSize.x));
+	vr.bottom = static_cast<Steinberg::int32> (std::floor (newSize.y));
+	return plugFrame->resizeView (this, &vr) == Steinberg::kResultTrue ? true : false;
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1351,10 +1344,10 @@ Steinberg::tresult PLUGIN_API VST3Editor::checkSizeConstraint (Steinberg::ViewRe
 		height = minSize.y * scaleFactor;
 	else if (height > maxSize.y * scaleFactor)
 		height = maxSize.y * scaleFactor;
-	if (width != rect->right - rect->left || height != rect->bottom - rect->top)
+	if (width != rect->getWidth () || height != rect->getHeight ())
 	{
-		rect->right = (Steinberg::int32)width + rect->left;
-		rect->bottom = (Steinberg::int32)height + rect->top;
+		rect->right = static_cast<int32_t> (std::floor (width + rect->left));
+		rect->bottom = static_cast<int32_t> (std::floor (height + rect->top));
 	}
 	return Steinberg::kResultTrue;
 }
