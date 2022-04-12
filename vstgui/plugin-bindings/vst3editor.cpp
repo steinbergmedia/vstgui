@@ -1656,8 +1656,8 @@ bool VST3Editor::enableEditing (bool state)
 			if (view)
 			{
 				double scaleFactor = getAbsScaleFactor ();
-				CCoord width = std::ceil (view->getWidth () * scaleFactor);
-				CCoord height = std::ceil (view->getHeight () * scaleFactor);
+				CCoord width = view->getWidth () * scaleFactor;
+				CCoord height = view->getHeight () * scaleFactor;
 
 				if (canResize () == Steinberg::kResultTrue)
 				{
@@ -1686,9 +1686,9 @@ bool VST3Editor::enableEditing (bool state)
 				}
 				else
 				{
-					checkSizeConstraint (&rect);
-					onSize (&rect);
-					requestResize (CPoint (rect.getWidth (), rect.getHeight ()));
+					rect.right = rect.left + width;
+					rect.bottom = rect.top + height;
+					requestResize ({width, height});
 				}
 
 				getFrame ()->setFocusDrawingEnabled (false);
