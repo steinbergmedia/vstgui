@@ -399,9 +399,15 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 			if (result->getKeyModifiers () == modifier)
 			{
 				if (event.virt != VirtualKey::None && event.virt == result->getVirtualKey ())
+				{
 					return result;
-				else if (!result->getKeycode ().empty () && result->getKeycode ().getString ()[0] == event.character)
+				}
+				else if (!result->getKeycode ().empty () &&
+						 static_cast<char32_t> (result->getKeycode ().getString ()[0]) ==
+							 event.character)
+				{
 					return result;
+				}
 			}
 		}
 	}
