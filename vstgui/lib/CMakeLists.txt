@@ -209,6 +209,7 @@ set(${target}_mac_sources
     platform/mac/cocoa/nsviewframe.mm
     platform/mac/cocoa/nsviewoptionmenu.h
     platform/mac/cocoa/nsviewoptionmenu.mm
+    platform/mac/cocoa/objcclassbuilder.h
     platform/mac/macclipboard.h
     platform/mac/macclipboard.mm
     platform/mac/macfactory.h

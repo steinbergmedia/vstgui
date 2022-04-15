@@ -97,8 +97,6 @@ public:
 protected:
 	void addDebugRedrawRect (CRect r, bool isClipBoundingBox = false);
 
-	static void initClass ();
-
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
 	SharedPointer<IDataPackage> dragDataPackage;

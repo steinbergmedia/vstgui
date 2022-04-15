@@ -12,20 +12,6 @@
 #include "../../../cbitmap.h"
 #include "../cgbitmap.h"
 
-//------------------------------------------------------------------------------------
-HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass)
-{
-	NSString* _className = [NSString stringWithString:className];
-	int32_t iteration = 0;
-	while (objc_lookUpClass ([className UTF8String]) != nil)
-	{
-		iteration++;
-		[className setString:[NSString stringWithFormat:@"%@_%d", _className, iteration]];
-	}
-	Class resClass = objc_allocateClassPair (baseClass, [className UTF8String], 0);
-	return resClass;
-}
-
 using namespace VSTGUI;
 
 //------------------------------------------------------------------------------------

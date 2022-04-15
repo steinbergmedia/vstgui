@@ -36,8 +36,6 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
-	static void initClass ();
-
 	NSTextField* platformControl;
 	NSView* parent;
 };
