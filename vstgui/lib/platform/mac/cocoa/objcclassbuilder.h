@@ -88,7 +88,7 @@ struct ObjCClassBuilder
 	Class finalize ();
 
 private:
-	static Class generateUniqueClass (const char* className, Class baseClass);
+	static Class generateUniqueClass (const std::string& inClassName, Class baseClass);
 
 	template<typename Func>
 	ObjCClassBuilder& addMethod (SEL selector, Func imp, const char* types);
@@ -143,14 +143,14 @@ inline ObjCClassBuilder& ObjCClassBuilder::init (const char* name, Class bc)
 }
 
 //------------------------------------------------------------------------------------
-inline Class ObjCClassBuilder::generateUniqueClass (const char* inClassName, Class baseClass)
+inline Class ObjCClassBuilder::generateUniqueClass (const std::string& inClassName, Class baseClass)
 {
 	std::string className (inClassName);
 	int32_t iteration = 0;
 	while (objc_lookUpClass (className.data ()) != nil)
 	{
 		iteration++;
-		className = className + "_" + std::to_string (iteration);
+		className = inClassName + "_" + std::to_string (iteration);
 	}
 	Class resClass = objc_allocateClassPair (baseClass, className.data (), 0);
 	return resClass;
