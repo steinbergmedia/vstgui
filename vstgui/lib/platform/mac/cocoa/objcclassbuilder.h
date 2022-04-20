@@ -4,11 +4,13 @@
 
 #pragma once
 
-#import <objc/runtime.h>
-#import <objc/message.h>
-#import <tuple>
-#import <string>
-#import <optional>
+#include <objc/runtime.h>
+#include <objc/message.h>
+#include <tuple>
+#include <string>
+#include <optional>
+#include <cmath>
+#include <cassert>
 
 //------------------------------------------------------------------------------------
 namespace VSTGUI {
@@ -17,26 +19,36 @@ namespace VSTGUI {
 template<typename T>
 struct ObjCVariable
 {
-	ObjCVariable (id obj, Ivar ivar) : obj (obj), ivar (ivar) {}
+	ObjCVariable (__unsafe_unretained id obj, Ivar ivar) : obj (obj), ivar (ivar) {}
+	ObjCVariable (ObjCVariable&& o) { *this = std::move (o); }
 
-	T get () const { return static_cast<T> (object_getIvar (obj, ivar)); }
+	ObjCVariable& operator= (ObjCVariable&& o)
+	{
+		obj = o.obj;
+		ivar = o.ivar;
+		o.obj = nullptr;
+		o.ivar = nullptr;
+		return *this;
+	}
 
-	void set (const T& value) { object_setIvar (obj, ivar, static_cast<id> (value)); }
+	T get () const { return (__bridge T) (object_getIvar (obj, ivar)); }
+
+	void set (const T& value) { object_setIvar (obj, ivar, (__bridge id) (value)); }
 
 private:
-	id obj;
+	__unsafe_unretained id obj;
 	Ivar ivar {nullptr};
 };
 
 //------------------------------------------------------------------------------------
 struct ObjCInstance
 {
-	ObjCInstance (id obj) : obj (obj) {}
+	ObjCInstance (__unsafe_unretained id obj) : obj (obj) {}
 
 	template<typename T>
 	std::optional<ObjCVariable<T>> getVariable (const char* name) const
 	{
-		if (auto ivar = class_getInstanceVariable ([obj class], name))
+		if (__strong auto ivar = class_getInstanceVariable (object_getClass (obj), name))
 		{
 			return {ObjCVariable<T> (obj, ivar)};
 		}
@@ -46,14 +58,17 @@ struct ObjCInstance
 	template<typename Func, typename... T>
 	void callSuper (SEL selector, T... args) const
 	{
-		void (*f) (id, SEL, T...) = (void (*) (id, SEL, T...))objc_msgSendSuper;
+		void (*f) (__unsafe_unretained id, SEL, T...) =
+			(void (*) (__unsafe_unretained id, SEL, T...))objc_msgSendSuper;
 		f (getSuper (), selector, args...);
 	}
 
 	template<typename Func, typename R, typename... T>
 	R callSuper (SEL selector, T... args) const
 	{
-		R (*f) (id, SEL, T...) = (R (*) (id, SEL, T...))objc_msgSendSuper;
+		R (*f)
+		(__unsafe_unretained id, SEL, T...) =
+			(R (*) (__unsafe_unretained id, SEL, T...))objc_msgSendSuper;
 		return f (getSuper (), selector, args...);
 	}
 
@@ -63,12 +78,12 @@ private:
 		if (os.receiver == nullptr)
 		{
 			os.receiver = obj;
-			os.super_class = class_getSuperclass ([obj class]);
+			os.super_class = class_getSuperclass (object_getClass (obj));
 		}
-		return static_cast<id> (&os);
+		return (__bridge id) (&os);
 	}
 
-	id obj;
+	__unsafe_unretained id obj;
 	mutable objc_super os {};
 };
 
@@ -171,7 +186,7 @@ template<typename Func>
 inline ObjCClassBuilder& ObjCClassBuilder::addMethod (SEL selector, Func imp, const char* types)
 {
 	auto res = class_addMethod (cl, selector, IMP (imp), types);
-	vstgui_assert (res == true);
+	assert (res == true);
 	return *this;
 }
 
@@ -186,7 +201,7 @@ ObjCClassBuilder& ObjCClassBuilder::addMethod (SEL selector, Func imp)
 template<typename T>
 inline ObjCClassBuilder& ObjCClassBuilder::addIvar (const char* name)
 {
-	return addIvar (name, sizeof (T), static_cast<uint8_t> (log2 (sizeof (T))), @encode (T));
+	return addIvar (name, sizeof (T), static_cast<uint8_t> (std::log2 (sizeof (T))), @encode (T));
 }
 
 //-----------------------------------------------------------------------------
@@ -194,7 +209,7 @@ inline ObjCClassBuilder& ObjCClassBuilder::addIvar (const char* name, size_t siz
 													uint8_t alignment, const char* types)
 {
 	auto res = class_addIvar (cl, name, size, alignment, types);
-	vstgui_assert (res == true);
+	assert (res == true);
 	return *this;
 }
 
@@ -210,7 +225,7 @@ inline ObjCClassBuilder& ObjCClassBuilder::addProtocol (const char* name)
 inline ObjCClassBuilder& ObjCClassBuilder::addProtocol (Protocol* proto)
 {
 	auto res = class_addProtocol (cl, proto);
-	vstgui_assert (res == true);
+	assert (res == true);
 	return *this;
 }
 
