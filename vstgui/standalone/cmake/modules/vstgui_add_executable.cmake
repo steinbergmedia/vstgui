@@ -41,10 +41,11 @@ function(vstgui_add_executable target sources)
   endif(CMAKE_HOST_APPLE)
 
   target_link_libraries(${target}
-    vstgui
-    vstgui_uidescription
-    vstgui_standalone
-    ${PLATFORM_LIBRARIES}
+  	PUBLIC
+		vstgui
+		vstgui_uidescription
+		vstgui_standalone
+		${PLATFORM_LIBRARIES}
   )
   target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 
