@@ -13,7 +13,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 void CGraphicsPath::addRoundRect (const CRect& size, CCoord radius)
 {
-	if (radius == 0.)
+	if (radius <= 0.)
 	{
 		addRect (size);
 		return;
