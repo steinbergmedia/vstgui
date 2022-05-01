@@ -143,8 +143,19 @@ public:
 	/** unregister a mouse observer */
 	void unregisterMouseObserver (IMouseObserver* observer);
 
-	void registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener);
-	void unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener);
+	VSTGUI_DEPRECATED_MSG (
+		void registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener) {
+			registerScaleFactorChangedListener (listener);
+		},
+		"use registerScaleFactorChangedListener")
+	VSTGUI_DEPRECATED_MSG (
+		void unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener) {
+			unregisterScaleFactorChangedListener (listener);
+		},
+		"use unregisterScaleFactorChangedListener")
+
+	void registerScaleFactorChangedListener (IScaleFactorChangedListener* listener);
+	void unregisterScaleFactorChangedListener (IScaleFactorChangedListener* listener);
 
 	void registerFocusViewObserver (IFocusViewObserver* observer);
 	void unregisterFocusViewObserver (IFocusViewObserver* observer);

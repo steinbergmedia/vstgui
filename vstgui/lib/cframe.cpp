@@ -1554,13 +1554,13 @@ void CFrame::dispatchKeyboardEventToHooks (KeyboardEvent& event)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
+void CFrame::registerScaleFactorChangedListener (IScaleFactorChangedListener* listener)
 {
 	pImpl->scaleFactorChangedListenerList.add (listener);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
+void CFrame::unregisterScaleFactorChangedListener (IScaleFactorChangedListener* listener)
 {
 	pImpl->scaleFactorChangedListenerList.remove (listener);
 }
