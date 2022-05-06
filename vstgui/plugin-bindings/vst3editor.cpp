@@ -6,6 +6,8 @@
 #include "../vstgui.h"
 #include "../lib/cvstguitimer.h"
 #include "../lib/vstkeycode.h"
+#include "../lib/animation/timingfunctions.h"
+#include "../lib/animation/animations.h"
 #include "../uidescription/detail/uiviewcreatorattributes.h"
 #include "../uidescription/editing/uieditcontroller.h"
 #include "../uidescription/editing/uieditmenucontroller.h"
@@ -1297,9 +1299,12 @@ Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 	{
 		auto width = static_cast<int32_t> (std::floor (sizeRequest->x));
 		auto height = static_cast<int32_t> (std::floor (sizeRequest->y));
-		return (width == newSize->getWidth () && height == newSize->getHeight ()) ?
-		           Steinberg::kResultTrue :
-		           Steinberg::kResultFalse;
+		if (width == newSize->getWidth () && height == newSize->getHeight ())
+		{
+			VSTGUIEditor::onSize (newSize);
+			return Steinberg::kResultTrue;
+		}
+		return Steinberg::kResultFalse;
 	}
 	if (getFrame ())
 	{
@@ -1310,6 +1315,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 		if (frameSize.left == newSize->left && frameSize.top == newSize->top &&
 			width == newSize->getWidth () && height == newSize->getHeight ())
 		{
+			VSTGUIEditor::onSize (newSize);
 			return Steinberg::kResultTrue;
 		}
 	}
@@ -1584,6 +1590,97 @@ void VST3Editor::syncParameterTags ()
 #endif
 }
 
+#if VSTGUI_LIVE_EDITING
+//------------------------------------------------------------------------
+class EnterEditModeController
+: public ViewListenerAdapter
+, public ViewEventListenerAdapter
+, public IControlListener
+{
+public:
+	using EnterEditModeFunc = std::function<void ()>;
+
+	static constexpr const auto strFull = "Open UI Editor";
+	static constexpr const auto strMinimized = "e";
+
+	EnterEditModeController (CFrame* frame, EnterEditModeFunc&& func)
+	: enterEditMode (std::move (func))
+	{
+		button = new CTextButton ({0, 0, 120, 20});
+		button->setTitle (strFull);
+		button->setRoundRadius (2.);
+		button->setFrameWidth (-1);
+		button->registerViewListener (this);
+		button->registerViewEventListener (this);
+		button->registerControlListener (this);
+		frame->addView (button);
+	}
+
+	void valueChanged (CControl* c) override
+	{
+		if (c->getValue () == 1.)
+		{
+			enterEditMode ();
+		}
+	}
+	void viewAttached (CView* view) override
+	{
+		view->addAnimation ("SizeAnim", new Animation::AlphaValueAnimation (1.f),
+							new Animation::LinearTimingFunction (1000),
+							[&] (auto, auto, auto) { close (); });
+	}
+
+	void viewWillDelete (CView* view) override
+	{
+		vstgui_assert (view == button);
+		button->unregisterViewEventListener (this);
+		button->unregisterViewListener (this);
+		button->unregisterControlListener (this);
+		delete this;
+	}
+	void viewOnEvent (CView* view, Event& event) override
+	{
+		if (event.type == EventType::MouseEnter)
+		{
+			open ();
+		}
+		else if (event.type == EventType::MouseExit)
+		{
+			close ();
+		}
+	}
+
+	Animation::ITimingFunction* createDefAnimTimingFunc () const
+	{
+		using namespace Animation;
+
+		static const constexpr auto AnimationTime = 150;
+		return new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (AnimationTime));
+	}
+
+	void open ()
+	{
+		button->addAnimation ("SizeAnim", new Animation::ViewSizeAnimation ({0, 0, 120, 20}),
+							  createDefAnimTimingFunc (),
+							  [&] (auto view, auto, auto) { button->setTitle (strFull); });
+		button->addAnimation ("AlphaValue", new Animation::AlphaValueAnimation (1.f),
+							  createDefAnimTimingFunc ());
+	}
+	void close ()
+	{
+		button->addAnimation ("SizeAnim", new Animation::ViewSizeAnimation ({0, 0, 10, 20}),
+							  createDefAnimTimingFunc (),
+							  [&] (auto view, auto, auto) { button->setTitle (strMinimized); });
+		button->addAnimation ("AlphaValue", new Animation::AlphaValueAnimation (0.3f),
+							  createDefAnimTimingFunc ());
+	}
+
+	EnterEditModeFunc enterEditMode;
+	CTextButton* button {nullptr};
+};
+
+#endif
+
 //------------------------------------------------------------------------
 bool VST3Editor::enableEditing (bool state)
 {
@@ -1749,6 +1846,9 @@ bool VST3Editor::enableEditing (bool state)
 						getFrame ()->setFocusWidth (focusWidth);
 					}
 				}
+#if VSTGUI_LIVE_EDITING
+				new EnterEditModeController (getFrame (), [this] () { enableEditing (true); });
+#endif
 				return true;
 			}
 		}
