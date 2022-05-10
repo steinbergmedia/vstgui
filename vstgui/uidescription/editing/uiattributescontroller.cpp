@@ -837,6 +837,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 		if (rcv)
 		{
 			attributeView = rcv;
+			attributeView->registerViewListener (this);
 		}
 	}
 	if (searchField == nullptr)
@@ -863,6 +864,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 		{
 			viewNameLabel = textLabel;
 			viewNameLabel->setText ("No Selection");
+			viewNameLabel->registerViewListener (this);
 		}
 	}
 	return DelegationController::verifyView (view, attributes, description);
@@ -970,9 +972,9 @@ void UIAttributesController::selectionDidChange (UISelection*)
 			if (frame->inEventProcessing ())
 			{
 				rebuildRequested = true;
-				frame->doAfterEventProcessing ([this] () {
-					rebuildAttributesView ();
-					rebuildRequested = false;
+				frame->doAfterEventProcessing ([Self = shared (this)] () {
+					Self->rebuildAttributesView ();
+					Self->rebuildRequested = false;
 				});
 			}
 		}
@@ -1289,6 +1291,17 @@ void UIAttributesController::rebuildAttributesView ()
 		attributeView->setMouseableArea (attributeView->getViewSize ());
 	}
 	attributeView->invalid ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::viewWillDelete (CView* view)
+{
+	if (view == attributeView)
+		attributeView = nullptr;
+	else if (view == viewNameLabel)
+		viewNameLabel = nullptr;
+
+	view->unregisterViewListener (this);
 }
 
 } // VSTGUI
