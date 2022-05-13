@@ -767,6 +767,10 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 //----------------------------------------------------------------------------------------------------
 UIAttributesController::~UIAttributesController ()
 {
+	if (viewNameLabel)
+		viewNameLabel->unregisterViewListener (this);
+	if (attributeView)
+		attributeView->unregisterViewListener (this);
 	selection->unregisterListener (this);
 	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
