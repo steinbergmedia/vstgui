@@ -5,6 +5,7 @@
 #include "cmoviebutton.h"
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
+#include "../events.h"
 
 namespace VSTGUI {
 
@@ -136,18 +137,19 @@ CMouseEventResult CMovieButton::onMouseCancel ()
 }
 
 //------------------------------------------------------------------------
-int32_t CMovieButton::onKeyDown (VstKeyCode& keyCode)
+void CMovieButton::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
+	if (event.type != EventType::KeyDown || event.modifiers.empty () == false)
+		return;
+	if (event.virt == VirtualKey::Return)
 	{
 		value = (value == getMax ()) ? getMin () : getMax ();
 		invalid ();
 		beginEdit ();
 		valueChanged ();
 		endEdit ();
-		return 1;
+		event.consumed = true;
 	}
-	return -1;
 }
 
 //-----------------------------------------------------------------------------------------------

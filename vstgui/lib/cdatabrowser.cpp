@@ -36,7 +36,7 @@ public:
 	void onDragLeave (DragEventData data) override;
 	bool onDrop (DragEventData data) override;
 	
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& keyCode) override;
 
 	CRect getRowBounds (int32_t row);
 	void invalidateRow (int32_t row);
@@ -160,10 +160,11 @@ bool CDataBrowser::removed (CView* parent)
 	return CScrollView::removed (parent);
 }
 
-//-----------------------------------------------------------------------------------------------
-int32_t CDataBrowser::onKeyDown (VstKeyCode& keyCode)
+//------------------------------------------------------------------------
+void CDataBrowser::onKeyboardEvent (KeyboardEvent& event)
 {
-	return dbView ? dbView->onKeyDown (keyCode) : -1;
+	if (dbView)
+		dbView->onKeyboardEvent (event);
 }
 
 //-----------------------------------------------------------------------------
@@ -1054,25 +1055,25 @@ DragOperation CDataBrowserView::onDragMove (DragEventData data)
 }
 
 //-----------------------------------------------------------------------------------------------
-int32_t CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
+void CDataBrowserView::onKeyboardEvent (KeyboardEvent& event)
 {
-	int32_t res = db->dbOnKeyDown (keyCode, browser);
-	if (res != -1)
-		return res;
-	if (keyCode.modifier != 0)
-		return -1;
-	if (keyCode.virt == VKEY_UP || keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_PAGEUP || keyCode.virt == VKEY_PAGEDOWN)
+	db->dbOnKeyboardEvent (event, browser);
+	if (event.consumed || event.type != EventType::KeyDown)
+		return;
+	if (!event.modifiers.empty ())
+		return;
+	if (event.virt == VirtualKey::Up || event.virt == VirtualKey::Down || event.virt == VirtualKey::PageUp || event.virt == VirtualKey::PageDown)
 	{
 		int32_t numRows = db->dbGetNumRows (browser);
 		int32_t selRow = browser->getSelectedRow ();
 		int32_t changeRow = 0;
-		if (keyCode.virt == VKEY_UP)
+		if (event.virt == VirtualKey::Up)
 			changeRow = -1;
-		else if (keyCode.virt == VKEY_DOWN)
+		else if (event.virt == VirtualKey::Down)
 			changeRow = 1;
-		else if (keyCode.virt == VKEY_PAGEUP)
+		else if (event.virt == VirtualKey::PageUp)
 			changeRow = (int32_t) (-browser->getHeight () / db->dbGetRowHeight (browser));
-		else if (keyCode.virt == VKEY_PAGEDOWN)
+		else if (event.virt == VirtualKey::PageDown)
 			changeRow = (int32_t) (browser->getHeight () / db->dbGetRowHeight (browser));
 		int32_t newSelRow = selRow + changeRow;
 		newSelRow = std::min<int32_t> (newSelRow, numRows);
@@ -1085,9 +1086,8 @@ int32_t CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
 			CRect rect = getRowBounds (newSelRow);
 			browser->makeRectVisible (rect);
 		}
-		return 1;
+		event.consumed = true;
 	}
-	return -1;
 }
 
 //-----------------------------------------------------------------------------------------------

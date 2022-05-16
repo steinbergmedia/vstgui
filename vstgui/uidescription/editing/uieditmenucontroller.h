@@ -12,6 +12,7 @@
 #include "uiundomanager.h"
 #include "../delegationcontroller.h"
 #include "../../lib/controls/icommandmenuitemtarget.h"
+#include "../../lib/events.h"
 
 namespace VSTGUI {
 class IActionPerformer;
@@ -24,7 +25,7 @@ struct MenuEntry {
 	UTF8StringPtr name {nullptr};
 	UTF8StringPtr key {nullptr};
 	int32_t modifier {0};
-	int32_t virtualKey {0};
+	VirtualKey virtualKey {VirtualKey::None};
 	int32_t menuFlags {0};
 	
 	enum {
@@ -44,8 +45,8 @@ struct MenuEntry {
 };
 
 //----------------------------------------------------------------------------------------------------
-static const MenuEntry kMenuSeparator = { "Separator", 0, 0, 0, 0 };
-static const MenuEntry kSubMenuEnd = { 0, 0 , 0, 0, 0, MenuEntry::kSubMenuEnd };
+static const MenuEntry kMenuSeparator = { "Separator", 0, 0, 0, VirtualKey::None };
+static const MenuEntry kSubMenuEnd = { 0, 0 , 0, 0, VirtualKey::None, MenuEntry::kSubMenuEnd };
 
 //----------------------------------------------------------------------------------------------------
 static const MenuEntry editMenu[] = {
@@ -55,57 +56,57 @@ static const MenuEntry editMenu[] = {
 	{ "Edit", "Cut" , "x", kControl },
 	{ "Edit", "Copy" , "c", kControl },
 	{ "Edit", "Paste" , "v", kControl },
-	{ "Edit", "Delete" , 0, kControl, VKEY_BACK },
+	{ "Edit", "Delete" , 0, kControl, VirtualKey::Back },
 	kMenuSeparator,
-	{ "Edit", "Selection" , 0, 0, 0, MenuEntry::kSubMenu},
+	{ "Edit", "Selection" , 0, 0, VirtualKey::None, MenuEntry::kSubMenu},
 	
-	{ "Selection", "Move" , 0, 0, 0, MenuEntry::kSubMenu},
-	{ "", "By Grid" , 0, 0, 0, MenuEntry::kMenuItemIsTitle},
+	{ "Selection", "Move" , 0, 0, VirtualKey::None, MenuEntry::kSubMenu},
+	{ "", "By Grid" , 0, 0, VirtualKey::None, MenuEntry::kMenuItemIsTitle},
 	kMenuSeparator,
-	{ "SelectionMoveByGrid", "Move Up" , 0, kControl, VKEY_UP },
-	{ "SelectionMoveByGrid", "Move Down" , 0, kControl, VKEY_DOWN },
-	{ "SelectionMoveByGrid", "Move Left" , 0, kControl, VKEY_LEFT },
-	{ "SelectionMoveByGrid", "Move Right" , 0, kControl, VKEY_RIGHT },
+	{ "SelectionMoveByGrid", "Move Up" , 0, kControl, VirtualKey::Up },
+	{ "SelectionMoveByGrid", "Move Down" , 0, kControl, VirtualKey::Down },
+	{ "SelectionMoveByGrid", "Move Left" , 0, kControl, VirtualKey::Left },
+	{ "SelectionMoveByGrid", "Move Right" , 0, kControl, VirtualKey::Right },
 	kMenuSeparator,
-	{ "", "By Pixel" , 0, 0, 0, MenuEntry::kMenuItemIsTitle},
+	{ "", "By Pixel" , 0, 0, VirtualKey::None, MenuEntry::kMenuItemIsTitle},
 	kMenuSeparator,
-	{ "SelectionMoveByPixel", "Move Up" , 0, kControl|kShift, VKEY_UP },
-	{ "SelectionMoveByPixel", "Move Down" , 0, kControl|kShift, VKEY_DOWN },
-	{ "SelectionMoveByPixel", "Move Left" , 0, kControl|kShift, VKEY_LEFT },
-	{ "SelectionMoveByPixel", "Move Right" , 0, kControl|kShift, VKEY_RIGHT },
+	{ "SelectionMoveByPixel", "Move Up" , 0, kControl|kShift, VirtualKey::Up },
+	{ "SelectionMoveByPixel", "Move Down" , 0, kControl|kShift, VirtualKey::Down },
+	{ "SelectionMoveByPixel", "Move Left" , 0, kControl|kShift, VirtualKey::Left },
+	{ "SelectionMoveByPixel", "Move Right" , 0, kControl|kShift, VirtualKey::Right },
 	kSubMenuEnd,
 	
-	{ "Selection", "Size" , 0, 0, 0, MenuEntry::kSubMenu},
-	{ "", "By Grid" , 0, 0, 0, MenuEntry::kMenuItemIsTitle},
+	{ "Selection", "Size" , 0, 0, VirtualKey::None, MenuEntry::kSubMenu},
+	{ "", "By Grid" , 0, 0, VirtualKey::None, MenuEntry::kMenuItemIsTitle},
 	kMenuSeparator,
-	{ "SelectionSizeByGrid", "Increase Size Width" , 0, kControl|kAlt, VKEY_RIGHT },
-	{ "SelectionSizeByGrid", "Increase Size Height" , 0, kControl|kAlt, VKEY_DOWN },
-	{ "SelectionSizeByGrid", "Decrease Size Width" , 0, kControl|kAlt, VKEY_LEFT },
-	{ "SelectionSizeByGrid", "Decrease Size Height" , 0, kControl|kAlt, VKEY_UP },
+	{ "SelectionSizeByGrid", "Increase Size Width" , 0, kControl|kAlt, VirtualKey::Right },
+	{ "SelectionSizeByGrid", "Increase Size Height" , 0, kControl|kAlt, VirtualKey::Down },
+	{ "SelectionSizeByGrid", "Decrease Size Width" , 0, kControl|kAlt, VirtualKey::Left },
+	{ "SelectionSizeByGrid", "Decrease Size Height" , 0, kControl|kAlt, VirtualKey::Up },
 	kMenuSeparator,
-	{ "", "By Pixel" , 0, 0, 0, MenuEntry::kMenuItemIsTitle},
+	{ "", "By Pixel" , 0, 0, VirtualKey::None, MenuEntry::kMenuItemIsTitle},
 	kMenuSeparator,
-	{ "SelectionSizeByPixel", "Increase Size Width" , 0, kControl|kAlt|kShift, VKEY_RIGHT },
-	{ "SelectionSizeByPixel", "Increase Size Height" , 0, kControl|kAlt|kShift, VKEY_DOWN },
-	{ "SelectionSizeByPixel", "Decrease Size Width" , 0, kControl|kAlt|kShift, VKEY_LEFT },
-	{ "SelectionSizeByPixel", "Decrease Size Height" , 0, kControl|kAlt|kShift, VKEY_UP },
+	{ "SelectionSizeByPixel", "Increase Size Width" , 0, kControl|kAlt|kShift, VirtualKey::Right },
+	{ "SelectionSizeByPixel", "Increase Size Height" , 0, kControl|kAlt|kShift, VirtualKey::Down },
+	{ "SelectionSizeByPixel", "Decrease Size Width" , 0, kControl|kAlt|kShift, VirtualKey::Left },
+	{ "SelectionSizeByPixel", "Decrease Size Height" , 0, kControl|kAlt|kShift, VirtualKey::Up },
 	kSubMenuEnd,
 
-	{ "Selection", "Z-Order" , 0, 0, 0, MenuEntry::kSubMenu},
-	{ "SelectionZOrder", "Lower" , 0, kAlt, VKEY_UP },
-	{ "SelectionZOrder", "Raise" , 0, kAlt, VKEY_DOWN },
+	{ "Selection", "Z-Order" , 0, 0, VirtualKey::None, MenuEntry::kSubMenu},
+	{ "SelectionZOrder", "Lower" , 0, kAlt, VirtualKey::Up },
+	{ "SelectionZOrder", "Raise" , 0, kAlt, VirtualKey::Down },
 	kSubMenuEnd,
 	kMenuSeparator,
-	{ "Selection", "Select Children Of Type" , 0, 0, 0 },
+	{ "Selection", "Select Children Of Type" , 0, 0, VirtualKey::None },
 	kMenuSeparator,
-	{ "Selection", "Select Parent(s)" , 0, 0, 0 },
-	{ "Selection", "Select All Children" , 0, 0, 0 },
+	{ "Selection", "Select Parent(s)" , 0, 0, VirtualKey::None },
+	{ "Selection", "Select All Children" , 0, 0, VirtualKey::None },
 	kMenuSeparator,
-	{ "Selection", "Select View in Hierarchy Browser" , 0, 0, 0 },
+	{ "Selection", "Select View in Hierarchy Browser" , 0, 0, VirtualKey::None },
 
 	kSubMenuEnd,
 	kMenuSeparator,
-	{ "Zoom", "Zoom" , 0, 0, 0, MenuEntry::kSubMenu},
+	{ "Zoom", "Zoom" , 0, 0, VirtualKey::None, MenuEntry::kSubMenu},
 	{ "Zoom", "Zoom In" , "=", kControl },
 	{ "Zoom", "Zoom Out" , "-", kControl },
 	kMenuSeparator,
@@ -113,26 +114,28 @@ static const MenuEntry editMenu[] = {
 	kSubMenuEnd,
 
 	kMenuSeparator,
-	{ "Edit", "Size To Fit" , 0, 0, 0 },
-	{ "Edit", "Unembed Views" , 0, 0, 0 },
-	{ "Edit", "Embed Into" , 0, 0, 0 },
-	{ "Edit", "Transform View Type" , 0, 0, 0 },
-	{ "Edit", "Insert Template" , 0, 0, 0 },
+	{ "Edit", "Size To Fit" , 0, 0, VirtualKey::None },
+	{ "Edit", "Unembed Views" , 0, 0, VirtualKey::None },
+	{ "Edit", "Embed Into" , 0, 0, VirtualKey::None },
+	{ "Edit", "Transform View Type" , 0, 0, VirtualKey::None },
+	{ "Edit", "Insert Template" , 0, 0, VirtualKey::None },
 	kMenuSeparator,
-	{ "Edit", "Add New Template" , 0, 0, 0 },
-	{ "Edit", "Delete Template" , 0, 0, 0 },
-	{ "Edit", "Duplicate Template" , 0, 0, 0 },
+	{ "Edit", "Add New Template" , 0, 0, VirtualKey::None },
+	{ "Edit", "Delete Template" , 0, 0, VirtualKey::None },
+	{ "Edit", "Duplicate Template" , 0, 0, VirtualKey::None },
 	kMenuSeparator,
-	{ "Edit", "Template Settings..." , 0, kControl, VKEY_ENTER },
-	{ "Edit", "Focus Drawing Settings..." , 0, 0, 0 },
+	{ "Edit", "Template Settings..." , 0, kControl, VirtualKey::Enter },
+	{ "Edit", "Focus Drawing Settings..." , 0, 0, VirtualKey::None },
+	kMenuSeparator,
+	{ "Edit", "Toggle UI Theme (Dark/Light)" , 0, 0, VirtualKey::None },
 	{0}
 };
 
 //----------------------------------------------------------------------------------------------------
 static const MenuEntry fileMenu[] = {
-	{ "File", "Save Options" , 0, 0, 0, MenuEntry::kSubMenu|MenuEntry::kSubMenuCheckStyle },
-	{ "File", "Encode Bitmaps in XML" , 0, 0, 0 },
-	{ "File", "Write Windows RC File on Save" , 0, 0, 0 },
+	{ "File", "Save Options" , 0, 0, VirtualKey::None, MenuEntry::kSubMenu|MenuEntry::kSubMenuCheckStyle },
+	{ "File", "Encode Bitmaps in XML" , 0, 0, VirtualKey::None },
+	{ "File", "Write Windows RC File on Save" , 0, 0, VirtualKey::None },
 	kSubMenuEnd,
 	kMenuSeparator,
 	{0}
@@ -150,7 +153,7 @@ public:
 	COptionMenu* getFileMenu () const { return fileMenu; }
 	COptionMenu* getEditMenu () const { return editMenu; }
 
-	int32_t processKeyCommand (const VstKeyCode& key);
+	void processKeyCommand (KeyboardEvent& event);
 	bool handleCommand (const UTF8StringPtr category, const UTF8StringPtr name);
 	bool canHandleCommand (const UTF8StringPtr category, const UTF8StringPtr name) const;
 
@@ -163,7 +166,7 @@ protected:
 	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
 
 	bool validateMenuItem (CCommandMenuItem& item);
-	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key);
+	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const KeyboardEvent& event);
 	void createEditMenu (COptionMenu* menu);
 	void createFileMenu (COptionMenu* menu);
 
@@ -180,8 +183,8 @@ protected:
 	SharedPointer<CVSTGUITimer> highlightTimer;
 	IActionPerformer* actionPerformer;
 
-	COptionMenu* fileMenu {nullptr};
-	COptionMenu* editMenu {nullptr};
+	SharedPointer<COptionMenu> fileMenu;
+	SharedPointer<COptionMenu> editMenu;
 	SharedPointer<CTextLabel> fileLabel;
 	SharedPointer<CTextLabel> editLabel;
 	

@@ -8,6 +8,7 @@
 
 #include "../../ccolor.h"
 #include "../../cfont.h"
+#include "../../events.h"
 #include "../../iviewlistener.h"
 
 #include <memory>
@@ -40,10 +41,12 @@ struct IGenericOptionMenuListener
 };
 
 //------------------------------------------------------------------------
-class GenericOptionMenu : public IPlatformOptionMenu, public ViewMouseListenerAdapter
+class GenericOptionMenu
+: public IPlatformOptionMenu
+, public ViewEventListenerAdapter
 {
 public:
-	GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
+	GenericOptionMenu (CFrame* frame, MouseEventButtonState initialButtons,
 	                   GenericOptionMenuTheme theme = {});
 	~GenericOptionMenu () noexcept override;
 
@@ -53,8 +56,7 @@ public:
 
 private:
 	void removeModalView (PlatformOptionMenuResult result);
-	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override;
-	CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) override;
+	void viewOnEvent (CView* view, Event& event) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

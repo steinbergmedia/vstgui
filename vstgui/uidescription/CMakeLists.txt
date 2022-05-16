@@ -178,7 +178,7 @@ add_library(${target} STATIC ${${target}_sources})
 add_dependencies(${target} vstgui)
 target_link_libraries(${target} PRIVATE vstgui)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 14)
+vstgui_set_cxx_version(${target} 17)
 vstgui_source_group_by_folder(${target})
 
 ##########################################################################################
@@ -212,4 +212,8 @@ if(EXPAT_FOUND)
     target_link_libraries(${target} PRIVATE expat)
 else()
     message(STATUS "VSTGUI will use the embedded Expat package!")
+endif()
+
+if(CMAKE_HOST_APPLE)
+  target_compile_options(${target} PRIVATE -Wall -Werror)
 endif()

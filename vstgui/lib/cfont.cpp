@@ -12,57 +12,105 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 // Global Fonts
 //-----------------------------------------------------------------------------
+struct GlobalFonts
+{
+	SharedPointer<CFontDesc> systemFont;
+	SharedPointer<CFontDesc> normalFontVeryBig;
+	SharedPointer<CFontDesc> normalFontBig;
+	SharedPointer<CFontDesc> normalFont;
+	SharedPointer<CFontDesc> normalFontSmall;
+	SharedPointer<CFontDesc> normalFontSmaller;
+	SharedPointer<CFontDesc> normalFontVerySmall;
+	SharedPointer<CFontDesc> symbolFont;
+};
+static GlobalFonts globalFonts;
+
+//-----------------------------------------------------------------------------
+CFontRef kSystemFont = nullptr;
+CFontRef kNormalFontVeryBig = nullptr;
+CFontRef kNormalFontBig = nullptr;
+CFontRef kNormalFont = nullptr;
+CFontRef kNormalFontSmall = nullptr;
+CFontRef kNormalFontSmaller = nullptr;
+CFontRef kNormalFontVerySmall = nullptr;
+CFontRef kSymbolFont = nullptr;
+
+//-----------------------------------------------------------------------------
+void CFontDesc::init ()
+{
 #if MAC
-	#if TARGET_OS_IPHONE
-	static CFontDesc gSystemFont ("Helvetica", 12);
-	static CFontDesc gNormalFontVeryBig ("ArialMT", 18);
-	static CFontDesc gNormalFontBig ("ArialMT", 14);
-	static CFontDesc gNormalFont ("ArialMT", 12);
-	static CFontDesc gNormalFontSmall ("ArialMT", 11);
-	static CFontDesc gNormalFontSmaller ("ArialMT", 10);
-	static CFontDesc gNormalFontVerySmall ("ArialMT", 9);
-	static CFontDesc gSymbolFont ("Symbol", 12);
-	#else
-	static CFontDesc gSystemFont ("Lucida Grande", 12);
-	static CFontDesc gNormalFontVeryBig ("Arial", 18);
-	static CFontDesc gNormalFontBig ("Arial", 14);
-	static CFontDesc gNormalFont ("Arial", 12);
-	static CFontDesc gNormalFontSmall ("Arial", 11);
-	static CFontDesc gNormalFontSmaller ("Arial", 10);
-	static CFontDesc gNormalFontVerySmall ("Arial", 9);
-	static CFontDesc gSymbolFont ("Symbol", 12);
-	#endif
-
-#elif WINDOWS
-	static CFontDesc gSystemFont ("Arial", 12);
-	static CFontDesc gNormalFontVeryBig ("Arial", 18);
-	static CFontDesc gNormalFontBig ("Arial", 14);
-	static CFontDesc gNormalFont ("Arial", 12);
-	static CFontDesc gNormalFontSmall ("Arial", 11);
-	static CFontDesc gNormalFontSmaller ("Arial", 10);
-	static CFontDesc gNormalFontVerySmall ("Arial", 9);
-	static CFontDesc gSymbolFont ("Symbol", 13);
-
+#if TARGET_OS_IPHONE
+	globalFonts.systemFont = makeOwned<CFontDesc> ("Helvetica", 12);
+	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("ArialMT", 18);
+	globalFonts.normalFontBig = makeOwned<CFontDesc> ("ArialMT", 14);
+	globalFonts.normalFont = makeOwned<CFontDesc> ("ArialMT", 12);
+	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("ArialMT", 11);
+	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("ArialMT", 10);
+	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("ArialMT", 9);
+	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 12);
 #else
-	static CFontDesc gSystemFont ("Arial", 12);
-	static CFontDesc gNormalFontVeryBig ("Arial", 18);
-	static CFontDesc gNormalFontBig ("Arial", 14);
-	static CFontDesc gNormalFont ("Arial", 12);
-	static CFontDesc gNormalFontSmall ("Arial", 11);
-	static CFontDesc gNormalFontSmaller ("Arial", 10);
-	static CFontDesc gNormalFontVerySmall ("Arial", 9);
-	static CFontDesc gSymbolFont ("Symbol", 13);
-
+	globalFonts.systemFont = makeOwned<CFontDesc> ("Lucida Grande", 12);
+	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("Arial", 18);
+	globalFonts.normalFontBig = makeOwned<CFontDesc> ("Arial", 14);
+	globalFonts.normalFont = makeOwned<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("Arial", 11);
+	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("Arial", 10);
+	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("Arial", 9);
+	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 12);
 #endif
 
-const CFontRef kSystemFont				= &gSystemFont;
-const CFontRef kNormalFontVeryBig		= &gNormalFontVeryBig;
-const CFontRef kNormalFontBig			= &gNormalFontBig;
-const CFontRef kNormalFont				= &gNormalFont;
-const CFontRef kNormalFontSmall			= &gNormalFontSmall;
-const CFontRef kNormalFontSmaller		= &gNormalFontSmaller;
-const CFontRef kNormalFontVerySmall		= &gNormalFontVerySmall;
-const CFontRef kSymbolFont				= &gSymbolFont;
+#elif WINDOWS
+	globalFonts.systemFont = makeOwned<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("Arial", 18);
+	globalFonts.normalFontBig = makeOwned<CFontDesc> ("Arial", 14);
+	globalFonts.normalFont = makeOwned<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("Arial", 11);
+	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("Arial", 10);
+	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("Arial", 9);
+	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 13);
+
+#else
+	globalFonts.systemFont = makeOwned<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("Arial", 18);
+	globalFonts.normalFontBig = makeOwned<CFontDesc> ("Arial", 14);
+	globalFonts.normalFont = makeOwned<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("Arial", 11);
+	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("Arial", 10);
+	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("Arial", 9);
+	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 13);
+
+#endif
+	kSystemFont = globalFonts.systemFont;
+	kNormalFontVeryBig = globalFonts.normalFontVeryBig;
+	kNormalFontBig = globalFonts.normalFontBig;
+	kNormalFont = globalFonts.normalFont;
+	kNormalFontSmall = globalFonts.normalFontSmall;
+	kNormalFontSmaller = globalFonts.normalFontSmaller;
+	kNormalFontVerySmall = globalFonts.normalFontVerySmall;
+	kSymbolFont = globalFonts.symbolFont;
+}
+
+//-----------------------------------------------------------------------------
+void CFontDesc::cleanup ()
+{
+	globalFonts.systemFont = nullptr;
+	globalFonts.normalFontVeryBig = nullptr;
+	globalFonts.normalFontBig = nullptr;
+	globalFonts.normalFont = nullptr;
+	globalFonts.normalFontSmall = nullptr;
+	globalFonts.normalFontSmaller = nullptr;
+	globalFonts.normalFontVerySmall = nullptr;
+	globalFonts.symbolFont = nullptr;
+
+	kSystemFont = nullptr;
+	kNormalFontVeryBig = nullptr;
+	kNormalFontBig = nullptr;
+	kNormalFont = nullptr;
+	kNormalFontSmall = nullptr;
+	kNormalFontSmaller = nullptr;
+	kNormalFontVerySmall = nullptr;
+	kSymbolFont = nullptr;
+}
 
 //-----------------------------------------------------------------------------
 // CFontDesc Implementation
@@ -91,7 +139,10 @@ CFontDesc::CFontDesc (const CFontDesc& font)
 }
 
 //------------------------------------------------------------------------
-CFontDesc::~CFontDesc () noexcept = default;
+CFontDesc::~CFontDesc () noexcept
+{
+	vstgui_assert (getNbReference () == 0, "Always use shared pointers with CFontDesc!");
+}
 
 //-----------------------------------------------------------------------------
 void CFontDesc::beforeDelete ()
@@ -165,19 +216,6 @@ bool CFontDesc::operator == (const CFontDesc& f) const
 	if (name != f.getName ())
 		return false;
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-void CFontDesc::cleanup ()
-{
-	gSystemFont.freePlatformFont ();
-	gNormalFontVeryBig.freePlatformFont ();
-	gNormalFontBig.freePlatformFont ();
-	gNormalFont.freePlatformFont ();
-	gNormalFontSmall.freePlatformFont ();
-	gNormalFontSmaller.freePlatformFont ();
-	gNormalFontVerySmall.freePlatformFont ();
-	gSymbolFont.freePlatformFont ();
 }
 
 } // VSTGUI

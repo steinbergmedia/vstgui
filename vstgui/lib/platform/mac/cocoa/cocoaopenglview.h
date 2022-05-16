@@ -41,7 +41,6 @@ public:
 	void doDraw (const CRect& r);
 	void reshape ();
 protected:
-	static void initClass ();
 
 	NSView* parent;
 #pragma clang diagnostic push

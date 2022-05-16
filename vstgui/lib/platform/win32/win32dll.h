@@ -46,6 +46,8 @@ struct DllBase
 		return reinterpret_cast<T> (GetProcAddress (module, name));
 	}
 
+	bool loaded () const { return module != nullptr; }
+
 private:
 	HINSTANCE module {nullptr};
 };

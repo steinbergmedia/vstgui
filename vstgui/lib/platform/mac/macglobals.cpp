@@ -12,8 +12,6 @@
 #include "../common/fileresourceinputstream.h"
 #include "../std_unorderedmap.h"
 
-#define USE_MAIN_DISPLAY_COLORSPACE	1
-
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -92,10 +90,24 @@ public:
 		return CGColorSpaceCreateDeviceRGB ();
 
 	#else
-		ColorSyncProfileRef csProfileRef = ColorSyncProfileCreateWithDisplayID (0);
+		ColorSyncProfileRef csProfileRef = ColorSyncProfileCreateWithDisplayID (CGMainDisplayID ());
 		if (csProfileRef)
 		{
-			CGColorSpaceRef colorSpace = CGColorSpaceCreateWithPlatformColorSpace (csProfileRef);
+			CGColorSpaceRef colorSpace = {};
+		#if defined(MAC_OS_VERSION_12_0) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_12_0)
+			if (__builtin_available (macOS 12.0, *))
+			{
+				colorSpace = CGColorSpaceCreateWithColorSyncProfile (csProfileRef, nullptr);
+			}
+		#if (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_VERSION_12_0)
+			else
+			{
+				colorSpace = CGColorSpaceCreateWithPlatformColorSpace (csProfileRef);
+			}
+		#endif
+		#else
+			colorSpace = CGColorSpaceCreateWithPlatformColorSpace (csProfileRef);
+		#endif
 			CFRelease (csProfileRef);
 			return colorSpace;
 		}

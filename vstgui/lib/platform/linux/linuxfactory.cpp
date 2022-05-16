@@ -4,6 +4,7 @@
 
 #include "cairobitmap.h"
 #include "cairofont.h"
+#include "cairogradient.h"
 #include "cairocontext.h"
 #include "x11frame.h"
 #include "../iplatformframecallback.h"
@@ -11,6 +12,7 @@
 #include "../iplatformresourceinputstream.h"
 #include "linuxstring.h"
 #include "x11timer.h"
+#include "x11fileselector.h"
 #include "linuxfactory.h"
 #include <list>
 #include <memory>
@@ -196,6 +198,20 @@ auto LinuxFactory::createOffscreenContext (const CPoint& size, double scaleFacto
 	if (context->valid ())
 		return context;
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+PlatformGradientPtr LinuxFactory::createGradient () const noexcept
+{
+	return std::make_unique<Cairo::Gradient> ();
+}
+
+//-----------------------------------------------------------------------------
+PlatformFileSelectorPtr LinuxFactory::createFileSelector (PlatformFileSelectorStyle style,
+														  IPlatformFrame* frame) const noexcept
+{
+	auto x11Frame = dynamic_cast<X11::Frame*> (frame);
+	return X11::createFileSelector (style, x11Frame);
 }
 
 //-----------------------------------------------------------------------------

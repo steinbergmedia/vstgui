@@ -9,12 +9,17 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
-using AssertionHandler = void (*) (const char* filename, const char* line, const char* desc);
+using AssertionHandler = void (*) (const char* filename, const char* line, const char* condition,
+								   const char* desc);
 void setAssertionHandler (AssertionHandler handler);
 bool hasAssertionHandler ();
-void doAssert (const char* filename, const char* line, const char* desc = nullptr) noexcept (false);
+void doAssert (const char* filename, const char* line, const char* condition,
+			   const char* desc = nullptr) noexcept (false);
 
-#define vstgui_assert(x, ...) if (!(x)) VSTGUI::doAssert (__FILE__, VSTGUI_MAKE_STRING(__LINE__), ## __VA_ARGS__);
+#define vstgui_assert(x, ...)                                                                      \
+	if (!(x))                                                                                      \
+		VSTGUI::doAssert (__FILE__, VSTGUI_MAKE_STRING (__LINE__), VSTGUI_MAKE_STRING (x),         \
+						  ##__VA_ARGS__);
 
 } // VSTGUI
 

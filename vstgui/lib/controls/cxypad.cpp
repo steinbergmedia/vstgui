@@ -4,6 +4,7 @@
 
 #include "cxypad.h"
 #include "../cdrawcontext.h"
+#include "../events.h"
 
 namespace VSTGUI {
 
@@ -67,34 +68,32 @@ void CXYPad::drawBack (CDrawContext* context, CBitmap* newBack)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CXYPad::onMouseDown (CPoint& where, const CButtonState& buttons)
+void CXYPad::onMouseDownEvent (MouseDownEvent& event)
 {
-	if (buttons.isLeftButton ())
+	if (event.buttonState.isLeft ())
 	{
 		invalidMouseWheelEditTimer (this);
 		mouseStartValue = getValue ();
-		mouseChangeStartPoint = where;
+		mouseChangeStartPoint = event.mousePosition;
 		mouseChangeStartPoint.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
 		                              -getViewSize ().top - getRoundRectRadius () / 2.);
 		beginEdit ();
-		return onMouseMoved (where, buttons);
+		onMouseMove (event);
 	}
-	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CXYPad::onMouseUp (CPoint& where, const CButtonState& buttons)
+void CXYPad::onMouseUpEvent (MouseUpEvent& event)
 {
 	if (isEditing ())
 	{
 		endEdit ();
-		return kMouseEventHandled;
+		event.consumed = true;
 	}
-	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CXYPad::onMouseCancel ()
+void CXYPad::onMouseCancelEvent (MouseCancelEvent &event)
 {
 	if (isEditing ())
 	{
@@ -105,60 +104,73 @@ CMouseEventResult CXYPad::onMouseCancel ()
 			invalid ();
 		}
 		endEdit ();
+		event.consumed = true;
 	}
-	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& buttons)
+void CXYPad::onMouseMoveEvent (MouseMoveEvent& event)
 {
-	if (buttons.isLeftButton () && isEditing ())
+	if (event.buttonState.isLeft () && isEditing ())
 	{
-		if (stopTrackingOnMouseExit)
-		{
-			if (!hitTest (where, buttons))
-			{
-				endEdit ();
-				return kMouseMoveEventHandledButDontNeedMoreEvents;
-			}
-		}
-		float x, y;
-		CCoord width = getWidth() - getRoundRectRadius ();
-		CCoord height = getHeight() - getRoundRectRadius ();
-		where.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
-		              -getViewSize ().top - getRoundRectRadius () / 2.);
-
-		x = (float)(where.x / width);
-		y = (float)(where.y / height);
-
-		boundValues (x, y);
-		setValue (calculateValue (x, y));
-		if (isDirty ())
-		{
-			valueChanged ();
-			invalid ();
-		}
-		lastMouseChangePoint = where;
-		return kMouseEventHandled;
+		onMouseMove (event);
 	}
-	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
-bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& _distance,
-                      const CButtonState& buttons)
+void CXYPad::onMouseMove (MouseDownUpMoveEvent& event)
+{
+	auto where = event.mousePosition;
+	if (stopTrackingOnMouseExit)
+	{
+		if (!hitTest (where, event))
+		{
+			endEdit ();
+			event.ignoreFollowUpMoveAndUpEvents (true);
+			event.consumed = true;
+			return;
+		}
+	}
+	float x, y;
+	CCoord width = getWidth() - getRoundRectRadius ();
+	CCoord height = getHeight() - getRoundRectRadius ();
+	where.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
+				  -getViewSize ().top - getRoundRectRadius () / 2.);
+
+	x = (float)(where.x / width);
+	y = (float)(where.y / height);
+
+	boundValues (x, y);
+	setValue (calculateValue (x, y));
+	if (isDirty ())
+	{
+		valueChanged ();
+		invalid ();
+	}
+	lastMouseChangePoint = where;
+	event.consumed = true;
+}
+
+//------------------------------------------------------------------------
+void CXYPad::onMouseWheelEvent (MouseWheelEvent& event)
 {
 	float x, y;
 	calculateXY (getValue (), x, y);
-	auto distance = _distance * getWheelInc ();
-	if (buttons & kMouseWheelInverted)
-		distance = -distance;
-	if (buttons & kShift)
-		distance *= 0.1f;
-	if (axis == kMouseWheelAxisX)
-		x += distance;
-	else
-		y += distance;
+
+	auto distanceX = static_cast<float> (event.deltaX) * getWheelInc ();
+	auto distanceY = static_cast<float> (event.deltaY) * getWheelInc ();
+	if (event.flags & MouseWheelEvent::DirectionInvertedFromDevice)
+	{
+		distanceX *= -1.f;
+		distanceY *= -1.f;
+	}
+	if (event.modifiers.has (ModifierKey::Shift))
+	{
+		distanceX *= 0.1f;
+		distanceY *= 0.1f;
+	}
+	x += distanceX;
+	y += distanceY;
 	boundValues (x, y);
 	onMouseWheelEditing (this);
 	setValue (calculateValue (x, y));
@@ -167,25 +179,22 @@ bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const fl
 		invalid ();
 		valueChanged ();
 	}
-	return true;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
-int32_t CXYPad::onKeyDown (VstKeyCode& keyCode)
+void CXYPad::onKeyboardEvent (KeyboardEvent& event)
 {
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown)
+		return;
+	if (event.virt == VirtualKey::Escape)
 	{
-		case VKEY_ESCAPE:
+		if (isEditing ())
 		{
-			if (isEditing ())
-			{
-				onMouseCancel ();
-				return 1;
-			}
-			break;
+			onMouseCancel ();
+			event.consumed = true;
 		}
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------
@@ -199,6 +208,18 @@ void CXYPad::boundValues (float& x, float& y)
 		y = 0.f;
 	else if (y > 1.f)
 		y = 1.f;
+}
+
+//------------------------------------------------------------------------
+void CXYPad::setDefaultValue (float val)
+{
+	CControl::setDefaultValue (calculateValue (val, val));
+}
+
+//------------------------------------------------------------------------
+void CXYPad::setDefaultValues (float x, float y)
+{
+	CControl::setDefaultValue (calculateValue (x, y));
 }
 
 } // VSTGUI

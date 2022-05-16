@@ -24,7 +24,7 @@ public:
 class IMutableStepValue : public Interface
 {
 public:
-	virtual void setNumSteps (IStepValue::StepType numSteps) = 0;
+	virtual bool setNumSteps (IStepValue::StepType numSteps) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -67,7 +67,7 @@ ValuePtr make (const UTF8String& id, IValue::Type initialValue = 0.,
 /** make a step value
  *
  *	@param id value ID
- *	@param numSteps number of discrete steps
+ *	@param numSteps number of discrete steps, must be greater than zero
  *	@param initialValue initial value in the normalized range [0..1]
  *	@param valueConverter value converter
  *	@return shared value pointer

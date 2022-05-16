@@ -14,59 +14,12 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <Cocoa/Cocoa.h>
-struct VstKeyCode;
 
 #define HIDDEN __attribute__((__visibility__("hidden")))
 
-#if DEBUG
-#define VSTGUI_CHECK_YES(x) { BOOL res = x; vstgui_assert (res == YES); }
-#else
-#define VSTGUI_CHECK_YES(x) x;
-#endif
-
 //------------------------------------------------------------------------------------
-inline HIDDEN id get_Objc_Value (id obj, const char* name)
-{
-	Ivar ivar = class_getInstanceVariable ([obj class], name);
-	if (ivar)
-	{
-		id value = object_getIvar (obj, ivar);
-		return value;
-	}
-	return nil;
-}
-
-//------------------------------------------------------------------------------------
-inline HIDDEN void set_Objc_Value (id obj, const char* name, id value)
-{
-	Ivar ivar = class_getInstanceVariable ([obj class], name);
-	if (ivar)
-	{
-		object_setIvar (obj, ivar, value);
-	}
-}
-
-#define __OBJC_SUPER(x) objc_super __os; __os.receiver = x; __os.super_class = class_getSuperclass ([x class]);
-#define SUPER	static_cast<id> (&__os)
-#define OBJC_GET_VALUE(x,y) get_Objc_Value (x, #y)
-#define OBJC_SET_VALUE(x,y,z) set_Objc_Value (x, #y, (id)z)
-
-//------------------------------------------------------------------------------------
-static id (*SuperInit) (id, SEL) = (id (*) (id, SEL))objc_msgSendSuper;
-static id (*SuperInitWithFrame) (id, SEL, NSRect) = (id (*) (id, SEL, NSRect))objc_msgSendSuper;
-static void (*SuperDealloc) (id, SEL) = (void (*) (id, SEL))objc_msgSendSuper;
-static void (*SuperRemoveFromSuperview) (id, SEL) = SuperDealloc;
-static void (*SuperEventMsg) (id, SEL, NSEvent*) = (void (*) (id, SEL, NSEvent*))objc_msgSendSuper;
-static void (*SuperUpdateTrackingAreas) (id, SEL) = (void (*) (id, SEL))objc_msgSendSuper;
-static void (*SuperTextDidChange) (id, SEL, NSNotification*) = (void (*) (id, SEL, NSNotification*))objc_msgSendSuper;
-static void (*SuperSetNeedsDisplayInRect) (id, SEL,
-										   NSRect) = (void (*) (id, SEL, NSRect))objc_msgSendSuper;
-static void (*SuperViewWillRedraw) (id, SEL) = SuperDealloc;
-
-//------------------------------------------------------------------------------------
-extern HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass);
-extern HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent);
-extern HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode);
+extern HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, VSTGUI::KeyboardEvent& event);
+extern HIDDEN NSString* GetVirtualKeyCodeString (VSTGUI::VirtualKey virtualKey);
 extern HIDDEN int32_t eventButton (NSEvent* theEvent);
 extern HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p);
 extern HIDDEN NSImage* bitmapToNSImage (VSTGUI::CBitmap* bitmap);

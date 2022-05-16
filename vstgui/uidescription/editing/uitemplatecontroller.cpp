@@ -34,46 +34,53 @@ public:
 	UINavigationDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate)
 	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; }
 
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override
 	{
-		if (dynamic_cast<CTextEdit*> (browser->getFrame ()->getFocusView ()))
-			return -1;
-		if (key.virt == VKEY_LEFT)
+		if (event.type == EventType::KeyDown &&
+		    dynamic_cast<CTextEdit*> (browser->getFrame ()->getFocusView ()) == nullptr)
 		{
-			if (auto parent = browser->getParentView ()->asViewContainer ())
+			if (event.virt == VirtualKey::Left)
 			{
-				if (parent->advanceNextFocusView (browser, true))
+				if (auto parent = browser->getParentView ()->asViewContainer ())
 				{
-					return 1;
+					if (parent->advanceNextFocusView (browser, true))
+					{
+						browser->unselectAll ();
+						event.consumed = true;
+						return;
+					}
 				}
 			}
-		}
-		else if (key.virt == VKEY_RIGHT)
-		{
-			if (auto parent = browser->getParentView ()->asViewContainer ())
+			else if (event.virt == VirtualKey::Right)
 			{
-				if (parent->advanceNextFocusView (browser, false))
+				if (auto parent = browser->getParentView ()->asViewContainer ())
 				{
-					if (auto* focusView = dynamic_cast<CView*> (browser->getFrame()->getFocusView ()))
+					if (parent->advanceNextFocusView (browser, false))
 					{
-						CViewContainer* parent2 = focusView->getParentView ()->asViewContainer ();
-						while (parent2 && parent2 != browser->getFrame ())
+						if (auto* focusView = browser->getFrame ()->getFocusView ())
 						{
-							parent2 = parent2->getParentView ()->asViewContainer ();
-							CDataBrowser* focusBrowser = dynamic_cast<CDataBrowser*>(parent2);
+							auto* focusBrowser = dynamic_cast<CDataBrowser*>(focusView);
+							parent = focusView->getParentView ()->asViewContainer ();
+							while (!focusBrowser && parent != browser->getFrame ())
+							{
+								if (parent->getParentView () == nullptr)
+									break;
+								parent = parent->getParentView ()->asViewContainer ();
+								focusBrowser = dynamic_cast<CDataBrowser*> (parent);
+							}
 							if (focusBrowser)
 							{
-								if (focusBrowser->getSelectedRow() == CDataBrowser::kNoSelection)
+								if (focusBrowser->getSelectedRow () == CDataBrowser::kNoSelection)
 									focusBrowser->setSelectedRow (0);
-								break;
 							}
 						}
+						event.consumed = true;
+						return;
 					}
-					return 1;
 				}
 			}
 		}
-		return GenericStringListDataBrowserSource::dbOnKeyDown (key, browser);
+		GenericStringListDataBrowserSource::dbOnKeyboardEvent (event, browser);
 	}
 	virtual const UTF8String& getHeaderTitle () const { return headerTitle; }
 	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) override
@@ -198,7 +205,7 @@ protected:
 	                                 int32_t column, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
 	                                  int32_t column, CDataBrowser* browser) override;
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where,
 	                                 IDataPackage* drag, CDataBrowser* browser) override;
@@ -244,6 +251,8 @@ UITemplateController::UITemplateController (IController* baseController, UIDescr
 //----------------------------------------------------------------------------------------------------
 UITemplateController::~UITemplateController ()
 {
+	if (templateDataBrowser)
+		templateDataBrowser->unregisterViewListener (this);
 	if (mainViewDataSource)
 		mainViewDataSource->forget ();
 	editDescription->unregisterListener (this);
@@ -283,6 +292,11 @@ void UITemplateController::selectTemplate (UTF8StringPtr name)
 {
 	if (templateDataBrowser)
 	{
+		if (name == nullptr)
+		{
+			templateDataBrowser->unselectAll ();
+			return;
+		}
 		int32_t index = 0;
 		for (auto& templName : templateNames)
 		{
@@ -422,6 +436,16 @@ void UITemplateController::navigateTo (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UITemplateController::viewWillDelete (CView* view)
+{
+	if (view == templateDataBrowser)
+	{
+		templateDataBrowser->unregisterViewListener (this);
+		templateDataBrowser = nullptr;
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 CView* UITemplateController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
@@ -443,6 +467,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 			UIEditController::setupDataSource (dataSource);
 			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kAutoHideScrollbars|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar|CDataBrowser::kDrawHeader);
 			dataSource->forget ();
+			templateDataBrowser->registerViewListener (this);
 			return templateDataBrowser;
 		}
 	}
@@ -550,7 +575,7 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 					return true;
 				}
 			}
-			it++;
+			++it;
 		}
 		inUpdate = false;
 		return false;
@@ -789,25 +814,23 @@ void UIViewListDataSource::onUndoManagerChange ()
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIViewListDataSource::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
+void UIViewListDataSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser)
 {
-	if (key.virt != 0)
+	if (event.type == EventType::KeyDown)
 	{
-		int32_t row = browser->getSelectedRow ();
-		CView* subview = getSubview (row);
-		if (subview)
+		if (event.virt == VirtualKey::Return)
 		{
-			switch (key.virt)
+			int32_t row = browser->getSelectedRow ();
+			CView* subview = getSubview (row);
+			if (subview)
 			{
-				case VKEY_RETURN:
-				{
-					selection->setExclusive (subview);
-					return 1;
-				}
+				selection->setExclusive (subview);
+				event.consumed = true;
+				return;
 			}
 		}
 	}
-	return UINavigationDataSource::dbOnKeyDown (key, browser);
+	UINavigationDataSource::dbOnKeyboardEvent (event, browser);
 }
 
 //----------------------------------------------------------------------------------------------------

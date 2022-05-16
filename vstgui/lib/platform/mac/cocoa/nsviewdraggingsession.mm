@@ -9,6 +9,7 @@
 #import "../cgbitmap.h"
 #import "../macclipboard.h"
 #import "cocoahelpers.h"
+#import "objcclassbuilder.h"
 
 //------------------------------------------------------------------------
 @interface NSObject (VSTGUI_BinaryDataType_Private)
@@ -37,6 +38,8 @@ struct BinaryDataType
 	}
 
 private:
+	static constexpr const auto dataVarName = "_data";
+
 	static NSString* getCocoaPasteboardTypeString ()
 	{
 		return [NSString stringWithCString:VSTGUI::MacClipboard::getPasteboardBinaryType ()
@@ -45,14 +48,26 @@ private:
 
 	static id Init (id self, SEL, const void* buffer, size_t bufferSize)
 	{
-		__OBJC_SUPER (self)
-		self = SuperInit (SUPER, @selector (init));
+		ObjCInstance obj (self);
+		self = obj.callSuper<id (id, SEL), id> (@selector (init));
 		if (self)
 		{
-			auto data = [[[NSData alloc] initWithBytes:buffer length:bufferSize] autorelease];
-			OBJC_SET_VALUE (self, _data, data);
+			auto data = [[NSData alloc] initWithBytes:buffer length:bufferSize];
+			if (auto var = obj.getVariable<NSData*> (dataVarName))
+				var->set (data);
 		}
 		return self;
+	}
+
+	static void Dealloc (id self, SEL _cmd)
+	{
+		ObjCInstance obj (self);
+		if (auto var = obj.getVariable<NSData*> (dataVarName); var.has_value () && var->get ())
+		{
+			[var->get () release];
+			var->set (nullptr);
+		}
+		obj.callSuper<void (id, SEL)> (_cmd);
 	}
 
 	static NSArray<NSPasteboardType>* WritableTypesForPasteboard (id, SEL, NSPasteboard*)
@@ -62,38 +77,30 @@ private:
 
 	static id PasteboardPropertyListForType (id self, SEL, NSPasteboardType)
 	{
-		return OBJC_GET_VALUE (self, _data);
+		ObjCInstance obj (self);
+		if (auto var = obj.getVariable<NSData*> (dataVarName); var.has_value () && var->get ())
+			return var->get ();
+		return nullptr;
 	}
 
 	Class cl {nullptr};
 
 	BinaryDataType () { initClass (); }
 
-	~BinaryDataType ()
-	{
-		if (cl)
-			objc_disposeClassPair (cl);
-	}
+	~BinaryDataType () { objc_disposeClassPair (cl); }
 
 	void initClass ()
 	{
-		auto className =
-		    [[[NSMutableString alloc] initWithString:@"VSTGUI_BinaryDataType"] autorelease];
-		cl = generateUniqueClass (className, [NSObject class]);
-		VSTGUI_CHECK_YES (class_addProtocol (cl, objc_getProtocol ("NSPasteboardWriting")))
-		char funcSig[100];
-		sprintf (funcSig, "@@:@:%s:%s", @encode (const void*), @encode (size_t));
-		VSTGUI_CHECK_YES (
-		    class_addMethod (cl, @selector (initWithData:andSize:), IMP (Init), funcSig))
-		sprintf (funcSig, "%s@:@:%s", @encode (NSArray<NSPasteboardType>*),
-		         @encode (NSPasteboard*));
-		VSTGUI_CHECK_YES (class_addMethod (cl, @selector (writableTypesForPasteboard:),
-		                                   IMP (WritableTypesForPasteboard), funcSig))
-		sprintf (funcSig, "%s@:@:%s", @encode (id), @encode (NSPasteboardType));
-		VSTGUI_CHECK_YES (class_addMethod (cl, @selector (pasteboardPropertyListForType:),
-		                                   IMP (PasteboardPropertyListForType), funcSig))
-		VSTGUI_CHECK_YES (class_addIvar (cl, "_data", sizeof (NSData*),
-		                                 (uint8_t)log2 (sizeof (NSData*)), @encode (NSData*)))
+		cl = ObjCClassBuilder ()
+				 .init ("VSTGUI_BinaryDataType", [NSObject class])
+				 .addProtocol ("NSPasteboardWriting")
+				 .addMethod (@selector (initWithData:andSize:), Init)
+				 .addMethod (@selector (dealloc), Dealloc)
+				 .addMethod (@selector (writableTypesForPasteboard:), WritableTypesForPasteboard)
+				 .addMethod (@selector (pasteboardPropertyListForType:),
+							 PasteboardPropertyListForType)
+				 .addIvar<NSData*> (dataVarName)
+				 .finalize ();
 	}
 };
 

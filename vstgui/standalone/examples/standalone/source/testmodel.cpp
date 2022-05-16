@@ -107,12 +107,18 @@ void TestModel::onEndEdit (IValue& value)
 	else if (value.getID () == "ShowPopup" && value.getValue () > 0.5)
 	{
 		value.performEdit (0.);
-		auto window = IApplication::instance ().getWindows ().front ();
-		vstgui_assert (window);
-		auto rect = window->getFocusViewRect ();
+		CRect rect;
+		for (auto& window : IApplication::instance ().getWindows ())
+		{
+			if (window->getType () == WindowType::Document)
+			{
+				rect = window->getFocusViewRect ();
+				rect.offset (window->getPosition ());
+				break;
+			}
+		}
 		if (rect.isEmpty ())
 			return;
-		rect.offset (window->getPosition ());
 		UIDesc::Config config;
 		config.viewName = "view";
 		config.modelBinding = shared_from_this ();

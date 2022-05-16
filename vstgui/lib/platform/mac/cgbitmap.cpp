@@ -78,7 +78,7 @@ PNGBitmapBuffer CGBitmap::createMemoryPNGRepresentation (const PlatformBitmapPtr
 			CFMutableDataRef data = CFDataCreateMutable (nullptr, 0);
 			if (data)
 			{
-				CGImageDestinationRef dest = CGImageDestinationCreateWithData (data, kUTTypePNG, 1, nullptr);
+				CGImageDestinationRef dest = CGImageDestinationCreateWithData (data, CFSTR ("public.png"), 1, nullptr);
 				if (dest)
 				{
 					auto scaleFactor = bitmap->getScaleFactor ();

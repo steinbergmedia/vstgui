@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "pixelbuffer.h"
+#include "vstguibase.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -18,20 +19,30 @@ inline uint32_t shuffle (uint32_t input)
 	static constexpr auto s3 = bs3 * 8;
 	static constexpr auto s4 = bs4 * 8;
 
-	auto b1 = (input & 0xFF000000);
-	auto b2 = (input & 0x00FF0000);
-	auto b3 = (input & 0x0000FF00);
-	auto b4 = (input & 0x000000FF);
+	uint32_t b1 = (input & 0xFF000000);
+	uint32_t b2 = (input & 0x00FF0000);
+	uint32_t b3 = (input & 0x0000FF00);
+	uint32_t b4 = (input & 0x000000FF);
 
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable:4293)
 #endif
 
-	b1 = (s1 >= 0) ? b1 << s1 : b1 >> -s1;
-	b2 = (s2 >= 0) ? b2 << s2 : b2 >> -s2;
-	b3 = (s3 >= 0) ? b3 << s3 : b3 >> -s3;
-	b4 = (s4 >= 0) ? b4 << s4 : b4 >> -s4;
+	if constexpr (ByteOrder::kNativeByteOrder == ByteOrder::kLittleEndianByteOrder)
+	{
+		b1 = (s4 >= 0) ? b1 >> s4 : b1 << -s4;
+		b2 = (s3 >= 0) ? b2 >> s3 : b2 << -s3;
+		b3 = (s2 >= 0) ? b3 >> s2 : b3 << -s2;
+		b4 = (s1 >= 0) ? b4 >> s1 : b4 << -s1;
+	}
+	else
+	{
+		b1 = (s1 >= 0) ? b1 << s1 : b1 >> -s1;
+		b2 = (s2 >= 0) ? b2 << s2 : b2 >> -s2;
+		b3 = (s3 >= 0) ? b3 << s3 : b3 >> -s3;
+		b4 = (s4 >= 0) ? b4 << s4 : b4 >> -s4;
+	}
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -63,7 +74,7 @@ inline void convert (uint8_t* buffer, uint32_t bytesPerRow, uint32_t width, uint
 						}
 						case Format::ABGR:
 						{
-							*intPtr = shuffle<0, -2, 0, 2> (pixel);
+							*intPtr = shuffle<-2, 0, 2, 0> (pixel);
 							break;
 						}
 						case Format::BGRA:
@@ -73,7 +84,7 @@ inline void convert (uint8_t* buffer, uint32_t bytesPerRow, uint32_t width, uint
 						}
 						case Format::RGBA:
 						{
-							*intPtr = shuffle<-3, 1, 1, 1> (pixel);
+							*intPtr = shuffle<-1, -1, -1, 3> (pixel);
 							break;
 						}
 					}
@@ -85,7 +96,7 @@ inline void convert (uint8_t* buffer, uint32_t bytesPerRow, uint32_t width, uint
 					{
 						case Format::ARGB:
 						{
-							*intPtr = shuffle<0, -2, 0, 2> (pixel);
+							*intPtr = shuffle<-2, 0, 2, 0> (pixel);
 							break;
 						}
 						case Format::ABGR:
@@ -95,7 +106,7 @@ inline void convert (uint8_t* buffer, uint32_t bytesPerRow, uint32_t width, uint
 						}
 						case Format::BGRA:
 						{
-							*intPtr = shuffle<-3, 1, 1, 1> (pixel);
+							*intPtr = shuffle<-1, -1, -1, 3> (pixel);
 							break;
 						}
 						case Format::RGBA:
@@ -112,7 +123,7 @@ inline void convert (uint8_t* buffer, uint32_t bytesPerRow, uint32_t width, uint
 					{
 						case Format::ARGB:
 						{
-							*intPtr = shuffle<-3, 1, 1, 1> (pixel);
+							*intPtr = shuffle<-1, -1, -1, 3> (pixel);
 							break;
 						}
 						case Format::ABGR:
@@ -144,7 +155,7 @@ inline void convert (uint8_t* buffer, uint32_t bytesPerRow, uint32_t width, uint
 						}
 						case Format::ABGR:
 						{
-							*intPtr = shuffle<-3, 1, 1, 1> (pixel);
+							*intPtr = shuffle<-1, -1, -1, 3> (pixel);
 							break;
 						}
 						case Format::BGRA:
@@ -154,7 +165,7 @@ inline void convert (uint8_t* buffer, uint32_t bytesPerRow, uint32_t width, uint
 						}
 						case Format::RGBA:
 						{
-							*intPtr = shuffle<-2, 0, 2, 0> (pixel);
+							*intPtr = shuffle<0, -2, 0, 2> (pixel);
 							break;
 						}
 					}

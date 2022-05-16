@@ -18,6 +18,8 @@ set(${target}_common_sources
     cbitmapfilter.cpp
     cbitmapfilter.h
     cbuttonstate.h
+    cclipboard.cpp
+    cclipboard.h
     ccolor.cpp
     ccolor.h
     cdatabrowser.cpp
@@ -35,6 +37,7 @@ set(${target}_common_sources
     cfont.h
     cframe.cpp
     cframe.h
+    cgradient.cpp
     cgradient.h
     cgradientview.cpp
     cgradientview.h
@@ -128,6 +131,9 @@ set(${target}_common_sources
     cvstguitimer.h
     dragging.h
     dispatchlist.h
+    events.cpp
+    events.h
+    finally.h
     genericstringlistdatabrowsersource.cpp
     genericstringlistdatabrowsersource.h
     idatabrowserdelegate.h
@@ -142,9 +148,12 @@ set(${target}_common_sources
     pixelbuffer.h
     pixelbuffer.cpp
     platform/iplatformbitmap.h
+    platform/iplatformfileselector.h
     platform/iplatformfont.h
     platform/iplatformframe.h
     platform/iplatformframecallback.h
+    platform/iplatformgradient.h
+    platform/iplatformgraphicspath.h
     platform/iplatformopenglview.h
     platform/iplatformoptionmenu.h
     platform/iplatformresourceinputstream.h
@@ -165,6 +174,7 @@ set(${target}_common_sources
     platform/common/genericoptionmenu.h
     platform/common/generictextedit.cpp
     platform/common/generictextedit.h
+    platform/common/gradientbase.h
     platform/common/stb_textedit.h
     vstguibase.h
     vstguidebug.cpp
@@ -177,12 +187,6 @@ set(${target}_common_sources
 
   ##########################################################################################
 set(${target}_mac_sources
-    platform/mac/carbon/hiviewframe.cpp
-    platform/mac/carbon/hiviewframe.h
-    platform/mac/carbon/hiviewoptionmenu.cpp
-    platform/mac/carbon/hiviewoptionmenu.h
-    platform/mac/carbon/hiviewtextedit.cpp
-    platform/mac/carbon/hiviewtextedit.h
     platform/mac/caviewlayer.h
     platform/mac/caviewlayer.mm
     platform/mac/cfontmac.h
@@ -205,11 +209,13 @@ set(${target}_mac_sources
     platform/mac/cocoa/nsviewframe.mm
     platform/mac/cocoa/nsviewoptionmenu.h
     platform/mac/cocoa/nsviewoptionmenu.mm
+    platform/mac/cocoa/objcclassbuilder.h
     platform/mac/macclipboard.h
     platform/mac/macclipboard.mm
     platform/mac/macfactory.h
     platform/mac/macfactory.mm
     platform/mac/macfileselector.mm
+    platform/mac/macfileselector.h
     platform/mac/macglobals.cpp
     platform/mac/macglobals.h
     platform/mac/macstring.h
@@ -228,16 +234,22 @@ set(${target}_mac_sources
 set(${target}_win32_sources
     platform/win32/direct2d/d2dbitmap.cpp
     platform/win32/direct2d/d2dbitmap.h
+    platform/win32/direct2d/d2dbitmapcache.cpp
+    platform/win32/direct2d/d2dbitmapcache.h
     platform/win32/direct2d/d2ddrawcontext.cpp
     platform/win32/direct2d/d2ddrawcontext.h
     platform/win32/direct2d/d2dfont.cpp
     platform/win32/direct2d/d2dfont.h
+    platform/win32/direct2d/d2dgradient.cpp
+    platform/win32/direct2d/d2dgradient.h
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
     platform/win32/win32bitmapbase.h
     platform/win32/win32dll.h
     platform/win32/win32datapackage.cpp
     platform/win32/win32datapackage.h
+    platform/win32/win32directcomposition.cpp
+    platform/win32/win32directcomposition.h
     platform/win32/win32dragging.cpp
     platform/win32/win32dragging.h
     platform/win32/win32factory.cpp
@@ -254,7 +266,10 @@ set(${target}_win32_sources
     platform/win32/win32support.h
     platform/win32/win32textedit.cpp
     platform/win32/win32textedit.h
+    platform/win32/win32viewlayer.cpp
+    platform/win32/win32viewlayer.h
     platform/win32/winfileselector.cpp
+    platform/win32/winfileselector.h
     platform/win32/winstring.cpp
     platform/win32/winstring.h
     platform/win32/wintimer.cpp
@@ -279,6 +294,7 @@ set(${target}_linux_sources
     platform/linux/x11dragging.cpp
     platform/linux/x11dragging.h
     platform/linux/x11fileselector.cpp
+    platform/linux/x11fileselector.h
     platform/linux/x11frame.cpp
     platform/linux/x11frame.h
     platform/linux/x11platform.cpp
@@ -311,7 +327,7 @@ endif()
 add_library(${target} STATIC ${${target}_sources})
 
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 14)
+vstgui_set_cxx_version(${target} 17)
 vstgui_source_group_by_folder(${target})
 
 if(LINUX)
@@ -322,4 +338,29 @@ if(LINUX)
     target_include_directories(${target} PRIVATE ${PANGO_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${FONTCONFIG_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES})
+endif()
+
+if(CMAKE_HOST_APPLE)
+  target_compile_options(${target} PRIVATE -Wall -Werror)
+  set(PLATFORM_LIBRARIES
+	"-framework Cocoa"
+	"-framework QuartzCore"
+	"-framework Accelerate"
+  )
+  if(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER_EQUAL 11.0)
+	set(PLATFORM_LIBRARIES
+	  ${PLATFORM_LIBRARIES}
+	  "-framework UniformTypeIdentifiers"
+	)
+  endif()
+  if(VSTGUI_ENABLE_OPENGL_SUPPORT)
+	set(PLATFORM_LIBRARIES
+	  ${PLATFORM_LIBRARIES}
+	  "-framework OpenGL"
+	)
+  endif()
+  target_link_libraries(${target}
+    PUBLIC
+      ${PLATFORM_LIBRARIES}
+  )
 endif()

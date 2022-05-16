@@ -54,8 +54,7 @@ protected:
 	void collectOpenGLViews (CViewContainer* container);
 	void setOpenGLViewsVisible (bool state);
 
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
+	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
 
 	CFrame* frame;
 	Optional<ModalViewSessionID> modalSession;

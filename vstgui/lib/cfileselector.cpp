@@ -2,6 +2,8 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "platform/iplatformfileselector.h"
+#include "platform/platformfactory.h"
 #include "cfileselector.h"
 #include "cframe.h"
 #include "cstring.h"
@@ -10,17 +12,29 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CFileExtension::CFileExtension (const UTF8String& inDescription, const UTF8String& inExtension, const UTF8String& inMimeType, int32_t inMacType, const UTF8String& inUti)
-: macType (inMacType)
+struct CFileExtension::Impl : PlatformFileExtension
+{
+};
+
+//-----------------------------------------------------------------------------
+CFileExtension::CFileExtension ()
+{
+	impl = std::make_unique<Impl> ();
+}
+
+//-----------------------------------------------------------------------------
+CFileExtension::CFileExtension (const UTF8String& inDescription, const UTF8String& inExtension,
+								const UTF8String& inMimeType, int32_t inMacType,
+								const UTF8String& inUti)
+: CFileExtension ()
 {
 	init (inDescription, inExtension, inMimeType, inUti);
 }
 
 //-----------------------------------------------------------------------------
-CFileExtension::CFileExtension (const CFileExtension& ext)
-: macType (ext.macType)
+CFileExtension::CFileExtension (const CFileExtension& ext) : CFileExtension ()
 {
-	init (ext.description, ext.extension, ext.mimeType, ext.uti);
+	*impl = *ext.impl;
 }
 
 //-----------------------------------------------------------------------------
@@ -33,26 +47,22 @@ CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
 }
 
 //-----------------------------------------------------------------------------
-CFileExtension& CFileExtension::operator=(CFileExtension&& ext) noexcept
+CFileExtension& CFileExtension::operator= (CFileExtension&& ext) noexcept
 {
-	description = std::move (ext.description);
-	extension = std::move (ext.extension);
-	mimeType = std::move (ext.mimeType);
-	uti = std::move (ext.uti);
-	macType = ext.macType;
-	ext.macType = 0;
+	std::swap (impl, ext.impl);
 	return *this;
 }
 
 //-----------------------------------------------------------------------------
-void CFileExtension::init (const UTF8String& inDescription, const UTF8String& inExtension, const UTF8String& inMimeType, const UTF8String& inUti)
+void CFileExtension::init (const UTF8String& inDescription, const UTF8String& inExtension,
+						   const UTF8String& inMimeType, const UTF8String& inUti)
 {
-	description = inDescription;
-	extension = inExtension;
-	mimeType = inMimeType;
-	uti = inUti;
+	impl->description = inDescription;
+	impl->extension = inExtension;
+	impl->mimeType = inMimeType;
+	impl->uti = inUti;
 
-	if (description == nullptr && !extension.empty ())
+	if (impl->description == nullptr && !impl->extension.empty ())
 	{
 		// TODO: query system for file type description
 		// Win32: AssocGetPerceivedType
@@ -64,20 +74,66 @@ void CFileExtension::init (const UTF8String& inDescription, const UTF8String& in
 bool CFileExtension::operator== (const CFileExtension& ext) const
 {
 	bool result = false;
-	result = extension == ext.extension;
+	result = impl->extension == ext.impl->extension;
 	if (!result)
-		result = mimeType == ext.mimeType;
+		result = impl->mimeType == ext.impl->mimeType;
 	if (!result)
-		result = uti == ext.uti;
-	if (!result && macType != 0 && ext.macType != 0)
-		result = (macType == ext.macType);
+		result = impl->uti == ext.impl->uti;
+	if (!result && impl->macType != 0 && ext.impl->macType != 0)
+		result = (impl->macType == ext.impl->macType);
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+const UTF8String& CFileExtension::getDescription () const
+{
+	return impl->description;
+}
+
+//-----------------------------------------------------------------------------
+const UTF8String& CFileExtension::getExtension () const
+{
+	return impl->extension;
+}
+
+//-----------------------------------------------------------------------------
+const UTF8String& CFileExtension::getMimeType () const
+{
+	return impl->mimeType;
+}
+
+//-----------------------------------------------------------------------------
+const UTF8String& CFileExtension::getUTI () const
+{
+	return impl->uti;
+}
+
+//-----------------------------------------------------------------------------
+int32_t CFileExtension::getMacType () const
+{
+	return impl->macType;
+}
+
+//-----------------------------------------------------------------------------
+CFileExtension::CFileExtension (const PlatformFileExtension& ext) : CFileExtension ()
+{
+	impl->description = ext.description;
+	impl->extension = ext.extension;
+	impl->mimeType = ext.mimeType;
+	impl->uti = ext.uti;
+	impl->macType = ext.macType;
+}
+
+//-----------------------------------------------------------------------------
+const PlatformFileExtension& CFileExtension::getPlatformFileExtension () const
+{
+	return *impl;
 }
 
 //-----------------------------------------------------------------------------
 const CFileExtension& CNewFileSelector::getAllFilesExtension ()
 {
-	static CFileExtension allFilesExtension ("All Files", "");
+	static CFileExtension allFilesExtension (PlatformAllFilesExtension);
 	return allFilesExtension;
 }
 
@@ -87,14 +143,19 @@ IdStringPtr CNewFileSelector::kSelectEndMessage = "CNewFileSelector Select End M
 //-----------------------------------------------------------------------------
 // CNewFileSelector Implementation
 //-----------------------------------------------------------------------------
-CNewFileSelector::CNewFileSelector (CFrame* frame)
-: frame (frame)
-, title (nullptr)
-, initialPath (nullptr)
-, defaultSaveName (nullptr)
-, defaultExtension (nullptr)
-, allowMultiFileSelection (false)
+struct CNewFileSelector::Impl : PlatformFileSelectorConfig
 {
+	PlatformFileSelectorPtr platformFileSelector;
+	CFrame* frame {nullptr};
+	std::vector<UTF8String> result;
+};
+
+//-----------------------------------------------------------------------------
+CNewFileSelector::CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector, CFrame* parent)
+{
+	impl = std::make_unique<Impl> ();
+	impl->platformFileSelector = std::move (platformFileSelector);
+	impl->frame = parent;
 }
 
 //-----------------------------------------------------------------------------
@@ -110,133 +171,147 @@ bool CNewFileSelector::run (CBaseObject* delegate)
 		#endif
 		return false;
 	}
-	if (frame)
-		frame->onStartLocalEventLoop ();
-	return runInternal (delegate);
+	if (impl->frame)
+		impl->frame->onStartLocalEventLoop ();
+
+	impl->doneCallback = [this, del = shared (delegate)] (std::vector<UTF8String>&& files) {
+		impl->result = std::move (files);
+		del->notify (this, CNewFileSelector::kSelectEndMessage);
+	};
+
+	setBit (impl->flags, PlatformFileSelectorFlags::RunModal, false);
+	return impl->platformFileSelector->run (*impl);
+}
+
+//-----------------------------------------------------------------------------
+bool CNewFileSelector::run (CallbackFunc&& callback)
+{
+	if (impl->frame)
+		impl->frame->onStartLocalEventLoop ();
+
+	impl->doneCallback = [Self = shared (this),
+						  cb = std::move (callback)] (std::vector<UTF8String>&& files) {
+		Self->impl->result = std::move (files);
+		cb (Self);
+	};
+
+	setBit (impl->flags, PlatformFileSelectorFlags::RunModal, false);
+	return impl->platformFileSelector->run (*impl);
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::cancel ()
 {
-	cancelInternal ();
+	impl->platformFileSelector->cancel ();
 }
 
 //-----------------------------------------------------------------------------
 bool CNewFileSelector::runModal ()
 {
-	if (frame)
-		frame->onStartLocalEventLoop ();
-	return runModalInternal ();
-}
+	if (impl->frame)
+		impl->frame->onStartLocalEventLoop ();
+	setBit (impl->flags, PlatformFileSelectorFlags::RunModal, true);
+	impl->doneCallback = [&] (std::vector<UTF8String>&& files) {
+		impl->result = std::move (files);
+	};
 
-//-----------------------------------------------------------------------------
-class CNewFileSelectorCallback : public CBaseObject
-{
-public:
-	CNewFileSelectorCallback (CNewFileSelector::CallbackFunc&& callback) : callbackFunc (std::move (callback)) {}
-	~CNewFileSelectorCallback () noexcept override = default;
-private:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
-	{
-		if (message == CNewFileSelector::kSelectEndMessage)
-		{
-			callbackFunc (dynamic_cast<CNewFileSelector*> (sender));
-			return kMessageNotified;
-		}
-		return kMessageUnknown;
-	}
-	
-	CNewFileSelector::CallbackFunc callbackFunc;
-};
-
-//-----------------------------------------------------------------------------
-bool CNewFileSelector::run (CallbackFunc&& callback)
-{
-	if (frame)
-		frame->onStartLocalEventLoop ();
-	auto fsCallback = makeOwned<CNewFileSelectorCallback> (std::move (callback));
-	return runInternal (fsCallback);
+	return impl->platformFileSelector->run (*impl);
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setTitle (const UTF8String& inTitle)
 {
-	title = inTitle;
+	impl->title = inTitle;
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setInitialDirectory (const UTF8String& path)
 {
-	initialPath = path;
+	impl->initialPath = path;
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setDefaultSaveName (const UTF8String& name)
 {
-	defaultSaveName = name;
+	impl->defaultSaveName = name;
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setAllowMultiFileSelection (bool state)
 {
-	allowMultiFileSelection = state;
+	setBit (impl->flags, PlatformFileSelectorFlags::MultiFileSelection, state);
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setDefaultExtension (const CFileExtension& extension)
 {
-	if (defaultExtension)
+	if (impl->defaultExtension != PlatformNoFileExtension)
 	{
-		#if DEBUG
-		DebugPrint ("VSTGUI Warning: It's not allowed to set a default extension twice on a CFileSelector instance\n");
-		#endif
+#if DEBUG
+		DebugPrint ("VSTGUI Warning: It's not allowed to set a default extension twice on a "
+					"CFileSelector instance\n");
+#endif
 		return;
 	}
 
-	bool found = false;
-	FileExtensionList::const_iterator it = extensions.begin ();
-	while (it != extensions.end ())
-	{
-		if ((*it) == extension)
-		{
-			defaultExtension = &(*it);
-			found = true;
-			break;
-		}
-		++it;
-	}
-	if (!found)
-	{
+	auto it = std::find (impl->extensions.begin (), impl->extensions.end (),
+						 extension.getPlatformFileExtension ());
+	if (it == impl->extensions.end ())
 		addFileExtension (extension);
-		setDefaultExtension (extension);
-	}
+	impl->defaultExtension = extension.getPlatformFileExtension ();
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::addFileExtension (const CFileExtension& extension)
 {
-	extensions.emplace_back (extension);
+	impl->extensions.emplace_back (extension.getPlatformFileExtension ());
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::addFileExtension (CFileExtension&& extension)
 {
-	extensions.emplace_back (std::move (extension));
+	impl->extensions.emplace_back (std::move (extension.getPlatformFileExtension ()));
 }
 
 //-----------------------------------------------------------------------------
 uint32_t CNewFileSelector::getNumSelectedFiles () const
 {
-	return static_cast<uint32_t> (result.size ());
+	return static_cast<uint32_t> (impl->result.size ());
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
 {
-	if (index < result.size ())
-		return result[index];
+	if (index < impl->result.size ())
+		return impl->result[index];
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
+{
+	PlatformFileSelectorStyle platformStyle;
+	switch (style)
+	{
+		case Style::kSelectFile:
+			platformStyle = PlatformFileSelectorStyle::SelectFile;
+			break;
+		case Style::kSelectDirectory:
+			platformStyle = PlatformFileSelectorStyle::SelectDirectory;
+			break;
+		case Style::kSelectSaveFile:
+			platformStyle = PlatformFileSelectorStyle::SelectSaveFile;
+			break;
+		default:
+			vstgui_assert (false);
+			return nullptr;
+	}
+	if (auto platformSelector = getPlatformFactory ().createFileSelector (
+			platformStyle, parent ? parent->getPlatformFrame () : nullptr))
+	{
+		return new CNewFileSelector (std::move (platformSelector), parent);
+	}
 	return nullptr;
 }
 
 } // VSTGUI
-

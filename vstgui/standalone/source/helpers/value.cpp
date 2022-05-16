@@ -83,7 +83,7 @@ public:
 		sstream.precision (stringPrecision);
 		sstream >> value;
 		value = plainToNormalized (value);
-		if (value < 0. || value > 1.)
+		if (sstream.fail () || value < 0. || value > 1.)
 			return IValue::InvalidValue;
 		return value;
 	}
@@ -313,7 +313,7 @@ public:
 
 	const IValueConverter& getConverter () const override;
 
-	void setNumSteps (StepType numSteps) override;
+	bool setNumSteps (StepType numSteps) override;
 
 private:
 	StepType steps;
@@ -424,6 +424,7 @@ StepValue::StepValue (const UTF8String& id, StepType initialSteps, Type initialV
                       const ValueConverterPtr& stringConverter)
 : Value (id, initialValue, stringConverter), steps (initialSteps - 1)
 {
+	vstgui_assert (initialSteps > 0);
 }
 
 //------------------------------------------------------------------------
@@ -466,7 +467,7 @@ IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 	std::istringstream sstream (string.getString ());
 	sstream.imbue (std::locale::classic ());
 	sstream >> v;
-	if (v > steps)
+	if (sstream.fail () || v > steps)
 		return IValue::InvalidValue;
 	return stepToValue (v);
 }
@@ -492,10 +493,16 @@ const IValueConverter& StepValue::getConverter () const
 }
 
 //------------------------------------------------------------------------
-void StepValue::setNumSteps (StepType numSteps)
+bool StepValue::setNumSteps (StepType numSteps)
 {
+	if (numSteps == 0)
+	{
+		vstgui_assert (numSteps > 0, "numSteps must be greater than zero");
+		return false;
+	}
 	steps = numSteps - 1;
 	dispatchStateChange ();
+	return true;
 }
 
 //------------------------------------------------------------------------
@@ -508,6 +515,8 @@ StringListValue::StringListValue (const UTF8String& id, StepType initialSteps, T
 //------------------------------------------------------------------------
 bool StringListValue::updateStringList (const StringList& newStrings)
 {
+	if (newStrings.empty ())
+		return false;
 	setValueConverter (std::make_shared<Detail::StringListValueConverter> (newStrings));
 	setNumSteps (static_cast<IStepValue::StepType> (newStrings.size ()));
 	return true;
@@ -538,11 +547,14 @@ ValuePtr make (const UTF8String& id, IValue::Type initialValue,
 }
 
 //------------------------------------------------------------------------
-ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType initialSteps,
-                        IValue::Type initialValue, const ValueConverterPtr& stringConverter)
+ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType numSteps,
+						IValue::Type initialValue, const ValueConverterPtr& stringConverter)
 {
 	vstgui_assert (id.empty () == false);
-	return std::make_shared<Detail::StepValue> (id, initialSteps, initialValue, stringConverter);
+	vstgui_assert (numSteps > 0, "numSteps must be greater than 0");
+	if (numSteps == 0)
+		return {};
+	return std::make_shared<Detail::StepValue> (id, numSteps, initialValue, stringConverter);
 }
 
 //------------------------------------------------------------------------

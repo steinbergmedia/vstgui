@@ -25,6 +25,7 @@ struct CInvalidRectList
 
 	void clear () { list.clear (); }
 	const RectList& data () const { return list; }
+	bool empty () const { return list.empty (); }
 
 private:
 	RectList list;

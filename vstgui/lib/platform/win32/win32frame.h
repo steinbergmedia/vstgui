@@ -9,8 +9,10 @@
 #if WINDOWS
 
 #include "../../cframe.h"
+#include "win32directcomposition.h"
 
 namespace VSTGUI {
+class Win32ViewLayer;
 
 //-----------------------------------------------------------------------------
 class Win32Frame final : public IPlatformFrame, public IWin32PlatformFrame
@@ -27,12 +29,14 @@ public:
 	
 	CCursorType getLastSetCursor () const { return lastSetCursor; }
 
+
 	// IPlatformFrame
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;
 	bool getSize (CRect& size) const override;
 	bool getCurrentMousePosition (CPoint& mousePosition) const override;
 	bool getCurrentMouseButtons (CButtonState& buttons) const override;
+	bool getCurrentModifiers (Modifiers& modifiers) const override;
 	bool setMouseCursor (CCursorType type) override;
 	bool invalidRect (const CRect& rect) override;
 	bool scrollRect (const CRect& src, const CPoint& distance) override;
@@ -44,7 +48,7 @@ public:
 #if VSTGUI_OPENGL_SUPPORT
 	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
-	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return nullptr; } // not yet supported
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 #endif
@@ -52,14 +56,19 @@ public:
 
 	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
 	void onFrameClosed () override;
-	Optional<UTF8String> convertCurrentKeyEventToText () override { return {}; }
+	Optional<UTF8String> convertCurrentKeyEventToText () override;
 	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override;
 
 	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------
 protected:
+	using ViewLayers = std::vector<Win32ViewLayer*>;
+
 	void initTooltip ();
 	void paint (HWND hwnd);
+
+	template<typename Proc>
+	void iterateRegion (HRGN rgn, Proc func);
 
 	static void initWindowClass ();
 	static void destroyWindowClass ();
@@ -74,6 +83,9 @@ protected:
 	SharedPointer<COffscreenContext> backBuffer;
 	CDrawContext* deviceContext;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
+	DirectComposition::VisualPtr directCompositionVisual;
+	Optional<MSG> currentEvent;
+	ViewLayers viewLayers;
 
 	bool inPaint;
 	bool mouseInside;

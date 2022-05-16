@@ -12,6 +12,7 @@
 #include "idatapackage.h"
 #include "iviewlistener.h"
 #include "malloc.h"
+#include "events.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
 #include "platform/iplatformframe.h"
@@ -146,8 +147,6 @@ std::unique_ptr<IdleViewUpdater> IdleViewUpdater::gInstance;
 
 } // CViewInternal
 
-uint32_t CView::idleRate = 30;
-
 /// @endcond
 
 UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";
@@ -178,12 +177,17 @@ struct CView::Impl
 {
 	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
-	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
-	
+	using ViewEventListenerDispatcher = DispatchList<IViewEventListener*>;
+
 	ViewAttributes attributes;
 	std::unique_ptr<ViewListenerDispatcher> viewListeners;
+	std::unique_ptr<ViewEventListenerDispatcher> viewEventListeners;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
+	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
 	std::unique_ptr<ViewMouseListenerDispatcher> viewMouseListener;
-	
+#include "private/enabledeprecatedmessage.h"
+#endif
 	CRect size;
 	int32_t viewFlags {0};
 	int32_t autosizeFlags {kAutosizeNone};
@@ -236,10 +240,12 @@ void CView::beforeDelete ()
 		});
 		vstgui_assert (pImpl->viewListeners->empty (), "View listeners not empty");
 	}
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (pImpl->viewMouseListener)
 	{
 		vstgui_assert (pImpl->viewMouseListener->empty (), "View mouse listeners not empty");
 	}
+#endif
 
 	vstgui_assert (isAttached () == false, "View is still attached");
 
@@ -264,7 +270,6 @@ void CView::beforeDelete ()
 	CViewInternal::gNbCView--;
 	CViewInternal::gViewList.remove (this);
 #endif
-	CBaseObject::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------
@@ -353,11 +358,18 @@ void CView::setMouseEnabled (bool state)
 		{
 			setDirty (true);
 		}
+		if (pImpl->viewListeners)
+			pImpl->viewListeners->forEach (
+			    [&] (IViewListener* listener) { listener->viewOnMouseEnabled (this, state); });
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		if (pImpl->viewMouseListener)
 		{
+#include "private/disabledeprecatedmessage.h"
 			pImpl->viewMouseListener->forEach (
 			    [&] (IViewMouseListener* listener) { listener->viewOnMouseEnabled (this, state); });
+#include "private/enabledeprecatedmessage.h"
 		}
+#endif
 	}
 }
 
@@ -463,6 +475,257 @@ bool CView::removed (CView* parent)
 	return true;
 }
 
+//------------------------------------------------------------------------
+void CView::onMouseDownEvent (MouseDownEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	switch (onMouseDown (event.mousePosition, buttonState))
+	{
+		case kMouseEventHandled:
+		{
+			event.consumed = true;
+			break;
+		}
+		case kMouseDownEventHandledButDontNeedMovedOrUpEvents:
+		{
+			event.consumed = true;
+			event.ignoreFollowUpMoveAndUpEvents (true);
+			break;
+		}
+		case kMouseEventNotHandled: [[fallthrough]];
+		case kMouseEventNotImplemented: [[fallthrough]];
+		case kMouseMoveEventHandledButDontNeedMoreEvents: break;
+	}
+}
+
+//------------------------------------------------------------------------
+void CView::onMouseMoveEvent (MouseMoveEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	switch (onMouseMoved (event.mousePosition, buttonState))
+	{
+		case kMouseEventHandled:
+		{
+			event.consumed = true;
+			break;
+		}
+		case kMouseMoveEventHandledButDontNeedMoreEvents:
+		{
+			event.consumed = true;
+			event.ignoreFollowUpMoveAndUpEvents (true);
+			break;
+		}
+		case kMouseEventNotHandled: [[fallthrough]];
+		case kMouseEventNotImplemented: [[fallthrough]];
+		case kMouseDownEventHandledButDontNeedMovedOrUpEvents: break;
+	}
+}
+
+//------------------------------------------------------------------------
+void CView::onMouseUpEvent (MouseUpEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	switch (onMouseUp (event.mousePosition, buttonState))
+	{
+		case kMouseEventHandled:
+		{
+			event.consumed = true;
+			break;
+		}
+		case kMouseDownEventHandledButDontNeedMovedOrUpEvents: [[fallthrough]];
+		case kMouseEventNotHandled: [[fallthrough]];
+		case kMouseEventNotImplemented: [[fallthrough]];
+		case kMouseMoveEventHandledButDontNeedMoreEvents: break;
+	}
+}
+
+//------------------------------------------------------------------------
+void CView::onMouseCancelEvent (MouseCancelEvent& event)
+{
+	switch (onMouseCancel ())
+	{
+		case kMouseEventHandled:
+		{
+			event.consumed = true;
+			break;
+		}
+		case kMouseDownEventHandledButDontNeedMovedOrUpEvents: [[fallthrough]];
+		case kMouseEventNotHandled: [[fallthrough]];
+		case kMouseEventNotImplemented: [[fallthrough]];
+		case kMouseMoveEventHandledButDontNeedMoreEvents: break;
+	}
+}
+
+//------------------------------------------------------------------------
+void CView::onMouseEnterEvent (MouseEnterEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	switch (onMouseEntered (event.mousePosition, buttonState))
+	{
+		case kMouseEventHandled:
+		{
+			event.consumed = true;
+			break;
+		}
+		case kMouseDownEventHandledButDontNeedMovedOrUpEvents: [[fallthrough]];
+		case kMouseEventNotHandled: [[fallthrough]];
+		case kMouseEventNotImplemented: [[fallthrough]];
+		case kMouseMoveEventHandledButDontNeedMoreEvents: break;
+	}
+}
+
+//------------------------------------------------------------------------
+void CView::onMouseExitEvent (MouseExitEvent& event)
+{
+	auto buttonState = buttonStateFromMouseEvent (event);
+	switch (onMouseExited (event.mousePosition, buttonState))
+	{
+		case kMouseEventHandled:
+		{
+			event.consumed = true;
+			break;
+		}
+		case kMouseDownEventHandledButDontNeedMovedOrUpEvents: [[fallthrough]];
+		case kMouseEventNotHandled: [[fallthrough]];
+		case kMouseEventNotImplemented: [[fallthrough]];
+		case kMouseMoveEventHandledButDontNeedMoreEvents: break;
+	}
+}
+
+//------------------------------------------------------------------------
+void CView::onMouseWheelEvent (MouseWheelEvent& event)
+{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
+	auto buttons = buttonStateFromEventModifiers (event.modifiers);
+	if (event.flags & MouseWheelEvent::DirectionInvertedFromDevice)
+		buttons |= kMouseWheelInverted;
+	if (event.deltaX != 0.)
+	{
+		if (onWheel (event.mousePosition, kMouseWheelAxisX, static_cast<float> (event.deltaX), buttons))
+			event.consumed = true;
+	}
+	if (event.deltaY != 0.)
+	{
+		if (onWheel (event.mousePosition, kMouseWheelAxisY, static_cast<float> (event.deltaY), buttons))
+			event.consumed = true;
+	}
+#include "private/enabledeprecatedmessage.h"
+#endif
+}
+
+//------------------------------------------------------------------------
+void CView::onKeyboardEvent (KeyboardEvent& event)
+{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
+	auto keyCode = toVstKeyCode (event);
+
+	switch (event.type)
+	{
+		case EventType::KeyDown:
+		{
+			if (onKeyDown (keyCode) == 1)
+				event.consumed = true;
+			break;
+		}
+		case EventType::KeyUp:
+		{
+			if (onKeyUp (keyCode) == 1)
+				event.consumed = true;
+			break;
+		}
+		default:
+		{
+			vstgui_assert (false);
+			break;
+		}
+	}
+#include "private/enabledeprecatedmessage.h"
+#endif
+}
+
+//------------------------------------------------------------------------
+void CView::onZoomGestureEvent (ZoomGestureEvent& event)
+{
+}
+
+//------------------------------------------------------------------------
+void CView::dispatchEvent (Event& event)
+{
+	if (pImpl->viewEventListeners)
+	{
+		pImpl->viewEventListeners->forEachReverse (
+			[&] (IViewEventListener* listener) {
+				listener->viewOnEvent (this, event);
+				return event.consumed;
+			},
+			[] (bool consumed) { return consumed; });
+		if (event.consumed)
+			return;
+	}
+
+	switch (event.type)
+	{
+		case EventType::MouseDown:
+		{
+			auto& mouseDownEvent = castMouseDownEvent (event);
+			onMouseDownEvent (mouseDownEvent);
+			break;
+		}
+		case EventType::MouseMove:
+		{
+			auto& mouseMoveEvent = castMouseMoveEvent (event);
+			onMouseMoveEvent (mouseMoveEvent);
+			break;
+		}
+		case EventType::MouseUp:
+		{
+			auto& mouseUpEvent = castMouseUpEvent (event);
+			onMouseUpEvent (mouseUpEvent);
+			break;
+		}
+		case EventType::MouseCancel:
+		{
+			auto& mouseCancelEvent = castMouseCancelEvent (event);
+			onMouseCancelEvent (mouseCancelEvent);
+			break;
+		}
+		case EventType::MouseEnter:
+		{
+			auto& mouseEnterEvent = castMouseEnterEvent (event);
+			onMouseEnterEvent (mouseEnterEvent);
+			break;
+		}
+		case EventType::MouseExit:
+		{
+			auto& mouseExitEvent = castMouseExitEvent (event);
+			onMouseExitEvent (mouseExitEvent);
+			break;
+		}
+		case EventType::MouseWheel:
+		{
+			auto& wheelEvent = castMouseWheelEvent (event);
+			onMouseWheelEvent (wheelEvent);
+			break;
+		}
+		case EventType::ZoomGesture:
+		{
+			auto& zoomGesture = castZoomGestureEvent (event);
+			onZoomGestureEvent (zoomGesture);
+			break;
+		}
+		case EventType::KeyUp: [[fallthrough]];
+		case EventType::KeyDown:
+		{
+			auto& keyEvent = castKeyboardEvent (event);
+			onKeyboardEvent (keyEvent);
+			break;
+		}
+		case EventType::Unknown: vstgui_assert (false); break;
+	}
+}
+
 //-----------------------------------------------------------------------------
 /**
  * @param where mouse location of mouse down
@@ -502,6 +765,26 @@ CMouseEventResult CView::onMouseCancel ()
 	return kMouseEventNotImplemented;
 }
 
+//------------------------------------------------------------------------
+bool CView::hitTest (const CPoint& where, const Event& event)
+{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
+	auto mouseEvent = asMouseEvent (event);
+	return hitTest (where, mouseEvent ? buttonStateFromMouseEvent (*mouseEvent) : -1);
+#include "private/enabledeprecatedmessage.h"
+#else
+	if (auto path = getHitTestPath ())
+	{
+		CPoint p (where);
+		p.offset (-getViewSize ().left, -getViewSize ().top);
+		return path->hitTest (p);
+	}
+	return getMouseableArea ().pointInside (where);
+#endif
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 /**
  * @param where location
@@ -518,6 +801,7 @@ bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
 	}
 	return getMouseableArea ().pointInside (where);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 /**
@@ -598,6 +882,7 @@ void CView::draw (CDrawContext* pContext)
 	setDirty (false);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 /**
  * @param where location
@@ -631,7 +916,6 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
 	return -1;
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------
 /**
  * a drag can only be started from within onMouseDown
@@ -1007,18 +1291,23 @@ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
 	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
 	if (auto frame = getFrame ())
 	{
+#include "private/disabledeprecatedmessage.h"
 		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
+#include "private/enabledeprecatedmessage.h"
 	}
 }
 #endif
 
 //-----------------------------------------------------------------------------
-void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc)
+void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
+						  Animation::ITimingFunction* timingFunction,
+						  const Animation::DoneFunction& doneFunc, bool callDoneOnCancel)
 {
 	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
 	if (auto frame = getFrame ())
 	{
-		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc);
+		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc,
+											 callDoneOnCancel);
 	}
 }
 
@@ -1060,8 +1349,10 @@ void CView::dumpInfo ()
 void CView::registerViewListener (IViewListener* listener)
 {
 	if (!pImpl->viewListeners)
+	{
 		pImpl->viewListeners =
 		    std::unique_ptr<Impl::ViewListenerDispatcher> (new Impl::ViewListenerDispatcher);
+	}
 	pImpl->viewListeners->add (listener);
 }
 
@@ -1073,6 +1364,27 @@ void CView::unregisterViewListener (IViewListener* listener)
 	pImpl->viewListeners->remove (listener);
 }
 
+//-----------------------------------------------------------------------------
+void CView::registerViewEventListener (IViewEventListener* listener)
+{
+	if (!pImpl->viewEventListeners)
+	{
+		pImpl->viewEventListeners = std::unique_ptr<Impl::ViewEventListenerDispatcher> (
+			new Impl::ViewEventListenerDispatcher);
+	}
+	pImpl->viewEventListeners->add (listener);
+}
+
+//-----------------------------------------------------------------------------
+void CView::unregisterViewEventListener (IViewEventListener* listener)
+{
+	if (!pImpl->viewEventListeners)
+		return;
+	pImpl->viewEventListeners->remove (listener);
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "private/disabledeprecatedmessage.h"
 //------------------------------------------------------------------------
 void CView::registerViewMouseListener (IViewMouseListener* listener)
 {
@@ -1089,6 +1401,7 @@ void CView::unregisterViewMouseListener (IViewMouseListener* listener)
 		return;
 	pImpl->viewMouseListener->remove (listener);
 }
+#include "private/enabledeprecatedmessage.h"
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons)
@@ -1096,6 +1409,7 @@ CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, 
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (!pImpl->viewMouseListener)
 		return result;
+#include "private/disabledeprecatedmessage.h"
 	pImpl->viewMouseListener->forEachReverse (
 	    [&] (IViewMouseListener* l) {
 		    switch (type)
@@ -1115,6 +1429,7 @@ CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, 
 		    }
 		    return false;
 	    });
+#include "private/enabledeprecatedmessage.h"
 	return result;
 }
 
@@ -1123,13 +1438,16 @@ void CView::callMouseListenerEnteredExited (bool mouseEntered)
 {
 	if (!pImpl->viewMouseListener)
 		return;
+#include "private/disabledeprecatedmessage.h"
 	pImpl->viewMouseListener->forEachReverse ([&] (IViewMouseListener* l) {
 		if (mouseEntered)
 			l->viewOnMouseEntered (this);
 		else
 			l->viewOnMouseExited (this);
 	});
+#include "private/enabledeprecatedmessage.h"
 }
+#endif
 
 //-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CView::getDropTarget ()

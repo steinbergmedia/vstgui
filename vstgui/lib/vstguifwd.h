@@ -8,6 +8,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <map>
 
 namespace VSTGUI {
 
@@ -136,8 +137,12 @@ struct ModalViewSession;
 struct CListControlRowDesc;
 struct CNinePartTiledDescription;
 
+using GradientColorStop = std::pair<double, CColor>;
+using GradientColorStopMap = std::multimap<double, CColor>;
+
 // interfaces
 class IViewListener;
+class IViewEventListener;
 class IViewContainerListener;
 class IViewMouseListener;
 class IDataPackage;
@@ -244,6 +249,29 @@ class CVuMeter;
 class CXYPad;
 class CListControl;
 
+// events
+struct Event;
+struct ModifierEvent;
+struct MousePositionEvent;
+struct MouseEvent;
+struct MouseDownUpMoveEvent;
+struct MouseDownEvent;
+struct MouseMoveEvent;
+struct MouseUpEvent;
+struct MouseCancelEvent;
+struct MouseEnterEvent;
+struct MouseExitEvent;
+struct GestureEvent;
+struct MouseWheelEvent;
+struct ZoomGestureEvent;
+struct KeyboardEvent;
+struct Modifiers;
+enum class EventType : uint32_t;
+enum class VirtualKey : uint32_t;
+enum class ModifierKey : uint32_t;
+
+const Event& noEvent ();
+
 // animation
 namespace Animation {
 class IAnimationTarget;
@@ -282,14 +310,24 @@ class IPlatformFactory;
 class IPlatformFrame;
 class IPlatformBitmap;
 class IPlatformFont;
+class IPlatformGradient;
+class IPlatformGraphicsPath;
+class IPlatformGraphicsPathFactory;
 class IPlatformString;
 class IPlatformTimer;
 class IPlatformResourceInputStream;
 class IPlatformFrameConfig;
 class IPlatformFrameCallback;
 class IPlatformTimerCallback;
+class IPlatformFileSelector;
+
+struct PlatformFileExtension;
+struct PlatformFileSelectorConfig;
 
 enum class PlatformType : int32_t;
+enum class PlatformGraphicsPathFillMode : int32_t;
+enum class PlatformFileSelectorStyle : uint32_t;
+enum class PlatformFileSelectorFlags : uint32_t;
 
 using PlatformFramePtr = SharedPointer<IPlatformFrame>;
 using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
@@ -298,6 +336,9 @@ using PlatformStringPtr = SharedPointer<IPlatformString>;
 using PlatformTimerPtr = SharedPointer<IPlatformTimer>;
 using PlatformResourceInputStreamPtr = std::unique_ptr<IPlatformResourceInputStream>;
 using PlatformFactoryPtr = std::unique_ptr<IPlatformFactory>;
-
+using PlatformGradientPtr = std::unique_ptr<IPlatformGradient>;
+using PlatformGraphicsPathPtr = std::unique_ptr<IPlatformGraphicsPath>;
+using PlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
+using PlatformFileSelectorPtr = std::shared_ptr<IPlatformFileSelector>;
 
 } // VSTGUI

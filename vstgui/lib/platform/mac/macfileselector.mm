@@ -1,20 +1,17 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 /// @cond ignore
 
-#import "../../cfileselector.h"
 #import "../../cstring.h"
-#import "../../cframe.h"
-
-// the cocoa fileselector is also used for carbon
-#import <Cocoa/Cocoa.h>
 #import "cocoa/cocoahelpers.h"
+#import "macfileselector.h"
 #import "macstring.h"
 
-#if MAC_COCOA
-#import "cocoa/nsviewframe.h"
+#if defined(MAC_OS_VERSION_11_0) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_VERSION_11_0)
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#define VSTGUI_USE_OBJC_UTTYPE
 #endif
 
 namespace VSTGUI {
@@ -22,31 +19,35 @@ namespace VSTGUI {
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class CocoaFileSelector : public CNewFileSelector
+class CocoaFileSelector
+: public IPlatformFileSelector
+, public std::enable_shared_from_this<CocoaFileSelector>
 {
 public:
-	CocoaFileSelector (CFrame* frame, Style style);
+	CocoaFileSelector (PlatformFileSelectorStyle style, NSViewFrame* frame);
 	~CocoaFileSelector () override = default;
 
+	bool run (const PlatformFileSelectorConfig& config) override;
+	bool cancel () override;
+
 	void openPanelDidEnd (NSSavePanel* panel, NSInteger resultCode);
+
 protected:
 	static void initClass ();
-	
-	bool runInternal (CBaseObject* delegate) override;
-	bool runModalInternal () override;
-	void cancelInternal () override;
 
-	void setupInitalDir ();
+	void setupInitalDir (const PlatformFileSelectorConfig& config);
 
-	Style style;
-	SharedPointer<CBaseObject> delegate;
-	NSSavePanel* savePanel;
+	PlatformFileSelectorStyle style;
+	NSViewFrame* frame {nullptr};
+	NSSavePanel* savePanel {nullptr};
+	PlatformFileSelectorConfig::CallbackFunc callback;
 };
 
 //-----------------------------------------------------------------------------
-CNewFileSelector* CNewFileSelector::create (CFrame* frame, Style style)
+PlatformFileSelectorPtr createCocoaFileSelector (PlatformFileSelectorStyle style,
+												 NSViewFrame* frame)
 {
-	return new CocoaFileSelector (frame, style);
+	return std::make_shared<CocoaFileSelector> (style, frame);
 }
 
 //-----------------------------------------------------------------------------
@@ -55,21 +56,19 @@ void CocoaFileSelector::initClass ()
 }
 
 //-----------------------------------------------------------------------------
-CocoaFileSelector::CocoaFileSelector (CFrame* frame, Style style)
-: CNewFileSelector (frame)
-, style (style)
-, delegate (nullptr)
+CocoaFileSelector::CocoaFileSelector (PlatformFileSelectorStyle style, NSViewFrame* frame)
+: style (style), frame (frame)
 {
-	savePanel = nil;
 	initClass ();
 }
 
 //-----------------------------------------------------------------------------
 void CocoaFileSelector::openPanelDidEnd (NSSavePanel* panel, NSInteger res)
 {
+	std::vector<UTF8String> result;
 	if (res == NSModalResponseOK)
 	{
-		if (style == kSelectSaveFile)
+		if (style == PlatformFileSelectorStyle::SelectSaveFile)
 		{
 			NSURL* url = [panel URL];
 			const char* utf8Path = url ? [[url path] UTF8String] : nullptr;
@@ -95,76 +94,95 @@ void CocoaFileSelector::openPanelDidEnd (NSSavePanel* panel, NSInteger res)
 			}
 		}
 	}
-	if (delegate)
-		delegate->notify (this, CNewFileSelector::kSelectEndMessage);
+	if (callback)
+		callback (std::move (result));
 }
 
 //-----------------------------------------------------------------------------
-void CocoaFileSelector::cancelInternal ()
+bool CocoaFileSelector::cancel ()
 {
 	if (savePanel)
+	{
 		[savePanel cancel:nil];
+		return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
-bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
+bool CocoaFileSelector::run (const PlatformFileSelectorConfig& config)
 {
-	CBaseObjectGuard lifeGuard (this);
-
 	NSWindow* parentWindow = nil;
-	if (_delegate)
-	{
-	#if MAC_COCOA
-		if (frame && frame->getPlatformFrame () &&
-		    frame->getPlatformFrame ()->getPlatformType () == PlatformType::kNSView)
-		{
-			auto nsViewFrame = static_cast<NSViewFrame*> (frame->getPlatformFrame ());
-			parentWindow = [(nsViewFrame->getNSView ())window];
-		}
-	#endif
-		delegate = _delegate;
-	}
+
+	if (!hasBit (config.flags, PlatformFileSelectorFlags::RunModal) && frame)
+		parentWindow = [(frame->getNSView ()) window];
+
+	callback = config.doneCallback;
+
 	NSOpenPanel* openPanel = nil;
 	NSMutableArray* typesArray = nil;
-	if (extensions.empty () == false)
+	if (config.extensions.empty () == false)
 	{
 		typesArray = [[[NSMutableArray alloc] init] autorelease];
-		for (auto& ext : extensions)
+		for (auto& ext : config.extensions)
 		{
+#ifdef VSTGUI_USE_OBJC_UTTYPE
+			UTType* uti = nullptr;
+			if (ext.uti.empty () == false)
+				uti = [UTType typeWithIdentifier:fromUTF8String<NSString*> (ext.uti)];
+			if (uti == nullptr && ext.mimeType.empty() == false)
+				uti = [UTType typeWithMIMEType:fromUTF8String<NSString*> (ext.mimeType)];
+			if (uti == nullptr && ext.extension.empty () == false)
+				uti = [UTType typeWithFilenameExtension:fromUTF8String<NSString*> (ext.extension)];
+			if (uti)
+				[typesArray addObject:uti];
+#else
 			NSString* uti = nullptr;
-			if (ext.getUTI ().empty () == false)
-				uti = [fromUTF8String<NSString*> (ext.getUTI ()) retain];
-			if (uti == nullptr && ext.getMimeType ().empty () == false)
-				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, fromUTF8String<CFStringRef> (ext.getMimeType ()), kUTTypeData);
-			if (uti == nullptr && ext.getMacType ())
+			if (ext.uti.empty () == false)
+				uti = [fromUTF8String<NSString*> (ext.uti) retain];
+			if (uti == nullptr && ext.mimeType.empty () == false)
+				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (
+					kUTTagClassMIMEType, fromUTF8String<CFStringRef> (ext.mimeType), kUTTypeData);
+			if (uti == nullptr && ext.macType)
 			{
-				NSString* osType = (NSString*)UTCreateStringForOSType (static_cast<OSType> (ext.getMacType ()));
+				NSString* osType =
+					(NSString*)UTCreateStringForOSType (static_cast<OSType> (ext.macType));
 				if (osType)
 				{
-					uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassOSType, (CFStringRef)osType, kUTTypeData);
+					uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (
+						kUTTagClassOSType, (CFStringRef)osType, kUTTypeData);
 					[osType release];
 				}
 			}
-			if (uti == nullptr && ext.getExtension ().empty () == false)
-				uti = [fromUTF8String<NSString*> (ext.getExtension ()) retain];
+			if (uti == nullptr && ext.extension.empty () == false)
+				uti = [fromUTF8String<NSString*> (ext.extension) retain];
 			if (uti)
 			{
 				[typesArray addObject:uti];
 				[uti release];
 			}
+#endif
 		}
 	}
-	if (style == kSelectSaveFile)
+	if (style == PlatformFileSelectorStyle::SelectSaveFile)
 	{
 		savePanel = [NSSavePanel savePanel];
 		if (typesArray)
+		{
+#ifdef VSTGUI_USE_OBJC_UTTYPE
+			[savePanel setAllowedContentTypes:typesArray];
+#else
 			[savePanel setAllowedFileTypes:typesArray];
+#endif
+		}
 	}
 	else
 	{
 		savePanel = openPanel = [NSOpenPanel openPanel];
-		if (style == kSelectFile)
+		if (style == PlatformFileSelectorStyle::SelectFile)
 		{
+			bool allowMultiFileSelection =
+				hasBit (config.flags, PlatformFileSelectorFlags::MultiFileSelection);
 			[openPanel setAllowsMultipleSelection:allowMultiFileSelection ? YES : NO];
 		}
 		else
@@ -172,42 +190,47 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 			[openPanel setCanChooseDirectories:YES];
 		}
 	}
-	if (!title.empty () && savePanel)
+	if (!config.title.empty () && savePanel)
 	{
+#if 0 // Apple broke this again with macOS 12. Disable this now and always use the message to
+	  // display the title.
 		if (@available (macOS 11, *))
 		{
 			if (parentWindow)
-				[savePanel setMessage:fromUTF8String<NSString*> (title)];
+				[savePanel setMessage:fromUTF8String<NSString*> (config.title)];
 			else
-				[savePanel setTitle:fromUTF8String<NSString*> (title)];
+				[savePanel setTitle:fromUTF8String<NSString*> (config.title)];
 		}
-		else if (@available (macOS 10.11, *))
+		else
+#endif
+		if (@available (macOS 10.11, *))
 		{
-			[savePanel setMessage:fromUTF8String<NSString*> (title)];
+			[savePanel setMessage:fromUTF8String<NSString*> (config.title)];
 		}
 		else
 		{
-			[savePanel setTitle:fromUTF8String<NSString*> (title)];
+			[savePanel setTitle:fromUTF8String<NSString*> (config.title)];
 		}
 	}
 	if (openPanel)
 	{
-	#if MAC_COCOA
+#ifdef VSTGUI_USE_OBJC_UTTYPE
+		openPanel.allowedContentTypes = typesArray;
+#else
+		openPanel.allowedFileTypes = typesArray;
+#endif
 		if (parentWindow)
 		{
-			setupInitalDir ();
-			openPanel.allowedFileTypes = typesArray;
-			remember ();
-			[openPanel beginSheetModalForWindow:parentWindow completionHandler:^(NSInteger result) {
-				openPanelDidEnd (openPanel, result);
-				forget ();
-			}];
+			setupInitalDir (config);
+			auto This = shared_from_this ();
+			[openPanel beginSheetModalForWindow:parentWindow
+							  completionHandler:^(NSInteger result) {
+								  This->openPanelDidEnd (openPanel, result);
+							  }];
 		}
 		else
-	#endif
 		{
-			setupInitalDir ();
-			openPanel.allowedFileTypes = typesArray;
+			setupInitalDir (config);
 			NSInteger res = [openPanel runModal];
 			openPanelDidEnd (openPanel, res);
 			return res == NSModalResponseOK;
@@ -215,58 +238,54 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 	}
 	else if (savePanel)
 	{
-	#if MAC_COCOA
+#ifdef VSTGUI_USE_OBJC_UTTYPE
+		savePanel.allowedContentTypes = typesArray;
+#else
+		savePanel.allowedFileTypes = typesArray;
+#endif
 		if (parentWindow)
 		{
-			setupInitalDir ();
-			savePanel.allowedFileTypes = typesArray;
-			remember ();
-			[savePanel beginSheetModalForWindow:parentWindow completionHandler:^(NSInteger result) {
-				openPanelDidEnd (savePanel, result);
-				forget ();
-			}];
+			setupInitalDir (config);
+			auto This = shared_from_this ();
+			[savePanel beginSheetModalForWindow:parentWindow
+							  completionHandler:^(NSInteger result) {
+								  This->openPanelDidEnd (savePanel, result);
+							  }];
 		}
 		else
-	#endif
 		{
-			setupInitalDir ();
-			savePanel.allowedFileTypes = typesArray;
+			setupInitalDir (config);
 			NSInteger res = [savePanel runModal];
 			openPanelDidEnd (savePanel, res);
 			return res == NSModalResponseOK;
 		}
 	}
-	
+
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-void CocoaFileSelector::setupInitalDir ()
+void CocoaFileSelector::setupInitalDir (const PlatformFileSelectorConfig& config)
 {
-	if (!initialPath.empty ())
+	if (!config.initialPath.empty ())
 	{
-		NSURL* dirURL = [NSURL fileURLWithPath:fromUTF8String<NSString*> (initialPath)];
+		NSURL* dirURL = [NSURL fileURLWithPath:fromUTF8String<NSString*> (config.initialPath)];
 		NSNumber* isDir;
 		if ([dirURL getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil])
 		{
 			if ([isDir boolValue] == NO)
 			{
-				savePanel.nameFieldStringValue = [[dirURL.path lastPathComponent] stringByDeletingPathExtension];
+				savePanel.nameFieldStringValue =
+					[[dirURL.path lastPathComponent] stringByDeletingPathExtension];
 				dirURL = [NSURL fileURLWithPath:[dirURL.path stringByDeletingLastPathComponent]];
 			}
 			savePanel.directoryURL = dirURL;
 		}
 	}
-	if (!defaultSaveName.empty ())
+	if (!config.defaultSaveName.empty ())
 	{
-		savePanel.nameFieldStringValue = fromUTF8String<NSString*> (defaultSaveName);
+		savePanel.nameFieldStringValue = fromUTF8String<NSString*> (config.defaultSaveName);
 	}
-}
-
-//-----------------------------------------------------------------------------
-bool CocoaFileSelector::runModalInternal ()
-{
-	return runInternal (nullptr);
 }
 
 } // VSTGUI

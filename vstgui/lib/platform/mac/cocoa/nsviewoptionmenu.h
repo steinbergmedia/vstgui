@@ -15,10 +15,6 @@ class NSViewOptionMenu : public IPlatformOptionMenu
 {
 public:
 	void popup (COptionMenu* optionMenu, const Callback& callback) override;
-
-//-----------------------------------------------------------------------------
-protected:
-	static bool initClass ();
 };
 
 } // VSTGUI

@@ -92,7 +92,7 @@ protected:
 	{
 	}
 
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override;
 
 	void dbAttached (CDataBrowser* browser) override;
 	void dbRemoved (CDataBrowser* browser) override;

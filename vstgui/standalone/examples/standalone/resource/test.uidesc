@@ -24,22 +24,24 @@
 			},
 			"UIEditController": {
 				"EditViewScale": "1.5",
-				"EditorSize": "0, 0, 1158, 1005",
-				"SplitViewSize_0_0": "0.7436159346271705716802102870133239775896",
-				"SplitViewSize_0_1": "0.2359550561797752743498080008066608570516",
-				"SplitViewSize_1_0": "0.5842696629213482983900007639022078365088",
-				"SplitViewSize_1_1": "0.411644535240040854162657524284441024065",
+				"EditorSize": "0, 0, 1158, 997",
+				"SplitViewSize_0_0": "0.7415036045314109536263913469156250357628",
+				"SplitViewSize_0_1": "0.2378990731204943254173400646322988905013",
+				"SplitViewSize_1_0": "0.5849639546858907968029939183907117694616",
+				"SplitViewSize_1_1": "0.4109165808444902312501767482899595052004",
 				"SplitViewSize_2_0": "0.6424870466321243034357735268713440746069",
 				"SplitViewSize_2_1": "0.3531951640759931065893795221199980005622",
 				"TabSwitchValue": "2",
-				"Version": "1"
+				"UI Theme": "Dark",
+				"Version": "1",
+				"ViewBackground": "3"
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
 				"SelectedRow": "24"
 			},
 			"UIDescFilePath": {
-				"path": "/media/psf/Source/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"
+				"path": "/Volumes/vst3/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"
 			},
 			"UITagsDataSource": {
 				"SelectedRow": "-1"
@@ -666,6 +668,7 @@
 							"tooltip": "Mutliline Label",
 							"transparent": "false",
 							"value-precision": "2",
+							"vertical-centered": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
 						}

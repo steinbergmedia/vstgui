@@ -88,7 +88,7 @@ public:
 	/** change view z order position */
 	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);
 
-	virtual bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1);
+	virtual bool hitTestSubViews (const CPoint& where, const Event& event);
 
 	/** enable or disable autosizing subviews. Per default this is enabled. */
 	virtual void setAutosizingEnabled (bool state);
@@ -136,18 +136,22 @@ public:
 	// CView
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseCancel () override;
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
-	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
+	void onMouseDownEvent (MouseDownEvent& event) override;
+	void onMouseMoveEvent (MouseMoveEvent& event) override;
+	void onMouseUpEvent (MouseUpEvent& event) override;
+	void onMouseCancelEvent (MouseCancelEvent& event) override;
+	void onMouseWheelEvent (MouseWheelEvent& event) override;
+	void onZoomGestureEvent (ZoomGestureEvent& event) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance,
+	              const CButtonState& buttons) final;
+#endif
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	virtual void onTouchEvent (ITouchEvent& event) override;
 	virtual bool wantsMultiTouchEvents () const override { return true; }
-	virtual void findSingleTouchEventTarget (ITouchEvent::Touch& event);
+	virtual bool findSingleTouchEventTarget (ITouchEvent::Touch& event);
 #endif
 
 	SharedPointer<IDropTarget> getDropTarget () override;
@@ -179,48 +183,56 @@ public:
 	class Iterator
 	{
 	public:
-		explicit Iterator<reverse> (const CViewContainer* container) : children (container->getChildren ()) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
-		Iterator<reverse> (const Iterator& vi) : children (vi.children), iterator (vi.iterator), riterator (vi.riterator) {}
-		
+		using IteratorType = typename std::conditional<reverse, ChildViewConstReverseIterator,
+													   ChildViewConstIterator>::type;
+
+		explicit Iterator (const CViewContainer* container) : children (container->getChildren ())
+		{
+			if constexpr (reverse)
+				iterator = children.rbegin ();
+			else
+				iterator = children.begin ();
+		}
+
+		explicit Iterator (const Iterator<reverse>& vi)
+		: children (vi.children), iterator (vi.iterator)
+		{
+		}
+
+		Iterator (Iterator<reverse>&& o) : children (o.children), iterator (std::move (o.iterator))
+		{
+		}
+
 		Iterator<reverse>& operator++ ()
 		{
-			if (reverse)
-				++riterator;
-			else
-				++iterator;
+			++iterator;
 			return *this;
 		}
-		
+
 		Iterator<reverse> operator++ (int)
 		{
 			Iterator<reverse> old (*this);
-			if (reverse)
-				++riterator;
-			else
-				++iterator;
+			++iterator;
 			return old;
 		}
 		
 		Iterator<reverse>& operator-- ()
 		{
-			if (reverse)
-				--riterator;
-			else
-				--iterator;
+			--iterator;
 			return *this;
 		}
 		
 		CView* operator* () const
 		{
-			if (reverse)
-				return riterator != children.rend () ? *riterator : nullptr;
-			return iterator != children.end () ? *iterator : nullptr;
+			if constexpr (reverse)
+				return (iterator == children.rend ()) ? nullptr : *iterator;
+			else
+				return (iterator == children.end ()) ? nullptr : *iterator;
 		}
 		
 	protected:
 		const ViewList& children;
-		ChildViewConstIterator iterator;
-		ChildViewConstReverseIterator riterator;
+		IteratorType iterator;
 	};
 
 	//-------------------------------------------
@@ -249,6 +261,8 @@ protected:
 	
 	const ViewList& getChildren () const;
 private:
+	void dispatchEventToSubViews (Event& event);
+	
 	void clearMouseDownView ();
 	CRect getLastDrawnFocus () const;
 	void setLastDrawnFocus (CRect r);

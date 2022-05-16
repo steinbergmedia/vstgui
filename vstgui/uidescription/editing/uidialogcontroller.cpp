@@ -11,6 +11,7 @@
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/cbitmapfilter.h"
 #include "../../lib/clayeredviewcontainer.h"
+#include "../../lib/events.h"
 #include "../../lib/controls/ctextlabel.h"
 #include "../../lib/controls/cbuttons.h"
 #include "../../lib/animation/animations.h"
@@ -46,7 +47,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	{
 		auto* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
 		if (layeredView)
-			layeredView->setZIndex (10);
+			layeredView->setZIndex (std::numeric_limits<uint32_t>::max ());
 
 		CRect size = view->getViewSize ();
 		size.right += sizeDiff.x;
@@ -255,38 +256,31 @@ void UIDialogController::layoutButtons ()
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIDialogController::onKeyDown (const VstKeyCode& code, CFrame* inFrame)
+void UIDialogController::onKeyboardEvent (KeyboardEvent& event, CFrame* inFrame)
 {
 	auto guard = shared (this);
-	int32_t result = -1;
 	CView* focusView = inFrame->getFocusView ();
 	if (focusView)
-		result = focusView->onKeyDown (const_cast<VstKeyCode&> (code));
-	if (result == -1)
 	{
-		if (code.virt == VKEY_RETURN && code.modifier == 0)
+		focusView->onKeyboardEvent (event);
+		if (event.consumed)
+			return;
+	}
+	if (event.type != EventType::KeyUp)
+	{
+		if (event.virt == VirtualKey::Return && event.modifiers.empty ())
 		{
 			button1->setValue (button1->getMax ());
 			button1->valueChanged ();
-			return 1;
+			event.consumed = true;
 		}
-		if (code.virt == VKEY_ESCAPE && code.modifier == 0 && button2->isVisible ())
+		else if (event.virt == VirtualKey::Escape && event.modifiers.empty () && button2->isVisible ())
 		{
 			button2->setValue (button2->getMax ());
 			button2->valueChanged ();
-			return 1;
+			event.consumed = true;
 		}
 	}
-	return result;
-}
-
-//----------------------------------------------------------------------------------------------------
-int32_t UIDialogController::onKeyUp (const VstKeyCode& code, CFrame* inFrame)
-{
-	CView* focusView = inFrame->getFocusView ();
-	if (focusView)
-		return focusView->onKeyUp (const_cast<VstKeyCode&> (code));
-	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------

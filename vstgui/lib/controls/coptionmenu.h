@@ -49,8 +49,8 @@ public:
 	virtual void setSubmenu (COptionMenu* submenu);
 	/** set keycode and key modifiers of menu item */
 	virtual void setKey (const UTF8String& keyCode, int32_t keyModifiers = 0);
-	/** set virtual keycode and key modifiers of menu item */
-	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);
+	/** set virtual key and key modifiers of menu item */
+	virtual void setVirtualKey (VirtualKey virtualKey, int32_t keyModifiers = 0);
 	/** set menu item enabled state */
 	virtual void setEnabled (bool state = true);
 	/** set menu item checked state */
@@ -65,42 +65,41 @@ public:
 	virtual void setTag (int32_t tag);
 
 	/** returns whether the item is enabled or not */
-	bool isEnabled () const { return !hasBit (flags, kDisabled); }
+	bool isEnabled () const;
 	/** returns whether the item is checked or not */
-	bool isChecked () const { return hasBit (flags, kChecked); }
+	bool isChecked () const;
 	/** returns whether the item is a title item or not */
-	bool isTitle () const { return hasBit (flags, kTitle); }
+	bool isTitle () const;
 	/** returns whether the item is a separator or not */
-	bool isSeparator () const { return hasBit (flags, kSeparator); }
+	bool isSeparator () const;
 
 	/** returns the title of the item */
-	const UTF8String& getTitle () const { return title; }
+	const UTF8String& getTitle () const;
 	/** returns the key modifiers of the item */
-	int32_t getKeyModifiers () const { return keyModifiers; }
+	int32_t getKeyModifiers () const;
 	/** returns the keycode of the item */
-	const UTF8String& getKeycode () const { return keyCode; }
-	/** returns the virtual keycode of the item */
-	int32_t getVirtualKeyCode () const { return virtualKeyCode; }
+	const UTF8String& getKeycode () const;
+	/** returns the virtual key of the item */
+	VirtualKey getVirtualKey () const;
 	/** returns the submenu of the item */
-	COptionMenu* getSubmenu () const { return submenu; }
+	COptionMenu* getSubmenu () const;
 	/** returns the icon of the item */
-	CBitmap* getIcon () const { return icon; }
+	CBitmap* getIcon () const;
 	/** returns the tag of the item */
-	int32_t getTag () const { return tag; }
+	int32_t getTag () const;
 	//@}
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	int32_t getVirtualKeyCode () const;
+	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);
+#endif
 //------------------------------------------------------------------------
 protected:
-	~CMenuItem () noexcept override = default;
+	CMenuItem ();
+	~CMenuItem () noexcept override;
 
-	UTF8String title;
-	UTF8String keyCode;
-	SharedPointer<COptionMenu> submenu;
-	SharedPointer<CBitmap> icon;
-	int32_t flags {0};
-	int32_t keyModifiers {0};
-	int32_t virtualKeyCode {0};
-	int32_t tag {-1};
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //-----------------------------------------------------------------------------
@@ -121,7 +120,8 @@ public:
 		SharedPointer<CBitmap> icon;
 		int32_t keyModifiers {0};
 		int32_t flags {kNoFlags};
-		
+		int32_t tag {-1};
+
 		Desc () = default;
 		~Desc () noexcept = default;
 
@@ -141,14 +141,13 @@ public:
 		{
 		}
 
-		Desc (const UTF8String& title, int32_t tag,
-		                 ICommandMenuItemTarget* target = nullptr,
-		                 const UTF8String& commandCategory = nullptr,
-		                 const UTF8String& commandName = nullptr)
+		Desc (const UTF8String& title, int32_t tag, ICommandMenuItemTarget* target = nullptr,
+			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
 		: title (title)
 		, commandCategory (commandCategory)
 		, commandName (commandName)
 		, target (target)
+		, tag (tag)
 		{
 		}
 
@@ -312,7 +311,7 @@ public:
 
 	void draw (CDrawContext* pContext) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	void takeFocus () override;
 	void looseFocus () override;

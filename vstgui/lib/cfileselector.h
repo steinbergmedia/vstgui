@@ -6,9 +6,8 @@
 
 #include "vstguifwd.h"
 #include "cstring.h"
-#include <list>
-#include <vector>
 #include <functional>
+#include <memory>
 
 namespace VSTGUI {
 
@@ -19,28 +18,33 @@ namespace VSTGUI {
 class CFileExtension
 {
 public:
-	CFileExtension (const UTF8String& description, const UTF8String& extension, const UTF8String& mimeType = "", int32_t macType = 0, const UTF8String& uti = "");
+	CFileExtension (const UTF8String& description, const UTF8String& extension,
+					const UTF8String& mimeType = "", int32_t macType = 0,
+					const UTF8String& uti = "");
 	CFileExtension (const CFileExtension& ext);
 	~CFileExtension () noexcept;
 
-	const UTF8String& getDescription () const { return description; }
-	const UTF8String& getExtension () const { return extension; }
-	const UTF8String& getMimeType () const { return mimeType; }
-	const UTF8String& getUTI () const { return uti; }
-	int32_t getMacType () const { return macType; }
+	const UTF8String& getDescription () const;
+	const UTF8String& getExtension () const;
+	const UTF8String& getMimeType () const;
+	const UTF8String& getUTI () const;
+	int32_t getMacType () const;
 
 	bool operator== (const CFileExtension& ext) const;
 //-----------------------------------------------------------------------------
 	CFileExtension (CFileExtension&& ext) noexcept;
-	CFileExtension& operator=(CFileExtension&& ext) noexcept;
+	CFileExtension& operator= (CFileExtension&& ext) noexcept;
+
+	CFileExtension (const PlatformFileExtension&);
+	const PlatformFileExtension& getPlatformFileExtension () const;
+
 protected:
-	void init (const UTF8String& description, const UTF8String& extension, const UTF8String& mimeType, const UTF8String& uti);
-	
-	UTF8String description;
-	UTF8String extension;
-	UTF8String mimeType;
-	UTF8String uti;
-	int32_t macType;
+	CFileExtension ();
+	void init (const UTF8String& description, const UTF8String& extension,
+			   const UTF8String& mimeType, const UTF8String& uti);
+
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //-----------------------------------------------------------------------------
@@ -81,7 +85,7 @@ CMessageResult MyClass::notify (CBaseObject* sender, IdStringPtr message)
 @endcode
 */
 //-----------------------------------------------------------------------------
-class CNewFileSelector : public CBaseObject
+class CNewFileSelector final : public CBaseObject
 {
 public:
 	enum Style {
@@ -99,6 +103,8 @@ public:
 	//@{
 	/** create a new instance */
 	static CNewFileSelector* create (CFrame* parent = nullptr, Style style = kSelectFile);
+
+	CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector, CFrame* parent);
 
 	using CallbackFunc = std::function<void(CNewFileSelector*)>;
 	bool run (CallbackFunc&& callback);
@@ -145,25 +151,12 @@ public:
 
 	static IdStringPtr kSelectEndMessage;
 //-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CNewFileSelector, CBaseObject)
+	CLASS_METHODS_NOCOPY (CNewFileSelector, CBaseObject)
 protected:
-	explicit CNewFileSelector (CFrame* frame = nullptr);
 	~CNewFileSelector () noexcept override;
 
-	virtual bool runInternal (CBaseObject* delegate) = 0;
-	virtual void cancelInternal () = 0;
-	virtual bool runModalInternal () = 0;
-
-	CFrame* frame;
-	UTF8String title;
-	UTF8String initialPath;
-	UTF8String defaultSaveName;
-	const CFileExtension* defaultExtension;
-	bool allowMultiFileSelection;
-
-	using FileExtensionList = std::list<CFileExtension>;
-	FileExtensionList extensions;
-	std::vector<UTF8String> result;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 } // VSTGUI

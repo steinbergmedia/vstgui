@@ -202,7 +202,7 @@ public:
 	CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const override;
 	CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
-	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
+	bool hitTestSubViews (const CPoint& where, const Event& event) override;
 	CPoint& frameToLocal (CPoint& point) const override { return point; }
 	CPoint& localToFrame (CPoint& point) const override { return point; }
 
@@ -210,14 +210,8 @@ public:
 	bool attached (CView* parent) override;
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
-	int32_t onKeyUp (VstKeyCode& keyCode) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void dispatchEvent (Event& event) override;
 
 	VSTGUIEditorInterface* getEditor () const override;
 	IPlatformFrame* getPlatformFrame () const;
@@ -234,37 +228,29 @@ protected:
 	
 	~CFrame () noexcept override = default;
 	void beforeDelete () override;
-	
-	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
-	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
+
+	void checkMouseViews (const MouseEvent& event);
+	void clearMouseViews (const CPoint& where, Modifiers modifiers, bool callMouseExit = true);
 	void removeFromMouseViews (CView* view);
 	void setCollectInvalidRects (CollectInvalidRects* collectInvalidRects);
 
 	// keyboard hooks
-	int32_t keyboardHooksOnKeyDown (const VstKeyCode& key);
-	int32_t keyboardHooksOnKeyUp (const VstKeyCode& key);
+	void dispatchKeyboardEventToHooks (KeyboardEvent& event);
 
 	// mouse observers
 	void callMouseObserverMouseEntered (CView* view);
 	void callMouseObserverMouseExited (CView* view);
-	CMouseEventResult callMouseObserverMouseDown (const CPoint& where, const CButtonState& buttons);
-	CMouseEventResult callMouseObserverMouseMoved (const CPoint& where, const CButtonState& buttons);
+	void callMouseObserverOtherMouseEvent (MouseEvent& event);
 
 	void dispatchNewScaleFactor (double newScaleFactor);
 
 	// platform frame
 	bool platformDrawRect (CDrawContext* context, const CRect& rect) override;
-	CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) override;
-	bool platformOnMouseWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	void platformOnEvent (Event& event) override;
 	DragOperation platformOnDragEnter (DragEventData data) override;
 	DragOperation platformOnDragMove (DragEventData data) override;
 	void platformOnDragLeave (DragEventData data) override;
 	bool platformOnDrop (DragEventData data) override;
-	bool platformOnKeyDown (VstKeyCode& keyCode) override;
-	bool platformOnKeyUp (VstKeyCode& keyCode) override;
 	void platformOnActivate (bool state) override;
 	void platformOnWindowActivate (bool state) override;
 	void platformScaleFactorChanged (double newScaleFactor) override;
@@ -278,6 +264,13 @@ private:
 #endif
 	void initModalViewSession (const ModalViewSession& session);
 	void clearModalViewSessions ();
+	void dispatchKeyboardEvent (KeyboardEvent& event);
+	void dispatchMouseEvent (MouseEvent& event);
+	void dispatchMouseDownEvent (MouseDownEvent& event);
+	void dispatchMouseMoveEvent (MouseMoveEvent& event);
+	void dispatchMouseUpEvent (MouseUpEvent& event);
+	void dispatchEvent (CView* view, Event& event);
+	void dispatchEventToChildren (Event& event);
 
 	struct Impl;
 	Impl* pImpl {nullptr};
@@ -314,11 +307,21 @@ public:
 	virtual ~IMouseObserver() noexcept = default;
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
-	/** a mouse move event happend on the frame at position where. If the observer handles this, the event won't be propagated further */
-	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
-	/** a mouse down event happend on the frame at position where. If the observer handles this, the event won't be propagated further */
-	virtual CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
+	virtual void onMouseEvent (MouseEvent& event, CFrame* frame) = 0;
 };
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+class OldMouseObserverAdapter : public IMouseObserver
+{
+public:
+	void onMouseEntered (CView* view, CFrame* frame) override {}
+	void onMouseExited (CView* view, CFrame* frame) override {}
+	void onMouseEvent (MouseEvent& event, CFrame* frame) override;
+	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons);
+};
+#endif
 
 //-----------------------------------------------------------------------------
 // IKeyboardHook Declaration
@@ -329,12 +332,22 @@ class IKeyboardHook
 {
 public:
 	virtual ~IKeyboardHook () noexcept = default;
-	
-	/** should return 1 if no further key down processing should apply, otherwise -1 */
-	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;
-	/** should return 1 if no further key up processing should apply, otherwise -1 */
-	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;
+
+	/** the event will not be dispatched further if it is consumed. */
+	virtual void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) = 0;
 };
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+class OldKeyboardHookAdapter : public IKeyboardHook
+{
+public:
+	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;
+	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;
+private:
+	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
+};
+#endif
 
 //-----------------------------------------------------------------------------
 // IViewAddedRemovedObserver Declaration

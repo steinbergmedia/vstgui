@@ -17,57 +17,57 @@
 
 using namespace VSTGUI::UnitTest;
 
-static std::string currentFile;
-static std::string currentLineNo;
-
 //------------------------------------------------------------------------
 void setupFunc (id self, SEL _cmd)
 {
 	auto cls = [self class];
 	std::string clsName (class_getName (cls) + 7);
-	auto it =
-	    std::find_if (UnitTestRegistry::instance ().begin (), UnitTestRegistry::instance ().end (),
-	                  [&] (auto& testCase) { return testCase.getName () == clsName; });
-	assert (it != UnitTestRegistry::instance ().end ());
-	auto ivar = class_getInstanceVariable ([self class], "_testCase");
-	object_setIvar (self, ivar, reinterpret_cast<id> (&(*it)));
+	auto testSuite = UnitTestRegistry::instance ().find (clsName);
+	assert (testSuite);
+	auto ivar = class_getInstanceVariable ([self class], "_testSuite");
+	object_setIvar (self, ivar, reinterpret_cast<id> (testSuite));
 }
 
 //------------------------------------------------------------------------
 void testFunc (id self, SEL _cmd)
 {
-	auto ivar = class_getInstanceVariable ([self class], "_testCase");
-	auto testCase = reinterpret_cast<TestCase*> (object_getIvar (self, ivar));
+	auto ivar = class_getInstanceVariable ([self class], "_testSuite");
+	auto testSuite = reinterpret_cast<TestSuite*> (object_getIvar (self, ivar));
 	auto name = std::string (sel_getName (_cmd) + 4);
-	auto it = std::find_if (testCase->begin (), testCase->end (),
+	auto it = std::find_if (testSuite->begin (), testSuite->end (),
 	                        [&] (auto& pair) { return pair.first == name; });
-	if (it == testCase->end ())
-	{
+	assert (it != testSuite->end ());
 
-		return;
-	}
 	struct TestContext : Context
 	{
+		TestContext (TestSuite& suite) : suite (suite) {}
 		void printRaw (const char* str) override { text += str; }
+		std::any& storage () override { return suite.getStorage (); }
+		TestSuite& suite;
 		std::string text;
-	} context;
+	} context (*testSuite);
 
-	if (auto setup = testCase->setup ())
-		setup (&context);
+	size_t assertLineNo = 0;
+	std::string assertFilePath;
 
-	XCTSourceCodeLocation* sourceCodeLocation = nullptr;
-	bool result;
+	bool result = true;
+
 	try
 	{
-		result = it->second (&context);
+		if (auto setup = testSuite->setup ())
+			setup (&context);
+
+		it->second (&context);
+
+		if (auto teardown = testSuite->teardown ())
+			teardown (&context);
 	}
 	catch (const error& exc)
 	{
 		result = false;
 		context.print ("%s", exc.what () ? exc.what () : "unknown");
-		sourceCodeLocation = [[[XCTSourceCodeLocation alloc]
-		    initWithFilePath:[NSString stringWithUTF8String:exc.filePath.data ()]
-		          lineNumber:exc.lineNo] autorelease];
+		assertLineNo = exc.lineNo;
+		assertFilePath = exc.filePath;
 	}
 	catch (const std::logic_error& exc)
 	{
@@ -81,13 +81,10 @@ void testFunc (id self, SEL _cmd)
 	}
 	if (!result)
 	{
-		if (!sourceCodeLocation)
-		{
-			auto lineNo = VSTGUI::UTF8StringView (currentLineNo.data ()).toInteger ();
-			sourceCodeLocation = [[[XCTSourceCodeLocation alloc]
-			    initWithFilePath:[NSString stringWithUTF8String:currentFile.data ()]
-			          lineNumber:lineNo] autorelease];
-		}
+#ifdef MAC_OS_VERSION_11_0
+		auto sourceCodeLocation = [[[XCTSourceCodeLocation alloc]
+		    initWithFilePath:[NSString stringWithUTF8String:assertFilePath.data ()]
+		          lineNumber:assertLineNo] autorelease];
 		auto sourceCodeContext =
 		    [[[XCTSourceCodeContext alloc] initWithLocation:sourceCodeLocation] autorelease];
 		auto issue =
@@ -99,10 +96,14 @@ void testFunc (id self, SEL _cmd)
 		                        attachments:@[]] autorelease];
 
 		[self recordIssue:issue];
-	}
+#else
 
-	if (auto teardown = testCase->teardown ())
-		teardown (&context);
+		[self recordFailureWithDescription:[NSString stringWithUTF8String:context.text.data ()]
+		                            inFile:[NSString stringWithUTF8String:assertFilePath.data ()]
+		                            atLine:assertLineNo
+		                          expected:NO];
+#endif
+	}
 }
 
 //------------------------------------------------------------------------
@@ -114,18 +115,28 @@ void testFunc (id self, SEL _cmd)
 //------------------------------------------------------------------------
 + (void)initialize
 {
+	VSTGUI::setAssertionHandler (
+		[] (const char* file, const char* line, const char* condition, const char* desc) {
+			size_t lineNo = 0;
+			if (line)
+			{
+				if (auto l = VSTGUI::UTF8StringView (line).toNumber<size_t> ())
+					lineNo = *l;
+			}
+			std::string text;
+			if (desc)
+			{
+				text = desc;
+			}
+			else
+			{
+				text = "Assertion: '";
+				text += condition;
+				text += "' failed.";
+			}
+			throw VSTGUI::UnitTest::error (file, lineNo, text.data ());
+		});
 	VSTGUI::init (CFBundleGetMainBundle ());
-	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
-		if (desc)
-			throw std::logic_error (desc);
-		currentFile = file;
-		currentLineNo = line;
-		std::string text = "assert: ";
-		text += file;
-		text += ":";
-		text += line;
-		throw std::logic_error (text.data ());
-	});
 
 	auto baseClass = objc_getClass ("XCTestCase");
 	for (auto& testCase : UnitTestRegistry::instance ())
@@ -137,13 +148,12 @@ void testFunc (id self, SEL _cmd)
 			NSLog (@"Duplicate TestCase name: %s", testCase.getName ().data ());
 			continue;
 		}
-		class_addIvar (cls, "_testCase", sizeof (void*), (uint8_t)log2 (sizeof (void*)),
+		class_addIvar (cls, "_testSuite", sizeof (void*), (uint8_t)log2 (sizeof (void*)),
 		               @encode (void*));
 		class_addMethod (cls, @selector (setUp), reinterpret_cast<IMP> (setupFunc), "v@:");
 		for (auto& test : testCase)
 		{
 			std::string name = "test" + test.first;
-			name[4] = toupper(name[4]);
 			auto sel = sel_registerName (name.data ());
 			if (!class_addMethod (cls, sel, reinterpret_cast<IMP> (testFunc), "v@:"))
 			{

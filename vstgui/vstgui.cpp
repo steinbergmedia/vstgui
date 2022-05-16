@@ -1,9 +1,10 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "lib/cbitmap.cpp"
 #include "lib/cbitmapfilter.cpp"
+#include "lib/cclipboard.cpp"
 #include "lib/ccolor.cpp"
 #include "lib/cdatabrowser.cpp"
 #include "lib/cdrawcontext.cpp"
@@ -12,6 +13,7 @@
 #include "lib/cfileselector.cpp"
 #include "lib/cfont.cpp"
 #include "lib/cframe.cpp"
+#include "lib/cgradient.cpp"
 #include "lib/cgradientview.cpp"
 #include "lib/cgraphicspath.cpp"
 #include "lib/clayeredviewcontainer.cpp"
@@ -30,6 +32,7 @@
 #include "lib/cview.cpp"
 #include "lib/cviewcontainer.cpp"
 #include "lib/cvstguitimer.cpp"
+#include "lib/events.cpp"
 #include "lib/genericstringlistdatabrowsersource.cpp"
 #include "lib/pixelbuffer.cpp"
 #include "lib/vstguidebug.cpp"

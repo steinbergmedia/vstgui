@@ -282,6 +282,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 	if (savedPath)
 		fs->setInitialDirectory (*savedPath);
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
+	fs->setTitle ("Please locate the shared resources uidesc file");
 	if (fs->runModal ())
 	{
 		if (fs->getNumSelectedFiles () == 0)

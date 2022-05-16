@@ -82,32 +82,40 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
+	/// @name Event Handling Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	
+	/** dispatch an event
+	 *
+	 *	the event is then dispatched to the event listeners and then to one of the event methods.
+	 */
+	virtual void dispatchEvent (Event& event);
+
+	//@}
+
+	//-----------------------------------------------------------------------------
 	/// @name Mouse Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	/** called when a mouse down event occurs */
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	/** called when a mouse up event occurs */
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual void onMouseDownEvent (MouseDownEvent& event);
 	/** called when a mouse move event occurs */
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual void onMouseMoveEvent (MouseMoveEvent& event);
+	/** called when a mouse up event occurs */
+	virtual void onMouseUpEvent (MouseUpEvent& event);
 	/** called when mouse tracking should be canceled */
-	virtual CMouseEventResult onMouseCancel ();
+	virtual void onMouseCancelEvent (MouseCancelEvent& event);
 
 	/** called when the mouse enters this view */
-	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
+	virtual void onMouseEnterEvent (MouseEnterEvent& event);
 	/** called when the mouse leaves this view */
-	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
-
-	void setHitTestPath (CGraphicsPath* path);
-	/** check if where hits this view */
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
-
-	VSTGUI_DEPRECATED(
-	/** \deprecated never called anymore, please override the method below for wheel handling */
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) final { return false; })
-	/** called if a mouse wheel event is happening over this view */
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
+	virtual void onMouseExitEvent (MouseExitEvent& event);
+	
+	/** called when a mouse wheel event occurs */
+	virtual void onMouseWheelEvent (MouseWheelEvent& event);
+	/** called when a zoom gesture event occurs */
+	virtual void onZoomGestureEvent (ZoomGestureEvent& event);
 
 	/** turn on/off mouse usage for this view */
 	virtual void setMouseEnabled (bool bEnable = true);
@@ -115,13 +123,61 @@ public:
 	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }
 
 	/** set the area in which the view reacts to the mouse */
-	void setMouseableArea (const CRect& rect);
+	virtual void setMouseableArea (const CRect& rect);
+	/** get the area in which the view reacts to the mouse */
+	CRect getMouseableArea () const;
+
+	//-----------------------------------------------------------------------------
+	// The following non deprecated mouse methods will still work for the next few years,
+	// but you should if possible refactor your own code to use the newer event methods
+	//-----------------------------------------------------------------------------
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseCancel ();
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
+	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
+	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
+
+	VSTGUI_DEPRECATED(
+	/** \deprecated never called anymore, please use onMouseWheelEvent instead */
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) final { return false; })
+	VSTGUI_DEPRECATED_MSG(
+	/** \deprecated please use onMouseWheelEvent instead */
+	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);, "Use CView::onMouseWheelEvent instead")
+
 	VSTGUI_DEPRECATED(
 	/** get the area in which the view reacts to the mouse */
 	CRect& getMouseableArea (CRect& rect) const;)
-	/** get the area in which the view reacts to the mouse */
-	CRect getMouseableArea () const;
 	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Hit testing Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	void setHitTestPath (CGraphicsPath* path);
+	/** check if where hits this view
+	 *
+	 *	the default behaviour is to return true if where is inside the view size of this view, but if you set a hit test path
+	 *	the path is checked if the point lies in its boundaries.
+	 */
+	virtual bool hitTest (const CPoint& where, const Event& event = noEvent ());
+
+	VSTGUI_DEPRECATED_MSG(
+	/** \deprecated check if where hits this view
+	 *
+	 *	the default behaviour is to return true if where is inside the view size of this view, but if you set a hit test path
+	 *	the path is checked if the point lies in its boundaries.
+	 */
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons);, "Use the other hitTest method")
+
+	//@}
+
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	//-----------------------------------------------------------------------------
@@ -144,18 +200,28 @@ public:
 	/** set a custom drop target */
 	void setDropTarget (const SharedPointer<IDropTarget>& dt);
 
+	VSTGUI_DEPRECATED(
 	/** \deprecated start a drag operation. See CDropSource to create the source data package */
-	VSTGUI_DEPRECATED(DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
+	DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	
+	/** called when a keyboard event is dispatched to this view
+	 *
+	 *	This happens normally only if the view is the focus view.
+	 */
+	virtual void onKeyboardEvent (KeyboardEvent& event);
+
+	VSTGUI_DEPRECATED_MSG(
 	/** called if a key down event occurs and this view has focus */
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);, "Use CView::onKeyboardEvent instead")
+	VSTGUI_DEPRECATED_MSG(
 	/** called if a key up event occurs and this view has focus */
-	virtual int32_t onKeyUp (VstKeyCode& keyCode);
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);, "Use CView::onKeyboardEvent instead")
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -297,8 +363,9 @@ public:
 	//@{
 	VSTGUI_DEPRECATED(void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject);)
 	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
-	                   Animation::ITimingFunction* timingFunction,
-	                   const Animation::DoneFunction& doneFunc = nullptr);
+					   Animation::ITimingFunction* timingFunction,
+					   const Animation::DoneFunction& doneFunc = nullptr,
+					   bool callDoneOnCancel = false);
 	void removeAnimation (IdStringPtr name);
 	void removeAllAnimations ();
 	//@}
@@ -316,7 +383,7 @@ public:
 	/** returns if the view wants idle callback or not */
 	bool wantsIdle () const { return hasViewFlag (kWantsIdle); }
 	/** global idle rate in Hz, defaults to 30 Hz*/
-	static uint32_t idleRate;
+	inline static uint32_t idleRate = 30;
 	//@}
 
 	/** whether this view wants to be informed if the window's active state changes */
@@ -332,9 +399,14 @@ public:
 	//@{
 	void registerViewListener (IViewListener* listener);
 	void unregisterViewListener (IViewListener* listener);
-	
-	void registerViewMouseListener (IViewMouseListener* listener);
-	void unregisterViewMouseListener (IViewMouseListener* listener);
+
+	void registerViewEventListener (IViewEventListener* listener);
+	void unregisterViewEventListener (IViewEventListener* listener);
+
+	VSTGUI_DEPRECATED_MSG(
+	void registerViewMouseListener (IViewMouseListener* listener);, "Use registerViewListener instead")
+	VSTGUI_DEPRECATED_MSG(
+	void unregisterViewMouseListener (IViewMouseListener* listener);, "Use unregisterViewListener instead")
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -356,6 +428,7 @@ public:
 	virtual CViewContainer* asViewContainer () { return nullptr; }
 	virtual const CViewContainer* asViewContainer () const { return nullptr; }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	enum class MouseListenerCall
 	{
 		MouseDown,
@@ -365,7 +438,8 @@ public:
 	};
 	CMouseEventResult callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons);
 	void callMouseListenerEnteredExited (bool mouseEntered);
-	
+#endif
+
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void beforeDelete () override;

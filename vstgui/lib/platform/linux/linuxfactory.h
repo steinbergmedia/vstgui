@@ -116,6 +116,19 @@ public:
 	COffscreenContextPtr createOffscreenContext (const CPoint& size,
 												 double scaleFactor = 1.) const noexcept final;
 
+	/** Create a platform gradient object
+	 *	@return platform gradient object or nullptr on failure
+	 */
+	PlatformGradientPtr createGradient () const noexcept final;
+
+	/** Create a platform file selector
+	 *	@param style file selector style
+	 *	@param frame frame
+	 *	@return platform file selector or nullptr on failure
+	 */
+	PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style,
+												IPlatformFrame* frame) const noexcept final;
+
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;
 	const Win32Factory* asWin32Factory () const noexcept final;

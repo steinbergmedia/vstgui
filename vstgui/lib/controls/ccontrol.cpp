@@ -4,10 +4,12 @@
 
 #include "ccontrol.h"
 #include "icontrollistener.h"
+#include "../events.h"
 #include "../cframe.h"
 #include "../cgraphicspath.h"
 #include "../cvstguitimer.h"
 #include "../dispatchlist.h"
+#include "../iviewlistener.h"
 #include <cassert>
 
 #define VSTGUI_CCONTROL_LOG_EDITING 0 //DEBUG
@@ -15,7 +17,7 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-struct CControl::Impl
+struct CControl::Impl : ViewEventListenerAdapter
 {
 	using SubListenerDispatcher = DispatchList<IControlListener*>;
 
@@ -26,6 +28,28 @@ struct CControl::Impl
 	float vmax {1.f};
 	float wheelInc {0.1f};
 	int32_t editing {0};
+
+	void viewOnEvent (CView* view, Event& event) override
+	{
+		if (event.type != EventType::MouseDown)
+			return;
+		auto control = static_cast<CControl*> (view);
+		auto& mouseDownEvent = castMouseDownEvent (event);
+		if (CControl::CheckDefaultValueEventFunc (control, mouseDownEvent))
+		{
+			auto defValue = control->getDefaultValue ();
+			if (defValue != control->getValue ())
+			{
+				control->beginEdit ();
+				control->setValue (defValue);
+				control->valueChanged ();
+				control->endEdit ();
+				control->setDirty ();
+			}
+			mouseDownEvent.consumed = true;
+			mouseDownEvent.ignoreFollowUpMoveAndUpEvents (true);
+		}
+	}
 };
 
 //------------------------------------------------------------------------
@@ -44,6 +68,7 @@ CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag, 
 	setTransparency (false);
 	setMouseEnabled (true);
 	setBackground (pBackground);
+	registerViewEventListener (impl.get ());
 }
 
 //------------------------------------------------------------------------
@@ -59,10 +84,14 @@ CControl::CControl (const CControl& c)
 	impl->vmin = c.impl->vmin;
 	impl->vmax = c.impl->vmax;
 	impl->wheelInc = c.impl->wheelInc;
+	registerViewEventListener (impl.get ());
 }
 
 //------------------------------------------------------------------------
-CControl::~CControl () noexcept = default;
+CControl::~CControl () noexcept
+{
+	unregisterViewEventListener (impl.get ());
+}
 
 //------------------------------------------------------------------------
 void CControl::registerControlListener (IControlListener* subListener)
@@ -135,10 +164,6 @@ float CControl::getDefaultValue (void) const
 {
 	return impl->defaultValue;
 }
-
-//------------------------------------------------------------------------
-int32_t CControl::kZoomModifier = kShift;
-int32_t CControl::kDefaultValueModifier = kControl;
 
 //------------------------------------------------------------------------
 void CControl::setTag (int32_t val)
@@ -265,6 +290,7 @@ void CControl::bounceValue ()
 		value = getMin ();
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 CControl::CheckDefaultValueFuncT CControl::CheckDefaultValueFunc = [] (CControl*,
 																	   CButtonState button) {
@@ -275,29 +301,25 @@ CControl::CheckDefaultValueFuncT CControl::CheckDefaultValueFunc = [] (CControl*
 #endif
 };
 
-//-----------------------------------------------------------------------------
-bool CControl::checkDefaultValue (CButtonState button)
-{
-	if (CheckDefaultValueFunc (this, button))
-	{
-		float defValue = getDefaultValue ();
-		if (defValue != getValue ())
-		{
-			// begin of edit parameter
-			beginEdit ();
-		
-			setValue (defValue);
-			valueChanged ();
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
-			// end of edit parameter
-			endEdit ();
-			
-			setDirty ();
+//------------------------------------------------------------------------
+CControl::CheckDefaultValueEventFuncT CControl::CheckDefaultValueEventFunc =
+	[] (CControl* c, MouseDownEvent& event) {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+		if (event.buttonState.isLeft ())
+		{
+			return CheckDefaultValueFunc (c, buttonStateFromMouseEvent (event));
 		}
-		return true;
-	}
-	return false;
-}
+#else
+#if TARGET_OS_IPHONE
+		return event.buttonState.isLeft () && event.clickCount == 2;
+#else
+		return event.buttonState.isLeft () && event.modifiers.is (ModifierKey::Control);
+#endif // TARGET_OS_IPHONE
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
+		return false;
+	};
 
 //------------------------------------------------------------------------
 bool CControl::drawFocusOnTop ()
@@ -322,6 +344,7 @@ bool CControl::getFocusPath (CGraphicsPath& outPath)
 	return true;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
 {
@@ -336,6 +359,7 @@ int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
 		modifiers |= kControl;
 	return modifiers;
 }
+#endif
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------

@@ -4,8 +4,8 @@
 
 #include "../../../../lib/controls/clistcontrol.h"
 #include "../../../../lib/cscrollview.h"
-#include "../../../../lib/vstkeycode.h"
 #include "../../unittests.h"
+#include "../eventhelpers.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -40,229 +40,264 @@ static SharedPointer<CScrollView> createScrollViewAndEmbedListControl (CViewCont
 }
 
 //------------------------------------------------------------------------
-static VstKeyCode makeKeyCode (int32_t c, unsigned char virt, unsigned char modifier)
+static KeyboardEvent makeKeyboardEvent (int32_t c, VirtualKey virt,
+                                        ModifierKey modifier = ModifierKey::None)
 {
-	return {c, virt, modifier};
+	KeyboardEvent event;
+	event.type = EventType::KeyDown;
+	event.character = c;
+	event.virt = virt;
+	event.modifiers.add (modifier);
+	return event;
 }
 
-//------------------------------------------------------------------------
-TESTCASE(CListControlTest,
+TEST_CASE (CListControlTest, minMax)
+{
+	constexpr auto rowHeight = 20;
+	auto listControl = createTestListControl (rowHeight);
+	listControl->setMin (-5.f);
+	listControl->setMax (5.f);
 
-	TEST(minMax,
-		constexpr auto rowHeight = 20;
-		auto listControl = createTestListControl (rowHeight);
-		listControl->setMin (-5.f);
-		listControl->setMax (5.f);
-		
-		auto row = listControl->getRowAtPoint (CPoint (0, 0));
-		EXPECT (row);
-		if (row)
-		{
-			EXPECT (*row == -5);
-		}
-		row = listControl->getRowAtPoint (CPoint (0, listControl->getHeight () - 1));
-		EXPECT (row);
-		if (row)
-		{
-			EXPECT (*row == 5);
-		}
-	);
+	auto row = listControl->getRowAtPoint (CPoint (0, 0));
+	EXPECT (row);
+	if (row)
+	{
+		EXPECT (*row == -5);
+	}
+	row = listControl->getRowAtPoint (CPoint (0, listControl->getHeight () - 1));
+	EXPECT (row);
+	if (row)
+	{
+		EXPECT (*row == 5);
+	}
+}
 
-	TEST(mouseRowSelection,
-		constexpr auto rowHeight = 20;
-		auto listControl = createTestListControl (rowHeight);
-		
-		CPoint where (0, rowHeight);
-		listControl->onMouseDown (where, kLButton);
-		listControl->onMouseUp (where, kLButton);
-		EXPECT (listControl->getValue () == 1.f);
-		where (0, rowHeight * 3);
-		listControl->onMouseDown (where, kLButton);
-		listControl->onMouseUp (where, kLButton);
-		EXPECT (listControl->getValue () == 3.f);
-	);
+TEST_CASE (CListControlTest, MouseRowSelection)
+{
+	constexpr auto rowHeight = 20;
+	auto listControl = createTestListControl (rowHeight);
 
-	TEST(hovering,
-		constexpr auto rowHeight = 20;
-		constexpr auto numRows = 5;
-		auto listControl = createTestListControl (rowHeight, numRows);
+	dispatchMouseEvent<MouseDownEvent> (listControl, {0., rowHeight}, MouseButton::Left);
+	dispatchMouseEvent<MouseUpEvent> (listControl, {0., rowHeight}, MouseButton::Left);
+	EXPECT_EQ (listControl->getValue (), 1.f);
+	dispatchMouseEvent<MouseDownEvent> (listControl, {0., rowHeight * 3.}, MouseButton::Left);
+	dispatchMouseEvent<MouseUpEvent> (listControl, {0., rowHeight * 3.}, MouseButton::Left);
+	EXPECT_EQ (listControl->getValue (), 3.f);
+}
 
-		EXPECT(!listControl->getHoveredRow ());
-		CPoint where (10, 5);
-		listControl->onMouseMoved (where, 0);
-		EXPECT(listControl->getHoveredRow ());
-		EXPECT(*listControl->getHoveredRow () == 0);
+TEST_CASE (CListControlTest, Hovering)
+{
+	constexpr auto rowHeight = 20;
+	constexpr auto numRows = 5;
+	auto listControl = createTestListControl (rowHeight, numRows);
 
-		where (10, 5 + rowHeight);
-		listControl->onMouseMoved (where, 0);
-		EXPECT(listControl->getHoveredRow ());
-		EXPECT(*listControl->getHoveredRow () == 1);
+	EXPECT_FALSE (listControl->getHoveredRow ());
+	dispatchMouseEvent<MouseMoveEvent>(listControl, {10., 5.});
+	EXPECT_TRUE (listControl->getHoveredRow ());
+	EXPECT_EQ (*listControl->getHoveredRow (), 0);
 
-		listControl->onMouseExited (where, 0);
-		EXPECT(!listControl->getHoveredRow ());
+	dispatchMouseEvent<MouseMoveEvent>(listControl, {10., 5. + rowHeight});
+	EXPECT_TRUE (listControl->getHoveredRow ());
+	EXPECT_EQ (*listControl->getHoveredRow (), 1);
 
-	);
+	dispatchMouseEvent<MouseExitEvent>(listControl, {10., 5. + rowHeight});
+	EXPECT_FALSE (listControl->getHoveredRow ());
+}
 
-	TEST(rowRect,
-		constexpr auto rowHeight = 20;
-		auto listControl = createTestListControl (rowHeight);
+TEST_CASE (CListControlTest, RowRect)
+{
+	constexpr auto rowHeight = 20;
+	auto listControl = createTestListControl (rowHeight);
 
-		auto rr = listControl->getRowRect (1);
-		EXPECT (rr);
-		if (rr)
-		{
-			EXPECT (*rr == CRect (0, rowHeight, 100, rowHeight * 2.));
-		}
-	);
+	auto rr = listControl->getRowRect (1);
+	EXPECT (rr);
+	if (rr)
+	{
+		EXPECT (*rr == CRect (0, rowHeight, 100, rowHeight * 2.));
+	}
+}
 
-	TEST(keyDownOnUnselectableRows,
-		constexpr auto rowHeight = 20;
-		constexpr auto numRows = 20;
-		auto listControl = createTestListControl (rowHeight, numRows, 0);
-		listControl->setValue (2.f);
-		EXPECT (listControl->getValue () == 2.f);
+TEST_CASE (CListControlTest, KeyDownOnUnselectableRows)
+{
+	constexpr auto rowHeight = 20;
+	constexpr auto numRows = 20;
+	auto listControl = createTestListControl (rowHeight, numRows, 0);
+	listControl->setValue (2.f);
+	EXPECT (listControl->getValue () == 2.f);
 
-		auto code = makeKeyCode (0, VKEY_DOWN, 0);
-		EXPECT (listControl->onKeyDown (code) == -1);
-		EXPECT (listControl->getValue () == 2.f);
-	);
+	auto event = makeKeyboardEvent (0, VirtualKey::Down);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == false);
+	EXPECT (listControl->getValue () == 2.f);
+}
 
-	TEST(keyWithModifier,
-		constexpr auto rowHeight = 20;
-		constexpr auto numRows = 20;
-		auto listControl = createTestListControl (rowHeight, numRows, 0);
+TEST_CASE (CListControlTest, KeyWithModifier)
+{
+	constexpr auto rowHeight = 20;
+	constexpr auto numRows = 20;
+	auto listControl = createTestListControl (rowHeight, numRows, 0);
 
-		listControl->setValue (1.f);
+	listControl->setValue (1.f);
 
-		auto code = makeKeyCode (0, VKEY_DOWN, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
-		EXPECT (listControl->getValue () == 1.f);
+	auto event = makeKeyboardEvent (0, VirtualKey::Down, ModifierKey::Shift);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == false);
+	EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_UP, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
-		EXPECT (listControl->getValue () == 1.f);
+	event = makeKeyboardEvent (0, VirtualKey::Up, ModifierKey::Shift);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == false);
+	EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_HOME, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
-		EXPECT (listControl->getValue () == 1.f);
+	event = makeKeyboardEvent (0, VirtualKey::Home, ModifierKey::Shift);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == false);
+	EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_END, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
-		EXPECT (listControl->getValue () == 1.f);
+	event = makeKeyboardEvent (0, VirtualKey::End, ModifierKey::Shift);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == false);
+	EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_PAGEUP, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
-		EXPECT (listControl->getValue () == 1.f);
+	event = makeKeyboardEvent (0, VirtualKey::PageUp, ModifierKey::Shift);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == false);
+	EXPECT (listControl->getValue () == 1.f);
 
-		code = makeKeyCode (0, VKEY_PAGEDOWN, MODIFIER_SHIFT);
-		EXPECT (listControl->onKeyDown (code) == -1);
-		EXPECT (listControl->getValue () == 1.f);
-	);
+	event = makeKeyboardEvent (0, VirtualKey::PageDown, ModifierKey::Shift);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == false);
+	EXPECT (listControl->getValue () == 1.f);
+}
 
-	TEST(keyHome,
-		constexpr auto rowHeight = 20;
-		auto listControl = createTestListControl (rowHeight);
-		listControl->setValue (5.f);
-		EXPECT (listControl->getValue () == 5.f);
+TEST_CASE (CListControlTest, KeyHome)
+{
+	constexpr auto rowHeight = 20;
+	auto listControl = createTestListControl (rowHeight);
+	listControl->setValue (5.f);
+	EXPECT (listControl->getValue () == 5.f);
 
-		auto code = makeKeyCode (0, VKEY_HOME, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 0.f);
-	);
+	auto event = makeKeyboardEvent (0, VirtualKey::Home);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 0.f);
+}
 
-	TEST(keyEnd,
-		constexpr auto rowHeight = 20;
-		constexpr auto numRows = 20;
-		auto listControl = createTestListControl (rowHeight, numRows);
-		listControl->setValue (0.f);
-		EXPECT (listControl->getValue () == 0.f);
+TEST_CASE (CListControlTest, KeyEnd)
+{
+	constexpr auto rowHeight = 20;
+	constexpr auto numRows = 20;
+	auto listControl = createTestListControl (rowHeight, numRows);
+	listControl->setValue (0.f);
+	EXPECT (listControl->getValue () == 0.f);
 
-		auto code = makeKeyCode (0, VKEY_END, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == numRows);
-	);
+	auto event = makeKeyboardEvent (0, VirtualKey::End);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == numRows);
+}
 
-	TEST(keyUp,
-		constexpr auto rowHeight = 20;
-		constexpr auto numRows = 20;
-		auto listControl = createTestListControl (rowHeight, numRows);
-		listControl->setValue (2.f);
-		EXPECT (listControl->getValue () == 2.f);
+TEST_CASE (CListControlTest, KeyUp)
+{
+	constexpr auto rowHeight = 20;
+	constexpr auto numRows = 20;
+	auto listControl = createTestListControl (rowHeight, numRows);
+	listControl->setValue (2.f);
+	EXPECT (listControl->getValue () == 2.f);
 
-		auto code = makeKeyCode (0, VKEY_UP, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 1.f);
+	auto event = makeKeyboardEvent (0, VirtualKey::Up);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 1.f);
+	event.consumed.reset ();
 
-		listControl->setValue (0.f);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == numRows);
-	);
+	listControl->setValue (0.f);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == numRows);
+}
 
-	TEST(keyDown,
-		constexpr auto rowHeight = 20;
-		constexpr auto numRows = 20;
-		auto listControl = createTestListControl (rowHeight, numRows);
-		listControl->setValue (2.f);
-		EXPECT (listControl->getValue () == 2.f);
+TEST_CASE (CListControlTest, KeyDown)
+{
+	constexpr auto rowHeight = 20;
+	constexpr auto numRows = 20;
+	auto listControl = createTestListControl (rowHeight, numRows);
+	listControl->setValue (2.f);
+	EXPECT (listControl->getValue () == 2.f);
 
-		auto code = makeKeyCode (0, VKEY_DOWN, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 3.f);
+	auto event = makeKeyboardEvent (0, VirtualKey::Down);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 3.f);
+	event.consumed.reset ();
 
-		listControl->setValue (numRows);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 0.f);
-	);
+	listControl->setValue (numRows);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 0.f);
+}
 
-	TEST(pageUp,
-		constexpr auto rowHeight = 20;
-		constexpr auto numRows = 30;
-		auto parent = makeOwned<CViewContainer>(CRect (0, 0, 1000, 1000));
-		auto listControl = createTestListControl (rowHeight, numRows);
-		auto scrollView = createScrollViewAndEmbedListControl (parent, listControl);
-		listControl->setValue (numRows);
-		auto rect = listControl->getRowRect (0);
-		scrollView->makeRectVisible (*rect);
+TEST_CASE (CListControlTest, PageUp)
+{
+	constexpr auto rowHeight = 20;
+	constexpr auto numRows = 30;
+	auto parent = makeOwned<CViewContainer> (CRect (0, 0, 1000, 1000));
+	auto listControl = createTestListControl (rowHeight, numRows);
+	auto scrollView = createScrollViewAndEmbedListControl (parent, listControl);
+	listControl->setValue (numRows);
+	auto rect = listControl->getRowRect (0);
+	scrollView->makeRectVisible (*rect);
 
-		auto code = makeKeyCode (0, VKEY_PAGEUP, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 15.f);
-		listControl->setValue (16);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 15.f);
+	auto event = makeKeyboardEvent (0, VirtualKey::PageUp);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 15.f);
+	event.consumed.reset ();
 
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 0.f);
+	listControl->setValue (16);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 15.f);
+	event.consumed.reset ();
 
-		scrollView->removed (parent);
-		parent->removeAll (false);
-	);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 0.f);
 
-	TEST(pageDown,
-		constexpr auto rowHeight = 20;
-		constexpr auto numRows = 30;
-		auto parent = makeOwned<CViewContainer>(CRect (0, 0, 1000, 1000));
-		auto listControl = createTestListControl (rowHeight, numRows);
-		auto scrollView = createScrollViewAndEmbedListControl (parent, listControl);
-		listControl->setValue (0.f);
-		auto rect = listControl->getRowRect (numRows);
-		scrollView->makeRectVisible (*rect);
+	scrollView->removed (parent);
+	parent->removeAll (false);
+}
 
-		auto code = makeKeyCode (0, VKEY_PAGEDOWN, 0);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 15.f);
-		listControl->setValue (14);
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 15.f);
+TEST_CASE (CListControlTest, PageDown)
+{
+	constexpr auto rowHeight = 20;
+	constexpr auto numRows = 30;
+	auto parent = makeOwned<CViewContainer> (CRect (0, 0, 1000, 1000));
+	auto listControl = createTestListControl (rowHeight, numRows);
+	auto scrollView = createScrollViewAndEmbedListControl (parent, listControl);
+	listControl->setValue (0.f);
+	auto rect = listControl->getRowRect (numRows);
+	scrollView->makeRectVisible (*rect);
 
-		EXPECT (listControl->onKeyDown (code) == 1);
-		EXPECT (listControl->getValue () == 30.f);
+	auto event = makeKeyboardEvent (0, VirtualKey::PageDown);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 15.f);
+	event.consumed.reset ();
 
-		scrollView->removed (parent);
-		parent->removeAll (false);
-	);
+	listControl->setValue (14);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 15.f);
+	event.consumed.reset ();
 
-);
+	listControl->onKeyboardEvent (event);
+	EXPECT (event.consumed == true);
+	EXPECT (listControl->getValue () == 30.f);
+
+	scrollView->removed (parent);
+	parent->removeAll (false);
+}
 
 //------------------------------------------------------------------------
 } // VSTGUI

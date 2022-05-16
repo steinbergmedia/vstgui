@@ -13,6 +13,7 @@
 #include "../../cframe.h"
 #include "../../cvstguitimer.h"
 #include "../../cdropsource.h"
+#include "../../events.h"
 
 #include <numeric>
 #include <string>
@@ -54,17 +55,11 @@ public:
 	void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr) override;
 	void setText (const UTF8String& txt) override;
 
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
+	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
 
 	void onMouseEntered (CView* view, CFrame* frame) override;
 	void onMouseExited (CView* view, CFrame* frame) override;
-	CMouseEventResult onMouseMoved (CFrame* frame,
-									const CPoint& where,
-									const CButtonState& buttons) override;
-	CMouseEventResult onMouseDown (CFrame* frame,
-								   const CPoint& where,
-								   const CButtonState& buttons) override;
+	void onMouseEvent (MouseEvent& event, CFrame* frame) override;
 
 	bool attached (CView* parent) override;
 	bool removed (CView* parent) override;
@@ -83,8 +78,7 @@ public:
 	static int getLength (STBTextEditView* self);
 
 private:
-	using CTextLabel::onKeyDown;
-	using CTextLabel::onKeyUp;
+	using CTextLabel::onKeyboardEvent;
 	using CTextLabel::onMouseEntered;
 	using CTextLabel::onMouseExited;
 	using CTextLabel::onMouseMoved;
@@ -103,18 +97,21 @@ private:
 	static constexpr auto BitCursorIsSet = 1 << 2;
 	static constexpr auto BitCursorSizesValid = 1 << 3;
 	static constexpr auto BitNotifyTextChange = 1 << 4;
+	static constexpr auto BitMouseDownHandling = 1 << 5;
 
 	bool isRecursiveKeyEventGuard () const { return hasBit (flags, BitRecursiveKeyGuard); }
 	bool isBlinkToggle () const { return hasBit (flags, BitBlinkToggle); }
 	bool isCursorSet () const { return hasBit (flags, BitCursorIsSet); }
 	bool cursorSizesValid () const { return hasBit (flags, BitCursorSizesValid); }
 	bool notifyTextChange () const { return hasBit (flags, BitNotifyTextChange); }
+	bool mouseDownHandling () const { return hasBit (flags, BitMouseDownHandling); }
 
 	void setRecursiveKeyEventGuard (bool state) { setBit (flags, BitRecursiveKeyGuard, state); }
 	void setBlinkToggle (bool state) { setBit (flags, BitBlinkToggle, state); }
 	void setCursorIsSet (bool state) { setBit (flags, BitCursorIsSet, state); }
 	void setCursorSizesValid (bool state) { setBit (flags, BitCursorSizesValid, state); }
 	void setNotifyTextChange (bool state) { setBit (flags, BitNotifyTextChange, state); }
+	void setMouseDownHandling (bool state) { setBit (flags, BitMouseDownHandling, state); }
 
 	SharedPointer<CVSTGUITimer> blinkTimer;
 	IPlatformTextEditCallback* callback;
@@ -264,49 +261,54 @@ bool STBTextEditView::callSTB (Proc proc)
 }
 
 //-----------------------------------------------------------------------------
-int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
+void STBTextEditView::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
 {
+	if (event.type == EventType::KeyUp)
+		return;
+
 	if (isRecursiveKeyEventGuard ())
-		return -1;
+		return;
 	auto selfGuard = SharedPointer<CBaseObject> (this);
 	BitScopeToggleT<uint32_t, uint32_t> br (flags, BitRecursiveKeyGuard);
-	if (callback->platformOnKeyDown (code))
-		return 1;
+	callback->platformOnKeyboardEvent (event);
+	if (event.consumed)
+		return;
 
-	if (code.character == 0 && code.virt == 0)
-		return -1;
+	if (event.character == 0 && event.virt == VirtualKey::None)
+		return;
 
-	if (code.modifier == MODIFIER_CONTROL)
+	if (event.modifiers.is (ModifierKey::Control))
 	{
-		switch (code.character)
+		switch (event.character)
 		{
 			case 'a':
 			{
 				selectAll ();
-				return 1;
+				event.consumed = true;
+				return;
 			}
 			case 'x':
 			{
 				if (doCut ())
-					return 1;
-				return -1;
+					event.consumed = true;
+				return;
 			}
 			case 'c':
 			{
 				if (doCopy ())
-					return 1;
-				return -1;
+					event.consumed = true;
+				return;
 			}
 			case 'v':
 			{
 				if (doPaste ())
-					return 1;
-				return -1;
+					event.consumed = true;
+				return;
 			}
 		}
 	}
 
-	auto key = code.character;
+	auto key = event.character;
 	if (key)
 	{
 		if (auto text = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
@@ -316,46 +318,95 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 			key = tmp[0];
 #else
 			if (text->length () != 1)
-				return -1;
+				return;
 			key = text->getString ()[0];
 #endif
 		}
 	}
-	if (code.virt)
+	if (event.virt != VirtualKey::None)
 	{
-		switch (code.virt)
+		switch (event.virt)
 		{
-			case VKEY_SPACE:
+			case VirtualKey::Space:
 			{
 				key = 0x20;
 				break;
 			}
-			case VKEY_TAB:
+			case VirtualKey::Tab:
 			{
-				return -1;
+				return;
 			}
 			default:
 			{
-				key = code.virt | VIRTUAL_KEY_BIT;
+				key = static_cast<uint32_t> (event.virt) | VIRTUAL_KEY_BIT;
 				break;
 			}
 		}
 	}
-	if (code.modifier & MODIFIER_CONTROL)
+	if (event.modifiers.has (ModifierKey::Control))
 		key |= STB_TEXTEDIT_K_CONTROL;
-	if (code.modifier & MODIFIER_ALTERNATE)
+	if (event.modifiers.has (ModifierKey::Alt))
 		key |= STB_TEXTEDIT_K_ALT;
-	if (code.modifier & MODIFIER_SHIFT)
+	if (event.modifiers.has (ModifierKey::Shift))
 		key |= STB_TEXTEDIT_K_SHIFT;
-	return callSTB ([&]() { stb_textedit_key (this, &editState, key); }) ? 1 : -1;
+	if (callSTB ([&]() { stb_textedit_key (this, &editState, key); }))
+		event.consumed = true;
 }
 
 //-----------------------------------------------------------------------------
-int32_t STBTextEditView::onKeyUp (const VstKeyCode& code, CFrame* frame)
+void STBTextEditView::onMouseEvent (MouseEvent& event, CFrame* frame)
 {
-	return -1;
+	if (event.buttonState.isLeft () == false)
+		return;
+
+	if (auto parent = getParentView ())
+	{
+		auto where = event.mousePosition;
+		where = translateToLocal (where, true);
+		if (mouseDownHandling () || hitTest (where, event))
+		{
+			where.x -= getViewSize ().left;
+			where.y -= getViewSize ().top;
+			switch (event.type)
+			{
+				case EventType::MouseDown:
+				{
+					setMouseDownHandling (true);
+					callSTB ([&] () {
+						stb_textedit_click (this, &editState, static_cast<float> (where.x),
+											static_cast<float> (where.y));
+					});
+					event.consumed = true;
+					break;
+				}
+				case EventType::MouseMove:
+				{
+					if (mouseDownHandling ())
+					{
+						callSTB ([&] () {
+							stb_textedit_drag (this, &editState, static_cast<float> (where.x),
+											   static_cast<float> (where.y));
+						});
+						event.consumed = true;
+					}
+					break;
+				}
+				case EventType::MouseUp:
+				{
+					if (mouseDownHandling ())
+					{
+						event.consumed = true;
+						setMouseDownHandling (false);
+					}
+					break;
+				}
+				default: break;
+			}
+		}
+	}
 }
 
+#if 0
 //-----------------------------------------------------------------------------
 CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
 												const CPoint& _where,
@@ -365,7 +416,7 @@ CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
 	if (auto parent = getParentView ())
 	{
 		where = translateToLocal (where, true);
-		if (buttons.isLeftButton () && hitTest (where, buttons))
+		if (buttons.isLeftButton () && hitTest (where, noEvent ()))
 		{
 			where.x -= getViewSize ().left;
 			where.y -= getViewSize ().top;
@@ -388,7 +439,7 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 	if (auto parent = getParentView ())
 	{
 		where = translateToLocal (where, true);
-		if (buttons.isLeftButton () && hitTest (where, buttons))
+		if (buttons.isLeftButton () && hitTest (where, noEvent ()))
 		{
 			where.x -= getViewSize ().left;
 			where.y -= getViewSize ().top;
@@ -401,6 +452,7 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 	}
 	return kMouseEventNotHandled;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void STBTextEditView::onMouseEntered (CView* view, CFrame* frame)

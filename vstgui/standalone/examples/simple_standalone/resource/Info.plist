@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>simple_standalone</string>
 	<key>CFBundleIdentifier</key>
-	<string>vstgui.examples.simplestandalone</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

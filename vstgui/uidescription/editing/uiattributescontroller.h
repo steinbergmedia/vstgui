@@ -14,6 +14,7 @@
 #include "../uidescriptionlistener.h"
 #include "uiundomanager.h"
 #include "../../lib/controls/ctextedit.h"
+#include "../../lib/iviewlistener.h"
 
 namespace VSTGUI {
 class CRowColumnView;
@@ -25,10 +26,11 @@ class Controller;
 
 //----------------------------------------------------------------------------------------------------
 class UIAttributesController : public NonAtomicReferenceCounted,
-                               public DelegationController,
-                               public UIDescriptionListenerAdapter,
-                               public UISelectionListenerAdapter,
-                               public IUIUndoManagerListener
+							   public DelegationController,
+							   public UIDescriptionListenerAdapter,
+							   public UISelectionListenerAdapter,
+							   public IUIUndoManagerListener,
+							   public ViewListenerAdapter
 {
 public:
 	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
@@ -63,6 +65,8 @@ protected:
 
 	void onUndoManagerChange () override;
 
+	void viewWillDelete (CView* view) override;
+
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> editDescription;
@@ -79,6 +83,7 @@ protected:
 	SharedPointer<CTextEdit> searchField;
 	CTextLabel* viewNameLabel;
 	CRowColumnView* attributeView;
+	CColor attributeNameColor {kBlackCColor};
 
 	std::string filterString;
 

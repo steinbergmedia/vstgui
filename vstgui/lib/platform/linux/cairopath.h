@@ -1,10 +1,11 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #pragma once
 
 #include "../../cgraphicspath.h"
+#include "../iplatformgraphicspath.h"
 #include "cairoutils.h"
 
 //------------------------------------------------------------------------
@@ -12,28 +13,49 @@ namespace VSTGUI {
 namespace Cairo {
 
 //------------------------------------------------------------------------
-class Path : public CGraphicsPath
+class GraphicsPathFactory : public IPlatformGraphicsPathFactory
 {
 public:
-	Path (const ContextHandle& cr) noexcept;
-	~Path () noexcept;
+	GraphicsPathFactory (const ContextHandle& cr);
 
-	cairo_path_t* getPath (const ContextHandle& handle,
-						   const CGraphicsTransform* alignTransform = nullptr);
+	PlatformGraphicsPathPtr createPath (PlatformGraphicsPathFillMode fillMode) override;
+	PlatformGraphicsPathPtr createTextPath (const PlatformFontPtr& font,
+											UTF8StringPtr text) override;
 
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1,
-							   const CColor& color2) override;
-
-	bool hitTest (const CPoint& p, bool evenOddFilled = false,
-				  CGraphicsTransform* transform = 0) override;
-	CPoint getCurrentPosition () override;
-	CRect getBoundingBox () override;
-
-	void dirty () override;
-
-//------------------------------------------------------------------------
 private:
-	ContextHandle cr;
+	ContextHandle context;
+};
+
+//-----------------------------------------------------------------------------
+class GraphicsPath : public IPlatformGraphicsPath
+{
+public:
+	GraphicsPath (const ContextHandle& c);
+	~GraphicsPath () noexcept;
+
+	cairo_path_t* getCairoPath () const { return path; }
+	std::unique_ptr<GraphicsPath> copyPixelAlign (const CGraphicsTransform& tm);
+
+	// IPlatformGraphicsPath
+	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;
+	void addEllipse (const CRect& rect) override;
+	void addRect (const CRect& rect) override;
+	void addLine (const CPoint& to) override;
+	void addBezierCurve (const CPoint& control1, const CPoint& control2,
+	                     const CPoint& end) override;
+	void beginSubpath (const CPoint& start) override;
+	void closeSubpath () override;
+	void finishBuilding () override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false,
+	              CGraphicsTransform* transform = nullptr) const override;
+	CRect getBoundingBox () const override;
+	PlatformGraphicsPathFillMode getFillMode () const override
+	{
+		return PlatformGraphicsPathFillMode::Ignored;
+	}
+
+private:
+	ContextHandle context;
 	cairo_path_t* path {nullptr};
 };
 

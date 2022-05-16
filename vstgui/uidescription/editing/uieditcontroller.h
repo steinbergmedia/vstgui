@@ -45,7 +45,8 @@ class UIEditController : public CBaseObject,
 {
 public:
 	UIEditController (UIDescription* description);
-
+	void setDarkTheme (bool state); // must be called before createEditView
+	bool usesDarkTheme () const;
 	CView* createEditView ();
 	UIEditMenuController* getMenuController () const { return menuController; }
 	UIUndoManager* getUndoManager () const { return undoManager; }
@@ -130,8 +131,7 @@ protected:
 	void finishGroupAction () override;
 
 	// IKeyboardHook
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
+	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
 
 	// CommandMenuItemTargetAdapter
 	bool validateCommandMenuItem (CCommandMenuItem* item) override;
@@ -142,7 +142,8 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIGridController> gridController;
-	UIEditView* editView;
+	CView* baseView {nullptr};
+	UIEditView* editView {nullptr};
 	SharedPointer<UITemplateController> templateController;
 	SharedPointer<UIEditMenuController> menuController;
 	SharedPointer<UIZoomSettingController> zoomSettingController;
@@ -191,6 +192,7 @@ private:
 	void doSelectAllChildren ();
 	void doSelectParents ();
 	void doSelectViewInHierarchyBrowser (CView* view);
+	void doChangeTheme (bool dark);
 	
 	void onUndoManagerChanged ();
 	template<typename NameChangeAction, IViewCreator::AttrType attrType> void performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName);

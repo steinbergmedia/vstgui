@@ -129,7 +129,7 @@ public:
 	bool attached (CView *parent) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) override;
 	bool drawFocusOnTop () override;

@@ -8,10 +8,11 @@
 
 #if WINDOWS
 struct IUnknown;
+struct ID2D1DeviceContext;
 
 #include "d2dbitmap.h"
 #include <windows.h>
-#include <d2d1.h>
+#include <d2d1_1.h>
 #include <stack>
 
 namespace VSTGUI {
@@ -22,6 +23,8 @@ class D2DDrawContext final : public COffscreenContext
 {
 public:
 	D2DDrawContext (HWND window, const CRect& drawSurface);
+	D2DDrawContext (ID2D1DeviceContext* deviceContext, const CRect& drawSurface,
+					ID2D1Device* device = nullptr);
 	D2DDrawContext (D2DBitmap* bitmap);
 	~D2DDrawContext ();
 
@@ -97,6 +100,7 @@ protected:
 	bool needsHalfPointOffset () const;
 
 	HWND window;
+	ID2D1Device* device {nullptr};
 	ID2D1RenderTarget* renderTarget;
 	ID2D1SolidColorBrush* fillBrush;
 	ID2D1SolidColorBrush* strokeBrush;
@@ -148,6 +152,14 @@ static inline D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
 	matrix._32 = static_cast<FLOAT> (t.dy);
 	return matrix;
 }
+
+//-----------------------------------------------------------------------------
+static inline D2D1::ColorF toColorF (CColor c, float alpha)
+{
+	return D2D1::ColorF (c.normRed<float> (), c.normGreen<float> (), c.normBlue<float> (),
+	                     c.normAlpha<float> () * alpha);
+}
+
 
 } // VSTGUI
 

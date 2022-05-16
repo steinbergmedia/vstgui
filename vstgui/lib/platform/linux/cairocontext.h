@@ -5,6 +5,7 @@
 #pragma once
 
 #include "cairoutils.h"
+#include "cairopath.h"
 
 #include "../../coffscreencontext.h"
 
@@ -67,6 +68,8 @@ private:
 
 	SurfaceHandle surface;
 	ContextHandle cr;
+
+	PlatformGraphicsPathFactoryPtr graphicsPathFactory;
 };
 
 //------------------------------------------------------------------------

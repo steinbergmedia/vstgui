@@ -760,11 +760,17 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 	selection->registerListener (this);
 	undoManager->registerListener (this);
 	description->registerListener (this);
+
+	UIEditController::getEditorDescription ()->getColor ("control.font", attributeNameColor);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIAttributesController::~UIAttributesController ()
 {
+	if (viewNameLabel)
+		viewNameLabel->unregisterViewListener (this);
+	if (attributeView)
+		attributeView->unregisterViewListener (this);
 	selection->unregisterListener (this);
 	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
@@ -835,6 +841,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 		if (rcv)
 		{
 			attributeView = rcv;
+			attributeView->registerViewListener (this);
 		}
 	}
 	if (searchField == nullptr)
@@ -861,6 +868,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 		{
 			viewNameLabel = textLabel;
 			viewNameLabel->setText ("No Selection");
+			viewNameLabel->registerViewListener (this);
 		}
 	}
 	return DelegationController::verifyView (view, attributes, description);
@@ -968,9 +976,9 @@ void UIAttributesController::selectionDidChange (UISelection*)
 			if (frame->inEventProcessing ())
 			{
 				rebuildRequested = true;
-				frame->doAfterEventProcessing ([this] () {
-					rebuildAttributesView ();
-					rebuildRequested = false;
+				frame->doAfterEventProcessing ([Self = shared (this)] () {
+					Self->rebuildAttributesView ();
+					Self->rebuildRequested = false;
 				});
 			}
 		}
@@ -1080,7 +1088,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	label->setTextTruncateMode (CTextLabel::kTruncateHead);
 	label->setTransparency (true);
 	label->setHoriAlign (kRightText);
-	label->setFontColor (kBlackCColor);
+	label->setFontColor (attributeNameColor);
 	label->setFont (kNormalFontSmall);
 	label->setAutosizeFlags (kAutosizeAll);
 
@@ -1287,6 +1295,17 @@ void UIAttributesController::rebuildAttributesView ()
 		attributeView->setMouseableArea (attributeView->getViewSize ());
 	}
 	attributeView->invalid ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::viewWillDelete (CView* view)
+{
+	if (view == attributeView)
+		attributeView = nullptr;
+	else if (view == viewNameLabel)
+		viewNameLabel = nullptr;
+
+	view->unregisterViewListener (this);
 }
 
 } // VSTGUI

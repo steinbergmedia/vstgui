@@ -6,6 +6,7 @@
 #include "../cbitmap.h"
 #include "../cframe.h"
 #include "../cstring.h"
+#include "../events.h"
 
 #include "../platform/iplatformoptionmenu.h"
 #include "../platform/iplatformframe.h"
@@ -13,11 +14,34 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+struct CMenuItem::Impl
+{
+	UTF8String title;
+	UTF8String keyCode;
+	SharedPointer<COptionMenu> submenu;
+	SharedPointer<CBitmap> icon;
+	int32_t flags {0};
+	int32_t keyModifiers {0};
+	VirtualKey virtualKey {VirtualKey::None};
+	int32_t tag {-1};
+};
+
+//------------------------------------------------------------------------
 // CMenuItem
 //------------------------------------------------------------------------
 /*! @class CMenuItem
 Defines an item of a VSTGUI::COptionMenu
 */
+
+//------------------------------------------------------------------------
+CMenuItem::CMenuItem ()
+{
+	impl = std::make_unique<Impl> ();
+}
+
+//------------------------------------------------------------------------
+CMenuItem::~CMenuItem () noexcept = default;
+
 //------------------------------------------------------------------------
 /**
  * CMenuItem constructor.
@@ -29,8 +53,9 @@ Defines an item of a VSTGUI::COptionMenu
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const UTF8String& inTitle, const UTF8String& inKeycode, int32_t inKeyModifiers, CBitmap* inIcon, int32_t inFlags)
-: flags (inFlags)
+: CMenuItem ()
 {
+	impl->flags = inFlags;
 	setTitle (inTitle);
 	setKey (inKeycode, inKeyModifiers);
 	setIcon (inIcon);
@@ -45,6 +70,7 @@ CMenuItem::CMenuItem (const UTF8String& inTitle, const UTF8String& inKeycode, in
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const UTF8String& inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
+: CMenuItem ()
 {
 	setTitle (inTitle);
 	setSubmenu (inSubmenu);
@@ -59,6 +85,7 @@ CMenuItem::CMenuItem (const UTF8String& inTitle, COptionMenu* inSubmenu, CBitmap
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const UTF8String& inTitle, int32_t inTag)
+: CMenuItem ()
 {
 	setTitle (inTitle);
 	setTag (inTag);
@@ -71,12 +98,13 @@ CMenuItem::CMenuItem (const UTF8String& inTitle, int32_t inTag)
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const CMenuItem& item)
-: flags (item.flags)
+: CMenuItem ()
 {
+	impl->flags = item.impl->flags;
 	setTitle (item.getTitle ());
 	setIcon (item.getIcon ());
-	if (item.getVirtualKeyCode ())
-		setVirtualKey (item.getVirtualKeyCode (), item.getKeyModifiers ());
+	if (item.getVirtualKey () != VirtualKey::None)
+		setVirtualKey (item.getVirtualKey (), item.getKeyModifiers ());
 	else
 		setKey (item.getKeycode (), item.getKeyModifiers ());
 	setTag (item.getTag ());
@@ -86,64 +114,145 @@ CMenuItem::CMenuItem (const CMenuItem& item)
 //------------------------------------------------------------------------
 void CMenuItem::setTitle (const UTF8String& inTitle)
 {
-	title = inTitle;
+	impl->title = inTitle;
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setKey (const UTF8String& inKeycode, int32_t inKeyModifiers)
 {
-	keyCode = inKeycode;
-	keyModifiers = inKeyModifiers;
-	virtualKeyCode = 0;
+	impl->keyCode = inKeycode;
+	impl->keyModifiers = inKeyModifiers;
+	impl->virtualKey = VirtualKey::None;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 void CMenuItem::setVirtualKey (int32_t inVirtualKeyCode, int32_t inKeyModifiers)
 {
 	setKey (nullptr, inKeyModifiers);
-	virtualKeyCode = inVirtualKeyCode;
+	impl->virtualKey = fromVstVirtualKey (inVirtualKeyCode);
+}
+
+//------------------------------------------------------------------------
+int32_t CMenuItem::getVirtualKeyCode () const
+{
+	return toVstVirtualKey (impl->virtualKey);
+}
+#endif
+
+//------------------------------------------------------------------------
+void CMenuItem::setVirtualKey (VirtualKey inVirtualKey, int32_t inKeyModifiers)
+{
+	setKey (nullptr, inKeyModifiers);
+	impl->virtualKey = inVirtualKey;
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setSubmenu (COptionMenu* inSubmenu)
 {
-	submenu = inSubmenu;
+	impl->submenu = inSubmenu;
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIcon (CBitmap* inIcon)
 {
-	icon = inIcon;
+	impl->icon = inIcon;
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setTag (int32_t t)
 {
-	tag = t;
+	impl->tag = t;
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setEnabled (bool state)
 {
-	setBit (flags, kDisabled, !state);
+	setBit (impl->flags, kDisabled, !state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setChecked (bool state)
 {
-	setBit (flags, kChecked, state);
+	setBit (impl->flags, kChecked, state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIsTitle (bool state)
 {
-	setBit (flags, kTitle, state);
+	setBit (impl->flags, kTitle, state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIsSeparator (bool state)
 {
-	setBit (flags, kSeparator, state);
+	setBit (impl->flags, kSeparator, state);
+}
+
+//------------------------------------------------------------------------
+bool CMenuItem::isEnabled () const
+{
+	return !hasBit (impl->flags, kDisabled);
+}
+
+//------------------------------------------------------------------------
+bool CMenuItem::isChecked () const
+{
+	return hasBit (impl->flags, kChecked);
+}
+
+//------------------------------------------------------------------------
+bool CMenuItem::isTitle () const
+{
+	return hasBit (impl->flags, kTitle);
+}
+
+//------------------------------------------------------------------------
+bool CMenuItem::isSeparator () const
+{
+	return hasBit (impl->flags, kSeparator);
+}
+
+//------------------------------------------------------------------------
+const UTF8String& CMenuItem::getTitle () const
+{
+	return impl->title;
+}
+
+//------------------------------------------------------------------------
+int32_t CMenuItem::getKeyModifiers () const
+{
+	return impl->keyModifiers;
+}
+
+//------------------------------------------------------------------------
+const UTF8String& CMenuItem::getKeycode () const
+{
+	return impl->keyCode;
+}
+
+//------------------------------------------------------------------------
+VirtualKey CMenuItem::getVirtualKey () const
+{
+	return impl->virtualKey;
+}
+
+//------------------------------------------------------------------------
+COptionMenu* CMenuItem::getSubmenu () const
+{
+	return impl->submenu;
+}
+
+//------------------------------------------------------------------------
+CBitmap* CMenuItem::getIcon () const
+{
+	return impl->icon;
+}
+
+//------------------------------------------------------------------------
+int32_t CMenuItem::getTag () const
+{
+	return impl->tag;
 }
 
 //------------------------------------------------------------------------
@@ -159,6 +268,7 @@ CCommandMenuItem::CCommandMenuItem (Desc&& args)
 , commandName (std::move (args.commandName))
 , itemTarget (std::move (args.target))
 {
+	setTag (args.tag);
 }
 
 //------------------------------------------------------------------------
@@ -168,6 +278,7 @@ CCommandMenuItem::CCommandMenuItem (const Desc& args)
 , commandName (args.commandName)
 , itemTarget (args.target)
 {
+	setTag (args.tag);
 }
 
 //------------------------------------------------------------------------
@@ -313,21 +424,22 @@ void COptionMenu::unregisterOptionMenuListener (IOptionMenuListener* listener)
 }
 
 //------------------------------------------------------------------------
-int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
+void COptionMenu::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.modifier == 0 && keyCode.character == 0)
+	if (event.type != EventType::KeyUp && event.modifiers.empty () && event.character == 0)
 	{
-		if (keyCode.virt == VKEY_RETURN)
+		if (event.virt == VirtualKey::Return)
 		{
 			auto self = shared (this);
 			getFrame ()->doAfterEventProcessing ([self] () {
 				self->doPopup ();
 			});
-			return 1;
+			event.consumed = true;
+			return;
 		}
 		if (!(style & (kMultipleCheckStyle & ~kCheckStyle)))
 		{
-			if (keyCode.virt == VKEY_UP)
+			if (event.virt == VirtualKey::Up)
 			{
 				int32_t value = (int32_t)getValue ()-1;
 				if (value >= 0)
@@ -345,9 +457,10 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 						invalid ();
 					}
 				}
-				return 1;
+				event.consumed = true;
+				return;
 			}
-			if (keyCode.virt == VKEY_DOWN)
+			if (event.virt == VirtualKey::Down)
 			{
 				int32_t value = (int32_t)getValue ()+1;
 				if (value < getNbEntries ())
@@ -365,11 +478,12 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 						invalid ();
 					}
 				}
-				return 1;
+				event.consumed = true;
+				return;
 			}
 		}
 	}
-	return CParamDisplay::onKeyDown (keyCode);
+	CParamDisplay::onKeyboardEvent (event);
 }
 
 //------------------------------------------------------------------------

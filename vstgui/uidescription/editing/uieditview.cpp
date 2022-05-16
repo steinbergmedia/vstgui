@@ -25,6 +25,7 @@
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/clayeredviewcontainer.h"
 #include "../../lib/dragging.h"
+#include "../../lib/events.h"
 #include "../../lib/idatapackage.h"
 #include "../../lib/controls/ctextedit.h"
 #include <cassert>
@@ -283,7 +284,7 @@ void UIEditView::enableEditing (bool state)
 			overlayView->setAutosizeFlags (kAutosizeAll);
 			overlayView->setMouseEnabled (false);
 			overlayView->setTransparency (true);
-			overlayView->setZIndex (1);
+			overlayView->setZIndex (std::numeric_limits<uint32_t>::max () - 1);
 			parent->addView (overlayView);
 			
 			highlightView = new UIEditViewInternal::UIHighlightView (this, viewHighlightColor);
@@ -481,11 +482,22 @@ bool UIEditView::advanceNextFocusView (CView* oldFocus, bool reverse)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
+void UIEditView::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (editing == false)
-		return CViewContainer::onWheel (where, axis, distance, buttons);
-	return false;
+	if (!editing)
+		CViewContainer::onMouseWheelEvent (event);
+}
+
+//------------------------------------------------------------------------
+void UIEditView::onZoomGestureEvent (ZoomGestureEvent& event)
+{
+	if (editing)
+	{
+		auto scale = getTransform ().m11;
+		auto newScale = scale + scale * event.zoom;
+		setScale (newScale);
+		event.consumed = true;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -558,9 +570,9 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditView::hitTestSubViews (const CPoint& where, const CButtonState& buttons)
+bool UIEditView::hitTestSubViews (const CPoint& where, const Event& event)
 {
-	return hitTest (where, buttons);
+	return hitTest (where, event);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -831,9 +843,10 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 }
 
 //------------------------------------------------------------------------
-int32_t UIEditView::onKeyDown (VstKeyCode& keyCode)
+void UIEditView::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (mouseEditMode != MouseEditMode::NoEditing && keyCode.virt == VKEY_ESCAPE)
+	if (mouseEditMode != MouseEditMode::NoEditing && event.virt == VirtualKey::Escape &&
+	    event.type == EventType::KeyDown)
 	{
 		if (lines)
 		{
@@ -848,9 +861,10 @@ int32_t UIEditView::onKeyDown (VstKeyCode& keyCode)
 		}
 		mouseEditMode = MouseEditMode::NoEditing;
 		getFrame ()->setCursor (kCursorDefault);
-		return 1;
+		event.consumed = true;
+		return;
 	}
-	return CViewContainer::onKeyDown (keyCode);
+	CViewContainer::onKeyboardEvent (event);
 }
 
 //-----------------------------------------------------------------------------

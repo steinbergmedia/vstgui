@@ -70,6 +70,11 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 		r.setWidth (widthPerColor < minWidth ? minWidth : (std::floor (widthPerColor * scaleFactor + 0.5) / scaleFactor));
 		r.offset (-r.getWidth (), 0);
 		offscreen->setLineWidth (minWidth);
+
+		auto maxLines = static_cast<size_t> (std::ceil (widthPerColor / minWidth));
+		CDrawContext::LineList lines;
+		lines.reserve (maxLines);
+
 		for (int32_t i = 0; i < kNumPoints; i++)
 		{
 			CCoord x = std::floor (widthPerColor * i * scaleFactor + 0.5) / scaleFactor;
@@ -121,8 +126,13 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 				CCoord next = r.left + widthPerColor;
 				while (r.left < next)
 				{
-					offscreen->drawLine (r.getTopLeft (), r.getBottomLeft ());
+					lines.emplace_back (r.getTopLeft (), r.getBottomLeft ());
 					r.offset (minWidth, 0);
+				}
+				if (!lines.empty ())
+				{
+					offscreen->drawLines (lines);
+					lines.clear ();
 				}
 			}
 		}

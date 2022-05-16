@@ -11,6 +11,7 @@
 #include "quartzgraphicspath.h"
 #include "cfontmac.h"
 #include "../../cbitmap.h"
+#include "../../cgradient.h"
 
 #ifndef CGFLOAT_DEFINED
 	#define CGFLOAT_DEFINED
@@ -99,22 +100,30 @@ void CGDrawContext::endDraw ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGDrawContext::createGraphicsPath ()
 {
-	return new QuartzGraphicsPath;
+	return new CGraphicsPath (CGGraphicsPathFactory::instance ());
 }
 
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
-	const CoreTextFont* ctFont = font->getPlatformFont ().cast<const CoreTextFont> ();
-	return ctFont ? new QuartzGraphicsPath (ctFont, text) : nullptr;
+	if (auto path =
+	        CGGraphicsPathFactory::instance ()->createTextPath (font->getPlatformFont (), text))
+	{
+		return new CGraphicsPath (CGGraphicsPathFactory::instance (), std::move (path));
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
-                                      CGraphicsTransform* t)
+void CGDrawContext::drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode, CGraphicsTransform* t)
 {
-	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
-	if (path == nullptr)
+	if (!path)
+		return;
+	const auto& graphicsPath = path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored);
+	if (!graphicsPath)
+		return;
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	if (!cgPath)
 		return;
 
 	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
@@ -143,19 +152,24 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
 		DoGraphicStateSave (context, [&] () {
 			if (t)
 			{
-				CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
+				CGAffineTransform transform = createCGAffineTransform (*t);
 				CGContextConcatCTM (context, transform);
 			}
 			if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
 			{
 				DoGraphicStateSave (context, [&] () {
 					applyLineWidthCTM (context);
-					path->pixelAlign (this);
+					cgPath->pixelAlign (
+					    [] (const CGPoint& p, void* context) {
+						    auto cgDrawContext = reinterpret_cast<CGDrawContext*> (context);
+						    return cgDrawContext->pixelAlligned (p);
+					    },
+					    this);
 				});
-				CGContextAddPath (context, path->getCGPathRef ());
+				CGContextAddPath (context, cgPath->getCGPathRef ());
 			}
 			else
-				CGContextAddPath (context, path->getCGPathRef ());
+				CGContextAddPath (context, cgPath->getCGPathRef ());
 
 		});
 		CGContextDrawPath (context, cgMode);
@@ -165,16 +179,22 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode,
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient,
-                                        const CPoint& startPoint, const CPoint& endPoint,
-                                        bool evenOdd, CGraphicsTransform* t)
+void CGDrawContext::fillLinearGradient (CGraphicsPath* path, const CGradient& gradient,
+										const CPoint& startPoint, const CPoint& endPoint,
+										bool evenOdd, CGraphicsTransform* t)
 {
-	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
 	if (path == nullptr)
 		return;
 
-	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
+	auto cgGradient = dynamic_cast<QuartzGradient*> (gradient.getPlatformGradient ().get ());
 	if (cgGradient == nullptr)
+		return;
+
+	const auto& graphicsPath = path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored);
+	if (!graphicsPath)
+		return;
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	if (!cgPath)
 		return;
 
 	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
@@ -189,13 +209,20 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 			}
 			if (t)
 			{
-				CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
+				CGAffineTransform transform = createCGAffineTransform (*t);
 				CGContextConcatCTM (context, transform);
 			}
 			if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
-				path->pixelAlign (this);
+			{
+				cgPath->pixelAlign (
+					[] (const CGPoint& p, void* context) {
+						auto cgDrawContext = reinterpret_cast<CGDrawContext*> (context);
+						return cgDrawContext->pixelAlligned (p);
+					},
+					this);
+			}
 
-			CGContextAddPath (context, path->getCGPathRef ());
+			CGContextAddPath (context, cgPath->getCGPathRef ());
 		});
 
 		if (evenOdd)
@@ -212,17 +239,23 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient,
-                                        const CPoint& center, CCoord radius,
-                                        const CPoint& originOffset, bool evenOdd,
-                                        CGraphicsTransform* t)
+void CGDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gradient,
+										const CPoint& center, CCoord radius,
+										const CPoint& originOffset, bool evenOdd,
+										CGraphicsTransform* t)
 {
-	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
 	if (path == nullptr)
 		return;
 
-	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
+	auto cgGradient = dynamic_cast<QuartzGradient*> (gradient.getPlatformGradient ().get ());
 	if (cgGradient == nullptr)
+		return;
+
+	const auto& graphicsPath = path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored);
+	if (!graphicsPath)
+		return;
+	auto cgPath = dynamic_cast<CGGraphicsPath*> (graphicsPath.get ());
+	if (!cgPath)
 		return;
 
 	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
@@ -230,13 +263,20 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 		DoGraphicStateSave (context, [&] () {
 			if (t)
 			{
-				CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
+				CGAffineTransform transform = createCGAffineTransform (*t);
 				CGContextConcatCTM (context, transform);
 			}
 			if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
-				path->pixelAlign (this);
+			{
+				cgPath->pixelAlign (
+					[] (const CGPoint& p, void* context) {
+						auto cgDrawContext = reinterpret_cast<CGDrawContext*> (context);
+						return cgDrawContext->pixelAlligned (p);
+					},
+					this);
+			}
 
-			CGContextAddPath (context, path->getCGPathRef ());
+			CGContextAddPath (context, cgPath->getCGPathRef ());
 		});
 
 		if (evenOdd)
@@ -354,7 +394,14 @@ void CGDrawContext::drawLines (const LineList& lines)
 	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		applyLineStyle (context);
-		auto cgPoints = std::unique_ptr<CGPoint[]> (new CGPoint[lines.size () * 2]);
+
+		static constexpr auto numStackPoints = 32;
+		CGPoint stackPoints[numStackPoints];
+
+		auto cgPointsPtr = (lines.size () * 2) < numStackPoints
+							   ? nullptr
+							   : std::unique_ptr<CGPoint[]> (new CGPoint[lines.size () * 2]);
+		auto cgPoints = cgPointsPtr ? cgPointsPtr.get () : stackPoints;
 		uint32_t index = 0;
 		if (getDrawMode ().integralMode ())
 		{
@@ -379,7 +426,7 @@ void CGDrawContext::drawLines (const LineList& lines)
 			applyLineWidthCTM (context);
 
 		const size_t maxPointsPerIteration = 16;
-		const CGPoint* pointPtr = cgPoints.get ();
+		const CGPoint* pointPtr = cgPoints;
 		size_t numPoints = lines.size () * 2;
 		while (numPoints)
 		{
@@ -826,7 +873,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 				t.dx = p.x;
 				t.dy = p.y;
 			}
-			CGContextConcatCTM (cgContext, QuartzGraphicsPath::createCGAffineTransform (t));
+			CGContextConcatCTM (cgContext, createCGAffineTransform (t));
 		}
 
 		if (!swapYAxis)

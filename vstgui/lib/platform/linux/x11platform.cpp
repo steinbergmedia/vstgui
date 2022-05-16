@@ -6,6 +6,7 @@
 #include "../../cfileselector.h"
 #include "../../cframe.h"
 #include "../../cstring.h"
+#include "../../events.h"
 #include "x11frame.h"
 #include "x11dragging.h"
 #include "cairobitmap.h"
@@ -31,6 +32,7 @@
 #define explicit _explicit
 #include <xcb/xkb.h>
 #undef explicit
+#undef None
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -41,63 +43,64 @@ namespace X11 {
 //------------------------------------------------------------------------
 namespace {
 
-using VirtMap = std::unordered_map<xkb_keysym_t, uint16_t>;
-const VirtMap keyMap = {{XKB_KEY_BackSpace, VKEY_BACK},
-						{XKB_KEY_Tab, VKEY_TAB},
-						{XKB_KEY_Clear, VKEY_CLEAR},
-						{XKB_KEY_Return, VKEY_RETURN},
-						{XKB_KEY_Pause, VKEY_PAUSE},
-						{XKB_KEY_Escape, VKEY_ESCAPE},
-						{XKB_KEY_space, VKEY_SPACE},
-						{XKB_KEY_KP_Next, VKEY_NEXT},
-						{XKB_KEY_End, VKEY_END},
-						{XKB_KEY_Home, VKEY_HOME},
+using VirtMap = std::unordered_map<xkb_keysym_t, VirtualKey>;
+const VirtMap keyMap = {{XKB_KEY_BackSpace, VirtualKey::Back},
+						{XKB_KEY_Tab, VirtualKey::Tab},
+						{XKB_KEY_Clear, VirtualKey::Clear},
+						{XKB_KEY_Return, VirtualKey::Return},
+						{XKB_KEY_Pause, VirtualKey::Pause},
+						{XKB_KEY_Escape, VirtualKey::Escape},
+						{XKB_KEY_space, VirtualKey::Space},
+						{XKB_KEY_End, VirtualKey::End},
+						{XKB_KEY_Home, VirtualKey::Home},
 
-						{XKB_KEY_Left, VKEY_LEFT},
-						{XKB_KEY_Up, VKEY_UP},
-						{XKB_KEY_Right, VKEY_RIGHT},
-						{XKB_KEY_Down, VKEY_DOWN},
-						{XKB_KEY_Page_Up, VKEY_PAGEUP},
-						{XKB_KEY_Page_Down, VKEY_PAGEDOWN},
-						{XKB_KEY_KP_Page_Up, VKEY_PAGEUP},
-						{XKB_KEY_KP_Page_Down, VKEY_PAGEDOWN},
+						{XKB_KEY_Left, VirtualKey::Left},
+						{XKB_KEY_Up, VirtualKey::Up},
+						{XKB_KEY_Right, VirtualKey::Right},
+						{XKB_KEY_Down, VirtualKey::Down},
+						{XKB_KEY_Page_Up, VirtualKey::PageUp},
+						{XKB_KEY_Page_Down, VirtualKey::PageDown},
 
-						{XKB_KEY_Select, VKEY_SELECT},
-						{XKB_KEY_Print, VKEY_PRINT},
-						{XKB_KEY_KP_Enter, VKEY_ENTER},
-						{XKB_KEY_Insert, VKEY_INSERT},
-						{XKB_KEY_Delete, VKEY_DELETE},
-						{XKB_KEY_Help, VKEY_HELP},
+						{XKB_KEY_Select, VirtualKey::Select},
+						{XKB_KEY_Print, VirtualKey::Print},
+						{XKB_KEY_KP_Enter, VirtualKey::Enter},
+						{XKB_KEY_Insert, VirtualKey::Insert},
+						{XKB_KEY_Delete, VirtualKey::Delete},
+						{XKB_KEY_Help, VirtualKey::Help},
 						// Numpads ???
-						{XKB_KEY_KP_Multiply, VKEY_MULTIPLY},
-						{XKB_KEY_KP_Add, VKEY_ADD},
-						{XKB_KEY_KP_Separator, VKEY_SEPARATOR},
-						{XKB_KEY_KP_Subtract, VKEY_SUBTRACT},
-						{XKB_KEY_KP_Decimal, VKEY_DECIMAL},
-						{XKB_KEY_KP_Divide, VKEY_DIVIDE},
-						{XKB_KEY_F1, VKEY_F1},
-						{XKB_KEY_F2, VKEY_F2},
-						{XKB_KEY_F3, VKEY_F3},
-						{XKB_KEY_F4, VKEY_F4},
-						{XKB_KEY_F5, VKEY_F5},
-						{XKB_KEY_F6, VKEY_F6},
-						{XKB_KEY_F7, VKEY_F7},
-						{XKB_KEY_F8, VKEY_F8},
-						{XKB_KEY_F9, VKEY_F9},
-						{XKB_KEY_F10, VKEY_F10},
-						{XKB_KEY_F11, VKEY_F11},
-						{XKB_KEY_F12, VKEY_F12},
-						{XKB_KEY_Num_Lock, VKEY_NUMLOCK},
-						{XKB_KEY_Scroll_Lock, VKEY_SCROLL}, // correct ?
+						{XKB_KEY_KP_Multiply, VirtualKey::Multiply},
+						{XKB_KEY_KP_Add, VirtualKey::Add},
+						{XKB_KEY_KP_Separator, VirtualKey::Separator},
+						{XKB_KEY_KP_Subtract, VirtualKey::Subtract},
+						{XKB_KEY_KP_Decimal, VirtualKey::Decimal},
+						{XKB_KEY_KP_Divide, VirtualKey::Divide},
+						{XKB_KEY_F1, VirtualKey::F1},
+						{XKB_KEY_F2, VirtualKey::F2},
+						{XKB_KEY_F3, VirtualKey::F3},
+						{XKB_KEY_F4, VirtualKey::F4},
+						{XKB_KEY_F5, VirtualKey::F5},
+						{XKB_KEY_F6, VirtualKey::F6},
+						{XKB_KEY_F7, VirtualKey::F7},
+						{XKB_KEY_F8, VirtualKey::F8},
+						{XKB_KEY_F9, VirtualKey::F9},
+						{XKB_KEY_F10, VirtualKey::F10},
+						{XKB_KEY_F11, VirtualKey::F11},
+						{XKB_KEY_F12, VirtualKey::F12},
+						{XKB_KEY_Num_Lock, VirtualKey::NumLock},
+						{XKB_KEY_Scroll_Lock, VirtualKey::Scroll}, // correct ?
 #if 0
-						{XKB_KEY_Shift_L, VKEY_SHIFT},
-						{XKB_KEY_Shift_R, VKEY_SHIFT},
-						{XKB_KEY_Control_L, VKEY_CONTROL},
-						{XKB_KEY_Control_R, VKEY_CONTROL},
-						{XKB_KEY_Alt_L, VKEY_ALT},
-						{XKB_KEY_Alt_R, VKEY_ALT},
+						{XKB_KEY_Shift_L, VirtualKey::SHIFT},
+						{XKB_KEY_Shift_R, VirtualKey::SHIFT},
+						{XKB_KEY_Control_L, VirtualKey::CONTROL},
+						{XKB_KEY_Control_R, VirtualKey::CONTROL},
+						{XKB_KEY_Alt_L, VirtualKey::ALT},
+						{XKB_KEY_Alt_R, VirtualKey::ALT},
 #endif
-						{XKB_KEY_VoidSymbol, 0}};
+						{XKB_KEY_VoidSymbol, VirtualKey::None}};
+const VirtMap shiftKeyMap = {{XKB_KEY_KP_Page_Up, VirtualKey::PageUp},
+							 {XKB_KEY_KP_Page_Down, VirtualKey::PageDown},
+							 {XKB_KEY_KP_Home, VirtualKey::Home},
+							 {XKB_KEY_KP_End, VirtualKey::End}};
 
 //------------------------------------------------------------------------
 } // anonymous
@@ -117,7 +120,7 @@ struct RunLoop::Impl : IEventHandler
 	xkb_keymap* xkbKeymap {nullptr};
 	WindowEventHandlerMap windowEventHandlerMap;
 	std::array<xcb_cursor_t, CCursorType::kCursorIBeam + 1> cursors {{XCB_CURSOR_NONE}};
-	VstKeyCode lastUnprocessedKeyEvent;
+	KeyboardEvent lastUnprocessedKeyEvent;
 	uint32_t lastUtf32KeyEventChar {0};
 
 	void init (const SharedPointer<IRunLoop>& inRunLoop)
@@ -142,6 +145,20 @@ struct RunLoop::Impl : IEventHandler
 														XKB_KEYMAP_COMPILE_NO_FLAGS);
 			xkbState = xkb_state_new (xkbKeymap);
 			xkbUnprocessedState = xkb_state_new (xkbKeymap);
+
+			auto xkbStateCookie = xcb_xkb_get_state (xcbConnection, deviceId);
+			auto* xkbStateReply = xcb_xkb_get_state_reply (xcbConnection, xkbStateCookie, nullptr);
+			if (xkbStateReply)
+			{
+				xkb_state_update_mask (xkbState,
+									   xkbStateReply->baseMods,
+									   xkbStateReply->latchedMods,
+									   xkbStateReply->lockedMods,
+									   xkbStateReply->baseGroup,
+									   xkbStateReply->latchedGroup,
+									   xkbStateReply->lockedGroup);
+				free (xkbStateReply);
+			}
 		}
 	}
 
@@ -199,7 +216,8 @@ struct RunLoop::Impl : IEventHandler
 				xcb_window_t targetId = getXdndProxy (windowId);
 				if (targetId != 0)
 					it = windowEventHandlerMap.find (targetId);
-				if (it != windowEventHandlerMap.end ()) {
+				if (it != windowEventHandlerMap.end ())
+				{
 					it->second->onEvent (cmsg, windowId);
 					return;
 				}
@@ -213,25 +231,44 @@ struct RunLoop::Impl : IEventHandler
 		if (!xkbUnprocessedState)
 			return;
 
-		VstKeyCode code {};
+		KeyboardEvent keyEvent;
+		keyEvent.type = isKeyDown ? EventType::KeyDown : EventType::KeyUp;
 
 		if (event.state & XCB_MOD_MASK_SHIFT)
-			code.modifier |= MODIFIER_SHIFT;
+			keyEvent.modifiers.add (ModifierKey::Shift);
 		if (event.state & XCB_MOD_MASK_CONTROL)
-			code.modifier |= MODIFIER_CONTROL;
+			keyEvent.modifiers.add (ModifierKey::Control);
 		if (event.state & (XCB_MOD_MASK_1 | XCB_MOD_MASK_5))
-			code.modifier |= MODIFIER_ALTERNATE;
+			keyEvent.modifiers.add (ModifierKey::Alt);
 
 		auto ksym = xkb_state_key_get_one_sym (xkbUnprocessedState, event.detail);
-		auto it = keyMap.find (ksym);
-		if (it != keyMap.end ())
-			code.virt = it->second;
-		else
-			code.character = xkb_keysym_to_utf32 (ksym);
-
 		xkb_state_update_key (xkbState, event.detail, isKeyDown ? XKB_KEY_DOWN : XKB_KEY_UP);
-		lastUtf32KeyEventChar = xkb_state_key_get_utf32 (xkbState, event.detail);
-		lastUnprocessedKeyEvent = code;
+
+		VirtMap::const_iterator it;
+		bool ksymMapped = false;
+		if (!ksymMapped && keyEvent.modifiers.has(ModifierKey::Shift))
+		{
+			it = shiftKeyMap.find (ksym);
+			ksymMapped = it != shiftKeyMap.end ();
+		}
+		if (!ksymMapped)
+		{
+			it = keyMap.find (ksym);
+			ksymMapped = it != keyMap.end ();
+		}
+
+		if (ksymMapped)
+		{
+			keyEvent.virt = it->second;
+			lastUtf32KeyEventChar = 0;
+		}
+		else
+		{
+			keyEvent.character = xkb_state_key_get_utf32 (xkbState, event.detail);
+			lastUtf32KeyEventChar = keyEvent.character;
+		}
+
+		lastUnprocessedKeyEvent = std::move (keyEvent);
 	}
 
 	void onEvent () override
@@ -490,9 +527,9 @@ uint32_t RunLoop::getCursorID (CCursorType cursor)
 }
 
 //------------------------------------------------------------------------
-VstKeyCode RunLoop::getCurrentKeyEvent () const
+KeyboardEvent&& RunLoop::getCurrentKeyEvent () const
 {
-	return impl->lastUnprocessedKeyEvent;
+	return std::move (impl->lastUnprocessedKeyEvent);
 }
 
 //------------------------------------------------------------------------

@@ -32,12 +32,6 @@ function(vstgui_add_executable target sources)
       MACOSX_PACKAGE_LOCATION "."
     )
     add_executable(${target} ${sources} ${PkgInfoResource})
-    set(PLATFORM_LIBRARIES
-      "-framework Cocoa"
-      "-framework OpenGL"
-      "-framework QuartzCore"
-      "-framework Accelerate"
-    )
     set_target_properties(${target} PROPERTIES
       MACOSX_BUNDLE TRUE
       XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT $<$<CONFIG:Debug>:dwarf>$<$<NOT:$<CONFIG:Debug>>:dwarf-with-dsym>
@@ -99,6 +93,15 @@ function(vstgui_add_resources target resources)
 	  endif()
     endforeach(resource ${resources})
   endif()  
+endfunction()
+
+###########################################################################################
+function(vstgui_set_target_bundle_id target identifier)
+  if(CMAKE_HOST_APPLE)
+    set_target_properties(${target} PROPERTIES
+      XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER ${identifier}
+    )
+  endif(CMAKE_HOST_APPLE)
 endfunction()
 
 ###########################################################################################

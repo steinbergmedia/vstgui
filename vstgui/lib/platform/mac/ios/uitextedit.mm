@@ -141,10 +141,10 @@ UITextEdit::~UITextEdit ()
 	#endif
 		platformControl = nil;
 	}
-	delegate = nil;
 #if !ARC_ENABLED
 	[delegate release];
 #endif
+	delegate = nil;
 }
 
 //------------------------------------------------------------------------------------

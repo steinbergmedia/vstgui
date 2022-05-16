@@ -8,14 +8,24 @@
 #include "../../optional.h"
 #include "../../cstring.h"
 
+struct ID2D1Factory;
+struct IDWriteFactory;
+struct IWICImagingFactory;
+
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
+
+//------------------------------------------------------------------------
+namespace DirectComposition {
+struct Factory;
+}
 
 //-----------------------------------------------------------------------------
 class Win32Factory final : public IPlatformFactory
 {
 public:
 	Win32Factory (HINSTANCE instance);
+	~Win32Factory () noexcept override;
 
 	HINSTANCE getInstance () const noexcept;
 	void setResourceBasePath (const UTF8String& path) const noexcept;
@@ -26,6 +36,12 @@ public:
 
 	void useGenericTextEdit (bool state) const noexcept;
 	bool useGenericTextEdit () const noexcept;
+
+	ID2D1Factory* getD2DFactory () const noexcept;
+	IWICImagingFactory* getWICImagingFactory () const noexcept;
+	IDWriteFactory* getDirectWriteFactory () const noexcept;
+
+	DirectComposition::Factory* getDirectCompositionFactory () const noexcept;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
@@ -124,6 +140,19 @@ public:
 	 */
 	COffscreenContextPtr createOffscreenContext (const CPoint& size,
 												 double scaleFactor = 1.) const noexcept final;
+
+	/** Create a platform gradient object
+	 *	@return platform gradient object or nullptr on failure
+	 */
+	PlatformGradientPtr createGradient () const noexcept final;
+
+	/** Create a platform file selector
+	 *	@param style file selector style
+	 *	@param frame frame
+	 *	@return platform file selector or nullptr on failure
+	 */
+	PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style,
+												IPlatformFrame* frame) const noexcept;
 
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;

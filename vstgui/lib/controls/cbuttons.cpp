@@ -7,6 +7,7 @@
 #include "../cbitmap.h"
 #include "../cframe.h"
 #include "../cgraphicspath.h"
+#include "../events.h"
 #include "../platform/iplatformfont.h"
 #include <cmath>
 
@@ -103,18 +104,19 @@ CMouseEventResult COnOffButton::onMouseCancel ()
 }
 
 //------------------------------------------------------------------------
-int32_t COnOffButton::onKeyDown (VstKeyCode& keyCode)
+void COnOffButton::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
+	if (event.type != EventType::KeyDown)
+		return;
+	if (event.virt == VirtualKey::Return && event.modifiers.empty ())
 	{
 		value = (value == getMax ()) ? getMin () : getMax ();
 		invalid ();
 		beginEdit ();
 		valueChanged ();
 		endEdit ();
-		return 1;
+		event.consumed = true;
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------
@@ -263,34 +265,30 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const CButtonState& 
 }
 
 //------------------------------------------------------------------------
-int32_t CKickButton::onKeyDown (VstKeyCode& keyCode)
+void CKickButton::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
+	if (event.modifiers.empty () && event.virt == VirtualKey::Return)
 	{
-		if (value != getMax ())
+		if (event.type == EventType::KeyDown)
 		{
-			beginEdit ();
-			value = getMax ();
+			if (value != getMax ())
+			{
+				beginEdit ();
+				value = getMax ();
+				invalid ();
+				valueChanged ();
+			}
+			event.consumed = true;
+		}
+		else if (event.type == EventType::KeyUp && isEditing ())
+		{
+			value = getMin ();
 			invalid ();
 			valueChanged ();
+			endEdit ();
+			event.consumed = true;
 		}
-		return 1;
 	}
-	return -1;
-}
-
-//------------------------------------------------------------------------
-int32_t CKickButton::onKeyUp (VstKeyCode& keyCode)
-{
-	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
-	{
-		value = getMin ();
-		invalid ();
-		valueChanged ();
-		endEdit ();
-		return 1;
-	}
-	return -1;
 }
 
 //------------------------------------------------------------------------
@@ -670,18 +668,18 @@ CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const CButtonState& butto
 }
 
 //------------------------------------------------------------------------
-int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
+void CCheckBox::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
+	if (event.type == EventType::KeyDown && event.virt == VirtualKey::Return &&
+	    event.modifiers.empty ())
 	{
 		value = (value < getMax ()) ? getMax () : getMin ();
 		invalid ();
 		beginEdit ();
 		valueChanged ();
 		endEdit ();
-		return 1;
+		event.consumed = true;
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------
@@ -1029,9 +1027,11 @@ CMouseEventResult CTextButton::onMouseMoved (CPoint& where, const CButtonState& 
 }
 
 //------------------------------------------------------------------------
-int32_t CTextButton::onKeyDown (VstKeyCode& keyCode)
+void CTextButton::onKeyboardEvent (KeyboardEvent& event)
 {
-	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
+	if (event.type != EventType::KeyDown)
+		return;
+	if (event.modifiers.empty () && event.virt == VirtualKey::Return)
 	{
 		if (style == kKickStyle)
 		{
@@ -1058,15 +1058,8 @@ int32_t CTextButton::onKeyDown (VstKeyCode& keyCode)
 			valueChanged ();
 			endEdit ();
 		}
-		return 1;
+		event.consumed = true;
 	}
-	return -1;
-}
-
-//------------------------------------------------------------------------
-int32_t CTextButton::onKeyUp (VstKeyCode& keyCode)
-{
-	return -1;
 }
 
 } // VSTGUI

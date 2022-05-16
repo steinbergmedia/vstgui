@@ -2,6 +2,7 @@
 
 #include "lib/platform/linux/linuxstring.cpp"
 
+#include "lib/platform/linux/x11dragging.cpp"
 #include "lib/platform/linux/x11fileselector.cpp"
 #include "lib/platform/linux/x11frame.cpp"
 #include "lib/platform/linux/x11platform.cpp"

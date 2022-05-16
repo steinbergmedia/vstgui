@@ -65,7 +65,6 @@ static Command ShowAlertBoxDesign {CommandGroup::File, "Show AlertBox Design"};
 
 //------------------------------------------------------------------------
 class DisabledControlsController : public DelegationController,
-                                   public ViewMouseListenerAdapter,
                                    public ViewListenerAdapter
 {
 public:
@@ -75,7 +74,6 @@ public:
 		for (auto control : controls)
 		{
 			control->unregisterViewListener (this);
-			control->unregisterViewMouseListener (this);
 		}
 		controls.clear ();
 	}
@@ -85,7 +83,6 @@ public:
 	{
 		if (auto control = dynamic_cast<CControl*> (view))
 		{
-			control->registerViewMouseListener (this);
 			control->registerViewListener (this);
 			controls.push_back (control);
 		}
@@ -105,7 +102,6 @@ public:
 			if (it != controls.end ())
 			{
 				control->unregisterViewListener (this);
-				control->unregisterViewMouseListener (this);
 				controls.erase (it);
 			}
 		}

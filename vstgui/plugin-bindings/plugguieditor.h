@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -28,18 +28,11 @@ public :
 	PluginGUIEditor (void *pEffect);
 	~PluginGUIEditor () override;
 
-	virtual void setParameter (int32_t index, float value) {} 
+	virtual void setParameter (int32_t index, float value) {}
 	virtual bool getRect (ERect **ppRect);
 	virtual bool open (void *ptr);
 	virtual void close () { systemWindow = nullptr; }
 	virtual void idle ();
-	virtual void draw (ERect *pRect);
-
-	// wait (in ms)
-	void wait (uint32_t ms);
-
-	// get the current time (in ms)
-	uint32_t getTicks ();
 
 	// feedback to appli.
 	void doIdleStuff () override;

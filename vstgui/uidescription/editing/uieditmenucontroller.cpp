@@ -12,6 +12,7 @@
 #include "../uiviewfactory.h"
 #include "../uiattributes.h"
 #include "../../lib/cvstguitimer.h"
+#include "../../lib/events.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/ctextlabel.h"
 #include "../detail/uiviewcreatorattributes.h"
@@ -56,7 +57,7 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 			{
 				item->setKey (entries[index].key, entries[index].modifier);
 			}
-			else if (entries[index].virtualKey)
+			else if (entries[index].virtualKey != VirtualKey::None)
 			{
 				item->setVirtualKey (entries[index].virtualKey, entries[index].modifier);
 			}
@@ -372,14 +373,14 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 }
 
 //----------------------------------------------------------------------------------------------------
-CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key)
+CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, const KeyboardEvent& event)
 {
 	for (auto& item : *menu->getItems ())
 	{
 		COptionMenu* subMenu = item->getSubmenu ();
 		if (subMenu)
 		{
-			CCommandMenuItem* result = findKeyCommandItem (subMenu, key);
+			CCommandMenuItem* result = findKeyCommandItem (subMenu, event);
 			if (result)
 				return result;
 		}
@@ -387,20 +388,26 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 		if (result)
 		{
 			int32_t modifier = 0;
-			if (key.modifier & MODIFIER_SHIFT)
+			if (event.modifiers.has (ModifierKey::Shift))
 				modifier |= kShift;
-			if (key.modifier & MODIFIER_ALTERNATE)
+			if (event.modifiers.has (ModifierKey::Alt))
 				modifier |= kAlt;
-			if (key.modifier & MODIFIER_CONTROL)
+			if (event.modifiers.has (ModifierKey::Control))
 				modifier |= kControl;
-			if (key.modifier & MODIFIER_COMMAND)
+			if (event.modifiers.has (ModifierKey::Super))
 				modifier |= kApple;
 			if (result->getKeyModifiers () == modifier)
 			{
-				if (key.virt && key.virt == result->getVirtualKeyCode ())
+				if (event.virt != VirtualKey::None && event.virt == result->getVirtualKey ())
+				{
 					return result;
-				else if (!result->getKeycode ().empty () && result->getKeycode ().getString ()[0] == key.character)
+				}
+				else if (!result->getKeycode ().empty () &&
+						 static_cast<char32_t> (result->getKeycode ().getString ()[0]) ==
+							 event.character)
+				{
 					return result;
+				}
 			}
 		}
 	}
@@ -550,14 +557,14 @@ bool UIEditMenuController::canHandleCommand (const UTF8StringPtr category, const
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
+void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 {
 	COptionMenu* baseMenu = editMenu;
-	CCommandMenuItem* item = baseMenu ? findKeyCommandItem (baseMenu, key) : nullptr;
+	CCommandMenuItem* item = baseMenu ? findKeyCommandItem (baseMenu, event) : nullptr;
 	if (item == nullptr && fileMenu)
 	{
 		baseMenu = fileMenu;
-		item = findKeyCommandItem (baseMenu, key);
+		item = findKeyCommandItem (baseMenu, event);
 	}
 	if (item && item->getItemTarget ())
 	{
@@ -590,10 +597,22 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 			{
 				highlightTimer = makeOwned<CVSTGUITimer> (this, 90u, true);
 			}
-			return 1;
+			event.consumed = true;
 		}
 	}
-	return -1;
+}
+
+//----------------------------------------------------------------------------------------------------
+static void copyMenuItems (COptionMenu* src, COptionMenu* dst)
+{
+	auto srcItems = src->getItems ();
+	if (!srcItems)
+		return;
+	for (auto& item : *srcItems)
+	{
+		item->remember ();
+		dst->addEntry (item);
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -606,13 +625,19 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 		{
 			case kMenuEditTag:
 			{
-				createEditMenu (menu);
+				if (editMenu)
+					copyMenuItems (editMenu, menu);
+				else
+					createEditMenu (menu);
 				editMenu = menu;
 				break;
 			}
 			case kMenuFileTag:
 			{
-				createFileMenu (menu);
+				if (fileMenu)
+					copyMenuItems (fileMenu, menu);
+				else
+					createFileMenu (menu);
 				fileMenu = menu;
 				break;
 			}

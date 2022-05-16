@@ -59,7 +59,8 @@ public:
 	virtual CFontDesc& operator= (const CFontDesc&);
 	virtual bool operator== (const CFontDesc&) const;
 	virtual bool operator!= (const CFontDesc& other) const { return !(*this == other);}
-	
+
+	static void init ();
 	static void cleanup ();
 
 protected:
@@ -75,13 +76,13 @@ protected:
 //-----------------------------------------------------------------------------
 // Global fonts
 //-----------------------------------------------------------------------------
-extern const CFontRef kSystemFont;
-extern const CFontRef kNormalFontVeryBig;
-extern const CFontRef kNormalFontBig;
-extern const CFontRef kNormalFont;
-extern const CFontRef kNormalFontSmall;
-extern const CFontRef kNormalFontSmaller;
-extern const CFontRef kNormalFontVerySmall;
-extern const CFontRef kSymbolFont;
+extern CFontRef kSystemFont;
+extern CFontRef kNormalFontVeryBig;
+extern CFontRef kNormalFontBig;
+extern CFontRef kNormalFont;
+extern CFontRef kNormalFontSmall;
+extern CFontRef kNormalFontSmaller;
+extern CFontRef kNormalFontVerySmall;
+extern CFontRef kSymbolFont;
 
 } // VSTGUI

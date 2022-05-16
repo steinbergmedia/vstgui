@@ -15,6 +15,7 @@
 #include "../../lib/cgradientview.h"
 #include "../../lib/ifocusdrawing.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/events.h"
 #include <algorithm>
 
 namespace VSTGUI {
@@ -41,7 +42,7 @@ public:
 	
 	void setCurrentStartOffset (double startOffset);
 	double getSelectedColorStart () const { return editStartOffset; }
-	const CGradient::ColorStopMap& getColorStopMap () const { return colorStopMap; }
+	const GradientColorStopMap& getColorStopMap () const { return colorStopMap; }
 
 	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::registerListener;
 	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::unregisterListener;
@@ -49,7 +50,7 @@ private:
 	void draw (CDrawContext* context) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void onKeyboardEvent (KeyboardEvent& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
@@ -64,7 +65,7 @@ private:
 
 	SharedPointer<UIColor> editColor;
 	SharedPointer<CGradient> gradient;
-	CGradient::ColorStopMap colorStopMap;
+	GradientColorStopMap colorStopMap;
 	double editStartOffset;
 	CCoord stopWidth;
 	
@@ -92,7 +93,7 @@ UIColorStopEditView::~UIColorStopEditView ()
 //----------------------------------------------------------------------------------------------------
 void UIColorStopEditView::selectNextColorStop ()
 {
-	CGradient::ColorStopMap::const_iterator pos = colorStopMap.find (getSelectedColorStart ());
+	auto pos = colorStopMap.find (getSelectedColorStart ());
 	pos++;
 	if (pos == colorStopMap.end ())
 	{
@@ -107,7 +108,7 @@ void UIColorStopEditView::selectNextColorStop ()
 //----------------------------------------------------------------------------------------------------
 void UIColorStopEditView::selectPrevColorStop ()
 {
-	CGradient::ColorStopMap::const_iterator pos = colorStopMap.find (getSelectedColorStart ());
+	auto pos = colorStopMap.find (getSelectedColorStart ());
 	if (pos == colorStopMap.begin ())
 		pos = colorStopMap.end ();
 	pos--;
@@ -124,7 +125,7 @@ void UIColorStopEditView::setCurrentStartOffset (double startOffset)
 		startOffset = 0.;
 	else if (startOffset > 1.)
 		startOffset = 1.;
-	CGradient::ColorStopMap::iterator pos = colorStopMap.find (getSelectedColorStart ());
+	auto pos = colorStopMap.find (getSelectedColorStart ());
 	if (pos != colorStopMap.end () && pos->first != startOffset)
 	{
 		CColor color = pos->second;
@@ -158,47 +159,52 @@ void UIColorStopEditView::removeColorStop (double startOffset)
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIColorStopEditView::onKeyDown (VstKeyCode& keyCode)
+void UIColorStopEditView::onKeyboardEvent (KeyboardEvent& event)
 {
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown)
+		return;
+	switch (event.virt)
 	{
-		case VKEY_LEFT:
+		case VirtualKey::Left:
 		{
-			if (keyCode.modifier == 0)
+			if (event.modifiers.empty ())
 			{
 				selectPrevColorStop ();
-				return 1;
+				event.consumed = true;
 			}
-			else if (keyCode.modifier == MODIFIER_ALTERNATE)
+			else if (event.modifiers.is (ModifierKey::Alt))
 			{
-				setCurrentStartOffset (editStartOffset-0.001);
+				setCurrentStartOffset (editStartOffset - 0.001);
+				event.consumed = true;
 			}
 			break;
 		}
-		case VKEY_RIGHT:
+		case VirtualKey::Right:
 		{
-			if (keyCode.modifier == 0)
+			if (event.modifiers.empty ())
 			{
 				selectNextColorStop ();
-				return 1;
+				event.consumed = true;
 			}
-			else if (keyCode.modifier == MODIFIER_ALTERNATE)
+			else if (event.modifiers.is(ModifierKey::Alt))
 			{
-				setCurrentStartOffset (editStartOffset+0.001);
+				setCurrentStartOffset (editStartOffset + 0.001);
+				event.consumed = true;
 			}
 			break;
 		}
-		case VKEY_BACK:
+		case VirtualKey::Back:
 		{
-			if (keyCode.modifier == 0)
+			if (event.modifiers.empty ())
 			{
 				removeColorStop (getSelectedColorStart ());
-				return 1;
+				event.consumed = true;
 			}
 			break;
 		}
+		default:
+			break;
 	}
-	return CView::onKeyDown (keyCode);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -221,6 +227,7 @@ CMouseEventResult UIColorStopEditView::onMouseDown (CPoint& where, const CButton
 	}
 	else if (buttons.isLeftButton ())
 	{
+		getFrame ()->setFocusView (this);
 		double pos = gradientStartPosFromMousePos (where);
 		double range = (stopWidth / getWidth ()) / 2.;
 		for (auto& colorStop : colorStopMap)
@@ -274,7 +281,7 @@ void UIColorStopEditView::uiColorChanged (UIColor* c)
 void UIColorStopEditView::setGradient (CGradient* inGradient)
 {
 	colorStopMap = inGradient->getColorStops ();
-	CGradient::ColorStopMap::const_iterator it = colorStopMap.find (editStartOffset);
+	auto it = colorStopMap.find (editStartOffset);
 	if (it == colorStopMap.end ())
 		editStartOffset = colorStopMap.begin ()->first;
 	gradient = inGradient;
@@ -433,8 +440,8 @@ void UIGradientEditorController::updatePositionEdit ()
 //----------------------------------------------------------------------------------------------------
 void UIGradientEditorController::uiColorChanged (UIColor* c)
 {
-	CGradient::ColorStopMap colorStopMap = gradient->getColorStops ();
-	CGradient::ColorStopMap::iterator it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
+	auto colorStopMap = gradient->getColorStops (); // create a copy
+	auto it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
 	if (it != colorStopMap.end () && it->second != editColor->base ())
 	{
 		it->second = editColor->base ();

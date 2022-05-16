@@ -12,6 +12,7 @@ struct IUnknown;
 
 #include "../../cbitmap.h"
 #include "../../optional.h"
+#include "../../crect.h"
 #include "../iplatformresourceinputstream.h"
 #include <algorithm>
 #include <windows.h>
@@ -20,8 +21,6 @@ struct IUnknown;
 interface ID2D1Factory;
 interface IDWriteFactory;
 interface IWICImagingFactory;
-
-struct VstKeyCode;
 
 namespace VSTGUI {
 
@@ -42,7 +41,9 @@ extern void useD2D ();
 extern void unuseD2D ();
 extern IDWriteFactory* getDWriteFactory ();
 extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect);
-extern Optional<VstKeyCode> keyMessageToKeyCode (WPARAM wParam, LPARAM lParam);
+extern VirtualKey translateWinVirtualKey (WPARAM winVKey);
+extern void updateModifiers (Modifiers& modifiers);
+extern Optional<KeyboardEvent> keyMessageToKeyboardEvent (WPARAM wParam, LPARAM lParam);
 
 class UTF8StringHelper
 {
@@ -115,6 +116,17 @@ protected:
 	bool allocStrIsWide;
 	int numCharacters {-1};
 };
+
+inline CRect rectFromRECT (const RECT& r)
+{
+	return CRect (r.left, r.top, r.right, r.bottom);
+}
+
+inline RECT RECTfromRect (const CRect& rect)
+{
+	return {static_cast<LONG> (rect.left), static_cast<LONG> (rect.top),
+			static_cast<LONG> (rect.right), static_cast<LONG> (rect.bottom)};
+}
 
 /// @endcond
 

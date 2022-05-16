@@ -197,7 +197,8 @@ Timer* Timer::gInstance = nullptr;
 class Animation : public NonAtomicReferenceCounted
 {
 public:
-	Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction&& notification);
+	Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t,
+			   DoneFunction&& notification, bool notifyOnCancel);
 	~Animation () noexcept override;
 	
 	std::string name;
@@ -205,21 +206,21 @@ public:
 	IAnimationTarget* animationTarget;
 	ITimingFunction* timingFunction;
 	DoneFunction notification;
-	uint64_t startTime;
-	float lastPos;
-	bool done;
+	uint64_t startTime {0};
+	float lastPos {-1.};
+	bool done {false};
+	bool notifyOnCancel;
 };
 
 //-----------------------------------------------------------------------------
-Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction&& notification)
+Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at,
+					  ITimingFunction* t, DoneFunction&& notification, bool notifyOnCancel)
 : name (name)
 , view (view)
 , animationTarget (at)
 , timingFunction (t)
 , notification (std::move (notification))
-, startTime (0)
-, lastPos (-1)
-, done (false)
+, notifyOnCancel (notifyOnCancel)
 {
 }
 
@@ -260,12 +261,15 @@ Animator::~Animator () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, DoneFunction notification)
+void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target,
+							 ITimingFunction* timingFunction, DoneFunction notification,
+							 bool notifyOnCancel)
 {
 	if (pImpl->animations.empty ())
 		Detail::Timer::addAnimator (this);
 	removeAnimation (view, name);
-	pImpl->animations.add (makeOwned<Detail::Animation> (view, name, target, timingFunction, std::move (notification)));
+	pImpl->animations.add (makeOwned<Detail::Animation> (view, name, target, timingFunction,
+														 std::move (notification), notifyOnCancel));
 #if DEBUG_LOG
 	DebugPrint ("new animation added: %p - %s\n", view, name);
 #endif
@@ -302,7 +306,8 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 				animation->done = true;
 				animation->animationTarget->animationFinished (view, name, true);
 			}
-			animation->notification = nullptr;
+			if (!animation->notifyOnCancel)
+				animation->notification = nullptr;
 			pImpl->animations.remove (animation);
 		}
 	});

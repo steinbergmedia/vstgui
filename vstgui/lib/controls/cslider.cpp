@@ -6,6 +6,7 @@
 #include "../cdrawcontext.h"
 #include "../cgraphicspath.h"
 #include "../cvstguitimer.h"
+#include "../events.h"
 #include "cslider.h"
 #include <cmath>
 
@@ -380,16 +381,6 @@ CMouseEventResult CSliderBase::onMouseDown (CPoint& where, const CButtonState& b
 	impl->mePreviousVal = getMin () - 1;
 	impl->meOldButton = buttons;
 
-	if ((getEffectiveSliderMode () == CSliderMode::RelativeTouch &&
-	     handleRect.pointInside (where)) ||
-	    getEffectiveSliderMode () != CSliderMode::RelativeTouch)
-	{
-		if (checkDefaultValue (buttons))
-		{
-			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-		}
-	}
-
 	if (getEffectiveSliderMode () == CSliderMode::Ramp && !handleRect.pointInside (where))
 	{
 		impl->rampTimer = owned (new CVSTGUITimer ([this] (CVSTGUITimer*) { doRamping (); }, 16));
@@ -504,28 +495,23 @@ CMouseEventResult CSliderBase::onMouseMoved (CPoint& where, const CButtonState& 
 }
 
 //------------------------------------------------------------------------
-bool CSliderBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance,
-                           const CButtonState& buttons)
+void CSliderBase::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	if (!getMouseEnabled ())
-		return false;
-
-	if ((isStyleHorizontal () && axis == kMouseWheelAxisY) ||
-	    (!isStyleHorizontal () && axis == kMouseWheelAxisX))
-		return false;
+	auto distance = isStyleHorizontal () ? event.deltaX : event.deltaY;
+	if (distance == 0.)
+		return;
 
 	onMouseWheelEditing (this);
 
-	float _distance = distance;
 	if (isStyleHorizontal ())
-		_distance *= -1.f;
+		distance *= -1.;
 	if (isInverseStyle ())
-		_distance *= -1.f;
+		distance *= -1.;
 	float normValue = getValueNormalized ();
-	if (buttons & kZoomModifier)
-		normValue += 0.1f * _distance * getWheelInc ();
+	if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
+		normValue += 0.1f * static_cast<float> (distance) * getWheelInc ();
 	else
-		normValue += _distance * getWheelInc ();
+		normValue += static_cast<float> (distance) * getWheelInc ();
 
 	setValueNormalized (normValue);
 
@@ -536,31 +522,33 @@ bool CSliderBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, con
 		valueChanged ();
 	}
 
-	return true;
+	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
-int32_t CSliderBase::onKeyDown (VstKeyCode& keyCode)
+void CSliderBase::onKeyboardEvent (KeyboardEvent& event)
 {
-	switch (keyCode.virt)
+	if (event.type != EventType::KeyDown)
+		return;
+	switch (event.virt)
 	{
-		case VKEY_UP:
-		case VKEY_RIGHT:
-		case VKEY_DOWN:
-		case VKEY_LEFT:
+		case VirtualKey::Up: [[fallthrough]];
+		case VirtualKey::Right: [[fallthrough]];
+		case VirtualKey::Down: [[fallthrough]];
+		case VirtualKey::Left:
 		{
 			float distance = 1.f;
 			bool isInverse = isInverseStyle ();
-			if ((keyCode.virt == VKEY_DOWN && !isInverse) ||
-			    (keyCode.virt == VKEY_UP && isInverse) ||
-			    (keyCode.virt == VKEY_LEFT && !isInverse) ||
-			    (keyCode.virt == VKEY_RIGHT && isInverse))
+			if ((event.virt == VirtualKey::Down && !isInverse) ||
+			    (event.virt == VirtualKey::Up && isInverse) ||
+			    (event.virt == VirtualKey::Left && !isInverse) ||
+			    (event.virt == VirtualKey::Right && isInverse))
 			{
 				distance = -distance;
 			}
 
 			float normValue = getValueNormalized ();
-			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
+			if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)
 				normValue += 0.1f * distance * getWheelInc ();
 			else
 				normValue += distance * getWheelInc ();
@@ -579,19 +567,19 @@ int32_t CSliderBase::onKeyDown (VstKeyCode& keyCode)
 				// end of edit parameter
 				endEdit ();
 			}
-			return 1;
+			event.consumed = true;
 		}
-		case VKEY_ESCAPE:
+		case VirtualKey::Escape:
 		{
 			if (isEditing ())
 			{
 				onMouseCancel ();
-				return 1;
+				event.consumed = true;
 			}
 			break;
 		}
+		default: break;
 	}
-	return -1;
 }
 
 //------------------------------------------------------------------------

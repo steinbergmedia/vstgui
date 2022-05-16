@@ -48,7 +48,7 @@ static void printf (const char* fmt, ...)
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-TestCase::TestCase (std::string&& name, TestCaseFunction&& testCase)
+TestSuite::TestSuite (std::string&& name, TestSuiteFunction&& testCase)
 : name (name)
 {
 	tcf = std::move (testCase);
@@ -56,38 +56,45 @@ TestCase::TestCase (std::string&& name, TestCaseFunction&& testCase)
 }
 
 //----------------------------------------------------------------------------------------------------
-TestCase::TestCase (TestCase&& tc) noexcept
+TestSuite::TestSuite (TestSuite&& tc) noexcept
 {
 	*this = std::move (tc);
 }
 
 //----------------------------------------------------------------------------------------------------
-TestCase& TestCase::operator=(TestCase &&tc) noexcept
+TestSuite& TestSuite::operator=(TestSuite &&tc) noexcept
 {
 	name = std::move (tc.name);
 	tests = std::move (tc.tests);
 	tcf = std::move (tc.tcf);
 	setupFunction = std::move (tc.setupFunction);
 	teardownFunction = std::move (tc.teardownFunction);
+	storage = std::move (tc.storage);
 	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------
-void TestCase::registerTest (std::string&& testName, TestFunction&& testFunction)
+void TestSuite::registerTest (std::string&& testName, TestFunction&& testFunction)
 {
 	tests.emplace_back (std::move (testName), std::move (testFunction));
 }
 
 //----------------------------------------------------------------------------------------------------
-void TestCase::setSetupFunction (SetupFunction&& _setupFunction)
+void TestSuite::setSetupFunction (SetupFunction&& _setupFunction)
 {
 	setupFunction = std::move (_setupFunction);
 }
 
 //----------------------------------------------------------------------------------------------------
-void TestCase::setTeardownFunction (TeardownFunction&& _teardownFunction)
+void TestSuite::setTeardownFunction (TeardownFunction&& _teardownFunction)
 {
 	teardownFunction = std::move (_teardownFunction);
+}
+
+//----------------------------------------------------------------------------------------------------
+void TestSuite::setStorage (std::any&& s)
+{
+	storage = std::move (s);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -100,9 +107,64 @@ UnitTestRegistry& UnitTestRegistry::instance ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UnitTestRegistry::registerTestCase (TestCase&& testCase)
+void UnitTestRegistry::registerTestSuite (TestSuite&& testCase)
 {
-	testCases.push_back (std::move (testCase));
+	testSuites.push_back (std::move (testCase));
+}
+
+//------------------------------------------------------------------------
+TestSuite* UnitTestRegistry::find (const std::string& name)
+{
+	auto it = std::find_if (testSuites.begin (), testSuites.end (),
+	                        [&name] (auto& tc) { return tc.getName () == name; });
+	if (it == testSuites.end ())
+		return nullptr;
+	return &(*it);
+}
+
+//------------------------------------------------------------------------
+TestRegistrar::TestRegistrar (std::string&& suite, TestSuiteFunction&& testCase)
+{
+	UnitTestRegistry::instance ().registerTestSuite (
+	    TestSuite (std::move (suite), std::move (testCase)));
+}
+
+//------------------------------------------------------------------------
+TestRegistrar::TestRegistrar (std::string&& suite, std::string&& testName, TestFunction&& testFunction)
+{
+	auto& registry = UnitTestRegistry::instance ();
+	if (auto tc = registry.find (suite))
+	{
+		tc->registerTest (std::move (testName), std::move (testFunction));
+	}
+	else
+	{
+		TestSuite ts (std::move (suite), [] (auto) {});
+		ts.registerTest (std::move (testName), std::move (testFunction));
+		registry.registerTestSuite (std::move (ts));
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+TestRegistrar::TestRegistrar (std::string&& suite, SetupFunction&& sotFunction, bool isSetupFunc)
+{
+	auto& registry = UnitTestRegistry::instance ();
+	if (auto tc = registry.find (suite))
+	{
+		if (isSetupFunc)
+			tc->setSetupFunction (std::move (sotFunction));
+		else
+			tc->setTeardownFunction (std::move (sotFunction));
+	}
+	else
+	{
+		TestSuite ts (std::move (suite), [] (auto) {});
+		if (isSetupFunc)
+			ts.setSetupFunction (std::move (sotFunction));
+		else
+			ts.setTeardownFunction (std::move (sotFunction));
+		registry.registerTestSuite (std::move (ts));
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -130,28 +192,5 @@ void Context::print (const char* fmt, ...)
 }
 
 }} // namespaces
-
-TESTCASE(Example,
-		 
-	static int result;
-
-	SETUP(
-		result = 0;
-	);
-	 
-	TEST(OnePlusOneIsTwo,
-		result = 1+1;
-		EXPECT (result == 2)
-	);
-	 
-	TEST(ThreeMinusOneIsTwo,
-		result = 3-1;
-		if (result != 2)
-		{
-			FAIL ("result is not two")
-		}
-	);
-
-);
 
 #endif

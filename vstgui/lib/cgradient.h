@@ -18,48 +18,26 @@ namespace VSTGUI {
 class CGradient : public AtomicReferenceCounted
 {
 public:
-	using ColorStopMap = std::multimap<double, CColor>;
-
-	static CGradient* create (const ColorStopMap& colorStopMap);
-	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
-	{
-		ColorStopMap map;
-		map.emplace (color1Start, color1);
-		map.emplace (color2Start, color2);
-		return create (map);
-	}
+	static CGradient* create (const GradientColorStopMap& colorStopMap);
+	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
 	
+	CGradient (PlatformGradientPtr&& platformGradient);
+	~CGradient () noexcept override;
+
 	//-----------------------------------------------------------------------------
 	/// @name Member Access
 	//-----------------------------------------------------------------------------
 	//@{
 	
-	void addColorStop (double start, const CColor& color)
-	{
-		addColorStop (std::make_pair (start, color));
-	}
+	void addColorStop (double start, const CColor& color);
+	void addColorStop (const GradientColorStop& colorStop);
 	
-	virtual void addColorStop (const std::pair<double, CColor>& colorStop)
-	{
-		colorStops.emplace (colorStop);
-	}
-
-	virtual void addColorStop (std::pair<double, CColor>&& colorStop)
-	{
-		colorStops.emplace (std::move (colorStop));
-	}
-	
-	const ColorStopMap& getColorStops () const { return colorStops; }
+	const GradientColorStopMap& getColorStops () const;
 	//@}
+	
+	const PlatformGradientPtr& getPlatformGradient () const;
 protected:
-	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
-	{
-		addColorStop (color1Start, color1);
-		addColorStop (color2Start, color2);
-	}
-	explicit CGradient (const ColorStopMap& colorStopMap) : colorStops (colorStopMap) {}
-
-	ColorStopMap colorStops;
+	PlatformGradientPtr platformGradient;
 };
 
 } // VSTGUI

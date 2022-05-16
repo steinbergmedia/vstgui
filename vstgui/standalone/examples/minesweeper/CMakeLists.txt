@@ -35,9 +35,10 @@ set(Minesweeper_font
 vstgui_add_executable(${target} "${${target}_sources}" )
 vstgui_add_resources(${target} "${Minesweeper_resources}")
 vstgui_add_resources(${target} "${Minesweeper_font}" "Fonts")
+vstgui_set_target_bundle_id(${target} "vstgui.examples.minesweeper")
 vstgui_set_target_infoplist(${target} "resource/Info.plist")
 vstgui_set_target_rcfile(${target} "resource/Minesweeper.rc")
-vstgui_set_cxx_version(${target} 14)
+vstgui_set_cxx_version(${target} 17)
 target_include_directories(${target} PRIVATE ../../../../)
 set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES_FOLDER})
 

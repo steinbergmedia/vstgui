@@ -118,7 +118,7 @@
 		},
 		"custom": {
 			"UIDescFilePath": {
-				"path": "/media/psf/Source/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"
+				"path": "/Volumes/vst3/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"
 			}
 		}
 	}
