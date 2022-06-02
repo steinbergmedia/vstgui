@@ -542,13 +542,13 @@ bool VST3Editor::setEditorSizeConstrains (const CPoint& newMinimumSize, const CP
 			CCoord height = currentSize.getHeight ();
 			double scaleFactor = getAbsScaleFactor ();
 			if (width > maxSize.x * scaleFactor)
-				currentSize.setWidth (maxSize.x * scaleFactor);
+				newSize.setWidth (maxSize.x * scaleFactor);
 			else if (width < minSize.x * scaleFactor)
-				currentSize.setWidth (minSize.x * scaleFactor);
+				newSize.setWidth (minSize.x * scaleFactor);
 			if (height > maxSize.y * scaleFactor)
-				currentSize.setHeight (maxSize.y * scaleFactor);
+				newSize.setHeight (maxSize.y * scaleFactor);
 			else if (height < minSize.y * scaleFactor)
-				currentSize.setHeight (minSize.y * scaleFactor);
+				newSize.setHeight (minSize.y * scaleFactor);
 			if (newSize != currentSize)
 				requestResize (CPoint (newSize.getWidth (), newSize.getHeight ()));
 		}
