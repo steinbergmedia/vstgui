@@ -54,8 +54,10 @@ struct ContentProviderWrapper
 
 	ContentProviderWrapper (IContentProvider& s) : stream (s)
 	{
-		bufferLeft = bufferSize =
-		    stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()), static_cast<int32_t> (buffer.size ()));
+		bufferLeft = bufferSize = stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()),
+		                                              static_cast<int32_t> (buffer.size ()));
+		if (bufferLeft == kStreamIOError)
+			bufferSize = bufferLeft = 0;
 		if (bufferSize == 0)
 		{
 			current = 0;
@@ -72,8 +74,10 @@ struct ContentProviderWrapper
 		++pos;
 		if (bufferLeft == 1)
 		{
-			bufferLeft = bufferSize =
-			    stream.readRawData (reinterpret_cast<int8_t*> (buffer.data ()), static_cast<int32_t> (buffer.size ()));
+			bufferLeft = bufferSize = stream.readRawData (
+			    reinterpret_cast<int8_t*> (buffer.data ()), static_cast<int32_t> (buffer.size ()));
+			if (bufferLeft == kStreamIOError)
+				bufferSize = bufferLeft = 0;
 			if (bufferSize == 0)
 			{
 				current = 0;
