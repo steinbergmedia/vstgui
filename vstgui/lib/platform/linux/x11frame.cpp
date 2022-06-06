@@ -177,6 +177,7 @@ struct DrawHandler
 
 	~DrawHandler ()
 	{
+		RunLoop::instance ().setDevice (device);
 		cairo_device_destroy (device);
 	}
 
