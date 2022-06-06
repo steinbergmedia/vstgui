@@ -1056,9 +1056,10 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 				return;
 			}
 		}
+		auto color = CGColorCreateGenericRGB (isClipBoundingBox ? 0. : 1., 1., 0., 1.);
 		auto layer = [[CALayer new] autorelease];
 		layer.name = @"DebugLayer";
-		layer.backgroundColor = CGColorCreateGenericRGB (isClipBoundingBox ? 0. : 1., 1., 0., 1.);
+		layer.backgroundColor = color;
 		layer.opacity = 0.f;
 		layer.zPosition = isClipBoundingBox ? 10 : 11;
 		layer.frame = nsRectFromCRect (r);
@@ -1066,6 +1067,7 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 
 		[delegate setLayer:layer];
 		[layer addAnimation:anim forKey:@"opacity"];
+		CFRelease (color);
 	}
 #endif
 }
