@@ -23,13 +23,13 @@ class Pasteboard : public IDataPackage
 public:
 	Pasteboard (NSPasteboard* pb) : pb (pb) { entries.resize ([pb pasteboardItems].count); }
 
-	uint32_t getCount () const override { return entries.size (); }
+	uint32_t getCount () const override { return static_cast<uint32_t> (entries.size ()); }
 	uint32_t getDataSize (uint32_t index) const override
 	{
 		if (index >= getCount ())
 			return 0;
 		prepareEntryAtIndex (index);
-		return entries[index].data.size ();
+		return static_cast<uint32_t> (entries[index].data.size ());
 	}
 	Type getDataType (uint32_t index) const override
 	{
@@ -45,7 +45,7 @@ public:
 		prepareEntryAtIndex (index);
 		buffer = entries[index].data.data ();
 		type = entries[index].type;
-		return entries[index].data.size ();
+		return static_cast<uint32_t> (entries[index].data.size ());
 	}
 
 private:

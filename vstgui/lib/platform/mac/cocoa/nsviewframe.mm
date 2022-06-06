@@ -1152,7 +1152,7 @@ bool NSViewFrame::onMouseDown (NSEvent* theEvent)
 	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
-	event.clickCount = theEvent.clickCount;
+	event.clickCount = static_cast<uint32_t> (theEvent.clickCount);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
 	event.mousePosition = pointFromNSPoint (nsPoint);
@@ -1167,7 +1167,7 @@ bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
-	event.clickCount = theEvent.clickCount;
+	event.clickCount = static_cast<uint32_t> (theEvent.clickCount);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
 	event.mousePosition = pointFromNSPoint (nsPoint);
@@ -1182,7 +1182,7 @@ bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
 	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
-	event.clickCount = theEvent.clickCount;
+	event.clickCount = static_cast<uint32_t> (theEvent.clickCount);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
 	event.mousePosition = pointFromNSPoint (nsPoint);
