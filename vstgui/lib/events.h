@@ -128,6 +128,10 @@ struct Modifiers
 		data = cast (modifier);
 		return *this;
 	}
+	/** check if equal to other modifiers */
+	bool operator== (const Modifiers& other) const { return data == other.data; }
+	/** check if different to other modifiers */
+	bool operator!= (const Modifiers& other) const { return data != other.data; }
 
 private:
 	static uint32_t cast (ModifierKey mod) { return static_cast<uint32_t> (mod); }

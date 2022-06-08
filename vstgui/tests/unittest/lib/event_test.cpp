@@ -200,5 +200,14 @@ TEST_CASE (EventTest, IgnoreFollowUpEvent)
 	EXPECT_TRUE (e.ignoreFollowUpMoveAndUpEvents ());
 	EXPECT_TRUE (e.consumed);
 }
+
+TEST_CASE (EventTest, ModifiersEquality)
+{
+	Modifiers altMod (ModifierKey::Alt);
+	Modifiers ctrlMod (ModifierKey::Control);
+	EXPECT_FALSE ((altMod == ctrlMod));
+	EXPECT_TRUE ((altMod != ctrlMod));
+}
+
 //------------------------------------------------------------------------
 } // VSTGUI
