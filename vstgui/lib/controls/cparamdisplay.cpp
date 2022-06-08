@@ -186,8 +186,8 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	{
 		char tmp[255];
 		char precisionStr[10];
-		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
-		sprintf (tmp, precisionStr, value);
+		snprintf (precisionStr, 10, "%%.%hhuf", valuePrecision);
+		snprintf (tmp, 255, precisionStr, value);
 		string = tmp;
 	}
 

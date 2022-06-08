@@ -141,22 +141,26 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 			char* titleWithPrefixNumbers = nullptr;
 			if (_menu->getPrefixNumbers ())
 			{
-				titleWithPrefixNumbers = (char*)std::malloc (strlen (item->getTitle ()) + 50);
+				auto bufferSize = strlen (item->getTitle ()) + 50;
+				titleWithPrefixNumbers = (char*)std::malloc (bufferSize);
 				switch (_menu->getPrefixNumbers ())
 				{
 					case 2:
 					{
-						sprintf (titleWithPrefixNumbers, "%1d %s", inc+1, item->getTitle ().data ());
+						snprintf (titleWithPrefixNumbers, bufferSize, "%1d %s", inc + 1,
+								  item->getTitle ().data ());
 						break;
 					}
 					case 3:
 					{
-						sprintf (titleWithPrefixNumbers, "%02d %s", inc+1, item->getTitle ().data ());
+						snprintf (titleWithPrefixNumbers, bufferSize, "%02d %s", inc + 1,
+								  item->getTitle ().data ());
 						break;
 					}
 					case 4:
 					{
-						sprintf (titleWithPrefixNumbers, "%03d %s", inc+1, item->getTitle ().data ());
+						snprintf (titleWithPrefixNumbers, bufferSize, "%03d %s", inc + 1,
+								  item->getTitle ().data ());
 						break;
 					}
 				}

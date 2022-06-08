@@ -240,21 +240,21 @@ static void setupParamDisplay (CParamDisplay* display, const CColorChooserUISett
 //-----------------------------------------------------------------------------
 bool CColorChooser::convertNormalizedToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData)
 {
-	sprintf (string, "%.3f", value);
+	snprintf (string, 255, "%.3f", value);
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool CColorChooser::convertColorValueToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData)
 {
-	sprintf (string, "%d", (int32_t)(value*255.f));
+	snprintf (string, 255, "%d", (int32_t)(value * 255.f));
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool CColorChooser::convertAngleToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData)
 {
-	sprintf (string, "%d%s", (int32_t)(value*359.f), kDegreeSymbol);
+	snprintf (string, 255, "%d%s", (int32_t)(value * 359.f), kDegreeSymbol);
 	return true;
 }
 

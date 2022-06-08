@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -186,7 +186,7 @@ bool Bitmap::load (const CResourceDescription& desc)
 		if (desc.type == CResourceDescription::kIntegerType)
 		{
 			char filename[PATH_MAX];
-			sprintf (filename, "bmp%05d.png", (int32_t)desc.u.id);
+			snprintf (filename, PATH_MAX, "bmp%05d.png", (int32_t)desc.u.id);
 			path += filename;
 		}
 		else

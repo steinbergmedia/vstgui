@@ -109,7 +109,7 @@ bool UIEditMenuController::createUniqueTemplateName (std::list<const std::string
 			while (name.length () && std::isspace (name[name.length ()-1]))
 				name.erase (name.length ()-1);
 			char number[10];
-			sprintf (number, "%d", count);
+			snprintf (number, 10, "%d", count);
 			name += ' ';
 			name += number;
 			return createUniqueTemplateName (names, name);
