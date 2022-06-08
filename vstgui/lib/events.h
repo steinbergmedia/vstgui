@@ -181,7 +181,10 @@ struct MouseEventButtonState
 	[[nodiscard]] bool isMiddle () const { return data == MouseButton::Middle; }
 	[[nodiscard]] bool isRight () const { return data == MouseButton::Right; }
 	[[nodiscard]] bool is (MouseButton pos) const { return data == pos; }
-	[[nodiscard]] bool isOther (uint32_t index) const { return data == static_cast<MouseButton> (1 << index); }
+	[[nodiscard]] bool isOther (uint32_t index) const
+	{
+		return data == static_cast<MouseButton> (1 << index);
+	}
 	[[nodiscard]] bool has (MouseButton pos) const
 	{
 		return static_cast<bool> (static_cast<uint32_t> (data) & static_cast<uint32_t> (pos));
@@ -200,8 +203,14 @@ struct MouseEventButtonState
 	MouseEventButtonState (const MouseEventButtonState&) = default;
 	MouseEventButtonState (MouseButton pos) { set (pos); }
 
-	[[nodiscard]] bool operator== (const MouseEventButtonState& other) const { return data == other.data; }
-	[[nodiscard]] bool operator!= (const MouseEventButtonState& other) const { return data != other.data; }
+	[[nodiscard]] bool operator== (const MouseEventButtonState& other) const
+	{
+		return data == other.data;
+	}
+	[[nodiscard]] bool operator!= (const MouseEventButtonState& other) const
+	{
+		return data != other.data;
+	}
 
 private:
 	MouseButton data {MouseButton::None};
@@ -223,8 +232,7 @@ struct MouseEvent : MousePositionEvent
 struct MouseEnterEvent : MouseEvent
 {
 	MouseEnterEvent () { type = EventType::MouseEnter; }
-	MouseEnterEvent (CPoint pos, MouseEventButtonState buttons, Modifiers mods)
-	: MouseEnterEvent ()
+	MouseEnterEvent (CPoint pos, MouseEventButtonState buttons, Modifiers mods) : MouseEnterEvent ()
 	{
 		mousePosition = pos;
 		buttonState = buttons;
@@ -243,8 +251,7 @@ struct MouseEnterEvent : MouseEvent
 struct MouseExitEvent : MouseEvent
 {
 	MouseExitEvent () { type = EventType::MouseExit; }
-	MouseExitEvent (CPoint pos, MouseEventButtonState buttons, Modifiers mods)
-	: MouseExitEvent ()
+	MouseExitEvent (CPoint pos, MouseEventButtonState buttons, Modifiers mods) : MouseExitEvent ()
 	{
 		mousePosition = pos;
 		buttonState = buttons;
@@ -489,7 +496,7 @@ enum class ModifierKey : uint32_t
 	/** the super key (Control key on macOS, Windows key on Windows and Super key on other
 	   platforms)*/
 	Super = 1 << 3,
-	
+
 	None = 0
 };
 
@@ -513,21 +520,29 @@ struct KeyboardEvent : ModifierEvent
 /** event as mouse position event or nullpointer if not a mouse position event
  *	@ingroup new_in_4_11
  */
-template <typename EventT, typename OutputT = MousePositionEvent,
-          typename MousePositionEventT = typename std::conditional<
-              std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+template<typename EventT, typename OutputT = MousePositionEvent,
+		 typename MousePositionEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
 inline MousePositionEventT* asMousePositionEvent (EventT& event)
 {
 	switch (event.type)
 	{
-		case EventType::ZoomGesture: [[fallthrough]];
-		case EventType::MouseWheel: [[fallthrough]];
-		case EventType::MouseDown: [[fallthrough]];
-		case EventType::MouseMove: [[fallthrough]];
-		case EventType::MouseUp: [[fallthrough]];
-		case EventType::MouseEnter: [[fallthrough]];
-		case EventType::MouseExit: return static_cast<MousePositionEventT*> (&event);
-		default: break;
+		case EventType::ZoomGesture:
+			[[fallthrough]];
+		case EventType::MouseWheel:
+			[[fallthrough]];
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
+			[[fallthrough]];
+		case EventType::MouseEnter:
+			[[fallthrough]];
+		case EventType::MouseExit:
+			return static_cast<MousePositionEventT*> (&event);
+		default:
+			break;
 	}
 	return nullptr;
 }
@@ -536,19 +551,25 @@ inline MousePositionEventT* asMousePositionEvent (EventT& event)
 /** event as mouse position event or nullpointer if not a mouse position event
  *	@ingroup new_in_4_11
  */
-template <typename EventT, typename OutputT = MouseEvent,
-          typename MouseEventT = typename std::conditional<
-              std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+template<typename EventT, typename OutputT = MouseEvent,
+		 typename MouseEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
 inline MouseEventT* asMouseEvent (EventT& event)
 {
 	switch (event.type)
 	{
-		case EventType::MouseDown: [[fallthrough]];
-		case EventType::MouseMove: [[fallthrough]];
-		case EventType::MouseUp: [[fallthrough]];
-		case EventType::MouseEnter: [[fallthrough]];
-		case EventType::MouseExit: return static_cast<MouseEventT*> (&event);
-		default: break;
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
+			[[fallthrough]];
+		case EventType::MouseEnter:
+			[[fallthrough]];
+		case EventType::MouseExit:
+			return static_cast<MouseEventT*> (&event);
+		default:
+			break;
 	}
 	return nullptr;
 }
@@ -557,17 +578,21 @@ inline MouseEventT* asMouseEvent (EventT& event)
 /** event as mouse down event or nullpointer if not a mouse down event
  *	@ingroup new_in_4_11
  */
-template <typename EventT, typename OutputT = MouseDownEvent,
-          typename MouseDownEventT = typename std::conditional<
-              std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+template<typename EventT, typename OutputT = MouseDownEvent,
+		 typename MouseDownEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
 inline MouseDownEventT* asMouseDownEvent (EventT& event)
 {
 	switch (event.type)
 	{
-		case EventType::MouseDown: [[fallthrough]];
-		case EventType::MouseMove: [[fallthrough]];
-		case EventType::MouseUp: return static_cast<MouseDownEventT*> (&event);
-		default: break;
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
+			return static_cast<MouseDownEventT*> (&event);
+		default:
+			break;
 	}
 	return nullptr;
 }
@@ -576,22 +601,31 @@ inline MouseDownEventT* asMouseDownEvent (EventT& event)
 /** event as modifier event or nullpointer if not a modifier event
  *	@ingroup new_in_4_11
  */
-template <typename EventT, typename OutputT = ModifierEvent,
-          typename ModifierEventT = typename std::conditional<
-              std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+template<typename EventT, typename OutputT = ModifierEvent,
+		 typename ModifierEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
 inline ModifierEventT* asModifierEvent (EventT& event)
 {
 	switch (event.type)
 	{
-		case EventType::KeyDown: [[fallthrough]];
-		case EventType::KeyUp: [[fallthrough]];
-		case EventType::MouseEnter: [[fallthrough]];
-		case EventType::MouseExit: [[fallthrough]];
-		case EventType::MouseWheel: [[fallthrough]];
-		case EventType::MouseDown: [[fallthrough]];
-		case EventType::MouseMove: [[fallthrough]];
-		case EventType::MouseUp: return static_cast<ModifierEventT*> (&event);
-		default: break;
+		case EventType::KeyDown:
+			[[fallthrough]];
+		case EventType::KeyUp:
+			[[fallthrough]];
+		case EventType::MouseEnter:
+			[[fallthrough]];
+		case EventType::MouseExit:
+			[[fallthrough]];
+		case EventType::MouseWheel:
+			[[fallthrough]];
+		case EventType::MouseDown:
+			[[fallthrough]];
+		case EventType::MouseMove:
+			[[fallthrough]];
+		case EventType::MouseUp:
+			return static_cast<ModifierEventT*> (&event);
+		default:
+			break;
 	}
 	return nullptr;
 }
@@ -600,16 +634,19 @@ inline ModifierEventT* asModifierEvent (EventT& event)
 /** event as keyboard event or nullpointer if not a keyboard event
  *	@ingroup new_in_4_11
  */
-template <typename EventT, typename OutputT = KeyboardEvent,
-          typename KeyboardEventT = typename std::conditional<
-              std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+template<typename EventT, typename OutputT = KeyboardEvent,
+		 typename KeyboardEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
 inline KeyboardEventT* asKeyboardEvent (EventT& event)
 {
 	switch (event.type)
 	{
-		case EventType::KeyDown: [[fallthrough]];
-		case EventType::KeyUp: return static_cast<KeyboardEventT*> (&event);
-		default: break;
+		case EventType::KeyDown:
+			[[fallthrough]];
+		case EventType::KeyUp:
+			return static_cast<KeyboardEventT*> (&event);
+		default:
+			break;
 	}
 	return nullptr;
 }
