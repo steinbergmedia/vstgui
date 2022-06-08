@@ -96,7 +96,7 @@ private:
 						int32_t blue = static_cast<int32_t> ([nsColor blueComponent] * 255.);
 						int32_t alpha = static_cast<int32_t> ([nsColor alphaComponent] * 255.);
 						char str[10];
-						sprintf (str, "#%02x%02x%02x%02x", red, green, blue, alpha);
+						snprintf (str, 10, "#%02x%02x%02x%02x", red, green, blue, alpha);
 						result.data.resize (10);
 						memcpy (result.data.data (), str, 10);
 					}
@@ -193,7 +193,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 				int32_t blue = static_cast<int32_t> ([nsColor blueComponent] * 255.);
 				int32_t alpha = static_cast<int32_t> ([nsColor alphaComponent] * 255.);
 				char str[10];
-				sprintf (str, "#%02x%02x%02x%02x", red, green, blue, alpha);
+				snprintf (str, 10, "#%02x%02x%02x%02x", red, green, blue, alpha);
 				strings.emplace_back (str);
 			}
 		}
