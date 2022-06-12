@@ -8,6 +8,7 @@
 #include "x11frame.h"
 #include <atomic>
 #include <memory>
+#include <cairo/cairo.h>
 
 struct xcb_connection_t;	  // forward declaration
 struct xcb_key_press_event_t; // forward declaration
@@ -62,6 +63,7 @@ struct RunLoop
 	KeyboardEvent&& getCurrentKeyEvent () const;
 	Optional<UTF8String> convertCurrentKeyEventToText () const;
 
+	void setDevice (cairo_device_t* device);
 	static RunLoop& instance ();
 
 private:

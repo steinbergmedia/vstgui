@@ -122,6 +122,7 @@ struct RunLoop::Impl : IEventHandler
 	std::array<xcb_cursor_t, CCursorType::kCursorIBeam + 1> cursors {{XCB_CURSOR_NONE}};
 	KeyboardEvent lastUnprocessedKeyEvent;
 	uint32_t lastUtf32KeyEventChar {0};
+	cairo_device_t* device {nullptr};
 
 	void init (const SharedPointer<IRunLoop>& inRunLoop)
 	{
@@ -166,6 +167,11 @@ struct RunLoop::Impl : IEventHandler
 	{
 		if (--useCount != 0)
 			return;
+
+		cairo_device_finish (device);
+		cairo_device_destroy (device);
+		device = nullptr;
+
 		if (xcbConnection)
 		{
 			if (xkbUnprocessedState)
@@ -548,6 +554,15 @@ Optional<UTF8String> RunLoop::convertCurrentKeyEventToText () const
 	{
 	}
 	return {};
+}
+
+void RunLoop::setDevice (cairo_device_t* device)
+{
+	if (impl->device != device)
+	{
+		cairo_device_destroy (impl->device);
+		impl->device = cairo_device_reference (device);
+	}
 }
 
 //------------------------------------------------------------------------
