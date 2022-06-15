@@ -187,6 +187,7 @@ inline ObjCClassBuilder& ObjCClassBuilder::addMethod (SEL selector, Func imp, co
 {
 	auto res = class_addMethod (cl, selector, IMP (imp), types);
 	assert (res == true);
+	(void)res;
 	return *this;
 }
 
@@ -210,6 +211,7 @@ inline ObjCClassBuilder& ObjCClassBuilder::addIvar (const char* name, size_t siz
 {
 	auto res = class_addIvar (cl, name, size, alignment, types);
 	assert (res == true);
+	(void)res;
 	return *this;
 }
 
@@ -226,6 +228,7 @@ inline ObjCClassBuilder& ObjCClassBuilder::addProtocol (Protocol* proto)
 {
 	auto res = class_addProtocol (cl, proto);
 	assert (res == true);
+	(void)res;
 	return *this;
 }
 
