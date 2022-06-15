@@ -56,7 +56,7 @@ bool COpenGLView::createPlatformOpenGLView ()
 			updatePlatformOpenGLViewSize ();
 			platformOpenGLViewCreated ();
 			platformOpenGLViewSizeChanged ();
-			getFrame ()->registerScaleFactorChangedListeneer (this);
+			getFrame ()->registerScaleFactorChangedListener (this);
 			return true;
 		}
 		platformOpenGLView = nullptr;
@@ -69,7 +69,7 @@ bool COpenGLView::destroyPlatformOpenGLView ()
 {
 	if (platformOpenGLView)
 	{
-		getFrame ()->unregisterScaleFactorChangedListeneer (this);
+		getFrame ()->unregisterScaleFactorChangedListener (this);
 		platformOpenGLViewWillDestroy ();
 		platformOpenGLView->remove ();
 		platformOpenGLView = nullptr;
