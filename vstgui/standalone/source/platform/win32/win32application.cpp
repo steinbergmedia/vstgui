@@ -315,22 +315,6 @@ void Application::run ()
 } // Standalone
 } // VSTGUI
 
-//---Workaround for Visual with ARM64EC platform
-// Reported to Microsoft (29.03.2022):
-// https://developercommunity.visualstudio.com/t/LINK-:-error-LNK2001:-unresolved-externa/1699333
-#if defined(_M_ARM64EC)
-#include <atlbase.h>
-//------------------------------------------------------------------------
-int APIENTRY WinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
-					  _In_ LPSTR _lpCmdLine, _In_ int nCmdShow)
-{ 
-	USES_CONVERSION;
-	auto cmdLine = A2W (_lpCmdLine);
-	return wWinMain (instance, prevInstance, cmdLine, nCmdShow);
-}
-#endif
-//---Workaround end
-
 //------------------------------------------------------------------------
 int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
                        _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
