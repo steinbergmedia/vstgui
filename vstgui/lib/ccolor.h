@@ -122,6 +122,8 @@ struct CColor
 	bool fromString (UTF8StringPtr str);
 	UTF8String toString () const;
 	static bool isColorRepresentation (UTF8StringPtr str);
+	
+	void fromRGBA(uint32_t color);
 
 	/** red component [0..255] */
 	uint8_t red {255};
