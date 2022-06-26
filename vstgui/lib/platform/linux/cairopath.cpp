@@ -83,7 +83,7 @@ void GraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle
 //------------------------------------------------------------------------
 void GraphicsPath::addEllipse (const CRect& rect)
 {
-#warning TODO: GraphicsPath::addEllipse
+	addArc(rect, 0, 360, true);
 }
 
 //------------------------------------------------------------------------
