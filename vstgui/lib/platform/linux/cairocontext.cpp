@@ -349,27 +349,33 @@ void Context::drawRect (const CRect& rect, const CDrawStyle drawStyle)
 void Context::drawArc (const CRect& rect, const float startAngle1, const float endAngle2,
 					   const CDrawStyle drawStyle)
 {
-	if (auto cd = DrawBlock::begin (*this))
-	{
-		CPoint center = rect.getCenter ();
-		cairo_translate (cr, center.x, center.y);
-		cairo_scale (cr, 2.0 / rect.getWidth (), 2.0 / rect.getHeight ());
-		cairo_arc (cr, 0, 0, 1, startAngle1, endAngle2);
-		draw (drawStyle);
-	}
+	if (rect.getWidth () && rect.getHeight())
+    {
+        if (auto cd = DrawBlock::begin (*this))
+        {
+            CPoint center = rect.getCenter ();
+            cairo_translate (cr, center.x, center.y);
+            cairo_scale (cr, 2.0 / rect.getWidth (), 2.0 / rect.getHeight ());
+            cairo_arc (cr, 0, 0, 1, startAngle1, endAngle2);
+            draw (drawStyle);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
 void Context::drawEllipse (const CRect& rect, const CDrawStyle drawStyle)
 {
-	if (auto cd = DrawBlock::begin (*this))
-	{
-		CPoint center = rect.getCenter ();
-		cairo_translate (cr, center.x, center.y);
-		cairo_scale (cr, 2.0 / rect.getWidth (), 2.0 / rect.getHeight ());
-		cairo_arc (cr, 0, 0, 1, 0, 2 * M_PI);
-		draw (drawStyle);
-	}
+	if (rect.getWidth () && rect.getHeight())
+    {
+        if (auto cd = DrawBlock::begin (*this))
+        {
+            CPoint center = rect.getCenter ();
+            cairo_translate (cr, center.x, center.y);
+            cairo_scale (cr, 2.0 / rect.getWidth (), 2.0 / rect.getHeight ());
+            cairo_arc (cr, 0, 0, 1, 0, 2 * M_PI);
+            draw (drawStyle);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
