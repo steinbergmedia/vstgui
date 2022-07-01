@@ -223,7 +223,7 @@ using UTF8StringBuffer = char*;
 enum ByteOrder {
 	kBigEndianByteOrder = 0,
 	kLittleEndianByteOrder,
-#if WINDOWS || defined (__LITTLE_ENDIAN__)
+#if WINDOWS || defined (__LITTLE_ENDIAN__) || defined (__LITTLE_ENDIAN)
 	kNativeByteOrder = kLittleEndianByteOrder
 #else
 	kNativeByteOrder = kBigEndianByteOrder
