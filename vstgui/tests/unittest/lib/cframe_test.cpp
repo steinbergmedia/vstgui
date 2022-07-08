@@ -291,6 +291,34 @@ TEST_CASE (CFrameTest, MouseEnterExitInContainer)
 	frame->unregisterMouseObserver (&observer);
 }
 
+TEST_CASE (CFrameTest, MouseMoveInContainer)
+{
+	struct TestView : CView
+	{
+		using CView::CView;
+
+		CPoint mouseMoveEventPos {};
+		CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override
+		{
+			mouseMoveEventPos = where;
+			return kMouseEventHandled;
+		}
+	};
+
+	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
+	auto container = new CViewContainer (CRect (10, 10, 80, 80));
+	frame->addView (container);
+
+	auto testView = new TestView ({10, 10, 60, 60});
+	container->addView (testView);
+
+	frame->attached (frame);
+
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (frame, {30., 30.}, MouseButton::None),
+			   EventConsumeState::Handled);
+	EXPECT_EQ (testView->mouseMoveEventPos, CPoint (20., 20.));
+}
+
 TEST_CASE (CFrameTest, RemoveViewWhileMouseInside)
 {
 	MouseObserver observer;
