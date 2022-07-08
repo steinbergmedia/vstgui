@@ -663,7 +663,13 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 		{
 			CPoint p (transformedMousePosition);
 			auto view = *it;
-			view->translateToLocal (p);
+			if (view->asViewContainer ())
+			{
+				if (auto parent = view->getParentView ())
+					parent->translateToLocal (p, true);
+			}
+			else
+				view->translateToLocal (p, true);
 			event.mousePosition = p;
 			dispatchEvent (view, event);
 			if (event.consumed)
