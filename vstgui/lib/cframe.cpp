@@ -888,7 +888,7 @@ void CFrame::setViewSize (const CRect& rect, bool invalid)
 bool CFrame::setSize (CCoord width, CCoord height)
 {
 	if ((width == getViewSize ().getWidth ()) && (height == getViewSize ().getHeight ()))
-		return false;
+		return true;
 
 	CRect newSize (getViewSize ());
 	newSize.setWidth (width);
