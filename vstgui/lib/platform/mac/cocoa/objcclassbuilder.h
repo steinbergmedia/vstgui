@@ -31,9 +31,18 @@ struct ObjCVariable
 		return *this;
 	}
 
-	T get () const { return (__bridge T) (object_getIvar (obj, ivar)); }
+	T get () const
+	{
+		auto offset = ivar_getOffset (ivar);
+		return *reinterpret_cast<T*> (((__bridge uintptr_t)obj) + offset);
+	}
 
-	void set (const T& value) { object_setIvar (obj, ivar, (__bridge id) (value)); }
+	void set (const T& value)
+	{
+		auto offset = ivar_getOffset (ivar);
+		auto storage = reinterpret_cast<T*> (((__bridge uintptr_t)obj) + offset);
+		*storage = value;
+	}
 
 private:
 	__unsafe_unretained id obj;
