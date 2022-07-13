@@ -12,6 +12,7 @@ set(standalone_sources
   "source/testappdelegate.h"
   "source/testmodel.cpp"
   "source/testmodel.h"
+  "../../../contrib/datepicker.h"
 )
 
 set(standalone_resources
@@ -25,6 +26,21 @@ set(standalone_resources
 set(standalone_font
   "resource/font/EffectsEighty.ttf"
 )
+
+#########################################################################################
+if(CMAKE_HOST_APPLE)
+  set(standalone_sources 
+    ${standalone_sources}
+    "../../../contrib/externalview_nsview.h"
+    "../../../contrib/datepicker.mm"
+  )
+elseif(MSVC)
+  set(standalone_sources 
+    ${standalone_sources}
+    "../../../contrib/externalview_hwnd.h"
+    "../../../contrib/datepicker_win32.cpp"
+  )
+endif()
 
 ##########################################################################################
 vstgui_add_executable(${target} "${standalone_sources}")

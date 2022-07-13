@@ -23,6 +23,11 @@
 
 #include "vstgui/standalone/source/genericalertbox.h"
 
+#include "vstgui/uidescription/uiattributes.h"
+#include "vstgui/uidescription/iuidescription.h"
+#include "vstgui/lib/cexternalview.h"
+#include "vstgui/contrib/datepicker.h"
+
 #include <memory>
 
 //------------------------------------------------------------------------
@@ -150,6 +155,34 @@ public:
 };
 
 //------------------------------------------------------------------------
+class DatePickerController : public DelegationController
+{
+public:
+	DatePickerController (IController* parent) : DelegationController (parent) {}
+
+#if MAC || WINDOWS
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
+		{
+			if (*customViewName == "DatePicker")
+			{
+				auto datePicker = std::make_shared<ExternalView::DatePicker> ();
+				datePicker->setDate ({12,8,2023});
+				datePicker->setChangeCallback ([] (auto date) {
+#if DEBUG
+					DebugPrint ("%d.%d.%d\n", date.day, date.month, date.year);
+#endif
+				});
+				return new CExternalView (CRect (), datePicker);
+			}
+		}
+		return controller->createView (attributes, description);
+	}
+#endif
+};
+
+//------------------------------------------------------------------------
 Delegate::Delegate ()
 : Application::DelegateAdapter ({"VSTGUI Standalone", "1.0.0", "vstgui.examples.standalone"})
 {
@@ -213,6 +246,11 @@ bool Delegate::handleCommand (const Command& command)
 			    "WeekdaysController",
 			    [] (const UTF8StringView&, IController* parent, const IUIDescription*) {
 				    return new WeekdaysController (parent);
+			    });
+			customization->addCreateViewControllerFunc (
+			    "DatePickerController",
+			    [] (const UTF8StringView&, IController* parent, const IUIDescription*) {
+				    return new DatePickerController (parent);
 			    });
 			config.customization = customization;
 		}

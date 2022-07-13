@@ -23,7 +23,7 @@
 				"SelectedTemplate": "view"
 			},
 			"UIEditController": {
-				"EditViewScale": "1.5",
+				"EditViewScale": "1",
 				"EditorSize": "0, 0, 1158, 997",
 				"SplitViewSize_0_0": "0.7415036045314109536263913469156250357628",
 				"SplitViewSize_0_1": "0.2378990731204943254173400646322988905013",
@@ -31,17 +31,17 @@
 				"SplitViewSize_1_1": "0.4109165808444902312501767482899595052004",
 				"SplitViewSize_2_0": "0.6424870466321243034357735268713440746069",
 				"SplitViewSize_2_1": "0.3531951640759931065893795221199980005622",
-				"TabSwitchValue": "2",
+				"TabSwitchValue": "0",
 				"UI Theme": "Dark",
 				"Version": "1",
 				"ViewBackground": "3"
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "24"
+				"SelectedRow": "29"
 			},
 			"UIDescFilePath": {
-				"path": "/Volumes/vst3/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"
+				"path": "/Users/scheffle/Source/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"
 			},
 			"UITagsDataSource": {
 				"SelectedRow": "-1"
@@ -76,7 +76,7 @@
 					"mouse-enabled": "true",
 					"opacity": "1",
 					"origin": "0, 0",
-					"size": "410, 350",
+					"size": "410, 455",
 					"sub-controller": "DisabledControlsController",
 					"transparent": "true",
 					"wants-focus": "false"
@@ -104,7 +104,7 @@
 							"class": "CViewContainer",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "0, 330",
+							"origin": "0, 435",
 							"size": "410, 20",
 							"transparent": "false",
 							"wants-focus": "false"
@@ -126,7 +126,7 @@
 							"radial-center": "0.5, 0.5",
 							"radial-radius": "1",
 							"round-rect-radius": "5",
-							"size": "410, 350",
+							"size": "410, 455",
 							"transparent": "false",
 							"wants-focus": "false"
 						}
@@ -652,7 +652,7 @@
 							"origin": "135, 290",
 							"round-rect-radius": "6",
 							"shadow-color": "TextShadow",
-							"size": "265, 50",
+							"size": "130, 155",
 							"style-3D-in": "false",
 							"style-3D-out": "false",
 							"style-no-draw": "false",
@@ -791,7 +791,7 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "330, 230",
+							"origin": "320, 295",
 							"size": "70, 70",
 							"skip-handle-drawing": "true",
 							"tooltip": "Knob",
@@ -828,7 +828,7 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "265, 225",
+							"origin": "320, 225",
 							"size": "70, 70",
 							"skip-handle-drawing": "true",
 							"tooltip": "Knob",
@@ -949,6 +949,20 @@
 							"transparent": "false",
 							"wants-focus": "true",
 							"wheel-inc-value": "0.1"
+						}
+					},
+					"CView": {
+						"attributes": {
+							"autosize": "left top ",
+							"class": "CView",
+							"custom-view-name": "DatePicker",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "15, 350",
+							"size": "110, 25",
+							"sub-controller": "DatePickerController",
+							"transparent": "false",
+							"wants-focus": "false"
 						}
 					}
 				}
