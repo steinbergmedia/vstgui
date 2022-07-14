@@ -96,6 +96,30 @@ private:
 	mutable objc_super os {};
 };
 
+//------------------------------------------------------------------------
+template<typename T>
+struct RuntimeObjCClass
+{
+	using Base = RuntimeObjCClass<T>;
+
+	static id alloc ()
+	{
+		static T gInstance;
+		return class_createInstance (gInstance.cl, 0);
+	}
+
+	RuntimeObjCClass () { cl = T::CreateClass (); }
+
+	~RuntimeObjCClass () noexcept
+	{
+		if (cl)
+			objc_disposeClassPair (cl);
+	}
+
+private:
+	Class cl {nullptr};
+};
+
 //------------------------------------------------------------------------------------
 struct ObjCClassBuilder
 {
