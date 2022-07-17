@@ -1,3 +1,6 @@
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "datepicker.h"
 #import "externalview_nsview.h"
@@ -99,11 +102,6 @@ DatePicker::DatePicker ()
 		impl->view.presentsCalendarOverlay = YES;
 	impl->view.dateValue = [NSDate date];
 	impl->view.calendar = [NSCalendar currentCalendar];
-	impl->view.drawsBackground = YES;
-	impl->view.backgroundColor = [NSColor blackColor];
-	impl->view.textColor = [NSColor redColor];
-	impl->view.bordered = YES;
-	impl->view.bezeled = NO;
 	[impl->container addSubview:impl->view];
 
 	impl->delegate = DatePickerDelegate::allocAndInit (

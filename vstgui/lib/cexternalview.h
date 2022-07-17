@@ -13,6 +13,14 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+/** View to embed non CView views into VSTGUI
+ *
+ *	This view is the umbrella for views from other view systems (like HWND child windows or
+ *	NSViews).
+ *	The actual implementation for the external view must be done via ExternalView::IView
+ *
+ *	@ingroup new_in_4_12
+ */
 class CExternalView : public CView,
 					  public IScaleFactorChangedListener
 {

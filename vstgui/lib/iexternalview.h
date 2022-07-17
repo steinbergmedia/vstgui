@@ -41,20 +41,42 @@ struct IntRect
 };
 
 //------------------------------------------------------------------------
+/** interface for embedding views from external view systems
+ *
+ *	@ingroup new_in_4_12
+ */
 struct IView
 {
 	virtual ~IView () noexcept = default;
 
+	/** check if the view supports the platform view type */
 	virtual bool platformViewTypeSupported (PlatformViewType type) = 0;
+	/** attach the view to the parent */
 	virtual bool attach (void* parent, PlatformViewType parentViewType) = 0;
+	/** remove the view from its parent */
 	virtual bool remove () = 0;
 
+	/** set the size and position of the view
+	 *
+	 *	the coordinate system for the parameters used are system native,
+	 *	this means on Windows the scale factor is already applied to the coordinates
+	 *	and on macOS they are not (as with all NSViews)
+	 *
+	 *	the visible rectangle is the rectangle clipped to all its parent views
+	 *	while the frame rectangle is the full size of the view if it would not
+	 *	be clipped. this way it is possible to support views inside of scroll views
+	 *	and the like. See the examples how this is done.
+	 */
 	virtual void setViewSize (IntRect frame, IntRect visible) = 0;
+	/** set the scale factor in use */
 	virtual void setContentScaleFactor (double scaleFactor) = 0;
 
+	/** enable or disable mouse handling for the view */
 	virtual void setMouseEnabled (bool state) = 0;
 
+	/** TODO: */
 	virtual void takeFocus () = 0;
+	/** TODO: */
 	virtual void looseFocus () = 0;
 };
 
