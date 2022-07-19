@@ -52,7 +52,10 @@ private:
 //------------------------------------------------------------------------------------
 struct ObjCInstance
 {
-	ObjCInstance (__unsafe_unretained id obj) : obj (obj) {}
+	ObjCInstance (__unsafe_unretained id obj, Class superClass = nullptr) : obj (obj)
+	{
+		os.super_class = superClass;
+	}
 
 	template<typename T>
 	std::optional<ObjCVariable<T>> getVariable (const char* name) const
@@ -87,6 +90,9 @@ private:
 		if (os.receiver == nullptr)
 		{
 			os.receiver = obj;
+		}
+		if (os.super_class == nullptr)
+		{
 			os.super_class = class_getSuperclass (object_getClass (obj));
 		}
 		return (__bridge id) (&os);
@@ -102,22 +108,35 @@ struct RuntimeObjCClass
 {
 	using Base = RuntimeObjCClass<T>;
 
-	static id alloc ()
+	static id alloc () { return class_createInstance (instance ().cl, 0); }
+
+	RuntimeObjCClass ()
 	{
-		static T gInstance;
-		return class_createInstance (gInstance.cl, 0);
+		cl = T::CreateClass ();
+		superClass = class_getSuperclass (cl);
 	}
 
-	RuntimeObjCClass () { cl = T::CreateClass (); }
-
-	~RuntimeObjCClass () noexcept
+	virtual ~RuntimeObjCClass () noexcept
 	{
 		if (cl)
 			objc_disposeClassPair (cl);
 	}
 
+	static ObjCInstance makeInstance (__unsafe_unretained id obj)
+	{
+		return ObjCInstance (obj, instance ().superClass);
+	}
+
+protected:
+	static T& instance ()
+	{
+		static T gInstance;
+		return gInstance;
+	}
+
 private:
 	Class cl {nullptr};
+	Class superClass {nullptr};
 };
 
 //------------------------------------------------------------------------------------
