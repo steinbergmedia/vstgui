@@ -107,8 +107,8 @@ if(CMAKE_HOST_APPLE)
 		NO_CACHE
 	)
 	if(UTI_FRAMEWORK)
-		set(PLATFORM_LIBRARIES
-		${PLATFORM_LIBRARIES}
+		set(${target}_PLATFORM_LIBS
+		${${target}_PLATFORM_LIBS}
 		"-framework UniformTypeIdentifiers"
 	)
 	endif()
