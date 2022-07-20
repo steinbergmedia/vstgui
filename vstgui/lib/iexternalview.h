@@ -81,5 +81,14 @@ struct IView
 };
 
 //------------------------------------------------------------------------
+struct IViewEmbedder
+{
+	virtual ~IViewEmbedder () noexcept = default;
+
+	/** returns the embedded view or nullptr if it has none */
+	virtual IView* getExternalView () const = 0;
+};
+
+//------------------------------------------------------------------------
 } // ExternalView
 } // VSTGUI

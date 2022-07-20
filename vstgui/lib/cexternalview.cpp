@@ -104,6 +104,8 @@ public:
 		if (view)
 			view->setMouseEnabled (state);
 	}
+
+	ExternalView::IView* getView () const { return view.get (); }
 };
 
 //------------------------------------------------------------------------
@@ -172,9 +174,12 @@ void CExternalView::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
 //------------------------------------------------------------------------
 void CExternalView::setMouseEnabled (bool enable)
 {
-	CView::setMouseEnabled (enable);
 	impl->enableMouse (enable);
+	CView::setMouseEnabled (enable);
 }
+
+//------------------------------------------------------------------------
+ExternalView::IView* CExternalView::getExternalView () const { return impl->getView (); }
 
 //------------------------------------------------------------------------
 } // VSTGUI

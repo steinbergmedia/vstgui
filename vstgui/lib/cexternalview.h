@@ -22,7 +22,8 @@ namespace VSTGUI {
  *	@ingroup new_in_4_12
  */
 class CExternalView : public CView,
-					  public IScaleFactorChangedListener
+					  public IScaleFactorChangedListener,
+					  public ExternalView::IViewEmbedder
 {
 public:
 	using ExternalViewPtr = std::shared_ptr<ExternalView::IView>;
@@ -40,6 +41,8 @@ public:
 	void setMouseEnabled (bool enable = true) override;
 
 private:
+	ExternalView::IView* getExternalView () const override;
+
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 };
