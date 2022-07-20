@@ -40,9 +40,9 @@ struct DatePickerDelegate : RuntimeObjCClass<DatePickerDelegate>
 
 	static id initWithCallbacks (id self, DoneCallback&& doneCallback, ValidateCallback&& callback)
 	{
-		if ((self = ObjCInstance (self).callSuper<id (), id> (@selector (init))))
+		if ((self = makeInstance (self).callSuper<id (), id> (@selector (init))))
 		{
-			ObjCInstance instance (self);
+			auto instance = makeInstance (self);
 			if (auto var = instance.getVariable<DoneCallback> (DoneCallbackVarName))
 				var->set (doneCallback);
 			if (auto var = instance.getVariable<ValidateCallback> (ValidateCallbackVarName))
@@ -53,7 +53,7 @@ struct DatePickerDelegate : RuntimeObjCClass<DatePickerDelegate>
 
 	static void complete (id self, SEL cmd, id sender)
 	{
-		if (auto var = ObjCInstance (self).getVariable<DoneCallback> (DoneCallbackVarName))
+		if (auto var = makeInstance (self).getVariable<DoneCallback> (DoneCallbackVarName))
 		{
 			const auto& callback = var->get ();
 			if (callback)
@@ -65,7 +65,7 @@ struct DatePickerDelegate : RuntimeObjCClass<DatePickerDelegate>
 						  NSDate* _Nonnull* _Nonnull proposedDateValue,
 						  NSTimeInterval* _Nullable proposedTimeInterval)
 	{
-		if (auto var = ObjCInstance (self).getVariable<ValidateCallback> (ValidateCallbackVarName))
+		if (auto var = makeInstance (self).getVariable<ValidateCallback> (ValidateCallbackVarName))
 		{
 			const auto& callback = var->get ();
 			if (callback)
