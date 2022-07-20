@@ -230,7 +230,7 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 		                   v.performEdit (0.);
 	                   }));
 
-	displayFrameValue = Value::makeStepValue ("DisplayFrame", 0, 1);
+	displayFrameValue = Value::makeStepValue ("DisplayFrame", 1, 1);
 	binding->addValue (displayFrameValue);
 
 	auto animationRunning = Value::make ("RunAnimation");
