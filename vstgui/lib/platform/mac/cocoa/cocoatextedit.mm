@@ -38,32 +38,18 @@ static constexpr auto Center = ::NSCenterTextAlignment;
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
-struct VSTGUI_NSTextField
+template<bool SecureT>
+struct VSTGUI_NSTextFieldT : RuntimeObjCClass<VSTGUI_NSTextFieldT<SecureT>>
 {
-	static id alloc () { return [instance ().textFieldClass alloc]; }
-	static id allocSecure () { return [instance ().secureTextFieldClass alloc]; }
+	using Base = RuntimeObjCClass<VSTGUI_NSTextFieldT<SecureT>>;
 
-private:
 	static constexpr const auto textEditVarName = "_textEdit";
 
-	Class textFieldClass {nullptr};
-	Class secureTextFieldClass {nullptr};
-
-	VSTGUI_NSTextField ()
+	static Class CreateClass ()
 	{
-		textFieldClass =
-			ObjCClassBuilder ()
-				.init ("VSTGUI_NSTextField", [NSTextField class])
-				.addMethod (@selector (initWithTextEdit:), Init)
-				.addMethod (@selector (syncSize), SyncSize)
-				.addMethod (@selector (removeFromSuperview), RemoveFromSuperview)
-				.addMethod (@selector (control:textView:doCommandBySelector:), DoCommandBySelector)
-				.addMethod (@selector (textDidChange:), TextDidChange)
-				.addIvar<CocoaTextEdit*> (textEditVarName)
-				.finalize ();
-
-		secureTextFieldClass =
-			ObjCClassBuilder ()
+		if constexpr (SecureT)
+		{
+			return ObjCClassBuilder ()
 				.init ("VSTGUI_NSSecureTextField", [NSSecureTextField class])
 				.addMethod (@selector (initWithTextEdit:), Init)
 				.addMethod (@selector (syncSize), SyncSize)
@@ -72,25 +58,23 @@ private:
 				.addMethod (@selector (textDidChange:), TextDidChange)
 				.addIvar<IPlatformTextEditCallback*> (textEditVarName)
 				.finalize ();
-	}
-
-	~VSTGUI_NSTextField () noexcept
-	{
-		if (textFieldClass)
-			objc_disposeClassPair (textFieldClass);
-		if (secureTextFieldClass)
-			objc_disposeClassPair (secureTextFieldClass);
-	}
-
-	static VSTGUI_NSTextField& instance ()
-	{
-		static VSTGUI_NSTextField gInstance;
-		return gInstance;
+		}
+		else
+		{
+			return ObjCClassBuilder ()
+				.init ("VSTGUI_NSTextField", [NSTextField class])
+				.addMethod (@selector (initWithTextEdit:), Init)
+				.addMethod (@selector (syncSize), SyncSize)
+				.addMethod (@selector (removeFromSuperview), RemoveFromSuperview)
+				.addMethod (@selector (control:textView:doCommandBySelector:), DoCommandBySelector)
+				.addMethod (@selector (textDidChange:), TextDidChange)
+				.addIvar<CocoaTextEdit*> (textEditVarName)
+				.finalize ();
+		}
 	}
 
 	static id Init (id self, SEL _cmd, void* textEdit)
 	{
-		ObjCInstance obj (self);
 		if (self)
 		{
 			CocoaTextEdit* te = (CocoaTextEdit*)textEdit;
@@ -119,14 +103,15 @@ private:
 			editFrameRect.origin.y = static_cast<CGFloat> (textInset.y / 2.);
 			editFrameRect.size.width -= textInset.x / 2.;
 			editFrameRect.size.height -= textInset.y / 2. - 1.;
-			self =
-				obj.callSuper<id (id, SEL, NSRect), id> (@selector (initWithFrame:), editFrameRect);
+			self = Base::makeInstance (self).template callSuper<id (id, SEL, NSRect), id> (
+				@selector (initWithFrame:), editFrameRect);
 			if (!self)
 			{
 				[containerView release];
 				return nil;
 			}
-			if (auto var = obj.getVariable<IPlatformTextEditCallback*> (textEditVarName))
+			auto obj = Base::makeInstance (self);
+			if (auto var = obj.template getVariable<IPlatformTextEditCallback*> (textEditVarName))
 				var->set (tec);
 
 			CoreTextFont* ctf = tec->platformGetFont ()->getPlatformFont ().cast<CoreTextFont> ();
@@ -217,7 +202,8 @@ private:
 	//------------------------------------------------------------------------------------
 	static void SyncSize (id self, SEL _cmd)
 	{
-		if (auto te = ObjCInstance (self).getVariable<IPlatformTextEditCallback*> (textEditVarName))
+		if (auto te = Base::makeInstance (self).template getVariable<IPlatformTextEditCallback*> (
+				textEditVarName))
 		{
 			auto textEdit = te->get ();
 			if (!textEdit)
@@ -236,8 +222,8 @@ private:
 	//------------------------------------------------------------------------------------
 	static void RemoveFromSuperview (id self, SEL _cmd)
 	{
-		ObjCInstance obj (self);
-		if (auto var = obj.getVariable<IPlatformTextEditCallback*> (textEditVarName))
+		auto obj = Base::makeInstance (self);
+		if (auto var = obj.template getVariable<IPlatformTextEditCallback*> (textEditVarName))
 			var->set (nullptr);
 		NSView* containerView = [self superview];
 		if (containerView)
@@ -245,7 +231,7 @@ private:
 			[[containerView window] makeFirstResponder:[containerView superview]];
 			[containerView removeFromSuperview];
 			// [super removeFromSuperview];
-			obj.callSuper<void (id, SEL)> (_cmd);
+			obj.template callSuper<void (id, SEL)> (_cmd);
 			[containerView release];
 		}
 	}
@@ -253,20 +239,21 @@ private:
 	//------------------------------------------------------------------------------------
 	static void TextDidChange (id self, SEL _cmd, NSNotification* notification)
 	{
-		ObjCInstance obj (self);
-		if (auto var = obj.getVariable<IPlatformTextEditCallback*> (textEditVarName))
+		auto obj = Base::makeInstance (self);
+		if (auto var = obj.template getVariable<IPlatformTextEditCallback*> (textEditVarName))
 		{
 			if (auto te = var->get ())
 				te->platformTextDidChange ();
 		}
-		obj.callSuper<void (id, SEL, NSNotification*)> (_cmd, notification);
+		obj.template callSuper<void (id, SEL, NSNotification*)> (_cmd, notification);
 	}
 
 	//------------------------------------------------------------------------------------
 	static BOOL DoCommandBySelector (id self, SEL _cmd, NSControl* control, NSTextView* textView,
 									 SEL commandSelector)
 	{
-		auto var = ObjCInstance (self).getVariable<IPlatformTextEditCallback*> (textEditVarName);
+		auto var = Base::makeInstance (self).template getVariable<IPlatformTextEditCallback*> (
+			textEditVarName);
 		if (!var)
 			return NO;
 		IPlatformTextEditCallback* tec = var->get ();
@@ -313,6 +300,9 @@ private:
 	}
 };
 
+using VSTGUI_NSTextField = VSTGUI_NSTextFieldT<false>;
+using VSTGUI_NSTextField_Secure = VSTGUI_NSTextFieldT<true>;
+
 //-----------------------------------------------------------------------------
 CocoaTextEdit::CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdit)
 : IPlatformTextEdit (textEdit)
@@ -320,7 +310,7 @@ CocoaTextEdit::CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdi
 , parent (parent)
 {
 	if (textEdit->platformIsSecureTextEdit ())
-		platformControl = [VSTGUI_NSTextField::allocSecure () initWithTextEdit:(id)this];
+		platformControl = [VSTGUI_NSTextField_Secure::alloc () initWithTextEdit:(id)this];
 	else
 		platformControl = [VSTGUI_NSTextField::alloc () initWithTextEdit:(id)this];
 }

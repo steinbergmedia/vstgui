@@ -28,48 +28,33 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-struct VSTGUI_NSOpenGLView
+struct VSTGUI_NSOpenGLView : RuntimeObjCClass<VSTGUI_NSOpenGLView>
 {
-	static id alloc () { return [instance ().openGLViewClass alloc]; }
-
-private:
 	static constexpr const auto cocoaOpenGLViewVarName = "cocoaOpenGLView";
 
-	Class openGLViewClass = nullptr;
-
 	//-----------------------------------------------------------------------------
-	VSTGUI_NSOpenGLView ()
+	static Class CreateClass ()
 	{
-		openGLViewClass = ObjCClassBuilder ()
-							  .init ("VSTGUI_NSOpenGLView", [NSOpenGLView class])
-							  .addMethod (@selector (initWithFrame:pixelFormat:callback:), Init)
-							  .addMethod (@selector (dealloc), Dealloc)
-							  .addMethod (@selector (update), Update_Reshape)
-							  .addMethod (@selector (reshape), Update_Reshape)
-							  .addMethod (@selector (isFlipped), IsFlipped)
-							  .addMethod (@selector (drawRect:), DrawRect)
-							  .addMethod (@selector (mouseMoved:), MouseXXX)
-							  .addMethod (@selector (rightMouseDown:), MouseXXX)
-							  .addMethod (@selector (rightMouseUp:), MouseXXX)
-							  .addIvar<CocoaOpenGLView*> (cocoaOpenGLViewVarName)
-							  .finalize ();
-	}
-
-	//-----------------------------------------------------------------------------
-	~VSTGUI_NSOpenGLView () noexcept { objc_disposeClassPair (openGLViewClass); }
-
-	//-----------------------------------------------------------------------------
-	static VSTGUI_NSOpenGLView& instance ()
-	{
-		static VSTGUI_NSOpenGLView gInstance;
-		return gInstance;
+		return ObjCClassBuilder ()
+			.init ("VSTGUI_NSOpenGLView", [NSOpenGLView class])
+			.addMethod (@selector (initWithFrame:pixelFormat:callback:), Init)
+			.addMethod (@selector (dealloc), Dealloc)
+			.addMethod (@selector (update), Update_Reshape)
+			.addMethod (@selector (reshape), Update_Reshape)
+			.addMethod (@selector (isFlipped), IsFlipped)
+			.addMethod (@selector (drawRect:), DrawRect)
+			.addMethod (@selector (mouseMoved:), MouseXXX)
+			.addMethod (@selector (rightMouseDown:), MouseXXX)
+			.addMethod (@selector (rightMouseUp:), MouseXXX)
+			.addIvar<CocoaOpenGLView*> (cocoaOpenGLViewVarName)
+			.finalize ();
 	}
 
 	//-----------------------------------------------------------------------------
 	static id Init (id self, SEL _cmd, NSRect frameRect, NSOpenGLPixelFormat* format,
 					CocoaOpenGLView* callback)
 	{
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 		self = obj.callSuper<id (id, SEL, NSRect, NSOpenGLPixelFormat*), id> (
 			@selector (initWithFrame:pixelFormat:), frameRect, format);
 		if (self)
@@ -86,7 +71,7 @@ private:
 	//-----------------------------------------------------------------------------
 	static void Dealloc (id self, SEL _cmd)
 	{
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 		if (auto var = obj.getVariable<CocoaOpenGLView*> (cocoaOpenGLViewVarName))
 		{
 			if (auto callback = var->get ())
@@ -98,7 +83,7 @@ private:
 	//-----------------------------------------------------------------------------
 	static void Update_Reshape (id self, SEL _cmd)
 	{
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 		if (auto var = obj.getVariable<CocoaOpenGLView*> (cocoaOpenGLViewVarName))
 		{
 			if (auto callback = var->get ())
@@ -112,7 +97,7 @@ private:
 	//------------------------------------------------------------------------------------
 	static void DrawRect (id self, SEL _cmd, NSRect rect)
 	{
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 		if (auto var = obj.getVariable<CocoaOpenGLView*> (cocoaOpenGLViewVarName))
 		{
 			if (auto callback = var->get ())

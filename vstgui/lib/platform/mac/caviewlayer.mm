@@ -76,35 +76,21 @@
 @end
 
 //-----------------------------------------------------------------------------
-struct VSTGUI_macOS_CALayer
+struct VSTGUI_macOS_CALayer : VSTGUI::RuntimeObjCClass<VSTGUI_macOS_CALayer>
 {
-	static id newInstance ()
-	{
-		return [[instance ().viewLayerClass alloc] init];
-	}
-
-private:
 	static constexpr const auto viewLayerDelegateVarName = "_viewLayerDelegate";
 
-	Class viewLayerClass {nullptr};
-
 	//-----------------------------------------------------------------------------
-	VSTGUI_macOS_CALayer ()
+	static Class CreateClass ()
 	{
-		viewLayerClass = VSTGUI::ObjCClassBuilder ()
-							 .init ("VSTGUI_CALayer", [CALayer class])
-							 .addMethod (@selector (init), Init)
-							 .addMethod (@selector (actionForKey:), ActionForKey)
-							 .addMethod (@selector (setDrawDelegate:), SetDrawDelegate)
-							 .addMethod (@selector (drawInContext:), DrawInContext)
-							 .addIvar<void*> (viewLayerDelegateVarName)
-							 .finalize ();
-	}
-
-	//-----------------------------------------------------------------------------
-	~VSTGUI_macOS_CALayer () noexcept
-	{
-		objc_disposeClassPair (viewLayerClass);
+		return VSTGUI::ObjCClassBuilder ()
+			.init ("VSTGUI_CALayer", [CALayer class])
+			.addMethod (@selector (init), Init)
+			.addMethod (@selector (actionForKey:), ActionForKey)
+			.addMethod (@selector (setDrawDelegate:), SetDrawDelegate)
+			.addMethod (@selector (drawInContext:), DrawInContext)
+			.addIvar<void*> (viewLayerDelegateVarName)
+			.finalize ();
 	}
 
 	//-----------------------------------------------------------------------------
@@ -117,7 +103,7 @@ private:
 	//-----------------------------------------------------------------------------
 	static id Init (id self, SEL _cmd)
 	{
-		self = VSTGUI::ObjCInstance (self).callSuper<id (id, SEL), id> (_cmd);
+		self = makeInstance (self).callSuper<id (id, SEL), id> (_cmd);
 		if (self)
 		{
 			[self setNeedsDisplayOnBoundsChange:YES];
@@ -132,7 +118,7 @@ private:
 	static void SetDrawDelegate (id self, SEL _cmd, VSTGUI::IPlatformViewLayerDelegate* delegate)
 	{
 		using namespace VSTGUI;
-		if (auto var = ObjCInstance (self).getVariable<IPlatformViewLayerDelegate*> (
+		if (auto var = makeInstance (self).getVariable<IPlatformViewLayerDelegate*> (
 				viewLayerDelegateVarName))
 			var->set (delegate);
 	}
@@ -142,7 +128,7 @@ private:
 	{
 		using namespace VSTGUI;
 
-		if (auto var = ObjCInstance (self).getVariable<IPlatformViewLayerDelegate*> (
+		if (auto var = makeInstance (self).getVariable<IPlatformViewLayerDelegate*> (
 				viewLayerDelegateVarName);
 			var.has_value ())
 		{
@@ -183,7 +169,7 @@ CAViewLayer::CAViewLayer (CALayer* parent)
 : layer (nullptr)
 {
 #if !TARGET_OS_IPHONE
-	layer = VSTGUI_macOS_CALayer::newInstance ();
+	layer = [VSTGUI_macOS_CALayer::alloc () init];
 #else
 	layer = [VSTGUI_CALayer new];
 #endif
