@@ -108,7 +108,20 @@ struct RuntimeObjCClass
 {
 	using Base = RuntimeObjCClass<T>;
 
-	static id alloc () { return class_createInstance (instance ().cl, 0); }
+	static id alloc ()
+	{
+		static auto allocSel = sel_registerName ("alloc");
+		if (auto method = class_getClassMethod (instance ().cl, allocSel))
+		{
+			if (auto methodImpl = method_getImplementation (method))
+			{
+				using fn2 = id (*) (id, SEL);
+				auto alloc = (fn2)methodImpl;
+				return alloc (instance ().cl, allocSel);
+			}
+		}
+		return nil;
+	}
 
 	RuntimeObjCClass ()
 	{
@@ -133,6 +146,9 @@ protected:
 		static T gInstance;
 		return gInstance;
 	}
+
+	Class getClass () const { return cl; }
+	Class getSuperClass () const { return superClass; }
 
 private:
 	Class cl {nullptr};
