@@ -351,6 +351,7 @@ if(CMAKE_HOST_APPLE)
     UTI_FRAMEWORK "UniformTypeIdentifiers"
     NO_CACHE
   )
+  message(${UTI_FRAMEWORK})
   if(UTI_FRAMEWORK)
 	set(PLATFORM_LIBRARIES
 	  ${PLATFORM_LIBRARIES}
