@@ -94,13 +94,6 @@ struct VSTGUI_macOS_CALayer : VSTGUI::RuntimeObjCClass<VSTGUI_macOS_CALayer>
 	}
 
 	//-----------------------------------------------------------------------------
-	static VSTGUI_macOS_CALayer& instance ()
-	{
-		static VSTGUI_macOS_CALayer gInstance;
-		return gInstance;
-	}
-
-	//-----------------------------------------------------------------------------
 	static id Init (id self, SEL _cmd)
 	{
 		self = makeInstance (self).callSuper<id (id, SEL), id> (_cmd);
