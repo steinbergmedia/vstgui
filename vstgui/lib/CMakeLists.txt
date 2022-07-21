@@ -347,12 +347,8 @@ if(CMAKE_HOST_APPLE)
 	"-framework QuartzCore"
 	"-framework Accelerate"
   )
-  find_library(
-    UTI_FRAMEWORK "UniformTypeIdentifiers"
-    NO_CACHE
-  )
-  message(${UTI_FRAMEWORK})
-  if(UTI_FRAMEWORK)
+  if(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER_EQUAL 11.0)
+    target_compile_definitions(${target} "VSTGUI_USE_OBJC_UTTYPE")
 	set(PLATFORM_LIBRARIES
 	  ${PLATFORM_LIBRARIES}
 	  "-framework UniformTypeIdentifiers"
