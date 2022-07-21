@@ -107,6 +107,7 @@ if(CMAKE_HOST_APPLE)
 		NO_CACHE
 	)
 	if(UTI_FRAMEWORK)
+		message(${UTI_FRAMEWORK})
 		set(${target}_PLATFORM_LIBS
 		${${target}_PLATFORM_LIBS}
 		"-framework UniformTypeIdentifiers"
