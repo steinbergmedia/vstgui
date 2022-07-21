@@ -102,6 +102,7 @@ if(CMAKE_HOST_APPLE)
 		"-framework QuartzCore"
 		"-framework Accelerate"
 	)
+	set(CMAKE_FRAMEWORK_PATH ${CMAKE_OSX_SYSROOT})
 	find_library(
 		UTI_FRAMEWORK "UniformTypeIdentifiers"
 		NO_CACHE
