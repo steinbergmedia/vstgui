@@ -5,6 +5,7 @@
 #pragma once
 
 #import "../lib/platform/mac/cocoa/objcclassbuilder.h"
+#import "../lib/iexternalview.h"
 #import <Cocoa/Cocoa.h>
 
 //------------------------------------------------------------------------
@@ -102,9 +103,11 @@ struct FlippedNSView : RuntimeObjCClass<FlippedNSView>
  *
  */
 template<typename ViewType>
-struct ExternalNSViewBase
+struct ExternalNSViewBase : IView
 {
 	using Base = ExternalNSViewBase<ViewType>;
+	using PlatformViewType = ExternalView::PlatformViewType;
+	using IntRect = ExternalView::IntRect;
 
 	NSView* container {[FlippedNSView::alloc () initWithFrame: {0., 0., 10., 10.}]};
 	ViewType* view {nullptr};
@@ -119,12 +122,12 @@ struct ExternalNSViewBase
 	}
 #endif
 
-	bool platformViewTypeSupported (PlatformViewType type)
+	bool platformViewTypeSupported (PlatformViewType type) override
 	{
 		return type == PlatformViewType::NSView;
 	}
 
-	bool attach (void* parent, PlatformViewType parentViewType)
+	bool attach (void* parent, PlatformViewType parentViewType) override
 	{
 		if (!parent || parentViewType != PlatformViewType::NSView)
 			return false;
@@ -133,13 +136,13 @@ struct ExternalNSViewBase
 		return true;
 	}
 
-	bool remove ()
+	bool remove () override
 	{
 		[container removeFromSuperview];
 		return true;
 	}
 
-	void setViewSize (IntRect frame, IntRect visible)
+	void setViewSize (IntRect frame, IntRect visible) override
 	{
 		container.frame = toNSRect (visible);
 		frame.origin.x -= visible.origin.x;
@@ -147,17 +150,24 @@ struct ExternalNSViewBase
 		view.frame = toNSRect (frame);
 	}
 
-	void setContentScaleFactor (double scaleFactor) {}
+	void setContentScaleFactor (double scaleFactor) override {}
 
-	void setMouseEnabled (bool state) { view.enabled = state; }
-
-	void takeFocus ()
+	void setMouseEnabled (bool state) override
 	{
-		if (auto window = view.window)
-			[window makeFirstResponder:view];
+		if ([view respondsToSelector:@selector (setEnabled:)])
+			[(id)view setEnabled:state];
 	}
 
-	void looseFocus () {}
+	void takeFocus () override
+	{
+		if (view.acceptsFirstResponder)
+		{
+			if (auto window = view.window)
+				[window makeFirstResponder:view];
+		}
+	}
+
+	void looseFocus () override {}
 };
 
 //------------------------------------------------------------------------
