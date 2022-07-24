@@ -82,7 +82,7 @@ private:
 			return true;
 
 		std::wstring windowClassName;
-		windowClassName = TEXT ("VSTGUI NativeUI Container ");
+		windowClassName = TEXT ("VSTGUI ExternalView Container ");
 		windowClassName += std::to_wstring (reinterpret_cast<uint64_t> (this));
 
 		WNDCLASS windowClass;
@@ -201,7 +201,7 @@ struct ExternalHWNDBase
 		}
 	}
 
-	void setMouseEnabled (bool state) { EnableWindow (child, state); }
+	void setMouseEnabled (bool state) { EnableWindow (container.getHWND (), state); }
 
 	void takeFocus () { SetFocus (child); }
 
