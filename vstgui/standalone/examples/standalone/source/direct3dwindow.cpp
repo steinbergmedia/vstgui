@@ -7,6 +7,7 @@
 #include "vstgui/contrib/externalview_hwnd.h"
 #include "vstgui/lib/cexternalview.h"
 #include "vstgui/lib/platform/win32/win32factory.h"
+#include "vstgui/lib/cvstguitimer.h"
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/windowcontroller.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
@@ -343,6 +344,7 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 			initPipeline ();
 			loadAssets ();
 			doRender ();
+			timer = makeOwned<CVSTGUITimer> ([this] (auto) { doRender (); }, 1);
 			return true;
 		}
 		return false;
@@ -350,6 +352,7 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 
 	bool remove () override
 	{
+		timer = nullptr;
 		onDestroy ();
 		return Base::remove ();
 	}
@@ -635,13 +638,36 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed (m_commandList->Close ());
 
+		updateAndUploadVertexBuffer ();
+
+		// Create synchronization objects and wait until assets have been uploaded to the GPU.
+		{
+			ThrowIfFailed (
+				m_device->CreateFence (0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS (&m_fence)));
+			m_fenceValue = 1;
+
+			// Create an event handle to use for frame synchronization.
+			m_fenceEvent = CreateEvent (nullptr, FALSE, FALSE, nullptr);
+			if (m_fenceEvent == nullptr)
+			{
+				ThrowIfFailed (HRESULT_FROM_WIN32 (GetLastError ()));
+			}
+
+			// Wait for the command list to execute; we are reusing the same command
+			// list in our main loop but for now, we just want to wait for setup to
+			// complete before continuing.
+			waitForPreviousFrame ();
+		}
+	}
+
+	void updateAndUploadVertexBuffer ()
+	{
 		// Create the vertex buffer.
 		{
 			// Define the geometry for a triangle.
-			Vertex triangleVertices[] = {
-				{{0.0f, 0.25f * m_aspectRatio, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-				{{0.25f, -0.25f * m_aspectRatio, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-				{{-0.25f, -0.25f * m_aspectRatio, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}};
+			Vertex triangleVertices[] = {{{0.0f, 0.5f, 0.0f}, colorRight},
+										 {{0.5f, -0.5f, 0.0f}, colorLeft},
+										 {{-0.5f, -0.5f, 0.0f}, colorTop}};
 
 			const UINT vertexBufferSize = sizeof (triangleVertices);
 
@@ -667,29 +693,31 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 			m_vertexBufferView.StrideInBytes = sizeof (Vertex);
 			m_vertexBufferView.SizeInBytes = vertexBufferSize;
 		}
+	}
 
-		// Create synchronization objects and wait until assets have been uploaded to the GPU.
-		{
-			ThrowIfFailed (
-				m_device->CreateFence (0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS (&m_fence)));
-			m_fenceValue = 1;
+	void updateColors ()
+	{
+		++frameCounter;
+		colorTop.x = (1.f + std::sin (frameCounter * 0.013f)) * 0.5f;
+		colorTop.y = (1.f + std::sin (frameCounter * 0.021f)) * 0.5f;
+		colorTop.z = (1.f + std::sin (frameCounter * 0.037f)) * 0.5f;
 
-			// Create an event handle to use for frame synchronization.
-			m_fenceEvent = CreateEvent (nullptr, FALSE, FALSE, nullptr);
-			if (m_fenceEvent == nullptr)
-			{
-				ThrowIfFailed (HRESULT_FROM_WIN32 (GetLastError ()));
-			}
+		colorLeft.x = (1.f + std::sin (frameCounter * 0.031f)) * 0.5f;
+		colorLeft.y = (1.f + std::sin (frameCounter * 0.021f)) * 0.5f;
+		colorLeft.z = (1.f + std::sin (frameCounter * 0.011f)) * 0.5f;
 
-			// Wait for the command list to execute; we are reusing the same command
-			// list in our main loop but for now, we just want to wait for setup to
-			// complete before continuing.
-			waitForPreviousFrame ();
-		}
+		colorRight.x = (1.f + std::sin (frameCounter * 0.025f)) * 0.5f;
+		colorRight.y = (1.f + std::sin (frameCounter * 0.012f)) * 0.5f;
+		colorRight.z = (1.f + std::sin (frameCounter * 0.031f)) * 0.5f;
 	}
 
 	void doRender ()
 	{
+		waitForPreviousFrame ();
+
+		updateColors ();
+		updateAndUploadVertexBuffer ();
+
 		// Record all the commands we need to render the scene into the command list.
 		populateCommandList ();
 
@@ -700,7 +728,6 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 		// Present the frame.
 		ThrowIfFailed (m_swapChain->Present (1, 0));
 
-		waitForPreviousFrame ();
 	}
 
 	void onDestroy ()
@@ -836,6 +863,12 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 
 	IntRect visibleRect {};
 	float scaleFactor {1.};
+
+	DirectX::XMFLOAT4 colorTop {0.f, 0.f, 1.f, 1.f};
+	DirectX::XMFLOAT4 colorLeft {0.f, 1.f, 0.f, 1.f};
+	DirectX::XMFLOAT4 colorRight {1.f, 0.f, 0.f, 1.f};
+	uint32_t frameCounter {0};
+	SharedPointer<CVSTGUITimer> timer;
 };
 
 //------------------------------------------------------------------------
