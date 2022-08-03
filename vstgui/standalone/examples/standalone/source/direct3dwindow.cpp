@@ -381,7 +381,6 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 		{
 			waitForPreviousFrame ();
 			ThrowIfFailed (m_dcompVisual->SetContent (nullptr));
-			ThrowIfFailed (m_dcompDevice->Commit ());
 			freeFrameResources ();
 			ThrowIfFailed (m_swapChain->ResizeBuffers (FrameCount, m_width, m_height,
 													   DXGI_FORMAT_R8G8B8A8_UNORM,
