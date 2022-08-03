@@ -148,9 +148,11 @@ private:
 };
 
 //------------------------------------------------------------------------
-struct ExternalHWNDBase
+struct ExternalHWNDBase : IView
 {
 	using Base = ExternalHWNDBase;
+	using PlatformViewType = ExternalView::PlatformViewType;
+	using IntRect = ExternalView::IntRect;
 
 	HWNDWindow container;
 	HWND child {nullptr};
@@ -167,12 +169,12 @@ struct ExternalHWNDBase
 			DestroyWindow (child);
 	}
 
-	bool platformViewTypeSupported (PlatformViewType type)
+	bool platformViewTypeSupported (PlatformViewType type) override
 	{
 		return type == PlatformViewType::HWND;
 	}
 
-	bool attach (void* parent, PlatformViewType parentViewType)
+	bool attach (void* parent, PlatformViewType parentViewType) override
 	{
 		assert (container.getHWND ());
 		if (parent == nullptr || parentViewType != PlatformViewType::HWND)
@@ -182,14 +184,14 @@ struct ExternalHWNDBase
 		return true;
 	}
 
-	bool remove ()
+	bool remove () override
 	{
 		assert (container.getHWND ());
 		SetParent (container.getHWND (), HWND_MESSAGE);
 		return true;
 	}
 
-	void setViewSize (IntRect frame, IntRect visible)
+	void setViewSize (IntRect frame, IntRect visible) override
 	{
 		assert (container.getHWND ());
 		container.setSize (visible);
@@ -201,11 +203,13 @@ struct ExternalHWNDBase
 		}
 	}
 
-	void setMouseEnabled (bool state) { EnableWindow (container.getHWND (), state); }
+	void setContentScaleFactor (double scaleFactor) override {}
 
-	void takeFocus () { SetFocus (child); }
+	void setMouseEnabled (bool state) override { EnableWindow (container.getHWND (), state); }
 
-	void looseFocus ()
+	void takeFocus () override { SetFocus (child); }
+
+	void looseFocus () override
 	{
 		if (GetFocus () == child)
 		{

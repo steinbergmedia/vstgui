@@ -22,6 +22,7 @@ set(standalone_resources
   "resource/test.uidesc"
   "resource/testpopup.uidesc"
   "resource/metalwindow.uidesc"
+  "resource/direct3dwindow.uidesc"
 )
 
 set(standalone_font
@@ -45,6 +46,9 @@ elseif(MSVC)
     ${standalone_sources}
     "../../../contrib/externalview_hwnd.h"
     "../../../contrib/datepicker_win32.cpp"
+	"source/direct3dwindow.cpp"
+	"source/direct3dwindow.h"
+	"source/direct3dshader.h"
   )
 endif()
 

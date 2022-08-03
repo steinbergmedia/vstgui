@@ -32,6 +32,8 @@
 
 #if MAC
 #include "metalwindow.h"
+#elif WINDOWS
+#include "direct3dwindow.h"
 #endif
 
 //------------------------------------------------------------------------
@@ -73,6 +75,8 @@ static Command NewPopup {CommandGroup::File, "New Popup"};
 static Command ShowAlertBoxDesign {CommandGroup::File, "Show AlertBox Design"};
 #if MAC
 static Command NewMetalExampleWindow {CommandGroup::File, "New Metal Example Window"};
+#elif WINDOWS
+static Command NewDirect3DExampleWindow {CommandGroup::File, "New Direct3D Example Window"};
 #endif
 
 //------------------------------------------------------------------------
@@ -204,6 +208,8 @@ void Delegate::finishLaunching ()
 	IApplication::instance ().registerCommand (ShowAlertBoxDesign, 'b');
 #if MAC
 	IApplication::instance ().registerCommand (NewMetalExampleWindow, 'M');
+#elif WINDOWS
+	IApplication::instance ().registerCommand (NewDirect3DExampleWindow, 'D');
 #endif
 	handleCommand (Commands::NewDocument);
 }
@@ -222,6 +228,9 @@ bool Delegate::canHandleCommand (const Command& command)
 {
 #if MAC
 	if (command == NewMetalExampleWindow)
+		return true;
+#elif WINDOWS
+	if (command == NewDirect3DExampleWindow)
 		return true;
 #endif
 	return command == Commands::NewDocument || command == NewPopup || command == ShowAlertBoxDesign;
@@ -285,6 +294,13 @@ bool Delegate::handleCommand (const Command& command)
 	else if (command == NewMetalExampleWindow)
 	{
 		if (auto window = makeNewMetalExampleWindow ())
+			window->show ();
+		return true;
+	}
+#elif WINDOWS
+	else if (command == NewDirect3DExampleWindow)
+	{
+		if (auto window = makeNewDirect3DExampleWindow ())
 			window->show ();
 		return true;
 	}
