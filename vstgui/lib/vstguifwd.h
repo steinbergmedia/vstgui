@@ -174,6 +174,7 @@ class ITouchEvent;
 
 // classes
 class CBitmap;
+class CMultiFrameBitmap;
 class CNinePartTiledBitmap;
 class CResourceDescription;
 class CLineStyle;

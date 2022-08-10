@@ -799,11 +799,18 @@ CAnimKnob::CAnimKnob (const CAnimKnob& v)
 //-----------------------------------------------------------------------------------------------
 bool CAnimKnob::sizeToFit ()
 {
-	if (getDrawBackground ())
+	if (auto bitmap = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (getDrawBackground ()->getWidth ());
-		vs.setHeight (getHeightOfOneImage ());
+		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			vs.setSize (frameBitmap->getFrameSize ());
+		}
+		else
+		{
+			vs.setWidth (bitmap->getWidth ());
+			vs.setHeight (getHeightOfOneImage ());
+		}
 		setViewSize (vs);
 		setMouseableArea (vs);
 		return true;
@@ -823,6 +830,13 @@ void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 void CAnimKnob::setBackground (CBitmap *background)
 {
 	CKnobBase::setBackground (background);
+	if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (background))
+	{
+		heightOfOneImage = frameBitmap->getFrameSize ().y;
+		setNumSubPixmaps (frameBitmap->getNumFrames ());
+		return;
+	}
+
 	if (heightOfOneImage == 0)
 		heightOfOneImage = getViewSize ().getHeight ();
 	if (background && heightOfOneImage > 0)
@@ -832,21 +846,30 @@ void CAnimKnob::setBackground (CBitmap *background)
 //------------------------------------------------------------------------
 void CAnimKnob::draw (CDrawContext *pContext)
 {
-	if (getDrawBackground ())
+	if (auto bitmap = getDrawBackground ())
 	{
-		CPoint where (0, 0);
-		float val = getValueNormalized ();
-		if (val >= 0.f && heightOfOneImage > 0.)
+		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
+			auto frameIndex = getValueNormalized () * frameBitmap->getNumFrames ();
 			if (bInverseBitmap)
-				where.y = floor ((1. - val) * tmp);
-			else
-				where.y = floor (val * tmp);
-			where.y -= (int32_t)where.y % (int32_t)heightOfOneImage;
+				frameIndex = frameBitmap->getNumFrames () - frameIndex;
+			frameBitmap->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
-
-		getDrawBackground ()->draw (pContext, getViewSize (), where);
+		else
+		{
+			CPoint where (0, 0);
+			float val = getValueNormalized ();
+			if (val >= 0.f && heightOfOneImage > 0.)
+			{
+				CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
+				if (bInverseBitmap)
+					where.y = floor ((1. - val) * tmp);
+				else
+					where.y = floor (val * tmp);
+				where.y -= (int32_t)where.y % (int32_t)heightOfOneImage;
+			}
+			bitmap->draw (pContext, getViewSize (), where);
+		}
 	}
 	setDirty (false);
 }

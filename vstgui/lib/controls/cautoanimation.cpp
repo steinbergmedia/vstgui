@@ -76,14 +76,21 @@ CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
 void CAutoAnimation::draw (CDrawContext *pContext)
 {
 	if (isWindowOpened ())
-	{	
-		CPoint where;
-		where.y = (int32_t)value + offset.y;
-		where.x = offset.x;
-		
-		if (getDrawBackground ())
+	{
+		if (auto bitmap = getDrawBackground ())
 		{
-			getDrawBackground ()->draw (pContext, getViewSize (), where);
+			if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+			{
+				auto frameIndex = getValueNormalized () * frameBitmap->getNumFrames ();
+				frameBitmap->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+			}
+			else
+			{
+				CPoint where;
+				where.y = (int32_t)value + offset.y;
+				where.x = offset.x;
+				bitmap->draw (pContext, getViewSize (), where);
+			}
 		}
 	}
 	setDirty (false);
