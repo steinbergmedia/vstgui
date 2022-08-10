@@ -135,7 +135,7 @@
 	#endif
 
 #else
-	#error unsupported compiler
+#error unsupported system/compiler
 #endif
 
 #include <atomic>
