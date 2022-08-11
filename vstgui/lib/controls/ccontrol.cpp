@@ -311,6 +311,7 @@ CControl::CheckDefaultValueEventFuncT CControl::CheckDefaultValueEventFunc =
 		{
 			return CheckDefaultValueFunc (c, buttonStateFromMouseEvent (event));
 		}
+		return false;
 #else
 #if TARGET_OS_IPHONE
 		return event.buttonState.isLeft () && event.clickCount == 2;
@@ -318,7 +319,6 @@ CControl::CheckDefaultValueEventFuncT CControl::CheckDefaultValueEventFunc =
 		return event.buttonState.isLeft () && event.modifiers.is (ModifierKey::Control);
 #endif // TARGET_OS_IPHONE
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-		return false;
 	};
 
 //------------------------------------------------------------------------
