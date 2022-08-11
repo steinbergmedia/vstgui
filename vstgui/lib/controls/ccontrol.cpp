@@ -298,7 +298,7 @@ CControl::CheckDefaultValueFuncT CControl::CheckDefaultValueFunc = [] (CControl*
 	return button.isDoubleClick ();
 #else
 	return (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier);
-#endif
+#endif // TARGET_OS_IPHONE
 };
 
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -359,7 +359,7 @@ int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
 		modifiers |= kControl;
 	return modifiers;
 }
-#endif
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
