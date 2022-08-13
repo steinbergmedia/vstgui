@@ -13,6 +13,8 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 TEST_CASE (CKickButtonCreatorTest, HeightOfOneImage)
 {
 	DummyUIDescription uidesc;
@@ -26,5 +28,7 @@ TEST_CASE (CKickButtonCreatorTest, SubPixmaps)
 	testAttribute<CKickButton> (kCKickButton, kAttrSubPixmaps, 11, &uidesc,
 	                            [] (CKickButton* v) { return v->getNumSubPixmaps () == 11; });
 }
+
+#endif
 
 } // VSTGUI
