@@ -761,29 +761,22 @@ CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag
 : CKnobBase (size, listener, tag, background)
 , bInverseBitmap (false)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	heightOfOneImage = size.getHeight ();
-	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
-	inset = 0;
-}
-
-//------------------------------------------------------------------------
-/**
- * CAnimKnob constructor.
- * @param size the size of this view
- * @param listener the listener
- * @param tag the control tag
- * @param subPixmaps number of sub bitmaps in background
- * @param heightOfOneImage the height of one sub bitmap
- * @param background the background bitmap
- * @param offset unused
- */
-//------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
-: CKnobBase (size, listener, tag, background)
-, bInverseBitmap (false)
-{
-	setNumSubPixmaps (subPixmaps);
-	setHeightOfOneImage (heightOfOneImage);
+	setNumSubPixmaps (0);
+	if (background)
+	{
+		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (background))
+		{
+			heightOfOneImage = frameBitmap->getFrameSize ().y;
+			setNumSubPixmaps (frameBitmap->getNumFrames ());
+		}
+		else
+		{
+			setNumSubPixmaps ((int32_t)(background->getHeight () / heightOfOneImage));
+		}
+	}
+#endif
 	inset = 0;
 }
 
@@ -792,8 +785,10 @@ CAnimKnob::CAnimKnob (const CAnimKnob& v)
 : CKnobBase (v)
 , bInverseBitmap (v.bInverseBitmap)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
+#endif
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -809,7 +804,11 @@ bool CAnimKnob::sizeToFit ()
 		else
 		{
 			vs.setWidth (bitmap->getWidth ());
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 			vs.setHeight (getHeightOfOneImage ());
+#else
+			vs.setHeight (bitmap->getHeight ());
+#endif
 		}
 		setViewSize (vs);
 		setMouseableArea (vs);
@@ -818,18 +817,47 @@ bool CAnimKnob::sizeToFit ()
 	return false;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+/**
+ * CAnimKnob constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param subPixmaps number of sub bitmaps in background
+ * @param heightOfOneImage the height of one sub bitmap
+ * @param background the background bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
+					  int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background,
+					  const CPoint& offset)
+: CKnobBase (size, listener, tag, background), bInverseBitmap (false)
+{
+	vstgui_assert (background && !dynamic_cast<CMultiFrameBitmap*> (background),
+				   "Use the other constrcutor when using a CMultiFrameBitmap");
+	setNumSubPixmaps (subPixmaps);
+	setHeightOfOneImage (heightOfOneImage);
+	inset = 0;
+}
+
 //-----------------------------------------------------------------------------------------------
 void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 {
+	if (dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
+		return;
 	IMultiBitmapControl::setHeightOfOneImage (height);
 	if (getDrawBackground () && heightOfOneImage > 0)
 		setNumSubPixmaps ((int32_t)(getDrawBackground ()->getHeight () / heightOfOneImage));
 }
+#endif
 
 //-----------------------------------------------------------------------------------------------
 void CAnimKnob::setBackground (CBitmap *background)
 {
 	CKnobBase::setBackground (background);
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (background))
 	{
 		heightOfOneImage = frameBitmap->getFrameSize ().y;
@@ -841,6 +869,7 @@ void CAnimKnob::setBackground (CBitmap *background)
 		heightOfOneImage = getViewSize ().getHeight ();
 	if (background && heightOfOneImage > 0)
 		setNumSubPixmaps ((int32_t)(background->getHeight () / heightOfOneImage));
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -848,15 +877,17 @@ void CAnimKnob::draw (CDrawContext *pContext)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			auto frameIndex = getValueNormalized () * frameBitmap->getNumFrames ();
+			auto frameIndex = static_cast<uint16_t> (std::min (
+				mfb->getNumFrames () - 1.f, getValueNormalized () * mfb->getNumFrames ()));
 			if (bInverseBitmap)
-				frameIndex = frameBitmap->getNumFrames () - frameIndex;
-			frameBitmap->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+				frameIndex = mfb->getNumFrames () - frameIndex;
+			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 			CPoint where (0, 0);
 			float val = getValueNormalized ();
 			if (val >= 0.f && heightOfOneImage > 0.)
@@ -869,6 +900,9 @@ void CAnimKnob::draw (CDrawContext *pContext)
 				where.y -= (int32_t)where.y % (int32_t)heightOfOneImage;
 			}
 			bitmap->draw (pContext, getViewSize (), where);
+#else
+			CView::draw (pContext);
+#endif
 		}
 	}
 	setDirty (false);
