@@ -25,6 +25,8 @@
 #include "../../lib/platform/iplatformbitmap.h"
 #include "../../lib/platform/platformfactory.h"
 
+#include <array>
+
 namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 class UIBitmapView : public CView
@@ -507,6 +509,7 @@ public:
 	void onDialogShow (UIDialogController*) override;
 protected:
 	void updateNinePartTiledControls ();
+	void updateMultiFrameControls ();
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
 
@@ -516,8 +519,10 @@ protected:
 	IActionPerformer* actionPerformer;
 	std::string bitmapName;
 	CRect origOffsets;
+	CMultiFrameBitmapDescription origMultiFrameDesc;
 
-	enum {
+	enum
+	{
 		kBitmapPathTag,
 		kBitmapWidthTag,
 		kBitmapHeightTag,
@@ -528,9 +533,14 @@ protected:
 		kNinePartTiledBottomTag,
 		kZoomTag,
 		kZoomTextTag,
+		kMultiFrameTag,
+		kMultiFrameFramesTag,
+		kMultiFrameFramesPerRowTag,
+		kMultiFrameSizeWidth,
+		kMultiFrameSizeHeight,
 		kNumTags
 	};
-	CControl* controls[kNumTags];
+	std::array<CControl*, kNumTags> controls;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -575,6 +585,34 @@ void UIBitmapSettingsController::updateNinePartTiledControls ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::updateMultiFrameControls ()
+{
+	auto mfb = bitmap.cast<CMultiFrameBitmap> ();
+	if (mfb)
+	{
+		controls[kMultiFrameTag]->setValueNormalized (1.f);
+		controls[kMultiFrameFramesTag]->setValue (mfb->getNumFrames ());
+		controls[kMultiFrameFramesPerRowTag]->setValue (mfb->getNumFramesPerRow ());
+		controls[kMultiFrameSizeWidth]->setValue (mfb->getFrameSize ().x);
+		controls[kMultiFrameSizeHeight]->setValue (mfb->getFrameSize ().y);
+	}
+	else
+	{
+		controls[kMultiFrameTag]->setValueNormalized (0.f);
+		for (int32_t i = kMultiFrameFramesTag; i <= kMultiFrameSizeHeight; i++)
+		{
+			auto* label = dynamic_cast<CTextLabel*> (controls[i]);
+			if (label)
+				label->setText ("");
+		}
+	}
+	for (int32_t i = kMultiFrameFramesTag; i <= kMultiFrameSizeHeight; i++)
+	{
+		controls[i]->setMouseEnabled (mfb ? true : false);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::valueChanged (CControl* control)
 {
 	switch (control->getTag ())
@@ -588,6 +626,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				bitmap = editDescription->getBitmap (bitmapName.data ());
 				bitmapView->setBackground (bitmap);
 				updateNinePartTiledControls ();
+				updateMultiFrameControls ();
 			}
 			break;
 		}
@@ -602,10 +641,17 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				origOffsets.bottom = nptb->getPartOffsets ().bottom;
 			}
 			bool checked = control->getValue () == control->getMax ();
+			if (checked && controls[kMultiFrameTag]->getValue () == 1.f)
+			{
+				controls[kMultiFrameTag]->setValue (0.f);
+				controls[kMultiFrameTag]->valueChanged ();
+				controls[kMultiFrameTag]->invalid ();
+			}
 			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), checked ? &origOffsets : nullptr);
 			bitmap = editDescription->getBitmap (bitmapName.data ());
 			bitmapView->setBackground (bitmap);
 			updateNinePartTiledControls ();
+			updateMultiFrameControls ();
 			break;
 		}
 		case kNinePartTiledLeftTag:
@@ -628,6 +674,50 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				textEdit->getFrame ()->doAfterEventProcessing ([=] () {
 					textEdit->takeFocus ();
 				});
+			}
+			break;
+		}
+		case kMultiFrameTag:
+		{
+			if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
+			{
+				origMultiFrameDesc.numFrames = mfb->getNumFrames ();
+				origMultiFrameDesc.framesPerRow = mfb->getNumFramesPerRow ();
+				origMultiFrameDesc.frameSize = mfb->getFrameSize ();
+			}
+			bool checked = control->getValue () == control->getMax ();
+			if (checked && controls[kNinePartTiledTag]->getValue () == 1.f)
+			{
+				controls[kNinePartTiledTag]->setValue (0.f);
+				controls[kNinePartTiledTag]->valueChanged ();
+				controls[kNinePartTiledTag]->invalid ();
+			}
+			actionPerformer->performBitmapMultiFrameChange (
+				bitmapName.data (), checked ? &origMultiFrameDesc : nullptr);
+			bitmap = editDescription->getBitmap (bitmapName.data ());
+			bitmapView->setBackground (bitmap);
+			updateNinePartTiledControls ();
+			updateMultiFrameControls ();
+			break;
+		}
+		case kMultiFrameFramesTag:
+		case kMultiFrameFramesPerRowTag:
+		case kMultiFrameSizeWidth:
+		case kMultiFrameSizeHeight:
+		{
+			CMultiFrameBitmapDescription desc;
+			desc.numFrames = controls[kMultiFrameFramesTag]->getValue ();
+			desc.framesPerRow = controls[kMultiFrameFramesPerRowTag]->getValue ();
+			desc.frameSize.x = controls[kMultiFrameSizeWidth]->getValue ();
+			desc.frameSize.y = controls[kMultiFrameSizeHeight]->getValue ();
+			actionPerformer->performBitmapMultiFrameChange (bitmapName.data (), &desc);
+			bitmap = editDescription->getBitmap (bitmapName.data ());
+			bitmapView->setBackground (bitmap);
+			updateMultiFrameControls ();
+			auto textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
+			if (textEdit && textEdit->bWasReturnPressed)
+			{
+				textEdit->getFrame ()->doAfterEventProcessing ([=] () { textEdit->takeFocus (); });
 			}
 			break;
 		}
@@ -669,6 +759,7 @@ void UIBitmapSettingsController::onDialogShow (UIDialogController*)
 {
 	bitmapView->setBackground (bitmap);
 	updateNinePartTiledControls ();
+	updateMultiFrameControls ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -750,6 +841,23 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 					textEdit->setStringToValueFunction (stringToValue);
 				}
 				control->setMax ((float)bitmap->getHeight ());
+				break;
+			}
+			case kMultiFrameTag:
+			{
+				break;
+			}
+			case kMultiFrameFramesTag:
+			case kMultiFrameFramesPerRowTag:
+			case kMultiFrameSizeWidth:
+			case kMultiFrameSizeHeight:
+			{
+				if (auto textEdit = dynamic_cast<CTextEdit*> (control))
+				{
+					textEdit->setPrecision (0);
+					textEdit->setStringToValueFunction (stringToValue);
+				}
+				control->setMax (32786);
 				break;
 			}
 			case kZoomTag:

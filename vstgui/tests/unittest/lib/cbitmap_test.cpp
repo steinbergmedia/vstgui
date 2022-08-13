@@ -105,7 +105,7 @@ TEST_CASE (CMultiFrameBitmap, NotInitialized)
 TEST_CASE (CMultiFrameBitmap, CalcFrameRect)
 {
 	CMultiFrameBitmap bitmap (100, 100);
-	EXPECT_TRUE (bitmap.setMultiFrameDesc ({50, 50}, 4, 2));
+	EXPECT_TRUE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 2}));
 	EXPECT_EQ (bitmap.getFrameSize (), CPoint (50., 50.));
 	EXPECT_EQ (bitmap.getNumFrames (), 4);
 	EXPECT_EQ (bitmap.getNumFramesPerRow (), 2);
@@ -120,8 +120,8 @@ TEST_CASE (CMultiFrameBitmap, CalcFrameRect)
 TEST_CASE (CMultiFrameBitmap, InvalidFrameDesc)
 {
 	CMultiFrameBitmap bitmap (100, 100);
-	EXPECT_FALSE (bitmap.setMultiFrameDesc ({50, 50}, 4, 1));
-	EXPECT_FALSE (bitmap.setMultiFrameDesc ({50, 50}, 4, 4));
+	EXPECT_FALSE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 1}));
+	EXPECT_FALSE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 4}));
 }
 
 } // VSTGUI

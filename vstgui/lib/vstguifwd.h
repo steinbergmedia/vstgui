@@ -136,6 +136,7 @@ struct DragEventData;
 struct ModalViewSession;
 struct CListControlRowDesc;
 struct CNinePartTiledDescription;
+struct CMultiFrameBitmapDescription;
 
 using GradientColorStop = std::pair<double, CColor>;
 using GradientColorStopMap = std::multimap<double, CColor>;

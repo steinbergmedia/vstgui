@@ -101,6 +101,8 @@ public:
 	void changeFont (UTF8StringPtr name, CFontRef newFont);
 	void changeGradient (UTF8StringPtr name, CGradient* newGradient);
 	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = nullptr);
+	void changeMultiFrameBitmap (UTF8StringPtr name, UTF8StringPtr newName,
+								 const CMultiFrameBitmapDescription* = nullptr);
 
 	void changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters);
 	void collectBitmapFilters (UTF8StringPtr bitmapName, std::list<SharedPointer<UIAttributes> >& filters) const;

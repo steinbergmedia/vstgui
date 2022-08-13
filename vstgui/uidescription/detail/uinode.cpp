@@ -333,11 +333,13 @@ void UIBitmapNode::removeXMLData ()
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* UIBitmapNode::createBitmap (const std::string& str,
-                                     CNinePartTiledDescription* partDesc) const
+CBitmap* UIBitmapNode::createBitmap (const std::string& str, const BitmapVariant& variant) const
 {
-	if (partDesc)
-		return new CNinePartTiledBitmap (CResourceDescription (str.c_str ()), *partDesc);
+
+	if (auto partDesc = std::get_if<CNinePartTiledDescription> (&variant))
+		return new CNinePartTiledBitmap (CResourceDescription (str.data ()), *partDesc);
+	else if (auto multiFrameDesc = std::get_if<CMultiFrameBitmapDescription> (&variant))
+		return new CMultiFrameBitmap (CResourceDescription (str.data ()), *multiFrameDesc);
 	return new CBitmap (CResourceDescription (str.c_str ()));
 }
 
@@ -378,16 +380,24 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 		const std::string* path = attributes->getAttributeValue ("path");
 		if (path)
 		{
-			CNinePartTiledDescription partDesc;
-			CNinePartTiledDescription* partDescPtr = nullptr;
+			BitmapVariant bitmapVariant;
+			int32_t tmpValue {};
 			CRect offsets;
 			if (attributes->getRectAttribute ("nineparttiled-offsets", offsets))
 			{
-				partDesc = CNinePartTiledDescription (offsets.left, offsets.top, offsets.right,
-				                                      offsets.bottom);
-				partDescPtr = &partDesc;
+				bitmapVariant = CNinePartTiledDescription (offsets.left, offsets.top, offsets.right,
+														   offsets.bottom);
 			}
-			bitmap = createBitmap (*path, partDescPtr);
+			else if (attributes->getIntegerAttribute ("multiframe-num-frames", tmpValue))
+			{
+				CMultiFrameBitmapDescription multiFrameDesc {};
+				multiFrameDesc.numFrames = static_cast<uint16_t> (tmpValue);
+				if (attributes->getIntegerAttribute ("mulitframe-frames-per-row", tmpValue))
+					multiFrameDesc.framesPerRow = static_cast<uint16_t> (tmpValue);
+				attributes->getPointAttribute ("multiframe-size", multiFrameDesc.frameSize);
+				bitmapVariant = multiFrameDesc;
+			}
+			bitmap = createBitmap (*path, bitmapVariant);
 			if (bitmap->getPlatformBitmap () == nullptr && pathIsAbsolute (pathHint))
 			{
 				std::string absPath = pathHint;
@@ -433,6 +443,35 @@ void UIBitmapNode::setBitmap (UTF8StringPtr bitmapName)
 	if (Detail::decodeScaleFactorFromName (name, scaleFactor))
 		attributes->setDoubleAttribute ("scale-factor", scaleFactor);
 	removeXMLData ();
+}
+
+//-----------------------------------------------------------------------------
+void UIBitmapNode::setMultiFrameDesc (const CMultiFrameBitmapDescription* desc)
+{
+	if (bitmap)
+	{
+		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap); mfb && desc)
+		{
+			mfb->setMultiFrameDesc (*desc);
+		}
+		else
+		{
+			bitmap->forget ();
+			bitmap = nullptr;
+		}
+	}
+	if (desc)
+	{
+		attributes->setPointAttribute ("multiframe-size", desc->frameSize);
+		attributes->setIntegerAttribute ("multiframe-num-frames", desc->numFrames);
+		attributes->setIntegerAttribute ("mulitframe-frames-per-row", desc->framesPerRow);
+	}
+	else
+	{
+		attributes->removeAttribute ("multiframe-size");
+		attributes->removeAttribute ("multiframe-num-frames");
+		attributes->removeAttribute ("mulitframe-frames-per-row");
+	}
 }
 
 //-----------------------------------------------------------------------------

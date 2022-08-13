@@ -675,7 +675,12 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 	}
 	offscreen->endDraw ();
 
-	return shared (offscreen->getBitmap ());
+	auto multiFrameBitmap =
+		makeOwned<CMultiFrameBitmap> (offscreen->getBitmap ()->getPlatformBitmap ());
+	multiFrameBitmap->setMultiFrameDesc (
+		{CPoint (docContext->getWidth (), docContext->getHeight ()),
+		 static_cast<uint16_t> (imageList.size ()), 1});
+	return multiFrameBitmap;
 }
 
 //------------------------------------------------------------------------
@@ -692,8 +697,6 @@ void DocumentWindowController::setDirty ()
 			imageView->setImageList (&imageList);
 		if (movieBitmapView)
 		{
-			movieBitmapView->setHeightOfOneImage (docContext->getHeight ());
-			movieBitmapView->setNumSubPixmaps (static_cast<int32_t> (imageList.size ()));
 			movieBitmapView->setBackground (createStitchedBitmap ());
 			auto size = movieBitmapView->getViewSize ();
 			size.setWidth (docContext->getWidth ());

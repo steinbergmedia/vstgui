@@ -1760,6 +1760,23 @@ void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8Strin
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditController::performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
+													  const CMultiFrameBitmapDescription* desc)
+{
+	std::list<CView*> views;
+	getTemplateViews (views);
+
+	undoManager->startGroupAction ("Change MultiFrame Bitmap");
+	undoManager->pushAndPerform (
+		new MultiFrameBitmapChangeAction (editDescription, bitmapName, desc, true));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (
+		editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
+	undoManager->pushAndPerform (
+		new MultiFrameBitmapChangeAction (editDescription, bitmapName, desc, false));
+	undoManager->endGroupAction ();
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets)
 {
 	std::list<CView*> views;

@@ -1344,6 +1344,41 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 			newNode->setBitmap (newName);
 			bitmapsNode->getChildren ().add (newNode);
 			bitmapsNode->sortChildren ();
+			impl->forEachListener (
+				[this] (UIDescriptionListener* l) { l->onUIDescBitmapChanged (this); });
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::changeMultiFrameBitmap (UTF8StringPtr name, UTF8StringPtr newName,
+											const CMultiFrameBitmapDescription* desc)
+{
+	UINode* bitmapsNode = getBaseNode (Detail::MainNodeNames::kBitmap);
+	auto* node =
+		dynamic_cast<Detail::UIBitmapNode*> (findChildNodeByNameAttribute (bitmapsNode, name));
+	if (node)
+	{
+		if (!node->noExport ())
+		{
+			node->setBitmap (newName);
+			node->setMultiFrameDesc (desc);
+			impl->forEachListener (
+				[this] (UIDescriptionListener* l) { l->onUIDescBitmapChanged (this); });
+		}
+	}
+	else
+	{
+		if (bitmapsNode)
+		{
+			auto attr = makeOwned<UIAttributes> ();
+			attr->setAttribute ("name", name);
+			auto* newNode = new Detail::UIBitmapNode ("bitmap", attr);
+			if (desc)
+				newNode->setMultiFrameDesc (desc);
+			newNode->setBitmap (newName);
+			bitmapsNode->getChildren ().add (newNode);
+			bitmapsNode->sortChildren ();
 			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescBitmapChanged (this);
 			});

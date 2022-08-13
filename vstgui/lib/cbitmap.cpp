@@ -177,27 +177,31 @@ auto CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const -> 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool CMultiFrameBitmap::setMultiFrameDesc (CPoint inFrameSize, uint16_t inFrameCount,
-										   uint16_t inFramesPerRow)
+CMultiFrameBitmap::CMultiFrameBitmap (const CResourceDescription& desc,
+									  CMultiFrameBitmapDescription multiFrameDesc)
+: CBitmap (desc), description (multiFrameDesc)
 {
-	if (inFrameSize.x * inFramesPerRow > getSize ().x)
+}
+
+//-----------------------------------------------------------------------------
+bool CMultiFrameBitmap::setMultiFrameDesc (CMultiFrameBitmapDescription desc)
+{
+	if (desc.frameSize.x * desc.framesPerRow > getSize ().x)
 		return false;
-	if (inFrameSize.y * (inFrameCount / inFramesPerRow) > getSize ().y)
+	if (desc.frameSize.y * (desc.numFrames / desc.framesPerRow) > getSize ().y)
 		return false;
-	frameSize = inFrameSize;
-	numFrames = inFrameCount;
-	numFramesPerRow = inFramesPerRow;
+	description = desc;
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-CPoint CMultiFrameBitmap::getFrameSize () const { return frameSize; }
+CPoint CMultiFrameBitmap::getFrameSize () const { return description.frameSize; }
 
 //-----------------------------------------------------------------------------
-uint16_t CMultiFrameBitmap::getNumFrames () const { return numFrames; }
+uint16_t CMultiFrameBitmap::getNumFrames () const { return description.numFrames; }
 
 //-----------------------------------------------------------------------------
-uint16_t CMultiFrameBitmap::getNumFramesPerRow () const { return numFramesPerRow; }
+uint16_t CMultiFrameBitmap::getNumFramesPerRow () const { return description.framesPerRow; }
 
 //-----------------------------------------------------------------------------
 CRect CMultiFrameBitmap::calcFrameRect (uint32_t frameIndex) const
@@ -209,10 +213,10 @@ CRect CMultiFrameBitmap::calcFrameRect (uint32_t frameIndex) const
 	auto rowIndex = frameIndex / getNumFramesPerRow ();
 	auto colIndex = frameIndex - (rowIndex * getNumFramesPerRow ());
 	CRect r;
-	r.left = frameSize.x * colIndex;
-	r.right = r.left + frameSize.x;
-	r.top = frameSize.y * rowIndex;
-	r.bottom = r.top + frameSize.y;
+	r.left = getFrameSize ().x * colIndex;
+	r.right = r.left + getFrameSize ().x;
+	r.top = getFrameSize ().y * rowIndex;
+	r.bottom = r.top + getFrameSize ().y;
 	return r;
 }
 
@@ -220,7 +224,7 @@ CRect CMultiFrameBitmap::calcFrameRect (uint32_t frameIndex) const
 void CMultiFrameBitmap::drawFrame (CDrawContext* context, uint16_t frameIndex, CPoint pos)
 {
 	auto fr = calcFrameRect (frameIndex);
-	auto r = CRect (pos, frameSize);
+	auto r = CRect (pos, getFrameSize ());
 	draw (context, r, fr.getTopLeft ());
 }
 

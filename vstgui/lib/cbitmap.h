@@ -70,6 +70,18 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+/** Description for a multi frame bitmap */
+struct CMultiFrameBitmapDescription
+{
+	/** size of one frame */
+	CPoint frameSize {};
+	/** number of total frames */
+	uint16_t numFrames {};
+	/** number of frames per row */
+	uint16_t framesPerRow {1};
+};
+
+//-----------------------------------------------------------------------------
 /** Multi frame bitmap
  *
  *	A bitmap describing multiple frames ordered in rows and columns
@@ -86,6 +98,9 @@ class CMultiFrameBitmap : public CBitmap
 public:
 	using CBitmap::CBitmap;
 
+	CMultiFrameBitmap (const CResourceDescription& desc,
+					   CMultiFrameBitmapDescription multiFrameDesc);
+
 	/** set the multi frame description
 	 *
 	 *	@param frameSize size of one frame
@@ -93,7 +108,7 @@ public:
 	 *	@param framesPerRow number of frames per row
 	 *	@return true if bitmap is big enough for the description
 	 */
-	bool setMultiFrameDesc (CPoint frameSize, uint16_t frameCount, uint16_t framesPerRow = 1);
+	bool setMultiFrameDesc (CMultiFrameBitmapDescription desc);
 	/** get the frame size */
 	CPoint getFrameSize () const;
 	/** get the number of frames */
@@ -107,9 +122,7 @@ public:
 	void drawFrame (CDrawContext* context, uint16_t frameIndex, CPoint pos);
 
 private:
-	uint16_t numFrames {0};
-	uint16_t numFramesPerRow {1};
-	CPoint frameSize;
+	CMultiFrameBitmapDescription description;
 };
 
 //-----------------------------------------------------------------------------
