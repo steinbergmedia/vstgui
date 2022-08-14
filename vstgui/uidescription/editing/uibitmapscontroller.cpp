@@ -32,6 +32,10 @@ namespace VSTGUI {
 class UIBitmapView : public CView
 {
 public:
+	static constexpr CCoord kDefaultOnOffDashLength2[] = {2, 2};
+	const CLineStyle lineOnOffDash2Style {CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0,
+										  2, kDefaultOnOffDashLength2};
+
 	UIBitmapView (CBitmap* bitmap = nullptr)
 	: CView (CRect (0, 0, 0, 0))
 	, zoom (1.)
@@ -49,12 +53,8 @@ public:
 			CRect r (getViewSize ());
 			matrix.inverse ().transform (r);
 			bitmap->CBitmap::draw (context, r);
-			auto* nptBitmap = dynamic_cast<CNinePartTiledBitmap*>(bitmap);
-			if (nptBitmap)
+			if (auto nptBitmap = dynamic_cast<CNinePartTiledBitmap*> (bitmap))
 			{
-				static const CCoord kDefaultOnOffDashLength2[] = {2, 2};
-				const CLineStyle kLineOnOffDash2 (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength2);
-
 				const CNinePartTiledDescription& offsets = nptBitmap->getPartOffsets ();
 
 				CRect r2;
@@ -76,12 +76,52 @@ public:
 
 				context->setFrameColor (kRedCColor);
 				context->setLineWidth (1);
-				context->setLineStyle (kLineOnOffDash2);
+				context->setLineStyle (lineOnOffDash2Style);
 
 				context->drawLine (CPoint (r2.left, r2.top + offsets.top), CPoint (r2.right, r2.top + offsets.top));
 				context->drawLine (CPoint (r2.left, r2.bottom - offsets.bottom), CPoint (r2.right, r2.bottom - offsets.bottom));
 				context->drawLine (CPoint (r2.left + offsets.left, r2.top), CPoint (r2.left + offsets.left, r2.bottom));
 				context->drawLine (CPoint (r2.right - offsets.right, r2.top), CPoint (r2.right - offsets.right, r2.bottom));
+			}
+			else if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+			{
+				auto desc = mfb->getMultiFrameDesc ();
+				auto columns = desc.framesPerRow;
+				auto rows = desc.numFrames / columns;
+				CRect frameRect;
+				frameRect.setSize (desc.frameSize);
+				CPoint p = getViewSize ().getTopLeft ();
+				matrix.inverse ().transform (p);
+				frameRect.offset (p.x, p.y);
+
+				auto rowRect = frameRect;
+				auto colRect = frameRect;
+				colRect.bottom = colRect.top;
+				CDrawContext::LineList rowLines;
+				for (auto row = 0u; row < rows; ++row)
+				{
+					rowLines.emplace_back (rowRect.getBottomLeft (), rowRect.getBottomRight ());
+					rowRect.offset (0., frameRect.getHeight ());
+					colRect.bottom += frameRect.getHeight ();
+				}
+				CDrawContext::LineList colLines;
+				for (auto col = 0u; col < columns; ++col)
+				{
+					colLines.emplace_back (colRect.getTopRight (), colRect.getBottomRight ());
+					colRect.offset (frameRect.getWidth (), 0);
+				}
+
+				context->setDrawMode (kAntiAliasing);
+				context->setFrameColor (kBlueCColor);
+				context->setLineWidth (1);
+				context->setLineStyle (kLineSolid);
+				context->drawLines (rowLines);
+				context->drawLines (colLines);
+				context->setFrameColor (kRedCColor);
+				context->setLineWidth (1);
+				context->setLineStyle (lineOnOffDash2Style);
+				context->drawLines (rowLines);
+				context->drawLines (colLines);
 			}
 		}
 	}
@@ -105,9 +145,9 @@ public:
 			CGraphicsTransform ().scale (zoom, zoom).transform (width, height);
 			width = std::floor (width + 0.5);
 			height = std::floor (height + 0.5);
-			r.setWidth (width);
-			r.setHeight (height);
-			
+			r.setWidth (width + 5.);
+			r.setHeight (height + 5.);
+
 			if (getViewSize () != r)
 			{
 				setViewSize (r);
@@ -491,12 +531,15 @@ bool UIBitmapsDataSource::add ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 class UIBitmapSettingsController : public NonAtomicReferenceCounted,
-                                   public IDialogController,
-                                   public IController
+								   public IDialogController,
+								   public IController,
+								   public IUIUndoManagerListener
 {
 public:
-	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIBitmapSettingsController () noexcept override = default;
+	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName,
+								UIDescription* description, IActionPerformer* actionPerformer,
+								UIUndoManager* undoManager);
+	~UIBitmapSettingsController () noexcept override;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
@@ -507,7 +550,11 @@ public:
 	void onDialogButton1Clicked (UIDialogController*) override;
 	void onDialogButton2Clicked (UIDialogController*) override;
 	void onDialogShow (UIDialogController*) override;
+
+	void onUndoManagerChange () override;
+
 protected:
+	void recreateBitmap ();
 	void updateNinePartTiledControls ();
 	void updateMultiFrameControls ();
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
@@ -516,7 +563,8 @@ protected:
 	SharedPointer<CBitmap> bitmap;
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIBitmapView> bitmapView;
-	IActionPerformer* actionPerformer;
+	IActionPerformer* actionPerformer {nullptr};
+	UIUndoManager* undoManager {nullptr};
 	std::string bitmapName;
 	CRect origOffsets;
 	CMultiFrameBitmapDescription origMultiFrameDesc;
@@ -538,22 +586,38 @@ protected:
 		kMultiFrameFramesPerRowTag,
 		kMultiFrameSizeWidth,
 		kMultiFrameSizeHeight,
+		kMultiFrameDescValidTag,
 		kNumTags
 	};
 	std::array<CControl*, kNumTags> controls;
 };
 
 //----------------------------------------------------------------------------------------------------
-UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer)
+UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap,
+														const std::string& bitmapName,
+														UIDescription* description,
+														IActionPerformer* actionPerformer,
+														UIUndoManager* undoManager)
 : bitmap (bitmap)
 , editDescription (description)
 , actionPerformer (actionPerformer)
+, undoManager (undoManager)
 , bitmapName (bitmapName)
 , origOffsets (10, 10, 10, 10)
 {
 	for (auto& control : controls)
 		control = nullptr;
+	undoManager->registerListener (this);
 }
+
+//----------------------------------------------------------------------------------------------------
+UIBitmapSettingsController::~UIBitmapSettingsController () noexcept
+{
+	undoManager->unregisterListener (this);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::onUndoManagerChange () { recreateBitmap (); }
 
 //----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::updateNinePartTiledControls ()
@@ -595,6 +659,8 @@ void UIBitmapSettingsController::updateMultiFrameControls ()
 		controls[kMultiFrameFramesPerRowTag]->setValue (mfb->getNumFramesPerRow ());
 		controls[kMultiFrameSizeWidth]->setValue (mfb->getFrameSize ().x);
 		controls[kMultiFrameSizeHeight]->setValue (mfb->getFrameSize ().y);
+		auto valid = mfb->setMultiFrameDesc (mfb->getMultiFrameDesc ());
+		controls[kMultiFrameDescValidTag]->setAlphaValue (valid ? 0 : 1.);
 	}
 	else
 	{
@@ -613,6 +679,15 @@ void UIBitmapSettingsController::updateMultiFrameControls ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::recreateBitmap ()
+{
+	bitmap = editDescription->getBitmap (bitmapName.data ());
+	bitmapView->setBackground (bitmap);
+	updateNinePartTiledControls ();
+	updateMultiFrameControls ();
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::valueChanged (CControl* control)
 {
 	switch (control->getTag ())
@@ -623,10 +698,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			if (edit)
 			{
 				actionPerformer->performBitmapChange (bitmapName.data (), edit->getText ());
-				bitmap = editDescription->getBitmap (bitmapName.data ());
-				bitmapView->setBackground (bitmap);
-				updateNinePartTiledControls ();
-				updateMultiFrameControls ();
+				recreateBitmap ();
 			}
 			break;
 		}
@@ -648,10 +720,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				controls[kMultiFrameTag]->invalid ();
 			}
 			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), checked ? &origOffsets : nullptr);
-			bitmap = editDescription->getBitmap (bitmapName.data ());
-			bitmapView->setBackground (bitmap);
-			updateNinePartTiledControls ();
-			updateMultiFrameControls ();
+			recreateBitmap ();
 			break;
 		}
 		case kNinePartTiledLeftTag:
@@ -665,9 +734,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			r.right = controls[kNinePartTiledRightTag]->getValue ();
 			r.bottom = controls[kNinePartTiledBottomTag]->getValue ();
 			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), &r);
-			bitmap = editDescription->getBitmap (bitmapName.data ());
-			bitmapView->setBackground (bitmap);
-			updateNinePartTiledControls ();
+			recreateBitmap ();
 			SharedPointer<CTextEdit> textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
@@ -694,10 +761,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			}
 			actionPerformer->performBitmapMultiFrameChange (
 				bitmapName.data (), checked ? &origMultiFrameDesc : nullptr);
-			bitmap = editDescription->getBitmap (bitmapName.data ());
-			bitmapView->setBackground (bitmap);
-			updateNinePartTiledControls ();
-			updateMultiFrameControls ();
+			recreateBitmap ();
 			break;
 		}
 		case kMultiFrameFramesTag:
@@ -711,9 +775,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			desc.frameSize.x = controls[kMultiFrameSizeWidth]->getValue ();
 			desc.frameSize.y = controls[kMultiFrameSizeHeight]->getValue ();
 			actionPerformer->performBitmapMultiFrameChange (bitmapName.data (), &desc);
-			bitmap = editDescription->getBitmap (bitmapName.data ());
-			bitmapView->setBackground (bitmap);
-			updateMultiFrameControls ();
+			recreateBitmap ();
 			auto textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
@@ -917,11 +979,13 @@ bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIBitmapsController::UIBitmapsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
+UIBitmapsController::UIBitmapsController (IController* baseController, UIDescription* description,
+										  IActionPerformer* actionPerformer,
+										  UIUndoManager* undoManager)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (nullptr)
+, undoManager (undoManager)
 {
 	dataSource = new UIBitmapsDataSource (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
@@ -937,9 +1001,9 @@ UIBitmapsController::~UIBitmapsController ()
 void UIBitmapsController::showSettingsDialog ()
 {
 	auto* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
-	auto fsController = makeOwned<UIBitmapSettingsController> (dataSource->getSelectedBitmap (),
-	                                                           dataSource->getSelectedBitmapName (),
-	                                                           editDescription, actionPerformer);
+	auto fsController = makeOwned<UIBitmapSettingsController> (
+		dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription,
+		actionPerformer, undoManager);
 	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController,
 	         UIEditController::getEditorDescription ());
 }

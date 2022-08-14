@@ -195,6 +195,9 @@ bool CMultiFrameBitmap::setMultiFrameDesc (CMultiFrameBitmapDescription desc)
 }
 
 //-----------------------------------------------------------------------------
+CMultiFrameBitmapDescription CMultiFrameBitmap::getMultiFrameDesc () const { return description; }
+
+//-----------------------------------------------------------------------------
 CPoint CMultiFrameBitmap::getFrameSize () const { return description.frameSize; }
 
 //-----------------------------------------------------------------------------

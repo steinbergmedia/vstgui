@@ -40,6 +40,7 @@
 			"bitmaps.settings.multiframe.frames.per.col": "12",
 			"bitmaps.settings.multiframe.size.height": "14",
 			"bitmaps.settings.multiframe.size.width": "13",
+			"bitmaps.settings.multiframe.valid": "15",
 			"bitmaps.settings.nineparttiled": "3",
 			"bitmaps.settings.nineparttiled.bottom": "7",
 			"bitmaps.settings.nineparttiled.left": "4",
@@ -105,14 +106,14 @@
 		"custom": {
 			"UIEditController": {
 				"EditViewScale": "1",
-				"EditorSize": "0, 0, 1633, 997",
+				"EditorSize": "0, 0, 1632, 997",
 				"EncodeBitmaps": "true",
 				"SplitViewSize_0_0": "0.6786817713697219645041514013428241014481",
 				"SplitViewSize_0_1": "0.3007209062821833422951556258340133354068",
 				"SplitViewSize_1_0": "0.4737384140061792203724166938627604395151",
 				"SplitViewSize_1_1": "0.5221421215242018076807539728179108351469",
-				"SplitViewSize_2_0": "0.7807715860379669248203526876750402152538",
-				"SplitViewSize_2_1": "0.2161665646050214273365952521999133750796",
+				"SplitViewSize_2_0": "0.7806372549019607864906333816179540008307",
+				"SplitViewSize_2_1": "0.2162990196078431459625335264718160033226",
 				"TabSwitchValue": "1",
 				"UI Theme": "Light",
 				"Version": "1"
@@ -123,17 +124,17 @@
 				"Size": "5, 5"
 			},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "25"
+				"SelectedRow": "8"
 			},
 			"UIAttributesController": {
 				"UIAttributesController": "tag"
 			},
 			"UIColorsDataSource": {
-				"SelectedRow": "6"
+				"SelectedRow": "36"
 			},
 			"UITagsDataSource": {
 				"FilterString": "bitmaps.settings.",
-				"SelectedRow": "4"
+				"SelectedRow": "6"
 			},
 			"UIFontsDataSource": {
 				"SelectedRow": "2"
@@ -522,15 +523,15 @@
 							"CTextLabel": {
 								"attributes": {
 									"autosize": "right bottom ",
-									"back-color": "~ RedCColor",
+									"back-color": "warning.background",
 									"background-offset": "0, 0",
 									"class": "CTextLabel",
 									"control-tag": "global.notsaved",
 									"default-value": "0.5",
 									"font": "control.font",
 									"font-antialias": "true",
-									"font-color": "~ BlackCColor",
-									"frame-color": "db.font",
+									"font-color": "warning.font",
+									"frame-color": "warning.frame",
 									"frame-width": "1",
 									"max-value": "1",
 									"min-value": "0",
@@ -538,12 +539,12 @@
 									"opacity": "1",
 									"origin": "415, 5",
 									"round-rect-radius": "3",
-									"shadow-color": "~ GreyCColor",
+									"shadow-color": "~ TransparentCColor",
 									"size": "75, 15",
 									"style-3D-in": "false",
 									"style-3D-out": "false",
 									"style-no-draw": "false",
-									"style-no-frame": "true",
+									"style-no-frame": "false",
 									"style-no-text": "false",
 									"style-round-rect": "true",
 									"style-shadow-text": "false",
@@ -5214,7 +5215,7 @@
 							"immediate-text-change": "false",
 							"max-value": "1",
 							"min-value": "0",
-							"mouse-enabled": "true",
+							"mouse-enabled": "false",
 							"opacity": "1",
 							"origin": "55, 30",
 							"round-rect-radius": "6",
@@ -5237,7 +5238,7 @@
 							"transparent": "true",
 							"truncate-mode": "tail",
 							"value-precision": "2",
-							"wants-focus": "true",
+							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
 						}
 					},
@@ -5256,7 +5257,7 @@
 							"immediate-text-change": "false",
 							"max-value": "1",
 							"min-value": "0",
-							"mouse-enabled": "true",
+							"mouse-enabled": "false",
 							"opacity": "1",
 							"origin": "55, 50",
 							"round-rect-radius": "6",
@@ -5279,7 +5280,7 @@
 							"transparent": "true",
 							"truncate-mode": "tail",
 							"value-precision": "2",
-							"wants-focus": "true",
+							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
 						}
 					},
@@ -6021,6 +6022,47 @@
 									"transparent": "false",
 									"value-precision": "2",
 									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CMultiLineTextLabel": {
+								"attributes": {
+									"auto-height": "false",
+									"back-color": "warning.background",
+									"background-offset": "0, 0",
+									"class": "CMultiLineTextLabel",
+									"control-tag": "bitmaps.settings.multiframe.valid",
+									"default-value": "0.5",
+									"font": "control.small.font",
+									"font-antialias": "true",
+									"font-color": "warning.font",
+									"frame-color": "warning.frame",
+									"frame-width": "1",
+									"line-layout": "wrap",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"opacity": "0.96",
+									"origin": "10, 135",
+									"round-rect-radius": "6",
+									"shadow-color": "~ TransparentCColor",
+									"size": "115, 30",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "true",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Description exceeds bitmap size!",
+									"transparent": "false",
+									"value-precision": "2",
+									"vertical-centered": "true",
+									"wants-focus": "false",
 									"wheel-inc-value": "0.1"
 								}
 							}

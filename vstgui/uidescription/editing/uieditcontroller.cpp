@@ -795,7 +795,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	}
 	else if (subControllerName == "BitmapEditController")
 	{
-		return new UIBitmapsController (this, editDescription, this);
+		return new UIBitmapsController (this, editDescription, this, undoManager);
 	}
 	else if (subControllerName == "FontEditController")
 	{

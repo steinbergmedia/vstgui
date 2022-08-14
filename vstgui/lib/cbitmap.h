@@ -109,6 +109,8 @@ public:
 	 *	@return true if bitmap is big enough for the description
 	 */
 	bool setMultiFrameDesc (CMultiFrameBitmapDescription desc);
+	/** get the mult frame description */
+	CMultiFrameBitmapDescription getMultiFrameDesc () const;
 	/** get the frame size */
 	CPoint getFrameSize () const;
 	/** get the number of frames */
@@ -117,7 +119,6 @@ public:
 	uint16_t getNumFramesPerRow () const;
 	/** calculate the rect for one frame */
 	CRect calcFrameRect (uint32_t frameIndex) const;
-
 	/** draw one frame at the position in the context */
 	void drawFrame (CDrawContext* context, uint16_t frameIndex, CPoint pos);
 

@@ -318,7 +318,10 @@
 			"shading.light.bottom": "#bfbfbfff",
 			"shading.light.frame": "#a6a6a6ff",
 			"textbutton.text": "#000000ff",
-			"textbutton.text.highlighted": "#ffffffff"
+			"textbutton.text.highlighted": "#ffffffff",
+			"warning.background": "#ff0000ff",
+			"warning.font": "#000000ff",
+			"warning.frame": "#930000ff"
 		},
 		"gradients": {
 			"Default TextButton Gradient": [
