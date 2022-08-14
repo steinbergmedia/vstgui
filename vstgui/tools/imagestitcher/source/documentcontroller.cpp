@@ -112,7 +112,7 @@ public:
 	{
 		if (index == 0)
 		{
-			minSize = 45;
+			minSize = 150;
 			maxSize = -1;
 			return true;
 		}
@@ -246,6 +246,12 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 		                   if (animationRunning->getValue () >= 0.5)
 			                   this->doStartAnimation ();
 	                   }));
+	numFramesPerRowValue =
+		Value::make ("NumFramesPerRow", 0, Value::makeRangeConverter (1, 32767, 0));
+	binding->addValue (numFramesPerRowValue, UIDesc::ValueCalls::onPerformEdit ([this] (auto& v) {
+						   this->docContext->setNumFramesPerRow (
+							   std::round (v.getConverter ().normalizedToPlain (v.getValue ())));
+					   }));
 	return binding;
 }
 
@@ -427,6 +433,12 @@ void DocumentWindowController::onImagePathRemoved (const Path& newPath, size_t i
 	auto it = imageList.begin ();
 	std::advance (it, index);
 	imageList.erase (it);
+	setDirty ();
+}
+
+//------------------------------------------------------------------------
+void DocumentWindowController::onNumFramesPerRowChanged (uint16_t newNumFramesPerRow)
+{
 	setDirty ();
 }
 
@@ -658,28 +670,43 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 {
 	if (!contentView || docContext->getImagePaths ().empty ())
 		return nullptr;
+	auto numCols = docContext->getNumFramesPerRow ();
+	auto numRows = std::ceil (static_cast<double> (docContext->getImagePaths ().size ()) / numCols);
+
 	CRect r;
 	CPoint size (docContext->getWidth (), docContext->getHeight ());
 	r.setSize (size);
-	size.y *= docContext->getImagePaths ().size ();
+	size.x *= numCols;
+	size.y *= numRows;
 
 	auto offscreen = COffscreenContext::create (size);
 	if (!offscreen)
 		return nullptr;
 
 	offscreen->beginDraw ();
+	auto col = 0;
 	for (auto image : imageList)
 	{
 		image.bitmap->draw (offscreen, r);
-		r.offset (0, docContext->getHeight ());
+		if (++col >= numCols)
+		{
+			col = 0;
+			r.left = 0;
+			r.offset (0, docContext->getHeight ());
+		}
+		else
+		{
+			r.offset (docContext->getWidth (), 0);
+		}
 	}
 	offscreen->endDraw ();
 
 	auto multiFrameBitmap =
 		makeOwned<CMultiFrameBitmap> (offscreen->getBitmap ()->getPlatformBitmap ());
-	multiFrameBitmap->setMultiFrameDesc (
+	auto res = multiFrameBitmap->setMultiFrameDesc (
 		{CPoint (docContext->getWidth (), docContext->getHeight ()),
-		 static_cast<uint16_t> (imageList.size ()), 1});
+		 static_cast<uint16_t> (imageList.size ()), numCols});
+	vstgui_assert (res, "Multi Frame Bitmap Description invalid!");
 	return multiFrameBitmap;
 }
 
