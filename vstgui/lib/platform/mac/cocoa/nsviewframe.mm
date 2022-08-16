@@ -442,9 +442,12 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	{
 		if (@available (macOS 10.12, *))
 		{
-			if (auto layer = [self layer])
+			if (auto frame = getNSViewFrame (self))
 			{
-				layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+				if (auto layer = frame->getCALayer ())
+				{
+					layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+				}
 			}
 		}
 		makeInstance (self).callSuper<void (id, SEL)> (_cmd);
@@ -920,10 +923,9 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config)
+NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent,
+						  IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
-, nsView (nullptr)
-, tooltipWindow (nullptr)
 , ignoreNextResignFirstResponder (false)
 , trackingAreaInitialized (false)
 , inDraw (false)
@@ -946,6 +948,8 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 		if (@available (macOS 10.11, *))
 		{
 			[nsView setWantsLayer:YES];
+			caLayer = [CALayer new];
+			[nsView.layer addSublayer:caLayer];
 			if (@available (macOS 10.13, *))
 			{
 				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
@@ -953,7 +957,7 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 				// the CoreGraphics engineers decided to be clever and join dirty rectangles without
 				// letting us know
 				if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
-					nsView.layer.drawsAsynchronously = YES;
+					caLayer.drawsAsynchronously = YES;
 				else
 					useInvalidRects = true;
 			}
@@ -966,6 +970,8 @@ NSViewFrame::~NSViewFrame () noexcept
 {
 	if (tooltipWindow)
 		tooltipWindow->forget ();
+	if (caLayer)
+		[caLayer release];
 	[nsView unregisterDraggedTypes]; // this is neccessary otherwise AppKit will crash if the plug-in is unloaded from the process
 	[nsView removeFromSuperview];
 	[nsView release];
@@ -974,8 +980,8 @@ NSViewFrame::~NSViewFrame () noexcept
 //------------------------------------------------------------------------------------
 void NSViewFrame::scaleFactorChanged (double newScaleFactor)
 {
-	if (nsView.wantsLayer)
-		nsView.layer.contentsScale = newScaleFactor;
+	if (caLayer)
+		caLayer.contentsScale = newScaleFactor;
 
 	if (frame)
 		frame->platformScaleFactorChanged (newScaleFactor);
@@ -1019,7 +1025,7 @@ void NSViewFrame::setNeedsDisplayInRect (NSRect r)
 void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 {
 #if DEBUG
-	if (getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas () && nsView.layer)
+	if (getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas () && caLayer)
 	{
 		id delegate = [[VSTGUI_DebugRedrawAnimDelegate::alloc () init] autorelease];
 		auto anim = [CABasicAnimation animation];
@@ -1030,7 +1036,7 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 		anim.duration = isClipBoundingBox ? 1. : 1.;
 
 		auto rect = nsRectFromCRect (r);
-		for (CALayer* layer in nsView.layer.sublayers)
+		for (CALayer* layer in caLayer.sublayers)
 		{
 			if (![layer.name isEqualToString:@"DebugLayer"])
 				continue;
@@ -1048,7 +1054,7 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 		layer.opacity = 0.f;
 		layer.zPosition = isClipBoundingBox ? 10 : 11;
 		layer.frame = nsRectFromCRect (r);
-		[nsView.layer addSublayer:layer];
+		[caLayer addSublayer:layer];
 
 		[delegate setLayer:layer];
 		[layer addAnimation:anim forKey:@"opacity"];
@@ -1446,9 +1452,10 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 	{
 		// after this is called, 'Quartz Debug' will not work as before. So when using 'Quartz Debug' comment the following two lines.
 		[nsView setWantsLayer:YES];
-		nsView.layer.actions = nil;
+		caLayer.actions = nil;
 	}
-	auto caParentLayer = parentViewLayer ? parentViewLayer->getCALayer () : [nsView layer];
+	auto caParentLayer =
+		parentViewLayer ? parentViewLayer->getCALayer () : (caLayer ? caLayer : nsView.layer);
 	auto layer = makeOwned<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
 	return std::move (layer);

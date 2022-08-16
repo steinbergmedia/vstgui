@@ -37,6 +37,7 @@ public:
 	~NSViewFrame () noexcept override;
 
 	NSView* getNSView () const override { return nsView; }
+	CALayer* getCALayer () const { return caLayer; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	void* makeTouchBar () const;
 	NSViewDraggingSession* getDraggingSession () const { return draggingSession; }
@@ -97,8 +98,9 @@ public:
 protected:
 	void addDebugRedrawRect (CRect r, bool isClipBoundingBox = false);
 
-	NSView* nsView;
-	CocoaTooltipWindow* tooltipWindow;
+	NSView* nsView {nullptr};
+	CALayer* caLayer {nullptr};
+	CocoaTooltipWindow* tooltipWindow {nullptr};
 	SharedPointer<IDataPackage> dragDataPackage;
 	SharedPointer<ITouchBarCreator> touchBarCreator;
 	SharedPointer<NSViewDraggingSession> draggingSession;
