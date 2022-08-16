@@ -57,6 +57,7 @@ public:
 	void scaleFactorChanged (double newScaleFactor);
 	void cursorUpdate ();
 	virtual void drawRect (NSRect* rect);
+	void drawLayer (CALayer* layer, CGContextRef ctx);
 	bool onMouseDown (NSEvent* evt);
 	bool onMouseUp (NSEvent* evt);
 	bool onMouseMoved (NSEvent* evt);

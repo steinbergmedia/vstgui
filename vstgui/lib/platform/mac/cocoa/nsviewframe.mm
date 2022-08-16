@@ -248,6 +248,9 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 
 		builder.addIvar<void*> ("_nsViewFrame");
 
+		builder.addProtocol ("CALayerDelegate")
+			.addMethod (@selector (drawLayer:inContext:), drawLayerInContext);
+
 		return builder.finalize ();
 	}
 
@@ -435,6 +438,14 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		NSViewFrame* frame = getNSViewFrame (self);
 		if (frame)
 			frame->drawRect (&rect);
+	}
+
+	//------------------------------------------------------------------------------------
+	static void drawLayerInContext (id self, SEL _cmd, CALayer* layer, CGContextRef ctx)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame)
+			frame->drawLayer (layer, ctx);
 	}
 
 	//------------------------------------------------------------------------
@@ -949,7 +960,11 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 		{
 			[nsView setWantsLayer:YES];
 			caLayer = [CALayer new];
+			caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
+			caLayer.frame = nsView.layer.bounds;
+			[caLayer setContentsScale:nsView.layer.contentsScale];
 			[nsView.layer addSublayer:caLayer];
+			useInvalidRects = true;
 			if (@available (macOS 10.13, *))
 			{
 				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
@@ -957,9 +972,10 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 				// the CoreGraphics engineers decided to be clever and join dirty rectangles without
 				// letting us know
 				if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
+				{
 					caLayer.drawsAsynchronously = YES;
-				else
-					useInvalidRects = true;
+					useInvalidRects = false;
+				}
 			}
 		}
 	}
@@ -1064,8 +1080,44 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 }
 
 //-----------------------------------------------------------------------------
+void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
+{
+	inDraw = true;
+
+	auto clipBoundingBoxNSRect = CGContextGetClipBoundingBox (ctx);
+	auto clipBoundingBox = rectFromNSRect (clipBoundingBoxNSRect);
+
+	addDebugRedrawRect (clipBoundingBox, true);
+
+	CGDrawContext drawContext (ctx, rectFromNSRect ([nsView bounds]));
+	drawContext.beginDraw ();
+
+	if (useInvalidRects)
+	{
+		joinNearbyInvalidRects (invalidRectList, 24.);
+		for (auto r : invalidRectList)
+		{
+			frame->platformDrawRect (&drawContext, r);
+			addDebugRedrawRect (r, false);
+		}
+		invalidRectList.clear ();
+	}
+	else
+	{
+		frame->platformDrawRect (&drawContext, clipBoundingBox);
+		addDebugRedrawRect (clipBoundingBox, false);
+	}
+	drawContext.endDraw ();
+
+	inDraw = false;
+}
+
+//-----------------------------------------------------------------------------
 void NSViewFrame::drawRect (NSRect* rect)
 {
+	if (caLayer)
+		return;
+
 	inDraw = true;
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
 
@@ -1215,6 +1267,9 @@ bool NSViewFrame::setSize (const CRect& newSize)
 	[nsView setAutoresizingMask: 0];
 	[nsView setFrame: r];
 	[nsView setAutoresizingMask: oldResizeMask];
+
+	if (caLayer)
+		caLayer.frame = nsView.layer.bounds;
 	return true;
 }
 
@@ -1326,7 +1381,12 @@ bool NSViewFrame::invalidRect (const CRect& rect)
 	if (inDraw)
 		return false;
 	NSRect r = nsRectFromCRect (rect);
-	[nsView setNeedsDisplayInRect:r];
+	if (caLayer)
+		[caLayer setNeedsDisplayInRect:r];
+	else
+		[nsView setNeedsDisplayInRect:r];
+	if (useInvalidRects)
+		invalidRectList.add (rectFromNSRect (r));
 	return true;
 }
 
