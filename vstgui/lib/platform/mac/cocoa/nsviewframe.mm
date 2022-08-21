@@ -187,6 +187,8 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (acceptsFirstResponder), acceptsFirstResponder)
 			.addMethod (@selector (becomeFirstResponder), becomeFirstResponder)
 			.addMethod (@selector (resignFirstResponder), resignFirstResponder)
+			.addMethod (@selector (nextValidKeyView), nextValidKeyView)
+			.addMethod (@selector (previousValidKeyView), previousValidKeyView)
 			.addMethod (@selector (canBecomeKeyView), canBecomeKeyView)
 			.addMethod (@selector (wantsDefaultClipping), wantsDefaultClipping)
 			.addMethod (@selector (isOpaque), isOpaque)
@@ -334,6 +336,26 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 				frame->platformOnActivate (false);
 		}
 		return YES;
+	}
+
+	//------------------------------------------------------------------------------------
+	static NSView* nextValidKeyView (id self, SEL _cmd)
+	{
+		auto view =
+			makeInstance (self).callSuper<NSView*(id, SEL), NSView*> (@selector (nextValidKeyView));
+		while (view != self && [view isDescendantOf:self])
+			view = view.nextValidKeyView;
+		return view;
+	}
+
+	//------------------------------------------------------------------------------------
+	static NSView* previousValidKeyView (id self, SEL _cmd)
+	{
+		auto view = makeInstance (self).callSuper<NSView*(id, SEL), NSView*> (
+			@selector (previousValidKeyView));
+		while (view != self && [view isDescendantOf:self])
+			view = view.previousValidKeyView;
+		return view;
 	}
 
 	//------------------------------------------------------------------------------------
