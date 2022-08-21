@@ -75,16 +75,21 @@ struct IView
 	/** enable or disable mouse handling for the view */
 	virtual void setMouseEnabled (bool state) = 0;
 
-	/** TODO: */
+	/** the view should take focus  */
 	virtual void takeFocus () = 0;
-	/** TODO: */
+	/** the view should loose focus  */
 	virtual void looseFocus () = 0;
 
 	using TookFocusCallback = std::function<void ()>;
+	/** a callback the embedder sets on the view to get notified when the view took focus */
 	virtual void setTookFocusCallback (const TookFocusCallback& callback) = 0;
 };
 
 //------------------------------------------------------------------------
+/** interface for view embedder classes
+ *
+ *	@ingroup new_in_4_12
+ */
 struct IViewEmbedder
 {
 	virtual ~IViewEmbedder () noexcept = default;
@@ -94,6 +99,10 @@ struct IViewEmbedder
 };
 
 //------------------------------------------------------------------------
+/** adapter for the IView interface
+ *
+ *	@ingroup new_in_4_12
+ */
 struct ViewAdapter : IView
 {
 	bool platformViewTypeSupported (PlatformViewType type) override { return false; }
