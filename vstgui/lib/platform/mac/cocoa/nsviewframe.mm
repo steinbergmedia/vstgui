@@ -217,7 +217,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (keyUp:), keyUp)
 			.addMethod (@selector (magnifyWithEvent:), magnifyWithEvent)
 			.addMethod (@selector (focusRingType), focusRingType)
-			.addMethod (@selector (makeSubViewFirstResponder:), makeSubViewFirstResponder)
 			.addMethod (@selector (draggingEntered:), draggingEntered)
 			.addMethod (@selector (draggingUpdated:), draggingUpdated)
 			.addMethod (@selector (draggingExited:), draggingExited)
@@ -307,18 +306,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL shouldBeTreatedAsInkEvent (id self, SEL _cmd, NSEvent* event) { return NO; }
 
 	//------------------------------------------------------------------------------------
-	static void makeSubViewFirstResponder (id self, SEL _cmd, NSResponder* newFirstResponder)
-	{
-		NSViewFrame* nsFrame = getNSViewFrame (self);
-		if (nsFrame)
-		{
-			nsFrame->setIgnoreNextResignFirstResponder (true);
-			[[self window] makeFirstResponder:newFirstResponder];
-			nsFrame->setIgnoreNextResignFirstResponder (false);
-		}
-	}
-
-	//------------------------------------------------------------------------------------
 	static BOOL becomeFirstResponder (id self, SEL _cmd)
 	{
 		if ([[self window] isKeyWindow])
@@ -338,15 +325,9 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			firstResponder = nil;
 		if (firstResponder)
 		{
-			NSViewFrame* nsFrame = getNSViewFrame (self);
-			if (nsFrame && nsFrame->getIgnoreNextResignFirstResponder ())
+			if ([firstResponder isDescendantOf:self])
 			{
-				while (firstResponder != self && firstResponder != nil)
-					firstResponder = [firstResponder superview];
-				if (firstResponder == self && [[self window] isKeyWindow])
-				{
-					return YES;
-				}
+				return YES;
 			}
 			IPlatformFrameCallback* frame = getFrame (self);
 			if (frame)
@@ -920,11 +901,11 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config)
+NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent,
+						  IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
 , nsView (nullptr)
 , tooltipWindow (nullptr)
-, ignoreNextResignFirstResponder (false)
 , trackingAreaInitialized (false)
 , inDraw (false)
 , cursor (kCursorDefault)

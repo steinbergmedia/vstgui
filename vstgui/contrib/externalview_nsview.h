@@ -22,19 +22,56 @@ inline NSRect toNSRect (const IntRect& r)
 /** a NSView that has a flipped coordinate system (top-left is {0, 0}, not AppKits default which is
  *	bottom-left)
  *
- *	to create it call [FlippedNSView::alloc () initWithFrame: rect]
+ *	to create it call [ExternalViewContainerNSView::alloc () initWithFrame: rect]
  */
-struct FlippedNSView : RuntimeObjCClass<FlippedNSView>
+struct ExternalViewContainerNSView : RuntimeObjCClass<ExternalViewContainerNSView>
 {
+	static constexpr auto TookFocusCallbackVarName = "TookFocusCallback";
+
 	static Class CreateClass ()
 	{
 		return ObjCClassBuilder ()
-			.init ("FlippedNSView", [NSView class])
+			.init ("ExternalViewContainerNSView", [NSView class])
 			.addMethod (@selector (isFlipped), isFlipped)
+			.addMethod (@selector (viewWillMoveToWindow:), viewWillMoveToWindow)
+			.addMethod (@selector (observeValueForKeyPath:ofObject:change:context:),
+						observeValueForKeyPath)
+			.addIvar<IView::TookFocusCallback> (TookFocusCallbackVarName)
 			.finalize ();
 	}
 
 	static BOOL isFlipped (id self, SEL cmd) { return YES; }
+	static void viewWillMoveToWindow (id self, SEL _cmd, NSWindow* window)
+	{
+		if ([self window] && [self window] != window)
+		{
+			[[self window] removeObserver:self forKeyPath:@"firstResponder"];
+		}
+		if (window)
+		{
+			[window addObserver:self forKeyPath:@"firstResponder" options:0 context:nullptr];
+		}
+	}
+
+	static void observeValueForKeyPath (id self, SEL cmd, NSString* keyPath, id object,
+										NSDictionary<NSKeyValueChangeKey, id>* change,
+										void* context)
+	{
+		if ([keyPath isEqualToString:@"firstResponder"])
+		{
+			auto view = [self window].firstResponder;
+			if ([view isKindOfClass:[NSView class]] &&
+				[static_cast<NSView*> (view) isDescendantOf:self])
+			{
+				if (auto var = makeInstance (self).getVariable<IView::TookFocusCallback> (
+						TookFocusCallbackVarName))
+				{
+					if (var.value ().get ())
+						var.value ().get () ();
+				}
+			}
+		}
+	}
 };
 
 //------------------------------------------------------------------------
@@ -103,13 +140,13 @@ struct FlippedNSView : RuntimeObjCClass<FlippedNSView>
  *
  */
 template<typename ViewType>
-struct ExternalNSViewBase : IView
+struct ExternalNSViewBase : ViewAdapter
 {
 	using Base = ExternalNSViewBase<ViewType>;
 	using PlatformViewType = ExternalView::PlatformViewType;
 	using IntRect = ExternalView::IntRect;
 
-	NSView* container {[FlippedNSView::alloc () initWithFrame: {0., 0., 10., 10.}]};
+	NSView* container {[ExternalViewContainerNSView::alloc () initWithFrame: {0., 0., 10., 10.}]};
 	ViewType* view {nullptr};
 
 	ExternalNSViewBase (ViewType* inView) : view (inView) { [container addSubview:view]; }
@@ -167,7 +204,20 @@ struct ExternalNSViewBase : IView
 		}
 	}
 
-	void looseFocus () override {}
+	void looseFocus () override
+	{
+		if (auto window = view.window)
+			[window makeFirstResponder:container.superview];
+	}
+
+	void setTookFocusCallback (const TookFocusCallback& callback) override
+	{
+		if (auto var = ObjCInstance (container).getVariable<TookFocusCallback> (
+				ExternalViewContainerNSView::TookFocusCallbackVarName))
+		{
+			var->set (callback);
+		}
+	}
 };
 
 //------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -78,6 +79,9 @@ struct IView
 	virtual void takeFocus () = 0;
 	/** TODO: */
 	virtual void looseFocus () = 0;
+
+	using TookFocusCallback = std::function<void ()>;
+	virtual void setTookFocusCallback (const TookFocusCallback& callback) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -87,6 +91,20 @@ struct IViewEmbedder
 
 	/** returns the embedded view or nullptr if it has none */
 	virtual IView* getExternalView () const = 0;
+};
+
+//------------------------------------------------------------------------
+struct ViewAdapter : IView
+{
+	bool platformViewTypeSupported (PlatformViewType type) override { return false; }
+	bool attach (void* parent, PlatformViewType parentViewType) override { return false; }
+	bool remove () override { return false; }
+	void setViewSize (IntRect frame, IntRect visible) override {}
+	void setContentScaleFactor (double scaleFactor) override {}
+	void setMouseEnabled (bool state) override {}
+	void takeFocus () override {}
+	void looseFocus () override {}
+	void setTookFocusCallback (const TookFocusCallback& callback) override {}
 };
 
 //------------------------------------------------------------------------

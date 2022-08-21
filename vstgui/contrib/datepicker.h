@@ -13,7 +13,7 @@ namespace VSTGUI {
 namespace ExternalView {
 
 //------------------------------------------------------------------------
-class DatePicker : public IView
+class DatePicker : public ViewAdapter
 {
 public:
 	DatePicker ();
@@ -42,6 +42,8 @@ private:
 
 	void takeFocus () override;
 	void looseFocus () override;
+
+	void setTookFocusCallback (const TookFocusCallback& callback) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

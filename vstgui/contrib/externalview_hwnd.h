@@ -148,7 +148,7 @@ private:
 };
 
 //------------------------------------------------------------------------
-struct ExternalHWNDBase : IView
+struct ExternalHWNDBase : ViewAdapter
 {
 	using Base = ExternalHWNDBase;
 	using PlatformViewType = ExternalView::PlatformViewType;

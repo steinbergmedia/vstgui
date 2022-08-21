@@ -112,10 +112,14 @@ public:
 CExternalView::CExternalView (const CRect& r, const ExternalViewPtr& view) : CView (r)
 {
 	impl = std::make_unique<Impl> (view);
+	impl->getView ()->setTookFocusCallback ([this] () {
+		if (auto frame = getFrame ())
+			frame->setFocusView (this);
+	});
 }
 
 //------------------------------------------------------------------------
-CExternalView::~CExternalView () noexcept {}
+CExternalView::~CExternalView () noexcept { impl->getView ()->setTookFocusCallback (nullptr); }
 
 //------------------------------------------------------------------------
 bool CExternalView::attached (CView* parent)

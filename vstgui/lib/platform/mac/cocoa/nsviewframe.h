@@ -46,8 +46,6 @@ public:
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 #endif
-	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
-	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
 
 	void setDragDataPackage (SharedPointer<IDataPackage>&& package) { dragDataPackage = std::move (package); }
 	const SharedPointer<IDataPackage>& getDragDataPackage () const { return dragDataPackage; }
@@ -107,7 +105,6 @@ protected:
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult lastDragOperationResult;
 #endif
-	bool ignoreNextResignFirstResponder;
 	bool trackingAreaInitialized;
 	bool inDraw;
 	bool useInvalidRects {false};

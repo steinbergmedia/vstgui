@@ -186,5 +186,11 @@ void DatePicker::takeFocus () { impl->takeFocus (); }
 void DatePicker::looseFocus () { impl->looseFocus (); }
 
 //------------------------------------------------------------------------
+void DatePicker::setTookFocusCallback (const TookFocusCallback& callback)
+{
+	impl->setTookFocusCallback (callback);
+}
+
+//------------------------------------------------------------------------
 } // ExternalView
 } // VSTGUI
