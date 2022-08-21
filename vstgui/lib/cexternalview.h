@@ -40,8 +40,9 @@ public:
 	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
 	void setMouseEnabled (bool enable = true) override;
 
-private:
 	ExternalView::IView* getExternalView () const override;
+
+private:
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;
