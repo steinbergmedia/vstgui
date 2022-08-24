@@ -171,10 +171,17 @@ struct MetalView : ExternalNSViewBase<NSView>,
 	/** immediately render the view [thread safe] */
 	void render () override
 	{
+		doLocked ([&] () { renderer->draw (metalLayer.nextDrawable); });
+	}
+
+	/** do something locked [thread safe] */
+	template<typename Proc>
+	void doLocked (Proc proc)
+	{
 		LockGuard g (mutex);
 		@autoreleasepool
 		{
-			renderer->draw (metalLayer.nextDrawable);
+			proc ();
 		}
 	}
 
@@ -242,11 +249,12 @@ private:
 
 	void onSizeUpdate ()
 	{
-		LockGuard g (mutex);
-		auto size = view.frame.size;
-		metalLayer.drawableSize =
-			NSMakeSize (size.width * contentScaleFactor, size.height * contentScaleFactor);
-		renderer->onSizeUpdate (size.width, size.height, contentScaleFactor);
+		doLocked ([this] () {
+			auto size = view.frame.size;
+			metalLayer.drawableSize =
+				NSMakeSize (size.width * contentScaleFactor, size.height * contentScaleFactor);
+			renderer->onSizeUpdate (size.width, size.height, contentScaleFactor);
+		});
 	}
 
 #if !__has_feature(objc_arc)

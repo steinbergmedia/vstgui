@@ -47,21 +47,20 @@ struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 	bool init (ExternalView::IMetalView* metalView, CAMetalLayer* metalLayer) override
 	{
 		NSError* error = nullptr;
-		id<MTLLibrary> defaultLibrary =
+		auto defaultLibrary =
 			[_device newLibraryWithSource:[NSString stringWithUTF8String:shaderCode]
 								  options:nil
 									error:&error];
 		if (error)
 			return false;
 
-		id<MTLFunction> vertexFunction = [defaultLibrary newFunctionWithName:@"vertexShader"];
-		id<MTLFunction> fragmentFunction = [defaultLibrary newFunctionWithName:@"fragmentShader"];
+		auto vertexFunction = [defaultLibrary newFunctionWithName:@"vertexShader"];
+		auto fragmentFunction = [defaultLibrary newFunctionWithName:@"fragmentShader"];
 		if (!vertexFunction || !fragmentFunction)
 			return false;
 
 		// Configure a pipeline descriptor that is used to create a pipeline state.
-		MTLRenderPipelineDescriptor* pipelineStateDescriptor =
-			[[MTLRenderPipelineDescriptor alloc] init];
+		auto pipelineStateDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
 		pipelineStateDescriptor.label = @"Simple Pipeline";
 		pipelineStateDescriptor.vertexFunction = vertexFunction;
 		pipelineStateDescriptor.fragmentFunction = fragmentFunction;
@@ -73,6 +72,8 @@ struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 #if !__has_feature(objc_arc)
 		[pipelineStateDescriptor release];
 		[defaultLibrary release];
+		[vertexFunction release];
+		[fragmentFunction release];
 #endif
 		if (error)
 			return false;
@@ -162,13 +163,13 @@ struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 		};
 
 		// Create a new command buffer for each render pass to the current drawable.
-		id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+		auto commandBuffer = [_commandQueue commandBuffer];
 		commandBuffer.label = @"MyCommand";
 
 		_drawableRenderDescriptor.colorAttachments[0].texture = drawable.texture;
 
 		// Create a render command encoder.
-		id<MTLRenderCommandEncoder> renderEncoder =
+		auto renderEncoder =
 			[commandBuffer renderCommandEncoderWithDescriptor:_drawableRenderDescriptor];
 		renderEncoder.label = @"MyRenderEncoder";
 
