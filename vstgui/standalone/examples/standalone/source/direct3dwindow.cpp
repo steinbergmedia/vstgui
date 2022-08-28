@@ -341,10 +341,17 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 	{
 		if (Base::attach (parent, parentViewType))
 		{
-			initPipeline ();
-			loadAssets ();
-			doRender ();
-			timer = makeOwned<CVSTGUITimer> ([this] (auto) { doRender (); }, 1);
+			try
+			{
+				initPipeline ();
+				loadAssets ();
+				doRender ();
+				timer = makeOwned<CVSTGUITimer> ([this] (auto) { doRender (); }, 1);
+			}
+			catch (...)
+			{
+				onDestroy ();
+			}
 			return true;
 		}
 		return false;
@@ -443,6 +450,10 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 
 		ComPtr<IDXGIAdapter1> hardwareAdapter;
 		getHardwareAdapter (factory.Get (), &hardwareAdapter);
+		if (!hardwareAdapter)
+		{
+			throw;
+		}
 
 		ThrowIfFailed (D3D12CreateDevice (hardwareAdapter.Get (), D3D_FEATURE_LEVEL_11_0,
 										  IID_PPV_ARGS (&m_device)));
@@ -800,6 +811,9 @@ struct Direct3DView : public ExternalView::ExternalHWNDBase
 
 	void waitForPreviousFrame ()
 	{
+		if (!m_commandQueue)
+			return;
+
 		// WAITING FOR THE FRAME TO COMPLETE BEFORE CONTINUING IS NOT BEST PRACTICE.
 		// This is code implemented as such for simplicity. The D3D12HelloFrameBuffering
 		// sample illustrates how to use fences for efficient resource usage and to
