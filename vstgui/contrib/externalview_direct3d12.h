@@ -10,6 +10,7 @@
 #include <dcomp.h>
 #include <dxgi1_4.h>
 #include <wrl.h>
+#include <comdef.h>
 
 #include <mutex>
 
@@ -23,11 +24,37 @@
 namespace VSTGUI {
 //------------------------------------------------------------------------
 
+//------------------------------------------------------------------------
+struct Win32Exception : std::exception
+{
+	explicit Win32Exception (HRESULT hr) : _hr (hr)
+	{
+		FormatMessageA (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+							FORMAT_MESSAGE_IGNORE_INSERTS,
+						NULL, hr, MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&_errorStr, 0,
+						NULL);
+	}
+
+	~Win32Exception () noexcept
+	{
+		if (_errorStr)
+			LocalFree ((HLOCAL)_errorStr);
+	}
+
+	const char* what () const noexcept override { return _errorStr; }
+
+	HRESULT hr () const noexcept { return _hr; }
+
+private:
+	HRESULT _hr;
+	char* _errorStr {nullptr};
+};
+
 inline void ThrowIfFailed (HRESULT hr)
 {
 	if (FAILED (hr))
 	{
-		throw;
+		throw Win32Exception (hr);
 	}
 }
 
@@ -86,9 +113,23 @@ private:
 	{
 		if (mutex.try_lock ())
 		{
-			waitForPreviousFrame ();
-			m_renderer->render (m_commandQueue.Get ());
-			auto result = getSwapChain ()->Present (1, 0);
+			HRESULT result = S_FALSE;
+			try
+			{
+				waitForPreviousFrame ();
+				m_renderer->render (m_commandQueue.Get ());
+				result = getSwapChain ()->Present (1, 0);
+			}
+			catch (const Win32Exception&)
+			{
+				try
+				{
+					freeResources ();
+				}
+				catch (...)
+				{
+				}
+			}
 			mutex.unlock ();
 			return SUCCEEDED (result);
 		}
@@ -162,10 +203,15 @@ private:
 
 	void freeResources ()
 	{
-		waitForPreviousFrame ();
 		CloseHandle (m_fenceEvent);
 
-		m_renderer->onRemove ();
+		try
+		{
+			m_renderer->onRemove ();
+		}
+		catch (...)
+		{
+		}
 
 		m_commandAllocator.Reset ();
 		m_commandQueue.Reset ();

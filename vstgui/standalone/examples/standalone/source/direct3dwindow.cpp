@@ -359,7 +359,14 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 		renderThread = std::thread ([this] () {
 			while (!stopRenderThread)
 			{
-				m_view->render ();
+				try
+				{
+					m_view->render ();
+				}
+				catch (...)
+				{
+					stopRenderThread = true;
+				}
 				std::this_thread::sleep_for (std::chrono::milliseconds (1));
 			}
 		});
