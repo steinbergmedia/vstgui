@@ -39,7 +39,6 @@ struct IDirect3D12View
 {
 	virtual ~IDirect3D12View () noexcept = default;
 
-	virtual ID3D12CommandQueue* getCommandQueue () const = 0;
 	virtual ID3D12CommandAllocator* getCommandAllocator () const = 0;
 	virtual IDXGISwapChain3* getSwapChain () const = 0;
 	virtual ID3D12Device* getDevice () const = 0;
@@ -47,20 +46,20 @@ struct IDirect3D12View
 	virtual INT getFrameIndex () const = 0;
 	virtual void setFrameIndex (INT index) = 0;
 
-	virtual void render () = 0;
+	virtual bool render () = 0;
 };
 
 //------------------------------------------------------------------------
 struct IDirect3D12Renderer
 {
 	virtual bool init (IDirect3D12View* view) = 0;
-	virtual void render () = 0;
+	virtual void render (ID3D12CommandQueue* queue) = 0;
 	virtual void beforeSizeUpdate () = 0;
 	virtual void onSizeUpdate (IntSize newSize, double scaleFactor) = 0;
 	virtual void onAttach () = 0;
 	virtual void onRemove () = 0;
 
-	virtual uint32_t getFrameCount () = 0;
+	virtual uint32_t getFrameCount () const = 0;
 };
 using Direct3D12RendererPtr = std::shared_ptr<IDirect3D12Renderer>;
 
@@ -77,18 +76,23 @@ struct Direct3D12View : public ExternalHWNDBase,
 	}
 
 private:
-	ID3D12CommandQueue* getCommandQueue () const { return m_commandQueue.Get (); }
 	ID3D12CommandAllocator* getCommandAllocator () const { return m_commandAllocator.Get (); }
 	IDXGISwapChain3* getSwapChain () const { return m_swapChain.Get (); }
 	ID3D12Device* getDevice () const { return m_device.Get (); }
 	INT getFrameIndex () const { return m_frameIndex; }
 	void setFrameIndex (INT index) { m_frameIndex = index; }
 
-	void render () override
+	bool render () override
 	{
-		waitForPreviousFrame ();
-		Guard g (mutex);
-		m_renderer->render ();
+		if (mutex.try_lock ())
+		{
+			waitForPreviousFrame ();
+			m_renderer->render (m_commandQueue.Get ());
+			auto result = getSwapChain ()->Present (1, 0);
+			mutex.unlock ();
+			return SUCCEEDED (result);
+		}
+		return false;
 	}
 
 	bool attach (void* parent, PlatformViewType parentViewType) override
@@ -115,6 +119,7 @@ private:
 	bool remove () override
 	{
 		Guard g (mutex);
+		waitForPreviousFrame ();
 		freeResources ();
 		return Base::remove ();
 	}

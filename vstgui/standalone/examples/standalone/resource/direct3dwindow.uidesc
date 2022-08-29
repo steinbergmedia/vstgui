@@ -36,6 +36,8 @@
 					"background-color": "~ BlackCColor",
 					"background-color-draw-style": "filled and stroked",
 					"class": "CViewContainer",
+					"maxSize": "32767, 32767",
+					"minSize": "300, 300",
 					"mouse-enabled": "true",
 					"opacity": "1",
 					"origin": "0, 0",

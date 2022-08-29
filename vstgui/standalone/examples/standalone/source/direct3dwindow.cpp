@@ -18,6 +18,10 @@
 #include <D3Dcompiler.h>
 #include <DirectXMath.h>
 
+#include <thread>
+
+#define VSTGUI_USE_THREADED_DIRECT3D12_EXAMPLE 1
+
 #ifdef _MSC_VER
 #pragma comment(lib, "d3dcompiler.lib")
 #endif
@@ -330,7 +334,7 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 		return true;
 	}
 
-	void render () override { doRender (); }
+	void render (ID3D12CommandQueue* queue) override { doRender (queue); }
 
 	void beforeSizeUpdate () override { freeFrameResources (); }
 
@@ -350,15 +354,32 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 		createFrameResources ();
 		loadAssets ();
 		m_view->render ();
+#if VSTGUI_USE_THREADED_DIRECT3D12_EXAMPLE
+		stopRenderThread = false;
+		renderThread = std::thread ([this] () {
+			while (!stopRenderThread)
+			{
+				m_view->render ();
+				std::this_thread::sleep_for (std::chrono::milliseconds (1));
+			}
+		});
+#else
 		timer = makeOwned<CVSTGUITimer> ([this] (auto) { m_view->render (); }, 16);
+#endif
 	}
 	void onRemove () override
 	{
+#if VSTGUI_USE_THREADED_DIRECT3D12_EXAMPLE
+		stopRenderThread = true;
+		if (renderThread.joinable ())
+			renderThread.join ();
+#else
 		timer = nullptr;
+#endif
 		freeFrameResources ();
 	}
 
-	uint32_t getFrameCount () override { return FrameCount; }
+	uint32_t getFrameCount () const override { return FrameCount; }
 
 	void freeFrameResources ()
 	{
@@ -496,36 +517,35 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 	void updateAndUploadVertexBuffer ()
 	{
 		// Create the vertex buffer.
-		{
-			// Define the geometry for a triangle.
-			Vertex triangleVertices[] = {{{0.0f, 0.5f, 0.0f}, colorRight},
-										 {{0.5f, -0.5f, 0.0f}, colorLeft},
-										 {{-0.5f, -0.5f, 0.0f}, colorTop}};
 
-			const UINT vertexBufferSize = sizeof (triangleVertices);
+		// Define the geometry for a triangle.
+		Vertex triangleVertices[] = {{{0.0f, 0.8f, 0.0f}, colorRight},
+									 {{0.8f, -0.8f, 0.0f}, colorLeft},
+									 {{-0.8f, -0.8f, 0.0f}, colorTop}};
 
-			// Note: using upload heaps to transfer static data like vert buffers is not
-			// recommended. Every time the GPU needs it, the upload heap will be marshalled
-			// over. Please read up on Default Heap usage. An upload heap is used here for
-			// code simplicity and because there are very few verts to actually transfer.
-			ThrowIfFailed (m_view->getDevice ()->CreateCommittedResource (
-				&CD3DX12_HEAP_PROPERTIES (D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
-				&CD3DX12_RESOURCE_DESC::Buffer (vertexBufferSize),
-				D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS (&m_vertexBuffer)));
+		const UINT vertexBufferSize = sizeof (triangleVertices);
 
-			// Copy the triangle data to the vertex buffer.
-			UINT8* pVertexDataBegin;
-			D3D12_RANGE readRange {0, 0}; // We do not intend to read from this resource on the CPU.
-			ThrowIfFailed (
-				m_vertexBuffer->Map (0, &readRange, reinterpret_cast<void**> (&pVertexDataBegin)));
-			memcpy (pVertexDataBegin, triangleVertices, sizeof (triangleVertices));
-			m_vertexBuffer->Unmap (0, nullptr);
+		// Note: using upload heaps to transfer static data like vert buffers is not
+		// recommended. Every time the GPU needs it, the upload heap will be marshalled
+		// over. Please read up on Default Heap usage. An upload heap is used here for
+		// code simplicity and because there are very few verts to actually transfer.
+		ThrowIfFailed (m_view->getDevice ()->CreateCommittedResource (
+			&CD3DX12_HEAP_PROPERTIES (D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer (vertexBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr, IID_PPV_ARGS (&m_vertexBuffer)));
 
-			// Initialize the vertex buffer view.
-			m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress ();
-			m_vertexBufferView.StrideInBytes = sizeof (Vertex);
-			m_vertexBufferView.SizeInBytes = vertexBufferSize;
-		}
+		// Copy the triangle data to the vertex buffer.
+		UINT8* pVertexDataBegin;
+		D3D12_RANGE readRange {0, 0}; // We do not intend to read from this resource on the CPU.
+		ThrowIfFailed (
+			m_vertexBuffer->Map (0, &readRange, reinterpret_cast<void**> (&pVertexDataBegin)));
+		memcpy (pVertexDataBegin, triangleVertices, sizeof (triangleVertices));
+		m_vertexBuffer->Unmap (0, nullptr);
+
+		// Initialize the vertex buffer view.
+		m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress ();
+		m_vertexBufferView.StrideInBytes = sizeof (Vertex);
+		m_vertexBufferView.SizeInBytes = vertexBufferSize;
 	}
 
 	void updateColors ()
@@ -544,7 +564,7 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 		colorRight.z = (1.f + std::sin (frameCounter * 0.031f)) * 0.5f;
 	}
 
-	void doRender ()
+	void doRender (ID3D12CommandQueue* queue)
 	{
 		updateColors ();
 		updateAndUploadVertexBuffer ();
@@ -554,10 +574,7 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 
 		// Execute the command list.
 		ID3D12CommandList* ppCommandLists[] = {m_commandList.Get ()};
-		m_view->getCommandQueue ()->ExecuteCommandLists (_countof (ppCommandLists), ppCommandLists);
-
-		// Present the frame.
-		ThrowIfFailed (m_view->getSwapChain ()->Present (1, 0));
+		queue->ExecuteCommandLists (_countof (ppCommandLists), ppCommandLists);
 	}
 
 	void onDestroy ()
@@ -645,7 +662,12 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 	DirectX::XMFLOAT4 colorLeft {0.f, 1.f, 0.f, 1.f};
 	DirectX::XMFLOAT4 colorRight {1.f, 0.f, 0.f, 1.f};
 	uint32_t frameCounter {0};
+#if VSTGUI_USE_THREADED_DIRECT3D12_EXAMPLE
+	bool stopRenderThread {true};
+	std::thread renderThread;
+#else
 	SharedPointer<CVSTGUITimer> timer;
+#endif
 };
 
 //------------------------------------------------------------------------
