@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <d2d1.h>
 #include <vector>
+#include <mutex>
 
 namespace VSTGUI {
 namespace D2DBitmapCache {
@@ -29,6 +30,9 @@ struct Cache
 	void removeDevice (ID2D1Device* device);
 
 private:
+	using Mutex = std::mutex;
+	using LockGuard = std::lock_guard<Mutex>;
+
 	COM::Ptr<ID2D1Bitmap> createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget) const;
 
 	struct ResourceLocation
@@ -45,45 +49,66 @@ private:
 	using ResourceLocationList = std::vector<std::pair<ResourceLocation, COM::Ptr<ID2D1Bitmap>>>;
 	using BitmapMap = std::map<D2DBitmap*, ResourceLocationList>;
 	BitmapMap bitmaps;
+
+	Mutex mutex;
 };
 
 //-----------------------------------------------------------------------------
 ID2D1Bitmap* Cache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget,
 							   ID2D1Device* device)
 {
+	ID2D1Bitmap* result = nullptr;
+
 	ResourceLocation resLoc {device, device ? nullptr : renderTarget};
 
+	mutex.lock ();
 	auto bitmapIt = bitmaps.find (bitmap);
 	if (bitmapIt != bitmaps.end ())
 	{
-
 		auto resLocIt = std::find_if (bitmapIt->second.begin (), bitmapIt->second.end (),
 									  [&] (const auto& loc) { return loc.first == resLoc; });
 		if (resLocIt != bitmapIt->second.end ())
 		{
-			return resLocIt->second.get ();
+			result = resLocIt->second.get ();
+			mutex.unlock ();
 		}
-		auto b = createBitmap (bitmap, renderTarget);
-		if (b)
-			bitmapIt->second.emplace_back (std::make_pair (resLoc, b));
-		return b.get ();
-	}
-	auto insertSuccess = bitmaps.emplace (bitmap, ResourceLocationList ());
-	if (insertSuccess.second == true)
-	{
-		auto b = createBitmap (bitmap, renderTarget);
-		if (b)
+		else
 		{
-			insertSuccess.first->second.emplace_back (std::make_pair (resLoc, b));
-			return b.get ();
+			mutex.unlock ();
+			auto b = createBitmap (bitmap, renderTarget);
+			if (b)
+			{
+				mutex.lock ();
+				bitmapIt->second.emplace_back (std::make_pair (resLoc, b));
+				mutex.unlock ();
+				result = b.get ();
+			}
 		}
 	}
-	return nullptr;
+	else
+	{
+		auto insertSuccess = bitmaps.emplace (bitmap, ResourceLocationList ());
+		mutex.unlock ();
+		if (insertSuccess.second == true)
+		{
+			auto b = createBitmap (bitmap, renderTarget);
+			if (b)
+			{
+				mutex.lock ();
+				insertSuccess.first->second.emplace_back (std::make_pair (resLoc, b));
+				mutex.unlock ();
+				result = b.get ();
+			}
+		}
+	}
+	return result;
 }
 
 //-----------------------------------------------------------------------------
 void Cache::removeBitmap (D2DBitmap* bitmap)
 {
+	LockGuard g (mutex);
+
 	auto bitmapIt = bitmaps.find (bitmap);
 	if (bitmapIt != bitmaps.end ())
 		bitmaps.erase (bitmapIt);
@@ -92,6 +117,8 @@ void Cache::removeBitmap (D2DBitmap* bitmap)
 //-----------------------------------------------------------------------------
 void Cache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
 {
+	LockGuard g (mutex);
+
 	auto bitmapIt = bitmaps.begin ();
 	while (bitmapIt != bitmaps.end ())
 	{
@@ -108,6 +135,8 @@ void Cache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
 //-----------------------------------------------------------------------------
 void Cache::removeDevice (ID2D1Device* device)
 {
+	LockGuard g (mutex);
+
 	auto bitmapIt = bitmaps.begin ();
 	while (bitmapIt != bitmaps.end ())
 	{

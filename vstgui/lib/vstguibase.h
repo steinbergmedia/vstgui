@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
 #define VSTGUI_VERSION_MINOR  11
-#define VSTGUI_VERSION_PATCHLEVEL  0
+#define VSTGUI_VERSION_PATCHLEVEL  1
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -135,7 +135,7 @@
 	#endif
 
 #else
-	#error unsupported compiler
+#error unsupported system/compiler
 #endif
 
 #include <atomic>
@@ -220,10 +220,11 @@ using UTF8StringBuffer = char*;
 //-----------------------------------------------------------------------------
 // @brief Byte Order
 //-----------------------------------------------------------------------------
-enum ByteOrder {
+enum ByteOrder
+{
 	kBigEndianByteOrder = 0,
 	kLittleEndianByteOrder,
-#if WINDOWS || defined (__LITTLE_ENDIAN__)
+#if WINDOWS || defined(__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN)
 	kNativeByteOrder = kLittleEndianByteOrder
 #else
 	kNativeByteOrder = kBigEndianByteOrder

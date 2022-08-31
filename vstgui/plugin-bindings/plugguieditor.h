@@ -21,7 +21,8 @@ struct ERect
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Declaration
 //-----------------------------------------------------------------------------
-class PluginGUIEditor : public VSTGUIEditorInterface
+class [[deprecated ("Please use your own VSTGUIEditorInterface subclass")]] PluginGUIEditor
+: public VSTGUIEditorInterface
 {
 public :
 
@@ -58,8 +59,6 @@ protected:
 	void* systemWindow;
 
 private:
-	uint32_t lLastTicks;
-
 	static int32_t knobMode;
 };
 

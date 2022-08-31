@@ -134,7 +134,7 @@ public:
 	 *	@return platform file selector or nullptr on failure
 	 */
 	PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style,
-												IPlatformFrame* frame) const noexcept;
+												IPlatformFrame* frame) const noexcept final;
 
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;

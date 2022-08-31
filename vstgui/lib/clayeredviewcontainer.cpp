@@ -69,7 +69,7 @@ bool CLayeredViewContainer::removed (CView* parent)
 	{
 		layer = nullptr;
 		parentLayerView = nullptr;
-		getFrame ()->unregisterScaleFactorChangedListeneer (this);
+		getFrame ()->unregisterScaleFactorChangedListener (this);
 	}
 	return CViewContainer::removed (parent);
 }
@@ -99,7 +99,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 			layer->setZIndex (zIndex);
 			layer->setAlpha (getAlphaValue ());
 			updateLayerSize ();
-			frame->registerScaleFactorChangedListeneer (this);
+			frame->registerScaleFactorChangedListener (this);
 		}
 	}
 	parent = getParentView ();

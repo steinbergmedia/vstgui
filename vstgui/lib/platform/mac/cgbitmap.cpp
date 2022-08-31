@@ -158,7 +158,7 @@ bool CGBitmap::load (const CResourceDescription& desc)
 		// else it just uses the name
 		char filename [PATH_MAX];
 		if (desc.type == CResourceDescription::kIntegerType)
-			sprintf (filename, "bmp%05d", (int32_t)desc.u.id);
+			snprintf (filename, PATH_MAX, "bmp%05d", (int32_t)desc.u.id);
 		else
 			std::strcpy (filename, desc.u.name);
 		CFStringRef cfStr = CFStringCreateWithCString (nullptr, filename, kCFStringEncodingUTF8);

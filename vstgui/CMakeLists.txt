@@ -2,12 +2,9 @@
 cmake_minimum_required(VERSION 3.5)
 
 if(NOT PROJECT_NAME)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14 CACHE STRING "")
     project(vstgui)
     set(VSTGUI_MAIN_PROJECT_BUILD 1)
-endif()
-
-if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/modules/")

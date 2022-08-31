@@ -121,8 +121,8 @@ void CTextEdit::setValue (float val)
 	{
 		char tmp[255];
 		char precisionStr[10];
-		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
-		sprintf (tmp, precisionStr, getValue ());
+		snprintf (precisionStr, 10, "%%.%hhuf", valuePrecision);
+		snprintf (tmp, 255, precisionStr, getValue ());
 		string = tmp;
 	}
 

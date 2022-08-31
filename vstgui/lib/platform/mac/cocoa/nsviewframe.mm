@@ -167,17 +167,12 @@ static auto VSTGUI_NSPasteboardTypeFileURL = NSFilenamesPboardType;
 #endif
 
 //------------------------------------------------------------------------------------
-struct VSTGUI_NSView
+struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 {
-	static id alloc () { return [instance ().viewClass alloc]; }
-
-private:
 	static constexpr const auto nsViewFrameVarName = "_nsViewFrame";
 
-	Class viewClass {nullptr};
-
 	//------------------------------------------------------------------------------------
-	VSTGUI_NSView ()
+	static Class CreateClass ()
 	{
 		ObjCClassBuilder builder;
 		builder.init ("VSTGUI_NSView", [NSView class])
@@ -253,23 +248,13 @@ private:
 
 		builder.addIvar<void*> ("_nsViewFrame");
 
-		viewClass = builder.finalize ();
-	}
-
-	//------------------------------------------------------------------------------------
-	~VSTGUI_NSView () { objc_disposeClassPair (viewClass); }
-
-	//------------------------------------------------------------------------------------
-	static VSTGUI_NSView& instance ()
-	{
-		static VSTGUI_NSView gInstance;
-		return gInstance;
+		return builder.finalize ();
 	}
 
 	//------------------------------------------------------------------------------------
 	static NSViewFrame* getNSViewFrame (id obj)
 	{
-		if (auto var = ObjCInstance (obj).getVariable<NSViewFrame*> (nsViewFrameVarName))
+		if (auto var = makeInstance (obj).getVariable<NSViewFrame*> (nsViewFrameVarName))
 			return var->get ();
 		return nullptr;
 	}
@@ -285,7 +270,7 @@ private:
 	//------------------------------------------------------------------------------------
 	static id init (id self, SEL _cmd, void* _frame, NSView* parentView, const void* _size)
 	{
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 
 		const CRect* size = (const CRect*)_size;
 		NSViewFrame* frame = (NSViewFrame*)_frame;
@@ -377,7 +362,7 @@ private:
 		if (viewFrame)
 			viewFrame->initTrackingArea ();
 
-		ObjCInstance (self).callSuper<void (id, SEL)> (_cmd);
+		makeInstance (self).callSuper<void (id, SEL)> (_cmd);
 	}
 
 	//------------------------------------------------------------------------------------
@@ -462,7 +447,7 @@ private:
 				layer.contentsFormat = kCAContentsFormatRGBA8Uint;
 			}
 		}
-		ObjCInstance (self).callSuper<void (id, SEL)> (_cmd);
+		makeInstance (self).callSuper<void (id, SEL)> (_cmd);
 	}
 
 	//------------------------------------------------------------------------
@@ -471,7 +456,7 @@ private:
 		NSViewFrame* frame = getNSViewFrame (self);
 		if (frame)
 			frame->setNeedsDisplayInRect (rect);
-		ObjCInstance (self).callSuper<void (id, SEL, NSRect)> (_cmd, rect);
+		makeInstance (self).callSuper<void (id, SEL, NSRect)> (_cmd, rect);
 	}
 
 	//------------------------------------------------------------------------------------
@@ -506,7 +491,7 @@ private:
 	{
 		if (![self onMouseDown:theEvent])
 		{
-			ObjCInstance (self).callSuper<void (id, SEL, NSEvent*)> (_cmd, theEvent);
+			makeInstance (self).callSuper<void (id, SEL, NSEvent*)> (_cmd, theEvent);
 		}
 	}
 
@@ -515,7 +500,7 @@ private:
 	{
 		if (![self onMouseUp:theEvent])
 		{
-			ObjCInstance (self).callSuper<void (id, SEL, NSEvent*)> (_cmd, theEvent);
+			makeInstance (self).callSuper<void (id, SEL, NSEvent*)> (_cmd, theEvent);
 		}
 	}
 
@@ -524,7 +509,7 @@ private:
 	{
 		if (![self onMouseMoved:theEvent])
 		{
-			ObjCInstance (self).callSuper<void (id, SEL, NSEvent*)> (_cmd, theEvent);
+			makeInstance (self).callSuper<void (id, SEL, NSEvent*)> (_cmd, theEvent);
 		}
 	}
 
@@ -1056,9 +1041,10 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 				return;
 			}
 		}
+		auto color = CGColorCreateGenericRGB (isClipBoundingBox ? 0. : 1., 1., 0., 1.);
 		auto layer = [[CALayer new] autorelease];
 		layer.name = @"DebugLayer";
-		layer.backgroundColor = CGColorCreateGenericRGB (isClipBoundingBox ? 0. : 1., 1., 0., 1.);
+		layer.backgroundColor = color;
 		layer.opacity = 0.f;
 		layer.zPosition = isClipBoundingBox ? 10 : 11;
 		layer.frame = nsRectFromCRect (r);
@@ -1066,6 +1052,7 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 
 		[delegate setLayer:layer];
 		[layer addAnimation:anim forKey:@"opacity"];
+		CFRelease (color);
 	}
 #endif
 }
@@ -1123,7 +1110,7 @@ static MouseEventButtonState buttonStateFromNSEvent (NSEvent* theEvent)
 	{
 		case 0:
 		{
-			if (theEvent.modifierFlags & MacEventModifier::ControlKeyMask)
+			if (theEvent.type == MacEventType::LeftMouseDown && theEvent.modifierFlags & MacEventModifier::ControlKeyMask)
 				state.add (MouseButton::Right);
 			else
 				state.add (MouseButton::Left);
@@ -1152,7 +1139,7 @@ bool NSViewFrame::onMouseDown (NSEvent* theEvent)
 	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
-	event.clickCount = theEvent.clickCount;
+	event.clickCount = static_cast<uint32_t> (theEvent.clickCount);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
 	event.mousePosition = pointFromNSPoint (nsPoint);
@@ -1167,7 +1154,7 @@ bool NSViewFrame::onMouseUp (NSEvent* theEvent)
 	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
-	event.clickCount = theEvent.clickCount;
+	event.clickCount = static_cast<uint32_t> (theEvent.clickCount);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
 	event.mousePosition = pointFromNSPoint (nsPoint);
@@ -1182,7 +1169,7 @@ bool NSViewFrame::onMouseMoved (NSEvent* theEvent)
 	event.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
 	event.buttonState = buttonStateFromNSEvent (theEvent);
 	event.modifiers = modifiersFromModifierFlags (theEvent.modifierFlags);
-	event.clickCount = theEvent.clickCount;
+	event.clickCount = static_cast<uint32_t> (theEvent.clickCount);
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [nsView convertPoint:nsPoint fromView:nil];
 	event.mousePosition = pointFromNSPoint (nsPoint);

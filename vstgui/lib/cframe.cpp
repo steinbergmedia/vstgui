@@ -663,8 +663,13 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 		{
 			CPoint p (transformedMousePosition);
 			auto view = *it;
-			if (auto parent = view->getParentView ())
-				parent->translateToLocal (p, true);
+			if (view->asViewContainer ())
+			{
+				if (auto parent = view->getParentView ())
+					parent->translateToLocal (p, true);
+			}
+			else
+				view->translateToLocal (p, true);
 			event.mousePosition = p;
 			dispatchEvent (view, event);
 			if (event.consumed)
@@ -883,7 +888,7 @@ void CFrame::setViewSize (const CRect& rect, bool invalid)
 bool CFrame::setSize (CCoord width, CCoord height)
 {
 	if ((width == getViewSize ().getWidth ()) && (height == getViewSize ().getHeight ()))
-		return false;
+		return true;
 
 	CRect newSize (getViewSize ());
 	newSize.setWidth (width);
@@ -1554,13 +1559,13 @@ void CFrame::dispatchKeyboardEventToHooks (KeyboardEvent& event)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
+void CFrame::registerScaleFactorChangedListener (IScaleFactorChangedListener* listener)
 {
 	pImpl->scaleFactorChangedListenerList.add (listener);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
+void CFrame::unregisterScaleFactorChangedListener (IScaleFactorChangedListener* listener)
 {
 	pImpl->scaleFactorChangedListenerList.remove (listener);
 }

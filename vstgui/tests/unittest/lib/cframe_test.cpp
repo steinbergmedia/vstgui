@@ -291,6 +291,57 @@ TEST_CASE (CFrameTest, MouseEnterExitInContainer)
 	frame->unregisterMouseObserver (&observer);
 }
 
+TEST_CASE (CFrameTest, MouseMoveInContainer)
+{
+	struct TestViewContainer : CViewContainer
+	{
+		using CViewContainer::CViewContainer;
+		CPoint mouseMoveEventPos {};
+		CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override
+		{
+			mouseMoveEventPos = where;
+			return CViewContainer::onMouseMoved (where, buttons);
+		}
+	};
+	struct TestView : CView
+	{
+		using CView::CView;
+
+		CPoint mouseMoveEventPos {};
+		CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override
+		{
+			mouseMoveEventPos = where;
+			return kMouseEventNotHandled;
+		}
+	};
+
+	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
+	auto container = new TestViewContainer (CRect (10, 10, 80, 80));
+	frame->addView (container);
+
+	auto testView = new TestView ({10, 10, 60, 60});
+	container->addView (testView);
+
+	frame->attached (frame);
+
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (frame, {30., 30.}, MouseButton::None),
+			   EventConsumeState::NotHandled);
+	EXPECT_EQ (container->mouseMoveEventPos, CPoint (30., 30.));
+	EXPECT_EQ (testView->mouseMoveEventPos, CPoint (20., 20.));
+
+	container->mouseMoveEventPos = {};
+	testView->mouseMoveEventPos = {};
+
+	CGraphicsTransform tm;
+	tm.scale (2., 2.);
+	container->setTransform (tm);
+
+	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (frame, {30., 30.}, MouseButton::None),
+			   EventConsumeState::NotHandled);
+	EXPECT_EQ (container->mouseMoveEventPos, CPoint (30., 30.));
+	EXPECT_EQ (testView->mouseMoveEventPos, CPoint (10., 10.));
+}
+
 TEST_CASE (CFrameTest, RemoveViewWhileMouseInside)
 {
 	MouseObserver observer;

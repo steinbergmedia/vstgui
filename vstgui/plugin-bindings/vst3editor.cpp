@@ -8,6 +8,7 @@
 #include "../lib/vstkeycode.h"
 #include "../lib/animation/timingfunctions.h"
 #include "../lib/animation/animations.h"
+#include "../lib/platform/platformfactory.h"
 #include "../uidescription/detail/uiviewcreatorattributes.h"
 #include "../uidescription/editing/uieditcontroller.h"
 #include "../uidescription/editing/uieditmenucontroller.h"
@@ -541,13 +542,13 @@ bool VST3Editor::setEditorSizeConstrains (const CPoint& newMinimumSize, const CP
 			CCoord height = currentSize.getHeight ();
 			double scaleFactor = getAbsScaleFactor ();
 			if (width > maxSize.x * scaleFactor)
-				currentSize.setWidth (maxSize.x * scaleFactor);
+				newSize.setWidth (maxSize.x * scaleFactor);
 			else if (width < minSize.x * scaleFactor)
-				currentSize.setWidth (minSize.x * scaleFactor);
+				newSize.setWidth (minSize.x * scaleFactor);
 			if (height > maxSize.y * scaleFactor)
-				currentSize.setHeight (maxSize.y * scaleFactor);
+				newSize.setHeight (maxSize.y * scaleFactor);
 			else if (height < minSize.y * scaleFactor)
-				currentSize.setHeight (minSize.y * scaleFactor);
+				newSize.setHeight (minSize.y * scaleFactor);
 			if (newSize != currentSize)
 				requestResize (CPoint (newSize.getWidth (), newSize.getHeight ()));
 		}
@@ -875,6 +876,12 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 			CMenuItem* item = controllerMenu->addEntry (new CCommandMenuItem (
 			    {"Open UIDescription Editor", this, "File", "Open UIDescription Editor"}));
 			item->setKey ("e", kControl);
+			item = controllerMenu->addEntry (new CCommandMenuItem (
+				{"Show 'Open UI Editor' Button", this, "File", "Show Editor Button"}));
+			if (enableShowEditButton ())
+				item->setChecked ();
+			item = controllerMenu->addEntry (new CCommandMenuItem (
+				{"Save Editor Screenshot", this, "File", "Save Editor Screenshot"}));
 		}
 	#endif
 		CViewContainer::ViewList views;
@@ -1276,6 +1283,7 @@ void PLUGIN_API VST3Editor::close ()
 			delete keyboardHook;
 		}
 		keyboardHook = nullptr;
+		openUIEditorController = nullptr;
 #endif
 		getFrame ()->unregisterMouseObserver (this);
 		getFrame ()->removeAll (true);
@@ -1422,6 +1430,19 @@ bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
 		{
 			save (true);
 			item->setChecked (false);
+			return true;
+		}
+		else if (cmdName == "Save Editor Screenshot")
+		{
+			saveScreenshot ();
+			return true;
+		}
+		else if (cmdName == "Show Editor Button")
+		{
+			auto state = enableShowEditButton ();
+			enableShowEditButton (!state);
+			if (!editingEnabled)
+				showEditButton (!state);
 			return true;
 		}
 	}
@@ -1590,6 +1611,96 @@ void VST3Editor::syncParameterTags ()
 #endif
 }
 
+//------------------------------------------------------------------------
+void VST3Editor::saveScreenshot ()
+{
+	if (auto fileSelector =
+			owned (CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectDirectory)))
+	{
+		fileSelector->setTitle ("Select Directory where to save the screenshots");
+		fileSelector->run ([this] (CNewFileSelector* fs) {
+			if (fs->getNumSelectedFiles () != 1)
+				return;
+
+			auto makeScreenshot = [] (CFrame* frame) -> SharedPointer<CBitmap> {
+				auto size = frame->getViewSize ().getSize ();
+				if (auto offscreen = COffscreenContext::create (size, 1.))
+				{
+					offscreen->beginDraw ();
+					frame->draw (offscreen);
+					offscreen->endDraw ();
+					return shared (offscreen->getBitmap ());
+				}
+				return nullptr;
+			};
+
+			showEditButton (false);
+
+			auto origZoom = getFrame ()->getZoom ();
+			getFrame ()->setZoom (1.);
+			auto bitmap1 = makeScreenshot (getFrame ());
+			getFrame ()->setZoom (2.);
+			auto bitmap2 = makeScreenshot (getFrame ());
+			getFrame ()->setZoom (origZoom);
+
+			auto folderPath = std::string (fs->getSelectedFile (0));
+			auto uidStr = std::string ("XXXXXXXX");
+			if (bitmap1)
+			{
+				auto data = getPlatformFactory ().createBitmapMemoryPNGRepresentation (
+					bitmap1->getPlatformBitmap ());
+				if (!data.empty ())
+				{
+					auto filename = folderPath + "/" + uidStr + "_snapshot.png";
+					CFileStream stream;
+					if (stream.open (filename.data (), CFileStream::kWriteMode |
+														   CFileStream::kTruncateMode |
+														   CFileStream::kBinaryMode))
+					{
+						stream.writeRaw (data.data (), static_cast<uint32_t> (data.size ()));
+					}
+				}
+			}
+			if (bitmap2)
+			{
+				auto filename = folderPath + "/" + uidStr + "_snapshot_2.0x.png";
+				auto data = getPlatformFactory ().createBitmapMemoryPNGRepresentation (
+					bitmap2->getPlatformBitmap ());
+				if (!data.empty ())
+				{
+					CFileStream stream;
+					if (stream.open (filename.data (), CFileStream::kWriteMode |
+														   CFileStream::kTruncateMode |
+														   CFileStream::kBinaryMode))
+					{
+						stream.writeRaw (data.data (), static_cast<uint32_t> (data.size ()));
+					}
+				}
+			}
+			if (enableShowEditButton ())
+				showEditButton (true);
+		});
+	}
+}
+
+//------------------------------------------------------------------------
+bool VST3Editor::enableShowEditButton () const
+{
+	bool addShowEditorButton = true;
+	if (auto attributes = description->getCustomAttributes ("VST3Editor", true))
+	{
+		attributes->getBooleanAttribute ("Show Editor Button", addShowEditorButton);
+	}
+	return addShowEditorButton;
+}
+
+//------------------------------------------------------------------------
+void VST3Editor::enableShowEditButton (bool state)
+{
+	if (auto attributes = description->getCustomAttributes ("VST3Editor", true))
+		attributes->setBooleanAttribute ("Show Editor Button", state);
+}
+
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
 class EnterEditModeController
@@ -1615,6 +1726,22 @@ public:
 		button->registerControlListener (this);
 		frame->addView (button);
 	}
+	~EnterEditModeController () noexcept override
+	{
+		if (button)
+		{
+			unregisterButtonListeners ();
+			if (auto parent = button->getParentView ())
+				parent->asViewContainer ()->removeView (button);
+		}
+	}
+
+	void unregisterButtonListeners ()
+	{
+		button->unregisterViewEventListener (this);
+		button->unregisterViewListener (this);
+		button->unregisterControlListener (this);
+	}
 
 	void valueChanged (CControl* c) override
 	{
@@ -1632,10 +1759,10 @@ public:
 
 	void viewWillDelete (CView* view) override
 	{
-		vstgui_assert (view == button);
-		button->unregisterViewEventListener (this);
-		button->unregisterViewListener (this);
-		button->unregisterControlListener (this);
+		if (button == nullptr)
+			return;
+		unregisterButtonListeners ();
+		button = nullptr;
 		delete this;
 	}
 	void viewOnEvent (CView* view, Event& event) override
@@ -1682,6 +1809,25 @@ public:
 #endif
 
 //------------------------------------------------------------------------
+void VST3Editor::showEditButton (bool state)
+{
+#if VSTGUI_LIVE_EDITING
+	if ((state && openUIEditorController) || (!state && openUIEditorController == nullptr))
+		return;
+	if (state)
+	{
+		openUIEditorController =
+			new EnterEditModeController (getFrame (), [this] () { enableEditing (true); });
+	}
+	else
+	{
+		delete openUIEditorController;
+		openUIEditorController = nullptr;
+	}
+#endif
+}
+
+//------------------------------------------------------------------------
 bool VST3Editor::enableEditing (bool state)
 {
 	if (getFrame ())
@@ -1689,6 +1835,7 @@ bool VST3Editor::enableEditing (bool state)
 		getFrame ()->removeAll ();
 
 	#if VSTGUI_LIVE_EDITING
+		openUIEditorController = nullptr;
 		if (state)
 		{
 			// update uiDesc file path to absolute if possible
@@ -1847,7 +1994,8 @@ bool VST3Editor::enableEditing (bool state)
 					}
 				}
 #if VSTGUI_LIVE_EDITING
-				new EnterEditModeController (getFrame (), [this] () { enableEditing (true); });
+				if (enableShowEditButton ())
+					showEditButton (true);
 #endif
 				return true;
 			}

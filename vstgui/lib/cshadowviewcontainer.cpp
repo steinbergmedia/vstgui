@@ -47,7 +47,7 @@ void CShadowViewContainer::beforeDelete ()
 //-----------------------------------------------------------------------------
 bool CShadowViewContainer::removed (CView* parent)
 {
-	getFrame ()->unregisterScaleFactorChangedListeneer (this);
+	getFrame ()->unregisterScaleFactorChangedListener (this);
 	setBackground (nullptr);
 	return CViewContainer::removed (parent);
 }
@@ -58,7 +58,7 @@ bool CShadowViewContainer::attached (CView* parent)
 	if (CViewContainer::attached (parent))
 	{
 		invalidateShadow ();
-		getFrame ()->registerScaleFactorChangedListeneer (this);
+		getFrame ()->registerScaleFactorChangedListener (this);
 		return true;
 	}
 	return false;

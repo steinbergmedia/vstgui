@@ -478,7 +478,7 @@ void Context::drawGraphicsPath (CGraphicsPath* path, CDrawContext::PathDrawMode 
 				cairo_matrix_t resultMatrix;
 				auto matrix = convert (*transformation);
 				cairo_get_matrix (cr, &currentMatrix);
-				cairo_matrix_multiply (&resultMatrix, &currentMatrix, &matrix);
+				cairo_matrix_multiply (&resultMatrix, &matrix, &currentMatrix);
 				cairo_set_matrix (cr, &resultMatrix);
 			}
 			cairo_append_path (cr, p);

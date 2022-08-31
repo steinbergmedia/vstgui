@@ -33,41 +33,32 @@ static constexpr auto NSControlStateValueOff = NSOffState;
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
-struct VSTGUI_NSMenu
+struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 {
-	//------------------------------------------------------------------------------------
-	static id alloc () { return [instance ().menuClass alloc]; }
-
-private:
 	static constexpr const auto privateVarName = "_private";
 
-	Class menuClass {nullptr};
 	int32_t menuClassCount = 0;
 
 	//------------------------------------------------------------------------------------
-	VSTGUI_NSMenu ()
+	static Class CreateClass ()
 	{
-		menuClass = ObjCClassBuilder ()
-						.init ("VSTGUI_NSMenu", [NSMenu class])
-						.addMethod (@selector (initWithOptionMenu:), Init)
-						.addMethod (@selector (dealloc), Dealloc)
-						.addMethod (@selector (validateMenuItem:), ValidateMenuItem)
-						.addMethod (@selector (menuItemSelected:), MenuItemSelected)
-						.addMethod (@selector (optionMenu), OptionMenu)
-						.addMethod (@selector (selectedMenu), SelectedMenu)
-						.addMethod (@selector (selectedItem), SelectedItem)
-						.addMethod (@selector (setSelectedMenu:), SetSelectedMenu)
-						.addMethod (@selector (setSelectedItem:), SetSelectedItem)
-						.addIvar<VSTGUI_NSMenu::Var*> (privateVarName)
-						.finalize ();
+		return ObjCClassBuilder ()
+			.init ("VSTGUI_NSMenu", [NSMenu class])
+			.addMethod (@selector (initWithOptionMenu:), Init)
+			.addMethod (@selector (dealloc), Dealloc)
+			.addMethod (@selector (validateMenuItem:), ValidateMenuItem)
+			.addMethod (@selector (menuItemSelected:), MenuItemSelected)
+			.addMethod (@selector (optionMenu), OptionMenu)
+			.addMethod (@selector (selectedMenu), SelectedMenu)
+			.addMethod (@selector (selectedItem), SelectedItem)
+			.addMethod (@selector (setSelectedMenu:), SetSelectedMenu)
+			.addMethod (@selector (setSelectedItem:), SetSelectedItem)
+			.addIvar<VSTGUI_NSMenu::Var*> (privateVarName)
+			.finalize ();
 	}
 
 	//------------------------------------------------------------------------------------
-	~VSTGUI_NSMenu () noexcept
-	{
-		objc_disposeClassPair (menuClass);
-		vstgui_assert (menuClassCount == 0);
-	}
+	~VSTGUI_NSMenu () noexcept { vstgui_assert (menuClassCount == 0); }
 
 	//------------------------------------------------------------------------------------
 	struct Var
@@ -78,17 +69,10 @@ private:
 	};
 
 	//------------------------------------------------------------------------------------
-	static VSTGUI_NSMenu& instance ()
-	{
-		static VSTGUI_NSMenu gInstance;
-		return gInstance;
-	}
-
-	//------------------------------------------------------------------------------------
 	static id Init (id self, SEL _cmd, void* _menu)
 	{
 		instance ().menuClassCount++;
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 		self = obj.callSuper<id (id, SEL), id> (@selector (init));
 		if (self)
 		{
@@ -194,7 +178,7 @@ private:
 	//-----------------------------------------------------------------------------
 	static void setVar (id self, Var* var)
 	{
-		if (auto v = ObjCInstance (self).getVariable<Var*> (privateVarName))
+		if (auto v = makeInstance (self).getVariable<Var*> (privateVarName))
 		{
 			if (auto old = v->get ())
 				delete old;
@@ -205,7 +189,7 @@ private:
 	//-----------------------------------------------------------------------------
 	static Var* getVar (id self)
 	{
-		if (auto v = ObjCInstance (self).getVariable<Var*> (privateVarName); v.has_value ())
+		if (auto v = makeInstance (self).getVariable<Var*> (privateVarName); v.has_value ())
 			return v->get ();
 		return nullptr;
 	}
@@ -216,7 +200,7 @@ private:
 		instance ().menuClassCount--;
 
 		setVar (self, nullptr);
-		ObjCInstance (self).callSuper<void (id, SEL)> (_cmd);
+		makeInstance (self).callSuper<void (id, SEL)> (_cmd);
 	}
 
 	//------------------------------------------------------------------------------------

@@ -10,58 +10,60 @@
 #include "macfactory.h"
 #include "../iplatformframe.h"
 #include "../common/fileresourceinputstream.h"
-#include "../std_unorderedmap.h"
+#include <unordered_map>
+#include <mutex>
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-struct ColorHash
-{
-	size_t operator () (const CColor& c) const
-	{
-		size_t v1 = static_cast<size_t> (c.red | (c.green << 8) | (c.blue << 16) | (c.alpha << 24));
-		return v1;
-	}
-};
-
-using CGColorMap = std::unordered_map<CColor, CGColorRef, ColorHash>;
-
-//-----------------------------------------------------------------------------
-class CGColorMapImpl
+class CGColorMap
 {
 public:
-	~CGColorMapImpl ()
+	struct ColorHash
 	{
-		for (auto& it : map)
-			CFRelease (it.second);
+		size_t operator() (const CColor& c) const
+		{
+			return static_cast<size_t> (c.red | (c.green << 8) | (c.blue << 16) | (c.alpha << 24));
+		}
+	};
+
+	using Map = std::unordered_map<CColor, CGColorRef, ColorHash>;
+
+	static CGColorMap& instance ()
+	{
+		static CGColorMap gInstance;
+		return gInstance;
 	}
-	
-	CGColorMap map;
+
+	~CGColorMap () noexcept
+	{
+		std::for_each (map.begin (), map.end (), [] (auto& el) { CFRelease (el.second); });
+	}
+
+	CGColorRef getColor (const CColor& color)
+	{
+		mutex.lock ();
+		auto it = map.find (color);
+		if (it != map.end ())
+		{
+			auto result = it->second;
+			mutex.unlock ();
+			return result;
+		}
+		const CGFloat components[] = {color.normRed<CGFloat> (), color.normGreen<CGFloat> (),
+									  color.normBlue<CGFloat> (), color.normAlpha<CGFloat> ()};
+		auto result = CGColorCreate (GetCGColorSpace (), components);
+		map.emplace (color, result);
+		mutex.unlock ();
+		return result;
+	}
+
+	Map map;
+	std::mutex mutex;
 };
 
 //-----------------------------------------------------------------------------
-static CGColorMap& getColorMap ()
-{
-	static CGColorMapImpl colorMap;
-	return colorMap.map;
-}
-
-//-----------------------------------------------------------------------------
-CGColorRef getCGColor (const CColor& color)
-{
-	auto& colorMap = getColorMap ();
-	auto it = colorMap.find (color);
-	if (it != colorMap.end ())
-	{
-		CGColorRef result = it->second;
-		return result;
-	}
-	const CGFloat components[] = {color.normRed<CGFloat> (), color.normGreen<CGFloat> (),
-	                              color.normBlue<CGFloat> (), color.normAlpha<CGFloat> ()};
-	CGColorRef result = CGColorCreate (GetCGColorSpace (), components);
-	colorMap.emplace (color, result);
-	return result;
-}
+CGColorRef getCGColor (const CColor& color) { return CGColorMap::instance ().getColor (color); }
 
 //-----------------------------------------------------------------------------
 class GenericMacColorSpace

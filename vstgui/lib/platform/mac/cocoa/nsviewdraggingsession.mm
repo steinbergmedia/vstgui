@@ -29,15 +29,8 @@ typedef NSString *NSPasteboardReadingOptionKey;
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-struct BinaryDataType
+struct BinaryDataType : RuntimeObjCClass<BinaryDataType>
 {
-	static Class& getClass ()
-	{
-		static BinaryDataType instance;
-		return instance.cl;
-	}
-
-private:
 	static constexpr const auto dataVarName = "_data";
 
 	static NSString* getCocoaPasteboardTypeString ()
@@ -48,7 +41,7 @@ private:
 
 	static id Init (id self, SEL, const void* buffer, size_t bufferSize)
 	{
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 		self = obj.callSuper<id (id, SEL), id> (@selector (init));
 		if (self)
 		{
@@ -61,7 +54,7 @@ private:
 
 	static void Dealloc (id self, SEL _cmd)
 	{
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 		if (auto var = obj.getVariable<NSData*> (dataVarName); var.has_value () && var->get ())
 		{
 			[var->get () release];
@@ -77,30 +70,23 @@ private:
 
 	static id PasteboardPropertyListForType (id self, SEL, NSPasteboardType)
 	{
-		ObjCInstance obj (self);
+		auto obj = makeInstance (self);
 		if (auto var = obj.getVariable<NSData*> (dataVarName); var.has_value () && var->get ())
 			return var->get ();
 		return nullptr;
 	}
 
-	Class cl {nullptr};
-
-	BinaryDataType () { initClass (); }
-
-	~BinaryDataType () { objc_disposeClassPair (cl); }
-
-	void initClass ()
+	static Class CreateClass ()
 	{
-		cl = ObjCClassBuilder ()
-				 .init ("VSTGUI_BinaryDataType", [NSObject class])
-				 .addProtocol ("NSPasteboardWriting")
-				 .addMethod (@selector (initWithData:andSize:), Init)
-				 .addMethod (@selector (dealloc), Dealloc)
-				 .addMethod (@selector (writableTypesForPasteboard:), WritableTypesForPasteboard)
-				 .addMethod (@selector (pasteboardPropertyListForType:),
-							 PasteboardPropertyListForType)
-				 .addIvar<NSData*> (dataVarName)
-				 .finalize ();
+		return ObjCClassBuilder ()
+			.init ("VSTGUI_BinaryDataType", [NSObject class])
+			.addProtocol ("NSPasteboardWriting")
+			.addMethod (@selector (initWithData:andSize:), Init)
+			.addMethod (@selector (dealloc), Dealloc)
+			.addMethod (@selector (writableTypesForPasteboard:), WritableTypesForPasteboard)
+			.addMethod (@selector (pasteboardPropertyListForType:), PasteboardPropertyListForType)
+			.addIvar<NSData*> (dataVarName)
+			.finalize ();
 	}
 };
 
@@ -159,8 +145,8 @@ SharedPointer<NSViewDraggingSession> NSViewDraggingSession::create (
 			}
 			case IDataPackage::kBinary:
 			{
-				if (id data = [[[BinaryDataType::getClass () alloc] initWithData:buffer
-				                                                         andSize:size] autorelease])
+				if (id data = [[BinaryDataType::alloc () initWithData:buffer
+															  andSize:size] autorelease])
 					item = [[[NSDraggingItem alloc] initWithPasteboardWriter:data] autorelease];
 				break;
 			}

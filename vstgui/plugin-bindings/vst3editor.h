@@ -148,6 +148,10 @@ protected:
 	void syncParameterTags ();
 	void save (bool saveAs = false);
 	bool enableEditing (bool state);
+	void saveScreenshot ();
+	bool enableShowEditButton () const;
+	void enableShowEditButton (bool state);
+	void showEditButton (bool state);
 
 	bool PLUGIN_API open (void* parent, const PlatformType& type) override;
 	void PLUGIN_API close () override;
@@ -197,6 +201,7 @@ protected:
 	UIDescription* description {nullptr};
 	IVST3EditorDelegate* delegate {nullptr};
 	IController* originalController {nullptr};
+	IControlListener* openUIEditorController {nullptr};
 	using ParameterChangeListenerMap = std::map<int32_t, ParameterChangeListener*>;
 	ParameterChangeListenerMap paramChangeListeners;
 	std::string viewName;

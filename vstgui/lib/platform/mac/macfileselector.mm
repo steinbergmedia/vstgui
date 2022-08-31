@@ -9,9 +9,12 @@
 #import "macfileselector.h"
 #import "macstring.h"
 
-#if defined(MAC_OS_VERSION_11_0) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_VERSION_11_0)
+#pragma clang diagnostic push
+
+#if defined(VSTGUI_USE_OBJC_UTTYPE)
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
-#define VSTGUI_USE_OBJC_UTTYPE
+#else
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 namespace VSTGUI {
@@ -289,5 +292,7 @@ void CocoaFileSelector::setupInitalDir (const PlatformFileSelectorConfig& config
 }
 
 } // VSTGUI
+
+#pragma clang diagnostic pop
 
 /// @endcond
