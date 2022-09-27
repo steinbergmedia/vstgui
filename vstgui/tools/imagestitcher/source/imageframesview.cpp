@@ -577,6 +577,7 @@ void ImageFramesView::onKeyboardEvent (KeyboardEvent& event)
 			--index;
 			selectExclusive (static_cast<size_t> (index));
 			event.consumed = true;
+			break;
 		}
 		case VirtualKey::Down:
 		{
@@ -587,6 +588,7 @@ void ImageFramesView::onKeyboardEvent (KeyboardEvent& event)
 				++index;
 			selectExclusive (static_cast<size_t> (index));
 			event.consumed = true;
+			break;
 		}
 		default: break;
 	}
