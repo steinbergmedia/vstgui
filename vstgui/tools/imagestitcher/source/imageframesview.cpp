@@ -104,6 +104,29 @@ void ImageFramesView::setSelectionColor (CColor color)
 	inactiveSelectionColor.toHSL (h, s, l);
 	s = 0.;
 	inactiveSelectionColor.fromHSL (h, s, l);
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void ImageFramesView::setTextColor (CColor color)
+{
+	textColor = color;
+	selectedTextColor = textColor;
+	struct HSL
+	{
+		double h, s, l;
+	};
+	HSL asc, tc;
+	activeSelectionColor.toHSL (asc.h, asc.s, asc.l);
+	textColor.toHSL (tc.h, tc.s, tc.l);
+	if (std::abs (asc.l - tc.l) < 0.5)
+	{
+		tc.l = asc.l - 0.5;
+		if (tc.l < 0)
+			tc.l = 1. - tc.l;
+		selectedTextColor.fromHSL (tc.h, tc.s, tc.l);
+	}
+	invalid ();
 }
 
 //------------------------------------------------------------------------
@@ -120,7 +143,7 @@ void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
 	context->setFillColor (getFrame ()->getFocusView () == this ? activeSelectionColor :
 	                                                              inactiveSelectionColor);
 
-	context->setFontColor (kBlackCColor);
+	context->setFontColor (textColor);
 	context->setFont (font);
 	context->setDrawMode (kAntiAliasing);
 
@@ -151,6 +174,7 @@ void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
 			if (updateRect.rectOverlap (tr))
 			{
 				auto name = getDisplayFilename (image.path);
+				context->setFontColor (image.selected ? selectedTextColor : textColor);
 				context->drawString (name.data (), tr);
 			}
 		}

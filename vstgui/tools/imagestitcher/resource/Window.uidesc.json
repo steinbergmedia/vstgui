@@ -41,8 +41,11 @@
 		"fonts": {},
 		"colors": {
 			"Focus": "#63bfffc8",
+			"control.frame": "#626262ff",
+			"font.color": "#bcbcbcff",
 			"gradientview.frame": "#00000046",
-			"window.background": "#eeeeeeff"
+			"scrollbar.scroller": "#5f5f5fff",
+			"window.background": "#292929ff"
 		},
 		"gradients": {
 			"Default TextButton Gradient": [
@@ -67,15 +70,25 @@
 			],
 			"SplitViewSeperatorGradient": [
 				{
-					"rgba": "#dcdcdcff",
+					"rgba": "#242424ff",
 					"start": "0"
 				},
 				{
-					"rgba": "#c8c8c8ff",
+					"rgba": "#383838ff",
 					"start": "0.4740542763157894468051267722330521792173"
 				},
 				{
-					"rgba": "#dcdcdcff",
+					"rgba": "#242424ff",
+					"start": "1"
+				}
+			],
+			"gradient": [
+				{
+					"rgba": "#2f2f2fff",
+					"start": "0"
+				},
+				{
+					"rgba": "#202020ff",
 					"start": "1"
 				}
 			]
@@ -105,18 +118,20 @@
 				"SplitViewSize_1_1": "0.5026954177897574593814056242990773171186",
 				"SplitViewSize_2_0": "0.6575203252032519873893079420668072998524",
 				"SplitViewSize_2_1": "0.3373983739837398410088553646346554160118",
-				"TabSwitchValue": "1",
-				"Version": "1"
+				"TabSwitchValue": "2",
+				"UI Theme": "Dark",
+				"Version": "1",
+				"ViewBackground": "2"
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
 				"SelectedRow": "4"
 			},
 			"UIColorsDataSource": {
-				"SelectedRow": "0"
+				"SelectedRow": "4"
 			},
 			"UIBitmapsDataSource": {
-				"SelectedRow": "0"
+				"SelectedRow": "2"
 			},
 			"UIGradientsDataSource": {
 				"SelectedRow": "2"
@@ -127,7 +142,8 @@
 				"width": "2"
 			},
 			"UIDescFilePath": {
-				"path": "/Volumes/Quasar/vstgui/vstgui/tools/imagestitcher/resource/Window.uidesc"
+				"path":
+					"/Users/scheffle/Source/vstgui/vstgui/tools/imagestitcher/resource/Window.uidesc"
 			},
 			"UITagsDataSource": {
 				"SelectedRow": "-1"
@@ -202,7 +218,7 @@
 													"draw-antialiased": "true",
 													"frame-color": "gradientview.frame",
 													"frame-width": "-1",
-													"gradient": "Default TextButton Gradient",
+													"gradient": "gradient",
 													"gradient-angle": "0",
 													"gradient-style": "linear",
 													"mouse-enabled": "true",
@@ -225,7 +241,7 @@
 													"default-value": "0.5",
 													"font": "~ SystemFont",
 													"font-antialias": "true",
-													"font-color": "~ BlackCColor",
+													"font-color": "font.color",
 													"frame-color": "~ TransparentCColor",
 													"frame-width": "1",
 													"max-value": "1",
@@ -265,7 +281,7 @@
 											"background-color-draw-style": "filled and stroked",
 											"bordered": "false",
 											"class": "CScrollView",
-											"container-size": "150, 363",
+											"container-size": "150, 1023",
 											"follow-focus-view": "false",
 											"horizontal-scrollbar": "true",
 											"mouse-enabled": "true",
@@ -274,7 +290,7 @@
 											"overlay-scrollbars": "true",
 											"scrollbar-background-color": "~ TransparentCColor",
 											"scrollbar-frame-color": "~ TransparentCColor",
-											"scrollbar-scroller-color": "~ BlackCColor",
+											"scrollbar-scroller-color": "scrollbar.scroller",
 											"scrollbar-width": "14",
 											"size": "150, 320",
 											"sub-controller": "ImageViewController",
@@ -290,7 +306,7 @@
 													"mouse-enabled": "true",
 													"opacity": "1",
 													"origin": "0, 0",
-													"size": "150, 363",
+													"size": "150, 1023",
 													"transparent": "false",
 													"wants-focus": "true"
 												}
@@ -318,7 +334,7 @@
 													"draw-antialiased": "true",
 													"frame-color": "gradientview.frame",
 													"frame-width": "-1",
-													"gradient": "Default TextButton Gradient",
+													"gradient": "gradient",
 													"gradient-angle": "0",
 													"gradient-style": "linear",
 													"mouse-enabled": "true",
@@ -332,70 +348,6 @@
 													"wants-focus": "false"
 												}
 											},
-											"CTextButton": {
-												"attributes": {
-													"autosize": "right bottom ",
-													"class": "CTextButton",
-													"control-tag": "AddPath",
-													"default-value": "0.5",
-													"font": "~ SystemFont",
-													"frame-color": "~ BlackCColor",
-													"frame-color-highlighted": "~ BlackCColor",
-													"frame-width": "-1",
-													"gradient": "Default TextButton Gradient",
-													"gradient-highlighted":
-														"Default TextButton Gradient Highlighted",
-													"icon-position": "left",
-													"icon-text-margin": "0",
-													"kick-style": "false",
-													"max-value": "1",
-													"min-value": "0",
-													"mouse-enabled": "true",
-													"opacity": "1",
-													"origin": "108, 2",
-													"round-radius": "2",
-													"size": "16, 16",
-													"text-alignment": "center",
-													"text-color": "~ BlackCColor",
-													"text-color-highlighted": "~ WhiteCColor",
-													"title": "+",
-													"transparent": "false",
-													"wants-focus": "true",
-													"wheel-inc-value": "0.1"
-												}
-											},
-											"CTextButton": {
-												"attributes": {
-													"autosize": "right bottom ",
-													"class": "CTextButton",
-													"control-tag": "RemovePath",
-													"default-value": "0.5",
-													"font": "~ SystemFont",
-													"frame-color": "~ BlackCColor",
-													"frame-color-highlighted": "~ BlackCColor",
-													"frame-width": "-1",
-													"gradient": "Default TextButton Gradient",
-													"gradient-highlighted":
-														"Default TextButton Gradient Highlighted",
-													"icon-position": "left",
-													"icon-text-margin": "0",
-													"kick-style": "false",
-													"max-value": "1",
-													"min-value": "0",
-													"mouse-enabled": "true",
-													"opacity": "1",
-													"origin": "129, 2",
-													"round-radius": "2",
-													"size": "16, 16",
-													"text-alignment": "center",
-													"text-color": "~ BlackCColor",
-													"text-color-highlighted": "~ WhiteCColor",
-													"title": "-",
-													"transparent": "false",
-													"wants-focus": "true",
-													"wheel-inc-value": "0.1"
-												}
-											},
 											"CTextLabel": {
 												"attributes": {
 													"autosize": "left top ",
@@ -405,7 +357,7 @@
 													"default-value": "0.5",
 													"font": "~ SystemFont",
 													"font-antialias": "true",
-													"font-color": "~ BlackCColor",
+													"font-color": "font.color",
 													"frame-color": "~ BlackCColor",
 													"frame-width": "1",
 													"max-value": "1",
@@ -444,8 +396,8 @@
 													"default-value": "0.5",
 													"font": "~ SystemFont",
 													"font-antialias": "true",
-													"font-color": "~ BlackCColor",
-													"frame-color": "~ BlackCColor",
+													"font-color": "font.color",
+													"frame-color": "control.frame",
 													"frame-width": "-1",
 													"immediate-text-change": "false",
 													"max-value": "1",
@@ -470,8 +422,75 @@
 													"text-rotation": "0",
 													"text-shadow-offset": "1, 1",
 													"title": "1",
+													"tooltip": "Set number of frames per row",
 													"transparent": "false",
 													"value-precision": "0",
+													"wants-focus": "true",
+													"wheel-inc-value": "0.1"
+												}
+											},
+											"CTextButton": {
+												"attributes": {
+													"autosize": "right bottom ",
+													"class": "CTextButton",
+													"control-tag": "AddPath",
+													"default-value": "0.5",
+													"font": "~ SystemFont",
+													"frame-color": "control.frame",
+													"frame-color-highlighted": "control.frame",
+													"frame-width": "-1",
+													"gradient": "Default TextButton Gradient",
+													"gradient-highlighted":
+														"Default TextButton Gradient Highlighted",
+													"icon-position": "left",
+													"icon-text-margin": "0",
+													"kick-style": "false",
+													"max-value": "1",
+													"min-value": "0",
+													"mouse-enabled": "true",
+													"opacity": "1",
+													"origin": "108, 2",
+													"round-radius": "2",
+													"size": "16, 16",
+													"text-alignment": "center",
+													"text-color": "~ BlackCColor",
+													"text-color-highlighted": "~ WhiteCColor",
+													"title": "+",
+													"tooltip": "Add a new frame",
+													"transparent": "false",
+													"wants-focus": "true",
+													"wheel-inc-value": "0.1"
+												}
+											},
+											"CTextButton": {
+												"attributes": {
+													"autosize": "right bottom ",
+													"class": "CTextButton",
+													"control-tag": "RemovePath",
+													"default-value": "0.5",
+													"font": "~ SystemFont",
+													"frame-color": "control.frame",
+													"frame-color-highlighted": "control.frame",
+													"frame-width": "-1",
+													"gradient": "Default TextButton Gradient",
+													"gradient-highlighted":
+														"Default TextButton Gradient Highlighted",
+													"icon-position": "left",
+													"icon-text-margin": "0",
+													"kick-style": "false",
+													"max-value": "1",
+													"min-value": "0",
+													"mouse-enabled": "true",
+													"opacity": "1",
+													"origin": "129, 2",
+													"round-radius": "2",
+													"size": "16, 16",
+													"text-alignment": "center",
+													"text-color": "~ BlackCColor",
+													"text-color-highlighted": "~ WhiteCColor",
+													"title": "-",
+													"tooltip": "Remove selected frame(s)",
+													"transparent": "false",
 													"wants-focus": "true",
 													"wheel-inc-value": "0.1"
 												}
@@ -501,7 +520,7 @@
 											"draw-antialiased": "true",
 											"frame-color": "gradientview.frame",
 											"frame-width": "1",
-											"gradient": "Default TextButton Gradient",
+											"gradient": "gradient",
 											"gradient-angle": "0",
 											"gradient-style": "linear",
 											"mouse-enabled": "true",
@@ -524,7 +543,7 @@
 											"default-value": "0.5",
 											"font": "~ SystemFont",
 											"font-antialias": "true",
-											"font-color": "~ BlackCColor",
+											"font-color": "font.color",
 											"frame-color": "~ BlackCColor",
 											"frame-width": "1",
 											"max-value": "1",
@@ -597,8 +616,8 @@
 											"default-value": "0.5",
 											"font": "~ SystemFont",
 											"font-antialias": "true",
-											"font-color": "~ BlackCColor",
-											"frame-color": "~ BlackCColor",
+											"font-color": "font.color",
+											"frame-color": "control.frame",
 											"frame-width": "-1",
 											"immediate-text-change": "false",
 											"max-value": "1",
@@ -622,7 +641,7 @@
 											"text-inset": "5, 0",
 											"text-rotation": "0",
 											"text-shadow-offset": "1, 1",
-											"title": "5",
+											"title": "13",
 											"transparent": "false",
 											"value-precision": "2",
 											"wants-focus": "true",
@@ -633,14 +652,14 @@
 										"attributes": {
 											"autosize-to-fit": "false",
 											"boxfill-color": "~ WhiteCColor",
-											"boxframe-color": "~ BlackCColor",
+											"boxframe-color": "control.frame",
 											"checkmark-color": "~ BlackCColor",
 											"class": "CCheckBox",
 											"control-tag": "RunAnimation",
 											"default-value": "0.5",
 											"draw-crossbox": "true",
 											"font": "~ SystemFont",
-											"font-color": "~ BlackCColor",
+											"font-color": "font.color",
 											"frame-width": "1",
 											"max-value": "1",
 											"min-value": "0",
@@ -699,8 +718,8 @@
 											"default-value": "0.5",
 											"font": "~ SystemFont",
 											"font-antialias": "true",
-											"font-color": "~ BlackCColor",
-											"frame-color": "~ BlackCColor",
+											"font-color": "font.color",
+											"frame-color": "control.frame",
 											"frame-width": "-1",
 											"immediate-text-change": "false",
 											"max-value": "1",
@@ -724,7 +743,7 @@
 											"text-inset": "5, 0",
 											"text-rotation": "0",
 											"text-shadow-offset": "1, 1",
-											"title": "16",
+											"title": "82",
 											"transparent": "false",
 											"value-precision": "2",
 											"wants-focus": "true",
@@ -740,7 +759,7 @@
 											"default-value": "0.5",
 											"font": "~ SystemFont",
 											"font-antialias": "true",
-											"font-color": "~ BlackCColor",
+											"font-color": "font.color",
 											"frame-color": "~ BlackCColor",
 											"frame-width": "1",
 											"max-value": "1",
@@ -796,12 +815,14 @@
 													"class": "CMovieBitmap",
 													"control-tag": "DisplayFrame",
 													"default-value": "0.5",
+													"height-of-one-image": "0",
 													"max-value": "1",
 													"min-value": "0",
 													"mouse-enabled": "true",
 													"opacity": "1",
 													"origin": "13, 0",
 													"size": "260, 290",
+													"sub-pixmaps": "0",
 													"transparent": "false",
 													"wants-focus": "false",
 													"wheel-inc-value": "0.1"

@@ -51,6 +51,8 @@ public:
 				CColor color;
 				if (description->getColor ("Focus", color))
 					imageView->setSelectionColor (color);
+				if (description->getColor ("font.color", color))
+					imageView->setTextColor (color);
 				return imageView;
 			}
 		}
