@@ -232,6 +232,11 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 		                   v.performEdit (0.);
 	                   }));
 
+	binding->addValue (Value::make ("Export"), UIDesc::ValueCalls::onAction ([this] (auto& v) {
+						   this->doExport ();
+						   v.performEdit (0.);
+					   }));
+
 	displayFrameValue = Value::makeStepValue ("DisplayFrame", 1, 1);
 	binding->addValue (displayFrameValue);
 
@@ -355,7 +360,7 @@ void DocumentWindowController::doExport ()
 	    owned (CNewFileSelector::create (contentView, CNewFileSelector::Style::kSelectSaveFile));
 	if (!fs)
 		return;
-	fs->setTitle ("Save Stitched Image");
+	fs->setTitle ("Export Stitched Image");
 	fs->setDefaultExtension (pngFileExtension);
 	// TODO: set filename depending on doc name
 	fs->run ([this] (CNewFileSelector* fs) {

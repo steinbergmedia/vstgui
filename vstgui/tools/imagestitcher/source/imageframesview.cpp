@@ -486,6 +486,8 @@ CMouseEventResult ImageFramesView::onMouseDown (CPoint& where, const CButtonStat
 				invalidRect (indexToRect (index));
 			}
 		}
+		if (auto frame = getFrame ())
+			frame->setFocusView (this);
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
