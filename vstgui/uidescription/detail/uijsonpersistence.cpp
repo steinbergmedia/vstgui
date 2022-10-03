@@ -406,7 +406,7 @@ SharedPointer<UINode> read (IContentProvider& stream)
 	Handler handler;
 	rapidjson::Reader reader;
 
-	auto result = reader.Parse (streamWrapper, handler);
+	auto result = reader.Parse<rapidjson::kParseStopWhenDoneFlag> (streamWrapper, handler);
 	if (result.IsError ())
 	{
 #if DEBUG
