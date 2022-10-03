@@ -11,6 +11,9 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 // CMovieBitmap Declaration
 //! @brief a bitmap view that displays different bitmaps according to its current value
+///
+/// Use a CMultiFrameBitmap for its background bitmap.
+///
 /// @ingroup views
 //-----------------------------------------------------------------------------
 class CMovieBitmap : public CControl

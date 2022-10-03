@@ -13,7 +13,8 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 /*! @class CAutoAnimation
 An auto-animation control contains a given number of subbitmaps which can be displayed in loop.
-Two functions allows to get the previous or the next subbitmap (these functions increase or decrease the current value of this control).
+Two functions allows to get the previous or the next subbitmap (these functions increase or decrease
+the current value of this control). Use a CMultiFrameBitmap for its background bitmap.
 */
 // displays bitmaps within a (child-) window
 //------------------------------------------------------------------------

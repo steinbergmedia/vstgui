@@ -744,8 +744,9 @@ void CKnob::setHandleBitmap (CBitmap* bitmap)
 // CAnimKnob
 //------------------------------------------------------------------------
 /*! @class CAnimKnob
-Such as a CKnob control object, but there is a unique bitmap which contains different views (subbitmaps) of this knob.
-According to the value, a specific subbitmap is displayed. The different subbitmaps are stacked in the bitmap object.
+Such as a CKnob control object, but there is a unique bitmap which contains different views
+(subbitmaps) of this knob. According to the value, a specific subbitmap is displayed. Use a
+CMultiFrameBitmap for its background bitmap.
 */
 //------------------------------------------------------------------------
 /**

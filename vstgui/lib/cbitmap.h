@@ -70,7 +70,10 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-/** Description for a multi frame bitmap */
+/** Description for a multi frame bitmap
+ *
+ *	@ingroup new_in_4_12
+ */
 struct CMultiFrameBitmapDescription
 {
 	/** size of one frame */
@@ -92,6 +95,7 @@ struct CMultiFrameBitmapDescription
  *	2.Row: 4 -> 5 -> 6
  *	...
  *
+ *	@ingroup new_in_4_12
  */
 class CMultiFrameBitmap : public CBitmap
 {

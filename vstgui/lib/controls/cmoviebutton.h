@@ -11,6 +11,9 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 // CMovieButton Declaration
 //! @brief a bi-states button with 2 subbitmaps
+///
+/// Use a CMultiFrameBitmap for its background bitmap.
+///
 /// @ingroup controls
 //-----------------------------------------------------------------------------
 class CMovieButton : public CControl

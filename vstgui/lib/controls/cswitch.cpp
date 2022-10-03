@@ -207,6 +207,7 @@ Define a switch with a given number of positions, the current position is define
 of the last click on this object (the object is divided in its height by the number of position).
 Each position has its subbitmap, each subbitmap is stacked in the given handle bitmap.
 By clicking Alt+Left Mouse the default value is used.
+Use a CMultiFrameBitmap for its background bitmap.
 */
 //------------------------------------------------------------------------
 /**
@@ -323,6 +324,7 @@ void CVerticalSwitch::onKeyboardEvent (KeyboardEvent& event)
 //------------------------------------------------------------------------
 /*! @class CHorizontalSwitch
 Same as the CVerticalSwitch but horizontal.
+Use a CMultiFrameBitmap for its background bitmap.
 */
 //------------------------------------------------------------------------
 /**

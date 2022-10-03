@@ -141,6 +141,7 @@ bool COnOffButton::sizeToFit ()
 Define a button with 2 states using 2 subbitmaps.
 One click on it, then the second subbitmap is displayed.
 When the mouse button is relaxed, the first subbitmap is framed.
+Use a CMultiFrameBitmap for its background bitmap.
 */
 //------------------------------------------------------------------------
 /**
