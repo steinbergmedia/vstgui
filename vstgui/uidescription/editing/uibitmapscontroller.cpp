@@ -664,6 +664,7 @@ void UIBitmapSettingsController::updateMultiFrameControls ()
 	}
 	else
 	{
+		controls[kMultiFrameDescValidTag]->setAlphaValue (0.);
 		controls[kMultiFrameTag]->setValueNormalized (0.f);
 		for (int32_t i = kMultiFrameFramesTag; i <= kMultiFrameSizeHeight; i++)
 		{
