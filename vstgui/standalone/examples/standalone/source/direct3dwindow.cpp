@@ -407,14 +407,6 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 			ThrowIfFailed (m_view->getDevice ()->CreateDescriptorHeap (&rtvHeapDesc,
 																	   IID_PPV_ARGS (&m_rtvHeap)));
 
-			// Describe and create a shader resource view (SRV) heap for the texture.
-			D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-			srvHeapDesc.NumDescriptors = 1;
-			srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-			srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			ThrowIfFailed (m_view->getDevice ()->CreateDescriptorHeap (&srvHeapDesc,
-																	   IID_PPV_ARGS (&m_srvHeap)));
-
 			m_rtvDescriptorSize = m_view->getDevice ()->GetDescriptorHandleIncrementSize (
 				D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		}
@@ -592,7 +584,6 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 			m_renderTargets[i].Reset ();
 		m_rootSignature.Reset ();
 		m_rtvHeap.Reset ();
-		m_srvHeap.Reset ();
 		m_pipelineState.Reset ();
 		m_commandList.Reset ();
 	}
@@ -647,7 +638,6 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 	ComPtr<ID3D12Resource> m_renderTargets[FrameCount];
 	ComPtr<ID3D12RootSignature> m_rootSignature;
 	ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
-	ComPtr<ID3D12DescriptorHeap> m_srvHeap;
 	ComPtr<ID3D12PipelineState> m_pipelineState;
 	ComPtr<ID3D12GraphicsCommandList> m_commandList;
 	UINT m_rtvDescriptorSize {0};
