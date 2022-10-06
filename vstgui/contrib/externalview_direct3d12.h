@@ -150,7 +150,7 @@ private:
 			{
 				if (m_renderer->init (this))
 				{
-					initPipeline ();
+					init ();
 					m_renderer->onAttach ();
 				}
 			}
@@ -230,7 +230,7 @@ private:
 		m_device.Reset ();
 	}
 
-	void initPipeline ()
+	void init ()
 	{
 #if defined(_DEBUG)
 		// Enable the D3D12 debug layer.
