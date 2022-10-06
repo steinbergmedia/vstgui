@@ -689,7 +689,7 @@ struct Direct3DController : DelegationController
 			if (*viewName == "Direct3DView")
 			{
 				auto renderer = std::make_shared<ExampleRenderer> ();
-				if (auto view = std::make_shared<ExternalView::Direct3D12View> (
+				if (auto view = ExternalView::Direct3D12View::make (
 						getPlatformFactory ().asWin32Factory ()->getInstance (), renderer))
 				{
 					return new CExternalView ({}, view);

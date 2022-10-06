@@ -102,6 +102,12 @@ struct Direct3D12View : public ExternalHWNDBase,
 	{
 	}
 
+	static std::shared_ptr<Direct3D12View> make (HINSTANCE instance,
+												 const Direct3D12RendererPtr& renderer)
+	{
+		return std::make_shared<Direct3D12View> (instance, renderer);
+	}
+
 private:
 	ID3D12CommandAllocator* getCommandAllocator () const { return m_commandAllocator.Get (); }
 	IDXGISwapChain3* getSwapChain () const { return m_swapChain.Get (); }
