@@ -97,16 +97,22 @@ struct Direct3D12View : public ExternalHWNDBase,
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-	Direct3D12View (HINSTANCE instance, const Direct3D12RendererPtr& renderer)
-	: Base (instance), m_renderer (renderer)
+	Direct3D12View (HINSTANCE instance, const Direct3D12RendererPtr& renderer,
+					ComPtr<IDXGIFactory4> factory = nullptr, ComPtr<ID3D12Device> device = nullptr)
+	: Base (instance), m_renderer (renderer), m_factory (factory), m_device (device)
 	{
+		vstgui_assert ((factory && device) || (!factory && !device));
 	}
 
 	static std::shared_ptr<Direct3D12View> make (HINSTANCE instance,
-												 const Direct3D12RendererPtr& renderer)
+												 const Direct3D12RendererPtr& renderer,
+												 ComPtr<IDXGIFactory4> factory = nullptr,
+												 ComPtr<ID3D12Device> device = nullptr)
 	{
-		return std::make_shared<Direct3D12View> (instance, renderer);
+		return std::make_shared<Direct3D12View> (instance, renderer, factory, device);
 	}
+
+	bool render () override { return doRender (); }
 
 private:
 	ID3D12CommandAllocator* getCommandAllocator () const { return m_commandAllocator.Get (); }
@@ -115,7 +121,7 @@ private:
 	INT getFrameIndex () const { return m_frameIndex; }
 	void setFrameIndex (INT index) { m_frameIndex = index; }
 
-	bool render () override
+	bool doRender ()
 	{
 		if (mutex.try_lock ())
 		{
@@ -242,18 +248,20 @@ private:
 			}
 		}
 #endif
-		ComPtr<IDXGIFactory4> factory;
-		ThrowIfFailed (CreateDXGIFactory1 (IID_PPV_ARGS (&factory)));
-
-		ComPtr<IDXGIAdapter1> hardwareAdapter;
-		getHardwareAdapter (factory.Get (), &hardwareAdapter);
-		if (!hardwareAdapter)
+		if (!m_factory)
+			ThrowIfFailed (CreateDXGIFactory1 (IID_PPV_ARGS (&m_factory)));
+		if (m_device == nullptr)
 		{
-			throw;
-		}
+			ComPtr<IDXGIAdapter1> hardwareAdapter;
+			getHardwareAdapter (m_factory.Get (), &hardwareAdapter);
+			if (!hardwareAdapter)
+			{
+				throw;
+			}
 
-		ThrowIfFailed (D3D12CreateDevice (hardwareAdapter.Get (), D3D_FEATURE_LEVEL_11_0,
-										  IID_PPV_ARGS (&m_device)));
+			ThrowIfFailed (D3D12CreateDevice (hardwareAdapter.Get (), D3D_FEATURE_LEVEL_11_0,
+											  IID_PPV_ARGS (&m_device)));
+		}
 
 		// Describe and create the command queue.
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -264,7 +272,7 @@ private:
 
 		try
 		{
-			createSwapChain (factory.Get ());
+			createSwapChain (m_factory.Get ());
 			setupDirectComposition ();
 		}
 		catch (...)
@@ -274,7 +282,7 @@ private:
 		}
 
 		ThrowIfFailed (
-			factory->MakeWindowAssociation (container.getHWND (), DXGI_MWA_NO_ALT_ENTER));
+			m_factory->MakeWindowAssociation (container.getHWND (), DXGI_MWA_NO_ALT_ENTER));
 
 		ThrowIfFailed (m_device->CreateCommandAllocator (D3D12_COMMAND_LIST_TYPE_DIRECT,
 														 IID_PPV_ARGS (&m_commandAllocator)));
@@ -333,7 +341,7 @@ private:
 		ThrowIfFailed (m_dcompDevice->Commit ());
 	}
 
-	void getHardwareAdapter (IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter) const
+	static void getHardwareAdapter (IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter)
 	{
 		ComPtr<IDXGIAdapter1> adapter;
 		*ppAdapter = nullptr;
@@ -404,6 +412,8 @@ private:
 	HANDLE m_fenceEvent {nullptr};
 	ComPtr<ID3D12Fence> m_fence;
 	UINT64 m_fenceValue {0};
+
+	ComPtr<IDXGIFactory4> m_factory;
 
 	ComPtr<IDXGISwapChain3> m_swapChain;
 
