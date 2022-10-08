@@ -27,10 +27,13 @@ CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	setHeightOfOneImage (size.getHeight ());
 	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
+#endif
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 /**
  * CMovieBitmap constructor.
@@ -50,14 +53,17 @@ CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32
 	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
 }
+#endif
 
 //------------------------------------------------------------------------
 CMovieBitmap::CMovieBitmap (const CMovieBitmap& v)
 : CControl (v)
 , offset (v.offset)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -65,21 +71,43 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		CPoint where (offset.x, offset.y);
-
-		if (useLegacyFrameCalculation)
+		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			where.y += heightOfOneImage *
-			           (int32_t) (getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
+			uint16_t frameIndex = 0;
+			if (useLegacyFrameCalculation)
+			{
+				frameIndex = static_cast<uint16_t> (
+					getValueNormalized () * (mfb->getNumFrames () - 1) + 0.5);
+			}
+			else
+			{
+				frameIndex = static_cast<uint16_t> (std::min (
+					mfb->getNumFrames () - 1.f, getValueNormalized () * mfb->getNumFrames ()));
+			}
+			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft () + offset);
 		}
 		else
 		{
-			auto step = static_cast<int32_t> (
-			    std::min (getNumSubPixmaps () - 1.f, getValueNormalized () * getNumSubPixmaps ()));
-			where.y += heightOfOneImage * step;
-		}
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+			CPoint where (offset.x, offset.y);
 
-		bitmap->draw (pContext, getViewSize (), where);
+			if (useLegacyFrameCalculation)
+			{
+				where.y += heightOfOneImage *
+						   (int32_t)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
+			}
+			else
+			{
+				auto step = static_cast<int32_t> (std::min (
+					getNumSubPixmaps () - 1.f, getValueNormalized () * getNumSubPixmaps ()));
+				where.y += heightOfOneImage * step;
+			}
+
+			bitmap->draw (pContext, getViewSize (), where);
+#else
+			bitmap->draw (pContext, getViewSize (), offset);
+#endif
+		}
 	}
 	setDirty (false);
 }
@@ -87,11 +115,22 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 //-----------------------------------------------------------------------------------------------
 bool CMovieBitmap::sizeToFit ()
 {
-	if (getDrawBackground ())
+	if (auto bitmap = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (getDrawBackground ()->getWidth ());
-		vs.setHeight (getHeightOfOneImage ());
+		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			vs.setSize (mfb->getFrameSize ());
+		}
+		else
+		{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+			vs.setHeight (getHeightOfOneImage ());
+#else
+			vs.setHeight (bitmap->getHeight ());
+#endif
+			vs.setWidth (bitmap->getWidth ());
+		}
 		setViewSize (vs);
 		setMouseableArea (vs);
 		return true;

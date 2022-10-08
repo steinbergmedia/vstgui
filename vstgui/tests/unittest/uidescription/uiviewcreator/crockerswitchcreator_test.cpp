@@ -13,6 +13,8 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 TEST_CASE (CRockerSwitchCreatorTest, HeightOfOneImage)
 {
 	DummyUIDescription uidesc;
@@ -27,5 +29,7 @@ TEST_CASE (CRockerSwitchCreatorTest, SubPixmaps)
 	testAttribute<CRockerSwitch> (kCRockerSwitch, kAttrSubPixmaps, 11, &uidesc,
 	                              [] (CRockerSwitch* v) { return v->getNumSubPixmaps () == 11; });
 }
+
+#endif
 
 } // VSTGUI

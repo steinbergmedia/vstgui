@@ -33,6 +33,8 @@ Optional<Path> getDirectoryName (const Path& path)
 }
 
 static constexpr uint32_t PersistentIdentifer = 'imst';
+static constexpr uint32_t PersistentIdentiferNew = 'ist2';
+static constexpr uint32_t PersistentVersion = 1;
 
 //------------------------------------------------------------------------
 } // anonymous
@@ -85,12 +87,22 @@ DocumentContextPtr DocumentContext::loadDocument (const Path& path)
 		return nullptr;
 
 	uint32_t identifier;
-	if (!(stream >> identifier) || identifier != PersistentIdentifer)
+	if (!(stream >> identifier))
+		return nullptr;
+	if (!(identifier == PersistentIdentifer || identifier == PersistentIdentiferNew))
 		return nullptr;
 
 	auto doc = std::make_shared<Document> ();
 	doc->path = path;
 
+	if (identifier == PersistentIdentiferNew)
+	{
+		uint32_t persistentVersion = 0;
+		if (!(stream >> persistentVersion))
+			return nullptr;
+		if (!(stream >> doc->numFramesPerRow))
+			return nullptr;
+	}
 	if (!(stream >> doc->width))
 		return nullptr;
 	if (!(stream >> doc->height))
@@ -128,7 +140,11 @@ bool DocumentContext::save ()
 	                  kLittleEndianByteOrder))
 		return false;
 
-	if (!(stream << PersistentIdentifer))
+	if (!(stream << PersistentIdentiferNew))
+		return false;
+	if (!(stream << PersistentVersion))
+		return false;
+	if (!(stream << doc->numFramesPerRow))
 		return false;
 	if (!(stream << doc->width))
 		return false;
@@ -169,6 +185,14 @@ void DocumentContext::replaceDocument (const DocumentPtr& newDoc)
 bool DocumentContext::setPath (const std::string& p)
 {
 	doc->path = p;
+	return true;
+}
+
+//------------------------------------------------------------------------
+bool DocumentContext::setNumFramesPerRow (uint16_t numFrames)
+{
+	doc->numFramesPerRow = numFrames;
+	listeners.forEach ([&] (auto& l) { l->onNumFramesPerRowChanged (numFrames); });
 	return true;
 }
 

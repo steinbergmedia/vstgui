@@ -66,6 +66,7 @@ public:
 private:
 	void onImagePathAdded (const Path& newPath, size_t index) override;
 	void onImagePathRemoved (const Path& newPath, size_t index) override;
+	void onNumFramesPerRowChanged (uint16_t newNumFramesPerRow) override;
 
 	IController* createController (const UTF8StringView& name, IController* parent,
 	                               const IUIDescription* uiDesc) override;
@@ -99,6 +100,7 @@ private:
 	Standalone::WindowPtr window;
 	Standalone::ValuePtr displayFrameValue;
 	Standalone::ValuePtr animationTimeValue;
+	Standalone::ValuePtr numFramesPerRowValue;
 	SharedPointer<CVSTGUITimer> timer;
 	ImageList imageList;
 	bool asyncUpdateTriggered {false};

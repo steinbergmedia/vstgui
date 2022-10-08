@@ -232,11 +232,13 @@ static const std::string kAttrCoronaLineCapButt = "corona-line-cap-butt";
 static const std::string kAttrSkipHandleDrawing = "skip-handle-drawing";
 static const std::string kAttrCoronaOutlineWidthAdd = "corona-outline-width-add";
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 // IMultiBitmapControlCreator attributes
 //-----------------------------------------------------------------------------
 static const std::string kAttrHeightOfOneImage = "height-of-one-image";
 static const std::string kAttrSubPixmaps = "sub-pixmaps";
+#endif
 
 //-----------------------------------------------------------------------------
 // CAnimKnobCreator attributes

@@ -141,6 +141,7 @@ bool COnOffButton::sizeToFit ()
 Define a button with 2 states using 2 subbitmaps.
 One click on it, then the second subbitmap is displayed.
 When the mouse button is relaxed, the first subbitmap is framed.
+Use a CMultiFrameBitmap for its background bitmap.
 */
 //------------------------------------------------------------------------
 /**
@@ -156,10 +157,16 @@ CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
-	heightOfOneImage = size.getHeight ();
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	if (dynamic_cast<CMultiFrameBitmap*> (background) == nullptr)
+	{
+		heightOfOneImage = size.getHeight ();
+	}
+#endif
 	setWantsFocus (true);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 /**
  * CKickButton constructor.
@@ -178,29 +185,44 @@ CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t
 	setHeightOfOneImage (heightOfOneImage);
 	setWantsFocus (true);
 }
+#endif
 
 //------------------------------------------------------------------------
 CKickButton::CKickButton (const CKickButton& v)
 : CControl (v)
 , offset (v.offset)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	setHeightOfOneImage (v.heightOfOneImage);
+#endif
 	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
 void CKickButton::draw (CDrawContext *pContext)
 {
-	CPoint where (offset.x, offset.y);
-
 	bounceValue ();
 
-	if (value == getMax ())
-		where.y += heightOfOneImage;
-
-	if (getDrawBackground ())
+	if (auto bitmap = getDrawBackground ())
 	{
-		getDrawBackground ()->draw (pContext, getViewSize (), where);
+		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			auto index = getValue () == getMax () ? 1 : 0;
+			mfb->drawFrame (pContext, index, getViewSize ().getTopLeft () + offset);
+		}
+		else
+		{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+			CPoint where (offset.x, offset.y);
+
+			if (value == getMax ())
+				where.y += heightOfOneImage;
+
+			bitmap->draw (pContext, getViewSize (), where);
+#else
+			bitmap->draw (pContext, getViewSize (), offset);
+#endif
+		}
 	}
 	setDirty (false);
 }
@@ -294,11 +316,22 @@ void CKickButton::onKeyboardEvent (KeyboardEvent& event)
 //------------------------------------------------------------------------
 bool CKickButton::sizeToFit ()
 {
-	if (getDrawBackground ())
+	if (auto bitmap = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setHeight (heightOfOneImage);
-		vs.setWidth (getDrawBackground ()->getWidth ());
+		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			vs.setSize (mfb->getFrameSize ());
+		}
+		else
+		{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+			vs.setHeight (heightOfOneImage);
+#else
+			vs.setHeight (bitmap->getHeight ());
+#endif
+			vs.setWidth (bitmap->getWidth ());
+		}
 		setViewSize (vs, true);
 		setMouseableArea (vs);
 		return true;

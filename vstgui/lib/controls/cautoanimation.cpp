@@ -13,7 +13,8 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 /*! @class CAutoAnimation
 An auto-animation control contains a given number of subbitmaps which can be displayed in loop.
-Two functions allows to get the previous or the next subbitmap (these functions increase or decrease the current value of this control).
+Two functions allows to get the previous or the next subbitmap (these functions increase or decrease
+the current value of this control). Use a CMultiFrameBitmap for its background bitmap.
 */
 // displays bitmaps within a (child-) window
 //------------------------------------------------------------------------
@@ -31,12 +32,16 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 , offset (offset)
 , bWindowOpened (false)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	heightOfOneImage = size.getHeight ();
 	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
 
 	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
+#else
+#endif
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 /**
  * CAutoAnimation constructor.
@@ -60,30 +65,46 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 	setMin (0.f);
 	setMax ((float)(totalHeightOfBitmap - (heightOfOneImage + 1.)));
 }
+#endif
 
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
 : CControl (v)
 , offset (v.offset)
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 , totalHeightOfBitmap (v.totalHeightOfBitmap)
+#endif
 , bWindowOpened (v.bWindowOpened)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
+#endif
 }
 
 //------------------------------------------------------------------------
 void CAutoAnimation::draw (CDrawContext *pContext)
 {
 	if (isWindowOpened ())
-	{	
-		CPoint where;
-		where.y = (int32_t)value + offset.y;
-		where.x = offset.x;
-		
-		if (getDrawBackground ())
+	{
+		if (auto bitmap = getDrawBackground ())
 		{
-			getDrawBackground ()->draw (pContext, getViewSize (), where);
+			if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+			{
+				auto frameIndex = getValueNormalized () * frameBitmap->getNumFrames ();
+				frameBitmap->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+			}
+			else
+			{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+				CPoint where;
+				where.y = (int32_t)value + offset.y;
+				where.x = offset.x;
+				bitmap->draw (pContext, getViewSize (), where);
+#else
+				CView::draw (pContext);
+#endif
+			}
 		}
 	}
 	setDirty (false);
@@ -127,19 +148,67 @@ void CAutoAnimation::closeWindow ()
 }
 
 //------------------------------------------------------------------------
+void CAutoAnimation::updateMinMaxFromBackground ()
+{
+	if (auto bitmap = getDrawBackground ())
+	{
+		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			setMin (0.f);
+			setMax (frameBitmap->getHeight ());
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+			heightOfOneImage = frameBitmap->getFrameSize ().y;
+			totalHeightOfBitmap = heightOfOneImage * frameBitmap->getNumFrames ();
+#endif
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void CAutoAnimation::setBackground (CBitmap* background)
+{
+	CControl::setBackground (background);
+	updateMinMaxFromBackground ();
+}
+
+//------------------------------------------------------------------------
 void CAutoAnimation::nextPixmap ()
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	value += (float)heightOfOneImage;
 	if (value >= (totalHeightOfBitmap - heightOfOneImage))
 		value = 0;
+#else
+	if (auto bitmap = getDrawBackground ())
+	{
+		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			value += frameBitmap->getFrameSize ().y;
+			if (value >= frameBitmap->getHeight ())
+				value = 0.f;
+		}
+	}
+#endif
 }
 
 //------------------------------------------------------------------------
 void CAutoAnimation::previousPixmap ()
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	value -= (float)heightOfOneImage;
 	if (value < 0.f)
 		value = (float)(totalHeightOfBitmap - heightOfOneImage - 1);
+#else
+	if (auto bitmap = getDrawBackground ())
+	{
+		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			value -= frameBitmap->getFrameSize ().y;
+			if (value < 0.f)
+				value = frameBitmap->getHeight ();
+		}
+	}
+#endif
 }
 
 } // VSTGUI

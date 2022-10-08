@@ -19,7 +19,11 @@ namespace UIViewCreator {
 bool SwitchBaseCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrInverseBitmap);
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return IMultiBitmapControlCreator::getAttributeNames (attributeNames);
+#else
+	return true;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -27,7 +31,11 @@ auto SwitchBaseCreator::getAttributeType (const string& attributeName) const -> 
 {
 	if (attributeName == kAttrInverseBitmap)
 		return kBooleanType;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return IMultiBitmapControlCreator::getAttributeType (attributeName);
+#else
+	return kUnknownType;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -44,7 +52,11 @@ bool SwitchBaseCreator::apply (CView* view, const UIAttributes& attributes,
 		control->setInverseBitmap (b);
 	}
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return IMultiBitmapControlCreator::apply (view, attributes, description);
+#else
+	return true;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -60,7 +72,11 @@ bool SwitchBaseCreator::getAttributeValue (CView* view, const string& attributeN
 		stringValue = control->getInverseBitmap () ? strTrue : strFalse;
 		return true;
 	}
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue, desc);
+#else
+	return false;
+#endif
 }
 
 //------------------------------------------------------------------------

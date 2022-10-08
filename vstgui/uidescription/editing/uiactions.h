@@ -348,6 +348,26 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
+class MultiFrameBitmapChangeAction : public IAction
+{
+public:
+	MultiFrameBitmapChangeAction (UIDescription* description, UTF8StringPtr name,
+								  const CMultiFrameBitmapDescription* desc, bool performOrUndo);
+	~MultiFrameBitmapChangeAction () override;
+
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
+
+protected:
+	SharedPointer<UIDescription> description;
+	std::string name;
+	std::unique_ptr<CMultiFrameBitmapDescription> oldDesc;
+	std::unique_ptr<CMultiFrameBitmapDescription> newDesc;
+	bool performOrUndo;
+};
+
+//----------------------------------------------------------------------------------------------------
 class BitmapFilterChangeAction : public IAction
 {
 public:
