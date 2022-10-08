@@ -248,6 +248,9 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 
 		builder.addIvar<void*> ("_nsViewFrame");
 
+		builder.addProtocol ("CALayerDelegate")
+			.addMethod (@selector (drawLayer:inContext:), drawLayerInContext);
+
 		return builder.finalize ();
 	}
 
@@ -437,14 +440,25 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			frame->drawRect (&rect);
 	}
 
+	//------------------------------------------------------------------------------------
+	static void drawLayerInContext (id self, SEL _cmd, CALayer* layer, CGContextRef ctx)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame)
+			frame->drawLayer (layer, ctx);
+	}
+
 	//------------------------------------------------------------------------
 	static void viewWillDraw (id self, SEL _cmd)
 	{
 		if (@available (macOS 10.12, *))
 		{
-			if (auto layer = [self layer])
+			if (auto frame = getNSViewFrame (self))
 			{
-				layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+				if (auto layer = frame->getCALayer ())
+				{
+					layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+				}
 			}
 		}
 		makeInstance (self).callSuper<void (id, SEL)> (_cmd);
@@ -920,10 +934,9 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config)
+NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent,
+						  IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
-, nsView (nullptr)
-, tooltipWindow (nullptr)
 , ignoreNextResignFirstResponder (false)
 , trackingAreaInitialized (false)
 , inDraw (false)
@@ -946,6 +959,12 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 		if (@available (macOS 10.11, *))
 		{
 			[nsView setWantsLayer:YES];
+			caLayer = [CALayer new];
+			caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
+			caLayer.frame = nsView.layer.bounds;
+			[caLayer setContentsScale:nsView.layer.contentsScale];
+			[nsView.layer addSublayer:caLayer];
+			useInvalidRects = true;
 			if (@available (macOS 10.13, *))
 			{
 				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
@@ -953,9 +972,10 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 				// the CoreGraphics engineers decided to be clever and join dirty rectangles without
 				// letting us know
 				if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
-					nsView.layer.drawsAsynchronously = YES;
-				else
-					useInvalidRects = true;
+				{
+					caLayer.drawsAsynchronously = YES;
+					useInvalidRects = false;
+				}
 			}
 		}
 	}
@@ -966,6 +986,8 @@ NSViewFrame::~NSViewFrame () noexcept
 {
 	if (tooltipWindow)
 		tooltipWindow->forget ();
+	if (caLayer)
+		[caLayer release];
 	[nsView unregisterDraggedTypes]; // this is neccessary otherwise AppKit will crash if the plug-in is unloaded from the process
 	[nsView removeFromSuperview];
 	[nsView release];
@@ -974,8 +996,8 @@ NSViewFrame::~NSViewFrame () noexcept
 //------------------------------------------------------------------------------------
 void NSViewFrame::scaleFactorChanged (double newScaleFactor)
 {
-	if (nsView.wantsLayer)
-		nsView.layer.contentsScale = newScaleFactor;
+	if (caLayer)
+		caLayer.contentsScale = newScaleFactor;
 
 	if (frame)
 		frame->platformScaleFactorChanged (newScaleFactor);
@@ -1019,7 +1041,7 @@ void NSViewFrame::setNeedsDisplayInRect (NSRect r)
 void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 {
 #if DEBUG
-	if (getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas () && nsView.layer)
+	if (getPlatformFactory ().asMacFactory ()->enableVisualizeRedrawAreas () && caLayer)
 	{
 		id delegate = [[VSTGUI_DebugRedrawAnimDelegate::alloc () init] autorelease];
 		auto anim = [CABasicAnimation animation];
@@ -1030,7 +1052,7 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 		anim.duration = isClipBoundingBox ? 1. : 1.;
 
 		auto rect = nsRectFromCRect (r);
-		for (CALayer* layer in nsView.layer.sublayers)
+		for (CALayer* layer in caLayer.sublayers)
 		{
 			if (![layer.name isEqualToString:@"DebugLayer"])
 				continue;
@@ -1048,7 +1070,7 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 		layer.opacity = 0.f;
 		layer.zPosition = isClipBoundingBox ? 10 : 11;
 		layer.frame = nsRectFromCRect (r);
-		[nsView.layer addSublayer:layer];
+		[caLayer addSublayer:layer];
 
 		[delegate setLayer:layer];
 		[layer addAnimation:anim forKey:@"opacity"];
@@ -1058,8 +1080,44 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 }
 
 //-----------------------------------------------------------------------------
+void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
+{
+	inDraw = true;
+
+	auto clipBoundingBoxNSRect = CGContextGetClipBoundingBox (ctx);
+	auto clipBoundingBox = rectFromNSRect (clipBoundingBoxNSRect);
+
+	addDebugRedrawRect (clipBoundingBox, true);
+
+	CGDrawContext drawContext (ctx, rectFromNSRect ([nsView bounds]));
+	drawContext.beginDraw ();
+
+	if (useInvalidRects)
+	{
+		joinNearbyInvalidRects (invalidRectList, 24.);
+		for (auto r : invalidRectList)
+		{
+			frame->platformDrawRect (&drawContext, r);
+			addDebugRedrawRect (r, false);
+		}
+		invalidRectList.clear ();
+	}
+	else
+	{
+		frame->platformDrawRect (&drawContext, clipBoundingBox);
+		addDebugRedrawRect (clipBoundingBox, false);
+	}
+	drawContext.endDraw ();
+
+	inDraw = false;
+}
+
+//-----------------------------------------------------------------------------
 void NSViewFrame::drawRect (NSRect* rect)
 {
+	if (caLayer)
+		return;
+
 	inDraw = true;
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
 
@@ -1209,6 +1267,9 @@ bool NSViewFrame::setSize (const CRect& newSize)
 	[nsView setAutoresizingMask: 0];
 	[nsView setFrame: r];
 	[nsView setAutoresizingMask: oldResizeMask];
+
+	if (caLayer)
+		caLayer.frame = nsView.layer.bounds;
 	return true;
 }
 
@@ -1320,7 +1381,12 @@ bool NSViewFrame::invalidRect (const CRect& rect)
 	if (inDraw)
 		return false;
 	NSRect r = nsRectFromCRect (rect);
-	[nsView setNeedsDisplayInRect:r];
+	if (caLayer)
+		[caLayer setNeedsDisplayInRect:r];
+	else
+		[nsView setNeedsDisplayInRect:r];
+	if (useInvalidRects)
+		invalidRectList.add (rectFromNSRect (r));
 	return true;
 }
 
@@ -1446,9 +1512,10 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 	{
 		// after this is called, 'Quartz Debug' will not work as before. So when using 'Quartz Debug' comment the following two lines.
 		[nsView setWantsLayer:YES];
-		nsView.layer.actions = nil;
+		caLayer.actions = nil;
 	}
-	auto caParentLayer = parentViewLayer ? parentViewLayer->getCALayer () : [nsView layer];
+	auto caParentLayer =
+		parentViewLayer ? parentViewLayer->getCALayer () : (caLayer ? caLayer : nsView.layer);
 	auto layer = makeOwned<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
 	return std::move (layer);
