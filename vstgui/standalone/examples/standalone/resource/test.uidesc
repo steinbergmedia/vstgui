@@ -902,7 +902,7 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "320, 225",
+							"origin": "270, 225",
 							"size": "70, 70",
 							"skip-handle-drawing": "true",
 							"tooltip": "Knob",
