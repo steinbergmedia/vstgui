@@ -118,11 +118,10 @@ protected:
 	float calcNormFromPoint (const CPoint& where) const override;
 };
 
-
 //-----------------------------------------------------------------------------
 // CRockerSwitch Declaration
 //! @brief a switch control with 3 sub bitmaps
-/// @ingroup controls
+/// @ingroup controls use_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
