@@ -334,7 +334,7 @@ protected:
 							segment.name = getParamStringByIndex (i).text8 ();
 							segmentButton->addSegment (std::move (segment));
 						}
-						c->setValue ((float)value - minValue);
+						c->setValue ((float)value);
 					}
 					else
 					{

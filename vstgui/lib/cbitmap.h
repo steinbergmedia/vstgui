@@ -70,6 +70,67 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+/** Description for a multi frame bitmap
+ *
+ *	@ingroup new_in_4_12
+ */
+struct CMultiFrameBitmapDescription
+{
+	/** size of one frame */
+	CPoint frameSize {};
+	/** number of total frames */
+	uint16_t numFrames {};
+	/** number of frames per row */
+	uint16_t framesPerRow {1};
+};
+
+//-----------------------------------------------------------------------------
+/** Multi frame bitmap
+ *
+ *	A bitmap describing multiple frames ordered in rows and columns
+ *
+ *	The index order is columns and then rows:
+ *
+ *	1.Row: 1 -> 2 -> 3
+ *	2.Row: 4 -> 5 -> 6
+ *	...
+ *
+ *	@ingroup new_in_4_12
+ */
+class CMultiFrameBitmap : public CBitmap
+{
+public:
+	using CBitmap::CBitmap;
+
+	CMultiFrameBitmap (const CResourceDescription& desc,
+					   CMultiFrameBitmapDescription multiFrameDesc);
+
+	/** set the multi frame description
+	 *
+	 *	@param frameSize size of one frame
+	 *	@param frameCount number of total frames
+	 *	@param framesPerRow number of frames per row
+	 *	@return true if bitmap is big enough for the description
+	 */
+	bool setMultiFrameDesc (CMultiFrameBitmapDescription desc);
+	/** get the mult frame description */
+	CMultiFrameBitmapDescription getMultiFrameDesc () const;
+	/** get the frame size */
+	CPoint getFrameSize () const;
+	/** get the number of frames */
+	uint16_t getNumFrames () const;
+	/** get the number of frames per row */
+	uint16_t getNumFramesPerRow () const;
+	/** calculate the rect for one frame */
+	CRect calcFrameRect (uint32_t frameIndex) const;
+	/** draw one frame at the position in the context */
+	void drawFrame (CDrawContext* context, uint16_t frameIndex, CPoint pos);
+
+private:
+	CMultiFrameBitmapDescription description;
+};
+
+//-----------------------------------------------------------------------------
 struct CNinePartTiledDescription
 {
 	enum

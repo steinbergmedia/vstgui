@@ -6,20 +6,29 @@
 			"Title": {
 				"font-name": "Arial",
 				"size": "36"
+			},
+			"VSTGUI": {
+				"font-name": "Arial",
+				"size": "9"
+			},
+			"Welcome": {
+				"font-name": "Arial",
+				"size": "18"
 			}
 		},
 		"colors": {
 			"Focus": "#63bfffc8",
+			"Text": "#d0d0d0ff",
 			"WindowFrame": "#a6a6a6ff"
 		},
 		"gradients": {
 			"BackgroundGradient": [
 				{
-					"rgba": "#b9b9b9ff",
+					"rgba": "#484848ff",
 					"start": "0.1360608552631579204472700439509935677052"
 				},
 				{
-					"rgba": "#dbdbdbb4",
+					"rgba": "#272727b4",
 					"start": "1"
 				}
 			],
@@ -64,23 +73,23 @@
 				"SplitViewSize_0_1": "0.3308042488619120091719594256574055179954",
 				"SplitViewSize_1_0": "0.4977238239757207916014181137143168598413",
 				"SplitViewSize_1_1": "0.4946889226100151804033089320000726729631",
-				"SplitViewSize_2_0": "0.8167006109979633166062740201596170663834",
-				"SplitViewSize_2_1": "0.178207739307535639738944155396893620491",
-				"TabSwitchValue": "3",
+				"SplitViewSize_2_0": "0.7046843177189409113125861949811223894358",
+				"SplitViewSize_2_1": "0.2902240325865580450326319805753882974386",
+				"TabSwitchValue": "6",
 				"Version": "1"
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "4"
+				"SelectedRow": "8"
 			},
 			"UIFontsDataSource": {
-				"SelectedRow": "0"
+				"SelectedRow": "1"
 			},
 			"UIBitmapsDataSource": {
 				"SelectedRow": "-1"
 			},
 			"UIColorsDataSource": {
-				"SelectedRow": "0"
+				"SelectedRow": "1"
 			},
 			"UIGradientsDataSource": {
 				"SelectedRow": "0"
@@ -91,7 +100,8 @@
 				"width": "2"
 			},
 			"UIDescFilePath": {
-				"path": "/Users/scheffle/Source/vstgui/vstgui/tools/imagestitcher/resource/StartupWindow.uidesc"
+				"path":
+					"/Users/scheffle/Source/vstgui/vstgui/tools/imagestitcher/resource/StartupWindow.uidesc"
 			}
 		},
 		"templates": {
@@ -139,14 +149,14 @@
 							"default-value": "0.5",
 							"font": "Title",
 							"font-antialias": "true",
-							"font-color": "~ BlackCColor",
+							"font-color": "Text",
 							"frame-color": "~ BlackCColor",
 							"frame-width": "1",
 							"max-value": "1",
 							"min-value": "0",
 							"mouse-enabled": "false",
 							"opacity": "1",
-							"origin": "0, 10",
+							"origin": "0, 20",
 							"round-rect-radius": "6",
 							"shadow-color": "~ RedCColor",
 							"size": "560, 50",
@@ -161,7 +171,7 @@
 							"text-inset": "0, 0",
 							"text-rotation": "0",
 							"text-shadow-offset": "1, 1",
-							"title": "VSTGUI ImageStitcher",
+							"title": "ImageStitcher",
 							"transparent": "true",
 							"value-precision": "2",
 							"wants-focus": "false",
@@ -174,19 +184,19 @@
 							"background-offset": "0, 0",
 							"class": "CTextLabel",
 							"default-value": "0.5",
-							"font": "~ NormalFontVeryBig",
+							"font": "Welcome",
 							"font-antialias": "true",
-							"font-color": "~ BlackCColor",
+							"font-color": "Text",
 							"frame-color": "WindowFrame",
 							"frame-width": "1",
 							"max-value": "1",
 							"min-value": "0",
 							"mouse-enabled": "false",
 							"opacity": "1",
-							"origin": "0, 60",
+							"origin": "0, 70",
 							"round-rect-radius": "6",
 							"shadow-color": "~ RedCColor",
-							"size": "560, 40",
+							"size": "560, 30",
 							"style-3D-in": "false",
 							"style-3D-out": "false",
 							"style-no-draw": "false",
@@ -292,6 +302,43 @@
 							"title": "Quit",
 							"transparent": "false",
 							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "VSTGUI",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "0, 0",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "560, 30",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "VSTGUI",
+							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
 						}
 					}

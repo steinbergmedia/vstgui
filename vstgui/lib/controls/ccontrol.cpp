@@ -298,7 +298,7 @@ CControl::CheckDefaultValueFuncT CControl::CheckDefaultValueFunc = [] (CControl*
 	return button.isDoubleClick ();
 #else
 	return (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier);
-#endif
+#endif // TARGET_OS_IPHONE
 };
 
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -311,6 +311,7 @@ CControl::CheckDefaultValueEventFuncT CControl::CheckDefaultValueEventFunc =
 		{
 			return CheckDefaultValueFunc (c, buttonStateFromMouseEvent (event));
 		}
+		return false;
 #else
 #if TARGET_OS_IPHONE
 		return event.buttonState.isLeft () && event.clickCount == 2;
@@ -318,7 +319,6 @@ CControl::CheckDefaultValueEventFuncT CControl::CheckDefaultValueEventFunc =
 		return event.buttonState.isLeft () && event.modifiers.is (ModifierKey::Control);
 #endif // TARGET_OS_IPHONE
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-		return false;
 	};
 
 //------------------------------------------------------------------------
@@ -359,8 +359,9 @@ int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
 		modifiers |= kControl;
 	return modifiers;
 }
-#endif
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -373,6 +374,7 @@ void IMultiBitmapControl::autoComputeHeightOfOneImage ()
 		heightOfOneImage = viewSize.getHeight ();
 	}
 }
+#endif
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------

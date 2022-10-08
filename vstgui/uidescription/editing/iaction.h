@@ -45,6 +45,8 @@ public:
 
 	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) = 0;
 
+	virtual void performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
+												const CMultiFrameBitmapDescription* desc) = 0;
 	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) = 0;
 	virtual void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) = 0;
 

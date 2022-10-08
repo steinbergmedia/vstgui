@@ -13,6 +13,8 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 TEST_CASE (CVerticalSwitchCreatorTest, HeightOfOneImage)
 {
 	DummyUIDescription uidesc;
@@ -28,6 +30,8 @@ TEST_CASE (CVerticalSwitchCreatorTest, SubPixmaps)
 	    kCVerticalSwitch, kAttrSubPixmaps, 11, &uidesc,
 	    [] (CVerticalSwitch* v) { return v->getNumSubPixmaps () == 11; });
 }
+
+#endif
 
 TEST_CASE (CVerticalSwitchCreatorTest, InverseBitmap)
 {

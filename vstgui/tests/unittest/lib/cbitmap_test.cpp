@@ -91,4 +91,37 @@ TEST_CASE (CBitmap, PixelAccess2)
 	}
 }
 
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+TEST_CASE (CMultiFrameBitmap, NotInitialized)
+{
+	CMultiFrameBitmap bitmap (100, 100);
+	auto fr = bitmap.calcFrameRect (0);
+	EXPECT_EQ (fr, CRect (0, 0, 100, 100));
+}
+
+//------------------------------------------------------------------------
+TEST_CASE (CMultiFrameBitmap, CalcFrameRect)
+{
+	CMultiFrameBitmap bitmap (100, 100);
+	EXPECT_TRUE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 2}));
+	EXPECT_EQ (bitmap.getFrameSize (), CPoint (50., 50.));
+	EXPECT_EQ (bitmap.getNumFrames (), 4);
+	EXPECT_EQ (bitmap.getNumFramesPerRow (), 2);
+	EXPECT_EQ (bitmap.calcFrameRect (0), CRect (0, 0, 50, 50));
+	EXPECT_EQ (bitmap.calcFrameRect (1), CRect (50, 0, 100, 50));
+	EXPECT_EQ (bitmap.calcFrameRect (2), CRect (0, 50, 50, 100));
+	EXPECT_EQ (bitmap.calcFrameRect (3), CRect (50, 50, 100, 100));
+	EXPECT_EQ (bitmap.calcFrameRect (4), CRect (50, 50, 100, 100));
+}
+
+//------------------------------------------------------------------------
+TEST_CASE (CMultiFrameBitmap, InvalidFrameDesc)
+{
+	CMultiFrameBitmap bitmap (100, 100);
+	EXPECT_FALSE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 1}));
+	EXPECT_FALSE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 4}));
+}
+
 } // VSTGUI

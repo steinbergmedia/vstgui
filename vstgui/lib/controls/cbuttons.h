@@ -131,13 +131,17 @@ private:
 //-----------------------------------------------------------------------------
 // CKickButton Declaration
 //!
-/// @ingroup controls
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
-class CKickButton : public CControl, public IMultiBitmapControl
+class CKickButton : public CControl
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+,
+					public IMultiBitmapControl
+#endif
 {
 public:
-	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
+				 const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CKickButton& kickButton);
 
 	void draw (CDrawContext*) override;
@@ -150,7 +154,12 @@ public:
 
 	bool sizeToFit () override;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
+				 CCoord heightOfOneImage, CBitmap* background,
+				 const CPoint& offset = CPoint (0, 0));
+#endif
 
 	CLASS_METHODS(CKickButton, CControl)
 protected:
