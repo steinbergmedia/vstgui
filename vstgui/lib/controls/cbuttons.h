@@ -131,7 +131,7 @@ private:
 //-----------------------------------------------------------------------------
 // CKickButton Declaration
 //!
-/// @ingroup controls
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CKickButton : public CControl
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

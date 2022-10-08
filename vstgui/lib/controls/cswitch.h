@@ -64,7 +64,7 @@ private:
 //-----------------------------------------------------------------------------
 // CVerticalSwitch Declaration
 //! @brief a vertical switch control
-/// @ingroup controls
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CVerticalSwitch : public CSwitchBase
 {
@@ -93,7 +93,7 @@ protected:
 //-----------------------------------------------------------------------------
 // CHorizontalSwitch Declaration
 //! @brief a horizontal switch control
-/// @ingroup controls
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CHorizontalSwitch : public CSwitchBase
 {

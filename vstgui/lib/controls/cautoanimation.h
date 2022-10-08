@@ -11,7 +11,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 // CAutoAnimation Declaration
 //!
-/// @ingroup controls
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CAutoAnimation : public CControl
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

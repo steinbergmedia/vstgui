@@ -395,3 +395,7 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  *	@ingroup views
  */
 //------------------------------------------------------------------------
+/*! @defgroup uses_multi_frame_bitmaps Views using Multi-Frame Bitmaps
+ *	\see CMultiFrameBitmap
+ */
+//------------------------------------------------------------------------

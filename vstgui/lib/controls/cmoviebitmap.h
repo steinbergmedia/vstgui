@@ -14,7 +14,7 @@ namespace VSTGUI {
 ///
 /// Use a CMultiFrameBitmap for its background bitmap.
 ///
-/// @ingroup views
+/// @ingroup views uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CMovieBitmap : public CControl
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

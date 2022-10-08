@@ -151,7 +151,7 @@ protected:
 //-----------------------------------------------------------------------------
 // CAnimKnob Declaration
 //! @brief a bitmap knob control
-/// @ingroup controls
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CAnimKnob : public CKnobBase
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
