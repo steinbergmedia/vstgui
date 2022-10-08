@@ -795,7 +795,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	}
 	else if (subControllerName == "BitmapEditController")
 	{
-		return new UIBitmapsController (this, editDescription, this);
+		return new UIBitmapsController (this, editDescription, this, undoManager);
 	}
 	else if (subControllerName == "FontEditController")
 	{
@@ -1757,6 +1757,23 @@ void UIEditController::performGradientNameChange (UTF8StringPtr oldName, UTF8Str
 void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	performNameChange<BitmapNameChangeAction, IViewCreator::kBitmapType> (oldName, newName, "Change Bitmap Name");
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
+													  const CMultiFrameBitmapDescription* desc)
+{
+	std::list<CView*> views;
+	getTemplateViews (views);
+
+	undoManager->startGroupAction ("Change MultiFrame Bitmap");
+	undoManager->pushAndPerform (
+		new MultiFrameBitmapChangeAction (editDescription, bitmapName, desc, true));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (
+		editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
+	undoManager->pushAndPerform (
+		new MultiFrameBitmapChangeAction (editDescription, bitmapName, desc, false));
+	undoManager->endGroupAction ();
 }
 
 //----------------------------------------------------------------------------------------------------

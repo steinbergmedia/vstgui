@@ -4,6 +4,8 @@
 
 #include "multibitmapcontrolcreator.h"
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 #include "../../lib/controls/ccontrol.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiattributes.h"
@@ -76,3 +78,5 @@ bool IMultiBitmapControlCreator::getAttributeValue (CView* view, const string& a
 //------------------------------------------------------------------------
 } // UIViewCreator
 } // VSTGUI
+
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS

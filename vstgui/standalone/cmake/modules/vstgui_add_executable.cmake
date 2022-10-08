@@ -36,6 +36,7 @@ function(vstgui_add_executable target sources)
     add_executable(${target} ${sources} ${PkgInfoResource})
     set_target_properties(${target} PROPERTIES
       MACOSX_BUNDLE TRUE
+      XCODE_ATTRIBUTE_GENERATE_PKGINFO_FILE NO
       XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT $<$<CONFIG:Debug>:dwarf>$<$<NOT:$<CONFIG:Debug>>:dwarf-with-dsym>
       XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING $<$<CONFIG:Debug>:NO>$<$<NOT:$<CONFIG:Debug>>:YES>
       OUTPUT_NAME "${target}"

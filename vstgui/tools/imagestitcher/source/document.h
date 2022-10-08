@@ -35,6 +35,7 @@ struct Document
 	PathList imagePaths;
 	uint32_t width {0};
 	uint32_t height {0};
+	uint16_t numFramesPerRow {1};
 };
 using DocumentPtr = std::shared_ptr<Document>;
 
@@ -43,6 +44,7 @@ struct IDocumentListener
 {
 	virtual void onImagePathAdded (const Path& newPath, size_t index) = 0;
 	virtual void onImagePathRemoved (const Path& newPath, size_t index) = 0;
+	virtual void onNumFramesPerRowChanged (uint16_t newNumFramesPerRow) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -72,6 +74,7 @@ struct DocumentContext
 	bool save ();
 
 	bool setPath (const Path& p);
+	bool setNumFramesPerRow (uint16_t numFrames);
 	Result removeImagePathAtIndex (size_t index);
 	Result insertImagePathAtIndex (size_t index, const Path& path);
 
@@ -80,6 +83,7 @@ struct DocumentContext
 	const PathList& getImagePaths () const noexcept { return doc->imagePaths; }
 	uint32_t getWidth () const noexcept { return doc->width; }
 	uint32_t getHeight () const noexcept { return doc->height; }
+	uint16_t getNumFramesPerRow () const noexcept { return doc->numFramesPerRow; }
 
 	void addListener (IDocumentListener* listener);
 	void removeListener (IDocumentListener* listener);

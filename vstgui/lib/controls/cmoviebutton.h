@@ -11,13 +11,20 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 // CMovieButton Declaration
 //! @brief a bi-states button with 2 subbitmaps
-/// @ingroup controls
+///
+/// Use a CMultiFrameBitmap for its background bitmap.
+///
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
-class CMovieButton : public CControl, public IMultiBitmapControl
+class CMovieButton : public CControl
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+,
+					 public IMultiBitmapControl
+#endif
 {
 public:
-	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
+				  const CPoint& offset = CPoint (0, 0));
 	CMovieButton (const CMovieButton& movieButton);
 
 	void draw (CDrawContext*) override;
@@ -29,7 +36,12 @@ public:
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	bool sizeToFit () override;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
+				  CCoord heightOfOneImage, CBitmap* background,
+				  const CPoint& offset = CPoint (0, 0));
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+#endif
 
 	CLASS_METHODS(CMovieButton, CControl)
 protected:

@@ -129,6 +129,7 @@ private:
 	std::unique_ptr<Impl> impl;
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 // IMultiBitmapControl Declaration
 //! @brief interface for controls with sub images
@@ -149,6 +150,7 @@ protected:
 	CCoord heightOfOneImage;
 	int32_t subPixmaps;
 };
+#endif
 
 //-----------------------------------------------------------------------------
 // CMouseWheelEditingSupport Declaration

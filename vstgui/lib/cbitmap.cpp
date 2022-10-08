@@ -175,6 +175,63 @@ auto CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const -> 
 }
 
 //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+CMultiFrameBitmap::CMultiFrameBitmap (const CResourceDescription& desc,
+									  CMultiFrameBitmapDescription multiFrameDesc)
+: CBitmap (desc), description (multiFrameDesc)
+{
+}
+
+//-----------------------------------------------------------------------------
+bool CMultiFrameBitmap::setMultiFrameDesc (CMultiFrameBitmapDescription desc)
+{
+	if (desc.frameSize.x * desc.framesPerRow > getSize ().x)
+		return false;
+	if (desc.frameSize.y * (desc.numFrames / desc.framesPerRow) > getSize ().y)
+		return false;
+	description = desc;
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+CMultiFrameBitmapDescription CMultiFrameBitmap::getMultiFrameDesc () const { return description; }
+
+//-----------------------------------------------------------------------------
+CPoint CMultiFrameBitmap::getFrameSize () const { return description.frameSize; }
+
+//-----------------------------------------------------------------------------
+uint16_t CMultiFrameBitmap::getNumFrames () const { return description.numFrames; }
+
+//-----------------------------------------------------------------------------
+uint16_t CMultiFrameBitmap::getNumFramesPerRow () const { return description.framesPerRow; }
+
+//-----------------------------------------------------------------------------
+CRect CMultiFrameBitmap::calcFrameRect (uint32_t frameIndex) const
+{
+	if (getNumFrames () == 0)
+		return CRect ({}, getSize ());
+	if (frameIndex >= getNumFrames ())
+		frameIndex = getNumFrames () - 1;
+	auto rowIndex = frameIndex / getNumFramesPerRow ();
+	auto colIndex = frameIndex - (rowIndex * getNumFramesPerRow ());
+	CRect r;
+	r.left = getFrameSize ().x * colIndex;
+	r.right = r.left + getFrameSize ().x;
+	r.top = getFrameSize ().y * rowIndex;
+	r.bottom = r.top + getFrameSize ().y;
+	return r;
+}
+
+//-----------------------------------------------------------------------------
+void CMultiFrameBitmap::drawFrame (CDrawContext* context, uint16_t frameIndex, CPoint pos)
+{
+	auto fr = calcFrameRect (frameIndex);
+	auto r = CRect (pos, getFrameSize ());
+	draw (context, r, fr.getTopLeft ());
+}
+
+//-----------------------------------------------------------------------------
 // CNinePartTiledBitmap Implementation
 //-----------------------------------------------------------------------------
 /*! @class CNinePartTiledBitmap

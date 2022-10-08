@@ -10,7 +10,11 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class CSwitchBase : public CControl, public IMultiBitmapControl
+class CSwitchBase : public CControl
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+,
+					public IMultiBitmapControl
+#endif
 {
 public:
 	void setInverseBitmap (bool state);
@@ -18,10 +22,7 @@ public:
 
 protected:
 	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-	             const CPoint& offset = CPoint (0, 0));
-	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
-	             CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background,
-	             const CPoint& offset = CPoint (0, 0));
+				 const CPoint& offset = CPoint (0, 0));
 	CSwitchBase (const CSwitchBase& other);
 	~CSwitchBase () noexcept override = default;
 
@@ -32,26 +33,21 @@ protected:
 	CMouseEventResult onMouseCancel () override;
 	bool sizeToFit () override;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
+				 CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background,
+				 const CPoint& offset = CPoint (0, 0));
 	void setNumSubPixmaps (int32_t numSubPixmaps) override
 	{
 		IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps);
 		invalid ();
 	}
+#endif
 	const CPoint& getOffset () const { return offset; }
 
 	double getCoef () const { return coef; }
-	int32_t normalizedToIndex (float norm) const
-	{
-		if (useLegacyIndexCalculation)
-			return static_cast<int32_t> (norm * (getNumSubPixmaps () - 1) + 0.5f);
-		return std::min<int32_t> (getNumSubPixmaps () - 1,
-		                          static_cast<int32_t> (norm * getNumSubPixmaps ()));
-	}
-
-	float indexToNormalized (int32_t index) const
-	{
-		return static_cast<float> (index) / static_cast<float> (getNumSubPixmaps () - 1);
-	}
+	int32_t normalizedToIndex (float norm) const;
+	float indexToNormalized (int32_t index) const;
 
 	virtual double calculateCoef () const = 0;
 	virtual float calcNormFromPoint (const CPoint& where) const = 0;
@@ -68,16 +64,22 @@ private:
 //-----------------------------------------------------------------------------
 // CVerticalSwitch Declaration
 //! @brief a vertical switch control
-/// @ingroup controls
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CVerticalSwitch : public CSwitchBase
 {
 public:
-	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+					 CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CVerticalSwitch (const CVerticalSwitch& vswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
+					 CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background,
+					 const CPoint& offset = CPoint (0, 0));
+#endif
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
@@ -91,16 +93,22 @@ protected:
 //-----------------------------------------------------------------------------
 // CHorizontalSwitch Declaration
 //! @brief a horizontal switch control
-/// @ingroup controls
+/// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
 class CHorizontalSwitch : public CSwitchBase
 {
 public:
-	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+					   CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+					   int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions,
+					   CBitmap* background, const CPoint& offset = CPoint (0, 0));
+#endif
 
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
@@ -110,13 +118,16 @@ protected:
 	float calcNormFromPoint (const CPoint& where) const override;
 };
 
-
 //-----------------------------------------------------------------------------
 // CRockerSwitch Declaration
 //! @brief a switch control with 3 sub bitmaps
-/// @ingroup controls
+/// @ingroup controls use_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
-class CRockerSwitch : public CControl, public IMultiBitmapControl
+class CRockerSwitch : public CControl
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+,
+					  public IMultiBitmapControl
+#endif
 {
 private:
 	enum StyleEnum
@@ -131,8 +142,8 @@ public:
 		kVertical = 1 << StyleVertical,
 	};
 
-	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
-	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
+	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
+				   const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);
 
 	void draw (CDrawContext*) override;
@@ -146,7 +157,12 @@ public:
 
 	bool sizeToFit () override;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+				   CCoord heightOfOneImage, CBitmap* background,
+				   const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+#endif
 
 	CLASS_METHODS(CRockerSwitch, CControl)
 protected:

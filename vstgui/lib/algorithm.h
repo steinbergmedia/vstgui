@@ -5,6 +5,7 @@
 #pragma once
 
 #include "optional.h"
+#include <cstdint>
 #include <algorithm>
 
 //------------------------------------------------------------------------

@@ -13,6 +13,8 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 TEST_CASE (CMovieBitmapCreatorTest, HeightOfOneImage)
 {
 	DummyUIDescription uidesc;
@@ -26,5 +28,7 @@ TEST_CASE (CMovieBitmapCreatorTest, SubPixmaps)
 	testAttribute<CMovieBitmap> (kCMovieBitmap, kAttrSubPixmaps, 11, &uidesc,
 	                             [] (CMovieBitmap* v) { return v->getNumSubPixmaps () == 11; });
 }
+
+#endif
 
 } // VSTGUI
