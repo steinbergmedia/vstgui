@@ -62,7 +62,7 @@ private:
 	CColor selectedTextColor {kBlackCColor};
 	CCoord titleHeight {8};
 	CCoord rowHeight {0};
-	CPoint mouseDownPos;
+	DragStartMouseObserver dragStartMouseObserver;
 	SharedPointer<CFontDesc> font;
 	DocumentContextPtr docContext;
 	ImageList* imageList {nullptr};

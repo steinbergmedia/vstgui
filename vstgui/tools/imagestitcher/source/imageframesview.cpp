@@ -8,6 +8,7 @@
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cscrollview.h"
 #include "vstgui/lib/dragging.h"
+#include "vstgui/lib/coffscreencontext.h"
 #include "vstgui/standalone/include/ialertbox.h"
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/iasync.h"
@@ -463,7 +464,6 @@ CMouseEventResult ImageFramesView::onMouseDown (CPoint& where, const CButtonStat
 	assert (imageList);
 	if (buttons.isLeftButton ())
 	{
-		mouseDownPos = where;
 		bool exclusive = buttons.getModifierState () != kControl;
 		bool shift = buttons.getModifierState () == kShift;
 		auto index = posToIndex (where);
@@ -488,6 +488,7 @@ CMouseEventResult ImageFramesView::onMouseDown (CPoint& where, const CButtonStat
 		}
 		if (auto frame = getFrame ())
 			frame->setFocusView (this);
+		dragStartMouseObserver.init (where);
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -498,7 +499,7 @@ CMouseEventResult ImageFramesView::onMouseMoved (CPoint& where, const CButtonSta
 {
 	if (buttons.isLeftButton ())
 	{
-		if (std::abs ((where.x - mouseDownPos.x) * (where.y - mouseDownPos.y)) > 5)
+		if (dragStartMouseObserver.shouldStartDrag (where))
 		{
 			std::vector<size_t> indices;
 			indices.emplace_back (DragPackageID);
@@ -514,6 +515,23 @@ CMouseEventResult ImageFramesView::onMouseMoved (CPoint& where, const CButtonSta
 				                 static_cast<uint32_t> (indices.size () * sizeof (size_t)),
 				                 IDataPackage::kBinary);
 				DragDescription dragDesc (dropSource);
+				auto imageSize = imageList->front ().bitmap->getSize ();
+				imageSize.y *= indices.size () - 1;
+				dragDesc.bitmap = renderBitmapOffscreen (
+					imageSize, getFrame ()->getScaleFactor (), [&] (CDrawContext& context) {
+						CRect r;
+						r.setSize (imageList->front ().bitmap->getSize ());
+						for (auto index : indices)
+						{
+							if (index == DragPackageID)
+								continue;
+							if (auto image = imageList->at (index).bitmap)
+							{
+								image->draw (&context, r);
+							}
+							r.offset (0, r.getHeight ());
+						}
+					});
 				doDrag (dragDesc);
 			}
 		}
