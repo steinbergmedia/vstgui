@@ -316,26 +316,22 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, cons
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser)
 {
-	uint32_t index = 0;
-	IDataPackage::Type type;
-	const void* item = nullptr;
-	while (drag->getData (index, item, type) > 0)
+	for (const auto& item : drag)
 	{
-		if (type == IDataPackage::kFilePath)
+		if (item.type != IDataPackage::kFilePath)
+			continue;
+		std::string_view filePath (static_cast<const char*> (item.data), item.dataSize);
+		auto it = filePath.find_last_of ('.');
+		if (it < filePath.size ())
 		{
-			const char* ext = strrchr (static_cast<const char*> (item), '.');
-			if (ext)
+			std::string extStr (filePath.substr (it));
+			std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
+			if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
 			{
-				std::string extStr (ext);
-				std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
-				if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
-				{
-					dragContainsBitmaps = true;
-					break;
-				}
+				dragContainsBitmaps = true;
+				break;
 			}
 		}
-		index++;
 	}
 	if (dragContainsBitmaps)
 		browser->getFrame ()->setCursor (kCursorCopy);
@@ -372,35 +368,33 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 		return false;
 
 	bool didBeganGroupAction = false;
-	uint32_t index = 0;
-	IDataPackage::Type type;
-	const void* item = nullptr;
 	UTF8String firstNewBitmapName;
-	while (drag->getData (index++, item, type) > 0)
+
+	for (const auto& item : drag)
 	{
-		if (type == IDataPackage::kFilePath)
+		if (item.type != IDataPackage::kFilePath)
+			continue;
+		std::string filePath (static_cast<const char*> (item.data), item.dataSize);
+		auto it = filePath.find_last_of ('.');
+		if (it < filePath.size ())
 		{
-			auto path = static_cast<UTF8StringPtr> (item);
-			const char* ext = strrchr (path, '.');
-			if (ext)
+			std::string extStr (filePath.substr (it));
+			std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
+			if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
 			{
-				std::string extStr (ext);
-				std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
-				if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
+				if (!didBeganGroupAction)
 				{
-					if (!didBeganGroupAction)
-					{
-						actionPerformer->beginGroupAction ("Add Bitmaps");
-						didBeganGroupAction = true;
-					}
-					std::string name;
-					addBitmap (path, name);
-					if (firstNewBitmapName.empty ())
-						firstNewBitmapName = name;
+					actionPerformer->beginGroupAction ("Add Bitmaps");
+					didBeganGroupAction = true;
 				}
+				std::string name;
+				addBitmap (filePath.data (), name);
+				if (firstNewBitmapName.empty ())
+					firstNewBitmapName = name;
 			}
 		}
 	}
+
 	if (didBeganGroupAction)
 	{
 		actionPerformer->finishGroupAction ();
