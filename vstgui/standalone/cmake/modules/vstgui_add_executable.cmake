@@ -106,6 +106,7 @@ function(vstgui_set_target_bundle_id target identifier)
       XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER ${identifier}
     )
   endif(CMAKE_HOST_APPLE)
+  target_compile_definitions(${target} PRIVATE VSTGUI_STANDALONE_APP_URI="${identifier}")
 endfunction()
 
 ###########################################################################################

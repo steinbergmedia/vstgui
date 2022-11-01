@@ -13,8 +13,7 @@ class MyApplication : public Application::DelegateAdapter, public WindowListener
 {
 public:
 	MyApplication ()
-	: Application::DelegateAdapter (
-	      {"simple_standalone", "1.0.0", "vstgui.examples.simplestandalone"})
+	: Application::DelegateAdapter ({"simple_standalone", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 	{
 	}
 

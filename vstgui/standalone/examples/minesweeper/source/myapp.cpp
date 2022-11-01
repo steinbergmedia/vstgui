@@ -22,7 +22,7 @@ class MyApplication final : public Application::DelegateAdapter,
 {
 public:
 	MyApplication ()
-	: Application::DelegateAdapter ({"Minesweeper", "1.0.0", "vstgui.examples.minesweeper"})
+	: Application::DelegateAdapter ({"Minesweeper", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 	{
 	}
 
