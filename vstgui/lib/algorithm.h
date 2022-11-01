@@ -58,7 +58,7 @@ StepT normalizedToSteps (NormT value, StepT numSteps, StepT stepStart = static_c
 {
 	static_assert (std::is_integral<StepT>::value, "Step type must be integral");
 	vstgui_assert (value >= 0. && value <= 1., "Only normalized values are allowed");
-	return std::min<StepT> (numSteps, (numSteps + 1) * value) + stepStart;
+	return std::min<StepT> (numSteps, static_cast<StepT> ((numSteps + 1) * value)) + stepStart;
 }
 
 //------------------------------------------------------------------------
