@@ -7,6 +7,7 @@
 #include "../cbitmap.h"
 #include "../cvstguitimer.h"
 #include "../events.h"
+#include "../algorithm.h"
 
 namespace VSTGUI {
 
@@ -50,14 +51,12 @@ int32_t CSwitchBase::normalizedToIndex (float norm) const
 {
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
-		return std::min<int32_t> (mfb->getNumFrames () - 1,
-								  static_cast<int32_t> (norm * mfb->getNumFrames ()));
+		return normalizedToSteps (norm, mfb->getNumFrames () - 1);
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (useLegacyIndexCalculation)
 		return static_cast<int32_t> (norm * (getNumSubPixmaps () - 1) + 0.5f);
-	return std::min<int32_t> (getNumSubPixmaps () - 1,
-							  static_cast<int32_t> (norm * getNumSubPixmaps ()));
+	return normalizedToSteps (norm, getNumSubPixmaps () - 1);
 #else
 	return 0;
 #endif
@@ -68,7 +67,7 @@ float CSwitchBase::indexToNormalized (int32_t index) const
 {
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
-		return static_cast<float> (index) / static_cast<float> (mfb->getNumFrames () - 1);
+		return stepsToNormalized<float> (index, mfb->getNumFrames () - 1);
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return static_cast<float> (index) / static_cast<float> (getNumSubPixmaps () - 1);
