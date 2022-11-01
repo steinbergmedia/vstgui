@@ -937,6 +937,24 @@
 							"wants-focus": "true",
 							"wheel-inc-value": "0.1"
 						}
+					},
+					"CAutoAnimation": {
+						"attributes": {
+							"animation-time": "32",
+							"bitmap": "autoanimation",
+							"bitmap-offset": "5, 5",
+							"class": "CAutoAnimation",
+							"default-value": "0.5",
+							"max-value": "36",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "85, 5",
+							"size": "30, 30",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
 					}
 				}
 			}

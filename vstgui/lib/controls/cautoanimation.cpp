@@ -3,11 +3,11 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cautoanimation.h"
+#include "../algorithm.h"
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
 
 namespace VSTGUI {
-
 //------------------------------------------------------------------------
 // CAutoAnimation
 //------------------------------------------------------------------------
@@ -27,10 +27,9 @@ the current value of this control). Use a CMultiFrameBitmap for its background b
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
-, bWindowOpened (false)
+CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
+								CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, background), offset (offset)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	heightOfOneImage = size.getHeight ();
@@ -54,10 +53,10 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
-, bWindowOpened (false)
+CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
+								int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background,
+								const CPoint& offset)
+: CControl (size, listener, tag, background), offset (offset)
 {
 	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
@@ -74,13 +73,15 @@ CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 , totalHeightOfBitmap (v.totalHeightOfBitmap)
 #endif
-, bWindowOpened (v.bWindowOpened)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 #endif
 }
+
+//------------------------------------------------------------------------
+bool CAutoAnimation::isWindowOpened () const { return bWindowOpened; }
 
 //------------------------------------------------------------------------
 void CAutoAnimation::draw (CDrawContext *pContext)
@@ -91,8 +92,10 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 		{
 			if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 			{
-				auto frameIndex = getValueNormalized () * frameBitmap->getNumFrames ();
-				frameBitmap->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+				auto frameIndex =
+					normalizedToSteps (getValueNormalized (), frameBitmap->getNumFrames ());
+				frameBitmap->drawFrame (pContext, frameIndex,
+										getViewSize ().getTopLeft () + offset);
 			}
 			else
 			{
@@ -136,15 +139,51 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const CButtonState
 }
 
 //------------------------------------------------------------------------
+bool CAutoAnimation::attached (CView* parent)
+{
+	if (CControl::attached (parent))
+	{
+		if (animationFrameTime > 0 && isWindowOpened ())
+			startTimer ();
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool CAutoAnimation::removed (CView* parent)
+{
+	timer = nullptr;
+	return CControl::removed (parent);
+}
+
+//------------------------------------------------------------------------
+void CAutoAnimation::startTimer ()
+{
+	if (animationFrameTime > 0)
+	{
+		timer = makeOwned<CVSTGUITimer> (
+			[this] (auto*) {
+				nextPixmap ();
+				invalid ();
+			},
+			animationFrameTime, true);
+	}
+}
+
+//------------------------------------------------------------------------
 void CAutoAnimation::openWindow ()
 {
 	bWindowOpened = true;
+	if (isAttached ())
+		startTimer ();
 }
 
 //------------------------------------------------------------------------
 void CAutoAnimation::closeWindow ()
 {
 	bWindowOpened = false;
+	timer = nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -155,7 +194,7 @@ void CAutoAnimation::updateMinMaxFromBackground ()
 		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
 			setMin (0.f);
-			setMax (frameBitmap->getHeight ());
+			setMax (frameBitmap->getMultiFrameDesc ().numFrames);
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 			heightOfOneImage = frameBitmap->getFrameSize ().y;
 			totalHeightOfBitmap = heightOfOneImage * frameBitmap->getNumFrames ();
@@ -174,41 +213,64 @@ void CAutoAnimation::setBackground (CBitmap* background)
 //------------------------------------------------------------------------
 void CAutoAnimation::nextPixmap ()
 {
+	if (auto bitmap = getDrawBackground ())
+	{
+		if (dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			if (getValue () == getMax ())
+				setValue (getMin ());
+			else
+				setValue (getValue () + 1.f);
+			return;
+		}
+	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	value += (float)heightOfOneImage;
 	if (value >= (totalHeightOfBitmap - heightOfOneImage))
 		value = 0;
-#else
-	if (auto bitmap = getDrawBackground ())
-	{
-		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
-		{
-			value += frameBitmap->getFrameSize ().y;
-			if (value >= frameBitmap->getHeight ())
-				value = 0.f;
-		}
-	}
 #endif
 }
 
 //------------------------------------------------------------------------
 void CAutoAnimation::previousPixmap ()
 {
+	if (auto bitmap = getDrawBackground ())
+	{
+		if (dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		{
+			if (getValue () == getMin ())
+				setValue (getMax ());
+			else
+				setValue (getValue () - 1.f);
+			return;
+		}
+	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	value -= (float)heightOfOneImage;
 	if (value < 0.f)
 		value = (float)(totalHeightOfBitmap - heightOfOneImage - 1);
-#else
-	if (auto bitmap = getDrawBackground ())
-	{
-		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
-		{
-			value -= frameBitmap->getFrameSize ().y;
-			if (value < 0.f)
-				value = frameBitmap->getHeight ();
-		}
-	}
 #endif
 }
+
+//------------------------------------------------------------------------
+void CAutoAnimation::setAnimationTime (uint32_t animationTime)
+{
+	animationFrameTime = animationTime;
+	if (timer)
+		startTimer ();
+}
+
+//------------------------------------------------------------------------
+uint32_t CAutoAnimation::getAnimationTime () const { return animationFrameTime; }
+
+//------------------------------------------------------------------------
+void CAutoAnimation::setBitmapOffset (const CPoint& off)
+{
+	offset = off;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+CPoint CAutoAnimation::getBitmapOffset () const { return offset; }
 
 } // VSTGUI

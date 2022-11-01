@@ -100,6 +100,8 @@ set(${target}_sources
     viewcreator/animationsplashscreencreator.h
     viewcreator/animknobcreator.cpp
     viewcreator/animknobcreator.h
+    viewcreator/autoanimationcreator.cpp
+    viewcreator/autoanimationcreator.h
     viewcreator/checkboxcreator.cpp
     viewcreator/checkboxcreator.h
     viewcreator/controlcreator.cpp
