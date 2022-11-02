@@ -148,6 +148,7 @@ set(${target}_common_sources
     pixelbuffer.h
     pixelbuffer.cpp
     platform/iplatformbitmap.h
+    platform/iplatformdrawdevice.h
     platform/iplatformfileselector.h
     platform/iplatformfont.h
     platform/iplatformframe.h

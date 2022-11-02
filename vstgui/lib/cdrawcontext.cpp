@@ -4,11 +4,20 @@
 
 #include "cdrawcontext.h"
 #include "cgraphicspath.h"
+#include "cgradient.h"
 #include "cbitmap.h"
 #include "cstring.h"
 #include "platform/iplatformfont.h"
+#include "platform/iplatformgraphicspath.h"
+#include "platform/iplatformgradient.h"
 #include <cassert>
 #include <stack>
+
+#define VSTGUI_PLATFORM_DRAWDEVICE 1
+
+#if VSTGUI_PLATFORM_DRAWDEVICE
+#include "platform/iplatformdrawdevice.h"
+#endif
 
 namespace VSTGUI {
 
@@ -66,6 +75,10 @@ struct CDrawContext::Impl
 
 	std::stack<CDrawContextState> globalStatesStack;
 	std::stack<CGraphicsTransform> transformStack;
+
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	IPlatformDrawDevice* device {nullptr};
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -115,11 +128,22 @@ void CDrawContext::init ()
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::saveGlobalState () { impl->globalStatesStack.push (getCurrentState ()); }
+void CDrawContext::saveGlobalState ()
+{
+	impl->globalStatesStack.push (getCurrentState ());
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->saveGlobalState ();
+#endif
+}
 
 //-----------------------------------------------------------------------------
 void CDrawContext::restoreGlobalState ()
 {
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->restoreGlobalState ();
+#endif
 	if (!impl->globalStatesStack.empty ())
 	{
 		getCurrentState () = std::move (impl->globalStatesStack.top ());
@@ -140,13 +164,34 @@ void CDrawContext::setBitmapInterpolationQuality(BitmapInterpolationQuality qual
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setLineStyle (const CLineStyle& style) { getCurrentState ().lineStyle = style; }
+void CDrawContext::setLineStyle (const CLineStyle& style)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setLineStyle (style);
+#endif
+	getCurrentState ().lineStyle = style;
+}
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setLineWidth (CCoord width) { getCurrentState ().frameWidth = width; }
+void CDrawContext::setLineWidth (CCoord width)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setLineWidth (width);
+#endif
+	getCurrentState ().frameWidth = width;
+}
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setDrawMode (CDrawMode mode) { getCurrentState ().drawMode = mode; }
+void CDrawContext::setDrawMode (CDrawMode mode)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setDrawMode (mode);
+#endif
+	getCurrentState ().drawMode = mode;
+}
 
 //-----------------------------------------------------------------------------
 CRect& CDrawContext::getClipRect (CRect &clip) const
@@ -163,16 +208,41 @@ void CDrawContext::setClipRect (const CRect &clip)
 	getCurrentState ().clipRect = clip;
 	getCurrentTransform ().transform (getCurrentState ().clipRect);
 	getCurrentState ().clipRect.normalize ();
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setClipRect (getCurrentState ().clipRect);
+#endif
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::resetClipRect () { getCurrentState ().clipRect = getSurfaceRect (); }
+void CDrawContext::resetClipRect ()
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setClipRect (getSurfaceRect ());
+#endif
+	getCurrentState ().clipRect = getSurfaceRect ();
+}
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFillColor (const CColor& color) { getCurrentState ().fillColor = color; }
+void CDrawContext::setFillColor (const CColor& color)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setFillColor (color);
+#endif
+	getCurrentState ().fillColor = color;
+}
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFrameColor (const CColor& color) { getCurrentState ().frameColor = color; }
+void CDrawContext::setFrameColor (const CColor& color)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setFrameColor (color);
+#endif
+	getCurrentState ().frameColor = color;
+}
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setFontColor (const CColor& color) { getCurrentState ().fontColor = color; }
@@ -197,7 +267,14 @@ void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const in
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setGlobalAlpha (float newAlpha) { getCurrentState ().globalAlpha = newAlpha; }
+void CDrawContext::setGlobalAlpha (float newAlpha)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setGlobalAlpha (newAlpha);
+#endif
+	getCurrentState ().globalAlpha = newAlpha;
+}
 
 //-----------------------------------------------------------------------------
 const UTF8String& CDrawContext::getDrawString (UTF8StringPtr string)
@@ -297,6 +374,28 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 	if (srcRect.isEmpty () || dstRect.isEmpty ())
 		return;
 
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+	{
+		if (auto deviceBitmapExt = impl->device->asBitmapExt ())
+		{
+			double transformedScaleFactor = getScaleFactor ();
+			CGraphicsTransform t = getCurrentTransform ();
+			if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
+				transformedScaleFactor *= t.m11;
+
+			if (auto pb = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor))
+			{
+				if (deviceBitmapExt->fillRectWithBitmap (*pb, srcRect, dstRect, alpha,
+														 getBitmapInterpolationQuality ()))
+				{
+					return;
+				}
+			}
+		}
+	}
+#endif
+
 	CRect bitmapPartRect;
 	CPoint sourceOffset (srcRect.left, srcRect.top);
 
@@ -328,6 +427,28 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 //-----------------------------------------------------------------------------
 void CDrawContext::drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest, const CNinePartTiledDescription& desc, float alpha)
 {
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+	{
+		if (auto deviceBitmapExt = impl->device->asBitmapExt ())
+		{
+			double transformedScaleFactor = getScaleFactor ();
+			CGraphicsTransform t = getCurrentTransform ();
+			if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
+				transformedScaleFactor *= t.m11;
+
+			if (auto pb = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor))
+			{
+				if (deviceBitmapExt->drawBitmapNinePartTiled (*pb, dest, desc, alpha,
+															  getBitmapInterpolationQuality ()))
+				{
+					return;
+				}
+			}
+		}
+	}
+#endif
+
 	CRect myBitmapBounds (0, 0, bitmap->getWidth (), bitmap->getHeight ());
 	CRect mySourceRect [CNinePartTiledDescription::kPartCount];
 	CRect myDestRect [CNinePartTiledDescription::kPartCount];
@@ -342,12 +463,12 @@ void CDrawContext::drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest, 
 //-----------------------------------------------------------------------------
 CGraphicsPath* CDrawContext::createRoundRectGraphicsPath (const CRect& size, CCoord radius)
 {
-	CGraphicsPath* path = createGraphicsPath ();
-	if (path)
+	if (auto path = createGraphicsPath ())
 	{
 		path->addRoundRect (size, radius);
+		return path;
 	}
-	return path;
+	return {};
 }
 
 //-----------------------------------------------------------------------------
@@ -357,6 +478,10 @@ void CDrawContext::pushTransform (const CGraphicsTransform& transformation)
 	const CGraphicsTransform& currentTransform = impl->transformStack.top ();
 	CGraphicsTransform newTransform = currentTransform * transformation;
 	impl->transformStack.push (newTransform);
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setTransformMatrix (newTransform);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -364,6 +489,10 @@ void CDrawContext::popTransform ()
 {
 	vstgui_assert (impl->transformStack.size () > 1);
 	impl->transformStack.pop ();
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setTransformMatrix (impl->transformStack.top ());
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -376,6 +505,202 @@ const CGraphicsTransform& CDrawContext::getCurrentTransform () const
 CCoord CDrawContext::getHairlineSize () const
 {
 	return 1. / (getScaleFactor () * getCurrentTransform ().m11);
+}
+
+//------------------------------------------------------------------------
+static DrawStyle convert (CDrawStyle s)
+{
+	switch (s)
+	{
+		case CDrawStyle::kDrawFilled:
+			return DrawStyle::Filled;
+		case CDrawStyle::kDrawStroked:
+			return DrawStyle::Stroked;
+		case CDrawStyle::kDrawFilledAndStroked:
+			return DrawStyle::FilledAndStroked;
+		default:
+			assert (false);
+	}
+	return {};
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawLine (const LinePair& line)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->drawLine (line);
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawLines (const LineList& lines)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->drawLines (lines);
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->drawPolygon (polygonPointList, convert (drawStyle));
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawRect (const CRect& rect, const CDrawStyle drawStyle)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->drawRect (rect, convert (drawStyle));
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawArc (const CRect& rect, const float startAngle1, const float endAngle2,
+							const CDrawStyle drawStyle)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->drawArc (rect, startAngle1, endAngle2, convert (drawStyle));
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawEllipse (const CRect& rect, const CDrawStyle drawStyle)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->drawEllipse (rect, convert (drawStyle));
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawPoint (const CPoint& point, const CColor& color)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->drawPoint (point, color);
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset,
+							   float alpha)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+	{
+		double transformedScaleFactor = getScaleFactor ();
+		CGraphicsTransform t = getCurrentTransform ();
+		if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
+			transformedScaleFactor *= t.m11;
+		if (auto pb = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor))
+			impl->device->drawBitmap (*pb, dest, offset, alpha, getBitmapInterpolationQuality ());
+	}
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::clearRect (const CRect& rect)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->clearRect (rect);
+#endif
+}
+
+//------------------------------------------------------------------------
+static PathDrawMode convert (CDrawContext::PathDrawMode mode)
+{
+	switch (mode)
+	{
+		case CDrawContext::PathDrawMode::kPathFilled:
+			return PathDrawMode::Filled;
+		case CDrawContext::PathDrawMode::kPathStroked:
+			return PathDrawMode::Stroked;
+		case CDrawContext::PathDrawMode::kPathFilledEvenOdd:
+			return PathDrawMode::FilledEvenOdd;
+		default:
+			assert (false);
+	}
+	return {};
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode,
+									 CGraphicsTransform* transformation)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+	{
+		if (auto& pp = path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored))
+			impl->device->drawGraphicsPath (*pp.get (), convert (mode), transformation);
+	}
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::fillLinearGradient (CGraphicsPath* path, const CGradient& gradient,
+									   const CPoint& startPoint, const CPoint& endPoint,
+									   bool evenOdd, CGraphicsTransform* transformation)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+	{
+		if (auto& platformGradient = gradient.getPlatformGradient ())
+		{
+			if (auto& pp = path->getPlatformPath (evenOdd ? PlatformGraphicsPathFillMode::Alternate
+														  : PlatformGraphicsPathFillMode::Winding))
+			{
+				impl->device->fillLinearGradient (*pp.get (), *platformGradient, startPoint,
+												  endPoint, evenOdd, transformation);
+			}
+		}
+	}
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gradient,
+									   const CPoint& center, CCoord radius,
+									   const CPoint& originOffset, bool evenOdd,
+									   CGraphicsTransform* transformation)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+	{
+		if (auto& platformGradient = gradient.getPlatformGradient ())
+		{
+			if (auto& pp = path->getPlatformPath (evenOdd ? PlatformGraphicsPathFillMode::Alternate
+														  : PlatformGraphicsPathFillMode::Winding))
+			{
+				impl->device->fillRadialGradient (*pp.get (), *platformGradient, center, radius,
+												  originOffset, evenOdd, transformation);
+			}
+		}
+	}
+#endif
+}
+
+//------------------------------------------------------------------------
+CGraphicsPath* CDrawContext::createGraphicsPath ()
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+#endif
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+CGraphicsPath* CDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+#endif
+	return nullptr;
 }
 
 } // VSTGUI
