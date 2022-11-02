@@ -14,7 +14,6 @@
 #include "clinestyle.h"
 #include "cdrawdefs.h"
 #include <cmath>
-#include <stack>
 #include <vector>
 
 namespace VSTGUI {
@@ -77,8 +76,13 @@ public:
 	// @name Bitmap Interpolation Quality
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setBitmapInterpolationQuality (BitmapInterpolationQuality quality);	///< set the current bitmap interpolation quality
-	const BitmapInterpolationQuality& getBitmapInterpolationQuality () const { return currentState.bitmapQuality; }	///< get the current bitmap interpolation quality
+	/** set the current bitmap interpolation quality */
+	virtual void setBitmapInterpolationQuality (BitmapInterpolationQuality quality);
+	/** get the current bitmap interpolation quality */
+	BitmapInterpolationQuality getBitmapInterpolationQuality () const
+	{
+		return getCurrentState ().bitmapQuality;
+	}
 
 	//@}
 
@@ -89,12 +93,12 @@ public:
 	/** set the current line style */
 	virtual void setLineStyle (const CLineStyle& style);
 	/** get the current line style */
-	const CLineStyle& getLineStyle () const { return currentState.lineStyle; }
+	const CLineStyle& getLineStyle () const { return getCurrentState ().lineStyle; }
 
 	/** set the current line width */
 	virtual void setLineWidth (CCoord width);
 	/** get the current line width */
-	CCoord getLineWidth () const { return currentState.frameWidth; }
+	CCoord getLineWidth () const { return getCurrentState ().frameWidth; }
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -104,7 +108,7 @@ public:
 	/** set the current draw mode, see CDrawMode */
 	virtual void setDrawMode (CDrawMode mode);
 	/** get the current draw mode, see CDrawMode */
-	CDrawMode getDrawMode () const { return currentState.drawMode; }
+	CDrawMode getDrawMode () const { return getCurrentState ().drawMode; }
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -126,11 +130,11 @@ public:
 	/** set current fill color */
 	virtual void setFillColor  (const CColor& color);
 	/** get current fill color */
-	CColor getFillColor () const { return currentState.fillColor; }
+	CColor getFillColor () const { return getCurrentState ().fillColor; }
 	/** set current stroke color */
 	virtual void setFrameColor (const CColor& color);
 	/** get current stroke color */
-	CColor getFrameColor () const { return currentState.frameColor; }
+	CColor getFrameColor () const { return getCurrentState ().frameColor; }
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -140,11 +144,11 @@ public:
 	/** set current font color */
 	virtual void setFontColor (const CColor& color);
 	/** get current font color */
-	CColor getFontColor () const { return currentState.fontColor; }
+	CColor getFontColor () const { return getCurrentState ().fontColor; }
 	/** set current font */
 	virtual void setFont (const CFontRef font, const CCoord& size = 0, const int32_t& style = -1);
 	/** get current font */
-	const CFontRef getFont () const { return currentState.font; }
+	const CFontRef getFont () const { return getCurrentState ().font; }
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -173,7 +177,7 @@ public:
 	/** sets the global alpha value[0..1] */
 	virtual void setGlobalAlpha (float newAlpha);
 	/** get current global alpha value */
-	float getGlobalAlpha () const { return currentState.globalAlpha; }
+	float getGlobalAlpha () const { return getCurrentState ().globalAlpha; }
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -189,7 +193,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	const CGraphicsTransform& getCurrentTransform () const;
-	const CRect& getAbsoluteClipRect () const { return currentState.clipRect; }
+	const CRect& getAbsoluteClipRect () const { return getCurrentState ().clipRect; }
 
 	/** returns the backend scale factor. */
 	virtual double getScaleFactor () const { return 1.; }
@@ -228,7 +232,7 @@ public:
 	virtual void beginDraw () {}
 	virtual void endDraw () {}
 
-	const CRect& getSurfaceRect () const { return surfaceRect; }
+	const CRect& getSurfaceRect () const;
 
 protected:
 	CDrawContext () = delete;
@@ -266,17 +270,12 @@ protected:
 	};
 	/// @endcond
 
-	const CDrawContextState& getCurrentState () const { return currentState; }
-	CDrawContextState& getCurrentState () { return currentState; }
+	const CDrawContextState& getCurrentState () const;
+	CDrawContextState& getCurrentState ();
 
 private:
-	UTF8String* drawStringHelper {nullptr};
-	CRect surfaceRect;
-
-	CDrawContextState currentState;
-
-	std::stack<CDrawContextState> globalStatesStack;
-	std::stack<CGraphicsTransform> transformStack;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //-----------------------------------------------------------------------------

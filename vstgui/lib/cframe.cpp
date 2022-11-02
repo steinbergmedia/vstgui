@@ -18,6 +18,7 @@
 #include <cassert>
 #include <vector>
 #include <queue>
+#include <stack>
 #include <limits>
 
 namespace VSTGUI {
