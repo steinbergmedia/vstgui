@@ -44,9 +44,9 @@ public:
 	/// @name Draw primitives
 	//-----------------------------------------------------------------------------
 	//@{
-	using LinePair = std::pair<CPoint, CPoint>;
-	using LineList = std::vector<LinePair>;
-	using PointList = std::vector<CPoint>;
+	using LinePair = VSTGUI::LinePair;
+	using LineList = VSTGUI::LineList;
+	using PointList = VSTGUI::PointList;
 
 	inline void drawLine (const CPoint& start, const CPoint& end) { drawLine (std::make_pair (start, end)); }
 	/** draw a line */

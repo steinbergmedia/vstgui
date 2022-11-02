@@ -9,6 +9,7 @@
 #include <limits>
 #include <memory>
 #include <map>
+#include <vector>
 
 namespace VSTGUI {
 
@@ -140,6 +141,10 @@ struct CMultiFrameBitmapDescription;
 
 using GradientColorStop = std::pair<double, CColor>;
 using GradientColorStopMap = std::multimap<double, CColor>;
+
+using LinePair = std::pair<CPoint, CPoint>;
+using LineList = std::vector<LinePair>;
+using PointList = std::vector<CPoint>;
 
 // interfaces
 class IViewListener;
