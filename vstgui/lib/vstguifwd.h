@@ -327,6 +327,9 @@ class IPlatformFrameConfig;
 class IPlatformFrameCallback;
 class IPlatformTimerCallback;
 class IPlatformFileSelector;
+class IPlatformGraphicsDevice;
+class IPlatformGraphicsDeviceContext;
+class IPlatformGraphicsDeviceContextBitmapExt;
 
 struct PlatformFileExtension;
 struct PlatformFileSelectorConfig;
@@ -347,5 +350,7 @@ using PlatformGradientPtr = std::unique_ptr<IPlatformGradient>;
 using PlatformGraphicsPathPtr = std::unique_ptr<IPlatformGraphicsPath>;
 using PlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
 using PlatformFileSelectorPtr = std::shared_ptr<IPlatformFileSelector>;
+using PlatformGraphicsDevicePtr = std::shared_ptr<IPlatformGraphicsDevice>;
+using PlatformGraphicsDeviceContextPtr = std::shared_ptr<IPlatformGraphicsDeviceContext>;
 
 } // VSTGUI

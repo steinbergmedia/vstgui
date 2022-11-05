@@ -196,8 +196,8 @@ public:
 	const CRect& getAbsoluteClipRect () const { return getCurrentState ().clipRect; }
 
 	/** returns the backend scale factor. */
-	virtual double getScaleFactor () const { return 1.; }
-	
+	virtual double getScaleFactor () const;
+
 	/** returns the current line size which corresponds to one pixel on screen.
 	 *
 	 *	do not cache this value, instead ask for it every time you need it.
@@ -233,6 +233,9 @@ public:
 	virtual void endDraw () {}
 
 	const CRect& getSurfaceRect () const;
+
+	CDrawContext (const PlatformGraphicsDeviceContextPtr device, const CRect& surfaceRect,
+				  double scaleFactor);
 
 protected:
 	CDrawContext () = delete;

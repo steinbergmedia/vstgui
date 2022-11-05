@@ -70,6 +70,7 @@ struct CDrawContext::Impl
 {
 	UTF8String* drawStringHelper {nullptr};
 	CRect surfaceRect;
+	double scaleFactor {1.};
 
 	CDrawContextState currentState;
 
@@ -77,7 +78,7 @@ struct CDrawContext::Impl
 	std::stack<CGraphicsTransform> transformStack;
 
 #if VSTGUI_PLATFORM_DRAWDEVICE
-	IPlatformDrawDevice* device {nullptr};
+	PlatformGraphicsDeviceContextPtr device;
 #endif
 };
 
@@ -88,6 +89,17 @@ CDrawContext::CDrawContext (const CRect& surfaceRect)
 	impl->surfaceRect = surfaceRect;
 
 	impl->transformStack.push (CGraphicsTransform ());
+}
+
+//------------------------------------------------------------------------
+CDrawContext::CDrawContext (const PlatformGraphicsDeviceContextPtr device, const CRect& surfaceRect,
+							double scaleFactor)
+: CDrawContext (surfaceRect)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	impl->device = device;
+	impl->scaleFactor = scaleFactor;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -103,6 +115,9 @@ CDrawContext::~CDrawContext () noexcept
 
 //-----------------------------------------------------------------------------
 const CRect& CDrawContext::getSurfaceRect () const { return impl->surfaceRect; }
+
+//------------------------------------------------------------------------
+double CDrawContext::getScaleFactor () const { return impl->scaleFactor; }
 
 //-----------------------------------------------------------------------------
 auto CDrawContext::getCurrentState () const -> const CDrawContextState&
@@ -158,7 +173,7 @@ void CDrawContext::restoreGlobalState ()
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setBitmapInterpolationQuality(BitmapInterpolationQuality quality)
+void CDrawContext::setBitmapInterpolationQuality (BitmapInterpolationQuality quality)
 {
 	getCurrentState ().bitmapQuality = quality;
 }
@@ -508,16 +523,16 @@ CCoord CDrawContext::getHairlineSize () const
 }
 
 //------------------------------------------------------------------------
-static DrawStyle convert (CDrawStyle s)
+static PlatformGraphicsDrawStyle convert (CDrawStyle s)
 {
 	switch (s)
 	{
 		case CDrawStyle::kDrawFilled:
-			return DrawStyle::Filled;
+			return PlatformGraphicsDrawStyle::Filled;
 		case CDrawStyle::kDrawStroked:
-			return DrawStyle::Stroked;
+			return PlatformGraphicsDrawStyle::Stroked;
 		case CDrawStyle::kDrawFilledAndStroked:
-			return DrawStyle::FilledAndStroked;
+			return PlatformGraphicsDrawStyle::FilledAndStroked;
 		default:
 			assert (false);
 	}
@@ -615,16 +630,16 @@ void CDrawContext::clearRect (const CRect& rect)
 }
 
 //------------------------------------------------------------------------
-static PathDrawMode convert (CDrawContext::PathDrawMode mode)
+static PlatformGraphicsPathDrawMode convert (CDrawContext::PathDrawMode mode)
 {
 	switch (mode)
 	{
 		case CDrawContext::PathDrawMode::kPathFilled:
-			return PathDrawMode::Filled;
+			return PlatformGraphicsPathDrawMode::Filled;
 		case CDrawContext::PathDrawMode::kPathStroked:
-			return PathDrawMode::Stroked;
+			return PlatformGraphicsPathDrawMode::Stroked;
 		case CDrawContext::PathDrawMode::kPathFilledEvenOdd:
-			return PathDrawMode::FilledEvenOdd;
+			return PlatformGraphicsPathDrawMode::FilledEvenOdd;
 		default:
 			assert (false);
 	}
