@@ -50,26 +50,29 @@ public:
 
 	inline void drawLine (const CPoint& start, const CPoint& end) { drawLine (std::make_pair (start, end)); }
 	/** draw a line */
-	virtual void drawLine (const LinePair& line) = 0;
+	virtual void drawLine (const LinePair& line);
 	/** draw multiple lines at once */
-	virtual void drawLines (const LineList& lines) = 0;
+	virtual void drawLines (const LineList& lines);
 	/** draw a polygon */
-	virtual void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle = kDrawStroked) = 0;
+	virtual void drawPolygon (const PointList& polygonPointList,
+							  const CDrawStyle drawStyle = kDrawStroked);
 	/** draw a rect */
-	virtual void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;
+	virtual void drawRect (const CRect& rect, const CDrawStyle drawStyle = kDrawStroked);
 	/** draw an arc, angles are in degree */
-	virtual void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) = 0;
+	virtual void drawArc (const CRect& rect, const float startAngle1, const float endAngle2,
+						  const CDrawStyle drawStyle = kDrawStroked);
 	/** draw an ellipse */
-	virtual void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;
+	virtual void drawEllipse (const CRect& rect, const CDrawStyle drawStyle = kDrawStroked);
 	/** draw a point */
-	virtual void drawPoint (const CPoint &point, const CColor& color) = 0;
+	virtual void drawPoint (const CPoint& point, const CColor& color);
 	/** don't call directly, please use CBitmap::draw instead */
-	virtual void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) = 0;
+	virtual void drawBitmap (CBitmap* bitmap, const CRect& dest,
+							 const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
 	virtual void drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest, const CNinePartTiledDescription& desc, float alpha = 1.f);
 	virtual void fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha);
 
 	/** clears the rect (makes r = 0, g = 0, b = 0, a = 0) */
-	virtual void clearRect (const CRect& rect) = 0;
+	virtual void clearRect (const CRect& rect);
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -210,9 +213,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** create a graphics path object, you need to forget it after usage */
-	virtual CGraphicsPath* createGraphicsPath () = 0;
+	virtual CGraphicsPath* createGraphicsPath ();
 	/** create a graphics path from a text */
-	virtual CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text) = 0;
+	virtual CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text);
 
 	/** create a rect with round corners as graphics path, you need to forget it after usage */
 	CGraphicsPath* createRoundRectGraphicsPath (const CRect& size, CCoord radius);
@@ -224,23 +227,33 @@ public:
 		kPathStroked
 	};
 
-	virtual void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = nullptr) = 0;
-	virtual void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = nullptr) = 0;
-	virtual void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0,0), bool evenOdd = false, CGraphicsTransform* transformation = nullptr) = 0;
+	virtual void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled,
+								   CGraphicsTransform* transformation = nullptr);
+	virtual void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient,
+									 const CPoint& startPoint, const CPoint& endPoint,
+									 bool evenOdd = false,
+									 CGraphicsTransform* transformation = nullptr);
+	virtual void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient,
+									 const CPoint& center, CCoord radius,
+									 const CPoint& originOffset = CPoint (0, 0),
+									 bool evenOdd = false,
+									 CGraphicsTransform* transformation = nullptr);
 	//@}
 
-	virtual void beginDraw () {}
-	virtual void endDraw () {}
+	virtual void beginDraw ();
+	virtual void endDraw ();
 
 	const CRect& getSurfaceRect () const;
 
 	CDrawContext (const PlatformGraphicsDeviceContextPtr device, const CRect& surfaceRect,
 				  double scaleFactor);
+	~CDrawContext () noexcept override;
+
+	const PlatformGraphicsDeviceContextPtr& getPlatformDeviceContext () const;
 
 protected:
 	CDrawContext () = delete;
 	explicit CDrawContext (const CRect& surfaceRect);
-	~CDrawContext () noexcept override;
 
 	virtual void init ();
 

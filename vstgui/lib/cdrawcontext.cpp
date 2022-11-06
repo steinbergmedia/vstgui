@@ -10,13 +10,14 @@
 #include "platform/iplatformfont.h"
 #include "platform/iplatformgraphicspath.h"
 #include "platform/iplatformgradient.h"
+#include "platform/platformfactory.h"
 #include <cassert>
 #include <stack>
 
 #define VSTGUI_PLATFORM_DRAWDEVICE 1
 
 #if VSTGUI_PLATFORM_DRAWDEVICE
-#include "platform/iplatformdrawdevice.h"
+#include "platform/iplatformgraphicsdevice.h"
 #endif
 
 namespace VSTGUI {
@@ -99,6 +100,7 @@ CDrawContext::CDrawContext (const PlatformGraphicsDeviceContextPtr device, const
 #if VSTGUI_PLATFORM_DRAWDEVICE
 	impl->device = device;
 	impl->scaleFactor = scaleFactor;
+	setClipRect (surfaceRect);
 #endif
 }
 
@@ -111,6 +113,16 @@ CDrawContext::~CDrawContext () noexcept
 	#endif
 	if (impl->drawStringHelper)
 		delete impl->drawStringHelper;
+}
+
+//------------------------------------------------------------------------
+const PlatformGraphicsDeviceContextPtr& CDrawContext::getPlatformDeviceContext () const
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	return impl->device;
+#else
+	return nullptr;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -598,9 +610,21 @@ void CDrawContext::drawEllipse (const CRect& rect, const CDrawStyle drawStyle)
 void CDrawContext::drawPoint (const CPoint& point, const CColor& color)
 {
 #if VSTGUI_PLATFORM_DRAWDEVICE
-	if (impl->device)
-		impl->device->drawPoint (point, color);
+	if (impl->device && impl->device->drawPoint (point, color))
+		return;
 #endif
+
+	// if the platform does not support drawing points, emulate it somehow
+
+	saveGlobalState ();
+
+	setLineWidth (1);
+	setFrameColor (color);
+	CPoint point2 (point);
+	point2.x++;
+	drawLine (point, point2);
+
+	restoreGlobalState ();
 }
 
 //------------------------------------------------------------------------
@@ -706,6 +730,8 @@ void CDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gra
 CGraphicsPath* CDrawContext::createGraphicsPath ()
 {
 #if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		return new CGraphicsPath (impl->device->getDevice ().getGraphicsPathFactory ());
 #endif
 	return nullptr;
 }
@@ -716,6 +742,24 @@ CGraphicsPath* CDrawContext::createTextPath (const CFontRef font, UTF8StringPtr 
 #if VSTGUI_PLATFORM_DRAWDEVICE
 #endif
 	return nullptr;
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::beginDraw ()
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->beginDraw ();
+#endif
+}
+
+//------------------------------------------------------------------------
+void CDrawContext::endDraw ()
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->endDraw ();
+#endif
 }
 
 } // VSTGUI

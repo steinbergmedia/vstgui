@@ -148,7 +148,7 @@ set(${target}_common_sources
     pixelbuffer.h
     pixelbuffer.cpp
     platform/iplatformbitmap.h
-    platform/iplatformdrawdevice.h
+    platform/iplatformgraphicsdevice.h
     platform/iplatformfileselector.h
     platform/iplatformfont.h
     platform/iplatformframe.h
@@ -211,6 +211,8 @@ set(${target}_mac_sources
     platform/mac/cocoa/nsviewoptionmenu.h
     platform/mac/cocoa/nsviewoptionmenu.mm
     platform/mac/cocoa/objcclassbuilder.h
+    platform/mac/coregraphicsdevicecontext.h
+    platform/mac/coregraphicsdevicecontext.mm
     platform/mac/macclipboard.h
     platform/mac/macclipboard.mm
     platform/mac/macfactory.h

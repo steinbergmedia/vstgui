@@ -8,6 +8,7 @@
 #if MAC
 #import "macstring.h"
 #import "cgdrawcontext.h"
+#import "coregraphicsdevicecontext.h"
 #import "macglobals.h"
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -279,6 +280,44 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 	return nullptr;
 }
 
+//------------------------------------------------------------------------
+static void drawCTLine (CTLineRef line, CGContextRef cgContext, CGColorRef cgColorRef,
+						CGPoint& cgPoint, CTFontRef fontRef, CPoint where, int32_t style,
+						bool antialias)
+{
+	CGContextSetShouldAntialias (cgContext, antialias);
+	CGContextSetShouldSmoothFonts (cgContext, true);
+	CGContextSetShouldSubpixelPositionFonts (cgContext, true);
+	CGContextSetShouldSubpixelQuantizeFonts (cgContext, true);
+	CGContextSetTextPosition (cgContext, static_cast<CGFloat> (where.x), cgPoint.y);
+	CTLineDraw (line, cgContext);
+	if (style & kUnderlineFace)
+	{
+		CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.f;
+		CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
+		CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
+		CGContextSetLineWidth (cgContext, underlineThickness);
+		cgPoint = CGContextGetTextPosition (cgContext);
+		CGContextBeginPath (cgContext);
+		CGContextMoveToPoint (cgContext, static_cast<CGFloat> (where.x),
+							  cgPoint.y - underlineOffset);
+		CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - underlineOffset);
+		CGContextDrawPath (cgContext, kCGPathStroke);
+	}
+	if (style & kStrikethroughFace)
+	{
+		CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
+		CGFloat offset = CTFontGetXHeight (fontRef) * 0.5f;
+		CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
+		CGContextSetLineWidth (cgContext, underlineThickness);
+		cgPoint = CGContextGetTextPosition (cgContext);
+		CGContextBeginPath (cgContext);
+		CGContextMoveToPoint (cgContext, static_cast<CGFloat> (where.x), cgPoint.y - offset);
+		CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - offset);
+		CGContextDrawPath (cgContext, kCGPathStroke);
+	}
+}
+
 //-----------------------------------------------------------------------------
 void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias) const
 {
@@ -297,39 +336,24 @@ void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, c
 			CGPoint cgPoint = CGPointFromCPoint (point);
 			if (integralMode)
 				cgPoint = cgDrawContext->pixelAlligned (cgPoint);
-			CGContextSetShouldAntialias (cgContext, antialias);
-			CGContextSetShouldSmoothFonts (cgContext, true);
-			CGContextSetShouldSubpixelPositionFonts (cgContext, true);
-			CGContextSetShouldSubpixelQuantizeFonts (cgContext, true);
-			CGContextSetTextPosition (cgContext, static_cast<CGFloat> (point.x), cgPoint.y);
-			CTLineDraw (line, cgContext);
-			if (style & kUnderlineFace)
-			{
-				CGColorRef cgColorRef = getCGColor (context->getFontColor ());
-				CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.f;
-				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
-				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
-				CGContextSetLineWidth (cgContext, underlineThickness);
-				cgPoint = CGContextGetTextPosition (cgContext);
-				CGContextBeginPath (cgContext);
-				CGContextMoveToPoint (cgContext, static_cast<CGFloat> (point.x), cgPoint.y - underlineOffset);
-				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - underlineOffset);
-				CGContextDrawPath (cgContext, kCGPathStroke);
-			}
-			if (style & kStrikethroughFace)
-			{
-				CGColorRef cgColorRef = getCGColor (context->getFontColor ());
-				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
-				CGFloat offset = CTFontGetXHeight (fontRef) * 0.5f;
-				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
-				CGContextSetLineWidth (cgContext, underlineThickness);
-				cgPoint = CGContextGetTextPosition (cgContext);
-				CGContextBeginPath (cgContext);
-				CGContextMoveToPoint (cgContext, static_cast<CGFloat> (point.x), cgPoint.y - offset);
-				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - offset);
-				CGContextDrawPath (cgContext, kCGPathStroke);
-			}
+			CGColorRef cgColorRef = nullptr;
+			if (style & kUnderlineFace || style & kStrikethroughFace)
+				cgColorRef = getCGColor (context->getFontColor ());
+			drawCTLine (line, cgContext, cgColorRef, cgPoint, fontRef, point, style, antialias);
 			cgDrawContext->releaseCGContext (cgContext);
+		}
+		else if (auto deviceContext = std::dynamic_pointer_cast<CoreGraphicsDeviceContext> (
+					 context->getPlatformDeviceContext ()))
+		{
+			deviceContext->customDraw (true, integralMode, [&] (auto cgContext, auto pixelAlign) {
+				CGPoint cgPoint = CGPointFromCPoint (point);
+				if (integralMode)
+					cgPoint = pixelAlign (cgPoint);
+				CGColorRef cgColorRef = nullptr;
+				if (style & kUnderlineFace || style & kStrikethroughFace)
+					cgColorRef = getCGColor (context->getFontColor ());
+				drawCTLine (line, cgContext, cgColorRef, cgPoint, fontRef, point, style, antialias);
+			});
 		}
 		CFRelease (line);
 	}

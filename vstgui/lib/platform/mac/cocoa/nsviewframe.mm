@@ -14,8 +14,9 @@
 #import "autoreleasepool.h"
 #import "../macclipboard.h"
 #import "../macfactory.h"
-#import "../cgdrawcontext.h"
+//#import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
+#import "../coregraphicsdevicecontext.h"
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
@@ -1089,7 +1090,13 @@ void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
 
 	addDebugRedrawRect (clipBoundingBox, true);
 
-	CGDrawContext drawContext (ctx, rectFromNSRect ([nsView bounds]));
+	CoreGraphicsDevice device {};
+	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (device, ctx);
+
+	CDrawContext drawContext (
+		std::static_pointer_cast<IPlatformGraphicsDeviceContext> (deviceContext),
+		rectFromNSRect ([nsView bounds]), layer.contentsScale);
+
 	drawContext.beginDraw ();
 
 	if (useInvalidRects)
@@ -1118,6 +1125,7 @@ void NSViewFrame::drawRect (NSRect* rect)
 	if (caLayer)
 		return;
 
+#if 0
 	inDraw = true;
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
 
@@ -1156,6 +1164,7 @@ void NSViewFrame::drawRect (NSRect* rect)
 	}
 	drawContext.endDraw ();
 	inDraw = false;
+#endif
 }
 
 //------------------------------------------------------------------------

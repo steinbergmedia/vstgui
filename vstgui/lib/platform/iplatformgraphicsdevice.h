@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../vstguifwd.h"
-#include "iplatformbitmap.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -26,6 +25,8 @@ enum class PlatformGraphicsPathDrawMode : uint32_t
 	Stroked
 };
 
+using TransformMatrix = CGraphicsTransform;
+
 //------------------------------------------------------------------------
 class IPlatformGraphicsDevice
 {
@@ -34,7 +35,8 @@ public:
 
 	virtual PlatformGraphicsDeviceContextPtr
 		createBitmapContext (const PlatformBitmapPtr& bitmap) const = 0;
-	virtual PlatformGraphicsPathPtr createPath () const = 0;
+
+	virtual PlatformGraphicsPathFactoryPtr getGraphicsPathFactory () const = 0;
 };
 
 //------------------------------------------------------------------------
@@ -61,13 +63,13 @@ public:
 							 BitmapInterpolationQuality quality) const = 0;
 	virtual bool clearRect (CRect rect) const = 0;
 	virtual bool drawGraphicsPath (IPlatformGraphicsPath& path, PlatformGraphicsPathDrawMode mode,
-								   CGraphicsTransform* transformation) const = 0;
+								   TransformMatrix* transformation) const = 0;
 	virtual bool fillLinearGradient (IPlatformGraphicsPath& path, const IPlatformGradient& gradient,
 									 CPoint startPoint, CPoint endPoint, bool evenOdd,
-									 CGraphicsTransform* transformation) const = 0;
+									 TransformMatrix* transformation) const = 0;
 	virtual bool fillRadialGradient (IPlatformGraphicsPath& path, const IPlatformGradient& gradient,
 									 CPoint center, CCoord radius, CPoint originOffset,
-									 bool evenOdd, CGraphicsTransform* transformation) const = 0;
+									 bool evenOdd, TransformMatrix* transformation) const = 0;
 	// state
 	virtual bool saveGlobalState () const = 0;
 	virtual bool restoreGlobalState () const = 0;
@@ -78,7 +80,7 @@ public:
 	virtual void setFillColor (CColor color) const = 0;
 	virtual void setFrameColor (CColor color) const = 0;
 	virtual void setGlobalAlpha (double newAlpha) const = 0;
-	virtual void setTransformMatrix (CGraphicsTransform tm) const = 0;
+	virtual void setTransformMatrix (const TransformMatrix& tm) const = 0;
 
 	// extension
 	virtual const IPlatformGraphicsDeviceContextBitmapExt* asBitmapExt () const = 0;
