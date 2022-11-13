@@ -71,8 +71,8 @@ public:
 									 CPoint center, CCoord radius, CPoint originOffset,
 									 bool evenOdd, TransformMatrix* transformation) const = 0;
 	// state
-	virtual bool saveGlobalState () const = 0;
-	virtual bool restoreGlobalState () const = 0;
+	virtual void saveGlobalState () const = 0;
+	virtual void restoreGlobalState () const = 0;
 	virtual void setLineStyle (const CLineStyle& style) const = 0;
 	virtual void setLineWidth (CCoord width) const = 0;
 	virtual void setDrawMode (CDrawMode mode) const = 0;

@@ -12,11 +12,10 @@
 #include "coregraphicsdevicecontext.h"
 #include "quartzgraphicspath.h"
 
+#include <stack>
+
 #if TARGET_OS_IPHONE
-#include <CoreGraphics/CoreGraphics.h>
 #include <ImageIO/ImageIO.h>
-#else
-#include <ApplicationServices/ApplicationServices.h>
 #endif
 
 //------------------------------------------------------------------------
@@ -113,12 +112,12 @@ struct CoreGraphicsDeviceContext::Impl
 	template<typename Proc>
 	void doInCGContext (bool swapYAxis, bool integralOffset, Proc proc) const
 	{
-		if (clipRect.isEmpty ())
+		if (state.clipRect.isEmpty ())
 			return;
 
 		CGContextSaveGState (cgContext);
 
-		CGRect cgClipRect = CGRectFromCRect (clipRect);
+		CGRect cgClipRect = CGRectFromCRect (state.clipRect);
 		if (integralOffset)
 			cgClipRect = pixelAlligned (cgClipRect);
 		CGContextClipToRect (cgContext, cgClipRect);
@@ -130,9 +129,9 @@ struct CoreGraphicsDeviceContext::Impl
 		}
 #endif
 
-		if (tm.isInvariant () == false)
+		if (state.tm.isInvariant () == false)
 		{
-			auto t = tm;
+			auto t = state.tm;
 			if (integralOffset)
 			{
 				CGPoint p = pixelAlligned (CGPointFromCPoint (CPoint (t.dx, t.dy)));
@@ -178,7 +177,7 @@ struct CoreGraphicsDeviceContext::Impl
 	//------------------------------------------------------------------------
 	void applyLineStyle () const
 	{
-		switch (lineStyle.getLineCap ())
+		switch (state.lineStyle.getLineCap ())
 		{
 			case CLineStyle::kLineCapButt:
 				CGContextSetLineCap (cgContext, kCGLineCapButt);
@@ -190,7 +189,7 @@ struct CoreGraphicsDeviceContext::Impl
 				CGContextSetLineCap (cgContext, kCGLineCapSquare);
 				break;
 		}
-		switch (lineStyle.getLineJoin ())
+		switch (state.lineStyle.getLineJoin ())
 		{
 			case CLineStyle::kLineJoinMiter:
 				CGContextSetLineJoin (cgContext, kCGLineJoinMiter);
@@ -202,15 +201,16 @@ struct CoreGraphicsDeviceContext::Impl
 				CGContextSetLineJoin (cgContext, kCGLineJoinBevel);
 				break;
 		}
-		if (lineStyle.getDashCount () > 0)
+		if (state.lineStyle.getDashCount () > 0)
 		{
-			CGFloat* dashLengths = new CGFloat[lineStyle.getDashCount ()];
-			for (uint32_t i = 0; i < lineStyle.getDashCount (); i++)
+			CGFloat* dashLengths = new CGFloat[state.lineStyle.getDashCount ()];
+			for (uint32_t i = 0; i < state.lineStyle.getDashCount (); i++)
 			{
-				dashLengths[i] = static_cast<CGFloat> (lineWidth * lineStyle.getDashLengths ()[i]);
+				dashLengths[i] =
+					static_cast<CGFloat> (state.lineWidth * state.lineStyle.getDashLengths ()[i]);
 			}
-			CGContextSetLineDash (cgContext, static_cast<CGFloat> (lineStyle.getDashPhase ()),
-								  dashLengths, lineStyle.getDashCount ());
+			CGContextSetLineDash (cgContext, static_cast<CGFloat> (state.lineStyle.getDashPhase ()),
+								  dashLengths, state.lineStyle.getDashCount ());
 			delete[] dashLengths;
 		}
 	}
@@ -218,8 +218,8 @@ struct CoreGraphicsDeviceContext::Impl
 	//-----------------------------------------------------------------------------
 	void applyLineWidthCTM () const
 	{
-		int32_t lineWidthInt = static_cast<int32_t> (lineWidth);
-		if (static_cast<CCoord> (lineWidthInt) == lineWidth && lineWidthInt % 2)
+		int32_t lineWidthInt = static_cast<int32_t> (state.lineWidth);
+		if (static_cast<CCoord> (lineWidthInt) == state.lineWidth && lineWidthInt % 2)
 			CGContextTranslateCTM (cgContext, 0.5, 0.5);
 	}
 
@@ -278,7 +278,7 @@ struct CoreGraphicsDeviceContext::Impl
 		bitmapNormSize.width /= bitmapScaleFactor;
 		bitmapNormSize.height /= bitmapScaleFactor;
 
-		CGContextSetAlpha (context, (CGFloat)alpha * globalAlpha);
+		CGContextSetAlpha (context, (CGFloat)alpha * state.globalAlpha);
 
 		CGRect dest;
 		dest.origin.x = static_cast<CGFloat> (rect.left - offset.x);
@@ -321,14 +321,19 @@ struct CoreGraphicsDeviceContext::Impl
 	CoreGraphicsDevice& device;
 	CGContextRef cgContext {nullptr};
 
-	CLineStyle lineStyle {kLineSolid};
-	CCoord lineWidth {1};
-	CDrawMode drawMode {};
-	CRect clipRect {};
-	CColor fillColor {};
-	CColor frameColor {};
-	double globalAlpha {1.};
-	TransformMatrix tm {};
+	struct State
+	{
+		CLineStyle lineStyle {kLineSolid};
+		CCoord lineWidth {1};
+		CDrawMode drawMode {};
+		CRect clipRect {};
+		double globalAlpha {1.};
+		TransformMatrix tm {};
+	};
+
+	State state;
+	std::stack<State> stateStack;
+
 	double backendScaleFactor {1.};
 
 	using BitmapDrawCountMap = std::map<CGBitmap*, int32_t>;
@@ -367,14 +372,14 @@ bool CoreGraphicsDeviceContext::endDraw () const
 //------------------------------------------------------------------------
 bool CoreGraphicsDeviceContext::drawLine (LinePair line) const
 {
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		impl->applyLineStyle ();
 
 		CGContextBeginPath (context);
 		CGPoint first = CGPointFromCPoint (line.first);
 		CGPoint second = CGPointFromCPoint (line.second);
 
-		if (impl->drawMode.integralMode ())
+		if (impl->state.drawMode.integralMode ())
 		{
 			first = impl->pixelAlligned (first);
 			second = impl->pixelAlligned (second);
@@ -393,7 +398,7 @@ bool CoreGraphicsDeviceContext::drawLine (LinePair line) const
 bool CoreGraphicsDeviceContext::drawLines (const LineList& lines) const
 {
 	vstgui_assert (lines.empty () == false);
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		impl->applyLineStyle ();
 		static constexpr auto numStackPoints = 32;
 		CGPoint stackPoints[numStackPoints];
@@ -403,7 +408,7 @@ bool CoreGraphicsDeviceContext::drawLines (const LineList& lines) const
 							   : std::unique_ptr<CGPoint[]> (new CGPoint[lines.size () * 2]);
 		auto cgPoints = cgPointsPtr ? cgPointsPtr.get () : stackPoints;
 		uint32_t index = 0;
-		if (impl->drawMode.integralMode ())
+		if (impl->state.drawMode.integralMode ())
 		{
 			for (const auto& line : lines)
 			{
@@ -422,7 +427,7 @@ bool CoreGraphicsDeviceContext::drawLines (const LineList& lines) const
 			}
 		}
 
-		if (impl->drawMode.integralMode ())
+		if (impl->state.drawMode.integralMode ())
 			impl->applyLineWidthCTM ();
 
 		const size_t maxPointsPerIteration = 16;
@@ -444,19 +449,19 @@ bool CoreGraphicsDeviceContext::drawPolygon (const PointList& polygonPointList,
 											 PlatformGraphicsDrawStyle drawStyle) const
 {
 	vstgui_assert (polygonPointList.empty () == false);
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		CGPathDrawingMode m = convert (drawStyle);
 		impl->applyLineStyle ();
 
 		CGContextBeginPath (context);
 		CGPoint p = CGPointFromCPoint (polygonPointList[0]);
-		if (impl->drawMode.integralMode ())
+		if (impl->state.drawMode.integralMode ())
 			p = impl->pixelAlligned (p);
 		CGContextMoveToPoint (context, p.x, p.y);
 		for (uint32_t i = 1; i < polygonPointList.size (); i++)
 		{
 			p = CGPointFromCPoint (polygonPointList[i]);
-			if (impl->drawMode.integralMode ())
+			if (impl->state.drawMode.integralMode ())
 				p = impl->pixelAlligned (p);
 			CGContextAddLineToPoint (context, p.x, p.y);
 		}
@@ -468,7 +473,7 @@ bool CoreGraphicsDeviceContext::drawPolygon (const PointList& polygonPointList,
 //------------------------------------------------------------------------
 bool CoreGraphicsDeviceContext::drawRect (CRect rect, PlatformGraphicsDrawStyle drawStyle) const
 {
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		CGRect r = CGRectFromCRect (rect);
 		if (drawStyle != PlatformGraphicsDrawStyle::Filled)
 		{
@@ -479,7 +484,7 @@ bool CoreGraphicsDeviceContext::drawRect (CRect rect, PlatformGraphicsDrawStyle 
 		CGPathDrawingMode m = convert (drawStyle);
 		impl->applyLineStyle ();
 
-		if (impl->drawMode.integralMode ())
+		if (impl->state.drawMode.integralMode ())
 		{
 			r = impl->pixelAlligned (r);
 			if (drawStyle != PlatformGraphicsDrawStyle::Filled)
@@ -497,7 +502,7 @@ bool CoreGraphicsDeviceContext::drawRect (CRect rect, PlatformGraphicsDrawStyle 
 bool CoreGraphicsDeviceContext::drawArc (CRect rect, double startAngle1, double endAngle2,
 										 PlatformGraphicsDrawStyle drawStyle) const
 {
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		CGPathDrawingMode m = convert (drawStyle);
 		impl->applyLineStyle ();
 
@@ -532,7 +537,7 @@ bool CoreGraphicsDeviceContext::drawArc (CRect rect, double startAngle1, double 
 //------------------------------------------------------------------------
 bool CoreGraphicsDeviceContext::drawEllipse (CRect rect, PlatformGraphicsDrawStyle drawStyle) const
 {
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		CGRect r = CGRectFromCRect (rect);
 		if (drawStyle != PlatformGraphicsDrawStyle::Filled)
 		{
@@ -542,7 +547,7 @@ bool CoreGraphicsDeviceContext::drawEllipse (CRect rect, PlatformGraphicsDrawSty
 
 		CGPathDrawingMode m = convert (drawStyle);
 		impl->applyLineStyle ();
-		if (impl->drawMode.integralMode ())
+		if (impl->state.drawMode.integralMode ())
 		{
 			if (drawStyle != PlatformGraphicsDrawStyle::Filled)
 				impl->applyLineWidthCTM ();
@@ -599,9 +604,9 @@ bool CoreGraphicsDeviceContext::drawBitmap (IPlatformBitmap& bitmap, CRect dest,
 //------------------------------------------------------------------------
 bool CoreGraphicsDeviceContext::clearRect (CRect rect) const
 {
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		CGRect cgRect = CGRectFromCRect (rect);
-		if (impl->drawMode.integralMode ())
+		if (impl->state.drawMode.integralMode ())
 			cgRect = impl->pixelAlligned (cgRect);
 		CGContextClearRect (context, cgRect);
 	});
@@ -617,7 +622,7 @@ bool CoreGraphicsDeviceContext::drawGraphicsPath (IPlatformGraphicsPath& path,
 	if (!cgPath)
 		return false;
 
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		auto cgMode = convert (mode);
 		if (cgMode == kCGPathStroke)
 			impl->applyLineStyle ();
@@ -627,7 +632,7 @@ bool CoreGraphicsDeviceContext::drawGraphicsPath (IPlatformGraphicsPath& path,
 				CGAffineTransform transform = createCGAffineTransform (*transformation);
 				CGContextConcatCTM (context, transform);
 			}
-			if (impl->drawMode.integralMode () && impl->drawMode.aliasing ())
+			if (impl->state.drawMode.integralMode () && impl->state.drawMode.aliasing ())
 			{
 				Impl::DoGraphicStateSave (context, [&] () {
 					impl->applyLineWidthCTM ();
@@ -662,11 +667,11 @@ bool CoreGraphicsDeviceContext::fillLinearGradient (IPlatformGraphicsPath& path,
 	if (!cgGradient)
 		return false;
 
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		CGPoint start = CGPointFromCPoint (startPoint);
 		CGPoint end = CGPointFromCPoint (endPoint);
 		Impl::DoGraphicStateSave (context, [&] () {
-			if (impl->drawMode.integralMode ())
+			if (impl->state.drawMode.integralMode ())
 			{
 				start = impl->pixelAlligned (start);
 				end = impl->pixelAlligned (end);
@@ -676,7 +681,7 @@ bool CoreGraphicsDeviceContext::fillLinearGradient (IPlatformGraphicsPath& path,
 				CGAffineTransform transform = createCGAffineTransform (*transformation);
 				CGContextConcatCTM (context, transform);
 			}
-			if (impl->drawMode.integralMode () && impl->drawMode.aliasing ())
+			if (impl->state.drawMode.integralMode () && impl->state.drawMode.aliasing ())
 			{
 				cgPath->pixelAlign (
 					[] (const CGPoint& p, void* context) {
@@ -715,14 +720,14 @@ bool CoreGraphicsDeviceContext::fillRadialGradient (IPlatformGraphicsPath& path,
 	if (!cgGradient)
 		return false;
 
-	impl->doInCGContext (true, impl->drawMode.integralMode (), [&] (auto context) {
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
 		Impl::DoGraphicStateSave (context, [&] () {
 			if (transformation)
 			{
 				CGAffineTransform transform = createCGAffineTransform (*transformation);
 				CGContextConcatCTM (context, transform);
 			}
-			if (impl->drawMode.integralMode () && impl->drawMode.aliasing ())
+			if (impl->state.drawMode.integralMode () && impl->state.drawMode.aliasing ())
 			{
 				cgPath->pixelAlign (
 					[] (const CGPoint& p, void* context) {
@@ -750,66 +755,71 @@ bool CoreGraphicsDeviceContext::fillRadialGradient (IPlatformGraphicsPath& path,
 }
 
 //------------------------------------------------------------------------
-bool CoreGraphicsDeviceContext::saveGlobalState () const
+void CoreGraphicsDeviceContext::saveGlobalState () const
 {
 	CGContextSaveGState (impl->cgContext);
-	return true;
+	impl->stateStack.push (impl->state);
 }
 
 //------------------------------------------------------------------------
-bool CoreGraphicsDeviceContext::restoreGlobalState () const
+void CoreGraphicsDeviceContext::restoreGlobalState () const
 {
+	vstgui_assert (impl->stateStack.empty () == false,
+				   "Unbalanced calls to saveGlobalState and restoreGlobalState");
+#if NDEBUG
+	if (impl->stateStack.empty ())
+		return;
+#endif
 	CGContextRestoreGState (impl->cgContext);
-	return true;
+	impl->state = impl->stateStack.top ();
+	impl->stateStack.pop ();
 }
 
 //------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setLineStyle (const CLineStyle& style) const
 {
-	impl->lineStyle = style;
+	impl->state.lineStyle = style;
 }
 
 //------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setLineWidth (CCoord width) const
 {
-	impl->lineWidth = width;
+	impl->state.lineWidth = width;
 	CGContextSetLineWidth (impl->cgContext, static_cast<CGFloat> (width));
 }
 
 //------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setDrawMode (CDrawMode mode) const
 {
-	impl->drawMode = mode;
+	impl->state.drawMode = mode;
 	CGContextSetShouldAntialias (impl->cgContext, mode.antiAliasing ());
 }
 
 //------------------------------------------------------------------------
-void CoreGraphicsDeviceContext::setClipRect (CRect clip) const { impl->clipRect = clip; }
+void CoreGraphicsDeviceContext::setClipRect (CRect clip) const { impl->state.clipRect = clip; }
 
 //------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setFillColor (CColor color) const
 {
-	impl->fillColor = color;
 	CGContextSetFillColorWithColor (impl->cgContext, getCGColor (color));
 }
 
 //------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setFrameColor (CColor color) const
 {
-	impl->frameColor = color;
 	CGContextSetStrokeColorWithColor (impl->cgContext, getCGColor (color));
 }
 
 //------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setGlobalAlpha (double newAlpha) const
 {
-	impl->globalAlpha = newAlpha;
+	impl->state.globalAlpha = newAlpha;
 }
 
 //------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setTransformMatrix (const TransformMatrix& tm) const
 {
-	impl->tm = tm;
+	impl->state.tm = tm;
 }
 
 //------------------------------------------------------------------------

@@ -6,14 +6,20 @@
 
 #include "../iplatformgraphicsdevice.h"
 
+#if TARGET_OS_IPHONE
+#include <CoreGraphics/CoreGraphics.h>
+#else
+#include <ApplicationServices/ApplicationServices.h>
+#endif
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
 class CoreGraphicsDevice;
 
 //------------------------------------------------------------------------
-class CoreGraphicsDeviceContext : public IPlatformGraphicsDeviceContext,
-								  public IPlatformGraphicsDeviceContextBitmapExt
+class CoreGraphicsDeviceContext final : public IPlatformGraphicsDeviceContext,
+										public IPlatformGraphicsDeviceContextBitmapExt
 {
 public:
 	CoreGraphicsDeviceContext (CoreGraphicsDevice& device, void* cgContext);
@@ -44,8 +50,8 @@ public:
 							 CPoint center, CCoord radius, CPoint originOffset, bool evenOdd,
 							 TransformMatrix* transformation) const override;
 	// state
-	bool saveGlobalState () const override;
-	bool restoreGlobalState () const override;
+	void saveGlobalState () const override;
+	void restoreGlobalState () const override;
 	void setLineStyle (const CLineStyle& style) const override;
 	void setLineWidth (CCoord width) const override;
 	void setDrawMode (CDrawMode mode) const override;
