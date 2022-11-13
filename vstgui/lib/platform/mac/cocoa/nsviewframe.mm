@@ -16,7 +16,6 @@
 #import "../macfactory.h"
 //#import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
-#import "../coregraphicsdevicecontext.h"
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
@@ -1090,9 +1089,9 @@ void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
 
 	addDebugRedrawRect (clipBoundingBox, true);
 
-	CoreGraphicsDevice device {};
 	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (device, ctx);
 
+	// TODO: refactor IPlatformFrameCallback to take a platform graphics device context
 	CDrawContext drawContext (
 		std::static_pointer_cast<IPlatformGraphicsDeviceContext> (deviceContext),
 		rectFromNSRect ([nsView bounds]), layer.contentsScale);
@@ -1523,9 +1522,14 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 		[nsView setWantsLayer:YES];
 		caLayer.actions = nil;
 	}
+
+	auto createGraphicsDeviceContext = [this] (void* ctx) {
+		return std::make_shared<CoreGraphicsDeviceContext> (device, ctx);
+	};
+
 	auto caParentLayer =
 		parentViewLayer ? parentViewLayer->getCALayer () : (caLayer ? caLayer : nsView.layer);
-	auto layer = makeOwned<CAViewLayer> (caParentLayer);
+	auto layer = makeOwned<CAViewLayer> (caParentLayer, createGraphicsDeviceContext);
 	layer->init (drawDelegate);
 	return std::move (layer);
 }

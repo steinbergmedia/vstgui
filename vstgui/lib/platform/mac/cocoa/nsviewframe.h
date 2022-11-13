@@ -12,6 +12,7 @@
 #include "../../../cview.h"
 #include "../../../cinvalidrectlist.h"
 #include "../../../idatapackage.h"
+#import "../coregraphicsdevicecontext.h"
 #include "nsviewdraggingsession.h"
 #include <list>
 
@@ -118,6 +119,7 @@ protected:
 	CCursorType cursor;
 	CButtonState mouseDownButtonState {};
 	CInvalidRectList invalidRectList;
+	CoreGraphicsDevice device {};
 };
 
 } // VSTGUI
