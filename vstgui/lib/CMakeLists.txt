@@ -289,6 +289,8 @@ set(${target}_linux_sources
     platform/linux/cairofont.h
     platform/linux/cairogradient.cpp
     platform/linux/cairogradient.h
+    platform/linux/cairographicscontext.cpp
+    platform/linux/cairographicscontext.h
     platform/linux/cairopath.cpp
     platform/linux/cairopath.h
     platform/linux/cairoutils.h

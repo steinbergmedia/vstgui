@@ -178,6 +178,8 @@ CGradient* CGraphicsPath::createGradient (double color1Start, double color2Start
 //-----------------------------------------------------------------------------
 void CGraphicsPath::makePlatformGraphicsPath (PlatformGraphicsPathFillMode fillMode)
 {
+	if (!factory)
+		return;
 	path = factory->createPath (fillMode);
 	if (!path)
 		return;

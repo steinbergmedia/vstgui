@@ -35,8 +35,6 @@ public:
 
 	virtual PlatformGraphicsDeviceContextPtr
 		createBitmapContext (const PlatformBitmapPtr& bitmap) const = 0;
-
-	virtual PlatformGraphicsPathFactoryPtr getGraphicsPathFactory () const = 0;
 };
 
 //------------------------------------------------------------------------
@@ -46,6 +44,7 @@ public:
 	virtual ~IPlatformGraphicsDeviceContext () noexcept = default;
 
 	virtual const IPlatformGraphicsDevice& getDevice () const = 0;
+	virtual PlatformGraphicsPathFactoryPtr getGraphicsPathFactory () const = 0;
 
 	virtual bool beginDraw () const = 0;
 	virtual bool endDraw () const = 0;

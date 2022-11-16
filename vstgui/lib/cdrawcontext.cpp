@@ -731,7 +731,7 @@ CGraphicsPath* CDrawContext::createGraphicsPath ()
 {
 #if VSTGUI_PLATFORM_DRAWDEVICE
 	if (impl->device)
-		return new CGraphicsPath (impl->device->getDevice ().getGraphicsPathFactory ());
+		return new CGraphicsPath (impl->device->getGraphicsPathFactory ());
 #endif
 	return nullptr;
 }
