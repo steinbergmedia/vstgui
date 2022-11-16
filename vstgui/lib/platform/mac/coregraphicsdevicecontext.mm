@@ -59,12 +59,6 @@ auto CoreGraphicsDevice::createBitmapContext (const PlatformBitmapPtr& bitmap) c
 }
 
 //------------------------------------------------------------------------
-auto CoreGraphicsDevice::getGraphicsPathFactory () const -> PlatformGraphicsPathFactoryPtr
-{
-	return CGGraphicsPathFactory::instance ();
-}
-
-//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 struct CoreGraphicsDeviceContext::Impl
@@ -357,6 +351,12 @@ CoreGraphicsDeviceContext::~CoreGraphicsDeviceContext () noexcept {}
 const IPlatformGraphicsDevice& CoreGraphicsDeviceContext::getDevice () const
 {
 	return impl->device;
+}
+
+//------------------------------------------------------------------------
+PlatformGraphicsPathFactoryPtr CoreGraphicsDeviceContext::getGraphicsPathFactory () const
+{
+	return CGGraphicsPathFactory::instance ();
 }
 
 //------------------------------------------------------------------------

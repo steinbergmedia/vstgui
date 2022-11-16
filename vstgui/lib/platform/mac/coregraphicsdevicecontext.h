@@ -24,7 +24,9 @@ class CoreGraphicsDeviceContext final : public IPlatformGraphicsDeviceContext,
 public:
 	CoreGraphicsDeviceContext (CoreGraphicsDevice& device, void* cgContext);
 	~CoreGraphicsDeviceContext () noexcept override;
+
 	const IPlatformGraphicsDevice& getDevice () const override;
+	PlatformGraphicsPathFactoryPtr getGraphicsPathFactory () const override;
 
 	bool beginDraw () const override;
 	bool endDraw () const override;
@@ -87,7 +89,6 @@ class CoreGraphicsDevice : public IPlatformGraphicsDevice
 public:
 	PlatformGraphicsDeviceContextPtr
 		createBitmapContext (const PlatformBitmapPtr& bitmap) const override;
-	PlatformGraphicsPathFactoryPtr getGraphicsPathFactory () const override;
 };
 
 //------------------------------------------------------------------------
