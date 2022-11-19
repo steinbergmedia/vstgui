@@ -242,6 +242,7 @@ CairoGraphicsDeviceContext::CairoGraphicsDeviceContext (const CairoGraphicsDevic
 														const Cairo::SurfaceHandle& handle)
 {
 	impl = std::make_unique<Impl> (device, handle);
+	impl->state.tm.translate (0.5, 0.5);
 }
 
 //------------------------------------------------------------------------
@@ -605,7 +606,10 @@ void CairoGraphicsDeviceContext::setGlobalAlpha (double newAlpha) const
 //------------------------------------------------------------------------
 void CairoGraphicsDeviceContext::setTransformMatrix (const TransformMatrix& tm) const
 {
-	impl->state.tm = tm;
+	TransformMatrix offset;
+	offset.translate (0.5, 0.5);
+
+	impl->state.tm = tm * offset;
 }
 
 //------------------------------------------------------------------------
