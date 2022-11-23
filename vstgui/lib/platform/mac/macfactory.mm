@@ -13,6 +13,7 @@
 #include "cgbitmap.h"
 #include "cgdrawcontext.h"
 #include "quartzgraphicspath.h"
+#include "coregraphicsdevicecontext.h"
 #include "cocoa/nsviewframe.h"
 #include "ios/uiviewframe.h"
 #include "macclipboard.h"
@@ -35,6 +36,7 @@ struct MacFactory::Impl
 	CFBundleRef bundle {nullptr};
 	bool useAsynchronousLayerDrawing {true};
 	bool visualizeRedrawAreas {false};
+	CoreGraphicsDeviceFactory graphicsDeviceFactory;
 };
 
 //-----------------------------------------------------------------------------
@@ -237,6 +239,12 @@ PlatformFileSelectorPtr MacFactory::createFileSelector (PlatformFileSelectorStyl
 	return createCocoaFileSelector (style, nsViewFrame);
 #endif
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformGraphicsDeviceFactory& MacFactory::getGraphicsDeviceFactory () const noexcept
+{
+	return impl->graphicsDeviceFactory;
 }
 
 //-----------------------------------------------------------------------------

@@ -25,7 +25,29 @@ enum class PlatformGraphicsPathDrawMode : uint32_t
 	Stroked
 };
 
+//------------------------------------------------------------------------
 using TransformMatrix = CGraphicsTransform;
+
+//------------------------------------------------------------------------
+struct ScreenInfo
+{
+	using Identifier = uint32_t;
+	/*
+		Identifier identifier;
+		uint32_t width;
+		uint32_t height;
+	*/
+};
+static constexpr const ScreenInfo::Identifier DefaultScreenIdentifier = 0u;
+
+//------------------------------------------------------------------------
+class IPlatformGraphicsDeviceFactory
+{
+public:
+	virtual ~IPlatformGraphicsDeviceFactory () noexcept = default;
+
+	virtual PlatformGraphicsDevicePtr getDeviceForScreen (ScreenInfo::Identifier screen) const = 0;
+};
 
 //------------------------------------------------------------------------
 class IPlatformGraphicsDevice

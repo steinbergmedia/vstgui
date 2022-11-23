@@ -131,9 +131,7 @@ struct VSTGUI_macOS_CALayer : VSTGUI::RuntimeObjCClass<VSTGUI_macOS_CALayer>
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CAViewLayer::CAViewLayer (CALayer* parent,
-						  const CreateGraphicsDeviceContextFunc& createGraphicsDeviceContext)
-: createGraphicsDeviceContext (createGraphicsDeviceContext)
+CAViewLayer::CAViewLayer (CALayer* parent)
 {
 #if !TARGET_OS_IPHONE
 	layer = [VSTGUI_macOS_CALayer::alloc () init];
@@ -240,10 +238,16 @@ void CAViewLayer::drawLayer (void* cgContext)
 	}
 	CGContextSaveGState (ctx);
 
-	if (auto graphicsDeviceContext = createGraphicsDeviceContext (cgContext))
+	auto device = getPlatformFactory ().getGraphicsDeviceFactory ().getDeviceForScreen (
+		DefaultScreenIdentifier);
+	if (!device)
+		return;
+	auto cgDevice = std::static_pointer_cast<CoreGraphicsDevice> (device);
+	if (auto deviceContext =
+			std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), cgContext))
 	{
 		// TODO: refactor draw delegate to take a platform graphics device context
-		CDrawContext drawContext (graphicsDeviceContext, CRectFromCGRect (layer.bounds),
+		CDrawContext drawContext (deviceContext, CRectFromCGRect (layer.bounds),
 								  layer.contentsScale);
 		drawContext.beginDraw ();
 		drawDelegate->drawViewLayer (&drawContext, CRectFromCGRect (dirtyRect));

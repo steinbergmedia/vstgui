@@ -151,6 +151,12 @@ public:
 	virtual PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style,
 														IPlatformFrame* frame) const noexcept = 0;
 
+	/** Get the graphics device factory
+	 *
+	 *	@return platform graphics device factory
+	 */
+	virtual const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept = 0;
+
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;
 	virtual const Win32Factory* asWin32Factory () const noexcept = 0;

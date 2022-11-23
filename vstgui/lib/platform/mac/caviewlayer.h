@@ -27,11 +27,7 @@ class CAViewLayer : public IPlatformViewLayer,
 //-----------------------------------------------------------------------------
 {
 public:
-	using CreateGraphicsDeviceContextFunc =
-		std::function<PlatformGraphicsDeviceContextPtr (void* cgContext)>;
-
-	CAViewLayer (CALayer* parent,
-				 const CreateGraphicsDeviceContextFunc& createGraphicsDeviceContext);
+	CAViewLayer (CALayer* parent);
 	~CAViewLayer () noexcept override;
 
 	bool init (IPlatformViewLayerDelegate* drawDelegate);
@@ -51,7 +47,6 @@ private:
 
 	CALayer* layer {nullptr};
 	IPlatformViewLayerDelegate* drawDelegate {nullptr};
-	CreateGraphicsDeviceContextFunc createGraphicsDeviceContext;
 };
 
 } // VSTGUI

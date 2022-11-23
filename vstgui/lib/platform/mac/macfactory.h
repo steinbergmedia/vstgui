@@ -136,6 +136,12 @@ public:
 	PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style,
 												IPlatformFrame* frame) const noexcept final;
 
+	/** Get the graphics device factory
+	 *
+	 *	@return platform graphics device factory
+	 */
+	const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept final;
+
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;
 	const Win32Factory* asWin32Factory () const noexcept final;

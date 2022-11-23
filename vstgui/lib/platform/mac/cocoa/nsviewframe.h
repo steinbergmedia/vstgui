@@ -119,7 +119,6 @@ protected:
 	CCursorType cursor;
 	CButtonState mouseDownButtonState {};
 	CInvalidRectList invalidRectList;
-	CoreGraphicsDevice device {};
 };
 
 } // VSTGUI

@@ -22,6 +22,14 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+PlatformGraphicsDevicePtr
+	CoreGraphicsDeviceFactory::getDeviceForScreen (ScreenInfo::Identifier screen) const
+{
+	static PlatformGraphicsDevicePtr gCoreGraphicsDevice = std::make_shared<CoreGraphicsDevice> ();
+	return gCoreGraphicsDevice;
+}
+
+//------------------------------------------------------------------------
 static CGPathDrawingMode convert (PlatformGraphicsPathDrawMode mode)
 {
 	switch (mode)
@@ -55,6 +63,19 @@ static CGPathDrawingMode convert (PlatformGraphicsDrawStyle drawStyle)
 auto CoreGraphicsDevice::createBitmapContext (const PlatformBitmapPtr& bitmap) const
 	-> PlatformGraphicsDeviceContextPtr
 {
+	auto cgBitmap = bitmap.cast<CGBitmap> ();
+	if (cgBitmap)
+	{
+		auto scaleFactor = bitmap->getScaleFactor ();
+		auto cgContext = cgBitmap->createCGContext ();
+		CGContextConcatCTM (cgContext,
+							CGAffineTransformMakeScale (static_cast<CGFloat> (scaleFactor),
+														static_cast<CGFloat> (scaleFactor)));
+		auto bitmapContext = std::make_shared<CoreGraphicsBitmapContext> (
+			*this, cgContext, [cgBitmap = shared (cgBitmap)] () { cgBitmap->setDirty (); });
+		CFRelease (cgContext);
+		return bitmapContext;
+	}
 	return nullptr;
 }
 
@@ -64,7 +85,7 @@ auto CoreGraphicsDevice::createBitmapContext (const PlatformBitmapPtr& bitmap) c
 struct CoreGraphicsDeviceContext::Impl
 {
 	//-----------------------------------------------------------------------------
-	Impl (CoreGraphicsDevice& d, CGContextRef cgContext) : device (d), cgContext (cgContext)
+	Impl (const CoreGraphicsDevice& d, CGContextRef cgContext) : device (d), cgContext (cgContext)
 	{
 		CFRetain (cgContext);
 
@@ -312,7 +333,7 @@ struct CoreGraphicsDeviceContext::Impl
 	}
 
 	//------------------------------------------------------------------------
-	CoreGraphicsDevice& device;
+	const CoreGraphicsDevice& device;
 	CGContextRef cgContext {nullptr};
 
 	struct State
@@ -339,7 +360,8 @@ struct CoreGraphicsDeviceContext::Impl
 };
 
 //------------------------------------------------------------------------
-CoreGraphicsDeviceContext::CoreGraphicsDeviceContext (CoreGraphicsDevice& device, void* cgContext)
+CoreGraphicsDeviceContext::CoreGraphicsDeviceContext (const CoreGraphicsDevice& device,
+													  void* cgContext)
 {
 	impl = std::make_unique<Impl> (device, static_cast<CGContextRef> (cgContext));
 }
@@ -875,6 +897,20 @@ void CoreGraphicsDeviceContext::customDraw (bool swapYAxis, bool integralOffset,
 	impl->doInCGContext (swapYAxis, integralOffset, [&] (CGContextRef context) {
 		f (context, [&] (CGPoint p) { return impl->pixelAlligned (p); });
 	});
+}
+
+//------------------------------------------------------------------------
+CoreGraphicsBitmapContext::CoreGraphicsBitmapContext (const CoreGraphicsDevice& device,
+													  void* cgContext, EndDrawFunc&& f)
+: CoreGraphicsDeviceContext (device, cgContext), endDrawFunc (std::move (f))
+{
+}
+
+//------------------------------------------------------------------------
+bool CoreGraphicsBitmapContext::endDraw () const
+{
+	endDrawFunc ();
+	return CoreGraphicsDeviceContext::endDraw ();
 }
 
 //------------------------------------------------------------------------

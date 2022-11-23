@@ -1089,7 +1089,12 @@ void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
 
 	addDebugRedrawRect (clipBoundingBox, true);
 
-	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (device, ctx);
+	auto device = getPlatformFactory ().getGraphicsDeviceFactory ().getDeviceForScreen (
+		DefaultScreenIdentifier);
+	if (!device)
+		return;
+	auto cgDevice = std::static_pointer_cast<CoreGraphicsDevice> (device);
+	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), ctx);
 
 	// TODO: refactor IPlatformFrameCallback to take a platform graphics device context
 	CDrawContext drawContext (
@@ -1523,13 +1528,9 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 		caLayer.actions = nil;
 	}
 
-	auto createGraphicsDeviceContext = [this] (void* ctx) {
-		return std::make_shared<CoreGraphicsDeviceContext> (device, ctx);
-	};
-
 	auto caParentLayer =
 		parentViewLayer ? parentViewLayer->getCALayer () : (caLayer ? caLayer : nsView.layer);
-	auto layer = makeOwned<CAViewLayer> (caParentLayer, createGraphicsDeviceContext);
+	auto layer = makeOwned<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
 	return std::move (layer);
 }

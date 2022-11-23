@@ -8,6 +8,7 @@
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
 #include "../iplatformframecallback.h"
+#include "../iplatformgraphicsdevice.h"
 #include "../iplatformresourceinputstream.h"
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
@@ -348,6 +349,20 @@ PlatformFileSelectorPtr Win32Factory::createFileSelector (PlatformFileSelectorSt
 {
 	auto win32Frame = dynamic_cast<Win32Frame*> (frame);
 	return createWinFileSelector (style, win32Frame ? win32Frame->getHWND () : nullptr);
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformGraphicsDeviceFactory& Win32Factory::getGraphicsDeviceFactory () const noexcept
+{
+	struct DummyGraphicsDeviceFactory : IPlatformGraphicsDeviceFactory
+	{
+		PlatformGraphicsDevicePtr getDeviceForScreen (ScreenInfo::Identifier screen) const final
+		{
+			return nullptr;
+		}
+	};
+	static DummyGraphicsDeviceFactory gInstance;
+	return gInstance;
 }
 
 //-----------------------------------------------------------------------------

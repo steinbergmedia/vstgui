@@ -18,11 +18,11 @@ namespace VSTGUI {
 class CoreGraphicsDevice;
 
 //------------------------------------------------------------------------
-class CoreGraphicsDeviceContext final : public IPlatformGraphicsDeviceContext,
-										public IPlatformGraphicsDeviceContextBitmapExt
+class CoreGraphicsDeviceContext : public IPlatformGraphicsDeviceContext,
+								  public IPlatformGraphicsDeviceContextBitmapExt
 {
 public:
-	CoreGraphicsDeviceContext (CoreGraphicsDevice& device, void* cgContext);
+	CoreGraphicsDeviceContext (const CoreGraphicsDevice& device, void* cgContext);
 	~CoreGraphicsDeviceContext () noexcept override;
 
 	const IPlatformGraphicsDevice& getDevice () const override;
@@ -84,11 +84,31 @@ private:
 };
 
 //------------------------------------------------------------------------
+class CoreGraphicsBitmapContext : public CoreGraphicsDeviceContext
+{
+public:
+	using EndDrawFunc = std::function<void ()>;
+	CoreGraphicsBitmapContext (const CoreGraphicsDevice& device, void* cgContext, EndDrawFunc&& f);
+
+	bool endDraw () const override;
+
+private:
+	EndDrawFunc endDrawFunc;
+};
+
+//------------------------------------------------------------------------
 class CoreGraphicsDevice : public IPlatformGraphicsDevice
 {
 public:
 	PlatformGraphicsDeviceContextPtr
 		createBitmapContext (const PlatformBitmapPtr& bitmap) const override;
+};
+
+//------------------------------------------------------------------------
+class CoreGraphicsDeviceFactory : public IPlatformGraphicsDeviceFactory
+{
+public:
+	PlatformGraphicsDevicePtr getDeviceForScreen (ScreenInfo::Identifier screen) const override;
 };
 
 //------------------------------------------------------------------------

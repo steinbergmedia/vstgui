@@ -327,6 +327,7 @@ class IPlatformFrameConfig;
 class IPlatformFrameCallback;
 class IPlatformTimerCallback;
 class IPlatformFileSelector;
+class IPlatformGraphicsDeviceFactory;
 class IPlatformGraphicsDevice;
 class IPlatformGraphicsDeviceContext;
 class IPlatformGraphicsDeviceContextBitmapExt;

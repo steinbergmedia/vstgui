@@ -10,6 +10,7 @@
 #include "../iplatformframecallback.h"
 #include "../common/fileresourceinputstream.h"
 #include "../iplatformresourceinputstream.h"
+#include "../iplatformgraphicsdevice.h"
 #include "linuxstring.h"
 #include "x11timer.h"
 #include "x11fileselector.h"
@@ -212,6 +213,20 @@ PlatformFileSelectorPtr LinuxFactory::createFileSelector (PlatformFileSelectorSt
 {
 	auto x11Frame = dynamic_cast<X11::Frame*> (frame);
 	return X11::createFileSelector (style, x11Frame);
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformGraphicsDeviceFactory& LinuxFactory::getGraphicsDeviceFactory () const noexcept
+{
+	struct DummyGraphicsDeviceFactory : IPlatformGraphicsDeviceFactory
+	{
+		PlatformGraphicsDevicePtr getDeviceForScreen (ScreenInfo::Identifier screen) const final
+		{
+			return nullptr;
+		}
+	};
+	static DummyGraphicsDeviceFactory gInstance;
+	return gInstance;
 }
 
 //-----------------------------------------------------------------------------
