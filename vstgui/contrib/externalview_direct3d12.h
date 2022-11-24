@@ -98,8 +98,8 @@ struct Direct3D12View : public ExternalHWNDBase,
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 	Direct3D12View (HINSTANCE instance, const Direct3D12RendererPtr& renderer,
-					ComPtr<IDXGIFactory4> factory = nullptr, ComPtr<ID3D12Device> device = nullptr)
-	: Base (instance), m_renderer (renderer), m_factory (factory), m_device (device)
+					ComPtr<IDXGIFactory4> factory = nullptr, ComPtr<ID3D12Device> device = nullptr, ComPtr<ID3D12CommandQueue> commandQueue = nullptr)
+	: Base (instance), m_renderer (renderer), m_factory (factory), m_device (device), m_commandQueue (commandQueue)
 	{
 		vstgui_assert ((factory && device) || (!factory && !device));
 	}
@@ -114,6 +114,9 @@ struct Direct3D12View : public ExternalHWNDBase,
 
 	bool render () override { return doRender (); }
 
+	Direct3D12RendererPtr& getRenderer () { return m_renderer; }
+	const Direct3D12RendererPtr& getRenderer () const { return m_renderer; }
+
 private:
 	ID3D12CommandAllocator* getCommandAllocator () const { return m_commandAllocator.Get (); }
 	IDXGISwapChain3* getSwapChain () const { return m_swapChain.Get (); }
@@ -125,25 +128,30 @@ private:
 	{
 		if (mutex.try_lock ())
 		{
-			HRESULT result = S_FALSE;
-			try
+			if (m_commandQueue)
 			{
-				waitForPreviousFrame ();
-				m_renderer->render (m_commandQueue.Get ());
-				result = getSwapChain ()->Present (1, 0);
-			}
-			catch (const Win32Exception&)
-			{
+				HRESULT result = S_FALSE;
 				try
 				{
-					freeResources ();
+					waitForPreviousFrame ();
+					m_renderer->render (m_commandQueue.Get ());
+					result = getSwapChain ()->Present (1, 0);
+					ThrowIfFailed (result);
 				}
-				catch (...)
+				catch (const Win32Exception&)
 				{
+					try
+					{
+						freeResources ();
+					}
+					catch (...)
+					{
+					}
 				}
+				mutex.unlock ();
+				return SUCCEEDED (result);
 			}
 			mutex.unlock ();
-			return SUCCEEDED (result);
 		}
 		return false;
 	}
@@ -162,6 +170,8 @@ private:
 			}
 			catch (...)
 			{
+				auto reasonHR = m_device->GetDeviceRemovedReason ();
+				Win32Exception e (reasonHR);
 				freeResources ();
 			}
 			return true;
@@ -262,13 +272,14 @@ private:
 			ThrowIfFailed (D3D12CreateDevice (hardwareAdapter.Get (), D3D_FEATURE_LEVEL_11_0,
 											  IID_PPV_ARGS (&m_device)));
 		}
-
-		// Describe and create the command queue.
-		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-		ThrowIfFailed (m_device->CreateCommandQueue (&queueDesc, IID_PPV_ARGS (&m_commandQueue)));
+		if (!m_commandQueue)
+		{
+			// Describe and create the command queue.
+			D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+			queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+			ThrowIfFailed (m_device->CreateCommandQueue (&queueDesc, IID_PPV_ARGS (&m_commandQueue)));
+		}
 
 		try
 		{
