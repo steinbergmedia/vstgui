@@ -87,7 +87,7 @@ public:
 			{
 				auto desc = mfb->getMultiFrameDesc ();
 				auto columns = desc.framesPerRow;
-				auto rows = desc.numFrames / columns;
+				uint16_t rows = desc.numFrames / columns;
 				CRect frameRect;
 				frameRect.setSize (desc.frameSize);
 				CPoint p = getViewSize ().getTopLeft ();
@@ -651,10 +651,10 @@ void UIBitmapSettingsController::updateMultiFrameControls ()
 		controls[kMultiFrameTag]->setValueNormalized (1.f);
 		controls[kMultiFrameFramesTag]->setValue (mfb->getNumFrames ());
 		controls[kMultiFrameFramesPerRowTag]->setValue (mfb->getNumFramesPerRow ());
-		controls[kMultiFrameSizeWidth]->setValue (mfb->getFrameSize ().x);
-		controls[kMultiFrameSizeHeight]->setValue (mfb->getFrameSize ().y);
+		controls[kMultiFrameSizeWidth]->setValue (static_cast<float> (mfb->getFrameSize ().x));
+		controls[kMultiFrameSizeHeight]->setValue (static_cast<float> (mfb->getFrameSize ().y));
 		auto valid = mfb->setMultiFrameDesc (mfb->getMultiFrameDesc ());
-		controls[kMultiFrameDescValidTag]->setAlphaValue (valid ? 0 : 1.);
+		controls[kMultiFrameDescValidTag]->setAlphaValue (valid ? 0.f : 1.f);
 	}
 	else
 	{
@@ -765,8 +765,8 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 		case kMultiFrameSizeHeight:
 		{
 			CMultiFrameBitmapDescription desc;
-			desc.numFrames = controls[kMultiFrameFramesTag]->getValue ();
-			desc.framesPerRow = controls[kMultiFrameFramesPerRowTag]->getValue ();
+			desc.numFrames = static_cast<uint16_t> (controls[kMultiFrameFramesTag]->getValue ());
+			desc.framesPerRow = static_cast<uint16_t> (controls[kMultiFrameFramesPerRowTag]->getValue ());
 			desc.frameSize.x = controls[kMultiFrameSizeWidth]->getValue ();
 			desc.frameSize.y = controls[kMultiFrameSizeHeight]->getValue ();
 			actionPerformer->performBitmapMultiFrameChange (bitmapName.data (), &desc);

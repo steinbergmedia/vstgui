@@ -120,7 +120,9 @@ public:
 				lightResDesc->save (lightResPath.data (),
 									UIDescription::kWriteImagesIntoUIDescFile);
 			}
+			return true;
 		}
+		return false;
 	}
 
 	void beforeShow (IWindow& window) override
@@ -192,7 +194,6 @@ public:
 				return true;
 			}
 			case SaveChanges::Cancel: return false;
-			default: return true;
 		}
 		return true;
 	}
