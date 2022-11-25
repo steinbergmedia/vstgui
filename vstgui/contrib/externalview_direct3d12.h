@@ -88,7 +88,63 @@ struct IDirect3D12Renderer
 
 	virtual uint32_t getFrameCount () const = 0;
 };
+
+//------------------------------------------------------------------------
 using Direct3D12RendererPtr = std::shared_ptr<IDirect3D12Renderer>;
+
+//------------------------------------------------------------------------
+struct GPUFence
+{
+	template<typename T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+	GPUFence () = default;
+	GPUFence (ID3D12Device* device, UINT64 initialValue = 0)
+	{
+		ThrowIfFailed (device->CreateFence (0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS (&m_fence)));
+		m_event = CreateEvent (nullptr, FALSE, FALSE, nullptr);
+		if (m_event == nullptr)
+		{
+			ThrowIfFailed (HRESULT_FROM_WIN32 (GetLastError ()));
+		}
+		m_value = initialValue;
+	}
+	~GPUFence () noexcept
+	{
+		if (m_event)
+			CloseHandle (m_event);
+	}
+
+	GPUFence& operator=(GPUFence&& o) noexcept
+	{
+		m_event = o.m_event;
+		m_fence = o.m_fence;
+		m_value = o.m_value;
+		o.m_event = nullptr;
+		o.m_fence.Reset ();
+		o.m_value = {};
+		return *this;
+	}
+
+	void wait (ID3D12CommandQueue* queue)
+	{
+		if (m_fence == nullptr)
+			return;
+
+		const auto value = m_value;
+		ThrowIfFailed (queue->Signal (m_fence.Get (), value));
+		m_value++;
+		if (m_fence->GetCompletedValue () < value)
+		{
+			ThrowIfFailed (m_fence->SetEventOnCompletion (value, m_event));
+			WaitForSingleObject (m_event, INFINITE);
+		}
+	}
+
+	HANDLE m_event {nullptr};
+	ComPtr<ID3D12Fence> m_fence;
+	UINT64 m_value {0};
+};
 
 //------------------------------------------------------------------------
 struct Direct3D12View : public ExternalHWNDBase,
@@ -225,7 +281,7 @@ private:
 
 	void freeResources ()
 	{
-		CloseHandle (m_fenceEvent);
+		m_fence = {};
 
 		try
 		{
@@ -298,16 +354,7 @@ private:
 		ThrowIfFailed (m_device->CreateCommandAllocator (D3D12_COMMAND_LIST_TYPE_DIRECT,
 														 IID_PPV_ARGS (&m_commandAllocator)));
 
-		// Create synchronization objects and wait until assets have been uploaded to the GPU.
-		ThrowIfFailed (m_device->CreateFence (0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS (&m_fence)));
-		m_fenceValue = 1;
-
-		// Create an event handle to use for frame synchronization.
-		m_fenceEvent = CreateEvent (nullptr, FALSE, FALSE, nullptr);
-		if (m_fenceEvent == nullptr)
-		{
-			ThrowIfFailed (HRESULT_FROM_WIN32 (GetLastError ()));
-		}
+		m_fence = GPUFence (m_device.Get (), 1);
 	}
 
 	void createSwapChain (IDXGIFactory4* factory)
@@ -393,18 +440,7 @@ private:
 		// sample illustrates how to use fences for efficient resource usage and to
 		// maximize GPU utilization.
 
-		// Signal and increment the fence value.
-		const UINT64 fence = m_fenceValue;
-		ThrowIfFailed (m_commandQueue->Signal (m_fence.Get (), fence));
-		m_fenceValue++;
-
-		// Wait until the previous frame is finished.
-		if (m_fence->GetCompletedValue () < fence)
-		{
-			ThrowIfFailed (m_fence->SetEventOnCompletion (fence, m_fenceEvent));
-			WaitForSingleObject (m_fenceEvent, INFINITE);
-		}
-
+		m_fence.wait (m_commandQueue.Get ());
 		m_frameIndex = m_swapChain->GetCurrentBackBufferIndex ();
 	}
 
@@ -420,9 +456,7 @@ private:
 	UINT m_frameIndex {0};
 
 	// Synchronization objects.
-	HANDLE m_fenceEvent {nullptr};
-	ComPtr<ID3D12Fence> m_fence;
-	UINT64 m_fenceValue {0};
+	GPUFence m_fence;
 
 	ComPtr<IDXGIFactory4> m_factory;
 
