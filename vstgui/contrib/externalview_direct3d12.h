@@ -73,7 +73,7 @@ struct IDirect3D12View
 	virtual INT getFrameIndex () const = 0;
 	virtual void setFrameIndex (INT index) = 0;
 
-	virtual bool render () = 0;
+	virtual void render () = 0;
 };
 
 //------------------------------------------------------------------------
@@ -170,7 +170,7 @@ struct Direct3D12View : public ExternalHWNDBase,
 		return std::make_shared<Direct3D12View> (instance, renderer, factory, device, queue);
 	}
 
-	bool render () override { return doRender (); }
+	void render () override { doRender (); }
 
 	Direct3D12RendererPtr& getRenderer () { return m_renderer; }
 	const Direct3D12RendererPtr& getRenderer () const { return m_renderer; }
@@ -182,7 +182,7 @@ private:
 	INT getFrameIndex () const { return m_frameIndex; }
 	void setFrameIndex (INT index) { m_frameIndex = index; }
 
-	bool doRender ()
+	void doRender ()
 	{
 		if (mutex.try_lock ())
 		{
@@ -196,7 +196,7 @@ private:
 					result = getSwapChain ()->Present (1, 0);
 					ThrowIfFailed (result);
 				}
-				catch (const Win32Exception&)
+				catch (const Win32Exception& e)
 				{
 					try
 					{
@@ -205,13 +205,11 @@ private:
 					catch (...)
 					{
 					}
+					throw (e);
 				}
-				mutex.unlock ();
-				return SUCCEEDED (result);
 			}
 			mutex.unlock ();
 		}
-		return false;
 	}
 
 	bool attach (void* parent, PlatformViewType parentViewType) override
