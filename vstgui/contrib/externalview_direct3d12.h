@@ -157,15 +157,17 @@ struct Direct3D12View : public ExternalHWNDBase,
 					ComPtr<IDXGIFactory4> factory = nullptr, ComPtr<ID3D12Device> device = nullptr, ComPtr<ID3D12CommandQueue> commandQueue = nullptr)
 	: Base (instance), m_renderer (renderer), m_factory (factory), m_device (device), m_commandQueue (commandQueue)
 	{
-		vstgui_assert ((factory && device) || (!factory && !device));
+		vstgui_assert ((factory && device) || (!factory && !device), "Either both factory and device are provided or none of both!");
+		vstgui_assert (commandQueue ? device : true, "If a command queue is provided, the device must also be provided!");
 	}
 
 	static std::shared_ptr<Direct3D12View> make (HINSTANCE instance,
 												 const Direct3D12RendererPtr& renderer,
 												 ComPtr<IDXGIFactory4> factory = nullptr,
-												 ComPtr<ID3D12Device> device = nullptr)
+												 ComPtr<ID3D12Device> device = nullptr,
+												 ComPtr<ID3D12CommandQueue> queue = nullptr)
 	{
-		return std::make_shared<Direct3D12View> (instance, renderer, factory, device);
+		return std::make_shared<Direct3D12View> (instance, renderer, factory, device, queue);
 	}
 
 	bool render () override { return doRender (); }
@@ -260,7 +262,7 @@ private:
 
 	void updateSizes ()
 	{
-		if (m_commandQueue)
+		if (m_swapChain)
 		{
 			if (m_size.width == m_visibleRect.size.width &&
 				m_size.height == m_visibleRect.size.height)
@@ -432,7 +434,7 @@ private:
 
 	void waitForPreviousFrame ()
 	{
-		if (!m_commandQueue)
+		if (!m_commandQueue || !m_swapChain)
 			return;
 
 		// WAITING FOR THE FRAME TO COMPLETE BEFORE CONTINUING IS NOT BEST PRACTICE.
