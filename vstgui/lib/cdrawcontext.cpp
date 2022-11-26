@@ -100,7 +100,8 @@ CDrawContext::CDrawContext (const PlatformGraphicsDeviceContextPtr device, const
 #if VSTGUI_PLATFORM_DRAWDEVICE
 	impl->device = device;
 	impl->scaleFactor = scaleFactor;
-	setClipRect (surfaceRect);
+	//	setClipRect (surfaceRect);
+	init ();
 #endif
 }
 
@@ -272,7 +273,14 @@ void CDrawContext::setFrameColor (const CColor& color)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFontColor (const CColor& color) { getCurrentState ().fontColor = color; }
+void CDrawContext::setFontColor (const CColor& color)
+{
+#if VSTGUI_PLATFORM_DRAWDEVICE
+	if (impl->device)
+		impl->device->setFontColor (color);
+#endif
+	getCurrentState ().fontColor = color;
+}
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const int32_t& style)
@@ -677,7 +685,9 @@ void CDrawContext::drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode,
 #if VSTGUI_PLATFORM_DRAWDEVICE
 	if (impl->device)
 	{
-		if (auto& pp = path->getPlatformPath (PlatformGraphicsPathFillMode::Ignored))
+		if (auto& pp = path->getPlatformPath (mode == kPathFilledEvenOdd
+												  ? PlatformGraphicsPathFillMode::Alternate
+												  : PlatformGraphicsPathFillMode::Winding))
 			impl->device->drawGraphicsPath (*pp.get (), convert (mode), transformation);
 	}
 #endif

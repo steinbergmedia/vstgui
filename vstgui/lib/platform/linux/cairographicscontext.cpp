@@ -226,6 +226,7 @@ struct CairoGraphicsDeviceContext::Impl
 		CDrawMode drawMode {};
 		CColor fillColor {kTransparentCColor};
 		CColor frameColor {kTransparentCColor};
+		CColor fontColor {kTransparentCColor};
 		CCoord lineWidth {1.};
 		double globalAlpha {1.};
 		TransformMatrix tm {};
@@ -595,6 +596,12 @@ void CairoGraphicsDeviceContext::setFillColor (CColor color) const
 void CairoGraphicsDeviceContext::setFrameColor (CColor color) const
 {
 	impl->state.frameColor = color;
+}
+
+//------------------------------------------------------------------------
+void CairoGraphicsDeviceContext::setFontColor (CColor color) const
+{
+	impl->state.fontColor = color;
 }
 
 //------------------------------------------------------------------------

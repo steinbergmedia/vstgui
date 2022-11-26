@@ -4,22 +4,23 @@
 
 #pragma once
 
-#include "../iplatformgraphicsdevice.h"
+#include "../../iplatformgraphicsdevice.h"
 
-#include "cairoutils.h"
+struct ID2D1DeviceContext;
+struct ID2D1Device;
+struct ID2D1SolidColorBrush;
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
-class CairoGraphicsDevice;
+class D2DGraphicsDevice;
 
 //------------------------------------------------------------------------
-class CairoGraphicsDeviceContext : public IPlatformGraphicsDeviceContext
+class D2DGraphicsDeviceContext : public IPlatformGraphicsDeviceContext
 {
 public:
-	CairoGraphicsDeviceContext (const CairoGraphicsDevice& device,
-								const Cairo::SurfaceHandle& handle);
-	~CairoGraphicsDeviceContext () noexcept;
+	D2DGraphicsDeviceContext (const D2DGraphicsDevice& device, ID2D1DeviceContext* deviceContext);
+	~D2DGraphicsDeviceContext () noexcept;
 
 	const IPlatformGraphicsDevice& getDevice () const override;
 	PlatformGraphicsPathFactoryPtr getGraphicsPathFactory () const override;
@@ -63,7 +64,8 @@ public:
 	// extension
 	const IPlatformGraphicsDeviceContextBitmapExt* asBitmapExt () const override;
 
-	using CustomDrawFunc = std::function<void (const Cairo::ContextHandle& ctx, double globalAlpha)>;
+	using CustomDrawFunc = std::function<void (ID2D1DeviceContext* deviceContext,
+											   ID2D1SolidColorBrush* fillBrush, CDrawMode mode)>;
 	void customDraw (const CustomDrawFunc& f) const;
 
 private:
@@ -72,16 +74,16 @@ private:
 };
 
 //------------------------------------------------------------------------
-class CairoGraphicsDevice : public IPlatformGraphicsDevice
+class D2DGraphicsDevice : public IPlatformGraphicsDevice
 {
 public:
-	CairoGraphicsDevice (cairo_device_t* device);
-	~CairoGraphicsDevice () noexcept;
+	D2DGraphicsDevice (ID2D1Device* device);
+	~D2DGraphicsDevice () noexcept;
 
 	PlatformGraphicsDeviceContextPtr
 		createBitmapContext (const PlatformBitmapPtr& bitmap) const override;
 
-	cairo_device_t* get () const;
+	ID2D1Device* get () const;
 
 private:
 	struct Impl;

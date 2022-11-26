@@ -12,6 +12,7 @@
 #include "../winstring.h"
 #include "../comptr.h"
 #include "d2ddrawcontext.h"
+#include "d2dgraphicscontext.h"
 #include <mutex>
 #include <dwrite.h>
 #include <d2d1.h>
@@ -278,8 +279,11 @@ IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 //-----------------------------------------------------------------------------
 void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias) const
 {
+	if (!textFormat || !context || !string)
+		return;
+
 	auto* d2dContext = dynamic_cast<D2DDrawContext*> (context);
-	if (d2dContext && textFormat)
+	if (d2dContext)
 	{
 		D2DDrawContext::D2DApplyClip ac (d2dContext);
 		if (ac.isEmpty ())
@@ -319,6 +323,44 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 				textLayout->Release ();
 			}
 		}
+	}
+	else if (auto graphicsContext = std::dynamic_pointer_cast<D2DGraphicsDeviceContext> (
+				 context->getPlatformDeviceContext ()))
+	{
+		graphicsContext->customDraw ([&] (auto deviceContext, auto fillBrush, auto drawMode) {
+			IDWriteTextLayout* textLayout = createTextLayout (string);
+			if (textLayout)
+			{
+				if (style & kUnderlineFace)
+				{
+					DWRITE_TEXT_RANGE range = {0, UINT_MAX};
+					textLayout->SetUnderline (true, range);
+				}
+				if (style & kStrikethroughFace)
+				{
+					DWRITE_TEXT_RANGE range = {0, UINT_MAX};
+					textLayout->SetStrikethrough (true, range);
+				}
+				deviceContext->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
+															   : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+
+				CPoint pos (p);
+				DWRITE_LINE_METRICS lm;
+				UINT lineCount;
+				if (SUCCEEDED (textLayout->GetLineMetrics (&lm, 1, &lineCount)))
+					pos.y -= lm.baseline;
+				else
+					pos.y -= textFormat->GetFontSize ();
+
+				if (drawMode.integralMode ())
+					pos.makeIntegral ();
+				pos.y += 0.5;
+
+				D2D1_POINT_2F origin = {(FLOAT)(p.x), (FLOAT)(pos.y)};
+				deviceContext->DrawTextLayout (origin, textLayout, fillBrush);
+				textLayout->Release ();
+			}
+		});
 	}
 }
 

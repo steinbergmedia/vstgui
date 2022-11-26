@@ -159,6 +159,8 @@ struct CoreGraphicsDeviceContext::Impl
 		if (!swapYAxis)
 			CGContextScaleCTM (cgContext, 1, -1);
 
+		CGContextSetAlpha (cgContext, state.globalAlpha);
+
 		proc (cgContext);
 
 		CGContextRestoreGState (cgContext);
@@ -342,6 +344,7 @@ struct CoreGraphicsDeviceContext::Impl
 		CCoord lineWidth {1};
 		CDrawMode drawMode {};
 		CRect clipRect {};
+		CColor fontColor {kTransparentCColor};
 		double globalAlpha {1.};
 		TransformMatrix tm {};
 	};
@@ -833,6 +836,9 @@ void CoreGraphicsDeviceContext::setFrameColor (CColor color) const
 }
 
 //------------------------------------------------------------------------
+void CoreGraphicsDeviceContext::setFontColor (CColor color) const { impl->state.fontColor = color; }
+
+//------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setGlobalAlpha (double newAlpha) const
 {
 	impl->state.globalAlpha = newAlpha;
@@ -898,6 +904,9 @@ void CoreGraphicsDeviceContext::customDraw (bool swapYAxis, bool integralOffset,
 		f (context, [&] (CGPoint p) { return impl->pixelAlligned (p); });
 	});
 }
+
+//------------------------------------------------------------------------
+CColor CoreGraphicsDeviceContext::getFontColor () const { return impl->state.fontColor; }
 
 //------------------------------------------------------------------------
 CoreGraphicsBitmapContext::CoreGraphicsBitmapContext (const CoreGraphicsDevice& device,

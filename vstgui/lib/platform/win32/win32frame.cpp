@@ -12,6 +12,7 @@
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dgraphicspath.h"
+#include "direct2d/d2dgraphicscontext.h"
 #include "win32factory.h"
 #include "win32textedit.h"
 #include "win32optionmenu.h"
@@ -661,13 +662,18 @@ void Win32Frame::paint (HWND hwnd)
 					rect, [&] (auto deviceContext, auto rect, auto offsetX, auto offsetY) {
 						COM::Ptr<ID2D1Device> device;
 						deviceContext->GetDevice (device.adoptPtr ());
-						D2DDrawContext drawContext (deviceContext, frameSize, device.get ());
-						drawContext.setClipRect (rect);
+
+						D2DGraphicsDevice graphicsDevice (device.get ());
+						auto drawDevice = std::make_shared<D2DGraphicsDeviceContext> (
+							graphicsDevice, deviceContext);
+
+						CDrawContext drawContext (drawDevice, frameSize, 1.);
 						CGraphicsTransform tm;
 						tm.translate (offsetX - rect.left, offsetY - rect.top);
 						CDrawContext::Transform transform (drawContext, tm);
 						{
 							drawContext.saveGlobalState ();
+							drawContext.setClipRect (rect);
 							drawContext.clearRect (rect);
 							getFrame ()->platformDrawRect (&drawContext, rect);
 							drawContext.restoreGlobalState ();

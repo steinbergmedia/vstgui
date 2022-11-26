@@ -351,7 +351,7 @@ void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, c
 					cgPoint = pixelAlign (cgPoint);
 				CGColorRef cgColorRef = nullptr;
 				if (style & kUnderlineFace || style & kStrikethroughFace)
-					cgColorRef = getCGColor (context->getFontColor ());
+					cgColorRef = getCGColor (deviceContext->getFontColor ());
 				drawCTLine (line, cgContext, cgColorRef, cgPoint, fontRef, point, style, antialias);
 			});
 		}

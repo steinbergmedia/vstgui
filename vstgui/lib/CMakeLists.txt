@@ -245,6 +245,8 @@ set(${target}_win32_sources
     platform/win32/direct2d/d2dfont.h
     platform/win32/direct2d/d2dgradient.cpp
     platform/win32/direct2d/d2dgradient.h
+    platform/win32/direct2d/d2dgraphicscontext.cpp
+    platform/win32/direct2d/d2dgraphicscontext.h
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
     platform/win32/win32bitmapbase.h
