@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -28,3 +28,4 @@
 #include "lib/platform/win32/direct2d/d2dfont.cpp"
 #include "lib/platform/win32/direct2d/d2dgradient.cpp"
 #include "lib/platform/win32/direct2d/d2dgraphicspath.cpp"
+#include "lib/platform/win32/direct2d/d2dgraphicscontext.cpp"
