@@ -8,6 +8,7 @@
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
+class CairoGraphicsDeviceFactory;
 
 //-----------------------------------------------------------------------------
 class LinuxFactory final : public IPlatformFactory
@@ -139,6 +140,7 @@ public:
 	const MacFactory* asMacFactory () const noexcept final;
 	const Win32Factory* asWin32Factory () const noexcept final;
 
+	CairoGraphicsDeviceFactory& getCairoGraphicsDeviceFactory () const noexcept;
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

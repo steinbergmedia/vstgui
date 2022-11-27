@@ -40,6 +40,44 @@ inline cairo_matrix_t convert (const TransformMatrix& ct)
 }
 
 //-----------------------------------------------------------------------------
+struct CairoGraphicsDeviceFactory::Impl
+{
+	std::vector<std::shared_ptr<CairoGraphicsDevice>> devices;
+};
+
+//-----------------------------------------------------------------------------
+CairoGraphicsDeviceFactory::CairoGraphicsDeviceFactory ()
+{
+	impl = std::make_unique<Impl> ();
+}
+
+//-----------------------------------------------------------------------------
+CairoGraphicsDeviceFactory::~CairoGraphicsDeviceFactory () noexcept = default;
+
+//-----------------------------------------------------------------------------
+PlatformGraphicsDevicePtr CairoGraphicsDeviceFactory::getDeviceForScreen (ScreenInfo::Identifier screen) const
+{
+	if (impl->devices.empty ())
+	{
+		// just create a dummy device as we don't really need the cairo device at the moment
+		impl->devices.push_back (std::make_shared<CairoGraphicsDevice> (nullptr));
+	}
+	return impl->devices.front ();
+}
+
+//-----------------------------------------------------------------------------
+PlatformGraphicsDevicePtr CairoGraphicsDeviceFactory::addDevice (cairo_device_t* device)
+{
+	for (auto& dev : impl->devices)
+	{
+		if (dev->get () == device)
+			return dev;
+	}
+	impl->devices.push_back (std::make_shared<CairoGraphicsDevice> (device));
+	return impl->devices.back ();
+}
+
+//-----------------------------------------------------------------------------
 struct CairoGraphicsDevice::Impl
 {
 	cairo_device_t* device;
@@ -50,11 +88,16 @@ CairoGraphicsDevice::CairoGraphicsDevice (cairo_device_t* device)
 {
 	impl = std::make_unique<Impl> ();
 	impl->device = device;
-	cairo_device_reference (device);
+	if (device)
+		cairo_device_reference (device);
 }
 
 //-----------------------------------------------------------------------------
-CairoGraphicsDevice::~CairoGraphicsDevice () noexcept { cairo_device_destroy (impl->device); }
+CairoGraphicsDevice::~CairoGraphicsDevice () noexcept
+{
+	if (impl->device)
+		cairo_device_destroy (impl->device);
+}
 
 //-----------------------------------------------------------------------------
 cairo_device_t* CairoGraphicsDevice::get () const { return impl->device; }
@@ -63,6 +106,11 @@ cairo_device_t* CairoGraphicsDevice::get () const { return impl->device; }
 PlatformGraphicsDeviceContextPtr
 	CairoGraphicsDevice::createBitmapContext (const PlatformBitmapPtr& bitmap) const
 {
+	auto cairoBitmap = bitmap.cast<Cairo::Bitmap> ();
+	if (cairoBitmap)
+	{
+		return std::make_shared<CairoGraphicsDeviceContext> (*this, cairoBitmap->getSurface ());
+	}
 	return nullptr;
 }
 
@@ -468,7 +516,12 @@ bool CairoGraphicsDeviceContext::drawGraphicsPath (IPlatformGraphicsPath& path,
 	impl->doInContext ([&] () {
 		std::unique_ptr<Cairo::GraphicsPath> alignedPath;
 		if (impl->state.drawMode.integralMode ())
-			alignedPath = cairoPath->copyPixelAlign (impl->state.tm);
+		{
+			alignedPath = cairoPath->copyPixelAlign ([&] (CPoint p) {
+				pixelAlign (impl->state.tm, p);
+				return p;
+			});
+		}
 		auto p = alignedPath ? alignedPath->getCairoPath () : cairoPath->getCairoPath ();
 		if (transformation)
 		{
@@ -523,7 +576,12 @@ bool CairoGraphicsDeviceContext::fillLinearGradient (IPlatformGraphicsPath& path
 	impl->doInContext ([&] () {
 		std::unique_ptr<Cairo::GraphicsPath> alignedPath;
 		if (impl->state.drawMode.integralMode ())
-			alignedPath = cairoPath->copyPixelAlign (impl->state.tm);
+		{
+			alignedPath = cairoPath->copyPixelAlign ([&] (CPoint p) {
+				pixelAlign (impl->state.tm, p);
+				return p;
+			});
+		}
 		auto p = alignedPath ? alignedPath->getCairoPath () : cairoPath->getCairoPath ();
 		cairo_append_path (impl->context, p);
 		cairo_set_source (impl->context, cairoGradient->getLinearGradient (startPoint, endPoint));

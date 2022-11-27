@@ -283,8 +283,6 @@ set(${target}_win32_sources
 set(${target}_linux_sources
     platform/linux/cairobitmap.cpp
     platform/linux/cairobitmap.h
-    platform/linux/cairocontext.cpp
-    platform/linux/cairocontext.h
     platform/linux/cairofont.cpp
     platform/linux/cairofont.h
     platform/linux/cairogradient.cpp

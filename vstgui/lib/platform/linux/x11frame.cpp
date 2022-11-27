@@ -19,7 +19,7 @@
 #include "../common/generictextedit.h"
 #include "../common/genericoptionmenu.h"
 #include "cairobitmap.h"
-//#include "cairocontext.h"
+#include "linuxfactory.h"
 #include "cairographicscontext.h"
 #include "x11platform.h"
 #include "x11utils.h"
@@ -163,30 +163,6 @@ struct RedrawTimerHandler
 	RedrawCallback redrawCallback;
 };
 
-struct CairoDevices
-{
-public:
-	static CairoDevices& instance () 
-	{
-		static CairoDevices gInstance;
-		return gInstance;
-	}
-
-	const CairoGraphicsDevice* getDevice (cairo_device_t* d)
-	{
-		for (auto& device : devices)
-		{
-			if (device->get () == d)
-				return device.get ();
-		}
-		auto device = std::make_shared<CairoGraphicsDevice> (d);
-		devices.push_back (device);
-		return device.get ();
-	}
-private:
-	std::vector<std::shared_ptr<CairoGraphicsDevice>> devices;
-};
-
 //------------------------------------------------------------------------
 struct DrawHandler
 {
@@ -196,7 +172,7 @@ struct DrawHandler
 										   window.getID (), window.getVisual (),
 										   window.getSize ().x, window.getSize ().y);
 		windowSurface.assign (s);
-		cairoDevice = CairoDevices::instance ().getDevice (cairo_surface_get_device (s));
+		device = getPlatformFactory ().asLinuxFactory ()->getCairoGraphicsDeviceFactory ().addDevice (cairo_surface_get_device (s));
 		onSizeChanged (window.getSize ());
 	}
 
@@ -206,6 +182,7 @@ struct DrawHandler
 		backBuffer = Cairo::SurfaceHandle (cairo_surface_create_similar (
 			windowSurface, CAIRO_CONTENT_COLOR_ALPHA, size.x, size.y));
 		backBufferSize.setSize (size);
+		auto cairoDevice = std::static_pointer_cast<CairoGraphicsDevice> (device);
 		drawContext = std::make_shared<CairoGraphicsDeviceContext> (*cairoDevice, backBuffer);
 	}
 
@@ -236,9 +213,8 @@ private:
 	Cairo::SurfaceHandle windowSurface;
 	Cairo::SurfaceHandle backBuffer;
 	CRect backBufferSize;
-//	SharedPointer<Cairo::Context> drawContext;
 	std::shared_ptr<CairoGraphicsDeviceContext> drawContext;
-	const CairoGraphicsDevice* cairoDevice {nullptr};
+	PlatformGraphicsDevicePtr device;
 
 	void blitBackbufferToWindow (const CRect& rect)
 	{

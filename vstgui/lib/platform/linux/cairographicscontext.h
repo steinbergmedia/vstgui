@@ -89,4 +89,20 @@ private:
 };
 
 //------------------------------------------------------------------------
+class CairoGraphicsDeviceFactory : public IPlatformGraphicsDeviceFactory
+{
+public:
+	CairoGraphicsDeviceFactory ();
+	~CairoGraphicsDeviceFactory () noexcept;
+
+	PlatformGraphicsDevicePtr getDeviceForScreen (ScreenInfo::Identifier screen) const override;
+
+	PlatformGraphicsDevicePtr addDevice (cairo_device_t* device);
+
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+};
+
+//------------------------------------------------------------------------
 } // VSTGUI

@@ -3,8 +3,9 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cairofont.h"
-#include "../../../lib/cstring.h"
-#include "cairocontext.h"
+#include "../../cstring.h"
+#include "../../cfont.h"
+#include "../../cdrawcontext.h"
 #include "cairographicscontext.h"
 #include "linuxstring.h"
 #include "linuxfactory.h"
@@ -260,20 +261,6 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 				std::dynamic_pointer_cast<CairoGraphicsDeviceContext> (platformContext))
 		{
 			cairoContext->drawPangoLayout (layout, {p.x + extents.x, p.y + extents.y - baseline});
-		}
-	}
-	else if (auto cairoContext = dynamic_cast<Context*> (context))
-	{
-		if (auto cd = DrawBlock::begin (*cairoContext))
-		{
-			auto color = cairoContext->getFontColor ();
-			auto alpha = cairoContext->getGlobalAlpha ();
-			const auto& cr = cairoContext->getCairo ();
-			cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
-								   color.normBlue<double> (), color.normAlpha<double> () * alpha);
-
-			cairo_move_to (cr, p.x + extents.x, p.y + extents.y - baseline);
-			pango_cairo_show_layout (cr, layout);
 		}
 	}
 	g_object_unref (layout);
