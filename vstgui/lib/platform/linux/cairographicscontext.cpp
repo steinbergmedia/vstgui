@@ -518,7 +518,7 @@ bool CairoGraphicsDeviceContext::drawGraphicsPath (IPlatformGraphicsPath& path,
 		if (impl->state.drawMode.integralMode ())
 		{
 			alignedPath = cairoPath->copyPixelAlign ([&] (CPoint p) {
-				pixelAlign (impl->state.tm, p);
+				p = pixelAlign (impl->state.tm, p);
 				return p;
 			});
 		}
@@ -578,7 +578,7 @@ bool CairoGraphicsDeviceContext::fillLinearGradient (IPlatformGraphicsPath& path
 		if (impl->state.drawMode.integralMode ())
 		{
 			alignedPath = cairoPath->copyPixelAlign ([&] (CPoint p) {
-				pixelAlign (impl->state.tm, p);
+				p = pixelAlign (impl->state.tm, p);
 				return p;
 			});
 		}
