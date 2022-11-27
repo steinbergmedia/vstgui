@@ -8,6 +8,7 @@
 
 #if TARGET_OS_IPHONE
 #include <CoreGraphics/CoreGraphics.h>
+#include <CoreText/CoreText.h>
 #else
 #include <ApplicationServices/ApplicationServices.h>
 #endif

@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../common/fileresourceinputstream.h"
+#include "../../coffscreencontext.h" // TODO: Remove when createOffscreenContext is removed
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
 #include "../iplatformframecallback.h"
@@ -11,7 +12,6 @@
 #include "../iplatformtimer.h"
 #include "cfontmac.h"
 #include "cgbitmap.h"
-#include "cgdrawcontext.h"
 #include "quartzgraphicspath.h"
 #include "coregraphicsdevicecontext.h"
 #include "cocoa/nsviewframe.h"
@@ -216,11 +216,6 @@ auto MacFactory::getClipboard () const noexcept -> DataPackagePtr
 auto MacFactory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
 	-> COffscreenContextPtr
 {
-	auto bitmap = makeOwned<CGBitmap> (size * scaleFactor);
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = makeOwned<CGDrawContext> (bitmap);
-	if (context->getCGContext ())
-		return std::move (context);
 	return nullptr;
 }
 

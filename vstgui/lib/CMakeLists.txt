@@ -194,8 +194,6 @@ set(${target}_mac_sources
     platform/mac/cfontmac.mm
     platform/mac/cgbitmap.cpp
     platform/mac/cgbitmap.h
-    platform/mac/cgdrawcontext.cpp
-    platform/mac/cgdrawcontext.h
     platform/mac/cocoa/autoreleasepool.h
     platform/mac/cocoa/autoreleasepool.mm
     platform/mac/cocoa/cocoahelpers.h

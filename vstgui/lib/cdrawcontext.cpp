@@ -100,8 +100,7 @@ CDrawContext::CDrawContext (const PlatformGraphicsDeviceContextPtr device, const
 #if VSTGUI_PLATFORM_DRAWDEVICE
 	impl->device = device;
 	impl->scaleFactor = scaleFactor;
-	//	setClipRect (surfaceRect);
-	init ();
+	setClipRect (surfaceRect);
 #endif
 }
 

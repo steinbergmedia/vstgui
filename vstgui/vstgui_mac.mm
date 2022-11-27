@@ -4,7 +4,6 @@
 
 #import "vstgui.cpp"
 
-#import "lib/platform/mac/cgdrawcontext.cpp"
 #import "lib/platform/mac/macglobals.cpp"
 #import "lib/platform/mac/cgbitmap.cpp"
 #import "lib/platform/mac/coregraphicsdevicecontext.mm"
