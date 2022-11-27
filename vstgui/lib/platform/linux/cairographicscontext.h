@@ -63,8 +63,8 @@ public:
 	// extension
 	const IPlatformGraphicsDeviceContextBitmapExt* asBitmapExt () const override;
 
-	using CustomDrawFunc = std::function<void (const Cairo::ContextHandle& ctx, double globalAlpha)>;
-	void customDraw (const CustomDrawFunc& f) const;
+	// private
+	void drawPangoLayout (void* layout, CPoint pos) const;
 
 private:
 	struct Impl;

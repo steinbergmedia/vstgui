@@ -897,16 +897,49 @@ bool CoreGraphicsDeviceContext::fillRectWithBitmap (IPlatformBitmap& bitmap, CRe
 }
 
 //------------------------------------------------------------------------
-void CoreGraphicsDeviceContext::customDraw (bool swapYAxis, bool integralOffset,
-											const CustomDrawFunc& f) const
+void CoreGraphicsDeviceContext::drawCTLine (CTLineRef line, CGPoint cgPoint, CTFontRef fontRef,
+											bool underline, bool strikeThrough,
+											bool antialias) const
 {
-	impl->doInCGContext (swapYAxis, integralOffset, [&] (CGContextRef context) {
-		f (context, [&] (CGPoint p) { return impl->pixelAlligned (p); });
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
+		if (impl->state.drawMode.integralMode ())
+			cgPoint = impl->pixelAlligned (cgPoint);
+		CGContextSetShouldAntialias (context, antialias);
+		CGContextSetShouldSmoothFonts (context, true);
+		CGContextSetShouldSubpixelPositionFonts (context, true);
+		CGContextSetShouldSubpixelQuantizeFonts (context, true);
+		CGContextSetTextPosition (context, cgPoint.x, cgPoint.y);
+		CTLineDraw (line, context);
+		CGColorRef cgColorRef = nullptr;
+		if (underline)
+		{
+			cgColorRef = getCGColor (impl->state.fontColor);
+			CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.f;
+			CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
+			CGContextSetStrokeColorWithColor (context, cgColorRef);
+			CGContextSetLineWidth (context, underlineThickness);
+			auto cgPoint2 = CGContextGetTextPosition (context);
+			CGContextBeginPath (context);
+			CGContextMoveToPoint (context, cgPoint.x, cgPoint.y - underlineOffset);
+			CGContextAddLineToPoint (context, cgPoint2.x, cgPoint.y - underlineOffset);
+			CGContextDrawPath (context, kCGPathStroke);
+		}
+		if (strikeThrough)
+		{
+			if (!cgColorRef)
+				cgColorRef = getCGColor (impl->state.fontColor);
+			CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
+			CGFloat offset = CTFontGetXHeight (fontRef) * 0.5f;
+			CGContextSetStrokeColorWithColor (context, cgColorRef);
+			CGContextSetLineWidth (context, underlineThickness);
+			auto cgPoint2 = CGContextGetTextPosition (context);
+			CGContextBeginPath (context);
+			CGContextMoveToPoint (context, cgPoint.x, cgPoint.y - offset);
+			CGContextAddLineToPoint (context, cgPoint2.x, cgPoint.y - offset);
+			CGContextDrawPath (context, kCGPathStroke);
+		}
 	});
 }
-
-//------------------------------------------------------------------------
-CColor CoreGraphicsDeviceContext::getFontColor () const { return impl->state.fontColor; }
 
 //------------------------------------------------------------------------
 CoreGraphicsBitmapContext::CoreGraphicsBitmapContext (const CoreGraphicsDevice& device,

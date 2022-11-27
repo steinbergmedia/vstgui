@@ -213,64 +213,53 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 	auto linuxString = dynamic_cast<LinuxString*> (string);
 	if (!linuxString)
 		return;
-	auto draw = [&] (const ContextHandle& cr, CColor color, double globalAlpha) {
-		cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
-							   color.normBlue<double> (), color.normAlpha<double> () * globalAlpha);
+	PangoContext* pangoContext = FontList::instance ().getFontContext ();
+	if (!context)
+		return;
+	PangoLayout* layout = pango_layout_new (pangoContext);
+	if (!layout)
+		return;
 
-		PangoContext* context = FontList::instance ().getFontContext ();
-		if (context)
+	if (impl->font)
+	{
+		PangoFontDescription* desc = pango_font_describe (impl->font);
+		if (desc)
 		{
-			PangoLayout* layout = pango_layout_new (context);
-			if (layout)
-			{
-				if (impl->font)
-				{
-					PangoFontDescription* desc = pango_font_describe (impl->font);
-					if (desc)
-					{
-						pango_layout_set_font_description (layout, desc);
-						pango_font_description_free (desc);
-					}
-				}
-
-				PangoAttrList* attrs = pango_attr_list_new ();
-				if (attrs)
-				{
-					if (impl->style & kUnderlineFace)
-						pango_attr_list_insert (attrs,
-												pango_attr_underline_new (PANGO_UNDERLINE_SINGLE));
-					if (impl->style & kStrikethroughFace)
-						pango_attr_list_insert (attrs, pango_attr_strikethrough_new (true));
-					pango_layout_set_attributes (layout, attrs);
-					pango_attr_list_unref (attrs);
-				}
-
-				pango_layout_set_text (layout, linuxString->get ().c_str (), -1);
-
-				PangoRectangle extents {};
-				pango_layout_get_pixel_extents (layout, nullptr, &extents);
-
-				PangoLayoutIter* iter = pango_layout_get_iter (layout);
-				CCoord baseline = 0.0;
-				if (iter)
-				{
-					baseline = pango_units_to_double (pango_layout_iter_get_baseline (iter));
-					pango_layout_iter_free (iter);
-				}
-
-				cairo_move_to (cr, p.x + extents.x, p.y + extents.y - baseline);
-				pango_cairo_show_layout (cr, layout);
-				g_object_unref (layout);
-			}
+			pango_layout_set_font_description (layout, desc);
+			pango_font_description_free (desc);
 		}
-	};
+	}
+
+	PangoAttrList* attrs = pango_attr_list_new ();
+	if (attrs)
+	{
+		if (impl->style & kUnderlineFace)
+			pango_attr_list_insert (attrs, pango_attr_underline_new (PANGO_UNDERLINE_SINGLE));
+		if (impl->style & kStrikethroughFace)
+			pango_attr_list_insert (attrs, pango_attr_strikethrough_new (true));
+		pango_layout_set_attributes (layout, attrs);
+		pango_attr_list_unref (attrs);
+	}
+
+	pango_layout_set_text (layout, linuxString->get ().c_str (), -1);
+
+	PangoRectangle extents {};
+	pango_layout_get_pixel_extents (layout, nullptr, &extents);
+
+	PangoLayoutIter* iter = pango_layout_get_iter (layout);
+	CCoord baseline = 0.0;
+	if (iter)
+	{
+		baseline = pango_units_to_double (pango_layout_iter_get_baseline (iter));
+		pango_layout_iter_free (iter);
+	}
+
 	if (auto platformContext = context->getPlatformDeviceContext ())
 	{
-		if (auto cairoContext = std::dynamic_pointer_cast<CairoGraphicsDeviceContext> (platformContext))
+		if (auto cairoContext =
+				std::dynamic_pointer_cast<CairoGraphicsDeviceContext> (platformContext))
 		{
-			cairoContext->customDraw ([&] (const auto& ctx, double globalAlpha) {
-				draw (ctx, context->getFontColor (), globalAlpha);
-			});
+			cairoContext->drawPangoLayout (layout, {p.x + extents.x, p.y + extents.y - baseline});
 		}
 	}
 	else if (auto cairoContext = dynamic_cast<Context*> (context))
@@ -280,9 +269,14 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 			auto color = cairoContext->getFontColor ();
 			auto alpha = cairoContext->getGlobalAlpha ();
 			const auto& cr = cairoContext->getCairo ();
-			draw (cr, color, alpha);
+			cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
+								   color.normBlue<double> (), color.normAlpha<double> () * alpha);
+
+			cairo_move_to (cr, p.x + extents.x, p.y + extents.y - baseline);
+			pango_cairo_show_layout (cr, layout);
 		}
 	}
+	g_object_unref (layout);
 }
 
 //------------------------------------------------------------------------

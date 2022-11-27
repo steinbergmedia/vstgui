@@ -17,6 +17,7 @@
 #include <stack>
 
 #include <d2d1_1.h>
+#include <dwrite.h>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -794,11 +795,17 @@ const IPlatformGraphicsDeviceContextBitmapExt* D2DGraphicsDeviceContext::asBitma
 }
 
 //------------------------------------------------------------------------
-void D2DGraphicsDeviceContext::customDraw (const CustomDrawFunc& f) const
+void D2DGraphicsDeviceContext::drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos,
+											   bool antialias)
 {
 	impl->doInContext ([&] (auto deviceContext) {
+		deviceContext->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
+													   : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+		if (impl->state.drawMode.integralMode ())
+			pos.makeIntegral ();
+		pos.y += 0.5;
 		impl->applyFontColor ();
-		f (deviceContext, impl->state.fontBrush.get (), impl->state.drawMode);
+		deviceContext->DrawTextLayout (convert (pos), textLayout, impl->state.fontBrush.get ());
 	});
 }
 

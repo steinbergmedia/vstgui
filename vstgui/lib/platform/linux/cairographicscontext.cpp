@@ -12,6 +12,7 @@
 #include "../../cdrawdefs.h"
 #include "../../clinestyle.h"
 
+#include <pango/pangocairo.h>
 #include <stack>
 
 //------------------------------------------------------------------------
@@ -188,6 +189,7 @@ struct CairoGraphicsDeviceContext::Impl
 	}
 	void applyFillColor () { setupSourceColor (state.fillColor); }
 	void applyFrameColor () { setupSourceColor (state.frameColor); }
+	void applyFontColor () { setupSourceColor (state.fontColor); }
 
 	void draw (PlatformGraphicsDrawStyle drawStyle)
 	{
@@ -626,9 +628,13 @@ const IPlatformGraphicsDeviceContextBitmapExt* CairoGraphicsDeviceContext::asBit
 }
 
 //------------------------------------------------------------------------
-void CairoGraphicsDeviceContext::customDraw (const CustomDrawFunc& f) const
+void CairoGraphicsDeviceContext::drawPangoLayout (void* layout, CPoint pos) const
 {
-	impl->doInContext ([&] () { f (impl->context, impl->state.globalAlpha); });
+	impl->doInContext ([&] () {
+		impl->applyFontColor ();
+		cairo_move_to (impl->context, pos.x, pos.y);
+		pango_cairo_show_layout (impl->context, reinterpret_cast<PangoLayout*> (layout));
+	});
 }
 
 //------------------------------------------------------------------------

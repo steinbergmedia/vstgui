@@ -74,12 +74,9 @@ public:
 	bool fillRectWithBitmap (IPlatformBitmap& bitmap, CRect srcRect, CRect dstRect, double alpha,
 							 BitmapInterpolationQuality quality) const override;
 
-	//
-	using PointPixelAllignFunc = std::function<CGPoint (CGPoint)>;
-	using CustomDrawFunc = std::function<void (CGContextRef, const PointPixelAllignFunc&)>;
-	void customDraw (bool swapYAxis, bool integralOffset, const CustomDrawFunc& f) const;
-
-	CColor getFontColor () const;
+	// private
+	void drawCTLine (CTLineRef line, CGPoint cgPoint, CTFontRef fontRef, bool underline,
+					 bool strikeThrough, bool antialias) const;
 
 private:
 	struct Impl;

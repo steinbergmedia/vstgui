@@ -345,15 +345,9 @@ void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, c
 		else if (auto deviceContext = std::dynamic_pointer_cast<CoreGraphicsDeviceContext> (
 					 context->getPlatformDeviceContext ()))
 		{
-			deviceContext->customDraw (true, integralMode, [&] (auto cgContext, auto pixelAlign) {
-				CGPoint cgPoint = CGPointFromCPoint (point);
-				if (integralMode)
-					cgPoint = pixelAlign (cgPoint);
-				CGColorRef cgColorRef = nullptr;
-				if (style & kUnderlineFace || style & kStrikethroughFace)
-					cgColorRef = getCGColor (deviceContext->getFontColor ());
-				drawCTLine (line, cgContext, cgColorRef, cgPoint, fontRef, point, style, antialias);
-			});
+			CGPoint cgPoint = CGPointFromCPoint (point);
+			deviceContext->drawCTLine (line, cgPoint, fontRef, style & kUnderlineFace,
+									   style & kStrikethroughFace, antialias);
 		}
 		CFRelease (line);
 	}

@@ -9,6 +9,7 @@
 struct ID2D1DeviceContext;
 struct ID2D1Device;
 struct ID2D1SolidColorBrush;
+struct IDWriteTextLayout;
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -64,9 +65,8 @@ public:
 	// extension
 	const IPlatformGraphicsDeviceContextBitmapExt* asBitmapExt () const override;
 
-	using CustomDrawFunc = std::function<void (ID2D1DeviceContext* deviceContext,
-											   ID2D1SolidColorBrush* fillBrush, CDrawMode mode)>;
-	void customDraw (const CustomDrawFunc& f) const;
+	// private
+	void drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos, bool antialias);
 
 private:
 	struct Impl;
