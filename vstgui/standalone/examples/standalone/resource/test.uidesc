@@ -765,39 +765,26 @@
 							"wheel-inc-value": "0.1"
 						}
 					},
-					"CKnob": {
+					"CAnimKnob": {
 						"attributes": {
 							"angle-range": "240",
 							"angle-start": "150",
 							"autosize": "right top ",
-							"circle-drawing": "false",
-							"class": "CKnob",
+							"bitmap": "knob",
+							"class": "CAnimKnob",
 							"control-tag": "Test",
-							"corona-color": "~ RedCColor",
-							"corona-dash-dot": "true",
-							"corona-dash-dot-lengths": "1.1,0.1",
-							"corona-drawing": "true",
-							"corona-from-center": "false",
-							"corona-inset": "12",
-							"corona-inverted": "false",
-							"corona-line-cap-butt": "true",
-							"corona-outline": "true",
-							"corona-outline-width-add": "2",
 							"default-value": "0.5",
-							"handle-color": "~ WhiteCColor",
-							"handle-line-width": "8",
-							"handle-shadow-color": "~ BlackCColor",
+							"inverse-bitmap": "false",
 							"max-value": "1",
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "330, 230",
-							"size": "70, 70",
-							"skip-handle-drawing": "true",
+							"origin": "340, 235",
+							"size": "50, 50",
 							"tooltip": "Knob",
 							"transparent": "false",
 							"value-inset": "5",
-							"wants-focus": "true",
+							"wants-focus": "false",
 							"wheel-inc-value": "0.1",
 							"zoom-factor": "1.5"
 						}
@@ -948,6 +935,24 @@
 							"tooltip": "String List Control",
 							"transparent": "false",
 							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CAutoAnimation": {
+						"attributes": {
+							"animation-time": "32",
+							"bitmap": "autoanimation",
+							"bitmap-offset": "5, 5",
+							"class": "CAutoAnimation",
+							"default-value": "0.5",
+							"max-value": "36",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "85, 5",
+							"size": "30, 30",
+							"transparent": "false",
+							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
 						}
 					}

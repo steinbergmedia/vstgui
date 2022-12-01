@@ -27,7 +27,7 @@ class ImageStitcherAppDelegate : public DelegateAdapter,
 {
 public:
 	ImageStitcherAppDelegate ()
-	: DelegateAdapter ({"ImageStitcher", "1.0.0", "com.steinberg.vstgui.imagestitcher"})
+	: DelegateAdapter ({"ImageStitcher", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 	{
 	}
 

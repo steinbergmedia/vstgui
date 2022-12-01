@@ -4,6 +4,7 @@
 
 #include "ccontrol.h"
 #include "icontrollistener.h"
+#include "../algorithm.h"
 #include "../events.h"
 #include "../cframe.h"
 #include "../cgraphicspath.h"
@@ -219,26 +220,18 @@ void CControl::endEdit ()
 }
 
 //------------------------------------------------------------------------
-void CControl::setValue (float val)
-{
-	if (val < getMin ())
-		val = getMin ();
-	else if (val > getMax ())
-		val = getMax ();
-	if (val != value)
-	{
-		value = val;
-	}
-}
+void CControl::setValue (float val) { value = clamp (val, getMin (), getMax ()); }
 
 //------------------------------------------------------------------------
 void CControl::setValueNormalized (float val)
 {
-	if (val > 1.f)
-		val = 1.f;
-	else if (val < 0.f)
-		val = 0.f;
-	setValue (getRange () * val + getMin ());
+	if (getRange () == 0.f)
+	{
+		value = getMin ();
+		return;
+	}
+	val = clampNorm (val);
+	setValue (normalizedToPlain (val, getMin (), getMax ()));
 }
 
 //------------------------------------------------------------------------
@@ -247,7 +240,7 @@ float CControl::getValueNormalized () const
 	auto range = getRange ();
 	if (range == 0.f)
 		return 0.f;
-	return (value - getMin ()) / range;
+	return plainToNormalized<float> (value, getMin (), getMax ());
 }
 
 //------------------------------------------------------------------------
@@ -282,13 +275,7 @@ void CControl::setDirty (bool val)
 }
 
 //------------------------------------------------------------------------
-void CControl::bounceValue ()
-{
-	if (value > getMax ())
-		value = getMax ();
-	else if (value < getMin ())
-		value = getMin ();
-}
+void CControl::bounceValue () { value = clamp (value, getMin (), getMax ()); }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
@@ -361,6 +348,7 @@ int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
 }
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -373,6 +361,7 @@ void IMultiBitmapControl::autoComputeHeightOfOneImage ()
 		heightOfOneImage = viewSize.getHeight ();
 	}
 }
+#endif
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------

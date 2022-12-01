@@ -10,6 +10,7 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 struct IMultiBitmapControlCreator
 {
@@ -47,6 +48,10 @@ struct MultiBitmapControlCreator : ViewCreatorAdapter
 		                                                      desc);
 	}
 };
+#else
+using MultiBitmapControlCreator = ViewCreatorAdapter;
+
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //------------------------------------------------------------------------
 } // UIViewCreator

@@ -51,6 +51,8 @@ public:
 				CColor color;
 				if (description->getColor ("Focus", color))
 					imageView->setSelectionColor (color);
+				if (description->getColor ("font.color", color))
+					imageView->setTextColor (color);
 				return imageView;
 			}
 		}
@@ -112,7 +114,7 @@ public:
 	{
 		if (index == 0)
 		{
-			minSize = 45;
+			minSize = 150;
 			maxSize = -1;
 			return true;
 		}
@@ -230,6 +232,11 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 		                   v.performEdit (0.);
 	                   }));
 
+	binding->addValue (Value::make ("Export"), UIDesc::ValueCalls::onAction ([this] (auto& v) {
+						   this->doExport ();
+						   v.performEdit (0.);
+					   }));
+
 	displayFrameValue = Value::makeStepValue ("DisplayFrame", 1, 1);
 	binding->addValue (displayFrameValue);
 
@@ -246,6 +253,12 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 		                   if (animationRunning->getValue () >= 0.5)
 			                   this->doStartAnimation ();
 	                   }));
+	numFramesPerRowValue =
+		Value::make ("NumFramesPerRow", 0, Value::makeRangeConverter (1, 32767, 0));
+	binding->addValue (numFramesPerRowValue, UIDesc::ValueCalls::onPerformEdit ([this] (auto& v) {
+						   this->docContext->setNumFramesPerRow (static_cast<uint16_t> (
+							   std::round (v.getConverter ().normalizedToPlain (v.getValue ()))));
+					   }));
 	return binding;
 }
 
@@ -347,7 +360,7 @@ void DocumentWindowController::doExport ()
 	    owned (CNewFileSelector::create (contentView, CNewFileSelector::Style::kSelectSaveFile));
 	if (!fs)
 		return;
-	fs->setTitle ("Save Stitched Image");
+	fs->setTitle ("Export Stitched Image");
 	fs->setDefaultExtension (pngFileExtension);
 	// TODO: set filename depending on doc name
 	fs->run ([this] (CNewFileSelector* fs) {
@@ -427,6 +440,12 @@ void DocumentWindowController::onImagePathRemoved (const Path& newPath, size_t i
 	auto it = imageList.begin ();
 	std::advance (it, index);
 	imageList.erase (it);
+	setDirty ();
+}
+
+//------------------------------------------------------------------------
+void DocumentWindowController::onNumFramesPerRowChanged (uint16_t newNumFramesPerRow)
+{
 	setDirty ();
 }
 
@@ -658,24 +677,44 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 {
 	if (!contentView || docContext->getImagePaths ().empty ())
 		return nullptr;
+	auto numCols = docContext->getNumFramesPerRow ();
+	auto numRows = std::ceil (static_cast<double> (docContext->getImagePaths ().size ()) / numCols);
+
 	CRect r;
 	CPoint size (docContext->getWidth (), docContext->getHeight ());
 	r.setSize (size);
-	size.y *= docContext->getImagePaths ().size ();
+	size.x *= numCols;
+	size.y *= numRows;
 
 	auto offscreen = COffscreenContext::create (size);
 	if (!offscreen)
 		return nullptr;
 
 	offscreen->beginDraw ();
-	for (auto image : imageList)
+	auto col = 0;
+	for (const auto& image : imageList)
 	{
 		image.bitmap->draw (offscreen, r);
-		r.offset (0, docContext->getHeight ());
+		if (++col >= numCols)
+		{
+			col = 0;
+			r.left = 0;
+			r.offset (0, docContext->getHeight ());
+		}
+		else
+		{
+			r.offset (docContext->getWidth (), 0);
+		}
 	}
 	offscreen->endDraw ();
 
-	return shared (offscreen->getBitmap ());
+	auto multiFrameBitmap =
+		makeOwned<CMultiFrameBitmap> (offscreen->getBitmap ()->getPlatformBitmap ());
+	auto res = multiFrameBitmap->setMultiFrameDesc (
+		{CPoint (docContext->getWidth (), docContext->getHeight ()),
+		 static_cast<uint16_t> (imageList.size ()), numCols});
+	vstgui_assert (res, "Multi Frame Bitmap Description invalid!");
+	return multiFrameBitmap;
 }
 
 //------------------------------------------------------------------------
@@ -692,8 +731,6 @@ void DocumentWindowController::setDirty ()
 			imageView->setImageList (&imageList);
 		if (movieBitmapView)
 		{
-			movieBitmapView->setHeightOfOneImage (docContext->getHeight ());
-			movieBitmapView->setNumSubPixmaps (static_cast<int32_t> (imageList.size ()));
 			movieBitmapView->setBackground (createStitchedBitmap ());
 			auto size = movieBitmapView->getViewSize ();
 			size.setWidth (docContext->getWidth ());

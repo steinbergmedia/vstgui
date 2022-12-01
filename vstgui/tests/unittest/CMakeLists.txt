@@ -22,6 +22,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/controls/csegmentbutton_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/controls/ctextbutton_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/controls/cxypad_test.cpp"
+	"${VSTGUI_TEST_BASE}lib/algorithm_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cbitmap_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cbuttonstate_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cclipboard_test.cpp"

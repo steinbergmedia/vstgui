@@ -24,7 +24,8 @@ class UIBitmapsController : public NonAtomicReferenceCounted,
                             public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIBitmapsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
+	UIBitmapsController (IController* baseController, UIDescription* description,
+						 IActionPerformer* actionPerformer, UIUndoManager* undoManager);
 	~UIBitmapsController () override;
 
 protected:
@@ -42,8 +43,9 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	IActionPerformer* actionPerformer;
-	UIBitmapsDataSource* dataSource;
+	IActionPerformer* actionPerformer {nullptr};
+	UIUndoManager* undoManager {nullptr};
+	UIBitmapsDataSource* dataSource {nullptr};
 	SharedPointer<CView> bitmapView;
 	SharedPointer<CTextEdit> bitmapPathEdit;
 	SharedPointer<CControl> settingButton;

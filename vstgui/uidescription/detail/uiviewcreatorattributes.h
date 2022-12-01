@@ -47,6 +47,7 @@ static const IdStringPtr kCVuMeter = "CVuMeter";
 static const IdStringPtr kCAnimationSplashScreen = "CAnimationSplashScreen";
 static const IdStringPtr kCGradientView = "CGradientView";
 static const IdStringPtr kCStringListControl = "CStringListControl";
+static const IdStringPtr kCAutoAnimation = "CAutoAnimation";
 
 //-----------------------------------------------------------------------------
 // attributes used in more than one view creator
@@ -232,11 +233,13 @@ static const std::string kAttrCoronaLineCapButt = "corona-line-cap-butt";
 static const std::string kAttrSkipHandleDrawing = "skip-handle-drawing";
 static const std::string kAttrCoronaOutlineWidthAdd = "corona-outline-width-add";
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 // IMultiBitmapControlCreator attributes
 //-----------------------------------------------------------------------------
 static const std::string kAttrHeightOfOneImage = "height-of-one-image";
 static const std::string kAttrSubPixmaps = "sub-pixmaps";
+#endif
 
 //-----------------------------------------------------------------------------
 // CAnimKnobCreator attributes

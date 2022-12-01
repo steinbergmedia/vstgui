@@ -22,6 +22,14 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_12 Version 4.12
+
+- new multi frame bitmap representation that allows to support more frames per bitmap on current
+hardware by supporting to layout the frames in the bitmap by rows and multiple columns instead of
+one column as before. See VSTGUI::CMultiFrameBitmap. All included controls are updated to support
+it, while the old method is deprecated but still supported for now.
+- the image stitcher tool was updated to support the creation of multi row/column frames bitmap
+
 @subsection version4_11 Version 4.11
 
 - Using DirectComposition on Windows now with support for CLayeredViewContainer
@@ -115,6 +123,13 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_11_to_4_12 VSTGUI 4.11 -> VSTGUI 4.12
+
+- The CMultiFrameBitmap change deprecated the VSTGUI::IMultiBitmapControl class. If you use it,
+update your uses and use a VSTGUI::CMultiFrameBitmap instead.
+- If you compile with VSTGUI_ENABLE_DEPRECATED_METHODS=0 you need to update your multi frame bitmaps
+to use VSTGUI::CMultiFrameBitmap.
 
 @subsection code_changes_4_10_to_4_11 VSTGUI 4.10 -> VSTGUI 4.11
 
@@ -359,6 +374,14 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------
+/*! @defgroup new_in_4_11 Version 4.11
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_12 Version 4.12
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
 /*! @defgroup views Views
  *	@ingroup viewsandcontrols
  */
@@ -370,5 +393,9 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
 //------------------------------------------------------------------------
 /*! @defgroup containerviews Container Views
  *	@ingroup views
+ */
+//------------------------------------------------------------------------
+/*! @defgroup uses_multi_frame_bitmaps Views using Multi-Frame Bitmaps
+ *	\see CMultiFrameBitmap
  */
 //------------------------------------------------------------------------

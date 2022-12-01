@@ -108,6 +108,8 @@ protected:
 	void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	void performGradientNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
+										const CMultiFrameBitmapDescription* desc) override;
 	void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) override;
 	void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) override;
 	void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) override;
