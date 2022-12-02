@@ -21,32 +21,7 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-
-//------------------------------------------------------------------------
-struct D2DGraphicsDevice::Impl
-{
-	COM::Ptr<ID2D1Device> device;
-};
-
-//------------------------------------------------------------------------
-D2DGraphicsDevice::D2DGraphicsDevice (ID2D1Device* device)
-{
-	impl = std::make_unique<Impl> ();
-	impl->device = COM::share<ID2D1Device> (device);
-}
-
-//------------------------------------------------------------------------
-D2DGraphicsDevice::~D2DGraphicsDevice () noexcept {}
-
-//------------------------------------------------------------------------
-PlatformGraphicsDeviceContextPtr
-	D2DGraphicsDevice::createBitmapContext (const PlatformBitmapPtr& bitmap) const
-{
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
-ID2D1Device* D2DGraphicsDevice::get () const { return impl->device.get (); }
+namespace {
 
 //-----------------------------------------------------------------------------
 template<typename T>
@@ -117,6 +92,143 @@ struct TransformGuard
 	D2D1_MATRIX_3X2_F matrix;
 	ID2D1DeviceContext* context;
 };
+
+//------------------------------------------------------------------------
+class D2DBitmapGraphicsContext : public D2DGraphicsDeviceContext
+{
+	using D2DGraphicsDeviceContext::D2DGraphicsDeviceContext;
+
+	bool beginDraw () const override
+	{
+		if (D2DGraphicsDeviceContext::beginDraw ())
+		{
+			getID2D1DeviceContext ()->BeginDraw ();
+			drawBegan = true;
+			return true;
+		}
+		return false;
+	}
+	bool endDraw () const override
+	{
+		if (D2DGraphicsDeviceContext::endDraw ())
+		{
+			if (drawBegan)
+			{
+				getID2D1DeviceContext ()->EndDraw ();
+				drawBegan = false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	mutable bool drawBegan {false};
+};
+
+//------------------------------------------------------------------------
+} // anonymous namespace
+
+//------------------------------------------------------------------------
+struct D2DGraphicsDeviceFactory::Impl
+{
+	std::vector<std::shared_ptr<D2DGraphicsDevice>> devices;
+};
+
+//------------------------------------------------------------------------
+D2DGraphicsDeviceFactory::D2DGraphicsDeviceFactory () { impl = std::make_unique<Impl> (); }
+
+//------------------------------------------------------------------------
+D2DGraphicsDeviceFactory::~D2DGraphicsDeviceFactory () noexcept {}
+
+//------------------------------------------------------------------------
+PlatformGraphicsDevicePtr
+	D2DGraphicsDeviceFactory::getDeviceForScreen (ScreenInfo::Identifier screen) const
+{
+	if (impl->devices.empty ())
+		return nullptr;
+	return impl->devices.front ();
+}
+
+//------------------------------------------------------------------------
+PlatformGraphicsDevicePtr D2DGraphicsDeviceFactory::find (ID2D1Device* dev) const
+{
+	auto it = std::find_if (impl->devices.begin (), impl->devices.end (),
+							[dev] (const auto& el) { return el->get () == dev; });
+	if (it != impl->devices.end ())
+		return *it;
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+void D2DGraphicsDeviceFactory::addDevice (const std::shared_ptr<D2DGraphicsDevice>& device) const
+{
+	impl->devices.push_back (device);
+}
+
+//------------------------------------------------------------------------
+void D2DGraphicsDeviceFactory::removeDevice (const std::shared_ptr<D2DGraphicsDevice>& device) const
+{
+	auto it = std::find (impl->devices.begin (), impl->devices.end (), device);
+	if (it != impl->devices.end ())
+		impl->devices.erase (it);
+}
+
+//------------------------------------------------------------------------
+struct D2DGraphicsDevice::Impl
+{
+	COM::Ptr<ID2D1Device> device;
+};
+
+//------------------------------------------------------------------------
+D2DGraphicsDevice::D2DGraphicsDevice (ID2D1Device* device)
+{
+	impl = std::make_unique<Impl> ();
+	impl->device = COM::share<ID2D1Device> (device);
+}
+
+//------------------------------------------------------------------------
+D2DGraphicsDevice::~D2DGraphicsDevice () noexcept {}
+
+//------------------------------------------------------------------------
+PlatformGraphicsDeviceContextPtr
+	D2DGraphicsDevice::createBitmapContext (const PlatformBitmapPtr& bitmap) const
+{
+	auto d2dBitmap = bitmap.cast<D2DBitmap> ();
+	if (d2dBitmap)
+	{
+		COM::Ptr<ID2D1Factory> factory;
+		impl->device->GetFactory (factory.adoptPtr ());
+
+		COM::Ptr<ID2D1RenderTarget> renderTarget;
+		D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+		D2D1_PIXEL_FORMAT pixelFormat =
+			D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
+		auto hr = factory->CreateWicBitmapRenderTarget (
+			d2dBitmap->getBitmap (), D2D1::RenderTargetProperties (targetType, pixelFormat),
+			renderTarget.adoptPtr ());
+
+		if (FAILED (hr))
+			return nullptr;
+
+		COM::Ptr<ID2D1DeviceContext> deviceContext;
+		hr = renderTarget->QueryInterface (__uuidof (ID2D1DeviceContext),
+										   reinterpret_cast<void**> (deviceContext.adoptPtr ()));
+		if (FAILED (hr))
+			return nullptr;
+
+		D2DBitmapCache::removeBitmap (d2dBitmap);
+
+		TransformMatrix tm;
+		tm.scale (d2dBitmap->getScaleFactor (), d2dBitmap->getScaleFactor ());
+		deviceContext->SetTransform (convert (tm));
+
+		return std::make_shared<D2DBitmapGraphicsContext> (*this, deviceContext.get ());
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+ID2D1Device* D2DGraphicsDevice::get () const { return impl->device.get (); }
 
 //------------------------------------------------------------------------
 struct D2DGraphicsDeviceContext::Impl
@@ -307,6 +419,12 @@ D2DGraphicsDeviceContext::D2DGraphicsDeviceContext (const D2DGraphicsDevice& dev
 
 //------------------------------------------------------------------------
 D2DGraphicsDeviceContext::~D2DGraphicsDeviceContext () noexcept { endDraw (); }
+
+//------------------------------------------------------------------------
+ID2D1DeviceContext* D2DGraphicsDeviceContext::getID2D1DeviceContext () const
+{
+	return impl->deviceContext.get ();
+}
 
 //------------------------------------------------------------------------
 const IPlatformGraphicsDevice& D2DGraphicsDeviceContext::getDevice () const { return impl->device; }

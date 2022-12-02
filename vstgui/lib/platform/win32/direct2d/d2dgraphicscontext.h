@@ -68,6 +68,9 @@ public:
 	// private
 	void drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos, bool antialias);
 
+protected:
+	ID2D1DeviceContext* getID2D1DeviceContext () const;
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;
@@ -84,6 +87,25 @@ public:
 		createBitmapContext (const PlatformBitmapPtr& bitmap) const override;
 
 	ID2D1Device* get () const;
+
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+};
+
+//------------------------------------------------------------------------
+class D2DGraphicsDeviceFactory : public IPlatformGraphicsDeviceFactory
+{
+public:
+	D2DGraphicsDeviceFactory ();
+	~D2DGraphicsDeviceFactory () noexcept;
+
+	PlatformGraphicsDevicePtr getDeviceForScreen (ScreenInfo::Identifier screen) const override;
+
+	PlatformGraphicsDevicePtr find (ID2D1Device* dev) const;
+
+	void addDevice (const std::shared_ptr<D2DGraphicsDevice>& device) const;
+	void removeDevice (const std::shared_ptr<D2DGraphicsDevice>& device) const;
 
 private:
 	struct Impl;

@@ -13,9 +13,10 @@
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
 #include "../common/fileresourceinputstream.h"
+#include "../../coffscreencontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dbitmapcache.h"
-#include "direct2d/d2ddrawcontext.h"
+#include "direct2d/d2dgraphicscontext.h"
 #include "direct2d/d2dfont.h"
 #include "direct2d/d2dgradient.h"
 #include "win32frame.h"
@@ -53,6 +54,7 @@ struct Win32Factory::Impl
 	COM::Ptr<IWICImagingFactory> wicImagingFactory;
 
 	std::unique_ptr<DirectComposition::Factory> directCompositionFactory;
+	D2DGraphicsDeviceFactory graphicsDeviceFactory;
 
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
@@ -113,6 +115,13 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 
 	impl->directCompositionFactory = DirectComposition::Factory::create (impl->d2dFactory.get ());
 	D2DBitmapCache::init ();
+	if (impl->directCompositionFactory)
+	{
+		auto device = impl->directCompositionFactory->getDevice ();
+		vstgui_assert (device, "if there's a direct composition factory it must have a device");
+		auto d2dDevice = std::make_shared<D2DGraphicsDevice> (device);
+		impl->graphicsDeviceFactory.addDevice (d2dDevice);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -329,11 +338,13 @@ auto Win32Factory::getClipboard () const noexcept -> DataPackagePtr
 auto Win32Factory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
 	-> COffscreenContextPtr
 {
+#if 0
 	if (auto bitmap = makeOwned<D2DBitmap> (size * scaleFactor))
 	{
 		bitmap->setScaleFactor (scaleFactor);
 		return owned<COffscreenContext> (new D2DDrawContext (bitmap));
 	}
+#endif
 	return nullptr;
 }
 
@@ -354,15 +365,7 @@ PlatformFileSelectorPtr Win32Factory::createFileSelector (PlatformFileSelectorSt
 //-----------------------------------------------------------------------------
 const IPlatformGraphicsDeviceFactory& Win32Factory::getGraphicsDeviceFactory () const noexcept
 {
-	struct DummyGraphicsDeviceFactory : IPlatformGraphicsDeviceFactory
-	{
-		PlatformGraphicsDevicePtr getDeviceForScreen (ScreenInfo::Identifier screen) const final
-		{
-			return nullptr;
-		}
-	};
-	static DummyGraphicsDeviceFactory gInstance;
-	return gInstance;
+	return impl->graphicsDeviceFactory;
 }
 
 //-----------------------------------------------------------------------------

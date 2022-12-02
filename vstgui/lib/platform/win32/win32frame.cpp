@@ -658,27 +658,30 @@ void Win32Frame::paint (HWND hwnd)
 			directCompositionVisual->resize (static_cast<uint32_t> (frameSize.getWidth ()),
 											 static_cast<uint32_t> (frameSize.getHeight ()));
 			iterateRegion (rgn, [&] (const auto& rect) {
-				directCompositionVisual->update (
-					rect, [&] (auto deviceContext, auto rect, auto offsetX, auto offsetY) {
-						COM::Ptr<ID2D1Device> device;
-						deviceContext->GetDevice (device.adoptPtr ());
+				directCompositionVisual->update (rect, [&] (auto deviceContext, auto rect,
+															auto offsetX, auto offsetY) {
+					COM::Ptr<ID2D1Device> device;
+					deviceContext->GetDevice (device.adoptPtr ());
 
-						D2DGraphicsDevice graphicsDevice (device.get ());
-						auto drawDevice = std::make_shared<D2DGraphicsDeviceContext> (
-							graphicsDevice, deviceContext);
+					const auto& graphicsDeviceFactory =
+						static_cast<const D2DGraphicsDeviceFactory&> (
+							getPlatformFactory ().asWin32Factory ()->getGraphicsDeviceFactory ());
+					auto graphicsDevice = graphicsDeviceFactory.find (device.get ());
+					auto drawDevice = std::make_shared<D2DGraphicsDeviceContext> (
+						*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext);
 
-						CDrawContext drawContext (drawDevice, frameSize, 1.);
-						CGraphicsTransform tm;
-						tm.translate (offsetX - rect.left, offsetY - rect.top);
-						CDrawContext::Transform transform (drawContext, tm);
-						{
-							drawContext.saveGlobalState ();
-							drawContext.setClipRect (rect);
-							drawContext.clearRect (rect);
-							getFrame ()->platformDrawRect (&drawContext, rect);
-							drawContext.restoreGlobalState ();
-						}
-					});
+					CDrawContext drawContext (drawDevice, frameSize, 1.);
+					CGraphicsTransform tm;
+					tm.translate (offsetX - rect.left, offsetY - rect.top);
+					CDrawContext::Transform transform (drawContext, tm);
+					{
+						drawContext.saveGlobalState ();
+						drawContext.setClipRect (rect);
+						drawContext.clearRect (rect);
+						getFrame ()->platformDrawRect (&drawContext, rect);
+						drawContext.restoreGlobalState ();
+					}
+				});
 			});
 			for (auto& vl : viewLayers)
 				vl->drawInvalidRects ();
