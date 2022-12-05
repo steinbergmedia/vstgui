@@ -8,6 +8,7 @@
 #include "d2dbitmap.h"
 #include "d2dbitmapcache.h"
 #include "d2dgradient.h"
+#include "d2d.h"
 #include "../comptr.h"
 #include "../../../crect.h"
 #include "../../../cgraphicstransform.h"
@@ -23,63 +24,6 @@
 namespace VSTGUI {
 namespace {
 
-//-----------------------------------------------------------------------------
-template<typename T>
-void pixelAlign (const TransformMatrix& tm, T& obj)
-{
-	CGraphicsTransform tInv = tm.inverse ();
-	tm.transform (obj);
-	obj.makeIntegral ();
-	tInv.transform (obj);
-}
-
-//------------------------------------------------------------------------
-inline D2D1_POINT_2F convert (const CPoint& p)
-{
-	D2D1_POINT_2F dp = {(FLOAT)p.x, (FLOAT)p.y};
-	return dp;
-}
-
-//------------------------------------------------------------------------
-inline D2D1::ColorF convert (CColor c, double alpha)
-{
-	return D2D1::ColorF (c.normRed<float> (), c.normGreen<float> (), c.normBlue<float> (),
-						 static_cast<FLOAT> (c.normAlpha<double> () * alpha));
-}
-
-//------------------------------------------------------------------------
-inline D2D1_RECT_F convert (const CRect& r)
-{
-	D2D1_RECT_F dr = {(FLOAT)r.left, (FLOAT)r.top, (FLOAT)r.right, (FLOAT)r.bottom};
-	return dr;
-}
-
-//------------------------------------------------------------------------
-inline D2D1_MATRIX_3X2_F convert (const TransformMatrix& t)
-{
-	D2D1_MATRIX_3X2_F matrix;
-	matrix._11 = static_cast<FLOAT> (t.m11);
-	matrix._12 = static_cast<FLOAT> (t.m21);
-	matrix._21 = static_cast<FLOAT> (t.m12);
-	matrix._22 = static_cast<FLOAT> (t.m22);
-	matrix._31 = static_cast<FLOAT> (t.dx);
-	matrix._32 = static_cast<FLOAT> (t.dy);
-	return matrix;
-}
-
-//------------------------------------------------------------------------
-inline TransformMatrix convert (const D2D1_MATRIX_3X2_F& t)
-{
-	TransformMatrix matrix;
-	matrix.m11 = static_cast<FLOAT> (t._11);
-	matrix.m21 = static_cast<FLOAT> (t._12);
-	matrix.m12 = static_cast<FLOAT> (t._21);
-	matrix.m22 = static_cast<FLOAT> (t._22);
-	matrix.dx = static_cast<FLOAT> (t._31);
-	matrix.dy = static_cast<FLOAT> (t._32);
-	return matrix;
-}
-
 //------------------------------------------------------------------------
 struct TransformGuard
 {
@@ -91,38 +35,6 @@ struct TransformGuard
 
 	D2D1_MATRIX_3X2_F matrix;
 	ID2D1DeviceContext* context;
-};
-
-//------------------------------------------------------------------------
-class D2DBitmapGraphicsContext : public D2DGraphicsDeviceContext
-{
-	using D2DGraphicsDeviceContext::D2DGraphicsDeviceContext;
-
-	bool beginDraw () const override
-	{
-		if (D2DGraphicsDeviceContext::beginDraw ())
-		{
-			getID2D1DeviceContext ()->BeginDraw ();
-			drawBegan = true;
-			return true;
-		}
-		return false;
-	}
-	bool endDraw () const override
-	{
-		if (D2DGraphicsDeviceContext::endDraw ())
-		{
-			if (drawBegan)
-			{
-				getID2D1DeviceContext ()->EndDraw ();
-				drawBegan = false;
-			}
-			return true;
-		}
-		return false;
-	}
-
-	mutable bool drawBegan {false};
 };
 
 //------------------------------------------------------------------------
@@ -222,7 +134,7 @@ PlatformGraphicsDeviceContextPtr
 		tm.scale (d2dBitmap->getScaleFactor (), d2dBitmap->getScaleFactor ());
 		deviceContext->SetTransform (convert (tm));
 
-		return std::make_shared<D2DBitmapGraphicsContext> (*this, deviceContext.get ());
+		return std::make_shared<D2DGraphicsDeviceContext> (*this, deviceContext.get ());
 	}
 	return nullptr;
 }
@@ -405,6 +317,7 @@ struct D2DGraphicsDeviceContext::Impl
 	std::stack<State> stateStack;
 	double scaleFactor {1.};
 	CRect applyClip {};
+	bool beginDrawCalled {false};
 
 	const D2DGraphicsDevice& device;
 	COM::Ptr<ID2D1DeviceContext> deviceContext;
@@ -436,7 +349,12 @@ PlatformGraphicsPathFactoryPtr D2DGraphicsDeviceContext::getGraphicsPathFactory 
 }
 
 //------------------------------------------------------------------------
-bool D2DGraphicsDeviceContext::beginDraw () const { return true; }
+bool D2DGraphicsDeviceContext::beginDraw () const
+{
+	impl->beginDrawCalled = true;
+	impl->deviceContext->BeginDraw ();
+	return true;
+}
 
 //------------------------------------------------------------------------
 bool D2DGraphicsDeviceContext::endDraw () const
@@ -444,6 +362,12 @@ bool D2DGraphicsDeviceContext::endDraw () const
 	if (impl->applyClip.isEmpty () == false)
 		impl->deviceContext->PopAxisAlignedClip ();
 	impl->applyClip = {};
+	if (impl->beginDrawCalled)
+	{
+		auto hr = impl->deviceContext->EndDraw ();
+		vstgui_assert (SUCCEEDED (hr));
+		impl->beginDrawCalled = false;
+	}
 	return true;
 }
 

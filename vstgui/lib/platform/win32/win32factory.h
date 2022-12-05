@@ -42,6 +42,7 @@ public:
 	IDWriteFactory* getDirectWriteFactory () const noexcept;
 
 	DirectComposition::Factory* getDirectCompositionFactory () const noexcept;
+	PlatformGraphicsDeviceContextPtr createGraphicsDeviceContext (void* hwnd) const noexcept;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks

@@ -233,12 +233,11 @@ set(${target}_mac_sources
 
   ##########################################################################################
 set(${target}_win32_sources
+    platform/win32/direct2d/d2d.h
     platform/win32/direct2d/d2dbitmap.cpp
     platform/win32/direct2d/d2dbitmap.h
     platform/win32/direct2d/d2dbitmapcache.cpp
     platform/win32/direct2d/d2dbitmapcache.h
-    platform/win32/direct2d/d2ddrawcontext.cpp
-    platform/win32/direct2d/d2ddrawcontext.h
     platform/win32/direct2d/d2dfont.cpp
     platform/win32/direct2d/d2dfont.h
     platform/win32/direct2d/d2dgradient.cpp

@@ -68,9 +68,9 @@ public:
 	// private
 	void drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos, bool antialias);
 
-protected:
 	ID2D1DeviceContext* getID2D1DeviceContext () const;
 
+protected:
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

@@ -199,6 +199,53 @@ DirectComposition::Factory* Win32Factory::getDirectCompositionFactory () const n
 }
 
 //-----------------------------------------------------------------------------
+PlatformGraphicsDeviceContextPtr
+	Win32Factory::createGraphicsDeviceContext (void* hwnd) const noexcept
+{
+	auto window = reinterpret_cast<HWND> (hwnd);
+	auto renderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+	if (auto pf = getPlatformFactory ().asWin32Factory ())
+	{
+		renderTargetType = pf->useD2DHardwareRenderer () ? D2D1_RENDER_TARGET_TYPE_HARDWARE
+														 : D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+	}
+	RECT rc;
+	GetClientRect (window, &rc);
+
+	auto size = D2D1::SizeU (static_cast<UINT32> (rc.right - rc.left),
+							 static_cast<UINT32> (rc.bottom - rc.top));
+	COM::Ptr<ID2D1HwndRenderTarget> hwndRenderTarget;
+	D2D1_PIXEL_FORMAT pixelFormat =
+		D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (
+		D2D1::RenderTargetProperties (renderTargetType, pixelFormat),
+		D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS),
+		hwndRenderTarget.adoptPtr ());
+	if (FAILED (hr))
+		return nullptr;
+	hwndRenderTarget->SetDpi (96, 96);
+
+	COM::Ptr<ID2D1DeviceContext> deviceContext;
+	hr = hwndRenderTarget->QueryInterface (__uuidof (ID2D1DeviceContext),
+										   reinterpret_cast<void**> (deviceContext.adoptPtr ()));
+	if (FAILED (hr))
+		return nullptr;
+
+	ID2D1Device* d2ddevice {};
+	deviceContext->GetDevice (&d2ddevice);
+	auto device = impl->graphicsDeviceFactory.find (d2ddevice);
+	if (!device)
+	{
+		impl->graphicsDeviceFactory.addDevice (std::make_shared<D2DGraphicsDevice> (d2ddevice));
+		device = impl->graphicsDeviceFactory.find (d2ddevice);
+		vstgui_assert (device);
+	}
+
+	return std::make_shared<D2DGraphicsDeviceContext> (
+		*std::static_pointer_cast<D2DGraphicsDevice> (device).get (), deviceContext.get ());
+}
+
+//-----------------------------------------------------------------------------
 uint64_t Win32Factory::getTicks () const noexcept
 {
 	return static_cast<uint64_t> (GetTickCount64 ());

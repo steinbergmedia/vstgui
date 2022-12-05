@@ -5,7 +5,9 @@
 #include "win32viewlayer.h"
 #include "win32directcomposition.h"
 #include "win32factory.h"
-#include "direct2d/d2ddrawcontext.h"
+#include "direct2d/d2dgraphicscontext.h"
+#include "direct2d/d2d.h"
+#include "../../cdrawcontext.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -46,13 +48,20 @@ bool Win32ViewLayer::drawInvalidRects ()
 		visual->update (r, [&] (auto deviceContext, auto updateRect, auto offsetX, auto offsetY) {
 			COM::Ptr<ID2D1Device> device;
 			deviceContext->GetDevice (device.adoptPtr ());
-			D2DDrawContext drawContext (deviceContext, viewSize, device.get ());
-			drawContext.setClipRect (updateRect);
+
+			const auto& graphicsDeviceFactory = static_cast<const D2DGraphicsDeviceFactory&> (
+				getPlatformFactory ().asWin32Factory ()->getGraphicsDeviceFactory ());
+			auto graphicsDevice = graphicsDeviceFactory.find (device.get ());
+			auto drawDevice = std::make_shared<D2DGraphicsDeviceContext> (
+				*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext);
+
+			CDrawContext drawContext (drawDevice, viewSize, 1.);
 			CGraphicsTransform tm;
 			tm.translate (offsetX - updateRect.left, offsetY - updateRect.top);
 			CDrawContext::Transform transform (drawContext, tm);
 			{
 				drawContext.saveGlobalState ();
+				drawContext.setClipRect (updateRect);
 				drawContext.clearRect (updateRect);
 				delegate->drawViewLayer (&drawContext, updateRect);
 				drawContext.restoreGlobalState ();
