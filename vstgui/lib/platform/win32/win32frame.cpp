@@ -650,24 +650,18 @@ void Win32Frame::paint (HWND hwnd)
 					COM::Ptr<ID2D1Device> device;
 					deviceContext->GetDevice (device.adoptPtr ());
 
+					CGraphicsTransform tm;
+					tm.translate (offsetX - rect.left, offsetY - rect.top);
+
 					const auto& graphicsDeviceFactory =
 						static_cast<const D2DGraphicsDeviceFactory&> (
 							getPlatformFactory ().asWin32Factory ()->getGraphicsDeviceFactory ());
 					auto graphicsDevice = graphicsDeviceFactory.find (device.get ());
 					auto drawDevice = std::make_shared<D2DGraphicsDeviceContext> (
-						*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext);
+						*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext,
+						tm);
 
-					CDrawContext drawContext (drawDevice, frameSize, 1.);
-					CGraphicsTransform tm;
-					tm.translate (offsetX - rect.left, offsetY - rect.top);
-					CDrawContext::Transform transform (drawContext, tm);
-					{
-						drawContext.saveGlobalState ();
-						drawContext.setClipRect (rect);
-						drawContext.clearRect (rect);
-						getFrame ()->platformDrawRect (&drawContext, rect);
-						drawContext.restoreGlobalState ();
-					}
+					getFrame ()->platformDrawRects (drawDevice, 1., {1, rect});
 				});
 			});
 			for (auto& vl : viewLayers)
@@ -685,20 +679,20 @@ void Win32Frame::paint (HWND hwnd)
 				GetRgnBox (rgn, &ps.rcPaint);
 				CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top,
 								  (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
-				CDrawContext drawContext (legacyDrawDevice, frameSize, 1.);
-				drawContext.setClipRect (updateRect);
 
-				drawContext.beginDraw ();
+				legacyDrawDevice->setClipRect (updateRect);
+
+				legacyDrawDevice->beginDraw ();
 
 				iterateRegion (rgn, [&] (const auto& rect) {
-					drawContext.saveGlobalState ();
-					drawContext.setClipRect (updateRect);
-					drawContext.clearRect (rect);
-					getFrame ()->platformDrawRect (&drawContext, rect);
-					drawContext.restoreGlobalState ();
+					legacyDrawDevice->saveGlobalState ();
+					legacyDrawDevice->setClipRect (updateRect);
+					legacyDrawDevice->clearRect (rect);
+					getFrame ()->platformDrawRects (legacyDrawDevice, 1, {1, rect});
+					legacyDrawDevice->restoreGlobalState ();
 				});
 
-				drawContext.endDraw ();
+				legacyDrawDevice->endDraw ();
 			}
 		}
 	}

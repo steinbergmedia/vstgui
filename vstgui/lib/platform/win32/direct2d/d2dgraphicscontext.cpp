@@ -134,7 +134,8 @@ PlatformGraphicsDeviceContextPtr
 		tm.scale (d2dBitmap->getScaleFactor (), d2dBitmap->getScaleFactor ());
 		deviceContext->SetTransform (convert (tm));
 
-		return std::make_shared<D2DGraphicsDeviceContext> (*this, deviceContext.get ());
+		return std::make_shared<D2DGraphicsDeviceContext> (*this, deviceContext.get (),
+														   TransformMatrix {});
 	}
 	return nullptr;
 }
@@ -145,8 +146,9 @@ ID2D1Device* D2DGraphicsDevice::get () const { return impl->device.get (); }
 //------------------------------------------------------------------------
 struct D2DGraphicsDeviceContext::Impl
 {
-	Impl (const D2DGraphicsDevice& device, ID2D1DeviceContext* deviceContext)
-	: device (device), deviceContext (COM::share (deviceContext))
+	Impl (const D2DGraphicsDevice& device, ID2D1DeviceContext* deviceContext,
+		  const TransformMatrix& tm)
+	: device (device), deviceContext (COM::share (deviceContext)), globalTM (tm)
 	{
 	}
 
@@ -158,7 +160,7 @@ struct D2DGraphicsDeviceContext::Impl
 
 		TransformGuard tmGuard (deviceContext.get ());
 
-		auto transform = convert (tmGuard.matrix) * state.tm;
+		auto transform = convert (tmGuard.matrix) * globalTM * state.tm;
 		transform.scale (scaleFactor, scaleFactor);
 		transform.translate (transformOffset);
 		bool useLayer = transform.m12 != 0. || transform.m21 != 0.;
@@ -187,6 +189,7 @@ struct D2DGraphicsDeviceContext::Impl
 		if (!useLayer)
 		{
 			auto newClip = state.clip;
+			globalTM.transform (newClip);
 			if (applyClip != newClip)
 			{
 				if (applyClip.isEmpty () == false)
@@ -318,6 +321,7 @@ struct D2DGraphicsDeviceContext::Impl
 	double scaleFactor {1.};
 	CRect applyClip {};
 	bool beginDrawCalled {false};
+	TransformMatrix globalTM;
 
 	const D2DGraphicsDevice& device;
 	COM::Ptr<ID2D1DeviceContext> deviceContext;
@@ -325,9 +329,10 @@ struct D2DGraphicsDeviceContext::Impl
 
 //------------------------------------------------------------------------
 D2DGraphicsDeviceContext::D2DGraphicsDeviceContext (const D2DGraphicsDevice& device,
-													ID2D1DeviceContext* deviceContext)
+													ID2D1DeviceContext* deviceContext,
+													const TransformMatrix& tm)
 {
-	impl = std::make_unique<Impl> (device, deviceContext);
+	impl = std::make_unique<Impl> (device, deviceContext, tm);
 }
 
 //------------------------------------------------------------------------
@@ -601,7 +606,7 @@ bool D2DGraphicsDeviceContext::clearRect (CRect rect) const
 #if 1
 	TransformGuard tmGuard (impl->deviceContext.get ());
 
-	impl->deviceContext->SetTransform (convert (impl->state.tm));
+	impl->deviceContext->SetTransform (convert (impl->globalTM * impl->state.tm));
 	impl->deviceContext->PushAxisAlignedClip (convert (rect), D2D1_ANTIALIAS_MODE_ALIASED);
 	impl->deviceContext->Clear (D2D1::ColorF (1.f, 1.f, 1.f, 0.f));
 	impl->deviceContext->PopAxisAlignedClip ();

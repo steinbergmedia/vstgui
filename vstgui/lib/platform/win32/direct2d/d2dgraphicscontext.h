@@ -20,7 +20,8 @@ class D2DGraphicsDevice;
 class D2DGraphicsDeviceContext : public IPlatformGraphicsDeviceContext
 {
 public:
-	D2DGraphicsDeviceContext (const D2DGraphicsDevice& device, ID2D1DeviceContext* deviceContext);
+	D2DGraphicsDeviceContext (const D2DGraphicsDevice& device, ID2D1DeviceContext* deviceContext,
+							  const TransformMatrix& tm);
 	~D2DGraphicsDeviceContext () noexcept;
 
 	const IPlatformGraphicsDevice& getDevice () const override;

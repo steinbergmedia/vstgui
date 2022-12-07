@@ -7,7 +7,6 @@
 #include "win32factory.h"
 #include "direct2d/d2dgraphicscontext.h"
 #include "direct2d/d2d.h"
-#include "../../cdrawcontext.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -49,23 +48,18 @@ bool Win32ViewLayer::drawInvalidRects ()
 			COM::Ptr<ID2D1Device> device;
 			deviceContext->GetDevice (device.adoptPtr ());
 
+			CGraphicsTransform tm;
+			tm.translate (offsetX - updateRect.left, offsetY - updateRect.top);
+
 			const auto& graphicsDeviceFactory = static_cast<const D2DGraphicsDeviceFactory&> (
 				getPlatformFactory ().asWin32Factory ()->getGraphicsDeviceFactory ());
 			auto graphicsDevice = graphicsDeviceFactory.find (device.get ());
 			auto drawDevice = std::make_shared<D2DGraphicsDeviceContext> (
-				*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext);
+				*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext, tm);
 
-			CDrawContext drawContext (drawDevice, viewSize, 1.);
-			CGraphicsTransform tm;
-			tm.translate (offsetX - updateRect.left, offsetY - updateRect.top);
-			CDrawContext::Transform transform (drawContext, tm);
-			{
-				drawContext.saveGlobalState ();
-				drawContext.setClipRect (updateRect);
-				drawContext.clearRect (updateRect);
-				delegate->drawViewLayer (&drawContext, updateRect);
-				drawContext.restoreGlobalState ();
-			}
+			drawDevice->setClipRect (updateRect);
+			drawDevice->clearRect (updateRect);
+			delegate->drawViewLayerRects (drawDevice, 1, {1, updateRect});
 		});
 	}
 	lastDrawTime = getPlatformFactory ().getTicks ();

@@ -242,7 +242,8 @@ PlatformGraphicsDeviceContextPtr
 	}
 
 	return std::make_shared<D2DGraphicsDeviceContext> (
-		*std::static_pointer_cast<D2DGraphicsDevice> (device).get (), deviceContext.get ());
+		*std::static_pointer_cast<D2DGraphicsDevice> (device).get (), deviceContext.get (),
+		TransformMatrix {});
 }
 
 //-----------------------------------------------------------------------------
