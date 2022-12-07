@@ -215,7 +215,10 @@ void CLayeredViewContainer::drawViewLayerRects (const PlatformGraphicsDeviceCont
 	{
 		drawTransform.inverse ().transform (dirtyRect);
 		dirtyRect.offset (p.x, p.y);
+		drawContext.saveGlobalState ();
+		drawContext.setClipRect (dirtyRect);
 		CViewContainer::drawRect (&drawContext, dirtyRect);
+		drawContext.restoreGlobalState ();
 	}
 }
 
