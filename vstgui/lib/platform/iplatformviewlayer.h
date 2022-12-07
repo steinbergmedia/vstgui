@@ -14,8 +14,7 @@ class IPlatformViewLayerDelegate
 public:
 	virtual ~IPlatformViewLayerDelegate () noexcept = default;
 
-	/** dirtyRect is in client coordinated (top-left is 0, 0) */
-	virtual void drawViewLayer (CDrawContext* context, const CRect& dirtyRect) = 0;
+	/** rects are in client coordinates (top-left is 0, 0) */
 	virtual void drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context,
 									 double scaleFactor, const std::vector<CRect>& rects) = 0;
 };

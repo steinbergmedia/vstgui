@@ -1670,13 +1670,6 @@ void CFrame::platformDrawRects (const PlatformGraphicsDeviceContextPtr& context,
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
-{
-	drawRect (context, rect);
-	return true;
-}
-
-//-----------------------------------------------------------------------------
 void CFrame::platformOnEvent (Event& event)
 {
 	dispatchEvent (event);

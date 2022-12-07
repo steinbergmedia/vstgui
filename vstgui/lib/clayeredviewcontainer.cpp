@@ -220,23 +220,6 @@ void CLayeredViewContainer::drawViewLayerRects (const PlatformGraphicsDeviceCont
 }
 
 //-----------------------------------------------------------------------------
-void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _dirtyRect)
-{
-	CRect dirtyRect (_dirtyRect);
-
-	CGraphicsTransform drawTransform = getDrawTransform ();
-	drawTransform.inverse ().transform (dirtyRect);
-
-	CRect visibleSize = getVisibleViewSize ();
-	CRect viewSize = getViewSize ();
-	CPoint p (viewSize.left < 0 ? viewSize.left - visibleSize.left : visibleSize.left,
-	          viewSize.top < 0 ? viewSize.top - visibleSize.top : visibleSize.top);
-	dirtyRect.offset (p.x, p.y);
-	CDrawContext::Transform transform (*context, drawTransform * CGraphicsTransform ().translate (-p.x, -p.y));
-	CViewContainer::drawRect (context, dirtyRect);
-}
-
-//-----------------------------------------------------------------------------
 CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 {
 	using ParentViews = std::list<CViewContainer*>;
