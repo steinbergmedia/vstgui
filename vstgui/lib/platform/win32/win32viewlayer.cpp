@@ -120,9 +120,6 @@ void Win32ViewLayer::setAlpha (float alpha)
 }
 
 //------------------------------------------------------------------------
-void Win32ViewLayer::draw (CDrawContext* context, const CRect& updateRect) {}
-
-//------------------------------------------------------------------------
 void Win32ViewLayer::onScaleFactorChanged (double newScaleFactor) {}
 
 //------------------------------------------------------------------------

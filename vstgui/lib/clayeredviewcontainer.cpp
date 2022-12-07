@@ -191,9 +191,7 @@ void CLayeredViewContainer::drawRect (CDrawContext* pContext, const CRect& updat
 	auto drawsIntoBitmap = false;
 	if (auto offscreenContext = dynamic_cast<COffscreenContext*> (pContext))
 		drawsIntoBitmap = offscreenContext->getBitmap () != nullptr;
-	if (layer && !drawsIntoBitmap)
-		layer->draw (pContext, updateRect);
-	else
+	if (!layer || drawsIntoBitmap)
 		CViewContainer::drawRect (pContext, updateRect);
 }
 

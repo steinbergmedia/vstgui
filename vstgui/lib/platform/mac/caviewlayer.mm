@@ -206,11 +206,6 @@ void CAViewLayer::setAlpha (float alpha)
 }
 
 //-----------------------------------------------------------------------------
-void CAViewLayer::draw (CDrawContext* context, const CRect& updateRect)
-{
-}
-
-//-----------------------------------------------------------------------------
 void CAViewLayer::onScaleFactorChanged (double newScaleFactor)
 {
 	if (layer)
