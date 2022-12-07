@@ -21,7 +21,7 @@ ID2D1GradientStopCollection* D2DGradient::create (ID2D1RenderTarget* renderTarge
 	for (auto it = getColorStops ().begin (); it != getColorStops ().end (); ++it, ++index)
 	{
 		gradientStops[index].position = static_cast<FLOAT> (it->first);
-		gradientStops[index].color = toColorF (it->second, globalAlpha);
+		gradientStops[index].color = convert (it->second, globalAlpha);
 	}
 	ID2D1GradientStopCollection* collection = nullptr;
 	auto hr = renderTarget->CreateGradientStopCollection (
