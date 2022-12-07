@@ -6,7 +6,7 @@
 
 #if WINDOWS
 
-#include "d2ddrawcontext.h"
+#include "d2d.h"
 #include <vector>
 
 namespace VSTGUI {
