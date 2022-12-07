@@ -14,7 +14,6 @@
 #import "autoreleasepool.h"
 #import "../macclipboard.h"
 #import "../macfactory.h"
-//#import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
@@ -190,7 +189,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (canBecomeKeyView), canBecomeKeyView)
 			.addMethod (@selector (wantsDefaultClipping), wantsDefaultClipping)
 			.addMethod (@selector (isOpaque), isOpaque)
-			.addMethod (@selector (drawRect:), drawRect)
 			.addMethod (@selector (setNeedsDisplayInRect:), setNeedsDisplayInRect)
 			.addMethod (@selector (viewWillDraw), viewWillDraw)
 			.addMethod (@selector (shouldBeTreatedAsInkEvent:), shouldBeTreatedAsInkEvent)
@@ -431,14 +429,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 
 	//------------------------------------------------------------------------------------
 	static BOOL isOpaque (id self, SEL _cmd) { return NO; }
-
-	//------------------------------------------------------------------------------------
-	static void drawRect (id self, SEL _cmd, NSRect rect)
-	{
-		NSViewFrame* frame = getNSViewFrame (self);
-		if (frame)
-			frame->drawRect (&rect);
-	}
 
 	//------------------------------------------------------------------------------------
 	static void drawLayerInContext (id self, SEL _cmd, CALayer* layer, CGContextRef ctx)
@@ -1096,79 +1086,26 @@ void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
 	auto cgDevice = std::static_pointer_cast<CoreGraphicsDevice> (device);
 	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), ctx);
 
-	// TODO: refactor IPlatformFrameCallback to take a platform graphics device context
-	CDrawContext drawContext (
-		std::static_pointer_cast<IPlatformGraphicsDeviceContext> (deviceContext),
-		rectFromNSRect ([nsView bounds]), layer.contentsScale);
-
-	drawContext.beginDraw ();
+	deviceContext->beginDraw ();
 
 	if (useInvalidRects)
 	{
 		joinNearbyInvalidRects (invalidRectList, 24.);
+		frame->platformDrawRects (deviceContext, layer.contentsScale, invalidRectList.data ());
 		for (auto r : invalidRectList)
-		{
-			frame->platformDrawRect (&drawContext, r);
 			addDebugRedrawRect (r, false);
-		}
 		invalidRectList.clear ();
 	}
 	else
 	{
-		frame->platformDrawRect (&drawContext, clipBoundingBox);
+		std::vector<CRect> rectList (1, clipBoundingBox);
+		frame->platformDrawRects (deviceContext, layer.contentsScale, rectList);
 		addDebugRedrawRect (clipBoundingBox, false);
 	}
-	drawContext.endDraw ();
+
+	deviceContext->endDraw ();
 
 	inDraw = false;
-}
-
-//-----------------------------------------------------------------------------
-void NSViewFrame::drawRect (NSRect* rect)
-{
-	if (caLayer)
-		return;
-
-#if 0
-	inDraw = true;
-	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
-
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAX_OS_X_VERSION_10_10
-	auto cgContext = static_cast<CGContextRef> ([nsContext graphicsPort]);
-#else
-	auto cgContext = static_cast<CGContextRef> ([nsContext CGContext]);
-#endif
-
-	addDebugRedrawRect (rectFromNSRect (*rect), true);
-
-	CGDrawContext drawContext (cgContext, rectFromNSRect ([nsView bounds]));
-	drawContext.beginDraw ();
-
-	if (useInvalidRects)
-	{
-		joinNearbyInvalidRects (invalidRectList, 24.);
-		for (auto r : invalidRectList)
-		{
-			frame->platformDrawRect (&drawContext, r);
-			addDebugRedrawRect (r, false);
-		}
-		invalidRectList.clear ();
-	}
-	else
-	{
-		const NSRect* dirtyRects;
-		NSInteger numDirtyRects;
-		[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-		for (NSInteger i = 0; i < numDirtyRects; i++)
-		{
-			auto r = rectFromNSRect (dirtyRects[i]);
-			frame->platformDrawRect (&drawContext, r);
-			addDebugRedrawRect (r, false);
-		}
-	}
-	drawContext.endDraw ();
-	inDraw = false;
-#endif
 }
 
 //------------------------------------------------------------------------

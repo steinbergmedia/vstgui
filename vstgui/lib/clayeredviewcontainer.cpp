@@ -198,6 +198,30 @@ void CLayeredViewContainer::drawRect (CDrawContext* pContext, const CRect& updat
 }
 
 //-----------------------------------------------------------------------------
+void CLayeredViewContainer::drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context,
+												double scaleFactor, const std::vector<CRect>& rects)
+{
+	CGraphicsTransform drawTransform = getDrawTransform ();
+
+	CRect visibleSize = getVisibleViewSize ();
+	CRect viewSize = getViewSize ();
+	CPoint p (viewSize.left < 0 ? viewSize.left - visibleSize.left : visibleSize.left,
+			  viewSize.top < 0 ? viewSize.top - visibleSize.top : visibleSize.top);
+
+	auto surfaceSize = getViewSize ();
+	surfaceSize.originize ();
+	CDrawContext drawContext (context, surfaceSize, scaleFactor);
+	CDrawContext::Transform transform (
+		drawContext, drawTransform * CGraphicsTransform ().translate (-p.x, -p.y));
+	for (auto dirtyRect : rects)
+	{
+		drawTransform.inverse ().transform (dirtyRect);
+		dirtyRect.offset (p.x, p.y);
+		CViewContainer::drawRect (&drawContext, dirtyRect);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _dirtyRect)
 {
 	CRect dirtyRect (_dirtyRect);

@@ -9,7 +9,6 @@
 #if MAC_COCOA && !TARGET_OS_IPHONE
 
 #include "../../platform_macos.h"
-#include "../../../cview.h"
 #include "../../../cinvalidrectlist.h"
 #include "../../../idatapackage.h"
 #import "../coregraphicsdevicecontext.h"
@@ -57,7 +56,6 @@ public:
 	void initTrackingArea ();
 	void scaleFactorChanged (double newScaleFactor);
 	void cursorUpdate ();
-	virtual void drawRect (NSRect* rect);
 	void drawLayer (CALayer* layer, CGContextRef ctx);
 	bool onMouseDown (NSEvent* evt);
 	bool onMouseUp (NSEvent* evt);

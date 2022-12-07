@@ -1661,6 +1661,15 @@ IPlatformFrame* CFrame::getPlatformFrame () const
 }
 
 //-----------------------------------------------------------------------------
+void CFrame::platformDrawRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
+								const std::vector<CRect>& rects)
+{
+	CDrawContext drawContext (context, getViewSize (), scaleFactor);
+	for (auto rect : rects)
+		drawRect (&drawContext, rect);
+}
+
+//-----------------------------------------------------------------------------
 bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 {
 	drawRect (context, rect);

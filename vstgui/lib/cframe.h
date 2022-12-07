@@ -256,6 +256,8 @@ protected:
 	void dispatchNewScaleFactor (double newScaleFactor);
 
 	// platform frame
+	void platformDrawRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
+							const std::vector<CRect>& rects) override;
 	bool platformDrawRect (CDrawContext* context, const CRect& rect) override;
 	void platformOnEvent (Event& event) override;
 	DragOperation platformOnDragEnter (DragEventData data) override;

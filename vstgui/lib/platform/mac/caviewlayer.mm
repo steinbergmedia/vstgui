@@ -246,12 +246,10 @@ void CAViewLayer::drawLayer (void* cgContext)
 	if (auto deviceContext =
 			std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), cgContext))
 	{
-		// TODO: refactor draw delegate to take a platform graphics device context
-		CDrawContext drawContext (deviceContext, CRectFromCGRect (layer.bounds),
-								  layer.contentsScale);
-		drawContext.beginDraw ();
-		drawDelegate->drawViewLayer (&drawContext, CRectFromCGRect (dirtyRect));
-		drawContext.endDraw ();
+		deviceContext->beginDraw ();
+		drawDelegate->drawViewLayerRects (deviceContext, layer.contentsScale,
+										  {1, CRectFromCGRect (dirtyRect)});
+		deviceContext->endDraw ();
 	}
 
 	CGContextRestoreGState (ctx);

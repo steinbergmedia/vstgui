@@ -43,6 +43,8 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	void drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
+							 const std::vector<CRect>& rects) override;
 	void drawViewLayer (CDrawContext* context, const CRect& dirtyRect) override;
 	void viewContainerTransformChanged (CViewContainer* container) override;
 	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
