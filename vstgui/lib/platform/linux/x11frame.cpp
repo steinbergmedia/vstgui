@@ -172,7 +172,9 @@ struct DrawHandler
 										   window.getID (), window.getVisual (),
 										   window.getSize ().x, window.getSize ().y);
 		windowSurface.assign (s);
-		device = getPlatformFactory ().asLinuxFactory ()->getCairoGraphicsDeviceFactory ().addDevice (cairo_surface_get_device (s));
+		device =
+			getPlatformFactory ().asLinuxFactory ()->getCairoGraphicsDeviceFactory ().addDevice (
+				cairo_surface_get_device (s));
 		onSizeChanged (window.getSize ());
 	}
 
@@ -186,25 +188,16 @@ struct DrawHandler
 		drawContext = std::make_shared<CairoGraphicsDeviceContext> (*cairoDevice, backBuffer);
 	}
 
-	template<typename RectList, typename Proc>
-	void draw (const RectList& dirtyRects, Proc proc)
+	void draw (const CInvalidRectList& dirtyRects, IPlatformFrameCallback* frame)
 	{
-		CDrawContext context (drawContext, backBufferSize, 1.);
+		drawContext->beginDraw ();
+		frame->platformDrawRects (drawContext, 1, dirtyRects.data ());
+		drawContext->endDraw ();
 
 		CRect copyRect;
-		context.beginDraw ();
-		for (auto rect : dirtyRects)
-		{
-			context.setClipRect (rect);
-			context.saveGlobalState ();
-			proc (&context, rect);
-			context.restoreGlobalState ();
-			if (copyRect.isEmpty ())
-				copyRect = rect;
-			else
-				copyRect.unite (rect);
-		}
-		context.endDraw ();
+		for (auto r : dirtyRects)
+			copyRect.unite (r);
+
 		blitBackbufferToWindow (copyRect);
 		xcb_flush (RunLoop::instance ().getXcbConnection ());
 	}
@@ -371,9 +364,7 @@ struct Frame::Impl : IFrameEventHandler
 	//------------------------------------------------------------------------
 	void redraw ()
 	{
-		drawHandler.draw (dirtyRects, [&] (CDrawContext* context, const CRect& rect) {
-			frame->platformDrawRect (context, rect);
-		});
+		drawHandler.draw (dirtyRects, frame);
 		dirtyRects.clear ();
 	}
 
