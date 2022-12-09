@@ -215,7 +215,7 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 	if (!linuxString)
 		return;
 	PangoContext* pangoContext = FontList::instance ().getFontContext ();
-	if (!context)
+	if (!pangoContext)
 		return;
 	PangoLayout* layout = pango_layout_new (pangoContext);
 	if (!layout)
