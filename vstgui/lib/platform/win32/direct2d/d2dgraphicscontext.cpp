@@ -166,8 +166,8 @@ struct D2DGraphicsDeviceContext::Impl
 		bool useLayer = transform.m12 != 0. || transform.m21 != 0.;
 		if (useLayer)
 		{ // we have a rotated matrix, we need to use a layer
-			ID2D1Factory* factory {};
-			deviceContext->GetFactory (&factory);
+			COM::Ptr<ID2D1Factory> factory {};
+			deviceContext->GetFactory (factory.adoptPtr ());
 			COM::Ptr<ID2D1RectangleGeometry> geometry;
 			if (SUCCEEDED (
 					factory->CreateRectangleGeometry (convert (state.clip), geometry.adoptPtr ())))
@@ -252,8 +252,8 @@ struct D2DGraphicsDeviceContext::Impl
 		if (state.strokeStyle)
 			return;
 
-		ID2D1Factory* factory {};
-		deviceContext->GetFactory (&factory);
+		COM::Ptr<ID2D1Factory> factory {};
+		deviceContext->GetFactory (factory.adoptPtr ());
 
 		D2D1_STROKE_STYLE_PROPERTIES properties;
 		switch (state.lineStyle.getLineCap ())
@@ -634,10 +634,10 @@ bool D2DGraphicsDeviceContext::drawGraphicsPath (IPlatformGraphicsPath& path,
 		COM::Ptr<ID2D1Geometry> path;
 		if (transformation)
 		{
-			ID2D1Factory* factory {};
-			deviceContext->GetFactory (&factory);
+			COM::Ptr<ID2D1Factory> factory {};
+			deviceContext->GetFactory (factory.adoptPtr ());
 			path = COM::adopt<ID2D1Geometry> (
-				d2dPath->createTransformedGeometry (factory, *transformation));
+				d2dPath->createTransformedGeometry (factory.get (), *transformation));
 		}
 		else
 		{
@@ -682,10 +682,10 @@ bool D2DGraphicsDeviceContext::fillLinearGradient (IPlatformGraphicsPath& path,
 		COM::Ptr<ID2D1Geometry> path;
 		if (transformation)
 		{
-			ID2D1Factory* factory {};
-			deviceContext->GetFactory (&factory);
+			COM::Ptr<ID2D1Factory> factory {};
+			deviceContext->GetFactory (factory.adoptPtr ());
 			path = COM::adopt<ID2D1Geometry> (
-				d2dPath->createTransformedGeometry (factory, *transformation));
+				d2dPath->createTransformedGeometry (factory.get (), *transformation));
 		}
 		else
 		{
@@ -725,10 +725,10 @@ bool D2DGraphicsDeviceContext::fillRadialGradient (IPlatformGraphicsPath& path,
 		COM::Ptr<ID2D1Geometry> path;
 		if (transformation)
 		{
-			ID2D1Factory* factory {};
-			deviceContext->GetFactory (&factory);
+			COM::Ptr<ID2D1Factory> factory {};
+			deviceContext->GetFactory (factory.adoptPtr ());
 			path = COM::adopt<ID2D1Geometry> (
-				d2dPath->createTransformedGeometry (factory, *transformation));
+				d2dPath->createTransformedGeometry (factory.get (), *transformation));
 		}
 		else
 		{
