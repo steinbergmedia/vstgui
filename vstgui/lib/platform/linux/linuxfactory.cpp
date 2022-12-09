@@ -11,7 +11,6 @@
 #include "../common/fileresourceinputstream.h"
 #include "../iplatformresourceinputstream.h"
 #include "../iplatformgraphicsdevice.h"
-#include "../../coffscreencontext.h" // TODO: remove when createOffscreenContext is gone
 #include "linuxstring.h"
 #include "x11timer.h"
 #include "x11fileselector.h"
@@ -187,13 +186,6 @@ bool LinuxFactory::setClipboard (const DataPackagePtr& data) const noexcept
 auto LinuxFactory::getClipboard () const noexcept -> DataPackagePtr
 {
 	// TODO: Linux Clipboard Implementation
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
-auto LinuxFactory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
-	-> COffscreenContextPtr
-{
 	return nullptr;
 }
 

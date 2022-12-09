@@ -33,7 +33,6 @@ class IPlatformFactory
 {
 public:
 	using DataPackagePtr = SharedPointer<IDataPackage>;
-	using COffscreenContextPtr = SharedPointer<COffscreenContext>;
 
 	virtual ~IPlatformFactory () noexcept = default;
 
@@ -129,14 +128,6 @@ public:
 	 *	@return data package pointer
 	 */
 	virtual DataPackagePtr getClipboard () const noexcept = 0;
-
-	/** create an offscreen draw device
-	 *	@param size the size of the bitmap where the offscreen renders to
-	 *	@param scaleFactor the scale factor for drawing
-	 *	@return an offscreen context object or nullptr on failure
-	 */
-	virtual COffscreenContextPtr
-		createOffscreenContext (const CPoint& size, double scaleFactor = 1.) const noexcept = 0;
 
 	/** Create a platform gradient object
 	 *	@return platform gradient object or nullptr on failure

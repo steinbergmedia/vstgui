@@ -109,14 +109,6 @@ public:
 	 */
 	DataPackagePtr getClipboard () const noexcept final;
 
-	/** create an offscreen draw device
-	 *	@param size the size of the bitmap where the offscreen renders to
-	 *	@param scaleFactor the scale factor for drawing
-	 *	@return an offscreen context object or nullptr on failure
-	 */
-	COffscreenContextPtr createOffscreenContext (const CPoint& size,
-												 double scaleFactor = 1.) const noexcept final;
-
 	/** Create a platform gradient object
 	 *	@return platform gradient object or nullptr on failure
 	 */

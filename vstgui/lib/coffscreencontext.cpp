@@ -66,7 +66,6 @@ SharedPointer<COffscreenContext> COffscreenContext::create (const CPoint& size, 
 				}
 			}
 		}
-		return getPlatformFactory ().createOffscreenContext (size, scaleFactor);
 	}
 	return nullptr;
 }

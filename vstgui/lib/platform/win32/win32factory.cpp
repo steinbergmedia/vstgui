@@ -13,7 +13,6 @@
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
 #include "../common/fileresourceinputstream.h"
-#include "../../coffscreencontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dbitmapcache.h"
 #include "direct2d/d2dgraphicscontext.h"
@@ -382,20 +381,6 @@ auto Win32Factory::getClipboard () const noexcept -> DataPackagePtr
 	if (OleGetClipboard (&dataObject) != S_OK)
 		return nullptr;
 	return makeOwned<Win32DataPackage> (dataObject);
-}
-
-//------------------------------------------------------------------------
-auto Win32Factory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
-	-> COffscreenContextPtr
-{
-#if 0
-	if (auto bitmap = makeOwned<D2DBitmap> (size * scaleFactor))
-	{
-		bitmap->setScaleFactor (scaleFactor);
-		return owned<COffscreenContext> (new D2DDrawContext (bitmap));
-	}
-#endif
-	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
