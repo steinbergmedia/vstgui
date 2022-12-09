@@ -243,17 +243,14 @@ CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color) const
 }
 
 //-----------------------------------------------------------------------------
-CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macString) const
+CTLineRef CoreTextFont::createCTLine (const PlatformGraphicsDeviceContextPtr& context,
+									  MacString* macString, const CColor& color) const
 {
-	CColor fontColor = context ? context->getFontColor () : kBlackCColor;
-	if (context)
+	if (macString->getCTLineFontRef () == this && macString->getCTLineColor () == color)
 	{
-		if (macString->getCTLineFontRef () == this && macString->getCTLineColor () == fontColor)
-		{
-			CTLineRef line = macString->getCTLine ();
-			CFRetain (line);
-			return line;
-		}
+		CTLineRef line = macString->getCTLine ();
+		CFRetain (line);
+		return line;
 	}
 	CFStringRef cfStr = macString->getCFString ();
 	if (cfStr == nullptr)
@@ -265,10 +262,10 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 	}
 
 	CGColorRef cgColorRef = nullptr;
-	if (fontColor != lastColor)
+	if (color != lastColor)
 	{
-		cgColorRef = getCGColor (fontColor);
-		lastColor = fontColor;
+		cgColorRef = getCGColor (color);
+		lastColor = color;
 	}
 
 	if (auto attrStr =
@@ -277,7 +274,7 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 		CTLineRef line = CTLineCreateWithAttributedString (attrStr);
 		if (context && line)
 		{
-			macString->setCTLine (line, this, fontColor);
+			macString->setCTLine (line, this, color);
 		}
 		CFRelease (attrStr);
 		return line;
@@ -287,19 +284,19 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 }
 
 //-----------------------------------------------------------------------------
-void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point,
+void CoreTextFont::drawString (const PlatformGraphicsDeviceContextPtr& context,
+							   IPlatformString* string, const CPoint& point, const CColor& color,
 							   bool antialias) const
 {
 	MacString* macString = dynamic_cast<MacString*> (string);
 	if (macString == nullptr)
 		return;
 
-	auto deviceContext =
-		std::dynamic_pointer_cast<CoreGraphicsDeviceContext> (context->getPlatformDeviceContext ());
+	auto deviceContext = std::dynamic_pointer_cast<CoreGraphicsDeviceContext> (context);
 	if (!deviceContext)
 		return;
 
-	CTLineRef line = createCTLine (context, macString);
+	CTLineRef line = createCTLine (context, macString, color);
 	if (!line)
 		return;
 
@@ -310,15 +307,15 @@ void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, c
 }
 
 //-----------------------------------------------------------------------------
-CCoord CoreTextFont::getStringWidth (CDrawContext* context, IPlatformString* string,
-									 bool antialias) const
+CCoord CoreTextFont::getStringWidth (const PlatformGraphicsDeviceContextPtr& context,
+									 IPlatformString* string, bool antialias) const
 {
 	CCoord result = 0;
 	MacString* macString = dynamic_cast<MacString*> (string);
 	if (macString == nullptr)
 		return result;
-	
-	CTLineRef line = createCTLine (context, macString);
+
+	CTLineRef line = createCTLine (context, macString, kBlackCColor);
 	if (line)
 	{
 		result = CTLineGetTypographicBounds (line, nullptr, nullptr, nullptr);

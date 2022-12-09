@@ -67,7 +67,7 @@ public:
 	const IPlatformGraphicsDeviceContextBitmapExt* asBitmapExt () const override;
 
 	// private
-	void drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos, bool antialias);
+	void drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos, CColor color, bool antialias);
 
 	ID2D1DeviceContext* getID2D1DeviceContext () const;
 

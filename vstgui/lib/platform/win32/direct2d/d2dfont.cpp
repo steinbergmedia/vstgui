@@ -274,14 +274,13 @@ IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 }
 
 //-----------------------------------------------------------------------------
-void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p,
-						  bool antialias) const
+void D2DFont::drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
+						  const CPoint& p, const CColor& color, bool antialias) const
 {
 	if (!textFormat || !context || !string)
 		return;
 
-	if (auto graphicsContext = std::dynamic_pointer_cast<D2DGraphicsDeviceContext> (
-			context->getPlatformDeviceContext ()))
+	if (auto graphicsContext = std::dynamic_pointer_cast<D2DGraphicsDeviceContext> (context))
 	{
 		IDWriteTextLayout* textLayout = createTextLayout (string);
 		if (!textLayout)
@@ -304,13 +303,13 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 		else
 			pos.y -= textFormat->GetFontSize ();
 
-		graphicsContext->drawTextLayout (textLayout, pos, antialias);
+		graphicsContext->drawTextLayout (textLayout, pos, color, antialias);
 		textLayout->Release ();
 	}
 }
 
 //-----------------------------------------------------------------------------
-CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string,
+CCoord D2DFont::getStringWidth (const PlatformGraphicsDeviceContextPtr&, IPlatformString* string,
 								bool antialias) const
 {
 	CCoord result = 0;

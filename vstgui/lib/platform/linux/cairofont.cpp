@@ -208,9 +208,12 @@ double Font::getCapHeight () const { return impl->capHeight; }
 const IFontPainter* Font::getPainter () const { return this; }
 
 //------------------------------------------------------------------------
-void Font::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p,
-					   bool antialias) const
+void Font::drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
+					   const CPoint& p, const CColor& color, bool antialias) const
 {
+	auto cairoContext = std::dynamic_pointer_cast<CairoGraphicsDeviceContext> (context);
+	if (!cairoContext)
+		return;
 	auto linuxString = dynamic_cast<LinuxString*> (string);
 	if (!linuxString)
 		return;
@@ -255,19 +258,14 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 		pango_layout_iter_free (iter);
 	}
 
-	if (auto platformContext = context->getPlatformDeviceContext ())
-	{
-		if (auto cairoContext =
-				std::dynamic_pointer_cast<CairoGraphicsDeviceContext> (platformContext))
-		{
-			cairoContext->drawPangoLayout (layout, {p.x + extents.x, p.y + extents.y - baseline});
-		}
-	}
+	cairoContext->drawPangoLayout (layout, {p.x + extents.x, p.y + extents.y - baseline}, color);
+
 	g_object_unref (layout);
 }
 
 //------------------------------------------------------------------------
-CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
+CCoord Font::getStringWidth (const PlatformGraphicsDeviceContextPtr&, IPlatformString* string,
+							 bool antialias) const
 {
 	if (auto linuxString = dynamic_cast<LinuxString*> (string))
 	{

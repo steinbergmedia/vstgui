@@ -300,8 +300,8 @@ CCoord CDrawContext::getStringWidth (IPlatformString* string)
 		return result;
 
 	if (auto painter = getCurrentState ().font->getFontPainter ())
-		result = painter->getStringWidth (this, string, true);
-	
+		result = painter->getStringWidth (impl->device, string, true);
+
 	return result;
 }
 
@@ -327,14 +327,15 @@ void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, cons
 		rect.bottom -= (rect.getHeight () / 2. - getCurrentState ().font->getSize () / 2.) + 1.;
 	if (hAlign != kLeftText)
 	{
-		CCoord stringWidth = painter->getStringWidth (this, string, antialias);
+		CCoord stringWidth = painter->getStringWidth (impl->device, string, antialias);
 		if (hAlign == kRightText)
 			rect.left = rect.right - stringWidth;
 		else
 			rect.left = rect.left + (rect.getWidth () / 2.) - (stringWidth / 2.);
 	}
 
-	painter->drawString (this, string, CPoint (rect.left, rect.bottom), antialias);
+	painter->drawString (impl->device, string, CPoint (rect.left, rect.bottom),
+						 impl->currentState.fontColor, antialias);
 }
 
 //------------------------------------------------------------------------
@@ -344,7 +345,7 @@ void CDrawContext::drawString (IPlatformString* string, const CPoint& point, boo
 		return;
 
 	if (auto painter = getCurrentState ().font->getFontPainter ())
-		painter->drawString (this, string, point, antialias);
+		painter->drawString (impl->device, string, point, impl->currentState.fontColor, antialias);
 }
 
 //-----------------------------------------------------------------------------

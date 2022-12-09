@@ -843,7 +843,7 @@ const IPlatformGraphicsDeviceContextBitmapExt* D2DGraphicsDeviceContext::asBitma
 
 //------------------------------------------------------------------------
 void D2DGraphicsDeviceContext::drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos,
-											   bool antialias)
+											   CColor color, bool antialias)
 {
 	impl->doInContext ([&] (auto deviceContext) {
 		deviceContext->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
@@ -851,6 +851,7 @@ void D2DGraphicsDeviceContext::drawTextLayout (IDWriteTextLayout* textLayout, CP
 		if (impl->state.drawMode.integralMode ())
 			pos.makeIntegral ();
 		pos.y += 0.5;
+		setFontColor (color);
 		impl->applyFontColor ();
 		deviceContext->DrawTextLayout (convert (pos), textLayout, impl->state.fontBrush.get ());
 	});

@@ -686,9 +686,10 @@ const IPlatformGraphicsDeviceContextBitmapExt* CairoGraphicsDeviceContext::asBit
 }
 
 //------------------------------------------------------------------------
-void CairoGraphicsDeviceContext::drawPangoLayout (void* layout, CPoint pos) const
+void CairoGraphicsDeviceContext::drawPangoLayout (void* layout, CPoint pos, CColor color) const
 {
 	impl->doInContext ([&] () {
+		setFontColor (color);
 		impl->applyFontColor ();
 		cairo_move_to (impl->context, pos.x, pos.y);
 		pango_cairo_show_layout (impl->context, reinterpret_cast<PangoLayout*> (layout));

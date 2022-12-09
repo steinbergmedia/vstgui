@@ -64,7 +64,7 @@ public:
 	const IPlatformGraphicsDeviceContextBitmapExt* asBitmapExt () const override;
 
 	// private
-	void drawPangoLayout (void* layout, CPoint pos) const;
+	void drawPangoLayout (void* layout, CPoint pos, CColor color) const;
 
 private:
 	struct Impl;
