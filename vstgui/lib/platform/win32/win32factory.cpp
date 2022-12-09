@@ -203,12 +203,8 @@ PlatformGraphicsDeviceContextPtr
 	Win32Factory::createGraphicsDeviceContext (void* hwnd) const noexcept
 {
 	auto window = reinterpret_cast<HWND> (hwnd);
-	auto renderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
-	if (auto pf = getPlatformFactory ().asWin32Factory ())
-	{
-		renderTargetType = pf->useD2DHardwareRenderer () ? D2D1_RENDER_TARGET_TYPE_HARDWARE
-														 : D2D1_RENDER_TARGET_TYPE_SOFTWARE;
-	}
+	auto renderTargetType = useD2DHardwareRenderer () ? D2D1_RENDER_TARGET_TYPE_HARDWARE
+													  : D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 	RECT rc;
 	GetClientRect (window, &rc);
 
