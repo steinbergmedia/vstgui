@@ -44,6 +44,10 @@ public:
 	DirectComposition::Factory* getDirectCompositionFactory () const noexcept;
 	PlatformGraphicsDeviceContextPtr createGraphicsDeviceContext (void* hwnd) const noexcept;
 
+	/** disable the use of direct composition. must be called before anything else or the behaviour
+	 * is undefined. */
+	void disableDirectComposition () const noexcept;
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */

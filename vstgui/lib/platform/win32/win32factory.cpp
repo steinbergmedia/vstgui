@@ -247,6 +247,12 @@ PlatformGraphicsDeviceContextPtr
 }
 
 //-----------------------------------------------------------------------------
+void Win32Factory::disableDirectComposition () const noexcept
+{
+	impl->directCompositionFactory.reset ();
+}
+
+//-----------------------------------------------------------------------------
 uint64_t Win32Factory::getTicks () const noexcept
 {
 	return static_cast<uint64_t> (GetTickCount64 ());
