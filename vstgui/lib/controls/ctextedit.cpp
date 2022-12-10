@@ -5,6 +5,7 @@
 #include "ctextedit.h"
 #include "itexteditlistener.h"
 #include "../cframe.h"
+#include "../cdrawcontext.h"
 #include "../events.h"
 #include "../platform/iplatformframe.h"
 #include <cassert>

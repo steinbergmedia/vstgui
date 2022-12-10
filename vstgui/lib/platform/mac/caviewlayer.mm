@@ -6,7 +6,6 @@
 
 #if MAC_COCOA
 
-#import "../../cdrawcontext.h"
 #import "coregraphicsdevicecontext.h"
 #import "macglobals.h"
 #import <QuartzCore/QuartzCore.h>

@@ -3,7 +3,6 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "cfontmac.h"
-#import "../../cdrawcontext.h"
 
 #if MAC
 #import "macstring.h"

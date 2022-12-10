@@ -7,7 +7,6 @@
 #include "win32factory.h"
 #include "winstring.h"
 #include "../../cstring.h"
-#include "../../cdrawcontext.h"
 #include "../../cvstguitimer.h"
 #include "win32dll.h"
 #include <dwmapi.h>

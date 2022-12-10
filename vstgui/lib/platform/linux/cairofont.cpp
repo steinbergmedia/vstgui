@@ -5,7 +5,6 @@
 #include "cairofont.h"
 #include "../../cstring.h"
 #include "../../cfont.h"
-#include "../../cdrawcontext.h"
 #include "cairographicscontext.h"
 #include "linuxstring.h"
 #include "linuxfactory.h"

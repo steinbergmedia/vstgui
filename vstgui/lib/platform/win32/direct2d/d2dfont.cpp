@@ -6,7 +6,6 @@
 
 #if WINDOWS
 
-#include "../../../cdrawcontext.h"
 #include "../win32support.h"
 #include "../win32resourcestream.h"
 #include "../win32factory.h"
