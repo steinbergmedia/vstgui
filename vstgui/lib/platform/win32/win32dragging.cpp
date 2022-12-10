@@ -6,6 +6,7 @@
 #include "win32support.h"
 #include "win32factory.h"
 #include "winstring.h"
+#include "../../cdrawcontext.h"
 #include "../../cstring.h"
 #include "../../cvstguitimer.h"
 #include "win32dll.h"

@@ -11,6 +11,7 @@
 #include "../win32factory.h"
 #include "../winstring.h"
 #include "../comptr.h"
+#include "../../../ccolor.h"
 #include "d2dgraphicscontext.h"
 #include <mutex>
 #include <dwrite.h>
