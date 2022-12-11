@@ -189,6 +189,7 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (canBecomeKeyView), canBecomeKeyView)
 			.addMethod (@selector (wantsDefaultClipping), wantsDefaultClipping)
 			.addMethod (@selector (isOpaque), isOpaque)
+			.addMethod (@selector (drawRect:), drawRect)
 			.addMethod (@selector (setNeedsDisplayInRect:), setNeedsDisplayInRect)
 			.addMethod (@selector (viewWillDraw), viewWillDraw)
 			.addMethod (@selector (shouldBeTreatedAsInkEvent:), shouldBeTreatedAsInkEvent)
@@ -429,6 +430,14 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 
 	//------------------------------------------------------------------------------------
 	static BOOL isOpaque (id self, SEL _cmd) { return NO; }
+
+	//------------------------------------------------------------------------------------
+	static void drawRect (id self, SEL _cmd, NSRect rect)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame)
+			frame->drawRect (&rect);
+	}
 
 	//------------------------------------------------------------------------------------
 	static void drawLayerInContext (id self, SEL _cmd, CALayer* layer, CGContextRef ctx)
@@ -939,33 +948,29 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	if (cocoaConfig && cocoaConfig->flags & CocoaFrameConfig::kNoCALayer)
 		return;
 
-	auto processInfo = [NSProcessInfo processInfo];
-	if ([processInfo respondsToSelector:@selector(operatingSystemVersion)])
+	// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
+	// few parts of a window are updated permanently when scrolling or manipulating a control
+	// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
+	// are drawn incorrectly when scaled.
+	if (@available (macOS 10.11, *))
 	{
-		// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
-		// few parts of a window are updated permanently when scrolling or manipulating a control
-		// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
-		// are drawn incorrectly when scaled.
-		if (@available (macOS 10.11, *))
+		[nsView setWantsLayer:YES];
+		caLayer = [CALayer new];
+		caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
+		caLayer.frame = nsView.layer.bounds;
+		[caLayer setContentsScale:nsView.layer.contentsScale];
+		[nsView.layer addSublayer:caLayer];
+		useInvalidRects = true;
+		if (@available (macOS 10.13, *))
 		{
-			[nsView setWantsLayer:YES];
-			caLayer = [CALayer new];
-			caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
-			caLayer.frame = nsView.layer.bounds;
-			[caLayer setContentsScale:nsView.layer.contentsScale];
-			[nsView.layer addSublayer:caLayer];
-			useInvalidRects = true;
-			if (@available (macOS 10.13, *))
+			nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+			// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
+			// the CoreGraphics engineers decided to be clever and join dirty rectangles without
+			// letting us know
+			if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
 			{
-				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
-				// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
-				// the CoreGraphics engineers decided to be clever and join dirty rectangles without
-				// letting us know
-				if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
-				{
-					caLayer.drawsAsynchronously = YES;
-					useInvalidRects = false;
-				}
+				caLayer.drawsAsynchronously = YES;
+				useInvalidRects = false;
 			}
 		}
 	}
@@ -1070,42 +1075,53 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 }
 
 //-----------------------------------------------------------------------------
-void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
+void NSViewFrame::draw (CGContextRef cgContext, CRect updateRect, double scaleFactor)
 {
-	inDraw = true;
-
-	auto clipBoundingBoxNSRect = CGContextGetClipBoundingBox (ctx);
-	auto clipBoundingBox = rectFromNSRect (clipBoundingBoxNSRect);
-
-	addDebugRedrawRect (clipBoundingBox, true);
-
 	auto device = getPlatformFactory ().getGraphicsDeviceFactory ().getDeviceForScreen (
 		DefaultScreenIdentifier);
 	if (!device)
 		return;
 	auto cgDevice = std::static_pointer_cast<CoreGraphicsDevice> (device);
-	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), ctx);
+	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), cgContext);
 
+	addDebugRedrawRect (updateRect, true);
+
+	inDraw = true;
 	deviceContext->beginDraw ();
 
 	if (useInvalidRects)
 	{
 		joinNearbyInvalidRects (invalidRectList, 24.);
-		frame->platformDrawRects (deviceContext, layer.contentsScale, invalidRectList.data ());
+		frame->platformDrawRects (deviceContext, scaleFactor, invalidRectList.data ());
 		for (auto r : invalidRectList)
 			addDebugRedrawRect (r, false);
 		invalidRectList.clear ();
 	}
 	else
 	{
-		std::vector<CRect> rectList (1, clipBoundingBox);
-		frame->platformDrawRects (deviceContext, layer.contentsScale, rectList);
-		addDebugRedrawRect (clipBoundingBox, false);
+		frame->platformDrawRects (deviceContext, scaleFactor, {1, updateRect});
+		addDebugRedrawRect (updateRect, false);
 	}
 
 	deviceContext->endDraw ();
-
 	inDraw = false;
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
+{
+	auto clipBoundingBox = CGContextGetClipBoundingBox (ctx);
+	draw (ctx, rectFromNSRect (clipBoundingBox), layer.contentsScale);
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::drawRect (NSRect* rect)
+{
+	if (caLayer)
+		return;
+
+	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
+	draw (nsContext.CGContext, rectFromNSRect (*rect), nsView.window.backingScaleFactor);
 }
 
 //------------------------------------------------------------------------
