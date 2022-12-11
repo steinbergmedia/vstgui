@@ -273,12 +273,7 @@ void CDrawContext::setFrameColor (const CColor& color)
 CColor CDrawContext::getFrameColor () const { return impl->currentState.frameColor; }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFontColor (const CColor& color)
-{
-	if (impl->device)
-		impl->device->setFontColor (color);
-	impl->currentState.fontColor = color;
-}
+void CDrawContext::setFontColor (const CColor& color) { impl->currentState.fontColor = color; }
 
 //-----------------------------------------------------------------------------
 CColor CDrawContext::getFontColor () const { return impl->currentState.fontColor; }

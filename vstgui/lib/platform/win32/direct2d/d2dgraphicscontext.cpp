@@ -227,10 +227,13 @@ struct D2DGraphicsDeviceContext::Impl
 	}
 
 	//-----------------------------------------------------------------------------
-	void applyFontColor ()
+	void applyFontColor (CColor color)
 	{
+		if (state.fontColor != color)
+			state.fontBrush.reset ();
 		if (state.fontBrush)
 			return;
+		state.fontColor = color;
 		deviceContext->CreateSolidColorBrush (convert (state.fontColor, state.globalAlpha),
 											  state.fontBrush.adoptPtr ());
 	}
@@ -808,16 +811,6 @@ void D2DGraphicsDeviceContext::setFrameColor (CColor color) const
 }
 
 //------------------------------------------------------------------------
-void D2DGraphicsDeviceContext::setFontColor (CColor color) const
-{
-	if (impl->state.fontColor != color)
-	{
-		impl->state.fontColor = color;
-		impl->state.fontBrush.reset ();
-	}
-}
-
-//------------------------------------------------------------------------
 void D2DGraphicsDeviceContext::setGlobalAlpha (double newAlpha) const
 {
 	if (impl->state.globalAlpha != newAlpha)
@@ -851,8 +844,7 @@ void D2DGraphicsDeviceContext::drawTextLayout (IDWriteTextLayout* textLayout, CP
 		if (impl->state.drawMode.integralMode ())
 			pos.makeIntegral ();
 		pos.y += 0.5;
-		setFontColor (color);
-		impl->applyFontColor ();
+		impl->applyFontColor (color);
 		deviceContext->DrawTextLayout (convert (pos), textLayout, impl->state.fontBrush.get ());
 	});
 }

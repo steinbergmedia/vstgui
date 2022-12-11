@@ -300,7 +300,7 @@ void CoreTextFont::drawString (const PlatformGraphicsDeviceContextPtr& context,
 		return;
 
 	CGPoint cgPoint = CGPointFromCPoint (point);
-	deviceContext->drawCTLine (line, cgPoint, fontRef, style & kUnderlineFace,
+	deviceContext->drawCTLine (line, cgPoint, fontRef, color, style & kUnderlineFace,
 							   style & kStrikethroughFace, antialias);
 	CFRelease (line);
 }

@@ -59,7 +59,6 @@ public:
 	void setClipRect (CRect clip) const override;
 	void setFillColor (CColor color) const override;
 	void setFrameColor (CColor color) const override;
-	void setFontColor (CColor color) const override;
 	void setGlobalAlpha (double newAlpha) const override;
 	void setTransformMatrix (const TransformMatrix& tm) const override;
 

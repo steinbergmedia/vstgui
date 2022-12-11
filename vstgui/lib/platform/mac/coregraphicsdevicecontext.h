@@ -61,7 +61,6 @@ public:
 	void setClipRect (CRect clip) const override;
 	void setFillColor (CColor color) const override;
 	void setFrameColor (CColor color) const override;
-	void setFontColor (CColor color) const override;
 	void setGlobalAlpha (double newAlpha) const override;
 	void setTransformMatrix (const TransformMatrix& tm) const override;
 
@@ -76,8 +75,8 @@ public:
 							 BitmapInterpolationQuality quality) const override;
 
 	// private
-	void drawCTLine (CTLineRef line, CGPoint cgPoint, CTFontRef fontRef, bool underline,
-					 bool strikeThrough, bool antialias) const;
+	void drawCTLine (CTLineRef line, CGPoint cgPoint, CTFontRef fontRef, CColor color,
+					 bool underline, bool strikeThrough, bool antialias) const;
 
 private:
 	struct Impl;

@@ -100,7 +100,6 @@ public:
 	virtual void setClipRect (CRect clip) const = 0;
 	virtual void setFillColor (CColor color) const = 0;
 	virtual void setFrameColor (CColor color) const = 0;
-	virtual void setFontColor (CColor color) const = 0;
 	virtual void setGlobalAlpha (double newAlpha) const = 0;
 	virtual void setTransformMatrix (const TransformMatrix& tm) const = 0;
 

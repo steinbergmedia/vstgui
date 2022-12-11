@@ -237,7 +237,7 @@ struct CairoGraphicsDeviceContext::Impl
 	}
 	void applyFillColor () { setupSourceColor (state.fillColor); }
 	void applyFrameColor () { setupSourceColor (state.frameColor); }
-	void applyFontColor () { setupSourceColor (state.fontColor); }
+	void applyFontColor (CColor color) { setupSourceColor (color); }
 
 	void draw (PlatformGraphicsDrawStyle drawStyle)
 	{
@@ -276,7 +276,6 @@ struct CairoGraphicsDeviceContext::Impl
 		CDrawMode drawMode {};
 		CColor fillColor {kTransparentCColor};
 		CColor frameColor {kTransparentCColor};
-		CColor fontColor {kTransparentCColor};
 		CCoord lineWidth {1.};
 		double globalAlpha {1.};
 		TransformMatrix tm {};
@@ -659,12 +658,6 @@ void CairoGraphicsDeviceContext::setFrameColor (CColor color) const
 }
 
 //------------------------------------------------------------------------
-void CairoGraphicsDeviceContext::setFontColor (CColor color) const
-{
-	impl->state.fontColor = color;
-}
-
-//------------------------------------------------------------------------
 void CairoGraphicsDeviceContext::setGlobalAlpha (double newAlpha) const
 {
 	impl->state.globalAlpha = newAlpha;
@@ -689,8 +682,7 @@ const IPlatformGraphicsDeviceContextBitmapExt* CairoGraphicsDeviceContext::asBit
 void CairoGraphicsDeviceContext::drawPangoLayout (void* layout, CPoint pos, CColor color) const
 {
 	impl->doInContext ([&] () {
-		setFontColor (color);
-		impl->applyFontColor ();
+		impl->applyFontColor (color);
 		cairo_move_to (impl->context, pos.x, pos.y);
 		pango_cairo_show_layout (impl->context, reinterpret_cast<PangoLayout*> (layout));
 	});

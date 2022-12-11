@@ -344,7 +344,6 @@ struct CoreGraphicsDeviceContext::Impl
 		CCoord lineWidth {1};
 		CDrawMode drawMode {};
 		CRect clipRect {};
-		CColor fontColor {kTransparentCColor};
 		double globalAlpha {1.};
 		TransformMatrix tm {};
 	};
@@ -836,9 +835,6 @@ void CoreGraphicsDeviceContext::setFrameColor (CColor color) const
 }
 
 //------------------------------------------------------------------------
-void CoreGraphicsDeviceContext::setFontColor (CColor color) const { impl->state.fontColor = color; }
-
-//------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::setGlobalAlpha (double newAlpha) const
 {
 	impl->state.globalAlpha = newAlpha;
@@ -898,7 +894,7 @@ bool CoreGraphicsDeviceContext::fillRectWithBitmap (IPlatformBitmap& bitmap, CRe
 
 //------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::drawCTLine (CTLineRef line, CGPoint cgPoint, CTFontRef fontRef,
-											bool underline, bool strikeThrough,
+											CColor color, bool underline, bool strikeThrough,
 											bool antialias) const
 {
 	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
@@ -913,7 +909,7 @@ void CoreGraphicsDeviceContext::drawCTLine (CTLineRef line, CGPoint cgPoint, CTF
 		CGColorRef cgColorRef = nullptr;
 		if (underline)
 		{
-			cgColorRef = getCGColor (impl->state.fontColor);
+			cgColorRef = getCGColor (color);
 			CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.f;
 			CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 			CGContextSetStrokeColorWithColor (context, cgColorRef);
@@ -927,7 +923,7 @@ void CoreGraphicsDeviceContext::drawCTLine (CTLineRef line, CGPoint cgPoint, CTF
 		if (strikeThrough)
 		{
 			if (!cgColorRef)
-				cgColorRef = getCGColor (impl->state.fontColor);
+				cgColorRef = getCGColor (color);
 			CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 			CGFloat offset = CTFontGetXHeight (fontRef) * 0.5f;
 			CGContextSetStrokeColorWithColor (context, cgColorRef);
