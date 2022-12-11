@@ -86,11 +86,7 @@ public:
 	/** set the current bitmap interpolation quality */
 	void setBitmapInterpolationQuality (BitmapInterpolationQuality quality);
 	/** get the current bitmap interpolation quality */
-	BitmapInterpolationQuality getBitmapInterpolationQuality () const
-	{
-		return getCurrentState ().bitmapQuality;
-	}
-
+	BitmapInterpolationQuality getBitmapInterpolationQuality () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -100,12 +96,12 @@ public:
 	/** set the current line style */
 	void setLineStyle (const CLineStyle& style);
 	/** get the current line style */
-	const CLineStyle& getLineStyle () const { return getCurrentState ().lineStyle; }
+	const CLineStyle& getLineStyle () const;
 
 	/** set the current line width */
 	void setLineWidth (CCoord width);
 	/** get the current line width */
-	CCoord getLineWidth () const { return getCurrentState ().frameWidth; }
+	CCoord getLineWidth () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -115,7 +111,7 @@ public:
 	/** set the current draw mode, see CDrawMode */
 	void setDrawMode (CDrawMode mode);
 	/** get the current draw mode, see CDrawMode */
-	CDrawMode getDrawMode () const { return getCurrentState ().drawMode; }
+	CDrawMode getDrawMode () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -137,11 +133,11 @@ public:
 	/** set current fill color */
 	void setFillColor (const CColor& color);
 	/** get current fill color */
-	CColor getFillColor () const { return getCurrentState ().fillColor; }
+	CColor getFillColor () const;
 	/** set current stroke color */
 	void setFrameColor (const CColor& color);
 	/** get current stroke color */
-	CColor getFrameColor () const { return getCurrentState ().frameColor; }
+	CColor getFrameColor () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -151,11 +147,11 @@ public:
 	/** set current font color */
 	void setFontColor (const CColor& color);
 	/** get current font color */
-	CColor getFontColor () const { return getCurrentState ().fontColor; }
+	CColor getFontColor () const;
 	/** set current font */
 	void setFont (const CFontRef font, const CCoord& size = 0, const int32_t& style = -1);
 	/** get current font */
-	const CFontRef getFont () const { return getCurrentState ().font; }
+	const CFontRef getFont () const;
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -186,7 +182,7 @@ public:
 	/** sets the global alpha value[0..1] */
 	void setGlobalAlpha (float newAlpha);
 	/** get current global alpha value */
-	float getGlobalAlpha () const { return getCurrentState ().globalAlpha; }
+	float getGlobalAlpha () const;
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -202,7 +198,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	const CGraphicsTransform& getCurrentTransform () const;
-	const CRect& getAbsoluteClipRect () const { return getCurrentState ().clipRect; }
+	const CRect& getAbsoluteClipRect () const;
 
 	/** returns the backend scale factor. */
 	double getScaleFactor () const;
@@ -265,32 +261,6 @@ protected:
 
 	const UTF8String& getDrawString (UTF8StringPtr string);
 	void clearDrawString ();
-
-	/// @cond ignore
-	struct CDrawContextState
-	{
-		SharedPointer<CFontDesc> font;
-		CColor frameColor {kTransparentCColor};
-		CColor fillColor {kTransparentCColor};
-		CColor fontColor {kTransparentCColor};
-		CCoord frameWidth {0.};
-		CPoint penLoc {};
-		CRect clipRect {};
-		CLineStyle lineStyle {kLineOnOffDash};
-		CDrawMode drawMode {kAntiAliasing};
-		float globalAlpha {1.f};
-		BitmapInterpolationQuality bitmapQuality {BitmapInterpolationQuality::kDefault};
-
-		CDrawContextState () = default;
-		CDrawContextState (const CDrawContextState& state);
-		CDrawContextState& operator= (const CDrawContextState& state) = default;
-		CDrawContextState (CDrawContextState&& state) noexcept;
-		CDrawContextState& operator= (CDrawContextState&& state) noexcept;
-	};
-	/// @endcond
-
-	const CDrawContextState& getCurrentState () const;
-	CDrawContextState& getCurrentState ();
 
 private:
 	struct Impl;

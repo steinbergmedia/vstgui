@@ -18,34 +18,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CDrawContext::CDrawContextState::CDrawContextState (const CDrawContextState& state)
-{
-	*this = state;
-}
-
-//-----------------------------------------------------------------------------
-CDrawContext::CDrawContextState::CDrawContextState (CDrawContextState&& state) noexcept
-{
-	*this = std::move (state);
-}
-
-//-----------------------------------------------------------------------------
-CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (CDrawContextState&& state) noexcept
-{
-	font = std::move (state.font);
-	frameColor = std::move (state.frameColor);
-	fillColor = std::move (state.fillColor);
-	fontColor = std::move (state.fontColor);
-	frameWidth = std::move (state.frameWidth);
-	penLoc = std::move (state.penLoc);
-	clipRect = std::move (state.clipRect);
-	lineStyle = std::move (state.lineStyle);
-	drawMode = std::move (state.drawMode);
-	globalAlpha = std::move (state.globalAlpha);
-	return *this;
-}
-
-//-----------------------------------------------------------------------------
 CDrawContext::Transform::Transform (CDrawContext& context, const CGraphicsTransform& transformation)
 : context (context)
 , transformation (transformation)
@@ -64,17 +36,62 @@ CDrawContext::Transform::~Transform () noexcept
 //-----------------------------------------------------------------------------
 struct CDrawContext::Impl
 {
+	//-----------------------------------------------------------------------------
+	struct State
+	{
+		SharedPointer<CFontDesc> font;
+		CColor frameColor {kTransparentCColor};
+		CColor fillColor {kTransparentCColor};
+		CColor fontColor {kTransparentCColor};
+		CCoord frameWidth {0.};
+		CPoint penLoc {};
+		CRect clipRect {};
+		CLineStyle lineStyle {kLineOnOffDash};
+		CDrawMode drawMode {kAntiAliasing};
+		float globalAlpha {1.f};
+		BitmapInterpolationQuality bitmapQuality {BitmapInterpolationQuality::kDefault};
+
+		State () = default;
+		State (const State& state);
+		State& operator= (const State& state) = default;
+		State (State&& state) noexcept;
+		State& operator= (State&& state) noexcept;
+	};
+
 	UTF8String* drawStringHelper {nullptr};
 	CRect surfaceRect;
 	double scaleFactor {1.};
 
-	CDrawContextState currentState;
+	State currentState;
 
-	std::stack<CDrawContextState> globalStatesStack;
+	std::stack<State> globalStatesStack;
 	std::stack<CGraphicsTransform> transformStack;
 
 	PlatformGraphicsDeviceContextPtr device;
 };
+
+//-----------------------------------------------------------------------------
+CDrawContext::Impl::State::State (const State& state) { *this = state; }
+
+//-----------------------------------------------------------------------------
+CDrawContext::Impl::State::State (State&& state) noexcept { *this = std::move (state); }
+
+//-----------------------------------------------------------------------------
+CDrawContext::Impl::State&
+	CDrawContext::Impl::State::operator= (CDrawContext::Impl::State&& state) noexcept
+{
+	font = std::move (state.font);
+	frameColor = std::move (state.frameColor);
+	fillColor = std::move (state.fillColor);
+	fontColor = std::move (state.fontColor);
+	frameWidth = std::move (state.frameWidth);
+	penLoc = std::move (state.penLoc);
+	clipRect = std::move (state.clipRect);
+	lineStyle = std::move (state.lineStyle);
+	drawMode = std::move (state.drawMode);
+	globalAlpha = std::move (state.globalAlpha);
+	return *this;
+}
 
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
@@ -119,15 +136,6 @@ const CRect& CDrawContext::getSurfaceRect () const { return impl->surfaceRect; }
 double CDrawContext::getScaleFactor () const { return impl->scaleFactor; }
 
 //-----------------------------------------------------------------------------
-auto CDrawContext::getCurrentState () const -> const CDrawContextState&
-{
-	return impl->currentState;
-}
-
-//-----------------------------------------------------------------------------
-auto CDrawContext::getCurrentState () -> CDrawContextState& { return impl->currentState; }
-
-//-----------------------------------------------------------------------------
 void CDrawContext::init ()
 {
 	// set the default values
@@ -144,7 +152,7 @@ void CDrawContext::init ()
 //-----------------------------------------------------------------------------
 void CDrawContext::saveGlobalState ()
 {
-	impl->globalStatesStack.push (getCurrentState ());
+	impl->globalStatesStack.push (impl->currentState);
 	if (impl->device)
 		impl->device->saveGlobalState ();
 }
@@ -156,7 +164,7 @@ void CDrawContext::restoreGlobalState ()
 		impl->device->restoreGlobalState ();
 	if (!impl->globalStatesStack.empty ())
 	{
-		getCurrentState () = std::move (impl->globalStatesStack.top ());
+		impl->currentState = std::move (impl->globalStatesStack.top ());
 		impl->globalStatesStack.pop ();
 	}
 	else
@@ -170,7 +178,13 @@ void CDrawContext::restoreGlobalState ()
 //-----------------------------------------------------------------------------
 void CDrawContext::setBitmapInterpolationQuality (BitmapInterpolationQuality quality)
 {
-	getCurrentState ().bitmapQuality = quality;
+	impl->currentState.bitmapQuality = quality;
+}
+
+//-----------------------------------------------------------------------------
+BitmapInterpolationQuality CDrawContext::getBitmapInterpolationQuality () const
+{
+	return impl->currentState.bitmapQuality;
 }
 
 //-----------------------------------------------------------------------------
@@ -178,42 +192,54 @@ void CDrawContext::setLineStyle (const CLineStyle& style)
 {
 	if (impl->device)
 		impl->device->setLineStyle (style);
-	getCurrentState ().lineStyle = style;
+	impl->currentState.lineStyle = style;
 }
+
+//-----------------------------------------------------------------------------
+const CLineStyle& CDrawContext::getLineStyle () const { return impl->currentState.lineStyle; }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setLineWidth (CCoord width)
 {
 	if (impl->device)
 		impl->device->setLineWidth (width);
-	getCurrentState ().frameWidth = width;
+	impl->currentState.frameWidth = width;
 }
+
+//-----------------------------------------------------------------------------
+CCoord CDrawContext::getLineWidth () const { return impl->currentState.frameWidth; }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setDrawMode (CDrawMode mode)
 {
 	if (impl->device)
 		impl->device->setDrawMode (mode);
-	getCurrentState ().drawMode = mode;
+	impl->currentState.drawMode = mode;
 }
+
+//-----------------------------------------------------------------------------
+CDrawMode CDrawContext::getDrawMode () const { return impl->currentState.drawMode; }
 
 //-----------------------------------------------------------------------------
 CRect& CDrawContext::getClipRect (CRect &clip) const
 {
-	clip = getCurrentState ().clipRect;
+	clip = impl->currentState.clipRect;
 	getCurrentTransform ().inverse ().transform (clip);
 	clip.normalize ();
 	return clip;
 }
 
 //-----------------------------------------------------------------------------
+const CRect& CDrawContext::getAbsoluteClipRect () const { return impl->currentState.clipRect; }
+
+//-----------------------------------------------------------------------------
 void CDrawContext::setClipRect (const CRect &clip)
 {
-	getCurrentState ().clipRect = clip;
-	getCurrentTransform ().transform (getCurrentState ().clipRect);
-	getCurrentState ().clipRect.normalize ();
+	impl->currentState.clipRect = clip;
+	getCurrentTransform ().transform (impl->currentState.clipRect);
+	impl->currentState.clipRect.normalize ();
 	if (impl->device)
-		impl->device->setClipRect (getCurrentState ().clipRect);
+		impl->device->setClipRect (impl->currentState.clipRect);
 }
 
 //-----------------------------------------------------------------------------
@@ -221,7 +247,7 @@ void CDrawContext::resetClipRect ()
 {
 	if (impl->device)
 		impl->device->setClipRect (getSurfaceRect ());
-	getCurrentState ().clipRect = getSurfaceRect ();
+	impl->currentState.clipRect = getSurfaceRect ();
 }
 
 //-----------------------------------------------------------------------------
@@ -229,24 +255,33 @@ void CDrawContext::setFillColor (const CColor& color)
 {
 	if (impl->device)
 		impl->device->setFillColor (color);
-	getCurrentState ().fillColor = color;
+	impl->currentState.fillColor = color;
 }
+
+//-----------------------------------------------------------------------------
+CColor CDrawContext::getFillColor () const { return impl->currentState.fillColor; }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setFrameColor (const CColor& color)
 {
 	if (impl->device)
 		impl->device->setFrameColor (color);
-	getCurrentState ().frameColor = color;
+	impl->currentState.frameColor = color;
 }
+
+//-----------------------------------------------------------------------------
+CColor CDrawContext::getFrameColor () const { return impl->currentState.frameColor; }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setFontColor (const CColor& color)
 {
 	if (impl->device)
 		impl->device->setFontColor (color);
-	getCurrentState ().fontColor = color;
+	impl->currentState.fontColor = color;
 }
+
+//-----------------------------------------------------------------------------
+CColor CDrawContext::getFontColor () const { return impl->currentState.fontColor; }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const int32_t& style)
@@ -255,25 +290,31 @@ void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const in
 		return;
 	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
 	{
-		getCurrentState ().font = makeOwned<CFontDesc> (*newFont);
+		impl->currentState.font = makeOwned<CFontDesc> (*newFont);
 		if (size > 0)
-			getCurrentState ().font->setSize (size);
+			impl->currentState.font->setSize (size);
 		if (style != -1)
-			getCurrentState ().font->setStyle (style);
+			impl->currentState.font->setStyle (style);
 	}
 	else
 	{
-		getCurrentState ().font = newFont;
+		impl->currentState.font = newFont;
 	}
 }
+
+//-----------------------------------------------------------------------------
+const CFontRef CDrawContext::getFont () const { return impl->currentState.font; }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setGlobalAlpha (float newAlpha)
 {
 	if (impl->device)
 		impl->device->setGlobalAlpha (newAlpha);
-	getCurrentState ().globalAlpha = newAlpha;
+	impl->currentState.globalAlpha = newAlpha;
 }
+
+//-----------------------------------------------------------------------------
+float CDrawContext::getGlobalAlpha () const { return impl->currentState.globalAlpha; }
 
 //-----------------------------------------------------------------------------
 const UTF8String& CDrawContext::getDrawString (UTF8StringPtr string)
@@ -296,10 +337,10 @@ void CDrawContext::clearDrawString ()
 CCoord CDrawContext::getStringWidth (IPlatformString* string)
 {
 	CCoord result = -1;
-	if (getCurrentState ().font == nullptr || string == nullptr)
+	if (impl->currentState.font == nullptr || string == nullptr)
 		return result;
 
-	if (auto painter = getCurrentState ().font->getFontPainter ())
+	if (auto painter = impl->currentState.font->getFontPainter ())
 		result = painter->getStringWidth (impl->device, string, true);
 
 	return result;
@@ -308,23 +349,23 @@ CCoord CDrawContext::getStringWidth (IPlatformString* string)
 //------------------------------------------------------------------------
 void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
 {
-	if (!string || getCurrentState ().font == nullptr)
+	if (!string || impl->currentState.font == nullptr)
 		return;
-	auto painter = getCurrentState ().font->getFontPainter ();
+	auto painter = impl->currentState.font->getFontPainter ();
 	if (painter == nullptr)
 		return;
 	
 	CRect rect (_rect);
 	
 	double capHeight = -1;
-	auto platformFont = getCurrentState ().font->getPlatformFont ();
+	auto platformFont = impl->currentState.font->getPlatformFont ();
 	if (platformFont)
 		capHeight = platformFont->getCapHeight ();
 	
 	if (capHeight > 0.)
 		rect.bottom -= (rect.getHeight () / 2. - capHeight / 2.);
 	else
-		rect.bottom -= (rect.getHeight () / 2. - getCurrentState ().font->getSize () / 2.) + 1.;
+		rect.bottom -= (rect.getHeight () / 2. - impl->currentState.font->getSize () / 2.) + 1.;
 	if (hAlign != kLeftText)
 	{
 		CCoord stringWidth = painter->getStringWidth (impl->device, string, antialias);
@@ -341,10 +382,10 @@ void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, cons
 //------------------------------------------------------------------------
 void CDrawContext::drawString (IPlatformString* string, const CPoint& point, bool antialias)
 {
-	if (string == nullptr || getCurrentState ().font == nullptr)
+	if (string == nullptr || impl->currentState.font == nullptr)
 		return;
 
-	if (auto painter = getCurrentState ().font->getFontPainter ())
+	if (auto painter = impl->currentState.font->getFontPainter ())
 		painter->drawString (impl->device, string, point, impl->currentState.fontColor, antialias);
 }
 
