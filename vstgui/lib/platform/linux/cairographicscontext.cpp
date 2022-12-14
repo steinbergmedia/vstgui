@@ -119,8 +119,8 @@ inline CPoint pixelAlign (const CGraphicsTransform& tm, const CPoint& p)
 {
 	auto obj = p;
 	tm.transform (obj);
-	obj.x = std::round (obj.x) - 0.5;
-	obj.y = std::round (obj.y) - 0.5;
+	obj.x = std::round (obj.x);
+	obj.y = std::round (obj.y);
 	tm.inverse ().transform (obj);
 	return obj;
 }
@@ -130,10 +130,10 @@ inline CRect pixelAlign (const CGraphicsTransform& tm, const CRect& r)
 {
 	auto obj = r;
 	tm.transform (obj);
-	obj.left = std::round (obj.left) - 0.5;
-	obj.right = std::round (obj.right) - 0.5;
-	obj.top = std::round (obj.top) - 0.5;
-	obj.bottom = std::round (obj.bottom) - 0.5;
+	obj.left = std::round (obj.left);
+	obj.right = std::round (obj.right);
+	obj.top = std::round (obj.top);
+	obj.bottom = std::round (obj.bottom);
 	tm.inverse ().transform (obj);
 	return obj;
 }
@@ -170,6 +170,21 @@ struct CairoGraphicsDeviceContext::Impl
 		p ();
 		checkCairoStatus (context);
 		cairo_restore (context);
+	}
+
+	void applyLineWidthCTM ()
+	{
+		auto p = calcLineTranslate ();
+		cairo_translate (context, p.x, p.y);
+	}
+
+	CPoint calcLineTranslate () const
+	{
+		CPoint p {};
+		int32_t lineWidthInt = static_cast<int32_t> (state.lineWidth);
+		if (static_cast<CCoord> (lineWidthInt) == state.lineWidth && lineWidthInt % 2)
+			p.x = p.y = 0.5;
+		return p;
 	}
 
 	void applyLineStyle ()
@@ -292,7 +307,6 @@ CairoGraphicsDeviceContext::CairoGraphicsDeviceContext (const CairoGraphicsDevic
 														const Cairo::SurfaceHandle& handle)
 {
 	impl = std::make_unique<Impl> (device, handle);
-	impl->state.tm.translate (0.5, 0.5);
 }
 
 //------------------------------------------------------------------------
@@ -340,6 +354,7 @@ bool CairoGraphicsDeviceContext::drawLine (LinePair line) const
 		{
 			CPoint start = pixelAlign (impl->state.tm, line.first);
 			CPoint end = pixelAlign (impl->state.tm, line.second);
+			impl->applyLineWidthCTM ();
 			cairo_move_to (impl->context, start.x, start.y);
 			cairo_line_to (impl->context, end.x, end.y);
 		}
@@ -361,12 +376,13 @@ bool CairoGraphicsDeviceContext::drawLines (const LineList& lines) const
 		impl->applyFrameColor ();
 		if (impl->state.drawMode.integralMode ())
 		{
+			auto pt = impl->calcLineTranslate ();
 			for (auto& line : lines)
 			{
 				CPoint start = pixelAlign (impl->state.tm, line.first);
 				CPoint end = pixelAlign (impl->state.tm, line.second);
-				cairo_move_to (impl->context, start.x, start.y);
-				cairo_line_to (impl->context, end.x, end.y);
+				cairo_move_to (impl->context, start.x + pt.x, start.y + pt.y);
+				cairo_line_to (impl->context, end.x + pt.x, end.y + pt.y);
 				cairo_stroke (impl->context);
 			}
 		}
@@ -409,9 +425,16 @@ bool CairoGraphicsDeviceContext::drawPolygon (const PointList& polygonPointList,
 bool CairoGraphicsDeviceContext::drawRect (CRect rect, PlatformGraphicsDrawStyle drawStyle) const
 {
 	impl->doInContext ([&] () {
+		if (drawStyle != PlatformGraphicsDrawStyle::Filled)
+		{
+			rect.right -= 1.;
+			rect.bottom -= 1.;
+		}
 		if (impl->state.drawMode.integralMode ())
 		{
 			rect = pixelAlign (impl->state.tm, rect);
+			if (drawStyle != PlatformGraphicsDrawStyle::Filled)
+				impl->applyLineWidthCTM ();
 			cairo_rectangle (impl->context, rect.left, rect.top, rect.getWidth (),
 							 rect.getHeight ());
 		}
@@ -666,10 +689,7 @@ void CairoGraphicsDeviceContext::setGlobalAlpha (double newAlpha) const
 //------------------------------------------------------------------------
 void CairoGraphicsDeviceContext::setTransformMatrix (const TransformMatrix& tm) const
 {
-	TransformMatrix offset;
-	offset.translate (0.5, 0.5);
-
-	impl->state.tm = tm * offset;
+	impl->state.tm = tm;
 }
 
 //------------------------------------------------------------------------
