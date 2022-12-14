@@ -194,11 +194,7 @@ struct DrawHandler
 		frame->platformDrawRects (drawContext, 1, dirtyRects.data ());
 		drawContext->endDraw ();
 
-		CRect copyRect;
-		for (auto r : dirtyRects)
-			copyRect.unite (r);
-
-		blitBackbufferToWindow (copyRect);
+		blitBackbufferToWindow (dirtyRects);
 		xcb_flush (RunLoop::instance ().getXcbConnection ());
 	}
 
@@ -209,14 +205,18 @@ private:
 	std::shared_ptr<CairoGraphicsDeviceContext> drawContext;
 	PlatformGraphicsDevicePtr device;
 
-	void blitBackbufferToWindow (const CRect& rect)
+	void blitBackbufferToWindow (const CInvalidRectList& rects)
 	{
 		Cairo::ContextHandle windowContext (cairo_create (windowSurface));
-		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-		cairo_clip (windowContext);
 		cairo_set_source_surface (windowContext, backBuffer, 0, 0);
-		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-		cairo_fill (windowContext);
+		for (auto rect : rects)
+		{
+			cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (),
+							 rect.getHeight ());
+			cairo_clip_preserve (windowContext);
+			cairo_fill (windowContext);
+			cairo_reset_clip (windowContext);
+		}
 		cairo_surface_flush (windowSurface);
 	}
 };
