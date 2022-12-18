@@ -79,6 +79,8 @@ struct IDirect3D12View
 //------------------------------------------------------------------------
 struct IDirect3D12Renderer
 {
+	virtual ~IDirect3D12Renderer () noexcept = default;
+
 	virtual bool init (IDirect3D12View* view) = 0;
 	virtual void render (ID3D12CommandQueue* queue) = 0;
 	virtual void beforeSizeUpdate () = 0;
