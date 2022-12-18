@@ -27,6 +27,8 @@ namespace ExternalView {
 //------------------------------------------------------------------------
 struct IMetalView
 {
+	virtual ~IMetalView () noexcept = default;
+
 	virtual void render () = 0;
 };
 
@@ -37,6 +39,8 @@ struct IMetalView
  */
 struct IMetalRenderer
 {
+	virtual ~IMetalRenderer () noexcept = default;
+
 	virtual bool init (IMetalView* metalView, CAMetalLayer* metalLayer) = 0;
 	virtual void draw (id<CAMetalDrawable> drawable) = 0;
 	virtual void onSizeUpdate (int32_t width, int32_t height, double scaleFactor) = 0;
