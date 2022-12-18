@@ -4,9 +4,9 @@
 
 #import "vstgui.cpp"
 
-#import "lib/platform/mac/cgdrawcontext.cpp"
 #import "lib/platform/mac/macglobals.cpp"
 #import "lib/platform/mac/cgbitmap.cpp"
+#import "lib/platform/mac/coregraphicsdevicecontext.mm"
 #import "lib/platform/mac/quartzgraphicspath.cpp"
 #import "lib/platform/mac/macfactory.mm"
 #import "lib/platform/mac/macfileselector.mm"

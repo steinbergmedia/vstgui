@@ -6,7 +6,6 @@
 #include "win32menu.h"
 #include "win32async.h"
 
-#include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
 #include "../../../../lib/platform/win32/win32directcomposition.h"
 #include "../../../../lib/platform/win32/win32factory.h"
 #include "../../../../lib/platform/win32/win32frame.h"

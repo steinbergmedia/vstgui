@@ -6,6 +6,7 @@
 
 #include "../cframe.h"
 #include "../cgraphicspath.h"
+#include "../cdrawcontext.h"
 
 namespace VSTGUI {
 

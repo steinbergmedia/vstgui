@@ -18,6 +18,7 @@
 #include "../../lib/cfileselector.h"
 #include "../../lib/idatapackage.h"
 #include "../../lib/dragging.h"
+#include "../../lib/cdrawcontext.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"

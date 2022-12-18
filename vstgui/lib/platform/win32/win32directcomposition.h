@@ -12,6 +12,7 @@
 #include <combaseapi.h>
 
 interface ID2D1DeviceContext;
+interface ID2D1Device;
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -46,6 +47,8 @@ struct Factory
 	VisualPtr createVisualForHWND (HWND hwnd);
 	VisualPtr createChildVisual (const VisualPtr& parent, uint32_t width, uint32_t height);
 	bool removeVisual (const VisualPtr& visual);
+
+	ID2D1Device* getDevice () const;
 
 	~Factory () noexcept;
 

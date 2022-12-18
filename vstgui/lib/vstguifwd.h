@@ -9,6 +9,7 @@
 #include <limits>
 #include <memory>
 #include <map>
+#include <vector>
 
 namespace VSTGUI {
 
@@ -93,6 +94,18 @@ enum DragResult {
 	kDragError = -1
 };
 
+//-----------
+// @brief Text Face
+//-----------
+enum CTxtFace
+{
+	kNormalFace = 0,
+	kBoldFace = 1 << 1,
+	kItalicFace = 1 << 2,
+	kUnderlineFace = 1 << 3,
+	kStrikethroughFace = 1 << 4
+};
+
 //----------------------------
 // @brief Bitmap Interpolation
 //----------------------------
@@ -140,6 +153,10 @@ struct CMultiFrameBitmapDescription;
 
 using GradientColorStop = std::pair<double, CColor>;
 using GradientColorStopMap = std::multimap<double, CColor>;
+
+using LinePair = std::pair<CPoint, CPoint>;
+using LineList = std::vector<LinePair>;
+using PointList = std::vector<CPoint>;
 
 // interfaces
 class IViewListener;
@@ -322,6 +339,10 @@ class IPlatformFrameConfig;
 class IPlatformFrameCallback;
 class IPlatformTimerCallback;
 class IPlatformFileSelector;
+class IPlatformGraphicsDeviceFactory;
+class IPlatformGraphicsDevice;
+class IPlatformGraphicsDeviceContext;
+class IPlatformGraphicsDeviceContextBitmapExt;
 
 struct PlatformFileExtension;
 struct PlatformFileSelectorConfig;
@@ -342,5 +363,7 @@ using PlatformGradientPtr = std::unique_ptr<IPlatformGradient>;
 using PlatformGraphicsPathPtr = std::unique_ptr<IPlatformGraphicsPath>;
 using PlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFactory>;
 using PlatformFileSelectorPtr = std::shared_ptr<IPlatformFileSelector>;
+using PlatformGraphicsDevicePtr = std::shared_ptr<IPlatformGraphicsDevice>;
+using PlatformGraphicsDeviceContextPtr = std::shared_ptr<IPlatformGraphicsDeviceContext>;
 
 } // VSTGUI

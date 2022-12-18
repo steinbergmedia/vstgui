@@ -80,10 +80,9 @@ protected:
 	HWND tooltipWindow;
 	HWND oldFocusWindow;
 
-	SharedPointer<COffscreenContext> backBuffer;
-	CDrawContext* deviceContext;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
 	DirectComposition::VisualPtr directCompositionVisual;
+	PlatformGraphicsDeviceContextPtr legacyDrawDevice;
 	Optional<MSG> currentEvent;
 	ViewLayers viewLayers;
 

@@ -14,7 +14,6 @@
 #import "autoreleasepool.h"
 #import "../macclipboard.h"
 #import "../macfactory.h"
-#import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
@@ -949,33 +948,29 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	if (cocoaConfig && cocoaConfig->flags & CocoaFrameConfig::kNoCALayer)
 		return;
 
-	auto processInfo = [NSProcessInfo processInfo];
-	if ([processInfo respondsToSelector:@selector(operatingSystemVersion)])
+	// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
+	// few parts of a window are updated permanently when scrolling or manipulating a control
+	// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
+	// are drawn incorrectly when scaled.
+	if (@available (macOS 10.11, *))
 	{
-		// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
-		// few parts of a window are updated permanently when scrolling or manipulating a control
-		// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
-		// are drawn incorrectly when scaled.
-		if (@available (macOS 10.11, *))
+		[nsView setWantsLayer:YES];
+		caLayer = [CALayer new];
+		caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
+		caLayer.frame = nsView.layer.bounds;
+		[caLayer setContentsScale:nsView.layer.contentsScale];
+		[nsView.layer addSublayer:caLayer];
+		useInvalidRects = true;
+		if (@available (macOS 10.13, *))
 		{
-			[nsView setWantsLayer:YES];
-			caLayer = [CALayer new];
-			caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
-			caLayer.frame = nsView.layer.bounds;
-			[caLayer setContentsScale:nsView.layer.contentsScale];
-			[nsView.layer addSublayer:caLayer];
-			useInvalidRects = true;
-			if (@available (macOS 10.13, *))
+			nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+			// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
+			// the CoreGraphics engineers decided to be clever and join dirty rectangles without
+			// letting us know
+			if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
 			{
-				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
-				// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
-				// the CoreGraphics engineers decided to be clever and join dirty rectangles without
-				// letting us know
-				if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
-				{
-					caLayer.drawsAsynchronously = YES;
-					useInvalidRects = false;
-				}
+				caLayer.drawsAsynchronously = YES;
+				useInvalidRects = false;
 			}
 		}
 	}
@@ -1080,36 +1075,43 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 }
 
 //-----------------------------------------------------------------------------
-void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
+void NSViewFrame::draw (CGContextRef cgContext, CRect updateRect, double scaleFactor)
 {
+	auto device = getPlatformFactory ().getGraphicsDeviceFactory ().getDeviceForScreen (
+		DefaultScreenIdentifier);
+	if (!device)
+		return;
+	auto cgDevice = std::static_pointer_cast<CoreGraphicsDevice> (device);
+	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), cgContext);
+
+	addDebugRedrawRect (updateRect, true);
+
 	inDraw = true;
-
-	auto clipBoundingBoxNSRect = CGContextGetClipBoundingBox (ctx);
-	auto clipBoundingBox = rectFromNSRect (clipBoundingBoxNSRect);
-
-	addDebugRedrawRect (clipBoundingBox, true);
-
-	CGDrawContext drawContext (ctx, rectFromNSRect ([nsView bounds]));
-	drawContext.beginDraw ();
+	deviceContext->beginDraw ();
 
 	if (useInvalidRects)
 	{
 		joinNearbyInvalidRects (invalidRectList, 24.);
+		frame->platformDrawRects (deviceContext, scaleFactor, invalidRectList.data ());
 		for (auto r : invalidRectList)
-		{
-			frame->platformDrawRect (&drawContext, r);
 			addDebugRedrawRect (r, false);
-		}
 		invalidRectList.clear ();
 	}
 	else
 	{
-		frame->platformDrawRect (&drawContext, clipBoundingBox);
-		addDebugRedrawRect (clipBoundingBox, false);
+		frame->platformDrawRects (deviceContext, scaleFactor, {1, updateRect});
+		addDebugRedrawRect (updateRect, false);
 	}
-	drawContext.endDraw ();
 
+	deviceContext->endDraw ();
 	inDraw = false;
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
+{
+	auto clipBoundingBox = CGContextGetClipBoundingBox (ctx);
+	draw (ctx, rectFromNSRect (clipBoundingBox), layer.contentsScale);
 }
 
 //-----------------------------------------------------------------------------
@@ -1118,44 +1120,8 @@ void NSViewFrame::drawRect (NSRect* rect)
 	if (caLayer)
 		return;
 
-	inDraw = true;
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
-
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAX_OS_X_VERSION_10_10
-	auto cgContext = static_cast<CGContextRef> ([nsContext graphicsPort]);
-#else
-	auto cgContext = static_cast<CGContextRef> ([nsContext CGContext]);
-#endif
-
-	addDebugRedrawRect (rectFromNSRect (*rect), true);
-
-	CGDrawContext drawContext (cgContext, rectFromNSRect ([nsView bounds]));
-	drawContext.beginDraw ();
-
-	if (useInvalidRects)
-	{
-		joinNearbyInvalidRects (invalidRectList, 24.);
-		for (auto r : invalidRectList)
-		{
-			frame->platformDrawRect (&drawContext, r);
-			addDebugRedrawRect (r, false);
-		}
-		invalidRectList.clear ();
-	}
-	else
-	{
-		const NSRect* dirtyRects;
-		NSInteger numDirtyRects;
-		[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-		for (NSInteger i = 0; i < numDirtyRects; i++)
-		{
-			auto r = rectFromNSRect (dirtyRects[i]);
-			frame->platformDrawRect (&drawContext, r);
-			addDebugRedrawRect (r, false);
-		}
-	}
-	drawContext.endDraw ();
-	inDraw = false;
+	draw (nsContext.CGContext, rectFromNSRect (*rect), nsView.window.backingScaleFactor);
 }
 
 //------------------------------------------------------------------------
@@ -1514,6 +1480,7 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 		[nsView setWantsLayer:YES];
 		caLayer.actions = nil;
 	}
+
 	auto caParentLayer =
 		parentViewLayer ? parentViewLayer->getCALayer () : (caLayer ? caLayer : nsView.layer);
 	auto layer = makeOwned<CAViewLayer> (caParentLayer);
