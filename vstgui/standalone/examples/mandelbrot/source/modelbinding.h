@@ -62,6 +62,8 @@ struct ModelBinding : VSTGUI::Standalone::UIDesc::IModelBinding,
 		if (&value == maxIterations.get ())
 		{
 			auto step = Value::currentStepValue (*maxIterations.get ());
+			if (step < 1)
+				step = 1;
 			if (step != IStepValue::InvalidStep)
 				model->setIterations (step);
 			return;

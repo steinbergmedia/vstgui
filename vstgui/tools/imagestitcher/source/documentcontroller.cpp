@@ -256,8 +256,8 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 	numFramesPerRowValue =
 		Value::make ("NumFramesPerRow", 0, Value::makeRangeConverter (1, 32767, 0));
 	binding->addValue (numFramesPerRowValue, UIDesc::ValueCalls::onPerformEdit ([this] (auto& v) {
-						   this->docContext->setNumFramesPerRow (
-							   std::round (v.getConverter ().normalizedToPlain (v.getValue ())));
+						   this->docContext->setNumFramesPerRow (static_cast<uint16_t> (
+							   std::round (v.getConverter ().normalizedToPlain (v.getValue ()))));
 					   }));
 	return binding;
 }
@@ -692,7 +692,7 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 
 	offscreen->beginDraw ();
 	auto col = 0;
-	for (auto image : imageList)
+	for (const auto& image : imageList)
 	{
 		image.bitmap->draw (offscreen, r);
 		if (++col >= numCols)

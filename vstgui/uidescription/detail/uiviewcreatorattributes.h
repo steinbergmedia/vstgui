@@ -47,6 +47,7 @@ static const IdStringPtr kCVuMeter = "CVuMeter";
 static const IdStringPtr kCAnimationSplashScreen = "CAnimationSplashScreen";
 static const IdStringPtr kCGradientView = "CGradientView";
 static const IdStringPtr kCStringListControl = "CStringListControl";
+static const IdStringPtr kCAutoAnimation = "CAutoAnimation";
 
 //-----------------------------------------------------------------------------
 // attributes used in more than one view creator

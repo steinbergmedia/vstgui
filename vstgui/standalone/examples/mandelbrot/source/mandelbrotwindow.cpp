@@ -77,7 +77,8 @@ inline std::function<uint32_t (CColor)> getColorToInt32 (IPlatformBitmapPixelAcc
 			};
 			break;
 		}
-		case IPlatformBitmapPixelAccess::kBGRA:
+		//case IPlatformBitmapPixelAccess::kBGRA:
+		default:
 		{
 			return [] (CColor color) {
 				return (color.blue) | (color.green << 8) | (color.red << 16) | (color.alpha << 24);

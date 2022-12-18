@@ -3,11 +3,10 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "cfontmac.h"
-#import "../../cdrawcontext.h"
 
 #if MAC
 #import "macstring.h"
-#import "cgdrawcontext.h"
+#import "coregraphicsdevicecontext.h"
 #import "macglobals.h"
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -125,7 +124,8 @@ bool CoreTextFont::getAllFontFamilies (const FontFamilyCallback& callback) noexc
 //-----------------------------------------------------------------------------
 static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicTraits trait)
 {
-	CTFontRef traitsFontRef = CTFontCreateCopyWithSymbolicTraits (fontRef, CTFontGetSize (fontRef), nullptr, trait, trait);
+	auto traitsFontRef = CTFontCreateCopyWithSymbolicTraits (fontRef, CTFontGetSize (fontRef),
+															 nullptr, trait, trait);
 	if (traitsFontRef)
 	{
 		CFRelease (fontRef);
@@ -134,7 +134,8 @@ static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicT
 	else if (trait == kCTFontItalicTrait)
 	{
 		CGAffineTransform transform = { 1, 0, -0.5, 1, 0, 0 };
-		traitsFontRef = CTFontCreateCopyWithAttributes (fontRef, CTFontGetSize (fontRef), &transform, nullptr);
+		traitsFontRef =
+			CTFontCreateCopyWithAttributes (fontRef, CTFontGetSize (fontRef), &transform, nullptr);
 		if (traitsFontRef)
 		{
 			CFRelease (fontRef);
@@ -162,7 +163,9 @@ CoreTextFont::CoreTextFont (const UTF8String& name, const CCoord& size, const in
 	{
 		if (@available (macOS 10.10, *))
 		{
-			CFMutableDictionaryRef attributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+			auto attributes =
+				CFDictionaryCreateMutable (kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks,
+										   &kCFTypeDictionaryValueCallBacks);
 			CFDictionaryAddValue (attributes, kCTFontFamilyNameAttribute, fontNameRef);
 			CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithAttributes (attributes);
 			fontRef = CTFontCreateWithFontDescriptor (descriptor, static_cast<CGFloat> (size), nullptr);
@@ -226,7 +229,9 @@ CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color) const
 {
 	if (stringAttributes == nullptr)
 	{
-		stringAttributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		stringAttributes =
+			CFDictionaryCreateMutable (kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks,
+									   &kCFTypeDictionaryValueCallBacks);
 		CFDictionarySetValue (stringAttributes, kCTFontAttributeName, fontRef);
 	}
 	if (color)
@@ -237,17 +242,14 @@ CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color) const
 }
 
 //-----------------------------------------------------------------------------
-CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macString) const
+CTLineRef CoreTextFont::createCTLine (const PlatformGraphicsDeviceContextPtr& context,
+									  MacString* macString, const CColor& color) const
 {
-	CColor fontColor = context ? context->getFontColor () : kBlackCColor;
-	if (context)
+	if (macString->getCTLineFontRef () == this && macString->getCTLineColor () == color)
 	{
-		if (macString->getCTLineFontRef () == this && macString->getCTLineColor () == fontColor)
-		{
-			CTLineRef line = macString->getCTLine ();
-			CFRetain (line);
-			return line;
-		}
+		CTLineRef line = macString->getCTLine ();
+		CFRetain (line);
+		return line;
 	}
 	CFStringRef cfStr = macString->getCFString ();
 	if (cfStr == nullptr)
@@ -259,18 +261,19 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 	}
 
 	CGColorRef cgColorRef = nullptr;
-	if (fontColor != lastColor)
+	if (color != lastColor)
 	{
-		cgColorRef = getCGColor (fontColor);
-		lastColor = fontColor;
+		cgColorRef = getCGColor (color);
+		lastColor = color;
 	}
-	CFAttributedStringRef attrStr = CFAttributedStringCreate (kCFAllocatorDefault, cfStr, getStringAttributes (cgColorRef));
-	if (attrStr)
+
+	if (auto attrStr =
+			CFAttributedStringCreate (kCFAllocatorDefault, cfStr, getStringAttributes (cgColorRef)))
 	{
 		CTLineRef line = CTLineCreateWithAttributedString (attrStr);
 		if (context && line)
 		{
-			macString->setCTLine (line, this, fontColor);
+			macString->setCTLine (line, this, color);
 		}
 		CFRelease (attrStr);
 		return line;
@@ -280,70 +283,38 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 }
 
 //-----------------------------------------------------------------------------
-void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias) const
+void CoreTextFont::drawString (const PlatformGraphicsDeviceContextPtr& context,
+							   IPlatformString* string, const CPoint& point, const CColor& color,
+							   bool antialias) const
 {
 	MacString* macString = dynamic_cast<MacString*> (string);
 	if (macString == nullptr)
 		return;
 
-	CTLineRef line = createCTLine (context, macString);
-	if (line)
-	{
-		bool integralMode = context->getDrawMode ().integralMode ();
-		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, integralMode) : nullptr;
-		if (cgContext)
-		{
-			CGPoint cgPoint = CGPointFromCPoint (point);
-			if (integralMode)
-				cgPoint = cgDrawContext->pixelAlligned (cgPoint);
-			CGContextSetShouldAntialias (cgContext, antialias);
-			CGContextSetShouldSmoothFonts (cgContext, true);
-			CGContextSetShouldSubpixelPositionFonts (cgContext, true);
-			CGContextSetShouldSubpixelQuantizeFonts (cgContext, true);
-			CGContextSetTextPosition (cgContext, static_cast<CGFloat> (point.x), cgPoint.y);
-			CTLineDraw (line, cgContext);
-			if (style & kUnderlineFace)
-			{
-				CGColorRef cgColorRef = getCGColor (context->getFontColor ());
-				CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.f;
-				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
-				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
-				CGContextSetLineWidth (cgContext, underlineThickness);
-				cgPoint = CGContextGetTextPosition (cgContext);
-				CGContextBeginPath (cgContext);
-				CGContextMoveToPoint (cgContext, static_cast<CGFloat> (point.x), cgPoint.y - underlineOffset);
-				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - underlineOffset);
-				CGContextDrawPath (cgContext, kCGPathStroke);
-			}
-			if (style & kStrikethroughFace)
-			{
-				CGColorRef cgColorRef = getCGColor (context->getFontColor ());
-				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
-				CGFloat offset = CTFontGetXHeight (fontRef) * 0.5f;
-				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
-				CGContextSetLineWidth (cgContext, underlineThickness);
-				cgPoint = CGContextGetTextPosition (cgContext);
-				CGContextBeginPath (cgContext);
-				CGContextMoveToPoint (cgContext, static_cast<CGFloat> (point.x), cgPoint.y - offset);
-				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - offset);
-				CGContextDrawPath (cgContext, kCGPathStroke);
-			}
-			cgDrawContext->releaseCGContext (cgContext);
-		}
-		CFRelease (line);
-	}
+	auto deviceContext = std::dynamic_pointer_cast<CoreGraphicsDeviceContext> (context);
+	if (!deviceContext)
+		return;
+
+	CTLineRef line = createCTLine (context, macString, color);
+	if (!line)
+		return;
+
+	CGPoint cgPoint = CGPointFromCPoint (point);
+	deviceContext->drawCTLine (line, cgPoint, fontRef, color, style & kUnderlineFace,
+							   style & kStrikethroughFace, antialias);
+	CFRelease (line);
 }
 
 //-----------------------------------------------------------------------------
-CCoord CoreTextFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
+CCoord CoreTextFont::getStringWidth (const PlatformGraphicsDeviceContextPtr& context,
+									 IPlatformString* string, bool antialias) const
 {
 	CCoord result = 0;
 	MacString* macString = dynamic_cast<MacString*> (string);
 	if (macString == nullptr)
 		return result;
-	
-	CTLineRef line = createCTLine (context, macString);
+
+	CTLineRef line = createCTLine (context, macString, kBlackCColor);
 	if (line)
 	{
 		result = CTLineGetTypographicBounds (line, nullptr, nullptr, nullptr);

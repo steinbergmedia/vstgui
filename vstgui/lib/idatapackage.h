@@ -34,4 +34,66 @@ protected:
 	IDataPackage () {}
 };
 
+//-----------------------------------------------------------------------------
+/** IDataPackage iterator
+ *
+ *	@ingroup new_in_4_12
+ */
+struct DataPackageIterator
+{
+	struct Item
+	{
+		IDataPackage::Type type;
+		uint32_t dataSize {0};
+		const void* data {nullptr};
+	};
+
+	DataPackageIterator (IDataPackage* pkg, uint32_t index = 0u) : pkg (pkg), index (index) {}
+
+	DataPackageIterator& operator++ ()
+	{
+		item = {};
+		index++;
+		return *this;
+	}
+
+	const Item& operator->() const
+	{
+		gatherItem ();
+		return item;
+	}
+
+	const Item& operator* () const
+	{
+		gatherItem ();
+		return item;
+	}
+
+	bool operator!= (const DataPackageIterator& other) const
+	{
+		return other.pkg != pkg || other.index != index;
+	}
+
+	uint32_t getIndex () const { return index; }
+
+private:
+	void gatherItem () const
+	{
+		if (item.data == nullptr && pkg && index < pkg->getCount ())
+			item.dataSize = pkg->getData (index, item.data, item.type);
+	}
+	IDataPackage* pkg {nullptr};
+	uint32_t index {0u};
+	mutable Item item;
+};
+
+//-----------------------------------------------------------------------------
+inline DataPackageIterator begin (IDataPackage* pkg) { return DataPackageIterator (pkg); }
+
+//-----------------------------------------------------------------------------
+inline DataPackageIterator end (IDataPackage* pkg)
+{
+	return DataPackageIterator (pkg, pkg->getCount () + 1);
+}
+
 } // VSTGUI

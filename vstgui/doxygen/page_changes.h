@@ -124,6 +124,10 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 @section code_changes Changes for existing VSTGUI code
 
+@subsection code_changes_4_12_to_4_13 VSTGUI 4.12 -> VSTGUI 4.13
+
+- the context argument of IFontPainter has changed to use the new platform graphics device context
+
 @subsection code_changes_4_11_to_4_12 VSTGUI 4.11 -> VSTGUI 4.12
 
 - The CMultiFrameBitmap change deprecated the VSTGUI::IMultiBitmapControl class. If you use it,

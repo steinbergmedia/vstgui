@@ -390,7 +390,7 @@ void MinefieldViewController::onGameWon ()
 	gameTimer = nullptr;
 	dataBrowser->invalid ();
 	if (wonCallback)
-		wonCallback (Value::currentPlainValue (timeValue));
+		wonCallback (static_cast<int32_t> (Value::currentPlainValue (timeValue)));
 }
 
 //------------------------------------------------------------------------

@@ -191,27 +191,35 @@ void CLayeredViewContainer::drawRect (CDrawContext* pContext, const CRect& updat
 	auto drawsIntoBitmap = false;
 	if (auto offscreenContext = dynamic_cast<COffscreenContext*> (pContext))
 		drawsIntoBitmap = offscreenContext->getBitmap () != nullptr;
-	if (layer && !drawsIntoBitmap)
-		layer->draw (pContext, updateRect);
-	else
+	if (!layer || drawsIntoBitmap)
 		CViewContainer::drawRect (pContext, updateRect);
 }
 
 //-----------------------------------------------------------------------------
-void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _dirtyRect)
+void CLayeredViewContainer::drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context,
+												double scaleFactor, const std::vector<CRect>& rects)
 {
-	CRect dirtyRect (_dirtyRect);
-
 	CGraphicsTransform drawTransform = getDrawTransform ();
-	drawTransform.inverse ().transform (dirtyRect);
 
 	CRect visibleSize = getVisibleViewSize ();
 	CRect viewSize = getViewSize ();
 	CPoint p (viewSize.left < 0 ? viewSize.left - visibleSize.left : visibleSize.left,
-	          viewSize.top < 0 ? viewSize.top - visibleSize.top : visibleSize.top);
-	dirtyRect.offset (p.x, p.y);
-	CDrawContext::Transform transform (*context, drawTransform * CGraphicsTransform ().translate (-p.x, -p.y));
-	CViewContainer::drawRect (context, dirtyRect);
+			  viewSize.top < 0 ? viewSize.top - visibleSize.top : visibleSize.top);
+
+	auto surfaceSize = getViewSize ();
+	surfaceSize.originize ();
+	CDrawContext drawContext (context, surfaceSize, scaleFactor);
+	CDrawContext::Transform transform (
+		drawContext, drawTransform * CGraphicsTransform ().translate (-p.x, -p.y));
+	for (auto dirtyRect : rects)
+	{
+		drawTransform.inverse ().transform (dirtyRect);
+		dirtyRect.offset (p.x, p.y);
+		drawContext.saveGlobalState ();
+		drawContext.setClipRect (dirtyRect);
+		CViewContainer::drawRect (&drawContext, dirtyRect);
+		drawContext.restoreGlobalState ();
+	}
 }
 
 //-----------------------------------------------------------------------------

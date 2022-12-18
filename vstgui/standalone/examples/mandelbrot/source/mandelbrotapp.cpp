@@ -19,7 +19,7 @@ using namespace VSTGUI::Standalone::Application;
 //------------------------------------------------------------------------
 struct AppDelegate : DelegateAdapter, WindowListenerAdapter, ICommandHandler
 {
-	AppDelegate () : DelegateAdapter ({"mandelbrot", "1.0.0", "vstgui.examples.mandelbrot"}) {}
+	AppDelegate () : DelegateAdapter ({"mandelbrot", "1.0.0", VSTGUI_STANDALONE_APP_URI}) {}
 
 	void finishLaunching () override
 	{

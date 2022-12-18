@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -39,6 +39,7 @@
 
 #include "uidescription/viewcreator/animationsplashscreencreator.cpp"
 #include "uidescription/viewcreator/animknobcreator.cpp"
+#include "uidescription/viewcreator/autoanimationcreator.cpp"
 #include "uidescription/viewcreator/checkboxcreator.cpp"
 #include "uidescription/viewcreator/controlcreator.cpp"
 #include "uidescription/viewcreator/gradientviewcreator.cpp"

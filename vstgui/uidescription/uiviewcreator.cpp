@@ -350,6 +350,7 @@ public:
 
 #include "viewcreator/animationsplashscreencreator.h"
 #include "viewcreator/animknobcreator.h"
+#include "viewcreator/autoanimationcreator.h"
 #include "viewcreator/checkboxcreator.h"
 #include "viewcreator/controlcreator.h"
 #include "viewcreator/gradientviewcreator.h"
@@ -528,6 +529,7 @@ bool getStandardAttributeListValues (const std::string& attributeName, std::list
 //------------------------------------------------------------------------
 AnimationSplashScreenCreator __gAnimationSplashScreenCreator;
 AnimKnobCreator __gAnimKnobCreator;
+AutoAnimationCreator __gAutoAnimationCreator;
 CheckBoxCreator __gCheckBoxCreator;
 ControlCreator __gControlCreator;
 GradientViewCreator __gGradientViewCreator;

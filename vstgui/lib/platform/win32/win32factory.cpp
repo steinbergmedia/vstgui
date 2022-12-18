@@ -8,13 +8,14 @@
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
 #include "../iplatformframecallback.h"
+#include "../iplatformgraphicsdevice.h"
 #include "../iplatformresourceinputstream.h"
 #include "../iplatformstring.h"
 #include "../iplatformtimer.h"
 #include "../common/fileresourceinputstream.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dbitmapcache.h"
-#include "direct2d/d2ddrawcontext.h"
+#include "direct2d/d2dgraphicscontext.h"
 #include "direct2d/d2dfont.h"
 #include "direct2d/d2dgradient.h"
 #include "win32frame.h"
@@ -52,6 +53,7 @@ struct Win32Factory::Impl
 	COM::Ptr<IWICImagingFactory> wicImagingFactory;
 
 	std::unique_ptr<DirectComposition::Factory> directCompositionFactory;
+	D2DGraphicsDeviceFactory graphicsDeviceFactory;
 
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
@@ -112,6 +114,13 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 
 	impl->directCompositionFactory = DirectComposition::Factory::create (impl->d2dFactory.get ());
 	D2DBitmapCache::init ();
+	if (impl->directCompositionFactory)
+	{
+		auto device = impl->directCompositionFactory->getDevice ();
+		vstgui_assert (device, "if there's a direct composition factory it must have a device");
+		auto d2dDevice = std::make_shared<D2DGraphicsDevice> (device);
+		impl->graphicsDeviceFactory.addDevice (d2dDevice);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -186,6 +195,56 @@ IDWriteFactory* Win32Factory::getDirectWriteFactory () const noexcept
 DirectComposition::Factory* Win32Factory::getDirectCompositionFactory () const noexcept
 {
 	return impl->directCompositionFactory.get ();
+}
+
+//-----------------------------------------------------------------------------
+PlatformGraphicsDeviceContextPtr
+	Win32Factory::createGraphicsDeviceContext (void* hwnd) const noexcept
+{
+	auto window = reinterpret_cast<HWND> (hwnd);
+	auto renderTargetType = useD2DHardwareRenderer () ? D2D1_RENDER_TARGET_TYPE_HARDWARE
+													  : D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+	RECT rc;
+	GetClientRect (window, &rc);
+
+	auto size = D2D1::SizeU (static_cast<UINT32> (rc.right - rc.left),
+							 static_cast<UINT32> (rc.bottom - rc.top));
+	COM::Ptr<ID2D1HwndRenderTarget> hwndRenderTarget;
+	D2D1_PIXEL_FORMAT pixelFormat =
+		D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (
+		D2D1::RenderTargetProperties (renderTargetType, pixelFormat),
+		D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS),
+		hwndRenderTarget.adoptPtr ());
+	if (FAILED (hr))
+		return nullptr;
+	hwndRenderTarget->SetDpi (96, 96);
+
+	COM::Ptr<ID2D1DeviceContext> deviceContext;
+	hr = hwndRenderTarget->QueryInterface (__uuidof (ID2D1DeviceContext),
+										   reinterpret_cast<void**> (deviceContext.adoptPtr ()));
+	if (FAILED (hr))
+		return nullptr;
+
+	ID2D1Device* d2ddevice {};
+	deviceContext->GetDevice (&d2ddevice);
+	auto device = impl->graphicsDeviceFactory.find (d2ddevice);
+	if (!device)
+	{
+		impl->graphicsDeviceFactory.addDevice (std::make_shared<D2DGraphicsDevice> (d2ddevice));
+		device = impl->graphicsDeviceFactory.find (d2ddevice);
+		vstgui_assert (device);
+	}
+
+	return std::make_shared<D2DGraphicsDeviceContext> (
+		*std::static_pointer_cast<D2DGraphicsDevice> (device).get (), deviceContext.get (),
+		TransformMatrix {});
+}
+
+//-----------------------------------------------------------------------------
+void Win32Factory::disableDirectComposition () const noexcept
+{
+	impl->directCompositionFactory.reset ();
 }
 
 //-----------------------------------------------------------------------------
@@ -324,18 +383,6 @@ auto Win32Factory::getClipboard () const noexcept -> DataPackagePtr
 	return makeOwned<Win32DataPackage> (dataObject);
 }
 
-//------------------------------------------------------------------------
-auto Win32Factory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
-	-> COffscreenContextPtr
-{
-	if (auto bitmap = makeOwned<D2DBitmap> (size * scaleFactor))
-	{
-		bitmap->setScaleFactor (scaleFactor);
-		return owned<COffscreenContext> (new D2DDrawContext (bitmap));
-	}
-	return nullptr;
-}
-
 //-----------------------------------------------------------------------------
 PlatformGradientPtr Win32Factory::createGradient () const noexcept
 {
@@ -348,6 +395,12 @@ PlatformFileSelectorPtr Win32Factory::createFileSelector (PlatformFileSelectorSt
 {
 	auto win32Frame = dynamic_cast<Win32Frame*> (frame);
 	return createWinFileSelector (style, win32Frame ? win32Frame->getHWND () : nullptr);
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformGraphicsDeviceFactory& Win32Factory::getGraphicsDeviceFactory () const noexcept
+{
+	return impl->graphicsDeviceFactory;
 }
 
 //-----------------------------------------------------------------------------

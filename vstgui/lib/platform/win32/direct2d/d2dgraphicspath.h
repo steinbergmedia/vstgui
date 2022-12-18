@@ -42,8 +42,6 @@ public:
 	ID2D1PathGeometry* getPathGeometry () const { return path; }
 	ID2D1Geometry* createTransformedGeometry (ID2D1Factory* factory,
 											  const CGraphicsTransform& tm) const;
-	ID2D1Geometry* createPixelAlignedGeometry (ID2D1Factory* factory, D2DDrawContext& context,
-											   const CGraphicsTransform* tm = nullptr) const;
 
 	// IPlatformGraphicsPath
 	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) override;

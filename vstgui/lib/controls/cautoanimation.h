@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ccontrol.h"
+#include "../cvstguitimer.h"
 
 namespace VSTGUI {
 
@@ -26,6 +27,8 @@ public:
 
 	void draw (CDrawContext*) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	bool attached (CView* parent) override;
+	bool removed (CView* parent) override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CAutoAnimation Methods
@@ -41,7 +44,13 @@ public:
 	/** the previous sub bitmap should be displayed */
 	virtual void previousPixmap ();
 
-	bool    isWindowOpened () const { return bWindowOpened; }
+	bool isWindowOpened () const;
+
+	void setAnimationTime (uint32_t animationTime);
+	uint32_t getAnimationTime () const;
+
+	void setBitmapOffset (const CPoint& off);
+	CPoint getBitmapOffset () const;
 	//@}
 
 	void setBackground (CBitmap* background) override;
@@ -61,14 +70,16 @@ protected:
 	~CAutoAnimation () noexcept override = default;
 
 	void updateMinMaxFromBackground ();
+	void startTimer ();
 
-	CPoint	offset;
+	CPoint offset;
+	uint32_t animationFrameTime {0u};
+	SharedPointer<CVSTGUITimer> timer;
+	bool bWindowOpened {false};
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CCoord	totalHeightOfBitmap;
+	CCoord totalHeightOfBitmap {0};
 #endif
-
-	bool	bWindowOpened;
 };
 
 } // VSTGUI

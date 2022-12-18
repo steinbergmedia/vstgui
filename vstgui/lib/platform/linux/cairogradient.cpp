@@ -22,11 +22,12 @@ void Gradient::changed ()
 }
 
 //------------------------------------------------------------------------
-const PatternHandle& Gradient::getLinearGradient (CPoint start, CPoint end)
+const PatternHandle& Gradient::getLinearGradient (CPoint start, CPoint end) const
 {
 	if (!linearGradient || start != linearGradientStart || end != linearGradientEnd)
 	{
-		changed ();
+		linearGradient.reset ();
+		radialGradient.reset ();
 		linearGradientStart = start;
 		linearGradientEnd = end;
 		linearGradient =
