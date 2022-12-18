@@ -19,7 +19,7 @@ namespace VSTGUI {
  *	NSViews).
  *	The actual implementation for the external view must be done via ExternalView::IView
  *
- *	@ingroup new_in_4_12
+ *	@ingroup new_in_4_13
  */
 class CExternalView : public CView,
 					  public IScaleFactorChangedListener,

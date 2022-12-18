@@ -44,7 +44,7 @@ struct IntRect
 //------------------------------------------------------------------------
 /** interface for embedding views from external view systems
  *
- *	@ingroup new_in_4_12
+ *	@ingroup new_in_4_13
  */
 struct IView
 {
@@ -88,7 +88,7 @@ struct IView
 //------------------------------------------------------------------------
 /** interface for view embedder classes
  *
- *	@ingroup new_in_4_12
+ *	@ingroup new_in_4_13
  */
 struct IViewEmbedder
 {
@@ -101,7 +101,7 @@ struct IViewEmbedder
 //------------------------------------------------------------------------
 /** adapter for the IView interface
  *
- *	@ingroup new_in_4_12
+ *	@ingroup new_in_4_13
  */
 struct ViewAdapter : IView
 {
