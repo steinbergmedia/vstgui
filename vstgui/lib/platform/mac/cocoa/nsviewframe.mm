@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -186,6 +186,8 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (acceptsFirstResponder), acceptsFirstResponder)
 			.addMethod (@selector (becomeFirstResponder), becomeFirstResponder)
 			.addMethod (@selector (resignFirstResponder), resignFirstResponder)
+			.addMethod (@selector (nextValidKeyView), nextValidKeyView)
+			.addMethod (@selector (previousValidKeyView), previousValidKeyView)
 			.addMethod (@selector (canBecomeKeyView), canBecomeKeyView)
 			.addMethod (@selector (wantsDefaultClipping), wantsDefaultClipping)
 			.addMethod (@selector (isOpaque), isOpaque)
@@ -216,7 +218,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (keyUp:), keyUp)
 			.addMethod (@selector (magnifyWithEvent:), magnifyWithEvent)
 			.addMethod (@selector (focusRingType), focusRingType)
-			.addMethod (@selector (makeSubViewFirstResponder:), makeSubViewFirstResponder)
 			.addMethod (@selector (draggingEntered:), draggingEntered)
 			.addMethod (@selector (draggingUpdated:), draggingUpdated)
 			.addMethod (@selector (draggingExited:), draggingExited)
@@ -309,18 +310,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL shouldBeTreatedAsInkEvent (id self, SEL _cmd, NSEvent* event) { return NO; }
 
 	//------------------------------------------------------------------------------------
-	static void makeSubViewFirstResponder (id self, SEL _cmd, NSResponder* newFirstResponder)
-	{
-		NSViewFrame* nsFrame = getNSViewFrame (self);
-		if (nsFrame)
-		{
-			nsFrame->setIgnoreNextResignFirstResponder (true);
-			[[self window] makeFirstResponder:newFirstResponder];
-			nsFrame->setIgnoreNextResignFirstResponder (false);
-		}
-	}
-
-	//------------------------------------------------------------------------------------
 	static BOOL becomeFirstResponder (id self, SEL _cmd)
 	{
 		if ([[self window] isKeyWindow])
@@ -340,21 +329,35 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			firstResponder = nil;
 		if (firstResponder)
 		{
-			NSViewFrame* nsFrame = getNSViewFrame (self);
-			if (nsFrame && nsFrame->getIgnoreNextResignFirstResponder ())
+			if ([firstResponder isDescendantOf:self])
 			{
-				while (firstResponder != self && firstResponder != nil)
-					firstResponder = [firstResponder superview];
-				if (firstResponder == self && [[self window] isKeyWindow])
-				{
-					return YES;
-				}
+				return YES;
 			}
 			IPlatformFrameCallback* frame = getFrame (self);
 			if (frame)
 				frame->platformOnActivate (false);
 		}
 		return YES;
+	}
+
+	//------------------------------------------------------------------------------------
+	static NSView* nextValidKeyView (id self, SEL _cmd)
+	{
+		auto view =
+			makeInstance (self).callSuper<NSView*(id, SEL), NSView*> (@selector (nextValidKeyView));
+		while (view != self && [view isDescendantOf:self])
+			view = view.nextValidKeyView;
+		return view;
+	}
+
+	//------------------------------------------------------------------------------------
+	static NSView* previousValidKeyView (id self, SEL _cmd)
+	{
+		auto view = makeInstance (self).callSuper<NSView*(id, SEL), NSView*> (
+			@selector (previousValidKeyView));
+		while (view != self && [view isDescendantOf:self])
+			view = view.previousValidKeyView;
+		return view;
 	}
 
 	//------------------------------------------------------------------------------------
@@ -936,7 +939,6 @@ protected:
 NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent,
 						  IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
-, ignoreNextResignFirstResponder (false)
 , trackingAreaInitialized (false)
 , inDraw (false)
 , cursor (kCursorDefault)
@@ -1280,7 +1282,7 @@ bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 		buttons |= kButton4;
 	if (mouseButtons & (1 << 4))
 		buttons |= kButton5;
-	
+
 	return true;
 }
 
@@ -1603,7 +1605,7 @@ void NSViewFrame::setTouchBarCreator (const SharedPointer<ITouchBarCreator>& cre
 		return;
 	if (![nsView respondsToSelector:@selector(setTouchBar:)])
 		return;
-	
+
 	if (!touchBarCreator)
 		[nsView performSelector:@selector(setTouchBar:) withObject:nil];
 	else

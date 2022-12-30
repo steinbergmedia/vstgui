@@ -31,6 +31,8 @@ set(${target}_common_sources
     cdrawmethods.h
     cdropsource.cpp
     cdropsource.h
+    cexternalview.cpp
+    cexternalview.h
     cfileselector.cpp
     cfileselector.h
     cfont.cpp
@@ -139,6 +141,7 @@ set(${target}_common_sources
     idatabrowserdelegate.h
     idatapackage.h
     idependency.h
+    iexternalview.h
     ifocusdrawing.h
     iscalefactorchangedlistener.h
     itouchevent.h
