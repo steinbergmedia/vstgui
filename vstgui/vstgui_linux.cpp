@@ -10,7 +10,7 @@
 #include "lib/platform/linux/x11utils.cpp"
 
 #include "lib/platform/linux/cairobitmap.cpp"
-#include "lib/platform/linux/cairocontext.cpp"
+#include "lib/platform/linux/cairographicscontext.cpp"
 #include "lib/platform/linux/cairofont.cpp"
 #include "lib/platform/linux/cairogradient.cpp"
 #include "lib/platform/linux/cairopath.cpp"

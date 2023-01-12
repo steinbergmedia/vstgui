@@ -32,7 +32,7 @@ bool MacTimer::start (uint32_t fireTime)
 	if (timer)
 	{
 #if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_8
-	#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAX_OS_X_VERSION_10_8
+	#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_8
 		if (CFRunLoopTimerSetTolerance)
 	#endif
 			CFRunLoopTimerSetTolerance (timer, fireTime * 0.0001f);

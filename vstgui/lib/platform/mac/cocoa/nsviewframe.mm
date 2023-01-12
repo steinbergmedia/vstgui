@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -14,7 +14,6 @@
 #import "autoreleasepool.h"
 #import "../macclipboard.h"
 #import "../macfactory.h"
-#import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
@@ -187,6 +186,8 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (acceptsFirstResponder), acceptsFirstResponder)
 			.addMethod (@selector (becomeFirstResponder), becomeFirstResponder)
 			.addMethod (@selector (resignFirstResponder), resignFirstResponder)
+			.addMethod (@selector (nextValidKeyView), nextValidKeyView)
+			.addMethod (@selector (previousValidKeyView), previousValidKeyView)
 			.addMethod (@selector (canBecomeKeyView), canBecomeKeyView)
 			.addMethod (@selector (wantsDefaultClipping), wantsDefaultClipping)
 			.addMethod (@selector (isOpaque), isOpaque)
@@ -217,7 +218,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (keyUp:), keyUp)
 			.addMethod (@selector (magnifyWithEvent:), magnifyWithEvent)
 			.addMethod (@selector (focusRingType), focusRingType)
-			.addMethod (@selector (makeSubViewFirstResponder:), makeSubViewFirstResponder)
 			.addMethod (@selector (draggingEntered:), draggingEntered)
 			.addMethod (@selector (draggingUpdated:), draggingUpdated)
 			.addMethod (@selector (draggingExited:), draggingExited)
@@ -310,18 +310,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL shouldBeTreatedAsInkEvent (id self, SEL _cmd, NSEvent* event) { return NO; }
 
 	//------------------------------------------------------------------------------------
-	static void makeSubViewFirstResponder (id self, SEL _cmd, NSResponder* newFirstResponder)
-	{
-		NSViewFrame* nsFrame = getNSViewFrame (self);
-		if (nsFrame)
-		{
-			nsFrame->setIgnoreNextResignFirstResponder (true);
-			[[self window] makeFirstResponder:newFirstResponder];
-			nsFrame->setIgnoreNextResignFirstResponder (false);
-		}
-	}
-
-	//------------------------------------------------------------------------------------
 	static BOOL becomeFirstResponder (id self, SEL _cmd)
 	{
 		if ([[self window] isKeyWindow])
@@ -341,21 +329,35 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			firstResponder = nil;
 		if (firstResponder)
 		{
-			NSViewFrame* nsFrame = getNSViewFrame (self);
-			if (nsFrame && nsFrame->getIgnoreNextResignFirstResponder ())
+			if ([firstResponder isDescendantOf:self])
 			{
-				while (firstResponder != self && firstResponder != nil)
-					firstResponder = [firstResponder superview];
-				if (firstResponder == self && [[self window] isKeyWindow])
-				{
-					return YES;
-				}
+				return YES;
 			}
 			IPlatformFrameCallback* frame = getFrame (self);
 			if (frame)
 				frame->platformOnActivate (false);
 		}
 		return YES;
+	}
+
+	//------------------------------------------------------------------------------------
+	static NSView* nextValidKeyView (id self, SEL _cmd)
+	{
+		auto view =
+			makeInstance (self).callSuper<NSView*(id, SEL), NSView*> (@selector (nextValidKeyView));
+		while (view != self && [view isDescendantOf:self])
+			view = view.nextValidKeyView;
+		return view;
+	}
+
+	//------------------------------------------------------------------------------------
+	static NSView* previousValidKeyView (id self, SEL _cmd)
+	{
+		auto view = makeInstance (self).callSuper<NSView*(id, SEL), NSView*> (
+			@selector (previousValidKeyView));
+		while (view != self && [view isDescendantOf:self])
+			view = view.previousValidKeyView;
+		return view;
 	}
 
 	//------------------------------------------------------------------------------------
@@ -937,7 +939,6 @@ protected:
 NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent,
 						  IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
-, ignoreNextResignFirstResponder (false)
 , trackingAreaInitialized (false)
 , inDraw (false)
 , cursor (kCursorDefault)
@@ -949,33 +950,29 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	if (cocoaConfig && cocoaConfig->flags & CocoaFrameConfig::kNoCALayer)
 		return;
 
-	auto processInfo = [NSProcessInfo processInfo];
-	if ([processInfo respondsToSelector:@selector(operatingSystemVersion)])
+	// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
+	// few parts of a window are updated permanently when scrolling or manipulating a control
+	// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
+	// are drawn incorrectly when scaled.
+	if (@available (macOS 10.11, *))
 	{
-		// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
-		// few parts of a window are updated permanently when scrolling or manipulating a control
-		// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
-		// are drawn incorrectly when scaled.
-		if (@available (macOS 10.11, *))
+		[nsView setWantsLayer:YES];
+		caLayer = [CALayer new];
+		caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
+		caLayer.frame = nsView.layer.bounds;
+		[caLayer setContentsScale:nsView.layer.contentsScale];
+		[nsView.layer addSublayer:caLayer];
+		useInvalidRects = true;
+		if (@available (macOS 10.13, *))
 		{
-			[nsView setWantsLayer:YES];
-			caLayer = [CALayer new];
-			caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
-			caLayer.frame = nsView.layer.bounds;
-			[caLayer setContentsScale:nsView.layer.contentsScale];
-			[nsView.layer addSublayer:caLayer];
-			useInvalidRects = true;
-			if (@available (macOS 10.13, *))
+			nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
+			// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
+			// the CoreGraphics engineers decided to be clever and join dirty rectangles without
+			// letting us know
+			if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
 			{
-				nsView.layer.contentsFormat = kCAContentsFormatRGBA8Uint;
-				// asynchronous layer drawing or drawing only dirty rectangles are exclusive as
-				// the CoreGraphics engineers decided to be clever and join dirty rectangles without
-				// letting us know
-				if (getPlatformFactory ().asMacFactory ()->getUseAsynchronousLayerDrawing ())
-				{
-					caLayer.drawsAsynchronously = YES;
-					useInvalidRects = false;
-				}
+				caLayer.drawsAsynchronously = YES;
+				useInvalidRects = false;
 			}
 		}
 	}
@@ -1080,36 +1077,43 @@ void NSViewFrame::addDebugRedrawRect (CRect r, bool isClipBoundingBox)
 }
 
 //-----------------------------------------------------------------------------
-void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
+void NSViewFrame::draw (CGContextRef cgContext, CRect updateRect, double scaleFactor)
 {
+	auto device = getPlatformFactory ().getGraphicsDeviceFactory ().getDeviceForScreen (
+		DefaultScreenIdentifier);
+	if (!device)
+		return;
+	auto cgDevice = std::static_pointer_cast<CoreGraphicsDevice> (device);
+	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), cgContext);
+
+	addDebugRedrawRect (updateRect, true);
+
 	inDraw = true;
-
-	auto clipBoundingBoxNSRect = CGContextGetClipBoundingBox (ctx);
-	auto clipBoundingBox = rectFromNSRect (clipBoundingBoxNSRect);
-
-	addDebugRedrawRect (clipBoundingBox, true);
-
-	CGDrawContext drawContext (ctx, rectFromNSRect ([nsView bounds]));
-	drawContext.beginDraw ();
+	deviceContext->beginDraw ();
 
 	if (useInvalidRects)
 	{
 		joinNearbyInvalidRects (invalidRectList, 24.);
+		frame->platformDrawRects (deviceContext, scaleFactor, invalidRectList.data ());
 		for (auto r : invalidRectList)
-		{
-			frame->platformDrawRect (&drawContext, r);
 			addDebugRedrawRect (r, false);
-		}
 		invalidRectList.clear ();
 	}
 	else
 	{
-		frame->platformDrawRect (&drawContext, clipBoundingBox);
-		addDebugRedrawRect (clipBoundingBox, false);
+		frame->platformDrawRects (deviceContext, scaleFactor, {1, updateRect});
+		addDebugRedrawRect (updateRect, false);
 	}
-	drawContext.endDraw ();
 
+	deviceContext->endDraw ();
 	inDraw = false;
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
+{
+	auto clipBoundingBox = CGContextGetClipBoundingBox (ctx);
+	draw (ctx, rectFromNSRect (clipBoundingBox), layer.contentsScale);
 }
 
 //-----------------------------------------------------------------------------
@@ -1118,44 +1122,8 @@ void NSViewFrame::drawRect (NSRect* rect)
 	if (caLayer)
 		return;
 
-	inDraw = true;
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
-
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAX_OS_X_VERSION_10_10
-	auto cgContext = static_cast<CGContextRef> ([nsContext graphicsPort]);
-#else
-	auto cgContext = static_cast<CGContextRef> ([nsContext CGContext]);
-#endif
-
-	addDebugRedrawRect (rectFromNSRect (*rect), true);
-
-	CGDrawContext drawContext (cgContext, rectFromNSRect ([nsView bounds]));
-	drawContext.beginDraw ();
-
-	if (useInvalidRects)
-	{
-		joinNearbyInvalidRects (invalidRectList, 24.);
-		for (auto r : invalidRectList)
-		{
-			frame->platformDrawRect (&drawContext, r);
-			addDebugRedrawRect (r, false);
-		}
-		invalidRectList.clear ();
-	}
-	else
-	{
-		const NSRect* dirtyRects;
-		NSInteger numDirtyRects;
-		[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-		for (NSInteger i = 0; i < numDirtyRects; i++)
-		{
-			auto r = rectFromNSRect (dirtyRects[i]);
-			frame->platformDrawRect (&drawContext, r);
-			addDebugRedrawRect (r, false);
-		}
-	}
-	drawContext.endDraw ();
-	inDraw = false;
+	draw (nsContext.CGContext, rectFromNSRect (*rect), nsView.window.backingScaleFactor);
 }
 
 //------------------------------------------------------------------------
@@ -1314,7 +1282,7 @@ bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 		buttons |= kButton4;
 	if (mouseButtons & (1 << 4))
 		buttons |= kButton5;
-	
+
 	return true;
 }
 
@@ -1514,6 +1482,7 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 		[nsView setWantsLayer:YES];
 		caLayer.actions = nil;
 	}
+
 	auto caParentLayer =
 		parentViewLayer ? parentViewLayer->getCALayer () : (caLayer ? caLayer : nsView.layer);
 	auto layer = makeOwned<CAViewLayer> (caParentLayer);
@@ -1636,7 +1605,7 @@ void NSViewFrame::setTouchBarCreator (const SharedPointer<ITouchBarCreator>& cre
 		return;
 	if (![nsView respondsToSelector:@selector(setTouchBar:)])
 		return;
-	
+
 	if (!touchBarCreator)
 		[nsView performSelector:@selector(setTouchBar:) withObject:nil];
 	else

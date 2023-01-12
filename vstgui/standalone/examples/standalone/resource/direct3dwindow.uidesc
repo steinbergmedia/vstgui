@@ -1,0 +1,67 @@
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"control-tags": {},
+		"custom": {
+			"UIDescFilePath": {
+				"path": "C:\\Users\\AScheffler\\source\\git\\vstgui\\vstgui\\standalone\\examples\\standalone\\resource\\direct3dwindow.uidesc"
+			},
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15"
+			},
+			"UIEditController": {
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 1108, 904",
+				"SplitViewSize_0_0": "0.7369020501138952017328165311482734978199",
+				"SplitViewSize_0_1": "0.2403189066059225609262028910961817018688",
+				"SplitViewSize_1_0": "0.4851936218678815637694867746176896616817",
+				"SplitViewSize_1_1": "0.5091116173120728838341619848506525158882",
+				"SplitViewSize_2_0": "0.6543321299638988897129365795990452170372",
+				"SplitViewSize_2_1": "0.3411552346570397298286536624800646677613",
+				"TabSwitchValue": "0",
+				"Version": "1"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "view"
+			},
+			"UIAttributesController": {},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "29"
+			}
+		},
+		"templates": {
+			"view": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ BlackCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"maxSize": "32767, 32767",
+					"minSize": "300, 300",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "300, 300",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CView": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"class": "CView",
+							"custom-view-name": "Direct3DView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "20, 20",
+							"size": "260, 260",
+							"sub-controller": "Direct3DController",
+							"transparent": "false",
+							"wants-focus": "false"
+						}
+					}
+				}
+			}
+		}
+	}
+}

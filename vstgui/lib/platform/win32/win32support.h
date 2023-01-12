@@ -40,7 +40,6 @@ extern IWICImagingFactory* getWICImageingFactory ();
 extern void useD2D ();
 extern void unuseD2D ();
 extern IDWriteFactory* getDWriteFactory ();
-extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect);
 extern VirtualKey translateWinVirtualKey (WPARAM winVKey);
 extern void updateModifiers (Modifiers& modifiers);
 extern Optional<KeyboardEvent> keyMessageToKeyboardEvent (WPARAM wParam, LPARAM lParam);
