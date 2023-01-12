@@ -9,9 +9,9 @@
 #include <commctrl.h>
 #include <cmath>
 #include <windowsx.h>
+#include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dgraphicspath.h"
-#include "direct2d/d2dgraphicscontext.h"
 #include "win32factory.h"
 #include "win32textedit.h"
 #include "win32optionmenu.h"
@@ -71,13 +71,13 @@ static bool isParentLayered (HWND parent)
 }
 
 //-----------------------------------------------------------------------------
-Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent,
-						PlatformType parentType)
+Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent, PlatformType parentType)
 : IPlatformFrame (frame)
 , parentWindow (parent)
 , windowHandle (nullptr)
 , tooltipWindow (nullptr)
 , oldFocusWindow (nullptr)
+, deviceContext (nullptr)
 , inPaint (false)
 , mouseInside (false)
 , updateRegionList (nullptr)
@@ -129,8 +129,12 @@ Win32Frame::~Win32Frame () noexcept
 
 	if (updateRegionList)
 		std::free (updateRegionList);
+	if (deviceContext)
+		deviceContext->forget ();
 	if (tooltipWindow)
 		DestroyWindow (tooltipWindow);
+	if (backBuffer)
+		backBuffer = nullptr;
 	if (windowHandle)
 		RevokeDragDrop (windowHandle);
 	if (parentWindow)
@@ -281,7 +285,15 @@ bool Win32Frame::getGlobalPosition (CPoint& pos) const
 //-----------------------------------------------------------------------------
 bool Win32Frame::setSize (const CRect& newSize)
 {
-	legacyDrawDevice.reset ();
+	if (deviceContext)
+	{
+		deviceContext->forget ();
+		deviceContext = nullptr;
+	}
+	if (backBuffer)
+	{
+		backBuffer = getPlatformFactory ().createOffscreenContext (newSize.getSize ());
+	}
 	if (!parentWindow)
 		return true;
 	SetWindowPos (windowHandle, HWND_TOP, (int)newSize.left, (int)newSize.top, (int)newSize.getWidth (), (int)newSize.getHeight (), SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOREDRAW|SWP_DEFERERASE);
@@ -645,24 +657,22 @@ void Win32Frame::paint (HWND hwnd)
 			directCompositionVisual->resize (static_cast<uint32_t> (frameSize.getWidth ()),
 											 static_cast<uint32_t> (frameSize.getHeight ()));
 			iterateRegion (rgn, [&] (const auto& rect) {
-				directCompositionVisual->update (rect, [&] (auto deviceContext, auto rect,
-															auto offsetX, auto offsetY) {
-					COM::Ptr<ID2D1Device> device;
-					deviceContext->GetDevice (device.adoptPtr ());
-
-					CGraphicsTransform tm;
-					tm.translate (offsetX - rect.left, offsetY - rect.top);
-
-					const auto& graphicsDeviceFactory =
-						static_cast<const D2DGraphicsDeviceFactory&> (
-							getPlatformFactory ().asWin32Factory ()->getGraphicsDeviceFactory ());
-					auto graphicsDevice = graphicsDeviceFactory.find (device.get ());
-					auto drawDevice = std::make_shared<D2DGraphicsDeviceContext> (
-						*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext,
-						tm);
-
-					getFrame ()->platformDrawRects (drawDevice, 1., {1, rect});
-				});
+				directCompositionVisual->update (
+					rect, [&] (auto deviceContext, auto rect, auto offsetX, auto offsetY) {
+						COM::Ptr<ID2D1Device> device;
+						deviceContext->GetDevice (device.adoptPtr ());
+						D2DDrawContext drawContext (deviceContext, frameSize, device.get ());
+						drawContext.setClipRect (rect);
+						CGraphicsTransform tm;
+						tm.translate (offsetX - rect.left, offsetY - rect.top);
+						CDrawContext::Transform transform (drawContext, tm);
+						{
+							drawContext.saveGlobalState ();
+							drawContext.clearRect (rect);
+							getFrame ()->platformDrawRect (&drawContext, rect);
+							drawContext.restoreGlobalState ();
+						}
+					});
 			});
 			for (auto& vl : viewLayers)
 				vl->drawInvalidRects ();
@@ -671,28 +681,32 @@ void Win32Frame::paint (HWND hwnd)
 		}
 		else
 		{
-			if (!legacyDrawDevice)
-				legacyDrawDevice =
-					getPlatformFactory ().asWin32Factory ()->createGraphicsDeviceContext (hwnd);
-			if (legacyDrawDevice)
+			if (deviceContext == nullptr)
+				deviceContext = createDrawContext (hwnd, hdc, frameSize);
+			if (deviceContext)
 			{
 				GetRgnBox (rgn, &ps.rcPaint);
 				CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top,
 								  (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
+				deviceContext->setClipRect (updateRect);
 
-				legacyDrawDevice->setClipRect (updateRect);
-
-				legacyDrawDevice->beginDraw ();
+				CDrawContext* drawContext = backBuffer ? backBuffer : deviceContext;
+				drawContext->beginDraw ();
 
 				iterateRegion (rgn, [&] (const auto& rect) {
-					legacyDrawDevice->saveGlobalState ();
-					legacyDrawDevice->setClipRect (updateRect);
-					legacyDrawDevice->clearRect (rect);
-					getFrame ()->platformDrawRects (legacyDrawDevice, 1, {1, rect});
-					legacyDrawDevice->restoreGlobalState ();
+					drawContext->clearRect (rect);
+					getFrame ()->platformDrawRect (drawContext, rect);
 				});
 
-				legacyDrawDevice->endDraw ();
+				drawContext->endDraw ();
+				if (backBuffer)
+				{
+					deviceContext->beginDraw ();
+					deviceContext->clearRect (updateRect);
+					backBuffer->copyFrom (deviceContext, updateRect,
+										  CPoint (updateRect.left, updateRect.top));
+					deviceContext->endDraw ();
+				}
 			}
 		}
 	}

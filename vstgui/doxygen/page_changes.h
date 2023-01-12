@@ -22,11 +22,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
-@subsection version4_13 Version 4.13
-
-- support embedding platform views (HWND & NSView) as sub views (see CExternalView and ExternalView::IView) and examples in the contrib folder.
-
-@subsection version4_12_1 Version 4.12.1
+@subsection version4_12 Version 4.12.1
 
 - make it possible to use the new multi frame bitmap feature with custom value to frame index mappings by subclassing.
 
@@ -131,10 +127,6 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
-
-@subsection code_changes_4_12_to_4_13 VSTGUI 4.12 -> VSTGUI 4.13
-
-- the context argument of IFontPainter has changed to use the new platform graphics device context
 
 @subsection code_changes_4_11_to_4_12 VSTGUI 4.11 -> VSTGUI 4.12
 

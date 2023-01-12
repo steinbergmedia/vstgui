@@ -14,6 +14,7 @@
 #include "clinestyle.h"
 #include "cdrawdefs.h"
 #include <cmath>
+#include <stack>
 #include <vector>
 
 namespace VSTGUI {
@@ -44,49 +45,41 @@ public:
 	/// @name Draw primitives
 	//-----------------------------------------------------------------------------
 	//@{
-	using LinePair = VSTGUI::LinePair;
-	using LineList = VSTGUI::LineList;
-	using PointList = VSTGUI::PointList;
+	using LinePair = std::pair<CPoint, CPoint>;
+	using LineList = std::vector<LinePair>;
+	using PointList = std::vector<CPoint>;
 
-	inline void drawLine (const CPoint& start, const CPoint& end)
-	{
-		drawLine (std::make_pair (start, end));
-	}
+	inline void drawLine (const CPoint& start, const CPoint& end) { drawLine (std::make_pair (start, end)); }
 	/** draw a line */
-	void drawLine (const LinePair& line);
+	virtual void drawLine (const LinePair& line) = 0;
 	/** draw multiple lines at once */
-	void drawLines (const LineList& lines);
+	virtual void drawLines (const LineList& lines) = 0;
 	/** draw a polygon */
-	void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle = kDrawStroked);
+	virtual void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle = kDrawStroked) = 0;
 	/** draw a rect */
-	void drawRect (const CRect& rect, const CDrawStyle drawStyle = kDrawStroked);
+	virtual void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;
 	/** draw an arc, angles are in degree */
-	void drawArc (const CRect& rect, const float startAngle1, const float endAngle2,
-				  const CDrawStyle drawStyle = kDrawStroked);
+	virtual void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) = 0;
 	/** draw an ellipse */
-	void drawEllipse (const CRect& rect, const CDrawStyle drawStyle = kDrawStroked);
+	virtual void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;
 	/** draw a point */
-	void drawPoint (const CPoint& point, const CColor& color);
+	virtual void drawPoint (const CPoint &point, const CColor& color) = 0;
 	/** don't call directly, please use CBitmap::draw instead */
-	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0),
-					 float alpha = 1.f);
-	void drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest,
-								  const CNinePartTiledDescription& desc, float alpha = 1.f);
-	void fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect,
-							 float alpha);
+	virtual void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) = 0;
+	virtual void drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest, const CNinePartTiledDescription& desc, float alpha = 1.f);
+	virtual void fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha);
 
 	/** clears the rect (makes r = 0, g = 0, b = 0, a = 0) */
-	void clearRect (const CRect& rect);
+	virtual void clearRect (const CRect& rect) = 0;
 	//@}
 
 	//-----------------------------------------------------------------------------
 	// @name Bitmap Interpolation Quality
 	//-----------------------------------------------------------------------------
 	//@{
-	/** set the current bitmap interpolation quality */
-	void setBitmapInterpolationQuality (BitmapInterpolationQuality quality);
-	/** get the current bitmap interpolation quality */
-	BitmapInterpolationQuality getBitmapInterpolationQuality () const;
+	virtual void setBitmapInterpolationQuality (BitmapInterpolationQuality quality);	///< set the current bitmap interpolation quality
+	const BitmapInterpolationQuality& getBitmapInterpolationQuality () const { return currentState.bitmapQuality; }	///< get the current bitmap interpolation quality
+
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -94,14 +87,14 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** set the current line style */
-	void setLineStyle (const CLineStyle& style);
+	virtual void setLineStyle (const CLineStyle& style);
 	/** get the current line style */
-	const CLineStyle& getLineStyle () const;
+	const CLineStyle& getLineStyle () const { return currentState.lineStyle; }
 
 	/** set the current line width */
-	void setLineWidth (CCoord width);
+	virtual void setLineWidth (CCoord width);
 	/** get the current line width */
-	CCoord getLineWidth () const;
+	CCoord getLineWidth () const { return currentState.frameWidth; }
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -109,9 +102,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** set the current draw mode, see CDrawMode */
-	void setDrawMode (CDrawMode mode);
+	virtual void setDrawMode (CDrawMode mode);
 	/** get the current draw mode, see CDrawMode */
-	CDrawMode getDrawMode () const;
+	CDrawMode getDrawMode () const { return currentState.drawMode; }
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -119,11 +112,11 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** set the current clip */
-	void setClipRect (const CRect& clip);
+	virtual void setClipRect (const CRect &clip);
 	/** get the current clip */
 	CRect& getClipRect (CRect &clip) const;
 	/** reset the clip to the default state */
-	void resetClipRect ();
+	virtual void resetClipRect ();
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -131,13 +124,13 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** set current fill color */
-	void setFillColor (const CColor& color);
+	virtual void setFillColor  (const CColor& color);
 	/** get current fill color */
-	CColor getFillColor () const;
+	CColor getFillColor () const { return currentState.fillColor; }
 	/** set current stroke color */
-	void setFrameColor (const CColor& color);
+	virtual void setFrameColor (const CColor& color);
 	/** get current stroke color */
-	CColor getFrameColor () const;
+	CColor getFrameColor () const { return currentState.frameColor; }
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -145,13 +138,13 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** set current font color */
-	void setFontColor (const CColor& color);
+	virtual void setFontColor (const CColor& color);
 	/** get current font color */
-	CColor getFontColor () const;
+	CColor getFontColor () const { return currentState.fontColor; }
 	/** set current font */
-	void setFont (const CFontRef font, const CCoord& size = 0, const int32_t& style = -1);
+	virtual void setFont (const CFontRef font, const CCoord& size = 0, const int32_t& style = -1);
 	/** get current font */
-	const CFontRef getFont () const;
+	const CFontRef getFont () const { return currentState.font; }
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -161,16 +154,14 @@ public:
 	/** get the width of an UTF-8 encoded string */
 	CCoord getStringWidth (UTF8StringPtr pStr);
 	/** draw an UTF-8 encoded string */
-	void drawString (UTF8StringPtr string, const CRect& _rect,
-					 const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);
+	void drawString (UTF8StringPtr string, const CRect& _rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);
 	/** draw an UTF-8 encoded string */
 	void drawString (UTF8StringPtr string, const CPoint& _point, bool antialias = true);
 
 	/** get the width of a platform string */
 	CCoord getStringWidth (IPlatformString* pStr);
 	/** draw a platform string */
-	void drawString (IPlatformString* string, const CRect& _rect,
-					 const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);
+	void drawString (IPlatformString* string, const CRect& _rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);
 	/** draw a platform string */
 	void drawString (IPlatformString* string, const CPoint& _point, bool antialias = true);
 	//@}
@@ -180,17 +171,17 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** sets the global alpha value[0..1] */
-	void setGlobalAlpha (float newAlpha);
+	virtual void setGlobalAlpha (float newAlpha);
 	/** get current global alpha value */
-	float getGlobalAlpha () const;
+	float getGlobalAlpha () const { return currentState.globalAlpha; }
 	//@}
 	
 	//-----------------------------------------------------------------------------
 	/// @name Global State Stack
 	//-----------------------------------------------------------------------------
 	//@{
-	void saveGlobalState ();
-	void restoreGlobalState ();
+	virtual void saveGlobalState ();
+	virtual void restoreGlobalState ();
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -198,11 +189,11 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	const CGraphicsTransform& getCurrentTransform () const;
-	const CRect& getAbsoluteClipRect () const;
+	const CRect& getAbsoluteClipRect () const { return currentState.clipRect; }
 
 	/** returns the backend scale factor. */
-	double getScaleFactor () const;
-
+	virtual double getScaleFactor () const { return 1.; }
+	
 	/** returns the current line size which corresponds to one pixel on screen.
 	 *
 	 *	do not cache this value, instead ask for it every time you need it.
@@ -215,9 +206,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** create a graphics path object, you need to forget it after usage */
-	CGraphicsPath* createGraphicsPath ();
+	virtual CGraphicsPath* createGraphicsPath () = 0;
 	/** create a graphics path from a text */
-	CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text);
+	virtual CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text) = 0;
 
 	/** create a rect with round corners as graphics path, you need to forget it after usage */
 	CGraphicsPath* createRoundRectGraphicsPath (const CRect& size, CCoord radius);
@@ -229,32 +220,22 @@ public:
 		kPathStroked
 	};
 
-	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled,
-						   CGraphicsTransform* transformation = nullptr);
-	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient,
-							 const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false,
-							 CGraphicsTransform* transformation = nullptr);
-	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center,
-							 CCoord radius, const CPoint& originOffset = CPoint (0, 0),
-							 bool evenOdd = false, CGraphicsTransform* transformation = nullptr);
+	virtual void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = nullptr) = 0;
+	virtual void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = nullptr) = 0;
+	virtual void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0,0), bool evenOdd = false, CGraphicsTransform* transformation = nullptr) = 0;
 	//@}
 
-	void beginDraw ();
-	void endDraw ();
+	virtual void beginDraw () {}
+	virtual void endDraw () {}
 
-	const CRect& getSurfaceRect () const;
-
-	CDrawContext (const PlatformGraphicsDeviceContextPtr device, const CRect& surfaceRect,
-				  double scaleFactor);
-	~CDrawContext () noexcept override;
-
-	const PlatformGraphicsDeviceContextPtr& getPlatformDeviceContext () const;
+	const CRect& getSurfaceRect () const { return surfaceRect; }
 
 protected:
 	CDrawContext () = delete;
 	explicit CDrawContext (const CRect& surfaceRect);
+	~CDrawContext () noexcept override;
 
-	void init ();
+	virtual void init ();
 
 	void pushTransform (const CGraphicsTransform& transformation);
 	void popTransform ();
@@ -262,9 +243,40 @@ protected:
 	const UTF8String& getDrawString (UTF8StringPtr string);
 	void clearDrawString ();
 
+	/// @cond ignore
+	struct CDrawContextState
+	{
+		SharedPointer<CFontDesc> font;
+		CColor frameColor {kTransparentCColor};
+		CColor fillColor {kTransparentCColor};
+		CColor fontColor {kTransparentCColor};
+		CCoord frameWidth {0.};
+		CPoint penLoc {};
+		CRect clipRect {};
+		CLineStyle lineStyle {kLineOnOffDash};
+		CDrawMode drawMode {kAntiAliasing};
+		float globalAlpha {1.f};
+		BitmapInterpolationQuality bitmapQuality {BitmapInterpolationQuality::kDefault};
+
+		CDrawContextState () = default;
+		CDrawContextState (const CDrawContextState& state);
+		CDrawContextState& operator= (const CDrawContextState& state) = default;
+		CDrawContextState (CDrawContextState&& state) noexcept;
+		CDrawContextState& operator= (CDrawContextState&& state) noexcept;
+	};
+	/// @endcond
+
+	const CDrawContextState& getCurrentState () const { return currentState; }
+	CDrawContextState& getCurrentState () { return currentState; }
+
 private:
-	struct Impl;
-	std::unique_ptr<Impl> impl;
+	UTF8String* drawStringHelper {nullptr};
+	CRect surfaceRect;
+
+	CDrawContextState currentState;
+
+	std::stack<CDrawContextState> globalStatesStack;
+	std::stack<CGraphicsTransform> transformStack;
 };
 
 //-----------------------------------------------------------------------------

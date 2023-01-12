@@ -33,6 +33,7 @@ class IPlatformFactory
 {
 public:
 	using DataPackagePtr = SharedPointer<IDataPackage>;
+	using COffscreenContextPtr = SharedPointer<COffscreenContext>;
 
 	virtual ~IPlatformFactory () noexcept = default;
 
@@ -129,6 +130,14 @@ public:
 	 */
 	virtual DataPackagePtr getClipboard () const noexcept = 0;
 
+	/** create an offscreen draw device
+	 *	@param size the size of the bitmap where the offscreen renders to
+	 *	@param scaleFactor the scale factor for drawing
+	 *	@return an offscreen context object or nullptr on failure
+	 */
+	virtual COffscreenContextPtr
+		createOffscreenContext (const CPoint& size, double scaleFactor = 1.) const noexcept = 0;
+
 	/** Create a platform gradient object
 	 *	@return platform gradient object or nullptr on failure
 	 */
@@ -141,12 +150,6 @@ public:
 	 */
 	virtual PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style,
 														IPlatformFrame* frame) const noexcept = 0;
-
-	/** Get the graphics device factory
-	 *
-	 *	@return platform graphics device factory
-	 */
-	virtual const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept = 0;
 
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;

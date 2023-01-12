@@ -12,6 +12,7 @@
 #include "win32factory.h"
 
 #include <shlwapi.h>
+#include "direct2d/d2ddrawcontext.h"
 
 namespace VSTGUI {
 
@@ -46,6 +47,18 @@ void useD2D () {}
 
 //-----------------------------------------------------------------------------
 void unuseD2D () {}
+
+//-----------------------------------------------------------------------------
+CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect)
+{
+	auto context = new D2DDrawContext (window, surfaceRect);
+	if (!context->usable ())
+	{
+		context->forget ();
+		return nullptr;
+	}
+	return context;
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

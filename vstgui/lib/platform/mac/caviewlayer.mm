@@ -6,7 +6,7 @@
 
 #if MAC_COCOA
 
-#import "coregraphicsdevicecontext.h"
+#import "cgdrawcontext.h"
 #import "macglobals.h"
 #import <QuartzCore/QuartzCore.h>
 
@@ -21,7 +21,7 @@
 @interface VSTGUI_CALayer : CALayer
 //-----------------------------------------------------------------------------
 {
-	VSTGUI::ICAViewLayerPrivate* _viewLayer;
+	VSTGUI::IPlatformViewLayerDelegate* _viewLayerDelegate;
 }
 @end
 
@@ -48,16 +48,20 @@
 }
 
 //-----------------------------------------------------------------------------
-- (void)setCAViewLayer:(VSTGUI::ICAViewLayerPrivate*)viewLayer
+- (void)setDrawDelegate:(VSTGUI::IPlatformViewLayerDelegate*)viewLayerDelegate
 {
-	_viewLayer = viewLayer;
+	_viewLayerDelegate = viewLayerDelegate;
 }
 
 //-----------------------------------------------------------------------------
 - (void)drawInContext:(CGContextRef)ctx
 {
-	if (_viewLayer)
-		_viewLayer->drawLayer (ctx);
+	if (_viewLayerDelegate)
+	{
+		CGRect dirtyRect = CGContextGetClipBoundingBox (ctx);
+		VSTGUI::CGDrawContext drawContext (ctx, VSTGUI::CRectFromCGRect (self.bounds));
+		_viewLayerDelegate->drawViewLayer (&drawContext, VSTGUI::CRectFromCGRect (dirtyRect));
+	}
 }
 
 @end
@@ -68,13 +72,13 @@
 //-----------------------------------------------------------------------------
 @interface VSTGUI_CALayer : CALayer
 //-----------------------------------------------------------------------------
-- (void)setCAViewLayer:(VSTGUI::ICAViewLayerPrivate*)viewLayer;
+- (void)setDrawDelegate:(VSTGUI::IPlatformViewLayerDelegate*)viewLayerDelegate;
 @end
 
 //-----------------------------------------------------------------------------
 struct VSTGUI_macOS_CALayer : VSTGUI::RuntimeObjCClass<VSTGUI_macOS_CALayer>
 {
-	static constexpr const auto viewLayerVarName = "_viewLayer";
+	static constexpr const auto viewLayerDelegateVarName = "_viewLayerDelegate";
 
 	//-----------------------------------------------------------------------------
 	static Class CreateClass ()
@@ -83,9 +87,9 @@ struct VSTGUI_macOS_CALayer : VSTGUI::RuntimeObjCClass<VSTGUI_macOS_CALayer>
 			.init ("VSTGUI_CALayer", [CALayer class])
 			.addMethod (@selector (init), Init)
 			.addMethod (@selector (actionForKey:), ActionForKey)
-			.addMethod (@selector (setCAViewLayer:), SetCAViewLayer)
+			.addMethod (@selector (setDrawDelegate:), SetDrawDelegate)
 			.addMethod (@selector (drawInContext:), DrawInContext)
-			.addIvar<VSTGUI::ICAViewLayerPrivate*> (viewLayerVarName)
+			.addIvar<void*> (viewLayerDelegateVarName)
 			.finalize ();
 	}
 
@@ -104,11 +108,12 @@ struct VSTGUI_macOS_CALayer : VSTGUI::RuntimeObjCClass<VSTGUI_macOS_CALayer>
 	static id<CAAction> ActionForKey (id self, SEL _cmd, NSString* event) { return nil; }
 
 	//-----------------------------------------------------------------------------
-	static void SetCAViewLayer (id self, SEL _cmd, VSTGUI::CAViewLayer* viewLayer)
+	static void SetDrawDelegate (id self, SEL _cmd, VSTGUI::IPlatformViewLayerDelegate* delegate)
 	{
 		using namespace VSTGUI;
-		if (auto var = makeInstance (self).getVariable<VSTGUI::CAViewLayer*> (viewLayerVarName))
-			var->set (viewLayer);
+		if (auto var = makeInstance (self).getVariable<IPlatformViewLayerDelegate*> (
+				viewLayerDelegateVarName))
+			var->set (delegate);
 	}
 
 //-----------------------------------------------------------------------------
@@ -116,11 +121,34 @@ struct VSTGUI_macOS_CALayer : VSTGUI::RuntimeObjCClass<VSTGUI_macOS_CALayer>
 	{
 		using namespace VSTGUI;
 
-		if (auto var =
-				makeInstance (self).getVariable<VSTGUI::ICAViewLayerPrivate*> (viewLayerVarName);
+		if (auto var = makeInstance (self).getVariable<IPlatformViewLayerDelegate*> (
+				viewLayerDelegateVarName);
 			var.has_value ())
 		{
-			var->get ()->drawLayer (ctx);
+			static bool visualizeLayer = false;
+			if (visualizeLayer)
+				CGContextClearRect (ctx, [self bounds]);
+
+			CGRect dirtyRect = CGContextGetClipBoundingBox (ctx);
+			if ([self contentsAreFlipped] == [self isGeometryFlipped])
+			{
+				CGContextScaleCTM (ctx, 1, -1);
+				CGContextTranslateCTM (ctx, 0, -[self bounds].size.height);
+				dirtyRect.origin.y =
+					(-dirtyRect.origin.y - dirtyRect.size.height) + [self bounds].size.height;
+			}
+			CGContextSaveGState (ctx);
+			CGDrawContext drawContext (ctx, CRectFromCGRect ([(CALayer*)self bounds]));
+			var->get ()->drawViewLayer (&drawContext, CRectFromCGRect (dirtyRect));
+			CGContextRestoreGState (ctx);
+
+			if (visualizeLayer)
+			{
+				CGContextSetRGBFillColor (ctx, 1., 0., 0., 0.3);
+				CGContextFillRect (ctx, [self bounds]);
+				CGContextSetRGBFillColor (ctx, 0., 1., 0., 0.3);
+				CGContextFillRect (ctx, dirtyRect);
+			}
 		}
 	}
 };
@@ -131,6 +159,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CAViewLayer::CAViewLayer (CALayer* parent)
+: layer (nullptr)
 {
 #if !TARGET_OS_IPHONE
 	layer = [VSTGUI_macOS_CALayer::alloc () init];
@@ -139,7 +168,6 @@ CAViewLayer::CAViewLayer (CALayer* parent)
 #endif
 	[layer setContentsScale:parent.contentsScale];
 	[parent addSublayer:layer];
-	[(id)layer setCAViewLayer:this];
 }
 
 //-----------------------------------------------------------------------------
@@ -155,9 +183,9 @@ CAViewLayer::~CAViewLayer () noexcept
 }
 
 //-----------------------------------------------------------------------------
-bool CAViewLayer::init (IPlatformViewLayerDelegate* delegate)
+bool CAViewLayer::init (IPlatformViewLayerDelegate* drawDelegate)
 {
-	drawDelegate = delegate;
+	[static_cast<VSTGUI_CALayer*> (layer) setDrawDelegate:drawDelegate];
 	return true;
 }
 
@@ -205,58 +233,15 @@ void CAViewLayer::setAlpha (float alpha)
 }
 
 //-----------------------------------------------------------------------------
+void CAViewLayer::draw (CDrawContext* context, const CRect& updateRect)
+{
+}
+
+//-----------------------------------------------------------------------------
 void CAViewLayer::onScaleFactorChanged (double newScaleFactor)
 {
 	if (layer)
 		layer.contentsScale = newScaleFactor;
-}
-
-//-----------------------------------------------------------------------------
-void CAViewLayer::drawLayer (void* cgContext)
-{
-	CGContextRef ctx = reinterpret_cast<CGContextRef> (cgContext);
-
-#if DEBUG
-	static bool visualizeLayer = false;
-	if (visualizeLayer)
-		CGContextClearRect (ctx, [layer bounds]);
-#endif
-
-	CGRect dirtyRect = CGContextGetClipBoundingBox (ctx);
-	if ([layer contentsAreFlipped] == [layer isGeometryFlipped])
-	{
-		CGContextScaleCTM (ctx, 1, -1);
-		CGContextTranslateCTM (ctx, 0, -[layer bounds].size.height);
-		dirtyRect.origin.y =
-			(-dirtyRect.origin.y - dirtyRect.size.height) + [layer bounds].size.height;
-	}
-	CGContextSaveGState (ctx);
-
-	auto device = getPlatformFactory ().getGraphicsDeviceFactory ().getDeviceForScreen (
-		DefaultScreenIdentifier);
-	if (!device)
-		return;
-	auto cgDevice = std::static_pointer_cast<CoreGraphicsDevice> (device);
-	if (auto deviceContext =
-			std::make_shared<CoreGraphicsDeviceContext> (*cgDevice.get (), cgContext))
-	{
-		deviceContext->beginDraw ();
-		drawDelegate->drawViewLayerRects (deviceContext, layer.contentsScale,
-										  {1, CRectFromCGRect (dirtyRect)});
-		deviceContext->endDraw ();
-	}
-
-	CGContextRestoreGState (ctx);
-
-#if DEBUG
-	if (visualizeLayer)
-	{
-		CGContextSetRGBFillColor (ctx, 1., 0., 0., 0.3);
-		CGContextFillRect (ctx, [layer bounds]);
-		CGContextSetRGBFillColor (ctx, 0., 1., 0., 0.3);
-		CGContextFillRect (ctx, dirtyRect);
-	}
-#endif
 }
 
 } // VSTGUI

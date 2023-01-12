@@ -8,7 +8,7 @@
 #import "../../../cfileselector.h"
 #import "../../../idatapackage.h"
 #import "../../iplatformoptionmenu.h"
-#import "../coregraphicsdevicecontext.h"
+#import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
@@ -55,19 +55,7 @@ using namespace VSTGUI;
 //-----------------------------------------------------------------------------
 - (void)drawRect:(CGRect)rect
 {
-	auto device = getPlatformFactory ().getGraphicsDeviceFactory ().getDeviceForScreen (
-		DefaultScreenIdentifier);
-	if (!device)
-		return;
-	auto cgDevice = std::static_pointer_cast<CoreGraphicsDevice> (device);
-	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (
-		*cgDevice.get (), UIGraphicsGetCurrentContext ());
-
-	// TODO: refactor IPlatformFrameCallback to take a platform graphics device context
-	CDrawContext drawContext (
-		std::static_pointer_cast<IPlatformGraphicsDeviceContext> (deviceContext),
-		CRectFromCGRect ([self bounds]), self.layer.contentsScale);
-
+	CGDrawContext drawContext (UIGraphicsGetCurrentContext (), CRectFromCGRect (self.bounds));
 	uiViewFrame->getFrame ()->platformDrawRect (&drawContext, CRectFromCGRect (rect));
 }
 

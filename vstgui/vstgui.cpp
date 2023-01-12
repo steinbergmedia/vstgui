@@ -10,7 +10,6 @@
 #include "lib/cdrawcontext.cpp"
 #include "lib/cdrawmethods.cpp"
 #include "lib/cdropsource.cpp"
-#include "lib/cexternalview.cpp"
 #include "lib/cfileselector.cpp"
 #include "lib/cfont.cpp"
 #include "lib/cframe.cpp"

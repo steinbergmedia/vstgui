@@ -3,11 +3,8 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cairofont.h"
-#include "../../cstring.h"
-#include "../../cfont.h"
-#include "../../cpoint.h"
-#include "../../ccolor.h"
-#include "cairographicscontext.h"
+#include "../../../lib/cstring.h"
+#include "cairocontext.h"
 #include "linuxstring.h"
 #include "linuxfactory.h"
 #include <pango/pangocairo.h>
@@ -20,8 +17,9 @@ namespace VSTGUI {
 namespace Cairo {
 namespace {
 
-using PangoFontHandle = Handle<PangoFont*, decltype (&g_object_ref), g_object_ref,
-							   decltype (&g_object_unref), g_object_unref>;
+using PangoFontHandle =
+	Handle<PangoFont*, decltype (&g_object_ref), g_object_ref,
+		   decltype (&g_object_unref), g_object_unref>;
 
 //------------------------------------------------------------------------
 class FontList
@@ -33,11 +31,20 @@ public:
 		return gInstance;
 	}
 
-	FcConfig* getFontConfig () { return fcConfig; }
+	FcConfig* getFontConfig ()
+	{
+		return fcConfig;
+	}
 
-	PangoFontMap* getFontMap () { return fontMap; }
+	PangoFontMap* getFontMap ()
+	{
+		return fontMap;
+	}
 
-	PangoContext* getFontContext () { return fontContext; }
+	PangoContext* getFontContext ()
+	{
+		return fontContext;
+	}
 
 	bool queryFont (UTF8StringPtr name, CCoord size, int32_t style, PangoFontHandle& fontHandle)
 	{
@@ -55,7 +62,7 @@ public:
 		return font != nullptr;
 	}
 
-	bool getAllFontFamilies (const FontFamilyCallback& callback)
+	bool getAllFontFamilies(const FontFamilyCallback& callback)
 	{
 		if (!fontContext)
 			return false;
@@ -78,8 +85,7 @@ private:
 		fontMap = pango_cairo_font_map_new ();
 		fontContext = pango_font_map_create_context (fontMap);
 
-		PangoFcFontMap* fcMap =
-			G_TYPE_CHECK_INSTANCE_CAST (fontMap, PANGO_TYPE_FC_FONT_MAP, PangoFcFontMap);
+		PangoFcFontMap *fcMap = G_TYPE_CHECK_INSTANCE_CAST (fontMap, PANGO_TYPE_FC_FONT_MAP, PangoFcFontMap);
 		if (fcMap && FcInit () && (fcConfig = FcInitLoadConfigAndFonts ()))
 		{
 			if (auto linuxFactory = getPlatformFactory ().asLinuxFactory ())
@@ -88,8 +94,7 @@ private:
 				if (!resourcePath.empty ())
 				{
 					auto fontDir = resourcePath + "Fonts/";
-					FcConfigAppFontAddDir (fcConfig,
-										   reinterpret_cast<const FcChar8*> (fontDir.data ()));
+					FcConfigAppFontAddDir (fcConfig, reinterpret_cast<const FcChar8*> (fontDir.data ()));
 				}
 				pango_fc_font_map_set_config (fcMap, fcConfig);
 				FcConfigDestroy (fcConfig);
@@ -160,7 +165,7 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 			pango_font_metrics_unref (metrics);
 		}
 
-		PangoContext* context = fontList.getFontContext ();
+		PangoContext* context = fontList.getFontContext();
 		if (context)
 		{
 			PangoLayout* layout = pango_layout_new (context);
@@ -191,87 +196,114 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 Font::~Font () {}
 
 //------------------------------------------------------------------------
-bool Font::valid () const { return impl->font; }
-
-//------------------------------------------------------------------------
-double Font::getAscent () const { return impl->ascent; }
-
-//------------------------------------------------------------------------
-double Font::getDescent () const { return impl->descent; }
-
-//------------------------------------------------------------------------
-double Font::getLeading () const { return impl->leading; }
-
-//------------------------------------------------------------------------
-double Font::getCapHeight () const { return impl->capHeight; }
-
-//------------------------------------------------------------------------
-const IFontPainter* Font::getPainter () const { return this; }
-
-//------------------------------------------------------------------------
-void Font::drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
-					   const CPoint& p, const CColor& color, bool antialias) const
+bool Font::valid () const
 {
-	auto cairoContext = std::dynamic_pointer_cast<CairoGraphicsDeviceContext> (context);
-	if (!cairoContext)
-		return;
-	auto linuxString = dynamic_cast<LinuxString*> (string);
-	if (!linuxString)
-		return;
-	PangoContext* pangoContext = FontList::instance ().getFontContext ();
-	if (!pangoContext)
-		return;
-	PangoLayout* layout = pango_layout_new (pangoContext);
-	if (!layout)
-		return;
-
-	if (impl->font)
-	{
-		PangoFontDescription* desc = pango_font_describe (impl->font);
-		if (desc)
-		{
-			pango_layout_set_font_description (layout, desc);
-			pango_font_description_free (desc);
-		}
-	}
-
-	PangoAttrList* attrs = pango_attr_list_new ();
-	if (attrs)
-	{
-		if (impl->style & kUnderlineFace)
-			pango_attr_list_insert (attrs, pango_attr_underline_new (PANGO_UNDERLINE_SINGLE));
-		if (impl->style & kStrikethroughFace)
-			pango_attr_list_insert (attrs, pango_attr_strikethrough_new (true));
-		pango_layout_set_attributes (layout, attrs);
-		pango_attr_list_unref (attrs);
-	}
-
-	pango_layout_set_text (layout, linuxString->get ().c_str (), -1);
-
-	PangoRectangle extents {};
-	pango_layout_get_pixel_extents (layout, nullptr, &extents);
-
-	PangoLayoutIter* iter = pango_layout_get_iter (layout);
-	CCoord baseline = 0.0;
-	if (iter)
-	{
-		baseline = pango_units_to_double (pango_layout_iter_get_baseline (iter));
-		pango_layout_iter_free (iter);
-	}
-
-	cairoContext->drawPangoLayout (layout, {p.x + extents.x, p.y + extents.y - baseline}, color);
-
-	g_object_unref (layout);
+	return impl->font;
 }
 
 //------------------------------------------------------------------------
-CCoord Font::getStringWidth (const PlatformGraphicsDeviceContextPtr&, IPlatformString* string,
-							 bool antialias) const
+double Font::getAscent () const
+{
+	return impl->ascent;
+}
+
+//------------------------------------------------------------------------
+double Font::getDescent () const
+{
+	return impl->descent;
+}
+
+//------------------------------------------------------------------------
+double Font::getLeading () const
+{
+	return impl->leading;
+}
+
+//------------------------------------------------------------------------
+double Font::getCapHeight () const
+{
+	return impl->capHeight;
+}
+
+//------------------------------------------------------------------------
+const IFontPainter* Font::getPainter () const
+{
+	return this;
+}
+
+//------------------------------------------------------------------------
+void Font::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p,
+					   bool antialias) const
+{
+	if (auto cairoContext = dynamic_cast<Context*> (context))
+	{
+		if (auto cd = DrawBlock::begin (*cairoContext))
+		{
+			if (auto linuxString = dynamic_cast<LinuxString*> (string))
+			{
+				auto color = cairoContext->getFontColor ();
+				const auto& cr = cairoContext->getCairo ();
+				auto alpha = color.normAlpha<double> () * cairoContext->getGlobalAlpha ();
+				cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
+									   color.normBlue<double> (), alpha);
+
+				PangoContext* context = FontList::instance ().getFontContext();
+				if (context)
+				{
+					PangoLayout* layout = pango_layout_new (context);
+					if (layout)
+					{
+						if (impl->font)
+						{
+							PangoFontDescription* desc = pango_font_describe (impl->font);
+							if (desc)
+							{
+								pango_layout_set_font_description (layout, desc);
+								pango_font_description_free (desc);
+							}
+						}
+
+						PangoAttrList* attrs = pango_attr_list_new ();
+						if (attrs)
+						{
+							if (impl->style & kUnderlineFace)
+								pango_attr_list_insert (attrs, pango_attr_underline_new (PANGO_UNDERLINE_SINGLE));
+							if (impl->style & kStrikethroughFace)
+								pango_attr_list_insert (attrs, pango_attr_strikethrough_new (true));
+							pango_layout_set_attributes(layout, attrs);
+							pango_attr_list_unref (attrs);
+						}
+
+						pango_layout_set_text (layout, linuxString->get ().c_str (), -1);
+
+						PangoRectangle extents {};
+						pango_layout_get_pixel_extents (layout, nullptr, &extents);
+
+						PangoLayoutIter* iter = pango_layout_get_iter (layout);
+						CCoord baseline = 0.0;
+						if (iter)
+						{
+							baseline = pango_units_to_double (pango_layout_iter_get_baseline (iter));
+							pango_layout_iter_free (iter);
+						}
+
+						cairo_move_to (cr, p.x + extents.x, p.y + extents.y - baseline);
+						pango_cairo_show_layout (cr, layout);
+						g_object_unref (layout);
+					}
+				}
+			}
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
 {
 	if (auto linuxString = dynamic_cast<LinuxString*> (string))
 	{
 		int pangoWidth = 0;
-		PangoContext* context = FontList::instance ().getFontContext ();
+		PangoContext* context = FontList::instance ().getFontContext();
 		if (context)
 		{
 			PangoLayout* layout = pango_layout_new (context);

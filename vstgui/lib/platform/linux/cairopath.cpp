@@ -4,6 +4,7 @@
 
 #include "../../cgradient.h"
 #include "../../cgraphicstransform.h"
+#include "cairocontext.h"
 #include "cairopath.h"
 
 //------------------------------------------------------------------------
@@ -115,16 +116,16 @@ void GraphicsPath::closeSubpath ()
 }
 
 //------------------------------------------------------------------------
-std::unique_ptr<GraphicsPath> GraphicsPath::copyPixelAlign (const std::function<CPoint (CPoint)>& pixelAlignFunc)
+std::unique_ptr<GraphicsPath> GraphicsPath::copyPixelAlign (const CGraphicsTransform& tm)
 {
 	auto result = std::make_unique<GraphicsPath> (context);
 	cairo_append_path (context, path);
 	result->finishBuilding ();
 	auto rpath = result->path;
 
-	auto align = [&] (_cairo_path_data_t* data, int index) {
+	auto align = [] (_cairo_path_data_t* data, int index, const CGraphicsTransform& tm) {
 		CPoint input (data[index].point.x, data[index].point.y);
-		auto output = pixelAlignFunc (input);
+		auto output = Cairo::pixelAlign (tm, input);
 		data[index].point.x = output.x;
 		data[index].point.y = output.y;
 	};
@@ -135,19 +136,19 @@ std::unique_ptr<GraphicsPath> GraphicsPath::copyPixelAlign (const std::function<
 		{
 			case CAIRO_PATH_MOVE_TO:
 			{
-				align (data, 1);
+				align (data, 1, tm);
 				break;
 			}
 			case CAIRO_PATH_LINE_TO:
 			{
-				align (data, 1);
+				align (data, 1, tm);
 				break;
 			}
 			case CAIRO_PATH_CURVE_TO:
 			{
-				align (data, 1);
-				align (data, 2);
-				align (data, 3);
+				align (data, 1, tm);
+				align (data, 2, tm);
+				align (data, 3, tm);
 				break;
 			}
 			case CAIRO_PATH_CLOSE_PATH: { break;

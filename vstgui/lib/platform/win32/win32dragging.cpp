@@ -4,10 +4,9 @@
 
 #include "win32dragging.h"
 #include "win32support.h"
-#include "win32factory.h"
 #include "winstring.h"
-#include "../../cdrawcontext.h"
 #include "../../cstring.h"
+#include "../../cdrawcontext.h"
 #include "../../cvstguitimer.h"
 #include "win32dll.h"
 #include <dwmapi.h>
@@ -787,7 +786,7 @@ void Win32DragBitmapWindow::updateWindowPosition (POINT where)
 void Win32DragBitmapWindow::paint ()
 {
 	PAINTSTRUCT ps;
-	BeginPaint (hwnd, &ps);
+	HDC hdc = BeginPaint (hwnd, &ps);
 
 	RECT clientRect;
 	GetClientRect (hwnd, &clientRect);
@@ -796,22 +795,17 @@ void Win32DragBitmapWindow::paint ()
 	rect.setWidth (clientRect.right - clientRect.left);
 	rect.setHeight (clientRect.bottom - clientRect.top);
 
-	if (auto deviceContext =
-			getPlatformFactory ().asWin32Factory ()->createGraphicsDeviceContext (hwnd))
+	if (auto drawContext = owned (createDrawContext (hwnd, hdc, rect)))
 	{
-		CDrawContext drawContext (deviceContext, rect, 1.);
+		drawContext->beginDraw ();
 
-		drawContext.beginDraw ();
+		drawContext->clearRect (rect);
+		drawContext->setGlobalAlpha (0.9f);
+		CDrawContext::Transform t (*drawContext, CGraphicsTransform ().scale (scaleFactor, scaleFactor));
+		bitmap->draw (drawContext, rect);
 
-		drawContext.clearRect (rect);
-		drawContext.setGlobalAlpha (0.9f);
-		CDrawContext::Transform t (drawContext,
-								   CGraphicsTransform ().scale (scaleFactor, scaleFactor));
-		bitmap->draw (&drawContext, rect);
-
-		drawContext.endDraw ();
+		drawContext->endDraw ();
 	}
-
 	EndPaint (hwnd, &ps);
 }
 

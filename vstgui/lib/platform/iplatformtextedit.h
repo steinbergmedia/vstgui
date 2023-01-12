@@ -9,7 +9,7 @@
 #include "../cfont.h"
 #include "../ccolor.h"
 #include "../crect.h"
-#include "../cdrawdefs.h"
+#include "../cdrawcontext.h"
 
 struct VstKeyCode;
 

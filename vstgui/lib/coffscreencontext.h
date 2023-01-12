@@ -75,9 +75,6 @@ public:
 
 	CBitmap* getBitmap () const { return bitmap; }
 
-	COffscreenContext (const PlatformGraphicsDeviceContextPtr device, const CRect& surfaceRect,
-					   const PlatformBitmapPtr& platformBitmap);
-
 protected:
 	explicit COffscreenContext (CBitmap* bitmap);
 	explicit COffscreenContext (const CRect& surfaceRect);

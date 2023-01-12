@@ -18,7 +18,6 @@
 #include <cassert>
 #include <vector>
 #include <queue>
-#include <stack>
 #include <limits>
 
 namespace VSTGUI {
@@ -1661,12 +1660,10 @@ IPlatformFrame* CFrame::getPlatformFrame () const
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformDrawRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
-								const std::vector<CRect>& rects)
+bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 {
-	CDrawContext drawContext (context, getViewSize (), scaleFactor);
-	for (auto rect : rects)
-		drawRect (&drawContext, rect);
+	drawRect (context, rect);
+	return true;
 }
 
 //-----------------------------------------------------------------------------

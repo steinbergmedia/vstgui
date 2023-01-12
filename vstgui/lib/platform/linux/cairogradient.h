@@ -19,18 +19,18 @@ class Gradient : public PlatformGradientBase
 public:
 	~Gradient () noexcept override;
 
-	const PatternHandle& getLinearGradient (CPoint start, CPoint end) const;
+	const PatternHandle& getLinearGradient (CPoint start, CPoint end);
 	const PatternHandle& getRadialGradient ();
 
 private:
 	void changed () override;
 
 	/* we want to calculate a normalized linear and radial gradiant */
-	mutable PatternHandle linearGradient;
-	mutable PatternHandle radialGradient;
+	PatternHandle linearGradient;
+	PatternHandle radialGradient;
 
-	mutable CPoint linearGradientStart;
-	mutable CPoint linearGradientEnd;
+	CPoint linearGradientStart;
+	CPoint linearGradientEnd;
 };
 
 //------------------------------------------------------------------------

@@ -9,7 +9,6 @@
 #include "controls/cscrollbar.h"
 #include "ifocusdrawing.h"
 #include "cgraphicspath.h"
-#include "cdrawcontext.h"
 #include "idatabrowserdelegate.h"
 #include <cmath>
 #include <algorithm>

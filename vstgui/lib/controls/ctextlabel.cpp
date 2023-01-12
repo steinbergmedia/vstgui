@@ -382,8 +382,7 @@ void CMultiLineTextLabel::calculateWrapLine  (CDrawContext* context,
 			break;
 		auto tmpEnd = pos;
 		UTF8String tmp ({start.base (), (++tmpEnd).base ()});
-		auto width = fontPainter->getStringWidth (
-			context ? context->getPlatformDeviceContext () : nullptr, tmp.getPlatformString ());
+		auto width = fontPainter->getStringWidth (context, tmp.getPlatformString ());
 		if (width > maxWidth)
 		{
 			if (lastSeparator == element.first.end ())
@@ -429,8 +428,7 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 	while (std::getline (stream, line, '\n'))
 	{
 		UTF8String str (std::move (line));
-		auto width = fontPainter->getStringWidth (
-			context ? context->getPlatformDeviceContext () : nullptr, str.getPlatformString ());
+		auto width = fontPainter->getStringWidth (context, str.getPlatformString ());
 		elements.emplace_back (std::move (str), width);
 	}
 

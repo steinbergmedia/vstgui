@@ -7,6 +7,7 @@
 #if MAC
 
 #include "cfontmac.h"
+#include "cgdrawcontext.h"
 
 #include "../../cgradient.h"
 

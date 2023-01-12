@@ -5,12 +5,11 @@
 #include "cairobitmap.h"
 #include "cairofont.h"
 #include "cairogradient.h"
-#include "cairographicscontext.h"
+#include "cairocontext.h"
 #include "x11frame.h"
 #include "../iplatformframecallback.h"
 #include "../common/fileresourceinputstream.h"
 #include "../iplatformresourceinputstream.h"
-#include "../iplatformgraphicsdevice.h"
 #include "linuxstring.h"
 #include "x11timer.h"
 #include "x11fileselector.h"
@@ -29,7 +28,6 @@ namespace VSTGUI {
 struct LinuxFactory::Impl
 {
 	std::string resPath;
-	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {std::make_unique<CairoGraphicsDeviceFactory> ()};
 
 	void setupResPath (void* handle)
 	{
@@ -189,6 +187,19 @@ auto LinuxFactory::getClipboard () const noexcept -> DataPackagePtr
 	return nullptr;
 }
 
+//------------------------------------------------------------------------
+auto LinuxFactory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
+	-> COffscreenContextPtr
+{
+	auto bitmap = new Cairo::Bitmap (size * scaleFactor);
+	bitmap->setScaleFactor (scaleFactor);
+	auto context = owned (new Cairo::Context (bitmap));
+	bitmap->forget ();
+	if (context->valid ())
+		return context;
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 PlatformGradientPtr LinuxFactory::createGradient () const noexcept
 {
@@ -201,12 +212,6 @@ PlatformFileSelectorPtr LinuxFactory::createFileSelector (PlatformFileSelectorSt
 {
 	auto x11Frame = dynamic_cast<X11::Frame*> (frame);
 	return X11::createFileSelector (style, x11Frame);
-}
-
-//-----------------------------------------------------------------------------
-const IPlatformGraphicsDeviceFactory& LinuxFactory::getGraphicsDeviceFactory () const noexcept
-{
-	return *impl->graphicsDeviceFactory.get ();
 }
 
 //-----------------------------------------------------------------------------
@@ -225,12 +230,6 @@ const MacFactory* LinuxFactory::asMacFactory () const noexcept
 const Win32Factory* LinuxFactory::asWin32Factory () const noexcept
 {
 	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-CairoGraphicsDeviceFactory& LinuxFactory::getCairoGraphicsDeviceFactory () const noexcept
-{
-	return *impl->graphicsDeviceFactory.get ();
 }
 
 //-----------------------------------------------------------------------------

@@ -30,10 +30,7 @@ enum class PlatformType : int32_t {
 class IPlatformFrameCallback
 {
 public:
-	virtual ~IPlatformFrameCallback () = default;
-
-	virtual void platformDrawRects (const PlatformGraphicsDeviceContextPtr& context,
-									double scaleFactor, const std::vector<CRect>& rects) = 0;
+	virtual bool platformDrawRect (CDrawContext* context, const CRect& rect) = 0;
 	
 	virtual void platformOnEvent (Event& event) = 0;
 

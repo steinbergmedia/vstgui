@@ -11,6 +11,18 @@
 
 namespace VSTGUI {
 
+//-----------
+// @brief Text Face
+//-----------
+enum CTxtFace
+{
+	kNormalFace    = 0,
+	kBoldFace      = 1 << 1,
+	kItalicFace    = 1 << 2,
+	kUnderlineFace = 1 << 3,
+	kStrikethroughFace = 1 << 4
+};
+
 //-----------------------------------------------------------------------------
 // CFontDesc Declaration
 //! @brief font class

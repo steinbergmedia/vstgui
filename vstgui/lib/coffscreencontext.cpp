@@ -6,7 +6,6 @@
 #include "cframe.h"
 #include "cbitmap.h"
 #include "platform/platformfactory.h"
-#include "platform/iplatformgraphicsdevice.h"
 
 namespace VSTGUI {
 
@@ -20,15 +19,6 @@ COffscreenContext::COffscreenContext (CBitmap* bitmap)
 //-----------------------------------------------------------------------------
 COffscreenContext::COffscreenContext (const CRect& surfaceRect)
 : CDrawContext (surfaceRect)
-{
-}
-
-//-----------------------------------------------------------------------------
-COffscreenContext::COffscreenContext (const PlatformGraphicsDeviceContextPtr device,
-									  const CRect& surfaceRect,
-									  const PlatformBitmapPtr& platformBitmap)
-: CDrawContext (device, surfaceRect, platformBitmap->getScaleFactor ())
-, bitmap (makeOwned<CBitmap> (platformBitmap))
 {
 }
 
@@ -51,22 +41,7 @@ SharedPointer<COffscreenContext> COffscreenContext::create (CFrame* frame, CCoor
 SharedPointer<COffscreenContext> COffscreenContext::create (const CPoint& size, double scaleFactor)
 {
 	if (size.x >= 1. && size.y >= 1.)
-	{
-		if (auto graphicsDevice =
-				getPlatformFactory ().getGraphicsDeviceFactory ().getDeviceForScreen (
-					DefaultScreenIdentifier))
-		{
-			if (auto bitmap = getPlatformFactory ().createBitmap (size * scaleFactor))
-			{
-				bitmap->setScaleFactor (scaleFactor);
-				if (auto context = graphicsDevice->createBitmapContext (bitmap))
-				{
-					CRect surfaceRect (CPoint (), size * scaleFactor);
-					return makeOwned<COffscreenContext> (context, surfaceRect, bitmap);
-				}
-			}
-		}
-	}
+		return getPlatformFactory ().createOffscreenContext (size, scaleFactor);
 	return nullptr;
 }
 

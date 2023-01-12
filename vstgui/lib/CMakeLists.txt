@@ -31,8 +31,6 @@ set(${target}_common_sources
     cdrawmethods.h
     cdropsource.cpp
     cdropsource.h
-    cexternalview.cpp
-    cexternalview.h
     cfileselector.cpp
     cfileselector.h
     cfont.cpp
@@ -141,7 +139,6 @@ set(${target}_common_sources
     idatabrowserdelegate.h
     idatapackage.h
     idependency.h
-    iexternalview.h
     ifocusdrawing.h
     iscalefactorchangedlistener.h
     itouchevent.h
@@ -151,7 +148,6 @@ set(${target}_common_sources
     pixelbuffer.h
     pixelbuffer.cpp
     platform/iplatformbitmap.h
-    platform/iplatformgraphicsdevice.h
     platform/iplatformfileselector.h
     platform/iplatformfont.h
     platform/iplatformframe.h
@@ -197,6 +193,8 @@ set(${target}_mac_sources
     platform/mac/cfontmac.mm
     platform/mac/cgbitmap.cpp
     platform/mac/cgbitmap.h
+    platform/mac/cgdrawcontext.cpp
+    platform/mac/cgdrawcontext.h
     platform/mac/cocoa/autoreleasepool.h
     platform/mac/cocoa/autoreleasepool.mm
     platform/mac/cocoa/cocoahelpers.h
@@ -212,8 +210,6 @@ set(${target}_mac_sources
     platform/mac/cocoa/nsviewoptionmenu.h
     platform/mac/cocoa/nsviewoptionmenu.mm
     platform/mac/cocoa/objcclassbuilder.h
-    platform/mac/coregraphicsdevicecontext.h
-    platform/mac/coregraphicsdevicecontext.mm
     platform/mac/macclipboard.h
     platform/mac/macclipboard.mm
     platform/mac/macfactory.h
@@ -236,17 +232,16 @@ set(${target}_mac_sources
 
   ##########################################################################################
 set(${target}_win32_sources
-    platform/win32/direct2d/d2d.h
     platform/win32/direct2d/d2dbitmap.cpp
     platform/win32/direct2d/d2dbitmap.h
     platform/win32/direct2d/d2dbitmapcache.cpp
     platform/win32/direct2d/d2dbitmapcache.h
+    platform/win32/direct2d/d2ddrawcontext.cpp
+    platform/win32/direct2d/d2ddrawcontext.h
     platform/win32/direct2d/d2dfont.cpp
     platform/win32/direct2d/d2dfont.h
     platform/win32/direct2d/d2dgradient.cpp
     platform/win32/direct2d/d2dgradient.h
-    platform/win32/direct2d/d2dgraphicscontext.cpp
-    platform/win32/direct2d/d2dgraphicscontext.h
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
     platform/win32/win32bitmapbase.h
@@ -285,12 +280,12 @@ set(${target}_win32_sources
 set(${target}_linux_sources
     platform/linux/cairobitmap.cpp
     platform/linux/cairobitmap.h
+    platform/linux/cairocontext.cpp
+    platform/linux/cairocontext.h
     platform/linux/cairofont.cpp
     platform/linux/cairofont.h
     platform/linux/cairogradient.cpp
     platform/linux/cairogradient.h
-    platform/linux/cairographicscontext.cpp
-    platform/linux/cairographicscontext.h
     platform/linux/cairopath.cpp
     platform/linux/cairopath.h
     platform/linux/cairoutils.h
