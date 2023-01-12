@@ -5,6 +5,7 @@
 #include "cbitmap.h"
 #include "cdrawcontext.h"
 #include "ccolor.h"
+#include "algorithm.h"
 #include "platform/iplatformbitmap.h"
 #include "platform/platformfactory.h"
 #include <cassert>
@@ -229,6 +230,18 @@ void CMultiFrameBitmap::drawFrame (CDrawContext* context, uint16_t frameIndex, C
 	auto fr = calcFrameRect (frameIndex);
 	auto r = CRect (pos, getFrameSize ());
 	draw (context, r, fr.getTopLeft ());
+}
+
+//-----------------------------------------------------------------------------
+uint16_t CMultiFrameBitmap::normalizedValueToFrameIndex (float value) const
+{
+	return normalizedToSteps<float, uint16_t> (value, getNumFrames () - 1);
+}
+
+//-----------------------------------------------------------------------------
+float CMultiFrameBitmap::frameIndexToNormalizedValue (uint16_t frameIndex) const
+{
+	return stepsToNormalized<float, uint16_t> (frameIndex, getNumFrames () - 1);
 }
 
 //-----------------------------------------------------------------------------

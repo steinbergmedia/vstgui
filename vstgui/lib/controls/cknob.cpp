@@ -880,10 +880,9 @@ void CAnimKnob::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			auto frameIndex = static_cast<uint16_t> (std::min (
-				mfb->getNumFrames () - 1.f, getValueNormalized () * mfb->getNumFrames ()));
+			auto frameIndex = mfb->normalizedValueToFrameIndex (getValueNormalized ());
 			if (bInverseBitmap)
-				frameIndex = mfb->getNumFrames () - frameIndex;
+				frameIndex = (mfb->getNumFrames () - 1) - frameIndex;
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else

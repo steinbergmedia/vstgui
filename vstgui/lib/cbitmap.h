@@ -125,6 +125,26 @@ public:
 	CRect calcFrameRect (uint32_t frameIndex) const;
 	/** draw one frame at the position in the context */
 	void drawFrame (CDrawContext* context, uint16_t frameIndex, CPoint pos);
+	/** return the frame to display for a normalized value
+	 *
+	 *	defaults to:
+	 *	 normalizedToSteps<float, uint16_t> (value, getNumFrames () - 1);
+	 *
+	 *	subclasses can adopt this to other value mappings
+	 *
+	 *	@ingroup new_in_4_12_1
+	 */
+	virtual uint16_t normalizedValueToFrameIndex (float value) const;
+	/** return the normalized value from the frame index
+	 *
+	 *	defaults to:
+	 *	 stepsToNormalized<float, uint16_t> (frameIndex, getNumFrames () - 1);
+	 *
+	 *	subclasses can adopt this to other value mappings
+	 *
+	 *	@ingroup new_in_4_12_1
+	 */
+	virtual float frameIndexToNormalizedValue (uint16_t frameIndex) const;
 
 private:
 	CMultiFrameBitmapDescription description;

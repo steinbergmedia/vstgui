@@ -26,6 +26,10 @@ It's recommended to start new projects with version 4 while old projects should 
 
 - support embedding platform views (HWND & NSView) as sub views (see CExternalView and ExternalView::IView) and examples in the contrib folder.
 
+@subsection version4_12 Version 4.12.1
+
+- make it possible to use the new multi frame bitmap feature with custom value to frame index mappings by subclassing.
+
 @subsection version4_12 Version 4.12
 
 - new multi frame bitmap representation that allows to support more frames per bitmap on current

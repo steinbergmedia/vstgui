@@ -37,7 +37,9 @@ public:
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 #endif
 
-	static bool useLegacyFrameCalculation;
+	VSTGUI_DEPRECATED_MSG (static bool useLegacyFrameCalculation;
+						   , "Use CMultiFrameBitmap::normalizedValueToFrameIndex() instead")
+
 	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
 	~CMovieBitmap () noexcept override = default;
