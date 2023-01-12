@@ -8,8 +8,10 @@
 
 namespace VSTGUI {
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 bool CMovieBitmap::useLegacyFrameCalculation = false;
+#endif
 
 //------------------------------------------------------------------------
 // CMovieBitmap
@@ -73,25 +75,16 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			uint16_t frameIndex = 0;
-			if (useLegacyFrameCalculation)
-			{
-				frameIndex = static_cast<uint16_t> (
-					getValueNormalized () * (mfb->getNumFrames () - 1) + 0.5);
-			}
-			else
-			{
-				frameIndex = static_cast<uint16_t> (std::min (
-					mfb->getNumFrames () - 1.f, getValueNormalized () * mfb->getNumFrames ()));
-			}
+			auto frameIndex = mfb->normalizedValueToFrameIndex (getValueNormalized ());
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft () + offset);
 		}
 		else
 		{
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 			CPoint where (offset.x, offset.y);
-
+#include "../private/disabledeprecatedmessage.h"
 			if (useLegacyFrameCalculation)
+#include "../private/enabledeprecatedmessage.h"
 			{
 				where.y += heightOfOneImage *
 						   (int32_t)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);

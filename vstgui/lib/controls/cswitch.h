@@ -52,7 +52,8 @@ protected:
 	virtual double calculateCoef () const = 0;
 	virtual float calcNormFromPoint (const CPoint& where) const = 0;
 
-	static bool useLegacyIndexCalculation;
+	VSTGUI_DEPRECATED_MSG (static bool useLegacyIndexCalculation;
+						   , "Use CMultiFrameBitmap::normalizedValueToFrameIndex() instead")
 
 private:
 	CPoint offset;

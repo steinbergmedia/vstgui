@@ -51,10 +51,12 @@ int32_t CSwitchBase::normalizedToIndex (float norm) const
 {
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
-		return normalizedToSteps (norm, mfb->getNumFrames () - 1);
+		return mfb->normalizedValueToFrameIndex (norm);
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+#include "../private/disabledeprecatedmessage.h"
 	if (useLegacyIndexCalculation)
+#include "../private/enabledeprecatedmessage.h"
 		return static_cast<int32_t> (norm * (getNumSubPixmaps () - 1) + 0.5f);
 	return normalizedToSteps (norm, getNumSubPixmaps () - 1);
 #else
@@ -67,7 +69,7 @@ float CSwitchBase::indexToNormalized (int32_t index) const
 {
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
-		return stepsToNormalized<float> (index, mfb->getNumFrames () - 1);
+		return mfb->frameIndexToNormalizedValue (static_cast<uint16_t> (index));
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return static_cast<float> (index) / static_cast<float> (getNumSubPixmaps () - 1);
