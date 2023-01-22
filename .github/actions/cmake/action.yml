@@ -17,6 +17,10 @@ inputs:
     description: 'build VSTGUI standalone and examples'
     required: 'false'
     default: OFF
+  enable-deprecated-methods:
+    description: 'enable deprecated VSTGUI methods'
+    required: 'false'
+    default: ON
 runs:
   using: "composite"
   steps:
@@ -27,7 +31,7 @@ runs:
   - name: Configure CMake
     shell: bash
     working-directory: ${{inputs.build-dir}}
-    run: cmake -S "${{inputs.source-dir}}" -B "${{inputs.build-dir}}" -DCMAKE_BUILD_TYPE=${{inputs.build-type}} -DVSTGUI_STANDALONE=${{inputs.build-vstgui-standalone}}
+    run: cmake -S "${{inputs.source-dir}}" -B "${{inputs.build-dir}}" -DCMAKE_BUILD_TYPE=${{inputs.build-type}} -DVSTGUI_STANDALONE=${{inputs.build-vstgui-standalone}} -DVSTGUI_ENABLE_DEPRECATED_METHODS=${{inputs.enable-deprecated-methods}}
 
   - name: Build
     shell: bash
