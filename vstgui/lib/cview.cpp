@@ -338,7 +338,7 @@ CGraphicsPath* CView::getHitTestPath () const
 //-----------------------------------------------------------------------------
 bool CView::hasViewFlag (int32_t bit) const
 {
-	return hasBit (pImpl->viewFlags, bit);
+	return pImpl && hasBit (pImpl->viewFlags, bit);
 }
 
 //-----------------------------------------------------------------------------
