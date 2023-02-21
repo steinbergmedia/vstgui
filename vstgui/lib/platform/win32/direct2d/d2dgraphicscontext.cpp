@@ -108,27 +108,25 @@ PlatformGraphicsDeviceContextPtr
 	auto d2dBitmap = bitmap.cast<D2DBitmap> ();
 	if (d2dBitmap)
 	{
-		COM::Ptr<ID2D1Factory> factory;
-		impl->device->GetFactory (factory.adoptPtr ());
-
-		COM::Ptr<ID2D1RenderTarget> renderTarget;
-		D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
-		D2D1_PIXEL_FORMAT pixelFormat =
-			D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
-		auto hr = factory->CreateWicBitmapRenderTarget (
-			d2dBitmap->getBitmap (), D2D1::RenderTargetProperties (targetType, pixelFormat),
-			renderTarget.adoptPtr ());
-
-		if (FAILED (hr))
-			return nullptr;
 
 		COM::Ptr<ID2D1DeviceContext> deviceContext;
-		hr = renderTarget->QueryInterface (__uuidof (ID2D1DeviceContext),
-										   reinterpret_cast<void**> (deviceContext.adoptPtr ()));
+		auto hr =
+	    impl->device->CreateDeviceContext (D2D1_DEVICE_CONTEXT_OPTIONS_NONE, deviceContext.adoptPtr ());
 		if (FAILED (hr))
 			return nullptr;
 
 		D2DBitmapCache::removeBitmap (d2dBitmap);
+
+		D2D1_BITMAP_PROPERTIES1 props = D2D1::BitmapProperties1 (
+		    D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+		    D2D1::PixelFormat (DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
+
+		COM::Ptr<ID2D1Bitmap1> bitmapTarget;
+		deviceContext->CreateBitmapFromWicBitmap (d2dBitmap->getSource (), &props, bitmapTarget.adoptPtr ());
+		if (!bitmapTarget)
+			return nullptr;
+
+		deviceContext->SetTarget (bitmapTarget.get ());
 
 		TransformMatrix tm;
 		tm.scale (d2dBitmap->getScaleFactor (), d2dBitmap->getScaleFactor ());
@@ -150,6 +148,11 @@ struct D2DGraphicsDeviceContext::Impl
 		  const TransformMatrix& tm)
 	: device (device), deviceContext (COM::share (deviceContext)), globalTM (tm)
 	{
+#if DEBUG
+		COM::Ptr<ID2D1Device> d2dDevice;
+		deviceContext->GetDevice (d2dDevice.adoptPtr ());
+		vstgui_assert (d2dDevice.get () == device.get ());
+#endif
 	}
 
 	template<typename Proc>
