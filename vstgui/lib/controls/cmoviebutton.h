@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ccontrol.h"
+#include "../cbitmap.h"
 
 namespace VSTGUI {
 
@@ -16,15 +17,15 @@ namespace VSTGUI {
 ///
 /// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
-class CMovieButton : public CControl
+class CMovieButton : public CControl,
+					 public MultiFrameBitmapView<CMovieButton>
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 ,
 					 public IMultiBitmapControl
 #endif
 {
 public:
-	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-				  const CPoint& offset = CPoint (0, 0));
+	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
 	CMovieButton (const CMovieButton& movieButton);
 
 	void draw (CDrawContext*) override;
@@ -46,7 +47,9 @@ public:
 	CLASS_METHODS(CMovieButton, CControl)
 protected:
 	~CMovieButton () noexcept override = default;
-	CPoint   offset;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CPoint offset {};
+#endif
 	float    buttonState;
 
 private:

@@ -150,6 +150,68 @@ private:
 	CMultiFrameBitmapDescription description;
 };
 
+//------------------------------------------------------------------------
+template<typename T>
+class MultiFrameBitmapView
+{
+	using This = T;
+
+public:
+	void setMultiFrameBitmapRange (int32_t startIndex, int32_t endIndex)
+	{
+		if (endIndex >= 0 && startIndex > endIndex)
+			std::swap (startIndex, endIndex);
+		frameStartIndex = startIndex;
+		frameEndIndex = endIndex;
+		static_cast<This*> (this)->invalid ();
+	}
+	std::pair<int32_t, int32_t> getMultiFrameBitmapRange () const
+	{
+		return {frameStartIndex, frameEndIndex};
+	}
+
+	uint16_t getMultiFrameBitmapRangeLength (const CMultiFrameBitmap& mfb) const
+	{
+		auto endIndex = frameEndIndex >= 0 ? frameEndIndex : mfb.getNumFrames ();
+		return endIndex - frameStartIndex;
+	}
+
+	uint16_t getInverseIndex (const CMultiFrameBitmap& mfb, uint16_t index) const
+	{
+		auto endIndex = frameEndIndex >= 0 ? frameEndIndex : mfb.getNumFrames () - 1;
+		if (index >= frameStartIndex && index <= endIndex)
+		{
+			return endIndex - (index - frameStartIndex);
+		}
+		return index;
+	}
+
+	uint16_t getMultiFrameBitmapIndex (const CMultiFrameBitmap& mfb, float normValue) const
+	{
+		if (frameStartIndex == 0 && frameEndIndex < 0)
+			return mfb.normalizedValueToFrameIndex (normValue);
+
+		auto startNorm = mfb.frameIndexToNormalizedValue (frameStartIndex);
+		auto endNorm = mfb.frameIndexToNormalizedValue (
+			frameEndIndex >= 0 ? frameEndIndex : mfb.getNumFrames () - 1);
+		normValue = normValue * (endNorm - startNorm) + startNorm;
+		return mfb.normalizedValueToFrameIndex (normValue);
+	}
+
+	float getNormValueFromMultiFrameBitmapIndex (const CMultiFrameBitmap& mfb, uint16_t index) const
+	{
+		auto startNorm = mfb.frameIndexToNormalizedValue (frameStartIndex);
+		auto endNorm = mfb.frameIndexToNormalizedValue (
+			frameEndIndex >= 0 ? frameEndIndex : mfb.getNumFrames () - 1);
+		auto indexNorm = mfb.frameIndexToNormalizedValue (index);
+		return (indexNorm - startNorm) / (endNorm - startNorm);
+	}
+
+private:
+	int32_t frameStartIndex {0};
+	int32_t frameEndIndex {-1};
+};
+
 //-----------------------------------------------------------------------------
 struct CNinePartTiledDescription
 {

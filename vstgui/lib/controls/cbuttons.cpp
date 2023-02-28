@@ -150,12 +150,11 @@ Use a CMultiFrameBitmap for its background bitmap.
  * @param listener the listener
  * @param tag the control tag
  * @param background the bitmap
- * @param offset unused
  */
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset)
+CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
+						  CBitmap* background)
 : CControl (size, listener, tag, background)
-, offset (offset)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (dynamic_cast<CMultiFrameBitmap*> (background) == nullptr)
@@ -188,11 +187,10 @@ CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t
 #endif
 
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CKickButton& v)
-: CControl (v)
-, offset (v.offset)
+CKickButton::CKickButton (const CKickButton& v) : CControl (v)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+	offset = v.offset;
 	setHeightOfOneImage (v.heightOfOneImage);
 #endif
 	setWantsFocus (true);
@@ -207,8 +205,8 @@ void CKickButton::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			auto index = getValue () == getMax () ? 1 : 0;
-			mfb->drawFrame (pContext, index, getViewSize ().getTopLeft () + offset);
+			auto index = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+			mfb->drawFrame (pContext, index, getViewSize ().getTopLeft ());
 		}
 		else
 		{
@@ -220,7 +218,7 @@ void CKickButton::draw (CDrawContext *pContext)
 
 			bitmap->draw (pContext, getViewSize (), where);
 #else
-			bitmap->draw (pContext, getViewSize (), offset);
+			bitmap->draw (pContext, getViewSize ());
 #endif
 		}
 	}

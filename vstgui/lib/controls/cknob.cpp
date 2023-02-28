@@ -755,12 +755,11 @@ CMultiFrameBitmap for its background bitmap.
  * @param listener the listener
  * @param tag the control tag
  * @param background the background bitmap
- * @param offset unused
  */
 //------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
-: CKnobBase (size, listener, tag, background)
-, bInverseBitmap (false)
+CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
+					  CBitmap* background)
+: CKnobBase (size, listener, tag, background), bInverseBitmap (false)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	heightOfOneImage = size.getHeight ();
@@ -880,9 +879,9 @@ void CAnimKnob::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			auto frameIndex = mfb->normalizedValueToFrameIndex (getValueNormalized ());
+			auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
 			if (bInverseBitmap)
-				frameIndex = (mfb->getNumFrames () - 1) - frameIndex;
+				frameIndex = getInverseIndex (*mfb, frameIndex);
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else

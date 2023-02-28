@@ -133,15 +133,15 @@ private:
 //!
 /// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
-class CKickButton : public CControl
+class CKickButton : public CControl,
+					public MultiFrameBitmapView<CKickButton>
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 ,
 					public IMultiBitmapControl
 #endif
 {
 public:
-	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-				 const CPoint& offset = CPoint (0, 0));
+	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
 	CKickButton (const CKickButton& kickButton);
 
 	void draw (CDrawContext*) override;
@@ -164,7 +164,9 @@ public:
 	CLASS_METHODS(CKickButton, CControl)
 protected:
 	~CKickButton () noexcept override = default;
-	CPoint	offset;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CPoint offset {};
+#endif
 };
 
 //-----------------------------------------------------------------------------

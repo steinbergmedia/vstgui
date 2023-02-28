@@ -22,12 +22,11 @@ bool CMovieBitmap::useLegacyFrameCalculation = false;
  * @param listener the listener
  * @param tag the control tag
  * @param background bitmap
- * @param offset
  */
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
+CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
+							CBitmap* background)
 : CControl (size, listener, tag, background)
-, offset (offset)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	setHeightOfOneImage (size.getHeight ());
@@ -58,11 +57,10 @@ CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32
 #endif
 
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CMovieBitmap& v)
-: CControl (v)
-, offset (v.offset)
+CMovieBitmap::CMovieBitmap (const CMovieBitmap& v) : CControl (v)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+	offset = v.offset;
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 #endif
@@ -75,16 +73,16 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			auto frameIndex = mfb->normalizedValueToFrameIndex (getValueNormalized ());
-			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft () + offset);
+			auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-			CPoint where (offset.x, offset.y);
+
 #include "../private/disabledeprecatedmessage.h"
+			CPoint where (offset.x, offset.y);
 			if (useLegacyFrameCalculation)
-#include "../private/enabledeprecatedmessage.h"
 			{
 				where.y += heightOfOneImage *
 						   (int32_t)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
@@ -97,8 +95,10 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 			}
 
 			bitmap->draw (pContext, getViewSize (), where);
+#include "../private/enabledeprecatedmessage.h"
+
 #else
-			bitmap->draw (pContext, getViewSize (), offset);
+			bitmap->draw (pContext, getViewSize ());
 #endif
 		}
 	}
