@@ -22,6 +22,10 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_12_2 Version 4.12.2
+
+- make it possible to draw only frames in a range for views using multi frame bitmaps.
+
 @subsection version4_12_1 Version 4.12.1
 
 - make it possible to use the new multi frame bitmap feature with custom value to frame index mappings by subclassing.
@@ -134,6 +138,15 @@ Note: All current deprecated methods will be removed in the next version. So mak
 update your uses and use a VSTGUI::CMultiFrameBitmap instead.
 - If you compile with VSTGUI_ENABLE_DEPRECATED_METHODS=0 you need to update your multi frame bitmaps
 to use VSTGUI::CMultiFrameBitmap.
+- In 4.12.2 the following constructors have lost their offset parameter:
+	- CKickButton
+	- CAnimKnob
+	- CMovieBitmap
+	- CMovieButton
+	- CSwitchBase
+	- CVerticalSwitch
+	- CHorizontalSwitch
+	- CRockerSwitch
 
 @subsection code_changes_4_10_to_4_11 VSTGUI 4.10 -> VSTGUI 4.11
 
@@ -383,6 +396,14 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  */
 //------------------------------------------------------------------------
 /*! @defgroup new_in_4_12 Version 4.12
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_12_1 Version 4.12.1
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_12_2 Version 4.12.2
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------
