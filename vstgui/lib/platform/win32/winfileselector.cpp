@@ -249,9 +249,9 @@ bool VistaFileSelector::run (const PlatformFileSelectorConfig& config)
 		}
 	}
 	hr = fileDialog->Show (parent);
+    std::vector<UTF8String> result;
 	if (SUCCEEDED (hr))
 	{
-		std::vector<UTF8String> result;
 		if (hasBit (config.flags, PlatformFileSelectorFlags::MultiFileSelection))
 		{
 			IFileOpenDialog* openFileDialog = nullptr;
@@ -301,9 +301,9 @@ bool VistaFileSelector::run (const PlatformFileSelectorConfig& config)
 				item->Release ();
 			}
 		}
-		if (config.doneCallback)
-			config.doneCallback (std::move (result));
 	}
+    if (config.doneCallback)
+        config.doneCallback (std::move (result));
 	fileDialog->Release ();
 	fileDialog = nullptr;
 	freeExtensionFilter (filters);
