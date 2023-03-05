@@ -124,4 +124,78 @@ TEST_CASE (CMultiFrameBitmap, InvalidFrameDesc)
 	EXPECT_FALSE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 4}));
 }
 
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+struct MultiFrameBitmapViewTest : MultiFrameBitmapView<MultiFrameBitmapViewTest>
+{
+	void invalid () {}
+};
+
+//------------------------------------------------------------------------
+TEST_CASE (MultiFrameBitmapViewTest, Default)
+{
+	MultiFrameBitmapViewTest testView;
+	CMultiFrameBitmap bitmap (100, 100);
+	EXPECT_TRUE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 2}));
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 0.f), 0);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 0.33f), 1);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 0.66f), 2);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 1.f), 3);
+	EXPECT_EQ (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 0), 0.f);
+	EXPECT_EQ (
+		static_cast<int> (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 1) * 100.f), 33);
+	EXPECT_EQ (
+		static_cast<int> (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 2) * 100.f), 66);
+	EXPECT_EQ (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 3), 1.f);
+}
+
+//------------------------------------------------------------------------
+TEST_CASE (MultiFrameBitmapViewTest, Range)
+{
+	MultiFrameBitmapViewTest testView;
+	CMultiFrameBitmap bitmap (100, 100);
+	EXPECT_TRUE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 2}));
+	testView.setMultiFrameBitmapRange (0, 1);
+	auto range = testView.getMultiFrameBitmapRange ();
+	EXPECT_EQ (range.first, 0);
+	EXPECT_EQ (range.second, 1);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 0.f), 0);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 1.f), 1);
+	EXPECT_EQ (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 0), 0.f);
+	EXPECT_EQ (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 1), 1.f);
+
+	testView.setMultiFrameBitmapRange (2, -1);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 0.f), 2);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 1.f), 3);
+	EXPECT_EQ (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 2), 0.f);
+	EXPECT_EQ (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 3), 1.f);
+
+	testView.setMultiFrameBitmapRange (2, 3);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 0.f), 2);
+	EXPECT_EQ (testView.getMultiFrameBitmapIndex (bitmap, 1.f), 3);
+	EXPECT_EQ (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 2), 0.f);
+	EXPECT_EQ (testView.getNormValueFromMultiFrameBitmapIndex (bitmap, 3), 1.f);
+}
+
+//------------------------------------------------------------------------
+TEST_CASE (MultiFrameBitmapViewTest, Inverse)
+{
+	MultiFrameBitmapViewTest testView;
+	CMultiFrameBitmap bitmap (100, 100);
+	EXPECT_TRUE (bitmap.setMultiFrameDesc ({{50, 50}, 4, 2}));
+	testView.setMultiFrameBitmapRange (0, 1);
+	EXPECT_EQ (testView.getInverseIndex (bitmap, 0), 1);
+	EXPECT_EQ (testView.getInverseIndex (bitmap, 1), 0);
+
+	testView.setMultiFrameBitmapRange (2, -1);
+	EXPECT_EQ (testView.getInverseIndex (bitmap, 2), 3);
+	EXPECT_EQ (testView.getInverseIndex (bitmap, 3), 2);
+
+	testView.setMultiFrameBitmapRange (2, 3);
+	EXPECT_EQ (testView.getInverseIndex (bitmap, 2), 3);
+	EXPECT_EQ (testView.getInverseIndex (bitmap, 3), 2);
+}
+
+//------------------------------------------------------------------------
 } // VSTGUI

@@ -17,8 +17,8 @@ bool CSwitchBase::useLegacyIndexCalculation = false;
 
 //------------------------------------------------------------------------
 CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
-                          CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, background), offset (offset)
+						  CBitmap* background)
+: CControl (size, listener, tag, background)
 {
 	setDefaultValue (0.f);
 	setWantsFocus (true);
@@ -39,9 +39,10 @@ CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t
 #endif
 
 //------------------------------------------------------------------------
-CSwitchBase::CSwitchBase (const CSwitchBase& other) : CControl (other), offset (other.offset)
+CSwitchBase::CSwitchBase (const CSwitchBase& other) : CControl (other)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+	offset = other.offset;
 	setNumSubPixmaps (other.subPixmaps);
 	setHeightOfOneImage (other.heightOfOneImage);
 #endif
@@ -53,7 +54,7 @@ int32_t CSwitchBase::normalizedToIndex (float norm) const
 {
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
-		return mfb->normalizedValueToFrameIndex (norm);
+		return getMultiFrameBitmapIndex (*mfb, norm);
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 #include "../private/disabledeprecatedmessage.h"
@@ -71,7 +72,7 @@ float CSwitchBase::indexToNormalized (int32_t index) const
 {
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
-		return mfb->frameIndexToNormalizedValue (static_cast<uint16_t> (index));
+		return getNormValueFromMultiFrameBitmapIndex (*mfb, static_cast<uint16_t> (index));
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return static_cast<float> (index) / static_cast<float> (getNumSubPixmaps () - 1);
@@ -86,17 +87,18 @@ void CSwitchBase::draw (CDrawContext* pContext)
 	if (auto bitmap = getDrawBackground ())
 	{
 		float norm = getValueNormalized ();
-		if (inverseBitmap)
-			norm = 1.f - norm;
-
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			auto frameIndex = static_cast<uint16_t> (normalizedToIndex (norm));
+			auto frameIndex = getMultiFrameBitmapIndex (*mfb, norm);
+			if (inverseBitmap)
+				frameIndex = getInverseIndex (*mfb, frameIndex);
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+			if (inverseBitmap)
+				norm = 1.f - norm;
 			// source position in bitmap
 			CPoint where (0, heightOfOneImage * normalizedToIndex (norm));
 			bitmap->draw (pContext, getViewSize (), where);
@@ -223,8 +225,8 @@ Use a CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-                                  CBitmap* background, const CPoint& offset)
-: CSwitchBase (size, listener, tag, background, offset)
+								  CBitmap* background)
+: CSwitchBase (size, listener, tag, background)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	heightOfOneImage = size.getHeight ();
@@ -266,7 +268,7 @@ double CVerticalSwitch::calculateCoef () const
 {
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
-		return mfb->getFrameSize ().y / static_cast<double> (mfb->getNumFrames ());
+		return mfb->getFrameSize ().y / static_cast<double> (getMultiFrameBitmapRangeLength (*mfb));
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return static_cast<double> (heightOfOneImage) / static_cast<double> (getNumSubPixmaps ());
@@ -281,7 +283,7 @@ float CVerticalSwitch::calcNormFromPoint (const CPoint& where) const
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
 		return static_cast<int32_t> ((where.y - getViewSize ().top) / getCoef ()) /
-			   static_cast<float> (mfb->getNumFrames () - 1);
+			   static_cast<float> (getMultiFrameBitmapRangeLength (*mfb) - 1);
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return static_cast<int32_t> ((where.y - getViewSize ().top) / getCoef ()) /
@@ -340,8 +342,8 @@ Use a CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-                                      CBitmap* background, const CPoint& offset)
-: CSwitchBase (size, listener, tag, background, offset)
+									  CBitmap* background)
+: CSwitchBase (size, listener, tag, background)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	heightOfOneImage = size.getWidth ();
@@ -383,7 +385,7 @@ double CHorizontalSwitch::calculateCoef () const
 {
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
-		return mfb->getFrameSize ().x / static_cast<double> (mfb->getNumFrames ());
+		return mfb->getFrameSize ().x / static_cast<double> (getMultiFrameBitmapRangeLength (*mfb));
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return getDrawBackground ()->getWidth () / static_cast<double> (getNumSubPixmaps ());
@@ -398,7 +400,7 @@ float CHorizontalSwitch::calcNormFromPoint (const CPoint& where) const
 	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
 	{
 		return static_cast<int32_t> ((where.x - getViewSize ().left) / getCoef ()) /
-			   static_cast<float> (mfb->getNumFrames () - 1);
+			   static_cast<float> (getMultiFrameBitmapRangeLength (*mfb) - 1);
 	}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return static_cast<int32_t> ((where.x - getViewSize ().left) / getCoef ()) /
@@ -454,6 +456,31 @@ When the mouse button is relaxed, the second subbitmap is framed. */
  * @param listener the listener
  * @param tag the control tag
  * @param background bitmap with 3 stacked images of the rocker switch
+ * @param style
+ */
+//------------------------------------------------------------------------
+CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+							  CBitmap* background, const int32_t style)
+: CControl (size, listener, tag, background), style (style), resetValueTimer (nullptr)
+{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	setNumSubPixmaps (3);
+	setHeightOfOneImage (size.getHeight ());
+#endif
+	setWantsFocus (true);
+	setMin (-1.f);
+	setMax (1.f);
+	setValue ((getMax () - getMin ()) / 2.f + getMin ());
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+/**
+ * CRockerSwitch constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background bitmap with 3 stacked images of the rocker switch
  * @param offset
  * @param style
  */
@@ -474,7 +501,6 @@ CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int
 	setValue ((getMax () - getMin ()) / 2.f + getMin ());
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 /**
  * CRockerSwitch constructor.
@@ -504,12 +530,10 @@ CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int
 
 //------------------------------------------------------------------------
 CRockerSwitch::CRockerSwitch (const CRockerSwitch& v)
-: CControl (v)
-, offset (v.offset)
-, style (v.style)
-, resetValueTimer (nullptr)
+: CControl (v), style (v.style), resetValueTimer (nullptr)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+	offset = v.offset;
 	setHeightOfOneImage (v.heightOfOneImage);
 #endif
 	setWantsFocus (true);
@@ -529,11 +553,7 @@ void CRockerSwitch::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			uint16_t frameIndex = 0;
-			if (value == getMax ())
-				frameIndex = 2;
-			else if (value == (getMax () - getMin ()) / 2.f + getMin ())
-				frameIndex = 1;
+			uint16_t frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

@@ -18,11 +18,11 @@ namespace VSTGUI {
  * @param listener the listener
  * @param tag the control tag
  * @param background bitmap
- * @param offset
  */
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
-: CControl (size, listener, tag, background), offset (offset), buttonState (value)
+CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
+							CBitmap* background)
+: CControl (size, listener, tag, background), buttonState (value)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	heightOfOneImage = size.getHeight ();
@@ -53,12 +53,10 @@ CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32
 #endif
 
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CMovieButton& v)
-: CControl (v)
-, offset (v.offset)
-, buttonState (v.buttonState)
+CMovieButton::CMovieButton (const CMovieButton& v) : CControl (v), buttonState (v.buttonState)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+	offset = v.offset;
 	setHeightOfOneImage (v.heightOfOneImage);
 #endif
 	setWantsFocus (true);
@@ -71,7 +69,8 @@ void CMovieButton::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
-			mfb->drawFrame (pContext, value == getMax () ? 1 : 0, getViewSize ().getTopLeft ());
+			auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
