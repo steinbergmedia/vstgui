@@ -358,7 +358,7 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 		}
 		else
 		{
-			std::string newName (filterString.empty () ? "New" : filterString);
+			std::string newName (filterString.empty () ? "New" : filterString.data ());
 			if (createUniqueName (newName))
 			{
 				actionPerformer->performColorChange (newName.data (), *dragColor);

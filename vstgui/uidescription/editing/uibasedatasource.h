@@ -47,7 +47,7 @@ public:
 	{
 		if (dataBrowser && actionPerformer)
 		{
-			std::string newName (filterString.empty () ? "New" : filterString);
+			std::string newName (filterString.empty () ? "New" : filterString.data ());
 			if (createUniqueName (newName))
 			{
 				addItem (newName.data ());
