@@ -354,7 +354,7 @@ void UITemplateController::onUIDescTemplateChanged (UIDescription* desc)
 	{
 		int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 		int32_t index = 0;
-		auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
+		auto selectedTemplateStr = selectedTemplateName ? selectedTemplateName->data () : "";
 		templateNames.clear ();
 		dataSource->setStringList (&templateNames);
 		std::list<const std::string*> tmp;
