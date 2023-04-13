@@ -20,6 +20,11 @@
 #include <codecvt>
 #include <locale>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -854,3 +859,7 @@ float STBTextEditView::getCharWidth (STBTextEditView* self, int n, int i)
 
 //-----------------------------------------------------------------------------
 } // VSTGUI
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
