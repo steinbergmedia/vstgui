@@ -139,6 +139,7 @@
 #endif
 
 #include <atomic>
+#include <utility>
 
 #ifdef UNICODE
 	#undef UNICODE
