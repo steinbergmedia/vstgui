@@ -61,9 +61,11 @@ bool AutoAnimationCreator::apply (CView* view, const UIAttributes& attributes,
 	int32_t value;
 	if (attributes.getIntegerAttribute (kAttrAnimationTime, value))
 		autoAnimation->setAnimationTime (static_cast<uint32_t> (value));
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	CPoint point;
 	if (attributes.getPointAttribute (kAttrBitmapOffset, point))
 		autoAnimation->setBitmapOffset (point);
+#endif
 	return true;
 }
 
@@ -80,11 +82,13 @@ bool AutoAnimationCreator::getAttributeValue (CView* view, const string& attribu
 			static_cast<int32_t> (autoAnimation->getAnimationTime ()));
 		return true;
 	}
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (attributeName == kAttrBitmapOffset)
 	{
 		stringValue = UIAttributes::pointToString (autoAnimation->getBitmapOffset ());
 		return true;
 	}
+#endif
 	return false;
 }
 
