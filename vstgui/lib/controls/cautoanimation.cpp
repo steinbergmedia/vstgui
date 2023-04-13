@@ -82,7 +82,18 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 	setMin (0.f);
 	setMax ((float)(totalHeightOfBitmap - (heightOfOneImage + 1.)));
 }
-#endif
+
+//------------------------------------------------------------------------
+void CAutoAnimation::setBitmapOffset (const CPoint& off)
+{
+	offset = off;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+CPoint CAutoAnimation::getBitmapOffset () const { return offset; }
+
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
@@ -279,15 +290,5 @@ void CAutoAnimation::setAnimationTime (uint32_t animationTime)
 
 //------------------------------------------------------------------------
 uint32_t CAutoAnimation::getAnimationTime () const { return animationFrameTime; }
-
-//------------------------------------------------------------------------
-void CAutoAnimation::setBitmapOffset (const CPoint& off)
-{
-	offset = off;
-	invalid ();
-}
-
-//------------------------------------------------------------------------
-CPoint CAutoAnimation::getBitmapOffset () const { return offset; }
 
 } // VSTGUI
