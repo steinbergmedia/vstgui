@@ -857,7 +857,8 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 			int32_t zoomFactorTag = 0;
 			for (std::vector<double>::const_iterator it = allowedZoomFactors.begin (), end = allowedZoomFactors.end (); it != end; ++it, ++zoomFactorTag)
 			{
-				sprintf (zoomFactorString, "%d%%", static_cast<int>((*it) * 100));
+				snprintf (zoomFactorString, std::size (zoomFactorString), "%d%%",
+						  static_cast<int> ((*it) * 100));
 				CMenuItem* item = zoomMenu->addEntry (new CCommandMenuItem (
 				    {zoomFactorString, zoomFactorTag, this, "Zoom", zoomFactorString}));
 				if (zoomFactor == *it)
