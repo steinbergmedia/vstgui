@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <utility>
+
 namespace VSTGUI {
 namespace COM {
 
