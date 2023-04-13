@@ -337,15 +337,15 @@ template<typename T1, typename T2,
 			 std::is_same<IPlatformBitmapPixelAccess::PixelFormat, T2>::value>::type* = nullptr>
 inline T1 convert (T2 format)
 {
-	using PixelFormat = IPlatformBitmapPixelAccess::PixelFormat;
+	using PlPixelFormat = IPlatformBitmapPixelAccess::PixelFormat;
 	using Format = PixelBuffer::Format;
-	static_assert (std::is_same<Format, T1>::value || std::is_same<PixelFormat, T1>::value,
+	static_assert (std::is_same<Format, T1>::value || std::is_same<PlPixelFormat, T1>::value,
 				   "Unexpected Format");
 	static_assert (!std::is_same<T1, T2>::value, "Unexpected Format");
-	static_assert (static_cast<int32_t> (Format::ARGB) == PixelFormat::kARGB, "Format Mismatch");
-	static_assert (static_cast<int32_t> (Format::ABGR) == PixelFormat::kABGR, "Format Mismatch");
-	static_assert (static_cast<int32_t> (Format::RGBA) == PixelFormat::kRGBA, "Format Mismatch");
-	static_assert (static_cast<int32_t> (Format::BGRA) == PixelFormat::kBGRA, "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::ARGB) == PlPixelFormat::kARGB, "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::ABGR) == PlPixelFormat::kABGR, "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::RGBA) == PlPixelFormat::kRGBA, "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::BGRA) == PlPixelFormat::kBGRA, "Format Mismatch");
 	return static_cast<T1> (format);
 }
 
