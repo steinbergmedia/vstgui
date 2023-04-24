@@ -289,7 +289,7 @@ inline uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, boo
 		{
 			if (auto container = child->asViewContainer ())
 			{
-				container->getChildViewsOfType<ViewClass, ContainerClass> (result);
+				container->getChildViewsOfType<ViewClass, ContainerClass> (result, deep);
 			}
 		}
 	}

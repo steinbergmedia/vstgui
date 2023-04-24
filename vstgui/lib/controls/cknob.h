@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ccontrol.h"
+#include "../cbitmap.h"
 #include "../ccolor.h"
 #include "../clinestyle.h"
 
@@ -153,15 +154,15 @@ protected:
 //! @brief a bitmap knob control
 /// @ingroup controls uses_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
-class CAnimKnob : public CKnobBase
+class CAnimKnob : public CKnobBase,
+				  public MultiFrameBitmapView<CAnimKnob>
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 ,
 				  public IMultiBitmapControl
 #endif
 {
 public:
-	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-			   const CPoint& offset = CPoint (0, 0));
+	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
 	CAnimKnob (const CAnimKnob& knob);
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

@@ -500,7 +500,7 @@ public:
 
 	bool onCommandMenuItemSelected (CCommandMenuItem* item) override
 	{
-		performValueChange (item->getTag () == 100 ? "" : item->getTitle ());
+		performValueChange (item->getTag () == 100 ? UTF8String ("") : item->getTitle ());
 		return true;
 	}
 

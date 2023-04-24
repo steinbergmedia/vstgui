@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -25,6 +25,10 @@ It's recommended to start new projects with version 4 while old projects should 
 @subsection version4_13 Version 4.13
 
 - support embedding platform views (HWND & NSView) as sub views (see CExternalView and ExternalView::IView) and examples in the contrib folder.
+
+@subsection version4_12_2 Version 4.12.2
+
+- make it possible to draw only frames in a range for views using multi frame bitmaps.
 
 @subsection version4_12_1 Version 4.12.1
 
@@ -83,7 +87,7 @@ it, while the old method is deprecated but still supported for now.
 - preview of @ref standalone_library @n
 - new Controls: VSTGUI::CMultiLineTextLabel, VSTGUI::CSearchTextEdit
 - adopt many c++11 language features
- 
+
 @subsection version4_4 Version 4.4
 
 - preview Linux version
@@ -142,6 +146,15 @@ Note: All current deprecated methods will be removed in the next version. So mak
 update your uses and use a VSTGUI::CMultiFrameBitmap instead.
 - If you compile with VSTGUI_ENABLE_DEPRECATED_METHODS=0 you need to update your multi frame bitmaps
 to use VSTGUI::CMultiFrameBitmap.
+- In 4.12.2 the following constructors have lost their offset parameter:
+	- CKickButton
+	- CAnimKnob
+	- CMovieBitmap
+	- CMovieButton
+	- CSwitchBase
+	- CVerticalSwitch
+	- CHorizontalSwitch
+	- CRockerSwitch
 
 @subsection code_changes_4_10_to_4_11 VSTGUI 4.10 -> VSTGUI 4.11
 
@@ -261,7 +274,7 @@ The old mouse methods (onMouseDown, onMouseUp, onMouseMoved, etc) are still supp
 @section hidpi_support HiDPI notes
 - HiDPI is supported on OSX, iOS and Windows (with Direct2D backend)
 - Due to platform differences one need to call frame->setZoom (scaleFactor) on Windows, while on OSX and iOS this is not needed.
- 
+
 @section ios_support iOS support notes
 
 - VSTGUI supports iOS 7 and later
@@ -269,10 +282,10 @@ The old mouse methods (onMouseDown, onMouseUp, onMouseMoved, etc) are still supp
 - Support for a single MultiTouch View is not yet tested and the API may change in the future
 
 @page page_previous_new_stuff New Stuff in VSTGUI 3.6 and earlier
- 
+
 @section new_mouse_methods New mouse methods
 
-In earlier versions there were only one method in CView for handling mouse events (VSTGUI::CView::mouse). 
+In earlier versions there were only one method in CView for handling mouse events (VSTGUI::CView::mouse).
 In this version there are five new methods :
 - VSTGUI::CView::onMouseDown	(new in 3.5)
 - VSTGUI::CView::onMouseUp	(new in 3.5)
@@ -391,6 +404,14 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  */
 //------------------------------------------------------------------------
 /*! @defgroup new_in_4_12 Version 4.12
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_12_1 Version 4.12.1
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_12_2 Version 4.12.2
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------

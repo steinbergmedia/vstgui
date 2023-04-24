@@ -24,12 +24,11 @@ the current value of this control). Use a CMultiFrameBitmap for its background b
  * @param listener the listener
  * @param tag the control tag
  * @param background the bitmap
- * @param offset unused
  */
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
-								CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, background), offset (offset)
+								CBitmap* background)
+: CControl (size, listener, tag, background)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	heightOfOneImage = size.getHeight ();
@@ -41,6 +40,25 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+/**
+ * CAutoAnimation constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background the bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
+								CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, background), offset (offset)
+{
+	heightOfOneImage = size.getHeight ();
+	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
+	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
+}
+
 //------------------------------------------------------------------------
 /**
  * CAutoAnimation constructor.
@@ -64,13 +82,24 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 	setMin (0.f);
 	setMax ((float)(totalHeightOfBitmap - (heightOfOneImage + 1.)));
 }
-#endif
+
+//------------------------------------------------------------------------
+void CAutoAnimation::setBitmapOffset (const CPoint& off)
+{
+	offset = off;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+CPoint CAutoAnimation::getBitmapOffset () const { return offset; }
+
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
 : CControl (v)
-, offset (v.offset)
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+, offset (v.offset)
 , totalHeightOfBitmap (v.totalHeightOfBitmap)
 #endif
 {
@@ -90,12 +119,10 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 	{
 		if (auto bitmap = getDrawBackground ())
 		{
-			if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+			if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 			{
-				auto frameIndex =
-					normalizedToSteps (getValueNormalized (), frameBitmap->getNumFrames ());
-				frameBitmap->drawFrame (pContext, frameIndex,
-										getViewSize ().getTopLeft () + offset);
+				auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+				mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 			}
 			else
 			{
@@ -191,13 +218,14 @@ void CAutoAnimation::updateMinMaxFromBackground ()
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
 		{
+			auto numFrames = getMultiFrameBitmapRangeLength (*mfb);
 			setMin (0.f);
-			setMax (frameBitmap->getMultiFrameDesc ().numFrames);
+			setMax (numFrames);
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-			heightOfOneImage = frameBitmap->getFrameSize ().y;
-			totalHeightOfBitmap = heightOfOneImage * frameBitmap->getNumFrames ();
+			heightOfOneImage = mfb->getFrameSize ().y;
+			totalHeightOfBitmap = heightOfOneImage * numFrames;
 #endif
 		}
 	}
@@ -262,15 +290,5 @@ void CAutoAnimation::setAnimationTime (uint32_t animationTime)
 
 //------------------------------------------------------------------------
 uint32_t CAutoAnimation::getAnimationTime () const { return animationFrameTime; }
-
-//------------------------------------------------------------------------
-void CAutoAnimation::setBitmapOffset (const CPoint& off)
-{
-	offset = off;
-	invalid ();
-}
-
-//------------------------------------------------------------------------
-CPoint CAutoAnimation::getBitmapOffset () const { return offset; }
 
 } // VSTGUI

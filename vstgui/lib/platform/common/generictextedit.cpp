@@ -2,10 +2,6 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#if defined(_WIN32)
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-#endif
-
 #include "generictextedit.h"
 #include "../iplatformfont.h"
 #include "../iplatformframe.h"
@@ -20,6 +16,14 @@
 #include <string>
 #include <codecvt>
 #include <locale>
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -855,3 +859,9 @@ float STBTextEditView::getCharWidth (STBTextEditView* self, int n, int i)
 
 //-----------------------------------------------------------------------------
 } // VSTGUI
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif

@@ -5,12 +5,14 @@
 #pragma once
 
 #include "ccontrol.h"
+#include "../cbitmap.h"
 #include <algorithm>
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class CSwitchBase : public CControl
+class CSwitchBase : public CControl,
+					public MultiFrameBitmapView<CSwitchBase>
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 ,
 					public IMultiBitmapControl
@@ -21,8 +23,7 @@ public:
 	bool getInverseBitmap () const { return inverseBitmap; }
 
 protected:
-	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-				 const CPoint& offset = CPoint (0, 0));
+	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
 	CSwitchBase (const CSwitchBase& other);
 	~CSwitchBase () noexcept override = default;
 
@@ -42,8 +43,8 @@ protected:
 		IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps);
 		invalid ();
 	}
-#endif
 	const CPoint& getOffset () const { return offset; }
+#endif
 
 	double getCoef () const { return coef; }
 	int32_t normalizedToIndex (float norm) const;
@@ -56,7 +57,9 @@ protected:
 						   , "Use CMultiFrameBitmap::normalizedValueToFrameIndex() instead")
 
 private:
-	CPoint offset;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CPoint offset {};
+#endif
 	double coef;
 	float mouseStartValue;
 	bool inverseBitmap{false};
@@ -71,7 +74,7 @@ class CVerticalSwitch : public CSwitchBase
 {
 public:
 	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-					 CBitmap* background, const CPoint& offset = CPoint (0, 0));
+					 CBitmap* background);
 	CVerticalSwitch (const CVerticalSwitch& vswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
@@ -100,7 +103,7 @@ class CHorizontalSwitch : public CSwitchBase
 {
 public:
 	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-					   CBitmap* background, const CPoint& offset = CPoint (0, 0));
+					   CBitmap* background);
 	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
@@ -124,7 +127,8 @@ protected:
 //! @brief a switch control with 3 sub bitmaps
 /// @ingroup controls use_multi_frame_bitmaps
 //-----------------------------------------------------------------------------
-class CRockerSwitch : public CControl
+class CRockerSwitch : public CControl,
+					  public MultiFrameBitmapView<CRockerSwitch>
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 ,
 					  public IMultiBitmapControl
@@ -144,7 +148,7 @@ public:
 	};
 
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-				   const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
+				   const int32_t style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);
 
 	void draw (CDrawContext*) override;
@@ -159,6 +163,8 @@ public:
 	bool sizeToFit () override;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
+				   const CPoint& offset, const int32_t style = kHorizontal);
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
 				   CCoord heightOfOneImage, CBitmap* background,
 				   const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
@@ -171,7 +177,9 @@ protected:
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	CPoint	offset;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	CPoint offset {};
+#endif
 	int32_t	style;
 
 	CVSTGUITimer* resetValueTimer;

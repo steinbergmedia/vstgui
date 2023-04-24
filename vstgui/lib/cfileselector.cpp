@@ -189,10 +189,12 @@ bool CNewFileSelector::run (CallbackFunc&& callback)
 	if (impl->frame)
 		impl->frame->onStartLocalEventLoop ();
 
-	impl->doneCallback = [Self = shared (this),
+    remember ();
+	impl->doneCallback = [this,
 						  cb = std::move (callback)] (std::vector<UTF8String>&& files) {
-		Self->impl->result = std::move (files);
-		cb (Self);
+		impl->result = std::move (files);
+		cb (this);
+        forget ();
 	};
 
 	setBit (impl->flags, PlatformFileSelectorFlags::RunModal, false);

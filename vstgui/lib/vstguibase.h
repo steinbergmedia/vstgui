@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
 #define VSTGUI_VERSION_MINOR  12
-#define VSTGUI_VERSION_PATCHLEVEL  1
+#define VSTGUI_VERSION_PATCHLEVEL  3
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -139,6 +139,7 @@
 #endif
 
 #include <atomic>
+#include <utility>
 
 #ifdef UNICODE
 	#undef UNICODE

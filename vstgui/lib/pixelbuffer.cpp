@@ -10,6 +10,11 @@ namespace VSTGUI {
 namespace PixelBuffer {
 namespace Private {
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4293)
+#endif
+
 //------------------------------------------------------------------------
 template<int8_t bs1, int8_t bs2, int8_t bs3, int8_t bs4>
 inline uint32_t shuffle (uint32_t input)
@@ -23,11 +28,6 @@ inline uint32_t shuffle (uint32_t input)
 	uint32_t b2 = (input & 0x00FF0000);
 	uint32_t b3 = (input & 0x0000FF00);
 	uint32_t b4 = (input & 0x000000FF);
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4293)
-#endif
 
 	if constexpr (ByteOrder::kNativeByteOrder == ByteOrder::kLittleEndianByteOrder)
 	{
@@ -44,12 +44,12 @@ inline uint32_t shuffle (uint32_t input)
 		b4 = (s4 >= 0) ? b4 << s4 : b4 >> -s4;
 	}
 
+	return b1 | b2 | b3 | b4;
+}
+
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-
-	return b1 | b2 | b3 | b4;
-}
 
 //------------------------------------------------------------------------
 template<Format SourceFormat, Format DestinationFormat>
