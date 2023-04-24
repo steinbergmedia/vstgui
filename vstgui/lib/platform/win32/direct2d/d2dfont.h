@@ -40,8 +40,10 @@ protected:
 
 	const IFontPainter* getPainter () const override { return this; }
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) const override;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) const override;
+	void drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
+					 const CPoint& p, const CColor& color, bool antialias = true) const override;
+	CCoord getStringWidth (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
+						   bool antialias = true) const override;
 
 	IDWriteTextFormat* textFormat;
 	double ascent;

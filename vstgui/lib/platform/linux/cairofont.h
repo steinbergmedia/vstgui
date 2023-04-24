@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -29,9 +29,9 @@ public:
 	double getCapHeight () const override;
 	const IFontPainter* getPainter () const override;
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p,
-					 bool antialias = true) const override;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string,
+	void drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
+					 const CPoint& p, const CColor& color, bool antialias = true) const override;
+	CCoord getStringWidth (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
 						   bool antialias = true) const override;
 
 	static bool getAllFamilies (const FontFamilyCallback& callback);

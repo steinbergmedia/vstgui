@@ -9,9 +9,9 @@
 #if MAC_COCOA && !TARGET_OS_IPHONE
 
 #include "../../platform_macos.h"
-#include "../../../cview.h"
 #include "../../../cinvalidrectlist.h"
 #include "../../../idatapackage.h"
+#import "../coregraphicsdevicecontext.h"
 #include "nsviewdraggingsession.h"
 #include <list>
 
@@ -47,8 +47,6 @@ public:
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 #endif
-	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
-	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
 
 	void setDragDataPackage (SharedPointer<IDataPackage>&& package) { dragDataPackage = std::move (package); }
 	const SharedPointer<IDataPackage>& getDragDataPackage () const { return dragDataPackage; }
@@ -56,8 +54,8 @@ public:
 	void initTrackingArea ();
 	void scaleFactorChanged (double newScaleFactor);
 	void cursorUpdate ();
-	virtual void drawRect (NSRect* rect);
 	void drawLayer (CALayer* layer, CGContextRef ctx);
+	void drawRect (NSRect* rect);
 	bool onMouseDown (NSEvent* evt);
 	bool onMouseUp (NSEvent* evt);
 	bool onMouseMoved (NSEvent* evt);
@@ -97,6 +95,7 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
+	void draw (CGContextRef context, CRect updateRect, double scaleFactor);
 	void addDebugRedrawRect (CRect r, bool isClipBoundingBox = false);
 
 	NSView* nsView {nullptr};
@@ -110,7 +109,6 @@ protected:
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult lastDragOperationResult;
 #endif
-	bool ignoreNextResignFirstResponder;
 	bool trackingAreaInitialized;
 	bool inDraw;
 	bool useInvalidRects {false};

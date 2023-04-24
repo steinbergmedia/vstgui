@@ -19,7 +19,8 @@
 #include "../common/generictextedit.h"
 #include "../common/genericoptionmenu.h"
 #include "cairobitmap.h"
-#include "cairocontext.h"
+#include "linuxfactory.h"
+#include "cairographicscontext.h"
 #include "x11platform.h"
 #include "x11utils.h"
 #include <cassert>
@@ -171,8 +172,10 @@ struct DrawHandler
 										   window.getID (), window.getVisual (),
 										   window.getSize ().x, window.getSize ().y);
 		windowSurface.assign (s);
+		device =
+			getPlatformFactory ().asLinuxFactory ()->getCairoGraphicsDeviceFactory ().addDevice (
+				cairo_surface_get_device (s));
 		onSizeChanged (window.getSize ());
-		RunLoop::instance ().setDevice (cairo_surface_get_device (s));
 	}
 
 	void onSizeChanged (const CPoint& size)
@@ -180,45 +183,40 @@ struct DrawHandler
 		cairo_xcb_surface_set_size (windowSurface, size.x, size.y);
 		backBuffer = Cairo::SurfaceHandle (cairo_surface_create_similar (
 			windowSurface, CAIRO_CONTENT_COLOR_ALPHA, size.x, size.y));
-		CRect r;
-		r.setSize (size);
-		drawContext = makeOwned<Cairo::Context> (r, backBuffer);
+		backBufferSize.setSize (size);
+		auto cairoDevice = std::static_pointer_cast<CairoGraphicsDevice> (device);
+		drawContext = std::make_shared<CairoGraphicsDeviceContext> (*cairoDevice, backBuffer);
 	}
 
-	template<typename RectList, typename Proc>
-	void draw (const RectList& dirtyRects, Proc proc)
+	void draw (const CInvalidRectList& dirtyRects, IPlatformFrameCallback* frame)
 	{
-		CRect copyRect;
 		drawContext->beginDraw ();
-		for (auto rect : dirtyRects)
-		{
-			drawContext->setClipRect (rect);
-			drawContext->saveGlobalState ();
-			proc (drawContext, rect);
-			drawContext->restoreGlobalState ();
-			if (copyRect.isEmpty ())
-				copyRect = rect;
-			else
-				copyRect.unite (rect);
-		}
+		frame->platformDrawRects (drawContext, 1, dirtyRects.data ());
 		drawContext->endDraw ();
-		blitBackbufferToWindow (copyRect);
+
+		blitBackbufferToWindow (dirtyRects);
 		xcb_flush (RunLoop::instance ().getXcbConnection ());
 	}
 
 private:
 	Cairo::SurfaceHandle windowSurface;
 	Cairo::SurfaceHandle backBuffer;
-	SharedPointer<Cairo::Context> drawContext;
+	CRect backBufferSize;
+	std::shared_ptr<CairoGraphicsDeviceContext> drawContext;
+	PlatformGraphicsDevicePtr device;
 
-	void blitBackbufferToWindow (const CRect& rect)
+	void blitBackbufferToWindow (const CInvalidRectList& rects)
 	{
 		Cairo::ContextHandle windowContext (cairo_create (windowSurface));
-		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-		cairo_clip (windowContext);
 		cairo_set_source_surface (windowContext, backBuffer, 0, 0);
-		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-		cairo_fill (windowContext);
+		for (auto rect : rects)
+		{
+			cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (),
+							 rect.getHeight ());
+			cairo_clip_preserve (windowContext);
+			cairo_fill (windowContext);
+			cairo_reset_clip (windowContext);
+		}
 		cairo_surface_flush (windowSurface);
 	}
 };
@@ -366,9 +364,7 @@ struct Frame::Impl : IFrameEventHandler
 	//------------------------------------------------------------------------
 	void redraw ()
 	{
-		drawHandler.draw (dirtyRects, [&] (CDrawContext* context, const CRect& rect) {
-			frame->platformDrawRect (context, rect);
-		});
+		drawHandler.draw (dirtyRects, frame);
 		dirtyRects.clear ();
 	}
 

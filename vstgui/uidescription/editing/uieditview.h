@@ -140,6 +140,10 @@ protected:
 	CColor lassoFrameColor;
 	CColor viewHighlightColor;
 	CColor viewSelectionColor;
+
+	struct ViewAddedObserver;
+	std::unique_ptr<ViewAddedObserver> editingViewAddedObserver;
+	void disableExternalViewsOnInlineEditing (bool state);
 };
 
 } // VSTGUI

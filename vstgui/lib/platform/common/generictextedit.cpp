@@ -10,6 +10,7 @@
 #include "../../cvstguitimer.h"
 #include "../../cdropsource.h"
 #include "../../events.h"
+#include "../../cdrawcontext.h"
 
 #include <numeric>
 #include <string>
