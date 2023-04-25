@@ -233,7 +233,7 @@ HBITMAP D2DBitmap::createHBitmap ()
 	pbmi.bmiHeader.biPlanes = 1;
 	pbmi.bmiHeader.biCompression = BI_RGB;
 	pbmi.bmiHeader.biWidth = (LONG)size.x;
-	pbmi.bmiHeader.biHeight = (LONG)size.y;
+	pbmi.bmiHeader.biHeight = -(LONG)size.y;
 	pbmi.bmiHeader.biBitCount = 32;
 
 	HDC hdc = GetDC (nullptr);
