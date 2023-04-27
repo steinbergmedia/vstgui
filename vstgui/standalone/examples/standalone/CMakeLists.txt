@@ -13,6 +13,7 @@ set(standalone_sources
   "source/testmodel.cpp"
   "source/testmodel.h"
   "../../../contrib/datepicker.h"
+  "../../../contrib/evbutton.h"
 )
 
 set(standalone_resources
@@ -40,6 +41,7 @@ if(CMAKE_HOST_APPLE)
     "../../../contrib/externalview_nsview.h"
     "../../../contrib/externalview_metal.h"
     "../../../contrib/datepicker.mm"
+    "../../../contrib/evbutton_macos.mm"
   )
 elseif(MSVC)
   set(standalone_sources 
