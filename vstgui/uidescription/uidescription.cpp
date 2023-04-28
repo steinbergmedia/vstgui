@@ -567,7 +567,8 @@ Detail::UINode* UIDescription::findNodeForView (CView* view) const
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData) const
+bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& stream,
+								SharedPointer<UIAttributes> customData) const
 {
 	auto nodeList = makeOwned<Detail::UIDescList> (false);
 	for (auto& view : views)
@@ -599,7 +600,6 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 			UINode* customNode = new UINode (Detail::MainNodeNames::kCustom, customData);
 			nodeList->add (customNode);
 			customNode->forget ();
-			customData->remember ();
 		}
 		UINode baseNode ("vstgui-ui-description-view-list", nodeList);
 		return Detail::UIJsonDescWriter::write (stream, &baseNode, false);
