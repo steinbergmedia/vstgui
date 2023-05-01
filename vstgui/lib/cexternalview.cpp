@@ -218,7 +218,7 @@ CExternalControl::CExternalControl (const CRect& r, const ExternalControlPtr& vi
 		[this] () { beginEdit (); },
 		[this] (double newValue) {
 			auto old = getValue ();
-			setValueNormalized (newValue);
+			setValueNormalized (static_cast<float> (newValue));
 			if (old != getValue ())
 				valueChanged ();
 		},
