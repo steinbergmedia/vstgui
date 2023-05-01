@@ -49,6 +49,7 @@ elseif(MSVC)
     "../../../contrib/externalview_hwnd.h"
     "../../../contrib/externalview_direct3d12.h"
     "../../../contrib/datepicker_win32.cpp"
+    "../../../contrib/evbutton_win32.cpp"
 	"source/direct3dwindow.cpp"
 	"source/direct3dwindow.h"
 	"source/direct3dshader.h"
