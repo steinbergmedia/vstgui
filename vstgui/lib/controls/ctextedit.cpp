@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -87,7 +87,7 @@ void CTextEdit::setSecureStyle (bool state)
 		secureStyle = state;
 		if (platformControl)
 		{
-			
+
 		}
 	}
 }
@@ -167,7 +167,7 @@ void CTextEdit::valueChanged ()
 {
 	if (stringToValueFunction)
 		CTextLabel::valueChanged ();
-	
+
 	CParamDisplay::valueChanged ();
 }
 
@@ -230,7 +230,7 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const CButtonState& but
 				if (!(buttons & kDoubleClick))
 					return kMouseEventNotHandled;
 			}
-		
+
 			takeFocus ();
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
@@ -243,7 +243,7 @@ void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 {
 	if (!platformControl || event.type != EventType::KeyDown)
 		return;
-	
+
 	if (event.virt == VirtualKey::Escape)
 	{
 		bWasReturnPressed = false;
@@ -252,7 +252,7 @@ void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 		looseFocus ();
 		event.consumed = true;
 	}
-	else if (event.virt == VirtualKey::Return)
+	else if ((event.virt == VirtualKey::Return) || (event.virt == VirtualKey::Enter))
 	{
 		bWasReturnPressed = true;
 		getFrame ()->setFocusView (nullptr);
@@ -347,7 +347,7 @@ void CTextEdit::createPlatformTextEdit ()
 {
 	if (platformControl)
 		return;
-	
+
 	bWasReturnPressed = false;
 	platformControl = getFrame ()->getPlatformFrame ()->createPlatformTextEdit (this);
 	textEditListeners.forEach (
@@ -384,7 +384,7 @@ void CTextEdit::looseFocus ()
 
 	auto _platformControl = std::move (platformControl);
 	updateText (_platformControl);
-	
+
 	_platformControl = nullptr;
 
 	textEditListeners.forEach (
