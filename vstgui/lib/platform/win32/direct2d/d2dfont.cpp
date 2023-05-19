@@ -166,7 +166,7 @@ static COM::Ptr<IDWriteFont> getFont (IDWriteTextFormat* format, int32_t style)
 		return {};
 	UINT32 index = 0;
 	BOOL exists = FALSE;
-	if (FAILED (fontCollection->FindFamilyName (familyName.get (), &index, &exists)))
+	if (FAILED (fontCollection->FindFamilyName (familyName.get (), &index, &exists)) || !exists)
 		return {};
 	COM::Ptr<IDWriteFontFamily> fontFamily;
 	fontCollection->GetFontFamily (index, fontFamily.adoptPtr ());
