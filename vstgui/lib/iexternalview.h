@@ -86,6 +86,23 @@ struct IView
 };
 
 //------------------------------------------------------------------------
+struct IControlViewExtension
+{
+	using ValueBeginEditCallback = std::function<void ()>;
+	using ValueEndEditCallback = std::function<void ()>;
+	using ValuePerformEditCallback = std::function<void (double newValue)>;
+	struct EditCallbacks
+	{
+		ValueBeginEditCallback beginEdit;
+		ValuePerformEditCallback performEdit;
+		ValueEndEditCallback endEdit;
+	};
+
+	virtual bool setValue (double value) = 0;
+	virtual bool setEditCallbacks (const EditCallbacks& callbacks) = 0;
+};
+
+//------------------------------------------------------------------------
 /** interface for view embedder classes
  *
  *	@ingroup new_in_4_13
@@ -114,6 +131,14 @@ struct ViewAdapter : IView
 	void takeFocus () override {}
 	void looseFocus () override {}
 	void setTookFocusCallback (const TookFocusCallback& callback) override {}
+};
+
+//------------------------------------------------------------------------
+struct ControlViewAdapter : ViewAdapter,
+							IControlViewExtension
+{
+	bool setValue (double value) override { return false; }
+	bool setEditCallbacks (const EditCallbacks& callbacks) override { return false; }
 };
 
 //------------------------------------------------------------------------

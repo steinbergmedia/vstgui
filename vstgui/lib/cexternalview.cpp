@@ -10,9 +10,11 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-struct CExternalView::Impl
+struct CExternalViewBaseImpl
 {
 private:
+	using ExternalViewPtr = std::shared_ptr<ExternalView::IView>;
+
 	ExternalViewPtr view;
 	bool isAttached {false};
 
@@ -43,7 +45,7 @@ private:
 	}
 
 public:
-	Impl (const ExternalViewPtr& v) : view (v) {}
+	CExternalViewBaseImpl (const ExternalViewPtr& v) : view (v) {}
 
 	void updateSize (CViewContainer* parent, CRect localSize, CRect globalSize)
 	{
@@ -106,6 +108,12 @@ public:
 	}
 
 	ExternalView::IView* getView () const { return view.get (); }
+};
+
+//------------------------------------------------------------------------
+struct CExternalView::Impl : CExternalViewBaseImpl
+{
+	using CExternalViewBaseImpl::CExternalViewBaseImpl;
 };
 
 //------------------------------------------------------------------------
@@ -184,6 +192,123 @@ void CExternalView::setMouseEnabled (bool enable)
 
 //------------------------------------------------------------------------
 ExternalView::IView* CExternalView::getExternalView () const { return impl->getView (); }
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+struct CExternalControl::Impl : CExternalViewBaseImpl
+{
+	using CExternalViewBaseImpl::CExternalViewBaseImpl;
+};
+
+//------------------------------------------------------------------------
+CExternalControl::CExternalControl (const CRect& r, const ExternalControlPtr& view)
+: CControl (r, nullptr)
+{
+	impl = std::make_unique<Impl> (view);
+	impl->getView ()->setTookFocusCallback ([this] () {
+		if (auto frame = getFrame ())
+			frame->setFocusView (this);
+	});
+	auto control = dynamic_cast<ExternalView::IControlViewExtension*> (impl->getView ());
+	vstgui_assert (
+		control, "Please provide an object that inherits from ExternalView::IControlViewExtension");
+	control->setEditCallbacks ({
+		[this] () { beginEdit (); },
+		[this] (double newValue) {
+			auto old = getValue ();
+			setValueNormalized (static_cast<float> (newValue));
+			if (old != getValue ())
+				valueChanged ();
+		},
+		[this] () { endEdit (); },
+	});
+	setWantsFocus (true);
+}
+
+//------------------------------------------------------------------------
+CExternalControl::~CExternalControl () noexcept
+{
+	impl->getView ()->setTookFocusCallback (nullptr);
+	auto control = dynamic_cast<ExternalView::IControlViewExtension*> (impl->getView ());
+	control->setEditCallbacks ({});
+}
+
+//------------------------------------------------------------------------
+void CExternalControl::setValue (float val)
+{
+	CControl::setValue (val);
+	auto control = dynamic_cast<ExternalView::IControlViewExtension*> (impl->getView ());
+	control->setValue (getValueNormalized ());
+}
+
+//------------------------------------------------------------------------
+bool CExternalControl::attached (CView* parent)
+{
+	if (CControl::attached (parent))
+	{
+		auto frame = parent->getFrame ();
+		impl->updateSize (parent->asViewContainer (), getViewSize (),
+						  translateToGlobal (getViewSize ()));
+		impl->scaleFactorChanged (frame->getScaleFactor ());
+		impl->attach (frame);
+		frame->registerScaleFactorChangedListener (this);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool CExternalControl::removed (CView* parent)
+{
+	if (auto frame = parent->getFrame ())
+	{
+		frame->unregisterScaleFactorChangedListener (this);
+	}
+	impl->remove ();
+	return CControl::removed (parent);
+}
+
+//------------------------------------------------------------------------
+void CExternalControl::takeFocus () { impl->takeFocus (); }
+
+//------------------------------------------------------------------------
+void CExternalControl::looseFocus () { impl->looseFocus (); }
+
+//------------------------------------------------------------------------
+void CExternalControl::setViewSize (const CRect& rect, bool invalid)
+{
+	CControl::setViewSize (rect, invalid);
+	impl->updateSize (getParentView () ? getParentView ()->asViewContainer () : nullptr,
+					  getViewSize (), translateToGlobal (getViewSize ()));
+}
+
+//------------------------------------------------------------------------
+void CExternalControl::parentSizeChanged ()
+{
+	impl->updateSize (getParentView () ? getParentView ()->asViewContainer () : nullptr,
+					  getViewSize (), translateToGlobal (getViewSize ()));
+}
+
+//------------------------------------------------------------------------
+void CExternalControl::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
+{
+	impl->scaleFactorChanged (newScaleFactor);
+}
+
+//------------------------------------------------------------------------
+void CExternalControl::setMouseEnabled (bool enable)
+{
+	impl->enableMouse (enable);
+	CControl::setMouseEnabled (enable);
+}
+
+//------------------------------------------------------------------------
+ExternalView::IView* CExternalControl::getExternalView () const { return impl->getView (); }
+
+//------------------------------------------------------------------------
+bool CExternalControl::getFocusPath (CGraphicsPath& outPath) { return true; }
 
 //------------------------------------------------------------------------
 } // VSTGUI

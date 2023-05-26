@@ -27,6 +27,7 @@
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/lib/cexternalview.h"
 #include "vstgui/contrib/datepicker.h"
+#include "vstgui/contrib/evbutton.h"
 
 #include <memory>
 
@@ -186,6 +187,30 @@ public:
 #endif
 				});
 				return new CExternalView (CRect (), datePicker);
+			}
+			if (*customViewName == "Native Checkbox")
+			{
+				auto checkbox = std::make_shared<ExternalView::Button> (
+					ExternalView::Button::Type::Checkbox, "Checkbox");
+				return new CExternalControl (CRect (), checkbox);
+			}
+			if (*customViewName == "Native Push Button")
+			{
+				auto checkbox = std::make_shared<ExternalView::Button> (
+					ExternalView::Button::Type::Push, "Push");
+				return new CExternalControl (CRect (), checkbox);
+			}
+			if (*customViewName == "Native OnOff Button")
+			{
+				auto checkbox = std::make_shared<ExternalView::Button> (
+					ExternalView::Button::Type::OnOff, "OnOff");
+				return new CExternalControl (CRect (), checkbox);
+			}
+			if (*customViewName == "Native Radio Button")
+			{
+				auto checkbox = std::make_shared<ExternalView::Button> (
+					ExternalView::Button::Type::Radio, "Radio");
+				return new CExternalControl (CRect (), checkbox);
 			}
 		}
 		return controller->createView (attributes, description);
