@@ -570,7 +570,9 @@ bool D2DGraphicsDeviceContext::drawBitmap (IPlatformBitmap& bitmap, CRect dest, 
 	auto originalTransformMatrix = impl->state.tm;
 	TransformMatrix tm = originalTransformMatrix * bitmapTransform;
 	setTransformMatrix (tm);
-	bitmapTransform.inverse ().transform (dest);
+	auto invBitmapTransform = bitmapTransform.inverse ();
+	invBitmapTransform.transform (dest);
+	invBitmapTransform.transform (offset);
 
 	impl->doInContext ([&] (auto deviceContext) {
 		auto bitmapSize = bitmap.getSize ();
