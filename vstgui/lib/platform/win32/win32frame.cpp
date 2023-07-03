@@ -816,7 +816,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
 			event.mousePosition (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
 			pFrame->platformOnEvent (event);
-			if (event.consumed && getPlatformWindow ())
+			if (event.consumed && !event.ignoreFollowUpMoveAndUpEvents () && getPlatformWindow ())
 				SetCapture (getPlatformWindow ());
 			return 0;
 		}
