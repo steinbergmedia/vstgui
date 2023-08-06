@@ -564,6 +564,12 @@ bool D2DGraphicsDeviceContext::drawBitmap (IPlatformBitmap& bitmap, CRect dest, 
 	if (!d2d1Bitmap)
 		return false;
 
+	auto originalClip = impl->state.clip;
+	auto cr = dest;
+	impl->state.tm.transform (cr);
+	cr.bound (originalClip);
+	impl->state.clip = cr;
+	
 	double bitmapScaleFactor = d2dBitmap->getScaleFactor ();
 	CGraphicsTransform bitmapTransform;
 	bitmapTransform.scale (1. / bitmapScaleFactor, 1. / bitmapScaleFactor);
@@ -605,6 +611,7 @@ bool D2DGraphicsDeviceContext::drawBitmap (IPlatformBitmap& bitmap, CRect dest, 
 								   &sourceRect);
 	});
 	setTransformMatrix (originalTransformMatrix);
+	impl->state.clip = originalClip;
 	return true;
 }
 
