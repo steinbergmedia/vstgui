@@ -843,7 +843,84 @@ void D2DGraphicsDeviceContext::setTransformMatrix (const TransformMatrix& tm) co
 //------------------------------------------------------------------------
 const IPlatformGraphicsDeviceContextBitmapExt* D2DGraphicsDeviceContext::asBitmapExt () const
 {
-	return nullptr;
+	return this;
+}
+
+//------------------------------------------------------------------------
+bool D2DGraphicsDeviceContext::drawBitmapNinePartTiled (IPlatformBitmap& bitmap, CRect dest,
+														const CNinePartTiledDescription& desc,
+														double alpha,
+														BitmapInterpolationQuality quality) const
+{
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool D2DGraphicsDeviceContext::fillRectWithBitmap (IPlatformBitmap& bitmap, CRect srcRect,
+												   CRect dstRect, double alpha,
+												   BitmapInterpolationQuality quality) const
+{
+	D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (&bitmap);
+	if (!d2dBitmap || !d2dBitmap->getSource ())
+		return false;
+	auto d2d1Bitmap =
+		D2DBitmapCache::getBitmap (d2dBitmap, impl->deviceContext.get (), impl->device.get ());
+	if (!d2d1Bitmap)
+		return false;
+
+	auto originalClip = impl->state.clip;
+	auto cr = dstRect;
+	impl->state.tm.transform (cr);
+	cr.bound (originalClip);
+
+	double bitmapScaleFactor = d2dBitmap->getScaleFactor ();
+	CGraphicsTransform bitmapTransform;
+	bitmapTransform.scale (1. / bitmapScaleFactor, 1. / bitmapScaleFactor);
+	auto invBitmapTransform = bitmapTransform.inverse ();
+	invBitmapTransform.transform (dstRect);
+	invBitmapTransform.transform (srcRect);
+
+	D2D1_IMAGE_BRUSH_PROPERTIES imageBrushProp = {};
+	imageBrushProp.sourceRectangle = convert (srcRect);
+	imageBrushProp.extendModeX = imageBrushProp.extendModeY = D2D1_EXTEND_MODE_WRAP;
+	switch (quality)
+	{
+		case BitmapInterpolationQuality::kLow:
+			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+			break;
+
+		case BitmapInterpolationQuality::kMedium:
+		case BitmapInterpolationQuality::kHigh:
+		default:
+			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_LINEAR;
+			break;
+	}
+	CGraphicsTransform brushTransform;
+	brushTransform.translate (dstRect.getTopLeft ());
+
+	D2D1_BRUSH_PROPERTIES brushProp = {};
+	brushProp.opacity = 1.f;
+	brushProp.transform = convert (brushTransform);
+
+	COM::Ptr<ID2D1ImageBrush> brush;
+	auto hr = impl->deviceContext->CreateImageBrush (d2d1Bitmap, imageBrushProp, brushProp,
+													 brush.adoptPtr ());
+	if (FAILED (hr))
+		return false;
+
+	impl->state.clip = cr;
+
+	auto originalTransformMatrix = impl->state.tm;
+	TransformMatrix tm = originalTransformMatrix * bitmapTransform;
+	setTransformMatrix (tm);
+
+	impl->doInContext ([&] (auto deviceContext) {
+		deviceContext->FillRectangle (convert (dstRect), brush.get ());
+	});
+
+	setTransformMatrix (originalTransformMatrix);
+	impl->state.clip = originalClip;
+	return true;
 }
 
 //------------------------------------------------------------------------

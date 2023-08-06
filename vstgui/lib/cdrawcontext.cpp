@@ -409,6 +409,11 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 {
 	if (srcRect.isEmpty () || dstRect.isEmpty ())
 		return;
+	if (srcRect.getWidth () == dstRect.getWidth () && srcRect.getHeight () == dstRect.getHeight ())
+	{
+		drawBitmap (bitmap, dstRect, srcRect.getTopLeft (), alpha);
+		return;
+	}
 
 	if (impl->device)
 	{

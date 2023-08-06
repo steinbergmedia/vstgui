@@ -17,7 +17,8 @@ namespace VSTGUI {
 class D2DGraphicsDevice;
 
 //------------------------------------------------------------------------
-class D2DGraphicsDeviceContext : public IPlatformGraphicsDeviceContext
+class D2DGraphicsDeviceContext : public IPlatformGraphicsDeviceContext,
+								 public IPlatformGraphicsDeviceContextBitmapExt
 {
 public:
 	D2DGraphicsDeviceContext (const D2DGraphicsDevice& device, ID2D1DeviceContext* deviceContext,
@@ -64,6 +65,12 @@ public:
 
 	// extension
 	const IPlatformGraphicsDeviceContextBitmapExt* asBitmapExt () const override;
+
+	bool drawBitmapNinePartTiled (IPlatformBitmap& bitmap, CRect dest,
+								  const CNinePartTiledDescription& desc, double alpha,
+								  BitmapInterpolationQuality quality) const override;
+	bool fillRectWithBitmap (IPlatformBitmap& bitmap, CRect srcRect, CRect dstRect, double alpha,
+							 BitmapInterpolationQuality quality) const override;
 
 	// private
 	void drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos, CColor color, bool antialias);
