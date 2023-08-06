@@ -331,6 +331,13 @@ struct D2DGraphicsDeviceContext::Impl
 
 	const D2DGraphicsDevice& device;
 	COM::Ptr<ID2D1DeviceContext> deviceContext;
+
+#if defined(VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY) &&                                          \
+	VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY == 1
+	static constexpr auto antialiasMode = D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE;
+#else
+	static constexpr auto antialiasMode = D2D1_TEXT_ANTIALIAS_MODE_DEFAULT;
+#endif
 };
 
 //------------------------------------------------------------------------
@@ -928,7 +935,7 @@ void D2DGraphicsDeviceContext::drawTextLayout (IDWriteTextLayout* textLayout, CP
 											   CColor color, bool antialias)
 {
 	impl->doInContext ([&] (auto deviceContext) {
-		deviceContext->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
+		deviceContext->SetTextAntialiasMode (antialias ? impl->antialiasMode
 													   : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 		if (impl->state.drawMode.integralMode ())
 			pos.makeIntegral ();
