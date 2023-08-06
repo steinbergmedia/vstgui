@@ -3,6 +3,16 @@
 ##########################################################################################
 set(target vstgui)
 
+option(
+    VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY
+    "Use the legacy platform inconsistency text rendering"
+    OFF
+)
+
+if(${VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY})
+    target_compile_definitions(${target} PRIVATE VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY=1)
+endif()
+
 set(${target}_common_sources
     animation/animations.cpp
     animation/animations.h
