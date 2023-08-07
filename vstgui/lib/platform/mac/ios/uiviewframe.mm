@@ -63,12 +63,8 @@ using namespace VSTGUI;
 	auto deviceContext = std::make_shared<CoreGraphicsDeviceContext> (
 		*cgDevice.get (), UIGraphicsGetCurrentContext ());
 
-	// TODO: refactor IPlatformFrameCallback to take a platform graphics device context
-	CDrawContext drawContext (
-		std::static_pointer_cast<IPlatformGraphicsDeviceContext> (deviceContext),
-		CRectFromCGRect ([self bounds]), self.layer.contentsScale);
-
-	uiViewFrame->getFrame ()->platformDrawRect (&drawContext, CRectFromCGRect (rect));
+	uiViewFrame->getFrame ()->platformDrawRects (deviceContext, self.layer.contentsScale,
+												 {CRectFromCGRect (rect)});
 }
 
 //-----------------------------------------------------------------------------
