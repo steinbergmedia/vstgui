@@ -232,7 +232,7 @@ struct ViewController : DelegationController,
 	{
 		if (auto frame = view->getFrame ())
 		{
-			frame->registerScaleFactorChangedListeneer (this);
+			frame->registerScaleFactorChangedListener (this);
 			scaleFactor = frame->getScaleFactor ();
 			updateMandelbrot ();
 		}
@@ -241,7 +241,7 @@ struct ViewController : DelegationController,
 	{
 		if (auto frame = view->getFrame ())
 		{
-			frame->unregisterScaleFactorChangedListeneer (this);
+			frame->unregisterScaleFactorChangedListener (this);
 		}
 	}
 	void viewWillDelete (CView* view) override
