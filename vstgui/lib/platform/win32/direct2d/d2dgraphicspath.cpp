@@ -9,8 +9,8 @@
 #include "../../../cgradient.h"
 #include "../../../cstring.h"
 #include "../win32support.h"
-#include "d2ddrawcontext.h"
 #include "d2dfont.h"
+#include "d2d.h"
 #include <dwrite.h>
 #include <winnt.h>
 #include <cassert>
@@ -104,132 +104,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class AlignPixelSink final : public ID2D1SimplifiedGeometrySink
-{
-public:
-	HRESULT STDMETHODCALLTYPE QueryInterface (REFIID iid, void** ppvObject) override
-	{
-		if (iid == __uuidof(IUnknown) || iid == __uuidof(ID2D1SimplifiedGeometrySink))
-		{
-			*ppvObject = static_cast<ID2D1SimplifiedGeometrySink*> (this);
-			AddRef ();
-			return S_OK;
-		}
-		else
-			return E_NOINTERFACE;
-	}
-	ULONG STDMETHODCALLTYPE AddRef () override { return 1; }
-	ULONG STDMETHODCALLTYPE Release () override { return 1; }
-
-	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
-	{
-		CPoint point (p.x, p.y);
-		if (context->getDrawMode ().antiAliasing ())
-			point.offset (-0.5, -0.5);
-		if (context)
-			context->pixelAllign (point);
-		return D2D1::Point2F (static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y));
-	}
-
-	STDMETHOD_ (void, AddBeziers) (const D2D1_BEZIER_SEGMENT* beziers, UINT beziersCount) override
-	{
-		for (UINT i = 0; i < beziersCount; ++i)
-		{
-			D2D1_BEZIER_SEGMENT segment = {};
-			segment.point1 = alignPoint (beziers[i].point1);
-			segment.point2 = alignPoint (beziers[i].point2);
-			segment.point3 = alignPoint (beziers[i].point3);
-			sink->AddBezier (segment);
-		}
-	}
-
-	STDMETHOD_ (void, AddLines) (const D2D1_POINT_2F* points, UINT pointsCount) override
-	{
-		for (UINT i = 0; i < pointsCount; ++i)
-		{
-			D2D_POINT_2F point = alignPoint (points[i]);
-			sink->AddLine (point);
-		}
-	}
-
-	STDMETHOD_ (void, BeginFigure)
-	(D2D1_POINT_2F startPoint, D2D1_FIGURE_BEGIN figureBegin) override
-	{
-		startPoint = alignPoint (startPoint);
-		sink->BeginFigure (startPoint, figureBegin);
-	}
-
-	STDMETHOD_ (void, EndFigure) (D2D1_FIGURE_END figureEnd) override
-	{
-		sink->EndFigure (figureEnd);
-	}
-
-	STDMETHOD_ (void, SetFillMode) (D2D1_FILL_MODE fillMode) override
-	{
-		sink->SetFillMode (fillMode);
-	}
-
-	STDMETHOD_ (void, SetSegmentFlags) (D2D1_PATH_SEGMENT vertexFlags) override
-	{
-		sink->SetSegmentFlags (vertexFlags);
-	}
-
-	STDMETHOD (Close) () override
-	{
-		isClosed = true;
-		return sink->Close ();
-	}
-
-	AlignPixelSink (D2DDrawContext* context)
-	: path (nullptr), sink (nullptr), context (context), isClosed (true)
-	{
-	}
-
-	~AlignPixelSink ()
-	{
-		if (sink)
-			sink->Release ();
-		if (path)
-			path->Release ();
-	}
-
-	bool init ()
-	{
-		getD2DFactory ()->CreatePathGeometry (&path);
-		if (path == nullptr)
-			return false;
-		if (!SUCCEEDED (path->Open (&sink)))
-			return false;
-		isClosed = false;
-		return true;
-	}
-
-	ID2D1PathGeometry* get ()
-	{
-		if (path)
-		{
-			if (sink)
-			{
-				if (!isClosed)
-					sink->Close ();
-				sink->Release ();
-				sink = nullptr;
-			}
-			ID2D1PathGeometry* result = path;
-			path = nullptr;
-			return result;
-		}
-		return nullptr;
-	}
-
-private:
-	ID2D1PathGeometry* path;
-	ID2D1GeometrySink* sink;
-	D2DDrawContext* context;
-	bool isClosed;
-};
-
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath (ID2D1PathGeometry* path, PlatformGraphicsPathFillMode fillMode)
@@ -254,33 +128,6 @@ ID2D1Geometry* D2DGraphicsPath::createTransformedGeometry (ID2D1Factory* factory
 		return nullptr;
 	return tg;
 	;
-}
-
-//-----------------------------------------------------------------------------
-ID2D1Geometry* D2DGraphicsPath::createPixelAlignedGeometry (ID2D1Factory* factory,
-															D2DDrawContext& context,
-															const CGraphicsTransform* tm) const
-{
-	ID2D1Geometry* workingPath = path;
-	workingPath->AddRef ();
-	if (tm)
-		workingPath = createTransformedGeometry (factory, *tm);
-
-	AlignPixelSink alignSink (&context);
-	if (alignSink.init () == false)
-	{
-		workingPath->Release ();
-		return nullptr;
-	}
-	if (!SUCCEEDED (workingPath->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES,
-										   nullptr, &alignSink)))
-	{
-		workingPath->Release ();
-		return nullptr;
-	}
-	workingPath->Release ();
-
-	return alignSink.get ();
 }
 
 //-----------------------------------------------------------------------------
@@ -324,12 +171,12 @@ void D2DGraphicsPath::addArc (const CRect& rect, double startAngle, double endAn
 		start.y = r.top + center.y + center.y * sin (startAngle);
 		if (!figureOpen)
 		{
-			sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
+			sink->BeginFigure (convert (start), D2D1_FIGURE_BEGIN_FILLED);
 			figureOpen = true;
 		}
 		else if (lastPos != start)
 		{
-			sink->AddLine (makeD2DPoint (start));
+			sink->AddLine (convert (start));
 		}
 
 		double sweepangle = endAngle - startAngle;
@@ -355,11 +202,12 @@ void D2DGraphicsPath::addArc (const CRect& rect, double startAngle, double endAn
 		endPoint.y = r.top + center.y + center.y * sin (endAngle);
 
 		D2D1_ARC_SEGMENT arc;
-		arc.size = makeD2DSize (r.getWidth () / 2., r.getHeight () / 2.);
+		arc.size = {static_cast<FLOAT> (r.getWidth () / 2.),
+					static_cast<FLOAT> (r.getHeight () / 2.)};
 		arc.rotationAngle = 0;
 		arc.sweepDirection =
 			clockwise ? D2D1_SWEEP_DIRECTION_CLOCKWISE : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE;
-		arc.point = makeD2DPoint (endPoint);
+		arc.point = convert (endPoint);
 		arc.arcSize = fabs (sweepangle) <= M_PI ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE;
 		sink->AddArc (arc);
 		lastPos = endPoint;
@@ -382,16 +230,16 @@ void D2DGraphicsPath::addEllipse (const CRect& rect)
 		}
 		if (!figureOpen)
 		{
-			sink->BeginFigure (makeD2DPoint (top), D2D1_FIGURE_BEGIN_FILLED);
+			sink->BeginFigure (convert (top), D2D1_FIGURE_BEGIN_FILLED);
 			figureOpen = true;
 		}
 		D2D1_ARC_SEGMENT arc =
-		    D2D1::ArcSegment (makeD2DPoint (bottom),
-		                      D2D1::SizeF (static_cast<FLOAT> (rect.getWidth () / 2.f),
-		                                   static_cast<FLOAT> (rect.getHeight () / 2.f)),
-		                      180.f, D2D1_SWEEP_DIRECTION_CLOCKWISE, D2D1_ARC_SIZE_SMALL);
+			D2D1::ArcSegment (convert (bottom),
+							  D2D1::SizeF (static_cast<FLOAT> (rect.getWidth () / 2.f),
+										   static_cast<FLOAT> (rect.getHeight () / 2.f)),
+							  180.f, D2D1_SWEEP_DIRECTION_CLOCKWISE, D2D1_ARC_SIZE_SMALL);
 		sink->AddArc (arc);
-		arc.point = makeD2DPoint (top);
+		arc.point = convert (top);
 		sink->AddArc (arc);
 		lastPos = top;
 	}
@@ -492,6 +340,7 @@ void D2DGraphicsPath::finishBuilding ()
 			sink->EndFigure (D2D1_FIGURE_END_OPEN);
 		HRESULT res = sink->Close ();
 		assert (SUCCEEDED (res));
+		(void)res; // prevent warning in release builds
 		sink->Release ();
 		sinkInternal = nullptr;
 		figureOpen = false;
@@ -513,7 +362,7 @@ bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled,
 		matrix._32 = (FLOAT)transform->dy;
 	}
 	BOOL result = false;
-	path->FillContainsPoint (makeD2DPoint (p), matrix, &result);
+	path->FillContainsPoint (convert (p), matrix, &result);
 	return result ? true : false;
 }
 

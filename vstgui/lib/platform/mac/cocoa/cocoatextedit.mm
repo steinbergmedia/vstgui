@@ -188,9 +188,6 @@ struct VSTGUI_NSTextFieldT : RuntimeObjCClass<VSTGUI_NSTextFieldT<SecureT>>
 			if (auto tv = static_cast<NSTextView*> ([[self window] fieldEditor:YES forObject:self]))
 				tv.insertionPointColor = nsColorFromCColor (tec->platformGetFontColor ());
 
-			if ([frameView respondsToSelector:@selector (makeSubViewFirstResponder:)])
-				[frameView performSelector:@selector (makeSubViewFirstResponder:) withObject:self];
-
 			dispatch_after (dispatch_time (DISPATCH_TIME_NOW, (int64_t) (1 * NSEC_PER_MSEC)),
 							dispatch_get_main_queue (), ^{
 								[[self window] makeFirstResponder:self];

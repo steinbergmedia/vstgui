@@ -234,9 +234,11 @@ public:
 	void removeControl (CControl* control)
 	{
 		auto it = std::find (controls.begin (), controls.end (), control);
-		vstgui_assert (it != controls.end ());
-		onRemoveControl (control);
-		controls.erase (it);
+		if (it != controls.end ())
+		{
+			onRemoveControl (control);
+			controls.erase (it);
+		}
 	}
 
 	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }

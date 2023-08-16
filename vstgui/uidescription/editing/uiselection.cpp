@@ -326,16 +326,7 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 				CDrawContext::Transform transform (context,
 				                                   CGraphicsTransform ().translate (p.x, p.y));
 				context.setClipRect (view->getViewSize ());
-				if (IPlatformViewLayerDelegate* layer = view.cast<IPlatformViewLayerDelegate> ())
-				{
-					CRect r (view->getViewSize ());
-					r.originize ();
-					layer->drawViewLayer (&context, r);
-				}
-				else
-				{
-					view->drawRect (&context, view->getViewSize ());
-				}
+				view->drawRect (&context, view->getViewSize ());
 			}
 		}
 		if (anchorView && anchorView->isAttached ())

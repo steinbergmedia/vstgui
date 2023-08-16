@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -418,7 +418,7 @@ CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitma
 	{
 		inset = 3;
 	}
-	
+
 	colorShadowHandle = kGreyCColor;
 	colorHandle = kWhiteCColor;
 	coronaLineStyle = kLineOnOffDash;
@@ -611,7 +611,7 @@ void CKnob::drawHandleAsLine (CDrawContext* pContext) const
 	pContext->setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
 	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
 	pContext->drawLine (where, origin);
-	
+
 	where.offset (1, -1);
 	origin.offset (1, -1);
 	pContext->setFrameColor (colorHandle);

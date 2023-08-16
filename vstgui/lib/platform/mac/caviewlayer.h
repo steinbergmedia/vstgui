@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -9,11 +9,21 @@
 #if MAC_COCOA
 
 #include "../platform_macos.h"
+#include <functional>
 
 namespace VSTGUI {
-	
+
+//------------------------------------------------------------------------
+struct ICAViewLayerPrivate
+{
+	virtual ~ICAViewLayerPrivate () = default;
+	virtual void drawLayer (void* cgContext) = 0;
+};
+
 //-----------------------------------------------------------------------------
-class CAViewLayer : public IPlatformViewLayer, public ICocoaViewLayer
+class CAViewLayer : public IPlatformViewLayer,
+					public ICocoaViewLayer,
+					private ICAViewLayerPrivate
 //-----------------------------------------------------------------------------
 {
 public:
@@ -21,18 +31,21 @@ public:
 	~CAViewLayer () noexcept override;
 
 	bool init (IPlatformViewLayerDelegate* drawDelegate);
-	
+
 	void invalidRect (const CRect& size) override;
 	void setSize (const CRect& size) override;
 	void setZIndex (uint32_t zIndex) override;
 	void setAlpha (float alpha) override;
-	void draw (CDrawContext* context, const CRect& updateRect) override;
 	void onScaleFactorChanged (double newScaleFactor) override;
 
 	CALayer* getCALayer () const override { return layer; }
+
 //-----------------------------------------------------------------------------
-protected:
-	CALayer* layer;
+private:
+	void drawLayer (void* cgContext) final;
+
+	CALayer* layer {nullptr};
+	IPlatformViewLayerDelegate* drawDelegate {nullptr};
 };
 
 } // VSTGUI

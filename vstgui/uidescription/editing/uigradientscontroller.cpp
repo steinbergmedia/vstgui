@@ -15,6 +15,7 @@
 #include "../../lib/cgradientview.h"
 #include "../../lib/ifocusdrawing.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/cdrawcontext.h"
 #include "../../lib/events.h"
 #include <algorithm>
 

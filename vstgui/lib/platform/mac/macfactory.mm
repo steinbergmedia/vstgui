@@ -11,8 +11,8 @@
 #include "../iplatformtimer.h"
 #include "cfontmac.h"
 #include "cgbitmap.h"
-#include "cgdrawcontext.h"
 #include "quartzgraphicspath.h"
+#include "coregraphicsdevicecontext.h"
 #include "cocoa/nsviewframe.h"
 #include "ios/uiviewframe.h"
 #include "macclipboard.h"
@@ -35,6 +35,7 @@ struct MacFactory::Impl
 	CFBundleRef bundle {nullptr};
 	bool useAsynchronousLayerDrawing {true};
 	bool visualizeRedrawAreas {false};
+	CoreGraphicsDeviceFactory graphicsDeviceFactory;
 };
 
 //-----------------------------------------------------------------------------
@@ -210,18 +211,6 @@ auto MacFactory::getClipboard () const noexcept -> DataPackagePtr
 #endif
 }
 
-//------------------------------------------------------------------------
-auto MacFactory::createOffscreenContext (const CPoint& size, double scaleFactor) const noexcept
-	-> COffscreenContextPtr
-{
-	auto bitmap = makeOwned<CGBitmap> (size * scaleFactor);
-	bitmap->setScaleFactor (scaleFactor);
-	auto context = makeOwned<CGDrawContext> (bitmap);
-	if (context->getCGContext ())
-		return std::move (context);
-	return nullptr;
-}
-
 //-----------------------------------------------------------------------------
 PlatformGradientPtr MacFactory::createGradient () const noexcept
 {
@@ -237,6 +226,12 @@ PlatformFileSelectorPtr MacFactory::createFileSelector (PlatformFileSelectorStyl
 	return createCocoaFileSelector (style, nsViewFrame);
 #endif
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformGraphicsDeviceFactory& MacFactory::getGraphicsDeviceFactory () const noexcept
+{
+	return impl->graphicsDeviceFactory;
 }
 
 //-----------------------------------------------------------------------------

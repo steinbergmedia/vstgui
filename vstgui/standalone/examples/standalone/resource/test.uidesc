@@ -23,25 +23,25 @@
 				"SelectedTemplate": "view"
 			},
 			"UIEditController": {
-				"EditViewScale": "1.5",
-				"EditorSize": "0, 0, 1158, 997",
-				"SplitViewSize_0_0": "0.7415036045314109536263913469156250357628",
-				"SplitViewSize_0_1": "0.2378990731204943254173400646322988905013",
-				"SplitViewSize_1_0": "0.5849639546858907968029939183907117694616",
-				"SplitViewSize_1_1": "0.4109165808444902312501767482899595052004",
-				"SplitViewSize_2_0": "0.6424870466321243034357735268713440746069",
-				"SplitViewSize_2_1": "0.3531951640759931065893795221199980005622",
-				"TabSwitchValue": "2",
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 923, 779",
+				"SplitViewSize_0_0": "0.8034528552456838834672225857502780854702",
+				"SplitViewSize_0_1": "0.1699867197875165880649461769280605949461",
+				"SplitViewSize_1_0": "0.6108897742363877947369132925814483314753",
+				"SplitViewSize_1_1": "0.3864541832669322607429762683750595897436",
+				"SplitViewSize_2_0": "0.5796316359696641606902289822755847126245",
+				"SplitViewSize_2_1": "0.4149512459371614281344875507784308865666",
+				"TabSwitchValue": "0",
 				"UI Theme": "Dark",
 				"Version": "1",
 				"ViewBackground": "3"
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "24"
+				"SelectedRow": "4"
 			},
 			"UIDescFilePath": {
-				"path": "/Volumes/vst3/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"
+				"path": "/Users/scheffle/git/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"
 			},
 			"UITagsDataSource": {
 				"SelectedRow": "-1"
@@ -71,12 +71,12 @@
 					"background-color": "~ BlackCColor",
 					"background-color-draw-style": "filled and stroked",
 					"class": "CViewContainer",
-					"maxSize": "800, 800",
-					"minSize": "410, 350",
+					"maxSize": "800, 1000",
+					"minSize": "410, 515",
 					"mouse-enabled": "true",
 					"opacity": "1",
 					"origin": "0, 0",
-					"size": "410, 350",
+					"size": "410, 515",
 					"sub-controller": "DisabledControlsController",
 					"transparent": "true",
 					"wants-focus": "false"
@@ -104,7 +104,7 @@
 							"class": "CViewContainer",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "0, 330",
+							"origin": "0, 495",
 							"size": "410, 20",
 							"transparent": "false",
 							"wants-focus": "false"
@@ -126,7 +126,7 @@
 							"radial-center": "0.5, 0.5",
 							"radial-radius": "1",
 							"round-rect-radius": "5",
-							"size": "410, 350",
+							"size": "410, 515",
 							"transparent": "false",
 							"wants-focus": "false"
 						}
@@ -188,6 +188,79 @@
 							"wants-focus": "true",
 							"wheel-inc-value": "0.05",
 							"zoom-factor": "10"
+						}
+					},
+					"CStringListControl": {
+						"attributes": {
+							"back-color": "~ WhiteCColor",
+							"back-color-selected": "TextShadow",
+							"class": "CStringListControl",
+							"control-tag": "Weekdays",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-color": "~ BlackCColor",
+							"font-color-selected": "~ BlackCColor",
+							"hover-color": "Hover",
+							"line-color": "~ BlackCColor",
+							"line-width": "-1",
+							"max-value": "7",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "15, 200",
+							"row-height": "16",
+							"size": "110, 144",
+							"style-hover": "true",
+							"sub-controller": "WeekdaysController",
+							"text-alignment": "center",
+							"text-inset": "5",
+							"tooltip": "String List Control",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextEdit": {
+						"attributes": {
+							"autosize": "left right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextEdit",
+							"control-tag": "MutableString",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ WhiteCColor",
+							"frame-width": "1",
+							"immediate-text-change": "true",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "40, 50",
+							"round-rect-radius": "3",
+							"secure-style": "false",
+							"shadow-color": "~ RedCColor",
+							"size": "260, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-doubleclick": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "This is a string value",
+							"tooltip": "Text Edit",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
 						}
 					},
 					"CSlider": {
@@ -637,6 +710,7 @@
 							"autosize": "left right top bottom ",
 							"back-color": "~ WhiteCColor",
 							"background-offset": "0, 0",
+							"bitmap": "box",
 							"class": "CMultiLineTextLabel",
 							"default-value": "0.5",
 							"font": "EffectsEighty",
@@ -652,7 +726,7 @@
 							"origin": "135, 290",
 							"round-rect-radius": "6",
 							"shadow-color": "TextShadow",
-							"size": "265, 50",
+							"size": "130, 215",
 							"style-3D-in": "false",
 							"style-3D-out": "false",
 							"style-no-draw": "false",
@@ -661,7 +735,7 @@
 							"style-round-rect": "false",
 							"style-shadow-text": "false",
 							"text-alignment": "left",
-							"text-inset": "3, 3",
+							"text-inset": "13, 13",
 							"text-rotation": "0",
 							"text-shadow-offset": "1, 1",
 							"title": "This is a multine line text label! That wraps the lines if they are too long.",
@@ -815,7 +889,7 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "265, 225",
+							"origin": "270, 225",
 							"size": "70, 70",
 							"skip-handle-drawing": "true",
 							"tooltip": "Knob",
@@ -824,49 +898,6 @@
 							"wants-focus": "true",
 							"wheel-inc-value": "0.1",
 							"zoom-factor": "1.5"
-						}
-					},
-					"CTextEdit": {
-						"attributes": {
-							"autosize": "left right top ",
-							"back-color": "~ BlackCColor",
-							"background-offset": "0, 0",
-							"class": "CTextEdit",
-							"control-tag": "MutableString",
-							"default-value": "0.5",
-							"font": "~ NormalFont",
-							"font-antialias": "true",
-							"font-color": "~ WhiteCColor",
-							"frame-color": "~ WhiteCColor",
-							"frame-width": "1",
-							"immediate-text-change": "true",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "40, 50",
-							"round-rect-radius": "3",
-							"secure-style": "false",
-							"shadow-color": "~ RedCColor",
-							"size": "260, 20",
-							"style-3D-in": "false",
-							"style-3D-out": "false",
-							"style-doubleclick": "false",
-							"style-no-draw": "false",
-							"style-no-frame": "false",
-							"style-no-text": "false",
-							"style-round-rect": "true",
-							"style-shadow-text": "false",
-							"text-alignment": "center",
-							"text-inset": "0, 0",
-							"text-rotation": "0",
-							"text-shadow-offset": "1, 1",
-							"title": "This is a string value",
-							"tooltip": "Text Edit",
-							"transparent": "false",
-							"value-precision": "2",
-							"wants-focus": "true",
-							"wheel-inc-value": "0.1"
 						}
 					},
 					"CParamDisplay": {
@@ -908,52 +939,115 @@
 							"wheel-inc-value": "0.1"
 						}
 					},
-					"CStringListControl": {
+					"CScrollView": {
 						"attributes": {
-							"back-color": "~ WhiteCColor",
-							"back-color-selected": "TextShadow",
-							"class": "CStringListControl",
-							"control-tag": "Weekdays",
-							"default-value": "0.5",
-							"font": "~ NormalFont",
-							"font-color": "~ BlackCColor",
-							"font-color-selected": "~ BlackCColor",
-							"hover-color": "Hover",
-							"line-color": "~ BlackCColor",
-							"line-width": "-1",
-							"max-value": "7",
-							"min-value": "0",
+							"auto-drag-scrolling": "false",
+							"auto-hide-scrollbars": "false",
+							"autosize": "left top bottom ",
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"bordered": "true",
+							"class": "CScrollView",
+							"container-size": "400, 800",
+							"follow-focus-view": "false",
+							"horizontal-scrollbar": "true",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "15, 200",
-							"row-height": "16",
-							"size": "110, 144",
-							"style-hover": "true",
-							"sub-controller": "WeekdaysController",
-							"text-alignment": "center",
-							"text-inset": "5",
-							"tooltip": "String List Control",
-							"transparent": "false",
-							"wants-focus": "true",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CAutoAnimation": {
-						"attributes": {
-							"animation-time": "32",
-							"bitmap": "autoanimation",
-							"bitmap-offset": "5, 5",
-							"class": "CAutoAnimation",
-							"default-value": "0.5",
-							"max-value": "36",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "85, 5",
-							"size": "30, 30",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
+							"origin": "15, 355",
+							"overlay-scrollbars": "false",
+							"scrollbar-background-color": "#ffffffc8",
+							"scrollbar-frame-color": "~ BlackCColor",
+							"scrollbar-scroller-color": "~ BlueCColor",
+							"scrollbar-width": "12",
+							"size": "110, 150",
+							"transparent": "true",
+							"vertical-scrollbar": "true",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CView": {
+								"attributes": {
+									"autosize": "left top ",
+									"class": "CView",
+									"custom-view-name": "DatePicker",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "5, 10",
+									"size": "110, 25",
+									"sub-controller": "DatePickerController",
+									"transparent": "false",
+									"wants-focus": "true"
+								}
+							},
+							"CControl": {
+								"attributes": {
+									"class": "CControl",
+									"control-tag": "Activate",
+									"custom-view-name": "Native Checkbox",
+									"default-value": "0.5",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "5, 40",
+									"size": "110, 20",
+									"sub-controller": "DatePickerController",
+									"transparent": "false",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CControl": {
+								"attributes": {
+									"class": "CControl",
+									"custom-view-name": "Native Push Button",
+									"default-value": "0.5",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "0, 65",
+									"size": "100, 24",
+									"sub-controller": "DatePickerController",
+									"transparent": "false",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CControl": {
+								"attributes": {
+									"class": "CControl",
+									"custom-view-name": "Native OnOff Button",
+									"default-value": "0.5",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "0, 90",
+									"size": "100, 25",
+									"sub-controller": "DatePickerController",
+									"transparent": "false",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CControl": {
+								"attributes": {
+									"class": "CControl",
+									"custom-view-name": "Native Radio Button",
+									"default-value": "0.5",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "5, 120",
+									"size": "100, 20",
+									"sub-controller": "DatePickerController",
+									"transparent": "false",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							}
 						}
 					}
 				}

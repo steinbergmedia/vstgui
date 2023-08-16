@@ -18,6 +18,7 @@
 #include "../../lib/cfileselector.h"
 #include "../../lib/idatapackage.h"
 #include "../../lib/dragging.h"
+#include "../../lib/cdrawcontext.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
@@ -115,13 +116,17 @@ public:
 				context->setFrameColor (kBlueCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineSolid);
-				context->drawLines (rowLines);
-				context->drawLines (colLines);
+				if (!rowLines.empty ())
+					context->drawLines (rowLines);
+				if (!colLines.empty ())
+					context->drawLines (colLines);
 				context->setFrameColor (kRedCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (lineOnOffDash2Style);
-				context->drawLines (rowLines);
-				context->drawLines (colLines);
+				if (!rowLines.empty ())
+					context->drawLines (rowLines);
+				if (!colLines.empty ())
+					context->drawLines (colLines);
 			}
 		}
 	}
@@ -685,7 +690,8 @@ void UIBitmapSettingsController::recreateBitmap ()
 //----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::valueChanged (CControl* control)
 {
-	switch (control->getTag ())
+	auto tag = control->getTag ();
+	switch (tag)
 	{
 		case kBitmapPathTag:
 		{
@@ -769,6 +775,12 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			desc.framesPerRow = static_cast<uint16_t> (controls[kMultiFrameFramesPerRowTag]->getValue ());
 			desc.frameSize.x = controls[kMultiFrameSizeWidth]->getValue ();
 			desc.frameSize.y = controls[kMultiFrameSizeHeight]->getValue ();
+			if (bitmap && tag == kMultiFrameFramesTag && desc.frameSize.x == 0. && desc.frameSize.y == 0.)
+			{
+				auto bitmapSize = bitmap->getSize ();
+				desc.frameSize.x = bitmapSize.x;
+				desc.frameSize.y = bitmapSize.y / desc.numFrames;
+			}
 			actionPerformer->performBitmapMultiFrameChange (bitmapName.data (), &desc);
 			recreateBitmap ();
 			auto textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();

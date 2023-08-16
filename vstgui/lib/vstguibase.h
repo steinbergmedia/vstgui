@@ -12,8 +12,8 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  12
-#define VSTGUI_VERSION_PATCHLEVEL  3
+#define VSTGUI_VERSION_MINOR  13
+#define VSTGUI_VERSION_PATCHLEVEL  0
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -544,6 +544,7 @@ private:
 
 #define VSTGUI_NEWER_THAN_4_10 VSTGUI_NEWER_THAN (4, 10)
 #define VSTGUI_NEWER_THAN_4_11 VSTGUI_NEWER_THAN (4, 11)
+#define VSTGUI_NEWER_THAN_4_12 VSTGUI_NEWER_THAN (4, 12)
 
 } // VSTGUI
 
