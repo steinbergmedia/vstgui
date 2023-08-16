@@ -282,7 +282,7 @@ bool Delegate::handleCommand (const Command& command)
 		else
 		{
 			config.uiDescFileName = "test.uidesc";
-			config.windowConfig.style.border ();
+			config.windowConfig.style.border ().size ();
 			config.windowConfig.style.movableByWindowBackground ();
 			auto customization = UIDesc::Customization::make ();
 			customization->addCreateViewControllerFunc (
