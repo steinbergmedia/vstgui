@@ -49,7 +49,6 @@ const PatternHandle& Gradient::getRadialGradient (CPoint center, CCoord radius,
 {
 	if (!radialGradient)
 	{
-		auto end = center + originOffset;
 		radialGradient = PatternHandle (
 			cairo_pattern_create_radial (center.x, center.y, 0., center.x, center.y, radius));
 
