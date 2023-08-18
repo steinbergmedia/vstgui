@@ -624,8 +624,33 @@ bool CairoGraphicsDeviceContext::fillRadialGradient (IPlatformGraphicsPath& path
 	auto cairoPath = dynamic_cast<Cairo::GraphicsPath*> (&path);
 	if (!cairoPath)
 		return false;
-	// TODO: Implementation
-	return false;
+
+	auto cairoGradient = dynamic_cast<const Cairo::Gradient*> (&gradient);
+	if (!cairoGradient)
+		return false;
+	impl->doInContext ([&] () {
+		std::unique_ptr<Cairo::GraphicsPath> alignedPath;
+		if (impl->state.drawMode.integralMode ())
+		{
+			alignedPath = cairoPath->copyPixelAlign ([&] (CPoint p) {
+				p = pixelAlign (impl->state.tm, p);
+				return p;
+			});
+		}
+		auto p = alignedPath ? alignedPath->getCairoPath () : cairoPath->getCairoPath ();
+		cairo_append_path (impl->context, p);
+
+		const auto& radialGradient =
+			cairoGradient->getRadialGradient (center, radius, originOffset);
+		cairo_set_source (impl->context, radialGradient);
+		if (evenOdd)
+			cairo_set_fill_rule (impl->context, CAIRO_FILL_RULE_EVEN_ODD);
+
+		cairo_arc (impl->context, 0, 0, 0, 0., M_PI * 2.);
+		cairo_fill (impl->context);
+	});
+
+	return true;
 }
 
 //------------------------------------------------------------------------
