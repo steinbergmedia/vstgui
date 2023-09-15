@@ -216,6 +216,7 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			.addMethod (@selector (performKeyEquivalent:), performKeyEquivalent)
 			.addMethod (@selector (keyDown:), keyDown)
 			.addMethod (@selector (keyUp:), keyUp)
+			.addMethod (@selector (flagsChanged:), flagsChanged)
 			.addMethod (@selector (magnifyWithEvent:), magnifyWithEvent)
 			.addMethod (@selector (focusRingType), focusRingType)
 			.addMethod (@selector (draggingEntered:), draggingEntered)
@@ -681,6 +682,24 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 				return;
 		}
 		[[self nextResponder] keyUp:theEvent];
+	}
+
+	//------------------------------------------------------------------------------------
+	static void flagsChanged (id self, SEL _cmd, NSEvent* theEvent)
+	{
+		IPlatformFrameCallback* _vstguiframe = getFrame (self);
+		if (!_vstguiframe)
+			return;
+
+		KeyboardEvent keyEvent;
+		keyEvent.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
+		if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
+		{
+			_vstguiframe->platformOnEvent (keyEvent);
+			if (keyEvent.consumed)
+				return;
+		}
+		[[self nextResponder] flagsChanged:theEvent];
 	}
 
 	//------------------------------------------------------------------------------------
