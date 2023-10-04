@@ -29,6 +29,7 @@
 #include "lib/csplitview.cpp"
 #include "lib/cstring.cpp"
 #include "lib/ctabview.cpp"
+#include "lib/ctexteditor.cpp"
 #include "lib/ctooltipsupport.cpp"
 #include "lib/cview.cpp"
 #include "lib/cviewcontainer.cpp"
