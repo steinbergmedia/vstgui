@@ -343,7 +343,7 @@ public:
 #include "iviewcreator.h"
 #include "detail/uiviewcreatorattributes.h"
 #include "uiviewcreator.h"
-#include "uiviewfactory.h"
+#include "iviewfactory.h"
 #include "uiviewswitchcontainer.h"
 #include "uiattributes.h"
 #include "uidescription.h"
@@ -444,12 +444,26 @@ bool colorToString (const CColor& color, std::string& string, const IUIDescripti
 //-----------------------------------------------------------------------------
 bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc)
 {
-	if (value && *value == "")
+	if (!value)
+		return false;
+	if (*value == "")
 	{
 		color = kTransparentCColor;
 		return true;
 	}
-	return value ? desc->getColor (value->c_str (), color) : false;
+	if (desc->getColor (value->data (), color))
+		return true;
+	if (color.fromString (value->data ()))
+		return true;
+	for (const auto& namedColor : getCSSNamedColors ())
+	{
+		if (namedColor.name == *value)
+		{
+			color = namedColor.color;
+			return true;
+		}
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------

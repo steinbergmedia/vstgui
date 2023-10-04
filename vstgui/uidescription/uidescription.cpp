@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uidescription.h"
+#include "uidescriptionaddonregistry.h"
 #include "uidescriptionlistener.h"
 #include "uiattributes.h"
 #include "uiviewfactory.h"
@@ -94,7 +95,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 
 	SharedPointer<UINode> nodes;
 	SharedPointer<UIDescription> sharedResources;
-	
+
 	mutable std::deque<IController*> subControllerStack;
 	
 	Optional<UINode*> variableBaseNode;
@@ -120,6 +121,8 @@ UIDescription::UIDescription (const CResourceDescription& uidescFile, IViewFacto
 		setFilePath (uidescFile.u.name);
 	if (impl->viewFactory == nullptr)
 		impl->viewFactory = getGenericViewFactory ();
+	UIDescriptionAddOnRegistry::forEach (
+		[&] (auto& addOn) { impl->viewFactory = addOn.getViewFactory (this, impl->viewFactory); });
 }
 
 //-----------------------------------------------------------------------------
@@ -130,11 +133,14 @@ UIDescription::UIDescription (IContentProvider* contentProvider, IViewFactory* _
 	impl->contentProvider = contentProvider;
 	if (impl->viewFactory == nullptr)
 		impl->viewFactory = getGenericViewFactory ();
+	UIDescriptionAddOnRegistry::forEach (
+		[&] (auto& addOn) { impl->viewFactory = addOn.getViewFactory (this, impl->viewFactory); });
 }
 
 //-----------------------------------------------------------------------------
 UIDescription::~UIDescription () noexcept
 {
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.onDestroy (this); });
 }
 
 //------------------------------------------------------------------------
@@ -263,7 +269,7 @@ bool UIDescription::parse ()
 	{
 		if ((impl->nodes = parseUIDesc (impl->contentProvider)))
 		{
-			addDefaultNodes ();
+			postParsing ();
 			return true;
 		}
 	}
@@ -275,7 +281,7 @@ bool UIDescription::parse ()
 			InputStreamContentProvider contentProvider (resInputStream);
 			if ((impl->nodes = parseUIDesc (&contentProvider)))
 			{
-				addDefaultNodes ();
+				postParsing ();
 				return true;
 			}
 		}
@@ -287,7 +293,7 @@ bool UIDescription::parse ()
 				InputStreamContentProvider contentProvider (fileStream);
 				if ((impl->nodes = parseUIDesc (&contentProvider)))
 				{
-					addDefaultNodes ();
+					postParsing ();
 					return true;
 				}
 			}
@@ -299,6 +305,13 @@ bool UIDescription::parse ()
 		addDefaultNodes ();
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::postParsing ()
+{
+	addDefaultNodes ();
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.afterParsing (this); });
 }
 
 //-----------------------------------------------------------------------------
@@ -470,7 +483,9 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags, Attribute
 		}
 	}
 	impl->nodes->getAttributes ()->setAttribute ("version", "1");
-	
+
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.beforeSaving (this); });
+
 	BufferedOutputStream bufferedStream (stream);
 	if (flags & kWriteAsXML)
 	{
@@ -580,7 +595,7 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 		else
 		{
 		#if VSTGUI_LIVE_EDITING
-			if (auto* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory))
+			if (auto* factory = dynamic_cast<IViewFactoryEditingSupport*> (impl->viewFactory))
 			{
 				auto attr = makeOwned<UIAttributes> ();
 				if (factory->getAttributesForView (view, const_cast<UIDescription*> (this), *attr) == false)
@@ -747,9 +762,12 @@ CViewAttributeID UIDescription::kTemplateNameAttributeID = 'uitl';
 //-----------------------------------------------------------------------------
 CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) const
 {
-	ScopePointer<IController> sp (&impl->controller, _controller);
-	if (impl->nodes)
-	{
+	if (impl->nodes == nullptr)
+		return {};
+
+	IUIDescriptionAddOn::CreateTemplateViewFunc f =
+		[this] (UTF8StringPtr name, IController* _controller) mutable -> CView* {
+		ScopePointer<IController> sp (&impl->controller, _controller);
 		for (const auto& itNode : impl->nodes->getChildren ())
 		{
 			if (itNode->getName () == Detail::MainNodeNames::kTemplate)
@@ -759,13 +777,18 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 				{
 					CView* view = createViewFromNode (itNode);
 					if (view)
-						view->setAttribute (kTemplateNameAttributeID, static_cast<uint32_t> (strlen (name) + 1), name);
+						view->setAttribute (kTemplateNameAttributeID,
+											static_cast<uint32_t> (strlen (name) + 1), name);
 					return view;
 				}
 			}
 		}
-	}
-	return nullptr;
+		return nullptr;
+	};
+
+	UIDescriptionAddOnRegistry::forEach (
+		[&] (auto& addOn) { f = std::move (addOn.onCreateTemplateView (this, f)); });
+	return f (name, _controller);
 }
 
 //-----------------------------------------------------------------------------
@@ -805,7 +828,7 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-Detail::UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
+Detail::UINode* UIDescription::getBaseNode (UTF8StringPtr name, bool create) const
 {
 	UTF8StringView nameView (name);
 	nameView.calculateByteCount ();
@@ -822,9 +845,12 @@ Detail::UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 		if (node)
 			return node;
 
-		node = new UINode (name);
-		impl->nodes->getChildren ().add (node);
-		return node;
+		if (create)
+		{
+			node = new UINode (name);
+			impl->nodes->getChildren ().add (node);
+			return node;
+		}
 	}
 	return nullptr;
 }
@@ -1616,7 +1642,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 {
 	bool result = false;
 #if VSTGUI_LIVE_EDITING
-	auto* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
+	auto* factory = dynamic_cast<IViewFactoryEditingSupport*> (impl->viewFactory);
 	std::list<std::string> attributeNames;
 	CViewContainer* container = view->asViewContainer ();
 	if (factory->getAttributeNamesForView (view, attributeNames))
@@ -1627,10 +1653,11 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 				impl->attributeSaveFilterFunc (view, name) == false)
 				continue;
 			std::string value;
-			if (factory->getAttributeValue (view, name, value, this))
+			if (impl->viewFactory->getAttributeValue (view, name, value, this))
 				node->getAttributes ()->setAttribute (name, std::move (value));
 		}
-		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass, factory->getViewName (view));
+		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass,
+											  IViewFactory::getViewName (view));
 		result = true;
 	}
 	if (deep && container && dynamic_cast<UIViewSwitchContainer*> (container) == nullptr)
@@ -1698,8 +1725,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 	if (!doIt)
 		return;
 
-	auto* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
-	if (factory && impl->nodes)
+	if (impl->viewFactory && impl->nodes)
 	{
 		UINode* node = nullptr;
 		for (auto& childNode : impl->nodes->getChildren ())
@@ -1820,7 +1846,8 @@ bool UIDescription::setCustomAttributes (UTF8StringPtr name, const SharedPointer
 //-----------------------------------------------------------------------------
 SharedPointer<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr name) const
 {
-	auto node = findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kCustom), name);
+	auto node =
+		findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kCustom, false), name);
 	return node ? node->getAttributes () : nullptr;
 }
 

@@ -11,8 +11,9 @@
 			"ShowPopup": "7",
 			"StepTest": "2",
 			"StringList": "6",
+			"TabIndex": "9",
 			"Test": "1",
-			"Weekdays": "9"
+			"Weekdays": "10"
 		},
 		"custom": {
 			"UIGridController": {
@@ -34,7 +35,7 @@
 				"TabSwitchValue": "0",
 				"UI Theme": "Dark",
 				"Version": "1",
-				"ViewBackground": "3"
+				"ViewBackground": "1"
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
@@ -62,6 +63,9 @@
 			},
 			"UIFontsDataSource": {
 				"SelectedRow": "1"
+			},
+			"Scripting": {
+				"Enabled": "true"
 			}
 		},
 		"templates": {
@@ -71,12 +75,13 @@
 					"background-color": "~ BlackCColor",
 					"background-color-draw-style": "filled and stroked",
 					"class": "CViewContainer",
-					"maxSize": "800, 1000",
-					"minSize": "410, 515",
+					"maxSize": "1020, 2060",
+					"minSize": "410, 530",
 					"mouse-enabled": "true",
 					"opacity": "1",
 					"origin": "0, 0",
-					"size": "410, 515",
+					"script": "//scriptfile test.js",
+					"size": "410, 530",
 					"sub-controller": "DisabledControlsController",
 					"transparent": "true",
 					"wants-focus": "false"
@@ -104,7 +109,7 @@
 							"class": "CViewContainer",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "0, 495",
+							"origin": "0, 510",
 							"size": "410, 20",
 							"transparent": "false",
 							"wants-focus": "false"
@@ -126,7 +131,7 @@
 							"radial-center": "0.5, 0.5",
 							"radial-radius": "1",
 							"round-rect-radius": "5",
-							"size": "410, 515",
+							"size": "410, 530",
 							"transparent": "false",
 							"wants-focus": "false"
 						}
@@ -209,6 +214,7 @@
 							"opacity": "1",
 							"origin": "15, 200",
 							"row-height": "16",
+							"script": "// Hover Opacity Animation Script\n// This example script changes the opacity of the view\n// when the mouse enters or exits the view\n\n/* the default opacity of the view is stored in view.default_opacity */\nview.default_opacity = 0.6;\n\n/* the current opacity of the view is stored in view.opacity */\nview.opacity = view.default_opacity;\n\n/* the timer to change the opacity is stored in view.opacity_timer */\nview.opacity_timer = createTimer (view, 16, function (view) {\n\tview.opacity += view.opacity_change;\n\tif (view.opacity_change > 0)\n\t{\n\t\tif (view.opacity > 1)\n\t\t{\n\t\t\tview.opacity = 1;\n\t\t\tview.opacity_timer.stop();\n\t\t}\n\t}\n\telse\n\t{\n\t\tif (view.opacity <= view.default_opacity)\n\t\t{\n\t\t\tview.opacity = view.default_opacity;\n\t\t\tview.opacity_timer.stop();\n\t\t}\n\t}\n\tview.setAttribute(\"opacity\", view.opacity);\n});\n\n/* we install a mouse enter listener\n   when the mouse enters the view we start the opacity change timer \n*/\nview.onMouseEnter = function (view, event) {\n\tview.opacity_change = 0.075;\n\tview.opacity_timer.start();\n\tevent.consumed = true;\n};\n\n/* we also install a mouse exit listener\n   when the mouse exits the view we start the opacity change timer again \n   now with a negative opacity_change variable so that in the timer callback \n   the opacity is going back to the default opacity \n*/\nview.onMouseExit = function (view, event) {\n\tview.opacity_change = -0.05;\n\tview.opacity_timer.start();\n\tevent.consumed = true;\n};\n\n/* we also install a view removed listener so that we can cleanup and stop the timer */\nview.onRemoved = function (view) {\n\t// cleanup, when the view is removed, stop the timer\n\tview.opacity_timer.stop();\n};\n\nview.setAttribute(\"mouse-enabled\", true);\nview.setAttribute(\"opacity\", view.opacity);\n\n",
 							"size": "110, 144",
 							"style-hover": "true",
 							"sub-controller": "WeekdaysController",
@@ -240,6 +246,7 @@
 							"opacity": "1",
 							"origin": "40, 50",
 							"round-rect-radius": "3",
+							"script": "//scriptfile changecoloronfocus.js",
 							"secure-style": "false",
 							"shadow-color": "~ RedCColor",
 							"size": "260, 20",
@@ -423,37 +430,6 @@
 							"wheel-inc-value": "0.1"
 						}
 					},
-					"CTextButton": {
-						"attributes": {
-							"class": "CTextButton",
-							"control-tag": "ShowAlert",
-							"default-value": "0.5",
-							"font": "~ SystemFont",
-							"frame-color": "~ BlackCColor",
-							"frame-color-highlighted": "~ BlackCColor",
-							"frame-width": "1",
-							"gradient": "Default TextButton Gradient",
-							"gradient-highlighted": "Default TextButton Gradient Highlighted",
-							"icon-position": "left",
-							"icon-text-margin": "0",
-							"kick-style": "false",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "170, 210",
-							"round-radius": "3",
-							"size": "95, 20",
-							"text-alignment": "center",
-							"text-color": "~ BlackCColor",
-							"text-color-highlighted": "~ WhiteCColor",
-							"title": "Show Alert 1",
-							"tooltip": "Text Button",
-							"transparent": "false",
-							"wants-focus": "true",
-							"wheel-inc-value": "0.1"
-						}
-					},
 					"CParamDisplay": {
 						"attributes": {
 							"autosize": "right top ",
@@ -600,6 +576,7 @@
 							"opacity": "1",
 							"origin": "310, 140",
 							"round-rect-radius": "6",
+							"script": "//scriptfile changecoloronfocus.js",
 							"shadow-color": "~ RedCColor",
 							"size": "90, 20",
 							"style-3D-in": "false",
@@ -641,6 +618,7 @@
 							"opacity": "1",
 							"origin": "310, 170",
 							"round-rect-radius": "6",
+							"script": "//scriptfile changecoloronfocus.js",
 							"shadow-color": "~ RedCColor",
 							"size": "90, 20",
 							"style-3D-in": "false",
@@ -707,7 +685,7 @@
 					"CMultiLineTextLabel": {
 						"attributes": {
 							"auto-height": "false",
-							"autosize": "left right top bottom ",
+							"autosize": "left right top ",
 							"back-color": "~ WhiteCColor",
 							"background-offset": "0, 0",
 							"bitmap": "box",
@@ -723,10 +701,10 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "135, 290",
+							"origin": "135, 310",
 							"round-rect-radius": "6",
 							"shadow-color": "TextShadow",
-							"size": "130, 215",
+							"size": "190, 70",
 							"style-3D-in": "false",
 							"style-3D-out": "false",
 							"style-no-draw": "false",
@@ -766,74 +744,12 @@
 							"round-radius": "3",
 							"segment-names": "1,2,3,4",
 							"selection-mode": "Multiple",
-							"size": "20, 80",
+							"size": "20, 110",
 							"style": "vertical",
 							"text-alignment": "center",
 							"text-color": "~ BlackCColor",
 							"text-color-highlighted": "~ WhiteCColor",
 							"tooltip": "Segment Button",
-							"transparent": "false",
-							"wants-focus": "true",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CTextButton": {
-						"attributes": {
-							"class": "CTextButton",
-							"control-tag": "ShowAlert2",
-							"default-value": "0.5",
-							"font": "~ SystemFont",
-							"frame-color": "~ BlackCColor",
-							"frame-color-highlighted": "~ BlackCColor",
-							"frame-width": "1",
-							"gradient": "Default TextButton Gradient",
-							"gradient-highlighted": "Default TextButton Gradient Highlighted",
-							"icon-position": "left",
-							"icon-text-margin": "0",
-							"kick-style": "false",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "170, 235",
-							"round-radius": "3",
-							"size": "95, 20",
-							"text-alignment": "center",
-							"text-color": "~ BlackCColor",
-							"text-color-highlighted": "~ WhiteCColor",
-							"title": "Show Alert 2",
-							"tooltip": "Text Button",
-							"transparent": "false",
-							"wants-focus": "true",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CTextButton": {
-						"attributes": {
-							"class": "CTextButton",
-							"control-tag": "ShowAlert3",
-							"default-value": "0.5",
-							"font": "~ SystemFont",
-							"frame-color": "~ BlackCColor",
-							"frame-color-highlighted": "~ BlackCColor",
-							"frame-width": "1",
-							"gradient": "Default TextButton Gradient",
-							"gradient-highlighted": "Default TextButton Gradient Highlighted",
-							"icon-position": "left",
-							"icon-text-margin": "0",
-							"kick-style": "false",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "170, 260",
-							"round-radius": "3",
-							"size": "95, 20",
-							"text-alignment": "center",
-							"text-color": "~ BlackCColor",
-							"text-color-highlighted": "~ WhiteCColor",
-							"title": "Show Alert 3",
-							"tooltip": "Text Button",
 							"transparent": "false",
 							"wants-focus": "true",
 							"wheel-inc-value": "0.1"
@@ -848,12 +764,13 @@
 							"class": "CAnimKnob",
 							"control-tag": "Test",
 							"default-value": "0.5",
+							"height-of-one-image": "50",
 							"inverse-bitmap": "false",
 							"max-value": "1",
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "340, 235",
+							"origin": "355, 245",
 							"size": "50, 50",
 							"tooltip": "Knob",
 							"transparent": "false",
@@ -889,7 +806,7 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "270, 225",
+							"origin": "280, 235",
 							"size": "70, 70",
 							"skip-handle-drawing": "true",
 							"tooltip": "Knob",
@@ -939,115 +856,498 @@
 							"wheel-inc-value": "0.1"
 						}
 					},
-					"CScrollView": {
+					"CAutoAnimation": {
 						"attributes": {
-							"auto-drag-scrolling": "false",
-							"auto-hide-scrollbars": "false",
-							"autosize": "left top bottom ",
-							"background-color": "~ BlackCColor",
-							"background-color-draw-style": "filled and stroked",
-							"bordered": "true",
-							"class": "CScrollView",
-							"container-size": "400, 800",
-							"follow-focus-view": "false",
-							"horizontal-scrollbar": "true",
+							"animation-time": "32",
+							"bitmap": "autoanimation",
+							"bitmap-offset": "0, 0",
+							"class": "CAutoAnimation",
+							"default-value": "0.5",
+							"max-value": "36",
+							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "15, 355",
-							"overlay-scrollbars": "false",
-							"scrollbar-background-color": "#ffffffc8",
-							"scrollbar-frame-color": "~ BlackCColor",
-							"scrollbar-scroller-color": "~ BlueCColor",
-							"scrollbar-width": "12",
-							"size": "110, 150",
+							"origin": "85, 5",
+							"size": "30, 30",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CSegmentButton": {
+						"attributes": {
+							"autosize": "left top ",
+							"class": "CSegmentButton",
+							"control-tag": "TabIndex",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-text-margin": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "165, 200",
+							"round-radius": "0",
+							"segment-names": "0,1,2",
+							"selection-mode": "Single",
+							"size": "115, 18",
+							"style": "horizontal",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"tooltip": "Segment Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"UIViewSwitchContainer": {
+						"attributes": {
+							"animation-style": "fade",
+							"animation-time": "120",
+							"animation-timing-function": "easy-in-out",
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "UIViewSwitchContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "165, 220",
+							"script": "//scriptfile viewcontainertest.js",
+							"size": "115, 90",
+							"template-names": "Tab1,Tab2,Tab3",
+							"template-switch-control": "TabIndex",
 							"transparent": "true",
-							"vertical-scrollbar": "true",
+							"wants-focus": "false"
+						}
+					},
+					"CSplitView": {
+						"attributes": {
+							"autosize": "left right top bottom row ",
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CSplitView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "horizontal",
+							"origin": "10, 380",
+							"resize-method": "all",
+							"separator-width": "10",
+							"size": "390, 140",
+							"transparent": "true",
 							"wants-focus": "false"
 						},
 						"children": {
-							"CView": {
+							"CScrollView": {
 								"attributes": {
-									"autosize": "left top ",
-									"class": "CView",
-									"custom-view-name": "DatePicker",
+									"auto-drag-scrolling": "false",
+									"auto-hide-scrollbars": "true",
+									"autosize": "left right top bottom ",
+									"background-color": "Black Alpha 140",
+									"background-color-draw-style": "filled and stroked",
+									"bordered": "true",
+									"class": "CScrollView",
+									"container-size": "300, 300",
+									"follow-focus-view": "false",
+									"horizontal-scrollbar": "true",
 									"mouse-enabled": "true",
 									"opacity": "1",
-									"origin": "5, 10",
-									"size": "110, 25",
-									"sub-controller": "DatePickerController",
+									"origin": "0, 0",
+									"overlay-scrollbars": "false",
+									"scrollbar-background-color": "~ TransparentCColor",
+									"scrollbar-frame-color": "~ TransparentCColor",
+									"scrollbar-scroller-color": "~ WhiteCColor",
+									"scrollbar-width": "12",
+									"size": "110, 140",
 									"transparent": "false",
-									"wants-focus": "true"
+									"vertical-scrollbar": "true",
+									"wants-focus": "false"
+								},
+								"children": {
+									"CView": {
+										"attributes": {
+											"autosize": "left top ",
+											"class": "CView",
+											"custom-view-name": "DatePicker",
+											"mouse-enabled": "true",
+											"opacity": "1",
+											"origin": "5, 10",
+											"size": "110, 25",
+											"sub-controller": "DatePickerController",
+											"transparent": "false",
+											"wants-focus": "true"
+										}
+									},
+									"CControl": {
+										"attributes": {
+											"class": "CControl",
+											"control-tag": "Activate",
+											"custom-view-name": "Native Checkbox",
+											"default-value": "0.5",
+											"max-value": "1",
+											"min-value": "0",
+											"mouse-enabled": "true",
+											"opacity": "1",
+											"origin": "5, 40",
+											"size": "110, 20",
+											"sub-controller": "DatePickerController",
+											"transparent": "false",
+											"wants-focus": "true",
+											"wheel-inc-value": "0.1"
+										}
+									},
+									"CControl": {
+										"attributes": {
+											"class": "CControl",
+											"custom-view-name": "Native Push Button",
+											"default-value": "0.5",
+											"max-value": "1",
+											"min-value": "0",
+											"mouse-enabled": "true",
+											"opacity": "1",
+											"origin": "0, 65",
+											"size": "100, 24",
+											"sub-controller": "DatePickerController",
+											"transparent": "false",
+											"wants-focus": "true",
+											"wheel-inc-value": "0.1"
+										}
+									},
+									"CControl": {
+										"attributes": {
+											"class": "CControl",
+											"custom-view-name": "Native OnOff Button",
+											"default-value": "0.5",
+											"max-value": "1",
+											"min-value": "0",
+											"mouse-enabled": "true",
+											"opacity": "1",
+											"origin": "0, 90",
+											"size": "100, 25",
+											"sub-controller": "DatePickerController",
+											"transparent": "false",
+											"wants-focus": "true",
+											"wheel-inc-value": "0.1"
+										}
+									},
+									"CControl": {
+										"attributes": {
+											"class": "CControl",
+											"custom-view-name": "Native Radio Button",
+											"default-value": "0.5",
+											"max-value": "1",
+											"min-value": "0",
+											"mouse-enabled": "true",
+											"opacity": "1",
+											"origin": "5, 120",
+											"size": "100, 20",
+											"sub-controller": "DatePickerController",
+											"transparent": "false",
+											"wants-focus": "true",
+											"wheel-inc-value": "0.1"
+										}
+									}
 								}
 							},
-							"CControl": {
+							"CScrollView": {
 								"attributes": {
-									"class": "CControl",
-									"control-tag": "Activate",
-									"custom-view-name": "Native Checkbox",
-									"default-value": "0.5",
-									"max-value": "1",
-									"min-value": "0",
+									"auto-drag-scrolling": "false",
+									"auto-hide-scrollbars": "true",
+									"autosize": "left right top bottom ",
+									"background-color": "~ TransparentCColor",
+									"background-color-draw-style": "filled and stroked",
+									"bordered": "true",
+									"class": "CScrollView",
+									"container-size": "268, 138",
+									"follow-focus-view": "false",
+									"horizontal-scrollbar": "true",
 									"mouse-enabled": "true",
 									"opacity": "1",
-									"origin": "5, 40",
-									"size": "110, 20",
-									"sub-controller": "DatePickerController",
+									"origin": "120, 0",
+									"overlay-scrollbars": "false",
+									"scrollbar-background-color": "~ TransparentCColor",
+									"scrollbar-frame-color": "~ TransparentCColor",
+									"scrollbar-scroller-color": "~ WhiteCColor",
+									"scrollbar-width": "12",
+									"size": "270, 140",
 									"transparent": "false",
-									"wants-focus": "true",
-									"wheel-inc-value": "0.1"
-								}
-							},
-							"CControl": {
-								"attributes": {
-									"class": "CControl",
-									"custom-view-name": "Native Push Button",
-									"default-value": "0.5",
-									"max-value": "1",
-									"min-value": "0",
-									"mouse-enabled": "true",
-									"opacity": "1",
-									"origin": "0, 65",
-									"size": "100, 24",
-									"sub-controller": "DatePickerController",
-									"transparent": "false",
-									"wants-focus": "true",
-									"wheel-inc-value": "0.1"
-								}
-							},
-							"CControl": {
-								"attributes": {
-									"class": "CControl",
-									"custom-view-name": "Native OnOff Button",
-									"default-value": "0.5",
-									"max-value": "1",
-									"min-value": "0",
-									"mouse-enabled": "true",
-									"opacity": "1",
-									"origin": "0, 90",
-									"size": "100, 25",
-									"sub-controller": "DatePickerController",
-									"transparent": "false",
-									"wants-focus": "true",
-									"wheel-inc-value": "0.1"
-								}
-							},
-							"CControl": {
-								"attributes": {
-									"class": "CControl",
-									"custom-view-name": "Native Radio Button",
-									"default-value": "0.5",
-									"max-value": "1",
-									"min-value": "0",
-									"mouse-enabled": "true",
-									"opacity": "1",
-									"origin": "5, 120",
-									"size": "100, 20",
-									"sub-controller": "DatePickerController",
-									"transparent": "false",
-									"wants-focus": "true",
-									"wheel-inc-value": "0.1"
+									"vertical-scrollbar": "true",
+									"wants-focus": "false"
+								},
+								"children": {
+									"CView": {
+										"attributes": {
+											"class": "CView",
+											"custom-view-name": "TextEditor",
+											"mouse-enabled": "true",
+											"opacity": "1",
+											"origin": "0, 0",
+											"size": "227, 60496",
+											"sub-controller": "TextEditorController",
+											"transparent": "false",
+											"wants-focus": "true"
+										}
+									}
 								}
 							}
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"autosize": "right top ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "330, 320",
+							"round-rect-radius": "6",
+							"script": "view.text_rotation.value = 0.0;\nview.text_rotation.change = -5.0;\nview.text_rotation.timer = createTimer(view, 16, function(view) {\n\tview.text_rotation.value += view.text_rotation.change;\n\tif (view.text_rotation.value > 360.)\n\t\tview.text_rotation.value = 0.;\n\telse if (view.text_rotation.value < 0.)\n\t\tview.text_rottaion.value = 360.;\n\tview.setAttribute(\"text-rotation\", view.text_rotation.value);\n});\nview.text_rotation.timer_started = false;\nview.toggle_timer = function() {\n\tif(this.text_rotation.timer_started === false)\n\t{\n\t\tthis.text_rotation.timer.start();\n\t\tthis.text_rotation.timer_started = true;\n\t}\n\telse\n\t{\n\t\tthis.text_rotation.timer.stop();\n\t\tthis.text_rotation.timer_started = false;\n\t}\n};\nview.onMouseDown = function(view, event) {\n\tif(event.modifiers.alt)\n\t{\n\t\tview.toggle_timer();\n\t}\n\telse\n\t{\n\t\tif(view.text_rotation.timer_started == false)\n\t\t\tview.toggle_timer();\n\t\tview.text_rotation.change = -1.0 * view.text_rotation.change;\n\t}\n\tevent.consumed = true;\n};\nview.onMouseEnter = function(view, event) {\n\tview.text_rotation.change = view.text_rotation.change * 2.5;\n};\nview.onMouseExit = function(view, event) {\n\tview.text_rotation.change = view.text_rotation.change / 2.5;\n};\nview.onAttached = function(view) {\n\tview.text_rotation.timer.start();\n\tview.text_rotation.timer_started = true;\n};\nview.onRemoved = function(view) {\n\tview.text_rotation.timer_started = false;\n\tview.text_rotation.timer.stop();\n};\n",
+							"shadow-color": "~ RedCColor",
+							"size": "60, 50",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "Hello",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			},
+			"Tab1": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ TransparentCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "115, 90",
+					"transparent": "true",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CTextLabel": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "0, 0",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "115, 90",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "1",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			},
+			"Tab2": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ TransparentCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "115, 90",
+					"transparent": "true",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CTextLabel": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"back-color": "~ BlueCColor",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "0, 0",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "115, 90",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0.5",
+							"text-shadow-offset": "1, 1",
+							"title": "2",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			},
+			"Tab3": {
+				"attributes": {
+					"background-color": "Black Alpha 140",
+					"background-color-draw-style": "filled",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "115, 90",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "ShowAlert",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 10",
+							"round-radius": "3",
+							"size": "95, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Show Alert 1",
+							"tooltip": "Text Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "ShowAlert2",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 35",
+							"round-radius": "3",
+							"size": "95, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Show Alert 2",
+							"tooltip": "Text Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"class": "CTextButton",
+							"control-tag": "ShowAlert3",
+							"default-value": "0.5",
+							"font": "~ SystemFont",
+							"frame-color": "~ BlackCColor",
+							"frame-color-highlighted": "~ BlackCColor",
+							"frame-width": "1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 60",
+							"round-radius": "3",
+							"size": "95, 20",
+							"text-alignment": "center",
+							"text-color": "~ BlackCColor",
+							"text-color-highlighted": "~ WhiteCColor",
+							"title": "Show Alert 3",
+							"tooltip": "Text Button",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
 						}
 					}
 				}

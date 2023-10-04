@@ -9,6 +9,7 @@
 #include "uidescription/uiattributes.cpp"
 #include "uidescription/uicontentprovider.cpp"
 #include "uidescription/uidescription.cpp"
+#include "uidescription/uidescriptionaddonregistry.cpp"
 #include "uidescription/uiviewcreator.cpp"
 #include "uidescription/uiviewfactory.cpp"
 #include "uidescription/uiviewswitchcontainer.cpp"

@@ -8,16 +8,19 @@
 
 #include "uiactions.h"
 #include "uieditcontroller.h"
-#include "../uiviewfactory.h"
+#include "uidialogcontroller.h"
 #include "../uiattributes.h"
+#include "../detail/uiviewcreatorattributes.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/controls/cslider.h"
+#include "../../lib/controls/cbuttons.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/crowcolumnview.h"
 #include "../../lib/iviewlistener.h"
 #include "../../lib/cstring.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/ctexteditor.h"
 #include <sstream>
 #include <algorithm>
 #include <cassert>
@@ -329,43 +332,25 @@ public:
 				textLabel->registerViewListener (this);
 			}
 		}
-		if (slider == nullptr)
-		{
-			auto* sliderView = dynamic_cast<CSlider*>(view);
-			if (sliderView)
-				slider = sliderView;
-		}
 		return controller->verifyView (view, attributes, description);
 	}
 	
 	void controlBeginEdit (VSTGUI::CControl* pControl) override
 	{
-		if (pControl == slider)
-		{
-			getAttributesController ()->beginLiveAttributeChange (attrName, UIAttributes::doubleToString (slider->getValue ()));
-		}
 		Controller::controlBeginEdit (pControl);
 	}
-	
+
 	void controlEndEdit (VSTGUI::CControl* pControl) override
 	{
-		if (pControl == slider)
-		{
-			getAttributesController ()->endLiveAttributeChange ();
-		}
 		Controller::controlEndEdit (pControl);
 	}
-	
+
 	void valueChanged (CControl* pControl) override
 	{
 		if (textLabel == pControl)
 		{
 			textLabel->setFontColor (originalTextColor);
 			performValueChange (textLabel->getText ());
-		}
-		else if (slider == pControl)
-		{
-			performValueChange (UIAttributes::doubleToString (slider->getValue ()).data ());
 		}
 	}
 	
@@ -384,18 +369,6 @@ public:
 			{
 				textLabel->setText (value.c_str ());
 			}
-		}
-		if (slider)
-		{
-			float floatValue;
-
-			std::istringstream sstream (value);
-			sstream.imbue (std::locale::classic ());
-			sstream.precision (40);
-			sstream >> floatValue;
-
-			slider->setValue (floatValue);
-			slider->invalid ();
 		}
 	}
 
@@ -433,8 +406,159 @@ public:
 	
 protected:
 	SharedPointer<CTextLabel> textLabel;
-	SharedPointer<CSlider> slider;
 	CColor originalTextColor;
+};
+
+//------------------------------------------------------------------------
+class ScriptController : public TextController,
+						 public IDialogController,
+						 public TextEditorControllerAdapter
+{
+public:
+	using TextController::TextController;
+
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription* description) override
+	{
+		if (editButton == nullptr)
+		{
+			auto button = dynamic_cast<CTextButton*> (view);
+			if (button)
+				editButton = button;
+		}
+		return TextController::verifyView (view, attributes, description);
+	}
+
+	void valueChanged (CControl* pControl) override
+	{
+		TextController::valueChanged (pControl);
+		if (editButton == pControl && pControl->getValue () == pControl->getMax ())
+		{
+			auto dc = new UIDialogController (this, editButton->getFrame ());
+			dc->run ("scripteditor", "Script Editor", "Close", nullptr, this,
+					 UIEditController::getEditorDescription (), true);
+		}
+	}
+
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
+		{
+			if (*name == "TextEditor")
+			{
+				CPoint size;
+				attributes.getPointAttribute (UIViewCreator::kAttrSize, size);
+				auto view = createNewTextEditor ({0, 0, size.x, size.y}, this);
+				if (textEditor)
+				{
+					ITextEditor::Style style {};
+					description->getColor ("control.back", style.backColor);
+					description->getColor ("control.font", style.textColor);
+					description->getColor ("control.frame", style.selectionBackColor);
+					description->getColor ("control.frame", style.lineNumberTextColor);
+					if (auto font = description->getFont ("scripteditor.font"))
+					{
+						style.font = font;
+						style.lineNumbersFont = makeOwned<CFontDesc> (*font);
+						style.lineNumbersFont->setSize (style.lineNumbersFont->getSize () - 2);
+					}
+					textEditor->setStyle (style);
+					textEditor->setPlainText (textLabel->getText ().getString ());
+				}
+				return view;
+			}
+		}
+		return nullptr;
+	}
+
+	void onDialogButton1Clicked (UIDialogController*) override {}
+	void onDialogButton2Clicked (UIDialogController*) override {}
+	void onDialogShow (UIDialogController*) override {}
+
+	void onTextEditorCreated (const ITextEditor& te) override { textEditor = &te; }
+
+	void onTextEditorDestroyed (const ITextEditor& te) override
+	{
+		textEditor = nullptr;
+		auto text = te.getPlainText ();
+		if (text != textLabel->getText ().getString ())
+			performValueChange (text.data ());
+		te.resetController ();
+	}
+
+protected:
+	SharedPointer<CTextButton> editButton;
+	const ITextEditor* textEditor {nullptr};
+};
+
+//----------------------------------------------------------------------------------------------------
+class NumberController : public TextController
+{
+public:
+	NumberController (IController* baseController, const std::string& attrName)
+	: TextController (baseController, attrName)
+	{
+	}
+
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription* description) override
+	{
+		if (slider == nullptr)
+		{
+			auto* sliderView = dynamic_cast<CSlider*> (view);
+			if (sliderView)
+				slider = sliderView;
+		}
+		return TextController::verifyView (view, attributes, description);
+	}
+
+	void controlBeginEdit (VSTGUI::CControl* pControl) override
+	{
+		if (pControl == slider)
+		{
+			getAttributesController ()->beginLiveAttributeChange (
+				attrName, UIAttributes::doubleToString (slider->getValue ()));
+		}
+		TextController::controlBeginEdit (pControl);
+	}
+
+	void controlEndEdit (VSTGUI::CControl* pControl) override
+	{
+		if (pControl == slider)
+		{
+			getAttributesController ()->endLiveAttributeChange ();
+		}
+		TextController::controlEndEdit (pControl);
+	}
+
+	void valueChanged (CControl* pControl) override
+	{
+		TextController::valueChanged (pControl);
+		if (slider == pControl)
+		{
+			performValueChange (UIAttributes::doubleToString (slider->getValue ()).data ());
+		}
+	}
+
+	void setValue (const std::string& value) override
+	{
+		TextController::setValue (value);
+		if (slider)
+		{
+			float floatValue;
+
+			std::istringstream sstream (value);
+			sstream.imbue (std::locale::classic ());
+			sstream.precision (40);
+			sstream >> floatValue;
+
+			slider->setValue (floatValue);
+			slider->invalid ();
+		}
+	}
+
+protected:
+	SharedPointer<CSlider> slider;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -731,7 +855,8 @@ public:
 
 	void collectMenuItemNames (StringPtrList& names) override
 	{
-		const auto* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
+		const auto* viewFactory =
+			dynamic_cast<const IViewFactoryEditingSupport*> (description->getViewFactory ());
 		if (viewFactory)
 		{
 			viewFactory->getPossibleAttributeListValues (selection->first (), attrName, names);
@@ -890,6 +1015,10 @@ IController* UIAttributesController::createSubController (IdStringPtr _name, con
 		{
 			return new UIAttributeControllers::TextController (this, *currentAttributeName);
 		}
+		else if (name == "NumberController")
+		{
+			return new UIAttributeControllers::NumberController (this, *currentAttributeName);
+		}
 		else if (name == "BooleanController")
 		{
 			return new UIAttributeControllers::BooleanController (this, *currentAttributeName);
@@ -925,6 +1054,10 @@ IController* UIAttributesController::createSubController (IdStringPtr _name, con
 		else if (name == "AutosizeController")
 		{
 			return new UIAttributeControllers::AutosizeController (this, selection, *currentAttributeName);
+		}
+		else if (name == "ScriptController")
+		{
+			return new UIAttributeControllers::ScriptController (this, *currentAttributeName);
 		}
 	}
 	return controller->createSubController (name, description);
@@ -1002,7 +1135,7 @@ void UIAttributesController::onUndoManagerChange ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::validateAttributeViews ()
 {
-	const auto* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	const auto* viewFactory = static_cast<const IViewFactory*> (editDescription->getViewFactory ());
 
 	for (auto& controller : attributeControllers)
 	{
@@ -1024,7 +1157,10 @@ void UIAttributesController::validateAttributeViews ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIAttributesController::createValueViewForAttributeType (const UIViewFactory* viewFactory, CView* view, const std::string& attrName, IViewCreator::AttrType attrType)
+CView* UIAttributesController::createValueViewForAttributeType (const IViewFactory* viewFactory,
+																CView* view,
+																const std::string& attrName,
+																IViewCreator::AttrType attrType)
 {
 	auto editorDescription = UIEditController::getEditorDescription ();
 	if (!editDescription)
@@ -1045,11 +1181,15 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 			return editorDescription->createView ("attributes.boolean", this);
 		case IViewCreator::kListType:
 			return editorDescription->createView ("attributes.list", this);
+		case IViewCreator::kScriptType:
+			return editorDescription->createView ("attributes.script", this);
 		case IViewCreator::kFloatType:
 		case IViewCreator::kIntegerType:
 		{
 			double minValue, maxValue;
-			if (viewFactory->getAttributeValueRange (view, attrName, minValue, maxValue))
+			const auto* viewFactoryEditing =
+				dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory);
+			if (viewFactoryEditing->getAttributeValueRange (view, attrName, minValue, maxValue))
 			{
 				CView* valueView = editorDescription->createView ("attributes.number", this);
 				if (valueView)
@@ -1096,7 +1236,8 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	
 	bool hasDifferentValues = false;
 
-	const auto* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	const auto* viewFactory = editDescription->getViewFactory ();
+	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory);
 
 	std::string attrValue;
 	bool first = true;
@@ -1125,7 +1266,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	if (valueView == nullptr)
 	{
 		CView* firstView = selection->first ();
-		IViewCreator::AttrType attrType = viewFactory->getAttributeType (firstView, attrName);
+		auto attrType = viewFactoryEditing->getAttributeType (firstView, attrName);
 		valueView = createValueViewForAttributeType (viewFactory, firstView, attrName, attrType);
 	}
 	if (valueView == nullptr) // fallcack if attributes.text template not defined
@@ -1168,7 +1309,8 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::getConsolidatedAttributeNames (StringList& attrNames, const std::string& filter)
 {
-	const auto* viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	const auto* viewFactory =
+		dynamic_cast<const IViewFactoryEditingSupport*> (editDescription->getViewFactory ());
 	vstgui_assert (viewFactory);
 	if (!viewFactory)
 		return;
@@ -1213,7 +1355,8 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::rebuildAttributesView ()
 {
-	auto viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	auto viewFactory =
+		dynamic_cast<const IViewFactoryEditingSupport*> (editDescription->getViewFactory ());
 	if (attributeView == nullptr || viewFactory == nullptr)
 		return;
 

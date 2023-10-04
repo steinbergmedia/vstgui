@@ -17,6 +17,7 @@
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/crect.h"
+#include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/iviewlistener.h"
 #include "vstgui/lib/controls/ccontrol.h"
 #include "vstgui/lib/controls/clistcontrol.h"
@@ -28,6 +29,12 @@
 #include "vstgui/lib/cexternalview.h"
 #include "vstgui/contrib/datepicker.h"
 #include "vstgui/contrib/evbutton.h"
+
+#include "vstgui/lib/ctexteditor.h"
+
+#ifdef VSTGUI_UISCRIPTING
+#include "vstgui/uidescription-scripting/uiscripting.h"
+#endif
 
 #include <memory>
 
@@ -43,6 +50,7 @@ namespace MyApp {
 using namespace VSTGUI;
 using namespace VSTGUI::Standalone;
 
+class AppTextEditorController;
 //------------------------------------------------------------------------
 class Delegate : public Application::DelegateAdapter,
 				 public ICommandHandler,
@@ -66,6 +74,7 @@ public:
 
 private:
 	std::shared_ptr<TestModel> model;
+	std::unique_ptr<AppTextEditorController> textEditorController;
 };
 
 //------------------------------------------------------------------------
@@ -79,6 +88,8 @@ static Command NewMetalExampleWindow {CommandGroup::File, "New Metal Example Win
 #elif WINDOWS
 static Command NewDirect3DExampleWindow {CommandGroup::File, "New Direct3D Example Window"};
 #endif
+static Command IncreaseTextSize {CommandGroup::Edit, "Increase Text Size"};
+static Command DecreaseTextSize {CommandGroup::Edit, "Decrease Text Size"};
 
 //------------------------------------------------------------------------
 class DisabledControlsController : public DelegationController,
@@ -167,6 +178,84 @@ public:
 };
 
 //------------------------------------------------------------------------
+class AppTextEditorController : public TextEditorControllerAdapter
+{
+public:
+	AppTextEditorController ()
+	{
+		style.selectionBackColor = MakeCColor (120, 120, 255, 150);
+		style.backColor = MakeCColor (255, 255, 255, 220);
+		style.textColor = kBlackCColor;
+		style.font = makeOwned<CFontDesc> (*kNormalFont);
+		style.lineNumbersFont = makeOwned<CFontDesc> (*kNormalFontSmall);
+		style.lineSpacing = 0.;
+	}
+	~AppTextEditorController () noexcept
+	{
+		std::for_each (textEditors.begin (), textEditors.end (),
+					   [] (const auto& el) { el->resetController (); });
+	}
+	void onTextEditorCreated (const ITextEditor& te) override
+	{
+		textEditors.emplace_back (&te);
+		te.setStyle (style);
+		te.setPlainText (text);
+	}
+	void onTextEditorDestroyed (const ITextEditor& te) override
+	{
+		text = te.getPlainText ();
+		te.resetController ();
+		auto it = std::find (textEditors.begin (), textEditors.end (), &te);
+		textEditors.erase (it);
+	}
+	void onTextEditorTextChanged (const ITextEditor& te) override {}
+
+	void increaseTextSize ()
+	{
+		style.font->setSize (style.font->getSize () + 1);
+		style.lineNumbersFont->setSize (style.lineNumbersFont->getSize () + 1);
+		std::for_each (textEditors.begin (), textEditors.end (),
+					   [&] (const auto& el) { el->setStyle (style); });
+	}
+	void decreaseTextSize ()
+	{
+		style.font->setSize (style.font->getSize () - 1);
+		style.lineNumbersFont->setSize (style.lineNumbersFont->getSize () - 1);
+		std::for_each (textEditors.begin (), textEditors.end (),
+					   [&] (const auto& el) { el->setStyle (style); });
+	}
+
+private:
+	using TextEditors = std::vector<const ITextEditor*>;
+	TextEditors textEditors;
+	ITextEditor::Style style {};
+	std::string text {"Hello Text Editor!"};
+};
+
+//------------------------------------------------------------------------
+class TextEditorViewController : public DelegationController
+{
+public:
+	TextEditorViewController (IController* parent, AppTextEditorController& textEditorController)
+	: DelegationController (parent), textEditorController (textEditorController)
+	{
+	}
+
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
+		{
+			if (*customViewName == "TextEditor")
+			{
+				return createNewTextEditor (CRect (), &textEditorController);
+			}
+		}
+		return controller->createView (attributes, description);
+	}
+	AppTextEditorController& textEditorController;
+};
+
+//------------------------------------------------------------------------
 class DatePickerController : public DelegationController
 {
 public:
@@ -222,11 +311,16 @@ public:
 Delegate::Delegate ()
 : Application::DelegateAdapter ({"VSTGUI Standalone", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 {
+#ifdef VSTGUI_UISCRIPTING
+	UIScripting::init ();
+#endif
 }
 
 //------------------------------------------------------------------------
 void Delegate::finishLaunching ()
 {
+	textEditorController = std::make_unique<AppTextEditorController> ();
+
 	model = std::make_shared<TestModel> ();
 	IApplication::instance ().registerCommand (Commands::NewDocument, 'n');
 	IApplication::instance ().registerCommand (NewPopup, 'N');
@@ -236,6 +330,8 @@ void Delegate::finishLaunching ()
 #elif WINDOWS
 	IApplication::instance ().registerCommand (NewDirect3DExampleWindow, 'D');
 #endif
+	IApplication::instance ().registerCommand (IncreaseTextSize, '=');
+	IApplication::instance ().registerCommand (DecreaseTextSize, '-');
 	handleCommand (Commands::NewDocument);
 }
 
@@ -258,7 +354,9 @@ bool Delegate::canHandleCommand (const Command& command)
 	if (command == NewDirect3DExampleWindow)
 		return true;
 #endif
-	return command == Commands::NewDocument || command == NewPopup || command == ShowAlertBoxDesign;
+	return command == Commands::NewDocument || command == NewPopup ||
+		   command == ShowAlertBoxDesign || command == IncreaseTextSize ||
+		   command == DecreaseTextSize;
 }
 
 //------------------------------------------------------------------------
@@ -284,6 +382,7 @@ bool Delegate::handleCommand (const Command& command)
 			config.uiDescFileName = "test.uidesc";
 			config.windowConfig.style.border ().size ();
 			config.windowConfig.style.movableByWindowBackground ();
+			config.windowConfig.style.size ();
 			auto customization = UIDesc::Customization::make ();
 			customization->addCreateViewControllerFunc (
 				"DisabledControlsController",
@@ -299,6 +398,11 @@ bool Delegate::handleCommand (const Command& command)
 				"DatePickerController",
 				[] (const UTF8StringView&, IController* parent, const IUIDescription*) {
 					return new DatePickerController (parent);
+				});
+			customization->addCreateViewControllerFunc (
+				"TextEditorController",
+				[this] (const UTF8StringView&, IController* parent, const IUIDescription*) {
+					return new TextEditorViewController (parent, *textEditorController.get ());
 				});
 			config.customization = customization;
 		}
@@ -330,6 +434,16 @@ bool Delegate::handleCommand (const Command& command)
 		return true;
 	}
 #endif
+	else if (command == IncreaseTextSize)
+	{
+		textEditorController->increaseTextSize ();
+		return true;
+	}
+	else if (command == DecreaseTextSize)
+	{
+		textEditorController->decreaseTextSize ();
+		return true;
+	}
 	return false;
 }
 

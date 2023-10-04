@@ -7,6 +7,8 @@
 #include "vstguibase.h"
 #include "vstguifwd.h"
 #include <cmath>
+#include <array>
+#include <string_view>
 
 namespace VSTGUI {
 
@@ -152,6 +154,21 @@ constexpr const CColor kBlueCColor			= CColor (  0,   0, 255, 255);
 constexpr const CColor kYellowCColor		= CColor (255, 255,   0, 255);
 constexpr const CColor kMagentaCColor		= CColor (255,   0, 255, 255);
 constexpr const CColor kCyanCColor			= CColor (  0, 255, 255, 255);
+
+//-----------------------------------------------------------------------------
+// CSS Colors
+struct CSSNamedColor
+{
+	const std::string_view name;
+	const CColor color;
+};
+
+using CSSNamedColorArray = std::array<CSSNamedColor, 148>;
+/** get the CSS color array
+ *
+ *	@ingroup new_in_4_13
+ */
+const CSSNamedColorArray& getCSSNamedColors ();
 
 //-----------------------------------------------------------------------------
 inline constexpr uint8_t CColor::getLuma () const

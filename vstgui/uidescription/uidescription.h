@@ -60,7 +60,7 @@ public:
 	
 	void setSharedResources (const SharedPointer<UIDescription>& resources);
 	const SharedPointer<UIDescription>& getSharedResources () const;
-	
+
 	const UIAttributes* getViewAttributes (UTF8StringPtr name) const;
 
 	void setController (IController* controller) const;
@@ -129,8 +129,8 @@ public:
 	bool changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName);
 	bool duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplicateName);
 
-	bool setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr);
-	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const;
+	bool setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr) override;
+	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const override;
 	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name, bool create);
 
 	bool getControlTagString (UTF8StringPtr tagName, std::string& tagString) const;
@@ -163,8 +163,9 @@ protected:
 
 	const CResourceDescription& getUIDescFile () const;
 private:
+	void postParsing ();
 	CView* createViewFromNode (UINode* node) const;
-	UINode* getBaseNode (UTF8StringPtr name) const;
+	UINode* getBaseNode (UTF8StringPtr name, bool create = true) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
 	UINode* findNodeForView (CView* view) const;
 	bool updateAttributesForView (UINode* node, CView* view, bool deep = true);

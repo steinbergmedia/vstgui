@@ -21,7 +21,7 @@ namespace VSTGUI {
 class UIViewCreatorDataSource : public UIBaseDataSource
 {
 public:
-	UIViewCreatorDataSource (const UIViewFactory* factory, UIDescription* description);
+	UIViewCreatorDataSource (const IViewFactory* factory, UIDescription* description);
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
@@ -35,8 +35,8 @@ public:
 	void addViewToCurrentEditView (int32_t row);
 protected:
 	SharedPointer<UISelection> createSelection (int32_t row);
-	UIViewFactory::ViewAndDisplayNameList viewAndDisplayNameList;
-	const UIViewFactory* factory;
+	IViewFactoryEditingSupport::ViewAndDisplayNameList viewAndDisplayNameList;
+	const IViewFactory* factory;
 	DragStartMouseObserver dragStartMouseObserver;
 };
 
@@ -63,8 +63,7 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes, cons
 		if (*name == "ViewDataBrowser")
 		{
 			vstgui_assert (dataBrowser == nullptr);
-			const auto factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-			dataSource = new UIViewCreatorDataSource (factory, description);
+			dataSource = new UIViewCreatorDataSource (description->getViewFactory (), description);
 			UIEditController::setupDataSource (dataSource);
 			dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 			return dataBrowser;
@@ -115,22 +114,24 @@ void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIViewCreatorDataSource::UIViewCreatorDataSource (const UIViewFactory* factory, UIDescription* description)
-: UIBaseDataSource (description, nullptr, nullptr)
-, factory (factory)
+UIViewCreatorDataSource::UIViewCreatorDataSource (const IViewFactory* factory,
+												  UIDescription* description)
+: UIBaseDataSource (description, nullptr, nullptr), factory (factory)
 {
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 {
-	viewAndDisplayNameList = factory->collectRegisteredViewAndDisplayNames ();
-	for (const auto& e : viewAndDisplayNameList)
+	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (factory))
 	{
-		names.emplace_back (&e.second);
+		viewAndDisplayNameList = vfEditingSupport->collectRegisteredViewAndDisplayNames ();
+		for (const auto& e : viewAndDisplayNameList)
+		{
+			names.emplace_back (&e.second);
+		}
+		names.sort ([] (const auto& lhs, const auto& rhs) { return *lhs < *rhs; });
 	}
-	names.sort ([] (const auto& lhs, const auto& rhs) { return *lhs < *rhs; });
-
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -149,9 +150,9 @@ void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<UISelection> createSelectionFromViewName (const std::string& viewName,
-                                                        const UIViewFactory* factory,
-                                                        const UIDescription* description,
-                                                        const UIAttributes* optionalAttributes)
+														const IViewFactory* factory,
+														const UIDescription* description,
+														const UIAttributes* optionalAttributes)
 {
 	SharedPointer<UISelection> selection;
 	UIAttributes viewAttr;

@@ -7,7 +7,6 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uieditview.h"
-#include "../uiviewfactory.h"
 #include "../uidescription.h"
 #include "../uiattributes.h"
 #include "../../lib/cgraphicspath.h"
@@ -63,8 +62,7 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewFactory* factory)
-: BaseSelectionOperation<SharedPointer<CView> > (selection)
-, factory (static_cast<const UIViewFactory*> (factory))
+: BaseSelectionOperation<SharedPointer<CView>> (selection), factory (factory)
 {
 	containerView = selection->first ()->asViewContainer ();
 	collectSubviews (containerView, true);
@@ -453,9 +451,9 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, CView* view,
-                                                        IdStringPtr viewClassName,
-                                                        UIDescription* desc,
-                                                        const UIViewFactory* factory)
+														IdStringPtr viewClassName,
+														UIDescription* desc,
+														const IViewFactory* factory)
 : view (view)
 , newView (nullptr)
 , insertIndex (-1)
@@ -464,18 +462,21 @@ TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, 
 , factory (factory)
 , description (desc)
 {
-	UIAttributes attr;
-	if (factory->getAttributesForView (view, desc, attr))
+	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (factory))
 	{
-		attr.setAttribute (UIViewCreator::kAttrClass, viewClassName);
-		newView = factory->createView (attr, desc);
-		ViewIterator it (parent);
-		while (*it)
+		UIAttributes attr;
+		if (vfEditingSupport->getAttributesForView (view, desc, attr))
 		{
-			++insertIndex;
-			if (*it == view)
-				break;
-			++it;
+			attr.setAttribute (UIViewCreator::kAttrClass, viewClassName);
+			newView = factory->createView (attr, desc);
+			ViewIterator it (parent);
+			while (*it)
+			{
+				++insertIndex;
+				if (*it == view)
+					break;
+				++it;
+			}
 		}
 	}
 }
@@ -496,24 +497,27 @@ UTF8StringPtr TransformViewTypeOperation::getName ()
 //-----------------------------------------------------------------------------
 void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewContainer* dst)
 {
-	if (src && dst)
+	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (factory))
 	{
-		std::list<CView*> temp;
-
-		src->forEachChild ([&] (CView* childView) {
-			if (factory->getViewName (childView))
-			{
-				temp.emplace_back (childView);
-			}
-			else if (auto container = childView->asViewContainer ())
-			{
-				exchangeSubViews (container, dst);
-			}
-		});
-		for (auto& viewToMove : temp)
+		if (src && dst)
 		{
-			src->removeView (viewToMove, false);
-			dst->addView (viewToMove);
+			std::list<CView*> temp;
+
+			src->forEachChild ([&] (CView* childView) {
+				if (IViewFactory::getViewName (childView))
+				{
+					temp.emplace_back (childView);
+				}
+				else if (auto container = childView->asViewContainer ())
+				{
+					exchangeSubViews (container, dst);
+				}
+			});
+			for (auto& viewToMove : temp)
+			{
+				src->removeView (viewToMove, false);
+				dst->addView (viewToMove);
+			}
 		}
 	}
 }
@@ -557,7 +561,7 @@ AttributeChangeAction::AttributeChangeAction (UIDescription* desc, UISelection* 
 , attrName (attrName)
 , attrValue (attrValue)
 {
-	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (desc->getViewFactory ());
+	const auto* viewFactory = desc->getViewFactory ();
 	std::string attrOldValue;
 	for (auto view : *selection)
 	{
@@ -631,24 +635,31 @@ MultipleAttributeChangeAction::MultipleAttributeChangeAction (UIDescription* des
 , oldValue (oldValue)
 , newValue (newValue)
 {
-	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
 	for (auto& view : views)
-		collectViewsWithAttributeValue (viewFactory, description, view, attrType, oldValue);
+		collectViewsWithAttributeValue (description->getViewFactory (), description, view, attrType,
+										oldValue);
 }
 
 //----------------------------------------------------------------------------------------------------
-void MultipleAttributeChangeAction::collectViewsWithAttributeValue (const UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value)
+void MultipleAttributeChangeAction::collectViewsWithAttributeValue (const IViewFactory* viewFactory,
+																	IUIDescription* desc,
+																	CView* startView,
+																	IViewCreator::AttrType type,
+																	const std::string& value)
 {
+	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory);
+	if (!viewFactoryEditing)
+		return;
 	std::list<CView*> views;
 	collectAllSubViews (startView, views);
 	for (auto& view : views)
 	{
 		std::list<std::string> attrNames;
-		if (viewFactory->getAttributeNamesForView (view, attrNames))
+		if (viewFactoryEditing->getAttributeNamesForView (view, attrNames))
 		{
 			for (auto& attrName : attrNames)
 			{
-				if (viewFactory->getAttributeType (view, attrName) == type)
+				if (viewFactoryEditing->getAttributeType (view, attrName) == type)
 				{
 					std::string typeValue;
 					if (viewFactory->getAttributeValue (view, attrName, typeValue, desc))

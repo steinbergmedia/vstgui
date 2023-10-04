@@ -39,8 +39,9 @@ public:
 	~UIDialogController () override = default;
 
 	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1,
-	          UTF8StringPtr button2, const SharedPointer<IDialogController>& controller,
-	          UIDescription* description);
+			  UTF8StringPtr button2, const SharedPointer<IDialogController>& controller,
+			  UIDescription* description, bool resizable = false);
+
 protected:
 	void valueChanged (CControl* pControl) override;
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override;
@@ -62,11 +63,13 @@ protected:
 	UIDescription* dialogDescription;
 	SharedPointer<CControl> button1;
 	SharedPointer<CControl> button2;
+	CView* customViewEmbedder {nullptr};
 	CPoint sizeDiff;
 	std::string templateName;
 	std::string dialogTitle;
 	std::string dialogButton1;
 	std::string dialogButton2;
+	bool resizable {false};
 
 #if VSTGUI_OPENGL_SUPPORT
 	std::list<SharedPointer<COpenGLView> > openglViews;

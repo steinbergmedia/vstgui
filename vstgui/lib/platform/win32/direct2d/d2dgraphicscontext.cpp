@@ -181,7 +181,6 @@ struct D2DGraphicsDeviceContext::Impl
 																 geometry.get (),
 																 D2D1_ANTIALIAS_MODE_ALIASED),
 										  nullptr);
-				geometry->Release ();
 				applyClip = state.clip;
 			}
 			else

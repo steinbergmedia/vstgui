@@ -468,6 +468,8 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 - (id)firstResponderIsFieldEditor
 {
 	id firstResponder = [self.macWindow->getNSWindow () firstResponder];
+	if ([firstResponder isKindOfClass:[NSText class]])
+		return firstResponder;
 	id fieldEditor = [self.macWindow->getNSWindow () fieldEditor:NO forObject:self];
 	return firstResponder == fieldEditor ? fieldEditor : nil;
 }

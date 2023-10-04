@@ -39,7 +39,8 @@ public:
 		kRectType,
 		kTagType,
 		kListType,
-		kGradientType
+		kGradientType,
+		kScriptType,
 	};
 
 	virtual IdStringPtr getViewName () const = 0;

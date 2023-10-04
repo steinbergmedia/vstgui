@@ -11,6 +11,7 @@
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/cbitmapfilter.h"
 #include "../../lib/clayeredviewcontainer.h"
+#include "../../lib/cshadowviewcontainer.h"
 #include "../../lib/events.h"
 #include "../../lib/controls/ctextlabel.h"
 #include "../../lib/controls/cbuttons.h"
@@ -30,9 +31,9 @@ UIDialogController::UIDialogController (IController* baseController, CFrame* fra
 
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle,
-                              UTF8StringPtr _button1, UTF8StringPtr _button2,
-                              const SharedPointer<IDialogController>& _dialogController,
-                              UIDescription* _description)
+							  UTF8StringPtr _button1, UTF8StringPtr _button2,
+							  const SharedPointer<IDialogController>& _dialogController,
+							  UIDescription* _description, bool _resizable)
 {
 	collectOpenGLViews (frame);
 
@@ -42,12 +43,13 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	dialogButton2 = _button2 != nullptr ? _button2 : "";
 	dialogController = _dialogController;
 	dialogDescription = _description;
+	resizable = _resizable;
 	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", this);
 	if (view)
 	{
 		auto* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
 		if (layeredView)
-			layeredView->setZIndex (std::numeric_limits<uint32_t>::max ());
+			layeredView->setZIndex (std::numeric_limits<uint32_t>::max () - 1);
 
 		CRect size = view->getViewSize ();
 		size.right += sizeDiff.x;
@@ -74,6 +76,14 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		view->addAnimation (
 		    "AlphaAnimation", new AlphaValueAnimation (1.f),
 		    new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)));
+
+		if (resizable)
+		{
+			if (customViewEmbedder)
+				customViewEmbedder->setAutosizeFlags (kAutosizeAll);
+			view->setAutosizeFlags (kAutosizeAll);
+			view->setViewSize (frameSize);
+		}
 	}
 	else
 	{
@@ -105,7 +115,7 @@ void UIDialogController::close ()
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::viewSizeChanged (CView* view, const CRect& oldSize)
 {
-	if (view == frame)
+	if (view == frame && !resizable)
 	{
 		CView* dialog = frame->getModalView ();
 		CRect viewSize = dialog->getViewSize ();
@@ -166,8 +176,7 @@ IControlListener* UIDialogController::getControlListener (UTF8StringPtr controlT
 CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes,
                                        const IUIDescription* description)
 {
-	auto* control = dynamic_cast<CControl*>(view);
-	if (control)
+	if (auto control = dynamic_cast<CControl*> (view))
 	{
 		if (control->getTag () == kButton1Tag)
 		{
@@ -205,8 +214,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 			}
 		}
 	}
-	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
-	if (name)
+	else if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 	{
 		if (*name == "view" && view)
 		{
@@ -225,7 +233,24 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 					container->addView (subView);
 				if (controller)
 					dialogController->remember ();
+				customViewEmbedder = view;
 			}
+		}
+	}
+	else if (auto shadowViewContainer = dynamic_cast<CShadowViewContainer*> (view))
+	{
+		if (resizable)
+		{
+			auto container = new CViewContainer (view->getViewSize ());
+			container->setAutosizeFlags (view->getAutosizeFlags ());
+			while (shadowViewContainer->hasChildren ())
+			{
+				auto child = shared (shadowViewContainer->getView (0));
+				shadowViewContainer->removeView (child, false);
+				container->addView (child);
+			}
+			view->forget ();
+			view = container;
 		}
 	}
 	return view;

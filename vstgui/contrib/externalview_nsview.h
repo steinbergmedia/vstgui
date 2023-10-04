@@ -146,7 +146,8 @@ struct ExternalNSViewBase : ViewAdapter
 	using PlatformViewType = ExternalView::PlatformViewType;
 	using IntRect = ExternalView::IntRect;
 
-	NSView* container {[ExternalViewContainerNSView::alloc () initWithFrame: {0., 0., 10., 10.}]};
+	NSView* container {
+		[ExternalViewContainerNSView::alloc () initWithFrame: {{0., 0.}, {10., 10.}}]};
 	ViewType* view {nullptr};
 
 	ExternalNSViewBase (ViewType* inView) : view (inView) { [container addSubview:view]; }

@@ -16,7 +16,7 @@ namespace CDrawMethods {
 UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, CFontRef font,
                                 CCoord maxWidth, const CPoint& textInset, uint32_t flags)
 {
-	if (mode == kTextTruncateNone)
+	if (mode == kTextTruncateNone || text.length () < 2)
 		return text;
 	auto painter = font->getPlatformFont () ? font->getPlatformFont ()->getPainter () : nullptr;
 	if (!painter)
@@ -29,27 +29,54 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 		UTF8String result;
 		auto left = text.begin ();
 		auto right = text.end ();
-		while (width > maxWidth && left != right)
+		size_t distance = std::distance (left, right) - 1;
+		int32_t dir = 1;
+		while (distance > 0 && width != maxWidth)
 		{
-			if (mode == kTextTruncateHead)
+			distance = (distance / 2);
+			while ((dir > 0 ? (width > maxWidth) : (width < maxWidth)) && distance > 0)
 			{
-				++left;
-				truncatedText = "..";
+				if (mode == kTextTruncateHead)
+				{
+					if (dir > 0)
+					{
+						for (auto i = distance; i > 0 && left != right; --i)
+							++left;
+					}
+					else
+					{
+						for (auto i = distance; i > 0 && left != text.begin (); --i)
+							--left;
+					}
+					truncatedText = "..";
+				}
+				else if (mode == kTextTruncateTail)
+				{
+					if (dir > 0)
+					{
+						for (auto i = distance; i > 0 && left != right; --i)
+							--right;
+					}
+					else
+					{
+						for (auto i = distance; i > 0 && right != text.end (); --i)
+							++right;
+					}
+					truncatedText = "";
+				}
+
+				truncatedText += {left.base (), right.base ()};
+
+				if (mode == kTextTruncateTail)
+					truncatedText += "..";
+
+				result = truncatedText;
+				width = painter->getStringWidth (nullptr, result.getPlatformString (), true);
+				width += textInset.x * 2;
+				if (left == right)
+					break;
 			}
-			else if (mode == kTextTruncateTail)
-			{
-				--right;
-				truncatedText = "";
-			}
-
-			truncatedText += {left.base (), right.base ()};
-
-			if (mode == kTextTruncateTail)
-				truncatedText += "..";
-
-			result = truncatedText;
-			width = painter->getStringWidth (nullptr, result.getPlatformString (), true);
-			width += textInset.x * 2;
+			dir *= -1;
 		}
 		if (left == right && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
 			result = "";

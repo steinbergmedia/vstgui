@@ -81,6 +81,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}uidescription/cstream_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/delegationcontroller_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiattributes_test.cpp"
+	"${VSTGUI_TEST_BASE}uidescription/uidescription_addon_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uidescription_json_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uidescription_test_helper.h"
 	"${VSTGUI_TEST_BASE}uidescription/uidescription_xml_test.cpp"
@@ -161,7 +162,7 @@ else()
 			"${VSTGUI_TEST_BASE}../../vstgui_mac.mm"
 		)
 	endif()
-	
+
 	set(${target}_sources
 		${${target}_sources}
 		"${VSTGUI_TEST_BASE}../../vstgui_uidescription.cpp"

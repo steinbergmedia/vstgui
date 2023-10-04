@@ -16,6 +16,9 @@ namespace VSTGUI {
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class UIViewFactory : public NonAtomicReferenceCounted, public IViewFactory
+#if VSTGUI_LIVE_EDITING
+, public IViewFactoryEditingSupport
+#endif
 {
 public:
 	UIViewFactory ();
@@ -25,8 +28,9 @@ public:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const override;
 	bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const override;
 	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const override;
-	
-	static IdStringPtr getViewName (CView* view);
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+							const IUIDescription* desc) const override;
+	bool viewIsTypeOf (CView* view, const std::string& typeName) const override;
 
 	static void registerViewCreator (const IViewCreator& viewCreator);
 	static void unregisterViewCreator (const IViewCreator& viewCreator);
@@ -35,18 +39,17 @@ public:
 	using StringPtrList = std::list<const std::string*>;
 	using StringList = std::list<std::string>;
 	using ViewAndDisplayNameList = std::list<std::pair<const std::string*, const std::string>>;
-	
-	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const;
-	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
-	void collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter = nullptr) const;
-	bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const;
-	// list type support
-	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const;
-	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const;
 
-	ViewAndDisplayNameList collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter = nullptr) const;
-	UTF8StringPtr getViewDisplayName (CView* view) const;
+	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const override;
+	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const override;
+	void collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter = nullptr) const override;
+	bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const override;
+	// list type support
+	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const override;
+	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const override;
+
+	ViewAndDisplayNameList collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter = nullptr) const override;
+	UTF8StringPtr getViewDisplayName (CView* view) const override;
 
 #if ENABLE_UNIT_TESTS
 	bool disableRememberAttributes {false};

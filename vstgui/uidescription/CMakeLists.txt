@@ -14,6 +14,7 @@ set(${target}_sources
     icontentprovider.h
     icontroller.h
     iuidescription.h
+    iuidescriptionaddon.h
     iviewcreator.h
     iviewfactory.h
     uiattributes.cpp
@@ -22,6 +23,8 @@ set(${target}_sources
     uicontentprovider.h
     uidescription.cpp
     uidescription.h
+    uidescriptionaddonregistry.cpp
+    uidescriptionaddonregistry.h
     uidescriptionlistener.h
     uidescriptionfwd.h
     uiviewcreator.cpp
@@ -186,7 +189,7 @@ vstgui_source_group_by_folder(${target})
 ##########################################################################################
 if(LINUX)
     set (VSTGUI_GENERATED_DIR ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.generated)
-    
+
     execute_process(
         COMMAND
             ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh ${VSTGUI_GENERATED_DIR}
@@ -222,3 +225,4 @@ endif()
 if(CMAKE_HOST_APPLE)
   target_compile_options(${target} PRIVATE -Wall -Werror)
 endif()
+

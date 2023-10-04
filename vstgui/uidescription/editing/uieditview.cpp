@@ -15,7 +15,7 @@
 #include "../icontroller.h"
 #include "../uiattributes.h"
 #include "../uidescription.h"
-#include "../uiviewfactory.h"
+#include "../iviewfactory.h"
 #include "../cstream.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../../lib/cvstguitimer.h"
@@ -224,6 +224,7 @@ void collectExternalViewsOnInlineEditing (CViewContainer* container, T& array)
 struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 									   ViewListenerAdapter
 {
+	ViewAddedObserver (CViewContainer* root) : root (root) {}
 	~ViewAddedObserver () override
 	{
 		for (auto view : views)
@@ -236,10 +237,23 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 			view->unregisterViewListener (this);
 		}
 	}
+
+	bool isViewSubViewOfRoot (CView* view)
+	{
+		CView* parent = view->getParentView ();
+		if (parent == nullptr || parent == root->getFrame ())
+			return false;
+		if (parent->asViewContainer () == root)
+			return true;
+		return isViewSubViewOfRoot (parent);
+	}
+
 	void onViewAdded (CFrame* frame, CView* view) override
 	{
 		if (auto viewEmbedder = dynamic_cast<ExternalView::IViewEmbedder*> (view))
 		{
+			if (!isViewSubViewOfRoot (view))
+				return;
 			if (auto ev = viewEmbedder->getExternalView ())
 				ev->setMouseEnabled (false);
 			view->registerViewListener (this);
@@ -264,6 +278,7 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 		}
 	}
 
+	CViewContainer* root;
 	std::vector<CView*> views;
 };
 
@@ -372,7 +387,7 @@ void UIEditView::disableExternalViewsOnInlineEditing (bool state)
 	editingViewAddedObserver.reset ();
 	if (state)
 	{
-		editingViewAddedObserver = std::make_unique<ViewAddedObserver> ();
+		editingViewAddedObserver = std::make_unique<ViewAddedObserver> (this);
 		std::vector<CView*> views;
 		UIEditViewInternal::collectExternalViewsOnInlineEditing (this, views);
 		for (auto* v : views)
@@ -524,13 +539,9 @@ CView* UIEditView::getViewAt (const CPoint& p, const GetViewOptions& options) co
 	CView* view = CViewContainer::getViewAt (p, options);
 	if (editing)
 	{
-		auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
-		if (factory)
+		while (view && IViewFactory::getViewName (view) == nullptr)
 		{
-			while (view && factory->getViewName (view) == nullptr)
-			{
-				view = view->getParentView ();
-			}
+			view = view->getParentView ();
 		}
 	}
 	return view;
@@ -542,13 +553,9 @@ CViewContainer* UIEditView::getContainerAt (const CPoint& p, const GetViewOption
 	CViewContainer* view = CViewContainer::getContainerAt (p, options);
 	if (editing)
 	{
-		auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
-		if (factory)
+		while (view && IViewFactory::getViewName (view) == nullptr)
 		{
-			while (view && factory->getViewName (view) == nullptr)
-			{
-				view = view->getParentView ()->asViewContainer ();
-			}
+			view = view->getParentView ()->asViewContainer ();
 		}
 	}
 	return view;
@@ -789,10 +796,9 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		area.setBottomRight (where2);
 		area.normalize ();
 		auto result = findChildsInArea (getEditView ()->asViewContainer (), area);
-		auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
 		for (auto& view : result)
 		{
-			if (factory->getViewName (view) && !getSelection ()->contains (view))
+			if (IViewFactory::getViewName (view) && !getSelection ()->contains (view))
 				getSelection ()->add (view);
 		}
 	}
@@ -1356,7 +1362,7 @@ void UIEditView::onDoubleClickEditing (CView* view)
 		Callback callback;
 	};
 
-	auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
+	const auto* factory = description->getViewFactory ();
 	vstgui_assert (factory);
 	std::string attrValue;
 	if (!factory ||

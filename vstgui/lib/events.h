@@ -655,110 +655,143 @@ inline KeyboardEventT* asKeyboardEvent (EventT& event)
 /** cast event to a mouse position event
  *	@ingroup new_in_4_11
  */
-inline MousePositionEvent& castMousePositionEvent (Event& event)
+template<typename EventT, typename OutputT = MousePositionEvent,
+		 typename MousePositionEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MousePositionEventT& castMousePositionEvent (EventT& event)
 {
 	vstgui_assert (event.type >= EventType::MouseDown && event.type <= EventType::ZoomGesture);
-	return static_cast<MousePositionEvent&> (event);
+	return static_cast<MousePositionEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse event
  *	@ingroup new_in_4_11
  */
-inline MouseEvent& castMouseEvent (Event& event)
+template<typename EventT, typename OutputT = MouseEvent,
+		 typename MouseEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MouseEventT& castMouseEvent (EventT& event)
 {
 	vstgui_assert (event.type >= EventType::MouseDown && event.type <= EventType::MouseExit);
-	return static_cast<MouseEvent&> (event);
+	return static_cast<MouseEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse down event
  *	@ingroup new_in_4_11
  */
-inline MouseDownEvent& castMouseDownEvent (Event& event)
+template<typename EventT, typename OutputT = MouseDownEvent,
+		 typename MouseDownEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MouseDownEventT& castMouseDownEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::MouseDown);
-	return static_cast<MouseDownEvent&> (event);
+	return static_cast<MouseDownEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse move event
  *	@ingroup new_in_4_11
  */
-inline MouseMoveEvent& castMouseMoveEvent (Event& event)
+template<typename EventT, typename OutputT = MouseMoveEvent,
+		 typename MouseMoveEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MouseMoveEventT& castMouseMoveEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::MouseMove);
-	return static_cast<MouseMoveEvent&> (event);
+	return static_cast<MouseMoveEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse up event
  *	@ingroup new_in_4_11
  */
-inline MouseUpEvent& castMouseUpEvent (Event& event)
+template<typename EventT, typename OutputT = MouseUpEvent,
+		 typename MouseUpEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MouseUpEventT& castMouseUpEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::MouseUp);
-	return static_cast<MouseUpEvent&> (event);
+	return static_cast<MouseUpEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse enter event
  *	@ingroup new_in_4_11
  */
-inline MouseEnterEvent& castMouseEnterEvent (Event& event)
+template<typename EventT, typename OutputT = MouseEnterEvent,
+		 typename MouseEnterEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MouseEnterEventT& castMouseEnterEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::MouseEnter);
-	return static_cast<MouseEnterEvent&> (event);
+	return static_cast<MouseEnterEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse exit event
  *	@ingroup new_in_4_11
  */
-inline MouseExitEvent& castMouseExitEvent (Event& event)
+template<typename EventT, typename OutputT = MouseExitEvent,
+		 typename MouseExitEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MouseExitEventT& castMouseExitEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::MouseExit);
-	return static_cast<MouseExitEvent&> (event);
+	return static_cast<MouseExitEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse cancel event
  *	@ingroup new_in_4_11
  */
-inline MouseCancelEvent& castMouseCancelEvent (Event& event)
+template<typename EventT, typename OutputT = MouseCancelEvent,
+		 typename MouseCancelEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MouseCancelEventT& castMouseCancelEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::MouseCancel);
-	return static_cast<MouseCancelEvent&> (event);
+	return static_cast<MouseCancelEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse wheel event
  *	@ingroup new_in_4_11
  */
-inline MouseWheelEvent& castMouseWheelEvent (Event& event)
+template<typename EventT, typename OutputT = MouseWheelEvent,
+		 typename MouseWheelEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline MouseWheelEventT& castMouseWheelEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::MouseWheel);
-	return static_cast<MouseWheelEvent&> (event);
+	return static_cast<MouseWheelEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a zoom gesture event
  *	@ingroup new_in_4_11
  */
-inline ZoomGestureEvent& castZoomGestureEvent (Event& event)
+template<typename EventT, typename OutputT = ZoomGestureEvent,
+		 typename ZoomGestureEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline ZoomGestureEventT& castZoomGestureEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::ZoomGesture);
-	return static_cast<ZoomGestureEvent&> (event);
+	return static_cast<ZoomGestureEventT&> (event);
 }
 
 //------------------------------------------------------------------------
 /** cast event to a mouse wheel event
  *	@ingroup new_in_4_11
  */
-inline KeyboardEvent& castKeyboardEvent (Event& event)
+template<typename EventT, typename OutputT = KeyboardEvent,
+		 typename KeyboardEventT = typename std::conditional<
+			 std::is_const_v<EventT>, typename std::add_const_t<OutputT>, OutputT>::type>
+inline KeyboardEventT& castKeyboardEvent (EventT& event)
 {
 	vstgui_assert (event.type == EventType::KeyDown || event.type == EventType::KeyUp);
-	return static_cast<KeyboardEvent&> (event);
+	return static_cast<KeyboardEventT&> (event);
 }
 
 //------------------------------------------------------------------------

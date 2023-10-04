@@ -85,6 +85,26 @@ public:
 
 	/** calculate the maximum rect where the scrollbars are inactive */
 	CRect calculateOptimalContainerSize () const;
+
+	/** returns the visible rect of the client */
+	CRect getVisibleClientRect () const;
+
+	enum class Edge
+	{
+		Top,
+		Left,
+	};
+	/** set a static edge view
+	 *
+	 *	An edge view can be set for the top and left edge. The top edge view will have the same
+	 *	width as the scroll view. The bottom of the left edge view will always be the bottom
+	 *	of the scroll view and its top will either be the bottom of the top edge view or the top of
+	 *	the scroll view itself.
+	 *
+	 *	@param edge the edge where to place the view
+	 *	@param view the view to set (if this is a nullptr then the previously set view is removed)
+	 */
+	void setEdgeView (Edge edge, CView* view);
 	//@}
 
 	// overwrite
@@ -115,6 +135,9 @@ protected:
 	CScrollContainer* sc;
 	CScrollbar* vsb;
 	CScrollbar* hsb;
+
+	CView* edgeViewTop {nullptr};
+	CView* edgeViewLeft {nullptr};
 
 	CRect containerSize;
 	CCoord scrollbarWidth;

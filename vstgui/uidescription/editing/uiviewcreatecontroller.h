@@ -9,7 +9,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../delegationcontroller.h"
-#include "../uiviewfactory.h"
+#include "../iviewfactory.h"
 #include "uiselection.h"
 #include <string>
 #include <vector>
@@ -48,9 +48,9 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<UISelection> createSelectionFromViewName (const std::string& viewName,
-                                                        const UIViewFactory* factory,
-                                                        const UIDescription* description,
-                                                        const UIAttributes* optionalAttributes);
+														const IViewFactory* factory,
+														const UIDescription* description,
+														const UIAttributes* optionalAttributes);
 
 } // VSTGUI
 

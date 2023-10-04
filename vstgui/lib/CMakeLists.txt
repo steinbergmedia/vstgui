@@ -61,6 +61,8 @@ set(${target}_common_sources
     clayeredviewcontainer.h
     clinestyle.cpp
     clinestyle.h
+    ctexteditor.h
+    ctexteditor.cpp
     coffscreencontext.cpp
     coffscreencontext.h
     controls/cautoanimation.cpp
