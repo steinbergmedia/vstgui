@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../../../uidescription/iuidescription.h"
+#include "../../../uidescription/uiattributes.h"
 
 namespace VSTGUI {
 
