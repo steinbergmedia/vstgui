@@ -234,9 +234,11 @@ public:
 	void removeControl (CControl* control)
 	{
 		auto it = std::find (controls.begin (), controls.end (), control);
-		vstgui_assert (it != controls.end ());
-		onRemoveControl (control);
-		controls.erase (it);
+		if (it != controls.end ())
+		{
+			onRemoveControl (control);
+			controls.erase (it);
+		}
 	}
 
 	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }
@@ -790,7 +792,30 @@ struct WindowController::EditImpl : WindowController::Impl
 				Detail::saveSharedUIDescription ();
 			int32_t flags = UIDescription::kWriteImagesIntoUIDescFile |
 			                CompressedUIDescription::kForceWriteCompressedDesc;
-			if (!uiDesc->save (uiDesc->getFilePath (), flags))
+
+			// filter out attributes we will always override with the values from the parameters
+			auto filter = [] (CView* view, const std::string& name) -> bool {
+				if (auto control = dynamic_cast<CControl*> (view))
+				{
+					if (control->getTag () >= 0)
+					{
+						if (name == UIViewCreator::kAttrMinValue)
+							return false;
+						if (name == UIViewCreator::kAttrMaxValue)
+							return false;
+						if (name == UIViewCreator::kAttrDefaultValue)
+							return false;
+						if (name == UIViewCreator::kAttrMouseEnabled)
+							return false;
+						if (name == UIViewCreator::kAttrTitle &&
+							dynamic_cast<CTextLabel*> (control))
+							return false;
+					}
+				}
+				return true;
+			};
+
+			if (!uiDesc->save (uiDesc->getFilePath (), flags, filter))
 			{
 				AlertBoxConfig config;
 				config.headline = "Saving the uidesc file failed.";

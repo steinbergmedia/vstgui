@@ -1534,7 +1534,30 @@ void VST3Editor::save (bool saveAs)
 	}
 	if (savePath.empty ())
 		return;
-	if (description->save (savePath.c_str (), VST3EditorInternal::getUIDescriptionSaveOptions (frame)))
+
+	// filter out attributes we will always override with the values from the parameters
+	auto filter = [] (CView* view, const std::string& name) -> bool {
+		if (auto control = dynamic_cast<CControl*> (view))
+		{
+			if (control->getTag () != -1)
+			{
+				if (name == UIViewCreator::kAttrMinValue)
+					return false;
+				if (name == UIViewCreator::kAttrMaxValue)
+					return false;
+				if (name == UIViewCreator::kAttrDefaultValue)
+					return false;
+				if (name == UIViewCreator::kAttrMouseEnabled)
+					return false;
+				if (name == UIViewCreator::kAttrTitle && dynamic_cast<CTextLabel*> (control))
+					return false;
+			}
+		}
+		return true;
+	};
+
+	if (description->save (savePath.c_str (),
+						   VST3EditorInternal::getUIDescriptionSaveOptions (frame), filter))
 		description->setFilePath (savePath.c_str ());
 }
 

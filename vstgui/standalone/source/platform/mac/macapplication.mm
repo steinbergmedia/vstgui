@@ -308,13 +308,15 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 {
 	NSMenu* mainMenu = [NSApp mainMenu];
 	NSMenuItem* appMenuItem = nil;
-	if (mainMenu == nil)
+	if (mainMenu == nil || mainMenu.itemArray.count == 1)
 	{
-		mainMenu = [NSMenu new];
-		[NSApp setMainMenu:mainMenu];
-
-		appMenuItem = [[NSMenuItem alloc] initWithTitle:@"App" action:nil keyEquivalent:@""];
-		[mainMenu addItem:appMenuItem];
+		if (mainMenu == nil)
+		{
+			mainMenu = [NSMenu new];
+			[NSApp setMainMenu:mainMenu];
+			appMenuItem = [[NSMenuItem alloc] initWithTitle:@"App" action:nil keyEquivalent:@""];
+			[mainMenu addItem:appMenuItem];
+		}
 
 		NSMenuItem* item =
 		    [[NSMenuItem alloc] initWithTitle:NSLocalizedString (@"Window", "Menu Name")
@@ -423,14 +425,17 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	}
 
 	// move Windows menu to the end
-	NSMenuItem* windowsMenuItem =
-	    [mainMenu itemWithTitle:NSLocalizedString (@"Window", "Menu Name")];
-	[mainMenu removeItem:windowsMenuItem];
-	[mainMenu addItem:windowsMenuItem];
+	if (auto* windowsMenuItem = [mainMenu itemWithTitle:NSLocalizedString (@"Window", "Menu Name")])
+	{
+		[mainMenu removeItem:windowsMenuItem];
+		[mainMenu addItem:windowsMenuItem];
+	}
 	// move Help menu to the end
-	NSMenuItem* helpMenuItem = [mainMenu itemWithTitle:NSLocalizedString (@"Help", "Menu Name")];
-	[mainMenu removeItem:helpMenuItem];
-	[mainMenu addItem:helpMenuItem];
+	if (auto* helpMenuItem = [mainMenu itemWithTitle:NSLocalizedString (@"Help", "Menu Name")])
+	{
+		[mainMenu removeItem:helpMenuItem];
+		[mainMenu addItem:helpMenuItem];
+	}
 }
 
 //------------------------------------------------------------------------

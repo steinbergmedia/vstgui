@@ -166,49 +166,19 @@ struct D2DGraphicsDeviceContext::Impl
 		auto transform = convert (tmGuard.matrix) * globalTM * state.tm;
 		transform.scale (scaleFactor, scaleFactor);
 		transform.translate (transformOffset);
-		bool useLayer = transform.m12 != 0. || transform.m21 != 0.;
-		if (useLayer)
-		{ // we have a rotated matrix, we need to use a layer
-			COM::Ptr<ID2D1Factory> factory {};
-			deviceContext->GetFactory (factory.adoptPtr ());
-			COM::Ptr<ID2D1RectangleGeometry> geometry;
-			if (SUCCEEDED (
-					factory->CreateRectangleGeometry (convert (state.clip), geometry.adoptPtr ())))
-			{
-				if (applyClip.isEmpty () == false)
-					deviceContext->PopAxisAlignedClip ();
-				deviceContext->PushLayer (D2D1::LayerParameters (D2D1::InfiniteRect (),
-																 geometry.get (),
-																 D2D1_ANTIALIAS_MODE_ALIASED),
-										  nullptr);
-				geometry->Release ();
-				applyClip = state.clip;
-			}
-			else
-			{
-				useLayer = false;
-			}
-		}
-		if (!useLayer)
+		auto newClip = state.clip;
+		globalTM.transform (newClip);
+		if (applyClip != newClip)
 		{
-			auto newClip = state.clip;
-			globalTM.transform (newClip);
-			if (applyClip != newClip)
-			{
-				if (applyClip.isEmpty () == false)
-					deviceContext->PopAxisAlignedClip ();
-				if (newClip.isEmpty () == false)
-					deviceContext->PushAxisAlignedClip (convert (newClip),
-														D2D1_ANTIALIAS_MODE_ALIASED);
-				applyClip = newClip;
-			}
+			if (applyClip.isEmpty () == false)
+				deviceContext->PopAxisAlignedClip ();
+			if (newClip.isEmpty () == false)
+				deviceContext->PushAxisAlignedClip (convert (newClip), D2D1_ANTIALIAS_MODE_ALIASED);
+			applyClip = newClip;
 		}
 		deviceContext->SetTransform (convert (transform));
 
 		p (deviceContext.get ());
-
-		if (useLayer)
-			deviceContext->PopLayer ();
 	}
 
 	//-----------------------------------------------------------------------------
@@ -331,6 +301,13 @@ struct D2DGraphicsDeviceContext::Impl
 
 	const D2DGraphicsDevice& device;
 	COM::Ptr<ID2D1DeviceContext> deviceContext;
+
+#if defined(VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY) &&                                          \
+	VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY == 1
+	static constexpr auto antialiasMode = D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE;
+#else
+	static constexpr auto antialiasMode = D2D1_TEXT_ANTIALIAS_MODE_DEFAULT;
+#endif
 };
 
 //------------------------------------------------------------------------
@@ -564,13 +541,21 @@ bool D2DGraphicsDeviceContext::drawBitmap (IPlatformBitmap& bitmap, CRect dest, 
 	if (!d2d1Bitmap)
 		return false;
 
+	auto originalClip = impl->state.clip;
+	auto cr = dest;
+	impl->state.tm.transform (cr);
+	cr.bound (originalClip);
+	impl->state.clip = cr;
+	
 	double bitmapScaleFactor = d2dBitmap->getScaleFactor ();
 	CGraphicsTransform bitmapTransform;
 	bitmapTransform.scale (1. / bitmapScaleFactor, 1. / bitmapScaleFactor);
 	auto originalTransformMatrix = impl->state.tm;
 	TransformMatrix tm = originalTransformMatrix * bitmapTransform;
 	setTransformMatrix (tm);
-	bitmapTransform.inverse ().transform (dest);
+	auto invBitmapTransform = bitmapTransform.inverse ();
+	invBitmapTransform.transform (dest);
+	invBitmapTransform.transform (offset);
 
 	impl->doInContext ([&] (auto deviceContext) {
 		auto bitmapSize = bitmap.getSize ();
@@ -603,6 +588,7 @@ bool D2DGraphicsDeviceContext::drawBitmap (IPlatformBitmap& bitmap, CRect dest, 
 								   &sourceRect);
 	});
 	setTransformMatrix (originalTransformMatrix);
+	impl->state.clip = originalClip;
 	return true;
 }
 
@@ -834,7 +820,84 @@ void D2DGraphicsDeviceContext::setTransformMatrix (const TransformMatrix& tm) co
 //------------------------------------------------------------------------
 const IPlatformGraphicsDeviceContextBitmapExt* D2DGraphicsDeviceContext::asBitmapExt () const
 {
-	return nullptr;
+	return this;
+}
+
+//------------------------------------------------------------------------
+bool D2DGraphicsDeviceContext::drawBitmapNinePartTiled (IPlatformBitmap& bitmap, CRect dest,
+														const CNinePartTiledDescription& desc,
+														double alpha,
+														BitmapInterpolationQuality quality) const
+{
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool D2DGraphicsDeviceContext::fillRectWithBitmap (IPlatformBitmap& bitmap, CRect srcRect,
+												   CRect dstRect, double alpha,
+												   BitmapInterpolationQuality quality) const
+{
+	D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (&bitmap);
+	if (!d2dBitmap || !d2dBitmap->getSource ())
+		return false;
+	auto d2d1Bitmap =
+		D2DBitmapCache::getBitmap (d2dBitmap, impl->deviceContext.get (), impl->device.get ());
+	if (!d2d1Bitmap)
+		return false;
+
+	auto originalClip = impl->state.clip;
+	auto cr = dstRect;
+	impl->state.tm.transform (cr);
+	cr.bound (originalClip);
+
+	double bitmapScaleFactor = d2dBitmap->getScaleFactor ();
+	CGraphicsTransform bitmapTransform;
+	bitmapTransform.scale (1. / bitmapScaleFactor, 1. / bitmapScaleFactor);
+	auto invBitmapTransform = bitmapTransform.inverse ();
+	invBitmapTransform.transform (dstRect);
+	invBitmapTransform.transform (srcRect);
+
+	D2D1_IMAGE_BRUSH_PROPERTIES imageBrushProp = {};
+	imageBrushProp.sourceRectangle = convert (srcRect);
+	imageBrushProp.extendModeX = imageBrushProp.extendModeY = D2D1_EXTEND_MODE_WRAP;
+	switch (quality)
+	{
+		case BitmapInterpolationQuality::kLow:
+			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+			break;
+
+		case BitmapInterpolationQuality::kMedium:
+		case BitmapInterpolationQuality::kHigh:
+		default:
+			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_LINEAR;
+			break;
+	}
+	CGraphicsTransform brushTransform;
+	brushTransform.translate (dstRect.getTopLeft ());
+
+	D2D1_BRUSH_PROPERTIES brushProp = {};
+	brushProp.opacity = 1.f;
+	brushProp.transform = convert (brushTransform);
+
+	COM::Ptr<ID2D1ImageBrush> brush;
+	auto hr = impl->deviceContext->CreateImageBrush (d2d1Bitmap, imageBrushProp, brushProp,
+													 brush.adoptPtr ());
+	if (FAILED (hr))
+		return false;
+
+	impl->state.clip = cr;
+
+	auto originalTransformMatrix = impl->state.tm;
+	TransformMatrix tm = originalTransformMatrix * bitmapTransform;
+	setTransformMatrix (tm);
+
+	impl->doInContext ([&] (auto deviceContext) {
+		deviceContext->FillRectangle (convert (dstRect), brush.get ());
+	});
+
+	setTransformMatrix (originalTransformMatrix);
+	impl->state.clip = originalClip;
+	return true;
 }
 
 //------------------------------------------------------------------------
@@ -842,7 +905,7 @@ void D2DGraphicsDeviceContext::drawTextLayout (IDWriteTextLayout* textLayout, CP
 											   CColor color, bool antialias)
 {
 	impl->doInContext ([&] (auto deviceContext) {
-		deviceContext->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
+		deviceContext->SetTextAntialiasMode (antialias ? impl->antialiasMode
 													   : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 		if (impl->state.drawMode.integralMode ())
 			pos.makeIntegral ();

@@ -510,9 +510,10 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 		// recommended. Every time the GPU needs it, the upload heap will be marshalled
 		// over. Please read up on Default Heap usage. An upload heap is used here for
 		// code simplicity and because there are very few verts to actually transfer.
+		auto heapProps = CD3DX12_HEAP_PROPERTIES (D3D12_HEAP_TYPE_UPLOAD);
+		auto bufferDesc = CD3DX12_RESOURCE_DESC::Buffer (vertexBufferSize);
 		ThrowIfFailed (m_view->getDevice ()->CreateCommittedResource (
-			&CD3DX12_HEAP_PROPERTIES (D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer (vertexBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ,
+			&heapProps, D3D12_HEAP_FLAG_NONE, &bufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr, IID_PPV_ARGS (&m_vertexBuffer)));
 
 		// Copy the triangle data to the vertex buffer.
@@ -589,10 +590,10 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 		m_commandList->RSSetScissorRects (1, &m_scissorRect);
 
 		// Indicate that the back buffer will be used as a render target.
-		m_commandList->ResourceBarrier (1, &CD3DX12_RESOURCE_BARRIER::Transition (
-											   m_renderTargets[m_view->getFrameIndex ()].Get (),
-											   D3D12_RESOURCE_STATE_PRESENT,
-											   D3D12_RESOURCE_STATE_RENDER_TARGET));
+		auto transition = CD3DX12_RESOURCE_BARRIER::Transition (
+			m_renderTargets[m_view->getFrameIndex ()].Get (), D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RENDER_TARGET);
+		m_commandList->ResourceBarrier (1, &transition);
 
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle (m_rtvHeap->GetCPUDescriptorHandleForHeapStart (),
 												 m_view->getFrameIndex (), m_rtvDescriptorSize);
@@ -606,10 +607,10 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 		m_commandList->DrawInstanced (3, 1, 0, 0);
 
 		// Indicate that the back buffer will now be used to present.
-		m_commandList->ResourceBarrier (1, &CD3DX12_RESOURCE_BARRIER::Transition (
-											   m_renderTargets[m_view->getFrameIndex ()].Get (),
-											   D3D12_RESOURCE_STATE_RENDER_TARGET,
-											   D3D12_RESOURCE_STATE_PRESENT));
+		transition = CD3DX12_RESOURCE_BARRIER::Transition (
+			m_renderTargets[m_view->getFrameIndex ()].Get (), D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_PRESENT);
+		m_commandList->ResourceBarrier (1, &transition);
 
 		ThrowIfFailed (m_commandList->Close ());
 	}

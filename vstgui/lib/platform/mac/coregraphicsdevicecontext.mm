@@ -356,6 +356,13 @@ struct CoreGraphicsDeviceContext::Impl
 	using BitmapDrawCountMap = std::map<CGBitmap*, int32_t>;
 	BitmapDrawCountMap bitmapDrawCount;
 
+#if defined(VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY) &&                                          \
+	VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY == 1
+	static constexpr bool shouldSmoothFonts = true;
+#else
+	static constexpr bool shouldSmoothFonts = false;
+#endif
+
 #if DEBUG
 	bool showClip {false};
 #endif
@@ -849,7 +856,7 @@ void CoreGraphicsDeviceContext::setTransformMatrix (const TransformMatrix& tm) c
 //------------------------------------------------------------------------
 const IPlatformGraphicsDeviceContextBitmapExt* CoreGraphicsDeviceContext::asBitmapExt () const
 {
-	return this;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -867,6 +874,7 @@ bool CoreGraphicsDeviceContext::fillRectWithBitmap (IPlatformBitmap& bitmap, CRe
 													CRect dstRect, double alpha,
 													BitmapInterpolationQuality quality) const
 {
+#if 0
 	auto cgBitmap = dynamic_cast<CGBitmap*> (&bitmap);
 	if (!cgBitmap)
 		return false;
@@ -889,6 +897,7 @@ bool CoreGraphicsDeviceContext::fillRectWithBitmap (IPlatformBitmap& bitmap, CRe
 
 		CGContextDrawTiledImage (context, r, cgImage);
 	});
+#endif
 	return false;
 }
 
@@ -901,7 +910,7 @@ void CoreGraphicsDeviceContext::drawCTLine (CTLineRef line, CGPoint cgPoint, CTF
 		if (impl->state.drawMode.integralMode ())
 			cgPoint = impl->pixelAlligned (cgPoint);
 		CGContextSetShouldAntialias (context, antialias);
-		CGContextSetShouldSmoothFonts (context, true);
+		CGContextSetShouldSmoothFonts (context, impl->shouldSmoothFonts);
 		CGContextSetShouldSubpixelPositionFonts (context, true);
 		CGContextSetShouldSubpixelQuantizeFonts (context, true);
 		CGContextSetTextPosition (context, cgPoint.x, cgPoint.y);

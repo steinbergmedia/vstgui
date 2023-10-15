@@ -5,6 +5,7 @@
 #pragma once
 
 #include "cview.h"
+#include "controls/ccontrol.h"
 #include "iscalefactorchangedlistener.h"
 #include "iexternalview.h"
 #include <memory>
@@ -43,6 +44,39 @@ public:
 	ExternalView::IView* getExternalView () const override;
 
 private:
+
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+};
+
+//------------------------------------------------------------------------
+class CExternalControl : public CControl,
+						 public IScaleFactorChangedListener,
+						 public ExternalView::IViewEmbedder
+{
+public:
+	using ExternalControlPtr = std::shared_ptr<ExternalView::IView>;
+
+	CExternalControl (const CRect& r, const ExternalControlPtr& control);
+	~CExternalControl () noexcept;
+
+	void setValue (float val) override;
+
+	bool attached (CView* parent) override;
+	bool removed (CView* parent) override;
+	void takeFocus () override;
+	void looseFocus () override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void parentSizeChanged () override;
+	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
+	void setMouseEnabled (bool enable = true) override;
+
+	ExternalView::IView* getExternalView () const override;
+
+	CLASS_METHODS_NOCOPY (CExternalControl, CControl)
+private:
+	void draw (CDrawContext* pContext) override {}
+	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

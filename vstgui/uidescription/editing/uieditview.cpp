@@ -211,7 +211,7 @@ template<typename T>
 void collectExternalViewsOnInlineEditing (CViewContainer* container, T& array)
 {
 	container->forEachChild ([&] (auto view) {
-		if (view.template cast<CExternalView> ())
+		if (view.template cast<ExternalView::IViewEmbedder> ())
 			array.emplace_back (view);
 		else if (auto c = view->asViewContainer ())
 			collectExternalViewsOnInlineEditing (c, array);

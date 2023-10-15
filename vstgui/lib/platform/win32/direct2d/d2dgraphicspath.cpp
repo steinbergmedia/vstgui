@@ -340,6 +340,7 @@ void D2DGraphicsPath::finishBuilding ()
 			sink->EndFigure (D2D1_FIGURE_END_OPEN);
 		HRESULT res = sink->Close ();
 		assert (SUCCEEDED (res));
+		(void)res; // prevent warning in release builds
 		sink->Release ();
 		sinkInternal = nullptr;
 		figureOpen = false;
