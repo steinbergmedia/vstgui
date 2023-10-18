@@ -34,7 +34,7 @@ public:
 	virtual CCoord getInsetValue () const { return inset; }
 	virtual void setInsetValue (CCoord val) { inset = val; }
 
-	virtual void setKnobRange (float val) { if(val > 0.f) range = val; }
+	virtual void setKnobRange (float val) { if(val > 0.f) knobRange = val; }
 	//@}
 
 	// overrides
