@@ -33,6 +33,8 @@ public:
 
 	virtual CCoord getInsetValue () const { return inset; }
 	virtual void setInsetValue (CCoord val) { inset = val; }
+
+	virtual void setKnobRange (float val) { if(val > 0.f) range = val; }
 	//@}
 
 	// overrides
@@ -56,6 +58,7 @@ protected:
 
 	float startAngle, rangeAngle;
 	float zoomFactor;
+	float knobRange;
 	CCoord inset;
 
 private:
