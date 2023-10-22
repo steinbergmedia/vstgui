@@ -166,48 +166,19 @@ struct D2DGraphicsDeviceContext::Impl
 		auto transform = convert (tmGuard.matrix) * globalTM * state.tm;
 		transform.scale (scaleFactor, scaleFactor);
 		transform.translate (transformOffset);
-		bool useLayer = transform.m12 != 0. || transform.m21 != 0.;
-		if (useLayer)
-		{ // we have a rotated matrix, we need to use a layer
-			COM::Ptr<ID2D1Factory> factory {};
-			deviceContext->GetFactory (factory.adoptPtr ());
-			COM::Ptr<ID2D1RectangleGeometry> geometry;
-			if (SUCCEEDED (
-					factory->CreateRectangleGeometry (convert (state.clip), geometry.adoptPtr ())))
-			{
-				if (applyClip.isEmpty () == false)
-					deviceContext->PopAxisAlignedClip ();
-				deviceContext->PushLayer (D2D1::LayerParameters (D2D1::InfiniteRect (),
-																 geometry.get (),
-																 D2D1_ANTIALIAS_MODE_ALIASED),
-										  nullptr);
-				applyClip = state.clip;
-			}
-			else
-			{
-				useLayer = false;
-			}
-		}
-		if (!useLayer)
+		auto newClip = state.clip;
+		globalTM.transform (newClip);
+		if (applyClip != newClip)
 		{
-			auto newClip = state.clip;
-			globalTM.transform (newClip);
-			if (applyClip != newClip)
-			{
-				if (applyClip.isEmpty () == false)
-					deviceContext->PopAxisAlignedClip ();
-				if (newClip.isEmpty () == false)
-					deviceContext->PushAxisAlignedClip (convert (newClip),
-														D2D1_ANTIALIAS_MODE_ALIASED);
-				applyClip = newClip;
-			}
+			if (applyClip.isEmpty () == false)
+				deviceContext->PopAxisAlignedClip ();
+			if (newClip.isEmpty () == false)
+				deviceContext->PushAxisAlignedClip (convert (newClip), D2D1_ANTIALIAS_MODE_ALIASED);
+			applyClip = newClip;
 		}
 		deviceContext->SetTransform (convert (transform));
 
 		p (deviceContext.get ());
-
-		if (useLayer)
-			deviceContext->PopLayer ();
 	}
 
 	//-----------------------------------------------------------------------------

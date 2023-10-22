@@ -35,6 +35,8 @@ bool KnobBaseCreator::apply (CView* view, const UIAttributes& attributes,
 		d = d / 180.f * static_cast<float> (Constants::pi);
 		knob->setRangeAngle (static_cast<float> (d));
 	}
+	if (attributes.getDoubleAttribute (kAttrKnobRange, d))
+		knob->setKnobRange (static_cast<float> (d));
 	if (attributes.getDoubleAttribute (kAttrValueInset, d))
 		knob->setInsetValue (d);
 	if (attributes.getDoubleAttribute (kAttrZoomFactor, d))
@@ -48,6 +50,7 @@ bool KnobBaseCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrAngleStart);
 	attributeNames.emplace_back (kAttrAngleRange);
+	attributeNames.emplace_back (kAttrKnobRange);
 	attributeNames.emplace_back (kAttrValueInset);
 	attributeNames.emplace_back (kAttrZoomFactor);
 	return true;
@@ -59,6 +62,8 @@ auto KnobBaseCreator::getAttributeType (const string& attributeName) const -> At
 	if (attributeName == kAttrAngleStart)
 		return kFloatType;
 	if (attributeName == kAttrAngleRange)
+		return kFloatType;
+	if (attributeName == kAttrKnobRange)
 		return kFloatType;
 	if (attributeName == kAttrValueInset)
 		return kFloatType;
@@ -85,6 +90,11 @@ bool KnobBaseCreator::getAttributeValue (CView* view, const string& attributeNam
 	{
 		stringValue =
 		    UIAttributes::doubleToString ((knob->getRangeAngle () / Constants::pi * 180.), 5);
+		return true;
+	}
+	if (attributeName == kAttrKnobRange)
+	{
+		stringValue = UIAttributes::doubleToString (knob->getKnobRange (), 5);
 		return true;
 	}
 	if (attributeName == kAttrValueInset)

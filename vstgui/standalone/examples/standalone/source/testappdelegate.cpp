@@ -314,6 +314,7 @@ Delegate::Delegate ()
 #ifdef VSTGUI_UISCRIPTING
 	UIScripting::init ();
 #endif
+	CFrame::kDefaultKnobMode = CKnobMode::kLinearMode;
 }
 
 //------------------------------------------------------------------------
