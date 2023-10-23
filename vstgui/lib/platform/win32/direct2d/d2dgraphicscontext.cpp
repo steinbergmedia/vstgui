@@ -432,6 +432,7 @@ bool D2DGraphicsDeviceContext::drawPolygon (const PointList& polygonPointList,
 	{
 		path->addLine (polygonPointList[i]);
 	}
+	path->finishBuilding ();
 	if (drawStyle == PlatformGraphicsDrawStyle::Filled ||
 		drawStyle == PlatformGraphicsDrawStyle::FilledAndStroked)
 	{
@@ -484,6 +485,8 @@ bool D2DGraphicsDeviceContext::drawArc (CRect rect, double startAngle1, double e
 	if (impl->state.drawMode.integralMode ())
 		pixelAlign (impl->state.tm, rect);
 	path->addArc (rect, startAngle1, endAngle2, true);
+	path->finishBuilding ();
+
 	if (drawStyle == PlatformGraphicsDrawStyle::Filled ||
 		drawStyle == PlatformGraphicsDrawStyle::FilledAndStroked)
 		drawGraphicsPath (*path, PlatformGraphicsPathDrawMode::Filled, nullptr);
