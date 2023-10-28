@@ -38,6 +38,94 @@ struct TransformGuard
 };
 
 //------------------------------------------------------------------------
+struct D2DBitmapDeviceContext : D2DGraphicsDeviceContext
+{
+	static PlatformGraphicsDeviceContextPtr make (const D2DGraphicsDevice& device,
+												  ID2D1DeviceContext* deviceContext,
+												  const SharedPointer<D2DBitmap>& bitmap)
+	{
+		D2D1_BITMAP_PROPERTIES1 props = D2D1::BitmapProperties1 (
+			D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+			D2D1::PixelFormat (DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
+
+		COM::Ptr<ID2D1Bitmap1> bitmapTarget;
+		deviceContext->CreateBitmapFromWicBitmap (bitmap->getSource (), &props,
+												  bitmapTarget.adoptPtr ());
+		if (!bitmapTarget)
+			return nullptr;
+
+		deviceContext->SetTarget (bitmapTarget.get ());
+
+		TransformMatrix tm;
+		tm.scale (bitmap->getScaleFactor (), bitmap->getScaleFactor ());
+		deviceContext->SetTransform (convert (tm));
+		return std::make_shared<D2DBitmapDeviceContext> (device, bitmap, deviceContext,
+														 TransformMatrix {});
+	}
+
+	D2DBitmapDeviceContext (const D2DGraphicsDevice& device, const SharedPointer<D2DBitmap>& bitmap,
+							ID2D1DeviceContext* deviceContext, const TransformMatrix& tm)
+	: D2DGraphicsDeviceContext (device, deviceContext, tm), bitmap (bitmap)
+	{
+	}
+
+	bool endDraw () const
+	{
+		if (D2DGraphicsDeviceContext::endDraw ())
+		{
+			COM::Ptr<ID2D1Image> image;
+			getID2D1DeviceContext ()->GetTarget (image.adoptPtr ());
+			if (!image)
+				return false;
+			COM::Ptr<ID2D1Bitmap1> bitmapTarget;
+			if (FAILED (image->QueryInterface<ID2D1Bitmap1> (bitmapTarget.adoptPtr ())))
+				return false;
+			auto pa = bitmap->lockPixels (true);
+			if (!pa)
+				return false;
+			auto size = bitmap->getSize ();
+			D2D1_BITMAP_PROPERTIES1 props = D2D1::BitmapProperties1 (
+				D2D1_BITMAP_OPTIONS_CPU_READ | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+				D2D1::PixelFormat (DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
+			COM::Ptr<ID2D1Bitmap1> cpuBitmap;
+			auto hr = getID2D1DeviceContext ()->CreateBitmap (
+				D2D1_SIZE_U {static_cast<UINT32> (size.x), static_cast<UINT32> (size.y)}, nullptr,
+				pa->getBytesPerRow (), props, cpuBitmap.adoptPtr ());
+			if (FAILED (hr))
+				return false;
+			D2D1_POINT_2U dp {};
+			D2D1_RECT_U dstRect {0, 0, static_cast<UINT32> (size.x), static_cast<UINT32> (size.y)};
+			hr = cpuBitmap->CopyFromBitmap (&dp, bitmapTarget.get (), &dstRect);
+			if (FAILED (hr))
+				return false;
+			D2D1_MAPPED_RECT mappedRect {};
+			hr = cpuBitmap->Map (D2D1_MAP_OPTIONS_READ, &mappedRect);
+			if (FAILED (hr))
+				return false;
+			auto height = static_cast<uint32_t> (size.y);
+			if (pa->getBytesPerRow () == mappedRect.pitch)
+			{
+				memcpy (pa->getAddress (), mappedRect.bits, mappedRect.pitch * height);
+			}
+			else
+			{
+				auto src = mappedRect.bits;
+				for (auto row = 0u; row < height; ++row, src += mappedRect.pitch)
+				{
+					auto dst = pa->getAddress () + pa->getBytesPerRow () * row;
+					memcpy (dst, src, pa->getBytesPerRow ());
+				}
+			}
+			cpuBitmap->Unmap ();
+			return true;
+		}
+		return false;
+	}
+
+	SharedPointer<D2DBitmap> bitmap;
+};
+
+//------------------------------------------------------------------------
 } // anonymous namespace
 
 //------------------------------------------------------------------------
@@ -117,23 +205,7 @@ PlatformGraphicsDeviceContextPtr
 
 		D2DBitmapCache::removeBitmap (d2dBitmap);
 
-		D2D1_BITMAP_PROPERTIES1 props = D2D1::BitmapProperties1 (
-		    D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-		    D2D1::PixelFormat (DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
-
-		COM::Ptr<ID2D1Bitmap1> bitmapTarget;
-		deviceContext->CreateBitmapFromWicBitmap (d2dBitmap->getSource (), &props, bitmapTarget.adoptPtr ());
-		if (!bitmapTarget)
-			return nullptr;
-
-		deviceContext->SetTarget (bitmapTarget.get ());
-
-		TransformMatrix tm;
-		tm.scale (d2dBitmap->getScaleFactor (), d2dBitmap->getScaleFactor ());
-		deviceContext->SetTransform (convert (tm));
-
-		return std::make_shared<D2DGraphicsDeviceContext> (*this, deviceContext.get (),
-														   TransformMatrix {});
+		return D2DBitmapDeviceContext::make (*this, deviceContext.get (), d2dBitmap);
 	}
 	return nullptr;
 }
@@ -432,6 +504,7 @@ bool D2DGraphicsDeviceContext::drawPolygon (const PointList& polygonPointList,
 	{
 		path->addLine (polygonPointList[i]);
 	}
+	path->finishBuilding ();
 	if (drawStyle == PlatformGraphicsDrawStyle::Filled ||
 		drawStyle == PlatformGraphicsDrawStyle::FilledAndStroked)
 	{
@@ -484,6 +557,8 @@ bool D2DGraphicsDeviceContext::drawArc (CRect rect, double startAngle1, double e
 	if (impl->state.drawMode.integralMode ())
 		pixelAlign (impl->state.tm, rect);
 	path->addArc (rect, startAngle1, endAngle2, true);
+	path->finishBuilding ();
+
 	if (drawStyle == PlatformGraphicsDrawStyle::Filled ||
 		drawStyle == PlatformGraphicsDrawStyle::FilledAndStroked)
 		drawGraphicsPath (*path, PlatformGraphicsPathDrawMode::Filled, nullptr);

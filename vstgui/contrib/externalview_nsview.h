@@ -150,7 +150,11 @@ struct ExternalNSViewBase : ViewAdapter
 		[ExternalViewContainerNSView::alloc () initWithFrame: {{0., 0.}, {10., 10.}}]};
 	ViewType* view {nullptr};
 
-	ExternalNSViewBase (ViewType* inView) : view (inView) { [container addSubview:view]; }
+	ExternalNSViewBase (ViewType* inView) : view (inView)
+	{
+		container.clipsToBounds = YES;
+		[container addSubview:view];
+	}
 
 #if !__has_feature(objc_arc)
 	virtual ~ExternalNSViewBase () noexcept
