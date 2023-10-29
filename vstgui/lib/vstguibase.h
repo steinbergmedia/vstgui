@@ -203,7 +203,7 @@
 
 //----------------------------------------------------
 #define CLASS_METHODS(name, parent) CBaseObject* newCopy () const override { return new name (*this); }
-#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const override { return 0; }
+#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const override { return nullptr; }
 #define CLASS_METHODS_VIRTUAL(name, parent) CBaseObject* newCopy () const override = 0;
 
 //----------------------------------------------------
@@ -401,7 +401,7 @@ inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other) noexcept
 //------------------------------------------------------------------------
 template <class I>
 inline SharedPointer<I>::SharedPointer () noexcept
-: ptr (0)
+: ptr (nullptr)
 {}
 
 //------------------------------------------------------------------------
