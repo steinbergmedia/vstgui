@@ -231,13 +231,15 @@ public:
 	void dumpHierarchy () override;
 	#endif
 
-	CLASS_METHODS(CFrame, CViewContainer)
+	CLASS_METHODS_NOCOPY(CFrame, CViewContainer)
 
 	//-------------------------------------------
 protected:
 	struct CollectInvalidRects;
 	
+	CFrame (const CFrame&) = delete;
 	~CFrame () noexcept override = default;
+
 	void beforeDelete () override;
 
 	void checkMouseViews (const MouseEvent& event);
