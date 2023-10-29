@@ -191,7 +191,7 @@ endif(VSTGUI_USE_XCODE_XCTEST)
 
 if(CMAKE_HOST_APPLE)
 	if(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER_EQUAL 11.0)
-		target_compile_definitions(${target} "VSTGUI_USE_OBJC_UTTYPE")
+		target_compile_definitions(${target} PRIVATE "VSTGUI_USE_OBJC_UTTYPE")
 		target_link_libraries(${target} PRIVATE
 			"-framework UniformTypeIdentifiers"
 		)
