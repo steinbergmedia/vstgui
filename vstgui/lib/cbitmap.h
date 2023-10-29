@@ -107,9 +107,7 @@ public:
 
 	/** set the multi frame description
 	 *
-	 *	@param frameSize size of one frame
-	 *	@param frameCount number of total frames
-	 *	@param framesPerRow number of frames per row
+	 *	@param desc the multi frame description
 	 *	@return true if bitmap is big enough for the description
 	 */
 	bool setMultiFrameDesc (CMultiFrameBitmapDescription desc);
