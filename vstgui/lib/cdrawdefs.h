@@ -28,8 +28,8 @@ struct CDrawMode
 {
 public:
 	constexpr CDrawMode (uint32_t mode = kAliasing) : mode (mode) {}
-	constexpr CDrawMode (const CDrawMode& m) : mode (m.mode) {}
-
+	constexpr CDrawMode (const CDrawMode& m) = default;
+	constexpr CDrawMode& operator= (const CDrawMode& m) = default;
 	constexpr uint32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
 
 	constexpr bool integralMode () const { return !hasBit (mode, kNonIntegralMode); }

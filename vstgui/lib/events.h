@@ -96,6 +96,7 @@ struct Modifiers
 	Modifiers () = default;
 	Modifiers (const Modifiers&) = default;
 	explicit Modifiers (ModifierKey modifier) : data (cast (modifier)) {}
+	Modifiers& operator= (const Modifiers&) = default;
 
 	/** test if no modifier key is set */
 	[[nodiscard]] bool empty () const { return data == 0; }
@@ -202,6 +203,7 @@ struct MouseEventButtonState
 	MouseEventButtonState () = default;
 	MouseEventButtonState (const MouseEventButtonState&) = default;
 	MouseEventButtonState (MouseButton pos) { set (pos); }
+	MouseEventButtonState& operator= (const MouseEventButtonState&) = default;
 
 	[[nodiscard]] bool operator== (const MouseEventButtonState& other) const
 	{
