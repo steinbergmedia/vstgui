@@ -259,7 +259,7 @@ public:
 	ReferenceCounted () = default;
 	virtual ~ReferenceCounted () noexcept = default;
 
-	ReferenceCounted (const ReferenceCounted&) {};
+	ReferenceCounted (const ReferenceCounted&) {}
 	ReferenceCounted& operator= (const ReferenceCounted&) { return *this; }
 
 	//-----------------------------------------------------------------------------
@@ -290,7 +290,7 @@ public:
 	CBaseObject () = default;
 	~CBaseObject () noexcept override = default;
 
-	CBaseObject (const CBaseObject&) {};
+	CBaseObject (const CBaseObject&) {}
 	CBaseObject& operator= (const CBaseObject&) { return *this; }
 
 	//-----------------------------------------------------------------------------
