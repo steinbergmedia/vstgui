@@ -511,6 +511,7 @@ uint32_t RunLoop::getCursorID (CCursorType cursor)
 			case kCursorNWSESize:
 				cursorID = makeCursor (impl->cursorContext, CursorNWSESizeNames);
 				break;
+			case kCursorCrosshair:
 			case kCursorSizeAll:
 				cursorID = makeCursor (impl->cursorContext, CursorSizeAllNames);
 				break;
