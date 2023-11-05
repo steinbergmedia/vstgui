@@ -1332,6 +1332,7 @@ bool NSViewFrame::setMouseCursor (CCursorType type)
 		case kCursorNotAllowed: cur = [NSCursor performSelector:@selector(operationNotAllowedCursor)]; break;
 		case kCursorHand: cur = [NSCursor openHandCursor]; break;
 		case kCursorIBeam: cur = [NSCursor IBeamCursor]; break;
+		case kCursorCrosshair: cur = [NSCursor crosshairCursor]; break;
 		default: cur = [NSCursor arrowCursor]; break;
 	}
 	if (cur)

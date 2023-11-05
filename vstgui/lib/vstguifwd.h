@@ -70,6 +70,8 @@ enum CCursorType
 	kCursorHand,
 	/** i beam cursor */
 	kCursorIBeam,
+	/** crosshair cursor */
+	kCursorCrosshair,
 };
 
 //----------------------------
