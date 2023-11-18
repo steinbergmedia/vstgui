@@ -125,8 +125,8 @@ public:
 	bool requestResize (const CPoint& newSize);
 
 	void setZoomFactor (double factor);
-	double getZoomFactor () const { return zoomFactor; }
-	
+	double getZoomFactor () const;
+
 	void setAllowedZoomFactors (std::vector<double> zoomFactors) { allowedZoomFactors = zoomFactors; }
 
 	/** set the delegate of the editor. no reference counting is happening here. */
@@ -141,6 +141,7 @@ protected:
 	~VST3Editor () override;
 	void init ();
 	double getAbsScaleFactor () const;
+	double getContentScaleFactor () const;
 	ParameterChangeListener* getParameterChangeListener (int32_t tag) const;
 	void recreateView ();
 	void requestRecreateView ();
@@ -152,6 +153,7 @@ protected:
 	bool enableShowEditButton () const;
 	void enableShowEditButton (bool state);
 	void showEditButton (bool state);
+	bool inEditMode () const;
 
 	bool PLUGIN_API open (void* parent, const PlatformType& type) override;
 	void PLUGIN_API close () override;
@@ -219,6 +221,34 @@ protected:
 	CRect nonEditRect;
 
 	Optional<CPoint> sizeRequest;
+};
+
+//-----------------------------------------------------------------------------
+//! @brief An extended VST3 Editor which scales its contents when resized
+//! @ingroup new_in_4_14
+//-----------------------------------------------------------------------------
+class AspectRatioVST3Editor : public VST3Editor
+{
+public:
+	using VST3Editor::VST3Editor;
+
+	void setMinZoomFactor (double factor);
+	double getMinZoomFactor () const;
+
+protected:
+	bool canCalculateAspectRatio () const;
+
+	bool PLUGIN_API open (void* parent, const PlatformType& type) override;
+	Steinberg::tresult PLUGIN_API onSize (Steinberg::ViewRect* newSize) override;
+	Steinberg::tresult PLUGIN_API checkSizeConstraint (Steinberg::ViewRect* rect) override;
+#ifdef VST3_CONTENT_SCALE_SUPPORT
+	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) override;
+#endif
+
+private:
+	CPoint initialSize {};
+	double minZoomFactor {1.};
+	double calcZoomFactor {1.};
 };
 
 //------------------------------------------------------------------------
