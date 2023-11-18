@@ -561,8 +561,14 @@ bool VST3Editor::setEditorSizeConstrains (const CPoint& newMinimumSize, const CP
 //-----------------------------------------------------------------------------
 double VST3Editor::getAbsScaleFactor () const
 {
-	return zoomFactor * contentScaleFactor;
+	return getZoomFactor () * getContentScaleFactor ();
 }
+
+//-----------------------------------------------------------------------------
+double VST3Editor::getContentScaleFactor () const { return contentScaleFactor; }
+
+//-----------------------------------------------------------------------------
+double VST3Editor::getZoomFactor () const { return zoomFactor; }
 
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 //-----------------------------------------------------------------------------
@@ -580,7 +586,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::setContentScaleFactor (ScaleFactor fac
 //-----------------------------------------------------------------------------
 void VST3Editor::setZoomFactor (double factor)
 {
-	if (zoomFactor == factor)
+	if (getZoomFactor () == factor)
 		return;
 
 	zoomFactor = factor;
@@ -861,7 +867,7 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 						  static_cast<int> ((*it) * 100));
 				CMenuItem* item = zoomMenu->addEntry (new CCommandMenuItem (
 				    {zoomFactorString, zoomFactorTag, this, "Zoom", zoomFactorString}));
-				if (zoomFactor == *it)
+				if (getZoomFactor () == *it)
 					item->setChecked (true);
 			}
 			CMenuItem* item = controllerMenu->addEntry ("UI Zoom");
@@ -1071,6 +1077,9 @@ void VST3Editor::requestRecreateView ()
 		task ();
 	}
 }
+
+//-----------------------------------------------------------------------------
+bool VST3Editor::inEditMode () const { return editingEnabled; }
 
 #if LINUX
 // Map Steinberg Vst Interface to VSTGUI Interface
@@ -1891,7 +1900,7 @@ bool VST3Editor::enableEditing (bool state)
 
 				getFrame ()->setSize (width, height);
 				getFrame ()->addView (view);
-				getFrame()->setZoom (contentScaleFactor);
+				getFrame ()->setZoom (getContentScaleFactor ());
 
 				getFrame ()->enableTooltips (true);
 				CColor focusColor = kBlueCColor;
@@ -2044,6 +2053,87 @@ IVST3EditorDelegate* VST3Editor::getDelegate () const
 UIDescription* VST3Editor::getUIDescription () const
 {
 	return description;
+}
+
+//------------------------------------------------------------------------
+//--- AspectRatioVST3Editor
+//------------------------------------------------------------------------
+void AspectRatioVST3Editor::setMinZoomFactor (double factor) { minZoomFactor = factor; }
+
+//------------------------------------------------------------------------
+double AspectRatioVST3Editor::getMinZoomFactor () const { return minZoomFactor; }
+
+//------------------------------------------------------------------------
+bool PLUGIN_API AspectRatioVST3Editor::open (void* parent, const PlatformType& type)
+{
+	if (VST3Editor::open (parent, type) && getFrame ())
+	{
+		initialSize = getFrame ()->getViewSize ().getSize ();
+		calcZoomFactor = getZoomFactor ();
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+Steinberg::tresult PLUGIN_API AspectRatioVST3Editor::onSize (Steinberg::ViewRect* newSize)
+{
+	if (newSize == nullptr)
+		return Steinberg::kInvalidArgument;
+
+	if (!canCalculateAspectRatio ())
+		return VST3Editor::onSize (newSize);
+
+	setZoomFactor (calcZoomFactor);
+	return Steinberg::kResultTrue;
+}
+
+//------------------------------------------------------------------------
+Steinberg::tresult PLUGIN_API AspectRatioVST3Editor::checkSizeConstraint (Steinberg::ViewRect* rect)
+{
+	if (rect == nullptr)
+		return Steinberg::kInvalidArgument;
+
+	if (!canCalculateAspectRatio ())
+		return VST3Editor::checkSizeConstraint (rect);
+
+	const CPoint size (rect->getWidth (), rect->getHeight ());
+	auto diff = size - initialSize;
+	auto anchor = initialSize.x >= initialSize.y ? initialSize.x : initialSize.y;
+	auto sizeAnchor = initialSize.x >= initialSize.y ? size.x : size.y;
+
+	auto factor = sizeAnchor / anchor;
+	if (factor < minZoomFactor * getContentScaleFactor ())
+		factor = minZoomFactor * getContentScaleFactor ();
+	factor = std::round (factor * anchor) / anchor;
+	auto newSize = initialSize * factor;
+	calcZoomFactor = factor / getContentScaleFactor ();
+	if (newSize != size)
+	{
+		rect->right = rect->left + newSize.x;
+		rect->bottom = rect->top + newSize.y;
+	}
+	return Steinberg::kResultTrue;
+}
+
+#ifdef VST3_CONTENT_SCALE_SUPPORT
+//------------------------------------------------------------------------
+Steinberg::tresult PLUGIN_API AspectRatioVST3Editor::setContentScaleFactor (ScaleFactor factor)
+{
+	auto res = VST3Editor::setContentScaleFactor (factor);
+	if (res == Steinberg::kResultTrue)
+		setZoomFactor (calcZoomFactor);
+	return res;
+}
+#endif
+
+//------------------------------------------------------------------------
+bool AspectRatioVST3Editor::canCalculateAspectRatio () const
+{
+	auto f = getFrame ();
+	if (inEditMode () || (f && f->hasChildren () == false))
+		return false;
+	return true;
 }
 
 //------------------------------------------------------------------------
