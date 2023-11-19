@@ -2066,10 +2066,11 @@ double AspectRatioVST3Editor::getMinZoomFactor () const { return minZoomFactor; 
 //------------------------------------------------------------------------
 bool PLUGIN_API AspectRatioVST3Editor::open (void* parent, const PlatformType& type)
 {
+	calcZoomFactor = getZoomFactor ();
 	if (VST3Editor::open (parent, type) && getFrame ())
 	{
 		initialSize = getFrame ()->getViewSize ().getSize ();
-		calcZoomFactor = getZoomFactor ();
+		initialSize /= calcZoomFactor;
 		return true;
 	}
 	return false;
@@ -2121,7 +2122,7 @@ Steinberg::tresult PLUGIN_API AspectRatioVST3Editor::checkSizeConstraint (Steinb
 Steinberg::tresult PLUGIN_API AspectRatioVST3Editor::setContentScaleFactor (ScaleFactor factor)
 {
 	auto res = VST3Editor::setContentScaleFactor (factor);
-	if (res == Steinberg::kResultTrue)
+	if (res == Steinberg::kResultTrue && canCalculateAspectRatio ())
 		setZoomFactor (calcZoomFactor);
 	return res;
 }
@@ -2131,7 +2132,7 @@ Steinberg::tresult PLUGIN_API AspectRatioVST3Editor::setContentScaleFactor (Scal
 bool AspectRatioVST3Editor::canCalculateAspectRatio () const
 {
 	auto f = getFrame ();
-	if (inEditMode () || (f && f->hasChildren () == false))
+	if (inEditMode () || f == nullptr || f->hasChildren () == false)
 		return false;
 	return true;
 }
