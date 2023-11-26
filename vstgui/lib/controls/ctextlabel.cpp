@@ -109,7 +109,7 @@ const UTF8String& CTextLabel::getText () const
 void CTextLabel::draw (CDrawContext *pContext)
 {
 	drawBack (pContext);
-	drawPlatformText (pContext, truncatedText.empty () ? text.getPlatformString () : truncatedText.getPlatformString ());
+	drawPlatformText (pContext, truncatedText.empty () ? text : truncatedText);
 	setDirty (false);
 }
 

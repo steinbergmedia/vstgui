@@ -136,6 +136,10 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 @section code_changes Changes for existing VSTGUI code
 
+@subsection code_changes_4_13_to_4_14 VSTGUI 4.13 -> VSTGUI 4.14
+
+- In CParamDisplay::drawPlatformText(..) the string argument changed from IPlatformString to UTF8Text
+
 @subsection code_changes_4_12_to_4_13 VSTGUI 4.12 -> VSTGUI 4.13
 
 - the context argument of IFontPainter has changed to use the new platform graphics device context
