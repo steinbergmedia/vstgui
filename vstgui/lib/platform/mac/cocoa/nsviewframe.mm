@@ -958,6 +958,7 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	{
 		[nsView setWantsLayer:YES];
 		caLayer = [CALayer new];
+		caLayer.geometryFlipped = ![nsView.layer contentsAreFlipped];
 		caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
 		caLayer.frame = nsView.layer.bounds;
 		[caLayer setContentsScale:nsView.layer.contentsScale];
