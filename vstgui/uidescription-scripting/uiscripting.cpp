@@ -980,6 +980,63 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 							 var->setReturnVar (obj->getVar ());
 							 obj->getVar ()->unref ();
 						 }));
+	scriptVar->addChild ("getControllerProperty"sv,
+						 createJSFunction (
+							 [view] (CScriptVar* var) {
+								 auto viewController = getViewController (view, true);
+								 auto controller =
+									 dynamic_cast<IScriptControllerExtension*> (viewController);
+								 auto name = var->getParameter ("name"sv);
+								 if (!controller || !name)
+								 {
+									 var->getReturnVar ()->setUndefined ();
+									 return;
+								 }
+								 IScriptControllerExtension::PropertyValue value;
+								 if (!controller->getProperty (view, name->getString (), value))
+								 {
+									 var->getReturnVar ()->setUndefined ();
+									 return;
+								 }
+								 std::visit (
+									 [&] (auto&& value) {
+										 using T = std::decay_t<decltype (value)>;
+										 if constexpr (std::is_same_v<T, int64_t>)
+											 var->getReturnVar ()->setInt (value);
+										 else if constexpr (std::is_same_v<T, double>)
+											 var->getReturnVar ()->setDouble (value);
+										 else if constexpr (std::is_same_v<T, std::string>)
+											 var->getReturnVar ()->setString (value);
+										 else if constexpr (std::is_same_v<T, nullptr_t>)
+											 var->getReturnVar ()->setUndefined ();
+									 },
+									 value);
+							 },
+							 {"name"}));
+	scriptVar->addChild (
+		"setControllerProperty"sv,
+		createJSFunction (
+			[view] (CScriptVar* var) {
+				auto viewController = getViewController (view, true);
+				auto controller = dynamic_cast<IScriptControllerExtension*> (viewController);
+				auto name = var->getParameter ("name"sv);
+				auto value = var->getParameter ("value"sv);
+				if (!controller || !name || !value || !(value->isNumeric () || value->isString ()))
+				{
+					var->getReturnVar ()->setUndefined ();
+					return;
+				}
+				IScriptControllerExtension::PropertyValue propValue;
+				if (value->isInt ())
+					propValue = value->getInt ();
+				else if (value->isDouble ())
+					propValue = value->getDouble ();
+				else if (value->isString ())
+					propValue = value->getString ();
+				auto result = controller->setProperty (view, name->getString (), propValue);
+				var->getReturnVar ()->setInt (result);
+			},
+			{"name", "value"}));
 	if (auto control = dynamic_cast<CControl*> (view))
 	{
 		scriptVar->addChild (
@@ -1069,10 +1126,17 @@ struct JavaScriptViewFactory : ViewFactoryDelegate
 		{
 			if (auto value = attributes.getAttributeValue (ScriptingInternal::kAttrScript))
 			{
-				view->setAttribute (scriptAttrID, static_cast<uint32_t> (value->size () + 1),
-									value->data ());
+				std::optional<std::string> verifiedScript;
+				if (auto scriptViewController =
+						dynamic_cast<IScriptControllerExtension*> (description->getController ()))
+				{
+					verifiedScript = scriptViewController->verifyScript (view, *value);
+				}
+				const auto& script = verifiedScript ? *verifiedScript : *value;
+				auto scriptSize = static_cast<uint32_t> (script.size () + 1);
+				view->setAttribute (scriptAttrID, scriptSize, script.data ());
 				if (!disabled)
-					scriptContext->onViewCreated (view, *value);
+					scriptContext->onViewCreated (view, script);
 			}
 			return view;
 		}

@@ -60,6 +60,11 @@ The following methods are implemented on that object:
 - `getTagForName(String: name) -> Integer`
 - `lookupTagName(Integer: tag) -> String`
 
+### Interaction with c++ code
+
+To interact with the c++ code extend the IController with IScriptControllerExtension
+and implement its methods and call from the script the view methods `getControllerProperty` or `setControllerProperty`.
+A property can either be an integer, floating point, string or undefined.
 
 ### View methods and properties
 
@@ -73,6 +78,10 @@ The following methods are implemented on that object:
 	- get the attribute with name "key"
 - `setAttribute(String: key, String: value) -> Void`
 	- set the attribute value with name "key" to "value"
+- `getControllerProperty(String: name, Property: value) -> Integer`
+	- set a controller property. returns true if succeeded
+- `setControllerProperty(String: name) -> Property`
+	- get a controller property. returns a property
 
 For example to set the opacity attribute of a view write:
 

@@ -34,6 +34,7 @@
 
 #ifdef VSTGUI_UISCRIPTING
 #include "vstgui/uidescription-scripting/uiscripting.h"
+#include <iostream>
 #endif
 
 #include <memory>
@@ -157,6 +158,10 @@ public:
 
 //------------------------------------------------------------------------
 class WeekdaysController : public DelegationController
+#ifdef VSTGUI_UISCRIPTING
+,
+						   public ScriptControllerExtensionAdapter
+#endif
 {
 public:
 	WeekdaysController (IController* parent) : DelegationController (parent) {}
@@ -175,6 +180,30 @@ public:
 		}
 		return controller->verifyView (view, attributes, description);
 	}
+#ifdef VSTGUI_UISCRIPTING
+	bool getProperty (CView* view, std::string_view name, PropertyValue& value) const override
+	{
+		using namespace std::literals;
+		if (name == "integer"sv)
+			value = 24;
+		else if (name == "double"sv)
+			value = 13.3333;
+		else if (name == "string"sv)
+			value = "Hello World"s;
+		else
+			value = nullptr;
+		return true;
+	}
+	bool setProperty (CView* view, std::string_view name, const PropertyValue& value) override
+	{
+		std::visit ([] (auto&& v) { std::cout << v << '\n'; }, value);
+		return true;
+	}
+	std::optional<std::string> verifyScript (CView* view, const std::string& script) override
+	{
+		return {script};
+	}
+#endif
 };
 
 //------------------------------------------------------------------------

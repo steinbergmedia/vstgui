@@ -8,7 +8,9 @@
 #include "../uidescription/iviewfactory.h"
 #include "../uidescription/iuidescription.h"
 #include "../uidescription/iuidescriptionaddon.h"
+#include <functional>
 
+//------------------------------------------------------------------------
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
@@ -37,6 +39,63 @@ private:
 	std::unique_ptr<Impl> impl;
 
 	friend std::unique_ptr<UIScripting> std::make_unique<UIScripting> ();
+};
+
+//------------------------------------------------------------------------
+/** extends IController
+ *
+ *	The script controller extension adds script related methods to the controller.
+ *
+ *	It can alter the scripts for the views if needed and scripts can get and set properties.
+ */
+struct IScriptControllerExtension
+{
+	/** a property value is either an integer, double, string or undefined (nullptr_t) */
+	using PropertyValue = std::variant<nullptr_t, int64_t, double, std::string>;
+
+	/** verify the script for a view
+	 *
+	 *	called before the script is executed
+	 *
+	 *	@param view the view
+	 *	@param script the script
+	 *	@return optional new script. if the optional is empty the original script is used.
+	 */
+	virtual std::optional<std::string> verifyScript (CView* view, const std::string& script) = 0;
+
+	/** get a property
+	 *
+	 *	called from a script
+	 *
+	 *	if the propery exists, the value should be set and the return value should be true.
+	 *	Otherwise return false.
+	 *
+	 *	@param view the view
+	 *	@param name the name of the property
+	 *	@param value the property value
+	 *	@return true on success.
+	 */
+	virtual bool getProperty (CView* view, std::string_view name, PropertyValue& value) const = 0;
+
+	/** set a property
+	 *
+	 *	called from a script
+	 *
+	 *	@param view the view
+	 *	@param name the name of the property
+	 *	@param value the value of the property
+	 *	@return true on success.
+	 */
+	virtual bool setProperty (CView* view, std::string_view name, const PropertyValue& value) = 0;
+};
+
+//------------------------------------------------------------------------
+/** adapter for IScriptControllerExtension */
+struct ScriptControllerExtensionAdapter : IScriptControllerExtension
+{
+	std::optional<std::string> verifyScript (CView*, const std::string&) override { return {}; }
+	bool getProperty (CView*, std::string_view, PropertyValue&) const override { return false; }
+	bool setProperty (CView*, std::string_view, const PropertyValue&) override { return false; }
 };
 
 //------------------------------------------------------------------------
