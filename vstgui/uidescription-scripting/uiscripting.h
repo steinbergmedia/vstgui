@@ -9,6 +9,7 @@
 #include "../uidescription/iuidescription.h"
 #include "../uidescription/iuidescriptionaddon.h"
 #include <functional>
+#include <optional>
 #include <variant>
 
 //------------------------------------------------------------------------
