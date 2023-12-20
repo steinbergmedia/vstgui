@@ -36,7 +36,7 @@ static const std::string kAttrScript = "script";
 class ScriptContext
 {
 public:
-	using OnScriptException = std::function<void (std::string reason)>;
+	using OnScriptException = std::function<void (const std::string& reason)>;
 
 	ScriptContext (IUIDescription* uiDesc, const OnScriptException& func);
 	~ScriptContext () noexcept;
@@ -1188,7 +1188,7 @@ IViewFactory* UIScripting::getViewFactory (IUIDescription* desc, IViewFactory* o
 	if (it != impl->map.end ())
 		return it->second.first.get ();
 	auto scripting = std::make_unique<ScriptingInternal::ScriptContext> (
-		desc, [] (std::string reason) { std::cerr << reason << '\n'; });
+		desc, [] (const std::string& reason) { std::cerr << reason << '\n'; });
 	auto result = impl->map.emplace (
 		desc, std::make_pair (std::make_unique<ScriptingInternal::JavaScriptViewFactory> (
 								  scripting.get (), originalFactory),
