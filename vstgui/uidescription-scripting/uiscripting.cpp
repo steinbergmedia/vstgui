@@ -116,12 +116,12 @@ struct TimerScriptObject : CScriptVar
 					timer->stop ();
 			},
 			static_cast<uint32_t> (fireTime), false);
-		addChild ("invalid", createJSFunction ([this] (auto) { timer = nullptr; }));
-		addChild ("start", createJSFunction ([this] (auto) {
+		addChild ("invalid"sv, createJSFunction ([this] (auto) { timer = nullptr; }));
+		addChild ("start"sv, createJSFunction ([this] (auto) {
 					  if (timer)
 						  timer->start ();
 				  }));
-		addChild ("stop", createJSFunction ([this] (auto) {
+		addChild ("stop"sv, createJSFunction ([this] (auto) {
 					  if (timer)
 						  timer->stop ();
 				  }));
@@ -171,24 +171,24 @@ struct ScriptObject
 		return var;
 	}
 
-	void addChild (const std::string& name, ScriptObject&& obj)
+	void addChild (std::string_view name, ScriptObject&& obj)
 	{
 		auto var = obj.take ();
 		scriptVar->addChild (name, var);
 	}
-	void addChild (const std::string& name, double d)
+	void addChild (std::string_view name, double d)
 	{
 		scriptVar->addChild (name, new CScriptVar (d));
 	}
-	void addChild (const std::string& name, int64_t i)
+	void addChild (std::string_view name, int64_t i)
 	{
 		scriptVar->addChild (name, new CScriptVar (i));
 	}
-	void addChild (const std::string& name, int32_t i)
+	void addChild (std::string_view name, int32_t i)
 	{
 		scriptVar->addChild (name, new CScriptVar (static_cast<int64_t> (i)));
 	}
-	void addChild (const std::string& name, const std::string& value)
+	void addChild (std::string_view name, const std::string& value)
 	{
 		scriptVar->addChild (name, new CScriptVar (value));
 	}
@@ -201,10 +201,10 @@ protected:
 inline ScriptObject makeScriptRect (const CRect& rect)
 {
 	ScriptObject obj;
-	obj.addChild ("left", rect.left);
-	obj.addChild ("top", rect.top);
-	obj.addChild ("right", rect.right);
-	obj.addChild ("bottom", rect.bottom);
+	obj.addChild ("left"sv, rect.left);
+	obj.addChild ("top"sv, rect.top);
+	obj.addChild ("right"sv, rect.right);
+	obj.addChild ("bottom"sv, rect.bottom);
 	return obj;
 }
 
@@ -212,8 +212,8 @@ inline ScriptObject makeScriptRect (const CRect& rect)
 inline ScriptObject makeScriptPoint (const CPoint& point)
 {
 	ScriptObject obj;
-	obj.addChild ("x", point.x);
-	obj.addChild ("y", point.y);
+	obj.addChild ("x"sv, point.x);
+	obj.addChild ("y"sv, point.y);
 	return obj;
 }
 
@@ -224,45 +224,45 @@ inline ScriptObject makeScriptEvent (const Event& event)
 	if (auto modifierEvent = asModifierEvent (event))
 	{
 		ScriptObject mod;
-		mod.addChild ("shift", modifierEvent->modifiers.has (ModifierKey::Shift));
-		mod.addChild ("alt", modifierEvent->modifiers.has (ModifierKey::Alt));
-		mod.addChild ("control", modifierEvent->modifiers.has (ModifierKey::Control));
-		mod.addChild ("super", modifierEvent->modifiers.has (ModifierKey::Super));
-		obj.addChild ("modifiers", std::move (mod));
+		mod.addChild ("shift"sv, modifierEvent->modifiers.has (ModifierKey::Shift));
+		mod.addChild ("alt"sv, modifierEvent->modifiers.has (ModifierKey::Alt));
+		mod.addChild ("control"sv, modifierEvent->modifiers.has (ModifierKey::Control));
+		mod.addChild ("super"sv, modifierEvent->modifiers.has (ModifierKey::Super));
+		obj.addChild ("modifiers"sv, std::move (mod));
 	}
 	if (auto mouseEvent = asMousePositionEvent (event))
 	{
-		obj.addChild ("mousePosition", makeScriptPoint (mouseEvent->mousePosition));
+		obj.addChild ("mousePosition"sv, makeScriptPoint (mouseEvent->mousePosition));
 	}
 	if (auto mouseEvent = asMouseEvent (event))
 	{
 		ScriptObject buttons;
-		buttons.addChild ("left", mouseEvent->buttonState.has (MouseButton::Left));
-		buttons.addChild ("right", mouseEvent->buttonState.has (MouseButton::Right));
-		buttons.addChild ("middle", mouseEvent->buttonState.has (MouseButton::Middle));
-		obj.addChild ("mouseButtons", std::move (buttons));
+		buttons.addChild ("left"sv, mouseEvent->buttonState.has (MouseButton::Left));
+		buttons.addChild ("right"sv, mouseEvent->buttonState.has (MouseButton::Right));
+		buttons.addChild ("middle"sv, mouseEvent->buttonState.has (MouseButton::Middle));
+		obj.addChild ("mouseButtons"sv, std::move (buttons));
 	}
 	if (event.type == EventType::MouseWheel)
 	{
 		const auto& wheelEvent = castMouseWheelEvent (event);
 		ScriptObject wheel;
-		wheel.addChild ("deltaX", wheelEvent.deltaX);
-		wheel.addChild ("deltaY", wheelEvent.deltaY);
+		wheel.addChild ("deltaX"sv, wheelEvent.deltaX);
+		wheel.addChild ("deltaY"sv, wheelEvent.deltaY);
 		wheel.addChild (
-			"directionInvertedFromDevice",
+			"directionInvertedFromDevice"sv,
 			wheelEvent.flags & MouseWheelEvent::Flags::DirectionInvertedFromDevice ? true : false);
-		wheel.addChild ("preciceDelta",
+		wheel.addChild ("preciceDelta"sv,
 						wheelEvent.flags & MouseWheelEvent::Flags::PreciseDeltas ? true : false);
-		obj.addChild ("mouseWheel", std::move (wheel));
+		obj.addChild ("mouseWheel"sv, std::move (wheel));
 	}
 	if (auto keyEvent = asKeyboardEvent (event))
 	{
 		ScriptObject key;
-		key.addChild ("character", static_cast<int> (keyEvent->character));
-		key.addChild ("virtual", static_cast<int> (keyEvent->virt));
-		key.addChild ("isRepeat", keyEvent->isRepeat);
+		key.addChild ("character"sv, static_cast<int> (keyEvent->character));
+		key.addChild ("virtual"sv, static_cast<int> (keyEvent->virt));
+		key.addChild ("isRepeat"sv, keyEvent->isRepeat);
 	}
-	obj.addChild ("consume", 0);
+	obj.addChild ("consume"sv, 0);
 	return obj;
 }
 
@@ -273,33 +273,33 @@ struct UIDescScriptObject : ScriptObject
 	UIDescScriptObject () = default;
 	UIDescScriptObject (IUIDescription* desc, CTinyJS* scriptContext)
 	{
-		scriptVar->addChild ("colorNames", createJSFunction ([desc] (CScriptVar* var) {
+		scriptVar->addChild ("colorNames"sv, createJSFunction ([desc] (CScriptVar* var) {
 								 StringList names;
 								 desc->collectColorNames (names);
 								 var->setReturnVar (createArrayFromNames (names));
 							 }));
-		scriptVar->addChild ("fontNames", createJSFunction ([desc] (CScriptVar* var) {
+		scriptVar->addChild ("fontNames"sv, createJSFunction ([desc] (CScriptVar* var) {
 								 StringList names;
 								 desc->collectFontNames (names);
 								 var->setReturnVar (createArrayFromNames (names));
 							 }));
-		scriptVar->addChild ("bitmapNames", createJSFunction ([desc] (CScriptVar* var) {
+		scriptVar->addChild ("bitmapNames"sv, createJSFunction ([desc] (CScriptVar* var) {
 								 StringList names;
 								 desc->collectBitmapNames (names);
 								 var->setReturnVar (createArrayFromNames (names));
 							 }));
-		scriptVar->addChild ("gradientNames", createJSFunction ([desc] (CScriptVar* var) {
+		scriptVar->addChild ("gradientNames"sv, createJSFunction ([desc] (CScriptVar* var) {
 								 StringList names;
 								 desc->collectGradientNames (names);
 								 var->setReturnVar (createArrayFromNames (names));
 							 }));
-		scriptVar->addChild ("controlTagNames", createJSFunction ([desc] (CScriptVar* var) {
+		scriptVar->addChild ("controlTagNames"sv, createJSFunction ([desc] (CScriptVar* var) {
 								 StringList names;
 								 desc->collectControlTagNames (names);
 								 var->setReturnVar (createArrayFromNames (names));
 							 }));
 		scriptVar->addChild (
-			"getTagForName",
+			"getTagForName"sv,
 			createJSFunction (
 				[desc] (CScriptVar* var) {
 					auto param = var->getParameter ("name"sv);
@@ -313,7 +313,7 @@ struct UIDescScriptObject : ScriptObject
 				},
 				{"name"}));
 		scriptVar->addChild (
-			"lookupTagName",
+			"lookupTagName"sv,
 			createJSFunction (
 				[desc] (CScriptVar* var) {
 					auto param = var->getParameter ("tag"sv);
@@ -413,7 +413,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		registerFunctions (jsContext.get ());
 		registerMathFunctions (jsContext.get ());
 
-		jsContext->root->addChild ("uiDesc", uiDescObject.getVar ());
+		jsContext->root->addChild ("uiDesc"sv, uiDescObject.getVar ());
 
 		jsContext->addNative (
 			"function createTimer(context, fireTime, callback)"sv, [this] (CScriptVar* var) {
@@ -930,8 +930,8 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 {
 	scriptVar->setLifeTimeObserver (this);
 	auto viewType = IViewFactory::getViewName (view);
-	scriptVar->addChild ("type", new CScriptVar (std::string (viewType ? viewType : "unknown")));
-	scriptVar->addChild ("setAttribute",
+	scriptVar->addChild ("type"sv, new CScriptVar (std::string (viewType ? viewType : "unknown")));
+	scriptVar->addChild ("setAttribute"sv,
 						 createJSFunction (
 							 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
 								 auto key = var->getParameter ("key"sv);
@@ -943,7 +943,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 								 var->getReturnVar ()->setInt (result);
 							 },
 							 {"key", "value"}));
-	scriptVar->addChild ("getAttribute",
+	scriptVar->addChild ("getAttribute"sv,
 						 createJSFunction (
 							 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
 								 auto key = var->getParameter ("key"sv);
@@ -959,7 +959,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 								 }
 							 },
 							 {"key"}));
-	scriptVar->addChild ("isTypeOf",
+	scriptVar->addChild ("isTypeOf"sv,
 						 createJSFunction (
 							 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
 								 auto typeName = var->getParameter ("typeName"sv);
@@ -968,7 +968,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 								 var->getReturnVar ()->setInt (result);
 							 },
 							 {"typeName"}));
-	scriptVar->addChild ("getParent", createJSFunction ([view, context] (CScriptVar* var) {
+	scriptVar->addChild ("getParent"sv, createJSFunction ([view, context] (CScriptVar* var) {
 							 auto parentView = view->getParentView ();
 							 if (!parentView)
 							 {
@@ -982,23 +982,23 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 						 }));
 	if (auto control = dynamic_cast<CControl*> (view))
 	{
-		scriptVar->addChild ("setValue", createJSFunction (
-											 [control] (CScriptVar* var) {
-												 auto value = var->getParameter ("value"sv);
-												 if (value->isNumeric ())
-												 {
-													 auto oldValue = control->getValue ();
-													 control->setValue (
-														 static_cast<float> (value->getDouble ()));
-													 if (oldValue != control->getValue ())
-														 control->valueChanged ();
-												 }
-											 },
-											 {"value"}));
-		scriptVar->addChild ("getValue", createJSFunction ([control] (CScriptVar* var) {
+		scriptVar->addChild (
+			"setValue"sv, createJSFunction (
+							  [control] (CScriptVar* var) {
+								  auto value = var->getParameter ("value"sv);
+								  if (value->isNumeric ())
+								  {
+									  auto oldValue = control->getValue ();
+									  control->setValue (static_cast<float> (value->getDouble ()));
+									  if (oldValue != control->getValue ())
+										  control->valueChanged ();
+								  }
+							  },
+							  {"value"}));
+		scriptVar->addChild ("getValue"sv, createJSFunction ([control] (CScriptVar* var) {
 								 var->getReturnVar ()->setDouble (control->getValue ());
 							 }));
-		scriptVar->addChild ("setValueNormalized",
+		scriptVar->addChild ("setValueNormalized"sv,
 							 createJSFunction (
 								 [control] (CScriptVar* var) {
 									 auto value = var->getParameter ("value"sv);
@@ -1012,20 +1012,21 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 									 }
 								 },
 								 {"value"}));
-		scriptVar->addChild ("getValueNormalized", createJSFunction ([control] (CScriptVar* var) {
+		scriptVar->addChild ("getValueNormalized"sv, createJSFunction ([control] (CScriptVar* var) {
 								 var->getReturnVar ()->setDouble (control->getValueNormalized ());
 							 }));
+		scriptVar->addChild ("beginEdit"sv, createJSFunction ([control] (CScriptVar* var) {
+								 control->beginEdit ();
+							 }));
 		scriptVar->addChild (
-			"beginEdit", createJSFunction ([control] (CScriptVar* var) { control->beginEdit (); }));
-		scriptVar->addChild (
-			"endEdit", createJSFunction ([control] (CScriptVar* var) { control->endEdit (); }));
-		scriptVar->addChild ("getMinValue", createJSFunction ([control] (CScriptVar* var) {
+			"endEdit"sv, createJSFunction ([control] (CScriptVar* var) { control->endEdit (); }));
+		scriptVar->addChild ("getMinValue"sv, createJSFunction ([control] (CScriptVar* var) {
 								 var->getReturnVar ()->setDouble (control->getMin ());
 							 }));
-		scriptVar->addChild ("getMaxValue", createJSFunction ([control] (CScriptVar* var) {
+		scriptVar->addChild ("getMaxValue"sv, createJSFunction ([control] (CScriptVar* var) {
 								 var->getReturnVar ()->setDouble (control->getMax ());
 							 }));
-		scriptVar->addChild ("getTag", createJSFunction ([control] (CScriptVar* var) {
+		scriptVar->addChild ("getTag"sv, createJSFunction ([control] (CScriptVar* var) {
 								 var->getReturnVar ()->setInt (control->getTag ());
 							 }));
 	}
