@@ -1146,10 +1146,10 @@ private:
 //------------------------------------------------------------------------
 struct UIScripting::Impl
 {
-	std::unordered_map<const IUIDescription*,
-					   std::pair<std::unique_ptr<ScriptingInternal::JavaScriptViewFactory>,
-								 std::unique_ptr<ScriptingInternal::ScriptContext>>>
-		map;
+	using JSViewFactoryPtr = std::unique_ptr<ScriptingInternal::JavaScriptViewFactory>;
+	using ScriptContextPtr = std::unique_ptr<ScriptingInternal::ScriptContext>;
+
+	std::unordered_map<const IUIDescription*, std::pair<JSViewFactoryPtr, ScriptContextPtr>> map;
 };
 
 //------------------------------------------------------------------------
