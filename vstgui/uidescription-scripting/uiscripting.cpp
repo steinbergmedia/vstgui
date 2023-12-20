@@ -1150,7 +1150,13 @@ struct UIScripting::Impl
 	using ScriptContextPtr = std::unique_ptr<ScriptingInternal::ScriptContext>;
 
 	std::unordered_map<const IUIDescription*, std::pair<JSViewFactoryPtr, ScriptContextPtr>> map;
+
+	static OnScriptException onScriptExceptionFunc;
 };
+UIScripting::OnScriptException UIScripting::Impl::onScriptExceptionFunc =
+	[] (const std::string& reason) {
+		std::cerr << reason << '\n';
+	};
 
 //------------------------------------------------------------------------
 UIScripting::UIScripting () { impl = std::make_unique<Impl> (); }
@@ -1187,8 +1193,8 @@ IViewFactory* UIScripting::getViewFactory (IUIDescription* desc, IViewFactory* o
 	auto it = impl->map.find (desc);
 	if (it != impl->map.end ())
 		return it->second.first.get ();
-	auto scripting = std::make_unique<ScriptingInternal::ScriptContext> (
-		desc, [] (const std::string& reason) { std::cerr << reason << '\n'; });
+	auto scripting =
+		std::make_unique<ScriptingInternal::ScriptContext> (desc, Impl::onScriptExceptionFunc);
 	auto result = impl->map.emplace (
 		desc, std::make_pair (std::make_unique<ScriptingInternal::JavaScriptViewFactory> (
 								  scripting.get (), originalFactory),
@@ -1216,7 +1222,12 @@ void UIScripting::onEditingEnd (IUIDescription* desc)
 }
 
 //------------------------------------------------------------------------
-void UIScripting::init () { UIDescriptionAddOnRegistry::add (std::make_unique<UIScripting> ()); }
+void UIScripting::init (const OnScriptException& func)
+{
+	if (func)
+		Impl::onScriptExceptionFunc = func;
+	UIDescriptionAddOnRegistry::add (std::make_unique<UIScripting> ());
+}
 
 //------------------------------------------------------------------------
 } // VSTGUI

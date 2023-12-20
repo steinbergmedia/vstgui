@@ -15,7 +15,9 @@ namespace VSTGUI {
 class UIScripting : public UIDescriptionAddOnAdapter
 {
 public:
-	static void init ();
+	using OnScriptException = std::function<void (const std::string& reason)>;
+
+	static void init (const OnScriptException& func = {});
 
 	~UIScripting () noexcept;
 
