@@ -102,7 +102,7 @@ public:
 	void assign (UTF8StringPtr str);
 	void clear () noexcept;
 
-	const UTF8StringPtr data () const noexcept { return string.data (); }
+	UTF8StringPtr data () const noexcept { return string.data (); }
 	operator const UTF8StringPtr () const noexcept { return data (); }
 	const StringType& getString () const noexcept { return string; }
 	IPlatformString* getPlatformString () const noexcept;
@@ -233,7 +233,7 @@ class UTF8CharacterIterator
 {
 public:
 	UTF8CharacterIterator (const UTF8StringPtr utf8Str)
-	: startPos ((uint8_t*)utf8Str)
+	: startPos ((const uint8_t*)utf8Str)
 	, currentPos (nullptr)
 	, strLen (std::strlen (utf8Str))
 	{
@@ -241,7 +241,7 @@ public:
 	}
 
 	UTF8CharacterIterator (const UTF8StringPtr utf8Str, size_t strLen)
-	: startPos ((uint8_t*)utf8Str)
+	: startPos ((const uint8_t*)utf8Str)
 	, currentPos (nullptr)
 	, strLen (strLen)
 	{
@@ -249,14 +249,14 @@ public:
 	}
 	
 	UTF8CharacterIterator (const std::string& stdStr)
-	: startPos ((uint8_t*)stdStr.c_str ())
+	: startPos ((const uint8_t*)stdStr.data ())
 	, currentPos (nullptr)
 	, strLen (stdStr.size ())
 	{
 		begin ();
 	}
 	
-	uint8_t* next ()
+	const uint8_t* next ()
 	{
 		if (currentPos)
 		{
@@ -276,7 +276,7 @@ public:
 		return currentPos;
 	}
 	
-	uint8_t* previous ()
+	const uint8_t* previous ()
 	{
 		while (currentPos)
 		{
@@ -319,8 +319,8 @@ public:
 		return 0;
 	}
 
-	uint8_t* begin () { currentPos = startPos; return currentPos;}
-	uint8_t* end () { currentPos = startPos + strLen; return currentPos; }
+	const uint8_t* begin () { currentPos = startPos; return currentPos;}
+	const uint8_t* end () { currentPos = startPos + strLen; return currentPos; }
 
 	const uint8_t* front () const { return startPos; }
 	const uint8_t* back () const { return startPos + strLen; }
@@ -328,11 +328,11 @@ public:
 	const uint8_t* operator++() { return next (); }
 	const uint8_t* operator--() { return previous (); }
 	bool operator==(uint8_t i) { if (currentPos) return *currentPos == i; return false; }
-	operator uint8_t* () const { return (uint8_t*)currentPos; }
+	operator const uint8_t* () const { return currentPos; }
 
 protected:
-	uint8_t* startPos;
-	uint8_t* currentPos;
+	const uint8_t* startPos;
+	const uint8_t* currentPos;
 	size_t strLen;
 };
 

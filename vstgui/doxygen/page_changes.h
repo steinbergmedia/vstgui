@@ -22,6 +22,11 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_14 Version 4.14
+
+- add crosshair mouse cursor (kCursorCrosshair)
+- customizable knob range (see CKnob::setKnobRange)
+
 @subsection version4_13 Version 4.13
 
 - support embedding platform views (HWND & NSView) as sub views (see CExternalView and ExternalView::IView) and examples in the contrib folder.
@@ -135,6 +140,10 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_13_to_4_14 VSTGUI 4.13 -> VSTGUI 4.14
+
+- In CParamDisplay::drawPlatformText(..) the string argument changed from IPlatformString to UTF8Text
 
 @subsection code_changes_4_12_to_4_13 VSTGUI 4.12 -> VSTGUI 4.13
 

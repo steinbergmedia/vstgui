@@ -958,6 +958,7 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	{
 		[nsView setWantsLayer:YES];
 		caLayer = [CALayer new];
+		caLayer.geometryFlipped = ![nsView.layer contentsAreFlipped];
 		caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
 		caLayer.frame = nsView.layer.bounds;
 		[caLayer setContentsScale:nsView.layer.contentsScale];
@@ -1332,6 +1333,7 @@ bool NSViewFrame::setMouseCursor (CCursorType type)
 		case kCursorNotAllowed: cur = [NSCursor performSelector:@selector(operationNotAllowedCursor)]; break;
 		case kCursorHand: cur = [NSCursor openHandCursor]; break;
 		case kCursorIBeam: cur = [NSCursor IBeamCursor]; break;
+		case kCursorCrosshair: cur = [NSCursor crosshairCursor]; break;
 		default: cur = [NSCursor arrowCursor]; break;
 	}
 	if (cur)

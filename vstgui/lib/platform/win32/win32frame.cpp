@@ -384,6 +384,9 @@ bool Win32Frame::setMouseCursor (CCursorType type)
 		case kCursorHand:
 			cursor = LoadCursor (nullptr, IDC_HAND);
 			break;
+		case kCursorCrosshair:
+			cursor = LoadCursor (nullptr, IDC_CROSS);
+			break;
 		default:
 			cursor = LoadCursor (nullptr, IDC_ARROW);
 			break;

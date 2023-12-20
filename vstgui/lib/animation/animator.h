@@ -80,7 +80,7 @@ public:
 	FinishedMessage (CView* view, const std::string& name, IAnimationTarget* target) : view (view), name (name), target (target) {}
 	
 	CView* getView () const { return view; }
-	const IdStringPtr getName () const { return name.c_str (); }
+	IdStringPtr getName () const { return name.c_str (); }
 	IAnimationTarget* getTarget () const { return target; }
 
 	CLASS_METHODS_NOCOPY(FinishedMessage, CBaseObject)

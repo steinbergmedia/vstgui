@@ -188,7 +188,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 		{
 			pContext->saveGlobalState ();
 			pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
-			drawPlatformText (pContext, placeholderString.getPlatformString ());
+			drawPlatformText (pContext, placeholderString);
 			pContext->restoreGlobalState ();
 		}
 		setDirty (false);
@@ -201,7 +201,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 		{
 			pContext->saveGlobalState ();
 			pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
-			drawPlatformText (pContext, placeholderString.getPlatformString ());
+			drawPlatformText (pContext, placeholderString);
 			pContext->restoreGlobalState ();
 		}
 	}
@@ -211,7 +211,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 		UTF8String str;
 		for (auto i = 0u; i < text.length (); ++i)
 			str += bulletCharacter;
-		drawPlatformText (pContext, str.getPlatformString ());
+		drawPlatformText (pContext, str);
 	}
 	else
 		CTextLabel::draw (pContext);

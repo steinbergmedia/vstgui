@@ -249,8 +249,8 @@ public:
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
-	
-	CLASS_METHODS(CTextButton, CControl)
+
+	CLASS_METHODS_NOCOPY (CTextButton, CControl)
 protected:
 	~CTextButton () noexcept override = default;
 

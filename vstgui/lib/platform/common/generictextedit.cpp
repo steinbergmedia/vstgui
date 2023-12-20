@@ -687,7 +687,7 @@ void STBTextEditView::draw (CDrawContext* context)
 	calcCursorSizes ();
 
 	drawBack (context, nullptr);
-	drawPlatformText (context, getText ().getPlatformString ());
+	drawPlatformText (context, getText ());
 
 	if (!isBlinkToggle () || editState.select_start != editState.select_end)
 		return;
