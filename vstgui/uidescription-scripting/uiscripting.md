@@ -44,7 +44,7 @@ view.onMouseEnter = function (view, event) {
 };
 ```
 
-See [**View Listeners**](#view-methods-and-properties) which listeners can be installed on views.
+See [**View Listeners**](#view-listeners) which listeners can be installed on views.
 And see [**View methods and properties**](#view-methods-and-properties) for the other methods a view supports.
 
 If the view is a control it additionally supports the methods described in [**Control methods and properties**](#control-methods-and-properties)
