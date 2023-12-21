@@ -42,7 +42,7 @@ using namespace std::literals;
 void scTrace (CScriptVar* c, void* userdata)
 {
 	CTinyJS* js = (CTinyJS*)userdata;
-	js->root->trace ();
+	js->getRoot ()->trace ();
 }
 
 void scObjectDump (CScriptVar* c) { c->getParameter ("this"sv)->trace ("> "); }

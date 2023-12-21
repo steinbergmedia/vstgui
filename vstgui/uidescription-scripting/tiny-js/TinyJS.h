@@ -423,10 +423,11 @@ public:
 	/** Send all variables to stdout */
 	void trace ();
 
-	/** root of symbol table */
-	CScriptVar* root {nullptr};
+	CScriptVar* getRoot () const { return root; }
 
 private:
+	/** root of symbol table */
+	CScriptVar* root {nullptr};
 	/** current lexer */
 	CScriptLex* lexer {nullptr};
 	/** stack of scopes when parsing */
