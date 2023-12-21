@@ -121,27 +121,6 @@
 
 #include "TinyJS.h"
 #include <cassert>
-
-#define ASSERT(X) assert (X)
-/* Frees the given link IF it isn't owned by anything else */
-#define CLEAN(x)                                                                                   \
-	{                                                                                              \
-		CScriptVarLink* __v = x;                                                                   \
-		if (__v && !__v->owned)                                                                    \
-		{                                                                                          \
-			delete __v;                                                                            \
-		}                                                                                          \
-	}
-/* Create a LINK to point to VAR and free the old link.
- * BUT this is more clever - it tries to keep the old link if it's not owned to save allocations */
-#define CREATE_LINK(LINK, VAR)                                                                     \
-	{                                                                                              \
-		if (!LINK || LINK->owned)                                                                  \
-			LINK = new CScriptVarLink (VAR);                                                       \
-		else                                                                                       \
-			LINK->replaceWith (VAR);                                                               \
-	}
-
 #include <string>
 #include <cstring>
 #include <sstream>
@@ -224,6 +203,28 @@ void show_allocated ()
 	allocatedLinks.clear ();
 }
 #endif
+
+#define ASSERT(X) assert (X)
+
+/* Frees the given link IF it isn't owned by anything else */
+static inline void CLEAN (CScriptVarLink* x)
+{
+	CScriptVarLink* __v = x;
+	if (__v && !__v->owned)
+	{
+		delete __v;
+	}
+}
+
+/* Create a LINK to point to VAR and free the old link.
+ * BUT this is more clever - it tries to keep the old link if it's not owned to save allocations */
+static inline void CREATE_LINK (CScriptVarLink*& link, CScriptVar* var)
+{
+	if (!link || link->owned)
+		link = new CScriptVarLink (var);
+	else
+		link->replaceWith (var);
+}
 
 // ----------------------------------------------------------------------------------- Utils
 bool isWhitespace (char ch) { return (ch == ' ') || (ch == '\t') || (ch == '\n') || (ch == '\r'); }
