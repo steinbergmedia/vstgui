@@ -335,9 +335,6 @@ public:
 
 	void setFunctionScript (std::string_view str);
 
-	CScriptVarLink* firstChild {nullptr};
-	CScriptVarLink* lastChild {nullptr};
-
 	/// For memory management/garbage collection
 	/** Add reference to this variable */
 	CScriptVar* ref ();
@@ -348,7 +345,13 @@ public:
 
 	void setLifeTimeObserver (IScriptVarLifeTimeObserver* obs) { lifeTimeObserver = obs; }
 
+	CScriptVarLink* getFirstChild () const { return firstChild; }
+	CScriptVarLink* getLastChild () const { return lastChild; }
+
 protected:
+	CScriptVarLink* firstChild {nullptr};
+	CScriptVarLink* lastChild {nullptr};
+
 	/** The number of references held to this - used for garbage collection */
 	int refs {0};
 	/** the flags determine the type of the variable - int/double/string/etc */

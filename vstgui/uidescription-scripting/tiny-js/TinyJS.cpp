@@ -1817,7 +1817,7 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 		if (parent)
 			functionRoot->addChildNoDup ("this", parent);
 		// grab in all parameters
-		CScriptVarLink* v = function->var->firstChild;
+		CScriptVarLink* v = function->var->getFirstChild ();
 		while (v)
 		{
 			CScriptVarLink* value = base (execute);

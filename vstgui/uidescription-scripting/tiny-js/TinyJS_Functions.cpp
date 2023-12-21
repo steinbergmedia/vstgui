@@ -184,7 +184,7 @@ void scEval (CScriptVar* c, void* data)
 void scArrayContains (CScriptVar* c)
 {
 	CScriptVar* obj = c->getParameter ("obj"sv);
-	CScriptVarLink* v = c->getParameter ("this"sv)->firstChild;
+	CScriptVarLink* v = c->getParameter ("this"sv)->getFirstChild ();
 
 	bool contains = false;
 	while (v)
@@ -206,7 +206,7 @@ void scArrayRemove (CScriptVar* c)
 	vector<int> removedIndices;
 	CScriptVarLink* v;
 	// remove
-	v = c->getParameter ("this"sv)->firstChild;
+	v = c->getParameter ("this"sv)->getFirstChild ();
 	while (v)
 	{
 		if (v->var->equals (obj))
@@ -216,7 +216,7 @@ void scArrayRemove (CScriptVar* c)
 		v = v->nextSibling;
 	}
 	// renumber
-	v = c->getParameter ("this"sv)->firstChild;
+	v = c->getParameter ("this"sv)->getFirstChild ();
 	while (v)
 	{
 		int n = v->getIntName ();
