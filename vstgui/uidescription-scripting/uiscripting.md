@@ -27,105 +27,120 @@ the resource directory of the plugin/application containing the script text.
 
 A reference to a script file is done via 
 
-	//scriptfile $SCRIPT_FILENAME
+```js
+//scriptfile $SCRIPT_FILENAME
+```
 
 The script is executed directly after the view was created and before its other attributes are set and before child views are added.
 
 ### The **view** variable
 
 The script contains a view variable which among other things can be used to add listeners on actions on the view.
-To install a listener when the mouse enters the view do:
+To install a function that is executed whenever the mouse enters the view do:
 
-	view.onMouseEnter = function (view) {
-	  // do something when the mouse enters this view...
-	};
+```js
+view.onMouseEnter = function (view, event) {
+  // do something when the mouse enters this view...
+};
+```
 
-See "**View Listeners**" which listeners can be installed on views.
-And see "**View methods and properties**" for the other methods a view supports.
+See [**View Listeners**](#view-methods-and-properties) which listeners can be installed on views.
+And see [**View methods and properties**](#view-methods-and-properties) for the other methods a view supports.
 
-If the view is a control it additionally supports the methods described in "**Control methods and properties**"
-and the listeners as described in "**Control listeners**".
+If the view is a control it additionally supports the methods described in [**Control methods and properties**](#control-methods-and-properties)
+and the listeners as described in [**Control listeners**](#control-listeners).
 
-If the view is a view container then it supports the additional listeners described in "**View container listeners**".
+If the view is a view container then it supports the additional listeners described in [**View container listeners**](#view-container-listeners).
 
 ### The **uiDesc** variable
 
 The script also contains the uiDesc variable you can use to query information on the uiDesc file.
 The following methods are implemented on that object:
-- `colorNames() -> Array`
-- `fontNames() -> Array`
-- `bitmapNames() -> Array`
-- `gradientNames() -> Array`
-- `controlTagNames() -> Array`
-- `getTagForName(String: name) -> Integer`
-- `lookupTagName(Integer: tag) -> String`
 
-### Interaction with c++ code
+|type    |name           |arguments    |return type    |comments                                      |
+|--------|---------------|-------------|---------------|----------------------------------------------|
+|method  |colorNames     |             |`array<string>`|get all color names from the UIDesc file      |
+|method  |fontNames      |             |`array<string>`|get all font names from the UIDesc file       |
+|method  |bitmapNames    |             |`array<string>`|get all bitmap names from the UIDesc file     |
+|method  |gradientNames  |             |`array<string>`|get all gradient names from the UIDesc file   |
+|method  |controlTagNames|             |`array<string>`|get all control tag names from the UIDesc file|
+|method  |getTagForName  |name:`string`|`integer`      |get the tag for the control tag name          |
+|method  |lookupTagName  |tag:`integer`|`string`       |get the control tag name from the tag         |
 
-To interact with the c++ code extend the IController with IScriptControllerExtension
-and implement its methods and call from the script the view methods `getControllerProperty` or `setControllerProperty`.
+### Interacting with c++ code
+
+To interact with the c++ code extend the `IController` with `IScriptControllerExtension`
+and implement its methods. From the script you can call the view methods `getControllerProperty` or `setControllerProperty`.
+
 A property can either be an integer, floating point, string or undefined.
 
 ### View methods and properties
 
-- `type -> String`
-	- contains the type of the view like "CAnimKnob"
-- `isTypeOf(String: name); -> Integer`
-	- returns a boolean if the view is of type "name"
-- `getParent() -> ViewObject`
-	- returns the parent view or undefined if it has none
-- `getAttribute(String: key) -> String`
-	- get the attribute with name "key"
-- `setAttribute(String: key, String: value) -> Void`
-	- set the attribute value with name "key" to "value"
-- `getControllerProperty(String: name, Property: value) -> Integer`
-	- set a controller property. returns true if succeeded
-- `setControllerProperty(String: name) -> Property`
-	- get a controller property. returns a property
+|type    |name                 |arguments                     |return type|comments                                            |
+|--------|---------------------|------------------------------|-----------|----------------------------------------------------|
+|property|type                 |                              |`string`   |contains the type of the view like `CAnimKnob`      |
+|method  |isTypeOf             |name:`string`                 |`integer`  |returns true if the view is of type `name`          |
+|method  |getParent            |                              |`object`   |returns the parent view or undefined if it has none |
+|method  |getAttribute         |key:`string`                  |`string`   |get the attribute with name `key`                   |
+|method  |setAttribute         |key:`string`,value:`string`   |`string`   |set the attribute value with name `key` to `value`  |
+|method  |getControllerProperty|name:`string`                 |`property` |set a controller property. returns true if succeeded|
+|method  |setControllerProperty|name:`string`,value:`property`|`property` |get a controller property. returns a property       |
 
 For example to set the opacity attribute of a view write:
 
-	view.setAttribute("opacity", 0.5);
+```js
+view.setAttribute("opacity", 0.5);
+```
 
 You can set any attribute as shown in the WYSIWYG editor.
 
 ### View listeners
 
-- `onAttached(view)`
-- `onRemoved(view)`
-- `onSizeChanged(view, newSize)`
-- `onLostFocus(view)`
-- `onTookFocus(view)`
-- `onMouseEnabled(view, state)`
-- `onMouseEnter(view, event)`
-- `onMouseExit(view, event)`
-- `onMouseDown(view, event)`
-- `onMouseUp(view, event)`
-- `onMouseMove(view, event)`
-- `onMouseWheel(view, event)`
-- `onKeyDown(view, event)`
-- `onKeyUp(view, event)`
+|name          |arguments                    |
+|--------------|-----------------------------|
+|onAttached    |view:`object`                |
+|onRemoved     |view:`object`                |
+|onSizeChanged |view:`object`,newSize:`rect` |
+|onLostFocus   |view:`object`                |
+|onTookFocus   |view:`object`                |
+|onMouseEnabled|view:`object`,state:`boolean`|
+|onMouseEnter  |view:`object`,event:`object` |
+|onMouseExit   |view:`object`,event:`object` |
+|onMouseDown   |view:`object`,event:`object` |
+|onMouseUp     |view:`object`,event:`object` |
+|onMouseMove   |view:`object`,event:`object` |
+|onMouseWheel  |view:`object`,event:`object` |
+|onKeyDown     |view:`object`,event:`object` |
+|onKeyUp       |view:`object`,event:`object` |
 
 ### Control methods and properties
 
-- `setValue(Number: value) -> Void`
-- `getValue() -> Number`
-- `setValueNormalized(Number: normValue) -> Void`
-- `getValueNormalized() -> Number`
-- `beginEdit() -> Void`
-- `endEdit() -> Void`
-- `getMinValue() -> Number`
-- `getMaxValue() -> Number`
-- `getTag() -> Number`
+|type    |name                 |arguments     |return type|comments                                            |
+|--------|---------------------|--------------|-----------|----------------------------------------------------|
+|method  |setValue             |value:`double`|`void`     | set the control value to `value`                   |
+|method  |getValue             |              |`double`   | get the control value                              |
+|method  |setValueNormalized   |value:`double`|`void`     | set the control value from the normalized `value`  |
+|method  |getValueNormalized   |              |`double`   | get the normalized control value                   |
+|method  |beginEdit            |              |`void`     | begin editing the control                          |
+|method  |endEdit              |              |`void`     | end editing the control                            |
+|method  |getMinValue          |              |`double`   | get the minimum value of the control               |
+|method  |getMaxValue          |              |`double`   | get the maximum value of the control               |
+|method  |getTag               |              |`integer`  | get the control tag                                |
 
 ### Control listeners
-- `onValueChanged(view, value)`
-- `onBeginEdit(view)`
-- `onEndEdit(view)`
+
+|name          |arguments                   |
+|--------------|----------------------------|
+|onValueChanged|view:`object`,value:`double`|
+|onBeginEdit   |view:`object`               |
+|onEndEdit     |view:`object`               |
 
 ### View container listeners
-- `onViewAdded(view, child)`
-- `onViewRemoved(view, child)`
+
+|name         |arguments                   |
+|-------------|----------------------------|
+|onViewAdded  |view:`object`,child:`object`|
+|onViewRemoved|view:`object`,child:`object`|
 
 ### Global functions
 
