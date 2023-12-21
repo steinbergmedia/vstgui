@@ -350,9 +350,9 @@ public:
 
 	/// For memory management/garbage collection
 	/** Add reference to this variable */
-	CScriptVar* ref ();
+	CScriptVar* addRef ();
 	/** Remove a reference, and delete this variable if required */
-	void unref ();
+	void release ();
 	/** Get the number of references to this script variable */
 	int getRefs ();
 
@@ -390,8 +390,8 @@ public:
 	/** Evaluate the given code and return a link to a javascript object,
 	 * useful for (dangerous) JSON parsing. If nothing to return, will return
 	 * 'undefined' variable type. CScriptVarLink is returned as this will
-	 * automatically unref the result as it goes out of scope. If you want to
-	 * keep it, you must use ref() and unref() */
+	 * automatically release the result as it goes out of scope. If you want to
+	 * keep it, you must use addRef() and release() */
 	CScriptVarLink evaluateComplex (std::string_view code);
 	/** Evaluate the given code and return a string. If nothing to return, will return
 	 * 'undefined' */

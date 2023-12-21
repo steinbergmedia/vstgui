@@ -108,7 +108,7 @@ struct TimerScriptObject : CScriptVar
 {
 	template<typename Proc>
 	TimerScriptObject (uint64_t fireTime, CScriptVar* _callback, Proc timerProc)
-	: CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT), callback (_callback->ref ())
+	: CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT), callback (_callback->addRef ())
 	{
 		timer = makeOwned<CVSTGUITimer> (
 			[timerProc, this] (auto) {
@@ -129,7 +129,7 @@ struct TimerScriptObject : CScriptVar
 	~TimerScriptObject () noexcept
 	{
 		timer = nullptr;
-		callback->unref ();
+		callback->release ();
 	}
 
 private:
@@ -143,13 +143,13 @@ struct ScriptObject
 	ScriptObject ()
 	{
 		scriptVar = new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT);
-		scriptVar->ref ();
+		scriptVar->addRef ();
 	}
 	ScriptObject (ScriptObject&& o) { *this = std::move (o); }
 	ScriptObject& operator= (ScriptObject&& o)
 	{
 		if (scriptVar)
-			scriptVar->unref ();
+			scriptVar->release ();
 		scriptVar = nullptr;
 		std::swap (scriptVar, o.scriptVar);
 		return *this;
@@ -159,7 +159,7 @@ struct ScriptObject
 		if (scriptVar)
 		{
 			scriptVar->removeAllChildren ();
-			scriptVar->unref ();
+			scriptVar->release ();
 		}
 	}
 
@@ -437,9 +437,9 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 						return evalScript (callback, "timerCallback (timerContext); ",
 										   "timerCallback");
 					});
-				timerObj->ref ();
+				timerObj->addRef ();
 				var->setReturnVar (timerObj);
-				timerObj->unref ();
+				timerObj->release ();
 			});
 		jsContext->addNative (
 			"function iterateSubViews(view, context, callback)"sv, [this] (CScriptVar* var) {
@@ -563,10 +563,10 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		if (!object || script.empty ())
 			return false;
 		vstgui_assert (object->getRefs () > 0);
-		object->ref ();
+		object->addRef ();
 		ScriptAddChildScoped scs (*jsContext->root, objectName, object);
 		auto result = evalScript (script);
-		object->unref ();
+		object->release ();
 		return result;
 	}
 
@@ -978,7 +978,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 							 auto obj = context->addView (parentView);
 							 vstgui_assert (obj);
 							 var->setReturnVar (obj->getVar ());
-							 obj->getVar ()->unref ();
+							 obj->getVar ()->release ();
 						 }));
 	scriptVar->addChild ("getControllerProperty"sv,
 						 createJSFunction (

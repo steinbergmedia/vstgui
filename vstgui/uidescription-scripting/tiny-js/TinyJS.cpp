@@ -834,7 +834,7 @@ CScriptVarLink::CScriptVarLink (CScriptVar* var, const std::string& name, bool o
 	mark_allocated (this);
 #endif
 	this->name = name;
-	this->var = var->ref ();
+	this->var = var->addRef ();
 	this->isOwned = own;
 }
 
@@ -845,7 +845,7 @@ CScriptVarLink::CScriptVarLink (const CScriptVarLink& link)
 	mark_allocated (this);
 #endif
 	this->name = link.name;
-	this->var = link.var->ref ();
+	this->var = link.var->addRef ();
 }
 
 CScriptVarLink::~CScriptVarLink ()
@@ -853,14 +853,14 @@ CScriptVarLink::~CScriptVarLink ()
 #if DEBUG_MEMORY
 	mark_deallocated (this);
 #endif
-	var->unref ();
+	var->release ();
 }
 
 void CScriptVarLink::replaceWith (CScriptVar* newVar)
 {
 	CScriptVar* oldVar = var;
-	var = newVar->ref ();
-	oldVar->unref ();
+	var = newVar->addRef ();
+	oldVar->release ();
 }
 
 void CScriptVarLink::replaceWith (CScriptVarLink* newVar)
@@ -1593,13 +1593,13 @@ void CScriptVar::setFunctionScript (std::string_view str)
 	variant = std::string {str.data (), str.size ()};
 }
 
-CScriptVar* CScriptVar::ref ()
+CScriptVar* CScriptVar::addRef ()
 {
 	refs++;
 	return this;
 }
 
-void CScriptVar::unref ()
+void CScriptVar::release ()
 {
 	if (refs <= 0)
 		printf ("OMFG, we have unreffed too far!\n");
@@ -1615,11 +1615,11 @@ int CScriptVar::getRefs () { return refs; }
 
 CTinyJS::CTinyJS ()
 {
-	root = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->ref ();
+	root = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->addRef ();
 	// Add built-in classes
-	stringClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->ref ();
-	arrayClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->ref ();
-	objectClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->ref ();
+	stringClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->addRef ();
+	arrayClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->addRef ();
+	objectClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->addRef ();
 	root->addChild ("String", stringClass);
 	root->addChild ("Array", arrayClass);
 	root->addChild ("Object", objectClass);
@@ -1629,10 +1629,10 @@ CTinyJS::~CTinyJS ()
 {
 	ASSERT (!lexer);
 	scopes.clear ();
-	stringClass->unref ();
-	arrayClass->unref ();
-	objectClass->unref ();
-	root->unref ();
+	stringClass->release ();
+	arrayClass->release ();
+	objectClass->release ();
+	root->release ();
 
 #if DEBUG_MEMORY
 	show_allocated ();
