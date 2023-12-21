@@ -828,24 +828,20 @@ std::string CScriptLex::getPosition (size_t pos) const
 // -----------------------------------------------------------------------------------
 // CSCRIPTVARLINK
 
-CScriptVarLink::CScriptVarLink (CScriptVar* var, const std::string& name, bool own)
+CScriptVarLink::CScriptVarLink (CScriptVar* inVar, const std::string& inName, bool own)
+: name (inName), var (inVar->addRef ()), isOwned (own)
 {
 #if DEBUG_MEMORY
 	mark_allocated (this);
 #endif
-	this->name = name;
-	this->var = var->addRef ();
-	this->isOwned = own;
 }
 
 CScriptVarLink::CScriptVarLink (const CScriptVarLink& link)
+: name (link.name), var (link.var->addRef ())
 {
-	// Copy constructor
 #if DEBUG_MEMORY
 	mark_allocated (this);
 #endif
-	this->name = link.name;
-	this->var = link.var->addRef ();
 }
 
 CScriptVarLink::~CScriptVarLink ()
