@@ -178,7 +178,7 @@ void scEval (CScriptVar* c, void* data)
 {
 	CTinyJS* tinyJS = (CTinyJS*)data;
 	std::string str = c->getParameter ("jsCode"sv)->getString ();
-	c->setReturnVar (tinyJS->evaluateComplex (str).var);
+	c->setReturnVar (tinyJS->evaluateComplex (str).getVar ());
 }
 
 void scArrayContains (CScriptVar* c)
@@ -189,12 +189,12 @@ void scArrayContains (CScriptVar* c)
 	bool contains = false;
 	while (v)
 	{
-		if (v->var->equals (obj))
+		if (v->getVar ()->equals (obj))
 		{
 			contains = true;
 			break;
 		}
-		v = v->nextSibling;
+		v = v->getNextSibling ();
 	}
 
 	c->getReturnVar ()->setInt (contains);
@@ -209,11 +209,11 @@ void scArrayRemove (CScriptVar* c)
 	v = c->getParameter ("this"sv)->getFirstChild ();
 	while (v)
 	{
-		if (v->var->equals (obj))
+		if (v->getVar ()->equals (obj))
 		{
 			removedIndices.push_back (v->getIntName ());
 		}
-		v = v->nextSibling;
+		v = v->getNextSibling ();
 	}
 	// renumber
 	v = c->getParameter ("this"sv)->getFirstChild ();
@@ -226,7 +226,7 @@ void scArrayRemove (CScriptVar* c)
 				newn--;
 		if (newn != n)
 			v->setIntName (newn);
-		v = v->nextSibling;
+		v = v->getNextSibling ();
 	}
 }
 

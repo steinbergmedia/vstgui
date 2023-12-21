@@ -58,8 +58,8 @@ struct ScriptAddChildScoped
 	{
 		if ((link = var.findChild (name)))
 		{
-			oldVar = link->var;
-			link->var = obj;
+			oldVar = link->getVar ();
+			link->setVar (obj);
 		}
 		else
 		{
@@ -70,7 +70,7 @@ struct ScriptAddChildScoped
 	{
 		if (oldVar && link)
 		{
-			link->var = oldVar;
+			link->setVar (oldVar);
 		}
 		else if (link)
 		{
@@ -538,10 +538,10 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		try
 		{
 			auto result = jsContext->evaluateComplex (script);
-			if (result.var && !result.var->isUndefined ())
+			if (result.getVar () && !result.getVar ()->isUndefined ())
 			{
 #if DEBUG
-				DebugPrint ("%s\n", result.var->getString ().data ());
+				DebugPrint ("%s\n", result.getVar ()->getString ().data ());
 #endif
 			}
 		}
@@ -668,7 +668,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 	{
 		if (auto consume = obj.getVar ()->findChild ("consumed"))
 		{
-			if (consume->var->isInt () && consume->var->getInt ())
+			if (consume->getVar ()->isInt () && consume->getVar ()->getInt ())
 				event.consumed = true;
 		}
 	}
@@ -1259,10 +1259,10 @@ IViewFactory* UIScripting::getViewFactory (IUIDescription* desc, IViewFactory* o
 		return it->second.first.get ();
 	auto scripting =
 		std::make_unique<ScriptingInternal::ScriptContext> (desc, Impl::onScriptExceptionFunc);
-	auto result = impl->map.emplace (
-		desc, std::make_pair (std::make_unique<ScriptingInternal::JavaScriptViewFactory> (
-								  scripting.get (), originalFactory),
-							  std::move (scripting)));
+	auto viewFactory = std::make_unique<ScriptingInternal::JavaScriptViewFactory> (scripting.get (),
+																				   originalFactory);
+	auto result =
+		impl->map.emplace (desc, std::make_pair (std::move (viewFactory), std::move (scripting)));
 	return result.first->second.first.get ();
 }
 

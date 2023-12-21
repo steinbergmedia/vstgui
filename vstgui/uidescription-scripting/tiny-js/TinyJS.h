@@ -209,13 +209,7 @@ using JSCallback = std::function<void (CScriptVar* var)>;
 class CScriptVarLink
 {
 public:
-	std::string name;
-	CScriptVarLink* nextSibling {nullptr};
-	CScriptVarLink* prevSibling {nullptr};
-	CScriptVar* var {nullptr};
-	bool owned {false};
-
-	CScriptVarLink (CScriptVar* var, const std::string& name = TINYJS_TEMP_NAME);
+	CScriptVarLink (CScriptVar* var, const std::string& name = TINYJS_TEMP_NAME, bool own = false);
 	/** Copy constructor */
 	CScriptVarLink (const CScriptVarLink& link);
 	~CScriptVarLink ();
@@ -227,6 +221,25 @@ public:
 	int getIntName ();
 	/** Set the name as an integer (for arrays) */
 	void setIntName (int n);
+
+	const std::string& getName () const { return name; }
+
+	void setNextSibling (CScriptVarLink* s) { nextSibling = s; }
+	void setPrevSibling (CScriptVarLink* s) { prevSibling = s; }
+	CScriptVarLink* getNextSibling () const { return nextSibling; }
+	CScriptVarLink* getPrevSibling () const { return prevSibling; }
+
+	void setVar (CScriptVar* v) { var = v; }
+	CScriptVar* getVar () const { return var; }
+
+	bool owned () const { return isOwned; }
+
+private:
+	std::string name;
+	CScriptVarLink* nextSibling {nullptr};
+	CScriptVarLink* prevSibling {nullptr};
+	CScriptVar* var {nullptr};
+	bool isOwned {false};
 };
 
 struct IScriptVarLifeTimeObserver
