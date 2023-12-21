@@ -229,7 +229,7 @@ public:
 	CScriptVarLink* getNextSibling () const { return nextSibling; }
 	CScriptVarLink* getPrevSibling () const { return prevSibling; }
 
-	void setVar (CScriptVar* v) { var = v; }
+	void setVar (CScriptVar* v);
 	CScriptVar* getVar () const { return var; }
 
 	bool owned () const { return isOwned; }

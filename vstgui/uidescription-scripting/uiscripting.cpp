@@ -59,6 +59,7 @@ struct ScriptAddChildScoped
 		if ((link = var.findChild (name)))
 		{
 			oldVar = link->getVar ();
+			oldVar->addRef ();
 			link->setVar (obj);
 		}
 		else
@@ -71,6 +72,7 @@ struct ScriptAddChildScoped
 		if (oldVar && link)
 		{
 			link->setVar (oldVar);
+			oldVar->release ();
 		}
 		else if (link)
 		{

@@ -880,6 +880,12 @@ void CScriptVarLink::setIntName (int n)
 	name = sIdx;
 }
 
+void CScriptVarLink::setVar (CScriptVar* v)
+{
+	var->release ();
+	var = v->addRef ();
+}
+
 // ----------------------------------------------------------------------------------- CSCRIPTVAR
 
 CScriptVar::CScriptVar ()
