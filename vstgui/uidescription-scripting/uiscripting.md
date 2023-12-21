@@ -208,3 +208,102 @@ You can set any attribute as shown in the WYSIWYG editor.
 - `Math.pow(a,b)`
 - `Math.sqr(a)`
 - `Math.sqrt(a)`
+
+### Example
+
+```js
+// Hover Opacity Animation Script
+// This example script changes the opacity of the view
+// when the mouse enters or exits the view
+
+/* the default opacity of the view is stored in view.default_opacity */
+view.default_opacity = 0.6;
+
+/* the current opacity of the view is stored in view.opacity */
+view.opacity = view.default_opacity;
+
+/* the timer to change the opacity is stored in view.opacity_timer */
+view.opacity_timer = createTimer(view, 16, function(view) {
+	view.opacity += view.opacity_change;
+	if (view.opacity_change > 0)
+	{
+		if (view.opacity > 1)
+		{
+			view.opacity = 1;
+			view.opacity_timer.stop();
+		}
+	}
+	else
+	{
+		if (view.opacity <= view.default_opacity)
+		{
+			view.opacity = view.default_opacity;
+			view.opacity_timer.stop();
+		}
+	}
+	view.setAttribute("opacity", view.opacity);
+});
+
+/* the view will be shown with full opacity when focused so the state of the focus is stored in view.hasFocus */
+view.has_focus = false;
+
+/* to correctly restore the hover state after focus lost, the state if the mouse is inside the view or outside 
+   is stored in view.mouseInside
+*/
+view.mouse_inside = false;
+
+/* we install a mouse enter listener
+   when the mouse enters the view we start the opacity change timer 
+*/
+view.onMouseEnter = function(view, event) {
+	view.mouse_inside = true;
+	if (view.has_focus)
+		return;
+	view.opacity_change = 0.075;
+	view.opacity_timer.start();
+	event.consume = true;
+};
+
+/* we also install a mouse exit listener
+   when the mouse exits the view we start the opacity change timer again 
+   now with a negative opacity_change variable so that in the timer callback 
+   the opacity is going back to the default opacity 
+*/
+view.onMouseExit = function(view, event) {
+	view.mouse_inside = false;
+	if (view.has_focus)
+		return;
+	view.opacity_change = -0.05;
+	view.opacity_timer.start();
+	event.consumed = true;
+};
+
+/* we also install a view removed listener so that we can cleanup and stop the timer */
+view.onRemoved = function(view) {
+	// cleanup, when the view is removed, stop the timer
+	view.opacity_timer.stop();
+};
+
+/* when the view takes focus we show the view with full opacity */
+view.onTookFocus = function(view) {
+	view.has_focus = true;
+	view.opacity_timer.stop();
+	view.setAttribute("opacity", 1);
+	view.opacity = 1;
+};
+
+/* when the view lost focus we start the opacity animation when the mouse is not inside this view */
+view.onLostFocus = function(view) {
+	view.has_focus = false;
+	if (!view.mouse_inside)
+	{
+		view.onMouseExit(view, undefind);
+	}
+};
+
+/* enable the mouse, otherwise no mouse listener is called */
+view.setAttribute("mouse-enabled", true);
+
+/* set the initial view opacity*/
+view.setAttribute("opacity", view.opacity);
+```
