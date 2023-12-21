@@ -1068,10 +1068,10 @@ void CScriptVar::removeLink (CScriptVarLink* link)
 {
 	if (!link)
 		return;
-	if (link->getNextSibling ())
-		link->getNextSibling ()->setPrevSibling (link->getPrevSibling ());
-	if (link->getPrevSibling ())
-		link->getPrevSibling ()->setNextSibling (link->getNextSibling ());
+	if (auto sibling = link->getNextSibling ())
+		sibling->setPrevSibling (link->getPrevSibling ());
+	if (auto sibling = link->getPrevSibling ())
+		sibling->setNextSibling (link->getNextSibling ());
 	if (lastChild == link)
 		lastChild = link->getPrevSibling ();
 	if (firstChild == link)
