@@ -871,7 +871,8 @@ void CScriptVarLink::replaceWith (CScriptVarLink* newVar)
 		replaceWith (new CScriptVar ());
 }
 
-int CScriptVarLink::getIntName () { return atoi (name.c_str ()); }
+int CScriptVarLink::getIntName () const { return atoi (name.c_str ()); }
+
 void CScriptVarLink::setIntName (int n)
 {
 	char sIdx[64];

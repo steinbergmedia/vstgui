@@ -218,7 +218,7 @@ public:
 	/** Replace the Variable pointed to (just dereferences) */
 	void replaceWith (CScriptVarLink* newVar);
 	/** Get the name as an integer (for arrays) */
-	int getIntName ();
+	int getIntName () const;
 	/** Set the name as an integer (for arrays) */
 	void setIntName (int n);
 
