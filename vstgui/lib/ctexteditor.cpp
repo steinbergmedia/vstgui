@@ -247,6 +247,7 @@ private:
 	void onSelectionChanged (Range newSel, bool forceInvalidation = false);
 	CRect calculateCursorRect (int cursor) const;
 	void selectOnDoubleClick (uint32_t clickCount);
+	void updateSelectionOnDoubleClickMove (uint32_t clickCount);
 	void insertNewLine ();
 	template<typename T>
 	T findLine (T begin, T end, size_t pos) const;
@@ -276,6 +277,7 @@ private:
 	mutable CCoord fontDescent {0.};
 
 	STB_TexteditState editState {};
+	STB_TexteditState editStateOnMouseDown {};
 	bool mouseIsDown {false};
 	bool cursorIsVisible {false};
 
@@ -852,6 +854,7 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 	getFrame ()->setFocusView (this);
 
 	mouseIsDown = true;
+	editStateOnMouseDown = editState;
 
 	if (event.clickCount > 1)
 	{
@@ -866,8 +869,6 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 	pos.x /= tm.m11;
 	pos.y /= tm.m22;
 
-	auto oldEditState = editState;
-
 	callSTB ([&] () {
 		stb_textedit_click (this, &editState, static_cast<float> (pos.x),
 							static_cast<float> (pos.y));
@@ -875,7 +876,7 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 
 	if (event.modifiers.is (ModifierKey::Shift))
 	{
-		editState.select_start = oldEditState.select_start;
+		editState.select_start = editStateOnMouseDown.select_start;
 		editState.select_end = editState.cursor;
 		onSelectionChanged (makeRange (editState));
 	}
@@ -900,6 +901,8 @@ void TextEditorView::onMouseMoveEvent (MouseMoveEvent& event)
 		stb_textedit_drag (this, &editState, static_cast<float> (pos.x),
 						   static_cast<float> (pos.y));
 	});
+	if (event.clickCount > 1)
+		updateSelectionOnDoubleClickMove (event.clickCount);
 	event.consumed = true;
 }
 
@@ -1342,6 +1345,19 @@ inline bool isStopChar (char16_t character)
 };
 
 //------------------------------------------------------------------------
+template<bool forward, typename iterator_t>
+inline bool findStopChar (iterator_t& it, iterator_t end)
+{
+	for (; it != end; forward ? ++it : --it)
+	{
+		auto cursorChar = *it;
+		if (isStopChar (cursorChar))
+			return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 void TextEditorView::selectOnDoubleClick (uint32_t clickCount)
 {
 	auto cursor = static_cast<size_t> (editState.cursor);
@@ -1356,6 +1372,7 @@ void TextEditorView::selectOnDoubleClick (uint32_t clickCount)
 			editState.select_start = static_cast<int> (currentLine->range.start);
 			editState.select_end = static_cast<int> (currentLine->range.end ());
 			onSelectionChanged (makeRange (editState), true);
+			editStateOnMouseDown = editState;
 		}
 		return;
 	}
@@ -1368,28 +1385,72 @@ void TextEditorView::selectOnDoubleClick (uint32_t clickCount)
 	{
 		auto it = model.text.begin ();
 		std::advance (it, cursor - 1);
-		for (; it != model.text.begin (); --it)
-		{
-			cursorChar = *it;
-			if (isStopChar (cursorChar))
-			{
-				++it;
-				break;
-			}
-		}
+		if (findStopChar<false> (it, model.text.begin ()))
+			++it;
 		editState.select_start = static_cast<int> (std::distance (model.text.begin (), it));
 	}
 	if (cursor < model.text.size ())
 	{
 		auto it = model.text.begin ();
 		std::advance (it, cursor + 1);
-		for (; it != model.text.end (); ++it)
-		{
-			cursorChar = *it;
-			if (isStopChar (cursorChar))
-				break;
-		}
+		findStopChar<true> (it, model.text.end ());
 		editState.select_end = static_cast<int> (std::distance (model.text.begin (), it));
+	}
+	editStateOnMouseDown = editState;
+	onSelectionChanged (makeRange (editState), true);
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::updateSelectionOnDoubleClickMove (uint32_t clickCount)
+{
+	auto cursor = static_cast<size_t> (editState.cursor);
+	if (cursor >= model.text.size ())
+		return;
+
+	if (clickCount > 2)
+	{
+		auto currentLine = findLine (model.lines.begin (), model.lines.end (), cursor);
+		if (currentLine != model.lines.end ())
+		{
+			if (currentLine->range.start >= editStateOnMouseDown.select_start)
+			{
+				editState.select_start = editStateOnMouseDown.select_start;
+				editState.select_end = static_cast<int> (currentLine->range.end ());
+			}
+			else
+			{
+				editState.select_start = static_cast<int> (currentLine->range.start);
+				editState.select_end = editStateOnMouseDown.select_end;
+			}
+			onSelectionChanged (makeRange (editState), true);
+		}
+		return;
+	}
+
+	if (cursor < editStateOnMouseDown.select_start)
+	{
+		auto it = model.text.begin ();
+		std::advance (it, cursor - 1);
+		if (findStopChar<false> (it, model.text.begin ()))
+			++it;
+		auto start = static_cast<int> (std::distance (model.text.begin (), it));
+		if (start < editStateOnMouseDown.select_start)
+			editState.select_start = start;
+		else
+			editState.select_start = editStateOnMouseDown.select_start;
+		editState.select_end = editStateOnMouseDown.select_end;
+	}
+	else
+	{
+		auto it = model.text.begin ();
+		std::advance (it, cursor + 1);
+		findStopChar<true> (it, model.text.end ());
+		auto end = static_cast<int> (std::distance (model.text.begin (), it));
+		if (end > editStateOnMouseDown.select_end)
+			editState.select_end = end;
+		else
+			editState.select_end = editStateOnMouseDown.select_end;
+		editState.select_start = editStateOnMouseDown.select_start;
 	}
 	onSelectionChanged (makeRange (editState), true);
 }
