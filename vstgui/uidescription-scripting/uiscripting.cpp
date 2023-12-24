@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <array>
 #include <iostream>
+#include <sstream>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -33,7 +34,7 @@ namespace ScriptingInternal {
 static const std::string kAttrScript = "script";
 
 //------------------------------------------------------------------------
-class ScriptContext
+class ScriptContext : public IScriptContext
 {
 public:
 	using OnScriptException = std::function<void (const std::string& reason)>;
@@ -47,6 +48,8 @@ public:
 	void reset ();
 
 private:
+	std::string eval (std::string_view script) const override;
+
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 };
@@ -926,6 +929,26 @@ void ScriptContext::onViewCreated (CView* view, const std::string& script)
 void ScriptContext::reset () { impl->reset (); }
 
 //------------------------------------------------------------------------
+std::string ScriptContext::eval (std::string_view script) const
+{
+	if (!impl->jsContext)
+		return {};
+	try
+	{
+		auto result = impl->jsContext->evaluateComplex (script);
+		std::stringstream stream;
+		result.getVar ()->getJSON (stream);
+		return stream.str ();
+	}
+	catch (const CScriptException* exc)
+	{
+		if (impl->onScriptException)
+			impl->onScriptException (exc->text);
+	}
+	return {};
+}
+
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* context)
@@ -1111,15 +1134,27 @@ void ViewScriptObject::onDestroy (CScriptVar* v)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-struct JavaScriptViewFactory : ViewFactoryDelegate
+struct JavaScriptViewFactory : ViewFactoryDelegate,
+							   ViewListenerAdapter
 {
 	static constexpr CViewAttributeID scriptAttrID = 'scri';
 
 	using Super = ViewFactoryDelegate;
+	using ViewControllerLink = std::pair<CView*, IScriptControllerExtension*>;
+	using ViewControllerLinkVector = std::vector<ViewControllerLink>;
 
 	JavaScriptViewFactory (ScriptingInternal::ScriptContext* scripting, IViewFactory* origFactory)
 	: Super (origFactory), scriptContext (scripting)
 	{
+	}
+
+	~JavaScriptViewFactory () noexcept
+	{
+		std::for_each (viewControllerLinks.begin (), viewControllerLinks.end (),
+					   [this] (const auto& el) {
+						   el.first->unregisterViewListener (this);
+						   el.second->scriptContextDestroyed (scriptContext);
+					   });
 	}
 
 	CView* createView (const UIAttributes& attributes,
@@ -1133,7 +1168,10 @@ struct JavaScriptViewFactory : ViewFactoryDelegate
 				if (auto scriptViewController =
 						dynamic_cast<IScriptControllerExtension*> (description->getController ()))
 				{
-					verifiedScript = scriptViewController->verifyScript (view, *value);
+					verifiedScript =
+						scriptViewController->verifyScript (view, *value, scriptContext);
+					view->registerViewListener (const_cast<JavaScriptViewFactory*> (this));
+					viewControllerLinks.emplace_back (view, scriptViewController);
 				}
 				const auto& script = verifiedScript ? *verifiedScript : *value;
 				auto scriptSize = static_cast<uint32_t> (script.size () + 1);
@@ -1201,7 +1239,20 @@ struct JavaScriptViewFactory : ViewFactoryDelegate
 	void setScriptingDisabled (bool state) { disabled = state; }
 
 private:
+	void viewWillDelete (CView* view) override
+	{
+		auto it = std::find_if (viewControllerLinks.begin (), viewControllerLinks.end (),
+								[view] (const auto& el) { return el.first == view; });
+		if (it != viewControllerLinks.end ())
+		{
+			it->second->scriptContextDestroyed (scriptContext);
+			viewControllerLinks.erase (it);
+		}
+		view->unregisterViewListener (this);
+	}
+
 	ScriptingInternal::ScriptContext* scriptContext;
+	mutable ViewControllerLinkVector viewControllerLinks;
 	bool disabled {false};
 };
 

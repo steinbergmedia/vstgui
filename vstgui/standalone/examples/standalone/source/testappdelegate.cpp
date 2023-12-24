@@ -199,7 +199,8 @@ public:
 		std::visit ([] (auto&& v) { std::cout << v << '\n'; }, value);
 		return true;
 	}
-	std::optional<std::string> verifyScript (CView* view, const std::string& script) override
+	std::optional<std::string> verifyScript (CView* view, const std::string& script,
+											 const IScriptContext*) override
 	{
 		return {script};
 	}

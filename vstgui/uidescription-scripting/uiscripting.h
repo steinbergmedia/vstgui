@@ -16,11 +16,20 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+/** UIDescription scripting support
+ *
+ */
 class UIScripting : public UIDescriptionAddOnAdapter
 {
 public:
 	using OnScriptException = std::function<void (const std::string& reason)>;
 
+	/** initialize the UIScripting library
+	 *
+	 *	must be called once before creating UIDescription objects
+	 *
+	 *	@param func [optional] function which is called when a script context throws an exception
+	 */
 	static void init (const OnScriptException& func = {});
 
 	~UIScripting () noexcept;
@@ -44,6 +53,17 @@ private:
 };
 
 //------------------------------------------------------------------------
+struct IScriptContext
+{
+	/** evaluate custom code in the script context
+	 *
+	 *	@param script the script to execute
+	 *	@return result object as json string
+	 */
+	virtual std::string eval (std::string_view script) const = 0;
+};
+
+//------------------------------------------------------------------------
 /** extends IController
  *
  *	The script controller extension adds script related methods to the controller.
@@ -61,9 +81,19 @@ struct IScriptControllerExtension
 	 *
 	 *	@param view the view
 	 *	@param script the script
+	 *	@param context the script context where the script is executed in
 	 *	@return optional new script. if the optional is empty the original script is used.
 	 */
-	virtual std::optional<std::string> verifyScript (CView* view, const std::string& script) = 0;
+	virtual std::optional<std::string> verifyScript (CView* view, const std::string& script,
+													 const IScriptContext* context) = 0;
+
+	/** notification that the script context is  destroyed
+	 *
+	 *	don't call the context anymore after this call
+	 *
+	 *	@param context the context which is destroyed
+	 */
+	virtual void scriptContextDestroyed (const IScriptContext* context) = 0;
 
 	/** get a property
 	 *
@@ -95,7 +125,12 @@ struct IScriptControllerExtension
 /** adapter for IScriptControllerExtension */
 struct ScriptControllerExtensionAdapter : IScriptControllerExtension
 {
-	std::optional<std::string> verifyScript (CView*, const std::string&) override { return {}; }
+	std::optional<std::string> verifyScript (CView*, const std::string&,
+											 const IScriptContext*) override
+	{
+		return {};
+	}
+	void scriptContextDestroyed (const IScriptContext* context) override {}
 	bool getProperty (CView*, std::string_view, PropertyValue&) const override { return false; }
 	bool setProperty (CView*, std::string_view, const PropertyValue&) override { return false; }
 };
