@@ -217,6 +217,8 @@ protected:
 	bool doCut ();
 	bool doCopy ();
 	bool doPaste ();
+	void useSelectionForFind ();
+	void doFind (bool forward = true);
 
 private:
 	template<typename Proc>
@@ -282,6 +284,8 @@ private:
 	bool cursorIsVisible {false};
 
 	mutable Lines::const_iterator stbInternalIterator;
+
+	String findString;
 };
 
 #define VIRTUAL_KEY_BIT 0x80000000
@@ -768,7 +772,7 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		}
 	});
 
-	if (event.modifiers.is (ModifierKey::Control))
+	if (event.modifiers.has (ModifierKey::Control))
 	{
 		switch (event.character)
 		{
@@ -794,6 +798,24 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 			{
 				if (doPaste ())
 					event.consumed = true;
+				return;
+			}
+			case 'e':
+			{
+				useSelectionForFind ();
+				event.consumed = true;
+				return;
+			}
+			case 'g':
+			{
+				doFind (true);
+				event.consumed = true;
+				return;
+			}
+			case 'h':
+			{
+				doFind (false);
+				event.consumed = true;
 				return;
 			}
 		}
@@ -1593,6 +1615,52 @@ bool TextEditorView::doPaste ()
 		}
 	}
 	return false;
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::useSelectionForFind ()
+{
+	if (auto range = makeRange (editState))
+	{
+		findString = model.text.substr (range.start, range.length);
+	}
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::doFind (bool forward)
+{
+	if (findString.empty ())
+		return;
+	auto pos = String::npos;
+	if (forward)
+	{
+		auto cursor = editState.select_end;
+		if (cursor > model.text.length ())
+			cursor = 0;
+		auto text = StringView (model.text.data (), model.text.length ());
+		pos = text.find (findString.data (), cursor, findString.length ());
+		if (pos == String::npos && cursor != 0 /*wrap around*/)
+			pos = text.find (findString.data (), 0, findString.length ());
+	}
+	else
+	{
+		auto cursor = editState.select_start - findString.length ();
+		if (cursor < 0)
+			cursor = String::npos;
+		auto text = StringView (model.text.data (), model.text.length ());
+		pos = text.rfind (findString.data (), cursor);
+		if (pos == String::npos /*wrap around*/)
+			pos = text.rfind (findString.data (), pos);
+	}
+	if (pos != String::npos)
+	{
+		auto oldCursor = editState.cursor;
+		editState.cursor = static_cast<int> (pos);
+		editState.select_start = editState.cursor;
+		editState.select_end = editState.cursor + static_cast<int> (findString.length ());
+		onSelectionChanged (makeRange (editState));
+		onCursorChanged (oldCursor, editState.cursor);
+	}
 }
 
 //------------------------------------------------------------------------
