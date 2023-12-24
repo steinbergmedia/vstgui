@@ -270,7 +270,8 @@ CGImageRef CGBitmap::getCGImage ()
 		size_t rowBytes = getBytesPerRow ();
 		size_t bitDepth = 32;
 
-		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
+		CGBitmapInfo bitmapInfo =
+			static_cast<CGBitmapInfo> (kCGImageAlphaPremultipliedFirst) | kCGBitmapByteOrder32Big;
 		image = CGImageCreate (static_cast<size_t> (size.x), static_cast<size_t> (size.y), 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, bitsDataProvider, nullptr, false, kCGRenderingIntentDefault);
 		dirty = false;
 	}
@@ -300,7 +301,8 @@ CGContextRef CGBitmap::createCGContext ()
 	}
 	if (bits)
 	{
-		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
+		CGBitmapInfo bitmapInfo =
+			static_cast<CGBitmapInfo> (kCGImageAlphaPremultipliedFirst) | kCGBitmapByteOrder32Big;
 		context = CGBitmapContextCreate (bits,
 						static_cast<size_t> (size.x),
 						static_cast<size_t> (size.y),
