@@ -46,7 +46,7 @@ private:
 
 	static constexpr const size_t NumCols = 4;
 
-	CFontDesc font;
+	SharedPointer<CFontDesc> font;
 	CColor fontColor {kBlackCColor};
 	CDataBrowser* dataBrowser {nullptr};
 	std::shared_ptr<HighScoreList> list;
