@@ -647,7 +647,7 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 	}
 	// cursor
 	auto cr = cursorRect;
-	if (cursorIsVisible)
+	if (cursorIsVisible && editState.select_start == editState.select_end)
 	{
 		cr.offset (getViewSize ().getTopLeft ());
 		context->setFillColor (style->textColor);
