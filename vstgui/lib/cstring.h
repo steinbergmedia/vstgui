@@ -221,6 +221,9 @@ public:
 	bool operator== (const UTF8StringPtr otherString) const;
 	bool operator!= (const UTF8StringPtr otherString) const;
 	bool operator== (UTF8StringView otherString) const;
+	bool operator!= (UTF8StringView otherString) const;
+	bool operator== (const UTF8String& otherString) const;
+	bool operator!= (const UTF8String& otherString) const;
 	operator const UTF8StringPtr () const;
 //-----------------------------------------------------------------------------
 private:
@@ -461,6 +464,26 @@ inline bool UTF8StringView::operator== (UTF8StringView otherString) const
 	if (byteCount && otherString.byteCount && *byteCount != *otherString.byteCount)
 		return false;
 	return operator==(otherString.str);
+}
+
+//------------------------------------------------------------------------
+inline bool UTF8StringView::operator!= (UTF8StringView otherString) const
+{
+	if (byteCount && otherString.byteCount && *byteCount != *otherString.byteCount)
+		return true;
+	return operator!= (otherString.str);
+}
+
+//------------------------------------------------------------------------
+inline bool UTF8StringView::operator== (const UTF8String& otherString) const
+{
+	return otherString == str;
+}
+
+//------------------------------------------------------------------------
+inline bool UTF8StringView::operator!= (const UTF8String& otherString) const
+{
+	return otherString != str;
 }
 
 //-----------------------------------------------------------------------------
