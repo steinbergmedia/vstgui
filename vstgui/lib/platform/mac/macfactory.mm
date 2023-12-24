@@ -46,6 +46,8 @@ MacFactory::MacFactory (CFBundleRef bundle)
 	mach_timebase_info (&impl->timebaseInfo);
 }
 
+MacFactory::~MacFactory () noexcept = default;
+
 //-----------------------------------------------------------------------------
 CFBundleRef MacFactory::getBundle () const noexcept
 {
