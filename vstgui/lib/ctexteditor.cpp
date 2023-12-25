@@ -211,14 +211,16 @@ protected:
 	std::string getPlainText () const override;
 	void resetController () const override;
 	void setStyle (const Style& style) const override;
+	bool canHandleCommand (Command cmd) const override;
+	bool handleCommand (Command cmd) const override;
 
 	// commandos
 	void selectAll ();
 	bool doCut ();
 	bool doCopy ();
 	bool doPaste ();
-	void useSelectionForFind ();
-	void doFind (bool forward = true);
+	bool useSelectionForFind ();
+	bool doFind (bool forward = true);
 
 private:
 	template<typename Proc>
@@ -286,6 +288,7 @@ private:
 	mutable Lines::const_iterator stbInternalIterator;
 
 	String findString;
+	std::array<KeyboardEvent, static_cast<size_t> (Command::UseSelectionForFind) + 1> commandKeys;
 };
 
 #define VIRTUAL_KEY_BIT 0x80000000
@@ -362,12 +365,46 @@ private:
 };
 
 //------------------------------------------------------------------------
+void setKeyForCommand (KeyboardEvent& cmd, char16_t character, VirtualKey vKey, Modifiers mod)
+{
+	cmd.character = character;
+	cmd.virt = vKey;
+	cmd.modifiers = mod;
+}
+
+//------------------------------------------------------------------------
 TextEditorView::TextEditorView (ITextEditorController* controller)
 : CView ({0, 0, 10, 10}), controller (controller)
 {
-	stb_textedit_initialize_state (&editState, false);
-	controller->onTextEditorCreated (*this);
 	setWantsFocus (true);
+	stb_textedit_initialize_state (&editState, false);
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::SelectAll)], u'a', VirtualKey::None,
+					  {ModifierKey::Control});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Cut)], u'x', VirtualKey::None,
+					  {ModifierKey::Control});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Copy)], u'c', VirtualKey::None,
+					  {ModifierKey::Control});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Paste)], u'v', VirtualKey::None,
+					  {ModifierKey::Control});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Undo)], u'z', VirtualKey::None,
+					  {ModifierKey::Control});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Redo)], u'z', VirtualKey::None,
+					  {ModifierKey::Control, ModifierKey::Shift});
+#if MAC
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::FindNext)], u'g', VirtualKey::None,
+					  {ModifierKey::Control});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::FindPrevious)], u'g',
+					  VirtualKey::None, {ModifierKey::Control, ModifierKey::Shift});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::UseSelectionForFind)], u'e',
+					  VirtualKey::None, {ModifierKey::Control});
+#else
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::FindNext)], 0, VirtualKey::F3, {});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::FindPrevious)], 0, VirtualKey::F3,
+					  {ModifierKey::Shift});
+	setKeyForCommand (commandKeys[static_cast<size_t> (Command::UseSelectionForFind)], 0,
+					  VirtualKey::F3, {ModifierKey::Control});
+#endif
+	controller->onTextEditorCreated (*this);
 }
 
 //------------------------------------------------------------------------
@@ -584,6 +621,83 @@ std::string TextEditorView::getPlainText () const { return convert (model.text);
 void TextEditorView::resetController () const { controller = nullptr; }
 
 //------------------------------------------------------------------------
+bool TextEditorView::canHandleCommand (Command cmd) const
+{
+	switch (cmd)
+	{
+		case Command::SelectAll:
+			return true;
+		case Command::UseSelectionForFind:
+			[[fallthrough]];
+		case Command::Cut:
+			[[fallthrough]];
+		case Command::Copy:
+		{
+			return editState.select_start != editState.select_end;
+		}
+		case Command::Paste:
+		{
+			if (auto clipboard = getFrame ()->getClipboard ())
+			{
+				auto count = clipboard->getCount ();
+				for (auto i = 0u; i < count; ++i)
+				{
+					if (clipboard->getDataType (i) == IDataPackage::kText)
+						return true;
+				}
+			}
+			return false;
+		}
+		case Command::Undo:
+		{
+			// TODO:
+			return true;
+		}
+		case Command::Redo:
+		{
+			// TODO:
+			return true;
+		}
+		case Command::FindNext:
+			[[fallthrough]];
+		case Command::FindPrevious:
+		{
+			return !findString.empty ();
+		}
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool TextEditorView::handleCommand (Command cmd) const
+{
+	auto This = const_cast<TextEditorView*> (this);
+	switch (cmd)
+	{
+		case Command::SelectAll:
+			This->selectAll ();
+			return true;
+		case Command::Cut:
+			return This->doCut ();
+		case Command::Copy:
+			return This->doCopy ();
+		case Command::Paste:
+			return This->doPaste ();
+		case Command::Undo:
+			return This->callSTB ([=] () { stb_text_undo (This, &This->editState); });
+		case Command::Redo:
+			return This->callSTB ([=] () { stb_text_redo (This, &This->editState); });
+		case Command::FindNext:
+			return This->doFind (true);
+		case Command::FindPrevious:
+			return This->doFind (false);
+		case Command::UseSelectionForFind:
+			return This->useSelectionForFind ();
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 inline Range toLineSelection (const Range& line, size_t selStart, size_t selEnd)
 {
 	if (selStart == selEnd)
@@ -772,49 +886,14 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		}
 	});
 
-	if (event.modifiers.has (ModifierKey::Control))
+	for (auto index = 0u; index < commandKeys.size (); ++index)
 	{
-		switch (event.character)
+		const auto& cmd = commandKeys[index];
+		if (cmd.character == event.character && cmd.virt == event.virt &&
+			cmd.modifiers == event.modifiers)
 		{
-			case 'a':
+			if (handleCommand (static_cast<Command> (index)))
 			{
-				selectAll ();
-				event.consumed = true;
-				return;
-			}
-			case 'x':
-			{
-				if (doCut ())
-					event.consumed = true;
-				return;
-			}
-			case 'c':
-			{
-				if (doCopy ())
-					event.consumed = true;
-				return;
-			}
-			case 'v':
-			{
-				if (doPaste ())
-					event.consumed = true;
-				return;
-			}
-			case 'e':
-			{
-				useSelectionForFind ();
-				event.consumed = true;
-				return;
-			}
-			case 'g':
-			{
-				doFind (true);
-				event.consumed = true;
-				return;
-			}
-			case 'h':
-			{
-				doFind (false);
 				event.consumed = true;
 				return;
 			}
@@ -1618,19 +1697,21 @@ bool TextEditorView::doPaste ()
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::useSelectionForFind ()
+bool TextEditorView::useSelectionForFind ()
 {
 	if (auto range = makeRange (editState))
 	{
 		findString = model.text.substr (range.start, range.length);
+		return true;
 	}
+	return false;
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::doFind (bool forward)
+bool TextEditorView::doFind (bool forward)
 {
 	if (findString.empty ())
-		return;
+		return false;
 	auto pos = String::npos;
 	if (forward)
 	{
@@ -1660,7 +1741,9 @@ void TextEditorView::doFind (bool forward)
 		editState.select_end = editState.cursor + static_cast<int> (findString.length ());
 		onSelectionChanged (makeRange (editState));
 		onCursorChanged (oldCursor, editState.cursor);
+		return true;
 	}
+	return false;
 }
 
 //------------------------------------------------------------------------

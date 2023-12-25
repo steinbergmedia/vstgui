@@ -63,6 +63,22 @@ struct ITextEditor
 	};
 
 	virtual void setStyle (const Style& style) const = 0;
+
+	enum class Command
+	{
+		SelectAll,
+		Cut,
+		Copy,
+		Paste,
+		Undo,
+		Redo,
+		FindNext,
+		FindPrevious,
+		UseSelectionForFind,
+	};
+
+	virtual bool canHandleCommand (Command cmd) const = 0;
+	virtual bool handleCommand (Command cmd) const = 0;
 };
 
 //------------------------------------------------------------------------

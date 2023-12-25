@@ -95,6 +95,11 @@ struct Modifiers
 {
 	Modifiers () = default;
 	Modifiers (const Modifiers&) = default;
+	Modifiers (const std::initializer_list<ModifierKey>& modifiers)
+	{
+		for (auto& mod : modifiers)
+			data |= cast (mod);
+	}
 	explicit Modifiers (ModifierKey modifier) : data (cast (modifier)) {}
 	Modifiers& operator= (const Modifiers&) = default;
 
