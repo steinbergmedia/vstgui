@@ -17,6 +17,8 @@
 #include "platform/iplatformfont.h"
 #include "platform/iplatformframe.h"
 #include "platform/platformfactory.h"
+#include "animation/timingfunctions.h"
+#include "animation/ianimationtarget.h"
 
 #include <codecvt>
 #include <locale>
@@ -251,16 +253,17 @@ private:
 	void layoutRows ();
 	void onCursorChanged (int oldCursorPos, int newCursorPos);
 	void onSelectionChanged (Range newSel, bool forceInvalidation = false);
-	CRect calculateCursorRect (int cursor) const;
 	void selectOnDoubleClick (uint32_t clickCount);
 	void updateSelectionOnDoubleClickMove (uint32_t clickCount);
 	void insertNewLine ();
 	template<typename T>
 	T findLine (T begin, T end, size_t pos) const;
-	void restartBlinkTimer ();
+	CRect calculateCursorRect (int cursor) const;
+	CRect invalidCursorRect ();
 	void toggleCursorVisibility ();
+	void restartBlinkTimer ();
 
-//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 	mutable TextModel model;
 
 	mutable std::shared_ptr<Style> style {std::make_shared<Style> ()};
@@ -286,6 +289,7 @@ private:
 	STB_TexteditState editStateOnMouseDown {};
 	bool mouseIsDown {false};
 	bool cursorIsVisible {false};
+	float cursorAlpha {1.f};
 
 	mutable Lines::const_iterator stbInternalIterator;
 
@@ -469,8 +473,8 @@ void TextEditorView::takeFocus ()
 void TextEditorView::looseFocus ()
 {
 	blinkTimer = nullptr;
-	if (cursorIsVisible)
-		toggleCursorVisibility ();
+	cursorIsVisible = true;
+	toggleCursorVisibility ();
 }
 
 //------------------------------------------------------------------------
@@ -773,16 +777,19 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 		context->drawString (lt.getPlatformString (), {x, y});
 	}
 	// cursor
-	auto cr = cursorRect;
-	if (cursorIsVisible && editState.select_start == editState.select_end)
+	if ((cursorIsVisible || cursorAlpha != 0.f) && editState.select_start == editState.select_end)
 	{
+		auto cr = cursorRect;
+		auto alpha = context->getGlobalAlpha ();
+		context->setGlobalAlpha (alpha * cursorAlpha);
 		cr.offset (getViewSize ().getTopLeft ());
 		context->setFillColor (style->textColor);
 		context->drawRect (cr, kDrawFilled);
+		context->setGlobalAlpha (alpha);
 		lastDrawnCursorRect = cr;
 	}
 	else
-		cr = {};
+		lastDrawnCursorRect = {};
 }
 
 //------------------------------------------------------------------------
@@ -859,20 +866,52 @@ CRect TextEditorView::calculateCursorRect (int cursor) const
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::toggleCursorVisibility ()
+CRect TextEditorView::invalidCursorRect ()
 {
-	cursorIsVisible = !cursorIsVisible;
 	auto r = cursorRect;
 	r.offset (getViewSize ().getTopLeft ());
 	invalidRect (r);
+	return r;
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::toggleCursorVisibility ()
+{
+	struct CursorAnimation : Animation::IAnimationTarget
+	{
+		CursorAnimation (TextEditorView& view) : view (view) {}
+		void animationStart (CView*, IdStringPtr name) override {}
+		void animationTick (CView*, IdStringPtr name, float pos) override
+		{
+			view.cursorAlpha = view.cursorIsVisible ? 1.f - pos : pos;
+			view.invalidCursorRect ();
+		}
+		void animationFinished (CView*, IdStringPtr name, bool wasCanceled) override
+		{
+			if (!wasCanceled)
+				view.cursorIsVisible = !view.cursorIsVisible;
+			view.cursorAlpha = view.cursorIsVisible ? 1.f : 0.f;
+			view.invalidCursorRect ();
+		}
+		TextEditorView& view;
+	};
+	addAnimation ("CursorAlphaBlend", new CursorAnimation (*this),
+				  new Animation::CubicBezierTimingFunction (
+					  Animation::CubicBezierTimingFunction::easy (style->cursorBlinkTime / 2.)));
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::restartBlinkTimer ()
 {
 	if (style->cursorBlinkTime)
+	{
+		removeAnimation ("CursorAlphaBlend");
+		cursorIsVisible = true;
+		cursorAlpha = 1.f;
+		invalidCursorRect ();
 		blinkTimer = makeOwned<CVSTGUITimer> ([this] (auto timer) { toggleCursorVisibility (); },
 											  style->cursorBlinkTime);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -1570,9 +1609,7 @@ void TextEditorView::onCursorChanged (int oldCursorPos, int newCursorPos)
 	if (!lastDrawnCursorRect.isEmpty ())
 		invalidRect (lastDrawnCursorRect);
 	cursorRect = calculateCursorRect (newCursorPos);
-	auto r = cursorRect;
-	r.offset (getViewSize ().getTopLeft ());
-	invalidRect (r);
+	auto r = invalidCursorRect ();
 	if (scrollView)
 	{
 		r.bottom += fontDescent;
