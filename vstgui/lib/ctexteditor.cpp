@@ -289,7 +289,7 @@ private:
 	STB_TexteditState editStateOnMouseDown {};
 	bool mouseIsDown {false};
 	bool cursorIsVisible {false};
-	float cursorAlpha {1.f};
+	float cursorAlpha {0.f};
 
 	mutable Lines::const_iterator stbInternalIterator;
 
