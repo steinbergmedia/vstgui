@@ -79,6 +79,8 @@ struct ITextEditor
 
 	virtual bool canHandleCommand (Command cmd) const = 0;
 	virtual bool handleCommand (Command cmd) const = 0;
+	virtual bool setCommandKeyBinding (Command cmd, char16_t character, VirtualKey virt,
+									   Modifiers modifiers) const = 0;
 };
 
 //------------------------------------------------------------------------

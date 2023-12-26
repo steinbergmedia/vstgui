@@ -213,6 +213,8 @@ protected:
 	void setStyle (const Style& style) const override;
 	bool canHandleCommand (Command cmd) const override;
 	bool handleCommand (Command cmd) const override;
+	bool setCommandKeyBinding (Command cmd, char16_t character, VirtualKey virt,
+							   Modifiers modifiers) const override;
 
 	// commandos
 	void selectAll ();
@@ -288,7 +290,20 @@ private:
 	mutable Lines::const_iterator stbInternalIterator;
 
 	String findString;
-	std::array<KeyboardEvent, static_cast<size_t> (Command::UseSelectionForFind) + 1> commandKeys;
+
+	struct Key
+	{
+		char16_t character;
+		VirtualKey virt;
+		Modifiers modifiers;
+
+		bool operator== (const KeyboardEvent& event) const
+		{
+			return event.character == character && event.virt == virt &&
+				   event.modifiers == modifiers;
+		}
+	};
+	mutable std::array<Key, static_cast<size_t> (Command::UseSelectionForFind) + 1> commandKeys;
 };
 
 #define VIRTUAL_KEY_BIT 0x80000000
@@ -364,13 +379,7 @@ private:
 	CView* textEditorView {nullptr};
 };
 
-//------------------------------------------------------------------------
-void setKeyForCommand (KeyboardEvent& cmd, char16_t character, VirtualKey vKey, Modifiers mod)
-{
-	cmd.character = character;
-	cmd.virt = vKey;
-	cmd.modifiers = mod;
-}
+static constexpr size_t Index (ITextEditor::Command cmd) { return static_cast<size_t> (cmd); }
 
 //------------------------------------------------------------------------
 TextEditorView::TextEditorView (ITextEditorController* controller)
@@ -378,31 +387,23 @@ TextEditorView::TextEditorView (ITextEditorController* controller)
 {
 	setWantsFocus (true);
 	stb_textedit_initialize_state (&editState, false);
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::SelectAll)], u'a', VirtualKey::None,
-					  {ModifierKey::Control});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Cut)], u'x', VirtualKey::None,
-					  {ModifierKey::Control});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Copy)], u'c', VirtualKey::None,
-					  {ModifierKey::Control});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Paste)], u'v', VirtualKey::None,
-					  {ModifierKey::Control});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Undo)], u'z', VirtualKey::None,
-					  {ModifierKey::Control});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::Redo)], u'z', VirtualKey::None,
-					  {ModifierKey::Control, ModifierKey::Shift});
+	commandKeys[Index (Command::SelectAll)] = {u'a', VirtualKey::None, {ModifierKey::Control}};
+	commandKeys[Index (Command::Cut)] = {u'x', VirtualKey::None, {ModifierKey::Control}};
+	commandKeys[Index (Command::Copy)] = {u'c', VirtualKey::None, {ModifierKey::Control}};
+	commandKeys[Index (Command::Paste)] = {u'v', VirtualKey::None, {ModifierKey::Control}};
+	commandKeys[Index (Command::Undo)] = {u'z', VirtualKey::None, {ModifierKey::Control}};
+	commandKeys[Index (Command::Redo)] = {
+		u'z', VirtualKey::None, {ModifierKey::Control, ModifierKey::Shift}};
 #if MAC
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::FindNext)], u'g', VirtualKey::None,
-					  {ModifierKey::Control});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::FindPrevious)], u'g',
-					  VirtualKey::None, {ModifierKey::Control, ModifierKey::Shift});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::UseSelectionForFind)], u'e',
-					  VirtualKey::None, {ModifierKey::Control});
+	commandKeys[Index (Command::FindNext)] = {u'g', VirtualKey::None, {ModifierKey::Control}};
+	commandKeys[Index (Command::FindPrevious)] = {
+		u'g', VirtualKey::None, {ModifierKey::Control, ModifierKey::Shift}};
+	commandKeys[Index (Command::UseSelectionForFind)] = {
+		u'e', VirtualKey::None, {ModifierKey::Control}};
 #else
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::FindNext)], 0, VirtualKey::F3, {});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::FindPrevious)], 0, VirtualKey::F3,
-					  {ModifierKey::Shift});
-	setKeyForCommand (commandKeys[static_cast<size_t> (Command::UseSelectionForFind)], 0,
-					  VirtualKey::F3, {ModifierKey::Control});
+	commandKeys[Index (Command::FindNext)] = {0, VirtualKey::F3, {}};
+	commandKeys[Index (Command::FindPrevious)] = {0, VirtualKey::F3, {ModifierKey::Shift}};
+	commandKeys[Index (Command::UseSelectionForFind)] = {0, VirtualKey::F3, {ModifierKey::Control}};
 #endif
 	controller->onTextEditorCreated (*this);
 }
@@ -698,6 +699,14 @@ bool TextEditorView::handleCommand (Command cmd) const
 }
 
 //------------------------------------------------------------------------
+bool TextEditorView::setCommandKeyBinding (Command cmd, char16_t character, VirtualKey virt,
+										   Modifiers modifiers) const
+{
+	commandKeys[Index (cmd)] = {character, virt, modifiers};
+	return true;
+}
+
+//------------------------------------------------------------------------
 inline Range toLineSelection (const Range& line, size_t selStart, size_t selEnd)
 {
 	if (selStart == selEnd)
@@ -889,8 +898,7 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 	for (auto index = 0u; index < commandKeys.size (); ++index)
 	{
 		const auto& cmd = commandKeys[index];
-		if (cmd.character == event.character && cmd.virt == event.virt &&
-			cmd.modifiers == event.modifiers)
+		if (cmd == event)
 		{
 			if (handleCommand (static_cast<Command> (index)))
 			{
