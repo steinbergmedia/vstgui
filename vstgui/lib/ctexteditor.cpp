@@ -249,6 +249,7 @@ private:
 	CRect calculateLineRect (size_t index) const;
 	CRect calculateLineRect (Lines::const_iterator it) const;
 	CCoord calculateMaxWidth () const;
+	CRect calculateSelectionRect () const;
 	void updateLineNumbersView () const;
 	void layoutRows ();
 	void onCursorChanged (int oldCursorPos, int newCursorPos);
@@ -811,11 +812,7 @@ void TextEditorView::invalidLine (Lines::const_iterator it, bool completeWidth)
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::invalidSelectedLines ()
-{
-	for (auto index = selectedLines.start; index < selectedLines.end (); ++index)
-		invalidLine (index, true);
-}
+void TextEditorView::invalidSelectedLines () { invalidRect (calculateSelectionRect ()); }
 
 //------------------------------------------------------------------------
 CRect TextEditorView::calculateLineRect (size_t index) const
@@ -834,6 +831,21 @@ CRect TextEditorView::calculateLineRect (Lines::const_iterator it) const
 {
 	auto lineIndex = std::distance (model.lines.cbegin (), it);
 	return calculateLineRect (lineIndex);
+}
+
+//------------------------------------------------------------------------
+CRect TextEditorView::calculateSelectionRect () const
+{
+	CRect result;
+	for (auto index = selectedLines.start; index < selectedLines.end (); ++index)
+	{
+		auto r = calculateLineRect (index);
+		if (result.isEmpty ())
+			result = r;
+		else
+			result.unite (r);
+	}
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -1612,6 +1624,12 @@ void TextEditorView::onCursorChanged (int oldCursorPos, int newCursorPos)
 	auto r = invalidCursorRect ();
 	if (scrollView)
 	{
+		if (editState.select_end != editState.select_start)
+		{
+			auto endRect = calculateCursorRect (editState.select_end);
+			endRect.offset (getViewSize ().getTopLeft ());
+			r.unite (endRect);
+		}
 		r.bottom += fontDescent;
 		scrollView->makeRectVisible (r);
 	}
@@ -1784,8 +1802,8 @@ bool TextEditorView::doFind (bool forward)
 		editState.cursor = static_cast<int> (pos);
 		editState.select_start = editState.cursor;
 		editState.select_end = editState.cursor + static_cast<int> (findString.length ());
-		onSelectionChanged (makeRange (editState));
 		onCursorChanged (oldCursor, editState.cursor);
+		onSelectionChanged ({makeRange (editState)}, true);
 		return true;
 	}
 	return false;

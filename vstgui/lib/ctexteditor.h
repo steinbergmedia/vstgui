@@ -66,14 +66,14 @@ struct ITextEditor
 
 	enum class Command
 	{
-		SelectAll,
+		Undo,
+		Redo,
 		Cut,
 		Copy,
 		Paste,
-		Undo,
-		Redo,
 		FindNext,
 		FindPrevious,
+		SelectAll,
 		UseSelectionForFind,
 	};
 
