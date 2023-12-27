@@ -915,7 +915,7 @@ void TextEditorView::toggleCursorVisibility ()
 //------------------------------------------------------------------------
 void TextEditorView::restartBlinkTimer ()
 {
-	if (style->cursorBlinkTime)
+	if (style->cursorBlinkTime && editState.select_start == editState.select_end)
 	{
 		removeAnimation ("CursorAlphaBlend");
 		cursorIsVisible = true;
@@ -940,7 +940,6 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		{
 			if (getFrame ()->getFocusView () == this)
 			{
-				cursorIsVisible = true;
 				restartBlinkTimer ();
 			}
 		}
@@ -1071,6 +1070,7 @@ void TextEditorView::onMouseUpEvent (MouseUpEvent& event)
 {
 	if (!mouseIsDown)
 		return;
+	restartBlinkTimer ();
 	event.consumed = true;
 	mouseIsDown = false;
 }
@@ -1496,6 +1496,11 @@ void TextEditorView::onSelectionChanged (Range newSel, bool forceInvalidation)
 	}
 	if (lineNumberView)
 		lineNumberView->setSelectedLines (newSelectedLines);
+	if (selectedLines.length > 0)
+	{
+		blinkTimer = nullptr;
+		cursorIsVisible = false;
+	}
 }
 
 //------------------------------------------------------------------------
