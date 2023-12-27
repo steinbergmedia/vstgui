@@ -350,8 +350,22 @@ bool Window::canHandleCommand (const Command& command)
 {
 	if (command == Commands::CloseWindow)
 		return controller->canClose (*this);
+	if (auto focusView = frame->getFocusView ())
+	{
+		if (auto viewController = getViewController (focusView, false))
+		{
+			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController))
+			{
+				if (commandHandler->canHandleCommand (command))
+					return true;
+			}
+		}
+	}
 	if (auto commandHandler = dynamicPtrCast<ICommandHandler> (controller))
-		return commandHandler->canHandleCommand (command);
+	{
+		if (commandHandler->canHandleCommand (command))
+			return true;
+	}
 	return false;
 }
 
@@ -363,8 +377,22 @@ bool Window::handleCommand (const Command& command)
 		close ();
 		return true;
 	}
+	if (auto focusView = frame->getFocusView ())
+	{
+		if (auto viewController = getViewController (focusView, false))
+		{
+			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController))
+			{
+				if (commandHandler->handleCommand (command))
+					return true;
+			}
+		}
+	}
 	if (auto commandHandler = dynamicPtrCast<ICommandHandler> (controller))
-		return commandHandler->handleCommand (command);
+	{
+		if (commandHandler->handleCommand (command))
+			return true;
+	}
 	return false;
 }
 

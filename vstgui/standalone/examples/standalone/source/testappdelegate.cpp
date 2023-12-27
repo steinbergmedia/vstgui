@@ -255,6 +255,19 @@ public:
 					   [&] (const auto& el) { el->setStyle (style); });
 	}
 
+	bool canHandleCommand (ITextEditor::Command cmd)
+	{
+		if (textEditors.empty ())
+			return false;
+		return textEditors.front ()->canHandleCommand (cmd);
+	}
+	bool handleCommand (ITextEditor::Command cmd)
+	{
+		if (textEditors.empty ())
+			return false;
+		return textEditors.front ()->handleCommand (cmd);
+	}
+
 private:
 	using TextEditors = std::vector<const ITextEditor*>;
 	TextEditors textEditors;
@@ -263,12 +276,17 @@ private:
 };
 
 //------------------------------------------------------------------------
-class TextEditorViewController : public DelegationController
+class TextEditorViewController : public DelegationController,
+								 public ICommandHandler
 {
 public:
 	TextEditorViewController (IController* parent, AppTextEditorController& textEditorController)
 	: DelegationController (parent), textEditorController (textEditorController)
 	{
+		IApplication::instance ().registerCommand (Commands::FindNext, 'g');
+		IApplication::instance ().registerCommand (Commands::FindPrevious, 'G');
+		IApplication::instance ().registerCommand (IncreaseTextSize, '=');
+		IApplication::instance ().registerCommand (DecreaseTextSize, '-');
 	}
 
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
@@ -281,6 +299,58 @@ public:
 			}
 		}
 		return controller->createView (attributes, description);
+	}
+	bool canHandleCommand (const Command& command) override
+	{
+		if (command == IncreaseTextSize || command == DecreaseTextSize)
+			return true;
+		if (command == Commands::Undo)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Undo);
+		if (command == Commands::Redo)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Redo);
+		if (command == Commands::Cut)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Cut);
+		if (command == Commands::Copy)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Copy);
+		if (command == Commands::Paste)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Paste);
+		if (command == Commands::SelectAll)
+			return textEditorController.canHandleCommand (ITextEditor::Command::SelectAll);
+		if (command == Commands::FindNext)
+			return textEditorController.canHandleCommand (ITextEditor::Command::FindNext);
+		if (command == Commands::FindPrevious)
+			return textEditorController.canHandleCommand (ITextEditor::Command::FindPrevious);
+		return false;
+	}
+	bool handleCommand (const Command& command) override
+	{
+		if (command == IncreaseTextSize)
+		{
+			textEditorController.increaseTextSize ();
+			return true;
+		}
+		if (command == DecreaseTextSize)
+		{
+			textEditorController.decreaseTextSize ();
+			return true;
+		}
+		if (command == Commands::Undo)
+			return textEditorController.handleCommand (ITextEditor::Command::Undo);
+		if (command == Commands::Redo)
+			return textEditorController.handleCommand (ITextEditor::Command::Redo);
+		if (command == Commands::Cut)
+			return textEditorController.handleCommand (ITextEditor::Command::Cut);
+		if (command == Commands::Copy)
+			return textEditorController.handleCommand (ITextEditor::Command::Copy);
+		if (command == Commands::Paste)
+			return textEditorController.handleCommand (ITextEditor::Command::Paste);
+		if (command == Commands::SelectAll)
+			return textEditorController.handleCommand (ITextEditor::Command::SelectAll);
+		if (command == Commands::FindNext)
+			return textEditorController.handleCommand (ITextEditor::Command::FindNext);
+		if (command == Commands::FindPrevious)
+			return textEditorController.handleCommand (ITextEditor::Command::FindPrevious);
+		return false;
 	}
 	AppTextEditorController& textEditorController;
 };
@@ -361,8 +431,6 @@ void Delegate::finishLaunching ()
 #elif WINDOWS
 	IApplication::instance ().registerCommand (NewDirect3DExampleWindow, 'D');
 #endif
-	IApplication::instance ().registerCommand (IncreaseTextSize, '=');
-	IApplication::instance ().registerCommand (DecreaseTextSize, '-');
 	handleCommand (Commands::NewDocument);
 }
 
@@ -385,9 +453,7 @@ bool Delegate::canHandleCommand (const Command& command)
 	if (command == NewDirect3DExampleWindow)
 		return true;
 #endif
-	return command == Commands::NewDocument || command == NewPopup ||
-		   command == ShowAlertBoxDesign || command == IncreaseTextSize ||
-		   command == DecreaseTextSize;
+	return command == Commands::NewDocument || command == NewPopup || command == ShowAlertBoxDesign;
 }
 
 //------------------------------------------------------------------------
@@ -465,16 +531,6 @@ bool Delegate::handleCommand (const Command& command)
 		return true;
 	}
 #endif
-	else if (command == IncreaseTextSize)
-	{
-		textEditorController->increaseTextSize ();
-		return true;
-	}
-	else if (command == DecreaseTextSize)
-	{
-		textEditorController->decreaseTextSize ();
-		return true;
-	}
 	return false;
 }
 
