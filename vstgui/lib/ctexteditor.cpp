@@ -678,6 +678,13 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 bool TextEditorView::handleCommand (Command cmd) const
 {
 	auto This = const_cast<TextEditorView*> (this);
+	auto doFinally = finally ([&] () {
+		if (getFrame ()->getFocusView () == this)
+		{
+			This->restartBlinkTimer ();
+		}
+	});
+
 	switch (cmd)
 	{
 		case Command::SelectAll:
