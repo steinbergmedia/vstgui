@@ -255,6 +255,8 @@ private:
 	void onCursorChanged (int oldCursorPos, int newCursorPos);
 	void onSelectionChanged (Range newSel, bool forceInvalidation = false);
 	void selectOnDoubleClick (uint32_t clickCount);
+	template<bool forward>
+	void selectPair (size_t startPos, char16_t closingChar);
 	void updateSelectionOnDoubleClickMove (uint32_t clickCount);
 	void insertNewLine ();
 	template<typename T>
@@ -1534,6 +1536,49 @@ inline bool findStopChar (iterator_t& it, iterator_t end)
 }
 
 //------------------------------------------------------------------------
+template<bool forward>
+void TextEditorView::selectPair (size_t startPos, char16_t closingChar)
+{
+	auto it = model.text.begin ();
+	std::advance (it, startPos);
+	auto openChar = *it;
+	int32_t numOpenChars = 0;
+	while (true)
+	{
+		if (*it == openChar)
+			++numOpenChars;
+		if (*it == closingChar)
+		{
+			if (--numOpenChars == 0)
+			{
+				editState.select_start = static_cast<int> (startPos);
+				editState.select_end =
+					static_cast<int> (std::distance (model.text.begin (), it)) + 1;
+				if constexpr (!forward)
+				{
+					editState.select_start += 1;
+					editState.select_end -= 1;
+				}
+				onSelectionChanged (makeRange (editState), true);
+				return;
+			}
+		}
+		if constexpr (forward)
+		{
+			++it;
+			if (it == model.text.end ())
+				break;
+		}
+		else
+		{
+			if (it == model.text.begin ())
+				break;
+			--it;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
 void TextEditorView::selectOnDoubleClick (uint32_t clickCount)
 {
 	auto cursor = static_cast<size_t> (editState.cursor);
@@ -1554,6 +1599,49 @@ void TextEditorView::selectOnDoubleClick (uint32_t clickCount)
 	}
 
 	auto cursorChar = model.text[cursor];
+	switch (cursorChar)
+	{
+		case u'(':
+		{
+			selectPair<true> (cursor, ')');
+			return;
+		}
+		case u')':
+		{
+			selectPair<false> (cursor, '(');
+			return;
+		}
+		case u'{':
+		{
+			selectPair<true> (cursor, '}');
+			return;
+		}
+		case u'}':
+		{
+			selectPair<false> (cursor, '{');
+			return;
+		}
+		case u'[':
+		{
+			selectPair<true> (cursor, ']');
+			return;
+		}
+		case u']':
+		{
+			selectPair<false> (cursor, '[');
+			return;
+		}
+		case u'<':
+		{
+			selectPair<true> (cursor, '>');
+			return;
+		}
+		case u'>':
+		{
+			selectPair<false> (cursor, '<');
+			return;
+		}
+	};
 	if (isStopChar (cursorChar))
 		return;
 
