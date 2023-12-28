@@ -852,6 +852,7 @@ CRect TextEditorView::calculateSelectionRect () const
 		else
 			result.unite (r);
 	}
+	result.setWidth (getWidth ());
 	return result;
 }
 
@@ -1488,12 +1489,15 @@ int32_t TextEditorView::getLength () const { return static_cast<int32_t> (model.
 void TextEditorView::onSelectionChanged (Range newSel, bool forceInvalidation)
 {
 	Range newSelectedLines = {};
-	auto line = findLine (model.lines.begin (), model.lines.end (), newSel.start);
-	if (line != model.lines.end ())
+	if (newSel.length > 0)
 	{
-		newSelectedLines.start = std::distance (model.lines.begin (), line);
-		auto endLine = ++(findLine (model.lines.begin (), model.lines.end (), newSel.end ()));
-		newSelectedLines.length = std::distance (line, endLine);
+		auto line = findLine (model.lines.begin (), model.lines.end (), newSel.start);
+		if (line != model.lines.end ())
+		{
+			newSelectedLines.start = std::distance (model.lines.begin (), line);
+			auto endLine = ++(findLine (model.lines.begin (), model.lines.end (), newSel.end ()));
+			newSelectedLines.length = std::distance (line, endLine);
+		}
 	}
 	if (forceInvalidation || newSelectedLines != selectedLines)
 	{
