@@ -33,7 +33,7 @@ namespace TextEditor {
 using CharT = char16_t;
 #define STB_TEXTEDIT_CHARTYPE CharT
 #define STB_TEXTEDIT_POSITIONTYPE int32_t
-#define STB_TEXTEDIT_STRING TextEditorView
+#define STB_TEXTEDIT_STRING const TextEditorView
 #define STB_TEXTEDIT_KEYTYPE uint32_t
 
 #include "platform/common/stb_textedit.h"
@@ -165,8 +165,8 @@ struct TextEditorView : public CView,
 
 	void viewOnEvent (CView* view, Event& event) override;
 
-	int32_t deleteChars (size_t pos, size_t num);
-	int32_t insertChars (size_t pos, const CharT* text, size_t num);
+	int32_t deleteChars (size_t pos, size_t num) const;
+	int32_t insertChars (size_t pos, const CharT* text, size_t num) const;
 	void layout (StbTexteditRow* row, size_t start_i) const;
 	float getCharWidth (size_t row, size_t pos) const;
 	CharT getChar (int32_t pos) const;
@@ -175,30 +175,31 @@ struct TextEditorView : public CView,
 	size_t moveToWordNext (size_t pos) const;
 
 	// STB
-	static int32_t deleteChars (TextEditorView* self, size_t pos, size_t num)
+	static int32_t deleteChars (const TextEditorView* self, size_t pos, size_t num)
 	{
 		return self->deleteChars (pos, num);
 	}
-	static int32_t insertChars (TextEditorView* self, size_t pos, const CharT* text, size_t num)
+	static int32_t insertChars (const TextEditorView* self, size_t pos, const CharT* text,
+								size_t num)
 	{
 		return self->insertChars (pos, text, num);
 	}
-	static void layout (StbTexteditRow* row, TextEditorView* self, size_t start_i)
+	static void layout (StbTexteditRow* row, const TextEditorView* self, size_t start_i)
 	{
 		self->layout (row, start_i);
 	}
-	static float getCharWidth (TextEditorView* self, size_t row, size_t pos)
+	static float getCharWidth (const TextEditorView* self, size_t row, size_t pos)
 	{
 		return self->getCharWidth (row, pos);
 	}
-	static CharT getChar (TextEditorView* self, int32_t pos) { return self->getChar (pos); }
-	static int32_t getLength (TextEditorView* self) { return self->getLength (); }
+	static CharT getChar (const TextEditorView* self, int32_t pos) { return self->getChar (pos); }
+	static int32_t getLength (const TextEditorView* self) { return self->getLength (); }
 
-	static int moveToWordPrevious (TextEditorView* self, size_t pos)
+	static int moveToWordPrevious (const TextEditorView* self, size_t pos)
 	{
 		return static_cast<int> (self->moveToWordPrevious (pos));
 	}
-	static int moveToWordNext (TextEditorView* self, size_t pos)
+	static int moveToWordNext (const TextEditorView* self, size_t pos)
 	{
 		return static_cast<int> (self->moveToWordNext (pos));
 	}
@@ -219,16 +220,16 @@ protected:
 							   Modifiers modifiers) const override;
 
 	// commandos
-	void selectAll ();
-	bool doCut ();
-	bool doCopy ();
-	bool doPaste ();
-	bool useSelectionForFind ();
-	bool doFind (bool forward = true);
+	void selectAll () const;
+	bool doCut () const;
+	bool doCopy () const;
+	bool doPaste () const;
+	bool useSelectionForFind () const;
+	bool doFind (bool forward = true) const;
 
 private:
 	template<typename Proc>
-	bool callSTB (Proc proc);
+	bool callSTB (Proc proc) const;
 
 	enum Dirty
 	{
@@ -237,80 +238,86 @@ private:
 
 		All = UI | Layout,
 	};
-	void validateLineStarts (Lines::const_iterator it, const Lines::const_iterator& end);
-	void invalidateSingleLine (size_t pos, int32_t numChars);
-	void invalidateSingleLine (Lines::iterator& line, int32_t numChars);
-	void invalidateLines (size_t pos, int32_t numChars);
+	void validateLineStarts (Lines::const_iterator it, const Lines::const_iterator& end) const;
+	void invalidateSingleLine (size_t pos, int32_t numChars) const;
+	void invalidateSingleLine (Lines::iterator& line, int32_t numChars) const;
+	void invalidateLines (size_t pos, int32_t numChars) const;
 	void invalidate (Dirty what = Dirty::UI) const;
-	void invalidLine (size_t index, bool completeWidth = false);
-	void invalidLine (Lines::const_iterator it, bool completeWidth = false);
-	void invalidSelectedLines ();
-	CCoord updateLineText (Lines::iterator& line);
+	void invalidLine (size_t index, bool completeWidth = false) const;
+	void invalidLine (Lines::const_iterator it, bool completeWidth = false) const;
+	void invalidateRect (CRect r) const;
+	void invalidSelectedLines () const;
+	CCoord updateLineText (Lines::iterator& line) const;
 	CRect calculateLineRect (size_t index) const;
 	CRect calculateLineRect (Lines::const_iterator it) const;
 	CCoord calculateMaxWidth () const;
 	CRect calculateSelectionRect () const;
 	void updateLineNumbersView () const;
-	void layoutRows ();
-	void onCursorChanged (int oldCursorPos, int newCursorPos);
-	void onSelectionChanged (Range newSel, bool forceInvalidation = false);
-	void selectOnDoubleClick (uint32_t clickCount);
+	void layoutRows () const;
+	void onCursorChanged (int oldCursorPos, int newCursorPos) const;
+	void onSelectionChanged (Range newSel, bool forceInvalidation = false) const;
+	void selectOnDoubleClick (uint32_t clickCount) const;
 	template<bool forward>
-	void selectPair (size_t startPos, char16_t closingChar);
-	void updateSelectionOnDoubleClickMove (uint32_t clickCount);
-	void insertNewLine ();
+	void selectPair (size_t startPos, char16_t closingChar) const;
+	void updateSelectionOnDoubleClickMove (uint32_t clickCount) const;
+	void insertNewLine () const;
 	template<typename T>
 	T findLine (T begin, T end, size_t pos) const;
 	CRect calculateCursorRect (int cursor) const;
-	CRect invalidCursorRect ();
-	void toggleCursorVisibility ();
-	void restartBlinkTimer ();
+	CRect invalidCursorRect () const;
+	void toggleCursorVisibility () const;
+	void restartBlinkTimer () const;
+
+	TextEditorView& mutableThis () const { return *const_cast<TextEditorView*> (this); }
 
 	//------------------------------------------------------------------------
-	mutable TextModel model;
-
-	mutable std::shared_ptr<Style> style {std::make_shared<Style> ()};
-	mutable ITextEditorController* controller {nullptr};
-	mutable const IFontPainter* fontPainer {nullptr};
-
-	CScrollView* scrollView {nullptr};
-	mutable SharedPointer<LineNumberView> lineNumberView;
-
-	SharedPointer<CVSTGUITimer> blinkTimer;
-
-	CRect cursorRect {};
-	CRect lastDrawnCursorRect {};
-	Range selectedLines {};
-	CPoint lastMouse {MouseOutsidePos};
-	CCoord maxHeight {0};
-	CCoord maxWidth {200.};
-	mutable CCoord lineHeight {style->font->getSize () + style->lineSpacing};
-	mutable CCoord fontAscent {0.};
-	mutable CCoord fontDescent {0.};
-
-	STB_TexteditState editState {};
-	STB_TexteditState editStateOnMouseDown {};
-	bool mouseIsDown {false};
-	bool cursorIsVisible {false};
-	float cursorAlpha {0.f};
-
-	mutable Lines::const_iterator stbInternalIterator;
-
-	String findString;
-
-	struct Key
+	mutable struct
 	{
-		char16_t character;
-		VirtualKey virt;
-		Modifiers modifiers;
+		TextModel model;
 
-		bool operator== (const KeyboardEvent& event) const
+		std::shared_ptr<Style> style {std::make_shared<Style> ()};
+		ITextEditorController* controller {nullptr};
+		const IFontPainter* fontPainer {nullptr};
+
+		CScrollView* scrollView {nullptr};
+		SharedPointer<LineNumberView> lineNumberView;
+
+		SharedPointer<CVSTGUITimer> blinkTimer;
+
+		CRect cursorRect {};
+		CRect lastDrawnCursorRect {};
+		Range selectedLines {};
+		CPoint lastMouse {MouseOutsidePos};
+		CCoord maxHeight {0};
+		CCoord maxWidth {200.};
+		CCoord lineHeight {style->font->getSize () + style->lineSpacing};
+		CCoord fontAscent {0.};
+		CCoord fontDescent {0.};
+
+		STB_TexteditState editState {};
+		STB_TexteditState editStateOnMouseDown {};
+		bool mouseIsDown {false};
+		bool cursorIsVisible {false};
+		float cursorAlpha {0.f};
+
+		Lines::const_iterator stbInternalIterator;
+
+		String findString;
+
+		struct Key
 		{
-			return event.character == character && event.virt == virt &&
-				   event.modifiers == modifiers;
-		}
-	};
-	mutable std::array<Key, static_cast<size_t> (Command::UseSelectionForFind) + 1> commandKeys;
+			char16_t character;
+			VirtualKey virt;
+			Modifiers modifiers;
+
+			bool operator== (const KeyboardEvent& event) const
+			{
+				return event.character == character && event.virt == virt &&
+					   event.modifiers == modifiers;
+			}
+		};
+		std::array<Key, static_cast<size_t> (Command::UseSelectionForFind) + 1> commandKeys;
+	} md;
 };
 
 #define VIRTUAL_KEY_BIT 0x80000000
@@ -389,37 +396,38 @@ private:
 static constexpr size_t Index (ITextEditor::Command cmd) { return static_cast<size_t> (cmd); }
 
 //------------------------------------------------------------------------
-TextEditorView::TextEditorView (ITextEditorController* controller)
-: CView ({0, 0, 10, 10}), controller (controller)
+TextEditorView::TextEditorView (ITextEditorController* controller) : CView ({0, 0, 10, 10})
 {
+	md.controller = controller;
 	setWantsFocus (true);
-	stb_textedit_initialize_state (&editState, false);
-	commandKeys[Index (Command::SelectAll)] = {u'a', VirtualKey::None, {ModifierKey::Control}};
-	commandKeys[Index (Command::Cut)] = {u'x', VirtualKey::None, {ModifierKey::Control}};
-	commandKeys[Index (Command::Copy)] = {u'c', VirtualKey::None, {ModifierKey::Control}};
-	commandKeys[Index (Command::Paste)] = {u'v', VirtualKey::None, {ModifierKey::Control}};
-	commandKeys[Index (Command::Undo)] = {u'z', VirtualKey::None, {ModifierKey::Control}};
-	commandKeys[Index (Command::Redo)] = {
+	stb_textedit_initialize_state (&md.editState, false);
+	md.commandKeys[Index (Command::SelectAll)] = {u'a', VirtualKey::None, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::Cut)] = {u'x', VirtualKey::None, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::Copy)] = {u'c', VirtualKey::None, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::Paste)] = {u'v', VirtualKey::None, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::Undo)] = {u'z', VirtualKey::None, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::Redo)] = {
 		u'z', VirtualKey::None, {ModifierKey::Control, ModifierKey::Shift}};
 #if MAC
-	commandKeys[Index (Command::FindNext)] = {u'g', VirtualKey::None, {ModifierKey::Control}};
-	commandKeys[Index (Command::FindPrevious)] = {
+	md.commandKeys[Index (Command::FindNext)] = {u'g', VirtualKey::None, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::FindPrevious)] = {
 		u'g', VirtualKey::None, {ModifierKey::Control, ModifierKey::Shift}};
-	commandKeys[Index (Command::UseSelectionForFind)] = {
+	md.commandKeys[Index (Command::UseSelectionForFind)] = {
 		u'e', VirtualKey::None, {ModifierKey::Control}};
 #else
-	commandKeys[Index (Command::FindNext)] = {0, VirtualKey::F3, {}};
-	commandKeys[Index (Command::FindPrevious)] = {0, VirtualKey::F3, {ModifierKey::Shift}};
-	commandKeys[Index (Command::UseSelectionForFind)] = {0, VirtualKey::F3, {ModifierKey::Control}};
+	data.commandKeys[Index (Command::FindNext)] = {0, VirtualKey::F3, {}};
+	data.commandKeys[Index (Command::FindPrevious)] = {0, VirtualKey::F3, {ModifierKey::Shift}};
+	data.commandKeys[Index (Command::UseSelectionForFind)] = {
+		0, VirtualKey::F3, {ModifierKey::Control}};
 #endif
-	controller->onTextEditorCreated (*this);
+	md.controller->onTextEditorCreated (*this);
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::beforeDelete ()
 {
-	if (controller)
-		controller->onTextEditorDestroyed (*this);
+	if (md.controller)
+		md.controller->onTextEditorDestroyed (*this);
 	CView::beforeDelete ();
 }
 
@@ -430,18 +438,18 @@ bool TextEditorView::attached (CView* parent)
 	{
 		if (auto sv = dynamic_cast<CScrollView*> (parent->getParentView ()))
 		{
-			scrollView = sv;
+			md.scrollView = sv;
 			layoutRows ();
-			scrollView->registerViewEventListener (this);
-			if (auto sb = scrollView->getVerticalScrollbar ())
+			md.scrollView->registerViewEventListener (this);
+			if (auto sb = md.scrollView->getVerticalScrollbar ())
 				sb->registerViewEventListener (this);
-			if (style->showLineNumbers)
+			if (md.style->showLineNumbers)
 			{
-				lineNumberView = makeOwned<LineNumberView> (this);
-				lineNumberView->setStyle (style, lineHeight);
+				md.lineNumberView = makeOwned<LineNumberView> (this);
+				md.lineNumberView->setStyle (md.style, md.lineHeight);
 				updateLineNumbersView ();
-				scrollView->setEdgeView (CScrollView::Edge::Left, lineNumberView);
-				lineNumberView->remember ();
+				md.scrollView->setEdgeView (CScrollView::Edge::Left, md.lineNumberView);
+				md.lineNumberView->remember ();
 			}
 		}
 		return true;
@@ -452,22 +460,22 @@ bool TextEditorView::attached (CView* parent)
 //------------------------------------------------------------------------
 bool TextEditorView::removed (CView* parent)
 {
-	if (scrollView)
+	if (md.scrollView)
 	{
-		scrollView->unregisterViewEventListener (this);
-		if (auto sb = scrollView->getVerticalScrollbar ())
+		md.scrollView->unregisterViewEventListener (this);
+		if (auto sb = md.scrollView->getVerticalScrollbar ())
 			sb->unregisterViewEventListener (this);
 	}
-	scrollView = nullptr;
-	blinkTimer = nullptr;
-	lineNumberView = nullptr;
+	md.scrollView = nullptr;
+	md.blinkTimer = nullptr;
+	md.lineNumberView = nullptr;
 	return CView::removed (parent);
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::takeFocus ()
 {
-	if (lastMouse != MouseOutsidePos)
+	if (md.lastMouse != MouseOutsidePos)
 		getFrame ()->setCursor (kCursorIBeam);
 	restartBlinkTimer ();
 }
@@ -475,28 +483,28 @@ void TextEditorView::takeFocus ()
 //------------------------------------------------------------------------
 void TextEditorView::looseFocus ()
 {
-	blinkTimer = nullptr;
-	cursorIsVisible = true;
+	md.blinkTimer = nullptr;
+	md.cursorIsVisible = true;
 	toggleCursorVisibility ();
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::parentSizeChanged ()
 {
-	if (scrollView)
+	if (md.scrollView)
 	{
 		auto func = [this] () mutable {
-			if (!scrollView)
+			if (!md.scrollView)
 				return;
 			auto viewSize = getViewSize ();
-			viewSize.setHeight (maxHeight);
-			viewSize.setWidth (maxWidth);
-			auto containerSize = scrollView->calculateOptimalContainerSize ();
+			viewSize.setHeight (md.maxHeight);
+			viewSize.setWidth (md.maxWidth);
+			auto containerSize = md.scrollView->calculateOptimalContainerSize ();
 			if (containerSize.getWidth () > viewSize.getWidth ())
 			{
 				if (viewSize.getHeight () > containerSize.getHeight ())
 					viewSize.setWidth (containerSize.getWidth () -
-									   scrollView->getScrollbarWidth ());
+									   md.scrollView->getScrollbarWidth ());
 				else
 					viewSize.setWidth (containerSize.getWidth ());
 			}
@@ -504,7 +512,7 @@ void TextEditorView::parentSizeChanged ()
 			{
 				if (viewSize.getWidth () > containerSize.getWidth ())
 					viewSize.setHeight (containerSize.getHeight () -
-										scrollView->getScrollbarWidth ());
+										md.scrollView->getScrollbarWidth ());
 				else
 					viewSize.setHeight (containerSize.getHeight ());
 			}
@@ -524,8 +532,8 @@ void TextEditorView::parentSizeChanged ()
 	else
 	{
 		auto viewSize = getViewSize ();
-		viewSize.setHeight (maxHeight);
-		viewSize.setWidth (maxWidth);
+		viewSize.setHeight (md.maxHeight);
+		viewSize.setWidth (md.maxWidth);
 		setViewSize (viewSize);
 	}
 }
@@ -558,58 +566,59 @@ void TextEditorView::viewOnEvent (CView* view, Event& event)
 	}
 	else
 	{
-		scrollOffset.x += wheelEvent.deltaX * lineHeight;
-		scrollOffset.y += wheelEvent.deltaY * lineHeight;
+		scrollOffset.x += wheelEvent.deltaX * md.lineHeight;
+		scrollOffset.y += wheelEvent.deltaY * md.lineHeight;
 	}
 
 	auto viewSize = getVisibleViewSize ();
 	viewSize.offset (scrollOffset);
 
-	scrollView->makeRectVisible (viewSize);
+	md.scrollView->makeRectVisible (viewSize);
 	event.consumed = true;
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::setStyle (const Style& newStyle) const
 {
-	if (!style->font)
+	if (!md.style->font)
 		return;
 
-	style = std::make_shared<Style> (newStyle);
+	md.style = std::make_shared<Style> (newStyle);
 
-	if (auto pf = style->font->getPlatformFont ())
+	if (auto pf = md.style->font->getPlatformFont ())
 	{
-		fontAscent = pf->getAscent ();
-		fontDescent = pf->getDescent ();
-		lineHeight = std::round ((fontAscent + fontDescent + style->lineSpacing) * 2.) / 2.;
+		md.fontAscent = pf->getAscent ();
+		md.fontDescent = pf->getDescent ();
+		md.lineHeight =
+			std::round ((md.fontAscent + md.fontDescent + md.style->lineSpacing) * 2.) / 2.;
 	}
 	else
 	{
-		lineHeight = style->font->getSize () + style->lineSpacing;
+		md.lineHeight = md.style->font->getSize () + md.style->lineSpacing;
 	}
 
-	fontPainer = style->font->getFontPainter ();
+	md.fontPainer = md.style->font->getFontPainter ();
 
-	if (lineNumberView)
+	if (md.lineNumberView)
 	{
-		if (style->showLineNumbers)
+		if (md.style->showLineNumbers)
 		{
-			lineNumberView->setStyle (style, lineHeight);
+			md.lineNumberView->setStyle (md.style, md.lineHeight);
 			updateLineNumbersView ();
 		}
-		else if (scrollView)
+		else if (md.scrollView)
 		{
-			scrollView->setEdgeView (CScrollView::Edge::Left, nullptr);
-			lineNumberView = nullptr;
+			md.scrollView->setEdgeView (CScrollView::Edge::Left, nullptr);
+			md.lineNumberView = nullptr;
 		}
 	}
-	else if (style->showLineNumbers && scrollView)
+	else if (md.style->showLineNumbers && md.scrollView)
 	{
-		lineNumberView = makeOwned<LineNumberView> (const_cast<TextEditorView*> (this));
-		lineNumberView->setStyle (style, lineHeight);
+		md.lineNumberView = makeOwned<LineNumberView> (&mutableThis ());
+		md.lineNumberView->setStyle (md.style, md.lineHeight);
 		updateLineNumbersView ();
-		scrollView->setEdgeView (CScrollView::Edge::Left, lineNumberView);
-		lineNumberView->remember ();
+		md.scrollView->setEdgeView (CScrollView::Edge::Left, md.lineNumberView);
+		md.lineNumberView->remember ();
 	}
 	invalidate (Dirty::All);
 }
@@ -617,16 +626,16 @@ void TextEditorView::setStyle (const Style& newStyle) const
 //------------------------------------------------------------------------
 bool TextEditorView::setPlainText (std::string_view utf8Text) const
 {
-	model.text = convert (utf8Text.data (), utf8Text.size ());
+	md.model.text = convert (utf8Text.data (), utf8Text.size ());
 	invalidate (Dirty::All);
 	return true;
 }
 
 //------------------------------------------------------------------------
-std::string TextEditorView::getPlainText () const { return convert (model.text); }
+std::string TextEditorView::getPlainText () const { return convert (md.model.text); }
 
 //------------------------------------------------------------------------
-void TextEditorView::resetController () const { controller = nullptr; }
+void TextEditorView::resetController () const { md.controller = nullptr; }
 
 //------------------------------------------------------------------------
 bool TextEditorView::canHandleCommand (Command cmd) const
@@ -641,7 +650,7 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 			[[fallthrough]];
 		case Command::Copy:
 		{
-			return editState.select_start != editState.select_end;
+			return md.editState.select_start != md.editState.select_end;
 		}
 		case Command::Paste:
 		{
@@ -670,7 +679,7 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 			[[fallthrough]];
 		case Command::FindPrevious:
 		{
-			return !findString.empty ();
+			return !md.findString.empty ();
 		}
 	}
 	return false;
@@ -679,35 +688,34 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 //------------------------------------------------------------------------
 bool TextEditorView::handleCommand (Command cmd) const
 {
-	auto This = const_cast<TextEditorView*> (this);
 	auto doFinally = finally ([&] () {
 		if (getFrame ()->getFocusView () == this)
 		{
-			This->restartBlinkTimer ();
+			restartBlinkTimer ();
 		}
 	});
 
 	switch (cmd)
 	{
 		case Command::SelectAll:
-			This->selectAll ();
+			selectAll ();
 			return true;
 		case Command::Cut:
-			return This->doCut ();
+			return doCut ();
 		case Command::Copy:
-			return This->doCopy ();
+			return doCopy ();
 		case Command::Paste:
-			return This->doPaste ();
+			return doPaste ();
 		case Command::Undo:
-			return This->callSTB ([=] () { stb_text_undo (This, &This->editState); });
+			return callSTB ([=] () { stb_text_undo (this, &md.editState); });
 		case Command::Redo:
-			return This->callSTB ([=] () { stb_text_redo (This, &This->editState); });
+			return callSTB ([=] () { stb_text_redo (this, &md.editState); });
 		case Command::FindNext:
-			return This->doFind (true);
+			return doFind (true);
 		case Command::FindPrevious:
-			return This->doFind (false);
+			return doFind (false);
 		case Command::UseSelectionForFind:
-			return This->useSelectionForFind ();
+			return useSelectionForFind ();
 	}
 	return false;
 }
@@ -716,7 +724,7 @@ bool TextEditorView::handleCommand (Command cmd) const
 bool TextEditorView::setCommandKeyBinding (Command cmd, char16_t character, VirtualKey virt,
 										   Modifiers modifiers) const
 {
-	commandKeys[Index (cmd)] = {character, virt, modifiers};
+	md.commandKeys[Index (cmd)] = {character, virt, modifiers};
 	return true;
 }
 
@@ -745,24 +753,25 @@ inline Range toLineSelection (const Range& line, size_t selStart, size_t selEnd)
 //------------------------------------------------------------------------
 void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 {
-	context->setFillColor (style->backColor);
+	context->setFillColor (md.style->backColor);
 	context->setDrawMode (kAntiAliasing);
 	context->drawRect (dirtyRect, kDrawFilled);
 
-	CCoord x = getViewSize ().left + style->leftMargin;
-	CCoord y = getViewSize ().top - style->lineSpacing;
-	for (auto index = 0u; index < model.lines.size (); ++index)
+	CCoord x = getViewSize ().left + md.style->leftMargin;
+	CCoord y = getViewSize ().top - md.style->lineSpacing;
+	for (auto index = 0u; index < md.model.lines.size (); ++index)
 	{
-		const auto& line = model.lines[index];
+		const auto& line = md.model.lines[index];
 		if (y > dirtyRect.bottom)
 			break;
-		y += lineHeight;
+		y += md.lineHeight;
 		if (y < dirtyRect.top)
 			continue;
-		context->setFontColor (style->textColor);
-		context->setFont (style->font);
+		context->setFontColor (md.style->textColor);
+		context->setFont (md.style->font);
 		auto lt = line.text;
-		auto selRange = toLineSelection (line.range, editState.select_start, editState.select_end);
+		auto selRange =
+			toLineSelection (line.range, md.editState.select_start, md.editState.select_end);
 		if (selRange)
 		{
 			auto selX = x;
@@ -771,74 +780,76 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 				auto nonSelectedText = lt.getString ().substr (0, selRange.start);
 				selX += context->getStringWidth (nonSelectedText.data ());
 			}
-			CRect r (selX, y - fontAscent, selX, y + fontDescent);
+			CRect r (selX, y - md.fontAscent, selX, y + md.fontDescent);
 			if (selRange.start + selRange.length >= line.range.length &&
-				(line.range.length > 0 && model.text[line.range.end () - 1] == u'\n'))
+				(line.range.length > 0 && md.model.text[line.range.end () - 1] == u'\n'))
 				r.right = getViewSize ().right;
 			else
 			{
 				auto selectedText = lt.getString ().substr (selRange.start, selRange.length);
 				r.setWidth (context->getStringWidth (selectedText.data ()));
 			}
-			r.inset (0, -style->lineSpacing / 2.);
-			context->setFillColor (style->selectionBackColor);
+			r.inset (0, -md.style->lineSpacing / 2.);
+			context->setFillColor (md.style->selectionBackColor);
 			context->drawRect (r, kDrawFilled);
 		}
 		context->drawString (lt.getPlatformString (), {x, y});
 	}
 	// cursor
-	if ((cursorIsVisible || cursorAlpha != 0.f) && editState.select_start == editState.select_end)
+	if ((md.cursorIsVisible || md.cursorAlpha != 0.f) &&
+		md.editState.select_start == md.editState.select_end)
 	{
-		auto cr = cursorRect;
+		auto cr = md.cursorRect;
 		auto alpha = context->getGlobalAlpha ();
-		context->setGlobalAlpha (alpha * cursorAlpha);
+		context->setGlobalAlpha (alpha * md.cursorAlpha);
 		cr.offset (getViewSize ().getTopLeft ());
-		context->setFillColor (style->textColor);
+		context->setFillColor (md.style->textColor);
 		context->drawRect (cr, kDrawFilled);
 		context->setGlobalAlpha (alpha);
-		lastDrawnCursorRect = cr;
+		md.lastDrawnCursorRect = cr;
 	}
 	else
-		lastDrawnCursorRect = {};
+		md.lastDrawnCursorRect = {};
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::invalidLine (size_t index, bool completeWidth)
+void TextEditorView::invalidLine (size_t index, bool completeWidth) const
 {
 	auto rectOfLine = calculateLineRect (index);
 	if (completeWidth)
 		rectOfLine.right = getViewSize ().right;
-	invalidRect (rectOfLine);
+	invalidateRect (rectOfLine);
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::invalidLine (Lines::const_iterator it, bool completeWidth)
+void TextEditorView::invalidLine (Lines::const_iterator it, bool completeWidth) const
 {
 	auto rectOfLine = calculateLineRect (it);
 	if (completeWidth)
 		rectOfLine.right = getViewSize ().right;
-	invalidRect (rectOfLine);
+	invalidateRect (rectOfLine);
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::invalidSelectedLines () { invalidRect (calculateSelectionRect ()); }
+void TextEditorView::invalidSelectedLines () const { invalidateRect (calculateSelectionRect ()); }
 
 //------------------------------------------------------------------------
 CRect TextEditorView::calculateLineRect (size_t index) const
 {
-	auto width = index < model.lines.size () ? model.lines[index].width : maxWidth;
-	CRect r {0., -style->lineSpacing, std::ceil (width + style->leftMargin), -style->lineSpacing};
-	r.offset (getViewSize ().left, lineHeight * (index + 1) + getViewSize ().top);
-	r.top = r.top - fontAscent;
-	r.bottom = r.bottom + fontDescent;
-	r.inset (0, -style->lineSpacing / 2.);
+	auto width = index < md.model.lines.size () ? md.model.lines[index].width : md.maxWidth;
+	CRect r {0., -md.style->lineSpacing, std::ceil (width + md.style->leftMargin),
+			 -md.style->lineSpacing};
+	r.offset (getViewSize ().left, md.lineHeight * (index + 1) + getViewSize ().top);
+	r.top = r.top - md.fontAscent;
+	r.bottom = r.bottom + md.fontDescent;
+	r.inset (0, -md.style->lineSpacing / 2.);
 	return r;
 }
 
 //------------------------------------------------------------------------
 CRect TextEditorView::calculateLineRect (Lines::const_iterator it) const
 {
-	auto lineIndex = std::distance (model.lines.cbegin (), it);
+	auto lineIndex = std::distance (md.model.lines.cbegin (), it);
 	return calculateLineRect (lineIndex);
 }
 
@@ -846,7 +857,7 @@ CRect TextEditorView::calculateLineRect (Lines::const_iterator it) const
 CRect TextEditorView::calculateSelectionRect () const
 {
 	CRect result;
-	for (auto index = selectedLines.start; index < selectedLines.end (); ++index)
+	for (auto index = md.selectedLines.start; index < md.selectedLines.end (); ++index)
 	{
 		auto r = calculateLineRect (index);
 		if (result.isEmpty ())
@@ -861,43 +872,43 @@ CRect TextEditorView::calculateSelectionRect () const
 //------------------------------------------------------------------------
 CRect TextEditorView::calculateCursorRect (int cursor) const
 {
-	CRect r {0., -style->lineSpacing, 1., -style->lineSpacing};
-	for (const auto& line : model.lines)
+	CRect r {0., -md.style->lineSpacing, 1., -md.style->lineSpacing};
+	for (const auto& line : md.model.lines)
 	{
-		r.offset (0., lineHeight);
+		r.offset (0., md.lineHeight);
 		if (static_cast<size_t> (cursor) <= line.range.end ())
 		{
 			if (static_cast<size_t> (cursor) == line.range.start)
 				break;
-			if (model.text[cursor - 1] != '\n')
+			if (md.model.text[cursor - 1] != '\n')
 			{
 				auto lineTextToCursor =
-					convert (model.text.data () + line.range.start, cursor - line.range.start);
+					convert (md.model.text.data () + line.range.start, cursor - line.range.start);
 				auto platformText = getPlatformFactory ().createString (lineTextToCursor.data ());
-				auto width = fontPainer->getStringWidth (nullptr, platformText);
+				auto width = md.fontPainer->getStringWidth (nullptr, platformText);
 				r.offset (width, 0);
 				break;
 			}
 		}
 	}
-	r.offset (style->leftMargin, 0.);
-	r.top = r.top - fontAscent;
-	r.bottom = r.bottom + fontDescent;
-	r.inset (0, -style->lineSpacing / 2.);
+	r.offset (md.style->leftMargin, 0.);
+	r.top = r.top - md.fontAscent;
+	r.bottom = r.bottom + md.fontDescent;
+	r.inset (0, -md.style->lineSpacing / 2.);
 	return r;
 }
 
 //------------------------------------------------------------------------
-CRect TextEditorView::invalidCursorRect ()
+CRect TextEditorView::invalidCursorRect () const
 {
-	auto r = cursorRect;
+	auto r = md.cursorRect;
 	r.offset (getViewSize ().getTopLeft ());
-	invalidRect (r);
+	invalidateRect (r);
 	return r;
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::toggleCursorVisibility ()
+void TextEditorView::toggleCursorVisibility () const
 {
 	struct CursorAnimation : Animation::IAnimationTarget
 	{
@@ -905,34 +916,35 @@ void TextEditorView::toggleCursorVisibility ()
 		void animationStart (CView*, IdStringPtr name) override {}
 		void animationTick (CView*, IdStringPtr name, float pos) override
 		{
-			view.cursorAlpha = view.cursorIsVisible ? 1.f - pos : pos;
+			view.md.cursorAlpha = view.md.cursorIsVisible ? 1.f - pos : pos;
 			view.invalidCursorRect ();
 		}
 		void animationFinished (CView*, IdStringPtr name, bool wasCanceled) override
 		{
 			if (!wasCanceled)
-				view.cursorIsVisible = !view.cursorIsVisible;
-			view.cursorAlpha = view.cursorIsVisible ? 1.f : 0.f;
+				view.md.cursorIsVisible = !view.md.cursorIsVisible;
+			view.md.cursorAlpha = view.md.cursorIsVisible ? 1.f : 0.f;
 			view.invalidCursorRect ();
 		}
 		TextEditorView& view;
 	};
-	addAnimation ("CursorAlphaBlend", new CursorAnimation (*this),
-				  new Animation::CubicBezierTimingFunction (
-					  Animation::CubicBezierTimingFunction::easy (style->cursorBlinkTime / 2.)));
+	mutableThis ().addAnimation (
+		"CursorAlphaBlend", new CursorAnimation (mutableThis ()),
+		new Animation::CubicBezierTimingFunction (
+			Animation::CubicBezierTimingFunction::easy (md.style->cursorBlinkTime / 2.)));
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::restartBlinkTimer ()
+void TextEditorView::restartBlinkTimer () const
 {
-	if (style->cursorBlinkTime && editState.select_start == editState.select_end)
+	if (md.style->cursorBlinkTime && md.editState.select_start == md.editState.select_end)
 	{
-		removeAnimation ("CursorAlphaBlend");
-		cursorIsVisible = true;
-		cursorAlpha = 1.f;
+		mutableThis ().removeAnimation ("CursorAlphaBlend");
+		md.cursorIsVisible = true;
+		md.cursorAlpha = 1.f;
 		invalidCursorRect ();
-		blinkTimer = makeOwned<CVSTGUITimer> ([this] (auto timer) { toggleCursorVisibility (); },
-											  style->cursorBlinkTime);
+		md.blinkTimer = makeOwned<CVSTGUITimer> ([this] (auto timer) { toggleCursorVisibility (); },
+												 md.style->cursorBlinkTime);
 	}
 }
 
@@ -955,9 +967,9 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		}
 	});
 
-	for (auto index = 0u; index < commandKeys.size (); ++index)
+	for (auto index = 0u; index < md.commandKeys.size (); ++index)
 	{
-		const auto& cmd = commandKeys[index];
+		const auto& cmd = md.commandKeys[index];
 		if (cmd == event)
 		{
 			if (handleCommand (static_cast<Command> (index)))
@@ -1010,7 +1022,7 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		key |= STB_TEXTEDIT_K_ALT;
 	if (event.modifiers.has (ModifierKey::Shift))
 		key |= STB_TEXTEDIT_K_SHIFT;
-	if (callSTB ([&] () { stb_textedit_key (this, &editState, key); }))
+	if (callSTB ([&] () { stb_textedit_key (this, &md.editState, key); }))
 		event.consumed = true;
 }
 
@@ -1022,8 +1034,8 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 
 	getFrame ()->setFocusView (this);
 
-	mouseIsDown = true;
-	editStateOnMouseDown = editState;
+	md.mouseIsDown = true;
+	md.editStateOnMouseDown = md.editState;
 
 	if (event.clickCount > 1)
 	{
@@ -1039,15 +1051,15 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 	pos.y /= tm.m22;
 
 	callSTB ([&] () {
-		stb_textedit_click (this, &editState, static_cast<float> (pos.x),
+		stb_textedit_click (this, &md.editState, static_cast<float> (pos.x),
 							static_cast<float> (pos.y));
 	});
 
 	if (event.modifiers.is (ModifierKey::Shift))
 	{
-		editState.select_start = editStateOnMouseDown.select_start;
-		editState.select_end = editState.cursor;
-		onSelectionChanged (makeRange (editState));
+		md.editState.select_start = md.editStateOnMouseDown.select_start;
+		md.editState.select_end = md.editState.cursor;
+		onSelectionChanged (makeRange (md.editState));
 	}
 
 	event.consumed = true;
@@ -1056,8 +1068,8 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 //------------------------------------------------------------------------
 void TextEditorView::onMouseMoveEvent (MouseMoveEvent& event)
 {
-	lastMouse = event.mousePosition;
-	if (!mouseIsDown)
+	md.lastMouse = event.mousePosition;
+	if (!md.mouseIsDown)
 		return;
 
 	CPoint pos (event.mousePosition);
@@ -1067,7 +1079,7 @@ void TextEditorView::onMouseMoveEvent (MouseMoveEvent& event)
 	pos.y /= tm.m22;
 
 	callSTB ([&] () {
-		stb_textedit_drag (this, &editState, static_cast<float> (pos.x),
+		stb_textedit_drag (this, &md.editState, static_cast<float> (pos.x),
 						   static_cast<float> (pos.y));
 	});
 	if (event.clickCount > 1)
@@ -1078,18 +1090,18 @@ void TextEditorView::onMouseMoveEvent (MouseMoveEvent& event)
 //------------------------------------------------------------------------
 void TextEditorView::onMouseUpEvent (MouseUpEvent& event)
 {
-	if (!mouseIsDown)
+	if (!md.mouseIsDown)
 		return;
 	restartBlinkTimer ();
 	event.consumed = true;
-	mouseIsDown = false;
+	md.mouseIsDown = false;
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::onMouseCancelEvent (MouseCancelEvent& event)
 {
-	if (mouseIsDown)
-		mouseIsDown = false;
+	if (md.mouseIsDown)
+		md.mouseIsDown = false;
 }
 
 //------------------------------------------------------------------------
@@ -1103,14 +1115,14 @@ void TextEditorView::onMouseEnterEvent (MouseEnterEvent& event)
 void TextEditorView::onMouseExitEvent (MouseExitEvent& event)
 {
 	getFrame ()->setCursor (CCursorType::kCursorDefault);
-	lastMouse = MouseOutsidePos;
+	md.lastMouse = MouseOutsidePos;
 }
 
 //------------------------------------------------------------------------
 CCoord TextEditorView::calculateMaxWidth () const
 {
 	auto width = 0.;
-	for (const auto& line : model.lines)
+	for (const auto& line : md.model.lines)
 	{
 		if (line.width > width)
 			width = line.width;
@@ -1119,66 +1131,68 @@ CCoord TextEditorView::calculateMaxWidth () const
 }
 
 //------------------------------------------------------------------------
+void TextEditorView::invalidateRect (CRect r) const { mutableThis ().invalidRect (r); }
+
+//------------------------------------------------------------------------
 void TextEditorView::invalidate (Dirty what) const
 {
-	auto This = const_cast<TextEditorView*> (this);
 	if (what & Dirty::Layout)
 	{
-		This->layoutRows ();
+		layoutRows ();
 	}
 	if (what & Dirty::UI)
 	{
-		This->onCursorChanged (This->editState.cursor, This->editState.cursor);
-		This->invalid ();
+		onCursorChanged (md.editState.cursor, md.editState.cursor);
+		mutableThis ().invalid ();
 	}
 }
 
 //------------------------------------------------------------------------
-CCoord TextEditorView::updateLineText (Lines::iterator& line)
+CCoord TextEditorView::updateLineText (Lines::iterator& line) const
 {
-	line->text = convert (model.text.data () + line->range.start, line->range.length);
-	line->width = fontPainer->getStringWidth (nullptr, line->text.getPlatformString ());
+	line->text = convert (md.model.text.data () + line->range.start, line->range.length);
+	line->width = md.fontPainer->getStringWidth (nullptr, line->text.getPlatformString ());
 	return line->width;
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::updateLineNumbersView () const
 {
-	if (!lineNumberView)
+	if (!md.lineNumberView)
 		return;
 
 	UTF8String str;
-	auto lineCount = model.lines.size ();
+	auto lineCount = md.model.lines.size ();
 	while (lineCount > 0)
 	{
 		str += "9";
 		lineCount /= 10;
 	}
-	auto lineNumbersWidth = style->lineNumbersFont->getFontPainter ()->getStringWidth (
+	auto lineNumbersWidth = md.style->lineNumbersFont->getFontPainter ()->getStringWidth (
 		nullptr, str.getPlatformString ());
-	lineNumbersWidth += (style->lineNumerLeftMargin + style->lineNumerRightMargin);
+	lineNumbersWidth += (md.style->lineNumerLeftMargin + md.style->lineNumerRightMargin);
 	lineNumbersWidth = std::ceil (lineNumbersWidth);
-	auto vs = lineNumberView->getViewSize ();
+	auto vs = md.lineNumberView->getViewSize ();
 	if (vs.getWidth () != lineNumbersWidth)
 		vs.setWidth (lineNumbersWidth);
-	lineNumberView->setViewSize (vs);
-	lineNumberView->setNumLines (model.lines.size ());
+	md.lineNumberView->setViewSize (vs);
+	md.lineNumberView->setNumLines (md.model.lines.size ());
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::layoutRows ()
+void TextEditorView::layoutRows () const
 {
-	NewLineProcessor::update (model.lines, model.text, 0);
+	NewLineProcessor::update (md.model.lines, md.model.text, 0);
 	CCoord width = 0.;
-	for (auto it = model.lines.begin (); it != model.lines.end (); ++it)
+	for (auto it = md.model.lines.begin (); it != md.model.lines.end (); ++it)
 	{
 		auto w = updateLineText (it);
 		if (w > width)
 			width = w;
 	}
-	maxWidth = width + style->leftMargin;
-	maxHeight = model.lines.size () * lineHeight + fontDescent;
-	parentSizeChanged ();
+	md.maxWidth = width + md.style->leftMargin;
+	md.maxHeight = md.model.lines.size () * md.lineHeight + md.fontDescent;
+	mutableThis ().parentSizeChanged ();
 }
 
 //------------------------------------------------------------------------
@@ -1211,11 +1225,11 @@ void NewLineProcessor::update (Lines& lines, StringView text, size_t startRow)
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::insertNewLine ()
+void TextEditorView::insertNewLine () const
 {
-	auto cursor = editState.cursor;
-	auto currentLine = findLine (model.lines.begin (), model.lines.end (), cursor);
-	if (currentLine == model.lines.end ())
+	auto cursor = md.editState.cursor;
+	auto currentLine = findLine (md.model.lines.begin (), md.model.lines.end (), cursor);
+	if (currentLine == md.model.lines.end ())
 		return;
 	std::u16string insertStr = u"\n";
 	auto isWhiteSpace = [] (char16_t character) {
@@ -1223,21 +1237,22 @@ void TextEditorView::insertNewLine ()
 	};
 	for (auto index = currentLine->range.start; index < currentLine->range.end (); ++index)
 	{
-		if (isWhiteSpace (model.text[index]))
+		if (isWhiteSpace (md.model.text[index]))
 		{
-			insertStr += model.text[index];
+			insertStr += md.model.text[index];
 			continue;
 		}
 		break;
 	}
 	callSTB ([&] () {
-		stb_textedit_paste (this, &editState, insertStr.data (),
+		stb_textedit_paste (this, &md.editState, insertStr.data (),
 							static_cast<int32_t> (insertStr.size ()));
 	});
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::validateLineStarts (Lines::const_iterator it, const Lines::const_iterator& end)
+void TextEditorView::validateLineStarts (Lines::const_iterator it,
+										 const Lines::const_iterator& end) const
 {
 #if DEBUG
 	auto prev = it;
@@ -1251,16 +1266,16 @@ void TextEditorView::validateLineStarts (Lines::const_iterator it, const Lines::
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::invalidateSingleLine (size_t pos, int32_t numChars)
+void TextEditorView::invalidateSingleLine (size_t pos, int32_t numChars) const
 {
-	auto line = findLine (model.lines.begin (), model.lines.end (), pos);
+	auto line = findLine (md.model.lines.begin (), md.model.lines.end (), pos);
 	invalidateSingleLine (line, numChars);
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::invalidateSingleLine (Lines::iterator& line, int32_t numChars)
+void TextEditorView::invalidateSingleLine (Lines::iterator& line, int32_t numChars) const
 {
-	if (line == model.lines.end ())
+	if (line == md.model.lines.end ())
 		return;
 
 	if (numChars < 0)
@@ -1269,11 +1284,11 @@ void TextEditorView::invalidateSingleLine (Lines::iterator& line, int32_t numCha
 	}
 
 	line->range.length += numChars;
-	auto width = updateLineText (line) + style->leftMargin;
-	if (width > maxWidth)
+	auto width = updateLineText (line) + md.style->leftMargin;
+	if (width > md.maxWidth)
 	{
-		maxWidth = width;
-		parentSizeChanged ();
+		md.maxWidth = width;
+		mutableThis ().parentSizeChanged ();
 	}
 
 	invalidLine (line);
@@ -1281,16 +1296,16 @@ void TextEditorView::invalidateSingleLine (Lines::iterator& line, int32_t numCha
 	{
 		auto it = line;
 		++it;
-		for (; it != model.lines.end (); ++it)
+		for (; it != md.model.lines.end (); ++it)
 			it->range.start += numChars;
 	}
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::invalidateLines (size_t pos, int32_t numChars)
+void TextEditorView::invalidateLines (size_t pos, int32_t numChars) const
 {
-	auto line = findLine (model.lines.begin (), model.lines.end (), pos);
-	if (line == model.lines.end ())
+	auto line = findLine (md.model.lines.begin (), md.model.lines.end (), pos);
+	if (line == md.model.lines.end ())
 		return;
 	bool numLinesChanged = false;
 	if (numChars > 0)
@@ -1298,7 +1313,7 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars)
 		int32_t counter = 0;
 		for (auto index = pos; index < pos + numChars; ++index)
 		{
-			if (model.text[index] == u'\n')
+			if (md.model.text[index] == u'\n')
 			{
 				auto change = static_cast<int32_t> (index - line->range.start) -
 							  static_cast<int32_t> (line->range.length);
@@ -1311,11 +1326,11 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars)
 				invalidateSingleLine (line, change + 1);
 				counter = 0;
 				Range nextLineRange {line->range.end (), static_cast<size_t> (nextLineLength)};
-				line = model.lines.emplace (++line, Line {nextLineRange, "", 0.});
+				line = md.model.lines.emplace (++line, Line {nextLineRange, "", 0.});
 				updateLineText (line);
 				auto nextLine = line;
 				auto prevLine = line;
-				while (++nextLine != model.lines.end ())
+				while (++nextLine != md.model.lines.end ())
 				{
 					nextLine->range.start = prevLine->range.end ();
 					prevLine = nextLine;
@@ -1333,14 +1348,14 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars)
 	else
 	{
 		int32_t counter = std::abs (numChars);
-		auto lineIndex = std::distance (model.lines.begin (), line);
+		auto lineIndex = std::distance (md.model.lines.begin (), line);
 		while (counter > 0)
 		{
 			auto numDel = std::min (counter, static_cast<int32_t> (line->range.end ()) -
 												 static_cast<int32_t> (pos));
-			vstgui_assert (model.text.size () > (pos + numDel - 1));
-			bool isNewLine = model.text[pos + numDel - 1] == u'\n';
-			model.text.erase (pos, numDel);
+			vstgui_assert (md.model.text.size () > (pos + numDel - 1));
+			bool isNewLine = md.model.text[pos + numDel - 1] == u'\n';
+			md.model.text.erase (pos, numDel);
 			invalidLine (lineIndex++, true);
 			if (isNewLine)
 			{
@@ -1348,11 +1363,11 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars)
 				++nextLine;
 				nextLine->range.length += line->range.length - numDel;
 				nextLine->range.start = line->range.start;
-				nextLine = model.lines.erase (line);
+				nextLine = md.model.lines.erase (line);
 				numLinesChanged = true;
 				invalidateSingleLine (nextLine, 0);
 				auto prevLine = nextLine;
-				while (++nextLine != model.lines.end ())
+				while (++nextLine != md.model.lines.end ())
 				{
 					nextLine->range.start = prevLine->range.end ();
 					prevLine = nextLine;
@@ -1366,43 +1381,43 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars)
 		}
 		if (numLinesChanged)
 		{
-			auto width = calculateMaxWidth () + style->leftMargin;
-			if (width != maxWidth)
-				maxWidth = width;
+			auto width = calculateMaxWidth () + md.style->leftMargin;
+			if (width != md.maxWidth)
+				md.maxWidth = width;
 		}
 	}
 	if (numLinesChanged)
 	{
-		maxHeight = model.lines.size () * lineHeight + fontDescent;
+		md.maxHeight = md.model.lines.size () * md.lineHeight + md.fontDescent;
 		updateLineNumbersView ();
-		parentSizeChanged ();
+		mutableThis ().parentSizeChanged ();
 	}
-	validateLineStarts (model.lines.begin (), model.lines.end ());
+	validateLineStarts (md.model.lines.begin (), md.model.lines.end ());
 }
 
 //------------------------------------------------------------------------
-int32_t TextEditorView::deleteChars (size_t pos, size_t num)
+int32_t TextEditorView::deleteChars (size_t pos, size_t num) const
 {
-	if (pos >= model.text.size ())
+	if (pos >= md.model.text.size ())
 		return false;
 
 	invalidateLines (pos, -static_cast<int32_t> (num));
 
-	if (controller)
-		controller->onTextEditorTextChanged (*this);
+	if (md.controller)
+		md.controller->onTextEditorTextChanged (*this);
 	return true;
 }
 
 //------------------------------------------------------------------------
-int32_t TextEditorView::insertChars (size_t pos, const CharT* chars, size_t num)
+int32_t TextEditorView::insertChars (size_t pos, const CharT* chars, size_t num) const
 {
-	if (pos >= model.text.size ())
-		pos = model.text.size ();
-	model.text.insert (pos, chars, num);
+	if (pos >= md.model.text.size ())
+		pos = md.model.text.size ();
+	md.model.text.insert (pos, chars, num);
 	invalidateLines (pos, static_cast<int32_t> (num));
 
-	if (controller)
-		controller->onTextEditorTextChanged (*this);
+	if (md.controller)
+		md.controller->onTextEditorTextChanged (*this);
 	return true;
 }
 
@@ -1431,43 +1446,43 @@ T TextEditorView::findLine (T begin, T end, size_t pos) const
 void TextEditorView::layout (StbTexteditRow* row, size_t start_i) const
 {
 	*row = {};
-	if (static_cast<size_t> (start_i) >= model.text.size ())
+	if (static_cast<size_t> (start_i) >= md.model.text.size ())
 		return;
-	if (start_i == stbInternalIterator->range.start)
+	if (start_i == md.stbInternalIterator->range.start)
 	{
-		row->num_chars = static_cast<int> (stbInternalIterator->range.length);
-		row->baseline_y_delta = static_cast<float> (lineHeight);
-		row->ymin = static_cast<float> (-fontDescent);
-		row->ymax = static_cast<float> (lineHeight);
-		row->x0 = static_cast<float> (style->leftMargin);
+		row->num_chars = static_cast<int> (md.stbInternalIterator->range.length);
+		row->baseline_y_delta = static_cast<float> (md.lineHeight);
+		row->ymin = static_cast<float> (-md.fontDescent);
+		row->ymax = static_cast<float> (md.lineHeight);
+		row->x0 = static_cast<float> (md.style->leftMargin);
 		row->x1 = static_cast<float> (getWidth ());
-		++stbInternalIterator;
+		++md.stbInternalIterator;
 		return;
 	}
-	stbInternalIterator = model.lines.begin ();
-	auto line = findLine (model.lines.begin (), model.lines.end (), start_i);
-	if (line == model.lines.end ())
+	md.stbInternalIterator = md.model.lines.begin ();
+	auto line = findLine (md.model.lines.begin (), md.model.lines.end (), start_i);
+	if (line == md.model.lines.end ())
 		return;
 	row->num_chars = static_cast<int> (line->range.length);
-	row->baseline_y_delta = static_cast<float> (lineHeight);
-	row->ymin = static_cast<float> (-fontDescent);
-	row->ymax = static_cast<float> (lineHeight);
-	row->x0 = static_cast<float> (style->leftMargin);
+	row->baseline_y_delta = static_cast<float> (md.lineHeight);
+	row->ymin = static_cast<float> (-md.fontDescent);
+	row->ymax = static_cast<float> (md.lineHeight);
+	row->x0 = static_cast<float> (md.style->leftMargin);
 	row->x1 = static_cast<float> (getWidth ());
 }
 
 //------------------------------------------------------------------------
 float TextEditorView::getCharWidth (size_t row, size_t pos) const
 {
-	if (row + pos >= model.text.length ())
+	if (row + pos >= md.model.text.length ())
 		return STB_TEXTEDIT_GETWIDTH_NEWLINE;
 
-	auto platformFont = style->font->getPlatformFont ();
+	auto platformFont = md.style->font->getPlatformFont ();
 	vstgui_assert (platformFont);
 	auto fontPainter = platformFont->getPainter ();
 	vstgui_assert (fontPainter);
 
-	auto c = model.text[row + pos];
+	auto c = md.model.text[row + pos];
 
 	UTF8String str (convert (&c, 1));
 	if (str[0] == '\n')
@@ -1480,39 +1495,43 @@ float TextEditorView::getCharWidth (size_t row, size_t pos) const
 CharT TextEditorView::getChar (int32_t pos) const
 {
 	if (pos < getLength ())
-		return model.text[pos];
+		return md.model.text[pos];
 	return 0;
 }
 
 //------------------------------------------------------------------------
-int32_t TextEditorView::getLength () const { return static_cast<int32_t> (model.text.length ()); }
+int32_t TextEditorView::getLength () const
+{
+	return static_cast<int32_t> (md.model.text.length ());
+}
 
 //------------------------------------------------------------------------
-void TextEditorView::onSelectionChanged (Range newSel, bool forceInvalidation)
+void TextEditorView::onSelectionChanged (Range newSel, bool forceInvalidation) const
 {
 	Range newSelectedLines = {};
 	if (newSel.length > 0)
 	{
-		auto line = findLine (model.lines.begin (), model.lines.end (), newSel.start);
-		if (line != model.lines.end ())
+		auto line = findLine (md.model.lines.begin (), md.model.lines.end (), newSel.start);
+		if (line != md.model.lines.end ())
 		{
-			newSelectedLines.start = std::distance (model.lines.begin (), line);
-			auto endLine = ++(findLine (model.lines.begin (), model.lines.end (), newSel.end ()));
+			newSelectedLines.start = std::distance (md.model.lines.begin (), line);
+			auto endLine =
+				++(findLine (md.model.lines.begin (), md.model.lines.end (), newSel.end ()));
 			newSelectedLines.length = std::distance (line, endLine);
 		}
 	}
-	if (forceInvalidation || newSelectedLines != selectedLines)
+	if (forceInvalidation || newSelectedLines != md.selectedLines)
 	{
 		invalidSelectedLines ();
-		selectedLines = newSelectedLines;
+		md.selectedLines = newSelectedLines;
 		invalidSelectedLines ();
 	}
-	if (lineNumberView)
-		lineNumberView->setSelectedLines (newSelectedLines);
-	if (selectedLines.length > 0)
+	if (md.lineNumberView)
+		md.lineNumberView->setSelectedLines (newSelectedLines);
+	if (md.selectedLines.length > 0)
 	{
-		blinkTimer = nullptr;
-		cursorIsVisible = false;
+		md.blinkTimer = nullptr;
+		md.cursorIsVisible = false;
 	}
 }
 
@@ -1537,9 +1556,9 @@ inline bool findStopChar (iterator_t& it, iterator_t end)
 
 //------------------------------------------------------------------------
 template<bool forward>
-void TextEditorView::selectPair (size_t startPos, char16_t closingChar)
+void TextEditorView::selectPair (size_t startPos, char16_t closingChar) const
 {
-	auto it = model.text.begin ();
+	auto it = md.model.text.begin ();
 	std::advance (it, startPos);
 	auto openChar = *it;
 	int32_t numOpenChars = 0;
@@ -1551,27 +1570,27 @@ void TextEditorView::selectPair (size_t startPos, char16_t closingChar)
 		{
 			if (--numOpenChars == 0)
 			{
-				editState.select_start = static_cast<int> (startPos);
-				editState.select_end =
-					static_cast<int> (std::distance (model.text.begin (), it)) + 1;
+				md.editState.select_start = static_cast<int> (startPos);
+				md.editState.select_end =
+					static_cast<int> (std::distance (md.model.text.begin (), it)) + 1;
 				if constexpr (!forward)
 				{
-					editState.select_start += 1;
-					editState.select_end -= 1;
+					md.editState.select_start += 1;
+					md.editState.select_end -= 1;
 				}
-				onSelectionChanged (makeRange (editState), true);
+				onSelectionChanged (makeRange (md.editState), true);
 				return;
 			}
 		}
 		if constexpr (forward)
 		{
 			++it;
-			if (it == model.text.end ())
+			if (it == md.model.text.end ())
 				break;
 		}
 		else
 		{
-			if (it == model.text.begin ())
+			if (it == md.model.text.begin ())
 				break;
 			--it;
 		}
@@ -1579,26 +1598,27 @@ void TextEditorView::selectPair (size_t startPos, char16_t closingChar)
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::selectOnDoubleClick (uint32_t clickCount)
+void TextEditorView::selectOnDoubleClick (uint32_t clickCount) const
 {
-	auto cursor = static_cast<size_t> (editState.cursor);
-	if (cursor >= model.text.size ())
+	auto cursor = static_cast<size_t> (md.editState.cursor);
+	if (cursor >= md.model.text.size ())
 		return;
 
 	if (clickCount > 2)
 	{
-		auto currentLine = findLine (model.lines.begin (), model.lines.end (), editState.cursor);
-		if (currentLine != model.lines.end ())
+		auto currentLine =
+			findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.cursor);
+		if (currentLine != md.model.lines.end ())
 		{
-			editState.select_start = static_cast<int> (currentLine->range.start);
-			editState.select_end = static_cast<int> (currentLine->range.end ());
-			onSelectionChanged (makeRange (editState), true);
-			editStateOnMouseDown = editState;
+			md.editState.select_start = static_cast<int> (currentLine->range.start);
+			md.editState.select_end = static_cast<int> (currentLine->range.end ());
+			onSelectionChanged (makeRange (md.editState), true);
+			md.editStateOnMouseDown = md.editState;
 		}
 		return;
 	}
 
-	auto cursorChar = model.text[cursor];
+	auto cursorChar = md.model.text[cursor];
 	switch (cursorChar)
 	{
 		case u'(':
@@ -1647,95 +1667,95 @@ void TextEditorView::selectOnDoubleClick (uint32_t clickCount)
 
 	if (cursor > 0)
 	{
-		auto it = model.text.begin ();
+		auto it = md.model.text.begin ();
 		std::advance (it, cursor - 1);
-		if (findStopChar<false> (it, model.text.begin ()))
+		if (findStopChar<false> (it, md.model.text.begin ()))
 			++it;
-		editState.select_start = static_cast<int> (std::distance (model.text.begin (), it));
+		md.editState.select_start = static_cast<int> (std::distance (md.model.text.begin (), it));
 	}
-	if (cursor < model.text.size ())
+	if (cursor < md.model.text.size ())
 	{
-		auto it = model.text.begin ();
+		auto it = md.model.text.begin ();
 		std::advance (it, cursor + 1);
-		findStopChar<true> (it, model.text.end ());
-		editState.select_end = static_cast<int> (std::distance (model.text.begin (), it));
+		findStopChar<true> (it, md.model.text.end ());
+		md.editState.select_end = static_cast<int> (std::distance (md.model.text.begin (), it));
 	}
-	editStateOnMouseDown = editState;
-	onSelectionChanged (makeRange (editState), true);
+	md.editStateOnMouseDown = md.editState;
+	onSelectionChanged (makeRange (md.editState), true);
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::updateSelectionOnDoubleClickMove (uint32_t clickCount)
+void TextEditorView::updateSelectionOnDoubleClickMove (uint32_t clickCount) const
 {
-	auto cursor = static_cast<size_t> (editState.cursor);
-	if (cursor >= model.text.size ())
+	auto cursor = static_cast<size_t> (md.editState.cursor);
+	if (cursor >= md.model.text.size ())
 		return;
 
 	if (clickCount > 2)
 	{
-		auto currentLine = findLine (model.lines.begin (), model.lines.end (), cursor);
-		if (currentLine != model.lines.end ())
+		auto currentLine = findLine (md.model.lines.begin (), md.model.lines.end (), cursor);
+		if (currentLine != md.model.lines.end ())
 		{
-			if (currentLine->range.start >= editStateOnMouseDown.select_start)
+			if (currentLine->range.start >= md.editStateOnMouseDown.select_start)
 			{
-				editState.select_start = editStateOnMouseDown.select_start;
-				editState.select_end = static_cast<int> (currentLine->range.end ());
+				md.editState.select_start = md.editStateOnMouseDown.select_start;
+				md.editState.select_end = static_cast<int> (currentLine->range.end ());
 			}
 			else
 			{
-				editState.select_start = static_cast<int> (currentLine->range.start);
-				editState.select_end = editStateOnMouseDown.select_end;
+				md.editState.select_start = static_cast<int> (currentLine->range.start);
+				md.editState.select_end = md.editStateOnMouseDown.select_end;
 			}
-			onSelectionChanged (makeRange (editState), true);
+			onSelectionChanged (makeRange (md.editState), true);
 		}
 		return;
 	}
 
-	if (cursor < editStateOnMouseDown.select_start)
+	if (cursor < md.editStateOnMouseDown.select_start)
 	{
-		auto it = model.text.begin ();
+		auto it = md.model.text.begin ();
 		std::advance (it, cursor - 1);
-		if (findStopChar<false> (it, model.text.begin ()))
+		if (findStopChar<false> (it, md.model.text.begin ()))
 			++it;
-		auto start = static_cast<int> (std::distance (model.text.begin (), it));
-		if (start < editStateOnMouseDown.select_start)
-			editState.select_start = start;
+		auto start = static_cast<int> (std::distance (md.model.text.begin (), it));
+		if (start < md.editStateOnMouseDown.select_start)
+			md.editState.select_start = start;
 		else
-			editState.select_start = editStateOnMouseDown.select_start;
-		editState.select_end = editStateOnMouseDown.select_end;
+			md.editState.select_start = md.editStateOnMouseDown.select_start;
+		md.editState.select_end = md.editStateOnMouseDown.select_end;
 	}
 	else
 	{
-		auto it = model.text.begin ();
+		auto it = md.model.text.begin ();
 		std::advance (it, cursor + 1);
-		findStopChar<true> (it, model.text.end ());
-		auto end = static_cast<int> (std::distance (model.text.begin (), it));
-		if (end > editStateOnMouseDown.select_end)
-			editState.select_end = end;
+		findStopChar<true> (it, md.model.text.end ());
+		auto end = static_cast<int> (std::distance (md.model.text.begin (), it));
+		if (end > md.editStateOnMouseDown.select_end)
+			md.editState.select_end = end;
 		else
-			editState.select_end = editStateOnMouseDown.select_end;
-		editState.select_start = editStateOnMouseDown.select_start;
+			md.editState.select_end = md.editStateOnMouseDown.select_end;
+		md.editState.select_start = md.editStateOnMouseDown.select_start;
 	}
-	onSelectionChanged (makeRange (editState), true);
+	onSelectionChanged (makeRange (md.editState), true);
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::onCursorChanged (int oldCursorPos, int newCursorPos)
+void TextEditorView::onCursorChanged (int oldCursorPos, int newCursorPos) const
 {
-	if (!lastDrawnCursorRect.isEmpty ())
-		invalidRect (lastDrawnCursorRect);
-	cursorRect = calculateCursorRect (newCursorPos);
+	if (!md.lastDrawnCursorRect.isEmpty ())
+		invalidateRect (md.lastDrawnCursorRect);
+	md.cursorRect = calculateCursorRect (newCursorPos);
 	auto r = invalidCursorRect ();
-	if (scrollView)
+	if (md.scrollView)
 	{
-		if (editState.select_end != editState.select_start)
+		if (md.editState.select_end != md.editState.select_start)
 		{
-			auto endRect = calculateCursorRect (editState.select_end);
+			auto endRect = calculateCursorRect (md.editState.select_end);
 			endRect.offset (getViewSize ().getTopLeft ());
 			r.unite (endRect);
 		}
-		r.bottom += fontDescent;
-		scrollView->makeRectVisible (r);
+		r.bottom += md.fontDescent;
+		md.scrollView->makeRectVisible (r);
 	}
 }
 
@@ -1745,10 +1765,10 @@ size_t TextEditorView::moveToWordPrevious (size_t pos) const
 	if (pos == 0)
 		return 0;
 	--pos;
-	auto it = model.text.begin ();
+	auto it = md.model.text.begin ();
 	std::advance (it, pos);
 	auto firstIsStopChar = isStopChar (*it);
-	for (; it != model.text.begin (); --it)
+	for (; it != md.model.text.begin (); --it)
 	{
 		auto cursorChar = *it;
 		if (isStopChar (cursorChar) != firstIsStopChar)
@@ -1757,45 +1777,45 @@ size_t TextEditorView::moveToWordPrevious (size_t pos) const
 			break;
 		}
 	}
-	return std::distance (model.text.begin (), it);
+	return std::distance (md.model.text.begin (), it);
 }
 
 //------------------------------------------------------------------------
 size_t TextEditorView::moveToWordNext (size_t pos) const
 {
-	if (pos >= model.text.size ())
+	if (pos >= md.model.text.size ())
 		return pos;
 	++pos;
-	auto it = model.text.begin ();
+	auto it = md.model.text.begin ();
 	std::advance (it, pos);
 	auto firstIsStopChar = isStopChar (*it);
-	for (; it != model.text.end (); ++it)
+	for (; it != md.model.text.end (); ++it)
 	{
 		auto cursorChar = *it;
 		if (isStopChar (cursorChar) != firstIsStopChar)
 			break;
 	}
-	return std::distance (model.text.begin (), it);
+	return std::distance (md.model.text.begin (), it);
 }
 
 //-----------------------------------------------------------------------------
 template<typename Proc>
-bool TextEditorView::callSTB (Proc proc)
+bool TextEditorView::callSTB (Proc proc) const
 {
-	stbInternalIterator = model.lines.begin ();
-	auto oldState = editState;
+	md.stbInternalIterator = md.model.lines.begin ();
+	auto oldState = md.editState;
 	proc ();
-	if (memcmp (&oldState, &editState, sizeof (STB_TexteditState)) != 0)
+	if (memcmp (&oldState, &md.editState, sizeof (STB_TexteditState)) != 0)
 	{
-		if (oldState.select_start != editState.select_start ||
-			oldState.select_end != editState.select_end)
-			onSelectionChanged (makeRange (editState), true);
-		if (oldState.cursor != editState.cursor)
+		if (oldState.select_start != md.editState.select_start ||
+			oldState.select_end != md.editState.select_end)
+			onSelectionChanged (makeRange (md.editState), true);
+		if (oldState.cursor != md.editState.cursor)
 		{
-			onCursorChanged (oldState.cursor, editState.cursor);
-			auto selRange = makeRange (editState);
+			onCursorChanged (oldState.cursor, md.editState.cursor);
+			auto selRange = makeRange (md.editState);
 			if (selRange.length == 0)
-				onSelectionChanged (makeRange (editState.cursor, editState.cursor));
+				onSelectionChanged (makeRange (md.editState.cursor, md.editState.cursor));
 		}
 		return true;
 	}
@@ -1803,34 +1823,34 @@ bool TextEditorView::callSTB (Proc proc)
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::selectAll ()
+void TextEditorView::selectAll () const
 {
-	editState.select_start = 0;
-	editState.select_end = getLength ();
-	onSelectionChanged (makeRange (editState), true);
+	md.editState.select_start = 0;
+	md.editState.select_end = getLength ();
+	onSelectionChanged (makeRange (md.editState), true);
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::doCut ()
+bool TextEditorView::doCut () const
 {
 	if (doCopy ())
 	{
-		callSTB ([&] () { stb_textedit_cut (this, &editState); });
+		callSTB ([&] () { stb_textedit_cut (this, &md.editState); });
 		return true;
 	}
 	return false;
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::doCopy ()
+bool TextEditorView::doCopy () const
 {
-	if (editState.select_start == editState.select_end)
+	if (md.editState.select_start == md.editState.select_end)
 		return false;
-	auto start = editState.select_start;
-	auto end = editState.select_end;
+	auto start = md.editState.select_start;
+	auto end = md.editState.select_end;
 	if (start > end)
 		std::swap (start, end);
-	auto txt = convert (model.text.data () + start, end - start);
+	auto txt = convert (md.model.text.data () + start, end - start);
 	auto dataPackage =
 		CDropSource::create (txt.data (), static_cast<uint32_t> (txt.size ()), IDataPackage::kText);
 	getFrame ()->setClipboard (dataPackage);
@@ -1838,7 +1858,7 @@ bool TextEditorView::doCopy ()
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::doPaste ()
+bool TextEditorView::doPaste () const
 {
 	if (auto clipboard = getFrame ()->getClipboard ())
 	{
@@ -1853,7 +1873,7 @@ bool TextEditorView::doPaste ()
 				auto txt = reinterpret_cast<const char*> (buffer);
 				auto uText = convert (txt, size);
 				callSTB ([&] () {
-					stb_textedit_paste (this, &editState, uText.data (),
+					stb_textedit_paste (this, &md.editState, uText.data (),
 										static_cast<int32_t> (uText.size ()));
 				});
 				return true;
@@ -1864,50 +1884,50 @@ bool TextEditorView::doPaste ()
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::useSelectionForFind ()
+bool TextEditorView::useSelectionForFind () const
 {
-	if (auto range = makeRange (editState))
+	if (auto range = makeRange (md.editState))
 	{
-		findString = model.text.substr (range.start, range.length);
+		md.findString = md.model.text.substr (range.start, range.length);
 		return true;
 	}
 	return false;
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::doFind (bool forward)
+bool TextEditorView::doFind (bool forward) const
 {
-	if (findString.empty ())
+	if (md.findString.empty ())
 		return false;
 	auto pos = String::npos;
 	if (forward)
 	{
-		auto cursor = editState.select_end;
-		if (cursor > model.text.length ())
+		auto cursor = md.editState.select_end;
+		if (cursor > md.model.text.length ())
 			cursor = 0;
-		auto text = StringView (model.text.data (), model.text.length ());
-		pos = text.find (findString.data (), cursor, findString.length ());
+		auto text = StringView (md.model.text.data (), md.model.text.length ());
+		pos = text.find (md.findString.data (), cursor, md.findString.length ());
 		if (pos == String::npos && cursor != 0 /*wrap around*/)
-			pos = text.find (findString.data (), 0, findString.length ());
+			pos = text.find (md.findString.data (), 0, md.findString.length ());
 	}
 	else
 	{
-		auto cursor = editState.select_start - findString.length ();
+		auto cursor = md.editState.select_start - md.findString.length ();
 		if (cursor < 0)
 			cursor = String::npos;
-		auto text = StringView (model.text.data (), model.text.length ());
-		pos = text.rfind (findString.data (), cursor);
+		auto text = StringView (md.model.text.data (), md.model.text.length ());
+		pos = text.rfind (md.findString.data (), cursor);
 		if (pos == String::npos /*wrap around*/)
-			pos = text.rfind (findString.data (), pos);
+			pos = text.rfind (md.findString.data (), pos);
 	}
 	if (pos != String::npos)
 	{
-		auto oldCursor = editState.cursor;
-		editState.cursor = static_cast<int> (pos);
-		editState.select_start = editState.cursor;
-		editState.select_end = editState.cursor + static_cast<int> (findString.length ());
-		onCursorChanged (oldCursor, editState.cursor);
-		onSelectionChanged ({makeRange (editState)}, true);
+		auto oldCursor = md.editState.cursor;
+		md.editState.cursor = static_cast<int> (pos);
+		md.editState.select_start = md.editState.cursor;
+		md.editState.select_end = md.editState.cursor + static_cast<int> (md.findString.length ());
+		onCursorChanged (oldCursor, md.editState.cursor);
+		onSelectionChanged ({makeRange (md.editState)}, true);
 		return true;
 	}
 	return false;
