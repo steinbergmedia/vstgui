@@ -2016,6 +2016,8 @@ void LineNumberView::setSelectedLines (Range range)
 CView* createNewTextEditor (const CRect& r, ITextEditorController* controller)
 {
 	vstgui_assert (controller != nullptr, "you need to call this with a controller");
+	if (!controller)
+		return nullptr;
 	return new TextEditor::TextEditorView (controller);
 }
 
