@@ -1509,12 +1509,12 @@ int32_t TextEditorView::getLength () const
 void TextEditorView::onSelectionChanged (Range newSel, bool forceInvalidation) const
 {
 	Range newSelectedLines = {};
-	if (newSel.length > 0)
+	auto line = findLine (md.model.lines.begin (), md.model.lines.end (), newSel.start);
+	if (line != md.model.lines.end ())
 	{
-		auto line = findLine (md.model.lines.begin (), md.model.lines.end (), newSel.start);
-		if (line != md.model.lines.end ())
+		newSelectedLines.start = std::distance (md.model.lines.begin (), line);
+		if (newSel.length > 0)
 		{
-			newSelectedLines.start = std::distance (md.model.lines.begin (), line);
 			auto endLine =
 				++(findLine (md.model.lines.begin (), md.model.lines.end (), newSel.end ()));
 			newSelectedLines.length = std::distance (line, endLine);
@@ -2023,6 +2023,8 @@ void LineNumberView::setSelectedLines (Range range)
 	if (range != selectedLines)
 	{
 		selectedLines = range;
+		if (selectedLines.length == 0)
+			selectedLines.length = 1;
 		invalid ();
 	}
 }
