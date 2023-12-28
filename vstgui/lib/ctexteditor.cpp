@@ -872,7 +872,8 @@ CRect TextEditorView::calculateSelectionRect () const
 //------------------------------------------------------------------------
 CRect TextEditorView::calculateCursorRect (int cursor) const
 {
-	CRect r {0., -md.style->lineSpacing, 1., -md.style->lineSpacing};
+	auto cursorWidth = md.lineHeight / 10.;
+	CRect r {-cursorWidth / 2., -md.style->lineSpacing, cursorWidth / 2., -md.style->lineSpacing};
 	for (const auto& line : md.model.lines)
 	{
 		r.offset (0., md.lineHeight);
