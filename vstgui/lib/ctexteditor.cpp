@@ -415,9 +415,9 @@ TextEditorView::TextEditorView (ITextEditorController* controller) : CView ({0, 
 	md.commandKeys[Index (Command::UseSelectionForFind)] = {
 		u'e', VirtualKey::None, {ModifierKey::Control}};
 #else
-	data.commandKeys[Index (Command::FindNext)] = {0, VirtualKey::F3, {}};
-	data.commandKeys[Index (Command::FindPrevious)] = {0, VirtualKey::F3, {ModifierKey::Shift}};
-	data.commandKeys[Index (Command::UseSelectionForFind)] = {
+	md.commandKeys[Index (Command::FindNext)] = {0, VirtualKey::F3, {}};
+	md.commandKeys[Index (Command::FindPrevious)] = {0, VirtualKey::F3, {ModifierKey::Shift}};
+	md.commandKeys[Index (Command::UseSelectionForFind)] = {
 		0, VirtualKey::F3, {ModifierKey::Control}};
 #endif
 	md.controller->onTextEditorCreated (*this);
