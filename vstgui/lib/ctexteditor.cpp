@@ -18,7 +18,7 @@
 #include "platform/iplatformframe.h"
 #include "platform/platformfactory.h"
 #include "animation/timingfunctions.h"
-#include "animation/ianimationtarget.h"
+#include "animation/animations.h"
 
 #include <codecvt>
 #include <locale>
@@ -910,28 +910,23 @@ CRect TextEditorView::invalidCursorRect () const
 //------------------------------------------------------------------------
 void TextEditorView::toggleCursorVisibility () const
 {
-	struct CursorAnimation : Animation::IAnimationTarget
-	{
-		CursorAnimation (TextEditorView& view) : view (view) {}
-		void animationStart (CView*, IdStringPtr name) override {}
-		void animationTick (CView*, IdStringPtr name, float pos) override
-		{
-			view.md.cursorAlpha = view.md.cursorIsVisible ? 1.f - pos : pos;
-			view.invalidCursorRect ();
-		}
-		void animationFinished (CView*, IdStringPtr name, bool wasCanceled) override
-		{
-			if (!wasCanceled)
-				view.md.cursorIsVisible = !view.md.cursorIsVisible;
-			view.md.cursorAlpha = view.md.cursorIsVisible ? 1.f : 0.f;
-			view.invalidCursorRect ();
-		}
-		TextEditorView& view;
-	};
+	using namespace Animation;
 	mutableThis ().addAnimation (
-		"CursorAlphaBlend", new CursorAnimation (mutableThis ()),
-		new Animation::CubicBezierTimingFunction (
-			Animation::CubicBezierTimingFunction::easy (md.style->cursorBlinkTime / 2.)));
+		"CursorAlphaBlend",
+		new FuncAnimation ([] (CView* view, IdStringPtr name) {},
+						   [this] (CView* view, IdStringPtr name, float pos) {
+							   md.cursorAlpha = md.cursorIsVisible ? 1.f - pos : pos;
+							   invalidCursorRect ();
+						   },
+						   [this] (CView* view, IdStringPtr name, bool wasCanceled) {
+							   if (!wasCanceled)
+								   md.cursorIsVisible = !md.cursorIsVisible;
+							   md.cursorAlpha = md.cursorIsVisible ? 1.f : 0.f;
+							   invalidCursorRect ();
+						   }),
+		CubicBezierTimingFunction::make (md.cursorIsVisible ? CubicBezierTimingFunction::EasyOut
+															: CubicBezierTimingFunction::EasyIn,
+										 md.style->cursorBlinkTime / 2.));
 }
 
 //------------------------------------------------------------------------

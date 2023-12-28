@@ -364,4 +364,24 @@ void ControlValueAnimation::animationFinished (CView* view, IdStringPtr name, bo
 	}
 }
 
+//------------------------------------------------------------------------
+FuncAnimation::FuncAnimation (StartFunc&& start, TickFunc&& tick, FinishedFunc&& finished)
+: start (std::move (start)), tick (std::move (tick)), finished (std::move (finished))
+{
+}
+
+//------------------------------------------------------------------------
+void FuncAnimation::animationStart (CView* view, IdStringPtr name) { start (view, name); }
+
+//------------------------------------------------------------------------
+void FuncAnimation::animationTick (CView* view, IdStringPtr name, float pos)
+{
+	tick (view, name, pos);
+}
+
+//------------------------------------------------------------------------
+void FuncAnimation::animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
+{
+	finished (view, name, wasCanceled);
+}
 }} // namespaces

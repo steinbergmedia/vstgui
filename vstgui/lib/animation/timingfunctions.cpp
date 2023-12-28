@@ -150,6 +150,24 @@ CubicBezierTimingFunction CubicBezierTimingFunction::easyInOut (uint32_t time)
 	return CubicBezierTimingFunction (time, CPoint (0.42, 0.), CPoint (0.58, 1.));
 }
 
+//------------------------------------------------------------------------
+CubicBezierTimingFunction* CubicBezierTimingFunction::make (Style style, uint32_t time)
+{
+	using Func = CubicBezierTimingFunction;
+	switch (style)
+	{
+		case Easy:
+			return new CubicBezierTimingFunction (Func::easy (time));
+		case EasyIn:
+			return new CubicBezierTimingFunction (Func::easyIn (time));
+		case EasyOut:
+			return new CubicBezierTimingFunction (Func::easyOut (time));
+		case EasyInOut:
+			return new CubicBezierTimingFunction (Func::easyInOut (time));
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

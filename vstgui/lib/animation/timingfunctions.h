@@ -92,7 +92,9 @@ class CubicBezierTimingFunction : public TimingFunctionBase
 public:
 	CubicBezierTimingFunction (uint32_t milliseconds, CPoint p1, CPoint p2);
 	CubicBezierTimingFunction (const CubicBezierTimingFunction&) = default;
+	CubicBezierTimingFunction (CubicBezierTimingFunction&&) = default;
 	CubicBezierTimingFunction& operator= (const CubicBezierTimingFunction&) = default;
+	CubicBezierTimingFunction& operator= (CubicBezierTimingFunction&&) = default;
 
 	float getPosition (uint32_t milliseconds) override;
 
@@ -101,6 +103,15 @@ public:
 	static CubicBezierTimingFunction easyIn (uint32_t time);
 	static CubicBezierTimingFunction easyOut (uint32_t time);
 	static CubicBezierTimingFunction easyInOut (uint32_t time);
+
+	enum Style
+	{
+		Easy,
+		EasyIn,
+		EasyOut,
+		EasyInOut
+	};
+	static CubicBezierTimingFunction* make (Style style, uint32_t time);
 
 private:
 	static CPoint lerp (CPoint p1, CPoint p2, float pos);
