@@ -889,6 +889,14 @@ void COptionMenu::setValue (float val)
 }
 
 //------------------------------------------------------------------------
+float COptionMenu::getMax () const
+{
+	if (menuItems->empty ())
+		return 0.f;
+	return static_cast<float> (menuItems->size () - 1);
+}
+
+//------------------------------------------------------------------------
 void COptionMenu::takeFocus ()
 {
 	CParamDisplay::takeFocus ();
