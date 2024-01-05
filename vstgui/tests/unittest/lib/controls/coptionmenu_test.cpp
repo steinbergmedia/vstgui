@@ -49,4 +49,10 @@ TEST_CASE (CCommandMenuItemTest, DescConstructor3)
 	EXPECT_EQ (item.getCommandName (), "CommandNme");
 }
 
+TEST_CASE (COptionMenuTest, GetMaxWhenEmpty)
+{
+	COptionMenu menu;
+	EXPECT_EQ (menu.getMax (), 0.f);
+}
+
 } // VSTGUI

@@ -307,7 +307,7 @@ public:
 	void setMin (float val) override {}
 	float getMin () const override { return 0; }
 	void setMax (float val) override {}
-	float getMax () const override { return (float)(menuItems->size () - 1); }
+	float getMax () const override;
 
 	void draw (CDrawContext* pContext) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
