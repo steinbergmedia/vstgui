@@ -714,7 +714,7 @@ void CDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gra
 CGraphicsPath* CDrawContext::createGraphicsPath ()
 {
 	if (impl->device)
-		return new CGraphicsPath (impl->device->getGraphicsPathFactory ());
+		return new CGraphicsPath (impl->device->getGraphicsPathFactory (), nullptr);
 	return nullptr;
 }
 

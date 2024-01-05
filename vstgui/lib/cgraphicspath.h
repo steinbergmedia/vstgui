@@ -92,8 +92,7 @@ public:
 	CRect getBoundingBox ();
 	//@}
 
-	CGraphicsPath (const PlatformGraphicsPathFactoryPtr& factory,
-				   PlatformGraphicsPathPtr&& path = nullptr);
+	CGraphicsPath (const PlatformGraphicsPathFactoryPtr& factory, PlatformGraphicsPathPtr&& path);
 	~CGraphicsPath () noexcept override;
 
 	const PlatformGraphicsPathPtr& getPlatformPath (PlatformGraphicsPathFillMode fillMode);
