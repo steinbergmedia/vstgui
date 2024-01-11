@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
 #define VSTGUI_VERSION_MINOR  13
-#define VSTGUI_VERSION_PATCHLEVEL  1
+#define VSTGUI_VERSION_PATCHLEVEL  2
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -203,7 +203,7 @@
 
 //----------------------------------------------------
 #define CLASS_METHODS(name, parent) CBaseObject* newCopy () const override { return new name (*this); }
-#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const override { return 0; }
+#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const override { return nullptr; }
 #define CLASS_METHODS_VIRTUAL(name, parent) CBaseObject* newCopy () const override = 0;
 
 //----------------------------------------------------
@@ -259,7 +259,7 @@ public:
 	ReferenceCounted () = default;
 	virtual ~ReferenceCounted () noexcept = default;
 
-	ReferenceCounted (const ReferenceCounted&) {};
+	ReferenceCounted (const ReferenceCounted&) {}
 	ReferenceCounted& operator= (const ReferenceCounted&) { return *this; }
 
 	//-----------------------------------------------------------------------------
@@ -290,7 +290,7 @@ public:
 	CBaseObject () = default;
 	~CBaseObject () noexcept override = default;
 
-	CBaseObject (const CBaseObject&) {};
+	CBaseObject (const CBaseObject&) {}
 	CBaseObject& operator= (const CBaseObject&) { return *this; }
 
 	//-----------------------------------------------------------------------------
@@ -401,7 +401,7 @@ inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other) noexcept
 //------------------------------------------------------------------------
 template <class I>
 inline SharedPointer<I>::SharedPointer () noexcept
-: ptr (0)
+: ptr (nullptr)
 {}
 
 //------------------------------------------------------------------------
