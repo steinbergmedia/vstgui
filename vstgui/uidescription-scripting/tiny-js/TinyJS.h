@@ -145,6 +145,10 @@ class CScriptException
 public:
 	std::string text;
 	CScriptException (const std::string& exceptionText);
+	CScriptException (std::string&& exceptionText);
+	CScriptException (const CScriptException&) = default;
+	CScriptException (CScriptException&&) = default;
+	~CScriptException () noexcept;
 };
 
 class CScriptLex

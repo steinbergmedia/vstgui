@@ -427,12 +427,11 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 				auto callback = var->getParameter ("callback"sv);
 				if (!fireTime->isInt ())
 				{
-					throw new CScriptException (
-						"Expect integer as first parameter on timer creation");
+					throw CScriptException ("Expect integer as first parameter on timer creation");
 				}
 				if (!callback->isFunction ())
 				{
-					throw new CScriptException (
+					throw CScriptException (
 						"Expect function as second parameter on timer creation");
 				}
 				auto timerObj = new TimerScriptObject (
@@ -453,19 +452,18 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 				auto callback = var->getParameter ("callback"sv);
 				if (!view->isObject ())
 				{
-					throw new CScriptException (
-						"Expect object as first parameter on iterateSubViews");
+					throw CScriptException ("Expect object as first parameter on iterateSubViews");
 				}
 				if (!callback->isFunction ())
 				{
-					throw new CScriptException (
+					throw CScriptException (
 						"Expect function as second parameter on iterateSubViews");
 				}
 				auto it =
 					std::find_if (viewScriptMap.begin (), viewScriptMap.end (),
 								  [&] (const auto& el) { return el.second->getVar () == view; });
 				if (it == viewScriptMap.end ())
-					throw new CScriptException ("View not found in iterateSubViews");
+					throw CScriptException ("View not found in iterateSubViews");
 				auto container = it->first->asViewContainer ();
 				if (!container)
 					return; // no sub views
@@ -551,13 +549,13 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 #endif
 			}
 		}
-		catch (const CScriptException* exc)
+		catch (const CScriptException& exc)
 		{
 #if DEBUG
-			DebugPrint ("Scripting Exception: %s\n", exc->text.data ());
+			DebugPrint ("Scripting Exception: %s\n", exc.text.data ());
 #endif
 			if (onScriptException)
-				onScriptException (exc->text);
+				onScriptException (exc.text);
 			return false;
 		}
 		return true;
@@ -940,10 +938,10 @@ std::string ScriptContext::eval (std::string_view script) const
 		result.getVar ()->getJSON (stream);
 		return stream.str ();
 	}
-	catch (const CScriptException* exc)
+	catch (const CScriptException& exc)
 	{
 		if (impl->onScriptException)
-			impl->onScriptException (exc->text);
+			impl->onScriptException (exc.text);
 	}
 	return {};
 }

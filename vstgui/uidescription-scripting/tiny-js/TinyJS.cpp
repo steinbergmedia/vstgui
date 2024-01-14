@@ -339,6 +339,11 @@ static double stringToDouble (std::string_view str)
 // CSCRIPTEXCEPTION
 
 CScriptException::CScriptException (const std::string& exceptionText) { text = exceptionText; }
+CScriptException::CScriptException (std::string&& exceptionText)
+{
+	text = std::move (exceptionText);
+}
+CScriptException::~CScriptException () noexcept {}
 
 struct LexTokenDef
 {
@@ -441,7 +446,7 @@ void CScriptLex::match (int expected_tk)
 		std::ostringstream errorString;
 		errorString << "Got " << getTokenStr (token) << " expected " << getTokenStr (expected_tk)
 					<< " at " << getPosition (tokenStart);
-		throw new CScriptException (errorString.str ());
+		throw CScriptException (errorString.str ());
 	}
 	getNextToken ();
 }
@@ -453,7 +458,7 @@ void CScriptLex::match (LexType expected_tk)
 		std::ostringstream errorString;
 		errorString << "Got " << getTokenStr (token) << " expected " << findTokenName (expected_tk)
 					<< " at " << getPosition (tokenStart);
-		throw new CScriptException (errorString.str ());
+		throw CScriptException (errorString.str ());
 	}
 	getNextToken ();
 }
@@ -1316,8 +1321,8 @@ CScriptVar* CScriptVar::mathsOp (CScriptVar* b, int op)
 				case asInteger (LexType::GEQUAL):
 					return new CScriptVar (da >= db);
 				default:
-					throw new CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
-												" not supported on the Int datatype");
+					throw CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
+											" not supported on the Int datatype");
 			}
 		}
 		else
@@ -1348,8 +1353,8 @@ CScriptVar* CScriptVar::mathsOp (CScriptVar* b, int op)
 				case asInteger (LexType::GEQUAL):
 					return new CScriptVar (da >= db);
 				default:
-					throw new CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
-												" not supported on the Double datatype");
+					throw CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
+											" not supported on the Double datatype");
 			}
 		}
 	}
@@ -1363,8 +1368,8 @@ CScriptVar* CScriptVar::mathsOp (CScriptVar* b, int op)
 			case asInteger (LexType::NEQUAL):
 				return new CScriptVar (a != b);
 			default:
-				throw new CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
-											" not supported on the Array datatype");
+				throw CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
+										" not supported on the Array datatype");
 		}
 	}
 	else if (a->isObject ())
@@ -1377,8 +1382,8 @@ CScriptVar* CScriptVar::mathsOp (CScriptVar* b, int op)
 			case asInteger (LexType::NEQUAL):
 				return new CScriptVar (a != b);
 			default:
-				throw new CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
-											" not supported on the Object datatype");
+				throw CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
+										" not supported on the Object datatype");
 		}
 	}
 	else
@@ -1403,8 +1408,8 @@ CScriptVar* CScriptVar::mathsOp (CScriptVar* b, int op)
 			case asInteger (LexType::GEQUAL):
 				return new CScriptVar (da >= db);
 			default:
-				throw new CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
-											" not supported on the string datatype");
+				throw CScriptException ("Operation " + CScriptLex::getTokenStr (op) +
+										" not supported on the string datatype");
 		}
 	}
 	ASSERT (0);
@@ -1660,19 +1665,20 @@ void CTinyJS::execute (const std::string& code)
 		while (lexer->getToken ())
 			statement (execute);
 	}
-	catch (CScriptException* e)
+	catch (CScriptException& e)
 	{
 		std::ostringstream msg;
-		msg << "Error " << e->text;
+		msg << "Error " << e.text;
 #ifdef TINYJS_CALL_STACK
 		for (int i = (int)call_stack.size () - 1; i >= 0; i--)
 			msg << "\n" << i << ": " << call_stack.at (i);
-#endif
+#else
 		msg << " at " << lexer->getPosition ();
+#endif
 		delete lexer;
 		lexer = oldLex;
 
-		throw new CScriptException (msg.str ());
+		throw CScriptException (msg.str ());
 	}
 	delete lexer;
 	lexer = oldLex;
@@ -1702,19 +1708,20 @@ CScriptVarLink CTinyJS::evaluateComplex (std::string_view code)
 				lexer->match (';');
 		} while (lexer->getToken () != asInteger (LexType::Eof));
 	}
-	catch (CScriptException* e)
+	catch (CScriptException& e)
 	{
 		std::ostringstream msg;
-		msg << "Error " << e->text;
+		msg << "Error: " << e.text;
 #ifdef TINYJS_CALL_STACK
 		for (int i = (int)call_stack.size () - 1; i >= 0; i--)
 			msg << "\n" << i << ": " << call_stack.at (i);
-#endif
+#else
 		msg << " at " << lexer->getPosition ();
+#endif
 		delete lexer;
 		lexer = oldLex;
 
-		throw new CScriptException (msg.str ());
+		throw CScriptException (msg.str ());
 	}
 	delete lexer;
 	lexer = oldLex;
@@ -1813,7 +1820,7 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 		{
 			std::string errorMsg = "Expecting '";
 			errorMsg = errorMsg + function->getName () + "' to be a function";
-			throw new CScriptException (errorMsg.c_str ());
+			throw CScriptException (errorMsg.c_str ());
 		}
 		lexer->match ('(');
 		// create a new symbol table entry for execution of this function
@@ -1851,7 +1858,7 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 		CScriptVarLink* returnVarLink = functionRoot->addChild (TINYJS_RETURN_VAR);
 		scopes.push_back (functionRoot);
 #ifdef TINYJS_CALL_STACK
-		call_stack.push_back (function->getName () + " from " + lexer->getPosition ());
+		call_stack.push_back (function->getName () + " " + lexer->getPosition ());
 #endif
 
 		if (function->getVar ()->isNative ())
@@ -1863,7 +1870,7 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 			/* we just want to execute the block, but something could
 			 * have messed up and left us with the wrong ScriptLex, so
 			 * we want to be careful here... */
-			CScriptException* exception = nullptr;
+			std::string exceptionText;
 			CScriptLex* oldLex = lexer;
 			CScriptLex* newLex = new CScriptLex (function->getVar ()->getString ());
 			lexer = newLex;
@@ -1873,15 +1880,15 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 				// because return will probably have called this, and set execute to false
 				execute = true;
 			}
-			catch (CScriptException* e)
+			catch (CScriptException& e)
 			{
-				exception = e;
+				exceptionText = std::move (e.text);
 			}
 			delete newLex;
 			lexer = oldLex;
 
-			if (exception)
-				throw exception;
+			if (!exceptionText.empty ())
+				throw CScriptException (std::move (exceptionText));
 		}
 #ifdef TINYJS_CALL_STACK
 		if (!call_stack.empty ())
@@ -2550,7 +2557,7 @@ void CTinyJS::statement (bool& execute)
 			root->trace ();
 			TRACE ("WHILE Loop exceeded %d iterations at %s\n", TINYJS_LOOP_MAX_ITERATIONS,
 				   lexer->getPosition ().c_str ());
-			throw new CScriptException ("LOOP_ERROR");
+			throw CScriptException ("LOOP_ERROR");
 		}
 	}
 	else if (lexer->getToken () == asInteger (LexType::R_FOR))
@@ -2610,7 +2617,7 @@ void CTinyJS::statement (bool& execute)
 			root->trace ();
 			TRACE ("FOR Loop exceeded %d iterations at %s\n", TINYJS_LOOP_MAX_ITERATIONS,
 				   lexer->getPosition ().c_str ());
-			throw new CScriptException ("LOOP_ERROR");
+			throw CScriptException ("LOOP_ERROR");
 		}
 	}
 	else if (lexer->getToken () == asInteger (LexType::R_RETURN))
