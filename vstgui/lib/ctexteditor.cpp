@@ -1386,6 +1386,15 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars) const
 	{
 		md.maxHeight = md.model.lines.size () * md.lineHeight + md.fontDescent;
 		updateLineNumbersView ();
+		if (numChars < 0)
+			invalidate ();
+		else
+		{
+			for (auto l = findLine (md.model.lines.begin (), md.model.lines.end (), pos);
+				 l != md.model.lines.end (); ++l)
+				invalidLine (l, true);
+		}
+
 		mutableThis ().parentSizeChanged ();
 	}
 	validateLineStarts (md.model.lines.begin (), md.model.lines.end ());
