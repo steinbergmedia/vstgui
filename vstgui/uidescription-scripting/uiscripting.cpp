@@ -5,6 +5,9 @@
 #include "uiscripting.h"
 #include "../uidescription/uiattributes.h"
 #include "../uidescription/iviewfactory.h"
+#include "../uidescription/uiviewfactory.h"
+#include "../uidescription/iviewcreator.h"
+#include "../uidescription/uiviewcreator.h"
 #include "../uidescription/uidescriptionaddonregistry.h"
 #include "../uidescription/detail/uiviewcreatorattributes.h"
 #include "../lib/iviewlistener.h"
@@ -14,6 +17,7 @@
 #include "../lib/platform/platformfactory.h"
 #include "../lib/platform/iplatformresourceinputstream.h"
 #include "../lib/controls/ccontrol.h"
+#include "../lib/cdrawcontext.h"
 
 #include "tiny-js/TinyJS.h"
 #include "tiny-js/TinyJS_Functions.h"
@@ -32,6 +36,8 @@ using namespace TJS;
 namespace ScriptingInternal {
 
 static const std::string kAttrScript = "script";
+
+struct ViewScriptObject;
 
 //------------------------------------------------------------------------
 class ScriptContext : public IScriptContext
@@ -90,20 +96,19 @@ private:
 };
 
 //------------------------------------------------------------------------
-template<typename Proc>
-CScriptVar* createJSFunction (Proc proc)
+inline CScriptVar* createJSFunction (JSCallback&& proc)
 {
 	auto funcVar = new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_FUNCTION | SCRIPTVAR_NATIVE);
-	funcVar->setCallback (proc);
+	funcVar->setCallback (std::move (proc));
 	return funcVar;
 }
 
 //------------------------------------------------------------------------
-template<typename Proc>
-CScriptVar* createJSFunction (Proc proc, const std::initializer_list<const char*>& paramNames)
+inline CScriptVar* createJSFunction (JSCallback&& proc,
+									 const std::initializer_list<const char*>& argNames)
 {
-	auto f = createJSFunction (proc);
-	for (auto name : paramNames)
+	auto f = createJSFunction (std::move (proc));
+	for (auto name : argNames)
 		f->addChildNoDup (name);
 	return f;
 }
@@ -147,7 +152,7 @@ struct ScriptObject
 {
 	ScriptObject ()
 	{
-		scriptVar = new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT);
+		scriptVar = new CScriptVar ();
 		scriptVar->addRef ();
 	}
 	ScriptObject (ScriptObject&& o) { *this = std::move (o); }
@@ -197,6 +202,15 @@ struct ScriptObject
 	{
 		scriptVar->addChild (name, new CScriptVar (value));
 	}
+	void addFunc (std::string_view name, std::function<void (CScriptVar*)>&& func)
+	{
+		scriptVar->addChild (name, createJSFunction (std::move (func)));
+	}
+	void addFunc (std::string_view name, std::function<void (CScriptVar*)>&& func,
+				  const std::initializer_list<const char*>& argNames)
+	{
+		scriptVar->addChild (name, createJSFunction (std::move (func), argNames));
+	}
 
 protected:
 	CScriptVar* scriptVar {nullptr};
@@ -220,6 +234,38 @@ inline ScriptObject makeScriptPoint (const CPoint& point)
 	obj.addChild ("x"sv, point.x);
 	obj.addChild ("y"sv, point.y);
 	return obj;
+}
+
+//------------------------------------------------------------------------
+inline CPoint fromScriptPoint (CScriptVar& var)
+{
+	CPoint result {};
+	if (auto xVar = var.findChild ("x"sv))
+		result.x = xVar->getVar ()->getDouble ();
+	else
+		throw CScriptException ("Not a point object, missing 'x' member");
+	if (auto yVar = var.findChild ("y"sv))
+		result.y = yVar->getVar ()->getDouble ();
+	else
+		throw CScriptException ("Not a point object, missing 'y' member");
+	return result;
+}
+
+//------------------------------------------------------------------------
+inline CRect fromScriptRect (CScriptVar& var)
+{
+	CRect result {};
+	auto leftVar = var.findChild ("left");
+	auto topVar = var.findChild ("top");
+	auto rightVar = var.findChild ("right");
+	auto bottomVar = var.findChild ("bottom");
+	if (!leftVar || !topVar || !rightVar || !bottomVar)
+		throw CScriptException ("Expecting a rect object here");
+	result.left = leftVar->getVar ()->getDouble ();
+	result.top = topVar->getVar ()->getDouble ();
+	result.right = rightVar->getVar ()->getDouble ();
+	result.bottom = bottomVar->getVar ()->getDouble ();
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -278,65 +324,61 @@ struct UIDescScriptObject : ScriptObject
 	UIDescScriptObject () = default;
 	UIDescScriptObject (IUIDescription* desc, CTinyJS* scriptContext)
 	{
-		scriptVar->addChild ("colorNames"sv, createJSFunction ([desc] (CScriptVar* var) {
-								 StringList names;
-								 desc->collectColorNames (names);
-								 var->setReturnVar (createArrayFromNames (names));
-							 }));
-		scriptVar->addChild ("fontNames"sv, createJSFunction ([desc] (CScriptVar* var) {
-								 StringList names;
-								 desc->collectFontNames (names);
-								 var->setReturnVar (createArrayFromNames (names));
-							 }));
-		scriptVar->addChild ("bitmapNames"sv, createJSFunction ([desc] (CScriptVar* var) {
-								 StringList names;
-								 desc->collectBitmapNames (names);
-								 var->setReturnVar (createArrayFromNames (names));
-							 }));
-		scriptVar->addChild ("gradientNames"sv, createJSFunction ([desc] (CScriptVar* var) {
-								 StringList names;
-								 desc->collectGradientNames (names);
-								 var->setReturnVar (createArrayFromNames (names));
-							 }));
-		scriptVar->addChild ("controlTagNames"sv, createJSFunction ([desc] (CScriptVar* var) {
-								 StringList names;
-								 desc->collectControlTagNames (names);
-								 var->setReturnVar (createArrayFromNames (names));
-							 }));
-		scriptVar->addChild (
-			"getTagForName"sv,
-			createJSFunction (
-				[desc] (CScriptVar* var) {
-					auto param = var->getParameter ("name"sv);
-					if (!param)
-					{
-						throw CScriptException ("Expect 'name' argument for getTagForName ");
-					}
-					std::string name = param->getString ();
-					auto tag = desc->getTagForName (name.data ());
-					var->setReturnVar (new CScriptVar (static_cast<int64_t> (tag)));
-				},
-				{"name"}));
-		scriptVar->addChild (
-			"lookupTagName"sv,
-			createJSFunction (
-				[desc] (CScriptVar* var) {
-					auto param = var->getParameter ("tag"sv);
-					if (!param)
-					{
-						throw CScriptException ("Expect 'tag' argument for lookupTagName ");
-					}
-					if (!param->isInt ())
-					{
-						throw CScriptException ("Expect 'tag' argument to be an integer ");
-					}
-					if (auto tagName =
-							desc->lookupControlTagName (static_cast<int32_t> (param->getInt ())))
-					{
-						var->setReturnVar (new CScriptVar (std::string (tagName)));
-					}
-				},
-				{"tag"}));
+		addFunc ("colorNames"sv, [desc] (CScriptVar* var) {
+			StringList names;
+			desc->collectColorNames (names);
+			var->setReturnVar (createArrayFromNames (names));
+		});
+		addFunc ("fontNames"sv, [desc] (CScriptVar* var) {
+			StringList names;
+			desc->collectFontNames (names);
+			var->setReturnVar (createArrayFromNames (names));
+		});
+		addFunc ("bitmapNames"sv, [desc] (CScriptVar* var) {
+			StringList names;
+			desc->collectBitmapNames (names);
+			var->setReturnVar (createArrayFromNames (names));
+		});
+		addFunc ("gradientNames"sv, [desc] (CScriptVar* var) {
+			StringList names;
+			desc->collectGradientNames (names);
+			var->setReturnVar (createArrayFromNames (names));
+		});
+		addFunc ("controlTagNames"sv, [desc] (CScriptVar* var) {
+			StringList names;
+			desc->collectControlTagNames (names);
+			var->setReturnVar (createArrayFromNames (names));
+		});
+		addFunc ("getTagForName"sv,
+				 [desc] (CScriptVar* var) {
+					 auto param = var->getParameter ("name"sv);
+					 if (!param)
+					 {
+						 throw CScriptException ("Expect 'name' argument for getTagForName ");
+					 }
+					 std::string name = param->getString ();
+					 auto tag = desc->getTagForName (name.data ());
+					 var->setReturnVar (new CScriptVar (static_cast<int64_t> (tag)));
+				 },
+				 {"name"});
+		addFunc ("lookupTagName"sv,
+				 [desc] (CScriptVar* var) {
+					 auto param = var->getParameter ("tag"sv);
+					 if (!param)
+					 {
+						 throw CScriptException ("Expect 'tag' argument for lookupTagName ");
+					 }
+					 if (!param->isInt ())
+					 {
+						 throw CScriptException ("Expect 'tag' argument to be an integer ");
+					 }
+					 if (auto tagName =
+							 desc->lookupControlTagName (static_cast<int32_t> (param->getInt ())))
+					 {
+						 var->setReturnVar (new CScriptVar (std::string (tagName)));
+					 }
+				 },
+				 {"tag"});
 	}
 
 	static CScriptVar* createArrayFromNames (const StringList& names)
@@ -353,6 +395,46 @@ struct UIDescScriptObject : ScriptObject
 	}
 };
 
+//------------------------------------------------------------------------
+struct DrawContextObject : ScriptObject,
+						   IScriptVarLifeTimeObserver
+{
+	DrawContextObject ();
+
+	void setDrawContext (CDrawContext* context, IUIDescription* uiDesc);
+
+	void onDestroy (CScriptVar* v) override;
+
+private:
+	CDrawContext* context {nullptr};
+	IUIDescription* uiDesc {nullptr};
+};
+
+//------------------------------------------------------------------------
+struct JavaScriptDrawableView : CView
+{
+	using CView::CView;
+
+	void drawRect (CDrawContext* context, const CRect& rect) override;
+
+	void setup (ViewScriptObject* object);
+
+private:
+	ViewScriptObject* scriptObject {nullptr};
+	DrawContextObject drawContext;
+};
+
+//------------------------------------------------------------------------
+struct JavaScriptDrawableViewCreator : ViewCreatorAdapter
+{
+	IdStringPtr getViewName () const override { return "JavaScriptDrawableView"; }
+	IdStringPtr getBaseViewName () const override { return UIViewCreator::kCView; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		return new JavaScriptDrawableView (CRect ());
+	}
+};
+
 struct IViewScriptObjectContext;
 
 //------------------------------------------------------------------------
@@ -361,6 +443,9 @@ struct ViewScriptObject : ScriptObject,
 {
 	ViewScriptObject (CView* view, IViewScriptObjectContext* context);
 	~ViewScriptObject () noexcept;
+
+	IViewScriptObjectContext* getContext () const { return context; }
+
 	void onDestroy (CScriptVar* v) override;
 
 private:
@@ -378,6 +463,8 @@ struct IViewScriptObjectContext
 	virtual IUIDescription* getUIDescription () const = 0;
 	virtual ViewScriptObject* addView (CView* view) = 0;
 	virtual ViewScriptMap::iterator removeView (CView* view) = 0;
+	virtual bool evalScript (std::string_view script) noexcept = 0;
+	virtual CScriptVar* getRoot () const = 0;
 };
 
 //------------------------------------------------------------------------
@@ -514,7 +601,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 			evalScript (*script);
 		}
 	}
-
+	CScriptVar* getRoot () const override { return jsContext->getRoot (); }
 	IUIDescription* getUIDescription () const override { return uiDesc; }
 
 	void installListeners (CView* view)
@@ -537,7 +624,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 			control->unregisterControlListener (this);
 	}
 
-	bool evalScript (std::string_view script)
+	bool evalScript (std::string_view script) noexcept override
 	{
 		try
 		{
@@ -562,7 +649,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 	}
 
 	bool evalScript (CScriptVar* object, std::string_view script,
-					 const std::string& objectName = "view")
+					 const std::string& objectName = "view") noexcept
 	{
 		if (!object || script.empty ())
 			return false;
@@ -677,7 +764,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		}
 	}
 
-	void callEventFunction (CScriptVar* var, Event& event, std::string_view script)
+	void callEventFunction (CScriptVar* var, Event& event, std::string_view script) noexcept
 	{
 		auto scriptEvent = ScriptingInternal::makeScriptEvent (event);
 		ScriptAddChildScoped scs (*jsContext->getRoot (), "event", scriptEvent.getVar ());
@@ -815,7 +902,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		return addView (view, std::make_unique<ViewScriptObject> (view, this));
 	}
 
-	void addView (CView* view, const std::string* script)
+	void addView (CView* view, const std::string* script) noexcept
 	{
 		addView (view);
 		if (script)
@@ -955,162 +1042,165 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 	scriptVar->setLifeTimeObserver (this);
 	auto viewType = IViewFactory::getViewName (view);
 	scriptVar->addChild ("type"sv, new CScriptVar (std::string (viewType ? viewType : "unknown")));
-	scriptVar->addChild ("setAttribute"sv,
-						 createJSFunction (
-							 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
-								 auto key = var->getParameter ("key"sv);
-								 auto value = var->getParameter ("value"sv);
-								 UIAttributes attr;
-								 attr.setAttribute (key->getString (), value->getString ());
-								 auto result = uiDesc->getViewFactory ()->applyAttributeValues (
-									 view, attr, uiDesc);
-								 var->getReturnVar ()->setInt (result);
-							 },
-							 {"key", "value"}));
-	scriptVar->addChild ("getAttribute"sv,
-						 createJSFunction (
-							 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
-								 auto key = var->getParameter ("key"sv);
-								 std::string result;
-								 if (uiDesc->getViewFactory ()->getAttributeValue (
-										 view, key->getString (), result, uiDesc))
-								 {
-									 var->getReturnVar ()->setString (result);
-								 }
-								 else
-								 {
-									 var->getReturnVar ()->setUndefined ();
-								 }
-							 },
-							 {"key"}));
-	scriptVar->addChild ("isTypeOf"sv,
-						 createJSFunction (
-							 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
-								 auto typeName = var->getParameter ("typeName"sv);
-								 auto result = uiDesc->getViewFactory ()->viewIsTypeOf (
-									 view, typeName->getString ());
-								 var->getReturnVar ()->setInt (result);
-							 },
-							 {"typeName"}));
-	scriptVar->addChild ("getParent"sv, createJSFunction ([view, context] (CScriptVar* var) {
-							 auto parentView = view->getParentView ();
-							 if (!parentView)
-							 {
-								 var->getReturnVar ()->setUndefined ();
-								 return;
-							 }
-							 auto obj = context->addView (parentView);
-							 vstgui_assert (obj);
-							 var->setReturnVar (obj->getVar ());
-							 obj->getVar ()->release ();
-						 }));
-	scriptVar->addChild ("getControllerProperty"sv,
-						 createJSFunction (
-							 [view] (CScriptVar* var) {
-								 auto viewController = getViewController (view, true);
-								 auto controller =
-									 dynamic_cast<IScriptControllerExtension*> (viewController);
-								 auto name = var->getParameter ("name"sv);
-								 if (!controller || !name)
-								 {
-									 var->getReturnVar ()->setUndefined ();
-									 return;
-								 }
-								 IScriptControllerExtension::PropertyValue value;
-								 if (!controller->getProperty (view, name->getString (), value))
-								 {
-									 var->getReturnVar ()->setUndefined ();
-									 return;
-								 }
-								 std::visit (
-									 [&] (auto&& value) {
-										 using T = std::decay_t<decltype (value)>;
-										 if constexpr (std::is_same_v<T, int64_t>)
-											 var->getReturnVar ()->setInt (value);
-										 else if constexpr (std::is_same_v<T, double>)
-											 var->getReturnVar ()->setDouble (value);
-										 else if constexpr (std::is_same_v<T, std::string>)
-											 var->getReturnVar ()->setString (value);
-										 else if constexpr (std::is_same_v<T, nullptr_t>)
-											 var->getReturnVar ()->setUndefined ();
-									 },
-									 value);
-							 },
-							 {"name"}));
-	scriptVar->addChild (
-		"setControllerProperty"sv,
-		createJSFunction (
-			[view] (CScriptVar* var) {
-				auto viewController = getViewController (view, true);
-				auto controller = dynamic_cast<IScriptControllerExtension*> (viewController);
-				auto name = var->getParameter ("name"sv);
-				auto value = var->getParameter ("value"sv);
-				if (!controller || !name || !value || !(value->isNumeric () || value->isString ()))
-				{
-					var->getReturnVar ()->setUndefined ();
-					return;
-				}
-				IScriptControllerExtension::PropertyValue propValue;
-				if (value->isInt ())
-					propValue = value->getInt ();
-				else if (value->isDouble ())
-					propValue = value->getDouble ();
-				else if (value->isString ())
-					propValue = value->getString ();
-				auto result = controller->setProperty (view, name->getString (), propValue);
-				var->getReturnVar ()->setInt (result);
-			},
-			{"name", "value"}));
+	addFunc ("setAttribute"sv,
+			 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
+				 auto key = var->getParameter ("key"sv);
+				 auto value = var->getParameter ("value"sv);
+				 UIAttributes attr;
+				 attr.setAttribute (key->getString (), value->getString ());
+				 auto result = uiDesc->getViewFactory ()->applyAttributeValues (view, attr, uiDesc);
+				 var->getReturnVar ()->setInt (result);
+			 },
+			 {"key", "value"});
+	addFunc ("getAttribute"sv,
+			 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
+				 auto key = var->getParameter ("key"sv);
+				 std::string result;
+				 if (uiDesc->getViewFactory ()->getAttributeValue (view, key->getString (), result,
+																   uiDesc))
+				 {
+					 var->getReturnVar ()->setString (result);
+				 }
+				 else
+				 {
+					 var->getReturnVar ()->setUndefined ();
+				 }
+			 },
+			 {"key"});
+	addFunc ("isTypeOf"sv,
+			 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
+				 auto typeName = var->getParameter ("typeName"sv);
+				 auto result =
+					 uiDesc->getViewFactory ()->viewIsTypeOf (view, typeName->getString ());
+				 var->getReturnVar ()->setInt (result);
+			 },
+			 {"typeName"});
+	addFunc ("invalid"sv, [view] (CScriptVar* var) { view->invalid (); });
+	addFunc ("invalidRect"sv,
+			 [view] (CScriptVar* var) {
+				 auto rectVar = var->getParameter ("rect"sv);
+				 if (!rectVar)
+					 throw CScriptException ("Missing 'rect' argument in view.invalidRect(rect) ");
+				 auto rect = fromScriptRect (*rectVar);
+				 view->invalidRect (rect);
+			 },
+			 {"rect"});
+	addFunc ("getBounds"sv, [view] (CScriptVar* var) {
+		auto bounds = view->getViewSize ();
+		bounds.originize ();
+		var->setReturnVar (makeScriptRect (bounds).take ());
+	});
+	addFunc ("getParent"sv, [view, context] (CScriptVar* var) {
+		auto parentView = view->getParentView ();
+		if (!parentView)
+		{
+			var->getReturnVar ()->setUndefined ();
+			return;
+		}
+		auto obj = context->addView (parentView);
+		vstgui_assert (obj);
+		var->setReturnVar (obj->getVar ());
+		obj->getVar ()->release ();
+	});
+	addFunc ("getControllerProperty"sv,
+			 [view] (CScriptVar* var) {
+				 auto viewController = getViewController (view, true);
+				 auto controller = dynamic_cast<IScriptControllerExtension*> (viewController);
+				 auto name = var->getParameter ("name"sv);
+				 if (!controller || !name)
+				 {
+					 var->getReturnVar ()->setUndefined ();
+					 return;
+				 }
+				 IScriptControllerExtension::PropertyValue value;
+				 if (!controller->getProperty (view, name->getString (), value))
+				 {
+					 var->getReturnVar ()->setUndefined ();
+					 return;
+				 }
+				 std::visit (
+					 [&] (auto&& value) {
+						 using T = std::decay_t<decltype (value)>;
+						 if constexpr (std::is_same_v<T, int64_t>)
+							 var->getReturnVar ()->setInt (value);
+						 else if constexpr (std::is_same_v<T, double>)
+							 var->getReturnVar ()->setDouble (value);
+						 else if constexpr (std::is_same_v<T, std::string>)
+							 var->getReturnVar ()->setString (value);
+						 else if constexpr (std::is_same_v<T, nullptr_t>)
+							 var->getReturnVar ()->setUndefined ();
+					 },
+					 value);
+			 },
+			 {"name"});
+	addFunc ("setControllerProperty"sv,
+			 [view] (CScriptVar* var) {
+				 auto viewController = getViewController (view, true);
+				 auto controller = dynamic_cast<IScriptControllerExtension*> (viewController);
+				 auto name = var->getParameter ("name"sv);
+				 auto value = var->getParameter ("value"sv);
+				 if (!controller || !name || !value || !(value->isNumeric () || value->isString ()))
+				 {
+					 var->getReturnVar ()->setUndefined ();
+					 return;
+				 }
+				 IScriptControllerExtension::PropertyValue propValue;
+				 if (value->isInt ())
+					 propValue = value->getInt ();
+				 else if (value->isDouble ())
+					 propValue = value->getDouble ();
+				 else if (value->isString ())
+					 propValue = value->getString ();
+				 auto result = controller->setProperty (view, name->getString (), propValue);
+				 var->getReturnVar ()->setInt (result);
+			 },
+			 {"name", "value"});
 	if (auto control = dynamic_cast<CControl*> (view))
 	{
-		scriptVar->addChild (
-			"setValue"sv, createJSFunction (
-							  [control] (CScriptVar* var) {
-								  auto value = var->getParameter ("value"sv);
-								  if (value->isNumeric ())
-								  {
-									  auto oldValue = control->getValue ();
-									  control->setValue (static_cast<float> (value->getDouble ()));
-									  if (oldValue != control->getValue ())
-										  control->valueChanged ();
-								  }
-							  },
-							  {"value"}));
-		scriptVar->addChild ("getValue"sv, createJSFunction ([control] (CScriptVar* var) {
-								 var->getReturnVar ()->setDouble (control->getValue ());
-							 }));
-		scriptVar->addChild ("setValueNormalized"sv,
-							 createJSFunction (
-								 [control] (CScriptVar* var) {
-									 auto value = var->getParameter ("value"sv);
-									 if (value->isNumeric ())
-									 {
-										 auto oldValue = control->getValue ();
-										 control->setValueNormalized (
-											 static_cast<float> (value->getDouble ()));
-										 if (oldValue != control->getValue ())
-											 control->valueChanged ();
-									 }
-								 },
-								 {"value"}));
-		scriptVar->addChild ("getValueNormalized"sv, createJSFunction ([control] (CScriptVar* var) {
-								 var->getReturnVar ()->setDouble (control->getValueNormalized ());
-							 }));
-		scriptVar->addChild ("beginEdit"sv, createJSFunction ([control] (CScriptVar* var) {
-								 control->beginEdit ();
-							 }));
-		scriptVar->addChild (
-			"endEdit"sv, createJSFunction ([control] (CScriptVar* var) { control->endEdit (); }));
-		scriptVar->addChild ("getMinValue"sv, createJSFunction ([control] (CScriptVar* var) {
-								 var->getReturnVar ()->setDouble (control->getMin ());
-							 }));
-		scriptVar->addChild ("getMaxValue"sv, createJSFunction ([control] (CScriptVar* var) {
-								 var->getReturnVar ()->setDouble (control->getMax ());
-							 }));
-		scriptVar->addChild ("getTag"sv, createJSFunction ([control] (CScriptVar* var) {
-								 var->getReturnVar ()->setInt (control->getTag ());
-							 }));
+		addFunc ("setValue"sv,
+				 [control] (CScriptVar* var) {
+					 auto value = var->getParameter ("value"sv);
+					 if (value->isNumeric ())
+					 {
+						 auto oldValue = control->getValue ();
+						 control->setValue (static_cast<float> (value->getDouble ()));
+						 if (oldValue != control->getValue ())
+							 control->valueChanged ();
+					 }
+				 },
+				 {"value"});
+		addFunc ("getValue"sv, [control] (CScriptVar* var) {
+			var->getReturnVar ()->setDouble (control->getValue ());
+		});
+		addFunc ("setValueNormalized"sv,
+				 [control] (CScriptVar* var) {
+					 auto value = var->getParameter ("value"sv);
+					 if (value->isNumeric ())
+					 {
+						 auto oldValue = control->getValue ();
+						 control->setValueNormalized (static_cast<float> (value->getDouble ()));
+						 if (oldValue != control->getValue ())
+							 control->valueChanged ();
+					 }
+				 },
+				 {"value"});
+		addFunc ("getValueNormalized"sv, [control] (CScriptVar* var) {
+			var->getReturnVar ()->setDouble (control->getValueNormalized ());
+		});
+		addFunc ("beginEdit"sv, [control] (CScriptVar* var) { control->beginEdit (); });
+		addFunc ("endEdit"sv, [control] (CScriptVar* var) { control->endEdit (); });
+		addFunc ("getMinValue"sv, [control] (CScriptVar* var) {
+			var->getReturnVar ()->setDouble (control->getMin ());
+		});
+		addFunc ("getMaxValue"sv, [control] (CScriptVar* var) {
+			var->getReturnVar ()->setDouble (control->getMax ());
+		});
+		addFunc ("getTag"sv, [control] (CScriptVar* var) {
+			var->getReturnVar ()->setInt (control->getTag ());
+		});
 	}
+	if (auto drawable = dynamic_cast<JavaScriptDrawableView*> (view))
+		drawable->setup (this);
 }
 
 //------------------------------------------------------------------------
@@ -1128,6 +1218,173 @@ void ViewScriptObject::onDestroy (CScriptVar* v)
 	if (context)
 		context->removeView (view);
 }
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+DrawContextObject::DrawContextObject ()
+{
+	scriptVar->setLifeTimeObserver (this);
+	addFunc ("drawLine"sv,
+			 [this] (CScriptVar* var) {
+				 if (!context)
+					 throw CScriptException ("Native context is missing!");
+				 auto fromPoint = var->getParameter ("from"sv);
+				 if (!fromPoint)
+					 throw CScriptException (
+						 "Missing `from` argument in drawContext.drawLine(from, to);");
+				 auto toPoint = var->getParameter ("to"sv);
+				 if (!toPoint)
+					 throw CScriptException (
+						 "Missing `to` argument in drawContext.drawLine(from, to);");
+				 auto from = fromScriptPoint (*fromPoint);
+				 auto to = fromScriptPoint (*toPoint);
+				 context->drawLine (from, to);
+			 },
+			 {"from", "to"});
+	addFunc ("drawRect"sv,
+			 [this] (CScriptVar* var) {
+				 if (!context)
+					 throw CScriptException ("Native context is missing!");
+				 auto rectVar = var->getParameter ("rect"sv);
+				 if (!rectVar)
+					 throw CScriptException (
+						 "Missing `rect` argument in drawContext.drawRect(rect, style);");
+				 auto styleVar = var->getParameter ("style"sv);
+				 if (!styleVar)
+					 throw CScriptException (
+						 "Missing `style` argument in drawContext.drawRect(rect, style);");
+				 auto rect = fromScriptRect (*rectVar);
+				 CDrawStyle style {};
+				 if (styleVar->getString () == "stroked")
+					 style = kDrawStroked;
+				 else if (styleVar->getString () == "filled")
+					 style = kDrawFilled;
+				 else if (styleVar->getString () == "filledAndStroked")
+					 style = kDrawFilledAndStroked;
+				 context->drawRect (rect, style);
+			 },
+			 {"rect", "style"});
+	addFunc ("clearRect"sv,
+			 [this] (CScriptVar* var) {
+				 if (!context)
+					 throw CScriptException ("Native context is missing!");
+				 auto rectVar = var->getParameter ("rect"sv);
+				 if (!rectVar)
+					 throw CScriptException (
+						 "Missing `rect` argument in drawContext.clearRect(rect);");
+				 auto rect = fromScriptRect (*rectVar);
+				 context->clearRect (rect);
+			 },
+			 {"rect", "style"});
+	addFunc ("setFillColor"sv,
+			 [this] (CScriptVar* var) {
+				 if (!context)
+					 throw CScriptException ("Native context is missing!");
+				 auto colorVar = var->getParameter ("color"sv);
+				 if (!colorVar)
+					 throw CScriptException (
+						 "Missing `color` argument in drawContext.setFillColor(color);");
+				 CColor color {};
+				 UIViewCreator::stringToColor (&colorVar->getString (), color, uiDesc);
+				 context->setFillColor (color);
+			 },
+			 {"color"});
+	addFunc ("setFrameColor"sv,
+			 [this] (CScriptVar* var) {
+				 if (!context)
+					 throw CScriptException ("Native context is missing!");
+				 auto colorVar = var->getParameter ("color"sv);
+				 if (!colorVar)
+					 throw CScriptException (
+						 "Missing `color` argument in drawContext.setFrameColor(color);");
+				 CColor color {};
+				 if (!UIViewCreator::stringToColor (&colorVar->getString (), color, uiDesc))
+					 throw CScriptException (
+						 "Unknown `color` argument in drawContext.setFrameColor(color);");
+				 context->setFrameColor (color);
+			 },
+			 {"color"});
+	addFunc ("setLineWidth"sv,
+			 [this] (CScriptVar* var) {
+				 if (!context)
+					 throw CScriptException ("Native context is missing!");
+				 auto widthVar = var->getParameter ("width"sv);
+				 if (!widthVar)
+					 throw CScriptException (
+						 "Missing `width` argument in drawContext.setLineWidth(width);");
+				 context->setLineWidth (widthVar->getDouble ());
+			 },
+			 {"width"});
+	addFunc ("drawBitmap"sv,
+			 [this] (CScriptVar* var) {
+				 if (!context)
+					 throw CScriptException ("Native context is missing!");
+				 auto bitmapNameVar = var->getParameter ("bitmap"sv);
+				 if (!bitmapNameVar)
+					 throw CScriptException (
+						 "Missing `bitmap` argument in drawContext.drawBitmap(bitmap, destRect, "
+						 "offsetPoint, alpha);");
+				 auto destRectVar = var->getParameter ("destRect"sv);
+				 if (!destRectVar)
+					 throw CScriptException (
+						 "Missing `destRect` argument in drawContext.drawBitmap(bitmap, destRect, "
+						 "offsetPoint, alpha);");
+				 auto offsetPointVar = var->findChild ("offsetPoint"sv);
+				 auto alphaVar = var->findChild ("alpha"sv);
+				 auto bitmap = uiDesc->getBitmap (bitmapNameVar->getString ().data ());
+				 if (!bitmap)
+					 throw CScriptException ("bitmap not found in uiDescription");
+				 auto destRect = fromScriptRect (*destRectVar);
+				 auto offset =
+					 offsetPointVar ? fromScriptPoint (*offsetPointVar->getVar ()) : CPoint (0, 0);
+				 auto alpha = alphaVar ? alphaVar->getVar ()->getDouble () : 1.f;
+				 context->drawBitmap (bitmap, destRect, offset, alpha);
+			 },
+			 {"bitmap", "destRect"});
+}
+
+//------------------------------------------------------------------------
+void DrawContextObject::setDrawContext (CDrawContext* inContext, IUIDescription* inUIDesc)
+{
+	context = inContext;
+	uiDesc = inUIDesc;
+}
+
+//------------------------------------------------------------------------
+void DrawContextObject::onDestroy (CScriptVar* v)
+{
+	v->setLifeTimeObserver (nullptr);
+	scriptVar = nullptr;
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
+{
+	if (!scriptObject)
+		return;
+	auto scriptContext = scriptObject->getContext ();
+	if (!scriptContext)
+		return;
+	drawContext.setDrawContext (context, scriptContext->getUIDescription ());
+
+	CDrawContext::Transform tm (*context,
+								CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
+
+	auto rectObj = makeScriptRect (rect);
+	auto scriptRoot = scriptContext->getRoot ();
+	ScriptAddChildScoped scs (*scriptRoot, "view", scriptObject->getVar ());
+	ScriptAddChildScoped scs2 (*scriptRoot, "context", drawContext.getVar ());
+	ScriptAddChildScoped scs3 (*scriptRoot, "rect", rectObj.getVar ());
+	scriptContext->evalScript ("view.draw(context, rect);"sv);
+
+	drawContext.setDrawContext (nullptr, nullptr);
+}
+
+//------------------------------------------------------------------------
+void JavaScriptDrawableView::setup (ViewScriptObject* inObject) { scriptObject = inObject; }
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -1175,7 +1432,9 @@ struct JavaScriptViewFactory : ViewFactoryDelegate,
 				auto scriptSize = static_cast<uint32_t> (script.size () + 1);
 				view->setAttribute (scriptAttrID, scriptSize, script.data ());
 				if (!disabled)
+				{
 					scriptContext->onViewCreated (view, script);
+				}
 			}
 			return view;
 		}
@@ -1343,6 +1602,8 @@ void UIScripting::init (const OnScriptException& func)
 	if (func)
 		Impl::onScriptExceptionFunc = func;
 	UIDescriptionAddOnRegistry::add (std::make_unique<UIScripting> ());
+	static ScriptingInternal::JavaScriptDrawableViewCreator jsViewCreator;
+	UIViewFactory::registerViewCreator (jsViewCreator);
 }
 
 //------------------------------------------------------------------------
