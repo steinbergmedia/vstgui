@@ -151,7 +151,26 @@ struct ExternalNSViewBase : ViewAdapter
 
 	ExternalNSViewBase (ViewType* inView) : view (inView)
 	{
-		container.clipsToBounds = YES;
+		if (@available (macOS 14, *))
+		{
+#ifdef MAC_OS_VERSION_14_0
+			// only available when building with the mac os sdk 14.0
+			container.clipsToBounds = YES;
+#else
+			// but necessary to set to YES on macOS 14 even when not building with Xcode 15
+			if ([container respondsToSelector:@selector (setClipsToBounds:)])
+			{
+				BOOL clipsToBounds = YES;
+				auto* signature = [[container class]
+					instanceMethodSignatureForSelector:@selector (setClipsToBounds:)];
+				auto* invocation = [NSInvocation invocationWithMethodSignature:signature];
+				invocation.target = container;
+				invocation.selector = @selector (setClipsToBounds:);
+				[invocation setArgument:&clipsToBounds atIndex:2];
+				[invocation invoke];
+			}
+#endif
+		}
 		[container addSubview:view];
 	}
 
