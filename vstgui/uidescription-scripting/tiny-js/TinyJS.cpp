@@ -883,8 +883,8 @@ void CScriptVarLink::setIntName (int n)
 
 void CScriptVarLink::setVar (CScriptVar* v)
 {
-	var->release ();
-	var = v->addRef ();
+	ASSERT (v != nullptr);
+	replaceWith (v);
 }
 
 // ----------------------------------------------------------------------------------- CSCRIPTVAR
