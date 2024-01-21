@@ -1492,7 +1492,25 @@ void DrawContextObject::onDestroy (CScriptVar* v)
 void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
 {
 	if (!scriptObject)
+	{
+		auto dashLength = std::round ((getWidth () * 2 + getHeight () * 2) / 40.);
+		CLineStyle ls (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0,
+					   {dashLength, dashLength});
+
+		auto lineWidth = 1.;
+		auto size = getViewSize ();
+		size.inset (lineWidth / 2., lineWidth / 2.);
+		context->setLineStyle (ls);
+		context->setLineWidth (lineWidth);
+		context->setFrameColor (kBlackCColor);
+		context->drawRect (size, kDrawStroked);
+
+		ls.setDashPhase (dashLength * lineWidth);
+		context->setLineStyle (ls);
+		context->setFrameColor (kWhiteCColor);
+		context->drawRect (size, kDrawStroked);
 		return;
+	}
 	auto scriptContext = scriptObject->getContext ();
 	if (!scriptContext)
 		return;
