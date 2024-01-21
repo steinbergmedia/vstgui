@@ -44,6 +44,11 @@
 				"font-name": "EffectsEighty",
 				"size": "22"
 			},
+			"JSTest": {
+				"bold": "true",
+				"font-name": "Arial",
+				"size": "12"
+			},
 			"View Label": {
 				"font-name": "Arial",
 				"size": "8"

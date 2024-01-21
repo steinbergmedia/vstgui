@@ -200,7 +200,7 @@
 							"line-color": "~ BlackCColor",
 							"line-width": "-1",
 							"opacity": "1",
-							"origin": "15, 200",
+							"origin": "10, 200",
 							"row-height": "16",
 							"script": "// Hover Opacity Animation Script\n// This example script changes the opacity of the view\n// when the mouse enters or exits the view\n\n/* the default opacity of the view is stored in view.default_opacity */\nview.default_opacity = 0.6;\n\n/* the current opacity of the view is stored in view.opacity */\nview.opacity = view.default_opacity;\n\n/* the timer to change the opacity is stored in view.opacity_timer */\nview.opacity_timer = createTimer(view, 16, function(view) {\n\tview.opacity += view.opacity_change;\n\tif (view.opacity_change > 0)\n\t{\n\t\tif (view.opacity > 1)\n\t\t{\n\t\t\tview.opacity = 1;\n\t\t\tview.opacity_timer.stop();\n\t\t}\n\t}\n\telse\n\t{\n\t\tif (view.opacity <= view.default_opacity)\n\t\t{\n\t\t\tview.opacity = view.default_opacity;\n\t\t\tview.opacity_timer.stop();\n\t\t}\n\t}\n\tview.setAttribute(\"opacity\", view.opacity);\n});\n\n/* the view will be shown with full opacity when focused so the state of the focus is stored in view.hasFocus */\nview.has_focus = false;\n\n/* to correctly restore the hover state after focus lost, the state if the mouse is inside the view or outside \n   is stored in view.mouseInside\n*/\nview.mouse_inside = false;\n\n/* we install a mouse enter listener\n   when the mouse enters the view we start the opacity change timer \n*/\nview.onMouseEnter = function(view, event) {\n\tview.mouse_inside = true;\n\tif (view.has_focus)\n\t\treturn;\n\tview.opacity_change = 0.075;\n\tview.opacity_timer.start();\n\tevent.consume = true;\n};\n\n/* we also install a mouse exit listener\n   when the mouse exits the view we start the opacity change timer again \n   now with a negative opacity_change variable so that in the timer callback \n   the opacity is going back to the default opacity \n*/\nview.onMouseExit = function(view, event) {\n\tview.mouse_inside = false;\n\tif (view.has_focus)\n\t\treturn;\n\tview.opacity_change = -0.05;\n\tview.opacity_timer.start();\n\tevent.consumed = true;\n};\n\n/* we also install a view removed listener so that we can cleanup and stop the timer */\nview.onRemoved = function(view) {\n\t// cleanup, when the view is removed, stop the timer\n\tview.opacity_timer.stop();\n};\n\n/* when the view takes focus we show the view with full opacity */\nview.onTookFocus = function(view) {\n\tview.has_focus = true;\n\tview.opacity_timer.stop();\n\tview.setAttribute(\"opacity\", 1);\n\tview.opacity = 1;\n};\n\n/* when the view lost focus we start the opacity animation when the mouse is not inside this view */\nview.onLostFocus = function(view) {\n\tview.has_focus = false;\n\tif (!view.mouse_inside)\n\t{\n\t\tview.onMouseExit(view, undefind);\n\t}\n};\n\n/* enable the mouse, otherwise no mouse listener is called */\nview.setAttribute(\"mouse-enabled\", true);\n\n/* set the initial view opacity*/\nview.setAttribute(\"opacity\", view.opacity);\n\n",
 							"size": "110, 144",
@@ -701,6 +701,7 @@
 							"control-tag": "Test",
 							"height-of-one-image": "50",
 							"inverse-bitmap": "false",
+							"knob-range": "200",
 							"opacity": "1",
 							"origin": "355, 245",
 							"size": "50, 50",
@@ -734,6 +735,7 @@
 							"handle-color": "~ WhiteCColor",
 							"handle-line-width": "8",
 							"handle-shadow-color": "~ BlackCColor",
+							"knob-range": "200",
 							"opacity": "1",
 							"origin": "280, 235",
 							"size": "70, 70",
@@ -966,7 +968,7 @@
 									"background-color-draw-style": "filled and stroked",
 									"bordered": "true",
 									"class": "CScrollView",
-									"container-size": "268, 138",
+									"container-size": "257, 138",
 									"follow-focus-view": "false",
 									"horizontal-scrollbar": "true",
 									"mouse-enabled": "true",
@@ -990,7 +992,7 @@
 											"mouse-enabled": "true",
 											"opacity": "1",
 											"origin": "0, 0",
-											"size": "227, 60496",
+											"size": "257, 138",
 											"sub-controller": "TextEditorController",
 											"transparent": "false",
 											"wants-focus": "true"
@@ -1037,6 +1039,18 @@
 							"value-precision": "2",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
+						}
+					},
+					"JavaScriptDrawableView": {
+						"attributes": {
+							"class": "JavaScriptDrawableView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 350",
+							"script": "view.draw = function (context, rect) {\n\tvar polygon = [];\n\tpolygon[0] = {x: 10, y:  0};\n\tpolygon[1] = {x:  0, y: 10};\n\tpolygon[2] = {x: 10, y: 20};\n\tpolygon[3] = {x: 20, y: 10};\n\tpolygon[4] = {x: 10, y:  0};\n\tcontext.setFrameColor (\"red\");\n\tcontext.setFillColor (\"green\");\n\tcontext.drawPolygon (polygon, \"filledAndStroked\");\n\n\tcontext.setFont (\"JSTest\");\n\tcontext.setFontColor (\"black\");\n\tcontext.drawString (\"Hello JavaScript\", view.getBounds (), \"center\");\n\n\tvar clipRect = {left: 5, top: 5, right: 15, bottom: 15};\n\tcontext.setClipRect (clipRect);\n\tcontext.setFillColor (\"cyan\");\n\tcontext.drawRect (view.getBounds (), \"filled\");\n};\n",
+							"size": "110, 25",
+							"transparent": "false",
+							"wants-focus": "false"
 						}
 					}
 				}
