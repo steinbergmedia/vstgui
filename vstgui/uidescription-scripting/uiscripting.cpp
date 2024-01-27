@@ -10,6 +10,7 @@
 #include "../uidescription/uiviewcreator.h"
 #include "../uidescription/uidescriptionaddonregistry.h"
 #include "../uidescription/detail/uiviewcreatorattributes.h"
+#include "../uidescription/viewcreator/controlcreator.h"
 #include "../lib/iviewlistener.h"
 #include "../lib/events.h"
 #include "../lib/cresourcedescription.h"
@@ -411,17 +412,36 @@ private:
 };
 
 //------------------------------------------------------------------------
-struct JavaScriptDrawableView : CView
+struct JavaScriptDrawable
 {
-	using CView::CView;
-
-	void drawRect (CDrawContext* context, const CRect& rect) override;
+	void onDraw (CDrawContext* context, const CRect& rect, const CRect& viewSize);
 
 	void setup (ViewScriptObject* object);
 
 private:
 	ViewScriptObject* scriptObject {nullptr};
 	DrawContextObject drawContext;
+};
+
+//------------------------------------------------------------------------
+struct JavaScriptDrawableView : CView,
+								JavaScriptDrawable
+{
+	using CView::CView;
+
+	void drawRect (CDrawContext* context, const CRect& rect) override;
+};
+
+//------------------------------------------------------------------------
+struct JavaScriptDrawableControl : CControl,
+								   JavaScriptDrawable
+{
+	using CControl::CControl;
+
+	void draw (CDrawContext* pContext) override;
+	void drawRect (CDrawContext* context, const CRect& rect) override;
+
+	CLASS_METHODS_NOCOPY (JavaScriptDrawableControl, CControl);
 };
 
 //------------------------------------------------------------------------
@@ -432,6 +452,17 @@ struct JavaScriptDrawableViewCreator : ViewCreatorAdapter
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		return new JavaScriptDrawableView (CRect ());
+	}
+};
+
+//------------------------------------------------------------------------
+struct JavaScriptDrawableControlCreator : UIViewCreator::ControlCreator
+{
+	IdStringPtr getViewName () const override { return "JavaScriptDrawableControl"; }
+	IdStringPtr getBaseViewName () const override { return UIViewCreator::kCControl; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		return new JavaScriptDrawableControl (CRect ());
 	}
 };
 
@@ -1199,7 +1230,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 			var->getReturnVar ()->setInt (control->getTag ());
 		});
 	}
-	if (auto drawable = dynamic_cast<JavaScriptDrawableView*> (view))
+	if (auto drawable = dynamic_cast<JavaScriptDrawable*> (view))
 		drawable->setup (this);
 }
 
@@ -1489,16 +1520,16 @@ void DrawContextObject::onDestroy (CScriptVar* v)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
+void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const CRect& viewSize)
 {
 	if (!scriptObject)
 	{
-		auto dashLength = std::round ((getWidth () * 2 + getHeight () * 2) / 40.);
+		auto dashLength = std::round ((viewSize.getWidth () * 2 + viewSize.getHeight () * 2) / 40.);
 		CLineStyle ls (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0,
 					   {dashLength, dashLength});
 
 		auto lineWidth = 1.;
-		auto size = getViewSize ();
+		auto size = viewSize;
 		size.inset (lineWidth / 2., lineWidth / 2.);
 		context->setLineStyle (ls);
 		context->setLineWidth (lineWidth);
@@ -1518,8 +1549,7 @@ void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
 
 	drawContext.setDrawContext (context, scriptContext->getUIDescription ());
 
-	CDrawContext::Transform tm (*context,
-								CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
+	CDrawContext::Transform tm (*context, CGraphicsTransform ().translate (viewSize.getTopLeft ()));
 
 	auto rectObj = makeScriptRect (rect);
 	auto scriptRoot = scriptContext->getRoot ();
@@ -1534,7 +1564,26 @@ void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
 }
 
 //------------------------------------------------------------------------
-void JavaScriptDrawableView::setup (ViewScriptObject* inObject) { scriptObject = inObject; }
+void JavaScriptDrawable::setup (ViewScriptObject* inObject) { scriptObject = inObject; }
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
+{
+	onDraw (context, rect, getViewSize ());
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+void JavaScriptDrawableControl::draw (CDrawContext* context) { drawRect (context, getViewSize ()); }
+
+//------------------------------------------------------------------------
+void JavaScriptDrawableControl::drawRect (CDrawContext* context, const CRect& rect)
+{
+	onDraw (context, rect, getViewSize ());
+}
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
