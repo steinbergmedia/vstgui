@@ -10,7 +10,6 @@
 #include "../uidescription/uiviewcreator.h"
 #include "../uidescription/uidescriptionaddonregistry.h"
 #include "../uidescription/detail/uiviewcreatorattributes.h"
-#include "../uidescription/viewcreator/controlcreator.h"
 #include "../lib/iviewlistener.h"
 #include "../lib/events.h"
 #include "../lib/cresourcedescription.h"
@@ -456,7 +455,7 @@ struct JavaScriptDrawableViewCreator : ViewCreatorAdapter
 };
 
 //------------------------------------------------------------------------
-struct JavaScriptDrawableControlCreator : UIViewCreator::ControlCreator
+struct JavaScriptDrawableControlCreator : ViewCreatorAdapter
 {
 	IdStringPtr getViewName () const override { return "JavaScriptDrawableControl"; }
 	IdStringPtr getBaseViewName () const override { return UIViewCreator::kCControl; }
@@ -1803,6 +1802,8 @@ void UIScripting::init (const OnScriptException& func)
 	UIDescriptionAddOnRegistry::add (std::make_unique<UIScripting> ());
 	static ScriptingInternal::JavaScriptDrawableViewCreator jsViewCreator;
 	UIViewFactory::registerViewCreator (jsViewCreator);
+	static ScriptingInternal::JavaScriptDrawableControlCreator jsControlCreator;
+	UIViewFactory::registerViewCreator (jsControlCreator);
 }
 
 //------------------------------------------------------------------------
