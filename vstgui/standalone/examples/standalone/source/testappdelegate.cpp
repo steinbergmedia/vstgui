@@ -185,7 +185,7 @@ public:
 	{
 		using namespace std::literals;
 		if (name == "integer"sv)
-			value = 24;
+			value = static_cast<int64_t> (24);
 		else if (name == "double"sv)
 			value = 13.3333;
 		else if (name == "string"sv)
