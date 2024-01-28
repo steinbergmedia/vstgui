@@ -678,6 +678,8 @@ bool Factory::Impl::createD3D11Device ()
 										 D3D_FEATURE_LEVEL_9_3,	 D3D_FEATURE_LEVEL_9_2,
 										 D3D_FEATURE_LEVEL_9_1};
 	UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	// fix UI flickering with some GPU cards/drivers
+	creationFlags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
 #if DEBUG
 	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
