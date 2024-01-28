@@ -927,7 +927,7 @@ void TextEditorView::toggleCursorVisibility () const
 						   }),
 		CubicBezierTimingFunction::make (md.cursorIsVisible ? CubicBezierTimingFunction::EasyOut
 															: CubicBezierTimingFunction::EasyIn,
-										 md.style->cursorBlinkTime / 2.));
+										 md.style->cursorBlinkTime / 2));
 }
 
 //------------------------------------------------------------------------
@@ -1701,7 +1701,8 @@ void TextEditorView::updateSelectionOnDoubleClickMove (uint32_t clickCount) cons
 		auto currentLine = findLine (md.model.lines.begin (), md.model.lines.end (), cursor);
 		if (currentLine != md.model.lines.end ())
 		{
-			if (currentLine->range.start >= md.editStateOnMouseDown.select_start)
+			if (currentLine->range.start >=
+				static_cast<size_t> (md.editStateOnMouseDown.select_start))
 			{
 				md.editState.select_start = md.editStateOnMouseDown.select_start;
 				md.editState.select_end = static_cast<int> (currentLine->range.end ());
@@ -1716,7 +1717,7 @@ void TextEditorView::updateSelectionOnDoubleClickMove (uint32_t clickCount) cons
 		return;
 	}
 
-	if (cursor < md.editStateOnMouseDown.select_start)
+	if (cursor < static_cast<size_t> (md.editStateOnMouseDown.select_start))
 	{
 		auto it = md.model.text.begin ();
 		std::advance (it, cursor - 1);
@@ -1907,7 +1908,7 @@ bool TextEditorView::doFind (bool forward) const
 	auto pos = String::npos;
 	if (forward)
 	{
-		auto cursor = md.editState.select_end;
+		auto cursor = static_cast<size_t> (md.editState.select_end);
 		if (cursor > md.model.text.length ())
 			cursor = 0;
 		auto text = StringView (md.model.text.data (), md.model.text.length ());
