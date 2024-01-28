@@ -562,13 +562,15 @@ void TextEditorView::viewOnEvent (CView* view, Event& event)
 	if (wheelEvent.flags & MouseWheelEvent::Flags::PreciseDeltas)
 	{
 		scrollOffset.x += std::ceil (wheelEvent.deltaX / 0.1);
-		scrollOffset.y += std::ceil (wheelEvent.deltaY / 0.1);
+		scrollOffset.y -= std::ceil (wheelEvent.deltaY / 0.1);
 	}
 	else
 	{
 		scrollOffset.x += wheelEvent.deltaX * md.lineHeight;
-		scrollOffset.y += wheelEvent.deltaY * md.lineHeight;
+		scrollOffset.y -= wheelEvent.deltaY * md.lineHeight;
 	}
+	if (wheelEvent.flags & MouseWheelEvent::DirectionInvertedFromDevice)
+		scrollOffset.y *= 1.;
 
 	auto viewSize = getVisibleViewSize ();
 	viewSize.offset (scrollOffset);
