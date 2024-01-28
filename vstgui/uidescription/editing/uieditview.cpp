@@ -359,7 +359,7 @@ void UIEditView::enableEditing (bool state)
 			overlayView->setAutosizeFlags (kAutosizeAll);
 			overlayView->setMouseEnabled (false);
 			overlayView->setTransparency (true);
-			overlayView->setZIndex (std::numeric_limits<uint32_t>::max () - 1);
+			overlayView->setZIndex (1000);
 			parent->addView (overlayView);
 
 			highlightView = new UIEditViewInternal::UIHighlightView (this, viewHighlightColor);
