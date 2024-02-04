@@ -167,7 +167,8 @@ DrawContextObject::DrawContextObject ()
 				 auto destRect = fromScriptRect (*destRectVar);
 				 auto offset =
 					 offsetPointVar ? fromScriptPoint (*offsetPointVar->getVar ()) : CPoint (0, 0);
-				 auto alpha = alphaVar ? alphaVar->getVar ()->getDouble () : 1.f;
+				 auto alpha =
+					 static_cast<float> (alphaVar ? alphaVar->getVar ()->getDouble () : 1.);
 				 context->drawBitmap (bitmap, destRect, offset, alpha);
 			 },
 			 {"bitmap", "destRect"});
