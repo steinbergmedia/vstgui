@@ -5,6 +5,15 @@ set(SCRIPTING_SOURCES
     tiny-js/TinyJS_MathFunctions.h
     tiny-js/TinyJS.cpp
     tiny-js/TinyJS.h
+    detail/scriptobject.h
+    detail/uidescscriptobject.h
+    detail/converters.h
+    detail/drawcontextobject.cpp
+    detail/drawcontextobject.h
+    detail/drawable.cpp
+    detail/drawable.h
+    detail/viewscriptobject.cpp
+    detail/viewscriptobject.h
     uiscripting.cpp
     uiscripting.h
     uiscripting.md
