@@ -230,7 +230,7 @@ static inline void CREATE_LINK (CScriptVarLink*& link, CScriptVar* var)
 bool isWhitespace (char ch) { return (ch == ' ') || (ch == '\t') || (ch == '\n') || (ch == '\r'); }
 
 bool isNumeric (char ch) { return (ch >= '0') && (ch <= '9'); }
-bool isNumber (const std::string& str)
+bool isNumber (const string& str)
 {
 	for (size_t i = 0; i < str.size (); i++)
 		if (!isNumeric (str[i]))
@@ -248,12 +248,12 @@ bool isAlpha (char ch)
 }
 
 /// convert the given string into a quoted string suitable for javascript
-std::string getJSString (const std::string& str)
+string getJSString (std::string_view str)
 {
-	std::string nStr = str;
+	string nStr {str.data (), str.size ()};
 	for (size_t i = 0; i < nStr.size (); i++)
 	{
-		std::string replaceWith = "";
+		string replaceWith = "";
 		bool replace = true;
 
 		switch (nStr[i])
@@ -310,7 +310,7 @@ int64_t stringToInteger (std::string_view str)
 			}
 			else
 			{
-				if (str.find_first_of ('.') == std::string::npos)
+				if (str.find_first_of ('.') == string::npos)
 				{
 					base = 8;
 				}
@@ -335,15 +335,32 @@ static double stringToDouble (std::string_view str)
 	return value;
 }
 
+//------------------------------------------------------------------------
+AllocatorFunc allocator = [] (size_t size) {
+	return operator new (size);
+};
+
+//------------------------------------------------------------------------
+DeallocatorFunc deallocator = [] (void* ptr, size_t size) {
+	return operator delete (ptr, size);
+};
+
+//------------------------------------------------------------------------
+void setCustomAllocator (AllocatorFunc&& _allocator, DeallocatorFunc&& _deallocator)
+{
+	allocator = std::move (_allocator);
+	deallocator = std::move (_deallocator);
+}
+
 // -----------------------------------------------------------------------------------
 // CSCRIPTEXCEPTION
 
-CScriptException::CScriptException (const std::string& exceptionText) { text = exceptionText; }
-CScriptException::CScriptException (std::string&& exceptionText)
-{
-	text = std::move (exceptionText);
-}
+CScriptException::CScriptException (const string& exceptionText) { text = exceptionText; }
+CScriptException::CScriptException (string&& exceptionText) { text = std::move (exceptionText); }
 CScriptException::~CScriptException () noexcept {}
+
+void* CScriptException::operator new (std::size_t count) { return allocator (count); }
+void CScriptException::operator delete (void* ptr, std::size_t size) { deallocator (ptr, size); }
 
 struct LexTokenDef
 {
@@ -426,6 +443,9 @@ CScriptLex::CScriptLex (std::string_view input)
 
 CScriptLex::~CScriptLex (void) {}
 
+void* CScriptLex::operator new (std::size_t count) { return allocator (count); }
+void CScriptLex::operator delete (void* ptr, std::size_t size) { deallocator (ptr, size); }
+
 void CScriptLex::reset ()
 {
 	dataPos = 0;
@@ -443,7 +463,7 @@ void CScriptLex::match (int expected_tk)
 {
 	if (token != expected_tk)
 	{
-		std::ostringstream errorString;
+		ostringstream errorString;
 		errorString << "Got " << getTokenStr (token) << " expected " << getTokenStr (expected_tk)
 					<< " at " << getPosition (tokenStart);
 		throw CScriptException (errorString.str ());
@@ -455,7 +475,7 @@ void CScriptLex::match (LexType expected_tk)
 {
 	if (token != asInteger (expected_tk))
 	{
-		std::ostringstream errorString;
+		ostringstream errorString;
 		errorString << "Got " << getTokenStr (token) << " expected " << findTokenName (expected_tk)
 					<< " at " << getPosition (tokenStart);
 		throw CScriptException (errorString.str ());
@@ -463,11 +483,11 @@ void CScriptLex::match (LexType expected_tk)
 	getNextToken ();
 }
 
-std::string CScriptLex::getTokenStr (int token)
+string CScriptLex::getTokenStr (int token)
 {
 	if (token > 32 && token < 128)
 	{
-		std::string str ("' '");
+		string str ("' '");
 		str[1] = static_cast<char> (token);
 		return str;
 	}
@@ -475,7 +495,7 @@ std::string CScriptLex::getTokenStr (int token)
 	if (!tokenString.empty ())
 		return {tokenString.data (), tokenString.size ()};
 
-	std::ostringstream msg;
+	ostringstream msg;
 	msg << "?[" << token << "]";
 	return msg.str ();
 }
@@ -787,17 +807,17 @@ void CScriptLex::getNextToken ()
 	tokenEnd = dataPos - 3;
 }
 
-std::string CScriptLex::getSubString (size_t lastPosition) const
+string CScriptLex::getSubString (size_t lastPosition) const
 {
 	size_t lastCharIdx = tokenLastEnd + 1;
 	if (lastCharIdx < dataEnd)
 	{
-		std::string value (&data[lastPosition], lastCharIdx - lastPosition);
+		string value (&data[lastPosition], lastCharIdx - lastPosition);
 		return value;
 	}
 	else
 	{
-		return std::string (&data[lastPosition]);
+		return string (&data[lastPosition]);
 	}
 }
 
@@ -810,7 +830,7 @@ CScriptLex* CScriptLex::getSubLex (size_t lastPosition) const
 		return new CScriptLex ({data + lastPosition, dataEnd - lastPosition});
 }
 
-std::string CScriptLex::getPosition (size_t pos) const
+string CScriptLex::getPosition (size_t pos) const
 {
 	if (pos == std::numeric_limits<size_t>::max ())
 		pos = tokenLastEnd;
@@ -826,14 +846,14 @@ std::string CScriptLex::getPosition (size_t pos) const
 	}
 	colNo = pos - lastLinePos;
 
-	return std::string ("(line: ") + std::to_string (lineNo) + std::string (", col: ") +
-		   std::to_string (colNo) + std::string (")");
+	return string ("(line: ") + std::to_string (lineNo).data () + string (", col: ") +
+		   std::to_string (colNo).data () + string (")");
 }
 
 // -----------------------------------------------------------------------------------
 // CSCRIPTVARLINK
 
-CScriptVarLink::CScriptVarLink (CScriptVar* inVar, const std::string& inName, bool own)
+CScriptVarLink::CScriptVarLink (CScriptVar* inVar, const string& inName, bool own)
 : name (inName), var (inVar->addRef ()), isOwned (own)
 {
 #if DEBUG_MEMORY
@@ -856,6 +876,9 @@ CScriptVarLink::~CScriptVarLink ()
 #endif
 	var->release ();
 }
+
+void* CScriptVarLink::operator new (std::size_t count) { return allocator (count); }
+void CScriptVarLink::operator delete (void* ptr, std::size_t size) { deallocator (ptr, size); }
 
 void CScriptVarLink::replaceWith (CScriptVar* newVar)
 {
@@ -897,16 +920,16 @@ CScriptVar::CScriptVar ()
 	flags = SCRIPTVAR_UNDEFINED;
 }
 
-CScriptVar::CScriptVar (const std::string& str)
+CScriptVar::CScriptVar (std::string_view str)
 {
 #if DEBUG_MEMORY
 	mark_allocated (this);
 #endif
 	flags = SCRIPTVAR_STRING;
-	variant = str;
+	variant = string (str.data (), str.size ());
 }
 
-CScriptVar::CScriptVar (const std::string& varData, int varFlags)
+CScriptVar::CScriptVar (const string& varData, int varFlags)
 {
 #if DEBUG_MEMORY
 	mark_allocated (this);
@@ -964,6 +987,9 @@ CScriptVar::~CScriptVar (void)
 	removeAllChildren ();
 }
 
+void* CScriptVar::operator new (std::size_t count) { return allocator (count); }
+void CScriptVar::operator delete (void* ptr, std::size_t size) { deallocator (ptr, size); }
+
 CScriptVar* CScriptVar::getReturnVar () { return getParameter (TINYJS_RETURN_VAR); }
 
 void CScriptVar::setReturnVar (CScriptVar* var)
@@ -997,10 +1023,10 @@ CScriptVarLink* CScriptVar::findChildOrCreate (std::string_view childName, int v
 	return addChild (childName, new CScriptVar (TINYJS_BLANK_DATA, varFlags));
 }
 
-CScriptVarLink* CScriptVar::findChildOrCreateByPath (const std::string& path)
+CScriptVarLink* CScriptVar::findChildOrCreateByPath (const string& path)
 {
 	size_t p = path.find ('.');
-	if (p == std::string::npos)
+	if (p == string::npos)
 		return findChildOrCreate (path);
 
 	return findChildOrCreate (path.substr (0, p), SCRIPTVAR_OBJECT)
@@ -1182,12 +1208,12 @@ double CScriptVar::getDouble ()
 	return 0; /* or NaN? */
 }
 
-const std::string& CScriptVar::getString ()
+const string& CScriptVar::getString ()
 {
 	/* Because we can't return a string that is generated on demand.
 	 * I should really just use char* :) */
-	static std::string s_null = "null";
-	static std::string s_undefined = "undefined";
+	static string s_null = "null";
+	static string s_undefined = "undefined";
 	if (isInt ())
 	{
 		dataStr = std::to_string (std::get<int64_t> (variant));
@@ -1204,7 +1230,7 @@ const std::string& CScriptVar::getString ()
 		return s_null;
 	if (isUndefined ())
 		return s_undefined;
-	if (auto s = std::get_if<std::string> (&variant))
+	if (auto s = std::get_if<string> (&variant))
 		return *s;
 	return s_undefined;
 }
@@ -1225,7 +1251,7 @@ void CScriptVar::setString (std::string_view str)
 {
 	// name sure it's not still a number or integer
 	flags = (flags & ~SCRIPTVAR_VARTYPEMASK) | SCRIPTVAR_STRING;
-	variant = std::string (str);
+	variant = string (str);
 }
 
 void CScriptVar::setUndefined ()
@@ -1388,8 +1414,8 @@ CScriptVar* CScriptVar::mathsOp (CScriptVar* b, int op)
 	}
 	else
 	{
-		std::string da = a->getString ();
-		std::string db = b->getString ();
+		string da = a->getString ();
+		string db = b->getString ();
 		// use strings
 		switch (op)
 		{
@@ -1472,11 +1498,11 @@ CScriptVar* CScriptVar::deepCopy ()
 	return newVar;
 }
 
-void CScriptVar::trace (std::string indentStr, const std::string& name)
+void CScriptVar::trace (string indentStr, const string& name)
 {
 	TRACE ("%s'%s' = '%s' %s\n", indentStr.c_str (), name.c_str (), getString ().c_str (),
 		   getFlagsAsString ().c_str ());
-	std::string indent = indentStr + " ";
+	string indent = indentStr + " ";
 	CScriptVarLink* link = firstChild;
 	while (link)
 	{
@@ -1485,9 +1511,9 @@ void CScriptVar::trace (std::string indentStr, const std::string& name)
 	}
 }
 
-std::string CScriptVar::getFlagsAsString ()
+string CScriptVar::getFlagsAsString ()
 {
-	std::string flagstr = "";
+	string flagstr = "";
 	if (flags & SCRIPTVAR_FUNCTION)
 		flagstr = flagstr + "FUNCTION ";
 	if (flags & SCRIPTVAR_OBJECT)
@@ -1505,14 +1531,14 @@ std::string CScriptVar::getFlagsAsString ()
 	return flagstr;
 }
 
-std::string CScriptVar::getParsableString ()
+string CScriptVar::getParsableString ()
 {
 	// Numbers can just be put in directly
 	if (isNumeric ())
 		return getString ();
 	if (isFunction ())
 	{
-		std::ostringstream funcStr;
+		ostringstream funcStr;
 		funcStr << "function (";
 		// get list of parameters
 		CScriptVarLink* link = firstChild;
@@ -1535,11 +1561,11 @@ std::string CScriptVar::getParsableString ()
 	return "undefined";
 }
 
-void CScriptVar::getJSON (std::ostream& destination, const std::string linePrefix)
+void CScriptVar::getJSON (std::ostream& destination, const string linePrefix)
 {
 	if (isObject ())
 	{
-		std::string indentedLinePrefix = linePrefix + "  ";
+		string indentedLinePrefix = linePrefix + "  ";
 		// children - handle with bracketed list
 		destination << "{ \n";
 		CScriptVarLink* link = firstChild;
@@ -1559,7 +1585,7 @@ void CScriptVar::getJSON (std::ostream& destination, const std::string linePrefi
 	}
 	else if (isArray ())
 	{
-		std::string indentedLinePrefix = linePrefix + "  ";
+		string indentedLinePrefix = linePrefix + "  ";
 		destination << "[\n";
 		int len = getArrayLength ();
 		if (len > 10000)
@@ -1598,7 +1624,7 @@ void CScriptVar::callCallback (CScriptVar* var)
 void CScriptVar::setFunctionScript (std::string_view str)
 {
 	ASSERT (isFunction ());
-	variant = std::string {str.data (), str.size ()};
+	variant = string {str.data (), str.size ()};
 }
 
 CScriptVar* CScriptVar::addRef ()
@@ -1647,9 +1673,12 @@ CTinyJS::~CTinyJS ()
 #endif
 }
 
+void* CTinyJS::operator new (std::size_t count) { return allocator (count); }
+void CTinyJS::operator delete (void* ptr, std::size_t size) { deallocator (ptr, size); }
+
 void CTinyJS::trace () { root->trace (); }
 
-void CTinyJS::execute (const std::string& code)
+void CTinyJS::execute (const string& code)
 {
 	CScriptLex* oldLex = lexer;
 	std::vector<CScriptVar*> oldScopes = std::move (scopes);
@@ -1667,7 +1696,7 @@ void CTinyJS::execute (const std::string& code)
 	}
 	catch (CScriptException& e)
 	{
-		std::ostringstream msg;
+		ostringstream msg;
 		msg << "Error " << e.text;
 #ifdef TINYJS_CALL_STACK
 		for (int i = (int)call_stack.size () - 1; i >= 0; i--)
@@ -1710,7 +1739,7 @@ CScriptVarLink CTinyJS::evaluateComplex (std::string_view code)
 	}
 	catch (CScriptException& e)
 	{
-		std::ostringstream msg;
+		ostringstream msg;
 		msg << "Error: " << e.text;
 #ifdef TINYJS_CALL_STACK
 		for (int i = (int)call_stack.size () - 1; i >= 0; i--)
@@ -1737,7 +1766,7 @@ CScriptVarLink CTinyJS::evaluateComplex (std::string_view code)
 	return CScriptVarLink (new CScriptVar ());
 }
 
-std::string CTinyJS::evaluate (std::string_view code)
+string CTinyJS::evaluate (std::string_view code)
 {
 	return evaluateComplex (code).getVar ()->getString ();
 }
@@ -1763,7 +1792,7 @@ void CTinyJS::addNative (std::string_view funcDesc, const JSCallback& ptr)
 	CScriptVar* base = root;
 
 	lexer->match (LexType::R_FUNCTION);
-	std::string funcName = lexer->getTokenString ();
+	string funcName = lexer->getTokenString ();
 	lexer->match (LexType::ID);
 	/* Check for dots, we might want to do something like function String.substring ... */
 	while (lexer->getToken () == '.')
@@ -1791,7 +1820,7 @@ CScriptVarLink* CTinyJS::parseFunctionDefinition ()
 {
 	// actually parse a function...
 	lexer->match (LexType::R_FUNCTION);
-	std::string funcName = TINYJS_TEMP_NAME;
+	string funcName = TINYJS_TEMP_NAME;
 	/* we can have functions without names */
 	if (lexer->getToken () == asInteger (LexType::ID))
 	{
@@ -1818,7 +1847,7 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 	{
 		if (!function->getVar ()->isFunction ())
 		{
-			std::string errorMsg = "Expecting '";
+			string errorMsg = "Expecting '";
 			errorMsg = errorMsg + function->getName () + "' to be a function";
 			throw CScriptException (errorMsg.c_str ());
 		}
@@ -1870,7 +1899,7 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 			/* we just want to execute the block, but something could
 			 * have messed up and left us with the wrong ScriptLex, so
 			 * we want to be careful here... */
-			std::string exceptionText;
+			string exceptionText;
 			CScriptLex* oldLex = lexer;
 			CScriptLex* newLex = new CScriptLex (function->getVar ()->getString ());
 			lexer = newLex;
@@ -1982,7 +2011,7 @@ CScriptVarLink* CTinyJS::factor (bool& execute)
 				lexer->match ('.');
 				if (execute)
 				{
-					const std::string& name = lexer->getTokenString ();
+					const string& name = lexer->getTokenString ();
 					CScriptVarLink* child = a->getVar ()->findChild (name);
 					if (!child)
 						child = findInParentClasses (a->getVar (), name);
@@ -2052,7 +2081,7 @@ CScriptVarLink* CTinyJS::factor (bool& execute)
 		lexer->match ('{');
 		while (lexer->getToken () != '}')
 		{
-			std::string id = lexer->getTokenString ();
+			string id = lexer->getTokenString ();
 			// we only allow strings or IDs on the left hand side of an initialisation
 			if (lexer->getToken () == asInteger (LexType::STR))
 				lexer->match (LexType::STR);
@@ -2109,7 +2138,7 @@ CScriptVarLink* CTinyJS::factor (bool& execute)
 	{
 		// new -> create a new object
 		lexer->match (LexType::R_NEW);
-		const std::string& className = lexer->getTokenString ();
+		const string& className = lexer->getTokenString ();
 		if (execute)
 		{
 			CScriptVarLink* objClassOrFunc = findInScopes (className);
@@ -2655,29 +2684,29 @@ void CTinyJS::statement (bool& execute)
 }
 
 /// Get the given variable specified by a path (var1.var2.etc), or return 0
-CScriptVar* CTinyJS::getScriptVariable (const std::string& path) const
+CScriptVar* CTinyJS::getScriptVariable (const string& path) const
 {
 	// traverse path
 	size_t prevIdx = 0;
 	size_t thisIdx = path.find ('.');
-	if (thisIdx == std::string::npos)
+	if (thisIdx == string::npos)
 		thisIdx = path.length ();
 	CScriptVar* var = root;
 	while (var && prevIdx < path.length ())
 	{
-		std::string el = path.substr (prevIdx, thisIdx - prevIdx);
+		string el = path.substr (prevIdx, thisIdx - prevIdx);
 		CScriptVarLink* varl = var->findChild (el);
 		var = varl ? varl->getVar () : 0;
 		prevIdx = thisIdx + 1;
 		thisIdx = path.find ('.', prevIdx);
-		if (thisIdx == std::string::npos)
+		if (thisIdx == string::npos)
 			thisIdx = path.length ();
 	}
 	return var;
 }
 
 /// Get the value of the given variable, or return 0
-const std::string* CTinyJS::getVariable (const std::string& path) const
+const string* CTinyJS::getVariable (const string& path) const
 {
 	CScriptVar* var = getScriptVariable (path);
 	// return result
@@ -2688,7 +2717,7 @@ const std::string* CTinyJS::getVariable (const std::string& path) const
 }
 
 /// set the value of the given variable, return trur if it exists and gets set
-bool CTinyJS::setVariable (const std::string& path, const std::string& varData)
+bool CTinyJS::setVariable (const string& path, const string& varData)
 {
 	CScriptVar* var = getScriptVariable (path);
 	// return result
@@ -2707,7 +2736,7 @@ bool CTinyJS::setVariable (const std::string& path, const std::string& varData)
 }
 
 /// Finds a child, looking recursively up the scopes
-CScriptVarLink* CTinyJS::findInScopes (const std::string& childName) const
+CScriptVarLink* CTinyJS::findInScopes (const string& childName) const
 {
 	for (int64_t s = scopes.size () - 1; s >= 0; s--)
 	{
@@ -2719,7 +2748,7 @@ CScriptVarLink* CTinyJS::findInScopes (const std::string& childName) const
 }
 
 /// Look up in any parent classes of the given object
-CScriptVarLink* CTinyJS::findInParentClasses (CScriptVar* object, const std::string& name) const
+CScriptVarLink* CTinyJS::findInParentClasses (CScriptVar* object, const string& name) const
 {
 	// Look for links to actual parent classes
 	CScriptVarLink* parentClass = object->findChild (TINYJS_PROTOTYPE_CLASS);

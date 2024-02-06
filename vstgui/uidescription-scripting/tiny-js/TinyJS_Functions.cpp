@@ -162,7 +162,7 @@ void scIntegerValueOf (CScriptVar* c)
 
 void scJSONStringify (CScriptVar* c)
 {
-	std::ostringstream result;
+	ostringstream result;
 	c->getParameter ("obj"sv)->getJSON (result);
 	c->getReturnVar ()->setString (result.str ());
 }
@@ -170,14 +170,14 @@ void scJSONStringify (CScriptVar* c)
 void scExec (CScriptVar* c, void* data)
 {
 	CTinyJS* tinyJS = (CTinyJS*)data;
-	std::string str = c->getParameter ("jsCode"sv)->getString ();
+	string str = c->getParameter ("jsCode"sv)->getString ();
 	tinyJS->execute (str);
 }
 
 void scEval (CScriptVar* c, void* data)
 {
 	CTinyJS* tinyJS = (CTinyJS*)data;
-	std::string str = c->getParameter ("jsCode"sv)->getString ();
+	string str = c->getParameter ("jsCode"sv)->getString ();
 	c->setReturnVar (tinyJS->evaluateComplex (str).getVar ());
 }
 

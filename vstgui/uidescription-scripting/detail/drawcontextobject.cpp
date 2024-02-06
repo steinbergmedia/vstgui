@@ -226,7 +226,7 @@ DrawContextObject::DrawContextObject ()
 					 throw CScriptException (
 						 "Missing `color` argument in drawContext.setFontColor(color);");
 				 CColor color {};
-				 UIViewCreator::stringToColor (&colorVar->getString (), color, uiDesc);
+				 UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
 				 context->setFontColor (color);
 			 },
 			 {"color"});
@@ -239,7 +239,7 @@ DrawContextObject::DrawContextObject ()
 					 throw CScriptException (
 						 "Missing `color` argument in drawContext.setFillColor(color);");
 				 CColor color {};
-				 UIViewCreator::stringToColor (&colorVar->getString (), color, uiDesc);
+				 UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
 				 context->setFillColor (color);
 			 },
 			 {"color"});
@@ -252,7 +252,7 @@ DrawContextObject::DrawContextObject ()
 					 throw CScriptException (
 						 "Missing `color` argument in drawContext.setFrameColor(color);");
 				 CColor color {};
-				 if (!UIViewCreator::stringToColor (&colorVar->getString (), color, uiDesc))
+				 if (!UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc))
 					 throw CScriptException (
 						 "Unknown `color` argument in drawContext.setFrameColor(color);");
 				 context->setFrameColor (color);

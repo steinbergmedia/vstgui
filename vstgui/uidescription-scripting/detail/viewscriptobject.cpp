@@ -32,7 +32,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 				 auto key = var->getParameter ("key"sv);
 				 auto value = var->getParameter ("value"sv);
 				 UIAttributes attr;
-				 attr.setAttribute (key->getString (), value->getString ());
+				 attr.setAttribute (key->getString ().data (), value->getString ().data ());
 				 auto result = uiDesc->getViewFactory ()->applyAttributeValues (view, attr, uiDesc);
 				 var->getReturnVar ()->setInt (result);
 			 },
@@ -41,8 +41,8 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 			 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
 				 auto key = var->getParameter ("key"sv);
 				 std::string result;
-				 if (uiDesc->getViewFactory ()->getAttributeValue (view, key->getString (), result,
-																   uiDesc))
+				 if (uiDesc->getViewFactory ()->getAttributeValue (view, key->getString ().data (),
+																   result, uiDesc))
 				 {
 					 var->getReturnVar ()->setString (result);
 				 }
@@ -56,7 +56,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 			 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
 				 auto typeName = var->getParameter ("typeName"sv);
 				 auto result =
-					 uiDesc->getViewFactory ()->viewIsTypeOf (view, typeName->getString ());
+					 uiDesc->getViewFactory ()->viewIsTypeOf (view, typeName->getString ().data ());
 				 var->getReturnVar ()->setInt (result);
 			 },
 			 {"typeName"});
@@ -135,7 +135,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 				 else if (value->isDouble ())
 					 propValue = value->getDouble ();
 				 else if (value->isString ())
-					 propValue = value->getString ();
+					 propValue = value->getString ().data ();
 				 auto result = controller->setProperty (view, name->getString (), propValue);
 				 var->getReturnVar ()->setInt (result);
 			 },

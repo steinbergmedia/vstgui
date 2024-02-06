@@ -441,29 +441,34 @@ bool colorToString (const CColor& color, std::string& string, const IUIDescripti
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc)
+bool stringToColor (std::string_view value, CColor& color, const IUIDescription* desc)
 {
-	if (!value)
-		return false;
-	if (*value == "")
+	if (value == "")
 	{
 		color = kTransparentCColor;
 		return true;
 	}
-	if (desc->getColor (value->data (), color))
+	if (desc->getColor (value.data (), color))
 		return true;
-	if (color.fromString (value->data ()))
+	if (color.fromString (value.data ()))
 		return true;
 	for (const auto& namedColor : getCSSNamedColors ())
 	{
-		if (namedColor.name == *value)
+		if (namedColor.name == value)
 		{
 			color = namedColor.color;
 			return true;
 		}
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc)
+{
+	if (!value)
+		return false;
+	return stringToColor (*value, color, desc);
 }
 
 //-----------------------------------------------------------------------------

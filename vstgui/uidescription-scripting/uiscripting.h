@@ -22,7 +22,7 @@ namespace VSTGUI {
 class UIScripting : public UIDescriptionAddOnAdapter
 {
 public:
-	using OnScriptException = std::function<void (const std::string& reason)>;
+	using OnScriptException = std::function<void (std::string_view reason)>;
 
 	/** initialize the UIScripting library
 	 *

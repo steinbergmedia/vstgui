@@ -53,7 +53,7 @@ struct UIDescScriptObject : ScriptObject
 					 {
 						 throw CScriptException ("Expect 'name' argument for getTagForName ");
 					 }
-					 std::string name = param->getString ();
+					 auto name = param->getString ();
 					 auto tag = desc->getTagForName (name.data ());
 					 var->setReturnVar (new CScriptVar (static_cast<int64_t> (tag)));
 				 },

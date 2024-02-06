@@ -39,7 +39,7 @@ struct ViewScriptObject;
 class ScriptContext : public IScriptContext
 {
 public:
-	using OnScriptException = std::function<void (const std::string& reason)>;
+	using OnScriptException = std::function<void (std::string_view reason)>;
 
 	ScriptContext (IUIDescription* uiDesc, const OnScriptException& func);
 	~ScriptContext () noexcept;
@@ -799,7 +799,7 @@ struct UIScripting::Impl
 	static OnScriptException onScriptExceptionFunc;
 };
 UIScripting::OnScriptException UIScripting::Impl::onScriptExceptionFunc =
-	[] (const std::string& reason) {
+	[] (std::string_view reason) {
 		std::cerr << reason << '\n';
 	};
 

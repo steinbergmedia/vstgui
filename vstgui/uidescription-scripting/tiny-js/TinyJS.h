@@ -135,20 +135,56 @@ static constexpr auto TINYJS_PROTOTYPE_CLASS = "prototype";
 static constexpr auto TINYJS_TEMP_NAME = "";
 static constexpr auto TINYJS_BLANK_DATA = "";
 
+//------------------------------------------------------------------------
+// Custom memory allocator
+using AllocatorFunc = std::function<void*(size_t)>;
+using DeallocatorFunc = std::function<void (void*, size_t)>;
+extern AllocatorFunc allocator;
+extern DeallocatorFunc deallocator;
+
+void setCustomAllocator (AllocatorFunc&& allocator, DeallocatorFunc&& deallocator);
+
+//------------------------------------------------------------------------
+template<typename T>
+struct Allocator
+{
+	using value_type = T;
+	using propagate_on_container_move_assignment = std::true_type;
+
+	Allocator () = default;
+
+	template<class U>
+	constexpr Allocator (const Allocator<U>&) noexcept
+	{
+	}
+
+	[[nodiscard]] T* allocate (std::size_t n)
+	{
+		return static_cast<T*> (allocator (n * sizeof (T)));
+	}
+	void deallocate (T* p, std::size_t n) noexcept { deallocator (p, n); }
+};
+
+using string = std::basic_string<char, std::char_traits<char>, Allocator<char>>;
+using ostringstream = std::basic_ostringstream<char, std::char_traits<char>, Allocator<char>>;
+
 /** convert the given string into a quoted string suitable for javascript */
-std::string getJSString (const std::string& str);
+string getJSString (std::string_view str);
 /** convert the given string to an 64 bit integer supporting hex and octal written numbers */
 int64_t stringToInteger (std::string_view str);
 
 class CScriptException
 {
 public:
-	std::string text;
-	CScriptException (const std::string& exceptionText);
-	CScriptException (std::string&& exceptionText);
+	string text;
+	CScriptException (const string& exceptionText);
+	CScriptException (string&& exceptionText);
 	CScriptException (const CScriptException&) = default;
 	CScriptException (CScriptException&&) = default;
 	~CScriptException () noexcept;
+
+	static void* operator new (std::size_t count);
+	static void operator delete (void* ptr, std::size_t size);
 };
 
 class CScriptLex
@@ -158,7 +194,7 @@ public:
 	~CScriptLex (void);
 
 	/** Get the string representation of the given token */
-	static std::string getTokenStr (int token);
+	static string getTokenStr (int token);
 
 	/** Lexical match wotsit */
 	void match (int expected_tk);
@@ -169,14 +205,17 @@ public:
 	int getToken () const { return token; }
 	size_t getTokenStart () const { return tokenStart; }
 	size_t getTokenEnd () const { return tokenEnd; }
-	const std::string& getTokenString () const { return tkStr; }
+	const string& getTokenString () const { return tkStr; }
 
 	/** Return a sub-string from the given position up until right now */
-	std::string getSubString (size_t pos) const;
+	string getSubString (size_t pos) const;
 	/** Return a sub-lexer from the given position up until right now */
 	CScriptLex* getSubLex (size_t lastPosition) const;
 	/** Return a string representing the position in lines and columns of the character pos given */
-	std::string getPosition (size_t pos = std::numeric_limits<size_t>::max ()) const;
+	string getPosition (size_t pos = std::numeric_limits<size_t>::max ()) const;
+
+	static void* operator new (std::size_t count);
+	static void operator delete (void* ptr, std::size_t size);
 
 private:
 	void getNextCh ();
@@ -192,7 +231,7 @@ private:
 	/** Position in the data at the last character of the last token */
 	size_t tokenLastEnd;
 	/** Data contained in the token we have here */
-	std::string tkStr;
+	string tkStr;
 
 	char currCh, nextCh;
 
@@ -213,7 +252,7 @@ using JSCallback = std::function<void (CScriptVar* var)>;
 class CScriptVarLink
 {
 public:
-	CScriptVarLink (CScriptVar* var, const std::string& name = TINYJS_TEMP_NAME, bool own = false);
+	CScriptVarLink (CScriptVar* var, const string& name = TINYJS_TEMP_NAME, bool own = false);
 	/** Copy constructor */
 	CScriptVarLink (const CScriptVarLink& link);
 	~CScriptVarLink ();
@@ -226,7 +265,7 @@ public:
 	/** Set the name as an integer (for arrays) */
 	void setIntName (int n);
 
-	const std::string& getName () const { return name; }
+	const string& getName () const { return name; }
 
 	void setNextSibling (CScriptVarLink* s) { nextSibling = s; }
 	void setPrevSibling (CScriptVarLink* s) { prevSibling = s; }
@@ -238,8 +277,11 @@ public:
 
 	bool owned () const { return isOwned; }
 
+	static void* operator new (std::size_t count);
+	static void operator delete (void* ptr, std::size_t size);
+
 private:
-	std::string name;
+	string name;
 	CScriptVarLink* nextSibling {nullptr};
 	CScriptVarLink* prevSibling {nullptr};
 	CScriptVar* var {nullptr};
@@ -260,9 +302,9 @@ public:
 	/** Create undefined */
 	CScriptVar ();
 	/** User defined */
-	CScriptVar (const std::string& varData, int varFlags);
+	CScriptVar (const string& varData, int varFlags);
 	/** Create a string */
-	CScriptVar (const std::string& str);
+	CScriptVar (std::string_view str);
 	/** Create a double */
 	CScriptVar (double varData);
 	/** Create an integer */
@@ -285,7 +327,7 @@ public:
 	CScriptVarLink* findChildOrCreate (std::string_view childName,
 									   int varFlags = SCRIPTVAR_UNDEFINED);
 	/** Tries to find a child with the given path (separated by dots) */
-	CScriptVarLink* findChildOrCreateByPath (const std::string& path);
+	CScriptVarLink* findChildOrCreateByPath (const string& path);
 	/** add a child if not already exist */
 	CScriptVarLink* addChild (std::string_view childName, CScriptVar* child = NULL);
 	/** add a child overwriting any with the same name */
@@ -307,9 +349,9 @@ public:
 	int64_t getInt ();
 	bool getBool () { return getInt () != 0; }
 	double getDouble ();
-	const std::string& getString ();
+	const string& getString ();
 	/** get Data as a parsable javascript string */
-	std::string getParsableString ();
+	string getParsableString ();
 	void setInt (int64_t num);
 	void setDouble (double val);
 	void setString (std::string_view str);
@@ -338,11 +380,11 @@ public:
 	CScriptVar* deepCopy ();
 
 	/** Dump out the contents of this using trace */
-	void trace (std::string indentStr = "", const std::string& name = "");
+	void trace (string indentStr = "", const string& name = "");
 	/** For debugging - just dump a string version of the flags */
-	std::string getFlagsAsString ();
+	string getFlagsAsString ();
 	/** Write out all the JS code needed to recreate this script variable to the stream (as JSON) */
-	void getJSON (std::ostream& destination, const std::string linePrefix = "");
+	void getJSON (std::ostream& destination, const string linePrefix = "");
 	/** Set the callback for native functions */
 	void setCallback (const JSCallback& callback);
 	/** Moves in the callback for native functions */
@@ -365,6 +407,9 @@ public:
 	CScriptVarLink* getFirstChild () const { return firstChild; }
 	CScriptVarLink* getLastChild () const { return lastChild; }
 
+	static void* operator new (std::size_t count);
+	static void operator delete (void* ptr, std::size_t size);
+
 protected:
 	CScriptVarLink* firstChild {nullptr};
 	CScriptVarLink* lastChild {nullptr};
@@ -373,8 +418,8 @@ protected:
 	int refs {0};
 	/** the flags determine the type of the variable - int/double/string/etc */
 	int flags {0};
-	std::variant<std::string, int64_t, double, JSCallback> variant;
-	std::string dataStr;
+	std::variant<string, int64_t, double, JSCallback> variant;
+	string dataStr;
 
 	/** Copy the basic data and flags from the variable given, with no
 	 * children. Should be used internally only - by copyValue and deepCopy */
@@ -390,7 +435,7 @@ public:
 	CTinyJS ();
 	~CTinyJS ();
 
-	void execute (const std::string& code);
+	void execute (const string& code);
 	/** Evaluate the given code and return a link to a javascript object,
 	 * useful for (dangerous) JSON parsing. If nothing to return, will return
 	 * 'undefined' variable type. CScriptVarLink is returned as this will
@@ -399,7 +444,7 @@ public:
 	CScriptVarLink evaluateComplex (std::string_view code);
 	/** Evaluate the given code and return a string. If nothing to return, will return
 	 * 'undefined' */
-	std::string evaluate (std::string_view code);
+	string evaluate (std::string_view code);
 
 	/** add a native function to be called from TinyJS
 	   example:
@@ -418,16 +463,19 @@ public:
 	void addNative (std::string_view funcDesc, const JSCallback& ptr);
 
 	/** Get the given variable specified by a path (var1.var2.etc), or return 0 */
-	CScriptVar* getScriptVariable (const std::string& path) const;
+	CScriptVar* getScriptVariable (const string& path) const;
 	/** Get the value of the given variable, or return 0 */
-	const std::string* getVariable (const std::string& path) const;
+	const string* getVariable (const string& path) const;
 	/** set the value of the given variable, return trur if it exists and gets set */
-	bool setVariable (const std::string& path, const std::string& varData);
+	bool setVariable (const string& path, const string& varData);
 
 	/** Send all variables to stdout */
 	void trace ();
 
 	CScriptVar* getRoot () const { return root; }
+
+	static void* operator new (std::size_t count);
+	static void operator delete (void* ptr, std::size_t size);
 
 private:
 	/** root of symbol table */
@@ -438,7 +486,7 @@ private:
 	std::vector<CScriptVar*> scopes;
 #ifdef TINYJS_CALL_STACK
 	/** Names of places called so we can show when erroring */
-	std::vector<std::string> call_stack;
+	std::vector<string> call_stack;
 #endif
 
 	/** Built in string class */
@@ -466,9 +514,9 @@ private:
 	void parseFunctionArguments (CScriptVar* funcVar) const;
 
 	/** Finds a child, looking recursively up the scopes */
-	CScriptVarLink* findInScopes (const std::string& childName) const;
+	CScriptVarLink* findInScopes (const string& childName) const;
 	/** Look up in any parent classes of the given object */
-	CScriptVarLink* findInParentClasses (CScriptVar* object, const std::string& name) const;
+	CScriptVarLink* findInParentClasses (CScriptVar* object, const string& name) const;
 };
 
 //------------------------------------------------------------------------

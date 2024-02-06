@@ -120,9 +120,9 @@ struct ScriptObject
 	{
 		scriptVar->addChild (name, new CScriptVar (static_cast<int64_t> (i)));
 	}
-	void addChild (std::string_view name, const std::string& value)
+	void addChild (std::string_view name, std::string_view value)
 	{
-		scriptVar->addChild (name, new CScriptVar (value));
+		scriptVar->addChild (name, new CScriptVar (TJS::string {value.data (), value.size ()}));
 	}
 	void addFunc (std::string_view name, std::function<void (CScriptVar*)>&& func)
 	{
