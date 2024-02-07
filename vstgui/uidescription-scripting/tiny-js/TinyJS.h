@@ -235,7 +235,7 @@ private:
 	/** Position in data (we CAN go past the end of the string here) */
 	size_t dataPos;
 
-	std::vector<size_t> newLinePositions;
+	std::vector<size_t, Allocator<size_t>> newLinePositions;
 };
 
 class CScriptVar;
