@@ -134,15 +134,6 @@ namespace TJS {
 
 using namespace std::string_view_literals;
 
-#ifdef _WIN32
-#ifdef _DEBUG
-#ifndef DBG_NEW
-#define DBG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
-#define new DBG_NEW
-#endif
-#endif
-#endif
-
 #ifdef __GNUC__
 #define vsprintf_s vsnprintf
 #define sprintf_s snprintf
