@@ -72,7 +72,7 @@ void ViewSizeAnimation::animationFinished (CView* view, IdStringPtr name, bool w
 		{
 			view->invalid ();
 			view->setViewSize (newRect);
-			view->setMouseableArea (newRect);
+			view->setMouseableArea (view->getViewSize ());
 			view->invalid ();
 		}
 	}
@@ -90,7 +90,7 @@ void ViewSizeAnimation::animationTick (CView* view, IdStringPtr name, float pos)
 	{
 		view->invalid ();
 		view->setViewSize (r);
-		view->setMouseableArea (r);
+		view->setMouseableArea (view->getViewSize ());
 		view->invalid ();
 	}
 }
