@@ -284,10 +284,9 @@ void UIDialogController::layoutButtons ()
 void UIDialogController::onKeyboardEvent (KeyboardEvent& event, CFrame* inFrame)
 {
 	auto guard = shared (this);
-	CView* focusView = inFrame->getFocusView ();
-	if (focusView)
+	if (auto focusView = shared (inFrame->getFocusView ()))
 	{
-		focusView->onKeyboardEvent (event);
+		focusView->dispatchEvent (event);
 		if (event.consumed)
 			return;
 	}
