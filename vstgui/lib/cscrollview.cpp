@@ -9,6 +9,7 @@
 #include "dragging.h"
 #include "controls/cscrollbar.h"
 #include "events.h"
+#include "algorithm.h"
 #include <cmath>
 
 /// @cond ignore
@@ -579,19 +580,17 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 	if (vsb)
 	{
 		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
-		float oldValue = vsb->getValue ();
+		float oldValue = vsb->getValueNormalized ();
 		vsb->setScrollSize (cs);
+		vsb->setMax (cs.getHeight () - sc->getViewSize ().getHeight ());
 		if (cs.getHeight () <= sc->getViewSize ().getHeight ())
-			vsb->setValue (0);
+			vsb->setValueNormalized (0.f);
 		else if (sc && keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
 		{
 			CRect vSize = sc->getViewSize ();
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ())));
-			if (newValue > 1.f)
-				newValue = 1.f;
-			else if (newValue < 0.f)
-				newValue = 0.f;
-			vsb->setValue (newValue);
+			newValue = clampNorm (newValue);
+			vsb->setValueNormalized (newValue);
 		}
 		if (oldSize != containerSize)
 			vsb->onVisualChange ();
@@ -600,19 +599,17 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 	if (hsb)
 	{
 		CRect oldScrollSize = hsb->getScrollSize (oldScrollSize);
-		float oldValue = hsb->getValue ();
+		float oldValue = hsb->getValueNormalized ();
 		hsb->setScrollSize (cs);
+		hsb->setMax (cs.getWidth () - sc->getViewSize ().getWidth ());
 		if (cs.getWidth () <= sc->getViewSize ().getWidth ())
-			hsb->setValue (0);
+			hsb->setValueNormalized (0.f);
 		else if (sc && keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
 		{
 			CRect vSize = sc->getViewSize ();
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ())));
-			if (newValue > 1.f)
-				newValue = 1.f;
-			else if (newValue < 0.f)
-				newValue = 0.f;
-			hsb->setValue (newValue);
+			newValue = clampNorm (newValue);
+			hsb->setValueNormalized (newValue);
 		}
 		if (oldSize != containerSize)
 			hsb->onVisualChange ();
@@ -628,13 +625,15 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	CPoint newOffset (scrollOffset);
 	CRect vs = sc->getViewSize ();
 	vs.originize ();
+#if 0
 	if (!(style & kDontDrawFrame))
 	{
 		vs.left--; //vs.top--;
 		vs.right++; //vs.bottom++;
 	}
+#endif
 	CRect cs (containerSize);
-	cs.offset (-cs.left, -cs.top);
+	cs.originize ();
 	cs.setWidth (vs.getWidth ());
 	cs.setHeight (vs.getHeight ());
 	if (r.top >= cs.top && r.bottom <= cs.bottom && r.left >= cs.left && r.right <= cs.right)
@@ -649,18 +648,25 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	}
 	if (r.left < cs.left)
 	{
-		newOffset.x -= (cs.left + r.left);
+		newOffset.x += (cs.left + r.left);
 	}
 	else if (r.right > cs.right && r.left != cs.left)
 	{
-		newOffset.x += (cs.right - r.right);
+		newOffset.x -= (cs.right - r.right);
 	}
 	if (vsb && newOffset.y != scrollOffset.y)
 	{
 		if (containerSize.getHeight () == vs.getHeight ())
-			vsb->setValue (0.f);
+		{
+			vsb->setValueNormalized (0.f);
+		}
 		else
-			vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
+		{
+			vsb->setValue (newOffset.y);
+			//			auto newValue = (newOffset.y - vs.top) / (containerSize.getHeight () -
+			//vs.getHeight ()); 			vsb->setValue (newValue * vsb->getMax ()); 			vsb->setValueNormalized
+			//(static_cast<float> (newValue));
+		}
 		vsb->bounceValue ();
 		vsb->onVisualChange ();
 		vsb->invalid ();
@@ -669,9 +675,15 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	if (hsb && newOffset.x != scrollOffset.x)
 	{
 		if (containerSize.getWidth () == vs.getWidth ())
-			hsb->setValue (0.f);
+		{
+			hsb->setValueNormalized (0.f);
+		}
 		else
-			hsb->setValue (-(float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
+		{
+			hsb->setValue (-newOffset.x);
+			//			auto newValue = (newOffset.x - vs.left) / (containerSize.getWidth () -
+			//vs.getWidth ()); 			hsb->setValueNormalized (-static_cast<float> (newValue));
+		}
 		hsb->bounceValue ();
 		hsb->onVisualChange ();
 		hsb->invalid ();
@@ -684,7 +696,7 @@ void CScrollView::resetScrollOffset ()
 {
 	if (vsb)
 	{
-		vsb->setValue (0);
+		vsb->setValueNormalized (0);
 		vsb->bounceValue ();
 		vsb->onVisualChange ();
 		vsb->invalid ();
@@ -692,7 +704,7 @@ void CScrollView::resetScrollOffset ()
 	}
 	if (hsb)
 	{
-		hsb->setValue (0);
+		hsb->setValueNormalized (0);
 		hsb->bounceValue ();
 		hsb->onVisualChange ();
 		hsb->invalid ();
@@ -833,7 +845,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getWidth () > vsize.getWidth ())
 				{
-					offset.x = (int32_t) (csize.left - (csize.getWidth () - vsize.getWidth ()) * value);
+					offset.x = -value;
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.x < 0)
@@ -847,7 +859,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getHeight () > vsize.getHeight ())
 				{
-					offset.y = (int32_t) (csize.top + (csize.getHeight () - vsize.getHeight ()) * value);
+					offset.y = value;
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.y > 0)
