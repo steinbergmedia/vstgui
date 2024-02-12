@@ -105,6 +105,7 @@ public:
 	 *	@param view the view to set (if this is a nullptr then the previously set view is removed)
 	 */
 	void setEdgeView (Edge edge, CView* view);
+	CView* getEdgeView (Edge edge) const;
 	//@}
 
 	// overwrite

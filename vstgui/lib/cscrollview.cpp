@@ -717,7 +717,7 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 				auto vs = view->getViewSize ();
 				if (vs.getWidth () < getVisibleClientRect ().getWidth ())
 					vs.setWidth (getVisibleClientRect ().getWidth ());
-				CViewContainer::addView (view);
+				CViewContainer::addView (view, sc);
 			}
 			break;
 		}
@@ -734,13 +734,30 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 				auto vs = view->getViewSize ();
 				if (vs.getHeight () < getVisibleClientRect ().getHeight ())
 					vs.setHeight (getVisibleClientRect ().getHeight ());
-				CViewContainer::addView (view);
+				CViewContainer::addView (view, sc);
 			}
 		}
 	}
 	setContainerSize (containerSize, true);
 	if (view)
 		view->registerViewListener (this);
+}
+
+//------------------------------------------------------------------------
+CView* CScrollView::getEdgeView (Edge edge) const
+{
+	switch (edge)
+	{
+		case Edge::Top:
+		{
+			return edgeViewTop;
+		}
+		case Edge::Left:
+		{
+			return edgeViewLeft;
+		}
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
