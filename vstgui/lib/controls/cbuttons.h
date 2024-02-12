@@ -61,11 +61,14 @@ public:
 	CCheckBox (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, UTF8StringPtr title = nullptr, CBitmap* bitmap = nullptr, int32_t style = 0);
 	CCheckBox (const CCheckBox& checkbox);
 
-	enum Styles {
+	enum Styles
+	{
 		/** automatically adjusts the width so that the label is completely visible */
 		kAutoSizeToFit = 1 << 0,
 		/** draws a crossbox instead of a checkmark if no bitmap is provided */
-		kDrawCrossBox  = 1 << 1
+		kDrawCrossBox = 1 << 1,
+		/** do not limit the box drawing to the cap height */
+		kIgnoreCapHeightOnDraw = 1 << 2,
 	};
 
 	//-----------------------------------------------------------------------------
