@@ -123,6 +123,13 @@ public:
 	CDrawStyle getBackgroundColorDrawStyle () const;
 	//@}
 
+	/** set custom initial focus view
+	 *  which is first focused when advanceNextFocusView is called without oldFocus view
+	 */
+	void setInitialFocusView (CView* view);
+	/** get custom initial focus view */
+	CView* getInitialFocusView () const;
+
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 	virtual bool invalidateDirtyViews ();
 	virtual CRect getVisibleSize (const CRect& rect) const;
@@ -261,6 +268,8 @@ protected:
 	
 	const ViewList& getChildren () const;
 private:
+	static constexpr CViewAttributeID kInitialFocusViewAttribute = 'cifv';
+
 	void dispatchEventToSubViews (Event& event);
 	
 	void clearMouseDownView ();

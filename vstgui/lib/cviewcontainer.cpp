@@ -158,6 +158,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 //-----------------------------------------------------------------------------
 CViewContainer::~CViewContainer () noexcept
 {
+	vstgui_assert (pImpl->children.empty ());
 	vstgui_assert (pImpl->viewContainerListeners.empty ());
 }
 
@@ -567,7 +568,8 @@ bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mou
 bool CViewContainer::removeAll (bool withForget)
 {
 	clearMouseDownView ();
-	
+	setInitialFocusView (nullptr);
+
 	auto it = pImpl->children.begin ();
 	while (it != pImpl->children.end ())
 	{
@@ -597,6 +599,8 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 	auto it = std::find (pImpl->children.begin (), pImpl->children.end (), pView);
 	if (it != pImpl->children.end ())
 	{
+		if (pView == getInitialFocusView ())
+			setInitialFocusView (nullptr);
 		pView->invalid ();
 		if (pView == getMouseDownView ())
 			clearMouseDownView ();
@@ -1266,6 +1270,32 @@ void CViewContainer::takeFocus ()
 	CView::takeFocus ();
 }
 
+//------------------------------------------------------------------------
+void CViewContainer::setInitialFocusView (CView* view)
+{
+	if (auto oldInitialFocusView = getInitialFocusView ())
+	{
+		oldInitialFocusView->forget ();
+	}
+	if (view)
+	{
+		setAttribute (kInitialFocusViewAttribute, view);
+		view->remember ();
+	}
+	else
+	{
+		removeAttribute (kInitialFocusViewAttribute);
+	}
+}
+
+//------------------------------------------------------------------------
+CView* CViewContainer::getInitialFocusView () const
+{
+	CView* initialFocusView = nullptr;
+	getAttribute (kInitialFocusViewAttribute, initialFocusView);
+	return initialFocusView;
+}
+
 //-----------------------------------------------------------------------------
 /**
  * @param oldFocus old focus view
@@ -1274,8 +1304,17 @@ void CViewContainer::takeFocus ()
  */
 bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 {
-	if (getFrame ())
+	if (auto frame = getFrame ())
 	{
+		if (!oldFocus)
+		{
+			if (auto initialFocusView = getInitialFocusView ())
+			{
+				frame->setFocusView (initialFocusView);
+				return true;
+			}
+		}
+
 		bool foundOld = false;
 
 		auto func = [&] (CView* pV) {
@@ -1291,7 +1330,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 			{
 				if (pV->wantsFocus () && pV->getMouseEnabled () && pV->isVisible ())
 				{
-					getFrame ()->setFocusView (pV);
+					frame->setFocusView (pV);
 					return true;
 				}
 				else if (CViewContainer* container = pV->asViewContainer ())
