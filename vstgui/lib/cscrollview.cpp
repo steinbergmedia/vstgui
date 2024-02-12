@@ -428,6 +428,8 @@ void CScrollView::recalculateSubViews ()
 				hsb->invalid ();
 			sbr.right -= (scrollbarWidth - 1);
 		}
+		if (edgeViewLeft && style & kOverlayScrollbars)
+			sbr.left = edgeViewLeft->getViewSize ().right;
 		if (hsb)
 		{
 			hsb->setViewSize (sbr, true);
@@ -460,6 +462,8 @@ void CScrollView::recalculateSubViews ()
 				vsb->invalid ();
 			sbr.bottom -= (scrollbarWidth - 1);
 		}
+		if (edgeViewTop)
+			sbr.top = edgeViewTop->getViewSize ().bottom;
 		if (vsb)
 		{
 			vsb->setViewSize (sbr, true);
@@ -488,7 +492,10 @@ void CScrollView::recalculateSubViews ()
 		evls.originize ();
 		evls.offset (scsize.getTopLeft ());
 		scsize.top += evls.getHeight ();
-		evls.right = scsize.right;
+		if (style & kOverlayScrollbars)
+			evls.right = scsize.right;
+		else
+			evls.right = getViewSize ().getWidth ();
 		edgeViewTop->setViewSize (evls);
 	}
 	if (edgeViewLeft)
