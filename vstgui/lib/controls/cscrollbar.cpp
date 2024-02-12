@@ -10,6 +10,7 @@
 #include "../cgraphicspath.h"
 #include "../cdrawcontext.h"
 #include "../events.h"
+#include "../algorithm.h"
 
 namespace VSTGUI {
 
@@ -104,7 +105,7 @@ CRect CScrollbar::getScrollerRect ()
 {
 	CRect sr (scrollerArea);
 	CCoord l = (direction == kHorizontal) ? scrollerArea.getWidth () : scrollerArea.getHeight ();
-	CCoord scrollerOffset = (CCoord) (value * (l - scrollerLength));
+	CCoord scrollerOffset = (CCoord)(getValueNormalized () * (l - scrollerLength));
 	if (direction == kHorizontal)
 	{
 		sr.setWidth (scrollerLength);
@@ -128,26 +129,25 @@ void CScrollbar::doStepping ()
 			return;
 	}
 	bool dir = (direction == kHorizontal && startPoint.x < sr.left) || (direction == kVertical && startPoint.y < sr.top);
-	float newValue;
+	float newValue = getValueNormalized ();
 	if (direction == kHorizontal)
 	{
 		if (dir)
-			newValue = value - (float)scrollerLength / (float)scrollerArea.getWidth ();
+			newValue -= (float)scrollerLength / (float)scrollerArea.getWidth ();
 		else
-			newValue = value + (float)scrollerLength / (float)scrollerArea.getWidth ();
+			newValue += (float)scrollerLength / (float)scrollerArea.getWidth ();
 	}
 	else
 	{
 		if (dir)
-			newValue = value - (float)scrollerLength / (float)scrollerArea.getHeight ();
+			newValue -= (float)scrollerLength / (float)scrollerArea.getHeight ();
 		else
-			newValue = value + (float)scrollerLength / (float)scrollerArea.getHeight ();
+			newValue += (float)scrollerLength / (float)scrollerArea.getHeight ();
 	}
-	if (newValue < 0.f) newValue = 0.f;
-	if (newValue > 1.f) newValue = 1.f;
-	if (newValue != value)
+	newValue = clampNorm (newValue);
+	if (newValue != getValueNormalized ())
 	{
-		value = newValue;
+		setValueNormalized (newValue);
 		valueChanged ();
 		invalid ();
 	}
@@ -255,11 +255,10 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 			{
 				newValue = (float)((float)(newPoint.y - scrollerArea.top) / ((float)scrollerArea.getHeight () - scrollerRect.getHeight ()));
 			}
-			if (newValue < 0.f) newValue = 0.f;
-			if (newValue > 1.f) newValue = 1.f;
-			if (newValue != value)
+			newValue = clampNorm (newValue);
+			if (newValue != getValueNormalized ())
 			{
-				value = newValue;
+				setValueNormalized (newValue);
 				valueChanged ();
 				invalid ();
 			}
@@ -326,14 +325,16 @@ void CScrollbar::onMouseWheelEvent (MouseWheelEvent& event)
 	if (event.flags & MouseWheelEvent::DirectionInvertedFromDevice)
 		distance *= -1;
 
+	float newValue = getValueNormalized ();
 	if (event.modifiers.has (ModifierKey::Shift))
-		value -= 0.1f * distance * getWheelInc ();
+		newValue -= 0.1f * distance * getWheelInc ();
 	else
-		value -= distance * getWheelInc ();
-	bounceValue ();
+		newValue -= distance * getWheelInc ();
+	newValue = clampNorm (newValue);
 
-	if (isDirty ())
+	if (newValue != getValueNormalized ())
 	{
+		setValueNormalized (newValue);
 		onVisualChange ();
 		valueChanged ();
 		invalid ();
