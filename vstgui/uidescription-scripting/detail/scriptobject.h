@@ -96,17 +96,10 @@ struct ScriptObject
 	}
 
 	CScriptVar* getVar () const { return scriptVar; }
-	CScriptVar* take ()
-	{
-		auto var = scriptVar;
-		scriptVar = nullptr;
-		return var;
-	}
 
 	void addChild (std::string_view name, ScriptObject&& obj)
 	{
-		auto var = obj.take ();
-		scriptVar->addChild (name, var);
+		scriptVar->addChild (name, obj.getVar ());
 	}
 	void addChild (std::string_view name, double d)
 	{
