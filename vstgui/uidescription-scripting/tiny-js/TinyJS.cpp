@@ -128,6 +128,7 @@
 #include <cstdio>
 #include <array>
 #include <charconv>
+#include <vector>
 
 //------------------------------------------------------------------------
 namespace TJS {
@@ -1871,8 +1872,6 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 			v = v->getNextSibling ();
 		}
 		lexer->match (')');
-		// setup a return variable
-		CScriptVarLink* returnVar = NULL;
 		// execute function!
 		// add the function's execute space to the symbol table so we can recurse
 		CScriptVarLink* returnVarLink = functionRoot->addChild (TINYJS_RETURN_VAR);
@@ -1881,16 +1880,23 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 		call_stack.push_back (function->getName () + " " + lexer->getPosition ());
 #endif
 
+		string exceptionText;
 		if (function->getVar ()->isNative ())
 		{
-			function->getVar ()->callCallback (functionRoot);
+			try
+			{
+				function->getVar ()->callCallback (functionRoot);
+			}
+			catch (CScriptException& e)
+			{
+				exceptionText = std::move (e.text);
+			}
 		}
 		else
 		{
 			/* we just want to execute the block, but something could
 			 * have messed up and left us with the wrong ScriptLex, so
 			 * we want to be careful here... */
-			string exceptionText;
 			CScriptLex* oldLex = lexer;
 			CScriptLex* newLex = new CScriptLex (function->getVar ()->getString ());
 			lexer = newLex;
@@ -1906,17 +1912,20 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 			}
 			delete newLex;
 			lexer = oldLex;
-
-			if (!exceptionText.empty ())
-				throw CScriptException (std::move (exceptionText));
 		}
+		if (!exceptionText.empty ())
+		{
+			delete functionRoot;
+			throw CScriptException (std::move (exceptionText));
+		}
+
 #ifdef TINYJS_CALL_STACK
 		if (!call_stack.empty ())
 			call_stack.pop_back ();
 #endif
 		scopes.pop_back ();
 		/* get the real return var before we remove it from our function */
-		returnVar = new CScriptVarLink (returnVarLink->getVar ());
+		auto returnVar = new CScriptVarLink (returnVarLink->getVar ());
 		functionRoot->removeLink (returnVarLink);
 		delete functionRoot;
 		if (returnVar)
