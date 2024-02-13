@@ -77,6 +77,7 @@ struct ScriptObject
 		scriptVar = new CScriptVar ();
 		scriptVar->addRef ();
 	}
+	ScriptObject (CScriptVar* var) : scriptVar (var) {}
 	ScriptObject (ScriptObject&& o) { *this = std::move (o); }
 	ScriptObject& operator= (ScriptObject&& o)
 	{
@@ -96,6 +97,12 @@ struct ScriptObject
 	}
 
 	CScriptVar* getVar () const { return scriptVar; }
+	CScriptVar* take ()
+	{
+		auto v = scriptVar;
+		scriptVar = nullptr;
+		return v;
+	}
 
 	void addChild (std::string_view name, ScriptObject&& obj)
 	{

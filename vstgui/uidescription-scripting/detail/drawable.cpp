@@ -47,11 +47,11 @@ void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const
 
 	CDrawContext::Transform tm (*context, CGraphicsTransform ().translate (viewSize.getTopLeft ()));
 
-	auto rectObj = makeScriptRect (rect);
+	auto rectVar = makeScriptRect (rect);
 	auto scriptRoot = scriptContext->getRoot ();
 	ScriptAddChildScoped scs (*scriptRoot, "view", scriptObject->getVar ());
 	ScriptAddChildScoped scs2 (*scriptRoot, "context", drawContext.getVar ());
-	ScriptAddChildScoped scs3 (*scriptRoot, "rect", rectObj.getVar ());
+	ScriptAddChildScoped scs3 (*scriptRoot, "rect", rectVar);
 	scriptContext->evalScript ("view.draw(context, rect);"sv);
 
 	drawContext.setDrawContext (nullptr, nullptr);
