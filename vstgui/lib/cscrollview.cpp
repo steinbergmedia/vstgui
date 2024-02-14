@@ -736,7 +736,10 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 			{
 				auto vs = view->getViewSize ();
 				if (vs.getWidth () < getVisibleClientRect ().getWidth ())
+				{
 					vs.setWidth (getVisibleClientRect ().getWidth ());
+					view->setViewSize (vs);
+				}
 				CViewContainer::addView (view, sc);
 			}
 			break;
@@ -753,12 +756,16 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 			{
 				auto vs = view->getViewSize ();
 				if (vs.getHeight () < getVisibleClientRect ().getHeight ())
+				{
 					vs.setHeight (getVisibleClientRect ().getHeight ());
+					view->setViewSize (vs);
+				}
 				CViewContainer::addView (view, sc);
 			}
 		}
 	}
 	setContainerSize (containerSize, true);
+	recalculateSubViews ();
 	if (view)
 		view->registerViewListener (this);
 }
