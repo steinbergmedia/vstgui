@@ -740,6 +740,7 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 					vs.setWidth (getVisibleClientRect ().getWidth ());
 					view->setViewSize (vs);
 				}
+				view->setAutosizeFlags (kAutosizeTop | kAutosizeLeft | kAutosizeRight);
 				CViewContainer::addView (view, sc);
 			}
 			break;
@@ -760,6 +761,7 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 					vs.setHeight (getVisibleClientRect ().getHeight ());
 					view->setViewSize (vs);
 				}
+				view->setAutosizeFlags (kAutosizeLeft | kAutosizeTop | kAutosizeBottom);
 				CViewContainer::addView (view, sc);
 			}
 		}
@@ -951,4 +953,3 @@ void CScrollView::viewWillDelete (CView* view)
 }
 
 } // VSTGUI
-
