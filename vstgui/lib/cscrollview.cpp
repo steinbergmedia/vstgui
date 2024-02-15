@@ -582,7 +582,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
 		float oldValue = vsb->getValueNormalized ();
 		vsb->setScrollSize (cs);
-		vsb->setMax (cs.getHeight () - sc->getViewSize ().getHeight ());
+		vsb->setMax (static_cast<float> (cs.getHeight () - sc->getViewSize ().getHeight ()));
 		if (cs.getHeight () <= sc->getViewSize ().getHeight ())
 			vsb->setValueNormalized (0.f);
 		else if (sc && keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
@@ -601,7 +601,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		CRect oldScrollSize = hsb->getScrollSize (oldScrollSize);
 		float oldValue = hsb->getValueNormalized ();
 		hsb->setScrollSize (cs);
-		hsb->setMax (cs.getWidth () - sc->getViewSize ().getWidth ());
+		hsb->setMax (static_cast<float> (cs.getWidth () - sc->getViewSize ().getWidth ()));
 		if (cs.getWidth () <= sc->getViewSize ().getWidth ())
 			hsb->setValueNormalized (0.f);
 		else if (sc && keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
@@ -663,7 +663,7 @@ void CScrollView::makeRectVisible (const CRect& rect)
 		}
 		else
 		{
-			vsb->setValue (newOffset.y);
+			vsb->setValue (static_cast<float> (newOffset.y));
 			//			auto newValue = (newOffset.y - vs.top) / (containerSize.getHeight () -
 			//vs.getHeight ()); 			vsb->setValue (newValue * vsb->getMax ()); 			vsb->setValueNormalized
 			//(static_cast<float> (newValue));
@@ -681,7 +681,7 @@ void CScrollView::makeRectVisible (const CRect& rect)
 		}
 		else
 		{
-			hsb->setValue (newOffset.x);
+			hsb->setValue (static_cast<float> (newOffset.x));
 			//			auto newValue = (newOffset.x - vs.left) / (containerSize.getWidth () -
 			//vs.getWidth ()); 			hsb->setValueNormalized (-static_cast<float> (newValue));
 		}

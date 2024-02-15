@@ -427,8 +427,11 @@ template<typename T>
 inline Optional<T> UTF8StringView::toNumber () const
 {
 	auto number = toInteger ();
-	if (number > std::numeric_limits<T>::max () || number < std::numeric_limits<T>::min ())
-		return {};
+	if constexpr (sizeof (number) > sizeof (T))
+	{
+		if (number > std::numeric_limits<T>::max () || number < std::numeric_limits<T>::min ())
+			return {};
+	}
 	return makeOptional (static_cast<T> (number));
 }
 
