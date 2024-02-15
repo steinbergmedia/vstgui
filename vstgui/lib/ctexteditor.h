@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "enumbitset.h"
 #include "cview.h"
 #include "ccolor.h"
 #include <string_view>
@@ -51,6 +52,7 @@ struct ITextEditor
 		CColor textColor {kBlackCColor};
 		CColor backColor {kWhiteCColor};
 		CColor selectionBackColor {kGreyCColor};
+		CColor frameColor {kGreyCColor};
 		CColor lineNumberTextColor {127, 127, 127, 100};
 		CColor lineNumberTextSelectedColor {100, 100, 100, 255};
 		CColor lineNumberLine {127, 127, 127, 100};
@@ -64,7 +66,7 @@ struct ITextEditor
 
 	virtual void setStyle (const Style& style) const = 0;
 
-	enum class Command
+	enum class Command : uint32_t
 	{
 		Undo,
 		Redo,
@@ -75,12 +77,24 @@ struct ITextEditor
 		FindPrevious,
 		SelectAll,
 		UseSelectionForFind,
+		ShowFindPanel,
+		TakeFocus,
 	};
 
 	virtual bool canHandleCommand (Command cmd) const = 0;
 	virtual bool handleCommand (Command cmd) const = 0;
 	virtual bool setCommandKeyBinding (Command cmd, char16_t character, VirtualKey virt,
 									   Modifiers modifiers) const = 0;
+
+	enum class FindOption : uint32_t
+	{
+		CaseSensitive,
+		WholeWords,
+	};
+	using FindOptions = EnumBitset<FindOption>;
+
+	virtual void setFindOptions (FindOptions opt) const = 0;
+	virtual void setFindString (std::string_view utf8Text) const = 0;
 };
 
 //------------------------------------------------------------------------

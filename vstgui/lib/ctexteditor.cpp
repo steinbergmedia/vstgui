@@ -17,6 +17,8 @@
 #include "platform/iplatformfont.h"
 #include "platform/iplatformframe.h"
 #include "platform/platformfactory.h"
+#include "controls/cbuttons.h"
+#include "controls/ctextedit.h"
 #include "animation/timingfunctions.h"
 #include "animation/animations.h"
 
@@ -134,9 +136,24 @@ struct NewLineProcessor
 };
 
 struct LineNumberView;
+struct FindPanelController;
 
 static constexpr CPoint MouseOutsidePos = {std::numeric_limits<CCoord>::max (),
 										   std::numeric_limits<CCoord>::max ()};
+
+//------------------------------------------------------------------------
+struct Key
+{
+	char16_t character;
+	VirtualKey virt;
+	Modifiers modifiers;
+
+	bool operator== (const KeyboardEvent& event) const
+	{
+		return event.character == character && event.virt == virt && event.modifiers == modifiers;
+	}
+};
+using CommandKeyArray = std::array<Key, static_cast<size_t> (ITextEditor::Command::TakeFocus) + 1>;
 
 //------------------------------------------------------------------------
 struct TextEditorView : public CView,
@@ -218,6 +235,8 @@ protected:
 	bool handleCommand (Command cmd) const override;
 	bool setCommandKeyBinding (Command cmd, char16_t character, VirtualKey virt,
 							   Modifiers modifiers) const override;
+	void setFindOptions (FindOptions opt) const override;
+	void setFindString (std::string_view utf8Text) const override;
 
 	// commandos
 	void selectAll () const;
@@ -225,7 +244,11 @@ protected:
 	bool doCopy () const;
 	bool doPaste () const;
 	bool useSelectionForFind () const;
-	bool doFind (bool forward = true) const;
+	bool doFind (bool forward = true, size_t oldPos = String::npos) const;
+	bool showFindPanel () const;
+
+	String::size_type doFindCaseSensitive (bool forward) const;
+	String::size_type doFindIgnoreCase (bool forward) const;
 
 private:
 	template<typename Proc>
@@ -267,17 +290,21 @@ private:
 	CRect invalidCursorRect () const;
 	void toggleCursorVisibility () const;
 	void restartBlinkTimer () const;
+	void onStyleChanged () const;
+	void setFindString (String&& text) const;
 
 	TextEditorView& mutableThis () const { return *const_cast<TextEditorView*> (this); }
 
+public:
 	//------------------------------------------------------------------------
-	mutable struct
+	struct ModelData
 	{
 		TextModel model;
 
 		std::shared_ptr<Style> style {std::make_shared<Style> ()};
 		ITextEditorController* controller {nullptr};
 		const IFontPainter* fontPainer {nullptr};
+		FindPanelController* findPanelController {nullptr};
 
 		CScrollView* scrollView {nullptr};
 		SharedPointer<LineNumberView> lineNumberView;
@@ -302,22 +329,14 @@ private:
 
 		Lines::const_iterator stbInternalIterator;
 
+		FindOptions findOptions;
 		String findString;
 
-		struct Key
-		{
-			char16_t character;
-			VirtualKey virt;
-			Modifiers modifiers;
+		CommandKeyArray commandKeys;
+	};
 
-			bool operator== (const KeyboardEvent& event) const
-			{
-				return event.character == character && event.virt == virt &&
-					   event.modifiers == modifiers;
-			}
-		};
-		std::array<Key, static_cast<size_t> (Command::UseSelectionForFind) + 1> commandKeys;
-	} md;
+private:
+	mutable ModelData md;
 };
 
 #define VIRTUAL_KEY_BIT 0x80000000
@@ -393,6 +412,44 @@ private:
 	CView* textEditorView {nullptr};
 };
 
+//------------------------------------------------------------------------
+struct FindPanelController : IControlListener,
+							 ViewListenerAdapter,
+							 ViewEventListenerAdapter
+{
+	using RemoveFindPanelFunc = std::function<void ()>;
+	static CViewContainer* makeFindPanelView (CRect rect, TextEditorView::ModelData& md,
+											  const ITextEditor& editor, RemoveFindPanelFunc&& f);
+
+	void setFindString (StringView text);
+	void setFindOptions (ITextEditor::FindOptions opt);
+
+private:
+	enum Tag
+	{
+		Textfield,
+		CloseButton,
+		WholeWords,
+		CaseSensitive,
+		FindPrevious,
+		FindNext,
+	};
+
+	FindPanelController (const ITextEditor& editor);
+	~FindPanelController () noexcept;
+	void valueChanged (CControl* control) override;
+	void viewLostFocus (CView* view) override;
+	void viewWillDelete (CView* view) override;
+	void viewOnEvent (CView* view, Event& event) override;
+
+	const ITextEditor& editor;
+	CTextEdit* editfield {nullptr};
+	CControl* closeBox {nullptr};
+	ITextEditor::FindOptions findOptions {};
+	CommandKeyArray commandKeys;
+	RemoveFindPanelFunc removeFindPanelFunc;
+};
+
 static constexpr size_t Index (ITextEditor::Command cmd) { return static_cast<size_t> (cmd); }
 
 //------------------------------------------------------------------------
@@ -400,6 +457,7 @@ TextEditorView::TextEditorView (ITextEditorController* controller) : CView ({0, 
 {
 	md.controller = controller;
 	setWantsFocus (true);
+	onStyleChanged ();
 	stb_textedit_initialize_state (&md.editState, false);
 	md.commandKeys[Index (Command::SelectAll)] = {u'a', VirtualKey::None, {ModifierKey::Control}};
 	md.commandKeys[Index (Command::Cut)] = {u'x', VirtualKey::None, {ModifierKey::Control}};
@@ -420,6 +478,8 @@ TextEditorView::TextEditorView (ITextEditorController* controller) : CView ({0, 
 	md.commandKeys[Index (Command::UseSelectionForFind)] = {
 		0, VirtualKey::F3, {ModifierKey::Control}};
 #endif
+	md.commandKeys[Index (Command::ShowFindPanel)] = {
+		u'f', VirtualKey::None, {ModifierKey::Control}};
 	md.controller->onTextEditorCreated (*this);
 }
 
@@ -570,7 +630,9 @@ void TextEditorView::viewOnEvent (CView* view, Event& event)
 		scrollOffset.y -= wheelEvent.deltaY * md.lineHeight;
 	}
 	if (wheelEvent.flags & MouseWheelEvent::DirectionInvertedFromDevice)
-		scrollOffset.y *= 1.;
+	{
+		scrollOffset.y *= -1.;
+	}
 
 	auto viewSize = getVisibleViewSize ();
 	viewSize.offset (scrollOffset);
@@ -580,13 +642,8 @@ void TextEditorView::viewOnEvent (CView* view, Event& event)
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::setStyle (const Style& newStyle) const
+void TextEditorView::onStyleChanged () const
 {
-	if (!md.style->font)
-		return;
-
-	md.style = std::make_shared<Style> (newStyle);
-
 	if (auto pf = md.style->font->getPlatformFont ())
 	{
 		md.fontAscent = pf->getAscent ();
@@ -626,10 +683,22 @@ void TextEditorView::setStyle (const Style& newStyle) const
 }
 
 //------------------------------------------------------------------------
+void TextEditorView::setStyle (const Style& newStyle) const
+{
+	if (!md.style->font)
+		return;
+
+	md.style = std::make_shared<Style> (newStyle);
+	onStyleChanged ();
+}
+
+//------------------------------------------------------------------------
 bool TextEditorView::setPlainText (std::string_view utf8Text) const
 {
 	md.model.text = convert (utf8Text.data (), utf8Text.size ());
 	invalidate (Dirty::All);
+	if (md.lineNumberView)
+		updateLineNumbersView ();
 	return true;
 }
 
@@ -677,12 +746,16 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 			// TODO:
 			return true;
 		}
+		case Command::TakeFocus:
+			return true;
 		case Command::FindNext:
 			[[fallthrough]];
 		case Command::FindPrevious:
 		{
 			return !md.findString.empty ();
 		}
+		case Command::ShowFindPanel:
+			return md.scrollView != nullptr;
 	}
 	return false;
 }
@@ -718,6 +791,17 @@ bool TextEditorView::handleCommand (Command cmd) const
 			return doFind (false);
 		case Command::UseSelectionForFind:
 			return useSelectionForFind ();
+		case Command::ShowFindPanel:
+			return showFindPanel ();
+		case Command::TakeFocus:
+		{
+			if (auto frame = getFrame ())
+			{
+				if (frame->getFocusView () != this)
+					frame->setFocusView (&mutableThis ());
+			}
+			return true;
+		}
 	}
 	return false;
 }
@@ -1896,17 +1980,72 @@ bool TextEditorView::useSelectionForFind () const
 {
 	if (auto range = makeRange (md.editState))
 	{
-		md.findString = md.model.text.substr (range.start, range.length);
+		setFindString (md.model.text.substr (range.start, range.length));
 		return true;
 	}
 	return false;
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::doFind (bool forward) const
+bool TextEditorView::doFind (bool forward, size_t oldPos) const
 {
 	if (md.findString.empty ())
 		return false;
+
+	std::optional<size_t> firstFound = {};
+
+	auto pos = String::npos;
+	while (true)
+	{
+		if (md.findOptions & FindOption::CaseSensitive)
+			pos = doFindCaseSensitive (forward);
+		else
+			pos = doFindIgnoreCase (forward);
+		if (pos == String::npos)
+			break;
+
+		auto oldCursor = md.editState.cursor;
+		md.editState.cursor = static_cast<int> (pos);
+		md.editState.select_start = md.editState.cursor;
+		md.editState.select_end = md.editState.cursor + static_cast<int> (md.findString.length ());
+
+		if (md.findOptions & FindOption::WholeWords)
+		{
+			if ((pos > 0 && !isStopChar (md.model.text[pos - 1])) ||
+				(pos + md.findString.length () < md.model.text.size () &&
+				 !isStopChar (md.model.text[pos + md.findString.length ()])))
+			{
+				if (firstFound)
+				{
+					if (pos == *firstFound)
+						break;
+				}
+				else
+				{
+					firstFound = {pos};
+				}
+				continue;
+			}
+		}
+
+		onCursorChanged (oldCursor, md.editState.cursor);
+		onSelectionChanged ({makeRange (md.editState)}, true);
+
+		return true;
+	}
+
+	if (md.editState.select_start != md.editState.select_end)
+	{
+		md.editState.select_end = md.editState.select_start;
+		onSelectionChanged ({makeRange (md.editState)}, true);
+	}
+
+	return false;
+}
+
+//------------------------------------------------------------------------
+String::size_type TextEditorView::doFindCaseSensitive (bool forward) const
+{
 	auto pos = String::npos;
 	if (forward)
 	{
@@ -1928,17 +2067,395 @@ bool TextEditorView::doFind (bool forward) const
 		if (pos == String::npos /*wrap around*/)
 			pos = text.rfind (md.findString.data (), pos);
 	}
-	if (pos != String::npos)
+	return pos;
+}
+
+//------------------------------------------------------------------------
+String::size_type TextEditorView::doFindIgnoreCase (bool forward) const
+{
+	auto pos = String::npos;
+	if (forward)
 	{
-		auto oldCursor = md.editState.cursor;
-		md.editState.cursor = static_cast<int> (pos);
-		md.editState.select_start = md.editState.cursor;
-		md.editState.select_end = md.editState.cursor + static_cast<int> (md.findString.length ());
-		onCursorChanged (oldCursor, md.editState.cursor);
-		onSelectionChanged ({makeRange (md.editState)}, true);
+		auto cursor = static_cast<size_t> (md.editState.select_end);
+		if (cursor > md.model.text.length ())
+			cursor = 0;
+
+		auto text = StringView (md.model.text.data () + cursor, md.model.text.length () - cursor);
+		auto it = std::search (
+			text.begin (), text.end (), md.findString.begin (), md.findString.end (),
+			[] (auto ch1, auto ch2) { return std::toupper (ch1) == std::toupper (ch2); });
+		if (it != text.end ())
+		{
+			pos = cursor + std::distance (text.begin (), it);
+		}
+		else if (cursor != 0) // wrap arround
+		{
+			text = StringView (md.model.text.data (), cursor);
+			it = std::search (
+				text.begin (), text.end (), md.findString.begin (), md.findString.end (),
+				[] (auto ch1, auto ch2) { return std::toupper (ch1) == std::toupper (ch2); });
+			if (it != text.end ())
+			{
+				pos = std::distance (text.begin (), it);
+			}
+		}
+	}
+	else
+	{
+		auto cursor = md.editState.select_start - md.findString.length ();
+		if (cursor < 0)
+			cursor = md.model.text.length ();
+		auto text = StringView (md.model.text.data (), cursor);
+		auto it = std::search (
+			text.rbegin (), text.rend (), md.findString.rbegin (), md.findString.rend (),
+			[] (auto ch1, auto ch2) { return std::toupper (ch1) == std::toupper (ch2); });
+		if (it != text.rend ())
+		{
+			pos = cursor - (std::distance (text.rbegin (), it) + md.findString.length ());
+		}
+		else if (cursor < md.model.text.length ()) // wrap arround
+		{
+			text = StringView (md.model.text.data () + cursor, md.model.text.length () - cursor);
+			it = std::search (
+				text.rbegin (), text.rend (), md.findString.rbegin (), md.findString.rend (),
+				[] (auto ch1, auto ch2) { return std::toupper (ch1) == std::toupper (ch2); });
+			if (it != text.rend ())
+			{
+				pos = (md.model.text.length () - md.findString.length ()) -
+					  std::distance (text.rbegin (), it);
+			}
+		}
+	}
+	return pos;
+}
+
+//------------------------------------------------------------------------
+FindPanelController::FindPanelController (const ITextEditor& editor) : editor (editor) {}
+
+//------------------------------------------------------------------------
+FindPanelController::~FindPanelController () noexcept
+{
+	if (closeBox)
+	{
+		closeBox->setListener (nullptr);
+		closeBox->unregisterViewListener (this);
+	}
+	if (editfield)
+	{
+		editfield->setListener (nullptr);
+		editfield->unregisterViewListener (this);
+	}
+}
+
+//------------------------------------------------------------------------
+void FindPanelController::valueChanged (CControl* control)
+{
+	switch (control->getTag ())
+	{
+		case FindPanelController::Textfield:
+		{
+			editor.setFindString (editfield->getText ().getString ());
+			break;
+		}
+		case FindPanelController::CloseButton:
+		{
+			removeFindPanelFunc ();
+			break;
+		}
+		case FindPanelController::FindPrevious:
+		{
+			if (control->getValue () != control->getMax ())
+				editor.handleCommand (ITextEditor::Command::FindPrevious);
+			break;
+		}
+		case FindPanelController::FindNext:
+		{
+			if (control->getValue () != control->getMax ())
+				editor.handleCommand (ITextEditor::Command::FindNext);
+			break;
+		}
+		case FindPanelController::CaseSensitive:
+		{
+			if (control->getValue () == control->getMax ())
+				findOptions.add (ITextEditor::FindOption::CaseSensitive);
+			else
+				findOptions.remove (ITextEditor::FindOption::CaseSensitive);
+			editor.setFindOptions (findOptions);
+			break;
+		}
+		case FindPanelController::WholeWords:
+		{
+			if (control->getValue () == control->getMax ())
+				findOptions.add (ITextEditor::FindOption::WholeWords);
+			else
+				findOptions.remove (ITextEditor::FindOption::WholeWords);
+			editor.setFindOptions (findOptions);
+			break;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void FindPanelController::viewLostFocus (CView* view)
+{
+	if (view == editfield)
+	{
+		editor.setFindString (editfield->getText ().getString ());
+		if (editfield->bWasReturnPressed)
+		{
+			editor.handleCommand (ITextEditor::Command::TakeFocus);
+			editfield->bWasReturnPressed = false;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void FindPanelController::viewOnEvent (CView* view, Event& event)
+{
+	if (event.type == EventType::KeyDown)
+	{
+		auto& keyEvent = castKeyboardEvent (event);
+		if (keyEvent.virt == VirtualKey::Escape)
+		{
+			removeFindPanelFunc ();
+			event.consumed = true;
+		}
+		else if (commandKeys[Index (ITextEditor::Command::FindNext)] == keyEvent)
+		{
+			editor.handleCommand (ITextEditor::Command::FindNext);
+			event.consumed = true;
+		}
+		else if (commandKeys[Index (ITextEditor::Command::FindPrevious)] == keyEvent)
+		{
+			editor.handleCommand (ITextEditor::Command::FindPrevious);
+			event.consumed = true;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void FindPanelController::viewWillDelete (CView* view)
+{
+	view->unregisterViewListener (this);
+	if (view == closeBox)
+		closeBox = nullptr;
+	else if (view == editfield)
+		editfield = nullptr;
+	else if (view->asViewContainer ())
+		delete this;
+}
+
+//------------------------------------------------------------------------
+void FindPanelController::setFindString (StringView text)
+{
+	if (editfield)
+		editfield->setText (convert (text.data (), text.size ()).data ());
+}
+
+//------------------------------------------------------------------------
+void FindPanelController::setFindOptions (ITextEditor::FindOptions opt) { findOptions = opt; }
+
+//------------------------------------------------------------------------
+CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorView::ModelData& md,
+														const ITextEditor& editor,
+														RemoveFindPanelFunc&& f)
+{
+	auto controller = new FindPanelController (editor);
+	controller->removeFindPanelFunc = std::move (f);
+	controller->commandKeys = md.commandKeys;
+	controller->setFindOptions (md.findOptions);
+
+	auto margin = (vcr.getHeight () - md.lineHeight) / 2.;
+	vcr.inset (margin, margin);
+	auto buttonWidth = vcr.getHeight ();
+
+	CViewContainer* findPanel = new CViewContainer (vcr);
+	findPanel->setTransparency (true);
+	auto tefr = vcr;
+	tefr.left += buttonWidth + margin;
+	tefr.right -= 6. * (buttonWidth + margin) + margin;
+	CTextEdit* editfield = new CTextEdit (tefr, controller, FindPanelController::Textfield);
+	editfield->setPlaceholderString ("Find");
+	editfield->setTextInset ({margin, 0});
+	editfield->setImmediateTextChange (true);
+	editfield->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeTop);
+	editfield->setHoriAlign (kLeftText);
+	editfield->setFrameColor (md.style->frameColor);
+	editfield->setFrameWidth (-1.);
+	editfield->setBackColor (md.style->backColor);
+	editfield->setFont (md.style->font);
+	editfield->setFontColor (md.style->textColor);
+	editfield->registerViewEventListener (controller);
+
+	auto styleButton = [&] (CTextButton* button) {
+		button->setFont (md.style->font);
+		button->setAutosizeFlags (kAutosizeTop | kAutosizeRight);
+		button->setFrameWidth (1.);
+		button->setRoundRadius (2.);
+		auto gradient =
+			owned (CGradient::create (0., 1., md.style->backColor, md.style->backColor));
+		button->setGradient (gradient);
+		auto isOnOffStyle = button->getStyle () == CTextButton::Style::kOnOffStyle;
+		if (isOnOffStyle)
+			gradient = owned (CGradient::create (0., 1., md.style->textColor, md.style->textColor));
+		button->setGradientHighlighted (gradient);
+		button->setTextColor (md.style->textColor);
+		auto color = md.style->frameColor;
+		color.alpha /= 2;
+		button->setTextColorHighlighted (isOnOffStyle ? md.style->backColor : md.style->textColor);
+		button->setFrameColor (md.style->frameColor);
+		button->setFrameColorHighlighted (color);
+	};
+
+	auto cbfr = vcr;
+	cbfr.right = tefr.left - margin;
+	auto closeBox = new CTextButton (cbfr, controller, FindPanelController::CloseButton);
+	closeBox->setTitle ("X");
+	styleButton (closeBox);
+	closeBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
+
+	auto icfr = tefr;
+	icfr.left = tefr.right + margin;
+	icfr.right = icfr.left + buttonWidth * 2;
+	auto caseSensitiveButton =
+		new CTextButton (icfr, controller, FindPanelController::CaseSensitive);
+	caseSensitiveButton->setTitle ("Aa");
+	caseSensitiveButton->setStyle (CTextButton::Style::kOnOffStyle);
+	caseSensitiveButton->setValue (md.findOptions & ITextEditor::FindOption::CaseSensitive ? 1.f
+																						   : 0.f);
+	styleButton (caseSensitiveButton);
+	icfr.offset (margin + buttonWidth * 2, 0);
+	auto wholeWordButton = new CTextButton (icfr, controller, FindPanelController::WholeWords);
+	wholeWordButton->setTitle ("|w|");
+	wholeWordButton->setStyle (CTextButton::Style::kOnOffStyle);
+	wholeWordButton->setValue (md.findOptions & ITextEditor::FindOption::WholeWords ? 1.f : 0.f);
+	styleButton (wholeWordButton);
+
+	auto tbfr = icfr;
+	tbfr.left = tbfr.right + margin;
+	tbfr.right = tbfr.left + buttonWidth;
+	auto prevButton = new CTextButton (tbfr, controller, FindPanelController::FindPrevious);
+	prevButton->setTitle ("<");
+	styleButton (prevButton);
+	tbfr.offset (margin + buttonWidth, 0);
+	auto nextButton = new CTextButton (tbfr, controller, FindPanelController::FindNext);
+	nextButton->setTitle (">");
+	styleButton (nextButton);
+
+	editfield->registerViewListener (controller);
+	closeBox->registerViewListener (controller);
+	findPanel->registerViewListener (controller);
+
+	controller->editfield = editfield;
+	controller->closeBox = closeBox;
+
+	findPanel->addView (closeBox);
+	findPanel->addView (editfield);
+	findPanel->addView (caseSensitiveButton);
+	findPanel->addView (wholeWordButton);
+	findPanel->addView (prevButton);
+	findPanel->addView (nextButton);
+	findPanel->setInitialFocusView (editfield);
+
+	controller->setFindString (md.findString);
+	md.findPanelController = controller;
+
+	return findPanel;
+}
+
+//------------------------------------------------------------------------
+bool TextEditorView::showFindPanel () const
+{
+	if (!md.scrollView)
+		return false;
+	if (auto view = md.scrollView->getEdgeView (CScrollView::Edge::Top))
+	{
+		if (auto frame = getFrame ())
+		{
+			if (auto container = view->asViewContainer ())
+				container->advanceNextFocusView (nullptr);
+			else
+				frame->setFocusView (view);
+		}
 		return true;
 	}
-	return false;
+	auto margin = 3.;
+
+	auto vcr = md.scrollView->getVisibleClientRect ();
+	vcr.originize ();
+	vcr.setHeight (md.lineHeight + margin * 2);
+
+	using namespace Animation;
+	auto findPanel = FindPanelController::makeFindPanelView (vcr, md, *this, [&] () {
+		md.findPanelController = nullptr;
+		if (auto panel = md.scrollView->getEdgeView (CScrollView::Edge::Top))
+		{
+			auto size = panel->getViewSize ();
+			size.setHeight (1.);
+			if (auto frame = panel->getFrame ())
+				frame->setFocusView (nullptr);
+			panel->addAnimation (
+				"ResizeAnimation", new ViewSizeAnimation (size, false),
+				CubicBezierTimingFunction::make (CubicBezierTimingFunction::EasyInOut, 120),
+				[&] (auto, auto, auto) {
+					md.scrollView->setEdgeView (CScrollView::Edge::Top, nullptr);
+					handleCommand (Command::TakeFocus);
+				});
+		}
+	});
+	auto initRect = vcr;
+	initRect.setHeight (1.);
+	findPanel->setViewSize (initRect);
+	md.scrollView->setEdgeView (CScrollView::Edge::Top, findPanel);
+
+	if (auto frame = getFrame ())
+		frame->setFocusView (nullptr);
+	findPanel->addAnimation (
+		"ResizeAnimation", new ViewSizeAnimation (vcr, false),
+		CubicBezierTimingFunction::make (CubicBezierTimingFunction::EasyInOut, 120),
+		[panel = shared (findPanel)] (auto, auto, auto) {
+			if (panel->isAttached ())
+				panel->advanceNextFocusView (nullptr);
+		});
+	return true;
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::setFindOptions (FindOptions opt) const
+{
+	md.findOptions = opt;
+	if (md.findPanelController)
+	{
+		md.findPanelController->setFindOptions (md.findOptions);
+		md.editState.select_end = md.editState.select_start;
+		onSelectionChanged (makeRange (md.editState));
+		doFind ();
+	}
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::setFindString (std::string_view utf8Text) const
+{
+	setFindString (convert (utf8Text.data (), utf8Text.size ()));
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::setFindString (String&& text) const
+{
+	md.findString = std::move (text);
+	if (auto frame = getFrame ())
+	{
+		if (frame->getFocusView () != this)
+		{
+			md.editState.select_end = md.editState.select_start;
+			onSelectionChanged (makeRange (md.editState));
+			doFind ();
+		}
+		else if (md.findPanelController)
+		{
+			md.findPanelController->setFindString (md.findString);
+		}
+	}
 }
 
 //------------------------------------------------------------------------

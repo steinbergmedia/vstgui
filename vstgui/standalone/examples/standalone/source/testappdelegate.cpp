@@ -216,6 +216,7 @@ public:
 		style.selectionBackColor = MakeCColor (120, 120, 255, 150);
 		style.backColor = MakeCColor (255, 255, 255, 220);
 		style.textColor = kBlackCColor;
+		style.frameColor = kBlackCColor; // MakeCColor (50, 50, 50, 200);
 		style.font = makeOwned<CFontDesc> (*kNormalFont);
 		style.lineNumbersFont = makeOwned<CFontDesc> (*kNormalFontSmall);
 		style.lineSpacing = 0.;

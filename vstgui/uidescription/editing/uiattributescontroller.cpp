@@ -21,6 +21,7 @@
 #include "../../lib/cstring.h"
 #include "../../lib/cgraphicspath.h"
 #include "../../lib/ctexteditor.h"
+#include "../../lib/cvstguitimer.h"
 #include <sstream>
 #include <algorithm>
 #include <cassert>
@@ -456,6 +457,7 @@ public:
 					description->getColor ("control.font", style.textColor);
 					description->getColor ("control.frame", style.selectionBackColor);
 					description->getColor ("control.frame", style.lineNumberTextColor);
+					description->getColor ("control.frame", style.frameColor);
 					if (auto font = description->getFont ("scripteditor.font"))
 					{
 						style.font = font;
@@ -475,7 +477,14 @@ public:
 	void onDialogButton2Clicked (UIDialogController*) override {}
 	void onDialogShow (UIDialogController*) override {}
 
-	void onTextEditorCreated (const ITextEditor& te) override { textEditor = &te; }
+	void onTextEditorCreated (const ITextEditor& te) override
+	{
+		textEditor = &te;
+		Call::later ([This = shared (this)] () {
+			if (This->textEditor)
+				This->textEditor->handleCommand (ITextEditor::Command::TakeFocus);
+		});
+	}
 
 	void onTextEditorDestroyed (const ITextEditor& te) override
 	{

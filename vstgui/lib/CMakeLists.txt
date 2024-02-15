@@ -145,6 +145,7 @@ set(${target}_common_sources
     cvstguitimer.h
     dragging.h
     dispatchlist.h
+    enumbitset.h
     events.cpp
     events.h
     finally.h
