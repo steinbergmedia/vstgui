@@ -790,6 +790,13 @@ CView* CScrollView::getEdgeView (Edge edge) const
 }
 
 //-----------------------------------------------------------------------------
+bool CScrollView::attached (CView* parent)
+{
+	setContainerSize (containerSize);
+	return CViewContainer::attached (parent);
+}
+
+//-----------------------------------------------------------------------------
 bool CScrollView::addView (CView* pView, CView* pBefore)
 {
 	return sc->addView (pView, pBefore);

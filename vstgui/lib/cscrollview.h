@@ -109,6 +109,7 @@ public:
 	//@}
 
 	// overwrite
+	bool attached (CView* parent) override;
 	bool addView (CView* pView, CView* pBefore = nullptr) override;
 	bool removeView (CView* pView, bool withForget = true) override;
 	bool removeAll (bool withForget = true) override;
