@@ -766,8 +766,8 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 			}
 		}
 	}
-	setContainerSize (containerSize, true);
 	recalculateSubViews ();
+	setContainerSize (containerSize, true);
 	if (view)
 		view->registerViewListener (this);
 }
@@ -944,11 +944,11 @@ void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
 	}
 	else if (view == edgeViewTop)
 	{
-		setContainerSize (containerSize, true);
+		recalculateSubViews ();
 	}
 	else if (view == edgeViewLeft)
 	{
-		setContainerSize (containerSize, true);
+		recalculateSubViews ();
 	}
 }
 
