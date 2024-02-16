@@ -675,10 +675,11 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			WINDOWINFO windowInfo {0};
 			GetWindowInfo (hwnd, &windowInfo);
 			RECT clientRect {};
-			clientRect.right = clientSize.x * newScaleFactor;
-			clientRect.bottom = clientSize.y * newScaleFactor;
-			HiDPISupport::instance ().adjustWindowRectExForDpi (
-				&clientRect, windowInfo.dwStyle, hasMenu, windowInfo.dwExStyle, wParam);
+			clientRect.right = static_cast<LONG> (clientSize.x * newScaleFactor);
+			clientRect.bottom = static_cast<LONG> (clientSize.y * newScaleFactor);
+			HiDPISupport::instance ().adjustWindowRectExForDpi (&clientRect, windowInfo.dwStyle,
+																hasMenu, windowInfo.dwExStyle,
+																static_cast<UINT> (wParam));
 			proposedSize->cx = clientRect.right - clientRect.left;
 			proposedSize->cy = clientRect.bottom - clientRect.top;
 			return TRUE;
@@ -897,8 +898,9 @@ void Window::setSize (const CPoint& newSize)
 	RECT clientRect {};
 	clientRect.right = static_cast<LONG> (newSize.x * dpiScale);
 	clientRect.bottom = static_cast<LONG> (newSize.y * dpiScale);
-	HiDPISupport::instance ().adjustWindowRectExForDpi (&clientRect, dwStyle, hasMenu, exStyle,
-														dpiScale * USER_DEFAULT_SCREEN_DPI);
+	HiDPISupport::instance ().adjustWindowRectExForDpi (
+		&clientRect, dwStyle, hasMenu, exStyle,
+		static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
 
 	LONG width = clientRect.right - clientRect.left;
 	LONG height = clientRect.bottom - clientRect.top;
@@ -918,8 +920,9 @@ void Window::setPosition (const CPoint& newPosition)
 	RECT clientRect {};
 	clientRect.right = 100;
 	clientRect.bottom = 100;
-	HiDPISupport::instance ().adjustWindowRectExForDpi (&clientRect, dwStyle, hasMenu, exStyle,
-														dpiScale * USER_DEFAULT_SCREEN_DPI);
+	HiDPISupport::instance ().adjustWindowRectExForDpi (
+		&clientRect, dwStyle, hasMenu, exStyle,
+		static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
 
 	clientRect.left += static_cast<LONG> (newPosition.x);
 	clientRect.top += static_cast<LONG> (newPosition.y);
