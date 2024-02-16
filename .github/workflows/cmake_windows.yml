@@ -11,7 +11,7 @@ jobs:
         os: [windows-2019, windows-2022]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - uses: ./.github/actions/cmake
       with:
