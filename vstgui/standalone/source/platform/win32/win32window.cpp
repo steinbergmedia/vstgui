@@ -132,6 +132,7 @@ private:
 	bool hasMenu {false};
 	WindowStyle style;
 	bool isPopup {false};
+	bool inWmDpiScaledSize {false};
 	std::function<LRESULT (HWND, UINT, WPARAM, LPARAM)> frameWindowProc;
 };
 
@@ -665,10 +666,35 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				return res;
 			break;
 		}
+		case WM_GETDPISCALEDSIZE:
+		{
+			auto* proposedSize = reinterpret_cast<SIZE*> (lParam);
+			auto newScaleFactor =
+				static_cast<double> (wParam) / static_cast<double> (USER_DEFAULT_SCREEN_DPI);
+			auto clientSize = getSize ();
+			WINDOWINFO windowInfo {0};
+			GetWindowInfo (hwnd, &windowInfo);
+			RECT clientRect {};
+			clientRect.right = clientSize.x * newScaleFactor;
+			clientRect.bottom = clientSize.y * newScaleFactor;
+			HiDPISupport::instance ().adjustWindowRectExForDpi (
+				&clientRect, windowInfo.dwStyle, hasMenu, windowInfo.dwExStyle, wParam);
+			proposedSize->cx = clientRect.right - clientRect.left;
+			proposedSize->cy = clientRect.bottom - clientRect.top;
+			return TRUE;
+
+			return FALSE;
+		}
 		case WM_DPICHANGED:
 		{
+			inWmDpiScaledSize = true;
 			setNewDPI (static_cast<uint32_t> (LOWORD (wParam)));
-			break;
+			inWmDpiScaledSize = false;
+
+			auto* rect = reinterpret_cast<RECT*> (lParam);
+			SetWindowPos (hwnd, nullptr, rect->left, rect->top, rect->right - rect->left,
+						  rect->bottom - rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+			return 0;
 		}
 		case WM_PARENTNOTIFY:
 		{
@@ -863,15 +889,21 @@ void Window::setSize (const CPoint& newSize)
 		initialSize = newSize;
 		return;
 	}
+	if (inWmDpiScaledSize)
+	{
+		return;
+	}
+
 	RECT clientRect {};
 	clientRect.right = static_cast<LONG> (newSize.x * dpiScale);
 	clientRect.bottom = static_cast<LONG> (newSize.y * dpiScale);
-	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
+	HiDPISupport::instance ().adjustWindowRectExForDpi (&clientRect, dwStyle, hasMenu, exStyle,
+														dpiScale * USER_DEFAULT_SCREEN_DPI);
 
 	LONG width = clientRect.right - clientRect.left;
 	LONG height = clientRect.bottom - clientRect.top;
-	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
-	              SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE);
+	SetWindowPos (hwnd, nullptr, 0, 0, width, height,
+				  SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE | SWP_NOZORDER);
 
 	if (style.isTransparent ())
 	{
@@ -886,12 +918,13 @@ void Window::setPosition (const CPoint& newPosition)
 	RECT clientRect {};
 	clientRect.right = 100;
 	clientRect.bottom = 100;
-	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
+	HiDPISupport::instance ().adjustWindowRectExForDpi (&clientRect, dwStyle, hasMenu, exStyle,
+														dpiScale * USER_DEFAULT_SCREEN_DPI);
 
 	clientRect.left += static_cast<LONG> (newPosition.x);
 	clientRect.top += static_cast<LONG> (newPosition.y);
-	SetWindowPos (hwnd, HWND_TOP, clientRect.left, clientRect.top, 0, 0,
-	              SWP_NOSIZE | SWP_NOACTIVATE);
+	SetWindowPos (hwnd, nullptr, clientRect.left, clientRect.top, 0, 0,
+				  SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 //------------------------------------------------------------------------
