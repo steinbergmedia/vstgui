@@ -228,10 +228,15 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	delegate = &inDelegate;
 	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR)this);
 	if (style.hasBorder ())
+	{
 		hasMenu = true;
+		BOOL value = TRUE;
+		DwmSetWindowAttribute (hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof (value));
+	}
 	if (style.isTransparent ())
 		makeTransparent ();
 	dwStyle = GetWindowStyle (hwnd);
+
 	return true;
 }
 
@@ -459,6 +464,8 @@ void Window::makeTransparent ()
 	MARGINS margin = {-1};
 	auto res = DwmExtendFrameIntoClientArea (hwnd, &margin);
 	vstgui_assert (res == S_OK);
+	DWM_SYSTEMBACKDROP_TYPE type = DWMSBT_NONE;
+	res = DwmSetWindowAttribute (hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &type, sizeof (type));
 }
 
 //------------------------------------------------------------------------
