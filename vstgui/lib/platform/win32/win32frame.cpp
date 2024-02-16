@@ -664,6 +664,7 @@ void Win32Frame::paint (HWND hwnd)
 						*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext,
 						tm);
 
+					drawDevice->clearRect (rect);
 					getFrame ()->platformDrawRects (drawDevice, 1., {1, rect});
 				});
 			});
