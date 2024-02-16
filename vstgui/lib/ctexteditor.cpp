@@ -22,6 +22,7 @@
 #include "animation/timingfunctions.h"
 #include "animation/animations.h"
 
+#include <optional>
 #include <codecvt>
 #include <locale>
 #include <string>
