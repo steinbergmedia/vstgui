@@ -683,8 +683,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			proposedSize->cx = clientRect.right - clientRect.left;
 			proposedSize->cy = clientRect.bottom - clientRect.top;
 			return TRUE;
-
-			return FALSE;
 		}
 		case WM_DPICHANGED:
 		{
