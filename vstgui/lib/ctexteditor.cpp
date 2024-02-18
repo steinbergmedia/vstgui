@@ -446,6 +446,8 @@ private:
 	const ITextEditor& editor;
 	CTextEdit* editfield {nullptr};
 	CControl* closeBox {nullptr};
+	CControl* caseSensitiveButton {nullptr};
+	CControl* wholeWordButton {nullptr};
 	ITextEditor::FindOptions findOptions {};
 	CommandKeyArray commandKeys;
 	RemoveFindPanelFunc removeFindPanelFunc;
@@ -2136,6 +2138,18 @@ FindPanelController::FindPanelController (const ITextEditor& editor) : editor (e
 //------------------------------------------------------------------------
 FindPanelController::~FindPanelController () noexcept
 {
+	if (caseSensitiveButton)
+	{
+		caseSensitiveButton->setListener (nullptr);
+		caseSensitiveButton->unregisterViewEventListener (this);
+		caseSensitiveButton->unregisterViewListener (this);
+	}
+	if (wholeWordButton)
+	{
+		wholeWordButton->setListener (nullptr);
+		wholeWordButton->unregisterViewEventListener (this);
+		wholeWordButton->unregisterViewListener (this);
+	}
 	if (closeBox)
 	{
 		closeBox->setListener (nullptr);
@@ -2144,6 +2158,7 @@ FindPanelController::~FindPanelController () noexcept
 	if (editfield)
 	{
 		editfield->setListener (nullptr);
+		editfield->unregisterViewEventListener (this);
 		editfield->unregisterViewListener (this);
 	}
 }
@@ -2242,6 +2257,16 @@ void FindPanelController::viewWillDelete (CView* view)
 		closeBox = nullptr;
 	else if (view == editfield)
 		editfield = nullptr;
+	else if (view == caseSensitiveButton)
+	{
+		caseSensitiveButton->unregisterViewEventListener (this);
+		caseSensitiveButton = nullptr;
+	}
+	else if (view == wholeWordButton)
+	{
+		wholeWordButton->unregisterViewEventListener (this);
+		wholeWordButton = nullptr;
+	}
 	else if (view->asViewContainer ())
 		delete this;
 }
@@ -2286,7 +2311,6 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	editfield->setBackColor (md.style->backColor);
 	editfield->setFont (md.style->font);
 	editfield->setFontColor (md.style->textColor);
-	editfield->registerViewEventListener (controller);
 
 	auto styleButton = [&] (CTextButton* button) {
 		button->setFont (md.style->font);
@@ -2344,11 +2368,18 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	styleButton (nextButton);
 
 	editfield->registerViewListener (controller);
+	editfield->registerViewEventListener (controller);
 	closeBox->registerViewListener (controller);
+	caseSensitiveButton->registerViewListener (controller);
+	wholeWordButton->registerViewListener (controller);
 	findPanel->registerViewListener (controller);
+	wholeWordButton->registerViewEventListener (controller);
+	findPanel->registerViewEventListener (controller);
 
 	controller->editfield = editfield;
 	controller->closeBox = closeBox;
+	controller->caseSensitiveButton = caseSensitiveButton;
+	controller->wholeWordButton = wholeWordButton;
 
 	findPanel->addView (closeBox);
 	findPanel->addView (editfield);
