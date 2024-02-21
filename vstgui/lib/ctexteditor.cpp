@@ -462,6 +462,7 @@ TextEditorView::TextEditorView (ITextEditorController* controller) : CView ({0, 
 	setWantsFocus (true);
 	onStyleChanged ();
 	stb_textedit_initialize_state (&md.editState, false);
+	std::fill (md.commandKeys.begin (), md.commandKeys.end (), Key ());
 	md.commandKeys[Index (Command::SelectAll)] = {u'a', VirtualKey::None, {ModifierKey::Control}};
 	md.commandKeys[Index (Command::Cut)] = {u'x', VirtualKey::None, {ModifierKey::Control}};
 	md.commandKeys[Index (Command::Copy)] = {u'c', VirtualKey::None, {ModifierKey::Control}};
