@@ -156,6 +156,9 @@ struct Allocator
 		return static_cast<T*> (allocator (n * sizeof (T)));
 	}
 	void deallocate (T* p, std::size_t n) noexcept { deallocator (p, n); }
+
+	bool operator== (const Allocator& other) const { return &other == this; }
+	bool operator!= (const Allocator& other) const { return &other != this; }
 };
 
 using string = std::basic_string<char, std::char_traits<char>, Allocator<char>>;
