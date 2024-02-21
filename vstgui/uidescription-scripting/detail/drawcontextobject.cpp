@@ -273,6 +273,13 @@ DrawContextObject::DrawContextObject ()
 }
 
 //------------------------------------------------------------------------
+DrawContextObject::~DrawContextObject () noexcept
+{
+	if (scriptVar)
+		scriptVar->setLifeTimeObserver (nullptr);
+}
+
+//------------------------------------------------------------------------
 void DrawContextObject::setDrawContext (CDrawContext* inContext, IUIDescription* inUIDesc)
 {
 	context = inContext;

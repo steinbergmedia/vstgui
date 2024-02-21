@@ -17,6 +17,7 @@ struct DrawContextObject : ScriptObject,
 						   TJS::IScriptVarLifeTimeObserver
 {
 	DrawContextObject ();
+	~DrawContextObject () noexcept override;
 
 	void setDrawContext (CDrawContext* context, IUIDescription* uiDesc);
 
