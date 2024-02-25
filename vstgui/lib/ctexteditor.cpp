@@ -1236,8 +1236,12 @@ void TextEditorView::invalidate (Dirty what) const
 //------------------------------------------------------------------------
 CCoord TextEditorView::updateLineText (Lines::iterator& line) const
 {
-	line->text = convert (md.model.text.data () + line->range.start, line->range.length);
-	line->width = md.fontPainer->getStringWidth (nullptr, line->text.getPlatformString ());
+	auto newText = convert (md.model.text.data () + line->range.start, line->range.length);
+	if (newText != line->text)
+	{
+		line->text = std::move (newText);
+		line->width = md.fontPainer->getStringWidth (nullptr, line->text.getPlatformString ());
+	}
 	return line->width;
 }
 
