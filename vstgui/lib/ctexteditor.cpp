@@ -111,6 +111,23 @@ inline Range makeRange (const STB_TexteditState& state)
 	return makeRange (state.select_start, state.select_end);
 }
 
+//------------------------------------------------------------------------
+inline void replaceTabs (std::string& str, uint32_t tabWidth)
+{
+	if (tabWidth < 1)
+		return;
+	std::string replaceStr;
+	while (--tabWidth)
+		replaceStr += ' ';
+	std::string::size_type pos = std::string::npos;
+	while ((pos = str.find_first_of ('\t')) != std::string::npos)
+	{
+		str[pos] = ' ';
+		str.replace (pos, 1, " ");
+		str.insert (pos, replaceStr);
+	}
+}
+
 using String = std::u16string;
 using StringView = std::u16string_view;
 
@@ -867,7 +884,9 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 			auto selX = x;
 			if (selRange.start != 0)
 			{
-				auto nonSelectedText = lt.getString ().substr (0, selRange.start);
+				auto t = md.model.text.substr (line.range.start, selRange.start);
+				auto nonSelectedText = convert (t);
+				replaceTabs (nonSelectedText, md.style->tabWidth);
 				selX += context->getStringWidth (nonSelectedText.data ());
 			}
 			CRect r (selX, y - md.fontAscent, selX, y + md.fontDescent);
@@ -876,7 +895,9 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 				r.right = getViewSize ().right;
 			else
 			{
-				auto selectedText = lt.getString ().substr (selRange.start, selRange.length);
+				auto t = md.model.text.substr (line.range.start + selRange.start, selRange.length);
+				auto selectedText = convert (t);
+				replaceTabs (selectedText, md.style->tabWidth);
 				r.setWidth (context->getStringWidth (selectedText.data ()));
 			}
 			r.inset (0, -md.style->lineSpacing / 2.);
@@ -975,6 +996,7 @@ CRect TextEditorView::calculateCursorRect (int cursor) const
 			{
 				auto lineTextToCursor =
 					convert (md.model.text.data () + line.range.start, cursor - line.range.start);
+				replaceTabs (lineTextToCursor, md.style->tabWidth);
 				auto platformText = getPlatformFactory ().createString (lineTextToCursor.data ());
 				auto width = md.fontPainer->getStringWidth (nullptr, platformText);
 				r.offset (width, 0);
@@ -1237,6 +1259,7 @@ void TextEditorView::invalidate (Dirty what) const
 CCoord TextEditorView::updateLineText (Lines::iterator& line) const
 {
 	auto newText = convert (md.model.text.data () + line->range.start, line->range.length);
+	replaceTabs (newText, md.style->tabWidth);
 	if (newText != line->text)
 	{
 		line->text = std::move (newText);
@@ -1586,6 +1609,14 @@ float TextEditorView::getCharWidth (size_t row, size_t pos) const
 	UTF8String str (convert (&c, 1));
 	if (str[0] == '\n')
 		return STB_TEXTEDIT_GETWIDTH_NEWLINE;
+	bool isTab = str[0] == '\t';
+	if (isTab && md.style->tabWidth > 0)
+	{
+		str = " ";
+		auto tabWidth = md.style->tabWidth;
+		while (--tabWidth)
+			str += " ";
+	}
 	auto width = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
 	return static_cast<float> (width / getGlobalTransform (true).m11);
 }

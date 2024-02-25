@@ -226,6 +226,12 @@ public:
 		std::for_each (textEditors.begin (), textEditors.end (),
 					   [] (const auto& el) { el->resetController (); });
 	}
+	void setFonts (const SharedPointer<CFontDesc>& textFont,
+				   const SharedPointer<CFontDesc>& lineNumbersFont)
+	{
+		style.font = textFont;
+		style.lineNumbersFont = lineNumbersFont;
+	}
 	void onTextEditorCreated (const ITextEditor& te) override
 	{
 		textEditors.emplace_back (&te);
@@ -422,6 +428,13 @@ Delegate::Delegate ()
 void Delegate::finishLaunching ()
 {
 	textEditorController = std::make_unique<AppTextEditorController> ();
+#if MAC
+	auto font = makeOwned<CFontDesc> ("Menlo", 12);
+	textEditorController->setFonts (font, font);
+#elif WINDOWS
+	auto font = makeOwned<CFontDesc> ("Consolas", 12);
+	textEditorController->setFonts (font, font);
+#endif
 
 	model = std::make_shared<TestModel> ();
 	IApplication::instance ().registerCommand (Commands::NewDocument, 'n');

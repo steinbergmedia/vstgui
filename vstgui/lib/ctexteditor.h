@@ -61,6 +61,7 @@ struct ITextEditor
 		CCoord lineNumerLeftMargin {2.};
 		CCoord lineNumerRightMargin {2.};
 		uint32_t cursorBlinkTime {500}; // in milliseconds
+		uint32_t tabWidth {4};
 		bool showLineNumbers {true};
 	};
 
