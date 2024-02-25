@@ -1321,7 +1321,7 @@ void TextEditorView::insertNewLine () const
 	auto isWhiteSpace = [] (char16_t character) {
 		return character == u'\t' || character == u' ';
 	};
-	for (auto index = currentLine->range.start; index < currentLine->range.end (); ++index)
+	for (auto index = currentLine->range.start; index < cursor; ++index)
 	{
 		if (isWhiteSpace (md.model.text[index]))
 		{
