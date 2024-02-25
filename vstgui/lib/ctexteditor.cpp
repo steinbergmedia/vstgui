@@ -574,18 +574,18 @@ void TextEditorView::parentSizeChanged ()
 {
 	if (md.scrollView)
 	{
-		auto func = [this] () mutable {
-			if (!md.scrollView)
+		auto func = [This = shared (this)] () mutable {
+			if (!This->isAttached () || !This->md.scrollView)
 				return;
-			auto viewSize = getViewSize ();
-			viewSize.setHeight (md.maxHeight);
-			viewSize.setWidth (md.maxWidth);
-			auto containerSize = md.scrollView->calculateOptimalContainerSize ();
+			auto viewSize = This->getViewSize ();
+			viewSize.setHeight (This->md.maxHeight);
+			viewSize.setWidth (This->md.maxWidth);
+			auto containerSize = This->md.scrollView->calculateOptimalContainerSize ();
 			if (containerSize.getWidth () > viewSize.getWidth ())
 			{
 				if (viewSize.getHeight () > containerSize.getHeight ())
 					viewSize.setWidth (containerSize.getWidth () -
-									   md.scrollView->getScrollbarWidth ());
+									   This->md.scrollView->getScrollbarWidth ());
 				else
 					viewSize.setWidth (containerSize.getWidth ());
 			}
@@ -593,11 +593,11 @@ void TextEditorView::parentSizeChanged ()
 			{
 				if (viewSize.getWidth () > containerSize.getWidth ())
 					viewSize.setHeight (containerSize.getHeight () -
-										md.scrollView->getScrollbarWidth ());
+										This->md.scrollView->getScrollbarWidth ());
 				else
 					viewSize.setHeight (containerSize.getHeight ());
 			}
-			setViewSize (viewSize);
+			This->setViewSize (viewSize);
 		};
 		auto frame = getFrame ();
 		if (frame && frame->inEventProcessing ())
