@@ -667,7 +667,13 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			if (view->asViewContainer ())
 			{
 				if (auto parent = view->getParentView ())
-					parent->translateToLocal (p, true);
+				{
+					if (parent != this)
+					{
+						p.offsetInverse (parent->getViewSize ().getTopLeft ());
+						parent->translateToLocal (p, true);
+					}
+				}
 			}
 			else
 				view->translateToLocal (p, true);
