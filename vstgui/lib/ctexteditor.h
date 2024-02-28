@@ -78,6 +78,8 @@ struct ITextEditor
 		FindPrevious,
 		SelectAll,
 		UseSelectionForFind,
+		ShiftLeft,
+		ShiftRight,
 		ShowFindPanel,
 		TakeFocus,
 	};

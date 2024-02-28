@@ -257,6 +257,7 @@ protected:
 	void setFindString (std::string_view utf8Text) const override;
 
 	// commandos
+	bool doShifting (bool right) const;
 	void selectAll () const;
 	bool doCut () const;
 	bool doCopy () const;
@@ -493,11 +494,15 @@ TextEditorView::TextEditorView (ITextEditorController* controller) : CView ({0, 
 		u'g', VirtualKey::None, {ModifierKey::Control, ModifierKey::Shift}};
 	md.commandKeys[Index (Command::UseSelectionForFind)] = {
 		u'e', VirtualKey::None, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::ShiftLeft)] = {u'[', VirtualKey::None, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::ShiftRight)] = {u']', VirtualKey::None, {ModifierKey::Control}};
 #else
 	md.commandKeys[Index (Command::FindNext)] = {0, VirtualKey::F3, {}};
 	md.commandKeys[Index (Command::FindPrevious)] = {0, VirtualKey::F3, {ModifierKey::Shift}};
 	md.commandKeys[Index (Command::UseSelectionForFind)] = {
 		0, VirtualKey::F3, {ModifierKey::Control}};
+	md.commandKeys[Index (Command::ShiftLeft)] = {0, VirtualKey::Tab, {ModifierKey::Shift}};
+	md.commandKeys[Index (Command::ShiftRight)] = {0, VirtualKey::Tab, {}};
 #endif
 	md.commandKeys[Index (Command::ShowFindPanel)] = {
 		u'f', VirtualKey::None, {ModifierKey::Control}};
@@ -767,6 +772,10 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 			// TODO:
 			return true;
 		}
+		case Command::ShiftLeft:
+			return true;
+		case Command::ShiftRight:
+			return true;
 		case Command::TakeFocus:
 			return true;
 		case Command::FindNext:
@@ -793,6 +802,10 @@ bool TextEditorView::handleCommand (Command cmd) const
 
 	switch (cmd)
 	{
+		case Command::ShiftLeft:
+			return doShifting (false);
+		case Command::ShiftRight:
+			return doShifting (true);
 		case Command::SelectAll:
 			selectAll ();
 			return true;
@@ -1951,6 +1964,60 @@ bool TextEditorView::callSTB (Proc proc) const
 		return true;
 	}
 	return false;
+}
+
+//------------------------------------------------------------------------
+bool TextEditorView::doShifting (bool right) const
+{
+	if (md.editState.select_start > md.editState.select_end)
+		std::swap (md.editState.select_start, md.editState.select_end);
+	auto lineStart =
+		findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.select_start);
+	if (lineStart == md.model.lines.end ())
+		return false;
+	auto lineEnd = md.editState.select_start == md.editState.select_end
+					   ? lineStart
+					   : findLine (lineStart, md.model.lines.end (), md.editState.select_end - 1);
+	if (lineEnd == md.model.lines.end ())
+		return false;
+	++lineEnd;
+	auto originCursor = md.editState.cursor;
+	auto originSelectStart = md.editState.select_start;
+	auto originSelectEnd = md.editState.select_end;
+	md.editState.select_start = md.editState.select_end = originCursor;
+	auto numChanges = 0;
+	if (right)
+	{
+		while (lineStart != lineEnd)
+		{
+			--lineEnd;
+			md.editState.cursor = static_cast<int> (lineEnd->range.start);
+			callSTB ([&] () { stb_textedit_key (this, &md.editState, u'\t'); });
+			++numChanges;
+		}
+		md.editState.select_start = originSelectStart + 1;
+		md.editState.select_end = originSelectEnd + numChanges;
+		md.editState.cursor = md.editState.select_start;
+	}
+	else
+	{
+		while (lineStart != lineEnd)
+		{
+			--lineEnd;
+			md.editState.cursor = static_cast<int> (lineEnd->range.start);
+			if (md.model.text[md.editState.cursor] == u'\t')
+			{
+				callSTB ([&] () { stb_textedit_key (this, &md.editState, STB_TEXTEDIT_K_DELETE); });
+				++numChanges;
+			}
+		}
+		md.editState.select_start = originSelectStart - (numChanges ? 1 : 0);
+		md.editState.select_end = originSelectEnd - numChanges;
+		md.editState.cursor = md.editState.select_start;
+	}
+	onCursorChanged (originCursor, md.editState.cursor);
+	onSelectionChanged (makeRange (md.editState));
+	return true;
 }
 
 //------------------------------------------------------------------------
