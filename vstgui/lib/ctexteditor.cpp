@@ -1971,11 +1971,14 @@ bool TextEditorView::doShifting (bool right) const
 {
 	if (md.editState.select_start > md.editState.select_end)
 		std::swap (md.editState.select_start, md.editState.select_end);
+	auto hasSelection = md.editState.select_start != md.editState.select_end;
+	if (!hasSelection)
+		md.editState.select_start = md.editState.select_end = md.editState.cursor;
 	auto lineStart =
 		findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.select_start);
 	if (lineStart == md.model.lines.end ())
 		return false;
-	auto lineEnd = md.editState.select_start == md.editState.select_end
+	auto lineEnd = !hasSelection
 					   ? lineStart
 					   : findLine (lineStart, md.model.lines.end (), md.editState.select_end - 1);
 	if (lineEnd == md.model.lines.end ())
@@ -1992,6 +1995,7 @@ bool TextEditorView::doShifting (bool right) const
 		{
 			--lineEnd;
 			md.editState.cursor = static_cast<int> (lineEnd->range.start);
+			md.editState.select_start = md.editState.select_end = md.editState.cursor;
 			callSTB ([&] () { stb_textedit_key (this, &md.editState, u'\t'); });
 			++numChanges;
 		}
@@ -2007,6 +2011,8 @@ bool TextEditorView::doShifting (bool right) const
 			md.editState.cursor = static_cast<int> (lineEnd->range.start);
 			if (md.model.text[md.editState.cursor] == u'\t')
 			{
+				md.editState.select_start = md.editState.cursor;
+				md.editState.select_end = md.editState.cursor + 1;
 				callSTB ([&] () { stb_textedit_key (this, &md.editState, STB_TEXTEDIT_K_DELETE); });
 				++numChanges;
 			}
