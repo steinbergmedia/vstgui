@@ -135,6 +135,7 @@ public:
 	UIDescription* getUIDescription () const;
 
 	bool inEditMode () const;
+	const std::string& getCurrentTemplateName () const { return viewName; }
 
 	//-----------------------------------------------------------------------------
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
