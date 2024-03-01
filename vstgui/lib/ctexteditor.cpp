@@ -612,7 +612,7 @@ void TextEditorView::parentSizeChanged ()
 		}
 		else
 		{
-			Call::later (func, 1);
+			func ();
 		}
 	}
 	else
