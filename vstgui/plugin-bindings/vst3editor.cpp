@@ -1859,7 +1859,7 @@ void VST3Editor::showEditButton (bool state)
 	if (state)
 	{
 		openUIEditorController =
-			new EnterEditModeController (getFrame (), [this] () { enableEditing (true); });
+			new EnterEditModeController (getFrame (), [this] () { editingEnabled = true; requestRecreateView (); });
 	}
 	else
 	{
