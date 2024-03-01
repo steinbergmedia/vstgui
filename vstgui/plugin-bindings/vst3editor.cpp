@@ -508,10 +508,19 @@ void VST3Editor::init ()
 //-----------------------------------------------------------------------------
 bool VST3Editor::exchangeView (UTF8StringPtr newViewName)
 {
+	if (viewName == newViewName)
+		return true;
+
 	const UIAttributes* attr = description->getViewAttributes (newViewName);
 	if (attr)
 	{
 		viewName = newViewName;
+		auto minSizeStr = attr->getAttributeValue ("minSize");
+		auto maxSizeStr = attr->getAttributeValue ("maxSize");
+		if (minSizeStr)
+			VST3EditorInternal::parseSize (*minSizeStr, minSize);
+		if (maxSizeStr)
+			VST3EditorInternal::parseSize (*maxSizeStr, maxSize);
 		requestRecreateView ();
 		return true;
 	}
