@@ -575,8 +575,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 	CRect oldSize (containerSize);
 	containerSize = cs;
 	sc->setContainerSize (cs);
-	if (style & kAutoHideScrollbars)
-		recalculateSubViews ();
+	recalculateSubViews ();
 	if (vsb)
 	{
 		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
