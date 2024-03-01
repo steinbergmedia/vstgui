@@ -313,6 +313,7 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 				int32_t autosize = pV->getAutosizeFlags ();
 				CRect viewSize (pV->getViewSize ());
 				CRect mouseSize (pV->getMouseableArea ());
+				bool viewSizeIsMouseSize = viewSize == mouseSize;
 				if (treatAsColumn)
 				{
 					if (counter)
@@ -356,7 +357,7 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 				if (viewSize != pV->getViewSize ())
 				{
 					pV->setViewSize (viewSize);
-					pV->setMouseableArea (mouseSize);
+					pV->setMouseableArea (viewSizeIsMouseSize ? pV->getViewSize () : mouseSize);
 				}
 				counter++;
 			}
