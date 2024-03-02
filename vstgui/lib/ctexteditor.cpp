@@ -336,6 +336,7 @@ public:
 		CPoint lastMouse {MouseOutsidePos};
 		CCoord maxHeight {0};
 		CCoord maxWidth {200.};
+		CCoord horizontalLineMargin {0};
 		CCoord lineHeight {style->font->getSize () + style->lineSpacing};
 		CCoord fontAscent {0.};
 		CCoord fontDescent {0.};
@@ -343,6 +344,7 @@ public:
 		STB_TexteditState editState {};
 		STB_TexteditState editStateOnMouseDown {};
 		bool mouseIsDown {false};
+		bool isInsertingText {false};
 		bool cursorIsVisible {false};
 		float cursorAlpha {0.f};
 
@@ -579,7 +581,7 @@ void TextEditorView::parentSizeChanged ()
 {
 	if (md.scrollView)
 	{
-		auto func = [This = shared (this)] () mutable {
+		auto func = [This = shared (this), makeCursorVisible = md.isInsertingText] () mutable {
 			if (!This->isAttached () || !This->md.scrollView)
 				return;
 			auto viewSize = This->getViewSize ();
@@ -603,6 +605,8 @@ void TextEditorView::parentSizeChanged ()
 					viewSize.setHeight (containerSize.getHeight ());
 			}
 			This->setViewSize (viewSize);
+			if (makeCursorVisible)
+				This->onCursorChanged (-1, This->md.editState.cursor);
 		};
 		auto frame = getFrame ();
 		if (frame && frame->inEventProcessing ())
@@ -705,6 +709,7 @@ void TextEditorView::onStyleChanged () const
 		md.scrollView->setEdgeView (CScrollView::Edge::Left, md.lineNumberView);
 		md.lineNumberView->remember ();
 	}
+	md.horizontalLineMargin = md.style->leftMargin * 2.;
 	invalidate (Dirty::All);
 }
 
@@ -1316,7 +1321,7 @@ void TextEditorView::layoutRows () const
 		if (w > width)
 			width = w;
 	}
-	md.maxWidth = width + md.style->leftMargin;
+	md.maxWidth = std::ceil (width + md.horizontalLineMargin);
 	md.maxHeight = md.model.lines.size () * md.lineHeight + md.fontDescent;
 	mutableThis ().parentSizeChanged ();
 }
@@ -1404,13 +1409,14 @@ void TextEditorView::invalidateSingleLine (Lines::iterator& line, int32_t numCha
 	if (line == md.model.lines.end ())
 		return;
 
+	auto wasMaxWidth = std::ceil (line->width + md.horizontalLineMargin) == md.maxWidth;
 	if (numChars < 0)
 	{
 		invalidLine (line, true);
 	}
 
 	line->range.length += numChars;
-	auto width = updateLineText (line) + md.style->leftMargin;
+	auto width = std::ceil (updateLineText (line) + md.horizontalLineMargin);
 	if (width > md.maxWidth)
 	{
 		md.maxWidth = width;
@@ -1424,6 +1430,16 @@ void TextEditorView::invalidateSingleLine (Lines::iterator& line, int32_t numCha
 		++it;
 		for (; it != md.model.lines.end (); ++it)
 			it->range.start += numChars;
+	}
+
+	if (wasMaxWidth && width != md.maxWidth)
+	{
+		auto newMaxWidth = std::ceil (calculateMaxWidth () + md.horizontalLineMargin);
+		if (md.maxWidth != newMaxWidth)
+		{
+			md.maxWidth = newMaxWidth;
+			mutableThis ().parentSizeChanged ();
+		}
 	}
 }
 
@@ -1507,7 +1523,7 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars) const
 		}
 		if (numLinesChanged)
 		{
-			auto width = calculateMaxWidth () + md.style->leftMargin;
+			auto width = std::ceil (calculateMaxWidth () + md.horizontalLineMargin);
 			if (width != md.maxWidth)
 				md.maxWidth = width;
 		}
@@ -1546,11 +1562,12 @@ int32_t TextEditorView::deleteChars (size_t pos, size_t num) const
 //------------------------------------------------------------------------
 int32_t TextEditorView::insertChars (size_t pos, const CharT* chars, size_t num) const
 {
+	md.isInsertingText = true;
 	if (pos >= md.model.text.size ())
 		pos = md.model.text.size ();
 	md.model.text.insert (pos, chars, num);
 	invalidateLines (pos, static_cast<int32_t> (num));
-
+	md.isInsertingText = false;
 	if (md.controller)
 		md.controller->onTextEditorTextChanged (*this);
 	return true;
@@ -1899,6 +1916,7 @@ void TextEditorView::onCursorChanged (int oldCursorPos, int newCursorPos) const
 			r.unite (endRect);
 		}
 		r.bottom += md.fontDescent;
+		r.inset (-md.style->leftMargin, 0);
 		md.scrollView->makeRectVisible (r);
 	}
 }
