@@ -91,7 +91,6 @@ struct ScriptObject
 	{
 		if (scriptVar)
 		{
-			scriptVar->removeAllChildren ();
 			scriptVar->release ();
 		}
 	}
