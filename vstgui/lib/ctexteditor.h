@@ -12,8 +12,8 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
-struct ITextEditorController;
 struct ITextEditor;
+struct ITextEditorController;
 
 //------------------------------------------------------------------------
 /** Create a new texteditor
@@ -109,4 +109,41 @@ struct TextEditorControllerAdapter : ITextEditorController
 };
 
 //------------------------------------------------------------------------
+namespace TextEditorColorization {
+
+//------------------------------------------------------------------------
+struct Position
+{
+	uint32_t row;
+	uint32_t column;
+};
+
+//------------------------------------------------------------------------
+/** extension to ITextEditor, use a dynamic_cast to get it from an ITextEditor */
+struct IEditorExt
+{
+	virtual std::u16string_view readText (size_t startOffset, size_t length) const = 0;
+};
+
+//------------------------------------------------------------------------
+/** extension to ITextEditorController */
+struct IStyleProvider
+{
+	using IEditorExt = TextEditorColorization::IEditorExt;
+
+	struct Style
+	{
+		size_t start;
+		size_t length;
+		CColor color;
+	};
+	using Styles = std::vector<Style>;
+
+	virtual void beginDraw (const IEditorExt& editor) = 0;
+	virtual Styles getStyles (const IEditorExt& editor, size_t beginOffset, size_t length) = 0;
+	virtual void endDraw (const IEditorExt& editor) = 0;
+};
+
+//------------------------------------------------------------------------
+} // TextEditorHighlighting
 } // VSTGUI

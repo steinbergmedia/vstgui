@@ -176,9 +176,12 @@ using CommandKeyArray = std::array<Key, static_cast<size_t> (ITextEditor::Comman
 //------------------------------------------------------------------------
 struct TextEditorView : public CView,
 						public ITextEditor,
+						public TextEditorColorization::IEditorExt,
 						public IFocusDrawing,
 						public ViewEventListenerAdapter
 {
+	using Position = TextEditorColorization::Position;
+
 	TextEditorView (ITextEditorController* controller);
 	void beforeDelete () override;
 
@@ -255,6 +258,9 @@ protected:
 							   Modifiers modifiers) const override;
 	void setFindOptions (FindOptions opt) const override;
 	void setFindString (std::string_view utf8Text) const override;
+
+	// TextEditorHighlighting::IEditorExt
+	std::u16string_view readText (size_t startOffset, size_t length) const override;
 
 	// commandos
 	bool doShifting (bool right) const;
@@ -854,6 +860,16 @@ bool TextEditorView::setCommandKeyBinding (Command cmd, char16_t character, Virt
 }
 
 //------------------------------------------------------------------------
+std::u16string_view TextEditorView::readText (size_t startOffset, size_t length) const
+{
+	if (startOffset >= md.model.text.length () || md.model.lines.empty ())
+		return {};
+	if (startOffset + length >= md.model.text.length ())
+		length = md.model.text.length () - startOffset;
+	return {md.model.text.data () + startOffset, length};
+}
+
+//------------------------------------------------------------------------
 inline Range toLineSelection (const Range& line, size_t selStart, size_t selEnd)
 {
 	if (selStart == selEnd)
@@ -882,6 +898,9 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 	context->setDrawMode (kAntiAliasing);
 	context->drawRect (dirtyRect, kDrawFilled);
 
+	auto styleProvider = dynamic_cast<TextEditorColorization::IStyleProvider*> (md.controller);
+	if (styleProvider)
+		styleProvider->beginDraw (*this);
 	CCoord x = getViewSize ().left + md.style->leftMargin;
 	CCoord y = getViewSize ().top - md.style->lineSpacing;
 	for (auto index = 0u; index < md.model.lines.size (); ++index)
@@ -894,7 +913,6 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 			continue;
 		context->setFontColor (md.style->textColor);
 		context->setFont (md.style->font);
-		auto lt = line.text;
 		auto selRange =
 			toLineSelection (line.range, md.editState.select_start, md.editState.select_end);
 		if (selRange)
@@ -922,8 +940,46 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 			context->setFillColor (md.style->selectionBackColor);
 			context->drawRect (r, kDrawFilled);
 		}
-		context->drawString (lt.getPlatformString (), {x, y});
+		if (styleProvider)
+		{
+			auto lineX = x;
+			auto styles = styleProvider->getStyles (*this, line.range.start, line.range.length);
+			size_t start = line.range.start;
+			size_t end = 0u;
+			std::string tmpStr;
+			for (const auto& style : styles)
+			{
+				if (style.start != start)
+				{
+					tmpStr = convert (md.model.text.substr (start, style.start - start));
+					replaceTabs (tmpStr, md.style->tabWidth);
+					context->setFontColor (md.style->textColor);
+					context->drawString (tmpStr.data (), {lineX, y});
+					lineX += context->getStringWidth (tmpStr.data ());
+				}
+				start = style.start < line.range.start ? line.range.start : style.start;
+				end = start + style.length;
+				if (start == end)
+					continue;
+				if (end > line.range.start + line.range.length)
+					end = line.range.start + line.range.length;
+				tmpStr = convert (md.model.text.substr (start, end - start));
+				replaceTabs (tmpStr, md.style->tabWidth);
+				context->setFontColor (style.color);
+				context->drawString (tmpStr.data (), {lineX, y});
+				lineX += context->getStringWidth (tmpStr.data ());
+				start += style.length;
+			}
+		}
+		else
+		{
+			context->drawString (line.text.getPlatformString (), {x, y});
+		}
 	}
+
+	if (styleProvider)
+		styleProvider->endDraw (*this);
+
 	// cursor
 	if ((md.cursorIsVisible || md.cursorAlpha != 0.f) &&
 		md.editState.select_start == md.editState.select_end)
