@@ -112,13 +112,6 @@ struct TextEditorControllerAdapter : ITextEditorController
 namespace TextEditorColorization {
 
 //------------------------------------------------------------------------
-struct Position
-{
-	uint32_t row;
-	uint32_t column;
-};
-
-//------------------------------------------------------------------------
 /** extension to ITextEditor, use a dynamic_cast to get it from an ITextEditor */
 struct IEditorExt
 {

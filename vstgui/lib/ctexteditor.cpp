@@ -180,8 +180,6 @@ struct TextEditorView : public CView,
 						public IFocusDrawing,
 						public ViewEventListenerAdapter
 {
-	using Position = TextEditorColorization::Position;
-
 	TextEditorView (ITextEditorController* controller);
 	void beforeDelete () override;
 
