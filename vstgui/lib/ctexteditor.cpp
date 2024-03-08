@@ -259,6 +259,7 @@ protected:
 
 	// TextEditorHighlighting::IEditorExt
 	std::u16string_view readText (size_t startOffset, size_t length) const override;
+	size_t getTextLength () const override;
 
 	// commandos
 	bool doShifting (bool right) const;
@@ -866,6 +867,9 @@ std::u16string_view TextEditorView::readText (size_t startOffset, size_t length)
 		length = md.model.text.length () - startOffset;
 	return {md.model.text.data () + startOffset, length};
 }
+
+//------------------------------------------------------------------------
+size_t TextEditorView::getTextLength () const { return md.model.text.length (); }
 
 //------------------------------------------------------------------------
 inline Range toLineSelection (const Range& line, size_t selStart, size_t selEnd)

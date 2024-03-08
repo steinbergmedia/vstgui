@@ -115,7 +115,18 @@ namespace TextEditorColorization {
 /** extension to ITextEditor, use a dynamic_cast to get it from an ITextEditor */
 struct IEditorExt
 {
+	/** get access to the internal string buffer of the text editor
+	 *
+	 *	@param startOffset offset into the buffer in number of characters
+	 *	@param length number of characters
+	 *	@return a string view into the buffer
+	 */
 	virtual std::u16string_view readText (size_t startOffset, size_t length) const = 0;
+	/** get the length of the text
+	 *
+	 *	@return number of characters
+	 */
+	virtual size_t getTextLength () const = 0;
 };
 
 //------------------------------------------------------------------------
@@ -132,8 +143,26 @@ struct IStyleProvider
 	};
 	using Styles = std::vector<Style>;
 
+	/** notification that drawing begins
+	 *
+	 *	@param editor reference to the editor
+	 */
 	virtual void beginDraw (const IEditorExt& editor) = 0;
+	/** get the styles of the text
+	 *
+	 *	The returned styles must be orded from front to back.
+	 *	If ranges are missing in the styles, they are rendered with the default style.
+	 *
+	 *	@param editor reference to the editor
+	 *	@param beginOffset offset into the text buffer in number of characters
+	 *	@param length number of characters
+	 *	@return vector of styles for the range
+	 */
 	virtual Styles getStyles (const IEditorExt& editor, size_t beginOffset, size_t length) = 0;
+	/** notification that drawing has ended
+	 *
+	 *	@param editor reference to the editor
+	 */
 	virtual void endDraw (const IEditorExt& editor) = 0;
 };
 
