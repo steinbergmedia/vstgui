@@ -62,47 +62,47 @@ bool SliderBaseCreator::apply (CView* view, const UIAttributes& attributes,
 	const auto* orientationAttr = attributes.getAttributeValue (kAttrOrientation);
 	if (orientationAttr)
 	{
-		int32_t style = slider->getStyle ();
+		auto style = slider->getStyle ();
 		if (*orientationAttr == strVertical)
 		{
-			setBit (style, CSlider::kHorizontal, false);
-			setBit (style, CSlider::kVertical, true);
+			style ^= CSlider::kHorizontal;
+			style |= CSlider::kVertical;
 		}
 		else
 		{
-			setBit (style, CSlider::kVertical, false);
-			setBit (style, CSlider::kHorizontal, true);
+			style ^= CSlider::kVertical;
+			style |= CSlider::kHorizontal;
 		}
 		slider->setStyle (style);
 	}
 	const auto* reverseOrientationAttr = attributes.getAttributeValue (kAttrReverseOrientation);
 	if (reverseOrientationAttr)
 	{
-		int32_t style = slider->getStyle ();
+		auto style = slider->getStyle ();
 		if (*reverseOrientationAttr == strTrue)
 		{
 			if (style & CSlider::kVertical)
 			{
-				setBit (style, CSlider::kBottom, false);
-				setBit (style, CSlider::kTop, true);
+				style ^= CSlider::kBottom;
+				style |= CSlider::kTop;
 			}
 			else if (style & CSlider::kHorizontal)
 			{
-				setBit (style, CSlider::kLeft, false);
-				setBit (style, CSlider::kRight, true);
+				style ^= CSlider::kLeft;
+				style |= CSlider::kRight;
 			}
 		}
 		else
 		{
 			if (style & CSlider::kVertical)
 			{
-				setBit (style, CSlider::kTop, false);
-				setBit (style, CSlider::kBottom, true);
+				style ^= CSlider::kTop;
+				style |= CSlider::kBottom;
 			}
 			else if (style & CSlider::kHorizontal)
 			{
-				setBit (style, CSlider::kRight, false);
-				setBit (style, CSlider::kLeft, true);
+				style ^= CSlider::kRight;
+				style |= CSlider::kLeft;
 			}
 		}
 		slider->setStyle (style);
@@ -171,7 +171,7 @@ bool SliderBaseCreator::getAttributeValue (CView* view, const string& attributeN
 	}
 	if (attributeName == kAttrReverseOrientation)
 	{
-		int32_t style = slider->getStyle ();
+		auto style = slider->getStyle ();
 		stringValue = strFalse;
 		if (((style & CSlider::kVertical) && (style & CSlider::kTop)) ||
 		    ((style & CSlider::kHorizontal) && (style & CSlider::kRight)))
