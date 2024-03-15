@@ -147,9 +147,12 @@ bool StringListControlCreator::apply (CView* view, const UIAttributes& attribute
 		configurator->setRowHeight (d);
 	bool b;
 	if (attributes.getBooleanAttribute (kAttrStyleHover, b))
-		configurator->setFlags (CListControlRowDesc::Selectable |
-		                        (b ? CListControlRowDesc::Hoverable : 0));
-
+	{
+		CListControlRowDesc::Flags f (CListControlRowDesc::Selectable);
+		if (b)
+			f |= CListControlRowDesc::Hoverable;
+		configurator->setFlags (f);
+	}
 	control->invalid ();
 	control->recalculateLayout ();
 

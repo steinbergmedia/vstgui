@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../optional.h"
+#include "../enumbitset.h"
 #include "ccontrol.h"
 
 //------------------------------------------------------------------------
@@ -84,20 +85,22 @@ private:
 //------------------------------------------------------------------------
 struct CListControlRowDesc
 {
-	enum Flags
+	enum Flag : uint32_t
 	{
 		/** Indicates that the row is selectable */
 		Selectable = 1 << 0,
 		/** Indicates that the row should be redrawn when the mouse hovers it */
 		Hoverable = 1 << 1,
 	};
+	using Flags = EnumBitset<Flag, true>;
+
 	/** The height of the row */
 	CCoord height {0};
 	/** The flags of the row, see the Flags enum above */
-	int32_t flags {Selectable};
+	Flags flags {Selectable};
 
 	CListControlRowDesc () = default;
-	CListControlRowDesc (CCoord h, int32_t f) : height (h), flags (f) {}
+	CListControlRowDesc (CCoord h, Flags f) : height (h), flags (f) {}
 };
 
 //------------------------------------------------------------------------
@@ -115,13 +118,14 @@ public:
 
 	struct Row
 	{
-		enum
+		enum Flag : uint32_t
 		{
 			Selectable = 1 << 0,
 			Selected = 1 << 1,
 			Hovered = 1 << 2,
 			LastRow = 1 << 3,
 		};
+		using Flags = EnumBitset<Flag, true>;
 
 		operator int32_t () const { return getIndex (); }
 		int32_t getIndex () const { return index; }
@@ -131,11 +135,11 @@ public:
 		bool isHovered () const { return (flags & Hovered) != 0; }
 		bool isLastRow () const { return (flags & LastRow) != 0; }
 
-		Row (int32_t index, int32_t flags) : index (index), flags (flags) {}
+		Row (int32_t index, Flags flags) : index (index), flags (flags) {}
 
 	private:
 		int32_t index;
-		int32_t flags;
+		Flags flags;
 	};
 
 	virtual void drawBackground (CDrawContext* context, CRect size) = 0;
@@ -168,23 +172,25 @@ class StaticListControlConfigurator : public IListControlConfigurator,
                                       public NonAtomicReferenceCounted
 {
 public:
+	using Flags = CListControlRowDesc::Flags;
+
 	StaticListControlConfigurator (CCoord inRowHeight,
-	                               int32_t inFlags = CListControlRowDesc::Selectable |
-	                                                 CListControlRowDesc::Hoverable)
+								   Flags inFlags = {CListControlRowDesc::Selectable,
+													CListControlRowDesc::Hoverable})
 	: rowHeight (inRowHeight), flags (inFlags)
 	{
 	}
 
 	void setRowHeight (CCoord height) { rowHeight = height; }
-	void setFlags (int32_t f) { flags = f; }
+	void setFlags (Flags f) { flags = f; }
 	CCoord getRowHeight () const { return rowHeight; }
-	int32_t getFlags () const { return flags; }
+	Flags getFlags () const { return flags; }
 
 	CListControlRowDesc getRowDesc (int32_t row) const override { return {rowHeight, flags}; }
 
 private:
 	CCoord rowHeight;
-	int32_t flags;
+	Flags flags;
 };
 
 //------------------------------------------------------------------------

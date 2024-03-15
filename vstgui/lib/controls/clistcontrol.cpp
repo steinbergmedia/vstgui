@@ -187,7 +187,9 @@ void CListControl::drawRect (CDrawContext* context, const CRect& updateRect)
 		rowSize.setHeight (impl->rowDescriptions[row].height);
 		if (updateRect.rectOverlap (rowSize))
 		{
-			int32_t flags = selectedRow == row ? IListControlDrawer::Row::Selected : 0;
+			IListControlDrawer::Row::Flags flags;
+			if (selectedRow == row)
+				flags = IListControlDrawer::Row::Selected;
 			if (impl->rowDescriptions[row].flags & CListControlRowDesc::Selectable)
 				flags |= IListControlDrawer::Row::Selectable;
 			if (impl->hoveredRow && *impl->hoveredRow == row + getMinRowIndex ())

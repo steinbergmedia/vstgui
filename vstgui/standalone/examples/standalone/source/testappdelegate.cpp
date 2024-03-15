@@ -151,7 +151,7 @@ public:
 	CListControlRowDesc getRowDesc (int32_t row) const override
 	{
 		if (row == 0)
-			return {getRowHeight () * 2., 0};
+			return {getRowHeight () * 2., {}};
 		return {getRowHeight (), getFlags ()};
 	}
 };
