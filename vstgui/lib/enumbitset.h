@@ -13,7 +13,7 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 /** enum class bitset
  *
- *	example:
+ *	example with an integer sequence enumeration:
  *
  *		enum class Flag {
  *			One,
@@ -24,10 +24,27 @@ namespace VSTGUI {
  *		Flags f;
  *		f = Flag::One
  *		f |= Flag::Two;
- *		if (f & Flag::One) {}
+ *		if (f & Flag::One)
+ *		{
+ *		}
+ *
+ *	example with an enumeration where the elements are bitmasks:
+ *
+ *		enum class Flag {
+ *			One = 1 << 0,
+ *			Two = 1 << 1,
+ *			Three = 1 << 2
+ *		};
+ *		using Flags = EnumBitSet<Flag, true>
+ *		Flags f;
+ *		f = Flag::One
+ *		f |= Flag::Two;
+ *		if (f & Flag::One)
+ *		{
+ *		}
  *
  */
-template<typename Enum>
+template<typename Enum, bool EnumIsBitMask = false>
 struct EnumBitset
 {
 	using value_type = std::underlying_type_t<Enum>;
@@ -49,8 +66,8 @@ struct EnumBitset
 	constexpr void remove (Enum e) { val &= ~to_value_type (e); }
 	constexpr void clear () { val = {}; }
 
-	constexpr bool test (Enum e) const { return (val & to_value_type (e)) != 0; }
-	constexpr bool empty () const { return val == 0; }
+	constexpr bool test (Enum e) const { return (val & to_value_type (e)) != value_type {}; }
+	constexpr bool empty () const { return val == value_type {}; }
 
 	constexpr EnumBitset& operator= (Enum e)
 	{
@@ -106,7 +123,12 @@ struct EnumBitset
 	constexpr value_type value () const { return val; }
 
 private:
-	constexpr value_type to_value_type (Enum e) const { return 1 << static_cast<value_type> (e); }
+	constexpr value_type to_value_type (Enum e) const
+	{
+		if constexpr (EnumIsBitMask)
+			return static_cast<value_type> (e);
+		return 1 << static_cast<value_type> (e);
+	}
 
 	value_type val {};
 };
