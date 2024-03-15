@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../enumbitset.h"
 #include "ccontrol.h"
 
 namespace VSTGUI {
@@ -15,20 +16,15 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class CVuMeter : public CControl
 {
-private:
-	enum StyleEnum
-	{
-		StyleHorizontal = 0,
-		StyleVertical,
-	};
 public:
-	enum Style
+	enum class Style : int32_t
 	{
-		kHorizontal = 1 << StyleHorizontal,
-		kVertical = 1 << StyleVertical,
+		kHorizontal,
+		kVertical,
 	};
 
-	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed, int32_t style = kVertical);
+	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed,
+			  Style style = Style::kVertical);
 	CVuMeter (const CVuMeter& vuMeter);
   
 	//-----------------------------------------------------------------------------
@@ -45,11 +41,14 @@ public:
 	
 	int32_t getNbLed () const { return nbLed; }
 	void setNbLed (int32_t nb) { nbLed = nb; invalid (); }
-	
-	void setStyle (int32_t newStyle) { style = newStyle; invalid (); }
-	int32_t getStyle () const { return style; }
-	//@}
 
+	void setStyle (Style newStyle)
+	{
+		style = newStyle;
+		invalid ();
+	}
+	Style getStyle () const { return style; }
+	//@}
 
 	// overrides
 	void setDirty (bool state) override;
@@ -60,16 +59,16 @@ public:
 	
 	CLASS_METHODS(CVuMeter, CControl)
 protected:
-	~CVuMeter () noexcept override;	
+	~CVuMeter () noexcept override;
 
 	CBitmap* offBitmap;
-	
-	int32_t     nbLed;
-	int32_t     style;
-	float    decreaseValue;
 
-	CRect    rectOn;
-	CRect    rectOff;
+	int32_t nbLed;
+	Style style;
+	float decreaseValue;
+
+	CRect rectOn;
+	CRect rectOff;
 };
 
 } // VSTGUI

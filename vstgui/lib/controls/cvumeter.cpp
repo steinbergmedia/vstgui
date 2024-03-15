@@ -22,11 +22,9 @@ namespace VSTGUI {
  * @param style kHorizontal or kVertical
  */
 //------------------------------------------------------------------------
-CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed, int32_t style)
-: CControl (size, nullptr, 0)
-, offBitmap (nullptr)
-, nbLed (nbLed)
-, style (style)
+CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed,
+					Style style)
+: CControl (size, nullptr, 0), offBitmap (nullptr), nbLed (nbLed), style (style)
 {
 	setDecreaseStepValue (0.1f);
 
@@ -126,8 +124,8 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	setOldValue (newValue);
 
 	newValue = (newValue - getMin ()) / getRange (); // normalize
-	
-	if (style & kHorizontal) 
+
+	if (style == Style::kHorizontal)
 	{
 		auto tmp = (CCoord)(((int32_t)(nbLed * newValue + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
 		pointOff (tmp, 0);
