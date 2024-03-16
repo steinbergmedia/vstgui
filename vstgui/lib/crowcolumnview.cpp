@@ -5,8 +5,213 @@
 #include "crowcolumnview.h"
 #include "animation/animations.h"
 #include "animation/timingfunctions.h"
+#include <vector>
 
 namespace VSTGUI {
+namespace Layouting {
+//--------------------------------------------------------------------------------
+using CRects = std::vector<CRect>;
+
+enum class Alignment
+{
+	kTopLeft,
+	kTopCenter,
+	kTopRight,
+	kMiddleLeft,
+	kMiddleCenter,
+	kMiddleRight,
+	kBottomLeft,
+	kBottomCenter,
+	kBottomRight
+};
+
+enum class Style
+{
+	kRow,
+	kColumn
+};
+
+//--------------------------------------------------------------------------------
+Alignment translate (const CRowColumnView::LayoutStyle layoutStyle)
+{
+	switch (layoutStyle)
+	{
+		case CRowColumnView::LayoutStyle::kTopLeft:
+			return Alignment::kTopLeft;
+		case CRowColumnView::LayoutStyle::kTopCenter:
+			return Alignment::kTopCenter;
+		case CRowColumnView::LayoutStyle::kTopRight:
+			return Alignment::kTopRight;
+		case CRowColumnView::LayoutStyle::kMiddleLeft:
+			return Alignment::kMiddleLeft;
+		case CRowColumnView::LayoutStyle::kMiddleCenter:
+			return Alignment::kMiddleCenter;
+		case CRowColumnView::LayoutStyle::kMiddleRight:
+			return Alignment::kMiddleRight;
+		case CRowColumnView::LayoutStyle::kBottomLeft:
+			return Alignment::kBottomLeft;
+		case CRowColumnView::LayoutStyle::kBottomCenter:
+			return Alignment::kBottomCenter;
+		case CRowColumnView::LayoutStyle::kBottomRight:
+			return Alignment::kBottomRight;
+		default:
+			return Alignment::kTopLeft;
+	}
+}
+
+//--------------------------------------------------------------------------------
+Style translate (const CRowColumnView::Style style)
+{
+	switch (style)
+	{
+		case CRowColumnView::Style::kRowStyle:
+			return Style::kRow;
+		case CRowColumnView::Style::kColumnStyle:
+			return Style::kColumn;
+		default:
+			return Style::kRow;
+	}
+}
+
+//--------------------------------------------------------------------------------
+CPoint computeRectOffset (const CPoint& parent, const CPoint& rect, const Alignment alignment)
+{
+	CPoint offset (0., 0.);
+	switch (alignment)
+	{
+		case Alignment::kTopLeft:
+		{
+			offset = CPoint (0., 0.);
+			break;
+		}
+		case Alignment::kTopCenter:
+		{
+			offset = CPoint ((parent.x - rect.x) / 2., 0.);
+			break;
+		}
+		case Alignment::kTopRight:
+		{
+			offset = CPoint (parent.x - rect.x, 0.);
+			break;
+		}
+		case Alignment::kMiddleLeft:
+		{
+			offset = CPoint (0., (parent.y - rect.y) / 2.);
+			break;
+		}
+		case Alignment::kMiddleCenter:
+		{
+			offset = CPoint ((parent.x - rect.x) / 2., (parent.y - rect.y) / 2.);
+			break;
+		}
+		case Alignment::kMiddleRight:
+		{
+			offset = CPoint (parent.x - rect.x, (parent.y - rect.y) / 2.);
+			break;
+		}
+		case Alignment::kBottomLeft:
+		{
+			offset = CPoint (0., parent.y - rect.y);
+			break;
+		}
+		case Alignment::kBottomCenter:
+		{
+			offset = CPoint ((parent.x - rect.x) / 2., parent.y - rect.y);
+			break;
+		}
+		case Alignment::kBottomRight:
+		{
+			offset = CPoint (parent.x - rect.x, parent.y - rect.y);
+			break;
+		}
+		default:
+			break;
+	}
+
+	return offset;
+}
+
+//--------------------------------------------------------------------------------
+CRect computeHelperRect (const CRect& parent, const CRects& rects, const Alignment alignment,
+						 const Style style, double spacing)
+{
+	CRect helperRect;
+	if (style == Style::kRow)
+	{
+		for (const auto& rect : rects)
+		{
+			if (helperRect.getWidth () < rect.getWidth ())
+				helperRect.setWidth (rect.getWidth ());
+
+			auto h = helperRect.getHeight () + rect.getHeight ();
+			helperRect.setHeight (h);
+		}
+		helperRect.setHeight (helperRect.getHeight () + (rects.size () - 1) * spacing);
+	}
+	else
+	{
+		for (const auto& rect : rects)
+		{
+			if (helperRect.getHeight () < rect.getHeight ())
+				helperRect.setHeight (rect.getHeight ());
+
+			auto w = helperRect.getWidth () + rect.getWidth ();
+			helperRect.setWidth (w);
+		}
+		helperRect.setWidth (helperRect.getWidth () + (rects.size () - 1) * spacing);
+	}
+
+	const CPoint& offset = computeRectOffset (parent.getSize (), helperRect.getSize (), alignment);
+	return helperRect.offset (offset);
+}
+
+//--------------------------------------------------------------------------------
+CRect computeHelperRect (const CViewContainer& parent, const Alignment alignment, const Style style,
+						 const double spacing)
+{
+	CRects childrenViewSizes;
+	parent.forEachChild (
+		[&] (const CView* child) { childrenViewSizes.push_back (child->getViewSize ()); });
+
+	return computeHelperRect (parent.getViewSize (), childrenViewSizes, alignment, style, spacing);
+}
+
+//--------------------------------------------------------------------------------
+// AutoLayout
+//--------------------------------------------------------------------------------
+class AutoLayout
+{
+public:
+	//--------------------------------------------------------------------------------
+	AutoLayout (const CViewContainer& parent, const Alignment alignment, const Style style,
+				const double spacing)
+	: alignment (alignment), style (style)
+	{
+		helperRect = Layouting::computeHelperRect (parent, alignment, style, spacing);
+	}
+
+	auto moveRect (CRect& viewSize) -> CRect&
+	{
+		const CPoint offset =
+			Layouting::computeRectOffset (helperRect.getSize (), viewSize.getSize (), alignment);
+		if (style == Style::kRow)
+			viewSize.offset (offset.x, 0.);
+		else
+			viewSize.offset (0., offset.y);
+
+		return viewSize.offset (helperRect.getTopLeft ());
+	}
+
+	//--------------------------------------------------------------------------------
+private:
+	const Alignment alignment = Alignment::kTopLeft;
+	const Style style = Style::kRow;
+	CRect helperRect;
+};
+
+//--------------------------------------------------------------------------------
+
+}
 
 //--------------------------------------------------------------------------------
 CRowColumnView::CRowColumnView (const CRect& size, Style style, LayoutStyle layoutStyle, CCoord spacing, const CRect& margin)
@@ -127,6 +332,10 @@ void CRowColumnView::layoutViewsEqualSize ()
 		maxSize.x = getViewSize ().getWidth () - (margin.right + margin.left);
 	else
 		maxSize.y = getViewSize ().getHeight () - (margin.top + margin.bottom);
+
+	Layouting::AutoLayout layout (*this, Layouting::translate (layoutStyle),
+								  Layouting::translate (style), spacing);
+
 	CPoint location = margin.getTopLeft ();
 	forEachChild ([&] (CView* view) {
 		CRect viewSize = view->getViewSize ();
@@ -152,6 +361,19 @@ void CRowColumnView::layoutViewsEqualSize ()
 				CCoord diffX = maxSize.x - viewSize.getWidth ();
 				CCoord diffY = maxSize.y - viewSize.getHeight ();
 				viewSize.offset (diffX, diffY);
+				break;
+			}
+			case kTopLeft:
+			case kTopCenter:
+			case kTopRight:
+			case kMiddleLeft:
+			case kMiddleCenter:
+			case kMiddleRight:
+			case kBottomLeft:
+			case kBottomCenter:
+			case kBottomRight:
+			{
+				layout.moveRect (viewSize);
 				break;
 			}
 			default:
