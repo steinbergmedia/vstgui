@@ -14,6 +14,7 @@ using Rects = std::vector<CRect>;
 static const CRect templateSize (0., 0., 100., 100.);
 static const CRect layoutSize (0., 0., 80., 80.);
 
+// clang-format off
 static const Rects childrenDefaultSizes = {
     {0., 0., 10., 10.},
     {0., 0., 20., 20.},
@@ -85,74 +86,75 @@ static const std::map<CRowColumnView::LayoutStyle, Rects> kChildrenResultSizes =
         }
     }
 };
+// clang-format on
 
-auto testWithLayoutStyle(const CRowColumnView::LayoutStyle layoutStyle) -> void
+auto testWithLayoutStyle (const CRowColumnView::LayoutStyle layoutStyle) -> void
 {
-    auto rowColumnView = owned (new CRowColumnView(layoutSize));
-    rowColumnView->setStyle(CRowColumnView::kRowStyle);
-    rowColumnView->setLayoutStyle(layoutStyle);
-    
-    for(auto& rect : childrenDefaultSizes)
-    {
-        auto child = new CView(rect);
-        rowColumnView->CViewContainer::addView(child);
-        rowColumnView->layoutViews();
-    }
-    
-    //rowColumnView->layoutViews();
-    size_t i = 0;
-    rowColumnView->forEachChild([&](CView* child){
-        const auto& results = kChildrenResultSizes.find(layoutStyle);
-        const auto& childrenResults = results->second;
-        auto viewSize = child->getViewSize();
-        EXPECT (viewSize == childrenResults.at(i))
-        i++;
-    });
+	auto rowColumnView = owned (new CRowColumnView (layoutSize));
+	rowColumnView->setStyle (CRowColumnView::kRowStyle);
+	rowColumnView->setLayoutStyle (layoutStyle);
+
+	for (auto& rect : childrenDefaultSizes)
+	{
+		auto child = new CView (rect);
+		rowColumnView->CViewContainer::addView (child);
+		rowColumnView->layoutViews ();
+	}
+
+	// rowColumnView->layoutViews();
+	size_t i = 0;
+	rowColumnView->forEachChild ([&] (CView* child) {
+		const auto& results = kChildrenResultSizes.find (layoutStyle);
+		const auto& childrenResults = results->second;
+		auto viewSize = child->getViewSize ();
+		EXPECT (viewSize == childrenResults.at (i))
+		i++;
+	});
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutTopLeftStyle)
 {
-    //testWithLayoutStyle(CRowColumnView::kTopLeft);
+	// testWithLayoutStyle(CRowColumnView::kTopLeft);
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutTopCenterStyle)
 {
-    testWithLayoutStyle(CRowColumnView::kTopCenter);
+	testWithLayoutStyle (CRowColumnView::kTopCenter);
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutTopRightStyle)
 {
-    testWithLayoutStyle(CRowColumnView::kTopRight);
+	testWithLayoutStyle (CRowColumnView::kTopRight);
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutMiddleLeftStyle)
 {
-    testWithLayoutStyle(CRowColumnView::kMiddleLeft);
+	testWithLayoutStyle (CRowColumnView::kMiddleLeft);
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutMiddleCenterStyle)
 {
-    testWithLayoutStyle(CRowColumnView::kMiddleCenter);
+	testWithLayoutStyle (CRowColumnView::kMiddleCenter);
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutMiddleRightStyle)
 {
-    testWithLayoutStyle(CRowColumnView::kMiddleRight);
+	testWithLayoutStyle (CRowColumnView::kMiddleRight);
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutBottomLeftStyle)
 {
-    testWithLayoutStyle(CRowColumnView::kBottomLeft);
+	testWithLayoutStyle (CRowColumnView::kBottomLeft);
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutBottomCenterStyle)
 {
-    testWithLayoutStyle(CRowColumnView::kBottomCenter);
+	testWithLayoutStyle (CRowColumnView::kBottomCenter);
 }
 
 TEST_CASE (CRowColumnViewTest, LayoutBottomRightStyle)
 {
-    testWithLayoutStyle(CRowColumnView::kBottomRight);
+	testWithLayoutStyle (CRowColumnView::kBottomRight);
 }
 
 } // VSTGUI
