@@ -54,7 +54,17 @@ public:
 		/** subviews have the same right or bottom position */
 		kRightBottomEqualy,
 		/** stretch subviews to the same width and height */
-		kStretchEqualy
+		kStretchEqualy,
+
+		kTopLeft,
+		kTopCenter,
+		kTopRight,
+		kMiddleLeft,
+		kMiddleCenter,
+		kMiddleRight,
+		kBottomLeft,
+		kBottomCenter,
+		kBottomRight
 	};
 
 	CRowColumnView (const CRect& size, Style style = kRowStyle, LayoutStyle layoutStyle = kLeftTopEqualy, CCoord spacing = 0., const CRect& margin = CRect (0., 0., 0., 0.));
