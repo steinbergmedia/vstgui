@@ -132,37 +132,41 @@ CPoint computeRectOffset (const CPoint& parent, const CPoint& rect, const Alignm
 }
 
 //--------------------------------------------------------------------------------
-CRect computeHelperRect (const CRect& parent, const CRects& rects, const Alignment alignment,
+CRect computeHelperRect (const CRect& parent, const CRects& children, const Alignment alignment,
 						 const Style style, double spacing)
 {
-	CRect helperRect;
-	if (style == Style::kRow)
-	{
-		for (const auto& rect : rects)
-		{
-			if (helperRect.getWidth () < rect.getWidth ())
-				helperRect.setWidth (rect.getWidth ());
+    CPoint maxSize;
+    if (style == Style::kRow)
+    {
+        for (const auto& rect : children)
+        {
+            if (maxSize.x < rect.getWidth ())
+                maxSize.x = rect.getWidth ();
 
-			auto h = helperRect.getHeight () + rect.getHeight ();
-			helperRect.setHeight (h);
-		}
-		helperRect.setHeight (helperRect.getHeight () + (rects.size () - 1) * spacing);
-	}
-	else
-	{
-		for (const auto& rect : rects)
-		{
-			if (helperRect.getHeight () < rect.getHeight ())
-				helperRect.setHeight (rect.getHeight ());
+            maxSize.y = maxSize.y + rect.getHeight () + spacing;
+        }
+        
+        // Remove the last spacing again
+        if (!children.empty())
+            maxSize.y -= spacing;
+    }
+    else
+    {
+        for (const auto& rect : children)
+        {
+            if (maxSize.y < rect.getHeight ())
+                maxSize.y = rect.getHeight ();
 
-			auto w = helperRect.getWidth () + rect.getWidth ();
-			helperRect.setWidth (w);
-		}
-		helperRect.setWidth (helperRect.getWidth () + (rects.size () - 1) * spacing);
-	}
+            maxSize.x = maxSize.x + rect.getWidth () + spacing;
+        }
+        
+        // Remove the last spacing again
+        if (!children.empty())
+            maxSize.x -= spacing;
+    }
 
-	const CPoint& offset = computeRectOffset (parent.getSize (), helperRect.getSize (), alignment);
-	return helperRect.offset (offset);
+    const auto offset = computeRectOffset (parent.getSize (), maxSize, alignment);
+    return CRect().setSize(maxSize).offset(offset);
 }
 
 //--------------------------------------------------------------------------------
@@ -192,14 +196,17 @@ public:
 
 	auto moveRect (CRect& viewSize) -> CRect&
 	{
-		const CPoint offset =
-			Layouting::computeRectOffset (helperRect.getSize (), viewSize.getSize (), alignment);
-		if (style == Style::kRow)
-			viewSize.offset (offset.x, 0.);
-		else
-			viewSize.offset (0., offset.y);
-
-		return viewSize.offset (helperRect.getTopLeft ());
+        // Offset the viewSize inside the helperRect...
+        const CPoint offset =
+            Layouting::computeRectOffset (helperRect.getSize (), viewSize.getSize (), alignment);
+        if (style == Style::kRow)
+            viewSize.offset (offset.x, 0.);
+        else
+            viewSize.offset (0., offset.y);
+        
+        //...and offset by topLeft of the helperRect afterwards, in order to align with the
+        // 'real' parent.
+        return viewSize.offset (helperRect.getTopLeft ());
 	}
 
 	//--------------------------------------------------------------------------------
