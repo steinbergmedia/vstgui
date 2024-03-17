@@ -1867,9 +1867,10 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 				}
 			}
 			CLEAN (value);
-			if (lexer->getToken () != ')')
-				lexer->match (',');
 			v = v->getNextSibling ();
+			if (lexer->getToken () == ')')
+				break;
+			lexer->match (',');
 		}
 		lexer->match (')');
 		// execute function!
