@@ -86,13 +86,28 @@ static const std::map<CRowColumnView::LayoutStyle, Rects> kChildrenResultSizes =
         }
     }
 };
+
+static const std::map<CRowColumnView::LayoutStyle, Rects> kChildrenResultSizesWithSpacing = {
+    {
+        CRowColumnView::kMiddleCenter, {
+            {35., 6., 45., 16.},
+            {30., 20., 50., 40.},
+            {25., 44., 55., 74.}
+        }
+    }
+};
 // clang-format on
 
-auto testWithLayoutStyle (const CRowColumnView::LayoutStyle layoutStyle) -> void
+auto testWithLayoutStyle (const CRowColumnView::LayoutStyle layoutStyle,
+						  double spacing = 0.) -> void
 {
+	const auto& results = spacing == 0. ? kChildrenResultSizes.find (layoutStyle)
+										: kChildrenResultSizesWithSpacing.find (layoutStyle);
+
 	auto rowColumnView = owned (new CRowColumnView (layoutSize));
 	rowColumnView->setStyle (CRowColumnView::kRowStyle);
 	rowColumnView->setLayoutStyle (layoutStyle);
+	rowColumnView->setSpacing (spacing);
 
 	for (auto& rect : childrenDefaultSizes)
 	{
@@ -104,7 +119,6 @@ auto testWithLayoutStyle (const CRowColumnView::LayoutStyle layoutStyle) -> void
 	// rowColumnView->layoutViews();
 	size_t i = 0;
 	rowColumnView->forEachChild ([&] (CView* child) {
-		const auto& results = kChildrenResultSizes.find (layoutStyle);
 		const auto& childrenResults = results->second;
 		auto viewSize = child->getViewSize ();
 		EXPECT (viewSize == childrenResults.at (i))
@@ -155,6 +169,11 @@ TEST_CASE (CRowColumnViewTest, LayoutBottomCenterStyle)
 TEST_CASE (CRowColumnViewTest, LayoutBottomRightStyle)
 {
 	testWithLayoutStyle (CRowColumnView::kBottomRight);
+}
+
+TEST_CASE (CRowColumnViewTest, LayoutMiddleCenterStyleWithSpacing)
+{
+	testWithLayoutStyle (CRowColumnView::kMiddleCenter, 4.);
 }
 
 } // VSTGUI
