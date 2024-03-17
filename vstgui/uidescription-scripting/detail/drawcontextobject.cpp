@@ -17,258 +17,218 @@ using namespace TJS;
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+struct DrawContextObject::Impl
+{
+	CDrawContext* context {nullptr};
+	IUIDescription* uiDesc {nullptr};
+
+	CScriptVar* getArgument (CScriptVar* var, std::string_view paramName,
+							 std::string_view funcSignature) const
+	{
+		auto child = var->findChild (paramName);
+		auto result = child ? child->getVar () : nullptr;
+		if (!result || result->isUndefined ())
+		{
+			string s ("Missing `");
+			s.append (paramName);
+			s.append ("` argument in ");
+			s.append (funcSignature);
+			throw CScriptException (std::move (s));
+		}
+		return result;
+	}
+
+	void checkContextOrThrow () const
+	{
+		if (!context)
+			throw CScriptException ("Native context is missing!");
+	}
+
+	CDrawStyle getDrawStyle (CScriptVar*& styleVar) const
+	{
+		CDrawStyle style {};
+		auto string = styleVar->getString ();
+		if (string == "stroked"sv)
+			style = kDrawStroked;
+		else if (string == "filled"sv)
+			style = kDrawFilled;
+		else if (string == "filledAndStroked"sv)
+			style = kDrawFilledAndStroked;
+		else
+			throw CScriptException ("Unknown draw style: " + string);
+		return style;
+	}
+
+	void drawLine (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto fromPoint = getArgument (var, "from"sv, "drawContext.drawLine(from, to);"sv);
+		auto toPoint = getArgument (var, "to"sv, "drawContext.drawLine(from, to);"sv);
+		auto from = fromScriptPoint (*fromPoint);
+		auto to = fromScriptPoint (*toPoint);
+		context->drawLine (from, to);
+	}
+	void drawRect (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto rectVar = getArgument (var, "rect"sv, "drawContext.drawRect(rect, style);"sv);
+		auto styleVar = getArgument (var, "style"sv, "drawContext.drawRect(rect, style);"sv);
+		auto rect = fromScriptRect (*rectVar);
+		auto style = getDrawStyle (styleVar);
+		context->drawRect (rect, style);
+	}
+	void drawEllipse (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto rectVar = getArgument (var, "rect"sv, "drawContext.drawEllipse(rect, style);"sv);
+		auto styleVar = getArgument (var, "style"sv, "drawContext.drawEllipse(rect, style);"sv);
+		auto rect = fromScriptRect (*rectVar);
+		auto style = getDrawStyle (styleVar);
+		context->drawEllipse (rect, style);
+	}
+	void clearRect (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto rectVar = getArgument (var, "rect"sv, "drawContext.clearRect(rect);");
+		auto rect = fromScriptRect (*rectVar);
+		context->clearRect (rect);
+	}
+	void drawPolygon (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto pointsVar = getArgument (var, "points"sv, "drawContext.drawPolygon(points, style);"sv);
+		if (!pointsVar->isArray ())
+			throw CScriptException ("`points` argument must be an array of points in "
+									"drawContext.drawPolygon(points, style);");
+		auto styleVar = getArgument (var, "style"sv, "drawContext.drawPolygon(points, style);"sv);
+		PointList points;
+		auto numPoints = pointsVar->getArrayLength ();
+		for (auto index = 0; index < numPoints; ++index)
+		{
+			auto pointVar = pointsVar->getArrayIndex (index);
+			vstgui_assert (pointVar != nullptr);
+			points.emplace_back (fromScriptPoint (*pointVar));
+		}
+		auto style = getDrawStyle (styleVar);
+		context->drawPolygon (points, style);
+	}
+	void setClipRect (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto rectVar = getArgument (var, "rect"sv, "drawContext.setClipRect(rect);"sv);
+		auto rect = fromScriptRect (*rectVar);
+		context->setClipRect (rect);
+	}
+	void drawBitmap (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto nameVar = getArgument (
+			var, "name"sv, "drawContext.drawBitmap(name, destRect, offsetPoint?, alpha?);"sv);
+		auto destRectVar = getArgument (
+			var, "destRect"sv, "drawContext.drawBitmap(name, destRect, offsetPoint?, alpha?);"sv);
+		auto offsetPointVar = var->findChild ("offsetPoint"sv);
+		auto alphaVar = var->findChild ("alpha"sv);
+		auto bitmap = uiDesc->getBitmap (nameVar->getString ().data ());
+		if (!bitmap)
+			throw CScriptException ("bitmap not found in uiDescription");
+		auto destRect = fromScriptRect (*destRectVar);
+		auto offset = offsetPointVar ? fromScriptPoint (*offsetPointVar->getVar ()) : CPoint (0, 0);
+		auto alpha = static_cast<float> (alphaVar ? alphaVar->getVar ()->getDouble () : 1.);
+		context->drawBitmap (bitmap, destRect, offset, alpha);
+	}
+	void drawString (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto stringVar =
+			getArgument (var, "string"sv, "drawContext.drawString(string, rect, align?);"sv);
+		auto rectVar =
+			getArgument (var, "rect"sv, "drawContext.drawString(string, rect, align?);"sv);
+		auto alignVar = var->getParameter ("align"sv);
+		auto string = stringVar->getString ().data ();
+		auto rect = fromScriptRect (*rectVar);
+		CHoriTxtAlign align = kCenterText;
+		if (!alignVar || alignVar->isUndefined ())
+			align = kCenterText;
+		else if (alignVar->getString () == "left"sv)
+			align = kLeftText;
+		else if (alignVar->getString () == "center"sv)
+			align = kCenterText;
+		else if (alignVar->getString () == "right"sv)
+			align = kRightText;
+		else
+			throw CScriptException ("wrong `align` argument. expected 'left', 'center' or 'right'");
+		context->drawString (string, rect, align, true);
+	}
+	void setFont (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto fontVar = getArgument (var, "font"sv, "drawContext.setFont(font);"sv);
+		if (auto font = uiDesc->getFont (fontVar->getString ().data ()))
+			context->setFont (font);
+	}
+	void setFontColor (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto colorVar = getArgument (var, "color"sv, "drawContext.setFontColor(color);"sv);
+		CColor color {};
+		UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
+		context->setFontColor (color);
+	}
+	void setFillColor (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto colorVar = getArgument (var, "color"sv, "drawContext.setFillColor(color);"sv);
+		CColor color {};
+		UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
+		context->setFillColor (color);
+	}
+	void setFrameColor (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto colorVar = getArgument (var, "color"sv, "drawContext.setFrameColor(color);"sv);
+		CColor color {};
+		if (!UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc))
+			throw CScriptException (
+				"Unknown `color` argument in drawContext.setFrameColor(color);");
+		context->setFrameColor (color);
+	}
+	void setLineWidth (CScriptVar* var) const
+	{
+		checkContextOrThrow ();
+		auto widthVar = getArgument (var, "width"sv, "drawContext.setLineWidth(width);"sv);
+		context->setLineWidth (widthVar->getDouble ());
+	}
+};
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 DrawContextObject::DrawContextObject ()
 {
 	// TODO: decide if this object should expose the same interface as "CanvasRenderingContext2D"
+	impl = std::make_unique<Impl> ();
 	scriptVar->setLifeTimeObserver (this);
 #if 0
 #else
-	addFunc ("drawLine"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto fromPoint = var->getParameter ("from"sv);
-				 if (!fromPoint)
-					 throw CScriptException (
-						 "Missing `from` argument in drawContext.drawLine(from, to);");
-				 auto toPoint = var->getParameter ("to"sv);
-				 if (!toPoint)
-					 throw CScriptException (
-						 "Missing `to` argument in drawContext.drawLine(from, to);");
-				 auto from = fromScriptPoint (*fromPoint);
-				 auto to = fromScriptPoint (*toPoint);
-				 context->drawLine (from, to);
-			 },
-			 {"from", "to"});
-	addFunc ("drawRect"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto rectVar = var->getParameter ("rect"sv);
-				 if (!rectVar)
-					 throw CScriptException (
-						 "Missing `rect` argument in drawContext.drawRect(rect, style);");
-				 auto styleVar = var->getParameter ("style"sv);
-				 if (!styleVar)
-					 throw CScriptException (
-						 "Missing `style` argument in drawContext.drawRect(rect, style);");
-				 auto rect = fromScriptRect (*rectVar);
-				 CDrawStyle style {};
-				 if (styleVar->getString () == "stroked")
-					 style = kDrawStroked;
-				 else if (styleVar->getString () == "filled")
-					 style = kDrawFilled;
-				 else if (styleVar->getString () == "filledAndStroked")
-					 style = kDrawFilledAndStroked;
-				 context->drawRect (rect, style);
-			 },
-			 {"rect", "style"});
-	addFunc ("drawEllipse"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto rectVar = var->getParameter ("rect"sv);
-				 if (!rectVar)
-					 throw CScriptException (
-						 "Missing `rect` argument in drawContext.drawEllipse(rect, style);");
-				 auto styleVar = var->getParameter ("style"sv);
-				 if (!styleVar)
-					 throw CScriptException (
-						 "Missing `style` argument in drawContext.drawEllipse(rect, style);");
-				 auto rect = fromScriptRect (*rectVar);
-				 CDrawStyle style {};
-				 if (styleVar->getString () == "stroked")
-					 style = kDrawStroked;
-				 else if (styleVar->getString () == "filled")
-					 style = kDrawFilled;
-				 else if (styleVar->getString () == "filledAndStroked")
-					 style = kDrawFilledAndStroked;
-				 context->drawEllipse (rect, style);
-			 },
-			 {"rect", "style"});
-	addFunc ("clearRect"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto rectVar = var->getParameter ("rect"sv);
-				 if (!rectVar)
-					 throw CScriptException (
-						 "Missing `rect` argument in drawContext.clearRect(rect);");
-				 auto rect = fromScriptRect (*rectVar);
-				 context->clearRect (rect);
-			 },
-			 {"rect", "style"});
-	addFunc ("drawPolygon"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto pointsVar = var->getParameter ("points"sv);
-				 if (!pointsVar)
-					 throw CScriptException (
-						 "Missing `points` argument in drawContext.drawPolygon(points, style);");
-				 if (!pointsVar->isArray ())
-					 throw CScriptException ("`points` argument must be an array of points in "
-											 "drawContext.drawPolygon(points, style);");
-				 auto styleVar = var->getParameter ("style"sv);
-				 if (!styleVar)
-					 throw CScriptException (
-						 "Missing `style` argument in drawContext.drawPolygon(points, style);");
-				 PointList points;
-				 auto numPoints = pointsVar->getArrayLength ();
-				 for (auto index = 0; index < numPoints; ++index)
-				 {
-					 auto pointVar = pointsVar->getArrayIndex (index);
-					 vstgui_assert (pointVar != nullptr);
-					 points.emplace_back (fromScriptPoint (*pointVar));
-				 }
-				 CDrawStyle style {};
-				 if (styleVar->getString () == "stroked")
-					 style = kDrawStroked;
-				 else if (styleVar->getString () == "filled")
-					 style = kDrawFilled;
-				 else if (styleVar->getString () == "filledAndStroked")
-					 style = kDrawFilledAndStroked;
-				 context->drawPolygon (points, style);
-			 },
-			 {"points", "style"});
-	addFunc ("setClipRect"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto rectVar = var->getParameter ("rect"sv);
-				 if (!rectVar)
-					 throw CScriptException (
-						 "Missing `rect` argument in drawContext.setClipRect(rect);");
-				 auto rect = fromScriptRect (*rectVar);
-				 context->setClipRect (rect);
-			 },
-			 {"rect"});
+	addFunc ("drawLine"sv, [this] (auto var) { impl->drawLine (var); }, {"from"sv, "to"sv});
+	addFunc ("drawRect"sv, [this] (auto var) { impl->drawRect (var); }, {"rect"sv, "style"sv});
+	addFunc ("drawEllipse"sv, [this] (auto var) { impl->drawEllipse (var); },
+			 {"rect"sv, "style"sv});
+	addFunc ("clearRect"sv, [this] (auto var) { impl->clearRect (var); }, {"rect"sv, "style"sv});
+	addFunc ("drawPolygon"sv, [this] (auto var) { impl->drawPolygon (var); },
+			 {"points"sv, "style"sv});
+	addFunc ("setClipRect"sv, [this] (auto var) { impl->setClipRect (var); }, {"rect"sv});
 #if 1 // TODO: make a bitmap js object instead
-	addFunc ("drawBitmap"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto bitmapNameVar = var->getParameter ("bitmap"sv);
-				 if (!bitmapNameVar)
-					 throw CScriptException (
-						 "Missing `bitmap` argument in drawContext.drawBitmap(bitmap, destRect, "
-						 "offsetPoint, alpha);");
-				 auto destRectVar = var->getParameter ("destRect"sv);
-				 if (!destRectVar)
-					 throw CScriptException (
-						 "Missing `destRect` argument in drawContext.drawBitmap(bitmap, destRect, "
-						 "offsetPoint, alpha);");
-				 auto offsetPointVar = var->findChild ("offsetPoint"sv);
-				 auto alphaVar = var->findChild ("alpha"sv);
-				 auto bitmap = uiDesc->getBitmap (bitmapNameVar->getString ().data ());
-				 if (!bitmap)
-					 throw CScriptException ("bitmap not found in uiDescription");
-				 auto destRect = fromScriptRect (*destRectVar);
-				 auto offset =
-					 offsetPointVar ? fromScriptPoint (*offsetPointVar->getVar ()) : CPoint (0, 0);
-				 auto alpha =
-					 static_cast<float> (alphaVar ? alphaVar->getVar ()->getDouble () : 1.);
-				 context->drawBitmap (bitmap, destRect, offset, alpha);
-			 },
-			 {"bitmap", "destRect"});
+	addFunc ("drawBitmap"sv, [this] (auto var) { impl->drawBitmap (var); },
+			 {"name"sv, "destRect"sv});
 #endif
-	addFunc (
-		"drawString"sv,
-		[this] (CScriptVar* var) {
-			if (!context)
-				throw CScriptException ("Native context is missing!");
-			auto stringVar = var->getParameter ("string"sv);
-			if (!stringVar)
-				throw CScriptException (
-					"Missing `string` argument in drawContext.drawString(string, rect, align);");
-			auto rectVar = var->getParameter ("rect"sv);
-			if (!rectVar)
-				throw CScriptException (
-					"Missing `rect` argument in drawContext.drawString(string, rect, align);");
-			auto alignVar = var->getParameter ("align"sv);
-			if (!alignVar)
-				throw CScriptException (
-					"Missing `align` argument in drawContext.drawString(string, rect, align);");
-			auto string = stringVar->getString ().data ();
-			auto rect = fromScriptRect (*rectVar);
-			CHoriTxtAlign align = kCenterText;
-			if (alignVar->getString () == "left")
-				align = kLeftText;
-			else if (alignVar->getString () == "center")
-				align = kCenterText;
-			else if (alignVar->getString () == "right")
-				align = kRightText;
-			else
-				throw CScriptException (
-					"wrong `align` argument. expected 'left', 'center' or 'right'");
-			context->drawString (string, rect, align, true);
-		},
-		{"string", "rect", "align"});
-	addFunc ("setFont"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto fontVar = var->getParameter ("font"sv);
-				 if (!fontVar)
-					 throw CScriptException (
-						 "Missing `font` argument in drawContext.setFont(font);");
-				 if (auto font = uiDesc->getFont (fontVar->getString ().data ()))
-					 context->setFont (font);
-			 },
-			 {"font"});
-	addFunc ("setFontColor"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto colorVar = var->getParameter ("color"sv);
-				 if (!colorVar)
-					 throw CScriptException (
-						 "Missing `color` argument in drawContext.setFontColor(color);");
-				 CColor color {};
-				 UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
-				 context->setFontColor (color);
-			 },
-			 {"color"});
-	addFunc ("setFillColor"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto colorVar = var->getParameter ("color"sv);
-				 if (!colorVar)
-					 throw CScriptException (
-						 "Missing `color` argument in drawContext.setFillColor(color);");
-				 CColor color {};
-				 UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
-				 context->setFillColor (color);
-			 },
-			 {"color"});
-	addFunc ("setFrameColor"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto colorVar = var->getParameter ("color"sv);
-				 if (!colorVar)
-					 throw CScriptException (
-						 "Missing `color` argument in drawContext.setFrameColor(color);");
-				 CColor color {};
-				 if (!UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc))
-					 throw CScriptException (
-						 "Unknown `color` argument in drawContext.setFrameColor(color);");
-				 context->setFrameColor (color);
-			 },
-			 {"color"});
-	addFunc ("setLineWidth"sv,
-			 [this] (CScriptVar* var) {
-				 if (!context)
-					 throw CScriptException ("Native context is missing!");
-				 auto widthVar = var->getParameter ("width"sv);
-				 if (!widthVar)
-					 throw CScriptException (
-						 "Missing `width` argument in drawContext.setLineWidth(width);");
-				 context->setLineWidth (widthVar->getDouble ());
-			 },
-			 {"width"});
+	addFunc ("drawString"sv, [this] (auto var) { impl->drawString (var); },
+			 {"string"sv, "rect"sv, "align"sv});
+	addFunc ("setFont"sv, [this] (auto var) { impl->setFont (var); }, {"font"sv});
+	addFunc ("setFontColor"sv, [this] (auto var) { impl->setFontColor (var); }, {"color"sv});
+	addFunc ("setFillColor"sv, [this] (auto var) { impl->setFillColor (var); }, {"color"sv});
+	addFunc ("setFrameColor"sv, [this] (auto var) { impl->setFrameColor (var); }, {"color"sv});
+	addFunc ("setLineWidth"sv, [this] (auto var) { impl->setLineWidth (var); }, {"width"sv});
 #endif
 }
 
@@ -282,8 +242,8 @@ DrawContextObject::~DrawContextObject () noexcept
 //------------------------------------------------------------------------
 void DrawContextObject::setDrawContext (CDrawContext* inContext, IUIDescription* inUIDesc)
 {
-	context = inContext;
-	uiDesc = inUIDesc;
+	impl->context = inContext;
+	impl->uiDesc = inUIDesc;
 }
 
 //------------------------------------------------------------------------

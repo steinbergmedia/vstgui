@@ -91,8 +91,8 @@ private:
 */
 	// clang-format on
 
-	CDrawContext* context {nullptr};
-	IUIDescription* uiDesc {nullptr};
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

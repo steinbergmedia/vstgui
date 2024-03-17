@@ -59,7 +59,7 @@ inline TJS::CScriptVar* createJSFunction (TJS::JSCallback&& proc)
 
 //------------------------------------------------------------------------
 inline TJS::CScriptVar* createJSFunction (TJS::JSCallback&& proc,
-										  const std::initializer_list<const char*>& argNames)
+										  const std::initializer_list<std::string_view>& argNames)
 {
 	auto f = createJSFunction (std::move (proc));
 	for (auto name : argNames)
@@ -128,7 +128,7 @@ struct ScriptObject
 		scriptVar->addChild (name, createJSFunction (std::move (func)));
 	}
 	void addFunc (std::string_view name, std::function<void (CScriptVar*)>&& func,
-				  const std::initializer_list<const char*>& argNames)
+				  const std::initializer_list<std::string_view>& argNames)
 	{
 		scriptVar->addChild (name, createJSFunction (std::move (func), argNames));
 	}
