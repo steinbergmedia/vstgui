@@ -228,6 +228,16 @@ struct DrawContextObject::Impl
 		auto widthVar = getArgument (var, "width"sv, signature);
 		context->setLineWidth (widthVar->getDouble ());
 	}
+	void saveGlobalState () const
+	{
+		checkContextOrThrow ();
+		context->saveGlobalState ();
+	}
+	void restoreGlobalState () const
+	{
+		checkContextOrThrow ();
+		context->restoreGlobalState ();
+	}
 };
 
 //------------------------------------------------------------------------
@@ -261,6 +271,8 @@ DrawContextObject::DrawContextObject ()
 	addFunc ("setFillColor"sv, [this] (auto var) { impl->setFillColor (var); }, {"color"sv});
 	addFunc ("setFrameColor"sv, [this] (auto var) { impl->setFrameColor (var); }, {"color"sv});
 	addFunc ("setLineWidth"sv, [this] (auto var) { impl->setLineWidth (var); }, {"width"sv});
+	addFunc ("saveGlobalState"sv, [this] (auto var) { impl->saveGlobalState (); });
+	addFunc ("restoreGlobalState"sv, [this] (auto var) { impl->restoreGlobalState (); });
 #endif
 }
 
