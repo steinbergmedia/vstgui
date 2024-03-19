@@ -228,6 +228,15 @@ struct DrawContextObject::Impl
 		auto widthVar = getArgument (var, "width"sv, signature);
 		context->setLineWidth (widthVar->getDouble ());
 	}
+	void setGlobalAlpha (CScriptVar* var) const
+	{
+		static constexpr auto signature = "drawContext.setGlobalAlpha(alpha);"sv;
+		checkContextOrThrow ();
+		auto alphaVar = getArgument (var, "alpha"sv, signature);
+		if (!alphaVar->isNumeric ())
+			throw CScriptException ("alpha must be a number.");
+		context->setGlobalAlpha (alphaVar->getDouble ());
+	}
 	void saveGlobalState () const
 	{
 		checkContextOrThrow ();
@@ -271,6 +280,7 @@ DrawContextObject::DrawContextObject ()
 	addFunc ("setFillColor"sv, [this] (auto var) { impl->setFillColor (var); }, {"color"sv});
 	addFunc ("setFrameColor"sv, [this] (auto var) { impl->setFrameColor (var); }, {"color"sv});
 	addFunc ("setLineWidth"sv, [this] (auto var) { impl->setLineWidth (var); }, {"width"sv});
+	addFunc ("setGlobalAlpha", [this] (auto var) { impl->setGlobalAlpha (var); }, {"alpha"sv});
 	addFunc ("saveGlobalState"sv, [this] (auto var) { impl->saveGlobalState (); });
 	addFunc ("restoreGlobalState"sv, [this] (auto var) { impl->restoreGlobalState (); });
 #endif
