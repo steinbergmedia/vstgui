@@ -236,7 +236,7 @@ bool run_test (const char* filename)
 	CTinyJS s;
 	registerFunctions (&s);
 	registerMathFunctions (&s);
-	s.root->addChild ("result", new CScriptVar ("0", SCRIPTVAR_INTEGER));
+	s.getRoot ()->addChild ("result", new CScriptVar ("0", SCRIPTVAR_INTEGER));
 	try
 	{
 		s.execute (buffer);
@@ -245,7 +245,7 @@ bool run_test (const char* filename)
 	{
 		printf ("ERROR: %s\n", e->text.c_str ());
 	}
-	bool pass = s.root->getParameter ("result")->getBool ();
+	bool pass = s.getRoot ()->getParameter ("result")->getBool ();
 
 	if (pass)
 		printf ("PASS\n");
@@ -257,7 +257,7 @@ bool run_test (const char* filename)
 		if (f)
 		{
 			std::ostringstream symbols;
-			s.root->getJSON (symbols);
+			s.getRoot ()->getJSON (symbols);
 			fprintf (f, "%s", symbols.str ().c_str ());
 			fclose (f);
 		}
