@@ -89,6 +89,25 @@ struct DrawContextObject::Impl
 		auto style = getDrawStyle (styleVar);
 		context->drawEllipse (rect, style);
 	}
+	void drawArc (CScriptVar* var) const
+	{
+		static constexpr auto signature =
+			"drawContext.drawArc(rect, startAngle, endAngle, style);"sv;
+		checkContextOrThrow ();
+		auto rectVar = getArgument (var, "rect"sv, signature);
+		auto startAngleVar = getArgument (var, "startAngle"sv, signature);
+		auto endAngleVar = getArgument (var, "endAngle"sv, signature);
+		auto styleVar = getArgument (var, "style"sv, signature);
+		auto rect = fromScriptRect (*rectVar);
+		if (!startAngleVar->isNumeric ())
+			throw CScriptException ("`startAngle` must be a number.");
+		if (!endAngleVar->isNumeric ())
+			throw CScriptException ("`endAngle` must be a number.");
+		auto startAngle = static_cast<float> (startAngleVar->getDouble ());
+		auto endAngle = static_cast<float> (endAngleVar->getDouble ());
+		auto style = getDrawStyle (styleVar);
+		context->drawArc (rect, startAngle, endAngle, style);
+	}
 	void clearRect (CScriptVar* var) const
 	{
 		static constexpr auto signature = "drawContext.clearRect(rect);"sv;
@@ -228,6 +247,8 @@ DrawContextObject::DrawContextObject ()
 	addFunc ("clearRect"sv, [this] (auto var) { impl->clearRect (var); }, {"rect"sv, "style"sv});
 	addFunc ("drawPolygon"sv, [this] (auto var) { impl->drawPolygon (var); },
 			 {"points"sv, "style"sv});
+	addFunc ("drawArc"sv, [this] (auto var) { impl->drawArc (var); },
+			 {"rect"sv, "startAngle"sv, "endAngle"sv, "style"sv});
 	addFunc ("setClipRect"sv, [this] (auto var) { impl->setClipRect (var); }, {"rect"sv});
 #if 1 // TODO: make a bitmap js object instead
 	addFunc ("drawBitmap"sv, [this] (auto var) { impl->drawBitmap (var); },
