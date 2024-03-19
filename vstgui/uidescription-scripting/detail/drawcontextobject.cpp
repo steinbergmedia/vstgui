@@ -21,6 +21,22 @@ struct DrawContextObject::Impl
 {
 	CDrawContext* context {nullptr};
 	IUIDescription* uiDesc {nullptr};
+	mutable int32_t globalStatesStored {0};
+
+	void setContext (CDrawContext* inContext, IUIDescription* inUIDesc)
+	{
+		if (context)
+		{
+			while (globalStatesStored > 0)
+			{
+				context->restoreGlobalState ();
+				--globalStatesStored;
+			}
+		}
+		context = inContext;
+		uiDesc = inUIDesc;
+		globalStatesStored = 0;
+	}
 
 	CScriptVar* getArgument (CScriptVar* var, std::string_view paramName,
 							 std::string_view funcSignature) const
@@ -241,11 +257,13 @@ struct DrawContextObject::Impl
 	{
 		checkContextOrThrow ();
 		context->saveGlobalState ();
+		++globalStatesStored;
 	}
 	void restoreGlobalState () const
 	{
 		checkContextOrThrow ();
 		context->restoreGlobalState ();
+		--globalStatesStored;
 	}
 };
 
@@ -296,8 +314,7 @@ DrawContextObject::~DrawContextObject () noexcept
 //------------------------------------------------------------------------
 void DrawContextObject::setDrawContext (CDrawContext* inContext, IUIDescription* inUIDesc)
 {
-	impl->context = inContext;
-	impl->uiDesc = inUIDesc;
+	impl->setContext (inContext, inUIDesc);
 }
 
 //------------------------------------------------------------------------
