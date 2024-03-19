@@ -61,46 +61,51 @@ struct DrawContextObject::Impl
 
 	void drawLine (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.drawLine(from, to);"sv;
 		checkContextOrThrow ();
-		auto fromPoint = getArgument (var, "from"sv, "drawContext.drawLine(from, to);"sv);
-		auto toPoint = getArgument (var, "to"sv, "drawContext.drawLine(from, to);"sv);
+		auto fromPoint = getArgument (var, "from"sv, signature);
+		auto toPoint = getArgument (var, "to"sv, signature);
 		auto from = fromScriptPoint (*fromPoint);
 		auto to = fromScriptPoint (*toPoint);
 		context->drawLine (from, to);
 	}
 	void drawRect (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.drawRect(rect, style);"sv;
 		checkContextOrThrow ();
-		auto rectVar = getArgument (var, "rect"sv, "drawContext.drawRect(rect, style);"sv);
-		auto styleVar = getArgument (var, "style"sv, "drawContext.drawRect(rect, style);"sv);
+		auto rectVar = getArgument (var, "rect"sv, signature);
+		auto styleVar = getArgument (var, "style"sv, signature);
 		auto rect = fromScriptRect (*rectVar);
 		auto style = getDrawStyle (styleVar);
 		context->drawRect (rect, style);
 	}
 	void drawEllipse (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.drawEllipse(rect, style);"sv;
 		checkContextOrThrow ();
-		auto rectVar = getArgument (var, "rect"sv, "drawContext.drawEllipse(rect, style);"sv);
-		auto styleVar = getArgument (var, "style"sv, "drawContext.drawEllipse(rect, style);"sv);
+		auto rectVar = getArgument (var, "rect"sv, signature);
+		auto styleVar = getArgument (var, "style"sv, signature);
 		auto rect = fromScriptRect (*rectVar);
 		auto style = getDrawStyle (styleVar);
 		context->drawEllipse (rect, style);
 	}
 	void clearRect (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.clearRect(rect);"sv;
 		checkContextOrThrow ();
-		auto rectVar = getArgument (var, "rect"sv, "drawContext.clearRect(rect);");
+		auto rectVar = getArgument (var, "rect"sv, signature);
 		auto rect = fromScriptRect (*rectVar);
 		context->clearRect (rect);
 	}
 	void drawPolygon (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.drawPolygon(points, style);"sv;
 		checkContextOrThrow ();
-		auto pointsVar = getArgument (var, "points"sv, "drawContext.drawPolygon(points, style);"sv);
+		auto pointsVar = getArgument (var, "points"sv, signature);
+		auto styleVar = getArgument (var, "style"sv, signature);
 		if (!pointsVar->isArray ())
 			throw CScriptException ("`points` argument must be an array of points in "
 									"drawContext.drawPolygon(points, style);");
-		auto styleVar = getArgument (var, "style"sv, "drawContext.drawPolygon(points, style);"sv);
 		PointList points;
 		auto numPoints = pointsVar->getArrayLength ();
 		for (auto index = 0; index < numPoints; ++index)
@@ -114,18 +119,19 @@ struct DrawContextObject::Impl
 	}
 	void setClipRect (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.setClipRect(rect);"sv;
 		checkContextOrThrow ();
-		auto rectVar = getArgument (var, "rect"sv, "drawContext.setClipRect(rect);"sv);
+		auto rectVar = getArgument (var, "rect"sv, signature);
 		auto rect = fromScriptRect (*rectVar);
 		context->setClipRect (rect);
 	}
 	void drawBitmap (CScriptVar* var) const
 	{
+		static constexpr auto signature =
+			"drawContext.drawBitmap(name, destRect, offsetPoint?, alpha?);"sv;
 		checkContextOrThrow ();
-		auto nameVar = getArgument (
-			var, "name"sv, "drawContext.drawBitmap(name, destRect, offsetPoint?, alpha?);"sv);
-		auto destRectVar = getArgument (
-			var, "destRect"sv, "drawContext.drawBitmap(name, destRect, offsetPoint?, alpha?);"sv);
+		auto nameVar = getArgument (var, "name"sv, signature);
+		auto destRectVar = getArgument (var, "destRect"sv, signature);
 		auto offsetPointVar = var->findChild ("offsetPoint"sv);
 		auto alphaVar = var->findChild ("alpha"sv);
 		auto bitmap = uiDesc->getBitmap (nameVar->getString ().data ());
@@ -138,11 +144,10 @@ struct DrawContextObject::Impl
 	}
 	void drawString (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.drawString(string, rect, align?);"sv;
 		checkContextOrThrow ();
-		auto stringVar =
-			getArgument (var, "string"sv, "drawContext.drawString(string, rect, align?);"sv);
-		auto rectVar =
-			getArgument (var, "rect"sv, "drawContext.drawString(string, rect, align?);"sv);
+		auto stringVar = getArgument (var, "string"sv, signature);
+		auto rectVar = getArgument (var, "rect"sv, signature);
 		auto alignVar = var->getParameter ("align"sv);
 		auto string = stringVar->getString ().data ();
 		auto rect = fromScriptRect (*rectVar);
@@ -156,36 +161,41 @@ struct DrawContextObject::Impl
 		else if (alignVar->getString () == "right"sv)
 			align = kRightText;
 		else
-			throw CScriptException ("wrong `align` argument. expected 'left', 'center' or 'right'");
+			throw CScriptException (
+				"wrong `align` argument. Expecting 'left', 'center' or 'right'");
 		context->drawString (string, rect, align, true);
 	}
 	void setFont (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.setFont(font);"sv;
 		checkContextOrThrow ();
-		auto fontVar = getArgument (var, "font"sv, "drawContext.setFont(font);"sv);
+		auto fontVar = getArgument (var, "font"sv, signature);
 		if (auto font = uiDesc->getFont (fontVar->getString ().data ()))
 			context->setFont (font);
 	}
 	void setFontColor (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.setFontColor(color);"sv;
 		checkContextOrThrow ();
-		auto colorVar = getArgument (var, "color"sv, "drawContext.setFontColor(color);"sv);
+		auto colorVar = getArgument (var, "color"sv, signature);
 		CColor color {};
 		UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
 		context->setFontColor (color);
 	}
 	void setFillColor (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.setFillColor(color);"sv;
 		checkContextOrThrow ();
-		auto colorVar = getArgument (var, "color"sv, "drawContext.setFillColor(color);"sv);
+		auto colorVar = getArgument (var, "color"sv, signature);
 		CColor color {};
 		UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
 		context->setFillColor (color);
 	}
 	void setFrameColor (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.setFrameColor(color);"sv;
 		checkContextOrThrow ();
-		auto colorVar = getArgument (var, "color"sv, "drawContext.setFrameColor(color);"sv);
+		auto colorVar = getArgument (var, "color"sv, signature);
 		CColor color {};
 		if (!UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc))
 			throw CScriptException (
@@ -194,8 +204,9 @@ struct DrawContextObject::Impl
 	}
 	void setLineWidth (CScriptVar* var) const
 	{
+		static constexpr auto signature = "drawContext.setLineWidth(width);"sv;
 		checkContextOrThrow ();
-		auto widthVar = getArgument (var, "width"sv, "drawContext.setLineWidth(width);"sv);
+		auto widthVar = getArgument (var, "width"sv, signature);
 		context->setLineWidth (widthVar->getDouble ());
 	}
 };
