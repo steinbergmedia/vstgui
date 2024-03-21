@@ -289,7 +289,7 @@ DrawContextObject::DrawContextObject ()
 	addFunc ("setClipRect"sv, [this] (auto var) { impl->setClipRect (var); }, {"rect"sv});
 #if 1 // TODO: make a bitmap js object instead
 	addFunc ("drawBitmap"sv, [this] (auto var) { impl->drawBitmap (var); },
-			 {"name"sv, "destRect"sv});
+			 {"name"sv, "destRect"sv, "offsetPoint"sv, "alpha"sv});
 #endif
 	addFunc ("drawString"sv, [this] (auto var) { impl->drawString (var); },
 			 {"string"sv, "rect"sv, "align"sv});
