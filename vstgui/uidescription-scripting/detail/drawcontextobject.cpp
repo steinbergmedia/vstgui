@@ -244,6 +244,67 @@ struct DrawContextObject::Impl
 		auto widthVar = getArgument (var, "width"sv, signature);
 		context->setLineWidth (widthVar->getDouble ());
 	}
+	void setLineStyle (CScriptVar* var) const
+	{
+		static constexpr auto signature =
+			"drawContext.setLineStyle(styleOrLineCap, lineJoin?, dashLengths?, dashPhase);"sv;
+		checkContextOrThrow ();
+		auto styleOrLineCapVar = getArgument (var, "styleOrLineCap"sv, signature);
+		auto lineJoinVarLink = var->findChild ("lineJoin"sv);
+		auto dashLengthsVarLink = var->findChild ("dashLengths"sv);
+		auto dashPhaseVarLink = var->findChild ("dashPhase"sv);
+		auto styleOrLineCap = styleOrLineCapVar->getString ();
+		std::unique_ptr<CLineStyle> lineStyle;
+		if (styleOrLineCap == "solid"sv)
+		{
+			lineStyle = std::make_unique<CLineStyle> (kLineSolid);
+		}
+		else if (styleOrLineCap == "onOff"sv)
+		{
+			lineStyle = std::make_unique<CLineStyle> (kLineOnOffDash);
+		}
+		else
+		{
+			if (styleOrLineCap == "butt"sv)
+				lineStyle = std::make_unique<CLineStyle> (CLineStyle::LineCap::kLineCapButt);
+			else if (styleOrLineCap == "round"sv)
+				lineStyle = std::make_unique<CLineStyle> (CLineStyle::LineCap::kLineCapRound);
+			else if (styleOrLineCap == "square"sv)
+				lineStyle = std::make_unique<CLineStyle> (CLineStyle::LineCap::kLineCapSquare);
+			else
+				throw CScriptException ("unknown `line cap` argument");
+			if (lineJoinVarLink)
+			{
+				auto lineJoin = lineJoinVarLink->getVar ()->getString ();
+				if (lineJoin == "miter"sv)
+					lineStyle->setLineJoin (CLineStyle::LineJoin::kLineJoinMiter);
+				else if (lineJoin == "round"sv)
+					lineStyle->setLineJoin (CLineStyle::LineJoin::kLineJoinRound);
+				else if (lineJoin == "bevel"sv)
+					lineStyle->setLineJoin (CLineStyle::LineJoin::kLineJoinBevel);
+			}
+			if (dashLengthsVarLink)
+			{
+				auto dashLengthsVar = dashLengthsVarLink->getVar ();
+				if (!dashLengthsVarLink->getVar ()->isArray ())
+					throw CScriptException ("`dashLengths` must be an array of numbers");
+				CLineStyle::CoordVector lengths;
+				auto numValues = dashLengthsVar->getArrayLength ();
+				for (auto index = 0; index < numValues; ++index)
+				{
+					if (auto lengthVar = dashLengthsVar->getArrayIndex (index))
+						lengths.push_back (lengthVar->getDouble ());
+				}
+				lineStyle->getDashLengths () = lengths;
+			}
+			if (dashPhaseVarLink)
+			{
+				lineStyle->setDashPhase (dashPhaseVarLink->getVar ()->getDouble ());
+			}
+		}
+		if (lineStyle)
+			context->setLineStyle (*lineStyle.get ());
+	}
 	void setGlobalAlpha (CScriptVar* var) const
 	{
 		static constexpr auto signature = "drawContext.setGlobalAlpha(alpha);"sv;
@@ -298,6 +359,8 @@ DrawContextObject::DrawContextObject ()
 	addFunc ("setFillColor"sv, [this] (auto var) { impl->setFillColor (var); }, {"color"sv});
 	addFunc ("setFrameColor"sv, [this] (auto var) { impl->setFrameColor (var); }, {"color"sv});
 	addFunc ("setLineWidth"sv, [this] (auto var) { impl->setLineWidth (var); }, {"width"sv});
+	addFunc ("setLineStyle"sv, [this] (auto var) { impl->setLineStyle (var); },
+			 {"styleOrLineCap"sv, "lineJoin"sv, "dashLengths"sv, "dashPhase"sv});
 	addFunc ("setGlobalAlpha", [this] (auto var) { impl->setGlobalAlpha (var); }, {"alpha"sv});
 	addFunc ("saveGlobalState"sv, [this] (auto var) { impl->saveGlobalState (); });
 	addFunc ("restoreGlobalState"sv, [this] (auto var) { impl->restoreGlobalState (); });
