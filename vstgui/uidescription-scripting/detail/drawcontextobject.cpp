@@ -183,17 +183,17 @@ struct DrawContextObject::Impl
 		checkContextOrThrow ();
 		auto stringVar = getArgument (var, "string"sv, signature);
 		auto rectVar = getArgument (var, "rect"sv, signature);
-		auto alignVar = var->getParameter ("align"sv);
+		auto alignVar = var->findChild ("align"sv);
 		auto string = stringVar->getString ().data ();
 		auto rect = fromScriptRect (*rectVar);
 		CHoriTxtAlign align = kCenterText;
-		if (!alignVar || alignVar->isUndefined ())
+		if (!alignVar || alignVar->getVar ()->isUndefined ())
 			align = kCenterText;
-		else if (alignVar->getString () == "left"sv)
+		else if (alignVar->getVar ()->getString () == "left"sv)
 			align = kLeftText;
-		else if (alignVar->getString () == "center"sv)
+		else if (alignVar->getVar ()->getString () == "center"sv)
 			align = kCenterText;
-		else if (alignVar->getString () == "right"sv)
+		else if (alignVar->getVar ()->getString () == "right"sv)
 			align = kRightText;
 		else
 			throw CScriptException (
