@@ -1106,6 +1106,7 @@ retry:
 //
 // @OPTIMIZE: the undo/redo buffer should be circular
 
+#if STB_TEXTEDIT_UNDOSTATECOUNT > 0
 static void stb_textedit_flush_redo(StbUndoState *state)
 {
    state->redo_point = STB_TEXTEDIT_UNDOSTATECOUNT;
@@ -1130,6 +1131,7 @@ static void stb_textedit_discard_undo(StbUndoState *state)
       STB_TEXTEDIT_memmove(state->undo_rec, state->undo_rec+1, (size_t) (state->undo_point*sizeof(state->undo_rec[0])));
    }
 }
+#endif
 
 // discard the oldest entry in the redo list--it's bad if this
 // ever happens, but because undo & redo have to store the actual
@@ -1160,6 +1162,7 @@ static void stb_textedit_discard_redo(StbUndoState *state)
 
 static StbUndoRecord *stb_text_create_undo_record(StbUndoState *state, int numchars)
 {
+#if STB_TEXTEDIT_UNDOSTATECOUNT > 0
    // any time we create a new undo record, we discard redo
    stb_textedit_flush_redo(state);
 
@@ -1180,6 +1183,9 @@ static StbUndoRecord *stb_text_create_undo_record(StbUndoState *state, int numch
       stb_textedit_discard_undo(state);
 
    return &state->undo_rec[state->undo_point++];
+#else
+   return NULL;
+#endif
 }
 
 static STB_TEXTEDIT_CHARTYPE *stb_text_createundo(StbUndoState *state, int pos, int insert_len, int delete_len)
