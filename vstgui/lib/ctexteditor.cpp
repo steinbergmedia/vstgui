@@ -612,6 +612,8 @@ void TextEditorView::parentSizeChanged ()
 			This->setViewSize (viewSize);
 			if (makeCursorVisible)
 				This->onCursorChanged (-1, This->md.editState.cursor);
+			This->md.editState.row_count_per_page =
+				This->getVisibleViewSize ().getHeight () / This->md.lineHeight;
 		};
 		auto frame = getFrame ();
 		if (frame && frame->inEventProcessing ())
