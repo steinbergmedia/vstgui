@@ -303,11 +303,13 @@ typedef struct
 
 typedef struct
 {
+#if STB_TEXTEDIT_UNDOSTATECOUNT
    // private data
    StbUndoRecord          undo_rec [STB_TEXTEDIT_UNDOSTATECOUNT];
    STB_TEXTEDIT_CHARTYPE  undo_char[STB_TEXTEDIT_UNDOCHARCOUNT];
    short undo_point, redo_point;
    int undo_char_point, redo_char_point;
+#endif
 } StbUndoState;
 
 typedef struct
@@ -1369,10 +1371,12 @@ static void stb_text_makeundo_replace(STB_TEXTEDIT_STRING *str, STB_TexteditStat
 // reset the state to default
 static void stb_textedit_clear_state(STB_TexteditState *state, int is_single_line)
 {
+#if STB_TEXTEDIT_UNDOSTATECOUNT
    state->undostate.undo_point = 0;
    state->undostate.undo_char_point = 0;
    state->undostate.redo_point = STB_TEXTEDIT_UNDOSTATECOUNT;
    state->undostate.redo_char_point = STB_TEXTEDIT_UNDOCHARCOUNT;
+#endif
    state->select_end = state->select_start = 0;
    state->cursor = 0;
    state->has_preferred_x = 0;
