@@ -177,6 +177,7 @@ private:
 
 #define STB_TEXTEDIT_IMPLEMENTATION
 #include "stb_textedit.h"
+#undef STB_TEXTEDIT_IMPLEMENTATION
 
 //-----------------------------------------------------------------------------
 struct GenericTextEdit::Impl
