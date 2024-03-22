@@ -127,7 +127,8 @@ private:
 	{
 		if constexpr (EnumIsBitMask)
 			return static_cast<value_type> (e);
-		return 1 << static_cast<value_type> (e);
+		else
+			return 1 << static_cast<value_type> (e);
 	}
 
 	value_type val {};
