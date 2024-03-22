@@ -38,6 +38,8 @@ using CharT = char16_t;
 #define STB_TEXTEDIT_POSITIONTYPE int32_t
 #define STB_TEXTEDIT_STRING const TextEditorView
 #define STB_TEXTEDIT_KEYTYPE uint32_t
+#define STB_TEXTEDIT_UNDOSTATECOUNT 0
+#define STB_TEXTEDIT_UNDOCHARCOUNT 0
 
 #include "platform/common/stb_textedit.h"
 
@@ -240,6 +242,14 @@ struct TextEditorView : public CView,
 		return static_cast<int> (self->moveToWordNext (pos));
 	}
 
+	static CharT* createUndoRecord (const TextEditorView* self, size_t pos, size_t insert_len,
+									size_t delete_len)
+	{
+		return self->createUndoRecord (pos, insert_len, delete_len);
+	}
+	static void undo (const TextEditorView* self) { self->undo (); }
+	static void redo (const TextEditorView* self) { self->redo (); }
+
 protected:
 	// IFocusDrawing
 	bool drawFocusOnTop () override;
@@ -273,6 +283,12 @@ protected:
 
 	String::size_type doFindCaseSensitive (bool forward) const;
 	String::size_type doFindIgnoreCase (bool forward) const;
+
+	// undo / redo
+	CharT* createUndoRecord (size_t pos, size_t insertLen, size_t deleteLen) const;
+	void undo () const;
+	void redo () const;
+	void doUndoRedo () const;
 
 private:
 	template<typename Proc>
@@ -321,6 +337,15 @@ private:
 
 public:
 	//------------------------------------------------------------------------
+	struct UndoRecord
+	{
+		size_t position {};
+		size_t deleted {0};
+		String characters;
+	};
+	using UndoList = std::vector<UndoRecord>;
+
+	//------------------------------------------------------------------------
 	struct ModelData
 	{
 		TextModel model;
@@ -351,6 +376,7 @@ public:
 		bool mouseIsDown {false};
 		bool isInsertingText {false};
 		bool cursorIsVisible {false};
+		bool isInUndoRedo {false};
 		float cursorAlpha {0.f};
 
 		Lines::const_iterator stbInternalIterator;
@@ -359,6 +385,8 @@ public:
 		String findString;
 
 		CommandKeyArray commandKeys;
+		UndoList undoList {UndoRecord ()};
+		UndoList::iterator undoPos;
 	};
 
 private:
@@ -408,6 +436,9 @@ private:
 #define STB_TEXTEDIT_INSERTCHARS TextEditorView::insertChars
 #define STB_TEXTEDIT_MOVEWORDLEFT TextEditorView::moveToWordPrevious
 #define STB_TEXTEDIT_MOVEWORDRIGHT TextEditorView::moveToWordNext
+#define STB_TEXTEDIT_CUSTOM_CREATEUNDO TextEditorView::createUndoRecord
+#define STB_TEXTEDIT_CUSTOM_UNDO TextEditorView::undo
+#define STB_TEXTEDIT_CUSTOM_REDO TextEditorView::redo
 #define STB_TEXTEDIT_GETWIDTH_NEWLINE -1.f
 
 #define STB_TEXTEDIT_IMPLEMENTATION
@@ -484,6 +515,7 @@ static constexpr size_t Index (ITextEditor::Command cmd) { return static_cast<si
 TextEditorView::TextEditorView (ITextEditorController* controller) : CView ({0, 0, 10, 10})
 {
 	md.controller = controller;
+	md.undoPos = md.undoList.end ();
 	setWantsFocus (true);
 	onStyleChanged ();
 	stb_textedit_initialize_state (&md.editState, false);
@@ -2675,6 +2707,79 @@ void TextEditorView::setFindString (String&& text) const
 			md.findPanelController->setFindString (md.findString);
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+CharT* TextEditorView::createUndoRecord (size_t pos, size_t insertLen, size_t deleteLen) const
+{
+	if (md.isInUndoRedo)
+		return nullptr;
+	if (md.undoPos != md.undoList.end ())
+	{
+		md.undoPos++;
+		if (md.undoPos != md.undoList.end ())
+			md.undoList.erase (md.undoPos, md.undoList.end ());
+	}
+	md.undoList.emplace_back (UndoRecord {});
+	md.undoPos = md.undoList.end ();
+	--md.undoPos;
+	auto& record = md.undoList.back ();
+	record.position = pos;
+	record.deleted = deleteLen;
+	if (insertLen)
+	{
+		record.characters.resize (insertLen);
+		return record.characters.data ();
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::doUndoRedo () const
+{
+	md.isInUndoRedo = true;
+	md.editState.cursor = md.editState.select_start = static_cast<int> (md.undoPos->position);
+	if (md.undoPos->deleted > 0)
+	{
+		md.editState.select_end =
+			md.editState.select_start + static_cast<int> (md.undoPos->deleted);
+		md.undoPos->characters = md.model.text.substr (
+			md.editState.select_start, md.editState.select_end - md.editState.select_start);
+		md.undoPos->deleted = 0;
+		callSTB ([&] () { stb_textedit_cut (this, &md.editState); });
+	}
+	else if (md.undoPos->characters.empty () == false)
+	{
+		md.editState.select_end =
+			md.editState.select_start + static_cast<int> (md.undoPos->characters.size ());
+		callSTB ([&] () {
+			stb_textedit_paste (this, &md.editState, md.undoPos->characters.data (),
+								static_cast<int> (md.undoPos->characters.size ()));
+		});
+		md.undoPos->deleted = md.undoPos->characters.size ();
+		md.undoPos->characters.clear ();
+	}
+	md.isInUndoRedo = false;
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::undo () const
+{
+	if (md.undoPos == md.undoList.end () || md.undoPos == md.undoList.begin ())
+		return;
+	doUndoRedo ();
+	--md.undoPos;
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::redo () const
+{
+	if (std::distance (md.undoPos, md.undoList.end ()) <= 1)
+		return;
+	++md.undoPos;
+	if (md.undoPos == md.undoList.end ())
+		return;
+	doUndoRedo ();
 }
 
 //------------------------------------------------------------------------
