@@ -259,7 +259,7 @@ struct DrawContextObject::Impl
 		{
 			lineStyle = std::make_unique<CLineStyle> (kLineSolid);
 		}
-		else if (styleOrLineCap == "onOff"sv)
+		else if (styleOrLineCap == "dotted"sv)
 		{
 			lineStyle = std::make_unique<CLineStyle> (kLineOnOffDash);
 		}
