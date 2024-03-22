@@ -247,8 +247,8 @@ struct TextEditorView : public CView,
 	{
 		return self->createUndoRecord (pos, insert_len, delete_len);
 	}
-	static void undo (const TextEditorView* self) { self->undo (); }
-	static void redo (const TextEditorView* self) { self->redo (); }
+	static void undo (const TextEditorView* self) { self->doUndo (); }
+	static void redo (const TextEditorView* self) { self->doRedo (); }
 
 protected:
 	// IFocusDrawing
@@ -287,8 +287,8 @@ protected:
 	// undo / redo
 	CharT* createUndoRecord (size_t pos, size_t insertLen, size_t deleteLen) const;
 	void checkCurrentUndoGroup (bool force) const;
-	void undo () const;
-	void redo () const;
+	void doUndo () const;
+	void doRedo () const;
 	template<bool iterateForward>
 	void doUndoRedo () const;
 
@@ -2805,7 +2805,7 @@ void TextEditorView::doUndoRedo () const
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::undo () const
+void TextEditorView::doUndo () const
 {
 	checkCurrentUndoGroup (true);
 	if (md.undoPos == md.undoList.end () || md.undoPos == md.undoList.begin ())
@@ -2815,7 +2815,7 @@ void TextEditorView::undo () const
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::redo () const
+void TextEditorView::doRedo () const
 {
 	checkCurrentUndoGroup (true);
 	if (std::distance (md.undoPos, md.undoList.end ()) <= 1)
