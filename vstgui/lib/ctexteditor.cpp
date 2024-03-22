@@ -286,8 +286,10 @@ protected:
 
 	// undo / redo
 	CharT* createUndoRecord (size_t pos, size_t insertLen, size_t deleteLen) const;
+	void checkCurrentUndoGroup (bool force) const;
 	void undo () const;
 	void redo () const;
+	template<bool iterateForward>
 	void doUndoRedo () const;
 
 private:
@@ -343,7 +345,15 @@ public:
 		size_t deleted {0};
 		String characters;
 	};
-	using UndoList = std::vector<UndoRecord>;
+	using UndoRecords = std::vector<UndoRecord>;
+
+	//------------------------------------------------------------------------
+	struct UndoGroup
+	{
+		uint64_t time {0};
+		UndoRecords record;
+	};
+	using UndoList = std::vector<UndoGroup>;
 
 	//------------------------------------------------------------------------
 	struct ModelData
@@ -385,8 +395,9 @@ public:
 		String findString;
 
 		CommandKeyArray commandKeys;
-		UndoList undoList {UndoRecord ()};
+		UndoList undoList {UndoGroup ()};
 		UndoList::iterator undoPos;
+		UndoGroup currentUndoGroup;
 	};
 
 private:
@@ -2710,20 +2721,35 @@ void TextEditorView::setFindString (String&& text) const
 }
 
 //------------------------------------------------------------------------
+void TextEditorView::checkCurrentUndoGroup (bool force) const
+{
+	auto currentTime = getPlatformFactory ().getTicks ();
+	if (force || md.currentUndoGroup.time < currentTime - 500)
+	{
+		if (md.currentUndoGroup.record.empty ())
+			return;
+		md.undoList.emplace_back (std::move (md.currentUndoGroup));
+		md.undoPos = md.undoList.end ();
+		--md.undoPos;
+		md.currentUndoGroup = {};
+	}
+	md.currentUndoGroup.time = currentTime;
+}
+
+//------------------------------------------------------------------------
 CharT* TextEditorView::createUndoRecord (size_t pos, size_t insertLen, size_t deleteLen) const
 {
 	if (md.isInUndoRedo)
 		return nullptr;
+	checkCurrentUndoGroup (false);
 	if (md.undoPos != md.undoList.end ())
 	{
 		md.undoPos++;
 		if (md.undoPos != md.undoList.end ())
 			md.undoList.erase (md.undoPos, md.undoList.end ());
 	}
-	md.undoList.emplace_back (UndoRecord {});
-	md.undoPos = md.undoList.end ();
-	--md.undoPos;
-	auto& record = md.undoList.back ();
+	md.currentUndoGroup.record.emplace_back (UndoRecord {});
+	auto& record = md.currentUndoGroup.record.back ();
 	record.position = pos;
 	record.deleted = deleteLen;
 	if (insertLen)
@@ -2735,29 +2761,45 @@ CharT* TextEditorView::createUndoRecord (size_t pos, size_t insertLen, size_t de
 }
 
 //------------------------------------------------------------------------
+template<bool iterateForward>
 void TextEditorView::doUndoRedo () const
 {
+	auto begin = [this] () {
+		if constexpr (iterateForward)
+			return md.undoPos->record.begin ();
+		else
+			return md.undoPos->record.rbegin ();
+	};
+	auto end = [this] () {
+		if constexpr (iterateForward)
+			return md.undoPos->record.end ();
+		else
+			return md.undoPos->record.rend ();
+	};
+
 	md.isInUndoRedo = true;
-	md.editState.cursor = md.editState.select_start = static_cast<int> (md.undoPos->position);
-	if (md.undoPos->deleted > 0)
+	for (auto it = begin (); it != end (); ++it)
 	{
-		md.editState.select_end =
-			md.editState.select_start + static_cast<int> (md.undoPos->deleted);
-		md.undoPos->characters = md.model.text.substr (
-			md.editState.select_start, md.editState.select_end - md.editState.select_start);
-		md.undoPos->deleted = 0;
-		callSTB ([&] () { stb_textedit_cut (this, &md.editState); });
-	}
-	else if (md.undoPos->characters.empty () == false)
-	{
-		md.editState.select_end =
-			md.editState.select_start + static_cast<int> (md.undoPos->characters.size ());
-		callSTB ([&] () {
-			stb_textedit_paste (this, &md.editState, md.undoPos->characters.data (),
-								static_cast<int> (md.undoPos->characters.size ()));
-		});
-		md.undoPos->deleted = md.undoPos->characters.size ();
-		md.undoPos->characters.clear ();
+		md.editState.cursor = md.editState.select_start = static_cast<int> (it->position);
+		if (it->deleted > 0)
+		{
+			md.editState.select_end = md.editState.select_start + static_cast<int> (it->deleted);
+			it->characters = md.model.text.substr (
+				md.editState.select_start, md.editState.select_end - md.editState.select_start);
+			it->deleted = 0;
+			callSTB ([&] () { stb_textedit_cut (this, &md.editState); });
+		}
+		else if (it->characters.empty () == false)
+		{
+			md.editState.select_end =
+				md.editState.select_start + static_cast<int> (it->characters.size ());
+			callSTB ([&] () {
+				stb_textedit_paste (this, &md.editState, it->characters.data (),
+									static_cast<int> (it->characters.size ()));
+			});
+			it->deleted = it->characters.size ();
+			it->characters.clear ();
+		}
 	}
 	md.isInUndoRedo = false;
 }
@@ -2765,21 +2807,23 @@ void TextEditorView::doUndoRedo () const
 //------------------------------------------------------------------------
 void TextEditorView::undo () const
 {
+	checkCurrentUndoGroup (true);
 	if (md.undoPos == md.undoList.end () || md.undoPos == md.undoList.begin ())
 		return;
-	doUndoRedo ();
+	doUndoRedo<false> ();
 	--md.undoPos;
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::redo () const
 {
+	checkCurrentUndoGroup (true);
 	if (std::distance (md.undoPos, md.undoList.end ()) <= 1)
 		return;
 	++md.undoPos;
 	if (md.undoPos == md.undoList.end ())
 		return;
-	doUndoRedo ();
+	doUndoRedo<true> ();
 }
 
 //------------------------------------------------------------------------
