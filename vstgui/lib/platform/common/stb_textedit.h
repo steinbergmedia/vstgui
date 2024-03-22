@@ -498,7 +498,7 @@ static void stb_textedit_drag(STB_TEXTEDIT_STRING *str, STB_TexteditState *state
 static void stb_text_undo(STB_TEXTEDIT_STRING *str, STB_TexteditState *state);
 static void stb_text_redo(STB_TEXTEDIT_STRING *str, STB_TexteditState *state);
 static void stb_text_makeundo_delete(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int where, int length);
-static void stb_text_makeundo_insert(STB_TexteditState *state, int where, int length);
+static void stb_text_makeundo_insert(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int where, int length);
 static void stb_text_makeundo_replace(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int where, int old_length, int new_length);
 
 typedef struct
@@ -707,7 +707,7 @@ static int stb_textedit_paste_internal(STB_TEXTEDIT_STRING *str, STB_TexteditSta
    stb_textedit_delete_selection(str,state);
    // try to insert the characters
    if (STB_TEXTEDIT_INSERTCHARS(str, state->cursor, text, len)) {
-      stb_text_makeundo_insert(state, state->cursor, len);
+      stb_text_makeundo_insert(str, state, state->cursor, len);
       state->cursor += len;
       state->has_preferred_x = 0;
       return 1;
@@ -744,7 +744,7 @@ retry:
             } else {
                stb_textedit_delete_selection(str,state); // implicitly clamps
                if (STB_TEXTEDIT_INSERTCHARS(str, state->cursor, &ch, 1)) {
-                  stb_text_makeundo_insert(state, state->cursor, 1);
+                  stb_text_makeundo_insert(str, state, state->cursor, 1);
                   ++state->cursor;
                   state->has_preferred_x = 0;
                }
@@ -1133,6 +1133,7 @@ static void stb_textedit_discard_undo(StbUndoState *state)
 }
 #endif
 
+#ifndef STB_TEXTEDIT_CUSTOM_CREATEUNDO
 // discard the oldest entry in the redo list--it's bad if this
 // ever happens, but because undo & redo have to store the actual
 // characters in different cases, the redo character buffer can
@@ -1187,9 +1188,13 @@ static StbUndoRecord *stb_text_create_undo_record(StbUndoState *state, int numch
    return NULL;
 #endif
 }
+#endif
 
-static STB_TEXTEDIT_CHARTYPE *stb_text_createundo(StbUndoState *state, int pos, int insert_len, int delete_len)
+static STB_TEXTEDIT_CHARTYPE *stb_text_createundo(STB_TEXTEDIT_STRING *str, StbUndoState *state, int pos, int insert_len, int delete_len)
 {
+#ifdef STB_TEXTEDIT_CUSTOM_CREATEUNDO
+   return STB_TEXTEDIT_CUSTOM_CREATEUNDO(str, pos, insert_len, delete_len);
+#else
    StbUndoRecord *r = stb_text_create_undo_record(state, insert_len);
    if (r == NULL)
       return NULL;
@@ -1206,10 +1211,14 @@ static STB_TEXTEDIT_CHARTYPE *stb_text_createundo(StbUndoState *state, int pos, 
       state->undo_char_point += insert_len;
       return &state->undo_char[r->char_storage];
    }
+#endif
 }
 
 static void stb_text_undo(STB_TEXTEDIT_STRING *str, STB_TexteditState *state)
 {
+#ifdef STB_TEXTEDIT_CUSTOM_CREATEUNDO
+   STB_TEXTEDIT_CUSTOM_UNDO (str);
+#else
    StbUndoState *s = &state->undostate;
    StbUndoRecord u, *r;
    if (s->undo_point == 0)
@@ -1274,10 +1283,14 @@ static void stb_text_undo(STB_TEXTEDIT_STRING *str, STB_TexteditState *state)
 
    s->undo_point--;
    s->redo_point--;
+#endif
 }
 
 static void stb_text_redo(STB_TEXTEDIT_STRING *str, STB_TexteditState *state)
 {
+#ifdef STB_TEXTEDIT_CUSTOM_CREATEUNDO
+   STB_TEXTEDIT_CUSTOM_REDO (str);
+#else
    StbUndoState *s = &state->undostate;
    StbUndoRecord *u, r;
    if (s->redo_point == STB_TEXTEDIT_UNDOSTATECOUNT)
@@ -1325,17 +1338,18 @@ static void stb_text_redo(STB_TEXTEDIT_STRING *str, STB_TexteditState *state)
 
    s->undo_point++;
    s->redo_point++;
+#endif
 }
 
-static void stb_text_makeundo_insert(STB_TexteditState *state, int where, int length)
+static void stb_text_makeundo_insert(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int where, int length)
 {
-   stb_text_createundo(&state->undostate, where, 0, length);
+   stb_text_createundo(str, &state->undostate, where, 0, length);
 }
 
 static void stb_text_makeundo_delete(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int where, int length)
 {
    int i;
-   STB_TEXTEDIT_CHARTYPE *p = stb_text_createundo(&state->undostate, where, length, 0);
+   STB_TEXTEDIT_CHARTYPE *p = stb_text_createundo(str, &state->undostate, where, length, 0);
    if (p) {
       for (i=0; i < length; ++i)
          p[i] = STB_TEXTEDIT_GETCHAR(str, where+i);
@@ -1345,7 +1359,7 @@ static void stb_text_makeundo_delete(STB_TEXTEDIT_STRING *str, STB_TexteditState
 static void stb_text_makeundo_replace(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int where, int old_length, int new_length)
 {
    int i;
-   STB_TEXTEDIT_CHARTYPE *p = stb_text_createundo(&state->undostate, where, old_length, new_length);
+   STB_TEXTEDIT_CHARTYPE *p = stb_text_createundo(str, &state->undostate, where, old_length, new_length);
    if (p) {
       for (i=0; i < old_length; ++i)
          p[i] = STB_TEXTEDIT_GETCHAR(str, where+i);
