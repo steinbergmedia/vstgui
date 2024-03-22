@@ -1234,6 +1234,7 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 			}
 			case VirtualKey::Return:
 			{
+				checkCurrentUndoGroup (true);
 				insertNewLine ();
 				event.consumed = true;
 				return;
@@ -2724,7 +2725,7 @@ void TextEditorView::setFindString (String&& text) const
 void TextEditorView::checkCurrentUndoGroup (bool force) const
 {
 	auto currentTime = getPlatformFactory ().getTicks ();
-	if (force || (md.currentUndoGroup.time > 0 && md.currentUndoGroup.time < currentTime - 500))
+	if (force || (md.currentUndoGroup.time > 0 && md.currentUndoGroup.time < currentTime - 250))
 	{
 		if (md.currentUndoGroup.record.empty ())
 			return;
@@ -2735,7 +2736,8 @@ void TextEditorView::checkCurrentUndoGroup (bool force) const
 		--md.undoPos;
 		md.currentUndoGroup = {};
 	}
-	md.currentUndoGroup.time = currentTime;
+	if (!force || md.currentUndoGroup.time != 0)
+		md.currentUndoGroup.time = currentTime;
 }
 
 //------------------------------------------------------------------------
