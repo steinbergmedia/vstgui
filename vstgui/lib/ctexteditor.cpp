@@ -2724,10 +2724,12 @@ void TextEditorView::setFindString (String&& text) const
 void TextEditorView::checkCurrentUndoGroup (bool force) const
 {
 	auto currentTime = getPlatformFactory ().getTicks ();
-	if (force || md.currentUndoGroup.time < currentTime - 500)
+	if (force || (md.currentUndoGroup.time > 0 && md.currentUndoGroup.time < currentTime - 500))
 	{
 		if (md.currentUndoGroup.record.empty ())
 			return;
+		if (md.currentUndoGroup.time == 0)
+			md.currentUndoGroup.time = currentTime;
 		md.undoList.emplace_back (std::move (md.currentUndoGroup));
 		md.undoPos = md.undoList.end ();
 		--md.undoPos;
