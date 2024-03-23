@@ -332,6 +332,14 @@ struct DrawContextObject::Impl
 		context->restoreGlobalState ();
 		--globalStatesStored;
 	}
+	void getStringWidth (CScriptVar* var) const
+	{
+		static constexpr auto signature = "drawContext.getStringWidth(string);"sv;
+		checkContextOrThrow ();
+		auto stringVar = getArgument (var, "string"sv, signature);
+		auto width = context->getStringWidth (stringVar->getString ().data ());
+		var->getReturnVar ()->setDouble (width);
+	}
 };
 
 //------------------------------------------------------------------------
@@ -342,6 +350,7 @@ DrawContextObject::DrawContextObject ()
 	impl = std::make_unique<Impl> ();
 	scriptVar->setLifeTimeObserver (this);
 	addFunc ("clearRect"sv, [this] (auto var) { impl->clearRect (var); }, {"rect"sv, "style"sv});
+	addFunc ("getStringWidth"sv, [this] (auto var) { impl->getStringWidth (var); }, {"string"sv});
 	addFunc ("drawArc"sv, [this] (auto var) { impl->drawArc (var); },
 			 {"rect"sv, "startAngle"sv, "endAngle"sv, "style"sv});
 	addFunc ("drawBitmap"sv, [this] (auto var) { impl->drawBitmap (var); },
