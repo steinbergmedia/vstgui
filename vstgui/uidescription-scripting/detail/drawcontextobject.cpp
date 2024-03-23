@@ -38,20 +38,27 @@ struct DrawContextObject::Impl
 		globalStatesStored = 0;
 	}
 
-	CScriptVar* getArgument (CScriptVar* var, std::string_view paramName,
+	CScriptVar* getArgument (CScriptVar* var, std::string_view argName,
 							 std::string_view funcSignature) const
 	{
-		auto child = var->findChild (paramName);
+		auto child = var->findChild (argName);
 		auto result = child ? child->getVar () : nullptr;
 		if (!result || result->isUndefined ())
 		{
 			string s ("Missing `");
-			s.append (paramName);
+			s.append (argName);
 			s.append ("` argument in ");
 			s.append (funcSignature);
 			throw CScriptException (std::move (s));
 		}
 		return result;
+	}
+
+	CScriptVar* getOptionalArgument (CScriptVar* var, std::string_view argName) const
+	{
+		if (auto child = var->findChild (argName))
+			return child->getVar ();
+		return nullptr;
 	}
 
 	void checkContextOrThrow () const
@@ -167,14 +174,14 @@ struct DrawContextObject::Impl
 		checkContextOrThrow ();
 		auto nameVar = getArgument (var, "name"sv, signature);
 		auto destRectVar = getArgument (var, "destRect"sv, signature);
-		auto offsetPointVar = var->findChild ("offsetPoint"sv);
-		auto alphaVar = var->findChild ("alpha"sv);
+		auto offsetPointVar = getOptionalArgument (var, "offsetPoint?"sv);
+		auto alphaVar = getOptionalArgument (var, "alpha?"sv);
 		auto bitmap = uiDesc->getBitmap (nameVar->getString ().data ());
 		if (!bitmap)
 			throw CScriptException ("bitmap not found in uiDescription");
 		auto destRect = fromScriptRect (*destRectVar);
-		auto offset = offsetPointVar ? fromScriptPoint (*offsetPointVar->getVar ()) : CPoint (0, 0);
-		auto alpha = static_cast<float> (alphaVar ? alphaVar->getVar ()->getDouble () : 1.);
+		auto offset = offsetPointVar ? fromScriptPoint (*offsetPointVar) : CPoint (0, 0);
+		auto alpha = static_cast<float> (alphaVar ? alphaVar->getDouble () : 1.);
 		context->drawBitmap (bitmap, destRect, offset, alpha);
 	}
 	void drawString (CScriptVar* var) const
@@ -183,17 +190,17 @@ struct DrawContextObject::Impl
 		checkContextOrThrow ();
 		auto stringVar = getArgument (var, "string"sv, signature);
 		auto rectVar = getArgument (var, "rect"sv, signature);
-		auto alignVar = var->findChild ("align"sv);
+		auto alignVar = getOptionalArgument (var, "align?"sv);
 		auto string = stringVar->getString ().data ();
 		auto rect = fromScriptRect (*rectVar);
 		CHoriTxtAlign align = kCenterText;
-		if (!alignVar || alignVar->getVar ()->isUndefined ())
+		if (!alignVar || alignVar->isUndefined ())
 			align = kCenterText;
-		else if (alignVar->getVar ()->getString () == "left"sv)
+		else if (alignVar->getString () == "left"sv)
 			align = kLeftText;
-		else if (alignVar->getVar ()->getString () == "center"sv)
+		else if (alignVar->getString () == "center"sv)
 			align = kCenterText;
-		else if (alignVar->getVar ()->getString () == "right"sv)
+		else if (alignVar->getString () == "right"sv)
 			align = kRightText;
 		else
 			throw CScriptException (
@@ -250,9 +257,9 @@ struct DrawContextObject::Impl
 			"drawContext.setLineStyle(styleOrLineCap, lineJoin?, dashLengths?, dashPhase);"sv;
 		checkContextOrThrow ();
 		auto styleOrLineCapVar = getArgument (var, "styleOrLineCap"sv, signature);
-		auto lineJoinVarLink = var->findChild ("lineJoin"sv);
-		auto dashLengthsVarLink = var->findChild ("dashLengths"sv);
-		auto dashPhaseVarLink = var->findChild ("dashPhase"sv);
+		auto lineJoinVar = getOptionalArgument (var, "lineJoin?"sv);
+		auto dashLengthsVar = getOptionalArgument (var, "dashLengths?"sv);
+		auto dashPhaseVar = getOptionalArgument (var, "dashPhase?"sv);
 		auto styleOrLineCap = styleOrLineCapVar->getString ();
 		std::unique_ptr<CLineStyle> lineStyle;
 		if (styleOrLineCap == "solid"sv)
@@ -273,9 +280,9 @@ struct DrawContextObject::Impl
 				lineStyle = std::make_unique<CLineStyle> (CLineStyle::LineCap::kLineCapSquare);
 			else
 				throw CScriptException ("unknown `line cap` argument");
-			if (lineJoinVarLink)
+			if (lineJoinVar)
 			{
-				auto lineJoin = lineJoinVarLink->getVar ()->getString ();
+				auto lineJoin = lineJoinVar->getString ();
 				if (lineJoin == "miter"sv)
 					lineStyle->setLineJoin (CLineStyle::LineJoin::kLineJoinMiter);
 				else if (lineJoin == "round"sv)
@@ -283,10 +290,9 @@ struct DrawContextObject::Impl
 				else if (lineJoin == "bevel"sv)
 					lineStyle->setLineJoin (CLineStyle::LineJoin::kLineJoinBevel);
 			}
-			if (dashLengthsVarLink)
+			if (dashLengthsVar)
 			{
-				auto dashLengthsVar = dashLengthsVarLink->getVar ();
-				if (!dashLengthsVarLink->getVar ()->isArray ())
+				if (!dashLengthsVar->isArray ())
 					throw CScriptException ("`dashLengths` must be an array of numbers");
 				CLineStyle::CoordVector lengths;
 				auto numValues = dashLengthsVar->getArrayLength ();
@@ -297,9 +303,9 @@ struct DrawContextObject::Impl
 				}
 				lineStyle->getDashLengths () = lengths;
 			}
-			if (dashPhaseVarLink)
+			if (dashPhaseVar)
 			{
-				lineStyle->setDashPhase (dashPhaseVarLink->getVar ()->getDouble ());
+				lineStyle->setDashPhase (dashPhaseVar->getDouble ());
 			}
 		}
 		if (lineStyle)
@@ -333,38 +339,32 @@ struct DrawContextObject::Impl
 //------------------------------------------------------------------------
 DrawContextObject::DrawContextObject ()
 {
-	// TODO: decide if this object should expose the same interface as "CanvasRenderingContext2D"
 	impl = std::make_unique<Impl> ();
 	scriptVar->setLifeTimeObserver (this);
-#if 0
-#else
-	addFunc ("drawLine"sv, [this] (auto var) { impl->drawLine (var); }, {"from"sv, "to"sv});
-	addFunc ("drawRect"sv, [this] (auto var) { impl->drawRect (var); }, {"rect"sv, "style"sv});
-	addFunc ("drawEllipse"sv, [this] (auto var) { impl->drawEllipse (var); },
-			 {"rect"sv, "style"sv});
 	addFunc ("clearRect"sv, [this] (auto var) { impl->clearRect (var); }, {"rect"sv, "style"sv});
-	addFunc ("drawPolygon"sv, [this] (auto var) { impl->drawPolygon (var); },
-			 {"points"sv, "style"sv});
 	addFunc ("drawArc"sv, [this] (auto var) { impl->drawArc (var); },
 			 {"rect"sv, "startAngle"sv, "endAngle"sv, "style"sv});
-	addFunc ("setClipRect"sv, [this] (auto var) { impl->setClipRect (var); }, {"rect"sv});
-#if 1 // TODO: make a bitmap js object instead
 	addFunc ("drawBitmap"sv, [this] (auto var) { impl->drawBitmap (var); },
-			 {"name"sv, "destRect"sv, "offsetPoint"sv, "alpha"sv});
-#endif
+			 {"name"sv, "destRect"sv, "offsetPoint?"sv, "alpha?"sv});
+	addFunc ("drawEllipse"sv, [this] (auto var) { impl->drawEllipse (var); },
+			 {"rect"sv, "style"sv});
+	addFunc ("drawLine"sv, [this] (auto var) { impl->drawLine (var); }, {"from"sv, "to"sv});
+	addFunc ("drawPolygon"sv, [this] (auto var) { impl->drawPolygon (var); },
+			 {"points"sv, "style"sv});
+	addFunc ("drawRect"sv, [this] (auto var) { impl->drawRect (var); }, {"rect"sv, "style"sv});
 	addFunc ("drawString"sv, [this] (auto var) { impl->drawString (var); },
-			 {"string"sv, "rect"sv, "align"sv});
+			 {"string"sv, "rect"sv, "align?"sv});
+	addFunc ("restoreGlobalState"sv, [this] (auto var) { impl->restoreGlobalState (); });
+	addFunc ("saveGlobalState"sv, [this] (auto var) { impl->saveGlobalState (); });
+	addFunc ("setClipRect"sv, [this] (auto var) { impl->setClipRect (var); }, {"rect"sv});
 	addFunc ("setFont"sv, [this] (auto var) { impl->setFont (var); }, {"font"sv});
 	addFunc ("setFontColor"sv, [this] (auto var) { impl->setFontColor (var); }, {"color"sv});
 	addFunc ("setFillColor"sv, [this] (auto var) { impl->setFillColor (var); }, {"color"sv});
 	addFunc ("setFrameColor"sv, [this] (auto var) { impl->setFrameColor (var); }, {"color"sv});
+	addFunc ("setGlobalAlpha", [this] (auto var) { impl->setGlobalAlpha (var); }, {"alpha"sv});
 	addFunc ("setLineWidth"sv, [this] (auto var) { impl->setLineWidth (var); }, {"width"sv});
 	addFunc ("setLineStyle"sv, [this] (auto var) { impl->setLineStyle (var); },
-			 {"styleOrLineCap"sv, "lineJoin"sv, "dashLengths"sv, "dashPhase"sv});
-	addFunc ("setGlobalAlpha", [this] (auto var) { impl->setGlobalAlpha (var); }, {"alpha"sv});
-	addFunc ("saveGlobalState"sv, [this] (auto var) { impl->saveGlobalState (); });
-	addFunc ("restoreGlobalState"sv, [this] (auto var) { impl->restoreGlobalState (); });
-#endif
+			 {"styleOrLineCap"sv, "lineJoin?"sv, "dashLengths?"sv, "dashPhase?"sv});
 }
 
 //------------------------------------------------------------------------
