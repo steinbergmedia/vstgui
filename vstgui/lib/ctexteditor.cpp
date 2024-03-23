@@ -2795,8 +2795,7 @@ void TextEditorView::doUndoRedo () const
 		}
 		else if (it->characters.empty () == false)
 		{
-			md.editState.select_end =
-				md.editState.select_start + static_cast<int> (it->characters.size ());
+			md.editState.select_end = md.editState.select_start;
 			callSTB ([&] () {
 				stb_textedit_paste (this, &md.editState, it->characters.data (),
 									static_cast<int> (it->characters.size ()));
