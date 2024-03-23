@@ -87,7 +87,7 @@ struct IScriptControllerExtension
 	virtual std::optional<std::string> verifyScript (CView* view, const std::string& script,
 													 const IScriptContext* context) = 0;
 
-	/** notification that the script context is  destroyed
+	/** notification that the script context is destroyed
 	 *
 	 *	don't call the context anymore after this call
 	 *
