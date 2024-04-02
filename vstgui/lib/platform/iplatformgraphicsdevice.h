@@ -121,4 +121,31 @@ public:
 };
 
 //------------------------------------------------------------------------
+enum class LineCap : uint32_t
+{
+	Butt = 0,
+	Round,
+	Square
+};
+
+//------------------------------------------------------------------------
+enum class LineJoin : uint32_t
+{
+	Miter = 0,
+	Round,
+	Bevel
+};
+
+//------------------------------------------------------------------------
+class IPlatformGraphicsDeviceContextGradientExt
+{
+public:
+	virtual ~IPlatformGraphicsDeviceContextGradientExt () noexcept = default;
+
+	virtual bool drawLinearGradientLine (const PointList& line, const IPlatformGradient& gradient,
+										 CCoord lineWidth, LineCap lineCap,
+										 LineJoin lineJoin) const = 0;
+};
+
+//------------------------------------------------------------------------
 } // VSTGUI
