@@ -295,16 +295,15 @@ struct D2DGraphicsDeviceContext::Impl
 	}
 
 	//-----------------------------------------------------------------------------
-	void applyLineStyle ()
+	COM::Ptr<ID2D1StrokeStyle> strokeStyleFromLineStyle (const CLineStyle& s) const
 	{
-		if (state.strokeStyle)
-			return;
+		COM::Ptr<ID2D1StrokeStyle> result;
 
 		COM::Ptr<ID2D1Factory> factory {};
 		deviceContext->GetFactory (factory.adoptPtr ());
 
 		D2D1_STROKE_STYLE_PROPERTIES properties;
-		switch (state.lineStyle.getLineCap ())
+		switch (s.getLineCap ())
 		{
 			case CLineStyle::kLineCapButt:
 				properties.startCap = properties.endCap = properties.dashCap = D2D1_CAP_STYLE_FLAT;
@@ -317,7 +316,7 @@ struct D2DGraphicsDeviceContext::Impl
 					D2D1_CAP_STYLE_SQUARE;
 				break;
 		}
-		switch (state.lineStyle.getLineJoin ())
+		switch (s.getLineJoin ())
 		{
 			case CLineStyle::kLineJoinMiter:
 				properties.lineJoin = D2D1_LINE_JOIN_MITER;
@@ -329,23 +328,32 @@ struct D2DGraphicsDeviceContext::Impl
 				properties.lineJoin = D2D1_LINE_JOIN_BEVEL;
 				break;
 		}
-		properties.dashOffset = static_cast<FLOAT> (state.lineStyle.getDashPhase ());
+		properties.dashOffset = static_cast<FLOAT> (s.getDashPhase ());
 		properties.miterLimit = 10.f;
-		if (state.lineStyle.getDashCount ())
+		if (s.getDashCount ())
 		{
 			properties.dashStyle = D2D1_DASH_STYLE_CUSTOM;
-			FLOAT* lengths = new FLOAT[state.lineStyle.getDashCount ()];
-			for (uint32_t i = 0; i < state.lineStyle.getDashCount (); i++)
-				lengths[i] = static_cast<FLOAT> (state.lineStyle.getDashLengths ()[i]);
-			factory->CreateStrokeStyle (properties, lengths, state.lineStyle.getDashCount (),
-										state.strokeStyle.adoptPtr ());
+			FLOAT* lengths = new FLOAT[s.getDashCount ()];
+			for (uint32_t i = 0; i < s.getDashCount (); i++)
+				lengths[i] = static_cast<FLOAT> (s.getDashLengths ()[i]);
+			factory->CreateStrokeStyle (properties, lengths, s.getDashCount (), result.adoptPtr ());
 			delete[] lengths;
 		}
 		else
 		{
 			properties.dashStyle = D2D1_DASH_STYLE_SOLID;
-			factory->CreateStrokeStyle (properties, nullptr, 0, state.strokeStyle.adoptPtr ());
+			factory->CreateStrokeStyle (properties, nullptr, 0, result.adoptPtr ());
 		}
+		return result;
+	}
+
+	//-----------------------------------------------------------------------------
+	void applyLineStyle ()
+	{
+		if (state.strokeStyle)
+			return;
+
+		state.strokeStyle = strokeStyleFromLineStyle (state.lineStyle);
 	}
 
 	struct State
@@ -814,6 +822,71 @@ bool D2DGraphicsDeviceContext::fillRadialGradient (IPlatformGraphicsPath& path,
 			{
 				deviceContext->FillGeometry (path.get (), brush.get ());
 			}
+		}
+	});
+	return true;
+}
+
+//------------------------------------------------------------------------
+bool D2DGraphicsDeviceContext::drawLinearGradientLine (const PointList& line,
+													   const IPlatformGradient& gradient,
+													   CCoord lineWidth, LineCap lineCap,
+													   LineJoin lineJoin) const
+{
+	if (line.size () < 2)
+		return false;
+	const auto d2dGradient = dynamic_cast<const D2DGradient*> (&gradient);
+	if (d2dGradient == nullptr)
+		return false;
+
+	COM::Ptr<ID2D1Factory> factory {};
+	impl->deviceContext->GetFactory (factory.adoptPtr ());
+	if (!factory)
+		return false;
+
+	COM::Ptr<ID2D1PathGeometry> path;
+	if (FAILED (factory->CreatePathGeometry (path.adoptPtr ())))
+		return false;
+	COM::Ptr<ID2D1GeometrySink> sink;
+	if (FAILED (path->Open (sink.adoptPtr ())))
+		return false;
+	sink->BeginFigure (convert (line.front ()), D2D1_FIGURE_BEGIN_FILLED);
+	for (auto index = 1u; index < line.size (); ++index)
+		sink->AddLine (convert (line[index]));
+	sink->EndFigure (D2D1_FIGURE_END_OPEN);
+	if (FAILED (sink->Close ()))
+		return false;
+	sink.reset ();
+
+	COM::Ptr<ID2D1PathGeometry> widenPath;
+	if (FAILED (factory->CreatePathGeometry (widenPath.adoptPtr ())))
+		return false;
+	if (FAILED (widenPath->Open (sink.adoptPtr ())))
+		return false;
+	CLineStyle lineStyle (static_cast<CLineStyle::LineCap> (lineCap),
+						  static_cast<CLineStyle::LineJoin> (lineJoin));
+	auto style = impl->strokeStyleFromLineStyle (lineStyle);
+	if (!style)
+		return false;
+	if (FAILED (path->Widen (static_cast<FLOAT> (lineWidth), style.get (), nullptr, sink.get ())))
+		return false;
+	if (FAILED (sink->Close ()))
+		return false;
+	sink.reset ();
+
+	impl->doInContext ([&] (auto deviceContext) {
+		auto stopCollection = COM::adopt<ID2D1GradientStopCollection> (
+			d2dGradient->create (deviceContext, static_cast<FLOAT> (impl->state.globalAlpha)));
+		if (!stopCollection)
+			return;
+		COM::Ptr<ID2D1LinearGradientBrush> brush;
+		D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES properties;
+		properties.startPoint = convert (line.front ());
+		properties.endPoint = convert (line.back ());
+		if (SUCCEEDED (deviceContext->CreateLinearGradientBrush (properties, stopCollection.get (),
+																 brush.adoptPtr ())))
+		{
+			deviceContext->FillGeometry (widenPath.get (), brush.get ());
 		}
 	});
 	return true;

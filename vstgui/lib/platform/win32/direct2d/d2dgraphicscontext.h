@@ -18,7 +18,8 @@ class D2DGraphicsDevice;
 
 //------------------------------------------------------------------------
 class D2DGraphicsDeviceContext : public IPlatformGraphicsDeviceContext,
-								 public IPlatformGraphicsDeviceContextBitmapExt
+								 public IPlatformGraphicsDeviceContextBitmapExt,
+								 public IPlatformGraphicsDeviceContextGradientExt
 {
 public:
 	D2DGraphicsDeviceContext (const D2DGraphicsDevice& device, ID2D1DeviceContext* deviceContext,
@@ -71,6 +72,11 @@ public:
 								  BitmapInterpolationQuality quality) const override;
 	bool fillRectWithBitmap (IPlatformBitmap& bitmap, CRect srcRect, CRect dstRect, double alpha,
 							 BitmapInterpolationQuality quality) const override;
+
+	// IPlatformGraphicsDeviceContextGradientExt
+	bool drawLinearGradientLine (const PointList& line, const IPlatformGradient& gradient,
+								 CCoord lineWidth, LineCap lineCap,
+								 LineJoin lineJoin) const override;
 
 	// private
 	void drawTextLayout (IDWriteTextLayout* textLayout, CPoint pos, CColor color, bool antialias);
