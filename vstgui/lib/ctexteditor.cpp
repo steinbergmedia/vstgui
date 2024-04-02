@@ -1609,7 +1609,7 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars) const
 				++nextLine;
 				nextLine->range.length += line->range.length - numDel;
 				nextLine->range.start = line->range.start;
-				nextLine = md.model.lines.erase (line);
+				nextLine = line = md.model.lines.erase (line);
 				numLinesChanged = true;
 				invalidateSingleLine (nextLine, 0);
 				auto prevLine = nextLine;
