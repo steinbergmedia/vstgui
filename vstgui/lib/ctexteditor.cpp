@@ -2070,8 +2070,10 @@ bool TextEditorView::callSTB (Proc proc) const
 {
 	md.stbInternalIterator = md.model.lines.begin ();
 	auto oldState = md.editState;
+	auto oldTextLength = md.model.text.length ();
 	proc ();
-	if (memcmp (&oldState, &md.editState, sizeof (STB_TexteditState)) != 0)
+	if (oldTextLength != md.model.text.length () ||
+		memcmp (&oldState, &md.editState, sizeof (STB_TexteditState)) != 0)
 	{
 		if (oldState.select_start != md.editState.select_start ||
 			oldState.select_end != md.editState.select_end)
