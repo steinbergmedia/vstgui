@@ -130,6 +130,12 @@ inline void replaceTabs (std::string& str, uint32_t tabWidth)
 	}
 }
 
+//------------------------------------------------------------------------
+inline bool isStopChar (char16_t character)
+{
+	return std::iswpunct (character) || std::iswcntrl (character) || std::iswspace (character);
+};
+
 using String = std::u16string;
 using StringView = std::u16string_view;
 
@@ -1217,6 +1223,8 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 			auto tmp = convert (txt->getString ());
 			key = tmp[0];
 		}
+		if (isStopChar (key))
+			checkCurrentUndoGroup (true);
 	}
 	if (event.virt != VirtualKey::None)
 	{
@@ -1224,11 +1232,13 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		{
 			case VirtualKey::Space:
 			{
+				checkCurrentUndoGroup (true);
 				key = 0x20;
 				break;
 			}
 			case VirtualKey::Tab:
 			{
+				checkCurrentUndoGroup (true);
 				key = '\t';
 				break;
 			}
@@ -1798,12 +1808,6 @@ void TextEditorView::onSelectionChanged (Range newSel, bool forceInvalidation) c
 		md.cursorIsVisible = false;
 	}
 }
-
-//------------------------------------------------------------------------
-inline bool isStopChar (char16_t character)
-{
-	return std::iswpunct (character) || std::iswcntrl (character) || std::iswspace (character);
-};
 
 //------------------------------------------------------------------------
 template<bool forward, typename iterator_t>
@@ -2727,7 +2731,7 @@ void TextEditorView::setFindString (String&& text) const
 void TextEditorView::checkCurrentUndoGroup (bool force) const
 {
 	auto currentTime = getPlatformFactory ().getTicks ();
-	if (force || (md.currentUndoGroup.time > 0 && md.currentUndoGroup.time < currentTime - 250))
+	if (force || (md.currentUndoGroup.time > 0 && md.currentUndoGroup.time < currentTime - 500))
 	{
 		if (md.currentUndoGroup.record.empty ())
 			return;
