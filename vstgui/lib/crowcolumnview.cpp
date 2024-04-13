@@ -132,8 +132,8 @@ CPoint computeRectOffset (const CPoint& parent, const CPoint& rect, const Alignm
 }
 
 //--------------------------------------------------------------------------------
-CRect computeHelperRect (const CRect& parent, const CRects& children, const Alignment alignment,
-						 const Style style, double spacing)
+CRect computeGroupRect (const CRect& parent, const CRects& children, const Alignment alignment,
+						const Style style, double spacing)
 {
     CPoint maxSize;
     if (style == Style::kRow)
@@ -170,14 +170,14 @@ CRect computeHelperRect (const CRect& parent, const CRects& children, const Alig
 }
 
 //--------------------------------------------------------------------------------
-CRect computeHelperRect (const CViewContainer& parent, const Alignment alignment, const Style style,
-						 const double spacing)
+CRect computeGroupRect (const CViewContainer& parent, const Alignment alignment, const Style style,
+						const double spacing)
 {
 	CRects childrenViewSizes;
 	parent.forEachChild (
 		[&] (const CView* child) { childrenViewSizes.push_back (child->getViewSize ()); });
 
-	return computeHelperRect (parent.getViewSize (), childrenViewSizes, alignment, style, spacing);
+	return computeGroupRect (parent.getViewSize (), childrenViewSizes, alignment, style, spacing);
 }
 
 //--------------------------------------------------------------------------------
@@ -191,29 +191,29 @@ public:
 				const double spacing)
 	: alignment (alignment), style (style)
 	{
-		helperRect = Layouting::computeHelperRect (parent, alignment, style, spacing);
+		groupRect = Layouting::computeGroupRect (parent, alignment, style, spacing);
 	}
 
 	auto moveRect (CRect& viewSize) -> CRect&
 	{
-        // Offset the viewSize inside the helperRect...
-        const CPoint offset =
-            Layouting::computeRectOffset (helperRect.getSize (), viewSize.getSize (), alignment);
-        if (style == Style::kRow)
-            viewSize.offset (offset.x, 0.);
-        else
-            viewSize.offset (0., offset.y);
-        
-        //...and offset by topLeft of the helperRect afterwards, in order to align with the
-        // 'real' parent.
-        return viewSize.offset (helperRect.getTopLeft ());
+		// Offset the viewSize inside the groupRect...
+		const CPoint offset =
+			Layouting::computeRectOffset (groupRect.getSize (), viewSize.getSize (), alignment);
+		if (style == Style::kRow)
+			viewSize.offset (offset.x, 0.);
+		else
+			viewSize.offset (0., offset.y);
+
+		//...and offset by topLeft of the groupRect afterwards, in order to align with the
+		// 'real' parent.
+		return viewSize.offset (groupRect.getTopLeft ());
 	}
 
 	//--------------------------------------------------------------------------------
 private:
 	const Alignment alignment = Alignment::kTopLeft;
 	const Style style = Style::kRow;
-	CRect helperRect;
+	CRect groupRect;
 };
 
 //--------------------------------------------------------------------------------
