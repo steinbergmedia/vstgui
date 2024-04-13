@@ -56,6 +56,7 @@ public:
 		/** stretch subviews to the same width and height */
 		kStretchEqualy,
 
+		/** options for the auto layout feature */
 		kTopLeft,
 		kTopCenter,
 		kTopRight,

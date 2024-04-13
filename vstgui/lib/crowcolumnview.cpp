@@ -181,7 +181,15 @@ CRect computeGroupRect (const CViewContainer& parent, const Alignment alignment,
 }
 
 //--------------------------------------------------------------------------------
-// AutoLayout
+// AutoLayout Declaration
+/// @brief An auto layout feature for the CRowColumnView
+///
+/// The AutoLayout flexibly layouts the children of a CRowColumnView. The children are grouped and
+/// aligned among themselves depending on whether the style is a row (left to right) or a
+/// column (top to bottom). The group is moved inside the parent to either of the nine
+/// positions (top-left, top-center, top-right, middle-left, middle-center, middle-right,
+/// bottom-left, bottom-center or bottom-right). If the size of the parent is changed, the layout
+/// and alignment of the group is always retained.
 //--------------------------------------------------------------------------------
 class AutoLayout
 {
@@ -194,6 +202,7 @@ public:
 		groupRect = Layouting::computeGroupRect (parent, alignment, style, spacing);
 	}
 
+	/** moves the child rect to the calculated position (inside the group and inside the parent) */
 	auto moveRect (CRect& viewSize) -> CRect&
 	{
 		// Offset the viewSize inside the groupRect...
