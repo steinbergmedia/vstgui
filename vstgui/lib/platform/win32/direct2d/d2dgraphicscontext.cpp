@@ -126,6 +126,42 @@ struct D2DBitmapDeviceContext : D2DGraphicsDeviceContext
 };
 
 //------------------------------------------------------------------------
+COM::Ptr<ID2D1ImageBrush> createBrushFromBitmap (ID2D1DeviceContext* deviceContext,
+												 ID2D1Bitmap* d2d1Bitmap, const CRect& srcRect,
+												 const CRect& dstRect,
+												 BitmapInterpolationQuality quality)
+{
+	D2D1_IMAGE_BRUSH_PROPERTIES imageBrushProp = {};
+	imageBrushProp.sourceRectangle = convert (srcRect);
+	imageBrushProp.extendModeX = imageBrushProp.extendModeY = D2D1_EXTEND_MODE_WRAP;
+	switch (quality)
+	{
+		case BitmapInterpolationQuality::kLow:
+			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+			break;
+
+		case BitmapInterpolationQuality::kMedium:
+		case BitmapInterpolationQuality::kHigh:
+		default:
+			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_LINEAR;
+			break;
+	}
+	CGraphicsTransform brushTransform;
+	brushTransform.translate (dstRect.getTopLeft ());
+
+	D2D1_BRUSH_PROPERTIES brushProp = {};
+	brushProp.opacity = 1.f;
+	brushProp.transform = convert (brushTransform);
+
+	COM::Ptr<ID2D1ImageBrush> brush;
+	auto hr =
+		deviceContext->CreateImageBrush (d2d1Bitmap, imageBrushProp, brushProp, brush.adoptPtr ());
+	if (FAILED (hr))
+		return {};
+	return brush;
+}
+
+//------------------------------------------------------------------------
 } // anonymous namespace
 
 //------------------------------------------------------------------------
@@ -643,24 +679,10 @@ bool D2DGraphicsDeviceContext::drawBitmap (IPlatformBitmap& bitmap, CRect dest, 
 		source.setWidth (d2d1Bitmap->GetSize ().width);
 		source.setHeight (d2d1Bitmap->GetSize ().height);
 
-		D2D1_BITMAP_INTERPOLATION_MODE mode;
-		switch (quality)
-		{
-			case BitmapInterpolationQuality::kLow:
-				mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
-				break;
-
-			case BitmapInterpolationQuality::kMedium:
-			case BitmapInterpolationQuality::kHigh:
-			default:
-				mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
-				break;
-		}
-
 		D2D1_RECT_F sourceRect = convert (source);
 		deviceContext->DrawBitmap (d2d1Bitmap, convert (d),
-								   static_cast<FLOAT> (alpha * impl->state.globalAlpha), mode,
-								   &sourceRect);
+								   static_cast<FLOAT> (alpha * impl->state.globalAlpha),
+								   convert (quality), &sourceRect);
 	});
 	setTransformMatrix (originalTransformMatrix);
 	impl->state.clip = originalClip;
@@ -932,32 +954,9 @@ bool D2DGraphicsDeviceContext::fillRectWithBitmap (IPlatformBitmap& bitmap, CRec
 	invBitmapTransform.transform (dstRect);
 	invBitmapTransform.transform (srcRect);
 
-	D2D1_IMAGE_BRUSH_PROPERTIES imageBrushProp = {};
-	imageBrushProp.sourceRectangle = convert (srcRect);
-	imageBrushProp.extendModeX = imageBrushProp.extendModeY = D2D1_EXTEND_MODE_WRAP;
-	switch (quality)
-	{
-		case BitmapInterpolationQuality::kLow:
-			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
-			break;
-
-		case BitmapInterpolationQuality::kMedium:
-		case BitmapInterpolationQuality::kHigh:
-		default:
-			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_LINEAR;
-			break;
-	}
-	CGraphicsTransform brushTransform;
-	brushTransform.translate (dstRect.getTopLeft ());
-
-	D2D1_BRUSH_PROPERTIES brushProp = {};
-	brushProp.opacity = 1.f;
-	brushProp.transform = convert (brushTransform);
-
-	COM::Ptr<ID2D1ImageBrush> brush;
-	auto hr = impl->deviceContext->CreateImageBrush (d2d1Bitmap, imageBrushProp, brushProp,
-													 brush.adoptPtr ());
-	if (FAILED (hr))
+	auto brush =
+		createBrushFromBitmap (impl->deviceContext.get (), d2d1Bitmap, srcRect, dstRect, quality);
+	if (!brush)
 		return false;
 
 	impl->state.clip = cr;
