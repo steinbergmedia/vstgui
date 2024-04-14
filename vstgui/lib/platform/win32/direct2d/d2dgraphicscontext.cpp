@@ -12,10 +12,12 @@
 #include "../comptr.h"
 #include "../../../crect.h"
 #include "../../../cgraphicstransform.h"
+#include "../../../cbitmap.h"
 #include "../../../ccolor.h"
 #include "../../../cdrawdefs.h"
 #include "../../../clinestyle.h"
 #include <stack>
+#include <array>
 
 #include <d2d1_1.h>
 #include <dwrite.h>
@@ -127,10 +129,16 @@ struct D2DBitmapDeviceContext : D2DGraphicsDeviceContext
 
 //------------------------------------------------------------------------
 COM::Ptr<ID2D1ImageBrush> createBrushFromBitmap (ID2D1DeviceContext* deviceContext,
-												 ID2D1Bitmap* d2d1Bitmap, const CRect& srcRect,
-												 const CRect& dstRect,
-												 BitmapInterpolationQuality quality)
+												 ID2D1Bitmap* d2d1Bitmap, CRect srcRect,
+												 CRect dstRect, double alpha,
+												 BitmapInterpolationQuality quality,
+												 CGraphicsTransform* brushTM = nullptr)
 {
+	CGraphicsTransform brushTransform;
+	if (brushTM)
+		brushTransform = *brushTM;
+	brushTransform.translate (dstRect.getTopLeft ());
+
 	D2D1_IMAGE_BRUSH_PROPERTIES imageBrushProp = {};
 	imageBrushProp.sourceRectangle = convert (srcRect);
 	imageBrushProp.extendModeX = imageBrushProp.extendModeY = D2D1_EXTEND_MODE_WRAP;
@@ -146,11 +154,9 @@ COM::Ptr<ID2D1ImageBrush> createBrushFromBitmap (ID2D1DeviceContext* deviceConte
 			imageBrushProp.interpolationMode = D2D1_INTERPOLATION_MODE_LINEAR;
 			break;
 	}
-	CGraphicsTransform brushTransform;
-	brushTransform.translate (dstRect.getTopLeft ());
 
 	D2D1_BRUSH_PROPERTIES brushProp = {};
-	brushProp.opacity = 1.f;
+	brushProp.opacity = static_cast<FLOAT> (alpha);
 	brushProp.transform = convert (brushTransform);
 
 	COM::Ptr<ID2D1ImageBrush> brush;
@@ -921,12 +927,88 @@ const IPlatformGraphicsDeviceContextBitmapExt* D2DGraphicsDeviceContext::asBitma
 }
 
 //------------------------------------------------------------------------
-bool D2DGraphicsDeviceContext::drawBitmapNinePartTiled (IPlatformBitmap& bitmap, CRect dest,
+bool D2DGraphicsDeviceContext::drawBitmapNinePartTiled (IPlatformBitmap& bitmap, CRect dstRect,
 														const CNinePartTiledDescription& desc,
 														double alpha,
 														BitmapInterpolationQuality quality) const
 {
-	return false;
+	using NPTD = CNinePartTiledDescription;
+
+	alpha *= impl->state.globalAlpha;
+	if (alpha == 0.)
+		return true;
+
+	D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (&bitmap);
+	if (!d2dBitmap || !d2dBitmap->getSource ())
+		return false;
+	auto d2d1Bitmap =
+		D2DBitmapCache::getBitmap (d2dBitmap, impl->deviceContext.get (), impl->device.get ());
+	if (!d2d1Bitmap)
+		return false;
+
+	auto interpolationMode = convert (quality);
+	auto originalClip = impl->state.clip;
+	auto cr = dstRect;
+	impl->state.tm.transform (cr);
+	cr.bound (originalClip);
+	impl->state.clip = cr;
+
+	auto originalTransformMatrix = impl->state.tm;
+
+	double bitmapScaleFactor = d2dBitmap->getScaleFactor ();
+	CGraphicsTransform bitmapTransform;
+	bitmapTransform.scale (bitmapScaleFactor, bitmapScaleFactor);
+	auto invBitmapTransform = bitmapTransform.inverse ();
+	setTransformMatrix ({});
+
+	CRect bitmapBounds (0, 0, bitmap.getSize ().x, bitmap.getSize ().y);
+	invBitmapTransform.transform (bitmapBounds);
+
+	std::array<CRect, NPTD::kPartCount> mySourceRect;
+	std::array<CRect, NPTD::kPartCount> myDestRect;
+
+	desc.calcRects (bitmapBounds, mySourceRect.data ());
+	desc.calcRects (dstRect, myDestRect.data ());
+
+	std::for_each (mySourceRect.begin (), mySourceRect.end (),
+				   [&] (auto& el) { bitmapTransform.transform (el); });
+	std::for_each (myDestRect.begin (), myDestRect.end (),
+				   [&] (auto& el) { originalTransformMatrix.transform (el); });
+
+	impl->doInContext ([&] (auto deviceContext) {
+		auto drawBitmap = [&] (const CRect& source, const CRect& destination) {
+			auto sourceRect = convert (source);
+			deviceContext->DrawBitmap (d2d1Bitmap, convert (destination),
+									   static_cast<FLOAT> (alpha), interpolationMode, &sourceRect);
+		};
+
+		drawBitmap (mySourceRect[NPTD::kPartTopLeft], myDestRect[NPTD::kPartTopLeft]);
+		drawBitmap (mySourceRect[NPTD::kPartTopRight], myDestRect[NPTD::kPartTopRight]);
+		drawBitmap (mySourceRect[NPTD::kPartBottomLeft], myDestRect[NPTD::kPartBottomLeft]);
+		drawBitmap (mySourceRect[NPTD::kPartBottomRight], myDestRect[NPTD::kPartBottomRight]);
+
+		auto tm = originalTransformMatrix * invBitmapTransform;
+		tm.dx = tm.dy = 0;
+
+		auto drawBitmapBrush = [&] (CRect src, CRect dst) {
+			if (auto brush = createBrushFromBitmap (deviceContext, d2d1Bitmap, src, dst, alpha,
+													quality, &tm))
+			{
+				dst.makeIntegral ();
+				deviceContext->FillRectangle (convert (dst), brush.get ());
+			}
+		};
+
+		drawBitmapBrush (mySourceRect[NPTD::kPartTop], myDestRect[NPTD::kPartTop]);
+		drawBitmapBrush (mySourceRect[NPTD::kPartCenter], myDestRect[NPTD::kPartCenter]);
+		drawBitmapBrush (mySourceRect[NPTD::kPartLeft], myDestRect[NPTD::kPartLeft]);
+		drawBitmapBrush (mySourceRect[NPTD::kPartRight], myDestRect[NPTD::kPartRight]);
+		drawBitmapBrush (mySourceRect[NPTD::kPartBottom], myDestRect[NPTD::kPartBottom]);
+	});
+
+	setTransformMatrix (originalTransformMatrix);
+	impl->state.clip = originalClip;
+	return true;
 }
 
 //------------------------------------------------------------------------
@@ -954,8 +1036,8 @@ bool D2DGraphicsDeviceContext::fillRectWithBitmap (IPlatformBitmap& bitmap, CRec
 	invBitmapTransform.transform (dstRect);
 	invBitmapTransform.transform (srcRect);
 
-	auto brush =
-		createBrushFromBitmap (impl->deviceContext.get (), d2d1Bitmap, srcRect, dstRect, quality);
+	auto brush = createBrushFromBitmap (impl->deviceContext.get (), d2d1Bitmap, srcRect, dstRect,
+										alpha * impl->state.globalAlpha, quality);
 	if (!brush)
 		return false;
 
