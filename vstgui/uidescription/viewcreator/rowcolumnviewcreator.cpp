@@ -18,7 +18,10 @@ namespace UIViewCreator {
 //------------------------------------------------------------------------
 auto RowColumnViewCreator::layoutStrings () -> LayoutStrings&
 {
-	static LayoutStrings strings = {"left-top", "center", "right-bottom", "stretch"};
+	static LayoutStrings strings = {
+		"left-top",	   "center",		"right-bottom", "stretch",		 "top-left",
+		"top-center",  "top-right",		"middle-left",	"middle-center", "middle-right",
+		"bottom-left", "bottom-center", "bottom-right"};
 	return strings;
 }
 
@@ -81,7 +84,7 @@ bool RowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrEqualSizeLayout);
 	if (attr)
 	{
-		for (auto index = 0u; index <= CRowColumnView::kStretchEqualy; ++index)
+		for (auto index = 0u; index <= CRowColumnView::kBottomRight; ++index)
 		{
 			if (*attr == layoutStrings ()[index])
 			{
