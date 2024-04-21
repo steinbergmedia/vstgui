@@ -329,7 +329,7 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			firstResponder = nil;
 		if (firstResponder)
 		{
-			if (firstResponder != self && [firstResponder isDescendantOf:self])
+			if ([firstResponder isDescendantOf:self])
 			{
 				return YES;
 			}
