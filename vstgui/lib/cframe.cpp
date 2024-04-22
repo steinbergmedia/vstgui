@@ -537,6 +537,8 @@ void CFrame::dispatchEventToChildren (Event& event)
 //-----------------------------------------------------------------------------
 void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 {
+	if (static_cast<uint32_t> (event.virt) > static_cast<uint32_t> (VirtualKey::Equals))
+		event.virt = VirtualKey::None;
 	dispatchKeyboardEventToHooks (event);
 	if (event.consumed)
 		return;
