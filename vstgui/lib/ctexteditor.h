@@ -58,8 +58,8 @@ struct ITextEditor
 		CColor lineNumberLine {127, 127, 127, 100};
 		CCoord lineSpacing {2.5};
 		CCoord leftMargin {4.};
-		CCoord lineNumerLeftMargin {2.};
-		CCoord lineNumerRightMargin {2.};
+		CCoord lineNumberLeftMargin {2.};
+		CCoord lineNumberRightMargin {2.};
 		uint32_t cursorBlinkTime {500}; // in milliseconds
 		uint32_t tabWidth {4};
 		bool showLineNumbers {true};

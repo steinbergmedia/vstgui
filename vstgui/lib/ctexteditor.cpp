@@ -1415,7 +1415,7 @@ void TextEditorView::updateLineNumbersView () const
 	}
 	auto lineNumbersWidth = md.style->lineNumbersFont->getFontPainter ()->getStringWidth (
 		nullptr, str.getPlatformString ());
-	lineNumbersWidth += (md.style->lineNumerLeftMargin + md.style->lineNumerRightMargin);
+	lineNumbersWidth += (md.style->lineNumberLeftMargin + md.style->lineNumberRightMargin);
 	lineNumbersWidth = std::ceil (lineNumbersWidth);
 	auto vs = md.lineNumberView->getViewSize ();
 	if (vs.getWidth () != lineNumbersWidth)
@@ -2894,7 +2894,7 @@ void LineNumberView::drawRect (CDrawContext* context, const CRect& _dirtyRect)
 		auto lineNoWidth = style->lineNumbersFont->getFontPainter ()->getStringWidth (
 			context->getPlatformDeviceContext (), lineNoStr.getPlatformString ());
 		context->drawString (lineNoStr.getPlatformString (),
-							 {x - (lineNoWidth + style->lineNumerRightMargin), y});
+							 {x - (lineNoWidth + style->lineNumberRightMargin), y});
 	}
 
 	auto cr = getViewSize ();
