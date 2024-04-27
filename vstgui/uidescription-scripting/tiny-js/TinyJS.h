@@ -37,6 +37,7 @@
 #include <functional>
 #include <variant>
 #include <limits>
+#include <any>
 
 #ifndef TRACE
 #define TRACE printf
@@ -403,6 +404,9 @@ public:
 	CScriptVarLink* getFirstChild () const { return firstChild; }
 	CScriptVarLink* getLastChild () const { return lastChild; }
 
+	void setCustomData (std::any&& cd) { customData = std::move (cd); }
+	const std::any& getCustomData () const { return customData; }
+
 	static void* operator new (std::size_t count);
 	static void operator delete (void* ptr, std::size_t size);
 
@@ -415,6 +419,7 @@ protected:
 	/** the flags determine the type of the variable - int/double/string/etc */
 	int flags {0};
 	std::variant<string, int64_t, double, JSCallback> variant;
+	std::any customData;
 	string dataStr;
 
 	/** Copy the basic data and flags from the variable given, with no
