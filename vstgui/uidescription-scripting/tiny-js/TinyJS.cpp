@@ -1437,6 +1437,7 @@ CScriptVar* CScriptVar::mathsOp (CScriptVar* b, int op)
 void CScriptVar::copySimpleData (CScriptVar* val)
 {
 	variant = val->variant;
+	customData = val->customData;
 	flags = (flags & ~SCRIPTVAR_VARTYPEMASK) | (val->flags & SCRIPTVAR_VARTYPEMASK);
 }
 

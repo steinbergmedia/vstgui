@@ -68,6 +68,31 @@ inline TJS::CScriptVar* createJSFunction (TJS::JSCallback&& proc,
 }
 
 //------------------------------------------------------------------------
+inline TJS::CScriptVar* getArgument (TJS::CScriptVar* var, std::string_view argName,
+									 std::string_view funcSignature)
+{
+	auto child = var->findChild (argName);
+	auto result = child ? child->getVar () : nullptr;
+	if (!result || result->isUndefined ())
+	{
+		TJS::string s ("Missing `");
+		s.append (argName);
+		s.append ("` argument in ");
+		s.append (funcSignature);
+		throw TJS::CScriptException (std::move (s));
+	}
+	return result;
+}
+
+//------------------------------------------------------------------------
+inline TJS::CScriptVar* getOptionalArgument (TJS::CScriptVar* var, std::string_view argName)
+{
+	if (auto child = var->findChild (argName))
+		return child->getVar ();
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
 struct ScriptObject
 {
 	using CScriptVar = TJS::CScriptVar;
