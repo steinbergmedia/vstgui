@@ -37,6 +37,44 @@ static SharedPointer<CGraphicsPath> getGraphicsPath (CScriptVar* var, std::strin
 }
 
 //------------------------------------------------------------------------
+static std::shared_ptr<CGraphicsTransform> extractTransformMatrix (CScriptVar* var,
+																   std::string_view signature)
+{
+	auto customData = var->getCustomData ();
+	if (!customData.has_value ())
+		throw CScriptException ("Variable is not a transform matrix");
+	try
+	{
+		auto path = std::any_cast<std::shared_ptr<CGraphicsTransform>> (customData);
+		return path;
+	}
+	catch (const std::bad_any_cast& e)
+	{
+		throw CScriptException ("Variable is not a transform matrix");
+	}
+	return {};
+}
+
+//------------------------------------------------------------------------
+static std::shared_ptr<CGraphicsTransform> getTransformMatrix (CScriptVar* var,
+															   std::string_view varName,
+															   std::string_view signature)
+{
+	auto tmVar = getArgument (var, varName, signature);
+	return extractTransformMatrix (tmVar, signature);
+}
+
+//------------------------------------------------------------------------
+static std::shared_ptr<CGraphicsTransform> getOptionalTransformMatrix (CScriptVar* var,
+																	   std::string_view varName,
+																	   std::string_view signature)
+{
+	if (auto tmVar = getOptionalArgument (var, varName))
+		return extractTransformMatrix (tmVar, signature);
+	return {};
+}
+
+//------------------------------------------------------------------------
 static CRect getRect (CScriptVar* var, std::string_view varName, std::string_view signature)
 {
 	auto rectVar = getArgument (var, varName, signature);
@@ -81,6 +119,131 @@ static int64_t getInt (CScriptVar* var, std::string_view varName, std::string_vi
 }
 
 //------------------------------------------------------------------------
+struct TransformMatrixScriptObject : ScriptObject
+{
+	using TransformMatrixPtr = std::shared_ptr<CGraphicsTransform>;
+
+	TransformMatrixScriptObject (TransformMatrixPtr tm = std::make_shared<CGraphicsTransform> ())
+	{
+		scriptVar = new CScriptVar ("", SCRIPTVAR_OBJECT);
+		scriptVar->addRef ();
+		scriptVar->setCustomData (tm);
+		addFunc ("concat"sv, [tm] (auto var) { concat (tm, var); }, {"transformMatrix"sv});
+		addFunc ("inverse"sv, [tm] (auto var) { inverse (tm, var); });
+		addFunc ("rotate"sv, [tm] (auto var) { rotate (tm, var); }, {"angle"sv, "center?"sv});
+		addFunc ("scale"sv, [tm] (auto var) { scale (tm, var); }, {"x"sv, "y"sv});
+		addFunc ("skewX"sv, [tm] (auto var) { skewX (tm, var); }, {"skewX"sv});
+		addFunc ("skewY"sv, [tm] (auto var) { skewY (tm, var); }, {"skewY"sv});
+		addFunc ("translate"sv, [tm] (auto var) { translate (tm, var); }, {"x"sv, "y"sv});
+		addFunc ("transform"sv, [tm] (auto var) { transform (tm, var); }, {"pointOrRect"sv});
+	}
+
+	static void inverse (const TransformMatrixPtr& tm, CScriptVar* var)
+	{
+		static constexpr auto signature = "matrix.inverse();"sv;
+		auto iTm = tm->inverse ();
+		TransformMatrixScriptObject obj (std::make_shared<CGraphicsTransform> (iTm));
+		var->setReturnVar (obj.take ());
+	}
+
+	static void concat (const TransformMatrixPtr& tm, CScriptVar* var)
+	{
+		static constexpr auto signature = "matrix.concat(transformMatrix);"sv;
+		auto other = getTransformMatrix (var, "transformMatrix"sv, signature);
+		auto result = *(tm.get ()) * *(other.get ());
+		*(tm.get ()) = result;
+	}
+
+	static void translate (const TransformMatrixPtr& tm, CScriptVar* var)
+	{
+		static constexpr auto signature = "matrix.translate(x, y);"sv;
+		auto x = getDouble (var, "x"sv, signature);
+		auto y = getDouble (var, "y"sv, signature);
+		tm->translate (x, y);
+	}
+
+	static void scale (const TransformMatrixPtr& tm, CScriptVar* var)
+	{
+		static constexpr auto signature = "matrix.scale(x, y);"sv;
+		auto x = getDouble (var, "x"sv, signature);
+		auto y = getDouble (var, "y"sv, signature);
+		tm->scale (x, y);
+	}
+
+	static void rotate (const TransformMatrixPtr& tm, CScriptVar* var)
+	{
+		static constexpr auto signature = "matrix.rotate(angle, center?);"sv;
+		auto angle = getDouble (var, "angle"sv, signature);
+		if (auto centerVar = getOptionalArgument (var, "center?"sv))
+		{
+			auto center = fromScriptPoint (*centerVar);
+			tm->rotate (angle, center);
+		}
+		else
+		{
+			tm->rotate (angle);
+		}
+	}
+
+	static void skewX (const TransformMatrixPtr& tm, CScriptVar* var)
+	{
+		static constexpr auto signature = "matrix.skewX(angle);"sv;
+		auto angle = getDouble (var, "angle"sv, signature);
+		tm->skewX (angle);
+	}
+
+	static void skewY (const TransformMatrixPtr& tm, CScriptVar* var)
+	{
+		static constexpr auto signature = "matrix.skewY(angle);"sv;
+		auto angle = getDouble (var, "angle"sv, signature);
+		tm->skewY (angle);
+	}
+
+	static void transform (const TransformMatrixPtr& tm, CScriptVar* var)
+	{
+		static constexpr auto signature = "matrix.transform(pointOrRect);"sv;
+		auto pointOrRect = getArgument (var, "pointOrRect"sv, signature);
+		auto xVar = getOptionalArgument (pointOrRect, "x"sv);
+		auto yVar = getOptionalArgument (pointOrRect, "y"sv);
+		if (xVar && yVar)
+		{
+			auto x = xVar->getDouble ();
+			auto y = yVar->getDouble ();
+			tm->transform (x, y);
+			xVar->setDouble (x);
+			yVar->setDouble (y);
+			return;
+		}
+		auto leftVar = getOptionalArgument (pointOrRect, "left"sv);
+		auto topVar = getOptionalArgument (pointOrRect, "top"sv);
+		auto rightVar = getOptionalArgument (pointOrRect, "right"sv);
+		auto bottomVar = getOptionalArgument (pointOrRect, "bottom"sv);
+		if (leftVar && topVar && rightVar && bottomVar)
+		{
+			CRect r (leftVar->getDouble (), topVar->getDouble (), rightVar->getDouble (),
+					 bottomVar->getDouble ());
+			tm->transform (r);
+			leftVar->setDouble (r.left);
+			topVar->setDouble (r.top);
+			rightVar->setDouble (r.right);
+			bottomVar->setDouble (r.bottom);
+			return;
+		}
+
+		string s ("Argument is not a point or a rect in ");
+		s.append (signature);
+		throw CScriptException (std::move (s));
+	}
+};
+
+//------------------------------------------------------------------------
+TJS::CScriptVar* makeTransformMatrixObject ()
+{
+	TransformMatrixScriptObject obj;
+	return obj.take ();
+}
+
+//------------------------------------------------------------------------
 struct GraphicsPathScriptObject : ScriptObject
 {
 	GraphicsPathScriptObject (const SharedPointer<CGraphicsPath>& p)
@@ -89,17 +252,27 @@ struct GraphicsPathScriptObject : ScriptObject
 		scriptVar->addRef ();
 		scriptVar->setCustomData (p);
 
+		addFunc ("addEllipse"sv, [p] (auto var) { addEllipse (p, var); }, {"rect"sv});
 		addFunc ("addArc"sv, [p] (auto var) { addArc (p, var); },
 				 {"rect"sv, "startAngle"sv, "endAngle"sv, "clockwise"sv});
-		addFunc ("addEllipse"sv, [p] (auto var) { addEllipse (p, var); }, {"rect"sv});
-		addFunc ("addRect"sv, [p] (auto var) { addRect (p, var); }, {"rect"sv});
-		addFunc ("addLine"sv, [p] (auto var) { addLine (p, var); }, {"to"sv});
 		addFunc ("addBezierCurve"sv, [p] (auto var) { addBezierCurve (p, var); },
 				 {"control1"sv, "control2"sv, "end"sv});
-		addFunc ("beginSubpath"sv, [p] (auto var) { beginSubpath (p, var); }, {"start"sv});
-		addFunc ("closeSubpath"sv, [p] (auto var) { closeSubpath (p); });
+		addFunc ("addLine"sv, [p] (auto var) { addLine (p, var); }, {"to"sv});
+		addFunc ("addPath"sv, [p] (auto var) { addPath (p, var); },
+				 {"path"sv, "transformMatrix?"sv});
+		addFunc ("addRect"sv, [p] (auto var) { addRect (p, var); }, {"rect"sv});
 		addFunc ("addRoundRect"sv, [p] (auto var) { addRoundRect (p, var); },
 				 {"rect"sv, "radius"sv});
+		addFunc ("closeSubpath"sv, [p] (auto var) { closeSubpath (p); });
+		addFunc ("beginSubpath"sv, [p] (auto var) { beginSubpath (p, var); }, {"start"sv});
+	}
+
+	static void addPath (const SharedPointer<CGraphicsPath>& path, CScriptVar* var)
+	{
+		static constexpr auto signature = "path.addPath(path, transformMatrix?);"sv;
+		auto otherPath = getGraphicsPath (var, "path"sv, signature);
+		auto tm = getOptionalTransformMatrix (var, "transformMatrix?"sv, signature);
+		path->addPath (*otherPath.get (), tm ? tm.get () : nullptr);
 	}
 
 	static void addArc (const SharedPointer<CGraphicsPath>& path, CScriptVar* var)
@@ -254,7 +427,8 @@ struct DrawContextObject::Impl
 		auto path = getGraphicsPath (var, "path"sv, signature);
 		auto modeVar = getOptionalArgument (var, "mode?");
 		auto mode = modeVar ? getPathDrawMode (modeVar) : CDrawContext::PathDrawMode::kPathFilled;
-		context->drawGraphicsPath (path, mode);
+		auto tm = getOptionalTransformMatrix (var, "transform?"sv, signature);
+		context->drawGraphicsPath (path, mode, tm ? tm.get () : nullptr);
 	}
 
 	void drawLine (CScriptVar* var) const

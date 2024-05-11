@@ -12,6 +12,8 @@
 namespace VSTGUI {
 namespace ScriptingInternal {
 
+TJS::CScriptVar* makeTransformMatrixObject ();
+
 //------------------------------------------------------------------------
 struct DrawContextObject : ScriptObject,
 						   TJS::IScriptVarLifeTimeObserver

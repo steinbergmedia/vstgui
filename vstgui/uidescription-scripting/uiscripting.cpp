@@ -200,6 +200,10 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 			});
 		jsContext->addNative ("function log(obj)",
 							  [this] (CScriptVar* var) { log (var->getParameter ("obj"sv)); });
+
+		jsContext->addNative ("function makeTransformMatrix()", [] (CScriptVar* var) {
+			var->setReturnVar (makeTransformMatrixObject ());
+		});
 	}
 
 	void reset (bool terminate = false)
