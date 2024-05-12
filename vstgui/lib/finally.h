@@ -18,7 +18,7 @@ public:
 	FinalAction (FinalAction&& other) noexcept
 	{
 		action = std::move (other.action);
-		other.invoke (false);
+		other.invoke = false;
 	}
 	FinalAction (const FinalAction&) = delete;
 	FinalAction& operator= (const FinalAction&) = delete;
