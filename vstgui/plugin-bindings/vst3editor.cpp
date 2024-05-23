@@ -1251,6 +1251,7 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 	if (!enableEditing (false))
 	{
 		getFrame ()->forget ();
+		frame = nullptr;
 		return false;
 	}
 
