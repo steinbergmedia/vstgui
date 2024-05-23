@@ -205,6 +205,7 @@ if(LINUX)
         PRIVATE
             ${VSTGUI_GENERATED_DIR}
     )
+    target_link_libraries(${target} PRIVATE vstgui)
 endif()
 ##########################################################################################
 find_package(EXPAT)
