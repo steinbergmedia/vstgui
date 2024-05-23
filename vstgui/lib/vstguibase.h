@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <utility>
 
 //-----------------------------------------------------------------------------
 // VSTGUI Version
