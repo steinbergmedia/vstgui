@@ -441,6 +441,7 @@ bool colorToString (const CColor& color, std::string& string, const IUIDescripti
 	return true;
 }
 
+//------------------------------------------------------------------------
 bool stringToColor (std::string_view value, CColor& color, const IUIDescription* desc)
 {
 	if (value == "")
@@ -448,7 +449,7 @@ bool stringToColor (std::string_view value, CColor& color, const IUIDescription*
 		color = kTransparentCColor;
 		return true;
 	}
-	if (desc->getColor (value.data (), color))
+	if (desc && desc->getColor (value.data (), color))
 		return true;
 	if (color.fromString (value.data ()))
 		return true;

@@ -6,6 +6,7 @@
 #include "converters.h"
 #include "../../lib/cdrawcontext.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/cgradient.h"
 #include "../../uidescription/uidescription.h"
 #include "../../uidescription/uiviewcreator.h"
 
@@ -17,42 +18,38 @@ using namespace std::literals;
 using namespace TJS;
 
 //------------------------------------------------------------------------
-static SharedPointer<CGraphicsPath> getGraphicsPath (CScriptVar* var, std::string_view varName,
-													 std::string_view signature)
+template<typename T>
+static T getFromVar (CScriptVar* var, const string& exceptionString)
 {
-	auto pathVar = getArgument (var, varName, signature);
-	auto customData = pathVar->getCustomData ();
+	auto customData = var->getCustomData ();
 	if (!customData.has_value ())
-		throw CScriptException ("Variable is not a graphics path");
+		throw CScriptException (exceptionString);
 	try
 	{
-		auto path = std::any_cast<SharedPointer<CGraphicsPath>> (customData);
-		return path;
+		auto result = std::any_cast<T> (customData);
+		return result;
 	}
 	catch (const std::bad_any_cast& e)
 	{
-		throw CScriptException ("Variable is not a graphics path");
+		throw CScriptException (exceptionString);
 	}
 	return {};
 }
 
 //------------------------------------------------------------------------
-static std::shared_ptr<CGraphicsTransform> extractTransformMatrix (CScriptVar* var,
-																   std::string_view signature)
+static SharedPointer<CGraphicsPath> getGraphicsPath (CScriptVar* var, std::string_view varName,
+													 std::string_view signature)
 {
-	auto customData = var->getCustomData ();
-	if (!customData.has_value ())
-		throw CScriptException ("Variable is not a transform matrix");
-	try
-	{
-		auto path = std::any_cast<std::shared_ptr<CGraphicsTransform>> (customData);
-		return path;
-	}
-	catch (const std::bad_any_cast& e)
-	{
-		throw CScriptException ("Variable is not a transform matrix");
-	}
-	return {};
+	auto pathVar = getArgument (var, varName, signature);
+	return getFromVar<SharedPointer<CGraphicsPath>> (pathVar, "Variable is not a graphics path");
+}
+
+//------------------------------------------------------------------------
+static SharedPointer<CGradient> getGradient (CScriptVar* var, std::string_view varName,
+											 std::string_view signature)
+{
+	auto gradientVar = getArgument (var, varName, signature);
+	return getFromVar<SharedPointer<CGradient>> (gradientVar, "Variable is not a gradient");
 }
 
 //------------------------------------------------------------------------
@@ -61,7 +58,8 @@ static std::shared_ptr<CGraphicsTransform> getTransformMatrix (CScriptVar* var,
 															   std::string_view signature)
 {
 	auto tmVar = getArgument (var, varName, signature);
-	return extractTransformMatrix (tmVar, signature);
+	return getFromVar<std::shared_ptr<CGraphicsTransform>> (tmVar,
+															"Variable is not a transform matrix");
 }
 
 //------------------------------------------------------------------------
@@ -70,7 +68,8 @@ static std::shared_ptr<CGraphicsTransform> getOptionalTransformMatrix (CScriptVa
 																	   std::string_view signature)
 {
 	if (auto tmVar = getOptionalArgument (var, varName))
-		return extractTransformMatrix (tmVar, signature);
+		return getFromVar<std::shared_ptr<CGraphicsTransform>> (
+			tmVar, "Variable is not a transform matrix");
 	return {};
 }
 
@@ -88,6 +87,15 @@ static CPoint getPoint (CScriptVar* var, std::string_view varName, std::string_v
 	auto pointVar = getArgument (var, varName, signature);
 	auto point = fromScriptPoint (*pointVar);
 	return point;
+}
+
+//------------------------------------------------------------------------
+static CPoint getOptionalPoint (CScriptVar* var, std::string_view varName,
+								std::string_view signature, CPoint defaultPoint = {})
+{
+	if (auto pointVar = getOptionalArgument (var, varName))
+		return fromScriptPoint (*pointVar);
+	return defaultPoint;
 }
 
 //------------------------------------------------------------------------
@@ -116,6 +124,42 @@ static int64_t getInt (CScriptVar* var, std::string_view varName, std::string_vi
 		throw CScriptException (s);
 	}
 	return intVar->getInt ();
+}
+
+//------------------------------------------------------------------------
+static int64_t getOptionalInt (CScriptVar* var, std::string_view varName,
+							   std::string_view signature, int64_t defaultInt = {})
+{
+	if (auto intVar = getOptionalArgument (var, varName))
+	{
+		if (!intVar->isNumeric ())
+		{
+			TJS::string s ("'");
+			s.append (varName);
+			s.append ("' must be numeric");
+			throw CScriptException (s);
+		}
+		return intVar->getInt ();
+	}
+	return defaultInt;
+}
+
+//------------------------------------------------------------------------
+static CColor getColor (CScriptVar* var, const IUIDescription* uiDesc, std::string_view varName,
+						std::string_view signature)
+{
+	auto colorVar = getArgument (var, varName, signature);
+	auto colorStr = colorVar->getString ();
+	CColor color {};
+	if (!UIViewCreator::stringToColor (colorStr, color, uiDesc))
+	{
+		string str ("'");
+		str += colorStr;
+		str += "' is not a color in a call to ";
+		str += signature;
+		throw CScriptException (str);
+	}
+	return color;
 }
 
 //------------------------------------------------------------------------
@@ -242,6 +286,17 @@ TJS::CScriptVar* makeTransformMatrixObject ()
 	TransformMatrixScriptObject obj;
 	return obj.take ();
 }
+
+//------------------------------------------------------------------------
+struct GradientScriptObject : ScriptObject
+{
+	GradientScriptObject (const SharedPointer<CGradient>& g)
+	{
+		scriptVar = new CScriptVar ("", SCRIPTVAR_OBJECT);
+		scriptVar->addRef ();
+		scriptVar->setCustomData (g);
+	}
+};
 
 //------------------------------------------------------------------------
 struct GraphicsPathScriptObject : ScriptObject
@@ -419,6 +474,22 @@ struct DrawContextObject::Impl
 		}
 	}
 
+	void createGradient (CScriptVar* var) const
+	{
+		static constexpr auto signature =
+			"drawContext.createGradient(startColorPosition, startColor, endColorPosition, endColor);"sv;
+		auto startColorPosition = getDouble (var, "startColorPosition", signature);
+		auto endColorPosition = getDouble (var, "endColorPosition", signature);
+		auto startColor = getColor (var, uiDesc, "startColor"sv, signature);
+		auto endColor = getColor (var, uiDesc, "endColor"sv, signature);
+		if (auto gradient = owned (
+				CGradient::create (startColorPosition, endColorPosition, startColor, endColor)))
+		{
+			GradientScriptObject obj (gradient);
+			var->setReturnVar (obj.getVar ());
+		}
+	}
+
 	void drawGraphicsPath (CScriptVar* var) const
 	{
 		static constexpr auto signature =
@@ -429,6 +500,36 @@ struct DrawContextObject::Impl
 		auto mode = modeVar ? getPathDrawMode (modeVar) : CDrawContext::PathDrawMode::kPathFilled;
 		auto tm = getOptionalTransformMatrix (var, "transform?"sv, signature);
 		context->drawGraphicsPath (path, mode, tm ? tm.get () : nullptr);
+	}
+
+	void fillLinearGradient (CScriptVar* var) const
+	{
+		static constexpr auto signature =
+			"drawContext.fillLinearGradient(path, gradient, startPoint, endPoint, evenOdd?, transform?);"sv;
+		checkContextOrThrow ();
+		auto path = getGraphicsPath (var, "path"sv, signature);
+		auto gradient = getGradient (var, "gradient"sv, signature);
+		auto startPoint = getPoint (var, "startPoint"sv, signature);
+		auto endPoint = getPoint (var, "endPoint"sv, signature);
+		auto tm = getOptionalTransformMatrix (var, "transform?"sv, signature);
+		auto evenOdd = getOptionalInt (var, "evenOdd?", signature);
+		context->fillLinearGradient (path, *gradient, startPoint, endPoint, evenOdd > 0, tm.get ());
+	}
+
+	void fillRadialGradient (CScriptVar* var) const
+	{
+		static constexpr auto signature =
+			"drawContext.fillRadialGradient(path, gradient, centerPoint, radius, originOffsetPoint?, evenOdd?, transform?);"sv;
+		checkContextOrThrow ();
+		auto path = getGraphicsPath (var, "path"sv, signature);
+		auto gradient = getGradient (var, "gradient"sv, signature);
+		auto centerPoint = getPoint (var, "centerPoint"sv, signature);
+		auto radius = getDouble (var, "radius"sv, signature);
+		auto originOffsetPoint = getOptionalPoint (var, "originOffsetPoint?"sv, signature);
+		auto evenOdd = getOptionalInt (var, "evenOdd?", signature);
+		auto tm = getOptionalTransformMatrix (var, "transform?"sv, signature);
+		context->fillRadialGradient (path, *gradient, centerPoint, radius, originOffsetPoint,
+									 evenOdd, tm.get ());
 	}
 
 	void drawLine (CScriptVar* var) const
@@ -564,20 +665,14 @@ struct DrawContextObject::Impl
 	{
 		static constexpr auto signature = "drawContext.setFillColor(color);"sv;
 		checkContextOrThrow ();
-		auto colorVar = getArgument (var, "color"sv, signature);
-		CColor color {};
-		UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
+		auto color = getColor (var, uiDesc, "color"sv, signature);
 		context->setFillColor (color);
 	}
 	void setFrameColor (CScriptVar* var) const
 	{
 		static constexpr auto signature = "drawContext.setFrameColor(color);"sv;
 		checkContextOrThrow ();
-		auto colorVar = getArgument (var, "color"sv, signature);
-		CColor color {};
-		if (!UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc))
-			throw CScriptException (
-				"Unknown `color` argument in drawContext.setFrameColor(color);");
+		auto color = getColor (var, uiDesc, "color"sv, signature);
 		context->setFrameColor (color);
 	}
 	void setLineWidth (CScriptVar* var) const
@@ -699,6 +794,8 @@ DrawContextObject::DrawContextObject ()
 	addFunc ("createRoundGraphicsPath"sv,
 			 [this] (auto var) { impl->createRoundGraphicsPath (var); }, {"rect"sv, "radius"sv});
 	addFunc ("createGraphicsPath"sv, [this] (auto var) { impl->createGraphicsPath (var); });
+	addFunc ("createGradient"sv, [this] (auto var) { impl->createGradient (var); },
+			 {"startColorPosition"sv, "startColor"sv, "endColorPosition"sv, "endColor"sv});
 	addFunc ("getStringWidth"sv, [this] (auto var) { impl->getStringWidth (var); }, {"string"sv});
 	addFunc ("drawArc"sv, [this] (auto var) { impl->drawArc (var); },
 			 {"rect"sv, "startAngle"sv, "endAngle"sv, "style"sv});
@@ -714,6 +811,11 @@ DrawContextObject::DrawContextObject ()
 	addFunc ("drawRect"sv, [this] (auto var) { impl->drawRect (var); }, {"rect"sv, "style"sv});
 	addFunc ("drawString"sv, [this] (auto var) { impl->drawString (var); },
 			 {"string"sv, "rect"sv, "align?"sv});
+	addFunc ("fillLinearGradient"sv, [this] (auto var) { impl->fillLinearGradient (var); },
+			 {"path"sv, "gradient"sv, "startPoint"sv, "endPoint"sv, "evenOdd?"sv, "transform?"sv});
+	addFunc ("fillRadialGradient"sv, [this] (auto var) { impl->fillRadialGradient (var); },
+			 {"path"sv, "gradient"sv, "centerPoint"sv, "radius"sv, "originOffsetPoint?"sv,
+			  "evenOdd?"sv, "transform?"sv});
 	addFunc ("restoreGlobalState"sv, [this] (auto var) { impl->restoreGlobalState (); });
 	addFunc ("saveGlobalState"sv, [this] (auto var) { impl->saveGlobalState (); });
 	addFunc ("setClipRect"sv, [this] (auto var) { impl->setClipRect (var); }, {"rect"sv});
