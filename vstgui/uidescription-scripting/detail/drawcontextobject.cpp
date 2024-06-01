@@ -290,11 +290,23 @@ TJS::CScriptVar* makeTransformMatrixObject ()
 //------------------------------------------------------------------------
 struct GradientScriptObject : ScriptObject
 {
-	GradientScriptObject (const SharedPointer<CGradient>& g)
+	GradientScriptObject (const SharedPointer<CGradient>& g, const IUIDescription* uiDesc)
 	{
 		scriptVar = new CScriptVar ("", SCRIPTVAR_OBJECT);
 		scriptVar->addRef ();
 		scriptVar->setCustomData (g);
+
+		addFunc ("addColorStop"sv, [g, uiDesc] (auto var) { addColorStop (g, uiDesc, var); },
+				 {"position"sv, "color"sv});
+	}
+
+	static void addColorStop (const SharedPointer<CGradient>& g, const IUIDescription* uiDesc,
+							  CScriptVar* var)
+	{
+		static constexpr auto signature = "gradient.addColorStop(position, color);"sv;
+		auto position = getDouble (var, "position"sv, signature);
+		auto color = getColor (var, uiDesc, "color"sv, signature);
+		g->addColorStop (position, color);
 	}
 };
 
@@ -485,7 +497,7 @@ struct DrawContextObject::Impl
 		if (auto gradient = owned (
 				CGradient::create (startColorPosition, endColorPosition, startColor, endColor)))
 		{
-			GradientScriptObject obj (gradient);
+			GradientScriptObject obj (gradient, uiDesc);
 			var->setReturnVar (obj.getVar ());
 		}
 	}
