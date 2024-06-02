@@ -52,6 +52,25 @@ and the listeners as described in [**Control listeners**](#control-listeners).
 
 If the view is a view container then it supports the additional listeners described in [**View container listeners**](#view-container-listeners).
 
+### The JavaScriptDrawableView
+
+You can add a `JavaScriptDrawableView` from the view types to your view hierarchy to create a view
+that you need to completely program via the script.
+Event handling is done via the previously mentioned listeners and drawing is done by implementing
+the draw function of the view:
+
+```js
+view.draw = function(drawContext, dirtyRect) {
+}
+```
+
+The [drawContext](#the-drawcontext-object) parameter is the object where you call its method to draw things into the view
+and the dirtyRect parameter contains the rectangle that needs to be drawn.
+
+### The JavaScriptDrawableControl
+
+TODO:
+
 ### The **uiDesc** variable
 
 The script also contains the uiDesc variable you can use to query information on the uiDesc file.
@@ -85,6 +104,7 @@ A property can either be an integer, floating point, string or undefined.
 |method  |setAttribute         |key:`string`,value:`string`   |`string`   |set the attribute value with name `key` to `value`  |
 |method  |getControllerProperty|name:`string`                 |`property` |set a controller property. returns true if succeeded|
 |method  |setControllerProperty|name:`string`,value:`property`|`property` |get a controller property. returns a property       |
+|method  |getBounds            |                              |`object`   |returns the bounds of the view as a rectangle       |
 
 For example to set the opacity attribute of a view write:
 
@@ -141,6 +161,57 @@ You can set any attribute as shown in the WYSIWYG editor.
 |-------------|----------------------------|
 |onViewAdded  |view:`object`,child:`object`|
 |onViewRemoved|view:`object`,child:`object`|
+
+### The drawcontext object
+
+|name                    |arguments                                                                                                                                   |return type|comments                                            |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-----------|----------------------------------------------------|
+|clearRect               | rect:`Rect`                                                                                                                                |`void`     |
+|createRoundGraphicsPath | rect:`Rect`,radius:`double`                                                                                                                |`Path`     |
+|createGraphicsPath      |                                                                                                                                            |`Path`     |
+|createGradient          | startColorPosition:`double`,startColor:`Color`,endColorPosition:`double`,endColor:`Color`                                                  |`Gradient` |
+|getStringWidth          | string:`string`                                                                                                                            |`double`   |
+|drawArc                 | rect:`Rect`,startAngle:`double`,endAngle:`double`,style:`string`                                                                           |`void`     |style can be `stroked`,`filled` or `filledAndStroked`
+|drawBitmap              | name:`string`,destRect:`Rect`,offsetPoint?:`Point`,alpha?:`double`                                                                         |`void`     |name is the bitmapname as declared in the uidesc file
+|drawEllipse             | rect:`Rect`,style:`string`                                                                                                                 |`void`     |style can be `stroked`,`filled` or `filledAndStroked`
+|drawGraphicsPath        | path:`Path`,mode?:`string`,transform?:`TransformMatrix`                                                                                    |`void`     |mode can be `stroked`, `filled` or `filledEvenOdd`
+|drawLine                | from:`Point`,to:`Point`                                                                                                                    |`void`     |
+|drawPolygon             | points:`PointArray`,style:`string`                                                                                                         |`void`     |style can be `stroked`,`filled` or `filledAndStroked`
+|drawRect                | rect:`Rect`,style:`string`                                                                                                                 |`void`     |style can be `stroked`,`filled` or `filledAndStroked`
+|drawString              | string:`string`,rect:`Rect`,align?:`string`                                                                                                |`void`     |align can be `left`, `center` or `right`
+|fillLinearGradient      | path:`Path`,gradient:`Gradient`,startPoint:`Point`,endPoint:`Point`,evenOdd?:`bool`,transform?:`TransformMatrix`                           |`void`     |
+|fillRadialGradient      | path:`Path`,gradient:`Gradient`,centerPoint:`Point`,radius:`double`,originOffsetPoint?:`Point`,evenOdd?:`bool`,transform?:`TransformMatrix`|`void`     |
+|restoreGlobalState      |                                                                                                                                            |`void`     |
+|saveGlobalState         |                                                                                                                                            |`void`     |
+|setClipRect             | rect:`Rect`                                                                                                                                |`void`     |
+|setFont                 | name:`string`                                                                                                                              |`void`     |name is the fontname as declared in the uidesc file
+|setFontColor            | color:`Color`                                                                                                                              |`void`     |
+|setFillColor            | color:`Color`                                                                                                                              |`void`     |
+|setFrameColor           | color:`Color`                                                                                                                              |`void`     |
+|setGlobalAlpha          | alpha:`double`                                                                                                                             |`void`     |
+|setLineWidth            | width:`double`                                                                                                                             |`void`     |
+|setLineStyle            | styleOrLineCap:`string`,lineJoin?:`string`,dashLengths?:`doubleArray`,dashPhase?:`double`                                                  |`void`     |
+|setDrawMode             | mode:`string`                                                                                                                              |`void`     |
+
+The `setLineStyle` method takes either one argument: the `style which can be `solid` or `dotted`. Or it can take 4 arguments:
+	* lineCap [required] : `butt`, `round` or `square`
+	* lineJoin [opt]     : `miter, `round` or `bevel`
+	* dashLength [opt]   : `doubleArray`
+	* dashPhase [opt]    : `double`
+
+The `Rect` object has 4 properties: `left`, `top`, `right` and `bottom`.
+
+The `Point` object has 2 properties: `x` and `y`.
+
+The `Color` object is either a CSS color name, a colorname as described in the uidesc file or an rgba value in hex form: `#FF00FFAA`.
+
+### The path object
+
+TODO:
+
+### The TransformMatrix object
+
+TODO:
 
 ### Global functions
 
