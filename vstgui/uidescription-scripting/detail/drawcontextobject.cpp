@@ -658,9 +658,9 @@ struct DrawContextObject::Impl
 	}
 	void setFont (CScriptVar* var) const
 	{
-		static constexpr auto signature = "drawContext.setFont(font);"sv;
+		static constexpr auto signature = "drawContext.setFont(name);"sv;
 		checkContextOrThrow ();
-		auto fontVar = getArgument (var, "font"sv, signature);
+		auto fontVar = getArgument (var, "name"sv, signature);
 		if (auto font = uiDesc->getFont (fontVar->getString ().data ()))
 			context->setFont (font);
 	}
@@ -802,7 +802,7 @@ DrawContextObject::DrawContextObject ()
 {
 	impl = std::make_unique<Impl> ();
 	scriptVar->setLifeTimeObserver (this);
-	addFunc ("clearRect"sv, [this] (auto var) { impl->clearRect (var); }, {"rect"sv, "style"sv});
+	addFunc ("clearRect"sv, [this] (auto var) { impl->clearRect (var); }, {"rect"sv});
 	addFunc ("createRoundGraphicsPath"sv,
 			 [this] (auto var) { impl->createRoundGraphicsPath (var); }, {"rect"sv, "radius"sv});
 	addFunc ("createGraphicsPath"sv, [this] (auto var) { impl->createGraphicsPath (var); });
@@ -831,7 +831,7 @@ DrawContextObject::DrawContextObject ()
 	addFunc ("restoreGlobalState"sv, [this] (auto var) { impl->restoreGlobalState (); });
 	addFunc ("saveGlobalState"sv, [this] (auto var) { impl->saveGlobalState (); });
 	addFunc ("setClipRect"sv, [this] (auto var) { impl->setClipRect (var); }, {"rect"sv});
-	addFunc ("setFont"sv, [this] (auto var) { impl->setFont (var); }, {"font"sv});
+	addFunc ("setFont"sv, [this] (auto var) { impl->setFont (var); }, {"name"sv});
 	addFunc ("setFontColor"sv, [this] (auto var) { impl->setFontColor (var); }, {"color"sv});
 	addFunc ("setFillColor"sv, [this] (auto var) { impl->setFillColor (var); }, {"color"sv});
 	addFunc ("setFrameColor"sv, [this] (auto var) { impl->setFrameColor (var); }, {"color"sv});
