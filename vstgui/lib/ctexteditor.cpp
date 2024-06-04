@@ -1714,6 +1714,8 @@ void TextEditorView::layout (StbTexteditRow* row, size_t start_i) const
 	*row = {};
 	if (static_cast<size_t> (start_i) >= md.model.text.size ())
 		return;
+	if (md.stbInternalIterator == md.model.lines.end ())
+		md.stbInternalIterator = md.model.lines.begin ();
 	if (start_i == md.stbInternalIterator->range.start)
 	{
 		row->num_chars = static_cast<int> (md.stbInternalIterator->range.length);
