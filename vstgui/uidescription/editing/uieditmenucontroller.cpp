@@ -30,6 +30,15 @@ UIEditMenuController::UIEditMenuController (IController* baseController, UISelec
 {
 }
 
+//------------------------------------------------------------------------
+UIEditMenuController::~UIEditMenuController () noexcept
+{
+	if (editMenu)
+		editMenu->unregisterViewListener (this);
+	if (fileMenu)
+		fileMenu->unregisterViewListener (this);
+}
+
 //----------------------------------------------------------------------------------------------------
 static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* menu, ICommandMenuItemTarget* menuItemTarget, int32_t& index)
 {
@@ -615,6 +624,21 @@ static void copyMenuItems (COptionMenu* src, COptionMenu* dst)
 	}
 }
 
+//------------------------------------------------------------------------
+void UIEditMenuController::viewRemoved (CView* view)
+{
+	if (view == editMenu)
+	{
+		view->unregisterViewListener (this);
+		editMenu = nullptr;
+	}
+	else if (view == fileMenu)
+	{
+		view->unregisterViewListener (this);
+		fileMenu = nullptr;
+	}
+}
+
 //----------------------------------------------------------------------------------------------------
 CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*)
 {
@@ -628,7 +652,10 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 				if (editMenu)
 					copyMenuItems (editMenu, menu);
 				else
+				{
 					createEditMenu (menu);
+					menu->registerViewListener (this);
+				}
 				editMenu = menu;
 				break;
 			}
@@ -637,7 +664,10 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 				if (fileMenu)
 					copyMenuItems (fileMenu, menu);
 				else
+				{
 					createFileMenu (menu);
+					menu->registerViewListener (this);
+				}
 				fileMenu = menu;
 				break;
 			}

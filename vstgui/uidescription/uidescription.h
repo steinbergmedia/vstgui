@@ -52,7 +52,8 @@ public:
 					   AttributeSaveFilterFunc func = nullptr);
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
-	bool storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData = nullptr) const;
+	bool storeViews (const std::list<CView*>& views, OutputStream& stream,
+					 SharedPointer<UIAttributes> customData = {}) const;
 	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = nullptr);
 
 	UTF8StringPtr getFilePath () const;

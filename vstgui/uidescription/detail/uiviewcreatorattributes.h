@@ -216,6 +216,7 @@ static const std::string kAttrSegmentNames = "segment-names";
 //-----------------------------------------------------------------------------
 static const std::string kAttrAngleStart = "angle-start";
 static const std::string kAttrAngleRange = "angle-range";
+static const std::string kAttrKnobRange = "knob-range";
 static const std::string kAttrValueInset = "value-inset";
 static const std::string kAttrCoronaInset = "corona-inset";
 static const std::string kAttrCoronaColor = "corona-color";

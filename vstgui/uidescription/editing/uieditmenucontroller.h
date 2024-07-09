@@ -13,6 +13,7 @@
 #include "../delegationcontroller.h"
 #include "../../lib/controls/icommandmenuitemtarget.h"
 #include "../../lib/events.h"
+#include "../../lib/iviewlistener.h"
 
 namespace VSTGUI {
 class IActionPerformer;
@@ -144,11 +145,14 @@ static const MenuEntry fileMenu[] = {
 } // UIEditing
 
 //----------------------------------------------------------------------------------------------------
-class UIEditMenuController : public CBaseObject, public DelegationController, public CommandMenuItemTargetAdapter
+class UIEditMenuController : public CBaseObject,
+							 public DelegationController,
+							 public CommandMenuItemTargetAdapter,
+							 public ViewListenerAdapter
 {
 public:
 	UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIEditMenuController () noexcept override = default;
+	~UIEditMenuController () noexcept override;
 
 	COptionMenu* getFileMenu () const { return fileMenu; }
 	COptionMenu* getEditMenu () const { return editMenu; }
@@ -170,6 +174,7 @@ protected:
 	void createEditMenu (COptionMenu* menu);
 	void createFileMenu (COptionMenu* menu);
 
+	void viewRemoved (CView* view) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override { return this; }
 	void controlBeginEdit (CControl* pControl) override;

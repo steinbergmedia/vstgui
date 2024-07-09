@@ -122,8 +122,9 @@ protected:
 	~CParamDisplay () noexcept override;
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr);
 
-	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string);
-	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string, const CRect& size);
+	virtual void drawPlatformText (CDrawContext* pContext, const UTF8String& string);
+	virtual void drawPlatformText (CDrawContext* pContext, const UTF8String& string,
+								   const CRect& size);
 
 	virtual void drawStyleChanged ();
 

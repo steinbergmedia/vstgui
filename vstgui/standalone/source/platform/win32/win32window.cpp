@@ -24,6 +24,21 @@
 #pragma comment(lib, "Dwmapi.lib")
 #pragma comment(lib, "Comctl32.lib")
 
+#if NTDDI_VERSION < 0x0A00000C
+
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#define DWMWA_SYSTEMBACKDROP_TYPE 38
+enum DWM_SYSTEMBACKDROP_TYPE
+{
+    DWMSBT_AUTO,             // [Default] Let DWM automatically decide the system-drawn backdrop for this window.
+    DWMSBT_NONE,             // Do not draw any system backdrop.
+    DWMSBT_MAINWINDOW,       // Draw the backdrop material effect corresponding to a long-lived window.
+    DWMSBT_TRANSIENTWINDOW,  // Draw the backdrop material effect corresponding to a transient window.
+    DWMSBT_TABBEDWINDOW,     // Draw the backdrop material effect corresponding to a window with a tabbed title bar.
+};
+
+#endif
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
@@ -117,6 +132,7 @@ private:
 	bool hasMenu {false};
 	WindowStyle style;
 	bool isPopup {false};
+	bool inWmDpiScaledSize {false};
 	std::function<LRESULT (HWND, UINT, WPARAM, LPARAM)> frameWindowProc;
 };
 
@@ -228,10 +244,15 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	delegate = &inDelegate;
 	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR)this);
 	if (style.hasBorder ())
+	{
 		hasMenu = true;
+		BOOL value = TRUE;
+		DwmSetWindowAttribute (hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof (value));
+	}
 	if (style.isTransparent ())
 		makeTransparent ();
 	dwStyle = GetWindowStyle (hwnd);
+
 	return true;
 }
 
@@ -459,6 +480,8 @@ void Window::makeTransparent ()
 	MARGINS margin = {-1};
 	auto res = DwmExtendFrameIntoClientArea (hwnd, &margin);
 	vstgui_assert (res == S_OK);
+	DWM_SYSTEMBACKDROP_TYPE type = DWMSBT_NONE;
+	res = DwmSetWindowAttribute (hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &type, sizeof (type));
 }
 
 //------------------------------------------------------------------------
@@ -643,10 +666,34 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				return res;
 			break;
 		}
+		case WM_GETDPISCALEDSIZE:
+		{
+			auto* proposedSize = reinterpret_cast<SIZE*> (lParam);
+			auto newScaleFactor =
+				static_cast<double> (wParam) / static_cast<double> (USER_DEFAULT_SCREEN_DPI);
+			auto clientSize = getSize ();
+			WINDOWINFO windowInfo {0};
+			GetWindowInfo (hwnd, &windowInfo);
+			RECT clientRect {};
+			clientRect.right = static_cast<LONG> (clientSize.x * newScaleFactor);
+			clientRect.bottom = static_cast<LONG> (clientSize.y * newScaleFactor);
+			HiDPISupport::instance ().adjustWindowRectExForDpi (&clientRect, windowInfo.dwStyle,
+																hasMenu, windowInfo.dwExStyle,
+																static_cast<UINT> (wParam));
+			proposedSize->cx = clientRect.right - clientRect.left;
+			proposedSize->cy = clientRect.bottom - clientRect.top;
+			return TRUE;
+		}
 		case WM_DPICHANGED:
 		{
+			inWmDpiScaledSize = true;
 			setNewDPI (static_cast<uint32_t> (LOWORD (wParam)));
-			break;
+			inWmDpiScaledSize = false;
+
+			auto* rect = reinterpret_cast<RECT*> (lParam);
+			SetWindowPos (hwnd, nullptr, rect->left, rect->top, rect->right - rect->left,
+						  rect->bottom - rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+			return 0;
 		}
 		case WM_PARENTNOTIFY:
 		{
@@ -841,15 +888,22 @@ void Window::setSize (const CPoint& newSize)
 		initialSize = newSize;
 		return;
 	}
+	if (inWmDpiScaledSize)
+	{
+		return;
+	}
+
 	RECT clientRect {};
 	clientRect.right = static_cast<LONG> (newSize.x * dpiScale);
 	clientRect.bottom = static_cast<LONG> (newSize.y * dpiScale);
-	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
+	HiDPISupport::instance ().adjustWindowRectExForDpi (
+		&clientRect, dwStyle, hasMenu, exStyle,
+		static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
 
 	LONG width = clientRect.right - clientRect.left;
 	LONG height = clientRect.bottom - clientRect.top;
-	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
-	              SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE);
+	SetWindowPos (hwnd, nullptr, 0, 0, width, height,
+				  SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE | SWP_NOZORDER);
 
 	if (style.isTransparent ())
 	{
@@ -864,12 +918,14 @@ void Window::setPosition (const CPoint& newPosition)
 	RECT clientRect {};
 	clientRect.right = 100;
 	clientRect.bottom = 100;
-	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
+	HiDPISupport::instance ().adjustWindowRectExForDpi (
+		&clientRect, dwStyle, hasMenu, exStyle,
+		static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
 
 	clientRect.left += static_cast<LONG> (newPosition.x);
 	clientRect.top += static_cast<LONG> (newPosition.y);
-	SetWindowPos (hwnd, HWND_TOP, clientRect.left, clientRect.top, 0, 0,
-	              SWP_NOSIZE | SWP_NOACTIVATE);
+	SetWindowPos (hwnd, nullptr, clientRect.left, clientRect.top, 0, 0,
+				  SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 //------------------------------------------------------------------------

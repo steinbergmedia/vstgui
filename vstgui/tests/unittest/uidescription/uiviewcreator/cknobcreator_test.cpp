@@ -31,6 +31,13 @@ TEST_CASE (CKnobCreatorTest, AngleRange)
 	});
 }
 
+TEST_CASE (CKnobCreatorTest, KnobRange)
+{
+	DummyUIDescription uidesc;
+	testAttribute<CKnob> (kCKnob, kAttrKnobRange, 200., &uidesc,
+						  [&] (CKnob* v) { return v->getKnobRange () == 200.; });
+}
+
 TEST_CASE (CKnobCreatorTest, ValueInset)
 {
 	DummyUIDescription uidesc;

@@ -384,6 +384,9 @@ bool Win32Frame::setMouseCursor (CCursorType type)
 		case kCursorHand:
 			cursor = LoadCursor (nullptr, IDC_HAND);
 			break;
+		case kCursorCrosshair:
+			cursor = LoadCursor (nullptr, IDC_CROSS);
+			break;
 		default:
 			cursor = LoadCursor (nullptr, IDC_ARROW);
 			break;
@@ -661,6 +664,7 @@ void Win32Frame::paint (HWND hwnd)
 						*static_cast<D2DGraphicsDevice*> (graphicsDevice.get ()), deviceContext,
 						tm);
 
+					drawDevice->clearRect (rect);
 					getFrame ()->platformDrawRects (drawDevice, 1., {1, rect});
 				});
 			});

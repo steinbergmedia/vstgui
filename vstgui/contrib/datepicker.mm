@@ -141,6 +141,9 @@ void DatePicker::setDate (Date date)
 	dateComponents.month = date.month;
 	dateComponents.year = date.year;
 	impl->view.dateValue = [calendar dateFromComponents:dateComponents];
+#if !__has_feature(objc_arc)
+	[dateComponents release];
+#endif
 }
 
 //------------------------------------------------------------------------

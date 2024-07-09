@@ -13,9 +13,9 @@
 
 namespace VSTGUI {
 #if TARGET_OS_IPHONE
-static const float kCKnobRange = 300.f;
+static const float kCKnobRangeDefault = 300.f;
 #else
-static const float kCKnobRange = 200.f;
+static const float kCKnobRangeDefault = 200.f;
 #endif
 
 static constexpr CViewAttributeID kCKnobMouseStateAttribute = 'knms';
@@ -40,6 +40,7 @@ CKnobBase::CKnobBase (const CRect& size, IControlListener* listener, int32_t tag
 	setStartAngle ((float)(3.f * Constants::quarter_pi));
 	setRangeAngle ((float)(3.f * Constants::half_pi));
 	zoomFactor = 1.5f;
+	knobRange = kCKnobRangeDefault;
 }
 
 //------------------------------------------------------------------------
@@ -112,7 +113,7 @@ CMouseEventResult CKnobBase::onMouseDown (CPoint& where, const CButtonState& but
 
 	mouseState.modeLinear = false;
 	mouseState.entryState = value;
-	mouseState.range = kCKnobRange;
+	mouseState.range = knobRange;
 	mouseState.coef = (getMax () - getMin ()) / mouseState.range;
 	mouseState.oldButton = buttons;
 
@@ -193,7 +194,7 @@ CMouseEventResult CKnobBase::onMouseMoved (CPoint& where, const CButtonState& bu
 				CCoord diff = (mouseState.firstPoint.y - where.y) + (where.x - mouseState.firstPoint.x);
 				if (buttons != mouseState.oldButton)
 				{
-					mouseState.range = kCKnobRange;
+					mouseState.range = knobRange;
 					if (buttons & kZoomModifier)
 						mouseState.range *= zoomFactor;
 

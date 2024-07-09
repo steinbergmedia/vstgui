@@ -222,6 +222,7 @@ public:
 Delegate::Delegate ()
 : Application::DelegateAdapter ({"VSTGUI Standalone", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 {
+	CFrame::kDefaultKnobMode = CKnobMode::kLinearMode;
 }
 
 //------------------------------------------------------------------------
