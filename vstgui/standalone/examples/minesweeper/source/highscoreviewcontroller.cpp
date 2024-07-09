@@ -24,7 +24,7 @@ HighScoreViewController::HighScoreViewController (IController* parent)
 	columnWidths[1] = 0.14;
 	columnWidths[2] = 0.5;
 	columnWidths[3] = 0.3;
-	font = *kSystemFont;
+	font = kSystemFont;
 }
 
 //------------------------------------------------------------------------
@@ -103,8 +103,8 @@ int32_t HighScoreViewController::dbGetNumColumns (CDataBrowser* browser)
 CCoord HighScoreViewController::dbGetRowHeight (CDataBrowser* browser)
 {
 	auto height = browser->getHeight () / (HighScoreListModel::Size + 1) - 1;
-	if (font.getSize () != height * 0.6)
-		font.setSize (height * 0.6);
+	if (font->getSize () != height * 0.6)
+		font->setSize (height * 0.6);
 	return height;
 }
 
@@ -129,7 +129,7 @@ bool HighScoreViewController::dbGetLineWidthAndColor (CCoord& width, CColor& col
 void HighScoreViewController::dbDrawHeader (CDrawContext* context, const CRect& size,
                                             int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	context->setFont (&font);
+	context->setFont (font);
 	context->setFontColor (fontColor);
 	UTF8String text;
 	switch (column)
@@ -157,7 +157,7 @@ void HighScoreViewController::dbDrawCell (CDrawContext* context, const CRect& si
 	if (entry == list->get ().end ())
 		return;
 	bool valid = entry->valid ();
-	context->setFont (&font);
+	context->setFont (font);
 	context->setFontColor (fontColor);
 	UTF8String text = "-";
 	CHoriTxtAlign align = kCenterText;
@@ -210,7 +210,7 @@ CView* HighScoreViewController::createView (const UIAttributes& attributes,
 	if (attr && *attr == "DataBrowser")
 	{
 		if (auto f = description->getFont ("highscore"))
-			font = *f;
+			font = f;
 		description->getColor ("highscore.font", fontColor);
 		return new CDataBrowser ({}, this, CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines,
 		                         0.);

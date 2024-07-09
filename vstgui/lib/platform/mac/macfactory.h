@@ -16,6 +16,7 @@ class MacFactory final : public IPlatformFactory
 {
 public:
 	MacFactory (CFBundleRef bundle);
+	~MacFactory () noexcept override;
 
 	CFBundleRef getBundle () const noexcept;
 

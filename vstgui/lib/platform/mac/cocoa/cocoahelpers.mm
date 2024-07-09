@@ -137,7 +137,7 @@ HIDDEN NSString* GetVirtualKeyCodeString (VirtualKey virtualKey)
 	unichar character = 0;
 	switch (virtualKey)
 	{
-		case VirtualKey::Back: character = NSDeleteCharacter; break;
+		case VirtualKey::Back: character = NSBackspaceCharacter; break;
 		case VirtualKey::Tab: character = NSTabCharacter; break;
 		case VirtualKey::Clear: character = NSClearLineFunctionKey; break;
 		case VirtualKey::Return: character = NSCarriageReturnCharacter; break;

@@ -75,7 +75,8 @@
 					"opacity": "1",
 					"origin": "0, 0",
 					"size": "340, 40",
-					"transparent": "true"
+					"transparent": "true",
+					"wants-focus": "false"
 				},
 				"children": {
 					"CGradientView": {
@@ -88,22 +89,21 @@
 							"gradient-angle": "0",
 							"gradient-style": "linear",
 							"mouse-enabled": "false",
-							"opacity": "1",
+							"opacity": "0.9",
 							"origin": "0, 0",
 							"radial-center": "0.5, 0.5",
 							"radial-radius": "0.8",
-							"round-rect-radius": "0",
+							"round-rect-radius": "2",
 							"size": "340, 40",
-							"transparent": "false"
+							"transparent": "false",
+							"wants-focus": "false"
 						}
 					},
 					"CSlider": {
 						"attributes": {
-							"background-offset": "0, 0",
 							"bitmap-offset": "0, 0",
 							"class": "CSlider",
 							"control-tag": "Test",
-							"default-value": "0.5",
 							"draw-back": "true",
 							"draw-back-color": "~ WhiteCColor",
 							"draw-frame": "true",
@@ -112,18 +112,16 @@
 							"draw-value-color": "~ RedCColor",
 							"draw-value-from-center": "false",
 							"draw-value-inverted": "false",
+							"frame-width": "1",
 							"handle-offset": "0, 0",
-							"max-value": "1",
-							"min-value": "0",
 							"mode": "free click",
-							"mouse-enabled": "true",
 							"opacity": "1",
 							"orientation": "horizontal",
 							"origin": "10, 10",
 							"reverse-orientation": "false",
 							"size": "220, 20",
 							"transparent": "false",
-							"transparent-handle": "true",
+							"wants-focus": "true",
 							"wheel-inc-value": "0.1",
 							"zoom-factor": "10"
 						}
@@ -134,19 +132,16 @@
 							"background-offset": "0, 0",
 							"class": "CTextEdit",
 							"control-tag": "Test",
-							"default-value": "0.5",
 							"font": "~ NormalFont",
 							"font-antialias": "true",
 							"font-color": "~ WhiteCColor",
 							"frame-color": "~ BlackCColor",
 							"frame-width": "1",
 							"immediate-text-change": "false",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
 							"opacity": "1",
 							"origin": "240, 10",
 							"round-rect-radius": "6",
+							"secure-style": "false",
 							"shadow-color": "~ RedCColor",
 							"size": "90, 20",
 							"style-3D-in": "false",
@@ -161,9 +156,9 @@
 							"text-inset": "0, 0",
 							"text-rotation": "0",
 							"text-shadow-offset": "1, 1",
-							"title": "0.287546",
 							"transparent": "false",
 							"value-precision": "2",
+							"wants-focus": "true",
 							"wheel-inc-value": "0.1"
 						}
 					}

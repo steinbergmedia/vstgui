@@ -26,6 +26,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 - add crosshair mouse cursor (kCursorCrosshair)
 - customizable knob range (see CKnob::setKnobRange)
+- new layouts for CRowColumnView
 
 @subsection version4_13 Version 4.13
 

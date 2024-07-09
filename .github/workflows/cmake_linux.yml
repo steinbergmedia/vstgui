@@ -11,7 +11,7 @@ jobs:
         os: [ubuntu-20.04, ubuntu-22.04]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - run: sudo apt-get update
     - run: sudo apt-get install libx11-dev libx11-xcb-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libfontconfig1-dev libcairo2-dev libfreetype6-dev libpango1.0-dev

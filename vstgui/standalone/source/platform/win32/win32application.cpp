@@ -90,11 +90,6 @@ private:
 //------------------------------------------------------------------------
 void Application::init (HINSTANCE instance, LPWSTR commandLine)
 {
-	auto& hidpiSupport = HiDPISupport::instance ();
-	if (!hidpiSupport.setProcessDpiAwarnessContext (
-	        HiDPISupport::AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
-		hidpiSupport.setProcessDpiAwareness (HiDPISupport::PROCESS_PER_MONITOR_DPI_AWARE);
-
 	WCHAR path[MAX_PATH];
 	if (SUCCEEDED (GetModuleFileNameW (static_cast<HMODULE> (instance), path, MAX_PATH)))
 	{
@@ -324,6 +319,11 @@ int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
 	HRESULT hr = OleInitialize (nullptr);
 	if (FAILED (hr))
 		return FALSE;
+
+	auto& hidpiSupport = VSTGUI::HiDPISupport::instance ();
+	if (!hidpiSupport.setProcessDpiAwarnessContext (
+			VSTGUI::HiDPISupport::AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+		hidpiSupport.setProcessDpiAwareness (VSTGUI::HiDPISupport::PROCESS_PER_MONITOR_DPI_AWARE);
 
 	VSTGUI::init (instance);
 	VSTGUI::getPlatformFactory ().asWin32Factory ()->useD2DHardwareRenderer (true);

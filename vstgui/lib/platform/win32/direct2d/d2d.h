@@ -74,6 +74,25 @@ inline TransformMatrix convert (const D2D1_MATRIX_3X2_F& t)
 }
 
 //------------------------------------------------------------------------
+inline D2D1_BITMAP_INTERPOLATION_MODE convert (BitmapInterpolationQuality quality)
+{
+	D2D1_BITMAP_INTERPOLATION_MODE mode;
+	switch (quality)
+	{
+		case BitmapInterpolationQuality::kLow:
+			mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+			break;
+
+		case BitmapInterpolationQuality::kMedium:
+		case BitmapInterpolationQuality::kHigh:
+		default:
+			mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
+			break;
+	}
+	return mode;
+}
+
+//------------------------------------------------------------------------
 } // anonymous namespace
 
 //------------------------------------------------------------------------

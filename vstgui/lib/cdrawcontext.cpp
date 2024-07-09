@@ -742,7 +742,7 @@ bool CDrawContext::drawLinearGradientLine (const DrawLinearGradientLineCallback&
 CGraphicsPath* CDrawContext::createGraphicsPath ()
 {
 	if (impl->device)
-		return new CGraphicsPath (impl->device->getGraphicsPathFactory ());
+		return new CGraphicsPath (impl->device->getGraphicsPathFactory (), nullptr);
 	return nullptr;
 }
 

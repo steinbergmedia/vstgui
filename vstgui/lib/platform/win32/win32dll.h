@@ -123,6 +123,14 @@ struct HiDPISupport : DllBase
 		return false;
 	}
 
+	bool adjustWindowRectExForDpi (LPRECT lpRect, DWORD dwStyle, BOOL bMenu, DWORD dwExStyle,
+								   UINT dpi) const
+	{
+		if (!adjustWindowRectExForDpiProc)
+			return false;
+		return adjustWindowRectExForDpiProc (lpRect, dwStyle, bMenu, dwExStyle, dpi);
+	}
+
 private:
 	using GetDpiForWindowFunc = UINT (WINAPI*) (HWND hWnd);
 	using GetDpiForMonitorFunc = HRESULT (WINAPI*) (_In_ HMONITOR hmonitor,
@@ -132,12 +140,15 @@ private:
 	using SetProcessDpiAwarnessFunc = HRESULT (WINAPI*) (_In_ PROCESS_DPI_AWARENESS value);
 	using EnableNonClientDpiScalingFunc = BOOL (WINAPI*) (_In_ HWND hwnd);
 	using SetProcessDpiAwarenessContextFunc = BOOL (WINAPI*) (_In_ DPI_AWARENESS_CONTEXT value);
+	using AdjustWindowRectExForDpiProc = BOOL (WINAPI*) (LPRECT, DWORD, BOOL, DWORD, UINT);
 
 	GetDpiForWindowFunc getDPIForWindowFunc {nullptr};
 	GetDpiForMonitorFunc getDpiForMonitorFunc {nullptr};
 	SetProcessDpiAwarnessFunc setProcessDpiAwarenessFunc {nullptr};
 	EnableNonClientDpiScalingFunc enableNonClientDpiScalingFunc {nullptr};
 	SetProcessDpiAwarenessContextFunc setProcessDpiAwarenessContextFunc {nullptr};
+	AdjustWindowRectExForDpiProc adjustWindowRectExForDpiProc {nullptr};
+
 	DllBase shCore {"Shcore.dll"};
 
 	HiDPISupport () : DllBase ("User32.dll")
@@ -149,6 +160,8 @@ private:
 		setProcessDpiAwarenessFunc =
 		    shCore.getProcAddress<SetProcessDpiAwarnessFunc> ("SetProcessDpiAwareness");
 		setProcessDpiAwarenessContextFunc = getProcAddress<SetProcessDpiAwarenessContextFunc> ("SetProcessDpiAwarenessContext");
+		adjustWindowRectExForDpiProc =
+			getProcAddress<AdjustWindowRectExForDpiProc> ("AdjustWindowRectExForDpi");
 	}
 };
 
