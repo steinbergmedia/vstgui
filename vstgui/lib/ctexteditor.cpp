@@ -1691,21 +1691,9 @@ int32_t TextEditorView::insertChars (size_t pos, const CharT* chars, size_t num)
 template<typename T>
 T TextEditorView::findLine (T begin, T end, size_t pos) const
 {
-	auto dist = std::distance (begin, end);
-	auto halfdist = dist / 2;
-	auto it = begin;
-	std::advance (it, halfdist);
-	if (it->range.start <= pos)
-	{
-		if (it->range.end () > pos)
-			return it;
-		if (halfdist == 0)
-			return it;
-		return findLine (it, end, pos);
-	}
-	if (halfdist == 0)
-		return begin;
-	return findLine (begin, it, pos);
+	return std::lower_bound (begin, end, pos, [] (const auto& line, const auto& value) {
+		return line.range.end () < value;
+	});
 }
 
 //------------------------------------------------------------------------
