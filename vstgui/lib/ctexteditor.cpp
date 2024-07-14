@@ -1691,9 +1691,9 @@ int32_t TextEditorView::insertChars (size_t pos, const CharT* chars, size_t num)
 template<typename T>
 T TextEditorView::findLine (T begin, T end, size_t pos) const
 {
-	return std::upper_bound (
-		begin, end, Line {.range = {pos, 0}},
-		[&] (const auto& a, const auto& b) { return a.range.end () < b.range.end (); });
+	return std::upper_bound (begin, end, Line {{pos, 0}}, [&] (const auto& a, const auto& b) {
+		return a.range.end () < b.range.end ();
+	});
 }
 
 //------------------------------------------------------------------------
