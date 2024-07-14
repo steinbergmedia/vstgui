@@ -884,7 +884,11 @@ void CScriptVarLink::replaceWith (CScriptVarLink* newVar)
 	if (newVar)
 		replaceWith (newVar->var);
 	else
-		replaceWith (new CScriptVar ());
+	{
+		auto v = new CScriptVar ();
+		replaceWith (v);
+		v->release ();
+	}
 }
 
 int CScriptVarLink::getIntName () const { return atoi (name.c_str ()); }
