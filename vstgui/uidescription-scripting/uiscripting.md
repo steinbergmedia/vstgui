@@ -207,7 +207,19 @@ The `Color` object is either a CSS color name, a colorname as described in the u
 
 ### The path object
 
-TODO:
+The path object can be created via the drawcontext object methods `createGraphicsPath` and `createRoundGraphicsPath`.
+
+|name            |arguments                                                         |return|
+|----------------|------------------------------------------------------------------|------|
+|addEllipse      |rect:`Rect`                                                       |`void`|
+|addArc          |rect:`Rect`,startAngle:`double`,endAngle:`double`,clockwise:`bool`|`void`|
+|addBezierCurve  |control1:`Point`,control2:`Point`,end:`Point`                     |`void`|
+|addLine         |to:`Point`                                                        |`void`|
+|addPath         |path:`Path`,transformMatrix?:`TransformMatrix`                    |`void`|
+|addRect         |rect:`Rect`                                                       |`void`|
+|addRoundRect    |rect:`Rect`,radius:`double`                                       |`void`|
+|closeSubpath    |                                                                  |`void`|
+|beginSubpath    |start:`Point`                                                     |`void`|
 
 ### The TransformMatrix object
 
