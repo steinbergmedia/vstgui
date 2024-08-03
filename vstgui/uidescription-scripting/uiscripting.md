@@ -56,6 +56,7 @@ If the view is a view container then it supports the additional listeners descri
 
 You can add a `JavaScriptDrawableView` from the view types to your view hierarchy to create a view
 that you need to completely program via the script.
+
 Event handling is done via the previously mentioned listeners and drawing is done by implementing
 the draw function of the view:
 
@@ -81,19 +82,19 @@ In addition to the `JavaScriptDrawableView` you can also use the
 The script also contains the uiDesc variable you can use to query information on the uiDesc file.
 The following methods are implemented on that object:
 
-|type    |name           |arguments    |return type    |comments                                      |
-|--------|---------------|-------------|---------------|----------------------------------------------|
-|method  |colorNames     |             |`array<string>`|get all color names from the UIDesc file      |
-|method  |fontNames      |             |`array<string>`|get all font names from the UIDesc file       |
-|method  |bitmapNames    |             |`array<string>`|get all bitmap names from the UIDesc file     |
-|method  |gradientNames  |             |`array<string>`|get all gradient names from the UIDesc file   |
-|method  |controlTagNames|             |`array<string>`|get all control tag names from the UIDesc file|
-|method  |getTagForName  |name:`string`|`integer`      |get the tag for the control tag name          |
-|method  |lookupTagName  |tag:`integer`|`string`       |get the control tag name from the tag         |
+|name           |arguments    |return type    |comments                                      |
+|---------------|-------------|---------------|----------------------------------------------|
+|colorNames     |             |`array<string>`|get all color names from the UIDesc file      |
+|fontNames      |             |`array<string>`|get all font names from the UIDesc file       |
+|bitmapNames    |             |`array<string>`|get all bitmap names from the UIDesc file     |
+|gradientNames  |             |`array<string>`|get all gradient names from the UIDesc file   |
+|controlTagNames|             |`array<string>`|get all control tag names from the UIDesc file|
+|getTagForName  |name:`string`|`integer`      |get the tag for the control tag name          |
+|lookupTagName  |tag:`integer`|`string`       |get the control tag name from the tag         |
 
 ### Interacting with c++ code
 
-To interact with the c++ code extend the `IController` with `IScriptControllerExtension`
+To interact with the c++ code set a subcontroller on the view or its parents and extend the `IController` with `IScriptControllerExtension`
 and implement its methods. From the script you can call the view methods `getControllerProperty` or `setControllerProperty`.
 
 A property can either be an integer, floating point, string or undefined.
@@ -212,19 +213,19 @@ The `Color` object is either a CSS color name, a colorname as described in the u
 
 ### The path object
 
-The path object can be created via the drawcontext object methods `createGraphicsPath` and `createRoundGraphicsPath`.
+The path object can be created via the drawcontext object methods `createGraphicsPath` and `createRoundGraphicsPath` and has these methods:
 
-|name            |arguments                                                         |return|
-|----------------|------------------------------------------------------------------|------|
-|addEllipse      |rect:`Rect`                                                       |`void`|
-|addArc          |rect:`Rect`,startAngle:`double`,endAngle:`double`,clockwise:`bool`|`void`|
-|addBezierCurve  |control1:`Point`,control2:`Point`,end:`Point`                     |`void`|
-|addLine         |to:`Point`                                                        |`void`|
-|addPath         |path:`Path`,transformMatrix?:`TransformMatrix`                    |`void`|
-|addRect         |rect:`Rect`                                                       |`void`|
-|addRoundRect    |rect:`Rect`,radius:`double`                                       |`void`|
-|closeSubpath    |                                                                  |`void`|
-|beginSubpath    |start:`Point`                                                     |`void`|
+|name            |arguments                                                         |
+|----------------|------------------------------------------------------------------|
+|addEllipse      |rect:`Rect`                                                       |
+|addArc          |rect:`Rect`,startAngle:`double`,endAngle:`double`,clockwise:`bool`|
+|addBezierCurve  |control1:`Point`,control2:`Point`,end:`Point`                     |
+|addLine         |to:`Point`                                                        |
+|addPath         |path:`Path`,transformMatrix?:`TransformMatrix`                    |
+|addRect         |rect:`Rect`                                                       |
+|addRoundRect    |rect:`Rect`,radius:`double`                                       |
+|closeSubpath    |                                                                  |
+|beginSubpath    |start:`Point`                                                     |
 
 ### The TransformMatrix object
 
@@ -256,6 +257,8 @@ A transform matrix object is created via the global `makeTransformMatrix ()` fun
 	- calls the callback with context as parameter for every child view of view
 - `log(obj) -> Void`
 	- logs the object to the debug console
+- `makeTransformMatrix() -> TransformMatrix`
+	- see [TransformMatrix](#the-transformmatrix-object)
 
 ### Other built in functions (from the TinyJS library)
 
