@@ -332,6 +332,7 @@ private:
 	void selectPair (size_t startPos, char16_t closingChar) const;
 	void updateSelectionOnDoubleClickMove (uint32_t clickCount) const;
 	void insertNewLine () const;
+	/** will return the last line if pos not found instead of end */
 	template<typename T>
 	T findLine (T begin, T end, size_t pos) const;
 	CRect calculateCursorRect (int cursor) const;
@@ -1474,8 +1475,7 @@ void TextEditorView::insertNewLine () const
 {
 	auto cursor = md.editState.cursor;
 	auto currentLine = findLine (md.model.lines.begin (), md.model.lines.end (), cursor);
-	if (currentLine == md.model.lines.end ())
-		return;
+	vstgui_assert (currentLine != md.model.lines.end ());
 	std::u16string insertStr = u"\n";
 	auto isWhiteSpace = [] (char16_t character) {
 		return character == u'\t' || character == u' ';
@@ -1561,8 +1561,7 @@ void TextEditorView::invalidateSingleLine (Lines::iterator& line, int32_t numCha
 void TextEditorView::invalidateLines (size_t pos, int32_t numChars) const
 {
 	auto line = findLine (md.model.lines.begin (), md.model.lines.end (), pos);
-	if (line == md.model.lines.end ())
-		return;
+	vstgui_assert (line != md.model.lines.end ());
 	bool numLinesChanged = false;
 	if (numChars > 0)
 	{
@@ -1691,9 +1690,14 @@ int32_t TextEditorView::insertChars (size_t pos, const CharT* chars, size_t num)
 template<typename T>
 T TextEditorView::findLine (T begin, T end, size_t pos) const
 {
-	return std::upper_bound (begin, end, Line {{pos, 0}}, [&] (const auto& a, const auto& b) {
-		return a.range.end () < b.range.end ();
-	});
+	vstgui_assert (begin != end);
+	auto result =
+		std::upper_bound (begin, end, Line {{pos, 0}}, [&] (const auto& a, const auto& b) {
+			return a.range.end () < b.range.end ();
+		});
+	if (result == end)
+		--result;
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -1717,8 +1721,7 @@ void TextEditorView::layout (StbTexteditRow* row, size_t start_i) const
 	}
 	md.stbInternalIterator = md.model.lines.begin ();
 	auto line = findLine (md.model.lines.begin (), md.model.lines.end (), start_i);
-	if (line == md.model.lines.end ())
-		return;
+	vstgui_assert (line != md.model.lines.end ());
 	row->num_chars = static_cast<int> (line->range.length);
 	row->baseline_y_delta = static_cast<float> (md.lineHeight);
 	row->ymin = static_cast<float> (-md.fontDescent);
@@ -1774,15 +1777,12 @@ void TextEditorView::onSelectionChanged (Range newSel, bool forceInvalidation) c
 {
 	Range newSelectedLines = {};
 	auto line = findLine (md.model.lines.begin (), md.model.lines.end (), newSel.start);
-	if (line != md.model.lines.end ())
+	vstgui_assert (line != md.model.lines.end ());
+	newSelectedLines.start = std::distance (md.model.lines.begin (), line);
+	if (newSel.length > 0)
 	{
-		newSelectedLines.start = std::distance (md.model.lines.begin (), line);
-		if (newSel.length > 0)
-		{
-			auto endLine =
-				++(findLine (md.model.lines.begin (), md.model.lines.end (), newSel.end ()));
-			newSelectedLines.length = std::distance (line, endLine);
-		}
+		auto endLine = ++(findLine (md.model.lines.begin (), md.model.lines.end (), newSel.end ()));
+		newSelectedLines.length = std::distance (line, endLine);
 	}
 	if (forceInvalidation || newSelectedLines != md.selectedLines)
 	{
@@ -1866,13 +1866,11 @@ void TextEditorView::selectOnDoubleClick (uint32_t clickCount) const
 	{
 		auto currentLine =
 			findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.cursor);
-		if (currentLine != md.model.lines.end ())
-		{
-			md.editState.select_start = static_cast<int> (currentLine->range.start);
-			md.editState.select_end = static_cast<int> (currentLine->range.end ());
-			onSelectionChanged (makeRange (md.editState), true);
-			md.editStateOnMouseDown = md.editState;
-		}
+		vstgui_assert (currentLine != md.model.lines.end ());
+		md.editState.select_start = static_cast<int> (currentLine->range.start);
+		md.editState.select_end = static_cast<int> (currentLine->range.end ());
+		onSelectionChanged (makeRange (md.editState), true);
+		md.editStateOnMouseDown = md.editState;
 		return;
 	}
 
@@ -1952,21 +1950,18 @@ void TextEditorView::updateSelectionOnDoubleClickMove (uint32_t clickCount) cons
 	if (clickCount > 2)
 	{
 		auto currentLine = findLine (md.model.lines.begin (), md.model.lines.end (), cursor);
-		if (currentLine != md.model.lines.end ())
+		vstgui_assert (currentLine != md.model.lines.end ());
+		if (currentLine->range.start >= static_cast<size_t> (md.editStateOnMouseDown.select_start))
 		{
-			if (currentLine->range.start >=
-				static_cast<size_t> (md.editStateOnMouseDown.select_start))
-			{
-				md.editState.select_start = md.editStateOnMouseDown.select_start;
-				md.editState.select_end = static_cast<int> (currentLine->range.end ());
-			}
-			else
-			{
-				md.editState.select_start = static_cast<int> (currentLine->range.start);
-				md.editState.select_end = md.editStateOnMouseDown.select_end;
-			}
-			onSelectionChanged (makeRange (md.editState), true);
+			md.editState.select_start = md.editStateOnMouseDown.select_start;
+			md.editState.select_end = static_cast<int> (currentLine->range.end ());
 		}
+		else
+		{
+			md.editState.select_start = static_cast<int> (currentLine->range.start);
+			md.editState.select_end = md.editStateOnMouseDown.select_end;
+		}
+		onSelectionChanged (makeRange (md.editState), true);
 		return;
 	}
 
@@ -2094,13 +2089,11 @@ bool TextEditorView::doShifting (bool right) const
 		md.editState.select_start = md.editState.select_end = md.editState.cursor;
 	auto lineStart =
 		findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.select_start);
-	if (lineStart == md.model.lines.end ())
-		return false;
+	vstgui_assert (lineStart != md.model.lines.end ());
 	auto lineEnd = !hasSelection
 					   ? lineStart
 					   : findLine (lineStart, md.model.lines.end (), md.editState.select_end - 1);
-	if (lineEnd == md.model.lines.end ())
-		return false;
+	vstgui_assert (lineEnd != md.model.lines.end ());
 	++lineEnd;
 	auto originCursor = md.editState.cursor;
 	auto originSelectStart = md.editState.select_start;
