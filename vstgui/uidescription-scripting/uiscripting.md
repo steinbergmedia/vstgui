@@ -223,7 +223,18 @@ The path object can be created via the drawcontext object methods `createGraphic
 
 ### The TransformMatrix object
 
-TODO:
+A transform matrix object is created via the global `makeTransformMatrix ()` function and has these methods:
+
+|name          |arguments                        |return type      |
+|--------------|---------------------------------|-----------------|
+|concat        |transformMatrix:`TransformMatrix`|`void`           |
+|inverse       |                                 |`TransformMatrix`|
+|rotate        |angle:`double`, center?:`Point`  |`void`           |
+|scale         |x:`double`, y:`double`           |`void`           |
+|skewX         |angle:`double`                   |`void`           |
+|skewY         |angle:`double`                   |`void`           |
+|translate     |x:`double`, y:`double`           |`void`           |
+|transform     |pointOrRect:`Point` or `Rect`    |`Point` or `Rect`|
 
 ### Global functions
 
