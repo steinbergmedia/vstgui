@@ -69,7 +69,12 @@ and the dirtyRect parameter contains the rectangle that needs to be drawn.
 
 ### The JavaScriptDrawableControl
 
-TODO:
+You can add a `JavaScriptDrawableControl` from the view types to your view hierarchy to create a
+control that you need to completely program via the script.
+
+In addition to the `JavaScriptDrawableView` you can also use the 
+[**Control methods and properties**](#control-methods-and-properties) and 
+[**Control listeners**](#control-listeners) on this view.
 
 ### The **uiDesc** variable
 
