@@ -176,8 +176,8 @@ struct TransformMatrixScriptObject : ScriptObject
 		addFunc ("inverse"sv, [tm] (auto var) { inverse (tm, var); });
 		addFunc ("rotate"sv, [tm] (auto var) { rotate (tm, var); }, {"angle"sv, "center?"sv});
 		addFunc ("scale"sv, [tm] (auto var) { scale (tm, var); }, {"x"sv, "y"sv});
-		addFunc ("skewX"sv, [tm] (auto var) { skewX (tm, var); }, {"skewX"sv});
-		addFunc ("skewY"sv, [tm] (auto var) { skewY (tm, var); }, {"skewY"sv});
+		addFunc ("skewX"sv, [tm] (auto var) { skewX (tm, var); }, {"angle"sv});
+		addFunc ("skewY"sv, [tm] (auto var) { skewY (tm, var); }, {"angle"sv});
 		addFunc ("translate"sv, [tm] (auto var) { translate (tm, var); }, {"x"sv, "y"sv});
 		addFunc ("transform"sv, [tm] (auto var) { transform (tm, var); }, {"pointOrRect"sv});
 	}
