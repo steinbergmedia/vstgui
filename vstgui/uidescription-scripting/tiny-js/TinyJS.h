@@ -430,6 +430,8 @@ private:
 	IScriptVarLifeTimeObserver* lifeTimeObserver {nullptr};
 };
 
+inline CScriptVar* owning (CScriptVar* v) { return v->addRef (); }
+
 class CTinyJS
 {
 public:

@@ -15,7 +15,7 @@ namespace VSTGUI {
 namespace ScriptingInternal {
 
 //------------------------------------------------------------------------
-inline TJS::CScriptVar* makeScriptRect (const CRect& rect)
+inline ScriptObject makeScriptRect (const CRect& rect)
 {
 	using namespace std::literals;
 	ScriptObject obj (new TJS::CScriptVar ());
@@ -23,7 +23,7 @@ inline TJS::CScriptVar* makeScriptRect (const CRect& rect)
 	obj.addChild ("top"sv, rect.top);
 	obj.addChild ("right"sv, rect.right);
 	obj.addChild ("bottom"sv, rect.bottom);
-	return obj.take ();
+	return obj;
 }
 
 //------------------------------------------------------------------------

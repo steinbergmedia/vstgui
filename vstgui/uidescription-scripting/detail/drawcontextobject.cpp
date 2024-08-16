@@ -170,7 +170,6 @@ struct TransformMatrixScriptObject : ScriptObject
 	TransformMatrixScriptObject (TransformMatrixPtr tm = std::make_shared<CGraphicsTransform> ())
 	: ScriptObject (new CScriptVar ("", SCRIPTVAR_OBJECT))
 	{
-		scriptVar->addRef ();
 		scriptVar->setCustomData (tm);
 		addFunc ("concat"sv, [tm] (auto var) { concat (tm, var); }, {"transformMatrix"sv});
 		addFunc ("inverse"sv, [tm] (auto var) { inverse (tm, var); });
@@ -293,7 +292,6 @@ struct GradientScriptObject : ScriptObject
 	GradientScriptObject (const SharedPointer<CGradient>& g, const IUIDescription* uiDesc)
 	: ScriptObject (new CScriptVar ("", SCRIPTVAR_OBJECT))
 	{
-		scriptVar->addRef ();
 		scriptVar->setCustomData (g);
 
 		addFunc ("addColorStop"sv, [g, uiDesc] (auto var) { addColorStop (g, uiDesc, var); },
@@ -316,7 +314,6 @@ struct GraphicsPathScriptObject : ScriptObject
 	GraphicsPathScriptObject (const SharedPointer<CGraphicsPath>& p)
 	: ScriptObject (new CScriptVar ("", SCRIPTVAR_OBJECT))
 	{
-		scriptVar->addRef ();
 		scriptVar->setCustomData (p);
 
 		addFunc ("addEllipse"sv, [p] (auto var) { addEllipse (p, var); }, {"rect"sv});

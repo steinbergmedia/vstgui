@@ -20,8 +20,7 @@ struct ScriptAddChildScoped
 	{
 		if ((link = var.findChild (name)))
 		{
-			oldVar = link->getVar ();
-			oldVar->addRef ();
+			oldVar = TJS::owning (link->getVar ());
 			link->setVar (obj);
 		}
 		else
@@ -97,12 +96,8 @@ struct ScriptObject
 {
 	using CScriptVar = TJS::CScriptVar;
 
-	ScriptObject ()
-	{
-		scriptVar = new CScriptVar ();
-		scriptVar->addRef ();
-	}
-	ScriptObject (CScriptVar* var) : scriptVar (var) {}
+	ScriptObject () { scriptVar = TJS::owning (new CScriptVar ()); }
+	ScriptObject (CScriptVar* var) : scriptVar (TJS::owning (var)) {}
 	ScriptObject (ScriptObject&& o) { *this = std::move (o); }
 	ScriptObject& operator= (ScriptObject&& o)
 	{

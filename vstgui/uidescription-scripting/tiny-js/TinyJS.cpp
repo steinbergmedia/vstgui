@@ -846,7 +846,7 @@ string CScriptLex::getPosition (size_t pos) const
 // CSCRIPTVARLINK
 
 CScriptVarLink::CScriptVarLink (CScriptVar* inVar, const string& inName, bool own)
-: name (inName), var (inVar->addRef ()), isOwned (own)
+: name (inName), var (owning (inVar)), isOwned (own)
 {
 #if DEBUG_MEMORY
 	mark_allocated (this);
@@ -854,7 +854,7 @@ CScriptVarLink::CScriptVarLink (CScriptVar* inVar, const string& inName, bool ow
 }
 
 CScriptVarLink::CScriptVarLink (const CScriptVarLink& link)
-: name (link.name), var (link.var->addRef ())
+: name (link.name), var (owning (link.var))
 {
 #if DEBUG_MEMORY
 	mark_allocated (this);
@@ -875,7 +875,7 @@ void CScriptVarLink::operator delete (void* ptr, std::size_t size) { deallocator
 void CScriptVarLink::replaceWith (CScriptVar* newVar)
 {
 	CScriptVar* oldVar = var;
-	var = newVar->addRef ();
+	var = owning (newVar);
 	oldVar->release ();
 }
 
@@ -885,7 +885,7 @@ void CScriptVarLink::replaceWith (CScriptVarLink* newVar)
 		replaceWith (newVar->var);
 	else
 	{
-		auto v = new CScriptVar ();
+		auto v = owning (new CScriptVar ());
 		replaceWith (v);
 		v->release ();
 	}
@@ -1646,11 +1646,11 @@ int CScriptVar::getRefs () { return refs; }
 
 CTinyJS::CTinyJS ()
 {
-	root = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->addRef ();
+	root = owning (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT));
 	// Add built-in classes
-	stringClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->addRef ();
-	arrayClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->addRef ();
-	objectClass = (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT))->addRef ();
+	stringClass = owning (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT));
+	arrayClass = owning (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT));
+	objectClass = owning (new CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT));
 	root->addChild ("String", stringClass);
 	root->addChild ("Array", arrayClass);
 	root->addChild ("Object", objectClass);

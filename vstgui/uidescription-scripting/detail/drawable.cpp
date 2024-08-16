@@ -51,7 +51,7 @@ void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const
 	auto scriptRoot = scriptContext->getRoot ();
 	ScriptAddChildScoped scs (*scriptRoot, "view", scriptObject->getVar ());
 	ScriptAddChildScoped scs2 (*scriptRoot, "context", drawContext.getVar ());
-	ScriptAddChildScoped scs3 (*scriptRoot, "rect", rectVar);
+	ScriptAddChildScoped scs3 (*scriptRoot, "rect", rectVar.getVar ());
 	scriptContext->evalScript ("view.draw(context, rect);"sv);
 
 	drawContext.setDrawContext (nullptr, nullptr);

@@ -61,7 +61,7 @@ struct TimerScriptObject : CScriptVar
 {
 	template<typename Proc>
 	TimerScriptObject (uint64_t fireTime, CScriptVar* _callback, Proc timerProc)
-	: CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT), callback (_callback->addRef ())
+	: CScriptVar (TINYJS_BLANK_DATA, SCRIPTVAR_OBJECT), callback (owning (_callback))
 	{
 		timer = makeOwned<CVSTGUITimer> (
 			[timerProc, this] (auto) {
@@ -151,8 +151,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 						return evalScript (callback, "timerCallback (timerContext); ",
 										   "timerCallback");
 					});
-				timerObj->addRef ();
-				var->setReturnVar (timerObj);
+				var->setReturnVar (owning (timerObj));
 				timerObj->release ();
 			});
 		jsContext->addNative (
