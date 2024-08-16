@@ -139,6 +139,8 @@ You can set any attribute as shown in the WYSIWYG editor.
 |onKeyDown     |view:`object`,event:`object` |
 |onKeyUp       |view:`object`,event:`object` |
 
+TODO: Describe Event object
+
 ### Control methods and properties
 
 |type    |name                 |arguments     |return type|comments                                            |
