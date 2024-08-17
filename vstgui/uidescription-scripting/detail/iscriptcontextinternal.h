@@ -11,6 +11,8 @@
 namespace VSTGUI {
 namespace ScriptingInternal {
 
+static const std::string kAttrScript = "script";
+
 //------------------------------------------------------------------------
 struct IScriptContextInternal : public IScriptContext
 {
