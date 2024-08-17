@@ -498,6 +498,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	void showView ()
 	{
+		frame->removeAll ();
 		updateMinMaxSizes ();
 		auto view = uiDesc->createView (templateName, this);
 		if (!view)
@@ -679,6 +680,7 @@ struct WindowController::EditImpl : WindowController::Impl
 	: Impl (controller, modelBinding, customization)
 	{
 		IApplication::instance ().registerCommand (Commands::Debug::ToggleInlineUIEditor, 'E');
+		IApplication::instance ().registerCommand (Commands::Debug::RecreateView, 0);
 		if (IApplication::instance ().getDelegate ().getSharedUIResourceFilename ())
 			IApplication::instance ().registerCommand (Commands::Debug::ResaveSharedResources, 0);
 	}
@@ -721,6 +723,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		showView ();
 
 		window->setContentView (frame);
+
 		return true;
 	}
 
@@ -900,9 +903,10 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	bool canHandleCommand (const Command& command) override
 	{
-		if (command == Commands::Debug::ToggleInlineUIEditor)
+		using namespace Commands;
+		if (command == Debug::ToggleInlineUIEditor || command == Debug::RecreateView)
 			return frame->getModalView () == nullptr;
-		if (command == Commands::Debug::ResaveSharedResources)
+		if (command == Debug::ResaveSharedResources)
 			return true;
 		else if (uiEditController && uiEditController->getMenuController ()->canHandleCommand (
 		                                 command.group, command.name))
@@ -912,12 +916,18 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	bool handleCommand (const Command& command) override
 	{
-		if (command == Commands::Debug::ToggleInlineUIEditor)
+		using namespace Commands;
+		if (command == Debug::ToggleInlineUIEditor)
 		{
 			enableEditing (!isEditing);
 			return true;
 		}
-		else if (command == Commands::Debug::ResaveSharedResources)
+		else if (command == Debug::RecreateView)
+		{
+			showView ();
+			return true;
+		}
+		else if (command == Debug::ResaveSharedResources)
 		{
 			Detail::saveSharedUIDescription ();
 			return true;

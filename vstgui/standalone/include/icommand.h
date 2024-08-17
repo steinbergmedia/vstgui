@@ -96,6 +96,7 @@ static constexpr IdStringPtr FindPrevious = "Find Previous";
 static constexpr IdStringPtr MenuSeparator = "~";
 
 static constexpr IdStringPtr ToggleInlineUIEditor = "Toggle Inline UI-Editor";
+static constexpr IdStringPtr RecreateView = "Recreate View";
 static constexpr IdStringPtr ResaveSharedResources = "Resave Shared Resources";
 
 } // CommandName
@@ -133,6 +134,7 @@ static const Command FindPrevious {CommandGroup::Edit, CommandName::FindPrevious
 namespace Debug {
 
 static const Command ToggleInlineUIEditor {CommandGroup::Debug, CommandName::ToggleInlineUIEditor};
+static const Command RecreateView {CommandGroup::Debug, CommandName::RecreateView};
 static const Command ResaveSharedResources {CommandGroup::Debug,
 											CommandName::ResaveSharedResources};
 
