@@ -18,11 +18,13 @@ namespace ScriptingInternal {
 inline ScriptObject makeScriptRect (const CRect& rect)
 {
 	using namespace std::literals;
-	ScriptObject obj (new TJS::CScriptVar ());
+	ScriptObject obj;
 	obj.addChild ("left"sv, rect.left);
 	obj.addChild ("top"sv, rect.top);
 	obj.addChild ("right"sv, rect.right);
 	obj.addChild ("bottom"sv, rect.bottom);
+	obj.addFunc ("getWidth"sv, "{ return this.right - this.left; }"sv);
+	obj.addFunc ("getHeight"sv, "{ return this.bottom - this.top; }"sv);
 	return obj;
 }
 

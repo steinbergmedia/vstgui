@@ -153,6 +153,13 @@ struct ScriptObject
 		scriptVar->addChild (name, createJSFunction (std::move (func), argNames));
 	}
 
+	void addFunc (std::string_view name, std::string_view code)
+	{
+		auto funcVar = new TJS::CScriptVar (TJS::TINYJS_BLANK_DATA, TJS::SCRIPTVAR_FUNCTION);
+		funcVar->setFunctionScript (code);
+		scriptVar->addChild (name, funcVar);
+	}
+
 protected:
 	CScriptVar* scriptVar {nullptr};
 };
