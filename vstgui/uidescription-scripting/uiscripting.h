@@ -55,6 +55,8 @@ private:
 //------------------------------------------------------------------------
 struct IScriptContext
 {
+	virtual ~IScriptContext () = default;
+
 	/** evaluate custom code in the script context
 	 *
 	 *	@param script the script to execute

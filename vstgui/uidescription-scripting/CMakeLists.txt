@@ -12,6 +12,7 @@ set(SCRIPTING_SOURCES
     detail/drawcontextobject.h
     detail/drawable.cpp
     detail/drawable.h
+    detail/iscriptcontextinternal.h
     detail/viewscriptobject.cpp
     detail/viewscriptobject.h
     uiscripting.cpp

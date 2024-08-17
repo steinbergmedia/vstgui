@@ -8,6 +8,7 @@
 #include "detail/uidescscriptobject.h"
 #include "detail/drawcontextobject.h"
 #include "detail/drawable.h"
+#include "detail/iscriptcontextinternal.h"
 #include "../uidescription/uiattributes.h"
 #include "../uidescription/uiviewfactory.h"
 #include "../uidescription/uidescriptionaddonregistry.h"
@@ -36,7 +37,7 @@ static const std::string kAttrScript = "script";
 struct ViewScriptObject;
 
 //------------------------------------------------------------------------
-class ScriptContext : public IScriptContext
+class ScriptContext : public IScriptContextInternal
 {
 public:
 	using OnScriptException = std::function<void (std::string_view reason)>;
@@ -45,7 +46,7 @@ public:
 	~ScriptContext () noexcept;
 
 	void init (const std::string& initScript);
-	void onViewCreated (CView* view, const std::string& script);
+	void onViewCreated (CView* view, const std::string& script) override;
 
 	void reset ();
 
@@ -673,7 +674,8 @@ struct JavaScriptViewFactory : ViewFactoryDelegate,
 	using ViewControllerLink = std::pair<CView*, IScriptControllerExtension*>;
 	using ViewControllerLinkVector = std::vector<ViewControllerLink>;
 
-	JavaScriptViewFactory (ScriptingInternal::ScriptContext* scripting, IViewFactory* origFactory)
+	JavaScriptViewFactory (ScriptingInternal::IScriptContextInternal* scripting,
+						   IViewFactory* origFactory)
 	: Super (origFactory), scriptContext (scripting)
 	{
 	}
@@ -783,7 +785,7 @@ private:
 		view->unregisterViewListener (this);
 	}
 
-	ScriptingInternal::ScriptContext* scriptContext;
+	ScriptingInternal::IScriptContextInternal* scriptContext;
 	mutable ViewControllerLinkVector viewControllerLinks;
 	bool disabled {false};
 };
