@@ -80,10 +80,14 @@ inline ScriptObject makeScriptEvent (const Event& event)
 	if (auto modifierEvent = asModifierEvent (event))
 	{
 		ScriptObject mod;
-		mod.addChild ("shift"sv, modifierEvent->modifiers.has (ModifierKey::Shift));
-		mod.addChild ("alt"sv, modifierEvent->modifiers.has (ModifierKey::Alt));
-		mod.addChild ("control"sv, modifierEvent->modifiers.has (ModifierKey::Control));
-		mod.addChild ("super"sv, modifierEvent->modifiers.has (ModifierKey::Super));
+		if (modifierEvent->modifiers.has (ModifierKey::Shift))
+			mod.addChild ("shift"sv, true);
+		if (modifierEvent->modifiers.has (ModifierKey::Alt))
+			mod.addChild ("alt"sv, true);
+		if (modifierEvent->modifiers.has (ModifierKey::Control))
+			mod.addChild ("control"sv, true);
+		if (modifierEvent->modifiers.has (ModifierKey::Super))
+			mod.addChild ("super"sv, true);
 		obj.addChild ("modifiers"sv, std::move (mod));
 	}
 	if (auto mouseEvent = asMousePositionEvent (event))
@@ -93,9 +97,12 @@ inline ScriptObject makeScriptEvent (const Event& event)
 	if (auto mouseEvent = asMouseEvent (event))
 	{
 		ScriptObject buttons;
-		buttons.addChild ("left"sv, mouseEvent->buttonState.has (MouseButton::Left));
-		buttons.addChild ("right"sv, mouseEvent->buttonState.has (MouseButton::Right));
-		buttons.addChild ("middle"sv, mouseEvent->buttonState.has (MouseButton::Middle));
+		if (mouseEvent->buttonState.has (MouseButton::Left))
+			buttons.addChild ("left"sv, true);
+		if (mouseEvent->buttonState.has (MouseButton::Right))
+			buttons.addChild ("right"sv, true);
+		if (mouseEvent->buttonState.has (MouseButton::Middle))
+			buttons.addChild ("middle"sv, true);
 		obj.addChild ("mouseButtons"sv, std::move (buttons));
 	}
 	if (event.type == EventType::MouseWheel)
@@ -104,11 +111,10 @@ inline ScriptObject makeScriptEvent (const Event& event)
 		ScriptObject wheel;
 		wheel.addChild ("deltaX"sv, wheelEvent.deltaX);
 		wheel.addChild ("deltaY"sv, wheelEvent.deltaY);
-		wheel.addChild (
-			"directionInvertedFromDevice"sv,
-			wheelEvent.flags & MouseWheelEvent::Flags::DirectionInvertedFromDevice ? true : false);
-		wheel.addChild ("preciceDelta"sv,
-						wheelEvent.flags & MouseWheelEvent::Flags::PreciseDeltas ? true : false);
+		if (wheelEvent.flags & MouseWheelEvent::Flags::DirectionInvertedFromDevice)
+			wheel.addChild ("directionInvertedFromDevice"sv, true);
+		if (wheelEvent.flags & MouseWheelEvent::Flags::PreciseDeltas)
+			wheel.addChild ("preciceDelta"sv, true);
 		obj.addChild ("mouseWheel"sv, std::move (wheel));
 	}
 	if (auto keyEvent = asKeyboardEvent (event))
@@ -117,6 +123,7 @@ inline ScriptObject makeScriptEvent (const Event& event)
 		key.addChild ("character"sv, static_cast<int> (keyEvent->character));
 		key.addChild ("virtual"sv, static_cast<int> (keyEvent->virt));
 		key.addChild ("isRepeat"sv, keyEvent->isRepeat);
+		obj.addChild ("key"sv, std::move (key));
 	}
 	obj.addChild ("consume"sv, 0);
 	return obj;
