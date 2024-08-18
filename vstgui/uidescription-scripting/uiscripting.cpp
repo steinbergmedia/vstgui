@@ -391,53 +391,72 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 
 	void viewOnEvent (CView* view, Event& event) override
 	{
+		auto applyEventMouseLocalPosition = [&] (auto proc) {
+			auto& mouseEvent = castMousePositionEvent (event);
+			auto oldPos = mouseEvent.mousePosition;
+			mouseEvent.mousePosition -= view->getViewSize ().getTopLeft ();
+			proc ();
+			mouseEvent.mousePosition = oldPos;
+		};
 		switch (event.type)
 		{
 			case EventType::MouseEnter:
 			{
-				callWhenScriptHasFunction (view, "onMouseEnter"sv, [&] (auto This, auto& obj) {
-					static constexpr auto script = R"(view.onMouseEnter(view, event);)"sv;
-					callEventFunction (obj->getVar (), event, script);
+				applyEventMouseLocalPosition ([&] () {
+					callWhenScriptHasFunction (view, "onMouseEnter"sv, [&] (auto This, auto& obj) {
+						static constexpr auto script = R"(view.onMouseEnter(view, event);)"sv;
+						callEventFunction (obj->getVar (), event, script);
+					});
 				});
 				break;
 			}
 			case EventType::MouseExit:
 			{
-				callWhenScriptHasFunction (view, "onMouseExit"sv, [&] (auto This, auto& obj) {
-					static constexpr auto script = R"(view.onMouseExit(view, event);)"sv;
-					callEventFunction (obj->getVar (), event, script);
+				applyEventMouseLocalPosition ([&] () {
+					callWhenScriptHasFunction (view, "onMouseExit"sv, [&] (auto This, auto& obj) {
+						static constexpr auto script = R"(view.onMouseExit(view, event);)"sv;
+						callEventFunction (obj->getVar (), event, script);
+					});
 				});
 				break;
 			}
 			case EventType::MouseDown:
 			{
-				callWhenScriptHasFunction (view, "onMouseDown"sv, [&] (auto This, auto& obj) {
-					static constexpr auto script = R"(view.onMouseDown(view, event);)"sv;
-					callEventFunction (obj->getVar (), event, script);
+				applyEventMouseLocalPosition ([&] () {
+					callWhenScriptHasFunction (view, "onMouseDown"sv, [&] (auto This, auto& obj) {
+						static constexpr auto script = R"(view.onMouseDown(view, event);)"sv;
+						callEventFunction (obj->getVar (), event, script);
+					});
 				});
 				break;
 			}
 			case EventType::MouseUp:
 			{
-				callWhenScriptHasFunction (view, "onMouseUp"sv, [&] (auto This, auto& obj) {
-					static constexpr auto script = R"(view.onMouseUp(view, event);)"sv;
-					callEventFunction (obj->getVar (), event, script);
+				applyEventMouseLocalPosition ([&] () {
+					callWhenScriptHasFunction (view, "onMouseUp"sv, [&] (auto This, auto& obj) {
+						static constexpr auto script = R"(view.onMouseUp(view, event);)"sv;
+						callEventFunction (obj->getVar (), event, script);
+					});
 				});
 				break;
 			}
 			case EventType::MouseMove:
 			{
-				callWhenScriptHasFunction (view, "onMouseMove"sv, [&] (auto This, auto& obj) {
-					static constexpr auto script = R"(view.onMouseMove(view, event);)"sv;
-					callEventFunction (obj->getVar (), event, script);
+				applyEventMouseLocalPosition ([&] () {
+					callWhenScriptHasFunction (view, "onMouseMove"sv, [&] (auto This, auto& obj) {
+						static constexpr auto script = R"(view.onMouseMove(view, event);)"sv;
+						callEventFunction (obj->getVar (), event, script);
+					});
 				});
 				break;
 			}
 			case EventType::MouseWheel:
 			{
-				callWhenScriptHasFunction (view, "onMouseWheel"sv, [&] (auto This, auto& obj) {
-					static constexpr auto script = R"(view.onMouseWheel(view, event);)"sv;
-					callEventFunction (obj->getVar (), event, script);
+				applyEventMouseLocalPosition ([&] () {
+					callWhenScriptHasFunction (view, "onMouseWheel"sv, [&] (auto This, auto& obj) {
+						static constexpr auto script = R"(view.onMouseWheel(view, event);)"sv;
+						callEventFunction (obj->getVar (), event, script);
+					});
 				});
 				break;
 			}
