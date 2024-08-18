@@ -58,7 +58,12 @@
 			"Black Alpha 140": "#0000008c",
 			"Focus": "#3bafffff",
 			"Hover": "#00000014",
-			"TextShadow": "#0000002f"
+			"TextShadow": "#0000002f",
+			"control.back": "#cfcfcfff",
+			"control.frame": "#000000ff",
+			"control.line": "#202020ff",
+			"control.value": "#0075d9ff",
+			"control.valueframe": "#010000ff"
 		},
 		"gradients": {
 			"About Background": [
