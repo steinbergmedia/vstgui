@@ -115,53 +115,102 @@ struct ScriptObject
 		}
 	}
 
-	CScriptVar* getVar () const { return scriptVar; }
+	operator CScriptVar* () const
+	{
+		validate ();
+		return scriptVar;
+	}
+	CScriptVar* operator->() const
+	{
+		validate ();
+		return scriptVar;
+	}
+
+	CScriptVar* getVar () const
+	{
+		validate ();
+		return scriptVar;
+	}
 	CScriptVar* take ()
 	{
 		auto v = scriptVar;
 		scriptVar = nullptr;
 		return v;
 	}
-
 	void addChild (std::string_view name, ScriptObject&& obj)
 	{
-		scriptVar->addChild (name, obj.getVar ());
+		validate ();
+		scriptVar->addChild (name, obj);
 	}
 	void addChild (std::string_view name, double d)
 	{
+		validate ();
 		scriptVar->addChild (name, new CScriptVar (d));
 	}
 	void addChild (std::string_view name, int64_t i)
 	{
+		validate ();
 		scriptVar->addChild (name, new CScriptVar (i));
 	}
 	void addChild (std::string_view name, int32_t i)
 	{
+		validate ();
 		scriptVar->addChild (name, new CScriptVar (static_cast<int64_t> (i)));
 	}
 	void addChild (std::string_view name, std::string_view value)
 	{
+		validate ();
 		scriptVar->addChild (name, new CScriptVar (TJS::string {value.data (), value.size ()}));
 	}
 	void addFunc (std::string_view name, std::function<void (CScriptVar*)>&& func)
 	{
+		validate ();
 		scriptVar->addChild (name, createJSFunction (std::move (func)));
 	}
 	void addFunc (std::string_view name, std::function<void (CScriptVar*)>&& func,
 				  const std::initializer_list<std::string_view>& argNames)
 	{
+		validate ();
 		scriptVar->addChild (name, createJSFunction (std::move (func), argNames));
 	}
-
 	void addFunc (std::string_view name, std::string_view code)
 	{
+		validate ();
 		auto funcVar = new TJS::CScriptVar (TJS::TINYJS_BLANK_DATA, TJS::SCRIPTVAR_FUNCTION);
 		funcVar->setFunctionScript (code);
 		scriptVar->addChild (name, funcVar);
 	}
 
+	using OnDestroyFunc = std::function<void (CScriptVar*)>;
+	void setOnDestroy (OnDestroyFunc&& f)
+	{
+		validate ();
+		scriptVar->setLifeTimeObserver (OnDestroy::make (std::move (f)));
+	}
+
 protected:
-	CScriptVar* scriptVar {nullptr};
+	struct OnDestroy : TJS::IScriptVarLifeTimeObserver
+	{
+		static OnDestroy* make (OnDestroyFunc f) { return new OnDestroy (std::move (f)); }
+
+	private:
+		OnDestroy (OnDestroyFunc f) : func (std::move (f)) {}
+
+		void onDestroy (CScriptVar* var)
+		{
+			func (var);
+			delete this;
+		}
+		OnDestroyFunc func;
+	};
+
+	void validate () const
+	{
+		if (scriptVar == nullptr)
+			scriptVar = TJS::owning (new CScriptVar ());
+	}
+
+	mutable CScriptVar* scriptVar {nullptr};
 };
 
 //------------------------------------------------------------------------

@@ -73,7 +73,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 	addFunc ("getBounds"sv, [view] (CScriptVar* var) {
 		auto bounds = view->getViewSize ();
 		bounds.originize ();
-		var->setReturnVar (makeScriptRect (bounds).getVar ());
+		var->setReturnVar (makeScriptRect (bounds));
 	});
 	addFunc ("getParent"sv, [view, context] (CScriptVar* var) {
 		auto parentView = view->getParentView ();

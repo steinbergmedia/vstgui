@@ -468,7 +468,7 @@ struct DrawContextObject::Impl
 		if (auto path = owned (context->createRoundRectGraphicsPath (rect, radius)))
 		{
 			GraphicsPathScriptObject obj (path);
-			var->setReturnVar (obj.getVar ());
+			var->setReturnVar (obj);
 		}
 	}
 
@@ -479,7 +479,7 @@ struct DrawContextObject::Impl
 		if (auto path = owned (context->createGraphicsPath ()))
 		{
 			GraphicsPathScriptObject obj (path);
-			var->setReturnVar (obj.getVar ());
+			var->setReturnVar (obj);
 		}
 	}
 
@@ -495,7 +495,7 @@ struct DrawContextObject::Impl
 				CGradient::create (startColorPosition, endColorPosition, startColor, endColor)))
 		{
 			GradientScriptObject obj (gradient, uiDesc);
-			var->setReturnVar (obj.getVar ());
+			var->setReturnVar (obj);
 		}
 	}
 
