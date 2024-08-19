@@ -1265,6 +1265,15 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		key |= STB_TEXTEDIT_K_SHIFT;
 	if (callSTB ([&] () { stb_textedit_key (this, &md.editState, key); }))
 		event.consumed = true;
+	if (!event.consumed)
+	{
+		if (event.virt == VirtualKey::Up || event.virt == VirtualKey::Down ||
+			event.virt == VirtualKey::PageUp || event.virt == VirtualKey::PageDown ||
+			event.virt == VirtualKey::Left || event.virt == VirtualKey::Right)
+		{
+			event.consumed = true;
+		}
+	}
 }
 
 //------------------------------------------------------------------------
