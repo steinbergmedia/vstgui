@@ -721,13 +721,13 @@ auto UIScripting::onCreateTemplateView (const IUIDescription* desc, const Create
 //------------------------------------------------------------------------
 IViewFactory* UIScripting::getViewFactory (IUIDescription* desc, IViewFactory* originalFactory)
 {
+	using namespace ScriptingInternal;
+
 	auto it = impl->map.find (desc);
 	if (it != impl->map.end ())
 		return it->second.first.get ();
-	auto scripting =
-		std::make_unique<ScriptingInternal::ScriptContext> (desc, Impl::onScriptExceptionFunc);
-	auto viewFactory = std::make_unique<ScriptingInternal::JavaScriptViewFactory> (scripting.get (),
-																				   originalFactory);
+	auto scripting = std::make_unique<ScriptContext> (desc, Impl::onScriptExceptionFunc);
+	auto viewFactory = std::make_unique<JavaScriptViewFactory> (scripting.get (), originalFactory);
 	auto result =
 		impl->map.emplace (desc, std::make_pair (std::move (viewFactory), std::move (scripting)));
 	return result.first->second.first.get ();
