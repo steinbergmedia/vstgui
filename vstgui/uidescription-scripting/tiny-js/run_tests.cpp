@@ -39,6 +39,10 @@
 #include <sstream>
 #include <stdio.h>
 
+#if __APPLE_CC__
+#include <unistd.h>
+#endif
+
 #ifdef MTRACE
 #include <mcheck.h>
 #endif
@@ -271,6 +275,24 @@ bool run_test (const char* filename)
 
 int main (int argc, char** argv)
 {
+#if __APPLE_CC__
+	struct LeakDetector
+	{
+		~LeakDetector () noexcept
+		{
+			char* env = getenv ("MallocStackLogging");
+			if (env && (!strcmp (env, "1") || !strcmp (env, "lite")))
+			{
+				char command[1024];
+				pid_t pid = getpid ();
+				snprintf (command, std::size (command), "leaks %d", pid);
+				system (command);
+			}
+		}
+	};
+	static LeakDetector gLeakDetector;
+#endif
+
 #ifdef MTRACE
 	mtrace ();
 #endif
