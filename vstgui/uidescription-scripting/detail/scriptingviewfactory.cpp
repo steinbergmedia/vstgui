@@ -9,7 +9,7 @@ namespace VSTGUI {
 namespace ScriptingInternal {
 
 //------------------------------------------------------------------------
-JavaScriptViewFactory::JavaScriptViewFactory (ScriptingInternal::IScriptContextInternal* scripting,
+JavaScriptViewFactory::JavaScriptViewFactory (IScriptContextInternal* scripting,
 											  IViewFactory* origFactory)
 : Super (origFactory), scriptContext (scripting)
 {
@@ -31,7 +31,7 @@ CView* JavaScriptViewFactory::createView (const UIAttributes& attributes,
 {
 	if (auto view = Super::createView (attributes, description))
 	{
-		if (auto value = attributes.getAttributeValue (ScriptingInternal::kAttrScript))
+		if (auto value = attributes.getAttributeValue (kAttrScript))
 		{
 			std::optional<std::string> verifiedScript;
 			if (auto scriptViewController =
@@ -59,7 +59,7 @@ bool JavaScriptViewFactory::getAttributeNamesForView (CView* view, StringList& a
 {
 	if (Super::getAttributeNamesForView (view, attributeNames))
 	{
-		attributeNames.emplace_back (ScriptingInternal::kAttrScript);
+		attributeNames.emplace_back (kAttrScript);
 		return true;
 	}
 	return false;
@@ -69,7 +69,7 @@ bool JavaScriptViewFactory::getAttributeNamesForView (CView* view, StringList& a
 auto JavaScriptViewFactory::getAttributeType (CView* view, const std::string& attributeName) const
 	-> IViewCreator::AttrType
 {
-	if (attributeName == ScriptingInternal::kAttrScript)
+	if (attributeName == kAttrScript)
 		return IViewCreator::kScriptType;
 	return Super::getAttributeType (view, attributeName);
 }
@@ -79,7 +79,7 @@ bool JavaScriptViewFactory::getAttributeValue (CView* view, const std::string& a
 											   std::string& stringValue,
 											   const IUIDescription* desc) const
 {
-	if (attributeName == ScriptingInternal::kAttrScript)
+	if (attributeName == kAttrScript)
 	{
 		uint32_t attrSize = 0;
 		if (view->getAttributeSize (scriptAttrID, attrSize) && attrSize > 0)
@@ -98,7 +98,7 @@ bool JavaScriptViewFactory::getAttributeValue (CView* view, const std::string& a
 bool JavaScriptViewFactory::applyAttributeValues (CView* view, const UIAttributes& attributes,
 												  const IUIDescription* desc) const
 {
-	if (auto value = attributes.getAttributeValue (ScriptingInternal::kAttrScript))
+	if (auto value = attributes.getAttributeValue (kAttrScript))
 	{
 		if (value->empty ())
 			view->removeAttribute (scriptAttrID);
