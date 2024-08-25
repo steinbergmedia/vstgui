@@ -1224,7 +1224,7 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 			auto tmp = convert (txt->getString ());
 			key = tmp[0];
 		}
-		if (isStopChar (key))
+		if (isStopChar (static_cast<char16_t> (key)))
 			checkCurrentUndoGroup (true);
 	}
 	if (event.virt != VirtualKey::None)

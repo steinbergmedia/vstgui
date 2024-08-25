@@ -29,7 +29,7 @@ static T getFromVar (CScriptVar* var, const string& exceptionString)
 		auto result = std::any_cast<T> (customData);
 		return result;
 	}
-	catch (const std::bad_any_cast& e)
+	catch (const std::bad_any_cast&)
 	{
 		throw CScriptException (exceptionString);
 	}
@@ -575,8 +575,8 @@ struct DrawContextObject::Impl
 			"drawContext.drawArc(rect, startAngle, endAngle, style);"sv;
 		checkContextOrThrow ();
 		auto rect = getRect (var, "rect"sv, signature);
-		auto startAngle = getDouble (var, "startAngle"sv, signature);
-		auto endAngle = getDouble (var, "endAngle"sv, signature);
+		auto startAngle = static_cast<float> (getDouble (var, "startAngle"sv, signature));
+		auto endAngle = static_cast<float> (getDouble (var, "endAngle"sv, signature));
 		auto styleVar = getArgument (var, "style"sv, signature);
 		auto style = getDrawStyle (styleVar);
 		context->drawArc (rect, startAngle, endAngle, style);
@@ -755,7 +755,7 @@ struct DrawContextObject::Impl
 	{
 		static constexpr auto signature = "drawContext.setGlobalAlpha(alpha);"sv;
 		checkContextOrThrow ();
-		auto alpha = getDouble (var, "alpha"sv, signature);
+		auto alpha = static_cast<float> (getDouble (var, "alpha"sv, signature));
 		context->setGlobalAlpha (alpha);
 	}
 	void saveGlobalState () const
