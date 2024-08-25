@@ -245,9 +245,9 @@ bool run_test (const char* filename)
 	{
 		s.execute (buffer);
 	}
-	catch (CScriptException* e)
+	catch (CScriptException& e)
 	{
-		printf ("ERROR: %s\n", e->text.c_str ());
+		printf ("ERROR: %s\n", e.text.c_str ());
 	}
 	bool pass = s.getRoot ()->getParameter ("result")->getBool ();
 
@@ -255,7 +255,7 @@ bool run_test (const char* filename)
 		printf ("PASS\n");
 	else
 	{
-		char fn[64];
+		char fn[PATH_MAX];
 		sprintf (fn, "%s.fail.js", filename);
 		FILE* f = fopen (fn, "wt");
 		if (f)
