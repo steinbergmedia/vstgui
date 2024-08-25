@@ -59,6 +59,7 @@ class Delegate : public Application::DelegateAdapter,
 {
 public:
 	Delegate ();
+	virtual ~Delegate ();
 
 	// Application::IDelegate
 	void finishLaunching () override;
@@ -423,6 +424,8 @@ Delegate::Delegate ()
 #endif
 	CFrame::kDefaultKnobMode = CKnobMode::kLinearMode;
 }
+
+Delegate::~Delegate () = default;
 
 //------------------------------------------------------------------------
 void Delegate::finishLaunching ()
