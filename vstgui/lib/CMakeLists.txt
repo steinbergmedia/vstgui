@@ -344,6 +344,7 @@ endif()
 ##########################################################################################
 add_library(${target} STATIC ${${target}_sources})
 
+target_precompile_headers(${target} PRIVATE cviewcontainer.h cdrawcontext.h)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 17)
 vstgui_source_group_by_folder(${target})
