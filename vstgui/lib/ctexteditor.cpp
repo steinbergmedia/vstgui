@@ -878,9 +878,9 @@ bool TextEditorView::handleCommand (Command cmd) const
 		case Command::Paste:
 			return doPaste ();
 		case Command::Undo:
-			return callSTB ([=] () { stb_text_undo (this, &md.editState); });
+			return callSTB ([this] () { stb_text_undo (this, &md.editState); });
 		case Command::Redo:
-			return callSTB ([=] () { stb_text_redo (this, &md.editState); });
+			return callSTB ([this] () { stb_text_redo (this, &md.editState); });
 		case Command::FindNext:
 			return doFind (true);
 		case Command::FindPrevious:
