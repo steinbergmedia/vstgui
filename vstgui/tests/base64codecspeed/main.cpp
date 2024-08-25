@@ -5,6 +5,7 @@
 #include "vstgui/uidescription/base64codec.h"
 #include "vstgui/lib/malloc.h"
 
+#include <algorithm>
 #include <random>
 
 using namespace VSTGUI;
