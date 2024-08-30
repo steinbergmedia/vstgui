@@ -28,6 +28,7 @@ public:
 
 	static bool getAllFontFamilies (const FontFamilyCallback& callback);
 
+	static void initialize (const UTF8String& resourceBasePath);
 	static void terminate ();
 
 protected:

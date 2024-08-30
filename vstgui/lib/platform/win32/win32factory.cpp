@@ -141,6 +141,7 @@ HINSTANCE Win32Factory::getInstance () const noexcept
 void Win32Factory::setResourceBasePath (const UTF8String& path) const noexcept
 {
 	impl->setBasePath (path);
+	D2DFont::initialize (path);
 }
 
 //-----------------------------------------------------------------------------
