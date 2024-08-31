@@ -49,16 +49,13 @@ struct CustomFonts
 		return false;
 	}
 
-	CustomFonts ()
+	CustomFonts (const UTF8String& resourceBasePath)
 	{
-		auto winFactory = getPlatformFactory ().asWin32Factory ();
-		if (!winFactory)
+		if (resourceBasePath.empty ())
 			return;
-		auto basePath = winFactory->getResourceBasePath ();
-		if (!basePath)
-			return;
-		*basePath += "Fonts\\*";
-		auto files = getDirectoryContents (*basePath);
+		auto basePath = resourceBasePath;
+		basePath += "Fonts\\*";
+		auto files = getDirectoryContents (basePath);
 		if (files.empty ())
 			return;
 		auto factory = getDWriteFactory ();
@@ -106,6 +103,7 @@ private:
 		return result;
 	}
 #else
+	CustomFonts (const UTF8String& resourceBasePath) {}
 	IDWriteFontCollection* getFontCollection () { return nullptr; }
 	bool contains (const WCHAR*, DWRITE_FONT_WEIGHT, DWRITE_FONT_STRETCH, DWRITE_FONT_STYLE)
 	{
@@ -116,14 +114,9 @@ private:
 
 //-----------------------------------------------------------------------------
 static std::unique_ptr<CustomFonts> customFonts;
-static std::once_flag customFontsOnceFlag;
 
 //-----------------------------------------------------------------------------
-static CustomFonts* getCustomFonts ()
-{
-	std::call_once (customFontsOnceFlag, [] () { customFonts = std::make_unique<CustomFonts> (); });
-	return customFonts.get ();
-}
+static CustomFonts* getCustomFonts () { return customFonts.get (); }
 
 //-----------------------------------------------------------------------------
 static void gatherFonts (const FontFamilyCallback& callback, IDWriteFontCollection* collection)
@@ -198,8 +191,14 @@ bool D2DFont::getAllFontFamilies (const FontFamilyCallback& callback)
 	return true;
 }
 
+//------------------------------------------------------------------------
+void D2DFont::initialize (const UTF8String& resourceBasePath)
+{
+	D2DFontPrivate::customFonts = std::make_unique<D2DFontPrivate::CustomFonts> (resourceBasePath);
+}
+
 //-----------------------------------------------------------------------------
-void D2DFont::terminate () { D2DFontPrivate::customFonts = nullptr; }
+void D2DFont::terminate () { D2DFontPrivate::customFonts.reset (); }
 
 //-----------------------------------------------------------------------------
 D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style)
