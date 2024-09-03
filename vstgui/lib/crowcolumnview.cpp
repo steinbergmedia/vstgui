@@ -459,8 +459,11 @@ bool CRowColumnView::sizeToFit ()
 		if (viewSize != getViewSize ())
 		{
 			invalid ();
+			auto autosizeState = getAutosizingEnabled ();
+			setAutosizingEnabled (false);
 			CViewContainer::setViewSize (viewSize);
 			CViewContainer::setMouseableArea (viewSize);
+			setAutosizingEnabled (autosizeState);
 			invalid ();
 		}
 		return true;
