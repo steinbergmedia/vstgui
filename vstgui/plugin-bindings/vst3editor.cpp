@@ -1872,6 +1872,7 @@ bool VST3Editor::enableEditing (bool state)
 		openUIEditorController = nullptr;
 		if (state)
 		{
+			editingEnabled = true;
 			// update uiDesc file path to absolute if possible
 			if (UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true))
 			{
@@ -1895,7 +1896,6 @@ bool VST3Editor::enableEditing (bool state)
 			CView* view = editController->createEditView ();
 			if (view)
 			{
-				editingEnabled = true;
 				CCoord width = view->getWidth ();
 				CCoord height = view->getHeight ();
 
