@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -135,38 +135,38 @@ CPoint computeRectOffset (const CPoint& parent, const CPoint& rect, const Alignm
 CRect computeGroupRect (const CRect& parent, const CRects& children, const Alignment alignment,
 						const Style style, double spacing)
 {
-    CPoint maxSize;
-    if (style == Style::kRow)
-    {
-        for (const auto& rect : children)
-        {
-            if (maxSize.x < rect.getWidth ())
-                maxSize.x = rect.getWidth ();
+	CPoint maxSize;
+	if (style == Style::kRow)
+	{
+		for (const auto& rect : children)
+		{
+			if (maxSize.x < rect.getWidth ())
+				maxSize.x = rect.getWidth ();
 
-            maxSize.y = maxSize.y + rect.getHeight () + spacing;
-        }
-        
-        // Remove the last spacing again
-        if (!children.empty())
-            maxSize.y -= spacing;
-    }
-    else
-    {
-        for (const auto& rect : children)
-        {
-            if (maxSize.y < rect.getHeight ())
-                maxSize.y = rect.getHeight ();
+			maxSize.y = maxSize.y + rect.getHeight () + spacing;
+		}
 
-            maxSize.x = maxSize.x + rect.getWidth () + spacing;
-        }
-        
-        // Remove the last spacing again
-        if (!children.empty())
-            maxSize.x -= spacing;
-    }
+		// Remove the last spacing again
+		if (!children.empty ())
+			maxSize.y -= spacing;
+	}
+	else
+	{
+		for (const auto& rect : children)
+		{
+			if (maxSize.y < rect.getHeight ())
+				maxSize.y = rect.getHeight ();
 
-    const auto offset = computeRectOffset (parent.getSize (), maxSize, alignment);
-    return CRect().setSize(maxSize).offset(offset);
+			maxSize.x = maxSize.x + rect.getWidth () + spacing;
+		}
+
+		// Remove the last spacing again
+		if (!children.empty ())
+			maxSize.x -= spacing;
+	}
+
+	const auto offset = computeRectOffset (parent.getSize (), maxSize, alignment);
+	return CRect ().setSize (maxSize).offset (offset);
 }
 
 //--------------------------------------------------------------------------------
@@ -230,7 +230,8 @@ private:
 }
 
 //--------------------------------------------------------------------------------
-CRowColumnView::CRowColumnView (const CRect& size, Style style, LayoutStyle layoutStyle, CCoord spacing, const CRect& margin)
+CRowColumnView::CRowColumnView (const CRect& size, Style style, LayoutStyle layoutStyle,
+								CCoord spacing, const CRect& margin)
 : CAutoLayoutContainerView (size)
 , style (style)
 , layoutStyle (layoutStyle)
@@ -287,10 +288,7 @@ void CRowColumnView::setLayoutStyle (LayoutStyle inLayoutStyle)
 }
 
 //--------------------------------------------------------------------------------
-bool CRowColumnView::isAnimateViewResizing () const
-{
-	return hasBit (flags, kAnimateViewResizing);
-}
+bool CRowColumnView::isAnimateViewResizing () const { return hasBit (flags, kAnimateViewResizing); }
 
 //--------------------------------------------------------------------------------
 void CRowColumnView::setAnimateViewResizing (bool state)
@@ -299,10 +297,7 @@ void CRowColumnView::setAnimateViewResizing (bool state)
 }
 
 //--------------------------------------------------------------------------------
-bool CRowColumnView::hideClippedSubviews () const
-{
-	return hasBit (flags, kHideClippedSubViews);
-}
+bool CRowColumnView::hideClippedSubviews () const { return hasBit (flags, kHideClippedSubViews); }
 
 //--------------------------------------------------------------------------------
 void CRowColumnView::setHideClippedSubviews (bool state)
@@ -317,7 +312,9 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 	{
 		if (isAttached () && isAnimateViewResizing () && viewResizeAnimationTime > 0)
 		{
-			view->addAnimation ("CRowColumnResizing", new Animation::ViewSizeAnimation (newSize, false), new Animation::LinearTimingFunction (viewResizeAnimationTime));
+			view->addAnimation ("CRowColumnResizing",
+								new Animation::ViewSizeAnimation (newSize, false),
+								new Animation::LinearTimingFunction (viewResizeAnimationTime));
 		}
 		else
 		{
@@ -485,10 +482,7 @@ CMessageResult CRowColumnView::notify (CBaseObject* sender, IdStringPtr message)
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
-CAutoLayoutContainerView::CAutoLayoutContainerView (const CRect& size)
-: CViewContainer (size)
-{
-}
+CAutoLayoutContainerView::CAutoLayoutContainerView (const CRect& size) : CViewContainer (size) {}
 
 //--------------------------------------------------------------------------------
 bool CAutoLayoutContainerView::attached (CView* parent)
@@ -546,4 +540,3 @@ bool CAutoLayoutContainerView::changeViewZOrder (CView* view, uint32_t newIndex)
 }
 
 } // VSTGUI
-
