@@ -1952,8 +1952,12 @@ bool VST3Editor::enableEditing (bool state)
 						tmp.right = getRect ().getWidth ();
 					if (getRect ().getHeight () != height)
 						tmp.bottom = getRect ().getHeight ();
-					if (tmp.getWidth () && tmp.getHeight ())
+					if (tmp.getWidth () || tmp.getHeight ())
 					{
+						if (tmp.getWidth () == 0)
+							tmp.right = width;
+						if (tmp.getHeight () == 0)
+							tmp.bottom = width;
 						checkSizeConstraint (&tmp);
 						nonEditRect.setWidth (tmp.getWidth ());
 						nonEditRect.setHeight (tmp.getHeight ());
@@ -1969,6 +1973,7 @@ bool VST3Editor::enableEditing (bool state)
 					rect.right = rect.left + (Steinberg::int32)nonEditRect.getWidth ();
 					rect.bottom = rect.top + (Steinberg::int32)nonEditRect.getHeight ();
 					plugFrame->resizeView (this, &rect);
+					getFrame ()->setSize (rect.getWidth (), rect.getHeight ());
 				}
 				else
 				{
