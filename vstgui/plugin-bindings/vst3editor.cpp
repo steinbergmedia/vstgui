@@ -1970,10 +1970,10 @@ bool VST3Editor::enableEditing (bool state)
 				getFrame ()->invalid ();
 				if (nonEditRect.isEmpty () == false)
 				{
-					rect.right = rect.left + (Steinberg::int32)nonEditRect.getWidth ();
-					rect.bottom = rect.top + (Steinberg::int32)nonEditRect.getHeight ();
-					plugFrame->resizeView (this, &rect);
-					getFrame ()->setSize (rect.getWidth (), rect.getHeight ());
+					Steinberg::ViewRect tmpRect = rect;
+					tmpRect.right = tmpRect.left + (Steinberg::int32)nonEditRect.getWidth ();
+					tmpRect.bottom = tmpRect.top + (Steinberg::int32)nonEditRect.getHeight ();
+					plugFrame->resizeView (this, &tmpRect);
 				}
 				else
 				{
