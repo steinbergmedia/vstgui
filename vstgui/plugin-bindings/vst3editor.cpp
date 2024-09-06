@@ -1945,7 +1945,7 @@ bool VST3Editor::enableEditing (bool state)
 				CCoord width = view->getWidth () * scaleFactor;
 				CCoord height = view->getHeight () * scaleFactor;
 
-				if (canResize () == Steinberg::kResultTrue)
+				if (canResize () == Steinberg::kResultTrue && nonEditRect.isEmpty ())
 				{
 					Steinberg::ViewRect tmp;
 					if (getRect ().getWidth () != width)
