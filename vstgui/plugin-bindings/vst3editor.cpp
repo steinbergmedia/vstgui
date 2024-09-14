@@ -1881,6 +1881,7 @@ bool VST3Editor::enableEditing (bool state)
 		openUIEditorController = nullptr;
 		if (state)
 		{
+			editingEnabled = true;
 			// update uiDesc file path to absolute if possible
 			if (UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true))
 			{
@@ -1904,7 +1905,6 @@ bool VST3Editor::enableEditing (bool state)
 			CView* view = editController->createEditView ();
 			if (view)
 			{
-				editingEnabled = true;
 				CCoord width = view->getWidth ();
 				CCoord height = view->getHeight ();
 
@@ -1954,15 +1954,19 @@ bool VST3Editor::enableEditing (bool state)
 				CCoord width = view->getWidth () * scaleFactor;
 				CCoord height = view->getHeight () * scaleFactor;
 
-				if (canResize () == Steinberg::kResultTrue)
+				if (canResize () == Steinberg::kResultTrue && nonEditRect.isEmpty ())
 				{
 					Steinberg::ViewRect tmp;
 					if (getRect ().getWidth () != width)
 						tmp.right = getRect ().getWidth ();
 					if (getRect ().getHeight () != height)
 						tmp.bottom = getRect ().getHeight ();
-					if (tmp.getWidth () && tmp.getHeight ())
+					if (tmp.getWidth () || tmp.getHeight ())
 					{
+						if (tmp.getWidth () == 0)
+							tmp.right = width;
+						if (tmp.getHeight () == 0)
+							tmp.bottom = width;
 						checkSizeConstraint (&tmp);
 						nonEditRect.setWidth (tmp.getWidth ());
 						nonEditRect.setHeight (tmp.getHeight ());
@@ -1975,9 +1979,10 @@ bool VST3Editor::enableEditing (bool state)
 				getFrame ()->invalid ();
 				if (nonEditRect.isEmpty () == false)
 				{
-					rect.right = rect.left + (Steinberg::int32)nonEditRect.getWidth ();
-					rect.bottom = rect.top + (Steinberg::int32)nonEditRect.getHeight ();
-					plugFrame->resizeView (this, &rect);
+					Steinberg::ViewRect tmpRect = rect;
+					tmpRect.right = tmpRect.left + (Steinberg::int32)nonEditRect.getWidth ();
+					tmpRect.bottom = tmpRect.top + (Steinberg::int32)nonEditRect.getHeight ();
+					plugFrame->resizeView (this, &tmpRect);
 				}
 				else
 				{
