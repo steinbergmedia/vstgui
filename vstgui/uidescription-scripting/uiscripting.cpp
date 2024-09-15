@@ -39,10 +39,10 @@ struct ViewScriptObject;
 class ScriptContext : public IScriptContextInternal
 {
 public:
-	using OnScriptException = std::function<void (std::string_view reason)>;
+	using OnScriptExceptionFunc = UIScripting::OnScriptExceptionFunc;
 	using ReadScriptContentsFunc = UIScripting::ReadScriptContentsFunc;
 
-	ScriptContext (IUIDescription* uiDesc, const OnScriptException& onExceptionFunc,
+	ScriptContext (IUIDescription* uiDesc, const OnScriptExceptionFunc& onExceptionFunc,
 				   const ReadScriptContentsFunc& readContentsFunc);
 	~ScriptContext () noexcept;
 
@@ -98,14 +98,14 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 	IUIDescription* uiDesc {nullptr};
 
 	std::unique_ptr<CTinyJS> jsContext;
-	OnScriptException onScriptException;
+	OnScriptExceptionFunc onScriptException;
 	ReadScriptContentsFunc readScriptContents;
 	using ViewScriptMap = ScriptingInternal::ViewScriptMap;
 	ViewScriptMap viewScriptMap;
 
 	UIDescScriptObject uiDescObject;
 
-	Impl (IUIDescription* uiDesc, const OnScriptException& onExceptionFunc,
+	Impl (IUIDescription* uiDesc, const OnScriptExceptionFunc& onExceptionFunc,
 		  const ReadScriptContentsFunc& readContentsFunc)
 	: uiDesc (uiDesc), onScriptException (onExceptionFunc), readScriptContents (readContentsFunc)
 	{
@@ -614,7 +614,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-ScriptContext::ScriptContext (IUIDescription* uiDesc, const OnScriptException& onExceptionFunc,
+ScriptContext::ScriptContext (IUIDescription* uiDesc, const OnScriptExceptionFunc& onExceptionFunc,
 							  const ReadScriptContentsFunc& readContentsFunc)
 {
 	impl = std::make_unique<Impl> (uiDesc, onExceptionFunc, readContentsFunc);
@@ -668,12 +668,12 @@ struct UIScripting::Impl
 
 	std::unordered_map<const IUIDescription*, std::pair<JSViewFactoryPtr, ScriptContextPtr>> map;
 
-	static OnScriptException onScriptExceptionFunc;
+	static OnScriptExceptionFunc onScriptExceptionFunc;
 	static ReadScriptContentsFunc readScriptContentsFunc;
 };
 
 //------------------------------------------------------------------------
-UIScripting::OnScriptException UIScripting::Impl::onScriptExceptionFunc =
+UIScripting::OnScriptExceptionFunc UIScripting::Impl::onScriptExceptionFunc =
 	[] (std::string_view reason) {
 		std::cerr << reason << '\n';
 	};
@@ -764,7 +764,7 @@ void UIScripting::onEditingEnd (IUIDescription* desc)
 }
 
 //------------------------------------------------------------------------
-void UIScripting::init (const OnScriptException& onExceptionFunc,
+void UIScripting::init (const OnScriptExceptionFunc& onExceptionFunc,
 						const ReadScriptContentsFunc& readScriptContentsFunc)
 {
 	if (onExceptionFunc)

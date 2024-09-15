@@ -22,7 +22,7 @@ namespace VSTGUI {
 class UIScripting : public UIDescriptionAddOnAdapter
 {
 public:
-	using OnScriptException = std::function<void (std::string_view reason)>;
+	using OnScriptExceptionFunc = std::function<void (std::string_view reason)>;
 	using ReadScriptContentsFunc = std::function<std::string (std::string_view filename)>;
 
 	/** initialize the UIScripting library
@@ -33,7 +33,7 @@ public:
 	 *	@param readScriptContentsFunc	[optional] called to load the script from a filename,
 	 *											   uses the resource folder as default.
 	 */
-	static void init (const OnScriptException& onExceptionFunc = {},
+	static void init (const OnScriptExceptionFunc& onExceptionFunc = {},
 					  const ReadScriptContentsFunc& readScriptContentsFunc = {});
 
 	~UIScripting () noexcept;
