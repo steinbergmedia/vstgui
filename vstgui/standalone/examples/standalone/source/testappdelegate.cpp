@@ -33,8 +33,11 @@
 #include "vstgui/lib/ctexteditor.h"
 
 #ifdef VSTGUI_UISCRIPTING
+#include "vstgui/uidescription/cstream.h"
 #include "vstgui/uidescription-scripting/uiscripting.h"
+#include <filesystem>
 #include <iostream>
+#include <fstream>
 #endif
 
 #include <memory>
@@ -419,9 +422,6 @@ public:
 Delegate::Delegate ()
 : Application::DelegateAdapter ({"VSTGUI Standalone", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 {
-#ifdef VSTGUI_UISCRIPTING
-	UIScripting::init ();
-#endif
 	CFrame::kDefaultKnobMode = CKnobMode::kLinearMode;
 }
 
@@ -430,6 +430,37 @@ Delegate::~Delegate () = default;
 //------------------------------------------------------------------------
 void Delegate::finishLaunching ()
 {
+#ifdef VSTGUI_UISCRIPTING
+	UIScripting::ReadScriptContentsFunc loadScriptFromRepositoryPath = {};
+#if DEBUG
+	// in Debug mode, we want to load the scripts from the repository instead of from the app
+	// resource folder as the scripts in the app resource folder are only synchronized when we build
+	// the app and not in-between.
+	loadScriptFromRepositoryPath = [] (auto filename) -> std::string {
+		std::filesystem::path path (__FILE__);
+		if (!path.empty ())
+		{
+			path = path.parent_path ().parent_path ();
+			path.append ("resource");
+			path.append ("scripts");
+			path.append (filename);
+			if (std::filesystem::exists (path))
+			{
+				std::ifstream f (path, std::ios::in | std::ios::binary);
+				const auto sz = std::filesystem::file_size (path);
+				std::string result (sz, '\0');
+				f.read (result.data (), sz);
+				return result;
+			}
+		}
+		return {};
+	};
+#endif
+
+	UIScripting::init ({}, loadScriptFromRepositoryPath);
+
+#endif
+
 	textEditorController = std::make_unique<AppTextEditorController> ();
 #if MAC
 	auto font = makeOwned<CFontDesc> ("Menlo", 12);
