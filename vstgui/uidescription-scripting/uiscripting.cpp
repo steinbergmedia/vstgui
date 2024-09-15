@@ -40,8 +40,10 @@ class ScriptContext : public IScriptContextInternal
 {
 public:
 	using OnScriptException = std::function<void (std::string_view reason)>;
+	using ReadScriptContentsFunc = UIScripting::ReadScriptContentsFunc;
 
-	ScriptContext (IUIDescription* uiDesc, const OnScriptException& func);
+	ScriptContext (IUIDescription* uiDesc, const OnScriptException& onExceptionFunc,
+				   const ReadScriptContentsFunc& readContentsFunc);
 	~ScriptContext () noexcept;
 
 	void init (const std::string& initScript);
@@ -97,13 +99,15 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 
 	std::unique_ptr<CTinyJS> jsContext;
 	OnScriptException onScriptException;
+	ReadScriptContentsFunc readScriptContents;
 	using ViewScriptMap = ScriptingInternal::ViewScriptMap;
 	ViewScriptMap viewScriptMap;
 
 	UIDescScriptObject uiDescObject;
 
-	Impl (IUIDescription* uiDesc, const OnScriptException& func)
-	: uiDesc (uiDesc), onScriptException (func)
+	Impl (IUIDescription* uiDesc, const OnScriptException& onExceptionFunc,
+		  const ReadScriptContentsFunc& readContentsFunc)
+	: uiDesc (uiDesc), onScriptException (onExceptionFunc), readScriptContents (readContentsFunc)
 	{
 		init ();
 	}
@@ -561,24 +565,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 				auto scriptFileStr = scriptView.substr (scriptFileCommand.length ());
 				if (scriptFileStr.length () < 255)
 				{
-					std::string fileStr (scriptFileStr);
-					CResourceDescription desc (fileStr.data ());
-					if (auto stream = getPlatformFactory ().createResourceInputStream (desc))
-					{
-						std::string fileContent;
-						while (true)
-						{
-							char buffer[256];
-							auto numRead = stream->readRaw (
-								buffer, static_cast<uint32_t> (std::size (buffer)));
-							if (numRead == kStreamIOError)
-								return {};
-							fileContent.append (buffer, numRead);
-							if (numRead < std::size (buffer))
-								break;
-						}
-						return fileContent;
-					}
+					return readScriptContents (scriptFileStr);
 				}
 			}
 		}
@@ -627,11 +614,10 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-ScriptContext::ScriptContext (IUIDescription* uiDesc, const OnScriptException& func)
+ScriptContext::ScriptContext (IUIDescription* uiDesc, const OnScriptException& onExceptionFunc,
+							  const ReadScriptContentsFunc& readContentsFunc)
 {
-	using namespace ScriptingInternal;
-
-	impl = std::make_unique<Impl> (uiDesc, func);
+	impl = std::make_unique<Impl> (uiDesc, onExceptionFunc, readContentsFunc);
 }
 
 //------------------------------------------------------------------------
@@ -683,11 +669,35 @@ struct UIScripting::Impl
 	std::unordered_map<const IUIDescription*, std::pair<JSViewFactoryPtr, ScriptContextPtr>> map;
 
 	static OnScriptException onScriptExceptionFunc;
+	static ReadScriptContentsFunc readScriptContentsFunc;
 };
+
+//------------------------------------------------------------------------
 UIScripting::OnScriptException UIScripting::Impl::onScriptExceptionFunc =
 	[] (std::string_view reason) {
 		std::cerr << reason << '\n';
 	};
+UIScripting::ReadScriptContentsFunc UIScripting::Impl::readScriptContentsFunc =
+	[] (std::string_view filename) -> std::string {
+	std::string fileStr (filename);
+	CResourceDescription desc (fileStr.data ());
+	if (auto stream = getPlatformFactory ().createResourceInputStream (desc))
+	{
+		std::string fileContent;
+		while (true)
+		{
+			char buffer[256];
+			auto numRead = stream->readRaw (buffer, static_cast<uint32_t> (std::size (buffer)));
+			if (numRead == kStreamIOError)
+				return {};
+			fileContent.append (buffer, numRead);
+			if (numRead < std::size (buffer))
+				break;
+		}
+		return fileContent;
+	}
+	return {};
+};
 
 //------------------------------------------------------------------------
 UIScripting::UIScripting () { impl = std::make_unique<Impl> (); }
@@ -726,7 +736,8 @@ IViewFactory* UIScripting::getViewFactory (IUIDescription* desc, IViewFactory* o
 	auto it = impl->map.find (desc);
 	if (it != impl->map.end ())
 		return it->second.first.get ();
-	auto scripting = std::make_unique<ScriptContext> (desc, Impl::onScriptExceptionFunc);
+	auto scripting = std::make_unique<ScriptContext> (desc, Impl::onScriptExceptionFunc,
+													  Impl::readScriptContentsFunc);
 	auto viewFactory = std::make_unique<JavaScriptViewFactory> (scripting.get (), originalFactory);
 	auto result =
 		impl->map.emplace (desc, std::make_pair (std::move (viewFactory), std::move (scripting)));
@@ -753,10 +764,21 @@ void UIScripting::onEditingEnd (IUIDescription* desc)
 }
 
 //------------------------------------------------------------------------
-void UIScripting::init (const OnScriptException& func)
+void UIScripting::init (const OnScriptException& onExceptionFunc,
+						const ReadScriptContentsFunc& readScriptContentsFunc)
 {
-	if (func)
-		Impl::onScriptExceptionFunc = func;
+	if (onExceptionFunc)
+		Impl::onScriptExceptionFunc = onExceptionFunc;
+	if (readScriptContentsFunc)
+	{
+		auto readFromResources = Impl::readScriptContentsFunc;
+		Impl::readScriptContentsFunc = [=] (std::string_view filename) {
+			auto result = readScriptContentsFunc (filename);
+			if (result.empty ())
+				result = readFromResources (filename);
+			return result;
+		};
+	}
 	UIDescriptionAddOnRegistry::add (std::make_unique<UIScripting> ());
 	static ScriptingInternal::JavaScriptDrawableViewCreator jsViewCreator;
 	UIViewFactory::registerViewCreator (jsViewCreator);

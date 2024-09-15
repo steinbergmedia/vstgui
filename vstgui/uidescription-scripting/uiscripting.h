@@ -23,14 +23,18 @@ class UIScripting : public UIDescriptionAddOnAdapter
 {
 public:
 	using OnScriptException = std::function<void (std::string_view reason)>;
+	using ReadScriptContentsFunc = std::function<std::string (std::string_view filename)>;
 
 	/** initialize the UIScripting library
 	 *
 	 *	must be called once before creating UIDescription objects
 	 *
-	 *	@param func [optional] function which is called when a script context throws an exception
+	 *	@param onExceptionFunc			[optional] called when a script context throws an exception
+	 *	@param readScriptContentsFunc	[optional] called to load the script from a filename,
+	 *											   uses the resource folder as default.
 	 */
-	static void init (const OnScriptException& func = {});
+	static void init (const OnScriptException& onExceptionFunc = {},
+					  const ReadScriptContentsFunc& readScriptContentsFunc = {});
 
 	~UIScripting () noexcept;
 
