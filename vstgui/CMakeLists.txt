@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 if(NOT PROJECT_NAME)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14 CACHE STRING "")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15 CACHE STRING "")
     project(vstgui)
     set(VSTGUI_MAIN_PROJECT_BUILD 1)
 endif()
