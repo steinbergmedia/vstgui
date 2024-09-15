@@ -32,6 +32,7 @@ set(standalone_font
 
 set(standalone_scripts
   "resource/scripts/changecoloronfocus.js"
+  "resource/scripts/customslider.js"
   "resource/scripts/hoveranim.js"
   "resource/scripts/test.js"
   "resource/scripts/viewcontainertest.js"
