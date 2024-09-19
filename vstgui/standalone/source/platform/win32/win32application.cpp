@@ -2,7 +2,6 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "win32async.h"
 #include "win32commondirectories.h"
 #include "win32preference.h"
 #include "win32window.h"
@@ -14,6 +13,7 @@
 #include "../../../../lib/platform/platform_win32.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
+#include "../../../include/iasync.h"
 #include "../../application.h"
 #include "../../genericalertbox.h"
 #include "../../shareduiresources.h"
@@ -113,8 +113,6 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 		cmdArgs.emplace_back (str.getUTF8String ());
 	}
 	LocalFree (cmdArgsArray);
-
-	initAsyncHandling (instance);
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
@@ -300,7 +298,6 @@ void Application::run ()
 			lastPaintMessageTime = steady_clock::now ();
 		}
 	}
-	terminateAsyncHandling ();
 	Detail::cleanupSharedUIResources ();
 }
 

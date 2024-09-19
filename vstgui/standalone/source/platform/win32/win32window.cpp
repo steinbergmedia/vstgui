@@ -4,7 +4,6 @@
 
 #include "win32window.h"
 #include "win32menu.h"
-#include "win32async.h"
 
 #include "../../../../lib/platform/win32/win32directcomposition.h"
 #include "../../../../lib/platform/win32/win32factory.h"
@@ -13,6 +12,7 @@
 #include "../../../../lib/platform/win32/winstring.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
+#include "../../../include/iasync.h"
 #include "../../application.h"
 #include "../iplatformwindow.h"
 #include <dwmapi.h>

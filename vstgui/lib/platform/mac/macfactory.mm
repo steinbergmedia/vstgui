@@ -16,6 +16,7 @@
 #include "cocoa/nsviewframe.h"
 #include "ios/uiviewframe.h"
 #include "macclipboard.h"
+#include "macconcurrency.h"
 #include "macfactory.h"
 #include "macfileselector.h"
 #include "macglobals.h"
@@ -36,6 +37,7 @@ struct MacFactory::Impl
 	bool useAsynchronousLayerDrawing {true};
 	bool visualizeRedrawAreas {false};
 	CoreGraphicsDeviceFactory graphicsDeviceFactory;
+	std::unique_ptr<MacConcurrency> concurrency = std::make_unique<MacConcurrency> ();
 };
 
 //-----------------------------------------------------------------------------
@@ -47,6 +49,9 @@ MacFactory::MacFactory (CFBundleRef bundle)
 }
 
 MacFactory::~MacFactory () noexcept = default;
+
+//------------------------------------------------------------------------
+void MacFactory::finalize () noexcept { impl->concurrency->waitAllTasksExecuted (); }
 
 //-----------------------------------------------------------------------------
 CFBundleRef MacFactory::getBundle () const noexcept
@@ -234,6 +239,12 @@ PlatformFileSelectorPtr MacFactory::createFileSelector (PlatformFileSelectorStyl
 const IPlatformGraphicsDeviceFactory& MacFactory::getGraphicsDeviceFactory () const noexcept
 {
 	return impl->graphicsDeviceFactory;
+}
+
+//------------------------------------------------------------------------
+const IPlatformConcurrency& MacFactory::getConcurrency () const noexcept
+{
+	return *impl->concurrency;
 }
 
 //-----------------------------------------------------------------------------

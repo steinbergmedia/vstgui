@@ -8,6 +8,7 @@
 #import "lib/platform/mac/cgbitmap.cpp"
 #import "lib/platform/mac/coregraphicsdevicecontext.mm"
 #import "lib/platform/mac/quartzgraphicspath.cpp"
+#import "lib/platform/mac/macconcurrency.mm"
 #import "lib/platform/mac/macfactory.mm"
 #import "lib/platform/mac/macfileselector.mm"
 #import "lib/platform/mac/macstring.mm"

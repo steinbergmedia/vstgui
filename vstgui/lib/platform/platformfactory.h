@@ -36,6 +36,8 @@ public:
 
 	virtual ~IPlatformFactory () noexcept = default;
 
+	virtual void finalize () noexcept = 0;
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */
@@ -147,6 +149,8 @@ public:
 	 *	@return platform graphics device factory
 	 */
 	virtual const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept = 0;
+
+	virtual const IPlatformConcurrency& getConcurrency () const noexcept = 0;
 
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;

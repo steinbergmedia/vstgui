@@ -18,6 +18,7 @@
 #include "direct2d/d2dgraphicscontext.h"
 #include "direct2d/d2dfont.h"
 #include "direct2d/d2dgradient.h"
+#include "win32concurrency.h"
 #include "win32frame.h"
 #include "win32dragging.h"
 #include "win32resourcestream.h"
@@ -54,6 +55,7 @@ struct Win32Factory::Impl
 
 	std::unique_ptr<DirectComposition::Factory> directCompositionFactory;
 	D2DGraphicsDeviceFactory graphicsDeviceFactory;
+	Win32Concurrency concurrency;
 
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
@@ -92,6 +94,7 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->instance = instance;
+	impl->concurrency.init (instance);
 
 	D2D1_FACTORY_OPTIONS* options = nullptr;
 #if 0 // DEBUG
@@ -129,6 +132,9 @@ Win32Factory::~Win32Factory () noexcept
 	D2DBitmapCache::terminate ();
 	D2DFont::terminate ();
 }
+
+//-----------------------------------------------------------------------------
+void Win32Factory::finalize () noexcept { impl->concurrency.waitAllTasksExecuted (); }
 
 //-----------------------------------------------------------------------------
 HINSTANCE Win32Factory::getInstance () const noexcept
@@ -402,6 +408,12 @@ PlatformFileSelectorPtr Win32Factory::createFileSelector (PlatformFileSelectorSt
 const IPlatformGraphicsDeviceFactory& Win32Factory::getGraphicsDeviceFactory () const noexcept
 {
 	return impl->graphicsDeviceFactory;
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformConcurrency& Win32Factory::getConcurrency () const noexcept
+{
+	return impl->concurrency;
 }
 
 //-----------------------------------------------------------------------------

@@ -20,6 +20,7 @@
 #include "lib/clayeredviewcontainer.cpp"
 #include "lib/clinestyle.cpp"
 #include "lib/coffscreencontext.cpp"
+#include "lib/concurrency.cpp"
 #include "lib/copenglview.cpp"
 #include "lib/cpoint.cpp"
 #include "lib/crect.cpp"

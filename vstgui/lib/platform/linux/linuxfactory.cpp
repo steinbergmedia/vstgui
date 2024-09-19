@@ -14,6 +14,7 @@
 #include "linuxstring.h"
 #include "x11timer.h"
 #include "x11fileselector.h"
+#include "linuxconcurrency.h"
 #include "linuxfactory.h"
 #include <list>
 #include <memory>
@@ -30,6 +31,7 @@ struct LinuxFactory::Impl
 {
 	std::string resPath;
 	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {std::make_unique<CairoGraphicsDeviceFactory> ()};
+	LinuxConcurrency concurrency;
 
 	void setupResPath (void* handle)
 	{
@@ -65,6 +67,9 @@ LinuxFactory::LinuxFactory (void* soHandle)
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->setupResPath (soHandle);
 }
+
+//-----------------------------------------------------------------------------
+void LinuxFactory::finalize () noexcept { impl->concurrency.waitAllTasksExecuted (); }
 
 //-----------------------------------------------------------------------------
 void LinuxFactory::setResourcePath (const std::string& path) const noexcept
@@ -207,6 +212,12 @@ PlatformFileSelectorPtr LinuxFactory::createFileSelector (PlatformFileSelectorSt
 const IPlatformGraphicsDeviceFactory& LinuxFactory::getGraphicsDeviceFactory () const noexcept
 {
 	return *impl->graphicsDeviceFactory.get ();
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformConcurrency& LinuxFactory::getConcurrency () const noexcept
+{
+	return impl->concurrency;
 }
 
 //-----------------------------------------------------------------------------

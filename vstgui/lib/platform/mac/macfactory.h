@@ -26,6 +26,7 @@ public:
 	void enableVisualizeRedrawAreas (bool state) const noexcept;
 	bool enableVisualizeRedrawAreas () const noexcept;
 
+	void finalize () noexcept final;
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */
@@ -134,6 +135,8 @@ public:
 	 *	@return platform graphics device factory
 	 */
 	const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept final;
+
+	const IPlatformConcurrency& getConcurrency () const noexcept final;
 
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;

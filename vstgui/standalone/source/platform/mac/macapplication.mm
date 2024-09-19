@@ -7,12 +7,12 @@
 #import "../../../../lib/vstguiinit.h"
 #import "../../../include/iappdelegate.h"
 #import "../../../include/iapplication.h"
+#import "../../../include/iasync.h"
 #import "../../application.h"
 #import "../../genericalertbox.h"
 #import "../../shareduiresources.h"
 #import "../../window.h"
 #import "VSTGUICommand.h"
-#import "macasync.h"
 #import "maccommondirectories.h"
 #import "macpreference.h"
 #import "macutilities.h"
@@ -675,7 +675,6 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 		[window close];
 	}
 	Detail::cleanupSharedUIResources ();
-	Async::waitAllTasksDone ();
 	VSTGUI::exit ();
 }
 

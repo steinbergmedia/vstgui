@@ -63,6 +63,8 @@ set(${target}_common_sources
     clinestyle.h
     coffscreencontext.cpp
     coffscreencontext.h
+    concurrency.cpp
+    concurrency.h
     controls/cautoanimation.cpp
     controls/cautoanimation.h
     controls/cbuttons.cpp
@@ -161,6 +163,7 @@ set(${target}_common_sources
     pixelbuffer.h
     pixelbuffer.cpp
     platform/iplatformbitmap.h
+    platform/iplatformconcurrency.h
     platform/iplatformgraphicsdevice.h
     platform/iplatformfileselector.h
     platform/iplatformfont.h
@@ -224,6 +227,8 @@ set(${target}_mac_sources
     platform/mac/cocoa/objcclassbuilder.h
     platform/mac/coregraphicsdevicecontext.h
     platform/mac/coregraphicsdevicecontext.mm
+    platform/mac/macconcurrency.mm
+    platform/mac/macconcurrency.h
     platform/mac/macclipboard.h
     platform/mac/macclipboard.mm
     platform/mac/macfactory.h
@@ -260,6 +265,8 @@ set(${target}_win32_sources
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
     platform/win32/win32bitmapbase.h
+    platform/win32/win32concurrency.cpp
+    platform/win32/win32concurrency.h
     platform/win32/win32dll.h
     platform/win32/win32datapackage.cpp
     platform/win32/win32datapackage.h
@@ -320,6 +327,8 @@ set(${target}_linux_sources
     platform/linux/x11utils.h
     platform/linux/linuxfactory.cpp
     platform/linux/linuxfactory.h
+    platform/linux/linuxconcurrency.cpp
+    platform/linux/linuxconcurrency.h
 )
 
 ##########################################################################################

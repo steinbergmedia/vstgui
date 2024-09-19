@@ -37,6 +37,7 @@ set(${target}_common_sources
     include/helpers/uidesc/customization.h
     source/application.cpp
     source/application.h
+    source/async.cpp
     source/genericalertbox.cpp
     source/genericalertbox.h
     source/shareduiresources.cpp
@@ -52,8 +53,6 @@ set(${target}_common_sources
 set(${target}_mac_sources
     source/platform/mac/VSTGUICommand.h
     source/platform/mac/VSTGUICommand.mm
-    source/platform/mac/macasync.mm
-    source/platform/mac/macasync.h
     source/platform/mac/macapplication.mm
     source/platform/mac/maccommondirectories.h
     source/platform/mac/maccommondirectories.mm
@@ -70,8 +69,6 @@ set(${target}_mac_sources
 ##########################################################################################
 set(${target}_win32_sources
     source/platform/win32/win32application.cpp
-    source/platform/win32/win32async.cpp
-    source/platform/win32/win32async.h
     source/platform/win32/win32commondirectories.h
     source/platform/win32/win32commondirectories.cpp
     source/platform/win32/win32menu.cpp
@@ -85,7 +82,6 @@ set(${target}_win32_sources
 set(${target}_gdk_sources
     source/platform/gdk/gdkapplication.cpp
     source/platform/gdk/gdkapplication.h
-    source/platform/gdk/gdkasync.cpp
     source/platform/gdk/gdkcommondirectories.cpp
     source/platform/gdk/gdkcommondirectories.h
     source/platform/gdk/gdkpreference.cpp
@@ -114,6 +110,7 @@ endif()
 if(LINUX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(SQLITE3 REQUIRED sqlite3)
+    pkg_check_modules(ATKMM REQUIRED atkmm-1.6)
 
     set(${target}_sources ${${target}_common_sources} ${${target}_gdk_sources})
 endif()
@@ -132,6 +129,7 @@ endif()
 if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
     target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${ATKMM_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${SQLITE3_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE vstgui_uidescription ${LINUX_LIBRARIES} dl ${SQLITE3_LIBRARIES})

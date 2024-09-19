@@ -345,6 +345,7 @@ class IPlatformGraphicsDeviceFactory;
 class IPlatformGraphicsDevice;
 class IPlatformGraphicsDeviceContext;
 class IPlatformGraphicsDeviceContextBitmapExt;
+class IPlatformConcurrency;
 
 struct PlatformFileExtension;
 struct PlatformFileSelectorConfig;
