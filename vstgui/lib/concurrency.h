@@ -8,27 +8,46 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
+/** Simple Task Concurrency API.
+ *
+ *	The task concurrency API allows scheduling tasks either concurrently or sequentially on
+ *	background threads. Additionally, tasks running on background threads can be scheduled back to
+ *	the main thread, for example, to notify when a task has been completed.
+ *
+ *	This API can be used while the VSTGUI library is initialized. Upon deinitialization (via the
+ *	required exit() call), the exit() function ensures that all dispatched tasks are completed
+ *	before returning.
+ *
+ *	Note that tasks cannot be canceled once they have been dispatched.
+ */
 namespace Concurrency {
 
 //------------------------------------------------------------------------
-/** Get main/UI serial queue.
+/** Get the main/UI serial queue.
  *
- *	Tasks scheduled on this queue are performed serially on the main/ui thread.
+ *	Tasks scheduled on this queue are performed sequentially on the main/ui thread.
+ *
+ *	@return the shared main queue
  */
 const Queue& mainQueue ();
 
 //------------------------------------------------------------------------
-/** Get background concurrent queue.
+/** Get the background concurrent queue.
  *
  *	Tasks scheduled on this queue are performed concurrently on background threads.
- *	The number of background threads are depending on the systems number of CPU cores.
+ *	The number of background threads depends on the system's CPU core count.
+ *
+ *	@return the shared background queue
  */
 const Queue& backgroundQueue ();
 
 //------------------------------------------------------------------------
 /** Make a new serial queue.
  *
- *	Tasks scheduled on this queue are performed serially on a background thread.
+ *	Tasks scheduled on this queue are executed sequentially on a background thread.
+ *
+ *	The caller owns the queue, and when the queue is destroyed, all remaining tasks are completed
+ *	before the destroy call returns..
  *
  *	@param name		the name of the serial queue (optional)
  *	@return 		a new serial queue
@@ -36,7 +55,7 @@ const Queue& backgroundQueue ();
 QueuePtr makeSerialQueue (const char* name);
 
 //------------------------------------------------------------------------
-/** Schedule a task to be performed asynchronous on a queue.
+/** Schedule a task to be executed asynchronously on a queue.
  *
  *	Can be called from any thread, but should not be called from realtime constraint threads as it
  *	may involves locks and memory allocations
@@ -47,7 +66,7 @@ QueuePtr makeSerialQueue (const char* name);
 void schedule (const Queue& queue, Task&& task);
 
 //------------------------------------------------------------------------
-/** Wait for all tasks to be executed on a queue
+/** Wait for all tasks in the queue to complete execution.
  *
  *	Can only be called from the main thread.
  *
