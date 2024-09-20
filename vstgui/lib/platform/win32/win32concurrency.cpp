@@ -222,11 +222,15 @@ const Concurrency::Queue& Win32Concurrency::getBackgroundQueue () const
 Concurrency::QueuePtr Win32Concurrency::makeSerialQueue (const char* name) const
 {
 	++Concurrency::numUserQueues;
-	return std::shared_ptr<Concurrency::SerialQueue> (new Concurrency::SerialQueue (name),
-													  [] (auto* queue) {
-														  delete queue;
-														  Concurrency::numUserQueues--;
-													  });
+	return std::shared_ptr<Concurrency::SerialQueue> (
+		new Concurrency::SerialQueue (name), [] (auto* queue) {
+			while (queue->numTasks > 0u)
+			{
+				std::this_thread::sleep_for (std::chrono::milliseconds (1));
+			}
+			delete queue;
+			Concurrency::numUserQueues--;
+		});
 }
 
 //------------------------------------------------------------------------

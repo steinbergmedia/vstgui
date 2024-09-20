@@ -87,6 +87,7 @@ Concurrency::QueuePtr MacConcurrency::makeSerialQueue (const char* name) const
 {
 	auto dq = dispatch_queue_create (name, DISPATCH_QUEUE_SERIAL);
 	auto queue = std::shared_ptr<Concurrency::Queue> (new Concurrency::Queue {dq}, [] (auto queue) {
+		queue->waitAllTasksDone ();
 		--Concurrency::numUserQueues;
 		delete queue;
 	});
