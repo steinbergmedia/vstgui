@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "platform/iplatformconcurrency.h"
+#include "platform/iplatformtaskexecutor.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -20,7 +20,7 @@ namespace VSTGUI {
  *
  *	Note that tasks cannot be canceled once they have been dispatched.
  */
-namespace Concurrency {
+namespace Tasks {
 
 //------------------------------------------------------------------------
 /** Get the main/UI serial queue.
@@ -75,5 +75,5 @@ void schedule (const Queue& queue, Task&& task);
 void waitAllTasksExecuted (const Queue& queue);
 
 //------------------------------------------------------------------------
-} // Concurrency
+} // Tasks
 } // VSTGUI

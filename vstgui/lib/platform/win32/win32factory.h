@@ -159,7 +159,7 @@ public:
 	 */
 	const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept final;
 
-	const IPlatformConcurrency& getConcurrency () const noexcept final;
+	const IPlatformTaskExecutor& getTaskExecutor () const noexcept final;
 
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;

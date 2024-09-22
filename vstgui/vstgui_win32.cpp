@@ -8,7 +8,7 @@
 
 #include "vstgui.cpp"
 
-#include "lib/platform/win32/win32async.cpp"
+#include "lib/platform/win32/win32taskexecutor.cpp"
 #include "lib/platform/win32/win32datapackage.cpp"
 #include "lib/platform/win32/win32directcomposition.cpp"
 #include "lib/platform/win32/win32dragging.cpp"

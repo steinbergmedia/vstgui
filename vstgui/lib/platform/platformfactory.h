@@ -150,7 +150,7 @@ public:
 	 */
 	virtual const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept = 0;
 
-	virtual const IPlatformConcurrency& getConcurrency () const noexcept = 0;
+	virtual const IPlatformTaskExecutor& getTaskExecutor () const noexcept = 0;
 
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;

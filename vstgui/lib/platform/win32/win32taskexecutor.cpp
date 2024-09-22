@@ -11,7 +11,7 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-namespace Concurrency {
+namespace Tasks {
 namespace Detail {
 
 //------------------------------------------------------------------------
@@ -36,10 +36,7 @@ struct TaskWrapper final : std::enable_shared_from_this<TaskWrapper>
 //------------------------------------------------------------------------
 struct Queue
 {
-	virtual ~Queue () noexcept
-	{
-		vstgui_assert (empty (), "Concurrency queues must be empty on exit");
-	}
+	virtual ~Queue () noexcept { vstgui_assert (empty (), "Tasks queues must be empty on exit"); }
 
 	virtual void schedule (Task&& task) const = 0;
 	uint32_t empty () const { return numTasks == 0u; }
@@ -55,7 +52,7 @@ struct MainQueue final : Queue
 	MainQueue (HINSTANCE instance) : instance (instance)
 	{
 		std::wstring windowClassName;
-		windowClassName = TEXT ("VSTGUI Concurrency MessageWindow ");
+		windowClassName = TEXT ("VSTGUI Tasks MessageWindow ");
 		windowClassName += std::to_wstring (reinterpret_cast<uint64_t> (this));
 
 		WNDCLASSEX wcex {};
@@ -89,7 +86,7 @@ struct MainQueue final : Queue
 		{
 			if (message == WM_USER_ASYNC)
 			{
-				auto* task = reinterpret_cast<Concurrency::Task*> (wParam);
+				auto* task = reinterpret_cast<Tasks::Task*> (wParam);
 				(*task) ();
 				delete task;
 				return 0;
@@ -100,7 +97,7 @@ struct MainQueue final : Queue
 
 	void schedule (Task&& t) const override
 	{
-		auto task = new Concurrency::Task (std::move (t));
+		auto task = new Tasks::Task (std::move (t));
 		PostMessage (messageWindow, WM_USER_ASYNC, reinterpret_cast<WPARAM> (task), 0);
 	}
 
@@ -175,72 +172,67 @@ private:
 static std::atomic<uint32_t> numUserQueues {0u};
 
 //------------------------------------------------------------------------
-} // Concurrency
+} // Tasks
 
 //------------------------------------------------------------------------
-struct Win32Concurrency::Impl
+struct Win32TaskExecutor::Impl
 {
-	std::unique_ptr<Concurrency::MainQueue> mainQueue;
-	Concurrency::BackgroundQueue backgroundQueue;
+	std::unique_ptr<Tasks::MainQueue> mainQueue;
+	Tasks::BackgroundQueue backgroundQueue;
 	std::atomic<uint32_t> numSerialQueues {0u};
 	std::thread::id mainThreadId {std::this_thread::get_id ()};
 };
 
 //------------------------------------------------------------------------
-Win32Concurrency::Win32Concurrency () { impl = std::make_unique<Impl> (); }
+Win32TaskExecutor::Win32TaskExecutor () { impl = std::make_unique<Impl> (); }
 
 //------------------------------------------------------------------------
-Win32Concurrency::~Win32Concurrency () noexcept
+Win32TaskExecutor::~Win32TaskExecutor () noexcept
 {
 	while (!impl->backgroundQueue.empty ())
 		impl->mainQueue->handleNextTask ();
 
-	vstgui_assert (Concurrency::numUserQueues == 0u,
-				   "Serial queues must all be destroyed at this point");
+	vstgui_assert (Tasks::numUserQueues == 0u, "Serial queues must all be destroyed at this point");
 }
 
 //------------------------------------------------------------------------
-void Win32Concurrency::init (HINSTANCE instance)
+void Win32TaskExecutor::init (HINSTANCE instance)
 {
-	impl->mainQueue = std::make_unique<Concurrency::MainQueue> (instance);
+	impl->mainQueue = std::make_unique<Tasks::MainQueue> (instance);
 }
 
 //------------------------------------------------------------------------
-const Concurrency::Queue& Win32Concurrency::getMainQueue () const
+const Tasks::Queue& Win32TaskExecutor::getMainQueue () const
 {
 	vstgui_assert (impl->mainQueue, "Not initialized!");
 	return *impl->mainQueue.get ();
 }
 
 //------------------------------------------------------------------------
-const Concurrency::Queue& Win32Concurrency::getBackgroundQueue () const
+const Tasks::Queue& Win32TaskExecutor::getBackgroundQueue () const { return impl->backgroundQueue; }
+
+//------------------------------------------------------------------------
+Tasks::QueuePtr Win32TaskExecutor::makeSerialQueue (const char* name) const
 {
-	return impl->backgroundQueue;
+	++Tasks::numUserQueues;
+	return std::shared_ptr<Tasks::SerialQueue> (new Tasks::SerialQueue (name), [] (auto* queue) {
+		while (queue->numTasks > 0u)
+		{
+			std::this_thread::sleep_for (std::chrono::milliseconds (1));
+		}
+		delete queue;
+		Tasks::numUserQueues--;
+	});
 }
 
 //------------------------------------------------------------------------
-Concurrency::QueuePtr Win32Concurrency::makeSerialQueue (const char* name) const
-{
-	++Concurrency::numUserQueues;
-	return std::shared_ptr<Concurrency::SerialQueue> (
-		new Concurrency::SerialQueue (name), [] (auto* queue) {
-			while (queue->numTasks > 0u)
-			{
-				std::this_thread::sleep_for (std::chrono::milliseconds (1));
-			}
-			delete queue;
-			Concurrency::numUserQueues--;
-		});
-}
-
-//------------------------------------------------------------------------
-void Win32Concurrency::schedule (const Concurrency::Queue& queue, Concurrency::Task&& task) const
+void Win32TaskExecutor::schedule (const Tasks::Queue& queue, Tasks::Task&& task) const
 {
 	queue.schedule (std::move (task));
 }
 
 //------------------------------------------------------------------------
-void Win32Concurrency::waitAllTasksExecuted (const Concurrency::Queue& queue) const
+void Win32TaskExecutor::waitAllTasksExecuted (const Tasks::Queue& queue) const
 {
 	vstgui_assert (std::this_thread::get_id () == impl->mainThreadId,
 				   "Call this only on the main thread");
@@ -253,7 +245,7 @@ void Win32Concurrency::waitAllTasksExecuted (const Concurrency::Queue& queue) co
 }
 
 //------------------------------------------------------------------------
-void Win32Concurrency::waitAllTasksExecuted () const
+void Win32TaskExecutor::waitAllTasksExecuted () const
 {
 	waitAllTasksExecuted (getBackgroundQueue ());
 	waitAllTasksExecuted (getMainQueue ());

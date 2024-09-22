@@ -3,7 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../include/iasync.h"
-#include "../../lib/concurrency.h"
+#include "../../lib/tasks.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI::Standalone::Async {
@@ -15,52 +15,49 @@ struct Queue
 {
 	virtual ~Queue () noexcept = default;
 
-	virtual const Concurrency::Queue& get () const = 0;
+	virtual const Tasks::Queue& get () const = 0;
 };
 
 //------------------------------------------------------------------------
 struct SimpleQueue : Queue
 {
-	const Concurrency::Queue* queue {nullptr};
+	const Tasks::Queue* queue {nullptr};
 
-	SimpleQueue (const Concurrency::Queue& q) : queue (&q) {}
-	const Concurrency::Queue& get () const { return *queue; }
+	SimpleQueue (const Tasks::Queue& q) : queue (&q) {}
+	const Tasks::Queue& get () const { return *queue; }
 };
 
 //------------------------------------------------------------------------
 struct SerialQueue : Queue
 {
-	Concurrency::QueuePtr queue;
+	Tasks::QueuePtr queue;
 
-	SerialQueue (Concurrency::QueuePtr&& queue) : queue (std::move (queue)) {}
-	const Concurrency::Queue& get () const { return *queue.get (); }
+	SerialQueue (Tasks::QueuePtr&& queue) : queue (std::move (queue)) {}
+	const Tasks::Queue& get () const { return *queue.get (); }
 };
 
 //------------------------------------------------------------------------
 const QueuePtr& mainQueue ()
 {
-	static QueuePtr q = std::make_shared<SimpleQueue> (Concurrency::mainQueue ());
+	static QueuePtr q = std::make_shared<SimpleQueue> (Tasks::mainQueue ());
 	return q;
 }
 
 //------------------------------------------------------------------------
 const QueuePtr& backgroundQueue ()
 {
-	static QueuePtr q = std::make_shared<SimpleQueue> (Concurrency::backgroundQueue ());
+	static QueuePtr q = std::make_shared<SimpleQueue> (Tasks::backgroundQueue ());
 	return q;
 }
 
 //------------------------------------------------------------------------
 QueuePtr makeSerialQueue (const char* name)
 {
-	return std::make_shared<SerialQueue> (Concurrency::makeSerialQueue (name));
+	return std::make_shared<SerialQueue> (Tasks::makeSerialQueue (name));
 }
 
 //------------------------------------------------------------------------
-void schedule (QueuePtr queue, Task&& task)
-{
-	Concurrency::schedule (queue->get (), std::move (task));
-}
+void schedule (QueuePtr queue, Task&& task) { Tasks::schedule (queue->get (), std::move (task)); }
 
 //------------------------------------------------------------------------
 } // namespace VSTGUI::Standalone::Async

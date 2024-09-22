@@ -4,25 +4,25 @@
 
 #pragma once
 
-#include "../iplatformconcurrency.h"
+#include "../iplatformtaskexecutor.h"
 #include "win32support.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-struct Win32Concurrency : IPlatformConcurrency
+struct Win32TaskExecutor : IPlatformTaskExecutor
 {
-	Win32Concurrency ();
-	~Win32Concurrency () noexcept;
+	Win32TaskExecutor ();
+	~Win32TaskExecutor () noexcept;
 
 	void init (HINSTANCE instance);
 
-	const Concurrency::Queue& getMainQueue () const final;
-	const Concurrency::Queue& getBackgroundQueue () const final;
-	Concurrency::QueuePtr makeSerialQueue (const char* name) const final;
-	void schedule (const Concurrency::Queue& queue, Concurrency::Task&& task) const final;
-	void waitAllTasksExecuted (const Concurrency::Queue& queue) const final;
+	const Tasks::Queue& getMainQueue () const final;
+	const Tasks::Queue& getBackgroundQueue () const final;
+	Tasks::QueuePtr makeSerialQueue (const char* name) const final;
+	void schedule (const Tasks::Queue& queue, Tasks::Task&& task) const final;
+	void waitAllTasksExecuted (const Tasks::Queue& queue) const final;
 	void waitAllTasksExecuted () const final;
 
 private:

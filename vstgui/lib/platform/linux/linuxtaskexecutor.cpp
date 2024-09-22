@@ -6,7 +6,7 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-namespace Concurrency {
+namespace Tasks {
 
 // TODO: This is currently a dummy implementation which executes the tasks directly
 
@@ -29,41 +29,38 @@ struct BackgroundQueue : Queue
 };
 
 //------------------------------------------------------------------------
-} // Concurrency
+} // Tasks
 
 //------------------------------------------------------------------------
-LinuxConcurrency::LinuxConcurrency ()
+LinuxTaskExecutor::LinuxTaskExecutor ()
 {
-	mainQueue = std::make_unique<Concurrency::MainQueue> ();
-	backgroundQueue = std::make_unique<Concurrency::BackgroundQueue> ();
+	mainQueue = std::make_unique<Tasks::MainQueue> ();
+	backgroundQueue = std::make_unique<Tasks::BackgroundQueue> ();
 }
 
 //------------------------------------------------------------------------
-LinuxConcurrency::~LinuxConcurrency () noexcept {}
+LinuxTaskExecutor::~LinuxTaskExecutor () noexcept {}
 
 //------------------------------------------------------------------------
-const Concurrency::Queue& LinuxConcurrency::getMainQueue () const { return *mainQueue.get (); }
+const Tasks::Queue& LinuxTaskExecutor::getMainQueue () const { return *mainQueue.get (); }
 
 //------------------------------------------------------------------------
-const Concurrency::Queue& LinuxConcurrency::getBackgroundQueue () const
-{
-	return *backgroundQueue.get ();
-}
+const Tasks::Queue& LinuxTaskExecutor::getBackgroundQueue () const { return *backgroundQueue.get (); }
 
 //------------------------------------------------------------------------
-Concurrency::QueuePtr LinuxConcurrency::makeSerialQueue (const char* name) const { return nullptr; }
+Tasks::QueuePtr LinuxTaskExecutor::makeSerialQueue (const char* name) const { return nullptr; }
 
 //------------------------------------------------------------------------
-void LinuxConcurrency::schedule (const Concurrency::Queue& queue, Concurrency::Task&& task) const
+void LinuxTaskExecutor::schedule (const Tasks::Queue& queue, Tasks::Task&& task) const
 {
 	queue.schedule (std::move (task));
 }
 
 //------------------------------------------------------------------------
-void LinuxConcurrency::waitAllTasksExecuted (const Concurrency::Queue& queue) const {}
+void LinuxTaskExecutor::waitAllTasksExecuted (const Tasks::Queue& queue) const {}
 
 //------------------------------------------------------------------------
-void LinuxConcurrency::waitAllTasksExecuted () const {}
+void LinuxTaskExecutor::waitAllTasksExecuted () const {}
 
 //------------------------------------------------------------------------
 } // VSTGUI

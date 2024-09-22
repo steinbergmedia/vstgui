@@ -2,7 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#import "macconcurrency.h"
+#import "mactaskexecutor.h"
 #import "../../vstguidebug.h"
 #import <dispatch/dispatch.h>
 #import <atomic>
@@ -11,7 +11,7 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-namespace Concurrency {
+namespace Tasks {
 
 //------------------------------------------------------------------------
 struct Queue
@@ -54,56 +54,52 @@ private:
 static std::atomic<uint32_t> numUserQueues {0u};
 
 //------------------------------------------------------------------------
-} // Concurrency
+} // Tasks
 
 //------------------------------------------------------------------------
-MacConcurrency::MacConcurrency ()
+MacTaskExecutor::MacTaskExecutor ()
 {
-	mainQueue = std::make_unique<Concurrency::Queue> (dispatch_get_main_queue ());
-	backgroundQueue = std::make_unique<Concurrency::Queue> (
-		dispatch_get_global_queue (QOS_CLASS_USER_INITIATED, 0));
+	mainQueue = std::make_unique<Tasks::Queue> (dispatch_get_main_queue ());
+	backgroundQueue =
+		std::make_unique<Tasks::Queue> (dispatch_get_global_queue (QOS_CLASS_USER_INITIATED, 0));
 }
 
 //------------------------------------------------------------------------
-MacConcurrency::~MacConcurrency () noexcept
+MacTaskExecutor::~MacTaskExecutor () noexcept
 {
 	waitAllTasksExecuted (getBackgroundQueue ());
 	waitAllTasksExecuted (getMainQueue ());
-	vstgui_assert (Concurrency::numUserQueues == 0u,
-				   "Serial queues must all be destroyed at this point");
+	vstgui_assert (Tasks::numUserQueues == 0u, "Serial queues must all be destroyed at this point");
 }
 
 //------------------------------------------------------------------------
-const Concurrency::Queue& MacConcurrency::getMainQueue () const { return *mainQueue.get (); }
+const Tasks::Queue& MacTaskExecutor::getMainQueue () const { return *mainQueue.get (); }
 
 //------------------------------------------------------------------------
-const Concurrency::Queue& MacConcurrency::getBackgroundQueue () const
-{
-	return *backgroundQueue.get ();
-}
+const Tasks::Queue& MacTaskExecutor::getBackgroundQueue () const { return *backgroundQueue.get (); }
 
 //------------------------------------------------------------------------
-Concurrency::QueuePtr MacConcurrency::makeSerialQueue (const char* name) const
+Tasks::QueuePtr MacTaskExecutor::makeSerialQueue (const char* name) const
 {
 	auto dq = dispatch_queue_create (name, DISPATCH_QUEUE_SERIAL);
-	auto queue = std::shared_ptr<Concurrency::Queue> (new Concurrency::Queue {dq}, [] (auto queue) {
+	auto queue = std::shared_ptr<Tasks::Queue> (new Tasks::Queue {dq}, [] (auto queue) {
 		queue->waitAllTasksDone ();
-		--Concurrency::numUserQueues;
+		--Tasks::numUserQueues;
 		delete queue;
 	});
-	++Concurrency::numUserQueues;
+	++Tasks::numUserQueues;
 	dispatch_release (dq);
 	return queue;
 }
 
 //------------------------------------------------------------------------
-void MacConcurrency::schedule (const Concurrency::Queue& queue, Concurrency::Task&& task) const
+void MacTaskExecutor::schedule (const Tasks::Queue& queue, Tasks::Task&& task) const
 {
 	queue.schedule (std::move (task));
 }
 
 //------------------------------------------------------------------------
-void MacConcurrency::waitAllTasksExecuted (const Concurrency::Queue& queue) const
+void MacTaskExecutor::waitAllTasksExecuted (const Tasks::Queue& queue) const
 {
 	vstgui_assert (pthread_main_np () != 0, "Must be called from the main thread");
 	auto isMainQueue = &queue == &getMainQueue ();
@@ -122,7 +118,7 @@ void MacConcurrency::waitAllTasksExecuted (const Concurrency::Queue& queue) cons
 }
 
 //------------------------------------------------------------------------
-void MacConcurrency::waitAllTasksExecuted () const
+void MacTaskExecutor::waitAllTasksExecuted () const
 {
 	while (!backgroundQueue->empty ())
 	{

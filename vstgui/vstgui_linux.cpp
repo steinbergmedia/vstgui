@@ -16,3 +16,4 @@
 #include "lib/platform/linux/cairopath.cpp"
 
 #include "lib/platform/linux/linuxfactory.cpp"
+#include "lib/platform/linux/linuxtaskexecutor.cpp"
