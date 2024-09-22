@@ -70,7 +70,7 @@ MacConcurrency::~MacConcurrency () noexcept
 	waitAllTasksExecuted (getBackgroundQueue ());
 	waitAllTasksExecuted (getMainQueue ());
 	vstgui_assert (Concurrency::numUserQueues == 0u,
-				   "Concurrency Queues must all be destroyed at this point");
+				   "Serial queues must all be destroyed at this point");
 }
 
 //------------------------------------------------------------------------

@@ -38,7 +38,7 @@ struct Queue
 {
 	virtual ~Queue () noexcept
 	{
-		vstgui_assert (empty (), "Concurrency Queues must be empty on exit");
+		vstgui_assert (empty (), "Concurrency queues must be empty on exit");
 	}
 
 	virtual void schedule (Task&& task) const = 0;
@@ -55,7 +55,7 @@ struct MainQueue final : Queue
 	MainQueue (HINSTANCE instance) : instance (instance)
 	{
 		std::wstring windowClassName;
-		windowClassName = TEXT ("VSTGUI MessageWindow ");
+		windowClassName = TEXT ("VSTGUI Concurrency MessageWindow ");
 		windowClassName += std::to_wstring (reinterpret_cast<uint64_t> (this));
 
 		WNDCLASSEX wcex {};
@@ -196,7 +196,7 @@ Win32Concurrency::~Win32Concurrency () noexcept
 		impl->mainQueue->handleNextTask ();
 
 	vstgui_assert (Concurrency::numUserQueues == 0u,
-				   "Concurrency Queues must all be destroyed at this point");
+				   "Serial queues must all be destroyed at this point");
 }
 
 //------------------------------------------------------------------------
