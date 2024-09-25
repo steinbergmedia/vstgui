@@ -15,7 +15,7 @@ namespace VSTGUI {
  *	thread from any other thread.
  *
  *	This API can be used while the VSTGUI library is initialized. Upon deinitialization, triggered
- *	by the mandatory exit() call, this API ensures that all dispatched tasks are completed prior to
+ *	by the mandatory exit() call, this API ensures that all scheduled tasks are completed prior to
  *	returning.
  *
  *	Please note that once a task has been dispatched, it cannot be canceled.
@@ -27,6 +27,8 @@ namespace Tasks {
  *
  *	Tasks scheduled on this queue are performed sequentially on the main/ui thread.
  *
+ *	Can be called from any thread.
+ *
  *	@return the shared main queue
  */
 const Queue& mainQueue ();
@@ -37,6 +39,8 @@ const Queue& mainQueue ();
  *	Tasks scheduled on this queue are performed concurrently on background threads.
  *	The number of background threads depends on the system's CPU core count.
  *
+ *	Can be called from any thread.
+ *
  *	@return the shared background queue
  */
 const Queue& backgroundQueue ();
@@ -46,8 +50,9 @@ const Queue& backgroundQueue ();
  *
  *	Tasks scheduled on this queue are executed sequentially on a background thread.
  *
- *	The caller owns the queue, and when the queue is destroyed, all remaining tasks are completed
- *	before the destroy call returns..
+ *	The caller owns the queue, and needs to release the queue via the releaseSerialQueue() function.
+ *
+ *	Can be called from any thread.
  *
  *	@param name		the name of the serial queue (optional)
  *	@return 		a new serial queue
@@ -56,6 +61,12 @@ Queue makeSerialQueue (const char* name);
 
 //------------------------------------------------------------------------
 /** Release a serial queue
+ *
+ *	This function will block until all tasks of the queue were executed.
+ *
+ *	Can be called from any thread.
+ *
+ *	@param queue	the queue which to release
  */
 void releaseSerialQueue (const Queue& queue);
 
