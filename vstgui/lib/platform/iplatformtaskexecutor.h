@@ -16,6 +16,19 @@ struct Queue final
 {
 	const uint64_t identifier;
 };
+static constexpr Queue InvalidQueue = Queue {std::numeric_limits<uint64_t>::max ()};
+
+//------------------------------------------------------------------------
+inline bool operator== (const Queue& q1, const Queue& q2) noexcept
+{
+	return q1.identifier == q2.identifier;
+}
+
+//------------------------------------------------------------------------
+inline bool operator!= (const Queue& q1, const Queue& q2) noexcept
+{
+	return q1.identifier != q2.identifier;
+}
 
 using Task = std::function<void ()>;
 

@@ -27,13 +27,19 @@ Queue makeSerialQueue (const char* name)
 //------------------------------------------------------------------------
 void releaseSerialQueue (const Queue& queue)
 {
-	return getPlatformFactory ().getTaskExecutor ().releaseSerialQueue (queue);
+	getPlatformFactory ().getTaskExecutor ().releaseSerialQueue (queue);
 }
 
 //------------------------------------------------------------------------
 void schedule (const Queue& queue, Task&& task)
 {
-	return getPlatformFactory ().getTaskExecutor ().schedule (queue, std::move (task));
+	getPlatformFactory ().getTaskExecutor ().schedule (queue, std::move (task));
+}
+
+//------------------------------------------------------------------------
+void waitAllTasksExecuted (const Queue& queue)
+{
+	getPlatformFactory ().getTaskExecutor ().waitAllTasksExecuted (queue);
 }
 
 //------------------------------------------------------------------------
