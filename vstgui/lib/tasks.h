@@ -10,15 +10,15 @@
 namespace VSTGUI {
 /** Simple Task Concurrency API.
  *
- *	The task concurrency API allows scheduling tasks either concurrently or sequentially on
- *	background threads. Additionally, tasks running on background threads can be scheduled back to
- *	the main thread, for example, to notify when a task has been completed.
+ *	The Task Concurrency API facilitates scheduling tasks for execution on background threads,
+ *	either concurrently or sequentially. This API also enables the scheduling of tasks on the main
+ *	thread from any other thread.
  *
- *	This API can be used while the VSTGUI library is initialized. Upon deinitialization (via the
- *	required exit() call), the exit() function ensures that all dispatched tasks are completed
- *	before returning.
+ *	This API can be used while the VSTGUI library is initialized. Upon deinitialization, triggered
+ *	by the mandatory exit() call, this API ensures that all dispatched tasks are completed prior to
+ *	returning.
  *
- *	Note that tasks cannot be canceled once they have been dispatched.
+ *	Please note that once a task has been dispatched, it cannot be canceled.
  */
 namespace Tasks {
 
@@ -52,7 +52,12 @@ const Queue& backgroundQueue ();
  *	@param name		the name of the serial queue (optional)
  *	@return 		a new serial queue
  */
-QueuePtr makeSerialQueue (const char* name);
+Queue makeSerialQueue (const char* name);
+
+//------------------------------------------------------------------------
+/** Release a serial queue
+ */
+void releaseSerialQueue (const Queue& queue);
 
 //------------------------------------------------------------------------
 /** Schedule a task to be executed asynchronously on a queue.

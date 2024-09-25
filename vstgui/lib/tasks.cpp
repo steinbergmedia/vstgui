@@ -19,9 +19,15 @@ const Queue& backgroundQueue ()
 }
 
 //------------------------------------------------------------------------
-QueuePtr makeSerialQueue (const char* name)
+Queue makeSerialQueue (const char* name)
 {
 	return getPlatformFactory ().getTaskExecutor ().makeSerialQueue (name);
+}
+
+//------------------------------------------------------------------------
+void releaseSerialQueue (const Queue& queue)
+{
+	return getPlatformFactory ().getTaskExecutor ().releaseSerialQueue (queue);
 }
 
 //------------------------------------------------------------------------

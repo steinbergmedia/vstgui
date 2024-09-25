@@ -37,7 +37,7 @@ struct MacFactory::Impl
 	bool useAsynchronousLayerDrawing {true};
 	bool visualizeRedrawAreas {false};
 	CoreGraphicsDeviceFactory graphicsDeviceFactory;
-	MacTaskExecutor taskExecutor;
+	PlatformTaskExecutorPtr taskExecutor;
 };
 
 //-----------------------------------------------------------------------------
@@ -46,12 +46,13 @@ MacFactory::MacFactory (CFBundleRef bundle)
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->bundle = bundle;
 	mach_timebase_info (&impl->timebaseInfo);
+	impl->taskExecutor = std::make_unique<MacTaskExecutor> ();
 }
 
 MacFactory::~MacFactory () noexcept = default;
 
 //------------------------------------------------------------------------
-void MacFactory::finalize () noexcept { impl->taskExecutor.waitAllTasksExecuted (); }
+void MacFactory::finalize () noexcept { impl->taskExecutor->waitAllTasksExecuted (); }
 
 //-----------------------------------------------------------------------------
 CFBundleRef MacFactory::getBundle () const noexcept
@@ -244,7 +245,7 @@ const IPlatformGraphicsDeviceFactory& MacFactory::getGraphicsDeviceFactory () co
 //------------------------------------------------------------------------
 const IPlatformTaskExecutor& MacFactory::getTaskExecutor () const noexcept
 {
-	return impl->taskExecutor;
+	return *impl->taskExecutor;
 }
 
 //-----------------------------------------------------------------------------

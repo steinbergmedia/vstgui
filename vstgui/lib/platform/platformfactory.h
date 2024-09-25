@@ -150,6 +150,10 @@ public:
 	 */
 	virtual const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept = 0;
 
+	/** Get the platform task executor
+	 *
+	 *  @return platform task executor
+	 */
 	virtual const IPlatformTaskExecutor& getTaskExecutor () const noexcept = 0;
 
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;

@@ -13,47 +13,30 @@ namespace VSTGUI::Standalone::Async {
 //------------------------------------------------------------------------
 struct Queue
 {
-	virtual ~Queue () noexcept = default;
-
-	virtual const Tasks::Queue& get () const = 0;
-};
-
-//------------------------------------------------------------------------
-struct SimpleQueue : Queue
-{
 	const Tasks::Queue* queue {nullptr};
 
-	SimpleQueue (const Tasks::Queue& q) : queue (&q) {}
+	Queue (const Tasks::Queue& q) : queue (&q) {}
 	const Tasks::Queue& get () const { return *queue; }
-};
-
-//------------------------------------------------------------------------
-struct SerialQueue : Queue
-{
-	Tasks::QueuePtr queue;
-
-	SerialQueue (Tasks::QueuePtr&& queue) : queue (std::move (queue)) {}
-	const Tasks::Queue& get () const { return *queue.get (); }
 };
 
 //------------------------------------------------------------------------
 const QueuePtr& mainQueue ()
 {
-	static QueuePtr q = std::make_shared<SimpleQueue> (Tasks::mainQueue ());
+	static QueuePtr q = std::make_shared<Queue> (Tasks::mainQueue ());
 	return q;
 }
 
 //------------------------------------------------------------------------
 const QueuePtr& backgroundQueue ()
 {
-	static QueuePtr q = std::make_shared<SimpleQueue> (Tasks::backgroundQueue ());
+	static QueuePtr q = std::make_shared<Queue> (Tasks::backgroundQueue ());
 	return q;
 }
 
 //------------------------------------------------------------------------
 QueuePtr makeSerialQueue (const char* name)
 {
-	return std::make_shared<SerialQueue> (Tasks::makeSerialQueue (name));
+	return std::make_shared<Queue> (Tasks::makeSerialQueue (name));
 }
 
 //------------------------------------------------------------------------

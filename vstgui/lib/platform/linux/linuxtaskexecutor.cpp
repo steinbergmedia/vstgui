@@ -2,58 +2,71 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "linuxconcurrency.h"
+#include "linuxtaskexecutor.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-namespace Tasks {
 
 // TODO: This is currently a dummy implementation which executes the tasks directly
 
 //------------------------------------------------------------------------
-struct Queue
+struct LinuxTaskExecutor::Queue
 {
-	virtual void schedule (Task&& task) const = 0;
+	Queue (uint64_t qId) : queueID ({qId}) {}
+	virtual ~Queue () noexcept = default;
+	virtual void schedule (Tasks::Task&& task) const = 0;
+
+	Tasks::Queue queueID;
 };
 
 //------------------------------------------------------------------------
-struct MainQueue : Queue
+struct LinuxTaskExecutor::MainQueue : LinuxTaskExecutor::Queue
 {
-	void schedule (Task&& task) const final { task (); }
+	using Queue::Queue;
+	void schedule (Tasks::Task&& task) const final { task (); }
 };
 
 //------------------------------------------------------------------------
-struct BackgroundQueue : Queue
+struct LinuxTaskExecutor::BackgroundQueue : LinuxTaskExecutor::Queue
 {
-	void schedule (Task&& task) const final { task (); }
+	using Queue::Queue;
+	void schedule (Tasks::Task&& task) const final { task (); }
 };
-
-//------------------------------------------------------------------------
-} // Tasks
 
 //------------------------------------------------------------------------
 LinuxTaskExecutor::LinuxTaskExecutor ()
 {
-	mainQueue = std::make_unique<Tasks::MainQueue> ();
-	backgroundQueue = std::make_unique<Tasks::BackgroundQueue> ();
+	mainQueue = std::make_unique<MainQueue> (0u);
+	backgroundQueue = std::make_unique<BackgroundQueue> (1u);
 }
 
 //------------------------------------------------------------------------
 LinuxTaskExecutor::~LinuxTaskExecutor () noexcept {}
 
 //------------------------------------------------------------------------
-const Tasks::Queue& LinuxTaskExecutor::getMainQueue () const { return *mainQueue.get (); }
+const Tasks::Queue& LinuxTaskExecutor::getMainQueue () const { return mainQueue->queueID; }
 
 //------------------------------------------------------------------------
-const Tasks::Queue& LinuxTaskExecutor::getBackgroundQueue () const { return *backgroundQueue.get (); }
+const Tasks::Queue& LinuxTaskExecutor::getBackgroundQueue () const
+{
+	return backgroundQueue->queueID;
+}
 
 //------------------------------------------------------------------------
-Tasks::QueuePtr LinuxTaskExecutor::makeSerialQueue (const char* name) const { return nullptr; }
+Tasks::Queue LinuxTaskExecutor::makeSerialQueue (const char* name) const { return {3}; }
+
+void LinuxTaskExecutor::releaseSerialQueue (const Tasks::Queue& queue) const {}
 
 //------------------------------------------------------------------------
 void LinuxTaskExecutor::schedule (const Tasks::Queue& queue, Tasks::Task&& task) const
 {
-	queue.schedule (std::move (task));
+	const Queue* q = nullptr;
+	if (queue.identifier == mainQueue->queueID.identifier)
+		q = mainQueue.get ();
+	else if (queue.identifier == backgroundQueue->queueID.identifier)
+		q = backgroundQueue.get ();
+	if (q)
+		q->schedule (std::move (task));
 }
 
 //------------------------------------------------------------------------

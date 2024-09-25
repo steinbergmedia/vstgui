@@ -20,7 +20,8 @@ struct Win32TaskExecutor : IPlatformTaskExecutor
 
 	const Tasks::Queue& getMainQueue () const final;
 	const Tasks::Queue& getBackgroundQueue () const final;
-	Tasks::QueuePtr makeSerialQueue (const char* name) const final;
+	Tasks::Queue makeSerialQueue (const char* name) const final;
+	void releaseSerialQueue (const Tasks::Queue& queue) const final;
 	void schedule (const Tasks::Queue& queue, Tasks::Task&& task) const final;
 	void waitAllTasksExecuted (const Tasks::Queue& queue) const final;
 	void waitAllTasksExecuted () const final;

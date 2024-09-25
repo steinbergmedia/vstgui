@@ -11,8 +11,11 @@
 namespace VSTGUI {
 namespace Tasks {
 
-struct Queue;
-using QueuePtr = std::shared_ptr<Queue>;
+//------------------------------------------------------------------------
+struct Queue final
+{
+	const uint64_t identifier;
+};
 
 using Task = std::function<void ()>;
 
@@ -27,11 +30,14 @@ public:
 
 	virtual const Tasks::Queue& getMainQueue () const = 0;
 	virtual const Tasks::Queue& getBackgroundQueue () const = 0;
-	virtual Tasks::QueuePtr makeSerialQueue (const char* name) const = 0;
+	virtual Tasks::Queue makeSerialQueue (const char* name) const = 0;
+	virtual void releaseSerialQueue (const Tasks::Queue& queue) const = 0;
 	virtual void schedule (const Tasks::Queue& queue, Tasks::Task&& task) const = 0;
 	virtual void waitAllTasksExecuted (const Tasks::Queue& queue) const = 0;
 	virtual void waitAllTasksExecuted () const = 0;
 };
+
+using PlatformTaskExecutorPtr = std::unique_ptr<IPlatformTaskExecutor>;
 
 //------------------------------------------------------------------------
 } // VSTGUI

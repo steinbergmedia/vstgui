@@ -5,6 +5,8 @@
 #pragma once
 
 #include "../iplatformtaskexecutor.h"
+#include <vector>
+#include <mutex>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -17,14 +19,23 @@ struct MacTaskExecutor final : IPlatformTaskExecutor
 
 	const Tasks::Queue& getMainQueue () const final;
 	const Tasks::Queue& getBackgroundQueue () const final;
-	Tasks::QueuePtr makeSerialQueue (const char* name) const final;
+	Tasks::Queue makeSerialQueue (const char* name) const final;
+	void releaseSerialQueue (const Tasks::Queue& queue) const final;
 	void schedule (const Tasks::Queue& queue, Tasks::Task&& task) const final;
 	void waitAllTasksExecuted (const Tasks::Queue& queue) const final;
 	void waitAllTasksExecuted () const final;
 
 private:
-	std::unique_ptr<Tasks::Queue> mainQueue;
-	std::unique_ptr<Tasks::Queue> backgroundQueue;
+	struct DispatchQueue;
+	using DispatchQueuePtr = std::unique_ptr<DispatchQueue>;
+
+	const DispatchQueue* dispatchQueueFromQueueID (const Tasks::Queue& queue) const;
+
+	DispatchQueuePtr mainQueue;
+	DispatchQueuePtr backgroundQueue;
+	mutable std::vector<DispatchQueuePtr> serialQueues;
+	mutable std::mutex serialQueueLock;
+	mutable uint64_t nextSerialQueueId {2};
 };
 
 //------------------------------------------------------------------------

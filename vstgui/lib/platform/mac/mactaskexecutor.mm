@@ -11,25 +11,24 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-namespace Tasks {
 
 //------------------------------------------------------------------------
-struct Queue
+struct MacTaskExecutor::DispatchQueue
 {
-	Queue (dispatch_queue_t q) : queue (q)
+	DispatchQueue (dispatch_queue_t q, uint64_t queueId) : queue (q), taskQueueID ({queueId})
 	{
 		dispatch_retain (queue);
 		group = dispatch_group_create ();
 	}
 
-	~Queue ()
+	~DispatchQueue ()
 	{
-		waitAllTasksDone ();
+		waitAllTasksExecuted ();
 		dispatch_release (group);
 		dispatch_release (queue);
 	}
 
-	void schedule (Task&& task) const
+	void schedule (Tasks::Task&& task) const
 	{
 		++taskCount;
 		dispatch_group_async (group, queue, [this, task = std::move (task)] () {
@@ -40,28 +39,23 @@ struct Queue
 
 	bool empty () const { return taskCount == 0; }
 
-	bool waitAllTasksDone () const
-	{
-		return dispatch_group_wait (group, DISPATCH_TIME_FOREVER) == 0;
-	}
+	void waitAllTasksExecuted () const { dispatch_group_wait (group, DISPATCH_TIME_FOREVER); }
+
+	const Tasks::Queue& getQueueID () const { return taskQueueID; }
 
 private:
 	dispatch_queue_t queue;
 	dispatch_group_t group;
+	mutable Tasks::Queue taskQueueID;
 	mutable std::atomic<uint64_t> taskCount {0u};
 };
-
-static std::atomic<uint32_t> numUserQueues {0u};
-
-//------------------------------------------------------------------------
-} // Tasks
 
 //------------------------------------------------------------------------
 MacTaskExecutor::MacTaskExecutor ()
 {
-	mainQueue = std::make_unique<Tasks::Queue> (dispatch_get_main_queue ());
-	backgroundQueue =
-		std::make_unique<Tasks::Queue> (dispatch_get_global_queue (QOS_CLASS_USER_INITIATED, 0));
+	mainQueue = std::make_unique<DispatchQueue> (dispatch_get_main_queue (), 0);
+	backgroundQueue = std::make_unique<DispatchQueue> (
+		dispatch_get_global_queue (QOS_CLASS_USER_INITIATED, 0), 1);
 }
 
 //------------------------------------------------------------------------
@@ -69,58 +63,105 @@ MacTaskExecutor::~MacTaskExecutor () noexcept
 {
 	waitAllTasksExecuted (getBackgroundQueue ());
 	waitAllTasksExecuted (getMainQueue ());
-	vstgui_assert (Tasks::numUserQueues == 0u, "Serial queues must all be destroyed at this point");
+	vstgui_assert (serialQueues.empty (), "Serial queues must all be destroyed at this point");
 }
 
 //------------------------------------------------------------------------
-const Tasks::Queue& MacTaskExecutor::getMainQueue () const { return *mainQueue.get (); }
+const Tasks::Queue& MacTaskExecutor::getMainQueue () const { return mainQueue->getQueueID (); }
 
 //------------------------------------------------------------------------
-const Tasks::Queue& MacTaskExecutor::getBackgroundQueue () const { return *backgroundQueue.get (); }
-
-//------------------------------------------------------------------------
-Tasks::QueuePtr MacTaskExecutor::makeSerialQueue (const char* name) const
+const Tasks::Queue& MacTaskExecutor::getBackgroundQueue () const
 {
+	return backgroundQueue->getQueueID ();
+}
+
+//------------------------------------------------------------------------
+Tasks::Queue MacTaskExecutor::makeSerialQueue (const char* name) const
+{
+	std::lock_guard<std::mutex> guard (serialQueueLock);
 	auto dq = dispatch_queue_create (name, DISPATCH_QUEUE_SERIAL);
-	auto queue = std::shared_ptr<Tasks::Queue> (new Tasks::Queue {dq}, [] (auto queue) {
-		queue->waitAllTasksDone ();
-		--Tasks::numUserQueues;
-		delete queue;
-	});
-	++Tasks::numUserQueues;
+	auto queue = std::make_unique<DispatchQueue> (dq, nextSerialQueueId++);
+	auto queueId = queue->getQueueID ();
+	serialQueues.emplace_back (std::move (queue));
 	dispatch_release (dq);
-	return queue;
+	return queueId;
+}
+
+//------------------------------------------------------------------------
+void MacTaskExecutor::releaseSerialQueue (const Tasks::Queue& queue) const
+{
+	serialQueueLock.lock ();
+	auto it = std::find_if (serialQueues.begin (), serialQueues.end (), [&] (const auto& el) {
+		return el->getQueueID ().identifier == queue.identifier;
+	});
+	if (it != serialQueues.end ())
+	{
+		auto dispatchQueue = std::move (*it);
+		serialQueues.erase (it);
+		serialQueueLock.unlock ();
+		dispatchQueue->waitAllTasksExecuted ();
+	}
+	else
+	{
+		serialQueueLock.unlock ();
+	}
+}
+
+//------------------------------------------------------------------------
+auto MacTaskExecutor::dispatchQueueFromQueueID (const Tasks::Queue& queue) const
+	-> const DispatchQueue*
+{
+	const DispatchQueue* dq = nullptr;
+	if (queue.identifier == mainQueue->getQueueID ().identifier)
+		dq = mainQueue.get ();
+	else if (queue.identifier == backgroundQueue->getQueueID ().identifier)
+		dq = backgroundQueue.get ();
+	else
+	{
+		serialQueueLock.lock ();
+		auto it = std::find_if (serialQueues.begin (), serialQueues.end (), [&] (const auto& el) {
+			return el->getQueueID ().identifier == queue.identifier;
+		});
+		if (it != serialQueues.end ())
+			dq = it->get ();
+		serialQueueLock.unlock ();
+	}
+	return dq;
 }
 
 //------------------------------------------------------------------------
 void MacTaskExecutor::schedule (const Tasks::Queue& queue, Tasks::Task&& task) const
 {
-	queue.schedule (std::move (task));
+	if (auto dispatchQueue = dispatchQueueFromQueueID (queue))
+		dispatchQueue->schedule (std::move (task));
 }
 
 //------------------------------------------------------------------------
 void MacTaskExecutor::waitAllTasksExecuted (const Tasks::Queue& queue) const
 {
 	vstgui_assert (pthread_main_np () != 0, "Must be called from the main thread");
-	auto isMainQueue = &queue == &getMainQueue ();
-	if (isMainQueue)
+	if (auto dispatchQueue = dispatchQueueFromQueueID (queue))
 	{
-		while (!queue.empty ())
+		auto isMainQueue = queue.identifier == mainQueue->getQueueID ().identifier;
+		if (isMainQueue)
 		{
-			[[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
-								  beforeDate:[NSDate distantFuture]];
+			while (!dispatchQueue->empty ())
+			{
+				[[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
+									  beforeDate:[NSDate distantFuture]];
+			}
 		}
-	}
-	else
-	{
-		queue.waitAllTasksDone ();
+		else
+		{
+			dispatchQueue->waitAllTasksExecuted ();
+		}
 	}
 }
 
 //------------------------------------------------------------------------
 void MacTaskExecutor::waitAllTasksExecuted () const
 {
-	while (!backgroundQueue->empty ())
+	while (!backgroundQueue->empty () || !mainQueue->empty ())
 	{
 		[[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
 	}
