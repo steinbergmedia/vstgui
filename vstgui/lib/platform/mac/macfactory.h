@@ -137,6 +137,7 @@ public:
 	const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept final;
 
 	const IPlatformTaskExecutor& getTaskExecutor () const noexcept final;
+	bool replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept final;
 
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;

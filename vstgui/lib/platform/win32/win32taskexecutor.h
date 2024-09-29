@@ -13,7 +13,7 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 struct Win32TaskExecutor : IPlatformTaskExecutor
 {
-	Win32TaskExecutor ();
+	Win32TaskExecutor (HINSTANCE instance);
 	~Win32TaskExecutor () noexcept;
 
 	void init (HINSTANCE instance);

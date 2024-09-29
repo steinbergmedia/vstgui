@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <memory>
+#include <limits>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -49,8 +50,6 @@ public:
 	virtual void waitAllTasksExecuted (const Tasks::Queue& queue) const = 0;
 	virtual void waitAllTasksExecuted () const = 0;
 };
-
-using PlatformTaskExecutorPtr = std::unique_ptr<IPlatformTaskExecutor>;
 
 //------------------------------------------------------------------------
 } // VSTGUI

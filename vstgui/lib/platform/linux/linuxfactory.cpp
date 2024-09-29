@@ -31,7 +31,7 @@ struct LinuxFactory::Impl
 {
 	std::string resPath;
 	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {std::make_unique<CairoGraphicsDeviceFactory> ()};
-	LinuxTaskExecutor taskExecutor;
+	PlatformTaskExecutorPtr taskExecutor {std::make_unique<LinuxTaskExecutor> ()};
 
 	void setupResPath (void* handle)
 	{
@@ -69,7 +69,7 @@ LinuxFactory::LinuxFactory (void* soHandle)
 }
 
 //-----------------------------------------------------------------------------
-void LinuxFactory::finalize () noexcept { impl->taskExecutor.waitAllTasksExecuted (); }
+void LinuxFactory::finalize () noexcept { impl->taskExecutor->waitAllTasksExecuted (); }
 
 //-----------------------------------------------------------------------------
 void LinuxFactory::setResourcePath (const std::string& path) const noexcept
@@ -217,7 +217,16 @@ const IPlatformGraphicsDeviceFactory& LinuxFactory::getGraphicsDeviceFactory () 
 //-----------------------------------------------------------------------------
 const IPlatformTaskExecutor& LinuxFactory::getTaskExecutor () const noexcept
 {
-	return impl->taskExecutor;
+	return *impl->taskExecutor;
+}
+
+//-----------------------------------------------------------------------------
+bool LinuxFactory::replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept
+{
+	if (!replaceFunc)
+		return false;
+	impl->taskExecutor = replaceFunc (std::move (impl->taskExecutor));
+	return true;
 }
 
 //-----------------------------------------------------------------------------

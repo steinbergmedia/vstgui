@@ -202,7 +202,11 @@ struct Win32TaskExecutor::Impl
 };
 
 //------------------------------------------------------------------------
-Win32TaskExecutor::Win32TaskExecutor () { impl = std::make_unique<Impl> (); }
+Win32TaskExecutor::Win32TaskExecutor (HINSTANCE instance)
+{
+	impl = std::make_unique<Impl> ();
+	init (instance);
+}
 
 //------------------------------------------------------------------------
 Win32TaskExecutor::~Win32TaskExecutor () noexcept

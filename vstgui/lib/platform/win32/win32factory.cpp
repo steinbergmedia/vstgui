@@ -55,7 +55,7 @@ struct Win32Factory::Impl
 
 	std::unique_ptr<DirectComposition::Factory> directCompositionFactory;
 	D2DGraphicsDeviceFactory graphicsDeviceFactory;
-	Win32TaskExecutor taskExecutor;
+	PlatformTaskExecutorPtr taskExecutor;
 
 	UTF8String resourceBasePath;
 	bool useD2DHardwareRenderer {false};
@@ -94,7 +94,7 @@ Win32Factory::Win32Factory (HINSTANCE instance)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->instance = instance;
-	impl->taskExecutor.init (instance);
+	impl->taskExecutor = std::make_unique<Win32TaskExecutor> (instance);
 
 	D2D1_FACTORY_OPTIONS* options = nullptr;
 #if 0 // DEBUG
@@ -134,7 +134,7 @@ Win32Factory::~Win32Factory () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void Win32Factory::finalize () noexcept { impl->taskExecutor.waitAllTasksExecuted (); }
+void Win32Factory::finalize () noexcept { impl->taskExecutor->waitAllTasksExecuted (); }
 
 //-----------------------------------------------------------------------------
 HINSTANCE Win32Factory::getInstance () const noexcept
@@ -413,7 +413,15 @@ const IPlatformGraphicsDeviceFactory& Win32Factory::getGraphicsDeviceFactory () 
 //-----------------------------------------------------------------------------
 const IPlatformTaskExecutor& Win32Factory::getTaskExecutor () const noexcept
 {
-	return impl->taskExecutor;
+	return *impl->taskExecutor;
+}
+
+//-----------------------------------------------------------------------------
+bool Win32Factory::replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept
+{
+	if (!replaceFunc)
+		return false;
+	return true;
 }
 
 //-----------------------------------------------------------------------------

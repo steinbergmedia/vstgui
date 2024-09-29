@@ -248,6 +248,15 @@ const IPlatformTaskExecutor& MacFactory::getTaskExecutor () const noexcept
 	return *impl->taskExecutor;
 }
 
+//------------------------------------------------------------------------
+bool MacFactory::replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept
+{
+	if (!replaceFunc)
+		return false;
+	impl->taskExecutor = replaceFunc (std::move (impl->taskExecutor));
+	return true;
+}
+
 //-----------------------------------------------------------------------------
 const LinuxFactory* MacFactory::asLinuxFactory () const noexcept
 {

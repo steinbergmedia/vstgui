@@ -156,6 +156,19 @@ public:
 	 */
 	virtual const IPlatformTaskExecutor& getTaskExecutor () const noexcept = 0;
 
+	using ReplaceTaskExecFunc =
+		std::function<PlatformTaskExecutorPtr (PlatformTaskExecutorPtr&& previousExecutor)>;
+
+	/** Replace the platform task executor
+	 *
+	 *	Make sure that no tasks are scheduled when replacing the task executor
+	 *
+	 *	@param replaceFunc	function which will be called from the factory to create the new
+	 *						executor
+	 *	@return true on success
+	 */
+	virtual bool replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept = 0;
+
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;
 	virtual const Win32Factory* asWin32Factory () const noexcept = 0;
