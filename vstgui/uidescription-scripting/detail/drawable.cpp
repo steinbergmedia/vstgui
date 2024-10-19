@@ -4,7 +4,10 @@
 
 #include "drawable.h"
 #include "converters.h"
+#include "../../lib/cframe.h"
 #include "../../lib/cdrawcontext.h"
+#include "../../lib/cgraphicspath.h"
+#include "../../lib/cgraphicstransform.h"
 #include "../../uidescription/detail/uiviewcreatorattributes.h"
 
 //------------------------------------------------------------------------
@@ -63,11 +66,62 @@ void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const
 void JavaScriptDrawable::setup (ViewScriptObject* inObject) { scriptObject = inObject; }
 
 //------------------------------------------------------------------------
+bool JavaScriptDrawable::onDrawFocusOnTop ()
+{
+	auto scriptContext = scriptObject->getContext ();
+	if (!scriptContext)
+		return false;
+
+	auto scriptRoot = scriptContext->getRoot ();
+	ScriptAddChildScoped scs (*scriptRoot, "view", *scriptObject);
+	auto boolResult = scriptContext->evalScript ("view.drawFocusOnTop();"sv);
+	return boolResult->isNumeric () ? boolResult->getInt () : false;
+}
+
+//------------------------------------------------------------------------
+bool JavaScriptDrawable::onGetFocusPath (CGraphicsPath& outPath, CCoord focusWidth,
+										 const CRect& viewSize)
+{
+	if (auto scriptContext = scriptObject->getContext ())
+	{
+		auto scriptRoot = scriptContext->getRoot ();
+		auto path = makeOwned<CGraphicsPath> (outPath);
+		ScriptObject focusWidthVar;
+		focusWidthVar->setDouble (focusWidth);
+		ScriptAddChildScoped scs (*scriptRoot, "view", *scriptObject);
+		ScriptAddChildScoped scs2 (*scriptRoot, "path", makeGraphicsPathScriptObject (path));
+		ScriptAddChildScoped scs3 (*scriptRoot, "focusWidth", focusWidthVar);
+		auto boolResult = scriptContext->evalScript ("view.getFocusPath(path, focusWidth);"sv);
+		if (boolResult->isNumeric ())
+		{
+			if (boolResult->getInt () == 1)
+			{
+				CGraphicsTransform tm;
+				tm.translate (viewSize.left, viewSize.top);
+				outPath.addPath (*path, &tm);
+				return true;
+			}
+			return false;
+		}
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
 {
 	onDraw (context, rect, getViewSize ());
+}
+
+//------------------------------------------------------------------------
+bool JavaScriptDrawableView::drawFocusOnTop () { return onDrawFocusOnTop (); }
+
+//------------------------------------------------------------------------
+bool JavaScriptDrawableView::getFocusPath (CGraphicsPath& outPath)
+{
+	return onGetFocusPath (outPath, getFrame ()->getFocusWidth (), getViewSize ());
 }
 
 //------------------------------------------------------------------------
@@ -79,6 +133,15 @@ void JavaScriptDrawableControl::draw (CDrawContext* context) { drawRect (context
 void JavaScriptDrawableControl::drawRect (CDrawContext* context, const CRect& rect)
 {
 	onDraw (context, rect, getViewSize ());
+}
+
+//------------------------------------------------------------------------
+bool JavaScriptDrawableControl::drawFocusOnTop () { return onDrawFocusOnTop (); }
+
+//------------------------------------------------------------------------
+bool JavaScriptDrawableControl::getFocusPath (CGraphicsPath& outPath)
+{
+	return onGetFocusPath (outPath, getFrame ()->getFocusWidth (), getViewSize ());
 }
 
 //------------------------------------------------------------------------

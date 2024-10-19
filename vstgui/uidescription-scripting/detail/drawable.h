@@ -18,6 +18,8 @@ namespace ScriptingInternal {
 struct JavaScriptDrawable
 {
 	void onDraw (CDrawContext* context, const CRect& rect, const CRect& viewSize);
+	bool onDrawFocusOnTop ();
+	bool onGetFocusPath (CGraphicsPath& outPath, CCoord focusWidth, const CRect& viewSize);
 
 	void setup (ViewScriptObject* object);
 
@@ -28,11 +30,14 @@ private:
 
 //------------------------------------------------------------------------
 struct JavaScriptDrawableView : CView,
+								IFocusDrawing,
 								JavaScriptDrawable
 {
 	using CView::CView;
 
 	void drawRect (CDrawContext* context, const CRect& rect) override;
+	bool drawFocusOnTop () override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
 };
 
 //------------------------------------------------------------------------
@@ -43,6 +48,8 @@ struct JavaScriptDrawableControl : CControl,
 
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* context, const CRect& rect) override;
+	bool drawFocusOnTop () override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	CLASS_METHODS_NOCOPY (JavaScriptDrawableControl, CControl);
 };

@@ -247,7 +247,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 			control->unregisterControlListener (this);
 	}
 
-	bool evalScript (std::string_view script) noexcept override
+	ScriptObject evalScript (std::string_view script) noexcept override
 	{
 		try
 		{
@@ -258,6 +258,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 				DebugPrint ("%s\n", result.getVar ()->getString ().data ());
 #endif
 			}
+			return result.getVar ();
 		}
 		catch (const CScriptException& exc)
 		{
@@ -266,16 +267,16 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 #endif
 			if (onScriptException)
 				onScriptException (exc.text);
-			return false;
+			return {};
 		}
-		return true;
+		return {};
 	}
 
-	bool evalScript (CScriptVar* object, std::string_view script,
-					 const std::string& objectName = "view") noexcept
+	ScriptObject evalScript (CScriptVar* object, std::string_view script,
+							 const std::string& objectName = "view") noexcept
 	{
 		if (!object || script.empty ())
-			return false;
+			return {};
 		vstgui_assert (object->getRefs () > 0);
 		object->addRef ();
 		ScriptAddChildScoped scs (*jsContext->getRoot (), objectName, object);

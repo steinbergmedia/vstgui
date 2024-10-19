@@ -68,6 +68,24 @@ view.draw = function(drawContext, dirtyRect) {
 The [drawContext](#the-drawcontext-object) parameter is the object where you call its method to draw things into the view
 and the dirtyRect parameter contains the rectangle that needs to be drawn.
 
+Additionally the following two functions can be implemented to provide custom focus drawing:
+```js
+view.drawFocusOnTop = function () { return false; };
+
+view.getFocusPath = function(path, focusWidth) {
+	var bounds = view.getBounds();
+	path.addRoundRect (bounds, 4);
+	bounds.left -= focusWidth;
+	bounds.right += focusWidth;
+	bounds.top -= focusWidth;
+	bounds.bottom += focusWidth;
+	path.addRoundRect (bounds, 4);
+	return true;
+};
+```
+
+See the C++ IFocusDrawing interface for a description of these methods. 
+
 ### The JavaScriptDrawableControl
 
 You can add a `JavaScriptDrawableControl` from the view types to your view hierarchy to create a

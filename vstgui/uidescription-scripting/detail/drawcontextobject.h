@@ -13,6 +13,7 @@ namespace VSTGUI {
 namespace ScriptingInternal {
 
 TJS::CScriptVar* makeTransformMatrixObject ();
+ScriptObject makeGraphicsPathScriptObject (const SharedPointer<CGraphicsPath>& p);
 
 //------------------------------------------------------------------------
 struct DrawContextObject : ScriptObject,

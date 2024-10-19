@@ -402,6 +402,12 @@ struct GraphicsPathScriptObject : ScriptObject
 };
 
 //------------------------------------------------------------------------
+ScriptObject makeGraphicsPathScriptObject (const SharedPointer<CGraphicsPath>& p)
+{
+	return GraphicsPathScriptObject (p);
+}
+
+//------------------------------------------------------------------------
 struct DrawContextObject::Impl
 {
 	CDrawContext* context {nullptr};

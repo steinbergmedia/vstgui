@@ -42,7 +42,7 @@ struct IViewScriptObjectContext
 	virtual IUIDescription* getUIDescription () const = 0;
 	virtual ViewScriptObject* addView (CView* view) = 0;
 	virtual ViewScriptMap::iterator removeView (CView* view) = 0;
-	virtual bool evalScript (std::string_view script) noexcept = 0;
+	virtual ScriptObject evalScript (std::string_view script) noexcept = 0;
 	virtual TJS::CScriptVar* getRoot () const = 0;
 };
 

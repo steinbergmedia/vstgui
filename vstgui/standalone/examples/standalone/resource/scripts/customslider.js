@@ -111,6 +111,19 @@ view.draw = function(context, dirtyRect) {
 	context.drawGraphicsPath(roundRect, "stroked");
 };
 
+view.drawFocusOnTop = function () { return false; };
+
+view.getFocusPath = function (path, focusWidth) {
+	var bounds = view.getBounds();
+	path.addRoundRect(bounds, 4);
+	bounds.left -= focusWidth;
+	bounds.right += focusWidth;
+	bounds.top -= focusWidth;
+	bounds.bottom += focusWidth;
+	path.addRoundRect(bounds, 4);
+	return true;
+};
+
 view.onMouseDown = function(view, event) {
 	if(!event.mouseButtons.left)
 		return;
