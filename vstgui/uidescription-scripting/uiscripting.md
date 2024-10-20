@@ -16,6 +16,43 @@ The library needs to be initialized once at runtime before any UIDescription obj
 This is done with a call to `VSTGUI::UIScripting::init ();`. You need to include 
 `"vstgui/uiscripting/uiscripting.h"` for this symbol.
 
+The init function accepts two optional parameters. The first parameter is a callback
+function that will be called whenever an exception occurs within a script, allowing you to
+handle any errors or exceptions that may arise. The second parameter is also a function
+that is invoked when a script is loaded, providing its name as input. This feature can be
+used, for instance, to load scripts directly from your source repository instead of the
+default location in the resource folder of your plug-in or application.
+
+```cpp
+UIScripting::ReadScriptContentsFunc loadScriptFromRepositoryPath = {};
+#if DEBUG
+// in Debug mode, we want to load the scripts from the repository instead of from the app
+// resource folder as the scripts in the app resource folder are only synchronized when we build
+// the app and not in-between.
+loadScriptFromRepositoryPath = [] (auto filename) -> std::string {
+	std::filesystem::path path (__FILE__);
+	if (!path.empty ())
+	{
+		path = path.parent_path ().parent_path ();
+		path.append ("resource");
+		path.append ("scripts");
+		path.append (filename);
+		if (std::filesystem::exists (path))
+		{
+			std::ifstream f (path, std::ios::in | std::ios::binary);
+			const auto sz = std::filesystem::file_size (path);
+			std::string result (sz, '\0');
+			f.read (result.data (), sz);
+			return result;
+		}
+	}
+	return {};
+};
+#endif
+
+UIScripting::init ({}, loadScriptFromRepositoryPath);
+```
+
 All scripts of one UIDescription object will be executed in the same JavaScript context. So you
 can access global variables from all your scripts if needed.
 

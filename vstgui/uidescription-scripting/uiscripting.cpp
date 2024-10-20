@@ -143,8 +143,9 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 				auto timerObj = TimerScriptObject (
 					fireTime->getInt (), callback->deepCopy (), [this, context] (auto callback) {
 						using namespace ScriptingInternal;
-						ScriptAddChildScoped scs (*jsContext->getRoot (), "timerContext", context);
-						return evalScript (callback, "timerCallback (timerContext); ",
+						ScriptAddChildScoped scs (*jsContext->getRoot (), "timerContext"sv,
+												  context);
+						return evalScript (callback, "timerCallback (timerContext);"sv,
 										   "timerCallback");
 					});
 				var->setReturnVar (timerObj);
@@ -176,19 +177,19 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 					auto childScriptObject = viewScriptMap.find (child);
 					if (childScriptObject != viewScriptMap.end ())
 					{
-						ScriptAddChildScoped scs (*jsContext->getRoot (), "child",
+						ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv,
 												  childScriptObject->second->getVar ());
-						ScriptAddChildScoped scs2 (*jsContext->getRoot (), "context", context);
-						evalScript (callback, "callback (child, context); ", "callback");
+						ScriptAddChildScoped scs2 (*jsContext->getRoot (), "context"sv, context);
+						evalScript (callback, "callback (child, context);"sv, "callback");
 					}
 					else
 					{
 						auto scriptObj =
 							addView (child, std::make_unique<ViewScriptObject> (child, this));
-						ScriptAddChildScoped scs (*jsContext->getRoot (), "child",
+						ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv,
 												  scriptObj->getVar ());
-						ScriptAddChildScoped scs2 (*jsContext->getRoot (), "context", context);
-						evalScript (callback, "callback (child, context); ", "callback");
+						ScriptAddChildScoped scs2 (*jsContext->getRoot (), "context"sv, context);
+						evalScript (callback, "callback (child, context);"sv, "callback");
 					}
 				});
 			});
@@ -252,12 +253,12 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		try
 		{
 			auto result = jsContext->evaluateComplex (script);
+#if 0 // DEBUG
 			if (result.getVar () && !result.getVar ()->isUndefined ())
 			{
-#if DEBUG
 				DebugPrint ("%s\n", result.getVar ()->getString ().data ());
-#endif
 			}
+#endif
 			return result.getVar ();
 		}
 		catch (const CScriptException& exc)
@@ -316,7 +317,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		callWhenScriptHasFunction (view, "onSizeChanged"sv, [&] (auto This, auto& obj) {
 			auto newSize = view->getViewSize ();
 			ScriptObject newSizeObject = ScriptingInternal::makeScriptRect (newSize);
-			ScriptAddChildScoped scs (*jsContext->getRoot (), "newSize", newSizeObject);
+			ScriptAddChildScoped scs (*jsContext->getRoot (), "newSize"sv, newSizeObject);
 			static constexpr auto script = R"(view.onSizeChanged(view, newSize);)"sv;
 			This->evalScript (obj->getVar (), script);
 		});
@@ -354,14 +355,14 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 			auto childScriptObject = viewScriptMap.find (view);
 			if (childScriptObject != viewScriptMap.end ())
 			{
-				ScriptAddChildScoped scs (*jsContext->getRoot (), "child",
+				ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv,
 										  childScriptObject->second->getVar ());
 				This->evalScript (obj->getVar (), script);
 			}
 			else
 			{
 				auto scriptObj = addView (view, std::make_unique<ViewScriptObject> (view, this));
-				ScriptAddChildScoped scs (*jsContext->getRoot (), "child", scriptObj->getVar ());
+				ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv, scriptObj->getVar ());
 				This->evalScript (obj->getVar (), script);
 			}
 		});
@@ -391,7 +392,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 	void callEventFunction (CScriptVar* var, Event& event, std::string_view script) noexcept
 	{
 		auto scriptEvent = ScriptingInternal::makeScriptEvent (event);
-		ScriptAddChildScoped scs (*jsContext->getRoot (), "event", scriptEvent);
+		ScriptAddChildScoped scs (*jsContext->getRoot (), "event"sv, scriptEvent);
 		evalScript (var, script);
 		checkEventConsumed (scriptEvent, event);
 	}
@@ -493,7 +494,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		callWhenScriptHasFunction (control, "onValueChanged"sv, [&] (auto This, auto& obj) {
 			ScriptObject controlValue;
 			controlValue->setDouble (control->getValue ());
-			ScriptAddChildScoped scs (*jsContext->getRoot (), "value", controlValue);
+			ScriptAddChildScoped scs (*jsContext->getRoot (), "value"sv, controlValue);
 			static constexpr auto script = R"(view.onValueChanged(view, value);)"sv;
 			This->evalScript (obj->getVar (), script);
 		});

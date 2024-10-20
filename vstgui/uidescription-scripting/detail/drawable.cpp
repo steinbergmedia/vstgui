@@ -52,9 +52,9 @@ void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const
 
 	auto rectVar = makeScriptRect (rect);
 	auto scriptRoot = scriptContext->getRoot ();
-	ScriptAddChildScoped scs (*scriptRoot, "view", *scriptObject);
-	ScriptAddChildScoped scs2 (*scriptRoot, "context", drawContext);
-	ScriptAddChildScoped scs3 (*scriptRoot, "rect", rectVar);
+	ScriptAddChildScoped scs (*scriptRoot, "view"sv, *scriptObject);
+	ScriptAddChildScoped scs2 (*scriptRoot, "context"sv, drawContext);
+	ScriptAddChildScoped scs3 (*scriptRoot, "rect"sv, rectVar);
 	scriptContext->evalScript ("view.draw(context, rect);"sv);
 
 	drawContext.setDrawContext (nullptr, nullptr);
@@ -72,8 +72,11 @@ bool JavaScriptDrawable::onDrawFocusOnTop ()
 	if (!scriptContext)
 		return false;
 
+	if (scriptObject->getVar ()->findChild ("drawFocusOnTop"sv) == nullptr)
+		return false;
+
 	auto scriptRoot = scriptContext->getRoot ();
-	ScriptAddChildScoped scs (*scriptRoot, "view", *scriptObject);
+	ScriptAddChildScoped scs (*scriptRoot, "view"sv, *scriptObject);
 	auto boolResult = scriptContext->evalScript ("view.drawFocusOnTop();"sv);
 	return boolResult->isNumeric () ? boolResult->getInt () : false;
 }
@@ -84,13 +87,22 @@ bool JavaScriptDrawable::onGetFocusPath (CGraphicsPath& outPath, CCoord focusWid
 {
 	if (auto scriptContext = scriptObject->getContext ())
 	{
+		if (scriptObject->getVar ()->findChild ("getFocusPath"sv) == nullptr)
+		{
+			auto r = viewSize;
+			outPath.addRect (r);
+			r.extend (focusWidth, focusWidth);
+			outPath.addRect (r);
+			return true;
+		}
+
 		auto scriptRoot = scriptContext->getRoot ();
 		auto path = makeOwned<CGraphicsPath> (outPath);
 		ScriptObject focusWidthVar;
 		focusWidthVar->setDouble (focusWidth);
-		ScriptAddChildScoped scs (*scriptRoot, "view", *scriptObject);
-		ScriptAddChildScoped scs2 (*scriptRoot, "path", makeGraphicsPathScriptObject (path));
-		ScriptAddChildScoped scs3 (*scriptRoot, "focusWidth", focusWidthVar);
+		ScriptAddChildScoped scs (*scriptRoot, "view"sv, *scriptObject);
+		ScriptAddChildScoped scs2 (*scriptRoot, "path"sv, makeGraphicsPathScriptObject (path));
+		ScriptAddChildScoped scs3 (*scriptRoot, "focusWidth"sv, focusWidthVar);
 		auto boolResult = scriptContext->evalScript ("view.getFocusPath(path, focusWidth);"sv);
 		if (boolResult->isNumeric ())
 		{
@@ -116,12 +128,19 @@ void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
 }
 
 //------------------------------------------------------------------------
-bool JavaScriptDrawableView::drawFocusOnTop () { return onDrawFocusOnTop (); }
+bool JavaScriptDrawableView::drawFocusOnTop ()
+{
+	if (wantsFocus ())
+		return onDrawFocusOnTop ();
+	return false;
+}
 
 //------------------------------------------------------------------------
 bool JavaScriptDrawableView::getFocusPath (CGraphicsPath& outPath)
 {
-	return onGetFocusPath (outPath, getFrame ()->getFocusWidth (), getViewSize ());
+	if (wantsFocus ())
+		return onGetFocusPath (outPath, getFrame ()->getFocusWidth (), getViewSize ());
+	return false;
 }
 
 //------------------------------------------------------------------------
@@ -136,12 +155,19 @@ void JavaScriptDrawableControl::drawRect (CDrawContext* context, const CRect& re
 }
 
 //------------------------------------------------------------------------
-bool JavaScriptDrawableControl::drawFocusOnTop () { return onDrawFocusOnTop (); }
+bool JavaScriptDrawableControl::drawFocusOnTop ()
+{
+	if (wantsFocus ())
+		return onDrawFocusOnTop ();
+	return false;
+}
 
 //------------------------------------------------------------------------
 bool JavaScriptDrawableControl::getFocusPath (CGraphicsPath& outPath)
 {
-	return onGetFocusPath (outPath, getFrame ()->getFocusWidth (), getViewSize ());
+	if (wantsFocus ())
+		return onGetFocusPath (outPath, getFrame ()->getFocusWidth (), getViewSize ());
+	return false;
 }
 
 //------------------------------------------------------------------------
