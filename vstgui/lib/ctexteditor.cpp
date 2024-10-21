@@ -1717,14 +1717,14 @@ void TextEditorView::layout (StbTexteditRow* row, size_t start_i) const
 		return;
 	if (md.stbInternalIterator == md.model.lines.end ())
 		md.stbInternalIterator = md.model.lines.begin ();
+	row->baseline_y_delta = static_cast<float> (md.lineHeight);
+	row->ymin = static_cast<float> (-md.fontDescent);
+	row->ymax = static_cast<float> (md.lineHeight);
+	row->x0 = static_cast<float> (md.style->leftMargin);
+	row->x1 = static_cast<float> (getWidth ());
 	if (start_i == md.stbInternalIterator->range.start)
 	{
 		row->num_chars = static_cast<int> (md.stbInternalIterator->range.length);
-		row->baseline_y_delta = static_cast<float> (md.lineHeight);
-		row->ymin = static_cast<float> (-md.fontDescent);
-		row->ymax = static_cast<float> (md.lineHeight);
-		row->x0 = static_cast<float> (md.style->leftMargin);
-		row->x1 = static_cast<float> (getWidth ());
 		++md.stbInternalIterator;
 		return;
 	}
@@ -1732,11 +1732,6 @@ void TextEditorView::layout (StbTexteditRow* row, size_t start_i) const
 	auto line = findLine (md.model.lines.begin (), md.model.lines.end (), start_i);
 	vstgui_assert (line != md.model.lines.end ());
 	row->num_chars = static_cast<int> (line->range.length);
-	row->baseline_y_delta = static_cast<float> (md.lineHeight);
-	row->ymin = static_cast<float> (-md.fontDescent);
-	row->ymax = static_cast<float> (md.lineHeight);
-	row->x0 = static_cast<float> (md.style->leftMargin);
-	row->x1 = static_cast<float> (getWidth ());
 }
 
 //------------------------------------------------------------------------
