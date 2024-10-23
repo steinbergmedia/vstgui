@@ -305,6 +305,7 @@ protected:
 	bool useSelectionForFind () const;
 	bool doFind (bool forward = true, size_t oldPos = String::npos) const;
 	bool showFindPanel () const;
+	bool gotoLine (size_t lineNo) const;
 
 	String::size_type doFindCaseSensitive (bool forward) const;
 	String::size_type doFindIgnoreCase (bool forward) const;
@@ -1251,6 +1252,18 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 	{
 		switch (event.virt)
 		{
+			case VirtualKey::Home:
+			{
+				gotoLine (0);
+				event.consumed = true;
+				break;
+			}
+			case VirtualKey::End:
+			{
+				gotoLine (md.model.lines.size () - 1);
+				event.consumed = true;
+				break;
+			}
 			case VirtualKey::Space:
 			{
 				checkCurrentUndoGroup (true);
@@ -2733,6 +2746,20 @@ void TextEditorView::setFindString (String&& text) const
 			md.findPanelController->setFindString (md.findString);
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+bool TextEditorView::gotoLine (size_t lineNo) const
+{
+	if (md.model.lines.size () <= lineNo)
+		return false;
+	auto originCursor = md.editState.cursor;
+	md.editState.select_start = static_cast<int> (md.model.lines[lineNo].range.start);
+	md.editState.select_end = md.editState.select_start;
+	md.editState.cursor = md.editState.select_start;
+	onCursorChanged (originCursor, md.editState.cursor);
+	onSelectionChanged (makeRange (md.editState));
+	return true;
 }
 
 //------------------------------------------------------------------------
