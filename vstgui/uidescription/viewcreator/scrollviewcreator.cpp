@@ -111,6 +111,13 @@ bool ScrollViewCreator::apply (CView* view, const UIAttributes& attributes,
 	CCoord width;
 	if (attributes.getDoubleAttribute (kAttrScrollbarWidth, width))
 		scrollView->setScrollbarWidth (width);
+	if (attributes.getDoubleAttribute (kAttrMinScrollerSize, width))
+	{
+		if (vscrollbar)
+			vscrollbar->setMinScrollerLength (width);
+		if (hscrollbar)
+			hscrollbar->setMinScrollerLength (width);
+	}
 	return true;
 }
 
@@ -127,6 +134,7 @@ bool ScrollViewCreator::getAttributeNames (StringList& attributeNames) const
 	attributeNames.emplace_back (kAttrAutoDragScrolling);
 	attributeNames.emplace_back (kAttrOverlayScrollbars);
 	attributeNames.emplace_back (kAttrScrollbarWidth);
+	attributeNames.emplace_back (kAttrMinScrollerSize);
 	attributeNames.emplace_back (kAttrBordered);
 	attributeNames.emplace_back (kAttrFollowFocusView);
 	return true;
@@ -154,6 +162,8 @@ auto ScrollViewCreator::getAttributeType (const string& attributeName) const -> 
 	if (attributeName == kAttrOverlayScrollbars)
 		return kBooleanType;
 	if (attributeName == kAttrScrollbarWidth)
+		return kIntegerType;
+	if (attributeName == kAttrMinScrollerSize)
 		return kIntegerType;
 	if (attributeName == kAttrBordered)
 		return kBooleanType;
@@ -197,6 +207,11 @@ bool ScrollViewCreator::getAttributeValue (CView* view, const string& attributeN
 		if (attributeName == kAttrScrollbarScrollerColor)
 		{
 			colorToString (scrollbar->getScrollerColor (), stringValue, desc);
+			return true;
+		}
+		if (attributeName == kAttrMinScrollerSize)
+		{
+			stringValue = UIAttributes::doubleToString (scrollbar->getMinScrollerLength ());
 			return true;
 		}
 	}
