@@ -77,6 +77,9 @@ inline std::string convert (const std::u16string& str) { return StringConvert {}
 #pragma warning(pop)
 #endif
 
+using String = std::u16string;
+using StringView = std::u16string_view;
+
 //------------------------------------------------------------------------
 struct Range
 {
@@ -131,13 +134,29 @@ inline void replaceTabs (std::string& str, uint32_t tabWidth)
 }
 
 //------------------------------------------------------------------------
+inline void convertWinLineEndingsToUnixLineEndings (String& text)
+{
+	auto it = text.begin (), end = text.end ();
+	if (it == end)
+		return;
+	auto lastChar = it;
+	++it;
+	for (; it != end; ++it)
+	{
+		if (*lastChar == '\r' && *it == '\n')
+		{
+			it = text.erase (lastChar);
+			++it;
+		}
+		lastChar = it;
+	}
+}
+
+//------------------------------------------------------------------------
 inline bool isStopChar (char16_t character)
 {
 	return std::iswpunct (character) || std::iswcntrl (character) || std::iswspace (character);
 };
-
-using String = std::u16string;
-using StringView = std::u16string_view;
 
 //------------------------------------------------------------------------
 struct Line
@@ -784,6 +803,7 @@ void TextEditorView::setStyle (const Style& newStyle) const
 bool TextEditorView::setPlainText (std::string_view utf8Text) const
 {
 	md.model.text = convert (utf8Text.data (), utf8Text.size ());
+	convertWinLineEndingsToUnixLineEndings (md.model.text);
 	invalidate (Dirty::All);
 	if (md.lineNumberView)
 		updateLineNumbersView ();
@@ -2191,6 +2211,7 @@ bool TextEditorView::doPaste () const
 			{
 				auto txt = reinterpret_cast<const char*> (buffer);
 				auto uText = convert (txt, size);
+				convertWinLineEndingsToUnixLineEndings (uText);
 				callSTB ([&] () {
 					stb_textedit_paste (this, &md.editState, uText.data (),
 										static_cast<int32_t> (uText.size ()));
