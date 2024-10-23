@@ -606,7 +606,7 @@ bool TextEditorView::attached (CView* parent)
 			md.scrollView->registerViewEventListener (this);
 			if (auto sb = md.scrollView->getVerticalScrollbar ())
 				sb->registerViewEventListener (this);
-			if (md.style->showLineNumbers)
+			if (md.style->flags & Style::Flags::ShowLineNumbers)
 			{
 				md.lineNumberView = makeOwned<LineNumberView> (this);
 				md.lineNumberView->setStyle (md.style, md.lineHeight);
@@ -767,7 +767,7 @@ void TextEditorView::onStyleChanged () const
 
 	if (md.lineNumberView)
 	{
-		if (md.style->showLineNumbers)
+		if (md.style->flags & Style::Flags::ShowLineNumbers)
 		{
 			md.lineNumberView->setStyle (md.style, md.lineHeight);
 			updateLineNumbersView ();
@@ -778,7 +778,7 @@ void TextEditorView::onStyleChanged () const
 			md.lineNumberView = nullptr;
 		}
 	}
-	else if (md.style->showLineNumbers && md.scrollView)
+	else if (md.style->flags & Style::Flags::ShowLineNumbers && md.scrollView)
 	{
 		md.lineNumberView = makeOwned<LineNumberView> (&mutableThis ());
 		md.lineNumberView->setStyle (md.style, md.lineHeight);
@@ -972,6 +972,8 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 	context->setFillColor (md.style->backColor);
 	context->setDrawMode (kAntiAliasing);
 	context->drawRect (dirtyRect, kDrawFilled);
+	bool drawCursorLineHighlight = (md.editState.select_start == md.editState.select_end) &&
+								   (md.style->flags & Style::Flags::HighlightCursorLine);
 
 	auto styleProvider = dynamic_cast<TextEditorColorization::IStyleProvider*> (md.controller);
 	if (styleProvider)
@@ -986,6 +988,13 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 		y += md.lineHeight;
 		if (y < dirtyRect.top)
 			continue;
+		if (drawCursorLineHighlight && md.selectedLines.start == index)
+		{
+			auto lineRect = calculateLineRect (index);
+			lineRect.right = getViewSize ().right;
+			context->setFillColor (md.style->highlightCursorLineColor);
+			context->drawRect (lineRect, kDrawFilled);
+		}
 		context->setFontColor (md.style->textColor);
 		context->setFont (md.style->font);
 		auto selRange =
@@ -1091,7 +1100,12 @@ void TextEditorView::invalidLine (Lines::const_iterator it, bool completeWidth) 
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::invalidSelectedLines () const { invalidateRect (calculateSelectionRect ()); }
+void TextEditorView::invalidSelectedLines () const
+{
+	if (md.selectedLines.length == 0 && (md.style->flags & Style::Flags::HighlightCursorLine))
+		invalidLine (md.selectedLines.start, true);
+	invalidateRect (calculateSelectionRect ());
+}
 
 //------------------------------------------------------------------------
 CRect TextEditorView::calculateLineRect (size_t index) const

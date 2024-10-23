@@ -47,10 +47,18 @@ struct ITextEditor
 
 	struct Style
 	{
+		enum class Flags : uint32_t
+		{
+			ShowLineNumbers,
+			HighlightCursorLine
+		};
+		using FlagsBitset = EnumBitset<Flags>;
+
 		SharedPointer<CFontDesc> font {kNormalFont};
 		SharedPointer<CFontDesc> lineNumbersFont {kNormalFontSmall};
 		CColor textColor {kBlackCColor};
 		CColor backColor {kWhiteCColor};
+		CColor highlightCursorLineColor {0, 0, 0, 10};
 		CColor selectionBackColor {kGreyCColor};
 		CColor frameColor {kGreyCColor};
 		CColor lineNumberTextColor {127, 127, 127, 100};
@@ -62,7 +70,7 @@ struct ITextEditor
 		CCoord lineNumberRightMargin {2.};
 		uint32_t cursorBlinkTime {500}; // in milliseconds
 		uint32_t tabWidth {4};
-		bool showLineNumbers {true};
+		FlagsBitset flags {{Flags::ShowLineNumbers, Flags::HighlightCursorLine}};
 	};
 
 	virtual void setStyle (const Style& style) const = 0;
