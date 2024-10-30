@@ -136,12 +136,12 @@ inline void replaceTabs (std::string& str, uint32_t tabWidth)
 //------------------------------------------------------------------------
 inline void convertWinLineEndingsToUnixLineEndings (String& text)
 {
-	auto it = text.begin (), end = text.end ();
-	if (it == end)
+	auto it = text.begin ();
+	if (it == text.end ())
 		return;
 	auto lastChar = it;
 	++it;
-	for (; it != end; ++it)
+	for (; it != text.end (); ++it)
 	{
 		if (*lastChar == '\r' && *it == '\n')
 		{
