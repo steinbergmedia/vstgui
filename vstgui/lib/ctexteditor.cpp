@@ -2163,7 +2163,6 @@ bool TextEditorView::doShifting (bool right) const
 		}
 		md.editState.select_start = originSelectStart + 1;
 		md.editState.select_end = originSelectEnd + numChanges;
-		md.editState.cursor = md.editState.select_start;
 	}
 	else
 	{
@@ -2181,8 +2180,14 @@ bool TextEditorView::doShifting (bool right) const
 		}
 		md.editState.select_start = originSelectStart - (numChanges ? 1 : 0);
 		md.editState.select_end = originSelectEnd - numChanges;
-		md.editState.cursor = md.editState.select_start;
 	}
+	if (hasSelection)
+	{
+		if (originSelectStart == lineStart->range.start)
+			md.editState.select_start = originSelectStart;
+	}
+
+	md.editState.cursor = md.editState.select_start;
 	onCursorChanged (originCursor, md.editState.cursor);
 	onSelectionChanged (makeRange (md.editState));
 	return true;
