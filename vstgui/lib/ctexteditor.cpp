@@ -117,19 +117,17 @@ inline Range makeRange (const STB_TexteditState& state)
 }
 
 //------------------------------------------------------------------------
-inline void replaceTabs (std::string& str, uint32_t tabWidth)
+inline void replaceTabs (std::string& str, uint32_t tabWidth, size_t lineOffset)
 {
 	if (tabWidth < 1)
 		return;
-	std::string replaceStr;
-	while (--tabWidth)
-		replaceStr += ' ';
+	auto whiteSpace = ' ';
 	std::string::size_type pos = std::string::npos;
 	while ((pos = str.find_first_of ('\t')) != std::string::npos)
 	{
-		str[pos] = ' ';
-		str.replace (pos, 1, " ");
-		str.insert (pos, replaceStr);
+		auto numWhiteSpace = tabWidth - ((pos + lineOffset) % tabWidth);
+		std::string s (numWhiteSpace, whiteSpace);
+		str.replace (pos, 1, s);
 	}
 }
 
@@ -1006,7 +1004,7 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 			{
 				auto t = md.model.text.substr (line.range.start, selRange.start);
 				auto nonSelectedText = convert (t);
-				replaceTabs (nonSelectedText, md.style->tabWidth);
+				replaceTabs (nonSelectedText, md.style->tabWidth, 0u);
 				selX += context->getStringWidth (nonSelectedText.data ());
 			}
 			CRect r (selX, y - md.fontAscent, selX, y + md.fontDescent);
@@ -1017,7 +1015,8 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 			{
 				auto t = md.model.text.substr (line.range.start + selRange.start, selRange.length);
 				auto selectedText = convert (t);
-				replaceTabs (selectedText, md.style->tabWidth);
+				replaceTabs (selectedText, md.style->tabWidth,
+							 static_cast<size_t> (selRange.start - line.range.start));
 				r.setWidth (context->getStringWidth (selectedText.data ()));
 			}
 			r.inset (0, -md.style->lineSpacing / 2.);
@@ -1036,7 +1035,8 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 				if (style.start != start)
 				{
 					tmpStr = convert (md.model.text.substr (start, style.start - start));
-					replaceTabs (tmpStr, md.style->tabWidth);
+					replaceTabs (tmpStr, md.style->tabWidth,
+								 static_cast<size_t> (start - line.range.start));
 					context->setFontColor (md.style->textColor);
 					context->drawString (tmpStr.data (), {lineX, y});
 					lineX += context->getStringWidth (tmpStr.data ());
@@ -1048,7 +1048,8 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 				if (end > line.range.start + line.range.length)
 					end = line.range.start + line.range.length;
 				tmpStr = convert (md.model.text.substr (start, end - start));
-				replaceTabs (tmpStr, md.style->tabWidth);
+				replaceTabs (tmpStr, md.style->tabWidth,
+							 static_cast<size_t> (start - line.range.start));
 				context->setFontColor (style.color);
 				context->drawString (tmpStr.data (), {lineX, y});
 				lineX += context->getStringWidth (tmpStr.data ());
@@ -1159,7 +1160,7 @@ CRect TextEditorView::calculateCursorRect (int cursor) const
 			{
 				auto lineTextToCursor =
 					convert (md.model.text.data () + line.range.start, cursor - line.range.start);
-				replaceTabs (lineTextToCursor, md.style->tabWidth);
+				replaceTabs (lineTextToCursor, md.style->tabWidth, 0u);
 				auto platformText = getPlatformFactory ().createString (lineTextToCursor.data ());
 				auto width = md.fontPainer->getStringWidth (nullptr, platformText);
 				r.offset (width, 0);
@@ -1448,7 +1449,7 @@ void TextEditorView::invalidate (Dirty what) const
 CCoord TextEditorView::updateLineText (Lines::iterator& line) const
 {
 	auto newText = convert (md.model.text.data () + line->range.start, line->range.length);
-	replaceTabs (newText, md.style->tabWidth);
+	replaceTabs (newText, md.style->tabWidth, 0u);
 	if (newText != line->text)
 	{
 		line->text = std::move (newText);
