@@ -33,7 +33,7 @@
 
 namespace VSTGUI {
 namespace Xml {
-#include "expat/expat.h"
+#include "../thirdparty/expat/expat.h"
 }}
 #endif // VSTGUI_USE_SYSTEM_EXPAT
 

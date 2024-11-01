@@ -19,7 +19,7 @@ namespace {
 #define MINIZ_NO_STDIO
 #define MINIZ_NO_ARCHIVE_APIS
 #define MINIZ_NO_ARCHIVE_WRITING_APIS
-#include "miniz/miniz.c"
+#include "../thirdparty/miniz/miniz.c"
 #if _MSC_VER
 #pragma warning(pop)
 #endif
