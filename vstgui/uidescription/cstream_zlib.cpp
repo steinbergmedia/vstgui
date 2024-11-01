@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cstream_zlib.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
