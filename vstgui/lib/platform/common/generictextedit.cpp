@@ -45,7 +45,7 @@ using STB_CharT = char;
 #define STB_TEXTEDIT_STRING STBTextEditView
 #define STB_TEXTEDIT_KEYTYPE uint32_t
 
-#include "stb_textedit.h"
+#include "../../../thirdparty/stb_textedit.h"
 
 //-----------------------------------------------------------------------------
 class STBTextEditView
@@ -176,7 +176,7 @@ private:
 #define STB_TEXTEDIT_INSERTCHARS STBTextEditView::insertChars
 
 #define STB_TEXTEDIT_IMPLEMENTATION
-#include "stb_textedit.h"
+#include "../../../thirdparty/stb_textedit.h"
 #undef STB_TEXTEDIT_IMPLEMENTATION
 
 //-----------------------------------------------------------------------------

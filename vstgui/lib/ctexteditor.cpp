@@ -41,7 +41,7 @@ using CharT = char16_t;
 #define STB_TEXTEDIT_UNDOSTATECOUNT 0
 #define STB_TEXTEDIT_UNDOCHARCOUNT 0
 
-#include "platform/common/stb_textedit.h"
+#include "../thirdparty/stb_textedit.h"
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -478,7 +478,7 @@ private:
 #define STB_TEXTEDIT_GETWIDTH_NEWLINE -1.f
 
 #define STB_TEXTEDIT_IMPLEMENTATION
-#include "platform/common/stb_textedit.h"
+#include "../thirdparty/stb_textedit.h"
 #undef STB_TEXTEDIT_IMPLEMENTATION
 
 //------------------------------------------------------------------------
