@@ -9,6 +9,8 @@ set(${target}_sources
     compresseduidescription.h
     cstream.cpp
     cstream.h
+    cstream_zlib.cpp
+    cstream_zlib.h
     delegationcontroller.h
     doc.h
     icontentprovider.h
