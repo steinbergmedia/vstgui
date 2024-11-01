@@ -270,7 +270,6 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 				onScriptException (exc.text);
 			return {};
 		}
-		return {};
 	}
 
 	ScriptObject evalScript (CScriptVar* object, std::string_view script,
