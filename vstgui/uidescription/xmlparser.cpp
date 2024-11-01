@@ -221,9 +221,9 @@ bool Parser::stop ()
 
 namespace VSTGUI {
 namespace Xml {
-#include "./expat/xmltok.c"
-#include "./expat/xmlrole.c"
-#include "./expat/xmlparse.c"
+#include "../thirdparty/expat/xmltok.c"
+#include "../thirdparty/expat/xmlrole.c"
+#include "../thirdparty/expat/xmlparse.c"
 }}
 
 #ifdef OLD_BYTEORDER
