@@ -191,6 +191,7 @@ set(${target}_common_sources
     platform/common/generictextedit.h
     platform/common/gradientbase.h
     platform/common/stb_textedit.h
+    platform/common/threadpooltaskexecutor.h
     tasks.cpp
     tasks.h
     vstguibase.h
