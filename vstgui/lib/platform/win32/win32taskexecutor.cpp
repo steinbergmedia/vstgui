@@ -243,6 +243,7 @@ Tasks::Queue Win32TaskExecutor::makeSerialQueue (const char* name) const
 	impl->serialQueueLock.lock ();
 	auto serialQueue = std::make_shared<Detail::SerialQueue> (name, impl->nextSerialQueueID++);
 	impl->serialQueues.emplace_back (serialQueue);
+	impl->serialQueueLock.unlock ();
 	return serialQueue->queueID;
 }
 

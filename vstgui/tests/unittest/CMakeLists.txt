@@ -188,6 +188,9 @@ else()
 		target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 	endif()
 
+    if(WIN32)
+        target_compile_options(${target} PRIVATE /bigobj)
+    endif()
 endif(VSTGUI_USE_XCODE_XCTEST)
 
 if(CMAKE_HOST_APPLE)
