@@ -84,6 +84,20 @@ std::string LinuxFactory::getResourcePath () const noexcept
 }
 
 //-----------------------------------------------------------------------------
+void LinuxFactory::setScheduleMainQueueTaskFunc (
+	LinuxTaskExecutor::ScheduleMainQueueTaskFunc&& func) const noexcept
+{
+	if (auto lte = dynamic_cast<LinuxTaskExecutor*> (impl->taskExecutor.get ()))
+	{
+		lte->setScheduleMainQueueTaskFunc (std::move (func));
+	}
+	else
+	{
+		vstgui_assert (false, "cannot set the func on a custom task executor");
+	}
+}
+
+//-----------------------------------------------------------------------------
 uint64_t LinuxFactory::getTicks () const noexcept
 {
 	using namespace std::chrono;

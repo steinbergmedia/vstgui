@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../iplatformtaskexecutor.h"
-
+#include "../../vstguifwd.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -25,9 +25,12 @@ struct ThreadPool
 
 	~ThreadPool () noexcept
 	{
-		stopThreads ();
-		condition.notify_all ();
-		joinAllThreads ();
+		if (started)
+		{
+			stopThreads ();
+			condition.notify_all ();
+			joinAllThreads ();
+		}
 	}
 
 	void enqueue (Task&& task) noexcept

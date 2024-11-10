@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../iplatformtaskexecutor.h"
+#include <functional>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -23,12 +24,12 @@ struct LinuxTaskExecutor final : IPlatformTaskExecutor
 	void waitAllTasksExecuted (const Tasks::Queue& queue) const final;
 	void waitAllTasksExecuted () const final;
 
+	using ScheduleMainQueueTaskFunc = std::function<void (Tasks::Task&&)>;
+	void setScheduleMainQueueTaskFunc (ScheduleMainQueueTaskFunc&& func);
+
 private:
-	struct Queue;
-	struct MainQueue;
-	struct BackgroundQueue;
-	std::unique_ptr<Queue> mainQueue;
-	std::unique_ptr<Queue> backgroundQueue;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

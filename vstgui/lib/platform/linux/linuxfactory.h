@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../platformfactory.h"
+#include "linuxtaskexecutor.h"
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -18,6 +19,9 @@ public:
 
 	void setResourcePath (const std::string& path) const noexcept;
 	std::string getResourcePath () const noexcept;
+
+	void setScheduleMainQueueTaskFunc (
+		LinuxTaskExecutor::ScheduleMainQueueTaskFunc&& func) const noexcept;
 
 	void finalize () noexcept final;
 
