@@ -39,7 +39,7 @@ TEST_CASE (SerialQueueTest, SimpleTasks)
 		++counter;
 		std::this_thread::yield ();
 	};
-	for (auto i = 0; i < numIterations; ++i)
+	for (auto i = 0u; i < numIterations; ++i)
 		Tasks::schedule (serialQueue, increaseCounterFunc);
 	Tasks::waitAllTasksExecuted (serialQueue);
 	EXPECT_EQ (counter, numIterations)
@@ -54,7 +54,7 @@ TEST_CASE (SerialQueueTest, scheduleSerialTasksOnBackgroundQueue)
 	auto increaseCounterFunc = [&] () {
 		++counter;
 	};
-	for (auto i = 0; i < numIterations; ++i)
+	for (auto i = 0u; i < numIterations; ++i)
 	{
 		Tasks::schedule (Tasks::backgroundQueue (),
 						 [&] () { Tasks::schedule (serialQueue, increaseCounterFunc); });
