@@ -1269,12 +1269,26 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		{
 			case VirtualKey::Home:
 			{
+#if !MAC
+				if (event.modifiers.has (ModifierKey::Control) == false)
+				{
+					key = static_cast<uint32_t> (event.virt) | VIRTUAL_KEY_BIT;
+					break;
+				}
+#endif
 				gotoLine (0);
 				event.consumed = true;
 				break;
 			}
 			case VirtualKey::End:
 			{
+#if !MAC
+				if (event.modifiers.has (ModifierKey::Control) == false)
+				{
+					key = static_cast<uint32_t> (event.virt) | VIRTUAL_KEY_BIT;
+					break;
+				}
+#endif
 				gotoLine (md.model.lines.size () - 1);
 				event.consumed = true;
 				break;
