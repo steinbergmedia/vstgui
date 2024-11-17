@@ -176,6 +176,7 @@ set(${target}_common_sources
     platform/iplatformresourceinputstream.h
     platform/iplatformstring.h
     platform/iplatformtextedit.h
+    platform/iplatformtextinputclient.h
     platform/iplatformtimer.h
     platform/iplatformviewlayer.h
     platform/platformfactory.cpp

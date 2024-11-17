@@ -9,6 +9,7 @@
 #if MAC_COCOA && !TARGET_OS_IPHONE
 
 #include "../../platform_macos.h"
+#include "../../iplatformtextinputclient.h"
 #include "../../../cinvalidrectlist.h"
 #include "../../../idatapackage.h"
 #import "../coregraphicsdevicecontext.h"
@@ -37,6 +38,9 @@ public:
 	~NSViewFrame () noexcept override;
 
 	NSView* getNSView () const override { return nsView; }
+	void setTextInputClient (ICocoaTextInputClient* client) override { textInputClient = client; }
+	ICocoaTextInputClient* getTextInputClient () const { return textInputClient; }
+
 	CALayer* getCALayer () const { return caLayer; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	void* makeTouchBar () const;
@@ -101,6 +105,7 @@ protected:
 	NSView* nsView {nullptr};
 	CALayer* caLayer {nullptr};
 	CocoaTooltipWindow* tooltipWindow {nullptr};
+	ICocoaTextInputClient* textInputClient {nullptr};
 	SharedPointer<IDataPackage> dragDataPackage;
 	SharedPointer<ITouchBarCreator> touchBarCreator;
 	SharedPointer<NSViewDraggingSession> draggingSession;

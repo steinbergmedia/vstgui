@@ -251,6 +251,22 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		builder.addProtocol ("CALayerDelegate")
 			.addMethod (@selector (drawLayer:inContext:), drawLayerInContext);
 
+		builder.addMethod (@selector (insertText:replacementRange:), insertText)
+			.addMethod (@selector (doCommandBySelector:), doCommandBySelector)
+			.addMethod (@selector (setMarkedText:selectedRange:replacementRange:), setMarkedText)
+			.addMethod (@selector (unmarkText), unmarkText)
+			.addMethod (@selector (selectedRange), selectedRange)
+			.addMethod (@selector (markedRange), markedRange)
+			.addMethod (@selector (hasMarkedText), hasMarkedText)
+			.addMethod (@selector (attributedSubstringForProposedRange:actualRange:),
+						attributedSubstringForProposedRange)
+			.addMethod (@selector (validAttributesForMarkedText), validAttributesForMarkedText)
+			.addMethod (@selector (firstRectForCharacterRange:actualRange:),
+						firstRectForCharacterRange)
+			.addMethod (@selector (characterIndexForPoint:), characterIndexForPoint);
+
+		builder.addProtocol ("NSTextInputClient");
+
 		return builder.finalize ();
 	}
 
@@ -615,6 +631,10 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	//------------------------------------------------------------------------------------
 	static BOOL performKeyEquivalent (id self, SEL _cmd, NSEvent* theEvent)
 	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+			return NO;
+
 		NSView* firstResponder = (NSView*)[[self window] firstResponder];
 		if (![firstResponder isKindOfClass:[NSView class]])
 			firstResponder = nil;
@@ -639,30 +659,46 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		return NO;
 	}
 
-	//------------------------------------------------------------------------------------
-	static void keyDown (id self, SEL _cmd, NSEvent* theEvent)
+	//------------------------------------------------------------------------
+	static BOOL processKeyDown (id self, NSEvent* event)
 	{
 		IPlatformFrameCallback* _vstguiframe = getFrame (self);
 		if (!_vstguiframe)
-			return;
+			return NO;
 
 		KeyboardEvent keyEvent;
-		keyEvent.timestamp = static_cast<uint64_t> (theEvent.timestamp * 1000.);
-		if (CreateKeyboardEventFromNSEvent (theEvent, keyEvent))
+		keyEvent.timestamp = static_cast<uint64_t> (event.timestamp * 1000.);
+		if (CreateKeyboardEventFromNSEvent (event, keyEvent))
 		{
 			_vstguiframe->platformOnEvent (keyEvent);
 			if (keyEvent.consumed)
-				return;
+				return YES;
 			if (keyEvent.virt == VirtualKey::Tab)
 			{
 				if (keyEvent.modifiers.has (ModifierKey::Shift))
 					[[self window] selectKeyViewPrecedingView:self];
 				else
 					[[self window] selectKeyViewFollowingView:self];
-				return;
+				return YES;
 			}
 		}
-		[[self nextResponder] keyDown:theEvent];
+		return NO;
+	}
+	//------------------------------------------------------------------------------------
+	static void keyDown (id self, SEL _cmd, NSEvent* theEvent)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			if (auto* inputContext = [NSTextInputContext currentInputContext])
+			{
+				if ([inputContext handleEvent:theEvent])
+					return;
+			}
+		}
+
+		if (!processKeyDown (self, theEvent))
+			[[self nextResponder] keyDown:theEvent];
 	}
 
 	//------------------------------------------------------------------------------------
@@ -910,6 +946,131 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		}
 	}
 #endif
+	// @protocol NSTextInputClient
+	static void insertText (id self, SEL _cmd, id string, NSRange replacementRange)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			auto textInputClient = frame->getTextInputClient ();
+			auto hadMarkedText = textInputClient->hasMarkedText ();
+			if ([string isKindOfClass:[NSAttributedString class]])
+				string = [string string];
+			std::u16string str;
+			str.resize ([string length]);
+			[string getCharacters:reinterpret_cast<unichar*> (str.data ())
+							range:NSMakeRange (0, str.length ())];
+			textInputClient->insertText (str, {replacementRange.location, replacementRange.length});
+			if (hadMarkedText && textInputClient->hasMarkedText () == false)
+			{
+				if (auto* inputContext = [NSTextInputContext currentInputContext])
+					[inputContext discardMarkedText];
+			}
+		}
+	}
+
+	static void doCommandBySelector (id self, SEL _cmd, SEL selector)
+	{
+		auto* event = NSApp.currentEvent;
+		if (event.type == NSEventTypeKeyDown)
+		{
+			if (processKeyDown (self, event))
+				return;
+		}
+	}
+
+	static void setMarkedText (id self, SEL _cmd, id string, NSRange selectedRange,
+							   NSRange replacementRange)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			if ([string isKindOfClass:[NSAttributedString class]])
+				string = [string string];
+
+			std::u16string str;
+			str.resize ([string length]);
+			[string getCharacters:reinterpret_cast<unichar*> (str.data ())
+							range:NSMakeRange (0, str.length ())];
+			frame->getTextInputClient ()->setMarkedText (
+				str, {selectedRange.location, selectedRange.length},
+				{replacementRange.location, replacementRange.length});
+		}
+	}
+
+	static void unmarkText (id self, SEL _cmd)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			frame->getTextInputClient ()->unmarkText ();
+		}
+	}
+
+	static NSRange selectedRange (id self, SEL _cmd)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			auto r = frame->getTextInputClient ()->getSelectedRange ();
+			if (r.length > 0)
+				return NSMakeRange (r.position, r.length);
+		}
+		return NSMakeRange (NSNotFound, 0);
+	}
+
+	static NSRange markedRange (id self, SEL _cmd)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			auto r = frame->getTextInputClient ()->getMarkedRange ();
+			return NSMakeRange (r.position, r.length);
+		}
+		return NSMakeRange (NSNotFound, 0);
+	}
+
+	static BOOL hasMarkedText (id self, SEL _cmd)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+			return frame->getTextInputClient ()->hasMarkedText ();
+		return NO;
+	}
+
+	static NSAttributedString* attributedSubstringForProposedRange (id self, SEL _cmd,
+																	NSRange range,
+																	NSRangePointer actualRange)
+	{
+		return nil;
+	}
+
+	static NSArray<NSAttributedStringKey>* validAttributesForMarkedText (id self, SEL _cmd)
+	{
+		return @[];
+	}
+
+	static NSRect firstRectForCharacterRange (id self, SEL _cmd, NSRange range,
+											  NSRangePointer actualRange)
+	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			ICocoaTextInputClient::TextRange ac {range.location, range.length};
+			auto r = frame->getTextInputClient ()->firstRectForCharacterRange (ac, ac);
+			if (actualRange)
+				*actualRange = NSMakeRange (ac.position, ac.length);
+			auto rect = NSMakeRect (r.left, r.top, r.getWidth (), r.getHeight ());
+			rect = [self convertRect:rect toView:nullptr];
+			return [[self window] convertRectToScreen:rect];
+		}
+		return {{0, 0}, {0, 0}};
+	}
+
+	static NSUInteger characterIndexForPoint (id self, SEL _cmd, NSPoint point)
+	{
+		return NSNotFound;
+	}
 
 //------------------------------------------------------------------------------------
 }; // VSTGUI_NSView

@@ -16,7 +16,9 @@
 #include "finally.h"
 #include "platform/iplatformfont.h"
 #include "platform/iplatformframe.h"
+#include "platform/iplatformtextinputclient.h"
 #include "platform/platformfactory.h"
+#include "platform/platform_macos.h"
 #include "controls/cbuttons.h"
 #include "controls/ctextedit.h"
 #include "animation/timingfunctions.h"
@@ -157,6 +159,20 @@ inline bool isStopChar (char16_t character)
 };
 
 //------------------------------------------------------------------------
+inline bool containsSurrogatePairs (std::u16string_view string)
+{
+	if (string.length () > 1)
+	{
+		for (auto character : string)
+		{
+			if (character >= 0xD800 && character <= 0xDFFF)
+				return true;
+		}
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 struct Line
 {
 	Range range;
@@ -203,7 +219,8 @@ struct TextEditorView : public CView,
 						public ITextEditor,
 						public TextEditorColorization::IEditorExt,
 						public IFocusDrawing,
-						public ViewEventListenerAdapter
+						public ViewEventListenerAdapter,
+						public ICocoaTextInputClient
 {
 	TextEditorView (ITextEditorController* controller);
 	void beforeDelete () override;
@@ -316,6 +333,16 @@ protected:
 	template<bool iterateForward>
 	void doUndoRedo () const;
 
+	// ICocoaTextInputClient
+	void insertText (const std::u16string& string, TextRange range) override;
+	void setMarkedText (const std::u16string& string, TextRange selectedRange,
+						TextRange replacementRange) override;
+	bool hasMarkedText () override;
+	void unmarkText () override;
+	TextRange getMarkedRange () override;
+	TextRange getSelectedRange () override;
+	CRect firstRectForCharacterRange (TextRange range, TextRange& actualRange) override;
+
 private:
 	template<typename Proc>
 	bool callSTB (Proc proc) const;
@@ -427,6 +454,8 @@ public:
 
 private:
 	mutable ModelData md;
+	Range markedRange {};
+	std::u16string markedText;
 };
 
 #define VIRTUAL_KEY_BIT 0x80000000
@@ -639,6 +668,13 @@ void TextEditorView::takeFocus ()
 	if (md.lastMouse != MouseOutsidePos)
 		getFrame ()->setCursor (kCursorIBeam);
 	restartBlinkTimer ();
+#if MAC_COCOA
+	auto pf = getFrame ()->getPlatformFrame ();
+	if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
+	{
+		cocoaFrame->setTextInputClient (this);
+	}
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -647,6 +683,13 @@ void TextEditorView::looseFocus ()
 	md.blinkTimer = nullptr;
 	md.cursorIsVisible = true;
 	toggleCursorVisibility ();
+#if MAC_COCOA
+	auto pf = getFrame ()->getPlatformFrame ();
+	if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
+	{
+		cocoaFrame->setTextInputClient (nullptr);
+	}
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -785,6 +828,7 @@ void TextEditorView::onStyleChanged () const
 		md.lineNumberView->remember ();
 	}
 	md.horizontalLineMargin = md.style->leftMargin * 2.;
+	md.model.lines.clear ();
 	invalidate (Dirty::All);
 }
 
@@ -2140,6 +2184,8 @@ bool TextEditorView::callSTB (Proc proc) const
 			if (selRange.length == 0)
 				onSelectionChanged (makeRange (md.editState.cursor, md.editState.cursor));
 		}
+		if (md.editState.select_start == md.editState.select_end)
+			md.editState.select_start = md.editState.select_end = md.editState.cursor;
 		return true;
 	}
 	return false;
@@ -2257,13 +2303,22 @@ bool TextEditorView::doPaste () const
 			if (dataType == IDataPackage::kText)
 			{
 				auto txt = reinterpret_cast<const char*> (buffer);
-				auto uText = convert (txt, size);
-				convertWinLineEndingsToUnixLineEndings (uText);
-				callSTB ([&] () {
-					stb_textedit_paste (this, &md.editState, uText.data (),
-										static_cast<int32_t> (uText.size ()));
-				});
-				return true;
+				try
+				{
+					auto uText = convert (txt, size);
+					if (containsSurrogatePairs (uText))
+						return false;
+					convertWinLineEndingsToUnixLineEndings (uText);
+					callSTB ([&] () {
+						stb_textedit_paste (this, &md.editState, uText.data (),
+											static_cast<int32_t> (uText.size ()));
+					});
+					return true;
+				}
+				catch (...)
+				{
+					return false;
+				}
 			}
 		}
 	}
@@ -2902,6 +2957,104 @@ void TextEditorView::doRedo () const
 	if (md.undoPos == md.undoList.end ())
 		return;
 	doUndoRedo<true> ();
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::insertText (const std::u16string& string, TextRange range)
+{
+	if (!containsSurrogatePairs (string))
+	{
+		if (range.length > 0 && range.position < md.model.text.size ())
+		{
+			md.editState.select_start = static_cast<int> (range.position);
+			md.editState.select_end = static_cast<int> (range.position + range.length);
+			md.editState.cursor = md.editState.select_start;
+		}
+		callSTB ([&] () {
+			stb_textedit_paste (this, &md.editState, string.data (),
+								static_cast<int> (string.length ()));
+		});
+		unmarkText ();
+		restartBlinkTimer ();
+	}
+	else
+	{
+		insertText (u"_", range);
+	}
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::setMarkedText (const std::u16string& string, TextRange selectedRange,
+									TextRange replacementRange)
+{
+	if (containsSurrogatePairs (string))
+	{
+		setMarkedText (u"_", selectedRange, replacementRange);
+		return;
+	}
+	markedText = string;
+	markedRange = {selectedRange.position, selectedRange.length};
+	if (replacementRange.length > 0 && replacementRange.position < md.model.text.size ())
+	{
+		md.editState.select_start = static_cast<int> (replacementRange.position);
+		md.editState.select_end =
+			static_cast<int> (replacementRange.position + replacementRange.length);
+		md.editState.cursor = md.editState.select_end;
+	}
+	auto oldCursor = md.editState.cursor;
+	auto selectionStart = md.editState.select_start;
+	callSTB ([&] () {
+		stb_textedit_paste (this, &md.editState, string.data (),
+							static_cast<int> (string.length ()));
+	});
+	md.editState.cursor = md.editState.select_start = selectionStart;
+	md.editState.select_end = static_cast<int> (selectionStart + string.length ());
+	onCursorChanged (oldCursor, md.editState.cursor);
+	onSelectionChanged (makeRange (md.editState));
+}
+
+//------------------------------------------------------------------------
+bool TextEditorView::hasMarkedText () { return !markedText.empty (); }
+
+//------------------------------------------------------------------------
+void TextEditorView::unmarkText ()
+{
+	markedText = {};
+	markedRange = {};
+}
+
+//------------------------------------------------------------------------
+auto TextEditorView::getMarkedRange () -> TextRange
+{
+	return {markedRange.start, markedRange.length};
+}
+
+//------------------------------------------------------------------------
+auto TextEditorView::getSelectedRange () -> TextRange
+{
+	auto start = static_cast<size_t> (md.editState.select_start);
+	auto end = static_cast<size_t> (md.editState.select_end);
+	if (end < start)
+		std::swap (start, end);
+	return {start, end - start};
+}
+
+//------------------------------------------------------------------------
+CRect TextEditorView::firstRectForCharacterRange (TextRange range, TextRange& actualRange)
+{
+	auto it = findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.cursor);
+	auto r = calculateLineRect (it);
+	actualRange = {static_cast<size_t> (md.editState.cursor), 0};
+	if (it->range.start != md.editState.cursor)
+	{
+		auto t = md.model.text.substr (it->range.start, md.editState.cursor - it->range.start);
+		auto nonSelectedText = convert (t);
+		replaceTabs (nonSelectedText, md.style->tabWidth, 0u);
+		auto str = getPlatformFactory ().createString (nonSelectedText.data ());
+		r.left += md.style->font->getFontPainter ()->getStringWidth (nullptr, str);
+		r.right = r.left;
+	}
+	return translateToGlobal (r);
 }
 
 //------------------------------------------------------------------------
