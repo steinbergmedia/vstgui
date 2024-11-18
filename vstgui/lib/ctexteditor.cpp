@@ -1331,7 +1331,9 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 	{
 		if (event.virt == VirtualKey::Up || event.virt == VirtualKey::Down ||
 			event.virt == VirtualKey::PageUp || event.virt == VirtualKey::PageDown ||
-			event.virt == VirtualKey::Left || event.virt == VirtualKey::Right)
+			event.virt == VirtualKey::Left || event.virt == VirtualKey::Right ||
+			event.virt == VirtualKey::Home || event.virt == VirtualKey::End ||
+			event.virt == VirtualKey::Delete || event.virt == VirtualKey::Back)
 		{
 			event.consumed = true;
 		}
