@@ -1244,11 +1244,9 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 		const auto& cmd = md.commandKeys[index];
 		if (cmd == event)
 		{
-			if (handleCommand (static_cast<Command> (index)))
-			{
-				event.consumed = true;
-				return;
-			}
+			handleCommand (static_cast<Command> (index));
+			event.consumed = true;
+			return;
 		}
 	}
 
