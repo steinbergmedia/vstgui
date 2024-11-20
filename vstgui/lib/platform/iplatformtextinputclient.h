@@ -18,8 +18,8 @@ struct ICocoaTextInputClient
 		size_t length;
 	};
 
-	virtual void insertText (const std::u16string& string, TextRange range) = 0;
-	virtual void setMarkedText (const std::u16string& string, TextRange selectedRange,
+	virtual void insertText (const std::u32string& string, TextRange range) = 0;
+	virtual void setMarkedText (const std::u32string& string, TextRange selectedRange,
 								TextRange replacementRange) = 0;
 	virtual bool hasMarkedText () = 0;
 	virtual void unmarkText () = 0;

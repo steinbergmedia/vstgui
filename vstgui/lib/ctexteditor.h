@@ -94,7 +94,7 @@ struct ITextEditor
 
 	virtual bool canHandleCommand (Command cmd) const = 0;
 	virtual bool handleCommand (Command cmd) const = 0;
-	virtual bool setCommandKeyBinding (Command cmd, char16_t character, VirtualKey virt,
+	virtual bool setCommandKeyBinding (Command cmd, char32_t character, VirtualKey virt,
 									   Modifiers modifiers) const = 0;
 
 	enum class FindOption : uint32_t
@@ -129,7 +129,7 @@ struct IEditorExt
 	 *	@param length number of characters
 	 *	@return a string view into the buffer
 	 */
-	virtual std::u16string_view readText (size_t startOffset, size_t length) const = 0;
+	virtual std::u32string_view readText (size_t startOffset, size_t length) const = 0;
 	/** get the length of the text
 	 *
 	 *	@return number of characters

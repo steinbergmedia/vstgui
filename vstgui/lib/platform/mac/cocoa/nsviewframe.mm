@@ -946,6 +946,36 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		}
 	}
 #endif
+	static std::u32string convert (NSString* str)
+	{
+		NSUInteger maxLength {};
+		NSUInteger usedLength {};
+
+		if ([str getBytes:nullptr
+					 maxLength:0
+					usedLength:&maxLength
+					  encoding:NSUTF32StringEncoding
+					   options:0
+						 range:NSMakeRange (0, str.length)
+				remainingRange:nullptr] == NO)
+		{
+			return {};
+		}
+		std::u32string result (maxLength / sizeof (char32_t), 0);
+		if ([str getBytes:result.data ()
+					 maxLength:maxLength
+					usedLength:&usedLength
+					  encoding:NSUTF32StringEncoding
+					   options:0
+						 range:NSMakeRange (0, str.length)
+				remainingRange:nullptr] == NO)
+		{
+			return {};
+		}
+		result.resize (usedLength / sizeof (char32_t));
+		return result;
+	}
+
 	// @protocol NSTextInputClient
 	static void insertText (id self, SEL _cmd, id string, NSRange replacementRange)
 	{
@@ -956,10 +986,7 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			auto hadMarkedText = textInputClient->hasMarkedText ();
 			if ([string isKindOfClass:[NSAttributedString class]])
 				string = [string string];
-			std::u16string str;
-			str.resize ([string length]);
-			[string getCharacters:reinterpret_cast<unichar*> (str.data ())
-							range:NSMakeRange (0, str.length ())];
+			auto str = convert (string);
 			textInputClient->insertText (str, {replacementRange.location, replacementRange.length});
 			if (hadMarkedText && textInputClient->hasMarkedText () == false)
 			{
@@ -988,10 +1015,7 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			if ([string isKindOfClass:[NSAttributedString class]])
 				string = [string string];
 
-			std::u16string str;
-			str.resize ([string length]);
-			[string getCharacters:reinterpret_cast<unichar*> (str.data ())
-							range:NSMakeRange (0, str.length ())];
+			auto str = convert (string);
 			frame->getTextInputClient ()->setMarkedText (
 				str, {selectedRange.location, selectedRange.length},
 				{replacementRange.location, replacementRange.length});
