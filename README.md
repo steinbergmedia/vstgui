@@ -1,8 +1,8 @@
 # VSTGUI
 
-![macOS Build](https://github.com/steinbergmedia/vstgui/workflows/macOS%20Build/badge.svg?branch=develop)
-![Windows build](https://github.com/steinbergmedia/vstgui/workflows/Windows%20build/badge.svg?branch=develop)
-![Linux build](https://github.com/steinbergmedia/vstgui/workflows/Linux%20build/badge.svg?branch=develop)
+![macOS Build](https://github.com/steinbergmedia/vstgui/actions/workflows/cmake_macos.yml/badge.svg?branch=develop)
+![Windows build](https://github.com/steinbergmedia/vstgui/actions/workflows/cmake_windows.yml/badge.svg?branch=develop)
+![Linux build](https://github.com/steinbergmedia/vstgui/actions/workflows/linux.yml/badge.svg?branch=develop)
 
 **VSTGUI** is a user interface toolkit mainly for audio plug-ins (VST, AAX, AudioUnit, etc...) and it is designed for working well with **VST 3** plug-ins and its wrappers like **AU**, **AAX**, ...
 
