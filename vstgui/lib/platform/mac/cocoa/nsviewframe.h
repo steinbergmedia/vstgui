@@ -38,7 +38,7 @@ public:
 	~NSViewFrame () noexcept override;
 
 	NSView* getNSView () const override { return nsView; }
-	void setTextInputClient (ICocoaTextInputClient* client) override { textInputClient = client; }
+	void setTextInputClient (ICocoaTextInputClient* client) override;
 	ICocoaTextInputClient* getTextInputClient () const { return textInputClient; }
 
 	CALayer* getCALayer () const { return caLayer; }

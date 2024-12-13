@@ -495,6 +495,14 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 	{
 		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			if (auto* inputContext = [self inputContext])
+			{
+				if ([inputContext handleEvent:theEvent])
+					return YES;
+			}
+		}
 		if (frame)
 			return frame->onMouseDown (theEvent) ? YES : NO;
 		return NO;
@@ -504,6 +512,14 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 	{
 		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			if (auto* inputContext = [self inputContext])
+			{
+				if ([inputContext handleEvent:theEvent])
+					return YES;
+			}
+		}
 		if (frame)
 			return frame->onMouseUp (theEvent) ? YES : NO;
 		return NO;
@@ -513,6 +529,14 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 	{
 		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			if (auto* inputContext = [self inputContext])
+			{
+				if ([inputContext handleEvent:theEvent])
+					return YES;
+			}
+		}
 		if (frame)
 			return frame->onMouseMoved (theEvent) ? YES : NO;
 		return NO;
@@ -690,7 +714,7 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		NSViewFrame* frame = getNSViewFrame (self);
 		if (frame && frame->getTextInputClient ())
 		{
-			if (auto* inputContext = [NSTextInputContext currentInputContext])
+			if (auto* inputContext = [self inputContext])
 			{
 				if ([inputContext handleEvent:theEvent])
 					return;
@@ -976,6 +1000,28 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		return result;
 	}
 
+	static NSString* convert (const std::u32string& u32str)
+	{
+		std::u16string u16str;
+		u16str.reserve (u32str.size ());
+		for (char32_t ch : u32str)
+		{
+			if (ch <= 0xFFFF)
+			{
+				u16str.push_back (static_cast<char16_t> (ch));
+			}
+			else
+			{
+				ch -= 0x10000;
+				u16str.push_back (static_cast<char16_t> ((ch >> 10) + 0xD800));
+				u16str.push_back (static_cast<char16_t> ((ch & 0x3FF) + 0xDC00));
+			}
+		}
+		return
+			[[[NSString alloc] initWithCharacters:reinterpret_cast<const unichar*> (u16str.data ())
+										   length:u16str.length ()] autorelease];
+	}
+
 	// @protocol NSTextInputClient
 	static void insertText (id self, SEL _cmd, id string, NSRange replacementRange)
 	{
@@ -988,11 +1034,10 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 				string = [string string];
 			auto str = convert (string);
 			textInputClient->insertText (str, {replacementRange.location, replacementRange.length});
-			if (hadMarkedText && textInputClient->hasMarkedText () == false)
-			{
-				if (auto* inputContext = [NSTextInputContext currentInputContext])
-					[inputContext discardMarkedText];
-			}
+			if (hadMarkedText)
+				unmarkText (self, @selector (unmarkText));
+			if (auto* inputContext = [self inputContext])
+				[inputContext invalidateCharacterCoordinates];
 		}
 	}
 
@@ -1002,7 +1047,11 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		if (event.type == NSEventTypeKeyDown)
 		{
 			if (processKeyDown (self, event))
+			{
+				if (auto* inputContext = [self inputContext])
+					[inputContext invalidateCharacterCoordinates];
 				return;
+			}
 		}
 	}
 
@@ -1019,6 +1068,8 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			frame->getTextInputClient ()->setMarkedText (
 				str, {selectedRange.location, selectedRange.length},
 				{replacementRange.location, replacementRange.length});
+			if (auto* inputContext = [self inputContext])
+				[inputContext invalidateCharacterCoordinates];
 		}
 	}
 
@@ -1028,6 +1079,8 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		if (frame && frame->getTextInputClient ())
 		{
 			frame->getTextInputClient ()->unmarkText ();
+			if (auto* inputContext = [self inputContext])
+				[inputContext discardMarkedText];
 		}
 	}
 
@@ -1066,6 +1119,21 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 																	NSRange range,
 																	NSRangePointer actualRange)
 	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			ICocoaTextInputClient::TextRange tr {range.location, range.length};
+			auto str = frame->getTextInputClient ()->substringForRange (tr, tr);
+			if (str.empty () == false)
+			{
+				if (auto* nsStr = convert (str))
+				{
+					if (actualRange)
+						*actualRange = NSMakeRange (tr.position, tr.length);
+					return [[[NSAttributedString alloc] initWithString:nsStr] autorelease];
+				}
+			}
+		}
 		return nil;
 	}
 
@@ -1093,6 +1161,15 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 
 	static NSUInteger characterIndexForPoint (id self, SEL _cmd, NSPoint point)
 	{
+		NSViewFrame* frame = getNSViewFrame (self);
+		if (frame && frame->getTextInputClient ())
+		{
+			point = [[self window] convertPointFromScreen:point];
+			point = [self convertPoint:point fromView:nullptr];
+			auto result = frame->getTextInputClient ()->characterIndexForPoint ({point.x, point.y});
+			if (result != std::numeric_limits<size_t>::max ())
+				return result;
+		}
 		return NSNotFound;
 	}
 
@@ -1819,6 +1896,16 @@ void* NSViewFrame::makeTouchBar () const
 	if (touchBarCreator)
 		return touchBarCreator->createTouchBar ();
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::setTextInputClient (ICocoaTextInputClient* client)
+{
+	if (textInputClient)
+		[nsView.inputContext deactivate];
+	textInputClient = client;
+	if (textInputClient)
+		[nsView.inputContext activate];
 }
 
 //------------------------------------------------------------------------------------

@@ -328,6 +328,8 @@ protected:
 	TextRange getMarkedRange () override;
 	TextRange getSelectedRange () override;
 	CRect firstRectForCharacterRange (TextRange range, TextRange& actualRange) override;
+	std::u32string substringForRange (TextRange range, TextRange& actualRange) override;
+	size_t characterIndexForPoint (CPoint pos) override;
 
 private:
 	template<typename Proc>
@@ -2956,7 +2958,6 @@ void TextEditorView::insertText (const std::u32string& string, TextRange range)
 		stb_textedit_paste (this, &md.editState, string.data (),
 							static_cast<int> (string.length ()));
 	});
-	unmarkText ();
 	restartBlinkTimer ();
 }
 
@@ -3008,6 +3009,8 @@ auto TextEditorView::getSelectedRange () -> TextRange
 	auto end = static_cast<size_t> (md.editState.select_end);
 	if (end < start)
 		std::swap (start, end);
+	else if (start == end && start > 0)
+		return {start - 1, 1};
 	return {start, end - start};
 }
 
@@ -3027,6 +3030,69 @@ CRect TextEditorView::firstRectForCharacterRange (TextRange range, TextRange& ac
 		r.right = r.left;
 	}
 	return translateToGlobal (r);
+}
+
+//------------------------------------------------------------------------
+std::u32string TextEditorView::substringForRange (TextRange range, TextRange& actualRange)
+{
+	if (range.position >= md.model.text.size ())
+	{
+		auto line = findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.cursor);
+		assert (line != md.model.lines.end ());
+		range.position = line->range.start;
+		range.length = line->range.length;
+
+		actualRange = range;
+		return md.model.text.substr (range.position, range.length);
+	}
+	if (range.position < md.model.text.size ())
+	{
+		auto length = std::min (range.length, md.model.text.size () - range.position);
+		if (length > 0)
+		{
+			actualRange.position = range.position;
+			actualRange.length = length;
+			return md.model.text.substr (range.position, length);
+		}
+	}
+	return {};
+}
+
+//------------------------------------------------------------------------
+size_t TextEditorView::characterIndexForPoint (CPoint pos)
+{
+	frameToLocal (pos);
+	if (hitTest (pos))
+	{
+		pos -= getViewSize ().getTopLeft ();
+		pos.y -= md.style->lineSpacing;
+		if (pos.y >= 0.)
+		{
+			auto lineIndex = std::floor (pos.y / md.lineHeight);
+			if (lineIndex < md.model.lines.size ())
+			{
+				pos.x += md.style->leftMargin;
+				const auto& line = md.model.lines[lineIndex];
+				if (pos.x >= 0. || pos.x <= line.width)
+				{
+					size_t index = 0u;
+					UTF8CharacterIterator it (line.text.data ());
+					while (it != it.back ())
+					{
+						auto substr = line.text.getString ().substr (
+							0, reinterpret_cast<UTF8StringPtr> (it.next ()) - line.text.data ());
+						auto platformText = getPlatformFactory ().createString (substr.data ());
+						auto width = md.fontPainer->getStringWidth (nullptr, platformText);
+						if (width > pos.x)
+							return line.range.start + index;
+						++index;
+					}
+					return line.range.start;
+				}
+			}
+		}
+	}
+	return std::numeric_limits<size_t>::max ();
 }
 
 //------------------------------------------------------------------------
