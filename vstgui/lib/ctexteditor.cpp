@@ -19,6 +19,7 @@
 #include "platform/iplatformtextinputclient.h"
 #include "platform/platformfactory.h"
 #include "platform/platform_macos.h"
+#include "platform/platform_win32.h"
 #include "controls/cbuttons.h"
 #include "controls/ctextedit.h"
 #include "animation/timingfunctions.h"
@@ -206,7 +207,8 @@ struct TextEditorView : public CView,
 						public TextEditorColorization::IEditorExt,
 						public IFocusDrawing,
 						public ViewEventListenerAdapter,
-						public ICocoaTextInputClient
+						public ICocoaTextInputClient,
+						public IIMETextInputClient
 {
 	TextEditorView (ITextEditorController* controller);
 	void beforeDelete () override;
@@ -330,6 +332,12 @@ protected:
 	CRect firstRectForCharacterRange (TextRange range, TextRange& actualRange) override;
 	std::u32string substringForRange (TextRange range, TextRange& actualRange) override;
 	size_t characterIndexForPoint (CPoint pos) override;
+
+	// IIMETextInputClient
+	bool ime_queryCharacterPosition (CharPosition& cp) override;
+	void ime_setMarkedText (const std::u32string& string) override;
+	void ime_insertText (const std::u32string& string) override;
+	void ime_unmarkText () override;
 
 private:
 	template<typename Proc>
@@ -662,6 +670,12 @@ void TextEditorView::takeFocus ()
 	{
 		cocoaFrame->setTextInputClient (this);
 	}
+#elif WINDOWS
+	auto pf = getFrame ()->getPlatformFrame ();
+	if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf))
+	{
+		winFrame->setTextInputClient (this);
+	}
 #endif
 }
 
@@ -676,6 +690,12 @@ void TextEditorView::looseFocus ()
 	if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
 	{
 		cocoaFrame->setTextInputClient (nullptr);
+	}
+#elif WINDOWS
+	auto pf = getFrame ()->getPlatformFrame ();
+	if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf))
+	{
+		winFrame->setTextInputClient (nullptr);
 	}
 #endif
 }
@@ -3068,7 +3088,7 @@ size_t TextEditorView::characterIndexForPoint (CPoint pos)
 		pos.y -= md.style->lineSpacing;
 		if (pos.y >= 0.)
 		{
-			auto lineIndex = std::floor (pos.y / md.lineHeight);
+			auto lineIndex = static_cast<size_t> (std::floor (pos.y / md.lineHeight));
 			if (lineIndex < md.model.lines.size ())
 			{
 				pos.x += md.style->leftMargin;
@@ -3093,6 +3113,62 @@ size_t TextEditorView::characterIndexForPoint (CPoint pos)
 		}
 	}
 	return std::numeric_limits<size_t>::max ();
+}
+
+//------------------------------------------------------------------------
+// IIMETextInputClient
+//------------------------------------------------------------------------
+bool TextEditorView::ime_queryCharacterPosition (CharPosition& cp)
+{
+	auto it = findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.cursor);
+	auto r = calculateLineRect (it);
+	if (static_cast<int> (it->range.start) != md.editState.cursor)
+	{
+		auto t = md.model.text.substr (it->range.start, md.editState.cursor - it->range.start);
+		auto nonSelectedText = convert (t);
+		replaceTabs (nonSelectedText, md.style->tabWidth, 0u);
+		auto str = getPlatformFactory ().createString (nonSelectedText.data ());
+		r.left += md.style->font->getFontPainter ()->getStringWidth (nullptr, str);
+		r.right = r.left;
+	}
+	r = translateToGlobal (r);
+	cp.position = r.getTopLeft ();
+	cp.lineHeight = md.lineHeight * getFrame ()->getScaleFactor ();
+	cp.documentRect = translateToGlobal (getVisibleViewSize ());
+	return true;
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::ime_setMarkedText (const std::u32string& string)
+{
+	if (markedRange.length > 0)
+		deleteChars (markedRange.start, markedRange.length);
+	insertChars (md.editState.select_start, string.data (), string.size ());
+	markedRange.start = md.editState.select_start;
+	markedRange.length = string.size ();
+	md.editState.select_end = static_cast<int> (md.editState.select_start + string.size ());
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::ime_insertText (const std::u32string& string)
+{
+	if (markedRange.length > 0)
+		deleteChars (markedRange.start, markedRange.length);
+	markedRange = {};
+	md.editState.select_start = md.editState.select_end = md.editState.cursor;
+	callSTB ([&] () {
+		stb_textedit_paste (this, &md.editState, string.data (),
+							static_cast<int32_t> (string.size ()));
+	});
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::ime_unmarkText ()
+{
+	if (markedRange.length > 0)
+		deleteChars (markedRange.start, markedRange.length);
+	markedRange = {};
+	md.editState.select_start = md.editState.select_end = md.editState.cursor;
 }
 
 //------------------------------------------------------------------------

@@ -22,6 +22,8 @@ public:
 	~Win32Frame () noexcept;
 
 	HWND getHWND () const override { return windowHandle; }
+	void setTextInputClient (IIMETextInputClient* client) override;
+
 	HWND getPlatformWindow () const { return windowHandle; }
 	HWND getParentPlatformWindow () const { return parentWindow; }
 	HWND getOuterWindow () const;
@@ -85,6 +87,7 @@ protected:
 	PlatformGraphicsDeviceContextPtr legacyDrawDevice;
 	Optional<MSG> currentEvent;
 	ViewLayers viewLayers;
+	IIMETextInputClient* textInputClient {nullptr};
 
 	bool inPaint;
 	bool mouseInside;

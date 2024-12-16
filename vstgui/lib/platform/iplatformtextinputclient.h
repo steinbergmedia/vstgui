@@ -33,4 +33,23 @@ struct ICocoaTextInputClient
 };
 
 //------------------------------------------------------------------------
+struct IIMETextInputClient
+{
+	struct CharPosition
+	{
+		uint32_t characterPosition;
+		CPoint position;
+		double lineHeight;
+		CRect documentRect;
+	};
+
+	virtual bool ime_queryCharacterPosition (CharPosition& cp) = 0;
+	virtual void ime_setMarkedText (const std::u32string& string) = 0;
+	virtual void ime_insertText (const std::u32string& string) = 0;
+	virtual void ime_unmarkText () = 0;
+
+	virtual ~IIMETextInputClient () noexcept = default;
+};
+
+//------------------------------------------------------------------------
 } // VSTGUI
