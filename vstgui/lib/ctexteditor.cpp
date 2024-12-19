@@ -117,10 +117,11 @@ inline Range makeRange (const STB_TexteditState& state)
 }
 
 //------------------------------------------------------------------------
-inline void replaceTabs (std::string& str, uint32_t tabWidth, size_t lineOffset)
+inline size_t replaceTabs (std::string& str, uint32_t tabWidth, size_t lineOffset)
 {
 	if (tabWidth < 1)
-		return;
+		return 0;
+	auto numReplacedChars = 0u;
 	auto whiteSpace = ' ';
 	std::string::size_type pos = std::string::npos;
 	while ((pos = str.find_first_of ('\t')) != std::string::npos)
@@ -128,7 +129,9 @@ inline void replaceTabs (std::string& str, uint32_t tabWidth, size_t lineOffset)
 		auto numWhiteSpace = tabWidth - ((pos + lineOffset) % tabWidth);
 		std::string s (numWhiteSpace, whiteSpace);
 		str.replace (pos, 1, s);
+		numReplacedChars += numWhiteSpace - 1;
 	}
+	return numReplacedChars;
 }
 
 //------------------------------------------------------------------------
@@ -999,12 +1002,14 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 			toLineSelection (line.range, md.editState.select_start, md.editState.select_end);
 		if (selRange)
 		{
+			size_t selOffset = static_cast<size_t> (selRange.start);
 			auto selX = x;
 			if (selRange.start != 0)
 			{
 				auto t = md.model.text.substr (line.range.start, selRange.start);
 				auto nonSelectedText = convert (t);
-				replaceTabs (nonSelectedText, md.style->tabWidth, 0u);
+				selOffset += replaceTabs (nonSelectedText, md.style->tabWidth, 0u);
+				// selOffset -= selOffset / md.style->tabWidth;
 				selX += context->getStringWidth (nonSelectedText.data ());
 			}
 			CRect r (selX, y - md.fontAscent, selX, y + md.fontDescent);
@@ -1015,8 +1020,7 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 			{
 				auto t = md.model.text.substr (line.range.start + selRange.start, selRange.length);
 				auto selectedText = convert (t);
-				replaceTabs (selectedText, md.style->tabWidth,
-							 static_cast<size_t> (selRange.start - line.range.start));
+				replaceTabs (selectedText, md.style->tabWidth, selOffset);
 				r.setWidth (context->getStringWidth (selectedText.data ()));
 			}
 			r.inset (0, -md.style->lineSpacing / 2.);
@@ -1812,13 +1816,23 @@ float TextEditorView::getCharWidth (size_t row, size_t pos) const
 	UTF8String str (convert (&c, 1));
 	if (str[0] == '\n')
 		return STB_TEXTEDIT_GETWIDTH_NEWLINE;
-	bool isTab = str[0] == '\t';
-	if (isTab && md.style->tabWidth > 0)
+
+	if (md.style->tabWidth > 0 && str[0] == '\t')
 	{
-		str = " ";
-		auto tabWidth = md.style->tabWidth;
-		while (--tabWidth)
-			str += " ";
+		auto posOffset = 0;
+		auto numTabs = 0u;
+		size_t numSpaces = md.style->tabWidth;
+		for (auto index = 0u; index <= pos; ++index)
+		{
+			if (md.model.text[row + index] == '\t')
+			{
+				numSpaces =
+					md.style->tabWidth - (((index - numTabs) + posOffset) % md.style->tabWidth);
+				posOffset += numSpaces;
+				++numTabs;
+			}
+		}
+		str = std::string (numSpaces, ' ');
 	}
 	auto width = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
 	return static_cast<float> (width / getGlobalTransform (true).m11);
