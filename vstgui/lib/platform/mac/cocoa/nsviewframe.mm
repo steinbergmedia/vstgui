@@ -501,6 +501,11 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 			{
 				if ([inputContext handleEvent:theEvent])
 					return YES;
+				auto hadMarkedText = frame->getTextInputClient ()->hasMarkedText ();
+				auto result = frame->onMouseDown (theEvent);
+				if (hadMarkedText && !frame->getTextInputClient ()->hasMarkedText ())
+					[inputContext discardMarkedText];
+				return result ? YES : NO;
 			}
 		}
 		if (frame)
@@ -1102,7 +1107,8 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		if (frame && frame->getTextInputClient ())
 		{
 			auto r = frame->getTextInputClient ()->getMarkedRange ();
-			return NSMakeRange (r.position, r.length);
+			if (r.length > 0)
+				return NSMakeRange (r.position, r.length);
 		}
 		return NSMakeRange (NSNotFound, 0);
 	}
@@ -1111,7 +1117,7 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	{
 		NSViewFrame* frame = getNSViewFrame (self);
 		if (frame && frame->getTextInputClient ())
-			return frame->getTextInputClient ()->hasMarkedText ();
+			return frame->getTextInputClient ()->hasMarkedText () ? YES : NO;
 		return NO;
 	}
 

@@ -1426,6 +1426,8 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 		onSelectionChanged (makeRange (md.editState));
 	}
 
+	unmarkText ();
+
 	event.consumed = true;
 }
 
@@ -2985,8 +2987,6 @@ void TextEditorView::insertText (const std::u32string& string, TextRange range)
 void TextEditorView::setMarkedText (const std::u32string& string, TextRange selectedRange,
 									TextRange replacementRange)
 {
-	markedText = string;
-	markedRange = {selectedRange.position, selectedRange.length};
 	if (replacementRange.length > 0 && replacementRange.position < md.model.text.size ())
 	{
 		md.editState.select_start = static_cast<int> (replacementRange.position);
@@ -3004,6 +3004,8 @@ void TextEditorView::setMarkedText (const std::u32string& string, TextRange sele
 	md.editState.select_end = static_cast<int> (selectionStart + string.length ());
 	onCursorChanged (oldCursor, md.editState.cursor);
 	onSelectionChanged (makeRange (md.editState));
+	markedText = string;
+	markedRange = {selectedRange.position, selectedRange.length};
 }
 
 //------------------------------------------------------------------------
