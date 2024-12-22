@@ -175,5 +175,5 @@ struct IStyleProvider
 };
 
 //------------------------------------------------------------------------
-} // TextEditorHighlighting
+} // TextEditorColorization
 } // VSTGUI
