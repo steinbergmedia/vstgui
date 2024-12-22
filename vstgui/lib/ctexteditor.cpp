@@ -207,7 +207,6 @@ struct TextEditorView : public CView,
 						public TextEditorColorization::IEditorExt,
 						public IFocusDrawing,
 						public ViewEventListenerAdapter,
-						public ICocoaTextInputClient,
 						public IIMETextInputClient
 {
 	TextEditorView (ITextEditorController* controller);
@@ -320,18 +319,6 @@ protected:
 	void doRedo () const;
 	template<bool iterateForward>
 	void doUndoRedo () const;
-
-	// ICocoaTextInputClient
-	void insertText (const std::u32string& string, TextRange range) override;
-	void setMarkedText (const std::u32string& string, TextRange selectedRange,
-						TextRange replacementRange) override;
-	bool hasMarkedText () override;
-	void unmarkText () override;
-	TextRange getMarkedRange () override;
-	TextRange getSelectedRange () override;
-	CRect firstRectForCharacterRange (TextRange range, TextRange& actualRange) override;
-	std::u32string substringForRange (TextRange range, TextRange& actualRange) override;
-	size_t characterIndexForPoint (CPoint pos) override;
 
 	// IIMETextInputClient
 	bool ime_queryCharacterPosition (CharPosition& cp) override;
@@ -450,6 +437,29 @@ public:
 
 private:
 	mutable ModelData md;
+
+	struct CocoaTextInputClient : ICocoaTextInputClient
+	{
+		TextEditorView& view;
+		Range markedRange {};
+		std::u32string markedText;
+
+		CocoaTextInputClient (TextEditorView& view) : view (view) {}
+
+		void insertText (const std::u32string& string, TextRange range) override;
+		void setMarkedText (const std::u32string& string, TextRange selectedRange,
+							TextRange replacementRange) override;
+		bool hasMarkedText () override;
+		void unmarkText () override;
+		TextRange getMarkedRange () override;
+		TextRange getSelectedRange () override;
+		CRect firstRectForCharacterRange (TextRange range, TextRange& actualRange) override;
+		std::u32string substringForRange (TextRange range, TextRange& actualRange) override;
+		size_t characterIndexForPoint (CPoint pos) override;
+	};
+
+	std::unique_ptr<CocoaTextInputClient> cocoaTextInputClient;
+
 	Range markedRange {};
 	std::u32string markedText;
 };
@@ -668,7 +678,8 @@ void TextEditorView::takeFocus ()
 	auto pf = getFrame ()->getPlatformFrame ();
 	if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
 	{
-		cocoaFrame->setTextInputClient (this);
+		cocoaTextInputClient = std::make_unique<CocoaTextInputClient> (*this);
+		cocoaFrame->setTextInputClient (cocoaTextInputClient.get ());
 	}
 #elif WINDOWS
 	auto pf = getFrame ()->getPlatformFrame ();
@@ -690,6 +701,7 @@ void TextEditorView::looseFocus ()
 	if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
 	{
 		cocoaFrame->setTextInputClient (nullptr);
+		cocoaTextInputClient.reset ();
 	}
 #elif WINDOWS
 	auto pf = getFrame ()->getPlatformFrame ();
@@ -1426,7 +1438,8 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 		onSelectionChanged (makeRange (md.editState));
 	}
 
-	unmarkText ();
+	if (cocoaTextInputClient)
+		cocoaTextInputClient->unmarkText ();
 
 	event.consumed = true;
 }
@@ -2968,67 +2981,70 @@ void TextEditorView::doRedo () const
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::insertText (const std::u32string& string, TextRange range)
+//--CocoaTextInputClient
+void TextEditorView::CocoaTextInputClient::insertText (const std::u32string& string,
+													   TextRange range)
 {
-	if (range.length > 0 && range.position < md.model.text.size ())
+	if (range.length > 0 && range.position < view.md.model.text.size ())
 	{
-		md.editState.select_start = static_cast<int> (range.position);
-		md.editState.select_end = static_cast<int> (range.position + range.length);
-		md.editState.cursor = md.editState.select_start;
+		view.md.editState.select_start = static_cast<int> (range.position);
+		view.md.editState.select_end = static_cast<int> (range.position + range.length);
+		view.md.editState.cursor = view.md.editState.select_start;
 	}
-	callSTB ([&] () {
-		stb_textedit_paste (this, &md.editState, string.data (),
+	view.callSTB ([&] () {
+		stb_textedit_paste (&view, &view.md.editState, string.data (),
 							static_cast<int> (string.length ()));
 	});
-	restartBlinkTimer ();
+	view.restartBlinkTimer ();
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::setMarkedText (const std::u32string& string, TextRange selectedRange,
-									TextRange replacementRange)
+void TextEditorView::CocoaTextInputClient::setMarkedText (const std::u32string& string,
+														  TextRange selectedRange,
+														  TextRange replacementRange)
 {
-	if (replacementRange.length > 0 && replacementRange.position < md.model.text.size ())
+	if (replacementRange.length > 0 && replacementRange.position < view.md.model.text.size ())
 	{
-		md.editState.select_start = static_cast<int> (replacementRange.position);
-		md.editState.select_end =
+		view.md.editState.select_start = static_cast<int> (replacementRange.position);
+		view.md.editState.select_end =
 			static_cast<int> (replacementRange.position + replacementRange.length);
-		md.editState.cursor = md.editState.select_end;
+		view.md.editState.cursor = view.md.editState.select_end;
 	}
-	auto oldCursor = md.editState.cursor;
-	auto selectionStart = md.editState.select_start;
-	callSTB ([&] () {
-		stb_textedit_paste (this, &md.editState, string.data (),
+	auto oldCursor = view.md.editState.cursor;
+	auto selectionStart = view.md.editState.select_start;
+	view.callSTB ([&] () {
+		stb_textedit_paste (&view, &view.md.editState, string.data (),
 							static_cast<int> (string.length ()));
 	});
-	md.editState.cursor = md.editState.select_start = selectionStart;
-	md.editState.select_end = static_cast<int> (selectionStart + string.length ());
-	onCursorChanged (oldCursor, md.editState.cursor);
-	onSelectionChanged (makeRange (md.editState));
+	view.md.editState.cursor = view.md.editState.select_start = selectionStart;
+	view.md.editState.select_end = static_cast<int> (selectionStart + string.length ());
+	view.onCursorChanged (oldCursor, view.md.editState.cursor);
+	view.onSelectionChanged (makeRange (view.md.editState));
 	markedText = string;
 	markedRange = {selectedRange.position, selectedRange.length};
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::hasMarkedText () { return !markedText.empty (); }
+bool TextEditorView::CocoaTextInputClient::hasMarkedText () { return !markedText.empty (); }
 
 //------------------------------------------------------------------------
-void TextEditorView::unmarkText ()
+void TextEditorView::CocoaTextInputClient::unmarkText ()
 {
 	markedText = {};
 	markedRange = {};
 }
 
 //------------------------------------------------------------------------
-auto TextEditorView::getMarkedRange () -> TextRange
+auto TextEditorView::CocoaTextInputClient::getMarkedRange () -> TextRange
 {
 	return {markedRange.start, markedRange.length};
 }
 
 //------------------------------------------------------------------------
-auto TextEditorView::getSelectedRange () -> TextRange
+auto TextEditorView::CocoaTextInputClient::getSelectedRange () -> TextRange
 {
-	auto start = static_cast<size_t> (md.editState.select_start);
-	auto end = static_cast<size_t> (md.editState.select_end);
+	auto start = static_cast<size_t> (view.md.editState.select_start);
+	auto end = static_cast<size_t> (view.md.editState.select_end);
 	if (end < start)
 		std::swap (start, end);
 	else if (start == end && start > 0)
@@ -3037,64 +3053,69 @@ auto TextEditorView::getSelectedRange () -> TextRange
 }
 
 //------------------------------------------------------------------------
-CRect TextEditorView::firstRectForCharacterRange (TextRange range, TextRange& actualRange)
+CRect TextEditorView::CocoaTextInputClient::firstRectForCharacterRange (TextRange range,
+																		TextRange& actualRange)
 {
-	auto it = findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.cursor);
-	auto r = calculateLineRect (it);
-	actualRange = {static_cast<size_t> (md.editState.cursor), 0};
-	if (static_cast<int> (it->range.start) != md.editState.cursor)
+	auto it = view.findLine (view.md.model.lines.begin (), view.md.model.lines.end (),
+							 view.md.editState.cursor);
+	auto r = view.calculateLineRect (it);
+	actualRange = {static_cast<size_t> (view.md.editState.cursor), 0};
+	if (static_cast<int> (it->range.start) != view.md.editState.cursor)
 	{
-		auto t = md.model.text.substr (it->range.start, md.editState.cursor - it->range.start);
+		auto t =
+			view.md.model.text.substr (it->range.start, view.md.editState.cursor - it->range.start);
 		auto nonSelectedText = convert (t);
-		replaceTabs (nonSelectedText, md.style->tabWidth, 0u);
+		replaceTabs (nonSelectedText, view.md.style->tabWidth, 0u);
 		auto str = getPlatformFactory ().createString (nonSelectedText.data ());
-		r.left += md.style->font->getFontPainter ()->getStringWidth (nullptr, str);
+		r.left += view.md.style->font->getFontPainter ()->getStringWidth (nullptr, str);
 		r.right = r.left;
 	}
-	return translateToGlobal (r);
+	return view.translateToGlobal (r);
 }
 
 //------------------------------------------------------------------------
-std::u32string TextEditorView::substringForRange (TextRange range, TextRange& actualRange)
+std::u32string TextEditorView::CocoaTextInputClient::substringForRange (TextRange range,
+																		TextRange& actualRange)
 {
-	if (range.position >= md.model.text.size ())
+	if (range.position >= view.md.model.text.size ())
 	{
-		auto line = findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.cursor);
-		assert (line != md.model.lines.end ());
+		auto line = view.findLine (view.md.model.lines.begin (), view.md.model.lines.end (),
+								   view.md.editState.cursor);
+		assert (line != view.md.model.lines.end ());
 		range.position = line->range.start;
 		range.length = line->range.length;
 
 		actualRange = range;
-		return md.model.text.substr (range.position, range.length);
+		return view.md.model.text.substr (range.position, range.length);
 	}
-	if (range.position < md.model.text.size ())
+	if (range.position < view.md.model.text.size ())
 	{
-		auto length = std::min (range.length, md.model.text.size () - range.position);
+		auto length = std::min (range.length, view.md.model.text.size () - range.position);
 		if (length > 0)
 		{
 			actualRange.position = range.position;
 			actualRange.length = length;
-			return md.model.text.substr (range.position, length);
+			return view.md.model.text.substr (range.position, length);
 		}
 	}
 	return {};
 }
 
 //------------------------------------------------------------------------
-size_t TextEditorView::characterIndexForPoint (CPoint pos)
+size_t TextEditorView::CocoaTextInputClient::characterIndexForPoint (CPoint pos)
 {
-	frameToLocal (pos);
-	if (hitTest (pos))
+	view.frameToLocal (pos);
+	if (view.hitTest (pos))
 	{
-		pos -= getViewSize ().getTopLeft ();
-		pos.y -= md.style->lineSpacing;
+		pos -= view.getViewSize ().getTopLeft ();
+		pos.y -= view.md.style->lineSpacing;
 		if (pos.y >= 0.)
 		{
-			auto lineIndex = static_cast<size_t> (std::floor (pos.y / md.lineHeight));
-			if (lineIndex < md.model.lines.size ())
+			auto lineIndex = static_cast<size_t> (std::floor (pos.y / view.md.lineHeight));
+			if (lineIndex < view.md.model.lines.size ())
 			{
-				pos.x += md.style->leftMargin;
-				const auto& line = md.model.lines[lineIndex];
+				pos.x += view.md.style->leftMargin;
+				const auto& line = view.md.model.lines[lineIndex];
 				if (pos.x >= 0. || pos.x <= line.width)
 				{
 					size_t index = 0u;
@@ -3104,7 +3125,7 @@ size_t TextEditorView::characterIndexForPoint (CPoint pos)
 						auto substr = line.text.getString ().substr (
 							0, reinterpret_cast<UTF8StringPtr> (it.next ()) - line.text.data ());
 						auto platformText = getPlatformFactory ().createString (substr.data ());
-						auto width = md.fontPainer->getStringWidth (nullptr, platformText);
+						auto width = view.md.fontPainer->getStringWidth (nullptr, platformText);
 						if (width > pos.x)
 							return line.range.start + index;
 						++index;
