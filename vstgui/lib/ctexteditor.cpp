@@ -206,8 +206,7 @@ struct TextEditorView : public CView,
 						public ITextEditor,
 						public TextEditorColorization::IEditorExt,
 						public IFocusDrawing,
-						public ViewEventListenerAdapter,
-						public IIMETextInputClient
+						public ViewEventListenerAdapter
 {
 	TextEditorView (ITextEditorController* controller);
 	void beforeDelete () override;
@@ -319,12 +318,6 @@ protected:
 	void doRedo () const;
 	template<bool iterateForward>
 	void doUndoRedo () const;
-
-	// IIMETextInputClient
-	bool ime_queryCharacterPosition (CharPosition& cp) override;
-	void ime_setMarkedText (const std::u32string& string) override;
-	void ime_insertText (const std::u32string& string) override;
-	void ime_unmarkText () override;
 
 private:
 	template<typename Proc>
@@ -457,11 +450,22 @@ private:
 		std::u32string substringForRange (TextRange range, TextRange& actualRange) override;
 		size_t characterIndexForPoint (CPoint pos) override;
 	};
-
 	std::unique_ptr<CocoaTextInputClient> cocoaTextInputClient;
 
-	Range markedRange {};
-	std::u32string markedText;
+	struct IMETextInputClient : IIMETextInputClient
+	{
+		TextEditorView& view;
+		Range markedRange {};
+		std::u32string markedText;
+
+		IMETextInputClient (TextEditorView& view) : view (view) {}
+
+		bool ime_queryCharacterPosition (CharPosition& cp) override;
+		void ime_setMarkedText (const std::u32string& string) override;
+		void ime_insertText (const std::u32string& string) override;
+		void ime_unmarkText () override;
+	};
+	std::unique_ptr<IMETextInputClient> imeTextInputClient;
 };
 
 #define VIRTUAL_KEY_BIT 0x80000000
@@ -685,7 +689,8 @@ void TextEditorView::takeFocus ()
 	auto pf = getFrame ()->getPlatformFrame ();
 	if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf))
 	{
-		winFrame->setTextInputClient (this);
+		imeTextInputClient = std::make_unique<IMETextInputClient> (*this);
+		winFrame->setTextInputClient (imeTextInputClient.get ());
 	}
 #endif
 }
@@ -708,6 +713,7 @@ void TextEditorView::looseFocus ()
 	if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf))
 	{
 		winFrame->setTextInputClient (nullptr);
+		imeTextInputClient.reset ();
 	}
 #endif
 }
@@ -3141,57 +3147,60 @@ size_t TextEditorView::CocoaTextInputClient::characterIndexForPoint (CPoint pos)
 //------------------------------------------------------------------------
 // IIMETextInputClient
 //------------------------------------------------------------------------
-bool TextEditorView::ime_queryCharacterPosition (CharPosition& cp)
+bool TextEditorView::IMETextInputClient::ime_queryCharacterPosition (CharPosition& cp)
 {
-	auto it = findLine (md.model.lines.begin (), md.model.lines.end (), md.editState.cursor);
-	auto r = calculateLineRect (it);
-	if (static_cast<int> (it->range.start) != md.editState.cursor)
+	auto it = view.findLine (view.md.model.lines.begin (), view.md.model.lines.end (),
+							 view.md.editState.cursor);
+	auto r = view.calculateLineRect (it);
+	if (static_cast<int> (it->range.start) != view.md.editState.cursor)
 	{
-		auto t = md.model.text.substr (it->range.start, md.editState.cursor - it->range.start);
+		auto t =
+			view.md.model.text.substr (it->range.start, view.md.editState.cursor - it->range.start);
 		auto nonSelectedText = convert (t);
-		replaceTabs (nonSelectedText, md.style->tabWidth, 0u);
+		replaceTabs (nonSelectedText, view.md.style->tabWidth, 0u);
 		auto str = getPlatformFactory ().createString (nonSelectedText.data ());
-		r.left += md.style->font->getFontPainter ()->getStringWidth (nullptr, str);
+		r.left += view.md.style->font->getFontPainter ()->getStringWidth (nullptr, str);
 		r.right = r.left;
 	}
-	r = translateToGlobal (r);
+	r = view.translateToGlobal (r);
 	cp.position = r.getTopLeft ();
-	cp.lineHeight = md.lineHeight * getFrame ()->getScaleFactor ();
-	cp.documentRect = translateToGlobal (getVisibleViewSize ());
+	cp.lineHeight = view.md.lineHeight * view.getFrame ()->getScaleFactor ();
+	cp.documentRect = view.translateToGlobal (view.getVisibleViewSize ());
 	return true;
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::ime_setMarkedText (const std::u32string& string)
+void TextEditorView::IMETextInputClient::ime_setMarkedText (const std::u32string& string)
 {
 	if (markedRange.length > 0)
-		deleteChars (markedRange.start, markedRange.length);
-	insertChars (md.editState.select_start, string.data (), string.size ());
-	markedRange.start = md.editState.select_start;
+		view.deleteChars (markedRange.start, markedRange.length);
+	view.insertChars (view.md.editState.select_start, string.data (), string.size ());
+	markedRange.start = view.md.editState.select_start;
 	markedRange.length = string.size ();
-	md.editState.select_end = static_cast<int> (md.editState.select_start + string.size ());
+	view.md.editState.select_end =
+		static_cast<int> (view.md.editState.select_start + string.size ());
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::ime_insertText (const std::u32string& string)
+void TextEditorView::IMETextInputClient::ime_insertText (const std::u32string& string)
 {
 	if (markedRange.length > 0)
-		deleteChars (markedRange.start, markedRange.length);
+		view.deleteChars (markedRange.start, markedRange.length);
 	markedRange = {};
-	md.editState.select_start = md.editState.select_end = md.editState.cursor;
-	callSTB ([&] () {
-		stb_textedit_paste (this, &md.editState, string.data (),
+	view.md.editState.select_start = view.md.editState.select_end = view.md.editState.cursor;
+	view.callSTB ([&] () {
+		stb_textedit_paste (&view, &view.md.editState, string.data (),
 							static_cast<int32_t> (string.size ()));
 	});
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::ime_unmarkText ()
+void TextEditorView::IMETextInputClient::ime_unmarkText ()
 {
 	if (markedRange.length > 0)
-		deleteChars (markedRange.start, markedRange.length);
+		view.deleteChars (markedRange.start, markedRange.length);
 	markedRange = {};
-	md.editState.select_start = md.editState.select_end = md.editState.cursor;
+	view.md.editState.select_start = view.md.editState.select_end = view.md.editState.cursor;
 }
 
 //------------------------------------------------------------------------
