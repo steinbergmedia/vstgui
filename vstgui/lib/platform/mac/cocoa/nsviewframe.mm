@@ -495,21 +495,19 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 	{
 		NSViewFrame* frame = getNSViewFrame (self);
-		if (frame && frame->getTextInputClient ())
-		{
-			if (auto* inputContext = [self inputContext])
-			{
-				if ([inputContext handleEvent:theEvent])
-					return YES;
-				auto hadMarkedText = frame->getTextInputClient ()->hasMarkedText ();
-				auto result = frame->onMouseDown (theEvent);
-				if (hadMarkedText && !frame->getTextInputClient ()->hasMarkedText ())
-					[inputContext discardMarkedText];
-				return result ? YES : NO;
-			}
-		}
 		if (frame)
+		{
+			if (frame->getTextInputClient ())
+			{
+				if (auto* inputContext = [self inputContext])
+				{
+					if ([inputContext handleEvent:theEvent])
+						return YES;
+					return frame->onMouseDown (theEvent);
+				}
+			}
 			return frame->onMouseDown (theEvent) ? YES : NO;
+		}
 		return NO;
 	}
 
@@ -517,16 +515,18 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 	{
 		NSViewFrame* frame = getNSViewFrame (self);
-		if (frame && frame->getTextInputClient ())
-		{
-			if (auto* inputContext = [self inputContext])
-			{
-				if ([inputContext handleEvent:theEvent])
-					return YES;
-			}
-		}
 		if (frame)
+		{
+			if (frame->getTextInputClient ())
+			{
+				if (auto* inputContext = [self inputContext])
+				{
+					if ([inputContext handleEvent:theEvent])
+						return YES;
+				}
+			}
 			return frame->onMouseUp (theEvent) ? YES : NO;
+		}
 		return NO;
 	}
 
@@ -534,16 +534,18 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	static BOOL onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 	{
 		NSViewFrame* frame = getNSViewFrame (self);
-		if (frame && frame->getTextInputClient ())
-		{
-			if (auto* inputContext = [self inputContext])
-			{
-				if ([inputContext handleEvent:theEvent])
-					return YES;
-			}
-		}
 		if (frame)
+		{
+			if (frame->getTextInputClient ())
+			{
+				if (auto* inputContext = [self inputContext])
+				{
+					if ([inputContext handleEvent:theEvent])
+						return YES;
+				}
+			}
 			return frame->onMouseMoved (theEvent) ? YES : NO;
+		}
 		return NO;
 	}
 
@@ -1911,7 +1913,11 @@ void NSViewFrame::setTextInputClient (ICocoaTextInputClient* client)
 		[nsView.inputContext deactivate];
 	textInputClient = client;
 	if (textInputClient)
+	{
 		[nsView.inputContext activate];
+		textInputClient->setCancelCallback (
+			[] () { [NSTextInputContext.currentInputContext discardMarkedText]; });
+	}
 }
 
 //------------------------------------------------------------------------------------

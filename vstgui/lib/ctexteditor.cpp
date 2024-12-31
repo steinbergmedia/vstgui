@@ -436,8 +436,11 @@ private:
 		TextEditorView& view;
 		Range markedRange {};
 		std::u32string markedText;
+		TextInputClientCancelCallback cancelCallback;
 
 		CocoaTextInputClient (TextEditorView& view) : view (view) {}
+
+		void cancel ();
 
 		void insertText (const std::u32string& string, TextRange range) override;
 		void setMarkedText (const std::u32string& string, TextRange selectedRange,
@@ -449,6 +452,8 @@ private:
 		CRect firstRectForCharacterRange (TextRange range, TextRange& actualRange) override;
 		std::u32string substringForRange (TextRange range, TextRange& actualRange) override;
 		size_t characterIndexForPoint (CPoint pos) override;
+
+		void setCancelCallback (const TextInputClientCancelCallback& callback) override;
 	};
 	std::unique_ptr<CocoaTextInputClient> cocoaTextInputClient;
 
@@ -951,6 +956,9 @@ bool TextEditorView::handleCommand (Command cmd) const
 		}
 	});
 
+	if (cocoaTextInputClient && cocoaTextInputClient->hasMarkedText ())
+		cocoaTextInputClient->cancel ();
+
 	switch (cmd)
 	{
 		case Command::ShiftLeft:
@@ -1414,6 +1422,9 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 	if (!event.buttonState.isLeft ())
 		return;
 
+	if (cocoaTextInputClient && cocoaTextInputClient->hasMarkedText ())
+		cocoaTextInputClient->cancel ();
+
 	getFrame ()->setFocusView (this);
 
 	md.mouseIsDown = true;
@@ -1443,9 +1454,6 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 		md.editState.select_end = md.editState.cursor;
 		onSelectionChanged (makeRange (md.editState));
 	}
-
-	if (cocoaTextInputClient)
-		cocoaTextInputClient->unmarkText ();
 
 	event.consumed = true;
 }
@@ -3009,6 +3017,8 @@ void TextEditorView::CocoaTextInputClient::setMarkedText (const std::u32string& 
 														  TextRange selectedRange,
 														  TextRange replacementRange)
 {
+	if (markedText.empty () == false)
+		view.doUndo ();
 	if (replacementRange.length > 0 && replacementRange.position < view.md.model.text.size ())
 	{
 		view.md.editState.select_start = static_cast<int> (replacementRange.position);
@@ -3142,6 +3152,23 @@ size_t TextEditorView::CocoaTextInputClient::characterIndexForPoint (CPoint pos)
 		}
 	}
 	return std::numeric_limits<size_t>::max ();
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::CocoaTextInputClient::setCancelCallback (
+	const TextInputClientCancelCallback& callback)
+{
+	cancelCallback = callback;
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::CocoaTextInputClient::cancel ()
+{
+	if (hasMarkedText ())
+		view.doUndo ();
+	unmarkText ();
+	if (cancelCallback)
+		cancelCallback ();
 }
 
 //------------------------------------------------------------------------

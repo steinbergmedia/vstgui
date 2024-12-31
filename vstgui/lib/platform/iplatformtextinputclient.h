@@ -5,9 +5,13 @@
 #pragma once
 
 #include "../vstguifwd.h"
+#include <functional>
 #include <string>
 
 namespace VSTGUI {
+
+//------------------------------------------------------------------------
+using TextInputClientCancelCallback = std::function<void ()>;
 
 //------------------------------------------------------------------------
 struct ICocoaTextInputClient
@@ -28,6 +32,8 @@ struct ICocoaTextInputClient
 	virtual CRect firstRectForCharacterRange (TextRange range, TextRange& actualRange) = 0;
 	virtual std::u32string substringForRange (TextRange range, TextRange& actualRange) = 0;
 	virtual size_t characterIndexForPoint (CPoint pos) = 0;
+
+	virtual void setCancelCallback (const TextInputClientCancelCallback& callback) = 0;
 
 	virtual ~ICocoaTextInputClient () noexcept = default;
 };
