@@ -343,7 +343,7 @@ private:
 	CRect calculateLineRect (size_t index) const;
 	CRect calculateLineRect (Lines::const_iterator it) const;
 	CCoord calculateMaxWidth () const;
-	CRect calculateSelectionRect () const;
+	CRect calculateSelectedLinesRect () const;
 	void updateLineNumbersView () const;
 	void layoutRows () const;
 	void onCursorChanged (int oldCursorPos, int newCursorPos) const;
@@ -1195,7 +1195,7 @@ void TextEditorView::invalidSelectedLines () const
 {
 	if (md.selectedLines.length == 0 && (md.style->flags & Style::Flags::HighlightCursorLine))
 		invalidLine (md.selectedLines.start, true);
-	invalidateRect (calculateSelectionRect ());
+	invalidateRect (calculateSelectedLinesRect ());
 }
 
 //------------------------------------------------------------------------
@@ -1219,7 +1219,7 @@ CRect TextEditorView::calculateLineRect (Lines::const_iterator it) const
 }
 
 //------------------------------------------------------------------------
-CRect TextEditorView::calculateSelectionRect () const
+CRect TextEditorView::calculateSelectedLinesRect () const
 {
 	CRect result;
 	for (auto index = md.selectedLines.start; index < md.selectedLines.end (); ++index)
