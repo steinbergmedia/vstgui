@@ -469,6 +469,8 @@ private:
 		void ime_setMarkedText (const std::u32string& string) override;
 		void ime_insertText (const std::u32string& string) override;
 		void ime_unmarkText () override;
+
+		bool hasMarkedText () const { return markedText.empty () == false; }
 	};
 	std::unique_ptr<IMETextInputClient> imeTextInputClient;
 };
@@ -1098,8 +1100,18 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 				r.setWidth (context->getStringWidth (selectedText.data ()));
 			}
 			r.inset (0, -md.style->lineSpacing / 2.);
-			context->setFillColor (md.style->selectionBackColor);
-			context->drawRect (r, kDrawFilled);
+			if ((cocoaTextInputClient && cocoaTextInputClient->hasMarkedText ()) ||
+				(imeTextInputClient && imeTextInputClient->hasMarkedText ()))
+			{
+				context->setLineWidth (1.);
+				context->setFrameColor (md.style->selectionBackColor);
+				context->drawRect (r, kDrawStroked);
+			}
+			else
+			{
+				context->setFillColor (md.style->selectionBackColor);
+				context->drawRect (r, kDrawFilled);
+			}
 		}
 		if (styleProvider)
 		{
