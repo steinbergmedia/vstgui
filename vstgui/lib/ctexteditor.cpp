@@ -318,6 +318,7 @@ protected:
 	void doRedo () const;
 	template<bool iterateForward>
 	void doUndoRedo () const;
+	void flushUndoList () const;
 
 private:
 	template<typename Proc>
@@ -2899,6 +2900,13 @@ bool TextEditorView::gotoLine (size_t lineNo) const
 }
 
 //------------------------------------------------------------------------
+void TextEditorView::flushUndoList () const
+{
+	if (md.undoPos != md.undoList.end ())
+		md.undoList.erase (md.undoPos, md.undoList.end ());
+}
+
+//------------------------------------------------------------------------
 void TextEditorView::checkCurrentUndoGroup (bool force) const
 {
 	auto currentTime = getPlatformFactory ().getTicks ();
@@ -2926,8 +2934,7 @@ CharT* TextEditorView::createUndoRecord (size_t pos, size_t insertLen, size_t de
 	if (md.undoPos != md.undoList.end ())
 	{
 		md.undoPos++;
-		if (md.undoPos != md.undoList.end ())
-			md.undoList.erase (md.undoPos, md.undoList.end ());
+		flushUndoList ();
 	}
 	md.currentUndoGroup.record.emplace_back (UndoRecord {});
 	auto& record = md.currentUndoGroup.record.back ();
@@ -3011,6 +3018,8 @@ void TextEditorView::doRedo () const
 void TextEditorView::CocoaTextInputClient::insertText (const std::u32string& string,
 													   TextRange range)
 {
+	if (markedText.empty () == false)
+		view.doUndo ();
 	if (range.length > 0 && range.position < view.md.model.text.size ())
 	{
 		view.md.editState.select_start = static_cast<int> (range.position);
@@ -3177,7 +3186,10 @@ void TextEditorView::CocoaTextInputClient::setCancelCallback (
 void TextEditorView::CocoaTextInputClient::cancel ()
 {
 	if (hasMarkedText ())
+	{
 		view.doUndo ();
+		view.flushUndoList ();
+	}
 	unmarkText ();
 	if (cancelCallback)
 		cancelCallback ();
