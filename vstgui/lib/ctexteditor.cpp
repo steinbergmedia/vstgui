@@ -3020,6 +3020,8 @@ void TextEditorView::CocoaTextInputClient::insertText (const std::u32string& str
 {
 	if (markedText.empty () == false)
 		view.doUndo ();
+	else
+		view.checkCurrentUndoGroup (true);
 	if (range.length > 0 && range.position < view.md.model.text.size ())
 	{
 		view.md.editState.select_start = static_cast<int> (range.position);
@@ -3040,6 +3042,8 @@ void TextEditorView::CocoaTextInputClient::setMarkedText (const std::u32string& 
 {
 	if (markedText.empty () == false)
 		view.doUndo ();
+	else
+		view.checkCurrentUndoGroup (true);
 	if (replacementRange.length > 0 && replacementRange.position < view.md.model.text.size ())
 	{
 		view.md.editState.select_start = static_cast<int> (replacementRange.position);
