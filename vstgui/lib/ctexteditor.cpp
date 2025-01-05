@@ -31,6 +31,7 @@
 #include <string>
 #include <bitset>
 #include <cwctype>
+#include <cassert>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
