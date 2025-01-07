@@ -664,7 +664,10 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 	{
 		NSViewFrame* frame = getNSViewFrame (self);
 		if (frame && frame->getTextInputClient ())
-			return NO;
+		{
+			if (!(theEvent.modifierFlags & MacEventModifier::CommandKeyMask))
+				return NO;
+		}
 
 		NSView* firstResponder = (NSView*)[[self window] firstResponder];
 		if (![firstResponder isKindOfClass:[NSView class]])
