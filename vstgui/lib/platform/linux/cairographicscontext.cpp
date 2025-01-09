@@ -43,6 +43,20 @@ inline cairo_matrix_t convert (const TransformMatrix& ct)
 struct CairoGraphicsDeviceFactory::Impl
 {
 	std::vector<std::shared_ptr<CairoGraphicsDevice>> devices;
+	Impl() = default;
+	~Impl() noexcept
+	{
+		for (auto& device : devices)
+		{
+#if DEBUG
+			DebugPrint ("Cairo device reference count: %u\n", cairo_device_get_reference_count (device->get ()));
+#endif
+			// Force cairo to remove this device from its internal cache list of devices.
+			// This is only needed because the reference count never seem to reach 0,
+			// which means there is still some resource leakage elsewhere in the code.
+			cairo_device_finish (device->get ());
+		}
+	}
 };
 
 //-----------------------------------------------------------------------------
