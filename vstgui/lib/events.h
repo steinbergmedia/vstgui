@@ -481,6 +481,9 @@ enum class VirtualKey : uint32_t
 	Equals,
 	// DO NOT CHANGE THE ORDER ABOVE
 
+	SuperModifier, // The Control key on macOS
+	CapsLockModifier,
+	FunctionModifier, // The Function (fn) key on macOS
 };
 
 //------------------------------------------------------------------------
@@ -498,6 +501,15 @@ enum class ModifierKey : uint32_t
 	/** the super key (Control key on macOS, Windows key on Windows and Super key on other
 	   platforms)*/
 	Super = 1 << 3,
+
+	/** (macOS only) The Caps Lock key */
+	CapsLock = 1 << 4,
+	/** (macOS only) A key in the numeric keypad or an arrow key  */
+	NumPad = 1 << 5,
+	/** (macOS only) The Help key */
+	Help = 1 << 6,
+	/** (macOS only) The function key */
+	Fn = 1 << 7,
 
 	None = 0
 };
