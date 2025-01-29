@@ -134,6 +134,8 @@ public:
 	IVST3EditorDelegate* getDelegate () const;
 	UIDescription* getUIDescription () const;
 
+	bool inEditMode () const;
+
 	//-----------------------------------------------------------------------------
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
 	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj) override;
@@ -153,7 +155,6 @@ protected:
 	bool enableShowEditButton () const;
 	void enableShowEditButton (bool state);
 	void showEditButton (bool state);
-	bool inEditMode () const;
 
 	bool PLUGIN_API open (void* parent, const PlatformType& type) override;
 	void PLUGIN_API close () override;
