@@ -83,6 +83,9 @@ void CairoGraphicsDeviceFactory::removeDevice (cairo_device_t* device)
 	const auto citer = std::find_if (impl->devices.cbegin (), impl->devices.cend (),
 									 [device] (const auto& dev) { return dev->get () == device; });
 
+	if (citer == impl->devices.cend ())
+		return;
+
 	impl->devices.erase (citer);
 }
 
