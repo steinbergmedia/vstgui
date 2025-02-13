@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.25.0)
 
 if(NOT DEFINED VSTGUI_ENABLE_DEPRECATED_METHODS)
     option(VSTGUI_ENABLE_DEPRECATED_METHODS "Enable VSTGUI deprecated methods" ON)
