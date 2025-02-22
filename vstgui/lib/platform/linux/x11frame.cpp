@@ -178,6 +178,12 @@ struct DrawHandler
 		onSizeChanged (window.getSize ());
 	}
 
+	~DrawHandler ()
+	{
+		getPlatformFactory ().asLinuxFactory ()->getCairoGraphicsDeviceFactory ().removeDevice (
+			cairo_surface_get_device (windowSurface));
+	}
+
 	void onSizeChanged (const CPoint& size)
 	{
 		cairo_xcb_surface_set_size (windowSurface, size.x, size.y);
