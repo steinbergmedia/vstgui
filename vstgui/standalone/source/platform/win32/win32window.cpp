@@ -506,11 +506,25 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				p = delegate->constraintSize (p);
 				frame->getTransform ().transform (p);
 				minmaxInfo->ptMinTrackSize = mapCPoint (p);
+
+				RECT r {0, 0, minmaxInfo->ptMinTrackSize.x, minmaxInfo->ptMinTrackSize.y};
+				HiDPISupport::instance ().adjustWindowRectExForDpi (
+					&r, dwStyle, !menuCommandList.empty (), exStyle,
+					static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
+				minmaxInfo->ptMinTrackSize = {r.right - r.left, r.bottom - r.top};
+
 				p = mapPOINT (minmaxInfo->ptMaxTrackSize);
 				frame->getTransform ().inverse ().transform (p);
 				p = delegate->constraintSize (p);
 				frame->getTransform ().transform (p);
 				minmaxInfo->ptMaxTrackSize = mapCPoint (p);
+
+				r = {0, 0, minmaxInfo->ptMaxTrackSize.x, minmaxInfo->ptMaxTrackSize.y};
+				HiDPISupport::instance ().adjustWindowRectExForDpi (
+					&r, dwStyle, !menuCommandList.empty (), exStyle,
+					static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
+				minmaxInfo->ptMaxTrackSize = {r.right - r.left, r.bottom - r.top};
+
 				return 0;
 			}
 			break;
@@ -677,9 +691,9 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			RECT clientRect {};
 			clientRect.right = static_cast<LONG> (clientSize.x * newScaleFactor);
 			clientRect.bottom = static_cast<LONG> (clientSize.y * newScaleFactor);
-			HiDPISupport::instance ().adjustWindowRectExForDpi (&clientRect, windowInfo.dwStyle,
-																hasMenu, windowInfo.dwExStyle,
-																static_cast<UINT> (wParam));
+			HiDPISupport::instance ().adjustWindowRectExForDpi (
+				&clientRect, windowInfo.dwStyle, !menuCommandList.empty (), windowInfo.dwExStyle,
+				static_cast<UINT> (wParam));
 			proposedSize->cx = clientRect.right - clientRect.left;
 			proposedSize->cy = clientRect.bottom - clientRect.top;
 			return TRUE;
@@ -897,7 +911,7 @@ void Window::setSize (const CPoint& newSize)
 	clientRect.right = static_cast<LONG> (newSize.x * dpiScale);
 	clientRect.bottom = static_cast<LONG> (newSize.y * dpiScale);
 	HiDPISupport::instance ().adjustWindowRectExForDpi (
-		&clientRect, dwStyle, hasMenu, exStyle,
+		&clientRect, dwStyle, !menuCommandList.empty (), exStyle,
 		static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
 
 	LONG width = clientRect.right - clientRect.left;
@@ -919,7 +933,7 @@ void Window::setPosition (const CPoint& newPosition)
 	clientRect.right = 100;
 	clientRect.bottom = 100;
 	HiDPISupport::instance ().adjustWindowRectExForDpi (
-		&clientRect, dwStyle, hasMenu, exStyle,
+		&clientRect, dwStyle, !menuCommandList.empty (), exStyle,
 		static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
 
 	clientRect.left += static_cast<LONG> (newPosition.x);
@@ -989,7 +1003,7 @@ void Window::show ()
 	RECT clientRect {};
 	clientRect.right = static_cast<LONG> (initialSize.x * dpiScale);
 	clientRect.bottom = static_cast<LONG> (initialSize.y * dpiScale);
-	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
+	AdjustWindowRectEx (&clientRect, dwStyle, !menuCommandList.empty (), exStyle);
 
 	delegate->onShow ();
 	LONG width = clientRect.right - clientRect.left;
