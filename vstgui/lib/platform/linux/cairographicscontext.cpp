@@ -78,6 +78,18 @@ PlatformGraphicsDevicePtr CairoGraphicsDeviceFactory::addDevice (cairo_device_t*
 }
 
 //-----------------------------------------------------------------------------
+void CairoGraphicsDeviceFactory::removeDevice (cairo_device_t* device)
+{
+	const auto citer = std::find_if (impl->devices.cbegin (), impl->devices.cend (),
+									 [device] (const auto& dev) { return dev->get () == device; });
+
+	if (citer == impl->devices.cend ())
+		return;
+
+	impl->devices.erase (citer);
+}
+
+//-----------------------------------------------------------------------------
 struct CairoGraphicsDevice::Impl
 {
 	cairo_device_t* device;
@@ -96,7 +108,10 @@ CairoGraphicsDevice::CairoGraphicsDevice (cairo_device_t* device)
 CairoGraphicsDevice::~CairoGraphicsDevice () noexcept
 {
 	if (impl->device)
+	{
+		cairo_device_finish (impl->device);
 		cairo_device_destroy (impl->device);
+	}
 }
 
 //-----------------------------------------------------------------------------

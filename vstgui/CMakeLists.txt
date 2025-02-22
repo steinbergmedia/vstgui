@@ -1,5 +1,5 @@
 ##########################################################################################
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.25.0)
 
 if(NOT PROJECT_NAME)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14 CACHE STRING "")
