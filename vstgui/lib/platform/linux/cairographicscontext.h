@@ -97,6 +97,7 @@ public:
 	PlatformGraphicsDevicePtr getDeviceForScreen (ScreenInfo::Identifier screen) const override;
 
 	PlatformGraphicsDevicePtr addDevice (cairo_device_t* device);
+	void removeDevice (cairo_device_t* device);
 
 private:
 	struct Impl;
