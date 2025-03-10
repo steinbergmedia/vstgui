@@ -3056,9 +3056,17 @@ void TextEditorView::CocoaTextInputClient::setMarkedText (const std::u32string& 
 														  TextRange replacementRange)
 {
 	if (markedText.empty () == false)
+	{
 		view.doUndo ();
+	}
 	else
+	{
+		if (view.md.editState.select_start != view.md.editState.select_end)
+		{
+			view.callSTB ([&] () { stb_textedit_delete_selection (&view, &view.md.editState); });
+		}
 		view.checkCurrentUndoGroup (true);
+	}
 	if (replacementRange.length > 0 && replacementRange.position < view.md.model.text.size ())
 	{
 		view.md.editState.select_start = static_cast<int> (replacementRange.position);
