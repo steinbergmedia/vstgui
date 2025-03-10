@@ -2917,8 +2917,11 @@ bool TextEditorView::gotoLine (size_t lineNo) const
 //------------------------------------------------------------------------
 void TextEditorView::flushUndoList () const
 {
-	if (md.undoPos != md.undoList.end ())
-		md.undoList.erase (md.undoPos, md.undoList.end ());
+	auto pos = md.undoPos + 1;
+	if (pos != md.undoList.end ())
+	{
+		md.undoList.erase (pos, md.undoList.end ());
+	}
 }
 
 //------------------------------------------------------------------------
@@ -2947,10 +2950,7 @@ CharT* TextEditorView::createUndoRecord (size_t pos, size_t insertLen, size_t de
 		return nullptr;
 	checkCurrentUndoGroup (false);
 	if (md.undoPos != md.undoList.end ())
-	{
-		md.undoPos++;
 		flushUndoList ();
-	}
 	md.currentUndoGroup.record.emplace_back (UndoRecord {});
 	auto& record = md.currentUndoGroup.record.back ();
 	record.position = pos;
@@ -3036,7 +3036,7 @@ void TextEditorView::CocoaTextInputClient::insertText (const std::u32string& str
 	if (markedText.empty () == false)
 		view.doUndo ();
 	else
-		view.checkCurrentUndoGroup (true);
+		view.checkCurrentUndoGroup (false);
 	if (range.length > 0 && range.position < view.md.model.text.size ())
 	{
 		view.md.editState.select_start = static_cast<int> (range.position);
