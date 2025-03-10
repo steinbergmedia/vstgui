@@ -17,7 +17,7 @@ vstgui_add_resources(${target} "${simple_standalone_resources}")
 vstgui_set_target_bundle_id(${target} "vstgui.examples.simplestandalone")
 vstgui_set_target_infoplist(${target} "resource/Info.plist")
 vstgui_set_target_rcfile(${target} "resource/simple_standalone.rc")
-vstgui_set_cxx_version(${target} 17)
+vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 target_include_directories(${target} PRIVATE ../../../../)
 set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES_FOLDER})
 

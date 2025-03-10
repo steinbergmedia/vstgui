@@ -185,7 +185,7 @@ add_library(${target} STATIC ${${target}_sources})
 add_dependencies(${target} vstgui)
 target_precompile_headers(${target} PRIVATE icontroller.h uiattributes.h iviewcreator.h uidescription.h)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 17)
+vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 vstgui_source_group_by_folder(${target})
 
 ##########################################################################################
