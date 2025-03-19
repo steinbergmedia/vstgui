@@ -148,6 +148,8 @@ inline void convertWinLineEndingsToUnixLineEndings (String& text)
 		{
 			it = text.erase (lastChar);
 			++it;
+			if (it == text.end ())
+				break;
 		}
 		lastChar = it;
 	}
