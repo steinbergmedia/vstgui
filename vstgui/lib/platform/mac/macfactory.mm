@@ -163,7 +163,7 @@ PlatformResourceInputStreamPtr
 		CFStringRef cfStr = CFStringCreateWithCString (nullptr, desc.u.name, kCFStringEncodingUTF8);
 		if (cfStr)
 		{
-			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
+			CFURLRef url = CFBundleCopyResourceURL (bundle, cfStr, nullptr, nullptr);
 			if (url)
 			{
 				char filePath[PATH_MAX];
