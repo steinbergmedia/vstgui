@@ -86,7 +86,7 @@ struct EnumBitset
 	}
 	constexpr EnumBitset& operator&= (const EnumBitset& other)
 	{
-		val &= other.value;
+		val &= other.val;
 		return *this;
 	}
 	constexpr EnumBitset& operator<< (Enum e)
