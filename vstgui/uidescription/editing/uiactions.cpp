@@ -497,7 +497,7 @@ UTF8StringPtr TransformViewTypeOperation::getName ()
 //-----------------------------------------------------------------------------
 void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewContainer* dst)
 {
-	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (factory))
+	if (dynamic_cast<const IViewFactoryEditingSupport*> (factory))
 	{
 		if (src && dst)
 		{
