@@ -1231,7 +1231,17 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	{
 		[nsView setWantsLayer:YES];
 		caLayer = [CALayer new];
-		caLayer.geometryFlipped = ![nsView.layer contentsAreFlipped];
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_13
+		if (@available (macOS 10.14, *))
+		{
+		}
+		else
+		{
+			// on macOS 10.13, the view is upside-down in Digital Performer if not flipping the
+			// geometry
+			caLayer.geometryFlipped = ![nsView.layer contentsAreFlipped];
+		}
+#endif
 		caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
 		caLayer.frame = nsView.layer.bounds;
 		[caLayer setContentsScale:nsView.layer.contentsScale];

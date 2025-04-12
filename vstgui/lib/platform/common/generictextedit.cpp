@@ -365,7 +365,7 @@ void STBTextEditView::onMouseEvent (MouseEvent& event, CFrame* frame)
 	if (event.buttonState.isLeft () == false)
 		return;
 
-	if (auto parent = getParentView ())
+	if (getParentView ())
 	{
 		auto where = event.mousePosition;
 		where = translateToLocal (where, true);
