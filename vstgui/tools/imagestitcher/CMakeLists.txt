@@ -23,7 +23,7 @@ vstgui_add_resources(${TargetName} "${${TargetName}_RESOURCES}")
 vstgui_set_target_bundle_id(${TargetName} "com.steinberg.vstgui.imagestitcher")
 vstgui_set_target_infoplist(${TargetName} "resource/Info.plist")
 vstgui_set_target_rcfile(${TargetName} "resource/imagestitcher.rc")
-vstgui_set_cxx_version(${TargetName} 17)
+vstgui_set_cxx_version(${TargetName} ${VSTGUI_CXX_VERSION})
 target_include_directories(${TargetName} PRIVATE ../../../)
 set_target_properties(${TargetName} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_TOOLS_FOLDER})
 

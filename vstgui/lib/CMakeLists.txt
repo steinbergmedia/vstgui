@@ -176,6 +176,7 @@ set(${target}_common_sources
     platform/iplatformresourceinputstream.h
     platform/iplatformstring.h
     platform/iplatformtextedit.h
+    platform/iplatformtextinputclient.h
     platform/iplatformtimer.h
     platform/iplatformviewlayer.h
     platform/platformfactory.cpp
@@ -345,7 +346,7 @@ add_library(${target} STATIC ${${target}_sources})
 
 target_precompile_headers(${target} PRIVATE cviewcontainer.h cdrawcontext.h)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 17)
+vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 vstgui_source_group_by_folder(${target})
 
 if(LINUX)

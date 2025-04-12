@@ -23,7 +23,7 @@ set(SCRIPTING_SOURCES
 )
 add_library(vstgui_uiscripting STATIC ${SCRIPTING_SOURCES})
 target_compile_definitions(vstgui_uiscripting ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(vstgui_uiscripting 17)
+vstgui_set_cxx_version(vstgui_uiscripting ${VSTGUI_CXX_VERSION})
 vstgui_source_group_by_folder(vstgui_uiscripting)
 
 option(VSTGUI_SCRIPTING_TINYJS_TESTS "Add Tiny-JS test target" OFF)
@@ -38,5 +38,5 @@ if(VSTGUI_SCRIPTING_TINYJS_TESTS)
         tiny-js/TinyJS.h
     )
     target_compile_definitions(uidescription_scripting_tiny_js_test ${VSTGUI_COMPILE_DEFINITIONS})
-    vstgui_set_cxx_version(uidescription_scripting_tiny_js_test 17)
+    vstgui_set_cxx_version(uidescription_scripting_tiny_js_test ${VSTGUI_CXX_VERSION})
 endif(VSTGUI_SCRIPTING_TINYJS_TESTS)

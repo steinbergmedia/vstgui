@@ -18,6 +18,8 @@ struct CALayer;
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
+struct ICocoaTextInputClient;
+
 //-----------------------------------------------------------------------------
 class CocoaFrameConfig : public IPlatformFrameConfig
 {
@@ -34,6 +36,7 @@ class ICocoaPlatformFrame
 {
 public:
 	virtual NSView* getNSView () const = 0;
+	virtual void setTextInputClient (ICocoaTextInputClient* client) = 0;
 };
 
 //-----------------------------------------------------------------------------
