@@ -7,6 +7,7 @@
 #include "enumbitset.h"
 #include "cview.h"
 #include "ccolor.h"
+#include "cfont.h"
 #include <string_view>
 
 //------------------------------------------------------------------------
