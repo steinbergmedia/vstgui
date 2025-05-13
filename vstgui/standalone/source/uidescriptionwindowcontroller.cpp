@@ -44,7 +44,7 @@ using UIDesc::CustomizationPtr;
 //------------------------------------------------------------------------
 class WindowController : public IWindowController,
 						 public ICommandHandler,
-						 IUIDescWindowController
+						 public IUIDescWindowController
 {
 public:
 	bool init (const UIDesc::Config& config, WindowPtr& window);
