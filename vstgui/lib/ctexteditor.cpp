@@ -894,7 +894,7 @@ bool TextEditorView::setPlainText (std::string_view utf8Text, bool clearSelectio
 		md.editState.cursor = md.editState.select_start = md.editState.select_end = 0;
 		onSelectionChanged (makeRange (md.editState), true);
 	}
-	  invalidate (Dirty::All);
+	invalidate (Dirty::All);
 	if (md.lineNumberView)
 		updateLineNumbersView ();
 	return true;
