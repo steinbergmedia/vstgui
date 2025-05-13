@@ -41,7 +41,7 @@ struct ITextEditor
 {
 	virtual ~ITextEditor () noexcept = default;
 
-	virtual bool setPlainText (std::string_view utf8Text) const = 0;
+	virtual bool setPlainText (std::string_view utf8Text, bool clearSelection = false) const = 0;
 	virtual std::string getPlainText () const = 0;
 
 	virtual void resetController () const = 0;

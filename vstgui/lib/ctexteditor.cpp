@@ -288,7 +288,7 @@ protected:
 	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	// ITextEditor
-	bool setPlainText (std::string_view utf8Text) const override;
+	bool setPlainText (std::string_view utf8Text, bool clearSelection) const override;
 	std::string getPlainText () const override;
 	void resetController () const override;
 	void setStyle (const Style& style) const override;
@@ -325,6 +325,7 @@ protected:
 	template<bool iterateForward>
 	void doUndoRedo () const;
 	void flushUndoList () const;
+	void clearUndoList () const;
 
 private:
 	template<typename Proc>
@@ -883,11 +884,17 @@ void TextEditorView::setStyle (const Style& newStyle) const
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::setPlainText (std::string_view utf8Text) const
+bool TextEditorView::setPlainText (std::string_view utf8Text, bool clearSelection) const
 {
+	clearUndoList ();
 	md.model.text = convert (utf8Text.data (), utf8Text.size ());
 	convertWinLineEndingsToUnixLineEndings (md.model.text);
-	invalidate (Dirty::All);
+	if (clearSelection)
+	{
+		md.editState.cursor = md.editState.select_start = md.editState.select_end = 0;
+		onSelectionChanged (makeRange (md.editState), true);
+	}
+	  invalidate (Dirty::All);
 	if (md.lineNumberView)
 		updateLineNumbersView ();
 	return true;
@@ -2924,6 +2931,15 @@ void TextEditorView::flushUndoList () const
 	{
 		md.undoList.erase (pos, md.undoList.end ());
 	}
+}
+
+//------------------------------------------------------------------------
+void TextEditorView::clearUndoList () const
+{
+	checkCurrentUndoGroup (true);
+	md.undoList.clear ();
+	md.undoList.emplace_back (UndoGroup ());
+	md.undoPos = md.undoList.end ();
 }
 
 //------------------------------------------------------------------------
