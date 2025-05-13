@@ -42,7 +42,9 @@ using UIDesc::ModelBindingPtr;
 using UIDesc::CustomizationPtr;
 
 //------------------------------------------------------------------------
-class WindowController : public IWindowController, public ICommandHandler
+class WindowController : public IWindowController,
+						 public ICommandHandler,
+						 IUIDescWindowController
 {
 public:
 	bool init (const UIDesc::Config& config, WindowPtr& window);
@@ -65,6 +67,9 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	const IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override;
+
+	ModelBindingPtr getModelBinding () const override;
+	CustomizationPtr getCustomization () const override;
 
 private:
 	struct Impl;
@@ -1065,6 +1070,9 @@ const IMenuBuilder* WindowController::getWindowMenuBuilder (const IWindow& windo
 		return menuBuilder.get ();
 	return nullptr;
 }
+
+ModelBindingPtr WindowController::getModelBinding () const { return impl->modelBinding; }
+CustomizationPtr WindowController::getCustomization () const { return impl->customization; }
 
 //------------------------------------------------------------------------
 } // Anonymous
