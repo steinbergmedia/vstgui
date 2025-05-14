@@ -346,6 +346,8 @@ public:
 	StringListValue (const UTF8String& id, StepType initialSteps, Type initialValue,
 					 const ValueConverterPtr& stringConverter);
 
+	bool setNumSteps (StepType numSteps) override;
+
 	bool updateStringList (const StringList& newStrings) override;
 	bool updateString (size_t index, const StringType& string) override;
 };
@@ -516,10 +518,19 @@ StringListValue::StringListValue (const UTF8String& id, StepType initialSteps, T
 }
 
 //------------------------------------------------------------------------
+bool StringListValue::setNumSteps (StepType numSteps)
+{
+	if (getSteps () == numSteps)
+		return true;
+	if (numSteps == 0)
+		numSteps = 1;
+	StepValue::setNumSteps (numSteps);
+	return true;
+}
+
+//------------------------------------------------------------------------
 bool StringListValue::updateStringList (const StringList& newStrings)
 {
-	if (newStrings.empty ())
-		return false;
 	setValueConverter (std::make_shared<Detail::StringListValueConverter> (newStrings));
 	setNumSteps (static_cast<IStepValue::StepType> (newStrings.size ()));
 	return true;
