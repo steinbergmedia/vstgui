@@ -749,19 +749,11 @@ void TextEditorView::parentSizeChanged ()
 			auto containerSize = This->md.scrollView->calculateOptimalContainerSize ();
 			if (containerSize.getWidth () > viewSize.getWidth ())
 			{
-				if (viewSize.getHeight () > containerSize.getHeight ())
-					viewSize.setWidth (containerSize.getWidth () -
-									   This->md.scrollView->getScrollbarWidth ());
-				else
-					viewSize.setWidth (containerSize.getWidth ());
+				viewSize.setWidth (containerSize.getWidth ());
 			}
 			if (containerSize.getHeight () > viewSize.getHeight ())
 			{
-				if (viewSize.getWidth () > containerSize.getWidth ())
-					viewSize.setHeight (containerSize.getHeight () -
-										This->md.scrollView->getScrollbarWidth ());
-				else
-					viewSize.setHeight (containerSize.getHeight ());
+				viewSize.setHeight (containerSize.getHeight ());
 			}
 			This->setViewSize (viewSize);
 			if (makeCursorVisible)

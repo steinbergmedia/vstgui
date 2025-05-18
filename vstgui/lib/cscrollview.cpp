@@ -356,9 +356,9 @@ CRect CScrollView::calculateOptimalContainerSize () const
 	if (!(style & kAutoHideScrollbars) && !(style & kOverlayScrollbars))
 	{
 		if (style & kHorizontalScrollbar)
-			size.right -= scrollbarWidth;
-		if (style & kVerticalScrollbar)
 			size.bottom -= scrollbarWidth;
+		if (style & kVerticalScrollbar)
+			size.right -= scrollbarWidth;
 	}
 	size.originize ();
 	return size;
