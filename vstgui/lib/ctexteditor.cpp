@@ -708,6 +708,7 @@ void TextEditorView::takeFocus ()
 		winFrame->setTextInputClient (imeTextInputClient.get ());
 	}
 #endif
+	CView::takeFocus ();
 }
 
 //------------------------------------------------------------------------
@@ -731,6 +732,7 @@ void TextEditorView::looseFocus ()
 		imeTextInputClient.reset ();
 	}
 #endif
+	CView::looseFocus ();
 }
 
 //------------------------------------------------------------------------
