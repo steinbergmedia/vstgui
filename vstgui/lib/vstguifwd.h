@@ -72,6 +72,10 @@ enum CCursorType
 	kCursorIBeam,
 	/** crosshair cursor */
 	kCursorCrosshair,
+	/** moveable object cursor */
+	kCursorMovableObject,
+	/** move object cursor */
+	kCursorMoveObject,
 
 	/** old name */
 	kCursorHand = kCursorPointingHand,

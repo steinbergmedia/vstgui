@@ -267,7 +267,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 		}
 	}
 	if (r.pointInside (where))
-		browser->getFrame ()->setCursor (kCursorPointingHand);
+		browser->getFrame ()->setCursor (kCursorMovableObject);
 	else
 		browser->getFrame ()->setCursor (kCursorDefault);
 	return UIBaseDataSource::dbOnMouseMoved (where, buttons, row, column, browser);
