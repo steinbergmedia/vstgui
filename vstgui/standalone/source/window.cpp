@@ -83,6 +83,7 @@ public:
 	WindowType getType () const override { return windowType; }
 	WindowStyle getStyle () const override { return windowStyle; }
 	const UTF8String& getAutoSaveFrameName () const override { return autoSaveFrameName; }
+	void setAutoSaveFrameName (const UTF8String& name) override { autoSaveFrameName = name; }
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override
 	{
