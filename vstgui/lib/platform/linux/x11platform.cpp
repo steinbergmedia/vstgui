@@ -515,7 +515,7 @@ uint32_t RunLoop::getCursorID (CCursorType cursor)
 			case kCursorNotAllowed:
 				cursorID = makeCursor (impl->cursorContext, CursorNotAllowedNames);
 				break;
-			case kCursorHand:
+			case kCursorPointingHand:
 				cursorID = makeCursor (impl->cursorContext, CursorHandNames);
 				break;
 			case kCursorIBeam:
