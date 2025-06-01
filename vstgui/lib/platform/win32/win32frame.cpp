@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -45,7 +45,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 static TCHAR gClassName[100];
-static bool bSwapped_mouse_buttons = false; 
+static bool bSwapped_mouse_buttons = false;
 
 //-----------------------------------------------------------------------------
 static bool isParentLayered (HWND parent)
@@ -158,15 +158,15 @@ void Win32Frame::initWindowClass ()
 		OleInitialize (nullptr);
 
 		VSTGUI_SPRINTF (gClassName, TEXT("VSTGUI%p"), GetInstance ());
-		
-		WNDCLASS windowClass;
-		windowClass.style = CS_GLOBALCLASS | CS_DBLCLKS;//|CS_OWNDC; // add Private-DC constant 
 
-		windowClass.lpfnWndProc = WindowProc; 
-		windowClass.cbClsExtra  = 0; 
-		windowClass.cbWndExtra  = 0; 
+		WNDCLASS windowClass;
+		windowClass.style = CS_GLOBALCLASS | CS_DBLCLKS; //|CS_OWNDC; // add Private-DC constant
+
+		windowClass.lpfnWndProc = WindowProc;
+		windowClass.cbClsExtra = 0;
+		windowClass.cbWndExtra = 0;
 		windowClass.hInstance   = GetInstance ();
-		windowClass.hIcon = nullptr; 
+		windowClass.hIcon = nullptr;
 
 		windowClass.hCursor = LoadCursor (nullptr, IDC_ARROW);
 		#if DEBUG_DRAWING
@@ -174,8 +174,8 @@ void Win32Frame::initWindowClass ()
 		#else
 		windowClass.hbrBackground = nullptr;
 		#endif
-		windowClass.lpszMenuName  = nullptr; 
-		windowClass.lpszClassName = gClassName; 
+		windowClass.lpszMenuName = nullptr;
+		windowClass.lpszClassName = gClassName;
 		RegisterClass (&windowClass);
 
 		bSwapped_mouse_buttons = GetSystemMetrics (SM_SWAPBUTTON) > 0;
@@ -234,7 +234,7 @@ HWND Win32Frame::getOuterWindow () const
 	RECT  rctTempWnd, rctPluginWnd;
 	HWND  hTempWnd = windowHandle;
 	GetWindowRect (hTempWnd, &rctPluginWnd);
-    
+
 	while (hTempWnd != nullptr)
 	{
 		// Looking for caption bar
@@ -244,13 +244,13 @@ HWND Win32Frame::getOuterWindow () const
 		// Looking for last parent
 		if (!GetParent (hTempWnd))
 			return hTempWnd;
-    
+
 		// get difference between plugin-window and current parent
 		GetWindowRect (GetParent (hTempWnd), &rctTempWnd);
-	    
+
 		diffWidth  = (rctTempWnd.right - rctTempWnd.left) - (rctPluginWnd.right - rctPluginWnd.left);
 		diffHeight = (rctTempWnd.bottom - rctTempWnd.top) - (rctPluginWnd.bottom - rctPluginWnd.top);
-		
+
 		// Looking for size mismatch
 		if ((abs (diffWidth) > 60) || (abs (diffHeight) > 60)) // parent belongs to host
 			return (hTempWnd);
@@ -258,8 +258,8 @@ HWND Win32Frame::getOuterWindow () const
 		if (diffWidth < 0)
 			diffWidth = 0;
         if (diffHeight < 0)
-			diffHeight = 0; 
-		
+			diffHeight = 0;
+
 		// get the next parent window
 		hTempWnd = GetParent (hTempWnd);
 	}
@@ -381,11 +381,16 @@ bool Win32Frame::setMouseCursor (CCursorType type)
 		case kCursorNotAllowed:
 			cursor = LoadCursor (nullptr, IDC_NO);
 			break;
-		case kCursorHand:
+		case kCursorPointingHand:
 			cursor = LoadCursor (nullptr, IDC_HAND);
 			break;
 		case kCursorCrosshair:
 			cursor = LoadCursor (nullptr, IDC_CROSS);
+			break;
+		case kCursorMovableObject:
+			[[fallthrough]];
+		case kCursorMoveObject:
+			cursor = LoadCursor (nullptr, IDC_SIZEALL);
 			break;
 		default:
 			cursor = LoadCursor (nullptr, IDC_ARROW);
@@ -703,7 +708,7 @@ void Win32Frame::paint (HWND hwnd)
 
 	EndPaint (hwnd, &ps);
 	DeleteObject (rgn);
-	
+
 	inPaint = false;
 	if (needsInvalidation && !frameSize.isEmpty ())
 	{
@@ -793,13 +798,13 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			}
 			break;
 		}
-			
+
 		case WM_PAINT:
 		{
 			paint (hwnd);
 			return 0;
 		}
-			
+
 		case WM_RBUTTONDBLCLK:
 		case WM_MBUTTONDBLCLK:
 		case WM_LBUTTONDBLCLK:
@@ -858,7 +863,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		{
 			MouseUpEvent event;
 			setupMouseEventFromWParam (event, wParam);
-			
+
 			if (message == WM_LBUTTONUP)
 				event.buttonState.add (MouseButton::Left);
 			else if (message == WM_RBUTTONUP)

@@ -467,7 +467,7 @@ CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 				lines = new UICrossLines (this, UICrossLines::kSelectionStyle, crosslineBackgroundColor, crosslineForegroundColor);
 				overlayView->addView (lines);
 				lines->update (selection);
-				getFrame ()->setCursor (kCursorHand);
+				getFrame ()->setCursor (kCursorMoveObject);
 			}
 			editTimer = nullptr;
 		}
@@ -910,7 +910,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 				case MouseSizeMode::None:
 				{
 					if (getSelection ()->contains (getEditView ()) == false)
-						ctype = kCursorHand;
+						ctype = kCursorMovableObject;
 					break;
 				}
 				default: ctype = kCursorDefault; break;
@@ -1039,7 +1039,7 @@ void UIEditView::doDragEditingMove (CPoint& where)
 				overlayView->addView (lines);
 				lines->update (selection);
 			}
-			getFrame ()->setCursor (kCursorHand);
+			getFrame ()->setCursor (kCursorMoveObject);
 		}
 		if (lines)
 			lines->update (selection);
