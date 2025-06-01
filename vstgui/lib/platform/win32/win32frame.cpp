@@ -390,7 +390,7 @@ bool Win32Frame::setMouseCursor (CCursorType type)
 		case kCursorMovableObject:
 			[[fallthrough]];
 		case kCursorMoveObject:
-			cursor = LoadCursor (nullptr, IDC_MOVE);
+			cursor = LoadCursor (nullptr, IDC_SIZEALL);
 			break;
 		default:
 			cursor = LoadCursor (nullptr, IDC_ARROW);
