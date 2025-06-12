@@ -81,6 +81,7 @@ private:
 //------------------------------------------------------------------------
 bool Application::init (int argc, char* argv[])
 {
+	gdk_set_allowed_backends ("x11");
 	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
 	app = Gtk::Application::create (argc, argv, appInfo.uri.data ());
 	Glib::set_application_name (appInfo.name.getString ());

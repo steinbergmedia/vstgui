@@ -219,7 +219,7 @@ private:
 				auto row = db->getSelectedRow ();
 				if (auto item = menu->getEntry (row))
 				{
-					if (auto subMenu = item->getSubmenu ())
+					if (item->getSubmenu ())
 					{
 						auto r = db->getCellBounds ({row, 0});
 						openSubMenu (item, r);

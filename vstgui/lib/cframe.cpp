@@ -978,7 +978,7 @@ CView* CFrame::getModalView () const
 //-----------------------------------------------------------------------------
 void CFrame::initModalViewSession (const ModalViewSession& session)
 {
-	if (auto view = getMouseDownView ())
+	if (getMouseDownView ())
 	{
 		onMouseCancel ();
 	}

@@ -475,6 +475,10 @@ constexpr auto CursorHandNames = //
 	CharPtrArray<4> {"openhand", "hand1", "all_scroll", "all-scroll"};
 constexpr auto CursorIBeamNames = //
 	CharPtrArray<3> {"ibeam", "xterm", "text"};
+constexpr auto CursorMovableObjectNames = //
+	CharPtrArray<2> {"hand1", "fleur"};
+constexpr auto CursorMoveObjectNames = //
+	CharPtrArray<2> {"fleur", "hand1"};
 
 //------------------------------------------------------------------------
 } // anonymous
@@ -515,11 +519,17 @@ uint32_t RunLoop::getCursorID (CCursorType cursor)
 			case kCursorNotAllowed:
 				cursorID = makeCursor (impl->cursorContext, CursorNotAllowedNames);
 				break;
-			case kCursorHand:
+			case kCursorPointingHand:
 				cursorID = makeCursor (impl->cursorContext, CursorHandNames);
 				break;
 			case kCursorIBeam:
 				cursorID = makeCursor (impl->cursorContext, CursorIBeamNames);
+				break;
+			case kCursorMovableObject:
+				cursorID = makeCursor (impl->cursorContext, CursorMovableObjectNames);
+				break;
+			case kCursorMoveObject:
+				cursorID = makeCursor (impl->cursorContext, CursorMoveObjectNames);
 				break;
 		}
 		impl->cursors[cursor] = cursorID;

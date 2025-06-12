@@ -168,6 +168,7 @@ set(${target}_sources
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
+	set_source_files_properties(detail/uijsonpersistence.cpp PROPERTIES COMPILE_FLAGS -fno-fast-math)
 endif()
 
 ##########################################################################################

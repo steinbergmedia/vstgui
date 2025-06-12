@@ -66,12 +66,19 @@ enum CCursorType
 	kCursorCopy,
 	/** not allowed cursor (mainly for drag&drop operations) */
 	kCursorNotAllowed,
-	/** hand cursor */
-	kCursorHand,
+	/** pointing hand cursor */
+	kCursorPointingHand,
 	/** i beam cursor */
 	kCursorIBeam,
 	/** crosshair cursor */
 	kCursorCrosshair,
+	/** moveable object cursor */
+	kCursorMovableObject,
+	/** move object cursor */
+	kCursorMoveObject,
+
+	/** old name */
+	kCursorHand = kCursorPointingHand,
 };
 
 //----------------------------
