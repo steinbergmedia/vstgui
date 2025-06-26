@@ -1231,14 +1231,14 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	{
 		[nsView setWantsLayer:YES];
 		caLayer = [CALayer new];
-#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_13
-		if (@available (macOS 10.14, *))
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_15
+		if (@available (macOS 10.15, *))
 		{
 		}
 		else
 		{
-			// on macOS 10.13, the view is upside-down in Digital Performer if not flipping the
-			// geometry
+			// on macOS 10.13 and 10.14, the view is upside-down in Ableton Live 9 and Digital
+			// Performer 9 (both linked with SDK < 10.8) if not flipping the geometry
 			caLayer.geometryFlipped = ![nsView.layer contentsAreFlipped];
 		}
 #endif
@@ -1614,9 +1614,17 @@ bool NSViewFrame::setMouseCursor (CCursorType type)
 			break;
 		}
 		case kCursorNotAllowed: cur = [NSCursor performSelector:@selector(operationNotAllowedCursor)]; break;
-		case kCursorHand: cur = [NSCursor openHandCursor]; break;
+		case kCursorPointingHand:
+			cur = [NSCursor pointingHandCursor];
+			break;
 		case kCursorIBeam: cur = [NSCursor IBeamCursor]; break;
 		case kCursorCrosshair: cur = [NSCursor crosshairCursor]; break;
+		case kCursorMovableObject:
+			cur = [NSCursor openHandCursor];
+			break;
+		case kCursorMoveObject:
+			cur = [NSCursor closedHandCursor];
+			break;
 		default: cur = [NSCursor arrowCursor]; break;
 	}
 	if (cur)

@@ -25,7 +25,7 @@ class UIColorsDataSource : public UIBaseDataSource, public UIColorListenerAdapte
 public:
 	UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer, UIColor* color);
 	~UIColorsDataSource () override;
-	
+
 protected:
 	void onUIDescColorChanged (UIDescription* desc) override;
 	void update () override;
@@ -255,7 +255,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 						offscreen->endDraw();
 						dragBitmap = offscreen->getBitmap ();
 					}
-					
+
 					auto df = makeOwned<DragCallbackFunctions> ();
 					df->endedFunc = [browser] (IDraggingSession*, CPoint, DragOperation) {
 						browser->getFrame ()->setCursor (kCursorDefault);
@@ -267,7 +267,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 		}
 	}
 	if (r.pointInside (where))
-		browser->getFrame ()->setCursor (kCursorHand);
+		browser->getFrame ()->setCursor (kCursorMovableObject);
 	else
 		browser->getFrame ()->setCursor (kCursorDefault);
 	return UIBaseDataSource::dbOnMouseMoved (where, buttons, row, column, browser);
