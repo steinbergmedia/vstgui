@@ -290,11 +290,11 @@ void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser*
 	{
 		if (item.type != IDataPackage::kText)
 			continue;
-		std::string text (static_cast<const char*> (item.data), item.dataSize);
-		if (CColor::isColorRepresentation (text.data ()))
+		std::string_view text (static_cast<const char*> (item.data), item.dataSize);
+		if (CColor::isColorRepresentation (text))
 		{
 			CColor c;
-			c.fromString (text.data ());
+			c.fromString (text);
 			dragColor = Optional<CColor> (c);
 			break;
 		}

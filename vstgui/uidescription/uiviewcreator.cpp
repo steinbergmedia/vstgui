@@ -451,7 +451,7 @@ bool stringToColor (std::string_view value, CColor& color, const IUIDescription*
 	}
 	if (desc && desc->getColor (value.data (), color))
 		return true;
-	if (color.fromString (value.data ()))
+	if (color.fromString (value))
 		return true;
 	for (const auto& namedColor : getCSSNamedColors ())
 	{

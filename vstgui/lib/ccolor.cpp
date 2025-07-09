@@ -276,10 +276,33 @@ void CColor::fromHSV (double hue, double saturation, double value)
 	setNormBlue (clampNorm (b));
 }
 
+//------------------------------------------------------------------------
+bool CColor::fromString (std::string_view str)
+{
+	if (!isColorRepresentation (str))
+		return false;
+	std::string rv (str.data () + 1, 2);
+	std::string gv (str.data () + 3, 2);
+	std::string bv (str.data () + 5, 2);
+	std::string av (str.data () + 7, 2);
+	red = (uint8_t)strtol (rv.data (), nullptr, 16);
+	green = (uint8_t)strtol (gv.data (), nullptr, 16);
+	blue = (uint8_t)strtol (bv.data (), nullptr, 16);
+	alpha = (uint8_t)strtol (av.data (), nullptr, 16);
+	return true;
+}
+
+//------------------------------------------------------------------------
+bool CColor::isColorRepresentation (std::string_view str)
+{
+	return (str.size () == 9 && str.data ()[0] == '#');
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 bool CColor::isColorRepresentation (UTF8StringPtr str)
 {
-	if (str && str[0] == '#' && strlen (str) == 9)
+	if (str && isColorRepresentation ({str, strlen (str)}))
 		return true;
 	return false;
 }
@@ -289,18 +312,9 @@ bool CColor::fromString (UTF8StringPtr str)
 {
 	if (!str)
 		return false;
-	if (!isColorRepresentation (str))
-		return false;
-	std::string rv (str + 1, 2);
-	std::string gv (str + 3, 2);
-	std::string bv (str + 5, 2);
-	std::string av (str + 7, 2);
-	red = (uint8_t)strtol (rv.data (), nullptr, 16);
-	green = (uint8_t)strtol (gv.data (), nullptr, 16);
-	blue = (uint8_t)strtol (bv.data (), nullptr, 16);
-	alpha = (uint8_t)strtol (av.data (), nullptr, 16);
-	return true;
+	return fromString ({str, strlen (str)});
 }
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //-----------------------------------------------------------------------------
 UTF8String CColor::toString () const

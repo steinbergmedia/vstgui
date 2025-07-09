@@ -25,13 +25,13 @@ public:
 		{
 			if (item.type != IDataPackage::kText)
 				continue;
-			std::string text (static_cast<const char*> (item.data), item.dataSize);
-			if (CColor::isColorRepresentation (text.data ()))
+			std::string_view text (static_cast<const char*> (item.data), item.dataSize);
+			if (CColor::isColorRepresentation (text))
 			{
 				CColor dragColor;
-				if (dragColor.fromString (text.data ()) && *color != dragColor)
+				if (dragColor.fromString (text) && *color != dragColor)
 				{
-					colorString = std::move (text);
+					colorString = text;
 					return DragOperation::Copy;
 				}
 			}
@@ -49,7 +49,7 @@ public:
 		if (!colorString.empty ())
 		{
 			CColor dragColor;
-			if (dragColor.fromString (colorString.data ()))
+			if (dragColor.fromString (colorString))
 			{
 				color->beginEdit ();
 				*color = dragColor;
