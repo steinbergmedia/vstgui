@@ -21,16 +21,17 @@ public:
 	UIColorChooserDropTarget (UIColor* color) : color (color) {}
 	DragOperation onDragEnter (DragEventData eventData) override
 	{
-		IDataPackage::Type type;
-		const void* item;
-		if (eventData.drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
+		for (const auto& item : eventData.drag)
 		{
-			if (CColor::isColorRepresentation (static_cast<const char*> (item)))
+			if (item.type != IDataPackage::kText)
+				continue;
+			std::string text (static_cast<const char*> (item.data), item.dataSize);
+			if (CColor::isColorRepresentation (text.data ()))
 			{
 				CColor dragColor;
-				if (dragColor.fromString (static_cast<const char*> (item)) && *color != dragColor)
+				if (dragColor.fromString (text.data ()) && *color != dragColor)
 				{
-					colorString = static_cast<const char*> (item);
+					colorString = std::move (text);
 					return DragOperation::Copy;
 				}
 			}
