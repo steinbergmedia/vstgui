@@ -219,7 +219,7 @@ public:
 	{
 		style.selectionBackColor = MakeCColor (120, 120, 255, 150);
 		style.backColor = MakeCColor (255, 255, 255, 220);
-		style.textColor = kBlackCColor;
+		style.cursorColor = style.textColor = kBlackCColor;
 		style.frameColor = kBlackCColor; // MakeCColor (50, 50, 50, 200);
 		style.font = makeOwned<CFontDesc> (*kNormalFont);
 		style.lineNumbersFont = makeOwned<CFontDesc> (*kNormalFontSmall);
@@ -283,7 +283,11 @@ private:
 	using TextEditors = std::vector<const ITextEditor*>;
 	TextEditors textEditors;
 	ITextEditor::Style style {};
-	std::string text {"Hello Text Editor!"};
+	std::string text {"Welcome to the VSTGUI Text Editor example.\n"
+					  "Here you can edit text, use commands like undo, redo, cut, copy, paste,\n"
+					  "select all and find next/previous.\n"
+					  "\n"
+					  "Have fun!"};
 };
 
 //------------------------------------------------------------------------

@@ -370,6 +370,7 @@ private:
 	void restartBlinkTimer () const;
 	void onStyleChanged () const;
 	void setFindString (String&& text) const;
+	bool isReadOnlyMode () const;
 
 	TextEditorView& mutableThis () const { return *const_cast<TextEditorView*> (this); }
 
@@ -693,21 +694,24 @@ void TextEditorView::takeFocus ()
 	if (md.lastMouse != MouseOutsidePos)
 		getFrame ()->setCursor (kCursorIBeam);
 	restartBlinkTimer ();
+	if (!isReadOnlyMode ())
+	{
 #if MAC_COCOA
-	auto pf = getFrame ()->getPlatformFrame ();
-	if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
-	{
-		cocoaTextInputClient = std::make_unique<CocoaTextInputClient> (*this);
-		cocoaFrame->setTextInputClient (cocoaTextInputClient.get ());
-	}
+		auto pf = getFrame ()->getPlatformFrame ();
+		if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
+		{
+			cocoaTextInputClient = std::make_unique<CocoaTextInputClient> (*this);
+			cocoaFrame->setTextInputClient (cocoaTextInputClient.get ());
+		}
 #elif WINDOWS
-	auto pf = getFrame ()->getPlatformFrame ();
-	if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf))
-	{
-		imeTextInputClient = std::make_unique<IMETextInputClient> (*this);
-		winFrame->setTextInputClient (imeTextInputClient.get ());
-	}
+		auto pf = getFrame ()->getPlatformFrame ();
+		if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf))
+		{
+			imeTextInputClient = std::make_unique<IMETextInputClient> (*this);
+			winFrame->setTextInputClient (imeTextInputClient.get ());
+		}
 #endif
+	}
 	CView::takeFocus ();
 }
 
@@ -910,13 +914,19 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 		case Command::UseSelectionForFind:
 			[[fallthrough]];
 		case Command::Cut:
+		{
+			if (isReadOnlyMode ())
+				return false;
 			[[fallthrough]];
+		}
 		case Command::Copy:
 		{
 			return md.editState.select_start != md.editState.select_end;
 		}
 		case Command::Paste:
 		{
+			if (isReadOnlyMode ())
+				return false;
 			if (auto clipboard = getFrame ()->getClipboard ())
 			{
 				auto count = clipboard->getCount ();
@@ -931,17 +941,17 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 		case Command::Undo:
 		{
 			// TODO:
-			return true;
+			return !isReadOnlyMode ();
 		}
 		case Command::Redo:
 		{
 			// TODO:
-			return true;
+			return !isReadOnlyMode ();
 		}
 		case Command::ShiftLeft:
-			return true;
+			return !isReadOnlyMode ();
 		case Command::ShiftRight:
-			return true;
+			return !isReadOnlyMode ();
 		case Command::TakeFocus:
 			return true;
 		case Command::FindNext:
@@ -1172,7 +1182,7 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 		auto alpha = context->getGlobalAlpha ();
 		context->setGlobalAlpha (alpha * md.cursorAlpha);
 		cr.offset (getViewSize ().getTopLeft ());
-		context->setFillColor (md.style->textColor);
+		context->setFillColor (md.style->cursorColor);
 		context->drawRect (cr, kDrawFilled);
 		context->setGlobalAlpha (alpha);
 		md.lastDrawnCursorRect = cr;
@@ -1835,6 +1845,9 @@ void TextEditorView::invalidateLines (size_t pos, int32_t numChars) const
 //------------------------------------------------------------------------
 int32_t TextEditorView::deleteChars (size_t pos, size_t num) const
 {
+	if (isReadOnlyMode ())
+		return false;
+
 	if (pos >= md.model.text.size ())
 		return false;
 
@@ -1848,6 +1861,9 @@ int32_t TextEditorView::deleteChars (size_t pos, size_t num) const
 //------------------------------------------------------------------------
 int32_t TextEditorView::insertChars (size_t pos, const CharT* chars, size_t num) const
 {
+	if (isReadOnlyMode ())
+		return false;
+
 	md.isInsertingText = true;
 	if (pos >= md.model.text.size ())
 		pos = md.model.text.size ();
@@ -2262,6 +2278,9 @@ bool TextEditorView::callSTB (Proc proc) const
 //------------------------------------------------------------------------
 bool TextEditorView::doShifting (bool right) const
 {
+	if (isReadOnlyMode ())
+		return false;
+
 	if (md.editState.select_start > md.editState.select_end)
 		std::swap (md.editState.select_start, md.editState.select_end);
 	auto hasSelection = md.editState.select_start != md.editState.select_end;
@@ -2333,6 +2352,8 @@ void TextEditorView::selectAll () const
 //------------------------------------------------------------------------
 bool TextEditorView::doCut () const
 {
+	if (isReadOnlyMode ())
+		return false;
 	if (doCopy ())
 	{
 		callSTB ([&] () { stb_textedit_cut (this, &md.editState); });
@@ -2360,6 +2381,8 @@ bool TextEditorView::doCopy () const
 //------------------------------------------------------------------------
 bool TextEditorView::doPaste () const
 {
+	if (isReadOnlyMode ())
+		return false;
 	if (auto clipboard = getFrame ()->getClipboard ())
 	{
 		auto count = clipboard->getCount ();
@@ -2904,6 +2927,12 @@ void TextEditorView::setFindString (String&& text) const
 }
 
 //------------------------------------------------------------------------
+bool TextEditorView::isReadOnlyMode () const
+{
+	return md.style->flags & Style::Flags::ReadOnlyMode;
+}
+
+//------------------------------------------------------------------------
 bool TextEditorView::gotoLine (size_t lineNo) const
 {
 	if (md.model.lines.size () <= lineNo)
@@ -2958,6 +2987,8 @@ void TextEditorView::checkCurrentUndoGroup (bool force) const
 //------------------------------------------------------------------------
 CharT* TextEditorView::createUndoRecord (size_t pos, size_t insertLen, size_t deleteLen) const
 {
+	if (isReadOnlyMode ())
+		return nullptr;
 	if (md.isInUndoRedo)
 		return nullptr;
 	checkCurrentUndoGroup (false);

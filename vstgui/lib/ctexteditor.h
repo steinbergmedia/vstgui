@@ -51,7 +51,8 @@ struct ITextEditor
 		enum class Flags : uint32_t
 		{
 			ShowLineNumbers,
-			HighlightCursorLine
+			HighlightCursorLine,
+			ReadOnlyMode
 		};
 		using FlagsBitset = EnumBitset<Flags>;
 
@@ -59,6 +60,7 @@ struct ITextEditor
 		SharedPointer<CFontDesc> lineNumbersFont {kNormalFontSmall};
 		CColor textColor {kBlackCColor};
 		CColor backColor {kWhiteCColor};
+		CColor cursorColor {kBlackCColor};
 		CColor highlightCursorLineColor {0, 0, 0, 10};
 		CColor selectionBackColor {kGreyCColor};
 		CColor frameColor {kGreyCColor};
