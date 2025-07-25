@@ -53,6 +53,9 @@ public:
 	explicit CView (const CRect& size);
 	CView (const CView& view);
 
+	/** get the unique runtime ID */
+	uint64_t getRuntimeID () const;
+
 	//-----------------------------------------------------------------------------
 	/// @name Draw and Update Methods
 	//-----------------------------------------------------------------------------

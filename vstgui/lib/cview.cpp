@@ -179,6 +179,8 @@ struct CView::Impl
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
 	using ViewEventListenerDispatcher = DispatchList<IViewEventListener*>;
 
+	static uint64_t gRuntimeID;
+
 	ViewAttributes attributes;
 	std::unique_ptr<ViewListenerDispatcher> viewListeners;
 	std::unique_ptr<ViewEventListenerDispatcher> viewEventListeners;
@@ -193,7 +195,11 @@ struct CView::Impl
 	int32_t autosizeFlags {kAutosizeNone};
 	CFrame* parentFrame {nullptr};
 	CView* parentView {nullptr};
+	uint64_t runtimeID {++gRuntimeID};
 };
+
+//-----------------------------------------------------------------------------
+uint64_t CView::Impl::gRuntimeID = 0u;
 
 //-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
@@ -270,6 +276,12 @@ void CView::beforeDelete ()
 	CViewInternal::gNbCView--;
 	CViewInternal::gViewList.remove (this);
 #endif
+}
+
+//------------------------------------------------------------------------
+uint64_t CView::getRuntimeID () const
+{
+	return pImpl->runtimeID;
 }
 
 //-----------------------------------------------------------------------------
