@@ -78,11 +78,6 @@ public:
 	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, const CRect& newSize);
 //-----------------------------------------------------------------------------
 protected:
-	void resizeFirstView (CPoint diff);
-	void resizeSecondView (CPoint diff);
-	void resizeLastView (CPoint diff);
-	void resizeViewsEqual (CPoint diff);
-
 	Style style;
 	ResizeMethod resizeMethod;
 	CCoord separatorWidth;
