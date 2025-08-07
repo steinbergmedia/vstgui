@@ -194,6 +194,8 @@ class ITextEditListener;
 class ITextLabelListener;
 class IListControlDrawer;
 class IListControlConfigurator;
+class IViewLayouter;
+struct ViewLayout;
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 class ITouchEvent;

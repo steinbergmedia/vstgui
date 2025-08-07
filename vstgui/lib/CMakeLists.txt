@@ -23,6 +23,8 @@ set(${target}_common_sources
     animation/timingfunctions.cpp
     animation/timingfunctions.h
     algorithm.h
+    autosizeviewlayouter.cpp
+    autosizeviewlayouter.h
     cbitmap.cpp
     cbitmap.h
     cbitmapfilter.cpp
@@ -155,6 +157,7 @@ set(${target}_common_sources
     ifocusdrawing.h
     iscalefactorchangedlistener.h
     itouchevent.h
+    iviewlayouter.h
     iviewlistener.h
     malloc.h
     optional.h

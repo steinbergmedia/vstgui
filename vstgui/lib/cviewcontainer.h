@@ -105,6 +105,27 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
+	/// @name View Layouter Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	/** set a view layouter
+	 *
+	 *	Per default the view container has an AutoSizeLayouter set.
+	 *	Use this method to set a custom layouter.
+	 *	To reset the layouter to the default AutoSizeLayouter use setViewLayouter (nullptr).
+	 */
+	void setViewLayouter (const SharedPointer<IViewLayouter>& layouter);
+	/** get the current view layouter */
+	SharedPointer<IViewLayouter> getViewLayouter () const;
+	/** calculate the view layout for the new size */
+	std::optional<ViewLayout> calculateViewLayout (const CRect& newSize) const;
+	/** apply a previously calculated view layout */
+	bool applyViewLayout (const ViewLayout& layout);
+	/** check if a view layout is currently applied */
+	bool inApplyViewLayout () const;
+	//@}
+
+	//-----------------------------------------------------------------------------
 	/// @name Background Methods
 	//-----------------------------------------------------------------------------
 	//@{
@@ -247,10 +268,12 @@ public:
 	const CViewContainer* asViewContainer () const final { return this; }
 
 protected:
-	enum {
-		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1)
+	enum
+	{
+		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1),
+		kInApplyLayout = 1 << (CView::kLastCViewFlag + 2),
 	};
-	
+
 	~CViewContainer () noexcept override;
 	void beforeDelete () override;
 	
