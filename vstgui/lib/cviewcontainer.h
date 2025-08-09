@@ -12,6 +12,7 @@
 #endif
 #include <list>
 #include <memory>
+#include <optional>
 
 namespace VSTGUI {
 
