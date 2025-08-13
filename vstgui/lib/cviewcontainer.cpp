@@ -9,7 +9,7 @@
 #include "ccolor.h"
 #include "ifocusdrawing.h"
 #include "itouchevent.h"
-#include "autosizeviewlayouter.h"
+#include "viewlayouter/autosizeviewlayouter.h"
 #include "iviewlistener.h"
 #include "controls/icontrollistener.h"
 #include "cgraphicspath.h"

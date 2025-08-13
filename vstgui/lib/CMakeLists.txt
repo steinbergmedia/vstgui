@@ -23,8 +23,6 @@ set(${target}_common_sources
     animation/timingfunctions.cpp
     animation/timingfunctions.h
     algorithm.h
-    autosizeviewlayouter.cpp
-    autosizeviewlayouter.h
     cbitmap.cpp
     cbitmap.h
     cbitmapfilter.cpp
@@ -193,6 +191,8 @@ set(${target}_common_sources
     platform/common/generictextedit.h
     platform/common/gradientbase.h
     platform/common/stb_textedit.h
+    viewlayouter/autosizeviewlayouter.cpp
+    viewlayouter/autosizeviewlayouter.h
     vstguibase.h
     vstguidebug.cpp
     vstguidebug.h
