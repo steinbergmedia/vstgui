@@ -36,6 +36,8 @@ std::optional<ViewLayout> AutoSizeViewLayouter::calculateLayout (const CViewCont
 	auto treatAsColumn = (container.getAutosizeFlags () & kAutosizeColumn) != 0;
 	auto treatAsRow = (container.getAutosizeFlags () & kAutosizeRow) != 0;
 
+	layoutData.reserve (numSubviews);
+
 	for (const auto& child : children)
 	{
 		int32_t autosize = child->getAutosizeFlags ();
@@ -86,8 +88,8 @@ std::optional<ViewLayout> AutoSizeViewLayouter::calculateLayout (const CViewCont
 			std::optional<ViewLayout> childLayout;
 			if (auto childContainer = child->asViewContainer ())
 				childLayout = childContainer->calculateViewLayout (viewSize);
-			layoutData.emplace_back (child->getRuntimeID (), viewSize, mouseSize,
-									 std::move (childLayout));
+			layoutData.push_back (
+				{child->getRuntimeID (), viewSize, mouseSize, std::move (childLayout)});
 		}
 		counter++;
 	}
@@ -96,47 +98,6 @@ std::optional<ViewLayout> AutoSizeViewLayouter::calculateLayout (const CViewCont
 }
 
 //------------------------------------------------------------------------
-bool AutoSizeViewLayouter::applyLayout (CViewContainer& container, const Children& children,
-										const ViewLayout& layout)
-{
-	auto layoutData = std::any_cast<const LayoutData> (&layout.data);
-	if (layoutData == nullptr)
-	{
-		vstgui_assert (false, "AutoSizeLayouter: Invalid layout data");
-		return false;
-	}
-	auto childIt = children.begin ();
-	auto childEnd = children.end ();
-	for (const auto& [runtimeId, viewSize, mouseSize, childLayout] : *layoutData)
-	{
-		while (childIt != childEnd && (*childIt)->getRuntimeID () != runtimeId)
-			++childIt;
-
-		if (childIt == childEnd)
-			continue;
-
-		auto doSetViewSize = true;
-		auto& child = *childIt;
-		if (auto childContainer = child->asViewContainer ())
-		{
-			if (childLayout)
-			{
-				if (!childContainer->applyViewLayout (*childLayout))
-					return false;
-				doSetViewSize = false;
-			}
-		}
-		if (doSetViewSize)
-		{
-			child->setViewSize (viewSize, true);
-			child->setMouseableArea (mouseSize);
-		}
-	}
-	container.setViewSize (layout.size);
-	container.setMouseableArea (layout.size);
-	return true;
-}
-
 // there's only one stateless static instance of this object so disable reference counting:
 void AutoSizeViewLayouter::forget () {}
 void AutoSizeViewLayouter::remember () {};

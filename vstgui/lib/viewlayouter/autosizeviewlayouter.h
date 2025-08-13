@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../iviewlayouter.h"
+#include "baseviewlayouter.h"
 #include <tuple>
 #include <vector>
 
@@ -17,19 +17,14 @@ namespace VSTGUI {
  *	a view layouter that uses the autosize flags of the views to determine the size and position
  *	of the child views in a view container.
  */
-struct AutoSizeViewLayouter final : IViewLayouter
+struct AutoSizeViewLayouter final : BaseViewLayouter
 {
 private:
-	using LayoutData = std::vector<std::tuple<uint64_t, CRect, CRect, std::optional<ViewLayout>>>;
-
 	AutoSizeViewLayouter () = default;
 
 	std::optional<ViewLayout> calculateLayout (const CViewContainer& container,
 											   const Children& children,
 											   const CRect& newSize) override;
-
-	bool applyLayout (CViewContainer& container, const Children& children,
-					  const ViewLayout& layout) override;
 
 	void forget () final;
 	void remember () final;

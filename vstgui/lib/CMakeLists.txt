@@ -193,6 +193,7 @@ set(${target}_common_sources
     platform/common/stb_textedit.h
     viewlayouter/autosizeviewlayouter.cpp
     viewlayouter/autosizeviewlayouter.h
+    viewlayouter/baseviewlayouter.h
     vstguibase.h
     vstguidebug.cpp
     vstguidebug.h

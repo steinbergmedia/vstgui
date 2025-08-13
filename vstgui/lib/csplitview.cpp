@@ -6,7 +6,7 @@
 #include "cframe.h"
 #include "cdrawcontext.h"
 #include "events.h"
-#include "iviewlayouter.h"
+#include "viewlayouter/baseviewlayouter.h"
 #include "../uidescription/icontroller.h"
 #include <list>
 
@@ -41,16 +41,15 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-struct SplitViewLayouter final : IViewLayouter,
+struct SplitViewLayouter final : BaseViewLayouter,
 								 NonAtomicReferenceCounted
 {
-	using LayoutData = std::vector<std::tuple<uint64_t, CRect, CRect, std::optional<ViewLayout>>>;
-
 	std::optional<ViewLayout> resizeFirstView (const CSplitView& splitView,
 											   const Children& children, const CRect& newSize,
 											   CPoint diff)
 	{
 		LayoutData layoutData;
+		layoutData.reserve (children.size ());
 
 		auto it = children.begin ();
 		if (it != children.end ())
@@ -62,7 +61,7 @@ struct SplitViewLayouter final : IViewLayouter,
 			std::optional<ViewLayout> childLayout;
 			if (auto childContainer = view->asViewContainer ())
 				childLayout = childContainer->calculateViewLayout (r);
-			layoutData.emplace_back (view->getRuntimeID (), r, r, std::move (childLayout));
+			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 			++it;
 		}
 		for (; it != children.end (); ++it)
@@ -82,7 +81,7 @@ struct SplitViewLayouter final : IViewLayouter,
 			std::optional<ViewLayout> childLayout;
 			if (auto childContainer = view->asViewContainer ())
 				childLayout = childContainer->calculateViewLayout (r);
-			layoutData.emplace_back (view->getRuntimeID (), r, r, std::move (childLayout));
+			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 		}
 		return {{newSize, std::move (layoutData)}};
 	}
@@ -92,6 +91,7 @@ struct SplitViewLayouter final : IViewLayouter,
 												CPoint diff)
 	{
 		LayoutData layoutData;
+		layoutData.reserve (children.size ());
 
 		int32_t viewIndex = 0;
 		for (auto it = children.begin (); it != children.end (); ++it)
@@ -133,7 +133,7 @@ struct SplitViewLayouter final : IViewLayouter,
 			std::optional<ViewLayout> childLayout;
 			if (auto childContainer = view->asViewContainer ())
 				childLayout = childContainer->calculateViewLayout (r);
-			layoutData.emplace_back (view->getRuntimeID (), r, r, std::move (childLayout));
+			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 		}
 		return {{newSize, std::move (layoutData)}};
 	}
@@ -142,6 +142,7 @@ struct SplitViewLayouter final : IViewLayouter,
 											  const CRect& newSize, CPoint diff)
 	{
 		LayoutData layoutData;
+		layoutData.reserve (children.size ());
 
 		auto it = children.rbegin ();
 		if (it != children.rend ())
@@ -153,7 +154,7 @@ struct SplitViewLayouter final : IViewLayouter,
 			std::optional<ViewLayout> childLayout;
 			if (auto childContainer = view->asViewContainer ())
 				childLayout = childContainer->calculateViewLayout (r);
-			layoutData.emplace_back (view->getRuntimeID (), r, r, std::move (childLayout));
+			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 			++it;
 		}
 		for (; it != children.rend (); ++it)
@@ -171,7 +172,7 @@ struct SplitViewLayouter final : IViewLayouter,
 			std::optional<ViewLayout> childLayout;
 			if (auto childContainer = view->asViewContainer ())
 				childLayout = childContainer->calculateViewLayout (r);
-			layoutData.emplace_back (view->getRuntimeID (), r, r, std::move (childLayout));
+			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 		}
 		return {{newSize, std::move (layoutData)}};
 	}
@@ -185,6 +186,7 @@ struct SplitViewLayouter final : IViewLayouter,
 			return {{newSize, std::move (layoutData)}};
 
 		auto numViews = children.size ();
+		layoutData.reserve (numViews);
 
 		auto numSeparators = numViews / 2u;
 		numViews -= numSeparators;
@@ -219,7 +221,7 @@ struct SplitViewLayouter final : IViewLayouter,
 				std::optional<ViewLayout> childLayout;
 				if (auto childContainer = view->asViewContainer ())
 					childLayout = childContainer->calculateViewLayout (r);
-				layoutData.emplace_back (view->getRuntimeID (), r, r, std::move (childLayout));
+				layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 			}
 			else
 			{
@@ -241,7 +243,7 @@ struct SplitViewLayouter final : IViewLayouter,
 				std::optional<ViewLayout> childLayout;
 				if (auto childContainer = view->asViewContainer ())
 					childLayout = childContainer->calculateViewLayout (r);
-				layoutData.emplace_back (view->getRuntimeID (), r, r, std::move (childLayout));
+				layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 			}
 		}
 		return {{newSize, std::move (layoutData)}};
@@ -282,42 +284,8 @@ struct SplitViewLayouter final : IViewLayouter,
 	bool applyLayout (CViewContainer& view, const Children& children,
 					  const ViewLayout& layout) override
 	{
-		auto layoutData = std::any_cast<const LayoutData> (&layout.data);
-		if (layoutData == nullptr)
-		{
-			vstgui_assert (false, "AutoSizeLayouter: Invalid layout data");
+		if (!BaseViewLayouter::applyLayout (view, children, layout))
 			return false;
-		}
-		auto childIt = children.begin ();
-		auto childEnd = children.end ();
-		for (const auto& [runtimeId, viewSize, mouseSize, childLayout] : *layoutData)
-		{
-			while (childIt != childEnd && (*childIt)->getRuntimeID () != runtimeId)
-				++childIt;
-
-			if (childIt == childEnd)
-				continue;
-
-			auto doSetViewSize = true;
-			auto& child = *childIt;
-			if (auto childContainer = child->asViewContainer ())
-			{
-				if (childLayout)
-				{
-					if (!childContainer->applyViewLayout (*childLayout))
-						return false;
-					doSetViewSize = false;
-				}
-			}
-			if (doSetViewSize)
-			{
-				child->setViewSize (viewSize, true);
-				child->setMouseableArea (mouseSize);
-			}
-		}
-
-		view.setViewSize (layout.size);
-		view.setMouseableArea (layout.size);
 
 		auto& splitView = static_cast<CSplitView&> (view);
 		std::vector<CSplitViewSeparatorView*> separators;
