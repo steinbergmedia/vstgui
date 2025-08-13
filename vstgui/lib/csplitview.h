@@ -6,6 +6,7 @@
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
+#include "viewlayouter/baseviewlayouter.h"
 
 namespace VSTGUI {
 class CSplitViewSeparatorView;
@@ -75,8 +76,10 @@ public:
 	bool removed (CView* parent) override;
 	bool attached (CView* parent) override;
 
-	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, const CRect& newSize);
-//-----------------------------------------------------------------------------
+	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, CRect newSize);
+	BaseViewLayouter::LayoutData layoutNewSeparatorSize (CSplitViewSeparatorView* separatorView,
+														 CRect newSize) const;
+	//-----------------------------------------------------------------------------
 protected:
 	Style style;
 	ResizeMethod resizeMethod;

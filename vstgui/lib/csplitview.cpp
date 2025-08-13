@@ -44,9 +44,8 @@ protected:
 struct SplitViewLayouter final : BaseViewLayouter,
 								 NonAtomicReferenceCounted
 {
-	std::optional<ViewLayout> resizeFirstView (const CSplitView& splitView,
-											   const Children& children, const CRect& newSize,
-											   CPoint diff)
+	LayoutData resizeFirstView (const CSplitView& splitView, const Children& children,
+								const CRect& newSize, CPoint diff)
 	{
 		LayoutData layoutData;
 		layoutData.reserve (children.size ());
@@ -83,12 +82,11 @@ struct SplitViewLayouter final : BaseViewLayouter,
 				childLayout = childContainer->calculateViewLayout (r);
 			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 		}
-		return {{newSize, std::move (layoutData)}};
+		return layoutData;
 	}
 
-	std::optional<ViewLayout> resizeSecondView (const CSplitView& splitView,
-												const Children& children, const CRect& newSize,
-												CPoint diff)
+	LayoutData resizeSecondView (const CSplitView& splitView, const Children& children,
+								 const CRect& newSize, CPoint diff)
 	{
 		LayoutData layoutData;
 		layoutData.reserve (children.size ());
@@ -135,11 +133,11 @@ struct SplitViewLayouter final : BaseViewLayouter,
 				childLayout = childContainer->calculateViewLayout (r);
 			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 		}
-		return {{newSize, std::move (layoutData)}};
+		return layoutData;
 	}
 
-	std::optional<ViewLayout> resizeLastView (const CSplitView& splitView, const Children& children,
-											  const CRect& newSize, CPoint diff)
+	LayoutData resizeLastView (const CSplitView& splitView, const Children& children,
+							   const CRect& newSize, CPoint diff)
 	{
 		LayoutData layoutData;
 		layoutData.reserve (children.size ());
@@ -174,16 +172,15 @@ struct SplitViewLayouter final : BaseViewLayouter,
 				childLayout = childContainer->calculateViewLayout (r);
 			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 		}
-		return {{newSize, std::move (layoutData)}};
+		return layoutData;
 	}
 
-	std::optional<ViewLayout> resizeViewsEqual (const CSplitView& splitView,
-												const Children& children, const CRect& newSize,
-												CPoint diff)
+	LayoutData resizeViewsEqual (const CSplitView& splitView, const Children& children,
+								 const CRect& newSize, CPoint diff)
 	{
 		LayoutData layoutData;
 		if (children.empty ())
-			return {{newSize, std::move (layoutData)}};
+			return layoutData;
 
 		auto numViews = children.size ();
 		layoutData.reserve (numViews);
@@ -246,7 +243,7 @@ struct SplitViewLayouter final : BaseViewLayouter,
 				layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
 			}
 		}
-		return {{newSize, std::move (layoutData)}};
+		return layoutData;
 	}
 
 	std::optional<ViewLayout> calculateLayout (const CViewContainer& view, const Children& children,
@@ -259,43 +256,51 @@ struct SplitViewLayouter final : BaseViewLayouter,
 		if (diff.x == 0. && diff.y == 0.)
 			return {{newSize, LayoutData {}}};
 
+		LayoutData result;
+
 		switch (splitView.getResizeMethod ())
 		{
 			case CSplitView::kResizeFirstView:
 			{
-				return resizeFirstView (splitView, children, newSize, diff);
+				result = resizeFirstView (splitView, children, newSize, diff);
+				break;
 			}
 			case CSplitView::kResizeSecondView:
 			{
-				return resizeSecondView (splitView, children, newSize, diff);
+				result = resizeSecondView (splitView, children, newSize, diff);
+				break;
 			}
 			case CSplitView::kResizeLastView:
 			{
-				return resizeLastView (splitView, children, newSize, diff);
+				result = resizeLastView (splitView, children, newSize, diff);
+				break;
 			}
 			case CSplitView::kResizeAllViews:
 			{
-				return resizeViewsEqual (splitView, children, newSize, diff);
+				result = resizeViewsEqual (splitView, children, newSize, diff);
+				break;
 			}
 		}
-		return {};
-	}
 
-	bool applyLayout (CViewContainer& view, const Children& children,
-					  const ViewLayout& layout) override
-	{
-		if (!BaseViewLayouter::applyLayout (view, children, layout))
-			return false;
-
-		auto& splitView = static_cast<CSplitView&> (view);
 		std::vector<CSplitViewSeparatorView*> separators;
 		view.getChildViewsOfType<CSplitViewSeparatorView> (separators);
-		std::for_each (separators.begin (), separators.end (),
-					   [&] (CSplitViewSeparatorView* separatorView) {
-						   CRect r (separatorView->getViewSize ());
-						   splitView.requestNewSeparatorSize (separatorView, r);
-					   });
-		return true;
+		std::for_each (
+			separators.begin (), separators.end (), [&] (CSplitViewSeparatorView* separatorView) {
+				CRect r (separatorView->getViewSize ());
+				auto l = splitView.layoutNewSeparatorSize (separatorView, r);
+				for (auto& element : l)
+				{
+					auto it = std::find_if (result.begin (), result.end (), [&] (const auto& el) {
+						return el.viewId == element.viewId;
+					});
+					if (it != result.end ())
+					{
+						it->mouseSize = element.mouseSize;
+						it->viewSize = element.viewSize;
+					}
+				}
+			});
+		return {{newSize, std::move (result)}};
 	}
 };
 
@@ -537,10 +542,10 @@ bool CSplitView::attached (CView* parent)
 	return result;
 }
 
-//-----------------------------------------------------------------------------
-bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, const CRect& _newSize)
+//------------------------------------------------------------------------
+BaseViewLayouter::LayoutData
+	CSplitView::layoutNewSeparatorSize (CSplitViewSeparatorView* separatorView, CRect newSize) const
 {
-	bool result = false;
 	ViewIterator it (this);
 	uint32_t sepIndex = 0;
 	CView* view1 = nullptr;
@@ -562,8 +567,6 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 	}
 	if (view1 && view2)
 	{
-		CRect newSize (_newSize);
-
 		CRect constrainSize (getViewSize ());
 		constrainSize.originize ();
 
@@ -591,14 +594,19 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 		ISplitViewController* controller = getSplitViewController (this);
 		if (controller)
 		{
-			if (controller->getSplitViewSizeConstraint (sepIndex / 2, view1MinWidth, view1MaxWidth, this) && view1MinWidth >= 0.)
+			if (controller->getSplitViewSizeConstraint (sepIndex / 2, view1MinWidth, view1MaxWidth,
+														const_cast<CSplitView*> (this)) &&
+				view1MinWidth >= 0.)
 			{
 				if (style == kHorizontal)
 					constrainSize.left += view1MinWidth;
 				else
 					constrainSize.top += view1MinWidth;
 			}
-			if (controller->getSplitViewSizeConstraint (sepIndex / 2 + 1, view2MinWidth, view2MaxWidth, this) && view2MinWidth >= 0.)
+			if (controller->getSplitViewSizeConstraint (sepIndex / 2 + 1, view2MinWidth,
+														view2MaxWidth,
+														const_cast<CSplitView*> (this)) &&
+				view2MinWidth >= 0.)
 			{
 				if (style == kHorizontal)
 					constrainSize.right -= view2MinWidth;
@@ -635,21 +643,22 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 			r2.top = newSize.bottom;
 		}
 
-	// TODO: if one of the view is too small or too wide, we could check to move another separator together with this one
+		// TODO: if one of the view is too small or too wide, we could check to move another
+		// separator together with this one
 		if (view1MaxWidth >= 0.)
 		{
 			if (style == kHorizontal)
 			{
 				if (r1.getWidth () > view1MaxWidth)
 				{
-					return false;
+					return {};
 				}
 			}
 			else
 			{
 				if (r1.getHeight () > view1MaxWidth)
 				{
-					return false;
+					return {};
 				}
 			}
 		}
@@ -659,14 +668,14 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 			{
 				if (r1.getWidth () < view1MinWidth)
 				{
-					return false;
+					return {};
 				}
 			}
 			else
 			{
 				if (r1.getHeight () < view1MinWidth)
 				{
-					return false;
+					return {};
 				}
 			}
 		}
@@ -677,14 +686,14 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 			{
 				if (r2.getWidth () > view2MaxWidth)
 				{
-					return false;
+					return {};
 				}
 			}
 			else
 			{
 				if (r2.getHeight () > view2MaxWidth)
 				{
-					return false;
+					return {};
 				}
 			}
 		}
@@ -694,39 +703,57 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 			{
 				if (r2.getWidth () < view2MinWidth)
 				{
-					return false;
+					return {};
 				}
 			}
 			else
 			{
 				if (r2.getHeight () < view2MinWidth)
 				{
-					return false;
+					return {};
 				}
 			}
 		}
 
+		BaseViewLayouter::LayoutData layoutData;
+		layoutData.reserve (3);
+
 		if (view1->getViewSize () != r1)
 		{
-			view1->setViewSize (r1);
-			view1->setMouseableArea (r1);
-			view1->invalid ();
-		}
-		if (view2->getViewSize () != r2)
-		{
-			view2->setViewSize (r2);
-			view2->setMouseableArea (r2);
-			view2->invalid ();
+			layoutData.push_back ({view1->getRuntimeID (), r1, r1, {}});
 		}
 		if (separatorView->getViewSize () != newSize)
 		{
-			separatorView->setViewSize (newSize);
-			separatorView->setMouseableArea (newSize);
-			separatorView->invalid ();
-			result = true;
+			layoutData.push_back ({separatorView->getRuntimeID (), newSize, newSize, {}});
+		}
+		if (view2->getViewSize () != r2)
+		{
+			layoutData.push_back ({view2->getRuntimeID (), r2, r2, {}});
+		}
+		return layoutData;
+	}
+	return {};
+}
+
+//-----------------------------------------------------------------------------
+bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, CRect newSize)
+{
+	auto layout = layoutNewSeparatorSize (separatorView, newSize);
+	if (layout.empty ())
+		return false;
+	auto layoutIt = layout.begin ();
+	for (auto& view : getChildren ())
+	{
+		if (view->getRuntimeID () == layoutIt->viewId)
+		{
+			view->setViewSize (layoutIt->viewSize);
+			view->setMouseableArea (layoutIt->mouseSize);
+			++layoutIt;
+			if (layoutIt == layout.end ())
+				break;
 		}
 	}
-	return result;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
