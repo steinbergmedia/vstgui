@@ -2,7 +2,6 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "lib/autosizeviewlayouter.cpp"
 #include "lib/cbitmap.cpp"
 #include "lib/cbitmapfilter.cpp"
 #include "lib/cclipboard.cpp"
@@ -72,3 +71,5 @@
 #include "lib/platform/common/fileresourceinputstream.cpp"
 #include "lib/platform/common/genericoptionmenu.cpp"
 #include "lib/platform/common/generictextedit.cpp"
+
+#include "lib/viewlayouter/autosizeviewlayouter.cpp"
