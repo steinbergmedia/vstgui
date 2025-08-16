@@ -20,6 +20,7 @@ struct BaseViewLayouterEntry
 };
 
 //------------------------------------------------------------------------
+/** a base class for view layouters */
 class BaseViewLayouter : public IViewLayouter
 {
 public:

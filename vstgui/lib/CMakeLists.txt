@@ -194,6 +194,8 @@ set(${target}_common_sources
     viewlayouter/autosizeviewlayouter.cpp
     viewlayouter/autosizeviewlayouter.h
     viewlayouter/baseviewlayouter.h
+    viewlayouter/gridlayouter.cpp
+    viewlayouter/gridlayouter.h
     vstguibase.h
     vstguidebug.cpp
     vstguidebug.h
