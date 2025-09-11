@@ -6,6 +6,7 @@
 #include "../../../lib/cviewcontainer.h"
 #include "../../../lib/cview.h"
 #include "../unittests.h"
+#include <array>
 
 namespace VSTGUI {
 
