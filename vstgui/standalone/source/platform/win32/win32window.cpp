@@ -505,11 +505,22 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				frame->getTransform ().inverse ().transform (p);
 				p = delegate->constraintSize (p);
 				frame->getTransform ().transform (p);
-				minmaxInfo->ptMinTrackSize = mapCPoint (p);
+				auto point = mapCPoint (p);
+				RECT clientRect {0, 0, point.x, point.y};
+				HiDPISupport::instance ().adjustWindowRectExForDpi (
+					&clientRect, self->dwStyle, self->hasMenu, self->exStyle,
+					static_cast<UINT> (self->dpiScale * USER_DEFAULT_SCREEN_DPI));
+				minmaxInfo->ptMinTrackSize = {clientRect.right - clientRect.left,
+											  clientRect.bottom - clientRect.top};
 				p = mapPOINT (minmaxInfo->ptMaxTrackSize);
 				frame->getTransform ().inverse ().transform (p);
 				p = delegate->constraintSize (p);
 				frame->getTransform ().transform (p);
+				point = mapCPoint (p);
+				clientRect = {0, 0, point.x, point.y};
+				HiDPISupport::instance ().adjustWindowRectExForDpi (
+					&clientRect, self->dwStyle, self->hasMenu, self->exStyle,
+					static_cast<UINT> (self->dpiScale * USER_DEFAULT_SCREEN_DPI));
 				minmaxInfo->ptMaxTrackSize = mapCPoint (p);
 				return 0;
 			}
