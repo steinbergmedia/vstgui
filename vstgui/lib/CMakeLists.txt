@@ -155,6 +155,7 @@ set(${target}_common_sources
     ifocusdrawing.h
     iscalefactorchangedlistener.h
     itouchevent.h
+    iviewlayouter.h
     iviewlistener.h
     malloc.h
     optional.h
@@ -190,6 +191,11 @@ set(${target}_common_sources
     platform/common/generictextedit.h
     platform/common/gradientbase.h
     platform/common/stb_textedit.h
+    viewlayouter/autosizeviewlayouter.cpp
+    viewlayouter/autosizeviewlayouter.h
+    viewlayouter/baseviewlayouter.h
+    viewlayouter/gridlayouter.cpp
+    viewlayouter/gridlayouter.h
     vstguibase.h
     vstguidebug.cpp
     vstguidebug.h

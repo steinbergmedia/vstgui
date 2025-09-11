@@ -71,3 +71,6 @@
 #include "lib/platform/common/fileresourceinputstream.cpp"
 #include "lib/platform/common/genericoptionmenu.cpp"
 #include "lib/platform/common/generictextedit.cpp"
+
+#include "lib/viewlayouter/autosizeviewlayouter.cpp"
+#include "lib/viewlayouter/gridlayouter.cpp"

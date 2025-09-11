@@ -9,6 +9,7 @@
 #include "ccolor.h"
 #include "ifocusdrawing.h"
 #include "itouchevent.h"
+#include "viewlayouter/autosizeviewlayouter.h"
 #include "iviewlistener.h"
 #include "controls/icontrollistener.h"
 #include "cgraphicspath.h"
@@ -41,7 +42,8 @@ struct CViewContainer::Impl
 	CGraphicsTransform transform;
 	
 	ViewList children;
-	
+	SharedPointer<IViewLayouter> layouter {AutoSizeViewLayouter::get ()};
+
 	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
 	CColor backgroundColor {kBlackCColor};
 };
@@ -283,6 +285,49 @@ void CViewContainer::setAutosizingEnabled (bool state)
 }
 
 //-----------------------------------------------------------------------------
+void CViewContainer::setViewLayouter (const SharedPointer<IViewLayouter>& layouter)
+{
+	if (layouter == nullptr)
+		pImpl->layouter = AutoSizeViewLayouter::get ();
+	else
+		pImpl->layouter = layouter;
+}
+
+//-----------------------------------------------------------------------------
+SharedPointer<IViewLayouter> CViewContainer::getViewLayouter () const { return pImpl->layouter; }
+
+//-----------------------------------------------------------------------------
+std::optional<ViewLayout> CViewContainer::calculateViewLayout (const CRect& newSize) const
+{
+	if (pImpl->layouter)
+	{
+		return pImpl->layouter->calculateLayout (*this, pImpl->children, newSize);
+	}
+	return {};
+}
+
+//-----------------------------------------------------------------------------
+bool CViewContainer::applyViewLayout (const ViewLayout& layout)
+{
+	bool result = true;
+	if (pImpl->layouter)
+	{
+		setViewFlag (kInApplyLayout, true);
+		result = pImpl->layouter->applyLayout (*this, pImpl->children, layout);
+		setViewFlag (kInApplyLayout, false);
+	}
+	else
+	{
+		setViewSize (layout.size);
+		setMouseableArea (layout.size);
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool CViewContainer::inApplyViewLayout () const { return hasViewFlag (kInApplyLayout); }
+
+//-----------------------------------------------------------------------------
 /**
  * @param rect the new size of the container
  * @param invalid the views to dirty
@@ -292,75 +337,19 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 	if (rect == getViewSize ())
 		return;
 
-	CRect oldSize (getViewSize ());
-	CView::setViewSize (rect, invalid);
-
-	if (getAutosizingEnabled ())
+	if (!inApplyViewLayout () && pImpl->layouter)
 	{
-		CCoord widthDelta = rect.getWidth () - oldSize.getWidth ();
-		CCoord heightDelta = rect.getHeight () - oldSize.getHeight ();
-		getTransform ().inverse ().transform (widthDelta, heightDelta);
-
-		if (widthDelta != 0 || heightDelta != 0)
+		if (auto layout = pImpl->layouter->calculateLayout (*this, pImpl->children, rect))
 		{
-			uint32_t numSubviews = getNbViews ();
-			uint32_t counter = 0;
-			bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
-			bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
-			for (const auto& pV : pImpl->children)
+			if (applyViewLayout (*layout))
 			{
-				int32_t autosize = pV->getAutosizeFlags ();
-				CRect viewSize (pV->getViewSize ());
-				CRect mouseSize (pV->getMouseableArea ());
-				if (treatAsColumn)
-				{
-					if (counter)
-					{
-						viewSize.offset (counter * (widthDelta / (numSubviews)), 0);
-						mouseSize.offset (counter * (widthDelta / (numSubviews)), 0);
-					}
-					viewSize.setWidth (viewSize.getWidth () + (widthDelta / (numSubviews)));
-					mouseSize.setWidth (mouseSize.getWidth () + (widthDelta / (numSubviews)));
-				}
-				else if (widthDelta != 0 && autosize & kAutosizeRight)
-				{
-					viewSize.right += widthDelta;
-					mouseSize.right += widthDelta;
-					if (!(autosize & kAutosizeLeft))
-					{
-						viewSize.left += widthDelta;
-						mouseSize.left += widthDelta;
-					}
-				}
-				if (treatAsRow)
-				{
-					if (counter)
-					{
-						viewSize.offset (0, counter * (heightDelta / (numSubviews)));
-						mouseSize.offset (0, counter * (heightDelta / (numSubviews)));
-					}
-					viewSize.setHeight (viewSize.getHeight () + (heightDelta / (numSubviews)));
-					mouseSize.setHeight (mouseSize.getHeight () + (heightDelta / (numSubviews)));
-				}
-				else if (heightDelta != 0 && autosize & kAutosizeBottom)
-				{
-					viewSize.bottom += heightDelta;
-					mouseSize.bottom += heightDelta;
-					if (!(autosize & kAutosizeTop))
-					{
-						viewSize.top += heightDelta;
-						mouseSize.top += heightDelta;
-					}
-				}
-				if (viewSize != pV->getViewSize ())
-				{
-					pV->setViewSize (viewSize);
-					pV->setMouseableArea (mouseSize);
-				}
-				counter++;
+				parentSizeChanged ();
+				return;
 			}
 		}
 	}
+	CView::setViewSize (rect, invalid);
+
 	parentSizeChanged ();
 }
 
