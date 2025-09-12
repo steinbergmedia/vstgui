@@ -272,61 +272,27 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 			for (size_t r = 0; r < r0; ++r)
 			{
 				y += rowHeights[r] + rowGap;
-				if (gridProps.alignContent == GridLayoutProperties::AlignContent::SpaceBetween &&
-					r < rows - 1)
-					y += spaceBetweenY;
-				else if (gridProps.alignContent ==
-							 GridLayoutProperties::AlignContent::SpaceAround &&
-						 r < rows - 1)
-					y += spaceAroundY;
+				if (r < rows - 1)
+					y += spaceBetweenY + spaceAroundY;
 			}
 			CCoord x = newSize.left + offsetX;
 			for (size_t c = 0; c < c0; ++c)
 			{
 				x += colWidths[c] + colGap;
-				if (spaceBetweenX > 0.0 && c < cols - 1)
-					x += spaceBetweenX;
-				else if (spaceAroundX > 0.0)
-					x += spaceAroundX;
+				if (c < cols - 1)
+					x += spaceBetweenX + spaceAroundX;
 			}
 			CCoord h = 0.0;
 			for (size_t r = r0; r < r1; ++r)
 				h += rowHeights[r];
-			h += (r1 - r0 - 1) * rowGap;
+			h += (r1 - r0 - 1) * (rowGap + spaceAroundY);
 			CCoord w = 0.0;
 			for (size_t c = c0; c < c1; ++c)
 				w += colWidths[c];
-			w += (c1 - c0 - 1) * colGap;
+			w += (c1 - c0 - 1) * (colGap + spaceAroundX);
 
 			CCoord itemWidth = w;
 			CCoord itemHeight = h;
-
-			if (gridProps.justifyItems == GridLayoutProperties::JustifyItems::Stretch)
-			{
-				itemWidth = w;
-			}
-			else if (area.colSpan == 1)
-			{
-				itemWidth = colWidths[c0];
-			}
-			else
-			{
-				itemWidth = w;
-			}
-
-			if (gridProps.alignItems == GridLayoutProperties::AlignItems::Stretch)
-			{
-				itemHeight = h;
-			}
-			else if (area.rowSpan == 1)
-			{
-				itemHeight = rowHeights[r0];
-			}
-			else
-			{
-				itemHeight = h;
-			}
-
 			CCoord itemX = x;
 			CCoord itemY = y;
 

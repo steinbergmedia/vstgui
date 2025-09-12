@@ -421,6 +421,59 @@ struct GridLayoutWindowController : public WindowControllerAdapter
 };
 
 //------------------------------------------------------------------------
+struct GridLayoutPropertiesWindowController : DelegationController
+{
+	GridLayoutPropertiesWindowController (IController* baseController)
+	: DelegationController (baseController)
+	{
+	}
+
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription* description) override
+	{
+		if (!container)
+		{
+			if ((container = view->asViewContainer ()))
+			{
+				GridLayoutProperties grid;
+				grid.rows = 14;
+				grid.columns = 2;
+				grid.alignItems = GridLayoutProperties::AlignItems::Stretch;
+				grid.justifyItems = GridLayoutProperties::JustifyItems::Stretch;
+				grid.alignContent = GridLayoutProperties::AlignContent::SpaceAround;
+				grid.justifyContent = GridLayoutProperties::JustifyContent::SpaceAround;
+				grid.autoRows = {
+					CCoord {20.},  CCoord {20.},
+					CCoord {20.},  CCoord {20.},
+					CCoord {20.},  CCoord {20.},
+					CCoord {20.},  CCoord {20.},
+					CCoord {20.},  GridLayoutProperties::Auto {},
+					CCoord {20.},  GridLayoutProperties::Auto {},
+					CCoord {20.},  GridLayoutProperties::Auto {},
+					CCoord {120.},
+				};
+				grid.autoColumns = {
+					GridLayoutProperties::Auto {},
+					GridLayoutProperties::Auto {},
+					CCoord {30.},
+				};
+				grid.gridAreas = {
+					{0, 0, 1, 1},  {0, 1, 1, 1},  {1, 0, 1, 1}, {1, 1, 1, 1},  {2, 0, 1, 1},
+					{2, 1, 1, 1},  {3, 0, 1, 1},  {3, 1, 1, 1}, {4, 0, 1, 1},  {4, 1, 1, 1},
+					{5, 0, 1, 1},  {5, 1, 1, 1},  {6, 0, 1, 1}, {6, 1, 1, 1},  {7, 0, 1, 1},
+					{7, 1, 1, 1},  {8, 0, 1, 3},  {9, 0, 1, 2}, {10, 0, 1, 2}, {11, 0, 1, 2},
+					{12, 0, 1, 2}, {13, 0, 1, 2},
+				};
+				container->setViewLayouter (makeOwned<GridLayouter> (grid));
+			}
+		}
+		return view;
+	}
+
+	CViewContainer* container {nullptr};
+};
+
+//------------------------------------------------------------------------
 class GridLayoutTestApp : public Application::DelegateAdapter,
 						  public WindowListenerAdapter
 {
@@ -525,6 +578,11 @@ public:
 				gridAreaController =
 					new GridAreaController (parent, gridAreas, [this] () { modelUpdated (); });
 				return gridAreaController;
+			});
+		customization->addCreateViewControllerFunc (
+			"GridLayoutPropertiesWindowController",
+			[this] (const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc) {
+				return new GridLayoutPropertiesWindowController (parent);
 			});
 
 		UIDesc::Config config;
