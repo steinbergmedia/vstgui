@@ -1500,6 +1500,8 @@ bool CViewContainer::attached (CView* parent)
 		for (const auto& pV : pImpl->children)
 			pV->attached (this);
 	}
+	if (auto layout = calculateViewLayout (getViewSize ()))
+		applyViewLayout (*layout);
 	return result;
 }
 
