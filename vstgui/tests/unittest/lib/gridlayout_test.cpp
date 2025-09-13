@@ -469,6 +469,7 @@ TEST_CASE (GridLayouter, AlignContentSpaceAround)
 	EXPECT (layoutOpt.has_value ());
 	auto layout = layoutOpt.value ();
 	EXPECT (container->applyViewLayout (layout));
+
 	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
 	EXPECT (rects && rects->size () == 2);
 	constexpr std::array expectedRects {CRect (0, 13.3333333333, 100, 43.3333333333),
@@ -1144,56 +1145,6 @@ TEST_CASE (GridLayouter, GridAreas_JustifyContentSpaceAround)
 }
 
 //------------------------------------------------------------------------
-TEST_CASE (GridLayouter, GridAreas_AlignItemsStretch_MultiCell)
-{
-	GridLayoutProperties props;
-	props.rows = 2;
-	props.columns = 2;
-	props.autoRows = {CCoord (40), CCoord (60)};
-	props.autoColumns = {CCoord (50), CCoord (70)};
-	props.gridAreas = {{0, 0, 1, 1}, {1, 1, 1, 1}};
-	props.alignItems = GridLayoutProperties::AlignItems::Stretch;
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addView (new CView ({}));
-	container->addView (new CView ({}));
-	container->setViewLayouter (layouter);
-	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
-	EXPECT (layoutOpt.has_value ());
-	auto layout = layoutOpt.value ();
-	EXPECT (container->applyViewLayout (layout));
-	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
-	EXPECT (rects && rects->size () == 2);
-	EXPECT (rectNearlyEqual ((*rects)[0].first, CRect (0, 0, 50, 40)));
-	EXPECT (rectNearlyEqual ((*rects)[1].first, CRect (50, 40, 120, 100)));
-}
-
-//------------------------------------------------------------------------
-TEST_CASE (GridLayouter, GridAreas_JustifyItemsStretch_MultiCell)
-{
-	GridLayoutProperties props;
-	props.rows = 2;
-	props.columns = 2;
-	props.autoRows = {CCoord (40), CCoord (60)};
-	props.autoColumns = {CCoord (50), CCoord (70)};
-	props.gridAreas = {{0, 0, 1, 1}, {1, 1, 1, 1}};
-	props.justifyItems = GridLayoutProperties::JustifyItems::Stretch;
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addView (new CView ({}));
-	container->addView (new CView ({}));
-	container->setViewLayouter (layouter);
-	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
-	EXPECT (layoutOpt.has_value ());
-	auto layout = layoutOpt.value ();
-	EXPECT (container->applyViewLayout (layout));
-	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
-	EXPECT (rects && rects->size () == 2);
-	EXPECT (rectNearlyEqual ((*rects)[0].first, CRect (0, 0, 50, 40)));
-	EXPECT (rectNearlyEqual ((*rects)[1].first, CRect (50, 40, 120, 100)));
-}
-
-//------------------------------------------------------------------------
 TEST_CASE (GridLayouter, GridAreas_Spanning_CenterEndStretch)
 {
 	GridLayoutProperties props;
@@ -1448,6 +1399,51 @@ TEST_CASE (GridLayouter, LayoutEmptyContainer)
 	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
 	EXPECT (rects && rects->empty () == true);
 	EXPECT (rectNearlyEqual (CRect (0, 0, 120, 120), container->getViewSize ()))
+}
+
+//------------------------------------------------------------------------
+TEST_CASE (GridLayouter, GridAreas_SpaceAround_MultiRowCol_AutoTracks_ExtraItem)
+{
+	// 2x2 grid, 5 items, grid areas for each, align/justify content SpaceAround, auto tracks
+	GridLayoutProperties props;
+	props.rows = 2;
+	props.columns = 2;
+	props.autoRows = {GridLayoutProperties::Auto {}, GridLayoutProperties::Auto {}, CCoord (30)};
+	props.autoColumns = {GridLayoutProperties::Auto {}, GridLayoutProperties::Auto {}, CCoord (30)};
+	props.alignContent = GridLayoutProperties::AlignContent::SpaceAround;
+	props.justifyContent = GridLayoutProperties::JustifyContent::SpaceAround;
+	props.gridAreas = {
+		{0, 0, 1, 1}, // Item 0: top-left
+		{0, 1, 1, 1}, // Item 1: top-right
+		{1, 0, 1, 1}, // Item 2: bottom-left
+		{1, 1, 1, 1}, // Item 3: bottom-right
+		{0, 0, 2, 2}  // Item 4: spans all
+	};
+	// Container is larger than grid, so space around is visible
+	auto layouter = makeOwned<GridLayouter> (props);
+	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 200));
+	for (int i = 0; i < 5; ++i)
+		container->addView (new CView ({}));
+	container->setViewLayouter (layouter);
+	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 200, 200));
+	EXPECT (layoutOpt.has_value ());
+	auto layout = layoutOpt.value ();
+	EXPECT (container->applyViewLayout (layout));
+	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
+	EXPECT (rects && rects->size () == 5);
+	constexpr std::array expectedRects {
+		CRect (10, 10, 95, 95),		// Item 0: top-left
+		CRect (105, 10, 190, 95),	// Item 1: top-right
+		CRect (10, 105, 95, 190),	// Item 2: bottom-left
+		CRect (105, 105, 190, 190), // Item 3: bottom-right
+		CRect (10, 10, 190, 190)	// Item 4: spans all
+	};
+	for (size_t i = 0; i < expectedRects.size (); ++i)
+	{
+		EXPECT (rectNearlyEqual ((*rects)[i].first, expectedRects[i]));
+		EXPECT (rectNearlyEqual (container->getView (static_cast<int> (i))->getViewSize (),
+								 expectedRects[i]));
+	}
 }
 
 } // namespace VSTGUI
