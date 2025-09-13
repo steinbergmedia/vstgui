@@ -10,6 +10,7 @@
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
 #include "vstgui/standalone/include/helpers/value.h"
+#include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cdatabrowser.h"
 #include "vstgui/lib/cdrawcontext.h"
@@ -475,7 +476,8 @@ struct GridLayoutPropertiesWindowController : DelegationController
 
 //------------------------------------------------------------------------
 class GridLayoutTestApp : public Application::DelegateAdapter,
-						  public WindowListenerAdapter
+						  public WindowListenerAdapter,
+						  public NoMenuBuilder
 {
 public:
 	static constexpr int32_t MaxRowsCols = 50;
@@ -512,38 +514,56 @@ public:
 			modelUpdatedCallback);
 
 		values->addValue (Value::make ("Add Auto Row"),
-						  UIDesc::ValueCalls::onEndEdit ([this] (auto&) {
+						  UIDesc::ValueCalls::onEndEdit ([this] (auto& v) {
+							  if (v.getValue () == 0)
+								  return;
 							  autoRows.push_back ({GridLayoutProperties::Auto {}});
 							  if (autoRowsController)
 								  autoRowsController->onRowAdded ();
+							  v.performEdit (0.);
 						  }));
 		values->addValue (Value::make ("Remove Auto Row"),
-						  UIDesc::ValueCalls::onEndEdit ([this] (auto&) {
+						  UIDesc::ValueCalls::onEndEdit ([this] (auto& v) {
+							  if (v.getValue () == 0)
+								  return;
 							  if (autoRowsController)
 								  autoRowsController->removeSelection ();
+							  v.performEdit (0.);
 						  }));
 		values->addValue (Value::make ("Add Auto Column"),
-						  UIDesc::ValueCalls::onEndEdit ([this] (auto&) {
+						  UIDesc::ValueCalls::onEndEdit ([this] (auto& v) {
+							  if (v.getValue () == 0)
+								  return;
 							  autoColumns.push_back ({GridLayoutProperties::Auto {}});
 							  if (autoColumnsController)
 								  autoColumnsController->onRowAdded ();
+							  v.performEdit (0.);
 						  }));
 		values->addValue (Value::make ("Remove Auto Column"),
-						  UIDesc::ValueCalls::onEndEdit ([this] (auto&) {
+						  UIDesc::ValueCalls::onEndEdit ([this] (auto& v) {
+							  if (v.getValue () == 0)
+								  return;
 							  if (autoColumnsController)
 								  autoColumnsController->removeSelection ();
+							  v.performEdit (0.);
 						  }));
 
 		values->addValue (Value::make ("Add Grid Area Item"),
-						  UIDesc::ValueCalls::onEndEdit ([this] (auto&) {
+						  UIDesc::ValueCalls::onEndEdit ([this] (auto& v) {
+							  if (v.getValue () == 0)
+								  return;
 							  gridAreas.push_back ({});
 							  if (gridAreaController)
 								  gridAreaController->onRowAdded ();
+							  v.performEdit (0.);
 						  }));
 		values->addValue (Value::make ("Remove Grid Area Item"),
-						  UIDesc::ValueCalls::onEndEdit ([this] (auto&) {
+						  UIDesc::ValueCalls::onEndEdit ([this] (auto& v) {
+							  if (v.getValue () == 0)
+								  return;
 							  if (gridAreaController)
 								  gridAreaController->removeSelection ();
+							  v.performEdit (0.);
 						  }));
 
 		autoRows.push_back ({GridLayoutProperties::Auto {}});
@@ -608,6 +628,7 @@ public:
 					windowConfig, gridLayoutWindowController))
 				gridLayoutWindow->show ();
 			modelUpdated ();
+			window->activate ();
 		}
 		else
 		{
@@ -623,11 +644,11 @@ public:
 		GridLayoutProperties props;
 		if (auto v = values->getValue ("Rows"))
 		{
-			props.rows = std::round (Value::currentPlainValue (*v));
+			props.rows = static_cast<size_t> (std::round (Value::currentPlainValue (*v)));
 		}
 		if (auto v = values->getValue ("Cols"))
 		{
-			props.columns = std::round (Value::currentPlainValue (*v));
+			props.columns = static_cast<size_t> (std::round (Value::currentPlainValue (*v)));
 		}
 		if (auto v = values->getValue ("Row Gap"))
 		{
