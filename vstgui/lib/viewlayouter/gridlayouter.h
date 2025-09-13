@@ -41,6 +41,8 @@ namespace VSTGUI {
  *
  *  This struct is designed to be compatible with the CSS Grid Layout specification:
  *  https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout
+ *
+ *	@ingroup new_in_4_15
  */
 struct GridLayoutProperties
 {
@@ -108,6 +110,10 @@ struct GridLayoutProperties
 };
 
 //------------------------------------------------------------------------
+/** grid view layouter
+ *
+ *	@ingroup new_in_4_15
+ */
 class GridLayouter : public IViewLayouter,
 					 public NonAtomicReferenceCounted
 {

@@ -17,6 +17,8 @@ namespace VSTGUI {
  *
  *	the view layout holds the information about the position and size of the child views in a view
  *	container as calculated by the view layouter.
+ *
+ *	@ingroup new_in_4_15
  */
 struct ViewLayout
 {
@@ -32,6 +34,7 @@ struct ViewLayout
  *	a view layouter is used to calculate and set the size and position of the child views in a view
  *	container.
  *
+ *	@ingroup new_in_4_15
  */
 class IViewLayouter : virtual public IReference
 {
