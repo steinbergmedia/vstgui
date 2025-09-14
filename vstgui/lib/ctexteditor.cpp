@@ -300,7 +300,8 @@ protected:
 	void setFindString (std::string_view utf8Text) const override;
 
 	// TextEditorHighlighting::IEditorExt
-	std::u32string_view readText (size_t startOffset, size_t length) const override;
+	bool readText (size_t startOffset, size_t length,
+				   const ReadCallbackFunc& callback) const override;
 	size_t getTextLength () const override;
 
 	// commandos
@@ -1028,13 +1029,15 @@ bool TextEditorView::setCommandKeyBinding (Command cmd, char32_t character, Virt
 }
 
 //------------------------------------------------------------------------
-std::u32string_view TextEditorView::readText (size_t startOffset, size_t length) const
+bool TextEditorView::readText (size_t startOffset, size_t length,
+							   const ReadCallbackFunc& callback) const
 {
 	if (startOffset >= md.model.text.length () || md.model.lines.empty ())
-		return {};
+		return false;
 	if (startOffset + length >= md.model.text.length ())
 		length = md.model.text.length () - startOffset;
-	return {md.model.text.data () + startOffset, length};
+	callback ({md.model.text.data () + startOffset, length});
+	return true;
 }
 
 //------------------------------------------------------------------------

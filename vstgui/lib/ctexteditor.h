@@ -192,14 +192,20 @@ namespace TextEditorColorization {
  */
 struct IEditorExt
 {
-	/** get access to the internal string buffer of the text editor
+	using ReadCallbackFunc = std::function<void (std::u32string_view text)>;
+	/** Get access to the internal string buffer of the text editor
 	 *
-	 *	@param startOffset offset into the buffer in number of characters
-	 *	@param length number of characters
-	 *	@return a string view into the buffer
+	 *	The callback is called synchronously within this call. The text passed to the callback is
+	 *	only valid inside the callback.
+	 *
+	 *	@param startOffset Offset into the buffer in number of characters
+	 *	@param length Number of characters
+	 *	@param callback The callback which receives the text
+	 *	@return True if the callback was called, false otherwise
 	 */
-	virtual std::u32string_view readText (size_t startOffset, size_t length) const = 0;
-	/** get the length of the text
+	virtual bool readText (size_t startOffset, size_t length,
+						   const ReadCallbackFunc& callback) const = 0;
+	/** Get the length of the text
 	 *
 	 *	@return number of characters
 	 */
