@@ -519,16 +519,9 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				point = mapCPoint (p);
 				clientRect = {0, 0, point.x, point.y};
 				HiDPISupport::instance ().adjustWindowRectExForDpi (
-					&clientRect, self->dwStyle, self->hasMenu, self->exStyle,
-					static_cast<UINT> (self->dpiScale * USER_DEFAULT_SCREEN_DPI));
-				minmaxInfo->ptMaxTrackSize = mapCPoint (p);
-
-				r = {0, 0, minmaxInfo->ptMaxTrackSize.x, minmaxInfo->ptMaxTrackSize.y};
-				HiDPISupport::instance ().adjustWindowRectExForDpi (
-					&r, dwStyle, !menuCommandList.empty (), exStyle,
+					&clientRect, dwStyle, !menuCommandList.empty (), exStyle,
 					static_cast<UINT> (dpiScale * USER_DEFAULT_SCREEN_DPI));
-				minmaxInfo->ptMaxTrackSize = {r.right - r.left, r.bottom - r.top};
-
+				minmaxInfo->ptMaxTrackSize = mapCPoint (p);
 				return 0;
 			}
 			break;
