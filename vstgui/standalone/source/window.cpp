@@ -246,8 +246,11 @@ CRect Window::getFocusViewRect () const
 }
 
 //------------------------------------------------------------------------
-CPoint Window::constraintSize (const CPoint& newSize)
+CPoint Window::constraintSize (const CPoint& _newSize)
 {
+	CPoint newSize (_newSize);
+	if (frame)
+		newSize = frame->checkSizeConstraint (newSize);
 	return controller ? controller->constraintSize (*this, newSize) : newSize;
 }
 

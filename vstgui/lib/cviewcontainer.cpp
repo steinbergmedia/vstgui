@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -9,6 +9,7 @@
 #include "ccolor.h"
 #include "ifocusdrawing.h"
 #include "itouchevent.h"
+#include "viewlayouter/autosizeviewlayouter.h"
 #include "iviewlistener.h"
 #include "controls/icontrollistener.h"
 #include "cgraphicspath.h"
@@ -36,12 +37,13 @@ const CViewAttributeID kCViewContainerBackgroundOffsetAttribute = 'vcbo';
 struct CViewContainer::Impl
 {
 	using ViewContainerListenerDispatcher = DispatchList<IViewContainerListener*>;
-	
+
 	ViewContainerListenerDispatcher viewContainerListeners;
 	CGraphicsTransform transform;
-	
+
 	ViewList children;
-	
+	SharedPointer<IViewLayouter> layouter {AutoSizeViewLayouter::get ()};
+
 	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
 	CColor backgroundColor {kBlackCColor};
 };
@@ -59,14 +61,14 @@ struct CViewContainerDropTarget : public IDropTarget, public NonAtomicReferenceC
 		container->getTransform ().inverse ().transform (where2);
 		return where2;
 	}
-	
+
 	DragOperation onDragEnter (DragEventData data) final
 	{
 		assert (dropTarget == nullptr);
-	
+
 		return onDragMove (data);
 	}
-	
+
 	DragOperation onDragMove (DragEventData data) final
 	{
 		CView* view = container->getViewAt (
@@ -284,6 +286,49 @@ void CViewContainer::setAutosizingEnabled (bool state)
 }
 
 //-----------------------------------------------------------------------------
+void CViewContainer::setViewLayouter (const SharedPointer<IViewLayouter>& layouter)
+{
+	if (layouter == nullptr)
+		pImpl->layouter = AutoSizeViewLayouter::get ();
+	else
+		pImpl->layouter = layouter;
+}
+
+//-----------------------------------------------------------------------------
+SharedPointer<IViewLayouter> CViewContainer::getViewLayouter () const { return pImpl->layouter; }
+
+//-----------------------------------------------------------------------------
+std::optional<ViewLayout> CViewContainer::calculateViewLayout (const CRect& newSize) const
+{
+	if (pImpl->layouter)
+	{
+		return pImpl->layouter->calculateLayout (*this, pImpl->children, newSize);
+	}
+	return {};
+}
+
+//-----------------------------------------------------------------------------
+bool CViewContainer::applyViewLayout (const ViewLayout& layout)
+{
+	bool result = true;
+	if (pImpl->layouter)
+	{
+		setViewFlag (kInApplyLayout, true);
+		result = pImpl->layouter->applyLayout (*this, pImpl->children, layout);
+		setViewFlag (kInApplyLayout, false);
+	}
+	else
+	{
+		setViewSize (layout.size);
+		setMouseableArea (layout.size);
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool CViewContainer::inApplyViewLayout () const { return hasViewFlag (kInApplyLayout); }
+
+//-----------------------------------------------------------------------------
 /**
  * @param rect the new size of the container
  * @param invalid the views to dirty
@@ -293,76 +338,19 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 	if (rect == getViewSize ())
 		return;
 
-	CRect oldSize (getViewSize ());
-	CView::setViewSize (rect, invalid);
-
-	if (getAutosizingEnabled ())
+	if (!inApplyViewLayout () && pImpl->layouter)
 	{
-		CCoord widthDelta = rect.getWidth () - oldSize.getWidth ();
-		CCoord heightDelta = rect.getHeight () - oldSize.getHeight ();
-		getTransform ().inverse ().transform (widthDelta, heightDelta);
-
-		if (widthDelta != 0 || heightDelta != 0)
+		if (auto layout = pImpl->layouter->calculateLayout (*this, pImpl->children, rect))
 		{
-			uint32_t numSubviews = getNbViews ();
-			uint32_t counter = 0;
-			bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
-			bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
-			for (const auto& pV : pImpl->children)
+			if (applyViewLayout (*layout))
 			{
-				int32_t autosize = pV->getAutosizeFlags ();
-				CRect viewSize (pV->getViewSize ());
-				CRect mouseSize (pV->getMouseableArea ());
-				bool viewSizeIsMouseSize = viewSize == mouseSize;
-				if (treatAsColumn)
-				{
-					if (counter)
-					{
-						viewSize.offset (counter * (widthDelta / (numSubviews)), 0);
-						mouseSize.offset (counter * (widthDelta / (numSubviews)), 0);
-					}
-					viewSize.setWidth (viewSize.getWidth () + (widthDelta / (numSubviews)));
-					mouseSize.setWidth (mouseSize.getWidth () + (widthDelta / (numSubviews)));
-				}
-				else if (widthDelta != 0 && autosize & kAutosizeRight)
-				{
-					viewSize.right += widthDelta;
-					mouseSize.right += widthDelta;
-					if (!(autosize & kAutosizeLeft))
-					{
-						viewSize.left += widthDelta;
-						mouseSize.left += widthDelta;
-					}
-				}
-				if (treatAsRow)
-				{
-					if (counter)
-					{
-						viewSize.offset (0, counter * (heightDelta / (numSubviews)));
-						mouseSize.offset (0, counter * (heightDelta / (numSubviews)));
-					}
-					viewSize.setHeight (viewSize.getHeight () + (heightDelta / (numSubviews)));
-					mouseSize.setHeight (mouseSize.getHeight () + (heightDelta / (numSubviews)));
-				}
-				else if (heightDelta != 0 && autosize & kAutosizeBottom)
-				{
-					viewSize.bottom += heightDelta;
-					mouseSize.bottom += heightDelta;
-					if (!(autosize & kAutosizeTop))
-					{
-						viewSize.top += heightDelta;
-						mouseSize.top += heightDelta;
-					}
-				}
-				if (viewSize != pV->getViewSize ())
-				{
-					pV->setViewSize (viewSize);
-					pV->setMouseableArea (viewSizeIsMouseSize ? pV->getViewSize () : mouseSize);
-				}
-				counter++;
+				parentSizeChanged ();
+				return;
 			}
 		}
 	}
+	CView::setViewSize (rect, invalid);
+
 	parentSizeChanged ();
 }
 
@@ -419,7 +407,7 @@ bool CViewContainer::sizeToFit ()
 	CRect vs (getViewSize ());
 	vs.right = vs.left + bounds.right + bounds.left;
 	vs.bottom = vs.top + bounds.bottom + bounds.top;
-	
+
 	setViewSize (vs);
 	setMouseableArea (vs);
 
@@ -834,14 +822,14 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
 	CRect oldClip2 (oldClip);
-	
+
 	CRect newClip (clientRect);
 	newClip.bound (oldClip);
 	pContext->setClipRect (newClip);
-	
+
 	// draw the background
 	drawBackgroundRect (pContext, clientRect);
-	
+
 	CView* _focusView = nullptr;
 	IFocusDrawing* _focusDrawing = nullptr;
 	auto frame = getFrame ();
@@ -856,7 +844,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		getTransform ().inverse ().transform (newClip);
 		getTransform ().inverse ().transform (clientRect);
 		getTransform ().transform (oldClip2);
-		
+
 		// draw each view
 		for (const auto& pV : pImpl->children)
 		{
@@ -900,7 +888,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			}
 		}
 	}
-	
+
 	pContext->setClipRect (oldClip2);
 
 	if (frame && _focusView)
@@ -932,7 +920,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			}
 		}
 	}
-	
+
 	setDirty (false);
 }
 
@@ -1368,7 +1356,7 @@ bool CViewContainer::isDirty () const
 {
 	if (CView::isDirty ())
 		return true;
-	
+
 	CRect viewSize (getViewSize ());
 	viewSize.offset (-getViewSize ().left, -getViewSize ().top);
 
@@ -1533,7 +1521,7 @@ bool CViewContainer::removed (CView* parent)
 
 	for (const auto& pV : pImpl->children)
 		pV->removed (this);
-	
+
 	return CView::removed (parent);
 }
 
@@ -1551,6 +1539,8 @@ bool CViewContainer::attached (CView* parent)
 		for (const auto& pV : pImpl->children)
 			pV->attached (this);
 	}
+	if (auto layout = calculateViewLayout (getViewSize ()))
+		applyViewLayout (*layout);
 	return result;
 }
 
