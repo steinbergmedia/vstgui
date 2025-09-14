@@ -18,6 +18,7 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 /** UIDescription scripting support
  *
+ *	@ingroup new_in_4_15
  */
 class UIScripting : public UIDescriptionAddOnAdapter
 {
@@ -25,12 +26,12 @@ public:
 	using OnScriptExceptionFunc = std::function<void (std::string_view reason)>;
 	using ReadScriptContentsFunc = std::function<std::string (std::string_view filename)>;
 
-	/** initialize the UIScripting library
+	/** Initialize the UIScripting library
 	 *
-	 *	must be called once before creating UIDescription objects
+	 *	Must be called once before creating UIDescription objects
 	 *
-	 *	@param onExceptionFunc			[optional] called when a script context throws an exception
-	 *	@param readScriptContentsFunc	[optional] called to load the script from a filename,
+	 *	@param onExceptionFunc			[optional] Called when a script context throws an exception
+	 *	@param readScriptContentsFunc	[optional] Called to load the script from a filename,
 	 *											   uses the resource folder as default.
 	 */
 	static void init (const OnScriptExceptionFunc& onExceptionFunc = {},
@@ -57,78 +58,84 @@ private:
 };
 
 //------------------------------------------------------------------------
+/** Script context interface
+ *
+ *	@ingroup new_in_4_15
+ */
 struct IScriptContext
 {
 	virtual ~IScriptContext () = default;
 
-	/** evaluate custom code in the script context
+	/** Evaluate custom code in the script context
 	 *
-	 *	@param script the script to execute
-	 *	@return result object as json string
+	 *	@param script The script to execute
+	 *	@return Result object as json string
 	 */
 	virtual std::string eval (std::string_view script) const = 0;
 };
 
 //------------------------------------------------------------------------
-/** extends IController
+/** Extends IController
  *
  *	The script controller extension adds script related methods to the controller.
  *
  *	It can alter the scripts for the views if needed and scripts can get and set properties.
+ *
+ *	@ingroup new_in_4_15
  */
 struct IScriptControllerExtension
 {
-	/** a property value is either an integer, double, string or undefined (nullptr_t) */
+	/** A property value is either an integer, double, string or undefined (nullptr_t) */
 	using PropertyValue = std::variant<nullptr_t, int64_t, double, std::string>;
 
-	/** verify the script for a view
+	/** Verify the script for a view
 	 *
 	 *	called before the script is executed
 	 *
-	 *	@param view the view
-	 *	@param script the script
-	 *	@param context the script context where the script is executed in
-	 *	@return optional new script. if the optional is empty the original script is used.
+	 *	@param view The view
+	 *	@param script The script
+	 *	@param context The script context where the script is executed in
+	 *	@return Optional new script. If the optional is empty the original script is used.
 	 */
 	virtual std::optional<std::string> verifyScript (CView* view, const std::string& script,
 													 const IScriptContext* context) = 0;
 
-	/** notification that the script context is destroyed
+	/** Notification that the script context is destroyed
 	 *
 	 *	don't call the context anymore after this call
 	 *
-	 *	@param context the context which is destroyed
+	 *	@param context The context which is destroyed
 	 */
 	virtual void scriptContextDestroyed (const IScriptContext* context) = 0;
 
-	/** get a property
+	/** Get a property
 	 *
 	 *	called from a script
 	 *
 	 *	if the propery exists, the value should be set and the return value should be true.
 	 *	Otherwise return false.
 	 *
-	 *	@param view the view
-	 *	@param name the name of the property
-	 *	@param value the property value
-	 *	@return true on success.
+	 *	@param view The view
+	 *	@param name The name of the property
+	 *	@param value The property value
+	 *	@return True on success.
 	 */
 	virtual bool getProperty (CView* view, std::string_view name, PropertyValue& value) const = 0;
 
-	/** set a property
+	/** Set a property
 	 *
 	 *	called from a script
 	 *
-	 *	@param view the view
-	 *	@param name the name of the property
-	 *	@param value the value of the property
-	 *	@return true on success.
+	 *	@param view The view
+	 *	@param name The name of the property
+	 *	@param value The value of the property
+	 *	@return True on success.
 	 */
 	virtual bool setProperty (CView* view, std::string_view name, const PropertyValue& value) = 0;
 };
 
 //------------------------------------------------------------------------
-/** adapter for IScriptControllerExtension */
+/** Adapter for IScriptControllerExtension */
 struct ScriptControllerExtensionAdapter : IScriptControllerExtension
 {
 	std::optional<std::string> verifyScript (CView*, const std::string&,

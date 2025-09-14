@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -36,7 +36,7 @@ struct CColor
 		green = _green;
 		blue  = _blue;
 		alpha = _alpha;
-		return *this; 
+		return *this;
 	}
 
 	CColor& operator= (const CColor& newColor)
@@ -45,10 +45,10 @@ struct CColor
 		green = newColor.green;
 		blue  = newColor.blue;
 		alpha = newColor.alpha;
-		return *this; 
+		return *this;
 	}
-	
-	bool operator!= (const CColor &other) const 
+
+	bool operator!= (const CColor &other) const
 	{ return (red != other.red || green != other.green || blue  != other.blue || alpha != other.alpha); }
 
 	bool operator== (const CColor &other) const
@@ -88,7 +88,7 @@ struct CColor
 	 * @param lightness normalized [0..1]
 	 */
 	void fromHSL (double hue, double saturation, double lightness);
-	
+
 	/** get the luma of the color */
 	inline constexpr uint8_t getLuma () const;
 	/** get the lightness of the color */
@@ -171,7 +171,7 @@ struct CSSNamedColor
 using CSSNamedColorArray = std::array<CSSNamedColor, 148>;
 /** get the CSS color array
  *
- *	@ingroup new_in_4_13
+ *	@ingroup new_in_4_15
  */
 const CSSNamedColorArray& getCSSNamedColors ();
 

@@ -23,10 +23,20 @@ struct ITextEditorController;
  *	controller listens to the destroy call of the text editor and then reset the controller on the
  *	texteditor, or when the controller is destroyed first to also reset the controller on the
  *	texteditor.
+ *
+ *	@param r size of the text editor
+ *	@param controller the controller of the text editor
+ *	@return a new text editor view, the caller owns the returned object
+ *
+ *	@ingroup new_in_4_15
  */
 CView* createNewTextEditor (const CRect& r, ITextEditorController* controller);
 
 //------------------------------------------------------------------------
+/** text editor controller interface
+ *
+ *	@ingroup new_in_4_15
+ */
 struct ITextEditorController
 {
 	virtual ~ITextEditorController () noexcept = default;
@@ -37,22 +47,40 @@ struct ITextEditorController
 };
 
 //------------------------------------------------------------------------
+/** text editor interface
+ *
+ *	@ingroup new_in_4_15
+ */
 struct ITextEditor
 {
 	virtual ~ITextEditor () noexcept = default;
 
+	/** Set the plain text content of the editor.
+	 *
+	 * @param utf8Text The new text to set, as a UTF-8 string view.
+	 * @param clearSelection If true, clears the current selection after setting the text.
+	 * @return True if the text was set successfully, false otherwise.
+	 */
 	virtual bool setPlainText (std::string_view utf8Text, bool clearSelection = false) const = 0;
+
+	/** Get the plain text content of the editor.
+	 *
+	 * @return The current text as a UTF-8 string.
+	 */
 	virtual std::string getPlainText () const = 0;
 
+	/** Reset the controller associated with this text editor. */
 	virtual void resetController () const = 0;
 
+	/** Style configuration for the text editor. */
 	struct Style
 	{
+		/** Style flags for the text editor. */
 		enum class Flags : uint32_t
 		{
-			ShowLineNumbers,
-			HighlightCursorLine,
-			ReadOnlyMode
+			ShowLineNumbers,	 ///< Show line numbers in the editor.
+			HighlightCursorLine, ///< Highlight the line with the cursor.
+			ReadOnlyMode		 ///< Enable read-only mode.
 		};
 		using FlagsBitset = EnumBitset<Flags>;
 
@@ -71,43 +99,78 @@ struct ITextEditor
 		CCoord leftMargin {4.};
 		CCoord lineNumberLeftMargin {2.};
 		CCoord lineNumberRightMargin {2.};
-		uint32_t cursorBlinkTime {500}; // in milliseconds
-		uint32_t tabWidth {4};
+		uint32_t cursorBlinkTime {500}; ///< Cursor blink time in milliseconds.
+		uint32_t tabWidth {4};			///< Tab width in spaces.
 		FlagsBitset flags {{Flags::ShowLineNumbers, Flags::HighlightCursorLine}};
 	};
 
+	/** Set the style of the text editor.
+	 *
+	 * @param style The style configuration to apply.
+	 */
 	virtual void setStyle (const Style& style) const = 0;
 
+	/** Editor command enumeration. */
 	enum class Command : uint32_t
 	{
-		Undo,
-		Redo,
-		Cut,
-		Copy,
-		Paste,
-		FindNext,
-		FindPrevious,
-		SelectAll,
-		UseSelectionForFind,
-		ShiftLeft,
-		ShiftRight,
-		ShowFindPanel,
-		TakeFocus,
+		Undo,				 ///< Undo the last action.
+		Redo,				 ///< Redo the last undone action.
+		Cut,				 ///< Cut the selected text.
+		Copy,				 ///< Copy the selected text.
+		Paste,				 ///< Paste text from the clipboard.
+		FindNext,			 ///< Find the next occurrence.
+		FindPrevious,		 ///< Find the previous occurrence.
+		SelectAll,			 ///< Select all text.
+		UseSelectionForFind, ///< Use the current selection for find.
+		ShiftLeft,			 ///< Shift selection left.
+		ShiftRight,			 ///< Shift selection right.
+		ShowFindPanel,		 ///< Show the find panel.
+		TakeFocus			 ///< Take keyboard focus.
 	};
 
+	/** Query if a command can be handled by the editor.
+	 *
+	 * @param cmd The command to query.
+	 * @return True if the command can be handled, false otherwise.
+	 */
 	virtual bool canHandleCommand (Command cmd) const = 0;
+
+	/** Handle a command in the editor.
+	 *
+	 * @param cmd The command to handle.
+	 * @return True if the command was handled, false otherwise.
+	 */
 	virtual bool handleCommand (Command cmd) const = 0;
+
+	/** Set a key binding for a command.
+	 *
+	 * @param cmd The command to bind.
+	 * @param character The character to bind.
+	 * @param virt The virtual key code.
+	 * @param modifiers The key modifiers.
+	 * @return True if the key binding was set, false otherwise.
+	 */
 	virtual bool setCommandKeyBinding (Command cmd, char32_t character, VirtualKey virt,
 									   Modifiers modifiers) const = 0;
 
+	/** Find options for searching text. */
 	enum class FindOption : uint32_t
 	{
-		CaseSensitive,
-		WholeWords,
+		CaseSensitive, ///< Match case when searching.
+		WholeWords,	   ///< Match whole words only.
 	};
 	using FindOptions = EnumBitset<FindOption>;
 
+	/** Set the find options for searching text.
+	 *
+	 * @param opt The find options to set.
+	 */
 	virtual void setFindOptions (FindOptions opt) const = 0;
+
+	/** Set the string to search for.
+	 *
+	 * @param utf8Text The search string as a UTF-8 string view.
+	 */
 	virtual void setFindString (std::string_view utf8Text) const = 0;
 };
 
@@ -123,7 +186,10 @@ struct TextEditorControllerAdapter : ITextEditorController
 namespace TextEditorColorization {
 
 //------------------------------------------------------------------------
-/** extension to ITextEditor, use a dynamic_cast to get it from an ITextEditor */
+/** Extension to ITextEditor, use a dynamic_cast to get it from an ITextEditor
+ *
+ *	@ingroup new_in_4_15
+ */
 struct IEditorExt
 {
 	/** get access to the internal string buffer of the text editor
@@ -141,7 +207,10 @@ struct IEditorExt
 };
 
 //------------------------------------------------------------------------
-/** extension to ITextEditorController */
+/** Extension to ITextEditorController
+ *
+ *	@ingroup new_in_4_15
+ */
 struct IStyleProvider
 {
 	using IEditorExt = TextEditorColorization::IEditorExt;
@@ -154,13 +223,14 @@ struct IStyleProvider
 	};
 	using Styles = std::vector<Style>;
 
-	/** notification that drawing begins
+	/** Notification that drawing begins
 	 *
 	 *	@param editor reference to the editor
 	 */
 	virtual void beginDraw (const IEditorExt& editor) = 0;
-	/** get the styles of the text
+	/** Get the styles of the text
 	 *
+	 *	The text editor calls this while drawing to get the styles for the text range.
 	 *	The returned styles must be orded from front to back.
 	 *	If ranges are missing in the styles, they are rendered with the default style.
 	 *
@@ -170,7 +240,7 @@ struct IStyleProvider
 	 *	@return vector of styles for the range
 	 */
 	virtual Styles getStyles (const IEditorExt& editor, size_t beginOffset, size_t length) = 0;
-	/** notification that drawing has ended
+	/** Notification that drawing has ended
 	 *
 	 *	@param editor reference to the editor
 	 */

@@ -103,6 +103,8 @@ public:
 	 *
 	 *	@param edge the edge where to place the view
 	 *	@param view the view to set (if this is a nullptr then the previously set view is removed)
+	 *
+	 *	@ingroup new_in_4_15
 	 */
 	void setEdgeView (Edge edge, CView* view);
 	CView* getEdgeView (Edge edge) const;
