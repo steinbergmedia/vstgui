@@ -9,13 +9,15 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uiselection.h"
-#include "../uiviewfactory.h"
+#include "../iviewfactory.h"
+#include "../iuidescription.h"
 #include "../../lib/ccolor.h"
 #include "../../lib/cgradient.h"
 #include <list>
 #include <map>
 #include <vector>
 #include <string>
+#include <functional>
 
 namespace VSTGUI {
 class UIViewFactory;
@@ -23,6 +25,27 @@ class IUIDescription;
 class UIDescription;
 class CViewContainer;
 class CView;
+
+//-----------------------------------------------------------------------------
+class Action : public IAction
+{
+public:
+	using Func = std::function<void ()>;
+	Action (const std::string& name, Func&& perform, Func&& undo)
+	: name (name), performAction (std::move (perform)), undoAction (std::move (undo))
+	{
+	}
+
+	UTF8StringPtr getName () override { return name.data (); }
+
+	void perform () override { performAction (); }
+	void undo () override { undoAction (); }
+
+private:
+	std::string name;
+	Func performAction;
+	Func undoAction;
+};
 
 //-----------------------------------------------------------------------------
 template <class T>
@@ -62,7 +85,7 @@ public:
 
 protected:
 	void collectSubviews (CViewContainer* container, bool deep);
-	const UIViewFactory* factory;
+	const IViewFactory* factory;
 	SharedPointer<CViewContainer> containerView;
 	CViewContainer* parent;
 };
@@ -162,7 +185,7 @@ class TransformViewTypeOperation : public IAction
 {
 public:
 	TransformViewTypeOperation (UISelection* selection, CView* view, IdStringPtr viewClassName,
-	                            UIDescription* desc, const UIViewFactory* factory);
+								UIDescription* desc, const IViewFactory* factory);
 	~TransformViewTypeOperation () override;
 
 	UTF8StringPtr getName () override;
@@ -176,7 +199,7 @@ protected:
 	int32_t insertIndex;
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<UISelection> selection;
-	const UIViewFactory* factory;
+	const IViewFactory* factory;
 	SharedPointer<UIDescription> description;
 };
 
@@ -211,7 +234,9 @@ public:
 protected:
 	void setAttributeValue (UTF8StringPtr value);
 	static void collectAllSubViews (CView* view, std::list<CView*>& views);
-	void collectViewsWithAttributeValue (const UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value);
+	void collectViewsWithAttributeValue (const IViewFactory* viewFactory, IUIDescription* desc,
+										 CView* startView, IViewCreator::AttrType type,
+										 const std::string& value);
 
 	SharedPointer<UIDescription> description;
 	std::string oldValue;

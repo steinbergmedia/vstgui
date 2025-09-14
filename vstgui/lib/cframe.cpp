@@ -539,6 +539,8 @@ void CFrame::dispatchEventToChildren (Event& event)
 //-----------------------------------------------------------------------------
 void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 {
+	if (static_cast<uint32_t> (event.virt) > static_cast<uint32_t> (VirtualKey::Equals))
+		event.virt = VirtualKey::None;
 	dispatchKeyboardEventToHooks (event);
 	if (event.consumed)
 		return;
@@ -669,7 +671,13 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			if (view->asViewContainer ())
 			{
 				if (auto parent = view->getParentView ())
-					parent->translateToLocal (p, true);
+				{
+					if (parent != this)
+					{
+						p.offsetInverse (parent->getViewSize ().getTopLeft ());
+						parent->translateToLocal (p, true);
+					}
+				}
 			}
 			else
 				view->translateToLocal (p, true);

@@ -43,7 +43,7 @@ struct DataPackageIterator
 {
 	struct Item
 	{
-		IDataPackage::Type type;
+		IDataPackage::Type type {IDataPackage::Type::kError};
 		uint32_t dataSize {0};
 		const void* data {nullptr};
 	};
@@ -93,7 +93,7 @@ inline DataPackageIterator begin (IDataPackage* pkg) { return DataPackageIterato
 //-----------------------------------------------------------------------------
 inline DataPackageIterator end (IDataPackage* pkg)
 {
-	return DataPackageIterator (pkg, pkg->getCount () + 1);
+	return DataPackageIterator (pkg, pkg->getCount ());
 }
 
 } // VSTGUI

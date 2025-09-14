@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.25.0)
 
+enable_language(CXX)
+
+if(NOT DEFINED VSTGUI_CXX_VERSION)
+    set(VSTGUI_CXX_VERSION "17" CACHE STRING "The C++ language version to compile VSTGUI")
+endif()
+
 if(NOT DEFINED VSTGUI_ENABLE_DEPRECATED_METHODS)
     option(VSTGUI_ENABLE_DEPRECATED_METHODS "Enable VSTGUI deprecated methods" ON)
 endif()
@@ -31,6 +37,7 @@ if(CMAKE_HOST_APPLE)
     endif()
   set(VSTGUI_LTO_LINKER_FLAGS "")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  enable_language(OBJCXX)
 endif()
 if(LINUX)
     set(VSTGUI_LTO_COMPILER_FLAGS "-O3 -flto")

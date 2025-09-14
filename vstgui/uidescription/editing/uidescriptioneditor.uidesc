@@ -9,6 +9,7 @@
 			"attributes.label": "0",
 			"attributes.number.slider": "1",
 			"attributes.optionmenu": "1",
+			"attributes.script.edit": "1",
 			"attributes.search": "100",
 			"attributes.text.alignment.center": "1",
 			"attributes.text.alignment.left": "0",
@@ -90,6 +91,7 @@
 			"grid.y": "5",
 			"menu.edit": "101",
 			"menu.file": "100",
+			"scripting.settings.enabled": "0",
 			"tags.add": "0",
 			"tags.remove": "1",
 			"tags.search": "2",
@@ -6189,7 +6191,7 @@
 					"opacity": "1",
 					"origin": "0, 0",
 					"size": "400, 18",
-					"sub-controller": "TextController",
+					"sub-controller": "NumberController",
 					"transparent": "true",
 					"wants-focus": "false"
 				},
@@ -7062,6 +7064,291 @@
 							"transparent": "false",
 							"value-precision": "2",
 							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			},
+			"attributes.script": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "db.font",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "400, 18",
+					"sub-controller": "ScriptController",
+					"transparent": "true",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CTextEdit": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"back-color": "control.back",
+							"background-offset": "0, 0",
+							"class": "CTextEdit",
+							"control-tag": "attributes.editfield",
+							"default-value": "0.5",
+							"font": "control.font",
+							"font-antialias": "true",
+							"font-color": "control.font",
+							"frame-color": "control.frame",
+							"frame-width": "-1",
+							"immediate-text-change": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "1, 1",
+							"round-rect-radius": "2",
+							"secure-style": "false",
+							"shadow-color": "~ TransparentCColor",
+							"size": "348, 16",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-doubleclick": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "2, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"transparent": "false",
+							"truncate-mode": "tail",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextButton": {
+						"attributes": {
+							"autosize": "right top ",
+							"class": "CTextButton",
+							"control-tag": "attributes.script.edit",
+							"default-value": "0.5",
+							"font": "control.small.font",
+							"frame-color": "control.font",
+							"frame-color-highlighted": "control.font",
+							"frame-width": "-1",
+							"gradient": "Default TextButton Gradient",
+							"gradient-highlighted": "Default TextButton Gradient Highlighted",
+							"icon-position": "left",
+							"icon-text-margin": "0",
+							"kick-style": "true",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "354, 2",
+							"round-radius": "6",
+							"size": "45, 14",
+							"text-alignment": "center",
+							"text-color": "control.font",
+							"text-color-highlighted": "checkmark.color.header",
+							"title": "edit",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					}
+				}
+			},
+			"scripteditor": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ TransparentCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "440, 550",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CScrollView": {
+						"attributes": {
+							"auto-drag-scrolling": "false",
+							"auto-hide-scrollbars": "true",
+							"autosize": "left right top bottom ",
+							"background-color": "~ TransparentCColor",
+							"background-color-draw-style": "filled",
+							"bordered": "true",
+							"class": "CScrollView",
+							"container-size": "435, 545",
+							"follow-focus-view": "false",
+							"horizontal-scrollbar": "true",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "0, 0",
+							"overlay-scrollbars": "false",
+							"scrollbar-background-color": "scrollbar.background",
+							"scrollbar-frame-color": "scrollbar.frame",
+							"scrollbar-scroller-color": "scrollbar.scroller",
+							"scrollbar-width": "12",
+							"size": "440, 550",
+							"transparent": "true",
+							"vertical-scrollbar": "true",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CView": {
+								"attributes": {
+									"autosize": "left right top bottom ",
+									"class": "CView",
+									"custom-view-name": "TextEditor",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "0, 0",
+									"size": "435, 545",
+									"transparent": "false",
+									"wants-focus": "true"
+								}
+							}
+						}
+					}
+				}
+			},
+			"scripting.settings": {
+				"attributes": {
+					"autosize": "left right top bottom ",
+					"background-color": "~ TransparentCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "220, 205",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CViewContainer": {
+						"attributes": {
+							"autosize": "left right top bottom ",
+							"background-color": "groupframe",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 50",
+							"size": "200, 145",
+							"transparent": "true",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CScrollView": {
+								"attributes": {
+									"auto-drag-scrolling": "false",
+									"auto-hide-scrollbars": "true",
+									"autosize": "left right top bottom ",
+									"background-color": "~ TransparentCColor",
+									"background-color-draw-style": "filled and stroked",
+									"bordered": "false",
+									"class": "CScrollView",
+									"container-size": "197, 142",
+									"follow-focus-view": "false",
+									"horizontal-scrollbar": "true",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "0, 0",
+									"overlay-scrollbars": "false",
+									"scrollbar-background-color": "scrollbar.background",
+									"scrollbar-frame-color": "scrollbar.frame",
+									"scrollbar-scroller-color": "scrollbar.scroller",
+									"scrollbar-width": "12",
+									"size": "200, 145",
+									"transparent": "true",
+									"vertical-scrollbar": "true",
+									"wants-focus": "false"
+								},
+								"children": {
+									"CView": {
+										"attributes": {
+											"autosize": "left right top bottom ",
+											"class": "CView",
+											"custom-view-name": "scripteditor",
+											"mouse-enabled": "true",
+											"opacity": "1",
+											"origin": "0, 0",
+											"size": "197, 142",
+											"transparent": "false",
+											"wants-focus": "true"
+										}
+									}
+								}
+							}
+						}
+					},
+					"CCheckBox": {
+						"attributes": {
+							"autosize": "left top ",
+							"autosize-to-fit": "false",
+							"boxfill-color": "control.back",
+							"boxframe-color": "control.frame",
+							"checkmark-color": "checkmark.color",
+							"class": "CCheckBox",
+							"control-tag": "scripting.settings.enabled",
+							"default-value": "0.5",
+							"draw-crossbox": "true",
+							"font": "control.font",
+							"font-color": "control.font",
+							"frame-width": "-1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "10, 10",
+							"round-rect-radius": "2",
+							"size": "100, 15",
+							"title": "Enabled",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CTextLabel": {
+						"attributes": {
+							"autosize": "left top ",
+							"back-color": "control.font",
+							"background-offset": "0, 0",
+							"class": "CTextLabel",
+							"default-value": "0.5",
+							"font": "control.font",
+							"font-antialias": "true",
+							"font-color": "control.font",
+							"frame-color": "control.font",
+							"frame-width": "-1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "10, 30",
+							"round-rect-radius": "2",
+							"shadow-color": "warning.background",
+							"size": "100, 15",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "left",
+							"text-inset": "5, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"title": "Initial script:",
+							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
 						}
 					}

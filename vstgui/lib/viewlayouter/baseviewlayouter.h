@@ -64,7 +64,8 @@ inline bool BaseViewLayouter::applyLayout (CViewContainer& container, const Chil
 		if (doSetViewSize)
 		{
 			child->setViewSize (entry.viewSize, true);
-			child->setMouseableArea (entry.mouseSize);
+			child->setMouseableArea (entry.mouseSize == entry.viewSize ? child->getViewSize ()
+																	   : entry.mouseSize);
 		}
 	}
 	container.setViewSize (layout.size);

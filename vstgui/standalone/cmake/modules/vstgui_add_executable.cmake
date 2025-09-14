@@ -4,6 +4,7 @@ get_filename_component(PkgInfoResource "${CMAKE_CURRENT_SOURCE_DIR}/cmake/resour
 ###########################################################################################
 if(LINUX)
   pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
+  pkg_check_modules(ATKMM REQUIRED atkmm-1.6)
 endif(LINUX)
 
 ###########################################################################################
@@ -73,29 +74,30 @@ function(vstgui_add_resources target resources)
   else()
     get_target_property(OUTPUTDIR ${target} RUNTIME_OUTPUT_DIRECTORY)
     set(destination "${OUTPUTDIR}/${destination}")
-    if(NOT EXISTS ${destination})
-      add_custom_command(TARGET ${target} PRE_BUILD
-          COMMAND ${CMAKE_COMMAND} -E make_directory
-          "${destination}"
-      )
-    endif()
     foreach(resource ${resources})
+      get_filename_component(resourceName "${resource}" NAME)
       get_filename_component(sourcePath "${resource}" ABSOLUTE "${CMAKE_CURRENT_LIST_DIR}")
-      if(IS_DIRECTORY "${sourcePath}")
-		get_filename_component(directoryName "${resource}" NAME)
-        add_custom_command(TARGET ${target} POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy_directory
-          "${sourcePath}"
-          "${destination}/${directoryName}"
+        if(IS_DIRECTORY "${sourcePath}")
+          get_filename_component(directoryName "${resource}" NAME)
+          add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${sourcePath}"
+            "${destination}/${directoryName}"
+          )
+      else()
+          add_custom_command(
+            OUTPUT "${destination}/${resourceName}"
+            MAIN_DEPENDENCY "${sourcePath}"
+            COMMAND ${CMAKE_COMMAND} -E copy
+            "${sourcePath}"
+            "${destination}"
+            COMMAND ${CMAKE_COMMAND} 
+            -E echo 
+                "[VSTGUI] Copied ${sourcePath} to ${destination}"
         )
-	  else()
-        add_custom_command(TARGET ${target} POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy
-          "${sourcePath}"
-          "${destination}"
-        )
-	  endif()
+	    endif()
     endforeach(resource ${resources})
+    target_sources(${target} PRIVATE ${resources})
   endif()  
 endfunction()
 

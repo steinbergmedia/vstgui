@@ -7,6 +7,8 @@
 #include "vstguibase.h"
 #include "vstguifwd.h"
 #include <cmath>
+#include <array>
+#include <string_view>
 
 namespace VSTGUI {
 
@@ -118,10 +120,15 @@ struct CColor
 	template<typename T>
 	void setNormAlpha (T v);
 	//@}
-	
-	bool fromString (UTF8StringPtr str);
+
 	UTF8String toString () const;
-	static bool isColorRepresentation (UTF8StringPtr str);
+	bool fromString (std::string_view str);
+	static bool isColorRepresentation (std::string_view str);
+
+	VSTGUI_DEPRECATED_MSG (bool fromString (UTF8StringPtr str);
+						   , "use fromString with a std::string_view")
+	VSTGUI_DEPRECATED_MSG (static bool isColorRepresentation (UTF8StringPtr str);
+						   , "use isColorRepresentation with a std::string_view")
 
 	/** red component [0..255] */
 	uint8_t red {255};
@@ -152,6 +159,21 @@ constexpr const CColor kBlueCColor			= CColor (  0,   0, 255, 255);
 constexpr const CColor kYellowCColor		= CColor (255, 255,   0, 255);
 constexpr const CColor kMagentaCColor		= CColor (255,   0, 255, 255);
 constexpr const CColor kCyanCColor			= CColor (  0, 255, 255, 255);
+
+//-----------------------------------------------------------------------------
+// CSS Colors
+struct CSSNamedColor
+{
+	const std::string_view name;
+	const CColor color;
+};
+
+using CSSNamedColorArray = std::array<CSSNamedColor, 148>;
+/** get the CSS color array
+ *
+ *	@ingroup new_in_4_13
+ */
+const CSSNamedColorArray& getCSSNamedColors ();
 
 //-----------------------------------------------------------------------------
 inline constexpr uint8_t CColor::getLuma () const

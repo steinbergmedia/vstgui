@@ -9,6 +9,7 @@
 #include "dragging.h"
 #include "controls/cscrollbar.h"
 #include "events.h"
+#include "algorithm.h"
 #include <cmath>
 
 /// @cond ignore
@@ -348,15 +349,27 @@ CRect CScrollView::calculateOptimalContainerSize () const
 	size.originize ();
 	if (!(style & kDontDrawFrame))
 		size.inset (1, 1);
+	if (edgeViewTop)
+		size.top += edgeViewTop->getHeight ();
+	if (edgeViewLeft)
+		size.left += edgeViewLeft->getWidth ();
 	if (!(style & kAutoHideScrollbars) && !(style & kOverlayScrollbars))
 	{
 		if (style & kHorizontalScrollbar)
-			size.right -= scrollbarWidth;
-		if (style & kVerticalScrollbar)
 			size.bottom -= scrollbarWidth;
+		if (style & kVerticalScrollbar)
+			size.right -= scrollbarWidth;
 	}
 	size.originize ();
 	return size;
+}
+
+//------------------------------------------------------------------------
+CRect CScrollView::getVisibleClientRect () const
+{
+	if (!sc)
+		return {};
+	return sc->getViewSize ();
 }
 
 //-----------------------------------------------------------------------------
@@ -375,6 +388,10 @@ void CScrollView::recalculateSubViews ()
 	{
 		activeScrollbarStyle = 0;
 		CRect r (scsize);
+		if (edgeViewTop)
+			r.top += edgeViewTop->getHeight ();
+		if (edgeViewLeft)
+			r.left += edgeViewLeft->getWidth ();
 		if (style & kHorizontalScrollbar)
 		{
 			if (style & kVerticalScrollbar && r.getHeight () < containerSize.getHeight ())
@@ -412,6 +429,8 @@ void CScrollView::recalculateSubViews ()
 				hsb->invalid ();
 			sbr.right -= (scrollbarWidth - 1);
 		}
+		if (edgeViewLeft && style & kOverlayScrollbars)
+			sbr.left = edgeViewLeft->getViewSize ().right;
 		if (hsb)
 		{
 			hsb->setViewSize (sbr, true);
@@ -444,6 +463,8 @@ void CScrollView::recalculateSubViews ()
 				vsb->invalid ();
 			sbr.bottom -= (scrollbarWidth - 1);
 		}
+		if (edgeViewTop)
+			sbr.top = edgeViewTop->getViewSize ().bottom;
 		if (vsb)
 		{
 			vsb->setViewSize (sbr, true);
@@ -464,6 +485,30 @@ void CScrollView::recalculateSubViews ()
 	else if (vsb)
 	{
 		vsb->setVisible (false);
+	}
+
+	if (edgeViewTop)
+	{
+		auto evls = edgeViewTop->getViewSize ();
+		evls.originize ();
+		evls.offset (scsize.getTopLeft ());
+		scsize.top += evls.getHeight ();
+		if (style & kOverlayScrollbars)
+			evls.right = scsize.right;
+		else
+			evls.right = getViewSize ().getWidth ();
+		edgeViewTop->setViewSize (evls);
+	}
+	if (edgeViewLeft)
+	{
+		auto evls = edgeViewLeft->getViewSize ();
+		evls.originize ();
+		evls.offset (scsize.getTopLeft ());
+		if (edgeViewTop)
+			evls.top = edgeViewTop->getViewSize ().bottom;
+		scsize.left += evls.getWidth ();
+		evls.bottom = scsize.bottom;
+		edgeViewLeft->setViewSize (evls);
 	}
 
 	if (!sc)
@@ -525,30 +570,26 @@ void CScrollView::setScrollbarWidth (CCoord width)
 //-----------------------------------------------------------------------------
 void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 {
+	vstgui_assert (sc != nullptr);
+
 	CRect oldSize (containerSize);
 	containerSize = cs;
-	if (sc)
-	{
-		sc->setContainerSize (cs);
-	}
-	if (style & kAutoHideScrollbars)
-		recalculateSubViews ();
+	sc->setContainerSize (cs);
+	recalculateSubViews ();
 	if (vsb)
 	{
 		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
-		float oldValue = vsb->getValue ();
+		float oldValue = vsb->getValueNormalized ();
 		vsb->setScrollSize (cs);
-		if (cs.getHeight () <= getViewSize ().getHeight ())
-			vsb->setValue (0);
+		vsb->setMax (static_cast<float> (cs.getHeight () - sc->getViewSize ().getHeight ()));
+		if (cs.getHeight () <= sc->getViewSize ().getHeight ())
+			vsb->setValueNormalized (0.f);
 		else if (sc && keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
 		{
 			CRect vSize = sc->getViewSize ();
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ())));
-			if (newValue > 1.f)
-				newValue = 1.f;
-			else if (newValue < 0.f)
-				newValue = 0.f;
-			vsb->setValue (newValue);
+			newValue = clampNorm (newValue);
+			vsb->setValueNormalized (newValue);
 		}
 		if (oldSize != containerSize)
 			vsb->onVisualChange ();
@@ -557,19 +598,17 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 	if (hsb)
 	{
 		CRect oldScrollSize = hsb->getScrollSize (oldScrollSize);
-		float oldValue = hsb->getValue ();
+		float oldValue = hsb->getValueNormalized ();
 		hsb->setScrollSize (cs);
-		if (cs.getWidth () <= getViewSize ().getWidth ())
-			hsb->setValue (0);
+		hsb->setMax (static_cast<float> (cs.getWidth () - sc->getViewSize ().getWidth ()));
+		if (cs.getWidth () <= sc->getViewSize ().getWidth ())
+			hsb->setValueNormalized (0.f);
 		else if (sc && keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
 		{
 			CRect vSize = sc->getViewSize ();
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ())));
-			if (newValue > 1.f)
-				newValue = 1.f;
-			else if (newValue < 0.f)
-				newValue = 0.f;
-			hsb->setValue (newValue);
+			newValue = clampNorm (newValue);
+			hsb->setValueNormalized (newValue);
 		}
 		if (oldSize != containerSize)
 			hsb->onVisualChange ();
@@ -584,17 +623,21 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	const CPoint& scrollOffset = sc->getScrollOffset ();
 	CPoint newOffset (scrollOffset);
 	CRect vs = sc->getViewSize ();
+	vs.originize ();
+#if 0
 	if (!(style & kDontDrawFrame))
 	{
 		vs.left--; //vs.top--;
 		vs.right++; //vs.bottom++;
 	}
+#endif
 	CRect cs (containerSize);
-	cs.offset (-cs.left, -cs.top);
+	cs.originize ();
 	cs.setWidth (vs.getWidth ());
 	cs.setHeight (vs.getHeight ());
 	if (r.top >= cs.top && r.bottom <= cs.bottom && r.left >= cs.left && r.right <= cs.right)
 		return;
+	newOffset.x *= -1.;
 	if (r.top < cs.top)
 	{
 		newOffset.y -= (cs.top - r.top);
@@ -605,18 +648,25 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	}
 	if (r.left < cs.left)
 	{
-		newOffset.x -= (cs.left + r.left);
+		newOffset.x += (cs.left + r.left);
 	}
 	else if (r.right > cs.right && r.left != cs.left)
 	{
-		newOffset.x += (cs.right - r.right);
+		newOffset.x += (r.right - cs.right);
 	}
 	if (vsb && newOffset.y != scrollOffset.y)
 	{
 		if (containerSize.getHeight () == vs.getHeight ())
-			vsb->setValue (0.f);
+		{
+			vsb->setValueNormalized (0.f);
+		}
 		else
-			vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
+		{
+			vsb->setValue (static_cast<float> (newOffset.y));
+			//			auto newValue = (newOffset.y - vs.top) / (containerSize.getHeight () -
+			//vs.getHeight ()); 			vsb->setValue (newValue * vsb->getMax ()); 			vsb->setValueNormalized
+			//(static_cast<float> (newValue));
+		}
 		vsb->bounceValue ();
 		vsb->onVisualChange ();
 		vsb->invalid ();
@@ -625,9 +675,15 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	if (hsb && newOffset.x != scrollOffset.x)
 	{
 		if (containerSize.getWidth () == vs.getWidth ())
-			hsb->setValue (0.f);
+		{
+			hsb->setValueNormalized (0.f);
+		}
 		else
-			hsb->setValue (-(float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
+		{
+			hsb->setValue (static_cast<float> (newOffset.x));
+			//			auto newValue = (newOffset.x - vs.left) / (containerSize.getWidth () -
+			//vs.getWidth ()); 			hsb->setValueNormalized (-static_cast<float> (newValue));
+		}
 		hsb->bounceValue ();
 		hsb->onVisualChange ();
 		hsb->invalid ();
@@ -640,7 +696,7 @@ void CScrollView::resetScrollOffset ()
 {
 	if (vsb)
 	{
-		vsb->setValue (0);
+		vsb->setValueNormalized (0);
 		vsb->bounceValue ();
 		vsb->onVisualChange ();
 		vsb->invalid ();
@@ -648,7 +704,7 @@ void CScrollView::resetScrollOffset ()
 	}
 	if (hsb)
 	{
-		hsb->setValue (0);
+		hsb->setValueNormalized (0);
 		hsb->bounceValue ();
 		hsb->onVisualChange ();
 		hsb->invalid ();
@@ -660,6 +716,83 @@ void CScrollView::resetScrollOffset ()
 const CPoint& CScrollView::getScrollOffset () const
 {
 	return sc->getScrollOffset ();
+}
+
+//------------------------------------------------------------------------
+void CScrollView::setEdgeView (Edge edge, CView* view)
+{
+	switch (edge)
+	{
+		case Edge::Top:
+		{
+			if (edgeViewTop)
+			{
+				edgeViewTop->unregisterViewListener (this);
+				CViewContainer::removeView (edgeViewTop);
+			}
+			edgeViewTop = view;
+			if (view)
+			{
+				auto vs = view->getViewSize ();
+				if (vs.getWidth () < getVisibleClientRect ().getWidth ())
+				{
+					vs.setWidth (getVisibleClientRect ().getWidth ());
+					view->setViewSize (vs);
+				}
+				view->setAutosizeFlags (kAutosizeTop | kAutosizeLeft | kAutosizeRight);
+				CViewContainer::addView (view, sc);
+			}
+			break;
+		}
+		case Edge::Left:
+		{
+			if (edgeViewLeft)
+			{
+				edgeViewLeft->unregisterViewListener (this);
+				CViewContainer::removeView (edgeViewLeft);
+			}
+			edgeViewLeft = view;
+			if (view)
+			{
+				auto vs = view->getViewSize ();
+				if (vs.getHeight () < getVisibleClientRect ().getHeight ())
+				{
+					vs.setHeight (getVisibleClientRect ().getHeight ());
+					view->setViewSize (vs);
+				}
+				view->setAutosizeFlags (kAutosizeLeft | kAutosizeTop | kAutosizeBottom);
+				CViewContainer::addView (view, sc);
+			}
+		}
+	}
+	recalculateSubViews ();
+	setContainerSize (containerSize, true);
+	if (view)
+		view->registerViewListener (this);
+}
+
+//------------------------------------------------------------------------
+CView* CScrollView::getEdgeView (Edge edge) const
+{
+	switch (edge)
+	{
+		case Edge::Top:
+		{
+			return edgeViewTop;
+		}
+		case Edge::Left:
+		{
+			return edgeViewLeft;
+		}
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+bool CScrollView::attached (CView* parent)
+{
+	setContainerSize (containerSize);
+	return CViewContainer::attached (parent);
 }
 
 //-----------------------------------------------------------------------------
@@ -728,7 +861,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getWidth () > vsize.getWidth ())
 				{
-					offset.x = (int32_t) (csize.left - (csize.getWidth () - vsize.getWidth ()) * value);
+					offset.x = -value;
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.x < 0)
@@ -742,7 +875,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getHeight () > vsize.getHeight ())
 				{
-					offset.y = (int32_t) (csize.top + (csize.getHeight () - vsize.getHeight ()) * value);
+					offset.y = value;
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.y > 0)
@@ -808,14 +941,21 @@ void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
 		vsb->setScrollSize (containerSize);
 		vsb->onVisualChange ();
 	}
+	else if (view == edgeViewTop)
+	{
+		recalculateSubViews ();
+	}
+	else if (view == edgeViewLeft)
+	{
+		recalculateSubViews ();
+	}
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::viewWillDelete (CView* view)
 {
-	if (view == hsb || view == vsb)
+	if (view == hsb || view == vsb || view == edgeViewTop || view == edgeViewLeft)
 		view->unregisterViewListener (this);
 }
 
 } // VSTGUI
-

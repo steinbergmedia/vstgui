@@ -277,6 +277,11 @@
 				"font-name": "Arial",
 				"size": "11"
 			},
+			"scripteditor.font": {
+				"alternative-font-names": "Hack,Consolas,Menlo",
+				"font-name": "Hack",
+				"size": "12"
+			},
 			"title.font": {
 				"bold": "true",
 				"font-name": "Arial",

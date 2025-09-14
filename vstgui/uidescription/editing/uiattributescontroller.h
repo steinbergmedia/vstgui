@@ -11,6 +11,7 @@
 #include "uiselection.h"
 #include "../delegationcontroller.h"
 #include "../iviewcreator.h"
+#include "../iviewfactory.h"
 #include "../uidescriptionlistener.h"
 #include "uiundomanager.h"
 #include "../../lib/controls/ctextedit.h"
@@ -18,7 +19,6 @@
 
 namespace VSTGUI {
 class CRowColumnView;
-class UIViewFactory;
 
 namespace UIAttributeControllers {
 class Controller;
@@ -45,7 +45,9 @@ protected:
 	CView* createViewForAttribute (const std::string& attrName);
 	void rebuildAttributesView ();
 	void validateAttributeViews ();
-	CView* createValueViewForAttributeType (const UIViewFactory* viewFactory, CView* view, const std::string& attrName, IViewCreator::AttrType attrType);
+	CView* createValueViewForAttributeType (const IViewFactory* viewFactory, CView* view,
+											const std::string& attrName,
+											IViewCreator::AttrType attrType);
 	void getConsolidatedAttributeNames (StringList& result, const std::string& filter);
 
 	void valueChanged (CControl* pControl) override;

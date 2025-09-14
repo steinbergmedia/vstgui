@@ -122,6 +122,7 @@ static const std::string kAttrScrollbarBackgroundColor = "scrollbar-background-c
 static const std::string kAttrScrollbarFrameColor = "scrollbar-frame-color";
 static const std::string kAttrScrollbarScrollerColor = "scrollbar-scroller-color";
 static const std::string kAttrScrollbarWidth = "scrollbar-width";
+static const std::string kAttrMinScrollerSize = "scrollbar-min-scroller-size";
 
 //-----------------------------------------------------------------------------
 // CControlCreator attributes

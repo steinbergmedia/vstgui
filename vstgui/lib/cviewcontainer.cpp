@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -37,10 +37,10 @@ const CViewAttributeID kCViewContainerBackgroundOffsetAttribute = 'vcbo';
 struct CViewContainer::Impl
 {
 	using ViewContainerListenerDispatcher = DispatchList<IViewContainerListener*>;
-	
+
 	ViewContainerListenerDispatcher viewContainerListeners;
 	CGraphicsTransform transform;
-	
+
 	ViewList children;
 	SharedPointer<IViewLayouter> layouter {AutoSizeViewLayouter::get ()};
 
@@ -61,14 +61,14 @@ struct CViewContainerDropTarget : public IDropTarget, public NonAtomicReferenceC
 		container->getTransform ().inverse ().transform (where2);
 		return where2;
 	}
-	
+
 	DragOperation onDragEnter (DragEventData data) final
 	{
 		assert (dropTarget == nullptr);
-	
+
 		return onDragMove (data);
 	}
-	
+
 	DragOperation onDragMove (DragEventData data) final
 	{
 		CView* view = container->getViewAt (
@@ -160,6 +160,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 //-----------------------------------------------------------------------------
 CViewContainer::~CViewContainer () noexcept
 {
+	vstgui_assert (pImpl->children.empty ());
 	vstgui_assert (pImpl->viewContainerListeners.empty ());
 }
 
@@ -406,7 +407,7 @@ bool CViewContainer::sizeToFit ()
 	CRect vs (getViewSize ());
 	vs.right = vs.left + bounds.right + bounds.left;
 	vs.bottom = vs.top + bounds.bottom + bounds.top;
-	
+
 	setViewSize (vs);
 	setMouseableArea (vs);
 
@@ -556,7 +557,8 @@ bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mou
 bool CViewContainer::removeAll (bool withForget)
 {
 	clearMouseDownView ();
-	
+	setInitialFocusView (nullptr);
+
 	auto it = pImpl->children.begin ();
 	while (it != pImpl->children.end ())
 	{
@@ -586,6 +588,8 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 	auto it = std::find (pImpl->children.begin (), pImpl->children.end (), pView);
 	if (it != pImpl->children.end ())
 	{
+		if (pView == getInitialFocusView ())
+			setInitialFocusView (nullptr);
 		pView->invalid ();
 		if (pView == getMouseDownView ())
 			clearMouseDownView ();
@@ -818,14 +822,14 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
 	CRect oldClip2 (oldClip);
-	
+
 	CRect newClip (clientRect);
 	newClip.bound (oldClip);
 	pContext->setClipRect (newClip);
-	
+
 	// draw the background
 	drawBackgroundRect (pContext, clientRect);
-	
+
 	CView* _focusView = nullptr;
 	IFocusDrawing* _focusDrawing = nullptr;
 	auto frame = getFrame ();
@@ -840,7 +844,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		getTransform ().inverse ().transform (newClip);
 		getTransform ().inverse ().transform (clientRect);
 		getTransform ().transform (oldClip2);
-		
+
 		// draw each view
 		for (const auto& pV : pImpl->children)
 		{
@@ -884,7 +888,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			}
 		}
 	}
-	
+
 	pContext->setClipRect (oldClip2);
 
 	if (frame && _focusView)
@@ -916,7 +920,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			}
 		}
 	}
-	
+
 	setDirty (false);
 }
 
@@ -1255,6 +1259,32 @@ void CViewContainer::takeFocus ()
 	CView::takeFocus ();
 }
 
+//------------------------------------------------------------------------
+void CViewContainer::setInitialFocusView (CView* view)
+{
+	if (auto oldInitialFocusView = getInitialFocusView ())
+	{
+		oldInitialFocusView->forget ();
+	}
+	if (view)
+	{
+		setAttribute (kInitialFocusViewAttribute, view);
+		view->remember ();
+	}
+	else
+	{
+		removeAttribute (kInitialFocusViewAttribute);
+	}
+}
+
+//------------------------------------------------------------------------
+CView* CViewContainer::getInitialFocusView () const
+{
+	CView* initialFocusView = nullptr;
+	getAttribute (kInitialFocusViewAttribute, initialFocusView);
+	return initialFocusView;
+}
+
 //-----------------------------------------------------------------------------
 /**
  * @param oldFocus old focus view
@@ -1263,8 +1293,17 @@ void CViewContainer::takeFocus ()
  */
 bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 {
-	if (getFrame ())
+	if (auto frame = getFrame ())
 	{
+		if (!oldFocus)
+		{
+			if (auto initialFocusView = getInitialFocusView ())
+			{
+				frame->setFocusView (initialFocusView);
+				return true;
+			}
+		}
+
 		bool foundOld = false;
 
 		auto func = [&] (CView* pV) {
@@ -1280,7 +1319,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 			{
 				if (pV->wantsFocus () && pV->getMouseEnabled () && pV->isVisible ())
 				{
-					getFrame ()->setFocusView (pV);
+					frame->setFocusView (pV);
 					return true;
 				}
 				else if (CViewContainer* container = pV->asViewContainer ())
@@ -1317,7 +1356,7 @@ bool CViewContainer::isDirty () const
 {
 	if (CView::isDirty ())
 		return true;
-	
+
 	CRect viewSize (getViewSize ());
 	viewSize.offset (-getViewSize ().left, -getViewSize ().top);
 
@@ -1482,7 +1521,7 @@ bool CViewContainer::removed (CView* parent)
 
 	for (const auto& pV : pImpl->children)
 		pV->removed (this);
-	
+
 	return CView::removed (parent);
 }
 

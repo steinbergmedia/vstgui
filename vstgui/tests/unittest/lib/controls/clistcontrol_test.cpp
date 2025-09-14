@@ -11,9 +11,10 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-static SharedPointer<CListControl> createTestListControl (
-    CCoord rowHeight, int32_t numRows = 10,
-    int32_t rowFlags = CListControlRowDesc::Selectable | CListControlRowDesc::Hoverable)
+static SharedPointer<CListControl>
+	createTestListControl (CCoord rowHeight, int32_t numRows = 10,
+						   CListControlRowDesc::Flags rowFlags = CListControlRowDesc::Flags {
+							   CListControlRowDesc::Selectable | CListControlRowDesc::Hoverable})
 {
 	auto listControl = makeOwned<CListControl> (CRect (0, 0, 100, 100));
 	auto config = makeOwned<StaticListControlConfigurator> (rowHeight, rowFlags);
@@ -121,7 +122,7 @@ TEST_CASE (CListControlTest, KeyDownOnUnselectableRows)
 {
 	constexpr auto rowHeight = 20;
 	constexpr auto numRows = 20;
-	auto listControl = createTestListControl (rowHeight, numRows, 0);
+	auto listControl = createTestListControl (rowHeight, numRows, {});
 	listControl->setValue (2.f);
 	EXPECT (listControl->getValue () == 2.f);
 
@@ -135,7 +136,7 @@ TEST_CASE (CListControlTest, KeyWithModifier)
 {
 	constexpr auto rowHeight = 20;
 	constexpr auto numRows = 20;
-	auto listControl = createTestListControl (rowHeight, numRows, 0);
+	auto listControl = createTestListControl (rowHeight, numRows, {});
 
 	listControl->setValue (1.f);
 

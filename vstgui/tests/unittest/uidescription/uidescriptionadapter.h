@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../../../uidescription/iuidescription.h"
+#include "../../../uidescription/uiattributes.h"
 
 namespace VSTGUI {
 
@@ -37,6 +38,15 @@ public:
 	void collectControlTagNames (std::list<const std::string*>& names) const override {}
 
 	const IViewFactory* getViewFactory () const override { return nullptr; }
+
+	bool setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr) override
+	{
+		return false;
+	}
+	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const override
+	{
+		return {};
+	}
 };
 
 }

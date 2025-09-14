@@ -230,6 +230,9 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
                                                       const CButtonState& buttons, int32_t row,
                                                       int32_t column, CDataBrowser* browser)
 {
+	if (row < 0 || column < 0)
+		return UIBaseDataSource::dbOnMouseMoved (where, buttons, row, column, browser);
+
 	auto r = browser->getCellBounds ({row, column});
 	r.left = r.right - getColorIconWith ();
 	r.inset (2, 2);
@@ -283,15 +286,17 @@ bool UIColorsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser)
 {
-	IDataPackage::Type type;
-	const void* item;
-	if (drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
+	for (const auto& item : drag)
 	{
-		if (CColor::isColorRepresentation (static_cast<UTF8StringPtr> (item)))
+		if (item.type != IDataPackage::kText)
+			continue;
+		std::string_view text (static_cast<const char*> (item.data), item.dataSize);
+		if (CColor::isColorRepresentation (text))
 		{
 			CColor c;
-			c.fromString (static_cast<UTF8StringPtr> (item));
+			c.fromString (text);
 			dragColor = Optional<CColor> (c);
+			break;
 		}
 	}
 }

@@ -61,6 +61,8 @@ set(${target}_common_sources
     clayeredviewcontainer.h
     clinestyle.cpp
     clinestyle.h
+    ctexteditor.h
+    ctexteditor.cpp
     coffscreencontext.cpp
     coffscreencontext.h
     controls/cautoanimation.cpp
@@ -143,6 +145,7 @@ set(${target}_common_sources
     cvstguitimer.h
     dragging.h
     dispatchlist.h
+    enumbitset.h
     events.cpp
     events.h
     finally.h
@@ -174,6 +177,7 @@ set(${target}_common_sources
     platform/iplatformresourceinputstream.h
     platform/iplatformstring.h
     platform/iplatformtextedit.h
+    platform/iplatformtextinputclient.h
     platform/iplatformtimer.h
     platform/iplatformviewlayer.h
     platform/platformfactory.cpp
@@ -190,7 +194,6 @@ set(${target}_common_sources
     platform/common/generictextedit.cpp
     platform/common/generictextedit.h
     platform/common/gradientbase.h
-    platform/common/stb_textedit.h
     viewlayouter/autosizeviewlayouter.cpp
     viewlayouter/autosizeviewlayouter.h
     viewlayouter/baseviewlayouter.h
@@ -347,8 +350,9 @@ endif()
 ##########################################################################################
 add_library(${target} STATIC ${${target}_sources})
 
+target_precompile_headers(${target} PRIVATE cviewcontainer.h cdrawcontext.h)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 17)
+vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 vstgui_source_group_by_folder(${target})
 
 if(LINUX)

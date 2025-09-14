@@ -28,6 +28,7 @@ TestModel::TestModel ()
 	addValue (Value::makeStringListValue ("StringList", {"one", "two", "three", "four", "five"}));
 	addValue (Value::make ("ShowPopup"));
 	addValue (Value::makeStringValue ("MutableString", "This is a string value"));
+	addValue (Value::makeStepValue ("TabIndex", 3, 0));
 	addValue (
 	    Value::makeStringListValue ("Weekdays", {"Weekdays", "Monday", "Tuesday", "Wednesday",
 	                                             "Thirsday", "Friday", "Saturday", "Sunday"}));

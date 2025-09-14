@@ -127,9 +127,9 @@ bool SharedUIResources::load () const
 #if VSTGUI_LIVE_EDITING
 			if (!initUIDescAsNew (*description, nullptr))
 				return false;
-			else
+#else
+			return false;
 #endif
-				return false;
 		}
 		auto settings = description->getCustomAttributes ("UIDescFilePath", true);
 		auto filePath = settings->getAttributeValue ("path");

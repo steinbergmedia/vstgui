@@ -35,6 +35,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/csplitview_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cview_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/cviewcontainer_test.cpp"
+	"${VSTGUI_TEST_BASE}lib/enumbitset_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/event_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/eventhelpers.h"
 	"${VSTGUI_TEST_BASE}lib/gridlayout_test.cpp"
@@ -82,6 +83,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}uidescription/cstream_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/delegationcontroller_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiattributes_test.cpp"
+	"${VSTGUI_TEST_BASE}uidescription/uidescription_addon_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uidescription_json_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uidescription_test_helper.h"
 	"${VSTGUI_TEST_BASE}uidescription/uidescription_xml_test.cpp"
@@ -145,7 +147,7 @@ if(VSTGUI_USE_XCODE_XCTEST)
 	)
 
 	xctest_add_bundle(${target} vstgui ${${target}_sources})
-	vstgui_set_cxx_version(${target} 17)
+	vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
 	target_link_libraries(${target} PRIVATE
 		${${target}_PLATFORM_LIBS}
@@ -162,7 +164,7 @@ else()
 			"${VSTGUI_TEST_BASE}../../vstgui_mac.mm"
 		)
 	endif()
-	
+
 	set(${target}_sources
 		${${target}_sources}
 		"${VSTGUI_TEST_BASE}../../vstgui_uidescription.cpp"
@@ -174,7 +176,7 @@ else()
 		${${target}_PLATFORM_LIBS}
 	)
 
-	vstgui_set_cxx_version(${target} 17)
+	vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
 	vstgui_source_group_by_folder(${target})
 

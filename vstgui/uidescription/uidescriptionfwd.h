@@ -20,5 +20,6 @@ class IBitmapCreator2;
 class IContentProvider;
 class MemoryContentProvider;
 class InputStreamContentProvider;
+class UIScripting;
 
 } // VSTGUI

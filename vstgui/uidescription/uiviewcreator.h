@@ -22,6 +22,7 @@ VSTGUI_DEPRECATED (extern bool pointToString (const CPoint& p, std::string& stri
 extern bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription* desc);
 extern bool colorToString (const CColor& color, std::string& string, const IUIDescription* desc);
 extern bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc);
+extern bool stringToColor (std::string_view value, CColor& color, const IUIDescription* desc);
 extern bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IUIDescription* desc);
 extern void applyStyleMask (const std::string* value, int32_t mask, int32_t& style);
 

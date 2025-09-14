@@ -127,6 +127,12 @@ bool UIAttributes::stringToBool (const std::string& str, bool& value)
 		value = false;
 		return true;
 	}
+	int32_t intValue;
+	if (stringToInteger (str, intValue))
+	{
+		value = intValue != 0;
+		return true;
+	}
 	return false;
 }
 
