@@ -86,9 +86,9 @@
 				"SplitViewSize_0_1": "0.1923990498812351568336254103996907360852",
 				"SplitViewSize_1_0": "0.4845605700712589114509398768859682604671",
 				"SplitViewSize_1_1": "0.509501187648456088652437756536528468132",
-				"SplitViewSize_2_0": "0.5763033175355449788668238397804088890553",
-				"SplitViewSize_2_1": "0.4189573459715639769385120416700374335051",
-				"TabSwitchValue": "3",
+				"SplitViewSize_2_0": "0.6236966824644549767242551752133294939995",
+				"SplitViewSize_2_1": "0.3715639810426540345922319374949438497424",
+				"TabSwitchValue": "0",
 				"Version": "1"
 			},
 			"UITemplateController": {
@@ -108,6 +108,15 @@
 			},
 			"UIGradientsDataSource": {
 				"SelectedRow": "2"
+			},
+			"UITagsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIBitmapsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIFontsDataSource": {
+				"SelectedRow": "-1"
 			}
 		},
 		"templates": {
@@ -762,13 +771,13 @@
 							"CScrollView": {
 								"attributes": {
 									"auto-drag-scrolling": "false",
-									"auto-hide-scrollbars": "true",
+									"auto-hide-scrollbars": "false",
 									"autosize": "left right top bottom ",
 									"background-color": "~ BlackCColor",
 									"background-color-draw-style": "filled and stroked",
 									"bordered": "false",
 									"class": "CScrollView",
-									"container-size": "212, 53.3333",
+									"container-size": "200, 210",
 									"custom-view-name": "DataBrowser",
 									"follow-focus-view": "false",
 									"horizontal-scrollbar": "false",
@@ -776,10 +785,10 @@
 									"opacity": "1",
 									"origin": "0, 0",
 									"overlay-scrollbars": "false",
-									"scrollbar-background-color": "#ffffffc8",
-									"scrollbar-frame-color": "~ BlackCColor",
+									"scrollbar-background-color": "control.background",
+									"scrollbar-frame-color": "control.frame",
 									"scrollbar-min-scroller-size": "8",
-									"scrollbar-scroller-color": "~ BlueCColor",
+									"scrollbar-scroller-color": "control.value",
 									"scrollbar-width": "12",
 									"size": "210, 53.3333",
 									"transparent": "true",
@@ -897,13 +906,13 @@
 							"CScrollView": {
 								"attributes": {
 									"auto-drag-scrolling": "false",
-									"auto-hide-scrollbars": "true",
+									"auto-hide-scrollbars": "false",
 									"autosize": "left right top bottom ",
 									"background-color": "~ BlackCColor",
 									"background-color-draw-style": "filled and stroked",
 									"bordered": "false",
 									"class": "CScrollView",
-									"container-size": "212, 53.3333",
+									"container-size": "200, 60",
 									"custom-view-name": "DataBrowser",
 									"follow-focus-view": "false",
 									"horizontal-scrollbar": "false",
@@ -911,10 +920,10 @@
 									"opacity": "1",
 									"origin": "0, 0",
 									"overlay-scrollbars": "false",
-									"scrollbar-background-color": "#ffffffc8",
-									"scrollbar-frame-color": "~ BlackCColor",
+									"scrollbar-background-color": "control.background",
+									"scrollbar-frame-color": "control.frame",
 									"scrollbar-min-scroller-size": "8",
-									"scrollbar-scroller-color": "~ BlueCColor",
+									"scrollbar-scroller-color": "control.value",
 									"scrollbar-width": "12",
 									"size": "210, 53.3333",
 									"transparent": "true",
@@ -1032,13 +1041,13 @@
 							"CScrollView": {
 								"attributes": {
 									"auto-drag-scrolling": "false",
-									"auto-hide-scrollbars": "true",
+									"auto-hide-scrollbars": "false",
 									"autosize": "left right top bottom ",
 									"background-color": "~ BlackCColor",
 									"background-color-draw-style": "filled and stroked",
 									"bordered": "false",
 									"class": "CScrollView",
-									"container-size": "214, 53.3333",
+									"container-size": "202, 53.3333",
 									"custom-view-name": "DataBrowser",
 									"follow-focus-view": "false",
 									"horizontal-scrollbar": "false",
@@ -1046,10 +1055,10 @@
 									"opacity": "1",
 									"origin": "0, 0",
 									"overlay-scrollbars": "false",
-									"scrollbar-background-color": "#ffffffc8",
-									"scrollbar-frame-color": "~ BlackCColor",
+									"scrollbar-background-color": "control.background",
+									"scrollbar-frame-color": "control.frame",
 									"scrollbar-min-scroller-size": "8",
-									"scrollbar-scroller-color": "~ BlueCColor",
+									"scrollbar-scroller-color": "control.value",
 									"scrollbar-width": "12",
 									"size": "210, 53.3333",
 									"transparent": "true",
@@ -1128,7 +1137,7 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "10, 550",
+							"origin": "10, 552.5",
 							"round-rect-radius": "4",
 							"shadow-color": "~ RedCColor",
 							"size": "100, 20",
@@ -1163,7 +1172,7 @@
 							"frame-width": "1",
 							"immediate-text-change": "false",
 							"opacity": "1",
-							"origin": "120, 550",
+							"origin": "120, 552.5",
 							"round-rect-radius": "1",
 							"secure-style": "false",
 							"shadow-color": "~ RedCColor",
