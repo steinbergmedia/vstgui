@@ -1446,4 +1446,72 @@ TEST_CASE (GridLayouter, GridAreas_SpaceAround_MultiRowCol_AutoTracks_ExtraItem)
 	}
 }
 
+//------------------------------------------------------------------------
+TEST_CASE (GridLayouter, GridAreas_IntrinsicSize_Center_NoStretch)
+{
+	GridLayoutProperties props;
+	props.rows = 1;
+	props.columns = 1;
+	props.autoRows = {CCoord (100)};
+	props.autoColumns = {CCoord (200)};
+	props.gridAreas = {{0, 0, 1, 1}};
+	props.justifyItems = GridLayoutProperties::JustifyItems::Center;
+	props.alignItems = GridLayoutProperties::AlignItems::Center;
+
+	auto layouter = makeOwned<GridLayouter> (props);
+	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 100));
+
+	// Child with intrinsic size 80x40
+	CView* child = new CView ({0, 0, 80, 40});
+	container->addView (child);
+
+	container->setViewLayouter (layouter);
+	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 200, 100));
+	EXPECT (layoutOpt.has_value ());
+	auto layout = layoutOpt.value ();
+	EXPECT (container->applyViewLayout (layout));
+
+	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
+	EXPECT (rects && rects->size () == 1);
+
+	// Centered within 200x100 area -> (60,30)-(140,70)
+	constexpr CRect expected (60, 30, 140, 70);
+	EXPECT (rectNearlyEqual ((*rects)[0].first, expected));
+	EXPECT (rectNearlyEqual (container->getView (0)->getViewSize (), expected));
+}
+
+//------------------------------------------------------------------------
+TEST_CASE (GridLayouter, GridAreas_IntrinsicSize_Stretch)
+{
+	GridLayoutProperties props;
+	props.rows = 1;
+	props.columns = 1;
+	props.autoRows = {CCoord (100)};
+	props.autoColumns = {CCoord (200)};
+	props.gridAreas = {{0, 0, 1, 1}};
+	props.justifyItems = GridLayoutProperties::JustifyItems::Stretch;
+	props.alignItems = GridLayoutProperties::AlignItems::Stretch;
+
+	auto layouter = makeOwned<GridLayouter> (props);
+	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 100));
+
+	// Child with intrinsic size 80x40 (ignored when stretching)
+	CView* child = new CView ({0, 0, 80, 40});
+	container->addView (child);
+
+	container->setViewLayouter (layouter);
+	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 200, 100));
+	EXPECT (layoutOpt.has_value ());
+	auto layout = layoutOpt.value ();
+	EXPECT (container->applyViewLayout (layout));
+
+	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
+	EXPECT (rects && rects->size () == 1);
+
+	// Full area
+	constexpr CRect expected (0, 0, 200, 100);
+	EXPECT (rectNearlyEqual ((*rects)[0].first, expected));
+	EXPECT (rectNearlyEqual (container->getView (0)->getViewSize (), expected));
+}
+
 } // namespace VSTGUI
