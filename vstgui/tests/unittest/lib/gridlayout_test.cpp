@@ -783,8 +783,8 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_StartStart)
 	props.alignItems = GridLayoutProperties::AlignItems::Start;
 	auto layouter = makeOwned<GridLayouter> (props);
 	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addView (new CView ({}));
-	container->addView (new CView ({}));
+	container->addView (new CView ({0., 0., 50., 40.}));
+	container->addView (new CView ({0., 0., 70., 60.}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -819,8 +819,8 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_CenterCenter)
 
 	auto layouter = makeOwned<GridLayouter> (props);
 	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addView (new CView ({}));
-	container->addView (new CView ({}));
+	container->addView (new CView ({0., 0., 20., 20.}));
+	container->addView (new CView ({0., 0., 40., 40.}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 400, 400));
 	EXPECT (layoutOpt.has_value ());
@@ -828,7 +828,7 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_CenterCenter)
 	EXPECT (container->applyViewLayout (layout));
 	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
 	EXPECT (rects && rects->size () == 2);
-	constexpr std::array expectedRects {CRect (160, 160, 200, 200), CRect (200, 200, 240, 240)};
+	constexpr std::array expectedRects {CRect (170, 170, 190, 190), CRect (200, 200, 240, 240)};
 	for (size_t i = 0; i < expectedRects.size (); ++i)
 	{
 		EXPECT ((*rects)[i].first == expectedRects[i]);
@@ -855,8 +855,8 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_EndEnd)
 	auto layouter = makeOwned<GridLayouter> (props);
 	// Container size changed to match expected rects
 	auto container = makeOwned<CViewContainer> (CRect (0, 0, 130, 120));
-	container->addView (new CView ({}));
-	container->addView (new CView ({}));
+	container->addView (new CView ({0., 0., 50., 40.}));
+	container->addView (new CView ({0., 0., 50., 40.}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 400, 400));
 	EXPECT (layoutOpt.has_value ());
@@ -1157,7 +1157,7 @@ TEST_CASE (GridLayouter, GridAreas_Spanning_CenterEndStretch)
 	props.alignItems = GridLayoutProperties::AlignItems::End;
 	auto layouter = makeOwned<GridLayouter> (props);
 	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addView (new CView ({}));
+	container->addView (new CView ({0., 0., 20, 20.}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1166,7 +1166,7 @@ TEST_CASE (GridLayouter, GridAreas_Spanning_CenterEndStretch)
 	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
 	EXPECT (rects && rects->size () == 1);
 	// Center horizontally, end vertically
-	EXPECT (rectNearlyEqual ((*rects)[0].first, CRect (0, 0, 120, 100)));
+	EXPECT (rectNearlyEqual ((*rects)[0].first, CRect (50, 80, 70, 100)));
 }
 
 //------------------------------------------------------------------------

@@ -291,26 +291,77 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 				w += colWidths[c];
 			w += (c1 - c0 - 1) * (colGap + spaceAroundX);
 
-			CCoord itemWidth = w;
-			CCoord itemHeight = h;
 			CCoord itemX = x;
 			CCoord itemY = y;
+			CCoord itemWidth = w;
+			CCoord itemHeight = h;
+			// Determine intrinsic size when not stretching
+			CCoord intrinsicW = w;
+			CCoord intrinsicH = h;
+			if (auto view = child->get (); view)
+			{
+				CRect vs = view->getViewSize ();
+				intrinsicW = std::max<CCoord> (0.0, std::min (vs.getWidth (), w));
+				intrinsicH = std::max<CCoord> (0.0, std::min (vs.getHeight (), h));
+			}
 
-			if (gridProps.justifyItems == GridLayoutProperties::JustifyItems::Center)
+			// Horizontal sizing and positioning
+			switch (gridProps.justifyItems)
 			{
-				itemX += (w - itemWidth) / 2.0;
+				case GridLayoutProperties::JustifyItems::Stretch:
+				{
+					itemWidth = w;
+					itemX = x;
+					break;
+				}
+				case GridLayoutProperties::JustifyItems::Center:
+				{
+					itemWidth = intrinsicW;
+					itemX = x + (w - itemWidth) / 2.0;
+					break;
+				}
+				case GridLayoutProperties::JustifyItems::End:
+				{
+					itemWidth = intrinsicW;
+					itemX = x + (w - itemWidth);
+					break;
+				}
+				case GridLayoutProperties::JustifyItems::Start:
+				default:
+				{
+					itemWidth = intrinsicW;
+					itemX = x;
+					break;
+				}
 			}
-			else if (gridProps.justifyItems == GridLayoutProperties::JustifyItems::End)
+			// Vertical sizing and positioning
+			switch (gridProps.alignItems)
 			{
-				itemX += (w - itemWidth);
-			}
-			if (gridProps.alignItems == GridLayoutProperties::AlignItems::Center)
-			{
-				itemY += (h - itemHeight) / 2.0;
-			}
-			else if (gridProps.alignItems == GridLayoutProperties::AlignItems::End)
-			{
-				itemY += (h - itemHeight);
+				case GridLayoutProperties::AlignItems::Stretch:
+				{
+					itemHeight = h;
+					itemY = y;
+					break;
+				}
+				case GridLayoutProperties::AlignItems::Center:
+				{
+					itemHeight = intrinsicH;
+					itemY = y + (h - itemHeight) / 2.0;
+					break;
+				}
+				case GridLayoutProperties::AlignItems::End:
+				{
+					itemHeight = intrinsicH;
+					itemY = y + (h - itemHeight);
+					break;
+				}
+				case GridLayoutProperties::AlignItems::Start:
+				default:
+				{
+					itemHeight = intrinsicH;
+					itemY = y;
+					break;
+				}
 			}
 			CRect childRect (itemX, itemY, itemX + itemWidth, itemY + itemHeight);
 			std::optional<ViewLayout> childLayout;

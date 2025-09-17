@@ -28,7 +28,7 @@ using namespace VSTGUI::Standalone;
 //------------------------------------------------------------------------
 struct ViewWithAFrame : CView
 {
-	ViewWithAFrame (uint32_t index = 0u) : CView ({}), index (index) {}
+	ViewWithAFrame (uint32_t index = 0u) : CView ({0., 0., 40., 40.}), index (index) {}
 
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override
 	{
