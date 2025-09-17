@@ -786,6 +786,82 @@ bool CoreGraphicsDeviceContext::fillRadialGradient (IPlatformGraphicsPath& path,
 }
 
 //------------------------------------------------------------------------
+bool CoreGraphicsDeviceContext::drawLinearGradientLine (const PointList& line,
+														const IPlatformGradient& gradient,
+														CCoord lineWidth, LineCap lineCap,
+														LineJoin lineJoin) const
+{
+	if (line.empty ())
+		return true;
+	auto cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
+	if (!cgGradient)
+		return false;
+
+	auto path = CGPathCreateMutable ();
+	CGPathMoveToPoint (path, nullptr, line[0].x, line[1].y);
+	if (impl->state.drawMode.integralMode () && impl->state.drawMode.aliasing ())
+	{
+		for (auto index = 1u; index < line.size (); ++index)
+		{
+			auto p = impl->pixelAlligned (CGPointFromCPoint (line[index]));
+			CGPathAddLineToPoint (path, nullptr, p.x, p.y);
+		}
+	}
+	else
+	{
+		for (auto index = 1u; index < line.size (); ++index)
+			CGPathAddLineToPoint (path, nullptr, line[index].x, line[index].y);
+	}
+	auto convertLineCap = [] (LineCap cap) -> CGLineCap {
+		switch (cap)
+		{
+			case LineCap::Butt:
+				return kCGLineCapButt;
+			case LineCap::Round:
+				return kCGLineCapRound;
+			case LineCap::Square:
+				return kCGLineCapSquare;
+		}
+	};
+	auto convertLineJoin = [] (LineJoin join) -> CGLineJoin {
+		switch (join)
+		{
+			case LineJoin::Bevel:
+				return kCGLineJoinBevel;
+			case LineJoin::Miter:
+				return kCGLineJoinMiter;
+			case LineJoin::Round:
+				return kCGLineJoinRound;
+		}
+	};
+	CGLineCap cap = convertLineCap (lineCap);
+	CGLineJoin join = convertLineJoin (lineJoin);
+	auto cgPath = CGPathCreateCopyByStrokingPath (path, nullptr, lineWidth, cap, join, 0.);
+
+	impl->doInCGContext (true, impl->state.drawMode.integralMode (), [&] (auto context) {
+		CGPoint start = CGPointFromCPoint (line.front ());
+		CGPoint end = CGPointFromCPoint (line.back ());
+		Impl::DoGraphicStateSave (context, [&] () {
+			if (impl->state.drawMode.integralMode ())
+			{
+				start = impl->pixelAlligned (start);
+				end = impl->pixelAlligned (end);
+			}
+			CGContextAddPath (context, cgPath);
+		});
+
+		CGContextClip (context);
+
+		CGContextDrawLinearGradient (context, *cgGradient, start, end,
+									 kCGGradientDrawsBeforeStartLocation |
+										 kCGGradientDrawsAfterEndLocation);
+	});
+	CGPathRelease (path);
+	CGPathRelease (cgPath);
+	return true;
+}
+
+//------------------------------------------------------------------------
 void CoreGraphicsDeviceContext::saveGlobalState () const
 {
 	CGContextSaveGState (impl->cgContext);

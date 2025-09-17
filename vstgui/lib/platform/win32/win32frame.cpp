@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -8,6 +8,7 @@
 
 #include <commctrl.h>
 #include <cmath>
+#include <codecvt>
 #include <windowsx.h>
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dgraphicspath.h"
@@ -20,6 +21,7 @@
 #include "win32dragging.h"
 #include "win32directcomposition.h"
 #include "win32viewlayer.h"
+#include "../iplatformtextinputclient.h"
 #include "../common/genericoptionmenu.h"
 #include "../common/generictextedit.h"
 #include "../../cdropsource.h"
@@ -37,6 +39,7 @@
 // windows libraries VSTGUI depends on
 #ifdef _MSC_VER
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "Imm32.lib")
 #endif
 
 namespace VSTGUI {
@@ -45,7 +48,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 static TCHAR gClassName[100];
-static bool bSwapped_mouse_buttons = false; 
+static bool bSwapped_mouse_buttons = false;
 
 //-----------------------------------------------------------------------------
 static bool isParentLayered (HWND parent)
@@ -158,15 +161,15 @@ void Win32Frame::initWindowClass ()
 		OleInitialize (nullptr);
 
 		VSTGUI_SPRINTF (gClassName, TEXT("VSTGUI%p"), GetInstance ());
-		
-		WNDCLASS windowClass;
-		windowClass.style = CS_GLOBALCLASS | CS_DBLCLKS;//|CS_OWNDC; // add Private-DC constant 
 
-		windowClass.lpfnWndProc = WindowProc; 
-		windowClass.cbClsExtra  = 0; 
-		windowClass.cbWndExtra  = 0; 
+		WNDCLASS windowClass;
+		windowClass.style = CS_GLOBALCLASS | CS_DBLCLKS; //|CS_OWNDC; // add Private-DC constant
+
+		windowClass.lpfnWndProc = WindowProc;
+		windowClass.cbClsExtra = 0;
+		windowClass.cbWndExtra = 0;
 		windowClass.hInstance   = GetInstance ();
-		windowClass.hIcon = nullptr; 
+		windowClass.hIcon = nullptr;
 
 		windowClass.hCursor = LoadCursor (nullptr, IDC_ARROW);
 		#if DEBUG_DRAWING
@@ -174,8 +177,8 @@ void Win32Frame::initWindowClass ()
 		#else
 		windowClass.hbrBackground = nullptr;
 		#endif
-		windowClass.lpszMenuName  = nullptr; 
-		windowClass.lpszClassName = gClassName; 
+		windowClass.lpszMenuName = nullptr;
+		windowClass.lpszClassName = gClassName;
 		RegisterClass (&windowClass);
 
 		bSwapped_mouse_buttons = GetSystemMetrics (SM_SWAPBUTTON) > 0;
@@ -234,7 +237,7 @@ HWND Win32Frame::getOuterWindow () const
 	RECT  rctTempWnd, rctPluginWnd;
 	HWND  hTempWnd = windowHandle;
 	GetWindowRect (hTempWnd, &rctPluginWnd);
-    
+
 	while (hTempWnd != nullptr)
 	{
 		// Looking for caption bar
@@ -244,13 +247,13 @@ HWND Win32Frame::getOuterWindow () const
 		// Looking for last parent
 		if (!GetParent (hTempWnd))
 			return hTempWnd;
-    
+
 		// get difference between plugin-window and current parent
 		GetWindowRect (GetParent (hTempWnd), &rctTempWnd);
-	    
+
 		diffWidth  = (rctTempWnd.right - rctTempWnd.left) - (rctPluginWnd.right - rctPluginWnd.left);
 		diffHeight = (rctTempWnd.bottom - rctTempWnd.top) - (rctPluginWnd.bottom - rctPluginWnd.top);
-		
+
 		// Looking for size mismatch
 		if ((abs (diffWidth) > 60) || (abs (diffHeight) > 60)) // parent belongs to host
 			return (hTempWnd);
@@ -258,8 +261,8 @@ HWND Win32Frame::getOuterWindow () const
 		if (diffWidth < 0)
 			diffWidth = 0;
         if (diffHeight < 0)
-			diffHeight = 0; 
-		
+			diffHeight = 0;
+
 		// get the next parent window
 		hTempWnd = GetParent (hTempWnd);
 	}
@@ -381,11 +384,16 @@ bool Win32Frame::setMouseCursor (CCursorType type)
 		case kCursorNotAllowed:
 			cursor = LoadCursor (nullptr, IDC_NO);
 			break;
-		case kCursorHand:
+		case kCursorPointingHand:
 			cursor = LoadCursor (nullptr, IDC_HAND);
 			break;
 		case kCursorCrosshair:
 			cursor = LoadCursor (nullptr, IDC_CROSS);
+			break;
+		case kCursorMovableObject:
+			[[fallthrough]];
+		case kCursorMoveObject:
+			cursor = LoadCursor (nullptr, IDC_SIZEALL);
 			break;
 		default:
 			cursor = LoadCursor (nullptr, IDC_ARROW);
@@ -703,7 +711,7 @@ void Win32Frame::paint (HWND hwnd)
 
 	EndPaint (hwnd, &ps);
 	DeleteObject (rgn);
-	
+
 	inPaint = false;
 	if (needsInvalidation && !frameSize.isEmpty ())
 	{
@@ -736,6 +744,24 @@ static void setupMouseEventFromWParam (MouseEvent& event, WPARAM wParam)
 		event.modifiers.add (ModifierKey::Alt);
 	if (GetAsyncKeyState (VK_LWIN) < 0)
 		event.modifiers.add (ModifierKey::Super);
+}
+
+//------------------------------------------------------------------------
+static std::u32string convert (std::wstring_view s)
+{
+	std::string bytes;
+	bytes.reserve (s.size () * 2);
+
+	for (const char16_t c : s)
+	{
+		bytes.push_back (static_cast<char> (c / 256));
+		bytes.push_back (static_cast<char> (c % 256));
+	}
+
+#pragma warning(disable : 4996) // deprecated
+	std::wstring_convert<std::codecvt_utf16<char32_t>, char32_t> convert;
+	return convert.from_bytes (bytes);
+#pragma warning(3 : 4996) // deprecated
 }
 
 //-----------------------------------------------------------------------------
@@ -793,13 +819,13 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			}
 			break;
 		}
-			
+
 		case WM_PAINT:
 		{
 			paint (hwnd);
 			return 0;
 		}
-			
+
 		case WM_RBUTTONDBLCLK:
 		case WM_MBUTTONDBLCLK:
 		case WM_LBUTTONDBLCLK:
@@ -858,7 +884,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		{
 			MouseUpEvent event;
 			setupMouseEventFromWParam (event, wParam);
-			
+
 			if (message == WM_LBUTTONUP)
 				event.buttonState.add (MouseButton::Left);
 			else if (message == WM_RBUTTONUP)
@@ -946,9 +972,89 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			}
 			break;
 		}
+		case WM_IME_STARTCOMPOSITION:
+		{
+			if (!textInputClient)
+				break;
+			return 0;
+		}
+		case WM_IME_ENDCOMPOSITION:
+		{
+			if (!textInputClient)
+				break;
+			textInputClient->ime_unmarkText ();
+			return 0;
+		}
+		case WM_IME_COMPOSITION:
+		{
+			if (!textInputClient)
+				break;
+
+			static constexpr auto getCompositionString = [] (auto context, auto which) {
+				auto requiredBytes = ImmGetCompositionStringW (context, which, nullptr, 0);
+				if (requiredBytes > 0)
+				{
+					std::wstring str;
+					str.resize (requiredBytes / sizeof (char16_t));
+					if (ImmGetCompositionStringW (context, which, str.data (), requiredBytes) ==
+						requiredBytes)
+					{
+						return str;
+					}
+				}
+				return std::wstring ();
+			};
+
+			if (auto immContext = ImmGetContext (hwnd))
+			{
+				if (lParam & GCS_RESULTSTR)
+				{
+					auto str = getCompositionString (immContext, GCS_RESULTSTR);
+					auto u32str = convert (str);
+					textInputClient->ime_insertText (u32str);
+				}
+				if (lParam & GCS_COMPSTR)
+				{
+					auto str = getCompositionString (immContext, GCS_COMPSTR);
+					auto u32str = convert (str);
+					textInputClient->ime_setMarkedText (u32str);
+				}
+				ImmReleaseContext (hwnd, immContext);
+			}
+			break;
+		}
+		case WM_IME_REQUEST:
+		{
+			if (!textInputClient)
+				break;
+			if (wParam == IMR_QUERYCHARPOSITION)
+			{
+				IIMETextInputClient::CharPosition cp {};
+				if (textInputClient->ime_queryCharacterPosition (cp))
+				{
+					auto charPos = reinterpret_cast<IMECHARPOSITION*> (lParam);
+					charPos->dwSize = sizeof (IMECHARPOSITION);
+					charPos->cLineHeight = static_cast<UINT> (std::ceil (cp.lineHeight));
+					charPos->pt = {static_cast<INT> (cp.position.x),
+								   static_cast<INT> (cp.position.y)};
+					charPos->dwCharPos = cp.characterPosition;
+					charPos->rcDocument.left = static_cast<LONG> (cp.documentRect.left);
+					charPos->rcDocument.top = static_cast<LONG> (cp.documentRect.top);
+					charPos->rcDocument.right = static_cast<LONG> (cp.documentRect.right);
+					charPos->rcDocument.bottom = static_cast<LONG> (cp.documentRect.bottom);
+					MapWindowPoints (hwnd, nullptr, &charPos->pt, 1);
+					MapWindowRect (hwnd, nullptr, &charPos->rcDocument);
+					return 1;
+				}
+			}
+			break;
+		}
 	}
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
+
+//------------------------------------------------------------------------
+void Win32Frame::setTextInputClient (IIMETextInputClient* client) { textInputClient = client; }
 
 //-----------------------------------------------------------------------------
 Optional<UTF8String> Win32Frame::convertCurrentKeyEventToText ()

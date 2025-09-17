@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "vstgui/lib/vstguibase.h"
-#include "vstgui/lib/iexternalview.h"
+#include "../lib/vstguibase.h"
+#include "../lib/iexternalview.h"
 
 #include <windows.h>
 #include <cassert>

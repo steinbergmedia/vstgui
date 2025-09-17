@@ -18,6 +18,7 @@ public:
 	using StringType = UTF8String;
 	using StringList = std::vector<StringType>;
 	virtual bool updateStringList (const StringList& newStrings) = 0;
+	virtual bool updateString (size_t index, const StringType& string) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -61,7 +62,7 @@ namespace Value {
  *	@return shared value pointer
  */
 ValuePtr make (const UTF8String& id, IValue::Type initialValue = 0.,
-               const ValueConverterPtr& valueConverter = nullptr);
+			   const ValueConverterPtr& valueConverter = nullptr);
 
 //------------------------------------------------------------------------
 /** make a step value
@@ -73,8 +74,8 @@ ValuePtr make (const UTF8String& id, IValue::Type initialValue = 0.,
  *	@return shared value pointer
  */
 ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType numSteps,
-                        IValue::Type initialValue = 0.,
-                        const ValueConverterPtr& valueConverter = nullptr);
+						IValue::Type initialValue = 0.,
+						const ValueConverterPtr& valueConverter = nullptr);
 
 //------------------------------------------------------------------------
 /** make a string list value
@@ -90,8 +91,8 @@ ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType numSteps,
  *	@return shared value pointer
  */
 ValuePtr makeStringListValue (const UTF8String& id,
-                              const std::initializer_list<IStringListValue::StringType>& strings,
-                              IValue::Type initialValue = 0.);
+							  const std::initializer_list<IStringListValue::StringType>& strings,
+							  IValue::Type initialValue = 0.);
 
 //------------------------------------------------------------------------
 /** make a string list value
@@ -165,7 +166,7 @@ ValueConverterPtr makePercentConverter ();
  *	converts normalized values to the range [minValue..maxValue]
  */
 ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxValue,
-                                      uint32_t stringPrecision = 4);
+									  uint32_t stringPrecision = 4);
 
 /** @} */
 

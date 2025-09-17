@@ -14,8 +14,9 @@ namespace Standalone {
 //------------------------------------------------------------------------
 /** %Command definition
  *
- *	Commands are automatically dispatched to Application::IDelegate and IWindowController instances
- *	if they implement the ICommandHandler interface.
+ *	Commands are automatically dispatched to the Application::IDelegate, the focus view controller
+ *	or IWindowController instances if they implement the ICommandHandler interface.
+ *
  *	Commands are registered via IApplication::registerCommand.
  *
  *
@@ -89,10 +90,13 @@ static constexpr IdStringPtr Copy = "Copy";
 static constexpr IdStringPtr Paste = "Paste";
 static constexpr IdStringPtr Delete = "Delete";
 static constexpr IdStringPtr SelectAll = "Select All";
+static constexpr IdStringPtr FindNext = "Find Next";
+static constexpr IdStringPtr FindPrevious = "Find Previous";
 
 static constexpr IdStringPtr MenuSeparator = "~";
 
 static constexpr IdStringPtr ToggleInlineUIEditor = "Toggle Inline UI-Editor";
+static constexpr IdStringPtr RecreateView = "Recreate View";
 static constexpr IdStringPtr ResaveSharedResources = "Resave Shared Resources";
 
 } // CommandName
@@ -123,11 +127,14 @@ static const Command Copy {CommandGroup::Edit, CommandName::Copy};
 static const Command Paste {CommandGroup::Edit, CommandName::Paste};
 static const Command Delete {CommandGroup::Edit, CommandName::Delete};
 static const Command SelectAll {CommandGroup::Edit, CommandName::SelectAll};
+static const Command FindNext {CommandGroup::Edit, CommandName::FindNext};
+static const Command FindPrevious {CommandGroup::Edit, CommandName::FindPrevious};
 
 //------------------------------------------------------------------------
 namespace Debug {
 
 static const Command ToggleInlineUIEditor {CommandGroup::Debug, CommandName::ToggleInlineUIEditor};
+static const Command RecreateView {CommandGroup::Debug, CommandName::RecreateView};
 static const Command ResaveSharedResources {CommandGroup::Debug,
 											CommandName::ResaveSharedResources};
 

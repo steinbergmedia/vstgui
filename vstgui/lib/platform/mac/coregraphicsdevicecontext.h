@@ -20,7 +20,8 @@ class CoreGraphicsDevice;
 
 //------------------------------------------------------------------------
 class CoreGraphicsDeviceContext : public IPlatformGraphicsDeviceContext,
-								  public IPlatformGraphicsDeviceContextBitmapExt
+								  public IPlatformGraphicsDeviceContextBitmapExt,
+								  public IPlatformGraphicsDeviceContextGradientExt
 {
 public:
 	CoreGraphicsDeviceContext (const CoreGraphicsDevice& device, void* cgContext);
@@ -73,6 +74,11 @@ public:
 								  BitmapInterpolationQuality quality) const override;
 	bool fillRectWithBitmap (IPlatformBitmap& bitmap, CRect srcRect, CRect dstRect, double alpha,
 							 BitmapInterpolationQuality quality) const override;
+
+	// IPlatformGraphicsDeviceContextGradientExt
+	bool drawLinearGradientLine (const PointList& line, const IPlatformGradient& gradient,
+								 CCoord lineWidth, LineCap lineCap,
+								 LineJoin lineJoin) const override;
 
 	// private
 	void drawCTLine (CTLineRef line, CGPoint cgPoint, CTFontRef fontRef, CColor color,

@@ -71,6 +71,8 @@ public:
 	bool getSize (CRect* pSize) const;
 	bool getSize (CRect& pSize) const;
 
+	CPoint checkSizeConstraint (const CPoint& newSize) const;
+
 	VSTGUI_DEPRECATED (
 	/** set a modal view. deprecated use beginModalViewSession instead */
 	bool setModalView (CView* pView);)

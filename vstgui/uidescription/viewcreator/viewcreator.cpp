@@ -338,14 +338,11 @@ bool ViewCreator::getAttributeValueRange (const string& attributeName, double& m
 bool ViewCreator::getViewAttributeString (CView* view, const CViewAttributeID attrID, string& value)
 {
 	uint32_t attrSize = 0;
-	if (view->getAttributeSize (attrID, attrSize))
+	if (view->getAttributeSize (attrID, attrSize) && attrSize > 0)
 	{
-		char* cstr = new char[attrSize + 1];
-		if (view->getAttribute (attrID, attrSize, cstr, attrSize))
-			value = cstr;
-		else
+		value.resize (attrSize - 1);
+		if (!view->getAttribute (attrID, attrSize, value.data (), attrSize))
 			value = "";
-		delete[] cstr;
 		return true;
 	}
 	return false;

@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -7,6 +7,8 @@
 #include "vstguibase.h"
 #include "vstguifwd.h"
 #include <cmath>
+#include <array>
+#include <string_view>
 
 namespace VSTGUI {
 
@@ -34,7 +36,7 @@ struct CColor
 		green = _green;
 		blue  = _blue;
 		alpha = _alpha;
-		return *this; 
+		return *this;
 	}
 
 	CColor& operator= (const CColor& newColor)
@@ -43,10 +45,10 @@ struct CColor
 		green = newColor.green;
 		blue  = newColor.blue;
 		alpha = newColor.alpha;
-		return *this; 
+		return *this;
 	}
-	
-	bool operator!= (const CColor &other) const 
+
+	bool operator!= (const CColor &other) const
 	{ return (red != other.red || green != other.green || blue  != other.blue || alpha != other.alpha); }
 
 	bool operator== (const CColor &other) const
@@ -86,7 +88,7 @@ struct CColor
 	 * @param lightness normalized [0..1]
 	 */
 	void fromHSL (double hue, double saturation, double lightness);
-	
+
 	/** get the luma of the color */
 	inline constexpr uint8_t getLuma () const;
 	/** get the lightness of the color */
@@ -118,10 +120,15 @@ struct CColor
 	template<typename T>
 	void setNormAlpha (T v);
 	//@}
-	
-	bool fromString (UTF8StringPtr str);
+
 	UTF8String toString () const;
-	static bool isColorRepresentation (UTF8StringPtr str);
+	bool fromString (std::string_view str);
+	static bool isColorRepresentation (std::string_view str);
+
+	VSTGUI_DEPRECATED_MSG (bool fromString (UTF8StringPtr str);
+						   , "use fromString with a std::string_view")
+	VSTGUI_DEPRECATED_MSG (static bool isColorRepresentation (UTF8StringPtr str);
+						   , "use isColorRepresentation with a std::string_view")
 
 	/** red component [0..255] */
 	uint8_t red {255};
@@ -152,6 +159,21 @@ constexpr const CColor kBlueCColor			= CColor (  0,   0, 255, 255);
 constexpr const CColor kYellowCColor		= CColor (255, 255,   0, 255);
 constexpr const CColor kMagentaCColor		= CColor (255,   0, 255, 255);
 constexpr const CColor kCyanCColor			= CColor (  0, 255, 255, 255);
+
+//-----------------------------------------------------------------------------
+// CSS Colors
+struct CSSNamedColor
+{
+	const std::string_view name;
+	const CColor color;
+};
+
+using CSSNamedColorArray = std::array<CSSNamedColor, 148>;
+/** get the CSS color array
+ *
+ *	@ingroup new_in_4_15
+ */
+const CSSNamedColorArray& getCSSNamedColors ();
 
 //-----------------------------------------------------------------------------
 inline constexpr uint8_t CColor::getLuma () const

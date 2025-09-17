@@ -6,7 +6,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../uiviewfactory.h"
+#include "../iviewfactory.h"
 #include "../uiattributes.h"
 #include "../viewcreator/viewcreator.h"
 #include "../../lib/controls/ctextedit.h"
@@ -185,7 +185,10 @@ protected:
 				return buffer.data ();
 			}
 		}
-		return viewFactory->getViewDisplayName (v);
+		if (const auto* vfEditingSupport =
+				dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory))
+			return vfEditingSupport->getViewDisplayName (v);
+		return {};
 	}
 	const UTF8String& getHeaderTitle () const override
 	{
@@ -220,7 +223,7 @@ protected:
 	void onUndoManagerChange () override;
 
 	CViewContainer* view;
-	const UIViewFactory* viewFactory;
+	const IViewFactory* viewFactory;
 	UIViewListDataSource* next;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
@@ -354,7 +357,7 @@ void UITemplateController::onUIDescTemplateChanged (UIDescription* desc)
 	{
 		int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 		int32_t index = 0;
-		auto selectedTemplateStr = selectedTemplateName ? selectedTemplateName->data () : "";
+		UTF8String selectedTemplateStr = selectedTemplateName ? selectedTemplateName->data () : "";
 		templateNames.clear ();
 		dataSource->setStringList (&templateNames);
 		std::list<const std::string*> tmp;
@@ -415,7 +418,7 @@ void UITemplateController::navigateTo (CView* view)
 			return; // view is not a child of the templateView
 		if (parent == templateView)
 			break;
-		if (UIViewFactory::getViewName (parent) == nullptr)
+		if (IViewFactory::getViewName (parent) == nullptr)
 		{
 			v = parent;
 			continue;
@@ -519,10 +522,12 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, GenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIViewListDataSource::UIViewListDataSource (
+	CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection,
+	UIUndoManager* undoManager, GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
-, viewFactory (dynamic_cast<const UIViewFactory*> (viewFactory))
+, viewFactory (viewFactory)
 , next (nullptr)
 , selection (selection)
 , undoManager (undoManager)

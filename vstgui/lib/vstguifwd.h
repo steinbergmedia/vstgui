@@ -66,12 +66,19 @@ enum CCursorType
 	kCursorCopy,
 	/** not allowed cursor (mainly for drag&drop operations) */
 	kCursorNotAllowed,
-	/** hand cursor */
-	kCursorHand,
+	/** pointing hand cursor */
+	kCursorPointingHand,
 	/** i beam cursor */
 	kCursorIBeam,
 	/** crosshair cursor */
 	kCursorCrosshair,
+	/** moveable object cursor */
+	kCursorMovableObject,
+	/** move object cursor */
+	kCursorMoveObject,
+
+	/** old name */
+	kCursorHand = kCursorPointingHand,
 };
 
 //----------------------------
@@ -187,6 +194,8 @@ class ITextEditListener;
 class ITextLabelListener;
 class IListControlDrawer;
 class IListControlConfigurator;
+class IViewLayouter;
+struct ViewLayout;
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 class ITouchEvent;

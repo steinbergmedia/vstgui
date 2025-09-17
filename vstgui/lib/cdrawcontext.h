@@ -239,6 +239,14 @@ public:
 							 bool evenOdd = false, CGraphicsTransform* transformation = nullptr);
 	//@}
 
+	struct IDrawLinearGradientLine
+	{
+		virtual bool draw (const PointList& line, const CGradient& gradient, CCoord lineWidth,
+						   CLineStyle::LineCap, CLineStyle::LineJoin) const = 0;
+	};
+	using DrawLinearGradientLineCallback = std::function<void (IDrawLinearGradientLine&)>;
+	bool drawLinearGradientLine (const DrawLinearGradientLineCallback& cb);
+
 	void beginDraw ();
 	void endDraw ();
 

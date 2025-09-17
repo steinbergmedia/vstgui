@@ -106,5 +106,22 @@ WindowPtr makeWindow (const Config& config);
 
 //------------------------------------------------------------------------
 } // UIDesc
+
+//------------------------------------------------------------------------
+/** Accessor interface for the window controller of an UIDescription window
+ *
+ *	When creating a window using UIDesc::makeWindow, the window controller of the window conforms to
+ *	this interface. You can utilize the dynamicPtrCast function to cast to this interface.
+ */
+class IUIDescWindowController : public Interface
+{
+public:
+	/** get the model binding object of the window controller */
+	virtual UIDesc::ModelBindingPtr getModelBinding () const = 0;
+	/** get the customization object of the window controller */
+	virtual UIDesc::CustomizationPtr getCustomization () const = 0;
+};
+
+//------------------------------------------------------------------------
 } // Standalone
 } // VSTGUI

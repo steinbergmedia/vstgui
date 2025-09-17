@@ -519,7 +519,10 @@ void CCheckBox::draw (CDrawContext* context)
 		auto lineWidth = frameWidth;
 		if (lineWidth < 0)
 			lineWidth = context->getHairlineSize ();
-		checkBoxSize.setHeight (std::floor (getFontCapHeight (font) + 2.5));
+		if (!(style & kIgnoreCapHeightOnDraw))
+			checkBoxSize.setHeight (std::floor (getFontCapHeight (font) + 2.5));
+		else
+			checkBoxSize.bottom -= 2.;
 		checkBoxSize.setWidth (checkBoxSize.getHeight ());
 		checkBoxSize.offset (1., std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2.));
 		context->setLineWidth (lineWidth);
@@ -626,7 +629,10 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 		}
 		else
 		{
-			checkBoxSize.setHeight (std::floor (getFontCapHeight (font) + 2.5));
+			if (!(style & kIgnoreCapHeightOnDraw))
+				checkBoxSize.setHeight (std::floor (getFontCapHeight (font) + 2.5));
+			else
+				checkBoxSize.bottom -= 2.;
 			checkBoxSize.setWidth (checkBoxSize.getHeight ());
 			checkBoxSize.offset (1, std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
 		}

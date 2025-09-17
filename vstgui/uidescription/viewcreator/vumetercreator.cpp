@@ -59,7 +59,8 @@ bool VuMeterCreator::apply (CView* view, const UIAttributes& attributes,
 
 	const auto* attr = attributes.getAttributeValue (kAttrOrientation);
 	if (attr)
-		vuMeter->setStyle (*attr == strVertical ? CVuMeter::kVertical : CVuMeter::kHorizontal);
+		vuMeter->setStyle (*attr == strVertical ? CVuMeter::Style::kVertical
+												: CVuMeter::Style::kHorizontal);
 
 	int32_t numLed;
 	if (attributes.getIntegerAttribute (kAttrNumLed, numLed))
@@ -113,7 +114,7 @@ bool VuMeterCreator::getAttributeValue (CView* view, const string& attributeName
 	}
 	else if (attributeName == kAttrOrientation)
 	{
-		if (vuMeter->getStyle () & CVuMeter::kVertical)
+		if (vuMeter->getStyle () == CVuMeter::Style::kVertical)
 			stringValue = strVertical;
 		else
 			stringValue = strHorizontal;

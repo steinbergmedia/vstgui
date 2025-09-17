@@ -5,7 +5,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uiselection.h"
-#include "../uiviewfactory.h"
+#include "../iviewfactory.h"
 #include "../uidescription.h"
 #include "../cstream.h"
 #include "../uiattributes.h"

@@ -29,6 +29,7 @@
 #include "lib/csplitview.cpp"
 #include "lib/cstring.cpp"
 #include "lib/ctabview.cpp"
+#include "lib/ctexteditor.cpp"
 #include "lib/ctooltipsupport.cpp"
 #include "lib/cview.cpp"
 #include "lib/cviewcontainer.cpp"
@@ -72,3 +73,6 @@
 #include "lib/platform/common/fileresourceinputstream.cpp"
 #include "lib/platform/common/genericoptionmenu.cpp"
 #include "lib/platform/common/generictextedit.cpp"
+
+#include "lib/viewlayouter/autosizeviewlayouter.cpp"
+#include "lib/viewlayouter/gridlayouter.cpp"

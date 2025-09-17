@@ -8,6 +8,8 @@
 
 namespace VSTGUI {
 
+using namespace std::string_view_literals;
+
 TEST_CASE (CColorTest, MakeCColor)
 {
 	CColor c = MakeCColor (10, 20, 30, 40);
@@ -114,9 +116,9 @@ TEST_CASE (CColorTest, HSL)
 
 TEST_CASE (CColorTest, IsColorRepresentation)
 {
-	EXPECT_TRUE (CColor::isColorRepresentation ("#FF00FFFF"));
+	EXPECT_TRUE (CColor::isColorRepresentation ("#FF00FFFF"sv));
 	// EXPECT_FALSE (CColor::isColorRepresentation ("#ABCDEFGH"));
-	EXPECT_FALSE (CColor::isColorRepresentation ("star"));
+	EXPECT_FALSE (CColor::isColorRepresentation ("star"sv));
 }
 
 TEST_CASE (CColorTest, ToString)
@@ -128,15 +130,15 @@ TEST_CASE (CColorTest, ToString)
 TEST_CASE (CColorTest, FromString)
 {
 	CColor c;
-	EXPECT_TRUE (c.fromString ("#FFFFFFFF"));
+	EXPECT_TRUE (c.fromString ("#FFFFFFFF"sv));
 	EXPECT_EQ (c, CColor (255, 255, 255));
-	c.fromString ("#FF0000FF");
+	c.fromString ("#FF0000FF"sv);
 	EXPECT_EQ (c, CColor (255, 0, 0));
-	c.fromString ("#00FF00FF");
+	c.fromString ("#00FF00FF"sv);
 	EXPECT_EQ (c, CColor (0, 255, 0));
-	c.fromString ("#0000FFFF");
+	c.fromString ("#0000FFFF"sv);
 	EXPECT_EQ (c, CColor (0, 0, 255));
-	c.fromString ("#0000FF00");
+	c.fromString ("#0000FF00"sv);
 	EXPECT_EQ (c, CColor (0, 0, 255, 0));
 }
 
