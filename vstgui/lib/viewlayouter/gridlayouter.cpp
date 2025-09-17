@@ -99,12 +99,6 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 		return std::nullopt;
 	}
 
-	if (gridProps.gridAreas.empty () == false && children.size () != gridProps.gridAreas.size ())
-	{
-		vstgui_assert (false, "GridLayouter: number of gridAreas must match number of children");
-		return std::nullopt;
-	}
-
 	std::vector<CCoord> rowHeights (rows, 0.0);
 	std::vector<CCoord> colWidths (cols, 0.0);
 	CCoord totalRowGap = (rows - 1) * rowGap;
@@ -259,15 +253,14 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 
 	if (!gridProps.gridAreas.empty ())
 	{
-		for (size_t childIdx = 0; childIdx < children.size (); ++childIdx, ++child)
-		{
-			const auto& area = gridProps.gridAreas[childIdx];
+		// Build an occupancy grid of explicit tracks
+		auto idx2D = [cols] (size_t r, size_t c) {
+			return r * cols + c;
+		};
+		std::vector<bool> occupied (rows * cols, false);
 
-			size_t r0 = std::min (area.row, rows - 1);
-			size_t c0 = std::min (area.column, cols - 1);
-			size_t r1 = std::min (r0 + area.rowSpan, rows);
-			size_t c1 = std::min (c0 + area.colSpan, cols);
-
+		// Helper to compute the raw cell rectangle for an area [r0,r1) x [c0,c1)
+		auto computeCellRect = [&] (size_t r0, size_t c0, size_t r1, size_t c1) {
 			CCoord y = newSize.top + offsetY;
 			for (size_t r = 0; r < r0; ++r)
 			{
@@ -285,25 +278,33 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 			CCoord h = 0.0;
 			for (size_t r = r0; r < r1; ++r)
 				h += rowHeights[r];
-			h += (r1 - r0 - 1) * (rowGap + spaceAroundY);
+			h += (r1 > r0 ? (r1 - r0 - 1) * (rowGap + spaceAroundY) : 0.0);
 			CCoord w = 0.0;
 			for (size_t c = c0; c < c1; ++c)
 				w += colWidths[c];
-			w += (c1 - c0 - 1) * (colGap + spaceAroundX);
+			w += (c1 > c0 ? (c1 - c0 - 1) * (colGap + spaceAroundX) : 0.0);
+			return CRect (x, y, x + w, y + h);
+		};
+
+		// Helper to place a single child for the given area with justify/align items handling
+		auto placeChildForArea = [&] (CView* child, size_t r0, size_t c0, size_t r1, size_t c1) {
+			CRect areaRect = computeCellRect (r0, c0, r1, c1);
+			CCoord x = areaRect.left;
+			CCoord y = areaRect.top;
+			CCoord w = areaRect.getWidth ();
+			CCoord h = areaRect.getHeight ();
 
 			CCoord itemX = x;
 			CCoord itemY = y;
 			CCoord itemWidth = w;
 			CCoord itemHeight = h;
+
 			// Determine intrinsic size when not stretching
 			CCoord intrinsicW = w;
 			CCoord intrinsicH = h;
-			if (auto view = child->get (); view)
-			{
-				CRect vs = view->getViewSize ();
-				intrinsicW = std::max<CCoord> (0.0, std::min (vs.getWidth (), w));
-				intrinsicH = std::max<CCoord> (0.0, std::min (vs.getHeight (), h));
-			}
+			CRect vs = child->getViewSize ();
+			intrinsicW = std::max<CCoord> (0.0, std::min (vs.getWidth (), w));
+			intrinsicH = std::max<CCoord> (0.0, std::min (vs.getHeight (), h));
 
 			// Horizontal sizing and positioning
 			switch (gridProps.justifyItems)
@@ -363,11 +364,65 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 					break;
 				}
 			}
+
 			CRect childRect (itemX, itemY, itemX + itemWidth, itemY + itemHeight);
 			std::optional<ViewLayout> childLayout;
-			if (auto childViewContainer = (*child)->asViewContainer ())
+			if (auto childViewContainer = child->asViewContainer ())
 				childLayout = {childViewContainer->calculateViewLayout (childRect)};
 			layout.emplace_back (childRect, childLayout);
+		};
+
+		// Mark occupied cells for the areas that correspond to existing children
+		const size_t numAreaChildren = std::min (children.size (), gridProps.gridAreas.size ());
+		for (size_t childIdx = 0; childIdx < numAreaChildren; ++childIdx)
+		{
+			const auto& area = gridProps.gridAreas[childIdx];
+			size_t r0 = std::min (area.row, rows - 1);
+			size_t c0 = std::min (area.column, cols - 1);
+			size_t r1 = std::min (r0 + area.rowSpan, rows);
+			size_t c1 = std::min (c0 + area.colSpan, cols);
+			for (size_t r = r0; r < r1; ++r)
+			{
+				for (size_t c = c0; c < c1; ++c)
+				{
+					occupied[idx2D (r, c)] = true;
+				}
+			}
+		}
+
+		// Now place children in order: explicit areas first, then auto-place remaining
+		for (size_t childIdx = 0; childIdx < children.size (); ++childIdx, ++child)
+		{
+			if (childIdx < gridProps.gridAreas.size ())
+			{
+				const auto& area = gridProps.gridAreas[childIdx];
+				size_t r0 = std::min (area.row, rows - 1);
+				size_t c0 = std::min (area.column, cols - 1);
+				size_t r1 = std::min (r0 + area.rowSpan, rows);
+				size_t c1 = std::min (c0 + area.colSpan, cols);
+				placeChildForArea (*child, r0, c0, r1, c1);
+			}
+			else
+			{
+				// Auto-place into the next free 1x1 cell (row-major)
+				bool placed = false;
+				for (size_t r = 0; r < rows && !placed; ++r)
+				{
+					for (size_t c = 0; c < cols && !placed; ++c)
+					{
+						if (!occupied[idx2D (r, c)])
+						{
+							occupied[idx2D (r, c)] = true;
+							placeChildForArea (*child, r, c, r + 1, c + 1);
+							placed = true;
+						}
+					}
+				}
+				if (!placed)
+				{
+					break;
+				}
+			}
 		}
 	}
 	else
@@ -433,8 +488,6 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 				y += spaceAroundY;
 		}
 	}
-	if (layout.size () != children.size ())
-		return std::nullopt;
 	return {{newSize, std::move (layout)}};
 }
 
@@ -446,12 +499,14 @@ bool GridLayouter::applyLayout (CViewContainer& container, const Children& child
 		return false;
 
 	const auto layoutData = std::any_cast<LayoutData> (&layout.data);
-	if (!layoutData || layoutData->size () != children.size ())
+	if (!layoutData || layoutData->size () > children.size ())
 		return false;
 
 	size_t childIdx = 0;
 	for (auto& child : children)
 	{
+		if (childIdx >= layoutData->size ())
+			break;
 		auto rect = (*layoutData)[childIdx].first;
 		auto& childLayout = (*layoutData)[childIdx].second;
 		if (auto childContainer = child->asViewContainer (); childContainer && childLayout)

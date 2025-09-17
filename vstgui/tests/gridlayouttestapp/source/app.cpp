@@ -393,25 +393,24 @@ struct GridLayoutWindowController : public WindowControllerAdapter
 		window.setContentView (frame);
 	}
 
-	void setGridProperties (const GridLayoutProperties& properties)
+	void setGridProperties (const GridLayoutProperties& properties, size_t numChildsToCreate)
 	{
 		layouter->setProperties (properties);
 		if (container)
 		{
 			container->invalid ();
 			container->removeAll ();
-			size_t numChilds = 0;
-			if (properties.gridAreas.empty ())
-				numChilds = properties.rows * properties.columns;
-			else
-				numChilds = properties.gridAreas.size ();
-			for (auto i = 0u; i < numChilds; ++i)
+			for (auto i = 0u; i < numChildsToCreate; ++i)
 			{
 				container->addView (new ViewWithAFrame (i));
 			}
 			if (auto layout = container->calculateViewLayout (container->getViewSize ()))
 			{
 				container->applyViewLayout (*layout);
+			}
+			else
+			{
+				container->removeAll ();
 			}
 		}
 	}
@@ -437,21 +436,21 @@ struct GridLayoutPropertiesWindowController : DelegationController
 			if ((container = view->asViewContainer ()))
 			{
 				GridLayoutProperties grid;
-				grid.rows = 14;
+				grid.rows = 15;
 				grid.columns = 2;
 				grid.alignItems = GridLayoutProperties::AlignItems::Stretch;
 				grid.justifyItems = GridLayoutProperties::JustifyItems::Stretch;
 				grid.alignContent = GridLayoutProperties::AlignContent::SpaceAround;
 				grid.justifyContent = GridLayoutProperties::JustifyContent::SpaceAround;
 				grid.autoRows = {
-					CCoord {20.},  CCoord {20.},
-					CCoord {20.},  CCoord {20.},
-					CCoord {20.},  CCoord {20.},
-					CCoord {20.},  CCoord {20.},
-					CCoord {20.},  GridLayoutProperties::Auto {},
-					CCoord {20.},  GridLayoutProperties::Auto {},
-					CCoord {20.},  GridLayoutProperties::Auto {},
-					CCoord {120.},
+					CCoord {20.}, CCoord {20.},
+					CCoord {20.}, CCoord {20.},
+					CCoord {20.}, CCoord {20.},
+					CCoord {20.}, CCoord {20.},
+					CCoord {20.}, GridLayoutProperties::Auto {},
+					CCoord {20.}, GridLayoutProperties::Auto {},
+					CCoord {20.}, GridLayoutProperties::Auto {},
+					CCoord {20.}, CCoord {120.},
 				};
 				grid.autoColumns = {
 					GridLayoutProperties::Auto {},
@@ -459,11 +458,11 @@ struct GridLayoutPropertiesWindowController : DelegationController
 					CCoord {30.},
 				};
 				grid.gridAreas = {
-					{0, 0, 1, 1},  {0, 1, 1, 1},  {1, 0, 1, 1}, {1, 1, 1, 1},  {2, 0, 1, 1},
-					{2, 1, 1, 1},  {3, 0, 1, 1},  {3, 1, 1, 1}, {4, 0, 1, 1},  {4, 1, 1, 1},
-					{5, 0, 1, 1},  {5, 1, 1, 1},  {6, 0, 1, 1}, {6, 1, 1, 1},  {7, 0, 1, 1},
-					{7, 1, 1, 1},  {8, 0, 1, 3},  {9, 0, 1, 2}, {10, 0, 1, 2}, {11, 0, 1, 2},
-					{12, 0, 1, 2}, {13, 0, 1, 2},
+					{0, 0, 1, 1},  {0, 1, 1, 1},  {1, 0, 1, 1},	 {1, 1, 1, 1},	{2, 0, 1, 1},
+					{2, 1, 1, 1},  {3, 0, 1, 1},  {3, 1, 1, 1},	 {4, 0, 1, 1},	{4, 1, 1, 1},
+					{5, 0, 1, 1},  {5, 1, 1, 1},  {6, 0, 1, 1},	 {6, 1, 1, 1},	{7, 0, 1, 1},
+					{7, 1, 1, 1},  {8, 0, 1, 3},  {9, 0, 1, 2},	 {10, 0, 1, 2}, {11, 0, 1, 2},
+					{12, 0, 1, 2}, {13, 0, 1, 2}, {14, 0, 1, 1}, {14, 1, 1, 1},
 				};
 				container->setViewLayouter (makeOwned<GridLayouter> (grid));
 			}
@@ -512,6 +511,7 @@ public:
 			Value::makeStringListValue ("Justify Content", {"Start", "Center", "End", "Stretch",
 															"SpaceBetween", "SpaceAround"}),
 			modelUpdatedCallback);
+		values->addValue (Value::makeStepValue ("NumViews", 1000), modelUpdatedCallback);
 
 		values->addValue (Value::make ("Add Auto Row"),
 						  UIDesc::ValueCalls::onEndEdit ([this] (auto& v) {
@@ -678,10 +678,16 @@ public:
 			props.justifyContent =
 				static_cast<GridLayoutProperties::JustifyContent> (Value::currentPlainValue (*v));
 		}
+		size_t numViewsToCreate = 1u;
+		if (auto v = values->getValue ("NumViews"))
+		{
+			numViewsToCreate = Value::currentPlainValue (*v);
+		}
+
 		props.autoRows = autoRows;
 		props.autoColumns = autoColumns;
 		props.gridAreas = gridAreas;
-		gridLayoutWindowController->setGridProperties (props);
+		gridLayoutWindowController->setGridProperties (props, numViewsToCreate);
 	}
 
 	std::shared_ptr<GridLayoutWindowController> gridLayoutWindowController;

@@ -1514,4 +1514,80 @@ TEST_CASE (GridLayouter, GridAreas_IntrinsicSize_Stretch)
 	EXPECT (rectNearlyEqual (container->getView (0)->getViewSize (), expected));
 }
 
+//------------------------------------------------------------------------
+TEST_CASE (GridLayouter, GridAreas_Mismatch_FewerChildrenThanAreas)
+{
+	// 2x2 grid, 3 defined areas, but only 2 children. Extra area is ignored.
+	auto layouter = makeOwned<GridLayouter> ();
+	GridLayoutProperties props;
+	props.rows = 2;
+	props.columns = 2;
+	props.autoRows = {CCoord (50), CCoord (50)};
+	props.autoColumns = {CCoord (50), CCoord (50)};
+	props.gridAreas = {
+		{0, 0, 1, 1}, // Area for child 0: top-left
+		{0, 1, 1, 1}, // Area for child 1: top-right
+		{1, 0, 1, 2}  // Extra area spanning bottom row (no child)
+	};
+	layouter->setProperties (props);
+
+	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 100));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->setViewLayouter (layouter);
+	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
+	EXPECT (layoutOpt.has_value ());
+	auto layout = layoutOpt.value ();
+	EXPECT (container->applyViewLayout (layout));
+
+	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
+	EXPECT (rects && rects->size () == 2);
+	constexpr std::array expectedRects {CRect (0, 0, 50, 50), CRect (50, 0, 100, 50)};
+	for (size_t i = 0; i < expectedRects.size (); ++i)
+	{
+		EXPECT ((*rects)[i].first == expectedRects[i]);
+		EXPECT (container->getView (static_cast<int> (i))->getViewSize () == expectedRects[i]);
+	}
+}
+
+//------------------------------------------------------------------------
+TEST_CASE (GridLayouter, GridAreas_Mismatch_MoreChildrenThanAreas_AutoPlacement)
+{
+	// 2x2 grid, 1 defined area for the first child, remaining children auto-placed.
+	auto layouter = makeOwned<GridLayouter> ();
+	GridLayoutProperties props;
+	props.rows = 2;
+	props.columns = 2;
+	props.autoRows = {CCoord (50), CCoord (50)};
+	props.autoColumns = {CCoord (50), CCoord (50)};
+	props.gridAreas = {
+		{0, 0, 1, 1} // Child 0: top-left cell
+	};
+	layouter->setProperties (props);
+
+	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 100));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->setViewLayouter (layouter);
+	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
+	EXPECT (layoutOpt.has_value ());
+	auto layout = layoutOpt.value ();
+	EXPECT (container->applyViewLayout (layout));
+
+	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
+	EXPECT (rects && rects->size () == 4);
+	constexpr std::array expectedRects {
+		CRect (0, 0, 50, 50),	 // Child 0: explicit area
+		CRect (50, 0, 100, 50),	 // Child 1: auto-placed to (0,1)
+		CRect (0, 50, 50, 100),	 // Child 2: auto-placed to (1,0)
+		CRect (50, 50, 100, 100) // Child 3: auto-placed to (1,1)
+	};
+	for (size_t i = 0; i < expectedRects.size (); ++i)
+	{
+		EXPECT ((*rects)[i].first == expectedRects[i]);
+		EXPECT (container->getView (static_cast<int> (i))->getViewSize () == expectedRects[i]);
+	}
+}
 } // namespace VSTGUI
