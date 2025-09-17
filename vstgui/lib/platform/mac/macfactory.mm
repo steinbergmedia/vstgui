@@ -16,6 +16,7 @@
 #include "cocoa/nsviewframe.h"
 #include "ios/uiviewframe.h"
 #include "macclipboard.h"
+#include "mactaskexecutor.h"
 #include "macfactory.h"
 #include "macfileselector.h"
 #include "macglobals.h"
@@ -36,6 +37,7 @@ struct MacFactory::Impl
 	bool useAsynchronousLayerDrawing {true};
 	bool visualizeRedrawAreas {false};
 	CoreGraphicsDeviceFactory graphicsDeviceFactory;
+	PlatformTaskExecutorPtr taskExecutor;
 };
 
 //-----------------------------------------------------------------------------
@@ -44,9 +46,13 @@ MacFactory::MacFactory (CFBundleRef bundle)
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->bundle = bundle;
 	mach_timebase_info (&impl->timebaseInfo);
+	impl->taskExecutor = std::make_unique<MacTaskExecutor> ();
 }
 
 MacFactory::~MacFactory () noexcept = default;
+
+//------------------------------------------------------------------------
+void MacFactory::finalize () noexcept { impl->taskExecutor->waitAllTasksExecuted (); }
 
 //-----------------------------------------------------------------------------
 CFBundleRef MacFactory::getBundle () const noexcept
@@ -234,6 +240,21 @@ PlatformFileSelectorPtr MacFactory::createFileSelector (PlatformFileSelectorStyl
 const IPlatformGraphicsDeviceFactory& MacFactory::getGraphicsDeviceFactory () const noexcept
 {
 	return impl->graphicsDeviceFactory;
+}
+
+//------------------------------------------------------------------------
+const IPlatformTaskExecutor& MacFactory::getTaskExecutor () const noexcept
+{
+	return *impl->taskExecutor;
+}
+
+//------------------------------------------------------------------------
+bool MacFactory::replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept
+{
+	if (!replaceFunc)
+		return false;
+	impl->taskExecutor = replaceFunc (std::move (impl->taskExecutor));
+	return true;
 }
 
 //-----------------------------------------------------------------------------

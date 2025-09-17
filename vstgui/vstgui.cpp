@@ -37,6 +37,7 @@
 #include "lib/events.cpp"
 #include "lib/genericstringlistdatabrowsersource.cpp"
 #include "lib/pixelbuffer.cpp"
+#include "lib/tasks.cpp"
 #include "lib/vstguidebug.cpp"
 #include "lib/vstguiinit.cpp"
 

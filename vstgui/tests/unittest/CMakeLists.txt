@@ -42,6 +42,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/idependency_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/pixelbufferconverter_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/platform_helper.h"
+	"${VSTGUI_TEST_BASE}lib/task_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/utf8string_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/utf8stringview_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/canimationsplashscreencreator_test.cpp"
@@ -190,6 +191,9 @@ else()
 		target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 	endif()
 
+    if(WIN32)
+        target_compile_options(${target} PRIVATE /bigobj)
+    endif()
 endif(VSTGUI_USE_XCODE_XCTEST)
 
 if(CMAKE_HOST_APPLE)

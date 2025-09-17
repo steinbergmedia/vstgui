@@ -53,6 +53,8 @@ endfunction(vstgui_source_group_by_folder)
 
 ##########################################################################################
 if(LINUX)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
     find_package(X11 REQUIRED)
     find_package(Freetype REQUIRED)
     find_package(PkgConfig REQUIRED)
@@ -81,6 +83,7 @@ if(LINUX)
         ${CAIRO_LIBRARIES}
         ${PANGO_LIBRARIES}
         ${FONTCONFIG_LIBRARIES}
+        Threads::Threads
         dl
     )
 endif()

@@ -36,6 +36,8 @@ public:
 
 	virtual ~IPlatformFactory () noexcept = default;
 
+	virtual void finalize () noexcept = 0;
+
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
 	 */
@@ -147,6 +149,25 @@ public:
 	 *	@return platform graphics device factory
 	 */
 	virtual const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept = 0;
+
+	/** Get the platform task executor
+	 *
+	 *  @return platform task executor
+	 */
+	virtual const IPlatformTaskExecutor& getTaskExecutor () const noexcept = 0;
+
+	using ReplaceTaskExecFunc =
+		std::function<PlatformTaskExecutorPtr (PlatformTaskExecutorPtr&& previousExecutor)>;
+
+	/** Replace the platform task executor
+	 *
+	 *	Make sure that no tasks are scheduled when replacing the task executor
+	 *
+	 *	@param replaceFunc	function which will be called from the factory to create the new
+	 *						executor
+	 *	@return true on success
+	 */
+	virtual bool replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept = 0;
 
 	virtual const LinuxFactory* asLinuxFactory () const noexcept = 0;
 	virtual const MacFactory* asMacFactory () const noexcept = 0;

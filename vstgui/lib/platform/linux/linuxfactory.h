@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../platformfactory.h"
+#include "linuxtaskexecutor.h"
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -18,6 +19,11 @@ public:
 
 	void setResourcePath (const std::string& path) const noexcept;
 	std::string getResourcePath () const noexcept;
+
+	void setScheduleMainQueueTaskFunc (
+		LinuxTaskExecutor::ScheduleMainQueueTaskFunc&& func) const noexcept;
+
+	void finalize () noexcept final;
 
 	/** Return platform ticks (millisecond resolution)
 	 *	@return ticks
@@ -127,6 +133,9 @@ public:
 	 *	@return platform graphics device factory
 	 */
 	const IPlatformGraphicsDeviceFactory& getGraphicsDeviceFactory () const noexcept final;
+
+	const IPlatformTaskExecutor& getTaskExecutor () const noexcept final;
+	bool replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept final;
 
 	const LinuxFactory* asLinuxFactory () const noexcept final;
 	const MacFactory* asMacFactory () const noexcept final;

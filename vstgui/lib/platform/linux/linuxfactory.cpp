@@ -14,6 +14,7 @@
 #include "linuxstring.h"
 #include "x11timer.h"
 #include "x11fileselector.h"
+#include "linuxtaskexecutor.h"
 #include "linuxfactory.h"
 #include <list>
 #include <memory>
@@ -30,6 +31,7 @@ struct LinuxFactory::Impl
 {
 	std::string resPath;
 	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {std::make_unique<CairoGraphicsDeviceFactory> ()};
+	PlatformTaskExecutorPtr taskExecutor {std::make_unique<LinuxTaskExecutor> ()};
 
 	void setupResPath (void* handle)
 	{
@@ -67,6 +69,9 @@ LinuxFactory::LinuxFactory (void* soHandle)
 }
 
 //-----------------------------------------------------------------------------
+void LinuxFactory::finalize () noexcept { impl->taskExecutor->waitAllTasksExecuted (); }
+
+//-----------------------------------------------------------------------------
 void LinuxFactory::setResourcePath (const std::string& path) const noexcept
 {
 	impl->resPath = path;
@@ -76,6 +81,20 @@ void LinuxFactory::setResourcePath (const std::string& path) const noexcept
 std::string LinuxFactory::getResourcePath () const noexcept
 {
 	return impl->resPath;
+}
+
+//-----------------------------------------------------------------------------
+void LinuxFactory::setScheduleMainQueueTaskFunc (
+	LinuxTaskExecutor::ScheduleMainQueueTaskFunc&& func) const noexcept
+{
+	if (auto lte = dynamic_cast<LinuxTaskExecutor*> (impl->taskExecutor.get ()))
+	{
+		lte->setScheduleMainQueueTaskFunc (std::move (func));
+	}
+	else
+	{
+		vstgui_assert (false, "cannot set the func on a custom task executor");
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -207,6 +226,21 @@ PlatformFileSelectorPtr LinuxFactory::createFileSelector (PlatformFileSelectorSt
 const IPlatformGraphicsDeviceFactory& LinuxFactory::getGraphicsDeviceFactory () const noexcept
 {
 	return *impl->graphicsDeviceFactory.get ();
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformTaskExecutor& LinuxFactory::getTaskExecutor () const noexcept
+{
+	return *impl->taskExecutor;
+}
+
+//-----------------------------------------------------------------------------
+bool LinuxFactory::replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept
+{
+	if (!replaceFunc)
+		return false;
+	impl->taskExecutor = replaceFunc (std::move (impl->taskExecutor));
+	return true;
 }
 
 //-----------------------------------------------------------------------------

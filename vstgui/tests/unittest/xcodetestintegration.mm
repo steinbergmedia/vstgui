@@ -57,7 +57,16 @@ void testFunc (id self, SEL _cmd)
 		if (auto setup = testSuite->setup ())
 			setup (&context);
 
-		it->second (&context);
+		try
+		{
+			it->second (&context);
+		}
+		catch (...)
+		{
+			if (auto teardown = testSuite->teardown ())
+				teardown (&context);
+			throw;
+		}
 
 		if (auto teardown = testSuite->teardown ())
 			teardown (&context);

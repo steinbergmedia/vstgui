@@ -176,6 +176,7 @@ set(${target}_common_sources
     platform/iplatformoptionmenu.h
     platform/iplatformresourceinputstream.h
     platform/iplatformstring.h
+    platform/iplatformtaskexecutor.h
     platform/iplatformtextedit.h
     platform/iplatformtextinputclient.h
     platform/iplatformtimer.h
@@ -194,11 +195,14 @@ set(${target}_common_sources
     platform/common/generictextedit.cpp
     platform/common/generictextedit.h
     platform/common/gradientbase.h
+    platform/common/threadpooltaskexecutor.h
     viewlayouter/autosizeviewlayouter.cpp
     viewlayouter/autosizeviewlayouter.h
     viewlayouter/baseviewlayouter.h
     viewlayouter/gridlayouter.cpp
     viewlayouter/gridlayouter.h
+    tasks.cpp
+    tasks.h
     vstguibase.h
     vstguidebug.cpp
     vstguidebug.h
@@ -243,6 +247,8 @@ set(${target}_mac_sources
     platform/mac/macglobals.h
     platform/mac/macstring.h
     platform/mac/macstring.mm
+    platform/mac/mactaskexecutor.mm
+    platform/mac/mactaskexecutor.h
     platform/mac/mactimer.cpp
     platform/mac/mactimer.h
     platform/mac/quartzgraphicspath.cpp
@@ -269,6 +275,8 @@ set(${target}_win32_sources
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
     platform/win32/win32bitmapbase.h
+    platform/win32/win32taskexecutor.cpp
+    platform/win32/win32taskexecutor.h
     platform/win32/win32dll.h
     platform/win32/win32datapackage.cpp
     platform/win32/win32datapackage.h
@@ -329,6 +337,8 @@ set(${target}_linux_sources
     platform/linux/x11utils.h
     platform/linux/linuxfactory.cpp
     platform/linux/linuxfactory.h
+    platform/linux/linuxtaskexecutor.cpp
+    platform/linux/linuxtaskexecutor.h
 )
 
 ##########################################################################################
