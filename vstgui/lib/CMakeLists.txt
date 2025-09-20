@@ -187,6 +187,7 @@ set(${target}_common_sources
     platform/platform_macos.h
     platform/platform_win32.h
     platform/platform_x11.h
+    platform/platform_wayland.h
     platform/std_unorderedmap.h
     platform/common/fileresourceinputstream.cpp
     platform/common/fileresourceinputstream.h
@@ -335,6 +336,14 @@ set(${target}_linux_sources
     platform/linux/x11timer.h
     platform/linux/x11utils.cpp
     platform/linux/x11utils.h
+    platform/linux/waylandframe.cpp
+    platform/linux/waylandframe.h
+    platform/linux/waylandplatform.cpp
+    platform/linux/waylandplatform.h
+    platform/linux/waylandutils.cpp
+    platform/linux/waylandutils.h
+    platform/linux/waylandclientcontext.cpp
+    platform/linux/waylandclientcontext.h
     platform/linux/linuxfactory.cpp
     platform/linux/linuxfactory.h
     platform/linux/linuxtaskexecutor.cpp
@@ -372,7 +381,7 @@ if(LINUX)
     target_include_directories(${target} PRIVATE ${CAIRO_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${PANGO_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${FONTCONFIG_INCLUDE_DIRS})
-    target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES})
+    target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES} ${WAYLAND_LIBRARIES})
 endif()
 
 if(CMAKE_HOST_APPLE)
