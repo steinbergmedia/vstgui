@@ -306,7 +306,7 @@ bool Frame::hideTooltip ()
 //------------------------------------------------------------------------
 void* Frame::getPlatformRepresentation () const
 {
-	// TODO
+#warning TODO: Implementation
 	return nullptr;
 	// return reinterpret_cast<void*> (getX11WindowID ());
 }
