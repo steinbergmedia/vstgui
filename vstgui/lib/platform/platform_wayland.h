@@ -8,6 +8,9 @@
 #pragma once
 
 #include "iplatformframe.h"
+
+// TODO: Get rid of this header (IRunLoop, IEventHandler & ITimerHandler is needed by both X11 and
+// Wayland)
 #include "platform_x11.h"
 
 struct wl_surface;
@@ -18,10 +21,6 @@ struct xdg_toplevel;
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Wayland {
-
-using X11::IEventHandler;
-using X11::ITimerHandler;
-using X11::IRunLoop;
 
 //------------------------------------------------------------------------
 class IWaylandHost : public virtual IReference

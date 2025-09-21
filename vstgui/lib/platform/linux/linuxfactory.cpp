@@ -205,7 +205,7 @@ PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) co
 	if (auto runLoop = Wayland::RunLoop::instance ().get ())
 	{
 		struct Timer : public IPlatformTimer,
-					   public X11::ITimerHandler
+					   public VSTGUI::ITimerHandler
 		{
 			Timer (IPlatformTimerCallback* callback) : callback (callback) {}
 			~Timer () noexcept { stop (); }
