@@ -13,6 +13,7 @@
 #include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/preferences.h"
 #include "vstgui/lib/cframe.h"
+#include "vstgui/lib/cclipboard.h"
 #include "vstgui/lib/cdatabrowser.h"
 #include "vstgui/lib/cdrawcontext.h"
 #include "vstgui/lib/controls/coptionmenu.h"
@@ -374,7 +375,8 @@ private:
 };
 
 //------------------------------------------------------------------------
-struct GridLayoutWindowController : public WindowControllerAdapter
+struct GridLayoutWindowController : public WindowControllerAdapter,
+									public NoMenuBuilder
 {
 	void onClosed (const IWindow& window) override
 	{
@@ -414,6 +416,157 @@ struct GridLayoutWindowController : public WindowControllerAdapter
 				container->removeAll ();
 			}
 		}
+	}
+
+	void copyGridPropertiesToClipboard ()
+	{
+		const auto& props = layouter->getProperties ();
+		std::stringstream string;
+		string << "GridLayoutProperties props;" << std::endl;
+		string << "props.rows = " << props.rows << ";" << std::endl;
+		string << "props.columns = " << props.columns << ";" << std::endl;
+		string << "props.rowGap = " << props.rowGap << ";" << std::endl;
+		string << "props.columnGap = " << props.columnGap << ";" << std::endl;
+		switch (props.alignItems)
+		{
+			case GridLayoutProperties::AlignItems::Start:
+				string << "props.alignItems = GridLayoutProperties::AlignItems::Start;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::AlignItems::Center:
+				string << "props.alignItems = GridLayoutProperties::AlignItems::Center;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::AlignItems::End:
+				string << "props.alignItems = GridLayoutProperties::AlignItems::End;" << std::endl;
+				break;
+			case GridLayoutProperties::AlignItems::Stretch:
+				string << "props.alignItems = GridLayoutProperties::AlignItems::Stretch;"
+					   << std::endl;
+				break;
+		}
+		switch (props.justifyItems)
+		{
+			case GridLayoutProperties::JustifyItems::Start:
+				string << "props.justifyItems = GridLayoutProperties::JustifyItems::Start;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::JustifyItems::Center:
+				string << "props.justifyItems = GridLayoutProperties::JustifyItems::Center;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::JustifyItems::End:
+				string << "props.justifyItems = GridLayoutProperties::JustifyItems::End;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::JustifyItems::Stretch:
+				string << "props.justifyItems = GridLayoutProperties::JustifyItems::Stretch;"
+					   << std::endl;
+				break;
+		}
+		switch (props.alignContent)
+		{
+			case GridLayoutProperties::AlignContent::Start:
+				string << "props.alignContent = GridLayoutProperties::AlignContent::Start;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::AlignContent::Center:
+				string << "props.alignContent = GridLayoutProperties::AlignContent::Center;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::AlignContent::End:
+				string << "props.alignContent = GridLayoutProperties::AlignContent::End;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::AlignContent::Stretch:
+				string << "props.alignContent = GridLayoutProperties::AlignContent::Stretch;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::AlignContent::SpaceBetween:
+				string << "props.alignContent = GridLayoutProperties::AlignContent::SpaceBetween;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::AlignContent::SpaceAround:
+				string << "props.alignContent = GridLayoutProperties::AlignContent::SpaceAround;"
+					   << std::endl;
+				break;
+		}
+		switch (props.justifyContent)
+		{
+			case GridLayoutProperties::JustifyContent::Start:
+				string << "props.justifyContent = GridLayoutProperties::JustifyContent::Start;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::JustifyContent::Center:
+				string << "props.justifyContent = GridLayoutProperties::JustifyContent::Center;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::JustifyContent::End:
+				string << "props.justifyContent = GridLayoutProperties::JustifyContent::End;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::JustifyContent::Stretch:
+				string << "props.justifyContent = GridLayoutProperties::JustifyContent::Stretch;"
+					   << std::endl;
+				break;
+			case GridLayoutProperties::JustifyContent::SpaceBetween:
+				string
+					<< "props.justifyContent = GridLayoutProperties::JustifyContent::SpaceBetween;"
+					<< std::endl;
+				break;
+			case GridLayoutProperties::JustifyContent::SpaceAround:
+				string
+					<< "props.justifyContent = GridLayoutProperties::JustifyContent::SpaceAround;"
+					<< std::endl;
+				break;
+		}
+		string << "props.autoRows.reserve (" << props.autoRows.size () << ");" << std::endl;
+		for (const auto& s : props.autoRows)
+		{
+			if (std::holds_alternative<CCoord> (s))
+			{
+				string << "props.autoRows.push_back (CCoord {" << std::get<CCoord> (s) << "});"
+					   << std::endl;
+			}
+			else if (std::holds_alternative<GridLayoutProperties::Percentage> (s))
+			{
+				string << "props.autoRows.push_back (GridLayoutProperties::Percentage {"
+					   << std::get<GridLayoutProperties::Percentage> (s).value << "});"
+					   << std::endl;
+			}
+			else
+			{
+				string << "props.autoRows.push_back (GridLayoutProperties::Auto {});" << std::endl;
+			}
+		}
+		string << "props.autoColumns.reserve (" << props.autoColumns.size () << ");" << std::endl;
+		for (const auto& s : props.autoColumns)
+		{
+			if (std::holds_alternative<CCoord> (s))
+			{
+				string << "props.autoColumns.push_back (CCoord {" << std::get<CCoord> (s) << "});"
+					   << std::endl;
+			}
+			else if (std::holds_alternative<GridLayoutProperties::Percentage> (s))
+			{
+				string << "props.autoColumns.push_back (GridLayoutProperties::Percentage {"
+					   << std::get<GridLayoutProperties::Percentage> (s).value << "});"
+					   << std::endl;
+			}
+			else
+			{
+				string << "props.autoColumns.push_back (GridLayoutProperties::Auto {});"
+					   << std::endl;
+			}
+		}
+		string << "props.gridAreas.reserve (" << props.gridAreas.size () << ");" << std::endl;
+		for (const auto& a : props.gridAreas)
+		{
+			string << "props.gridAreas.push_back ({" << a.row << ", " << a.column << ", "
+				   << a.rowSpan << ", " << a.colSpan << "});" << std::endl;
+		}
+
+		CClipboard::setString (string.str ().data ());
 	}
 
 	SharedPointer<CFrame> frame;
@@ -477,7 +630,7 @@ struct GridLayoutPropertiesWindowController : DelegationController
 //------------------------------------------------------------------------
 class GridLayoutTestApp : public Application::DelegateAdapter,
 						  public WindowListenerAdapter,
-						  public NoMenuBuilder
+						  public ICommandHandler
 {
 public:
 	static constexpr int32_t MaxRowsCols = 50;
@@ -634,6 +787,21 @@ public:
 		}
 	}
 	void onClosed (const IWindow& window) override { IApplication::instance ().quit (); }
+	bool canHandleCommand (const Command& command) override
+	{
+		if (command == Commands::Copy)
+			return true;
+		return false;
+	}
+	bool handleCommand (const Command& command) override
+	{
+		if (command == Commands::Copy)
+		{
+			gridLayoutWindowController->copyGridPropertiesToClipboard ();
+			return true;
+		}
+		return false;
+	}
 
 	void restoreValues ()
 	{
