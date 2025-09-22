@@ -11,6 +11,7 @@
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/standalone/include/helpers/menubuilder.h"
+#include "vstgui/standalone/include/helpers/preferences.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cdatabrowser.h"
 #include "vstgui/lib/cdrawcontext.h"
@@ -565,18 +566,15 @@ public:
 								  gridAreaController->removeSelection ();
 							  v.performEdit (0.);
 						  }));
-
-		autoRows.push_back ({GridLayoutProperties::Auto {}});
-		autoRows.push_back ({GridLayoutProperties::Auto {}});
-		autoRows.push_back ({GridLayoutProperties::Auto {}});
-
-		autoColumns.push_back ({GridLayoutProperties::Auto {}});
-		autoColumns.push_back ({GridLayoutProperties::Auto {}});
-		autoColumns.push_back ({GridLayoutProperties::Auto {}});
 	}
 
 	void finishLaunching () override
 	{
+		restoreValues ();
+		restoreAutoRowsCols ("AutoRows", autoRows);
+		restoreAutoRowsCols ("AutoColumns", autoColumns);
+		restoreGridAreas (gridAreas);
+
 		auto customization = UIDesc::Customization::make ();
 		customization->addCreateViewControllerFunc (
 			"AutoRowsController",
@@ -636,6 +634,157 @@ public:
 		}
 	}
 	void onClosed (const IWindow& window) override { IApplication::instance ().quit (); }
+
+	void restoreValues ()
+	{
+		Preferences prefs ({"Values"});
+		for (auto& value : values->getValues ())
+		{
+			const auto& id = value->getID ();
+			if (auto norm = prefs.getNumber<double> (id))
+			{
+				value->performEdit (*norm);
+			}
+		}
+	}
+
+	void storeValue ()
+	{
+		Preferences prefs ({"Values"});
+		for (auto& value : values->getValues ())
+		{
+			const auto& id = value->getID ();
+			const auto& norm = value->getValue ();
+			prefs.setFloat (id, norm);
+		}
+	}
+
+	void restoreAutoRowsCols (const UTF8String& name,
+							  std::vector<GridLayoutProperties::SizeSpec>& list) const
+	{
+		Preferences prefs ({name});
+		size_t index = 0u;
+		while (true)
+		{
+			auto sizePrefs = prefs.subGroupPreferences (toString (index));
+			if (auto type = sizePrefs.get ("Type"))
+			{
+				if (*type == "")
+					break;
+				if (*type == "Coord")
+				{
+					CCoord coord = 20.;
+					if (auto value = sizePrefs.getNumber<double> ("Value"))
+						coord = *value;
+					list.push_back (coord);
+				}
+				else if (*type == "Percentage")
+				{
+					GridLayoutProperties::Percentage perc (50.);
+					if (auto value = sizePrefs.getNumber<double> ("Value"))
+						perc.value = *value;
+					list.push_back (perc);
+				}
+				else if (*type == "Auto")
+				{
+					list.push_back (GridLayoutProperties::Auto {});
+				}
+				else
+				{
+					assert (false); // unexpected
+					break;
+				}
+			}
+			else
+			{
+				break;
+			}
+			++index;
+		}
+	}
+
+	void storeAutoRowsCols (const UTF8String& name,
+							const std::vector<GridLayoutProperties::SizeSpec>& list) const
+	{
+		Preferences prefs ({name});
+		size_t index = 0u;
+		for (const auto& size : list)
+		{
+			auto sizePrefs = prefs.subGroupPreferences (toString (index));
+			if (std::holds_alternative<CCoord> (size))
+			{
+				sizePrefs.set ("Type", "Coord");
+				sizePrefs.setFloat ("Value", std::get<CCoord> (size));
+			}
+			else if (std::holds_alternative<GridLayoutProperties::Percentage> (size))
+			{
+				sizePrefs.set ("Type", "Percentage");
+				sizePrefs.setFloat ("Value",
+									std::get<GridLayoutProperties::Percentage> (size).value);
+			}
+			else
+			{
+				sizePrefs.set ("Type", "Auto");
+			}
+			++index;
+		}
+		auto sizePrefs = prefs.subGroupPreferences (toString (index));
+		sizePrefs.set ("Type", "");
+	}
+
+	void restoreGridAreas (std::vector<GridLayoutProperties::GridArea>& areas)
+	{
+		Preferences prefs ({"GridAreas"});
+		size_t index = 0u;
+		while (true)
+		{
+			GridLayoutProperties::GridArea area {};
+			auto areaPrefs = prefs.subGroupPreferences (toString (index));
+			if (auto value = areaPrefs.getNumber<size_t> ("Row"))
+				area.row = *value;
+			else
+				break;
+			if (auto value = areaPrefs.getNumber<size_t> ("Column"))
+				area.column = *value;
+			else
+				break;
+			if (auto value = areaPrefs.getNumber<size_t> ("RowSpan"))
+				area.rowSpan = *value;
+			else
+				break;
+			if (auto value = areaPrefs.getNumber<size_t> ("ColSpan"))
+				area.colSpan = *value;
+			else
+				break;
+			areas.push_back (area);
+			++index;
+		}
+	}
+
+	void storeGridAreas (const std::vector<GridLayoutProperties::GridArea>& areas)
+	{
+		Preferences prefs ({"GridAreas"});
+		size_t index = 0u;
+		for (const auto& area : areas)
+		{
+			auto areaPrefs = prefs.subGroupPreferences (toString (index));
+			areaPrefs.setNumber ("Row", area.row);
+			areaPrefs.setNumber ("Column", area.column);
+			areaPrefs.setNumber ("RowSpan", area.rowSpan);
+			areaPrefs.setNumber ("ColSpan", area.colSpan);
+			++index;
+		}
+		auto areaPrefs = prefs.subGroupPreferences (toString (index));
+		areaPrefs.set ("Row", "");
+	}
+
+	void onQuit () override
+	{
+		storeValue ();
+		storeAutoRowsCols ("AutoRows", autoRows);
+		storeAutoRowsCols ("AutoColumns", autoColumns);
+		storeGridAreas (gridAreas);
+	}
 
 	void modelUpdated ()
 	{
