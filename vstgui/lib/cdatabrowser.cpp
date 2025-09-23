@@ -222,12 +222,6 @@ void CDataBrowser::valueChanged (CControl *pControl)
 }
 
 //-----------------------------------------------------------------------------------------------
-void CDataBrowser::recalculateSubViews ()
-{
-	CScrollView::recalculateSubViews ();
-}
-
-//-----------------------------------------------------------------------------------------------
 /**
  * @param rememberSelection if true selection will be remembered
  */

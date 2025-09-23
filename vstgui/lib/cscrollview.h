@@ -131,7 +131,7 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	~CScrollView () noexcept override;
-	virtual void recalculateSubViews ();
+	void recalculateSubViews ();
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewWillDelete (CView* view) override;
