@@ -884,6 +884,16 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 					pContext->setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
 					pV->drawRect (pContext, viewSize);
 					pContext->setGlobalAlpha (globalContextAlpha);
+#if DEBUG
+					static bool drawViewWireFrames = false;
+					if (drawViewWireFrames)
+					{
+						pContext->setFrameColor (kRedCColor);
+						pContext->setLineWidth (pContext->getHairlineSize ());
+						pContext->setLineStyle (kLineSolid);
+						pContext->drawRect (pV->getViewSize ());
+					}
+#endif
 				}
 			}
 		}
