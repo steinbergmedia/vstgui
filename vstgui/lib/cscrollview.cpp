@@ -298,21 +298,37 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 	return getParentView () ? getParentView ()->notify (sender, message) : kMessageUnknown;
 }
 
+//------------------------------------------------------------------------
+struct CScrollView::Impl
+{
+	CScrollContainer* sc {nullptr};
+	CScrollbar* vsb {nullptr};
+	CScrollbar* hsb {nullptr};
+
+	CView* edgeViewTop {nullptr};
+	CView* edgeViewLeft {nullptr};
+
+	CRect containerSize {};
+	CCoord scrollbarWidth {};
+	int32_t style {};
+	int32_t activeScrollbarStyle {};
+	bool recalculateSubViewsRecursionGard {false};
+};
+
 /// @endcond
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
+CScrollView::CScrollView (const CRect& size, const CRect& containerSize, int32_t style,
+						  CCoord scrollbarWidth, CBitmap* pBackground)
 : CViewContainer (size)
-, sc (nullptr)
-, vsb (nullptr)
-, hsb (nullptr)
-, containerSize (containerSize)
-, scrollbarWidth (scrollbarWidth)
-, style (style)
-, activeScrollbarStyle (0)
 {
+	impl = std::make_unique<Impl> ();
+	impl->containerSize = containerSize;
+	impl->scrollbarWidth = scrollbarWidth;
+	impl->style = style;
+
 	setViewLayouter (makeOwned<NoViewLayouter> ());
 	if (pBackground)
 		setBackground(pBackground);
@@ -320,48 +336,48 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t
 }
 
 //-----------------------------------------------------------------------------
-CScrollView::CScrollView (const CScrollView& v)
-: CViewContainer (v)
-, containerSize (v.containerSize)
-, scrollbarWidth (v.scrollbarWidth)
-, style (v.style)
-, activeScrollbarStyle (v.activeScrollbarStyle)
+CScrollView::CScrollView (const CScrollView& v) : CViewContainer (v)
 {
+	impl = std::make_unique<Impl> (*v.impl);
+
 	setViewLayouter (makeOwned<NoViewLayouter> ());
 	CViewContainer::removeAll ();
-	if (activeScrollbarStyle & kHorizontalScrollbar && v.hsb)
+	if (impl->activeScrollbarStyle & kHorizontalScrollbar && v.impl->hsb)
 	{
-		hsb = static_cast<CScrollbar*> (v.hsb->newCopy ());
-		hsb->setListener (this);
-		CViewContainer::addView (hsb, nullptr);
+		impl->hsb = static_cast<CScrollbar*> (v.impl->hsb->newCopy ());
+		impl->hsb->setListener (this);
+		CViewContainer::addView (impl->hsb, nullptr);
 	}
-	if (activeScrollbarStyle & kVerticalScrollbar && v.vsb)
+	if (impl->activeScrollbarStyle & kVerticalScrollbar && v.impl->vsb)
 	{
-		vsb = static_cast<CScrollbar*> (v.vsb->newCopy ());
-		vsb->setListener (this);
-		CViewContainer::addView (vsb, nullptr);
+		impl->vsb = static_cast<CScrollbar*> (v.impl->vsb->newCopy ());
+		impl->vsb->setListener (this);
+		CViewContainer::addView (impl->vsb, nullptr);
 	}
-	sc = static_cast<CScrollContainer*> (v.sc->newCopy ());
-	CViewContainer::addView (sc, nullptr);
+	impl->sc = static_cast<CScrollContainer*> (v.impl->sc->newCopy ());
+	CViewContainer::addView (impl->sc, nullptr);
 }
+
+//-----------------------------------------------------------------------------
+CScrollView::~CScrollView () noexcept = default;
 
 //-----------------------------------------------------------------------------
 CRect CScrollView::calculateOptimalContainerSize () const
 {
 	auto size = getViewSize ();
 	size.originize ();
-	if (!(style & kDontDrawFrame))
+	if (!(impl->style & kDontDrawFrame))
 		size.inset (1, 1);
-	if (edgeViewTop)
-		size.top += edgeViewTop->getHeight ();
-	if (edgeViewLeft)
-		size.left += edgeViewLeft->getWidth ();
-	if (!(style & kAutoHideScrollbars) && !(style & kOverlayScrollbars))
+	if (impl->edgeViewTop)
+		size.top += impl->edgeViewTop->getHeight ();
+	if (impl->edgeViewLeft)
+		size.left += impl->edgeViewLeft->getWidth ();
+	if (!(impl->style & kAutoHideScrollbars) && !(impl->style & kOverlayScrollbars))
 	{
-		if (style & kHorizontalScrollbar)
-			size.bottom -= scrollbarWidth;
-		if (style & kVerticalScrollbar)
-			size.right -= scrollbarWidth;
+		if (impl->style & kHorizontalScrollbar)
+			size.bottom -= impl->scrollbarWidth;
+		if (impl->style & kVerticalScrollbar)
+			size.right -= impl->scrollbarWidth;
 	}
 	size.originize ();
 	return size;
@@ -370,252 +386,282 @@ CRect CScrollView::calculateOptimalContainerSize () const
 //------------------------------------------------------------------------
 CRect CScrollView::getVisibleClientRect () const
 {
-	if (!sc)
+	if (!impl->sc)
 		return {};
-	return sc->getViewSize ();
+	return impl->sc->getViewSize ();
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::recalculateSubViews ()
 {
-	if (recalculateSubViewsRecursionGard)
+	if (impl->recalculateSubViewsRecursionGard)
 		return;
-	recalculateSubViewsRecursionGard = true;
-	CRect scsize (containerSize.left, containerSize.top, getViewSize ().getWidth (), getViewSize ().getHeight ());
-	if (!(style & kDontDrawFrame))
+	impl->recalculateSubViewsRecursionGard = true;
+	CRect scsize (impl->containerSize.left, impl->containerSize.top, getViewSize ().getWidth (),
+				  getViewSize ().getHeight ());
+	if (!(impl->style & kDontDrawFrame))
 	{
 		scsize.left++; scsize.top++;
 		scsize.right-=1; scsize.bottom--;
 	}
-	if (style & kAutoHideScrollbars)
+	if (impl->style & kAutoHideScrollbars)
 	{
-		activeScrollbarStyle = 0;
+		impl->activeScrollbarStyle = 0;
 		CRect r (scsize);
-		if (edgeViewTop)
-			r.top += edgeViewTop->getHeight ();
-		if (edgeViewLeft)
-			r.left += edgeViewLeft->getWidth ();
-		if (style & kHorizontalScrollbar)
+		if (impl->edgeViewTop)
+			r.top += impl->edgeViewTop->getHeight ();
+		if (impl->edgeViewLeft)
+			r.left += impl->edgeViewLeft->getWidth ();
+		if (impl->style & kHorizontalScrollbar)
 		{
-			if (style & kVerticalScrollbar && r.getHeight () < containerSize.getHeight ())
+			if (impl->style & kVerticalScrollbar &&
+				r.getHeight () < impl->containerSize.getHeight ())
 			{
-				activeScrollbarStyle |= kVerticalScrollbar;
-				if (!(style & kOverlayScrollbars))
-					r.right -= scrollbarWidth;
+				impl->activeScrollbarStyle |= kVerticalScrollbar;
+				if (!(impl->style & kOverlayScrollbars))
+					r.right -= impl->scrollbarWidth;
 			}
-			activeScrollbarStyle |= containerSize.getWidth () <= r.getWidth () ? 0 : kHorizontalScrollbar;
-			if (!(style & kOverlayScrollbars))
-				r.bottom -= scrollbarWidth;
-			if (activeScrollbarStyle == kHorizontalScrollbar && style & kVerticalScrollbar && r.getHeight () < containerSize.getHeight ())
+			impl->activeScrollbarStyle |=
+				impl->containerSize.getWidth () <= r.getWidth () ? 0 : kHorizontalScrollbar;
+			if (!(impl->style & kOverlayScrollbars))
+				r.bottom -= impl->scrollbarWidth;
+			if (impl->activeScrollbarStyle == kHorizontalScrollbar &&
+				impl->style & kVerticalScrollbar &&
+				r.getHeight () < impl->containerSize.getHeight ())
 			{
-				activeScrollbarStyle |= kVerticalScrollbar;
+				impl->activeScrollbarStyle |= kVerticalScrollbar;
 			}
 		}
-		else if (style & kVerticalScrollbar)
+		else if (impl->style & kVerticalScrollbar)
 		{
-			activeScrollbarStyle |= containerSize.getHeight () <= r.getHeight () ? 0 : kVerticalScrollbar;
+			impl->activeScrollbarStyle |=
+				impl->containerSize.getHeight () <= r.getHeight () ? 0 : kVerticalScrollbar;
 		}
 	}
 	else
 	{
-		activeScrollbarStyle = (style & kHorizontalScrollbar) | (style & kVerticalScrollbar);
-	}
-	
-	if (activeScrollbarStyle & kHorizontalScrollbar)
-	{
-		CRect sbr (getViewSize ());
-		sbr.originize ();
-		sbr.top = sbr.bottom - scrollbarWidth;
-		if (activeScrollbarStyle & kVerticalScrollbar)
-		{
-			if (hsb && (vsb && vsb->isVisible () == false))
-				hsb->invalid ();
-			sbr.right -= (scrollbarWidth - 1);
-		}
-		if (edgeViewLeft && style & kOverlayScrollbars)
-			sbr.left = edgeViewLeft->getViewSize ().right;
-		if (hsb)
-		{
-			hsb->setViewSize (sbr, true);
-			hsb->setMouseableArea (sbr);
-			hsb->setVisible (true);
-		}
-		else
-		{
-			hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
-			hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
-			CViewContainer::addView (hsb, nullptr);
-			hsb->registerViewListener (this);
-		}
-		if (!(style & kOverlayScrollbars))
-			scsize.bottom = sbr.top;
-		hsb->setOverlayStyle ((style & kOverlayScrollbars) ? true : false);
-	}
-	else if (hsb)
-	{
-		hsb->setVisible (false);
-	}
-	if (activeScrollbarStyle & kVerticalScrollbar)
-	{
-		CRect sbr (getViewSize ());
-		sbr.originize ();
-		sbr.left = sbr.right - scrollbarWidth;
-		if (activeScrollbarStyle & kHorizontalScrollbar)
-		{
-			if (vsb && (hsb  && hsb->isVisible () == false))
-				vsb->invalid ();
-			sbr.bottom -= (scrollbarWidth - 1);
-		}
-		if (edgeViewTop)
-			sbr.top = edgeViewTop->getViewSize ().bottom;
-		if (vsb)
-		{
-			vsb->setViewSize (sbr, true);
-			vsb->setMouseableArea (sbr);
-			vsb->setVisible (true);
-		}
-		else
-		{
-			vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
-			vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
-			CViewContainer::addView (vsb, nullptr);
-			vsb->registerViewListener (this);
-		}
-		if (!(style & kOverlayScrollbars))
-			scsize.right = sbr.left;
-		vsb->setOverlayStyle ((style & kOverlayScrollbars) ? true : false);
-	}
-	else if (vsb)
-	{
-		vsb->setVisible (false);
+		impl->activeScrollbarStyle =
+			(impl->style & kHorizontalScrollbar) | (impl->style & kVerticalScrollbar);
 	}
 
-	if (edgeViewTop)
+	if (impl->activeScrollbarStyle & kHorizontalScrollbar)
 	{
-		auto evls = edgeViewTop->getViewSize ();
+		CRect sbr (getViewSize ());
+		sbr.originize ();
+		sbr.top = sbr.bottom - impl->scrollbarWidth;
+		if (impl->activeScrollbarStyle & kVerticalScrollbar)
+		{
+			if (impl->hsb && (impl->vsb && impl->vsb->isVisible () == false))
+				impl->hsb->invalid ();
+			sbr.right -= (impl->scrollbarWidth - 1);
+		}
+		if (impl->edgeViewLeft && impl->style & kOverlayScrollbars)
+			sbr.left = impl->edgeViewLeft->getViewSize ().right;
+		if (impl->hsb)
+		{
+			impl->hsb->setViewSize (sbr, true);
+			impl->hsb->setMouseableArea (sbr);
+			impl->hsb->setVisible (true);
+		}
+		else
+		{
+			impl->hsb =
+				new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, impl->containerSize);
+			impl->hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
+			CViewContainer::addView (impl->hsb, nullptr);
+			impl->hsb->registerViewListener (this);
+		}
+		if (!(impl->style & kOverlayScrollbars))
+			scsize.bottom = sbr.top;
+		impl->hsb->setOverlayStyle ((impl->style & kOverlayScrollbars) ? true : false);
+	}
+	else if (impl->hsb)
+	{
+		impl->hsb->setVisible (false);
+	}
+	if (impl->activeScrollbarStyle & kVerticalScrollbar)
+	{
+		CRect sbr (getViewSize ());
+		sbr.originize ();
+		sbr.left = sbr.right - impl->scrollbarWidth;
+		if (impl->activeScrollbarStyle & kHorizontalScrollbar)
+		{
+			if (impl->vsb && (impl->hsb && impl->hsb->isVisible () == false))
+				impl->vsb->invalid ();
+			sbr.bottom -= (impl->scrollbarWidth - 1);
+		}
+		if (impl->edgeViewTop)
+			sbr.top = impl->edgeViewTop->getViewSize ().bottom;
+		if (impl->vsb)
+		{
+			impl->vsb->setViewSize (sbr, true);
+			impl->vsb->setMouseableArea (sbr);
+			impl->vsb->setVisible (true);
+		}
+		else
+		{
+			impl->vsb =
+				new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, impl->containerSize);
+			impl->vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
+			CViewContainer::addView (impl->vsb, nullptr);
+			impl->vsb->registerViewListener (this);
+		}
+		if (!(impl->style & kOverlayScrollbars))
+			scsize.right = sbr.left;
+		impl->vsb->setOverlayStyle ((impl->style & kOverlayScrollbars) ? true : false);
+	}
+	else if (impl->vsb)
+	{
+		impl->vsb->setVisible (false);
+	}
+
+	if (impl->edgeViewTop)
+	{
+		auto evls = impl->edgeViewTop->getViewSize ();
 		evls.originize ();
 		evls.offset (scsize.getTopLeft ());
 		scsize.top += evls.getHeight ();
-		if (style & kOverlayScrollbars)
+		if (impl->style & kOverlayScrollbars)
 			evls.right = scsize.right;
 		else
 			evls.right = getViewSize ().getWidth ();
-		edgeViewTop->setViewSize (evls);
+		impl->edgeViewTop->setViewSize (evls);
 	}
-	if (edgeViewLeft)
+	if (impl->edgeViewLeft)
 	{
-		auto evls = edgeViewLeft->getViewSize ();
+		auto evls = impl->edgeViewLeft->getViewSize ();
 		evls.originize ();
 		evls.offset (scsize.getTopLeft ());
-		if (edgeViewTop)
-			evls.top = edgeViewTop->getViewSize ().bottom;
+		if (impl->edgeViewTop)
+			evls.top = impl->edgeViewTop->getViewSize ().bottom;
 		scsize.left += evls.getWidth ();
 		evls.bottom = scsize.bottom;
-		edgeViewLeft->setViewSize (evls);
+		impl->edgeViewLeft->setViewSize (evls);
 	}
 
-	if (!sc)
+	if (!impl->sc)
 	{
-		sc = new CScrollContainer (scsize, containerSize);
-		sc->setAutosizeFlags (kAutosizeAll);
-		CViewContainer::addView (sc, CViewContainer::getView (0));
+		impl->sc = new CScrollContainer (scsize, impl->containerSize);
+		impl->sc->setAutosizeFlags (kAutosizeAll);
+		CViewContainer::addView (impl->sc, CViewContainer::getView (0));
 	}
 	else
 	{
-		sc->setViewSize (scsize, true);
-		sc->setMouseableArea (scsize);
+		impl->sc->setViewSize (scsize, true);
+		impl->sc->setMouseableArea (scsize);
 	}
-	sc->setAutoDragScroll ((style & kAutoDragScrolling) ? true : false);
-	recalculateSubViewsRecursionGard = false;
+	impl->sc->setAutoDragScroll ((impl->style & kAutoDragScrolling) ? true : false);
+	impl->recalculateSubViewsRecursionGard = false;
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::setViewSize (const CRect &rect, bool invalid)
 {
-	bool autoHideScrollbars = (style & kAutoHideScrollbars) != 0;
-	style &= ~ kAutoHideScrollbars;
+	bool autoHideScrollbars = (impl->style & kAutoHideScrollbars) != 0;
+	impl->style &= ~kAutoHideScrollbars;
 	CViewContainer::setViewSize (rect, invalid);
 	if (autoHideScrollbars)
-		style |= kAutoHideScrollbars;
-	setContainerSize (containerSize, true);
+		impl->style |= kAutoHideScrollbars;
+	setContainerSize (impl->containerSize, true);
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::setAutosizeFlags (int32_t flags)
 {
 	CViewContainer::setAutosizeFlags (flags);
-	if (sc)
-		sc->setAutosizeFlags (flags);
+	if (impl->sc)
+		impl->sc->setAutosizeFlags (flags);
 }
+
+//-----------------------------------------------------------------------------
+int32_t CScrollView::getStyle () const { return impl->style; }
 
 //-----------------------------------------------------------------------------
 void CScrollView::setStyle (int32_t newStyle)
 {
-	if (style != newStyle)
+	if (impl->style != newStyle)
 	{
-		if ((style & kDontDrawFrame) != (newStyle & kDontDrawFrame))
-			setBackgroundColorDrawStyle ((style & kDontDrawFrame) ? kDrawFilled : kDrawFilledAndStroked);
-		style = newStyle;
+		if ((impl->style & kDontDrawFrame) != (newStyle & kDontDrawFrame))
+			setBackgroundColorDrawStyle ((impl->style & kDontDrawFrame) ? kDrawFilled
+																		: kDrawFilledAndStroked);
+		impl->style = newStyle;
 		recalculateSubViews ();
 	}
 }
+
+//-----------------------------------------------------------------------------
+int32_t CScrollView::getActiveScrollbars () const { return impl->activeScrollbarStyle; }
+
+//-----------------------------------------------------------------------------
+CCoord CScrollView::getScrollbarWidth () const { return impl->scrollbarWidth; }
 
 //-----------------------------------------------------------------------------
 void CScrollView::setScrollbarWidth (CCoord width)
 {
-	if (scrollbarWidth != width)
+	if (impl->scrollbarWidth != width)
 	{
-		scrollbarWidth = width;
+		impl->scrollbarWidth = width;
 		recalculateSubViews ();
 	}
 }
 
 //-----------------------------------------------------------------------------
+CScrollbar* CScrollView::getVerticalScrollbar () const { return impl->vsb; }
+
+//-----------------------------------------------------------------------------
+CScrollbar* CScrollView::getHorizontalScrollbar () const { return impl->hsb; }
+
+//-----------------------------------------------------------------------------
+const CRect& CScrollView::getContainerSize () const { return impl->containerSize; }
+
+//-----------------------------------------------------------------------------
 void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 {
-	vstgui_assert (sc != nullptr);
+	vstgui_assert (impl->sc != nullptr);
 
-	CRect oldSize (containerSize);
-	containerSize = cs;
-	sc->setContainerSize (cs);
+	CRect oldSize (impl->containerSize);
+	impl->containerSize = cs;
+	impl->sc->setContainerSize (cs);
 	recalculateSubViews ();
-	if (vsb)
+	if (impl->vsb)
 	{
-		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
-		float oldValue = vsb->getValueNormalized ();
-		vsb->setScrollSize (cs);
-		vsb->setMax (static_cast<float> (cs.getHeight () - sc->getViewSize ().getHeight ()));
-		if (cs.getHeight () <= sc->getViewSize ().getHeight ())
-			vsb->setValueNormalized (0.f);
-		else if (sc && keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
+		CRect oldScrollSize = impl->vsb->getScrollSize (oldScrollSize);
+		float oldValue = impl->vsb->getValueNormalized ();
+		impl->vsb->setScrollSize (cs);
+		impl->vsb->setMax (
+			static_cast<float> (cs.getHeight () - impl->sc->getViewSize ().getHeight ()));
+		if (cs.getHeight () <= impl->sc->getViewSize ().getHeight ())
+			impl->vsb->setValueNormalized (0.f);
+		else if (impl->sc && keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
 		{
-			CRect vSize = sc->getViewSize ();
+			CRect vSize = impl->sc->getViewSize ();
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ())));
 			newValue = clampNorm (newValue);
-			vsb->setValueNormalized (newValue);
+			impl->vsb->setValueNormalized (newValue);
 		}
-		if (oldSize != containerSize)
-			vsb->onVisualChange ();
-		valueChanged (vsb);
+		if (oldSize != impl->containerSize)
+			impl->vsb->onVisualChange ();
+		valueChanged (impl->vsb);
 	}
-	if (hsb)
+	if (impl->hsb)
 	{
-		CRect oldScrollSize = hsb->getScrollSize (oldScrollSize);
-		float oldValue = hsb->getValueNormalized ();
-		hsb->setScrollSize (cs);
-		hsb->setMax (static_cast<float> (cs.getWidth () - sc->getViewSize ().getWidth ()));
-		if (cs.getWidth () <= sc->getViewSize ().getWidth ())
-			hsb->setValueNormalized (0.f);
-		else if (sc && keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
+		CRect oldScrollSize = impl->hsb->getScrollSize (oldScrollSize);
+		float oldValue = impl->hsb->getValueNormalized ();
+		impl->hsb->setScrollSize (cs);
+		impl->hsb->setMax (
+			static_cast<float> (cs.getWidth () - impl->sc->getViewSize ().getWidth ()));
+		if (cs.getWidth () <= impl->sc->getViewSize ().getWidth ())
+			impl->hsb->setValueNormalized (0.f);
+		else if (impl->sc && keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
 		{
-			CRect vSize = sc->getViewSize ();
+			CRect vSize = impl->sc->getViewSize ();
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ())));
 			newValue = clampNorm (newValue);
-			hsb->setValueNormalized (newValue);
+			impl->hsb->setValueNormalized (newValue);
 		}
-		if (oldSize != containerSize)
-			hsb->onVisualChange ();
-		valueChanged (hsb);
+		if (oldSize != impl->containerSize)
+			impl->hsb->onVisualChange ();
+		valueChanged (impl->hsb);
 	}
 }
 
@@ -623,18 +669,18 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 void CScrollView::makeRectVisible (const CRect& rect)
 {
 	CRect r (rect);
-	const CPoint& scrollOffset = sc->getScrollOffset ();
+	const CPoint& scrollOffset = impl->sc->getScrollOffset ();
 	CPoint newOffset (scrollOffset);
-	CRect vs = sc->getViewSize ();
+	CRect vs = impl->sc->getViewSize ();
 	vs.originize ();
 #if 0
-	if (!(style & kDontDrawFrame))
+	if (!(impl->style & kDontDrawFrame))
 	{
 		vs.left--; //vs.top--;
 		vs.right++; //vs.bottom++;
 	}
 #endif
-	CRect cs (containerSize);
+	CRect cs (impl->containerSize);
 	cs.originize ();
 	cs.setWidth (vs.getWidth ());
 	cs.setHeight (vs.getHeight ());
@@ -657,69 +703,67 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	{
 		newOffset.x += (r.right - cs.right);
 	}
-	if (vsb && newOffset.y != scrollOffset.y)
+	if (impl->vsb && newOffset.y != scrollOffset.y)
 	{
-		if (containerSize.getHeight () == vs.getHeight ())
+		if (impl->containerSize.getHeight () == vs.getHeight ())
 		{
-			vsb->setValueNormalized (0.f);
+			impl->vsb->setValueNormalized (0.f);
 		}
 		else
 		{
-			vsb->setValue (static_cast<float> (newOffset.y));
-			//			auto newValue = (newOffset.y - vs.top) / (containerSize.getHeight () -
-			//vs.getHeight ()); 			vsb->setValue (newValue * vsb->getMax ()); 			vsb->setValueNormalized
-			//(static_cast<float> (newValue));
+			impl->vsb->setValue (static_cast<float> (newOffset.y));
+			//			auto newValue = (newOffset.y - vs.top) / (impl->containerSize.getHeight () -
+			// vs.getHeight ()); 			impl->vsb->setValue (newValue * impl->vsb->getMax ());
+			// impl->vsb->setValueNormalized (static_cast<float> (newValue));
 		}
-		vsb->bounceValue ();
-		vsb->onVisualChange ();
-		vsb->invalid ();
-		valueChanged (vsb);
+		impl->vsb->bounceValue ();
+		impl->vsb->onVisualChange ();
+		impl->vsb->invalid ();
+		valueChanged (impl->vsb);
 	}
-	if (hsb && newOffset.x != scrollOffset.x)
+	if (impl->hsb && newOffset.x != scrollOffset.x)
 	{
-		if (containerSize.getWidth () == vs.getWidth ())
+		if (impl->containerSize.getWidth () == vs.getWidth ())
 		{
-			hsb->setValueNormalized (0.f);
+			impl->hsb->setValueNormalized (0.f);
 		}
 		else
 		{
-			hsb->setValue (static_cast<float> (newOffset.x));
-			//			auto newValue = (newOffset.x - vs.left) / (containerSize.getWidth () -
-			//vs.getWidth ()); 			hsb->setValueNormalized (-static_cast<float> (newValue));
+			impl->hsb->setValue (static_cast<float> (newOffset.x));
+			//			auto newValue = (newOffset.x - vs.left) / (impl->containerSize.getWidth () -
+			// vs.getWidth ()); 			impl->hsb->setValueNormalized (-static_cast<float>
+			// (newValue));
 		}
-		hsb->bounceValue ();
-		hsb->onVisualChange ();
-		hsb->invalid ();
-		valueChanged (hsb);
+		impl->hsb->bounceValue ();
+		impl->hsb->onVisualChange ();
+		impl->hsb->invalid ();
+		valueChanged (impl->hsb);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::resetScrollOffset ()
 {
-	if (vsb)
+	if (impl->vsb)
 	{
-		vsb->setValueNormalized (0);
-		vsb->bounceValue ();
-		vsb->onVisualChange ();
-		vsb->invalid ();
-		valueChanged (vsb);
+		impl->vsb->setValueNormalized (0);
+		impl->vsb->bounceValue ();
+		impl->vsb->onVisualChange ();
+		impl->vsb->invalid ();
+		valueChanged (impl->vsb);
 	}
-	if (hsb)
+	if (impl->hsb)
 	{
-		hsb->setValueNormalized (0);
-		hsb->bounceValue ();
-		hsb->onVisualChange ();
-		hsb->invalid ();
-		valueChanged (hsb);
+		impl->hsb->setValueNormalized (0);
+		impl->hsb->bounceValue ();
+		impl->hsb->onVisualChange ();
+		impl->hsb->invalid ();
+		valueChanged (impl->hsb);
 	}
 }
 
 //-----------------------------------------------------------------------------
-const CPoint& CScrollView::getScrollOffset () const
-{
-	return sc->getScrollOffset ();
-}
+const CPoint& CScrollView::getScrollOffset () const { return impl->sc->getScrollOffset (); }
 
 //------------------------------------------------------------------------
 void CScrollView::setEdgeView (Edge edge, CView* view)
@@ -728,12 +772,12 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 	{
 		case Edge::Top:
 		{
-			if (edgeViewTop)
+			if (impl->edgeViewTop)
 			{
-				edgeViewTop->unregisterViewListener (this);
-				CViewContainer::removeView (edgeViewTop);
+				impl->edgeViewTop->unregisterViewListener (this);
+				CViewContainer::removeView (impl->edgeViewTop);
 			}
-			edgeViewTop = view;
+			impl->edgeViewTop = view;
 			if (view)
 			{
 				auto vs = view->getViewSize ();
@@ -743,18 +787,18 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 					view->setViewSize (vs);
 				}
 				view->setAutosizeFlags (kAutosizeTop | kAutosizeLeft | kAutosizeRight);
-				CViewContainer::addView (view, sc);
+				CViewContainer::addView (view, impl->sc);
 			}
 			break;
 		}
 		case Edge::Left:
 		{
-			if (edgeViewLeft)
+			if (impl->edgeViewLeft)
 			{
-				edgeViewLeft->unregisterViewListener (this);
-				CViewContainer::removeView (edgeViewLeft);
+				impl->edgeViewLeft->unregisterViewListener (this);
+				CViewContainer::removeView (impl->edgeViewLeft);
 			}
-			edgeViewLeft = view;
+			impl->edgeViewLeft = view;
 			if (view)
 			{
 				auto vs = view->getViewSize ();
@@ -764,12 +808,12 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 					view->setViewSize (vs);
 				}
 				view->setAutosizeFlags (kAutosizeLeft | kAutosizeTop | kAutosizeBottom);
-				CViewContainer::addView (view, sc);
+				CViewContainer::addView (view, impl->sc);
 			}
 		}
 	}
 	recalculateSubViews ();
-	setContainerSize (containerSize, true);
+	setContainerSize (impl->containerSize, true);
 	if (view)
 		view->registerViewListener (this);
 }
@@ -781,11 +825,11 @@ CView* CScrollView::getEdgeView (Edge edge) const
 	{
 		case Edge::Top:
 		{
-			return edgeViewTop;
+			return impl->edgeViewTop;
 		}
 		case Edge::Left:
 		{
-			return edgeViewLeft;
+			return impl->edgeViewLeft;
 		}
 	}
 	return nullptr;
@@ -794,44 +838,35 @@ CView* CScrollView::getEdgeView (Edge edge) const
 //-----------------------------------------------------------------------------
 bool CScrollView::attached (CView* parent)
 {
-	setContainerSize (containerSize);
+	setContainerSize (impl->containerSize);
 	return CViewContainer::attached (parent);
 }
 
 //-----------------------------------------------------------------------------
 bool CScrollView::addView (CView* pView, CView* pBefore)
 {
-	return sc->addView (pView, pBefore);
+	return impl->sc->addView (pView, pBefore);
 }
 
 //-----------------------------------------------------------------------------
 bool CScrollView::removeView (CView *pView, bool withForget)
 {
-	return sc->removeView (pView, withForget);
+	return impl->sc->removeView (pView, withForget);
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::removeAll (bool withForget)
-{
-	return sc->removeAll (withForget);
-}
+bool CScrollView::removeAll (bool withForget) { return impl->sc->removeAll (withForget); }
 
 //-----------------------------------------------------------------------------
-uint32_t CScrollView::getNbViews () const
-{
-	return sc->getNbViews ();
-}
+uint32_t CScrollView::getNbViews () const { return impl->sc->getNbViews (); }
 
 //-----------------------------------------------------------------------------
-CView* CScrollView::getView (uint32_t index) const
-{
-	return sc->getView (index);
-}
+CView* CScrollView::getView (uint32_t index) const { return impl->sc->getView (index); }
 
 //-----------------------------------------------------------------------------
 bool CScrollView::changeViewZOrder (CView* view, uint32_t newIndex)
 {
-	return sc->changeViewZOrder (view, newIndex);
+	return impl->sc->changeViewZOrder (view, newIndex);
 }
 
 //-----------------------------------------------------------------------------
@@ -849,14 +884,14 @@ void CScrollView::setBackgroundColor (const CColor& color)
 //-----------------------------------------------------------------------------
 void CScrollView::valueChanged (CControl *pControl)
 {
-	if (sc)
+	if (impl->sc)
 	{
 		float value = pControl->getValue ();
 		int32_t tag = pControl->getTag ();
 		CPoint offset;
-		CRect vsize = sc->getViewSize ();
-		CRect csize = sc->getContainerSize ();
-		sc->getScrollOffset (offset);
+		CRect vsize = impl->sc->getViewSize ();
+		CRect csize = impl->sc->getContainerSize ();
+		impl->sc->getScrollOffset (offset);
 
 		switch (tag)
 		{
@@ -865,12 +900,12 @@ void CScrollView::valueChanged (CControl *pControl)
 				if (csize.getWidth () > vsize.getWidth ())
 				{
 					offset.x = -value;
-					sc->setScrollOffset (offset, false);
+					impl->sc->setScrollOffset (offset, false);
 				}
 				else if (offset.x < 0)
 				{
 					offset.x = 0;
-					sc->setScrollOffset (offset, false);
+					impl->sc->setScrollOffset (offset, false);
 				}
 				break;
 			}
@@ -879,12 +914,12 @@ void CScrollView::valueChanged (CControl *pControl)
 				if (csize.getHeight () > vsize.getHeight ())
 				{
 					offset.y = value;
-					sc->setScrollOffset (offset, false);
+					impl->sc->setScrollOffset (offset, false);
 				}
 				else if (offset.y > 0)
 				{
 					offset.y = 0;
-					sc->setScrollOffset (offset, false);
+					impl->sc->setScrollOffset (offset, false);
 				}
 				break;
 			}
@@ -906,10 +941,10 @@ void CScrollView::onMouseWheelEvent (MouseWheelEvent& event)
 	CViewContainer::onMouseWheelEvent (event);
 	if (event.consumed)
 		return;
-	if (vsb && event.deltaY != 0.)
-		vsb->onMouseWheelEvent (event);
-	if (hsb && event.deltaX != 0.)
-		hsb->onMouseWheelEvent (event);
+	if (impl->vsb && event.deltaY != 0.)
+		impl->vsb->onMouseWheelEvent (event);
+	if (impl->hsb && event.deltaX != 0.)
+		impl->hsb->onMouseWheelEvent (event);
 }
 
 //-----------------------------------------------------------------------------
@@ -918,7 +953,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 	if (message == kMsgNewFocusView && getStyle () & kFollowFocusView)
 	{
 		auto* focusView = static_cast<CView*> (sender);
-		if (sc->isChild (focusView, true))
+		if (impl->sc->isChild (focusView, true))
 		{
 			CRect r = focusView->getViewSize ();
 			CPoint p;
@@ -934,21 +969,21 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 //-----------------------------------------------------------------------------
 void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
 {
-	if (view == hsb)
+	if (view == impl->hsb)
 	{
-		hsb->setScrollSize (containerSize);
-		hsb->onVisualChange ();
+		impl->hsb->setScrollSize (impl->containerSize);
+		impl->hsb->onVisualChange ();
 	}
-	else if (view == vsb)
+	else if (view == impl->vsb)
 	{
-		vsb->setScrollSize (containerSize);
-		vsb->onVisualChange ();
+		impl->vsb->setScrollSize (impl->containerSize);
+		impl->vsb->onVisualChange ();
 	}
-	else if (view == edgeViewTop)
+	else if (view == impl->edgeViewTop)
 	{
 		recalculateSubViews ();
 	}
-	else if (view == edgeViewLeft)
+	else if (view == impl->edgeViewLeft)
 	{
 		recalculateSubViews ();
 	}
@@ -957,7 +992,8 @@ void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
 //-----------------------------------------------------------------------------
 void CScrollView::viewWillDelete (CView* view)
 {
-	if (view == hsb || view == vsb || view == edgeViewTop || view == edgeViewLeft)
+	if (view == impl->hsb || view == impl->vsb || view == impl->edgeViewTop ||
+		view == impl->edgeViewLeft)
 		view->unregisterViewListener (this);
 }
 

@@ -60,25 +60,25 @@ public:
 	/// @name CScrollView Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	int32_t getStyle () const { return style; }
+	int32_t getStyle () const;
 	void setStyle (int32_t newStyle);
-	
-	int32_t getActiveScrollbars () const { return activeScrollbarStyle; }
 
-	CCoord getScrollbarWidth () const { return scrollbarWidth; }
+	int32_t getActiveScrollbars () const;
+
+	CCoord getScrollbarWidth () const;
 	void setScrollbarWidth (CCoord width);
 
 	/** set the virtual size of this container */
 	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);
-	const CRect& getContainerSize () const { return containerSize; }
+	const CRect& getContainerSize () const;
 	/** get scroll offset */
 	const CPoint& getScrollOffset () const;
 	void resetScrollOffset ();
 
 	/** get the vertical scrollbar */
-	CScrollbar* getVerticalScrollbar () const { return vsb; }
+	CScrollbar* getVerticalScrollbar () const;
 	/** get the horizontal scrollbar */
-	CScrollbar* getHorizontalScrollbar () const { return hsb; }
+	CScrollbar* getHorizontalScrollbar () const;
 
 	/** set scrollview to show rect */
 	virtual void makeRectVisible (const CRect& rect);
@@ -130,28 +130,18 @@ public:
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
-	~CScrollView () noexcept override = default;
+	~CScrollView () noexcept override;
 	virtual void recalculateSubViews ();
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewWillDelete (CView* view) override;
 
-	CScrollContainer* sc;
-	CScrollbar* vsb;
-	CScrollbar* hsb;
+	static constexpr int32_t kHSBTag = 0;
+	static constexpr int32_t kVSBTag = 1;
 
-	CView* edgeViewTop {nullptr};
-	CView* edgeViewLeft {nullptr};
-
-	CRect containerSize;
-	CCoord scrollbarWidth;
-	int32_t style;
-	int32_t activeScrollbarStyle;
-	bool recalculateSubViewsRecursionGard {false};
-	enum {
-		kHSBTag,
-		kVSBTag
-	};
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 } // VSTGUI
