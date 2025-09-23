@@ -201,6 +201,7 @@ set(${target}_common_sources
     viewlayouter/baseviewlayouter.h
     viewlayouter/gridlayouter.cpp
     viewlayouter/gridlayouter.h
+    viewlayouter/noviewlayouter.h
     tasks.cpp
     tasks.h
     vstguibase.h

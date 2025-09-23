@@ -2731,11 +2731,12 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	controller->setFindOptions (md.findOptions);
 
 	auto margin = (vcr.getHeight () - md.lineHeight) / 2.;
-	vcr.inset (margin, margin);
 	auto buttonWidth = vcr.getHeight ();
 
 	CViewContainer* findPanel = new CViewContainer (vcr);
 	findPanel->setTransparency (true);
+
+	vcr.inset (margin, margin);
 	auto tefr = vcr;
 	tefr.left += buttonWidth + margin;
 	tefr.right -= 6. * (buttonWidth + margin) + margin;
@@ -2874,20 +2875,21 @@ bool TextEditorView::showFindPanel () const
 				});
 		}
 	});
-	auto initRect = vcr;
-	initRect.setHeight (1.);
-	findPanel->setViewSize (initRect);
 	md.scrollView->setEdgeView (CScrollView::Edge::Top, findPanel);
 
 	if (auto frame = getFrame ())
 		frame->setFocusView (nullptr);
 	findPanel->addAnimation (
-		"ResizeAnimation", new ViewSizeAnimation (vcr, false),
+		"ResizeAnimation", new ViewSizeAnimation (findPanel->getViewSize (), false),
 		CubicBezierTimingFunction::make (CubicBezierTimingFunction::EasyInOut, 120),
 		[panel = shared (findPanel)] (auto, auto, auto) {
 			if (panel->isAttached ())
 				panel->advanceNextFocusView (nullptr);
 		});
+	vcr = findPanel->getViewSize ();
+	vcr.setHeight (1.);
+	findPanel->setViewSize (vcr);
+
 	return true;
 }
 

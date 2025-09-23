@@ -10,6 +10,7 @@
 #include "controls/cscrollbar.h"
 #include "events.h"
 #include "algorithm.h"
+#include "viewlayouter/noviewlayouter.h"
 #include <cmath>
 
 /// @cond ignore
@@ -312,6 +313,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t
 , style (style)
 , activeScrollbarStyle (0)
 {
+	setViewLayouter (makeOwned<NoViewLayouter> ());
 	if (pBackground)
 		setBackground(pBackground);
 	recalculateSubViews ();
@@ -325,6 +327,7 @@ CScrollView::CScrollView (const CScrollView& v)
 , style (v.style)
 , activeScrollbarStyle (v.activeScrollbarStyle)
 {
+	setViewLayouter (makeOwned<NoViewLayouter> ());
 	CViewContainer::removeAll ();
 	if (activeScrollbarStyle & kHorizontalScrollbar && v.hsb)
 	{
