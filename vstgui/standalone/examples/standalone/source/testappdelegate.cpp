@@ -18,6 +18,9 @@
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/crect.h"
 #include "vstgui/lib/ccolor.h"
+#include "vstgui/lib/cdatabrowser.h"
+#include "vstgui/lib/cdrawcontext.h"
+#include "vstgui/lib/idatabrowserdelegate.h"
 #include "vstgui/lib/iviewlistener.h"
 #include "vstgui/lib/controls/ccontrol.h"
 #include "vstgui/lib/controls/clistcontrol.h"
@@ -423,6 +426,95 @@ public:
 };
 
 //------------------------------------------------------------------------
+struct DBController : DelegationController,
+					  DataBrowserDelegateAdapter,
+					  NonAtomicReferenceCounted
+{
+	static constexpr size_t NumColumns = 20u;
+
+	DBController (IController* base) : DelegationController (base)
+	{
+		for (auto i = 0u; i < 200u; ++i)
+		{
+			data.push_back ({});
+			data[i][0] = i;
+		}
+	}
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
+		{
+			if (*customViewName == "DataBrowser")
+			{
+				auto db = new CDataBrowser ({}, this);
+				remember (); // data browser will call forget()
+				return db;
+			}
+		}
+		return nullptr;
+	}
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription* description) override
+	{
+		if (auto db = dynamic_cast<CDataBrowser*> (view))
+		{
+			auto style = db->getStyle ();
+			style |= CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines |
+					 CDataBrowser::kDrawColumnLines;
+			db->setStyle (style);
+		}
+		return controller->verifyView (view, attributes, description);
+	}
+
+	int32_t dbGetNumRows (CDataBrowser* browser) override
+	{
+		return static_cast<int32_t> (data.size ());
+	}
+	int32_t dbGetNumColumns (CDataBrowser* browser) override
+	{
+		return static_cast<int32_t> (NumColumns);
+	}
+	CCoord dbGetRowHeight (CDataBrowser* browser) override { return 15.; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override { return 30.; }
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override
+	{
+		if (row < 0 || row >= data.size ())
+			return;
+		if (column < 0 || column >= data[row].size ())
+			return;
+		if (flags & kRowSelected)
+		{
+			context->setFillColor (selectColor);
+			context->drawRect (size, kDrawFilled);
+		}
+		auto str = toString (data[row][column]);
+		context->setFont (font);
+		context->setFontColor (kBlackCColor);
+		context->drawString (str, size);
+	}
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags,
+					   CDataBrowser* browser) override
+	{
+		context->setFillColor (kWhiteCColor);
+		context->drawRect (size, kDrawFilled);
+
+		UTF8String str;
+		str += 0x41 + column;
+		context->setFont (font);
+		context->setFontColor (kBlackCColor);
+		context->drawString (str, size);
+	}
+
+	using RowData = std::array<size_t, NumColumns>;
+	using DBData = std::vector<RowData>;
+
+	DBData data;
+	CFontRef font {kSystemFont};
+	CColor selectColor {MakeCColor (255, 255, 255, 40)};
+};
+
+//------------------------------------------------------------------------
 Delegate::Delegate ()
 : Application::DelegateAdapter ({"VSTGUI Standalone", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 {
@@ -552,6 +644,11 @@ bool Delegate::handleCommand (const Command& command)
 				"TextEditorController",
 				[this] (const UTF8StringView&, IController* parent, const IUIDescription*) {
 					return new TextEditorViewController (parent, *textEditorController.get ());
+				});
+			customization->addCreateViewControllerFunc (
+				"DBController",
+				[this] (const UTF8StringView&, IController* parent, const IUIDescription*) {
+					return new DBController (parent);
 				});
 			config.customization = customization;
 		}

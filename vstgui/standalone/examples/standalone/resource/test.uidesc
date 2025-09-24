@@ -21,7 +21,7 @@
 				"Size": "5, 5"
 			},
 			"UITemplateController": {
-				"SelectedTemplate": "view"
+				"SelectedTemplate": "Tab1"
 			},
 			"UIEditController": {
 				"EditViewScale": "1",
@@ -908,6 +908,7 @@
 									"CControl": {
 										"attributes": {
 											"class": "CControl",
+											"control-tag": "Activate",
 											"custom-view-name": "Native Push Button",
 											"opacity": "1",
 											"origin": "0, 65",
@@ -921,6 +922,7 @@
 									"CControl": {
 										"attributes": {
 											"class": "CControl",
+											"control-tag": "Activate",
 											"custom-view-name": "Native OnOff Button",
 											"opacity": "1",
 											"origin": "0, 90",
@@ -934,6 +936,7 @@
 									"CControl": {
 										"attributes": {
 											"class": "CControl",
+											"control-tag": "Activate",
 											"custom-view-name": "Native Radio Button",
 											"opacity": "1",
 											"origin": "5, 120",
@@ -955,7 +958,7 @@
 									"background-color-draw-style": "filled and stroked",
 									"bordered": "true",
 									"class": "CScrollView",
-									"container-size": "257, 138",
+									"container-size": "521, 138",
 									"follow-focus-view": "false",
 									"horizontal-scrollbar": "true",
 									"mouse-enabled": "true",
@@ -980,7 +983,7 @@
 											"mouse-enabled": "true",
 											"opacity": "1",
 											"origin": "0, 0",
-											"size": "257, 138",
+											"size": "521, 138",
 											"sub-controller": "TextEditorController",
 											"transparent": "false",
 											"wants-focus": "true"
@@ -1057,42 +1060,33 @@
 					"wants-focus": "false"
 				},
 				"children": {
-					"CTextLabel": {
+					"CScrollView": {
 						"attributes": {
+							"auto-drag-scrolling": "false",
+							"auto-hide-scrollbars": "false",
 							"autosize": "left right top bottom ",
-							"back-color": "~ BlackCColor",
-							"background-offset": "0, 0",
-							"class": "CTextLabel",
-							"default-value": "0.5",
-							"font": "~ NormalFont",
-							"font-antialias": "true",
-							"font-color": "~ WhiteCColor",
-							"frame-color": "~ BlackCColor",
-							"frame-width": "1",
-							"max-value": "1",
-							"min-value": "0",
+							"background-color": "~ GreyCColor",
+							"background-color-draw-style": "filled and stroked",
+							"bordered": "true",
+							"class": "CScrollView",
+							"container-size": "600, 3000",
+							"custom-view-name": "DataBrowser",
+							"follow-focus-view": "false",
+							"horizontal-scrollbar": "true",
 							"mouse-enabled": "true",
 							"opacity": "1",
 							"origin": "0, 0",
-							"round-rect-radius": "6",
-							"shadow-color": "~ RedCColor",
+							"overlay-scrollbars": "false",
+							"scrollbar-background-color": "control.back",
+							"scrollbar-frame-color": "~ TransparentCColor",
+							"scrollbar-min-scroller-size": "20",
+							"scrollbar-scroller-color": "control.value",
+							"scrollbar-width": "14",
 							"size": "115, 90",
-							"style-3D-in": "false",
-							"style-3D-out": "false",
-							"style-no-draw": "false",
-							"style-no-frame": "false",
-							"style-no-text": "false",
-							"style-round-rect": "false",
-							"style-shadow-text": "false",
-							"text-alignment": "center",
-							"text-inset": "0, 0",
-							"text-rotation": "0",
-							"text-shadow-offset": "1, 1",
-							"title": "1",
+							"sub-controller": "DBController",
 							"transparent": "false",
-							"value-precision": "2",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
+							"vertical-scrollbar": "true",
+							"wants-focus": "false"
 						}
 					}
 				}
