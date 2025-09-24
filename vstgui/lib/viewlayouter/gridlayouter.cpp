@@ -85,10 +85,10 @@ std::vector<CCoord> GridLayouter::calculateAutoColumns (CCoord& usedColWidth, CC
 //------------------------------------------------------------------------
 std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /*view*/,
 														 const Children& children,
-														 const CRect& newSize)
+														 const CRect& _newSize)
 {
 	if (children.empty ())
-		return {{newSize, LayoutData {}}};
+		return {{_newSize, LayoutData {}}};
 
 	size_t rows = gridProps.rows;
 	size_t cols = gridProps.columns;
@@ -98,6 +98,9 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 	{
 		return std::nullopt;
 	}
+
+	auto newSize = _newSize;
+	newSize.originize ();
 
 	std::vector<CCoord> rowHeights (rows, 0.0);
 	std::vector<CCoord> colWidths (cols, 0.0);
@@ -488,7 +491,7 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 				y += spaceAroundY;
 		}
 	}
-	return {{newSize, std::move (layout)}};
+	return {{_newSize, std::move (layout)}};
 }
 
 //------------------------------------------------------------------------
