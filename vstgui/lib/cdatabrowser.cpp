@@ -245,26 +245,15 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	CRect newContainerSize (0, 0, allColumnsWidth, allRowsHeight);
 	if (getStyle () & kDrawHeader)
 	{
-
-		newContainerSize.offset (0, headerHeight+lineWidth);
-
-		CRect headerSize (0, 0, newContainerSize.getWidth (), headerHeight+lineWidth);
-		if (getStyle () & kHorizontalScrollbar && getHorizontalScrollbar ())
-			headerSize.right += getHorizontalScrollbar ()->getWidth ();
+		CRect headerSize (0, 0, newContainerSize.getWidth (), headerHeight + lineWidth);
 		if (dbHeader == nullptr)
 		{
-			CRect hcs (headerSize);
-			if (!(getStyle () & kDontDrawFrame))
-				hcs.left = hcs.top = 1;
-			hcs.setWidth (getViewSize ().getWidth () - ((getStyle () & kDontDrawFrame) ? 0 : 2));
-			dbHeaderContainer = new CViewContainer (hcs);
+			dbHeaderContainer = new CViewContainer (headerSize);
 			dbHeaderContainer->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->setTransparency (true);
-			headerSize.offset (-headerSize.left, -headerSize.top);
 			dbHeader = new CDataBrowserHeader (headerSize, db, this);
-			dbHeader->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->addView (dbHeader);
-			CViewContainer::addView (dbHeaderContainer, nullptr);
+			setEdgeView (Edge::Top, dbHeaderContainer);
 		}
 		else
 		{
