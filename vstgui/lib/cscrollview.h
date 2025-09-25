@@ -34,8 +34,8 @@ protected:
 	};
 
 public:
-	CScrollView (const CRect& size, const CRect& containerSize, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
-	CScrollView (const CScrollView& scrollView);
+	CScrollView (const CRect& size, const CRect& containerSize, int32_t style,
+				 CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
 
 	/** Scroll View Style Flags */
 	enum CScrollViewStyle
@@ -127,14 +127,18 @@ public:
 	void setAutosizeFlags (int32_t flags) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	CLASS_METHODS(CScrollView, CViewContainer)
-//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY (CScrollView, CViewContainer)
+	//-----------------------------------------------------------------------------
 protected:
 	~CScrollView () noexcept override;
-	void recalculateSubViews ();
+
+	void recalculateLayout ();
+	void preLayouting () const;
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewWillDelete (CView* view) override;
+
+	CScrollContainer* getScrollContainer () const;
 
 	static constexpr int32_t kHSBTag = 0;
 	static constexpr int32_t kVSBTag = 1;
