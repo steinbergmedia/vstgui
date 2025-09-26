@@ -618,13 +618,6 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	CPoint newOffset (scrollOffset);
 	CRect vs = impl->scrollContainer->getViewSize ();
 	vs.originize ();
-#if 0
-	if (!(impl->style & kDontDrawFrame))
-	{
-		vs.left--; //vs.top--;
-		vs.right++; //vs.bottom++;
-	}
-#endif
 	CRect cs (impl->containerSize);
 	cs.originize ();
 	cs.setWidth (vs.getWidth ());
@@ -657,9 +650,6 @@ void CScrollView::makeRectVisible (const CRect& rect)
 		else
 		{
 			impl->vScrollbar->setValue (static_cast<float> (newOffset.y));
-			//			auto newValue = (newOffset.y - vs.top) / (impl->containerSize.getHeight () -
-			// vs.getHeight ()); 			impl->vsb->setValue (newValue * impl->vsb->getMax ());
-			// impl->vsb->setValueNormalized (static_cast<float> (newValue));
 		}
 		impl->vScrollbar->bounceValue ();
 		impl->vScrollbar->onVisualChange ();
@@ -675,9 +665,6 @@ void CScrollView::makeRectVisible (const CRect& rect)
 		else
 		{
 			impl->hScrollbar->setValue (static_cast<float> (newOffset.x));
-			//			auto newValue = (newOffset.x - vs.left) / (impl->containerSize.getWidth () -
-			// vs.getWidth ()); 			impl->hsb->setValueNormalized (-static_cast<float>
-			// (newValue));
 		}
 		impl->hScrollbar->bounceValue ();
 		impl->hScrollbar->onVisualChange ();
@@ -714,8 +701,9 @@ const CPoint& CScrollView::getScrollOffset () const
 }
 
 //------------------------------------------------------------------------
-void CScrollView::setEdgeView (Edge edge, CView* view)
+void CScrollView::setEdgeView (Edge edge, CView* _view)
 {
+	auto view = _view;
 	if (view == nullptr)
 		view = new CView ({});
 
@@ -740,8 +728,8 @@ void CScrollView::setEdgeView (Edge edge, CView* view)
 	}
 	recalculateLayout ();
 	setContainerSize (impl->containerSize, true);
-	if (view)
-		view->registerViewListener (this);
+	if (_view)
+		_view->registerViewListener (this);
 }
 
 //------------------------------------------------------------------------
@@ -906,32 +894,18 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 //-----------------------------------------------------------------------------
 void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
 {
-	if (view == impl->hScrollbar)
-	{
-		impl->hScrollbar->setScrollSize (impl->containerSize);
-		impl->hScrollbar->onVisualChange ();
-	}
-	else if (view == impl->vScrollbar)
-	{
-		impl->vScrollbar->setScrollSize (impl->containerSize);
-		impl->vScrollbar->onVisualChange ();
-	}
-	else if (view == impl->edgeViewTop)
-	{
-		recalculateLayout ();
-	}
-	else if (view == impl->edgeViewLeft)
-	{
-		recalculateLayout ();
-	}
+	vstgui_assert (view == impl->edgeViewTop || view == impl->edgeViewLeft);
+	recalculateLayout ();
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::viewWillDelete (CView* view)
 {
-	if (view == impl->hScrollbar || view == impl->vScrollbar || view == impl->edgeViewTop ||
-		view == impl->edgeViewLeft)
-		view->unregisterViewListener (this);
+	view->unregisterViewListener (this);
+	if (view == impl->edgeViewTop)
+		impl->edgeViewTop = nullptr;
+	else if (view == impl->edgeViewLeft)
+		impl->edgeViewLeft = nullptr;
 }
 
 } // VSTGUI
