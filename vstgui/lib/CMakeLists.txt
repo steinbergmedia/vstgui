@@ -377,7 +377,7 @@ vstgui_source_group_by_folder(${target})
 if(LINUX)
     # Fetch wayland-server-delegate to get iwaylandclientcontext.h
     include (FetchContent)
-    FetchCOntent_Declare(
+    FetchContent_Declare(
         ccl_wayland_server_delegate
         GIT_REPOSITORY https://github.com/cclsoftware/wayland-server-delegate.git
         GIT_TAG 86c32c61f0c861448635c041da5c343ce097ccff
