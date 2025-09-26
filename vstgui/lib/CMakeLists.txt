@@ -375,6 +375,22 @@ vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 vstgui_source_group_by_folder(${target})
 
 if(LINUX)
+    # Fetch wayland-server-delegate to get iwaylandclientcontext.h
+    include (FetchContent)
+    FetchCOntent_Declare(
+        ccl_wayland_server_delegate
+        GIT_REPOSITORY https://github.com/cclsoftware/wayland-server-delegate.git
+        GIT_TAG 86c32c61f0c861448635c041da5c343ce097ccff
+    )
+    FetchContent_MakeAvailable(ccl_wayland_server_delegate)
+
+    target_include_directories(${target}
+        PRIVATE
+            ${ccl_wayland_server_delegate_SOURCE_DIR}
+    )
+endif()
+
+if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
     target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${GLIB_INCLUDE_DIRS})
