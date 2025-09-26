@@ -7,6 +7,8 @@
 #include "cairogradient.h"
 #include "cairographicscontext.h"
 #include "x11frame.h"
+#include "waylandframe.h"
+#include "waylandplatform.h"
 #include "../iplatformframecallback.h"
 #include "../common/fileresourceinputstream.h"
 #include "../iplatformresourceinputstream.h"
@@ -22,6 +24,10 @@
 #include <X11/X.h>
 #include <dlfcn.h>
 #include <link.h>
+
+struct wl_display;
+struct xdg_surface;
+struct xdg_toplevel;
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -114,6 +120,11 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 		auto x11Parent = reinterpret_cast<XID> (parent);
 		return makeOwned<X11::Frame> (frame, size, x11Parent, config);
 	}
+	if (parentType == PlatformType::kWaylandSurfaceID)
+	{
+		//		auto surface = reinterpret_cast<xdg_surface*> (parent);
+		return makeOwned<Wayland::Frame> (frame, size, config);
+	}
 	return nullptr;
 }
 
@@ -191,6 +202,40 @@ PlatformStringPtr LinuxFactory::createString (UTF8StringPtr utf8String) const no
 //-----------------------------------------------------------------------------
 PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
+	if (auto runLoop = Wayland::RunLoop::instance ().get ())
+	{
+		struct Timer : public IPlatformTimer,
+					   public VSTGUI::ITimerHandler
+		{
+			Timer (IPlatformTimerCallback* callback) : callback (callback) {}
+			~Timer () noexcept { stop (); }
+
+			bool start (uint32_t periodMs) override
+			{
+				if (auto runLoop = Wayland::RunLoop::instance ().get ())
+				{
+					runLoop->registerTimer (periodMs, this);
+					return true;
+				}
+				return false;
+			}
+			bool stop () override
+			{
+				if (auto runLoop = Wayland::RunLoop::instance ().get ())
+				{
+					runLoop->unregisterTimer (this);
+					return true;
+				}
+				return false;
+			}
+
+			void onTimer () override { callback->fire (); }
+
+			IPlatformTimerCallback* callback;
+		};
+		auto timer = makeOwned<Timer> (callback);
+		return timer;
+	}
 	return makeOwned<X11::Timer> (callback);
 }
 

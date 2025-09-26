@@ -19,6 +19,7 @@ enum class PlatformType : int32_t {
 	kUIView,	// iOS UIView
 	kHWNDTopLevel,	// Windows HWDN Top Level (non child)
 	kX11EmbedWindowID,	// X11 XID
+	kWaylandSurfaceID,	// Wayland Surface ID
 	kGdkWindow, // GdkWindow
 
 	kDefaultNative = -1
