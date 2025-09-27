@@ -848,7 +848,7 @@ public:
 				}
 				else if (*type == "Percentage")
 				{
-					GridLayoutProperties::Percentage perc (50.);
+					GridLayoutProperties::Percentage perc {50.};
 					if (auto value = sizePrefs.getNumber<double> ("Value"))
 						perc.value = *value;
 					list.push_back (perc);
