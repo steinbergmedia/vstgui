@@ -77,10 +77,13 @@ public:
 	bool attached (CView* parent) override;
 
 	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, CRect newSize);
-	BaseViewLayouter::LayoutData layoutNewSeparatorSize (CSplitViewSeparatorView* separatorView,
-														 CRect newSize) const;
 	//-----------------------------------------------------------------------------
 protected:
+	struct SplitViewLayouter;
+
+	BaseViewLayouter::LayoutData layoutNewSeparatorSize (CSplitViewSeparatorView* separatorView,
+														 CRect newSize) const;
+
 	Style style;
 	ResizeMethod resizeMethod;
 	CCoord separatorWidth;

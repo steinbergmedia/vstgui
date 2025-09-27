@@ -103,6 +103,9 @@ public:
 	template<typename Proc>
 	void forEachChild (Proc proc) const;
 
+	template<typename Proc>
+	CView* findFirstViewIf (Proc filter) const;
+
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -337,6 +340,17 @@ inline void CViewContainer::forEachChild (Proc proc) const
 	{
 		proc (child);
 	}
+}
+
+template<typename Proc>
+inline CView* CViewContainer::findFirstViewIf (Proc filter) const
+{
+	for (const auto& child : getChildren ())
+	{
+		if (filter (child))
+			return child;
+	}
+	return nullptr;
 }
 
 } // VSTGUI

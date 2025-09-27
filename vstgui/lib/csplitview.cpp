@@ -41,8 +41,19 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-struct SplitViewLayouter final : BaseViewLayouter,
-								 NonAtomicReferenceCounted
+static ISplitViewController* getSplitViewController (const CView* view)
+{
+	IController* controller = getViewController (view, true);
+	if (controller)
+	{
+		return dynamic_cast<ISplitViewController*> (controller);
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
+											 NonAtomicReferenceCounted
 {
 	LayoutData resizeFirstView (const CSplitView& splitView, const Children& children,
 								const CRect& newSize, CPoint diff)
@@ -77,10 +88,7 @@ struct SplitViewLayouter final : BaseViewLayouter,
 				r.offset (0, diff.y);
 				r.right += diff.x;
 			}
-			std::optional<ViewLayout> childLayout;
-			if (auto childContainer = view->asViewContainer ())
-				childLayout = childContainer->calculateViewLayout (r);
-			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
+			layoutData.push_back ({view->getRuntimeID (), r, r});
 		}
 		return layoutData;
 	}
@@ -128,10 +136,7 @@ struct SplitViewLayouter final : BaseViewLayouter,
 					r.right += diff.x;
 				}
 			}
-			std::optional<ViewLayout> childLayout;
-			if (auto childContainer = view->asViewContainer ())
-				childLayout = childContainer->calculateViewLayout (r);
-			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
+			layoutData.push_back ({view->getRuntimeID (), r, r});
 		}
 		return layoutData;
 	}
@@ -167,11 +172,9 @@ struct SplitViewLayouter final : BaseViewLayouter,
 			{
 				r.right += diff.x;
 			}
-			std::optional<ViewLayout> childLayout;
-			if (auto childContainer = view->asViewContainer ())
-				childLayout = childContainer->calculateViewLayout (r);
-			layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
+			layoutData.push_back ({view->getRuntimeID (), r, r});
 		}
+		std::reverse (layoutData.begin (), layoutData.end ());
 		return layoutData;
 	}
 
@@ -215,10 +218,7 @@ struct SplitViewLayouter final : BaseViewLayouter,
 					r.offset (0, offset.y);
 					r.right += offset.x;
 				}
-				std::optional<ViewLayout> childLayout;
-				if (auto childContainer = view->asViewContainer ())
-					childLayout = childContainer->calculateViewLayout (r);
-				layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
+				layoutData.push_back ({view->getRuntimeID (), r, r});
 			}
 			else
 			{
@@ -237,10 +237,7 @@ struct SplitViewLayouter final : BaseViewLayouter,
 					r.bottom += diff.y;
 					offset.y += diff.y;
 				}
-				std::optional<ViewLayout> childLayout;
-				if (auto childContainer = view->asViewContainer ())
-					childLayout = childContainer->calculateViewLayout (r);
-				layoutData.push_back ({view->getRuntimeID (), r, r, std::move (childLayout)});
+				layoutData.push_back ({view->getRuntimeID (), r, r});
 			}
 		}
 		return layoutData;
@@ -249,6 +246,9 @@ struct SplitViewLayouter final : BaseViewLayouter,
 	std::optional<ViewLayout> calculateLayout (const CViewContainer& view, const Children& children,
 											   const CRect& newSize) override
 	{
+		if (children.size () < 3u)
+			return {{newSize, LayoutData {}}};
+
 		auto& splitView = static_cast<const CSplitView&> (view);
 		auto oldSize = view.getViewSize ();
 		CPoint diff (newSize.getWidth () - oldSize.getWidth (),
@@ -282,42 +282,113 @@ struct SplitViewLayouter final : BaseViewLayouter,
 			}
 		}
 
-		std::vector<CSplitViewSeparatorView*> separators;
-		view.getChildViewsOfType<CSplitViewSeparatorView> (separators);
-		std::for_each (
-			separators.begin (), separators.end (), [&] (CSplitViewSeparatorView* separatorView) {
-				CRect r (separatorView->getViewSize ());
-				auto l = splitView.layoutNewSeparatorSize (separatorView, r);
-				for (auto& element : l)
+		bool isHorizontal = splitView.getStyle () == kHorizontal;
+
+		auto controller = getSplitViewController (&splitView);
+
+		auto sepIndex = 0;
+		auto view1 = result.begin ();
+		auto prevSep = result.end ();
+		for (; view1 != result.end (); ++sepIndex)
+		{
+			auto constraintSize = newSize;
+			constraintSize.originize ();
+			auto sep = std::next (view1);
+			auto view2 = std::next (sep);
+			auto nextSep = std::next (view2);
+			if (prevSep != result.end ())
+			{
+				if (isHorizontal)
+					constraintSize.left = prevSep->mouseSize.right;
+				else
+					constraintSize.top = prevSep->mouseSize.bottom;
+			}
+			if (nextSep != result.end ())
+			{
+				if (isHorizontal)
+					constraintSize.right = nextSep->mouseSize.left;
+				else
+					constraintSize.bottom = nextSep->mouseSize.top;
+			}
+			CCoord view1MinWidth = -1.;
+			CCoord view1MaxWidth = -1.;
+			CCoord view2MinWidth = -1.;
+			CCoord view2MaxWidth = -1.;
+			if (controller)
+			{
+				if (controller->getSplitViewSizeConstraint (sepIndex, view1MinWidth, view1MaxWidth,
+															const_cast<CSplitView*> (&splitView)) &&
+					view1MinWidth >= 0.)
 				{
-					auto it = std::find_if (result.begin (), result.end (), [&] (const auto& el) {
-						return el.viewId == element.viewId;
-					});
-					if (it != result.end ())
+					if (isHorizontal)
+						constraintSize.left += view1MinWidth;
+					else
+						constraintSize.top += view1MinWidth;
+				}
+				if (controller->getSplitViewSizeConstraint (sepIndex + 1, view2MinWidth,
+															view2MaxWidth,
+															const_cast<CSplitView*> (&splitView)) &&
+					view2MinWidth >= 0.)
+				{
+					if (isHorizontal)
+						constraintSize.right -= view2MinWidth;
+					else
+						constraintSize.bottom -= view2MinWidth;
+				}
+			}
+			auto seperatorSize = sep->mouseSize;
+			if (isHorizontal)
+			{
+				if (seperatorSize.left < constraintSize.left)
+					seperatorSize.offset (constraintSize.left - seperatorSize.left, 0);
+				if (seperatorSize.right > constraintSize.right)
+					seperatorSize.offset (constraintSize.right - seperatorSize.right, 0);
+			}
+			else
+			{
+				if (seperatorSize.top < constraintSize.top)
+					seperatorSize.offset (0, constraintSize.top - seperatorSize.top);
+				if (seperatorSize.bottom > constraintSize.bottom)
+					seperatorSize.offset (0, constraintSize.bottom - seperatorSize.bottom);
+			}
+			CRect r1 (view1->viewSize);
+			CRect r2 (view2->viewSize);
+			if (isHorizontal)
+			{
+				r1.right = seperatorSize.left;
+				r2.left = seperatorSize.right;
+			}
+			else
+			{
+				r1.bottom = seperatorSize.top;
+				r2.top = seperatorSize.bottom;
+			}
+			view1->mouseSize = r1;
+			view1->viewSize = r1;
+			view2->mouseSize = r2;
+			view2->viewSize = r2;
+			auto calculateChildLayout = [&] (auto&& it) {
+				if (auto child = splitView.findFirstViewIf (
+						[&] (auto&& view) { return view->getRuntimeID () == it->viewId; }))
+				{
+					if (auto containerChild = child->asViewContainer ())
 					{
-						it->mouseSize = element.mouseSize;
-						it->viewSize = element.viewSize;
+						it->childLayout = containerChild->calculateViewLayout (it->viewSize);
 					}
 				}
-			});
+			};
+			calculateChildLayout (view1);
+			calculateChildLayout (view2);
+			if (nextSep == result.end ())
+				break;
+			view1 = view2;
+			prevSep = nextSep;
+		}
 		return {{newSize, std::move (result)}};
 	}
 };
 
 /// @endcond
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-static ISplitViewController* getSplitViewController (const CView* view)
-{
-	IController* controller = getViewController (view, true);
-	if (controller)
-	{
-		return dynamic_cast<ISplitViewController*> (controller);
-	}
-	return nullptr;
-}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -619,14 +690,14 @@ BaseViewLayouter::LayoutData
 		{
 			if (newSize.left < constrainSize.left)
 				newSize.offset (constrainSize.left - newSize.left, 0);
-			else if (newSize.right > constrainSize.right)
+			if (newSize.right > constrainSize.right)
 				newSize.offset (constrainSize.right - newSize.right, 0);
 		}
 		else
 		{
 			if (newSize.top < constrainSize.top)
 				newSize.offset (0, constrainSize.top - newSize.top);
-			else if (newSize.bottom > constrainSize.bottom)
+			if (newSize.bottom > constrainSize.bottom)
 				newSize.offset (0, constrainSize.bottom - newSize.bottom);
 		}
 
