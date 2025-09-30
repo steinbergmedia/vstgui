@@ -73,6 +73,8 @@ public:
 	const CRect& getContainerSize () const;
 	/** get scroll offset */
 	const CPoint& getScrollOffset () const;
+	/** set scroll offset */
+	void setScrollOffset (CPoint newOffset);
 	void resetScrollOffset ();
 
 	/** get the vertical scrollbar */
@@ -134,6 +136,9 @@ protected:
 
 	void recalculateLayout ();
 	void preLayouting () const;
+	void syncScrollbars (bool keepVisibleArea);
+	void syncHScrollbar (bool keepVisibleArea);
+	void syncVScrollbar (bool keepVisibleArea);
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewWillDelete (CView* view) override;

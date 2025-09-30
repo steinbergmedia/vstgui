@@ -385,6 +385,8 @@ CScrollView::CScrollView (const CRect& size, const CRect& containerSize, int32_t
 	CViewContainer::addView (impl->vScrollbar);
 	CViewContainer::addView (impl->hScrollbar);
 
+	impl->scrollContainer->registerViewListener (this);
+
 	if (pBackground)
 		setBackground(pBackground);
 	recalculateLayout ();
@@ -562,52 +564,79 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 {
 	vstgui_assert (impl->scrollContainer != nullptr);
 
-	CRect oldSize (impl->containerSize);
 	impl->containerSize = cs;
 	impl->scrollContainer->setContainerSize (cs);
 	recalculateLayout ();
-	if (impl->vScrollbar)
+	syncScrollbars (keepVisibleArea);
+}
+
+//------------------------------------------------------------------------
+void CScrollView::syncVScrollbar (bool keepVisibleArea)
+{
+	vstgui_assert (impl->vScrollbar != nullptr && impl->scrollContainer != nullptr);
+	const auto& cs = getContainerSize ();
+
+	CRect oldScrollSize = impl->vScrollbar->getScrollSize (oldScrollSize);
+	float oldValue = impl->vScrollbar->getValueNormalized ();
+	impl->vScrollbar->setScrollSize (cs);
+	auto csHeight = cs.getHeight ();
+	auto scrollContainerHeight = impl->scrollContainer->getHeight ();
+	auto newMax = static_cast<float> (csHeight - scrollContainerHeight);
+	impl->vScrollbar->setMax (newMax);
+	if (csHeight <= scrollContainerHeight)
+		impl->vScrollbar->setValueNormalized (0.f);
+	else if (impl->scrollContainer && keepVisibleArea && oldScrollSize.getHeight () != csHeight)
 	{
-		CRect oldScrollSize = impl->vScrollbar->getScrollSize (oldScrollSize);
-		float oldValue = impl->vScrollbar->getValueNormalized ();
-		impl->vScrollbar->setScrollSize (cs);
-		impl->vScrollbar->setMax (static_cast<float> (
-			cs.getHeight () - impl->scrollContainer->getViewSize ().getHeight ()));
-		if (cs.getHeight () <= impl->scrollContainer->getViewSize ().getHeight ())
-			impl->vScrollbar->setValueNormalized (0.f);
-		else if (impl->scrollContainer && keepVisibleArea &&
-				 oldScrollSize.getHeight () != cs.getHeight ())
-		{
-			CRect vSize = impl->scrollContainer->getViewSize ();
-			float newValue = (float)(oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ())));
-			newValue = clampNorm (newValue);
-			impl->vScrollbar->setValueNormalized (newValue);
-		}
-		if (oldSize != impl->containerSize)
-			impl->vScrollbar->onVisualChange ();
+		CRect vSize = impl->scrollContainer->getViewSize ();
+		float newValue =
+			static_cast<float> (oldValue * ((oldScrollSize.getHeight () - vSize.getHeight ()) /
+											(csHeight - vSize.getHeight ())));
+		newValue = clampNorm (newValue);
+		impl->vScrollbar->setValueNormalized (newValue);
+	}
+	if (impl->vScrollbar->isDirty ())
+	{
 		valueChanged (impl->vScrollbar);
+		impl->vScrollbar->onVisualChange ();
 	}
-	if (impl->hScrollbar)
+}
+
+//------------------------------------------------------------------------
+void CScrollView::syncHScrollbar (bool keepVisibleArea)
+{
+	vstgui_assert (impl->hScrollbar != nullptr && impl->scrollContainer != nullptr);
+	const auto& cs = getContainerSize ();
+
+	CRect oldScrollSize = impl->hScrollbar->getScrollSize (oldScrollSize);
+	float oldValue = impl->hScrollbar->getValueNormalized ();
+	impl->hScrollbar->setScrollSize (cs);
+	auto csWidth = cs.getWidth ();
+	auto scrollContainerWidth = impl->scrollContainer->getWidth ();
+	auto newMax = static_cast<float> (csWidth - scrollContainerWidth);
+	impl->hScrollbar->setMax (newMax);
+	if (csWidth <= scrollContainerWidth)
+		impl->hScrollbar->setValueNormalized (0.f);
+	else if (impl->scrollContainer && keepVisibleArea && oldScrollSize.getWidth () != csWidth)
 	{
-		CRect oldScrollSize = impl->hScrollbar->getScrollSize (oldScrollSize);
-		float oldValue = impl->hScrollbar->getValueNormalized ();
-		impl->hScrollbar->setScrollSize (cs);
-		impl->hScrollbar->setMax (static_cast<float> (
-			cs.getWidth () - impl->scrollContainer->getViewSize ().getWidth ()));
-		if (cs.getWidth () <= impl->scrollContainer->getViewSize ().getWidth ())
-			impl->hScrollbar->setValueNormalized (0.f);
-		else if (impl->scrollContainer && keepVisibleArea &&
-				 oldScrollSize.getWidth () != cs.getWidth ())
-		{
-			CRect vSize = impl->scrollContainer->getViewSize ();
-			float newValue = (float)(oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ())));
-			newValue = clampNorm (newValue);
-			impl->hScrollbar->setValueNormalized (newValue);
-		}
-		if (oldSize != impl->containerSize)
-			impl->hScrollbar->onVisualChange ();
-		valueChanged (impl->hScrollbar);
+		CRect vSize = impl->scrollContainer->getViewSize ();
+		float newValue =
+			static_cast<float> (oldValue * (oldScrollSize.getWidth () -
+											vSize.getWidth () / (csWidth - vSize.getWidth ())));
+		newValue = clampNorm (newValue);
+		impl->hScrollbar->setValueNormalized (newValue);
 	}
+	if (impl->hScrollbar->isDirty ())
+	{
+		valueChanged (impl->hScrollbar);
+		impl->hScrollbar->onVisualChange ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CScrollView::syncScrollbars (bool keepVisibleArea)
+{
+	syncVScrollbar (keepVisibleArea);
+	syncHScrollbar (keepVisibleArea);
 }
 
 //-----------------------------------------------------------------------------
@@ -641,6 +670,15 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	{
 		newOffset.x += (r.right - cs.right);
 	}
+	setScrollOffset (newOffset);
+}
+
+//------------------------------------------------------------------------
+void CScrollView::setScrollOffset (CPoint newOffset)
+{
+	const CPoint& scrollOffset = impl->scrollContainer->getScrollOffset ();
+	CRect vs = impl->scrollContainer->getViewSize ();
+	vs.originize ();
 	if (impl->vScrollbar && newOffset.y != scrollOffset.y)
 	{
 		if (impl->containerSize.getHeight () == vs.getHeight ())
@@ -894,8 +932,14 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 //-----------------------------------------------------------------------------
 void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
 {
-	vstgui_assert (view == impl->edgeViewTop || view == impl->edgeViewLeft);
-	recalculateLayout ();
+	if (view == impl->edgeViewTop || view == impl->edgeViewLeft)
+		recalculateLayout ();
+	else if (view == impl->scrollContainer)
+		syncScrollbars (true);
+	else
+	{
+		vstgui_assert (false, "unexpected view");
+	}
 }
 
 //-----------------------------------------------------------------------------
