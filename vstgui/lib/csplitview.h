@@ -81,9 +81,6 @@ public:
 protected:
 	struct SplitViewLayouter;
 
-	BaseViewLayouter::LayoutData layoutNewSeparatorSize (CSplitViewSeparatorView* separatorView,
-														 CRect newSize) const;
-
 	Style style;
 	ResizeMethod resizeMethod;
 	CCoord separatorWidth;
