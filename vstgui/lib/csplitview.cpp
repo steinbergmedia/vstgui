@@ -327,7 +327,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 				r1.bottom = seperatorSize.top;
 				r2.top = seperatorSize.bottom;
 			}
-#if 0
+#if 1
 			// TODO: if one of the view is too small or too wide, we could check to move another
 			// separator together with this one
 			if (view1MaxWidth >= 0.)
@@ -336,14 +336,14 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 				{
 					if (r1.getWidth () > view1MaxWidth)
 					{
-						return {};
+						return false;
 					}
 				}
 				else
 				{
 					if (r1.getHeight () > view1MaxWidth)
 					{
-						return {};
+						return false;
 					}
 				}
 			}
@@ -353,14 +353,14 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 				{
 					if (r1.getWidth () < view1MinWidth)
 					{
-						return {};
+						return false;
 					}
 				}
 				else
 				{
 					if (r1.getHeight () < view1MinWidth)
 					{
-						return {};
+						return false;
 					}
 				}
 			}
@@ -371,14 +371,14 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 				{
 					if (r2.getWidth () > view2MaxWidth)
 					{
-						return {};
+						return false;
 					}
 				}
 				else
 				{
 					if (r2.getHeight () > view2MaxWidth)
 					{
-						return {};
+						return false;
 					}
 				}
 			}
@@ -388,14 +388,14 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 				{
 					if (r2.getWidth () < view2MinWidth)
 					{
-						return {};
+						return false;
 					}
 				}
 				else
 				{
 					if (r2.getHeight () < view2MinWidth)
 					{
-						return {};
+						return false;
 					}
 				}
 			}
