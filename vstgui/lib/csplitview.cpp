@@ -327,7 +327,6 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 				r1.bottom = seperatorSize.top;
 				r2.top = seperatorSize.bottom;
 			}
-#if 1
 			// TODO: if one of the view is too small or too wide, we could check to move another
 			// separator together with this one
 			if (view1MaxWidth >= 0.)
@@ -399,7 +398,6 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 					}
 				}
 			}
-#endif
 			view1->mouseSize = r1;
 			view1->viewSize = r1;
 			view2->mouseSize = r2;
@@ -421,7 +419,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 			if (nextSep == result.end ())
 				break;
 			view1 = view2;
-			prevSep = nextSep;
+			prevSep = sep;
 		}
 		return true;
 	}
@@ -503,19 +501,32 @@ void CSplitView::setSeparatorWidth (CCoord width)
 {
 	if (width != separatorWidth)
 	{
-		ReverseViewIterator it (this);
-		while (*it)
+		SplitViewLayouter::LayoutData layoutData;
+		for (auto& child : getChildren ())
 		{
-			if (auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (*it))
+			auto viewSize = child->getViewSize ();
+			auto mouseSize = child->getMouseableArea ();
+			if (child.cast<CSplitViewSeparatorView> ())
 			{
-				CRect r (separatorView->getViewSize ());
 				if (style == kHorizontal)
-					r.setWidth (width);
+				{
+					viewSize.setWidth (width);
+					mouseSize.setWidth (width);
+				}
 				else
-					r.setHeight (width);
-				requestNewSeparatorSize (separatorView, r);
+				{
+					viewSize.setHeight (width);
+					mouseSize.setHeight (width);
+				}
 			}
-			++it;
+			layoutData.push_back ({child->getRuntimeID (), viewSize, mouseSize, {}});
+		}
+		if (auto layouter = getViewLayouter ().cast<SplitViewLayouter> ())
+		{
+			if (layouter->validateLayoutData (*this, layoutData, getViewSize ()))
+			{
+				applyViewLayout ({getViewSize (), layoutData});
+			}
 		}
 		separatorWidth = width;
 	}
@@ -525,17 +536,6 @@ void CSplitView::setSeparatorWidth (CCoord width)
 void CSplitView::setViewSize (const CRect& rect, bool invalid)
 {
 	CViewContainer::setViewSize (rect, invalid);
-
-	if (!inApplyViewLayout ())
-	{
-		std::vector<CSplitViewSeparatorView*> separators;
-		getChildViewsOfType<CSplitViewSeparatorView> (separators);
-		std::for_each (separators.begin (), separators.end (),
-					   [&] (CSplitViewSeparatorView* separatorView) {
-						   CRect r (separatorView->getViewSize ());
-						   requestNewSeparatorSize (separatorView, r);
-					   });
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -719,6 +719,8 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 	}
 	if (view1 && view2)
 	{
+		auto size = view1->getViewSize ();
+		size.unite (view2->getViewSize ());
 		SplitViewLayouter::LayoutData layoutData;
 		layoutData.push_back (
 			{view1->getRuntimeID (), view1->getViewSize (), view1->getMouseableArea (), {}});
@@ -727,7 +729,7 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 			{view2->getRuntimeID (), view2->getViewSize (), view2->getMouseableArea (), {}});
 		if (auto layouter = getViewLayouter ().cast<SplitViewLayouter> ())
 		{
-			if (layouter->validateLayoutData (*this, layoutData, getViewSize ()))
+			if (layouter->validateLayoutData (*this, layoutData, size))
 			{
 				return applyViewLayout ({getViewSize (), layoutData});
 			}
