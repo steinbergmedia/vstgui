@@ -467,17 +467,36 @@ void CScrollView::preLayouting () const
 			return;
 		}
 		auto layoutData = std::any_cast<GridLayouter::LayoutData> (&layout->data);
+		auto contSize = layoutData->at (0).first;
 		if (style & kHorizontalScrollbar)
 		{
-			if (impl->containerSize.getWidth () > layoutData->at (0).first.getWidth ())
+			if (impl->containerSize.getWidth () > contSize.getWidth ())
 			{
 				gridProps.autoRows[3] = impl->scrollbarWidth;
 				impl->activeScrollbarStyle |= kHorizontalScrollbar;
+				contSize.bottom -= impl->scrollbarWidth;
+			}
+			if (style & kVerticalScrollbar)
+			{
+				if (impl->containerSize.getHeight () > contSize.getHeight ())
+				{
+					gridProps.autoColumns[3] = impl->scrollbarWidth;
+					impl->activeScrollbarStyle |= kVerticalScrollbar;
+					contSize.right -= impl->scrollbarWidth;
+					if (!(impl->activeScrollbarStyle & kHorizontalScrollbar))
+					{
+						if (impl->containerSize.getWidth () > contSize.getWidth ())
+						{
+							gridProps.autoRows[3] = impl->scrollbarWidth;
+							impl->activeScrollbarStyle |= kHorizontalScrollbar;
+						}
+					}
+				}
 			}
 		}
-		if (style & kVerticalScrollbar)
+		else if (style & kVerticalScrollbar)
 		{
-			if (impl->containerSize.getHeight () > layoutData->at (0).first.getHeight ())
+			if (impl->containerSize.getHeight () > contSize.getHeight ())
 			{
 				gridProps.autoColumns[3] = impl->scrollbarWidth;
 				impl->activeScrollbarStyle |= kVerticalScrollbar;
