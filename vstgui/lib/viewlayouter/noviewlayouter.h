@@ -9,6 +9,11 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
+//------------------------------------------------------------------------
+/** A view layouter that does not layout any views.
+ *
+ *	@ingroup new_in_4_15
+ */
 struct NoViewLayouter final : BaseViewLayouter,
 							  NonAtomicReferenceCounted
 {

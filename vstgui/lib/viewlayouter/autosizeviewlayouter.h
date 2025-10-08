@@ -16,6 +16,8 @@ namespace VSTGUI {
  *
  *	a view layouter that uses the autosize flags of the views to determine the size and position
  *	of the child views in a view container.
+ *
+ *	@ingroup new_in_4_15
  */
 struct AutoSizeViewLayouter final : BaseViewLayouter
 {
