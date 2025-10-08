@@ -29,6 +29,7 @@ It's recommended to start new projects with version 4 while old projects should 
 - add Scripting for UIDescription (see uidescription-scripting/uiscripting.md)
 - add new text editor view (see lib/ctexteditor.h)
 - a scroll view can now have a top and a left edge view (see CScrollView::setEdgeView)
+- preliminary Wayland support
 
 @subsection version4_14 Version 4.14
 
