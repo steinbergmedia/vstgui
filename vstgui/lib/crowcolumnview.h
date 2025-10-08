@@ -37,7 +37,9 @@ public:
 class CRowColumnView : public CAutoLayoutContainerView
 {
 public:
-	enum Style 
+	static constexpr CViewAttributeID ViewAnimatesResizingAttr = 'crcr';
+
+	enum Style
 	{
 		/** subviews are arranged as rows (top to bottom) */
 		kRowStyle,
