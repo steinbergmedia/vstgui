@@ -10,11 +10,13 @@
 #include "uicolorchoosercontroller.h"
 #include "uieditcontroller.h"
 #include "uibasedatasource.h"
+#include "../../lib/ccolor.h"
 #include "../../lib/cdropsource.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/dragging.h"
 #include "../../lib/optional.h"
 #include "../../lib/idatapackage.h"
+#include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csearchtextedit.h"
 
 namespace VSTGUI {
@@ -47,6 +49,8 @@ protected:
 	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
+								   int32_t column, CDataBrowser* browser) override;
 
 	CCoord getColorIconWith ();
 
@@ -260,8 +264,10 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 					}
 
 					auto df = makeOwned<DragCallbackFunctions> ();
-					df->endedFunc = [browser] (IDraggingSession*, CPoint, DragOperation) {
+					df->endedFunc = [browser, Self = shared (this)] (IDraggingSession*, CPoint,
+																	 DragOperation) {
 						browser->getFrame ()->setCursor (kCursorDefault);
+						Self->allowDrag = false;
 					};
 					browser->doDrag (DragDescription (dropSource, -r.getSize () / 2., dragBitmap), df);
 				}
@@ -274,6 +280,15 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 	else
 		browser->getFrame ()->setCursor (kCursorDefault);
 	return UIBaseDataSource::dbOnMouseMoved (where, buttons, row, column, browser);
+}
+
+//----------------------------------------------------------------------------------------------------
+CMouseEventResult UIColorsDataSource::dbOnMouseUp (const CPoint& where, const CButtonState& buttons,
+												   int32_t row, int32_t column,
+												   CDataBrowser* browser)
+{
+	allowDrag = false;
+	return UIBaseDataSource::dbOnMouseUp (where, buttons, row, column, browser);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -460,6 +475,42 @@ IController* UIColorsController::createSubController (IdStringPtr name, const IU
 	if (std::strcmp (name, "ColorChooserController") == 0)
 		return new UIColorChooserController (this, color);
 	return controller->createSubController (name, description);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsController::appendContextMenuItems (COptionMenu& contextMenu, CView* view,
+												 const CPoint& where)
+{
+	auto item = new CCommandMenuItem ({"Add Color"});
+	item->setActions ([this] (auto) { dataSource->add (); });
+	contextMenu.addEntry (item);
+	item = new CCommandMenuItem ({"Remove Color"});
+	item->setActions ([this] (auto) { dataSource->remove (); });
+	contextMenu.addEntry (item);
+	contextMenu.addSeparator ();
+
+	auto cssColorMenu = new COptionMenu ();
+	auto cssColors = getCSSNamedColors ();
+	std::for_each (cssColors.begin (), cssColors.end (), [this, cssColorMenu] (const auto& el) {
+		auto item = new CCommandMenuItem ({std::string (el.name.data (), el.name.size ())});
+		item->setActions ([this, el] (auto item) {
+			color->beginEdit ();
+			*color = el.color;
+			color->endEdit ();
+		});
+		constexpr const CCoord size = 15;
+		if (auto context = COffscreenContext::create ({size, size}))
+		{
+			context->beginDraw ();
+			context->setFillColor (el.color);
+			context->drawRect (CRect (0, 0, size, size), kDrawFilled);
+			context->endDraw ();
+			item->setIcon (context->getBitmap ());
+		}
+
+		cssColorMenu->addEntry (item);
+	});
+	contextMenu.addEntry (cssColorMenu, "Set to CSS Color");
 }
 
 } // VSTGUI
