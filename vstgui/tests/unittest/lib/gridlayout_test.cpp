@@ -1590,4 +1590,76 @@ TEST_CASE (GridLayouter, GridAreas_Mismatch_MoreChildrenThanAreas_AutoPlacement)
 		EXPECT (container->getView (static_cast<int> (i))->getViewSize () == expectedRects[i]);
 	}
 }
+
+//------------------------------------------------------------------------
+TEST_CASE (GridLayouter, GridAreas_MultiRowView_SpaceBetween)
+{
+	GridLayoutProperties props;
+	props.rows = 4;
+	props.columns = 4;
+	props.rowGap = 0;
+	props.columnGap = 0;
+	props.alignItems = GridLayoutProperties::AlignItems::Stretch;
+	props.justifyItems = GridLayoutProperties::JustifyItems::Stretch;
+	props.alignContent = GridLayoutProperties::AlignContent::SpaceBetween;
+	props.justifyContent = GridLayoutProperties::JustifyContent::SpaceBetween;
+	props.autoRows.reserve (5);
+	props.autoRows.push_back (GridLayoutProperties::Auto {});
+	props.autoRows.push_back (GridLayoutProperties::Auto {});
+	props.autoRows.push_back (GridLayoutProperties::Auto {});
+	props.autoRows.push_back (GridLayoutProperties::Auto {});
+	props.autoRows.push_back (CCoord {30});
+	props.autoColumns.reserve (5);
+	props.autoColumns.push_back (GridLayoutProperties::Auto {});
+	props.autoColumns.push_back (GridLayoutProperties::Auto {});
+	props.autoColumns.push_back (GridLayoutProperties::Auto {});
+	props.autoColumns.push_back (GridLayoutProperties::Auto {});
+	props.autoColumns.push_back (CCoord {30});
+	props.gridAreas.reserve (4);
+	props.gridAreas.push_back ({0, 0, 3, 1});
+	props.gridAreas.push_back ({1, 1, 2, 1});
+	props.gridAreas.push_back ({2, 2, 2, 1});
+	props.gridAreas.push_back ({0, 1, 1, 2});
+	auto layouter = makeOwned<GridLayouter> (props);
+
+	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 100));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->addView (new CView ({}));
+	container->setViewLayouter (layouter);
+	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 110, 110));
+	EXPECT (layoutOpt.has_value ());
+	auto layout = layoutOpt.value ();
+	EXPECT (container->applyViewLayout (layout));
+
+	const auto rects = std::any_cast<GridLayouter::LayoutData> (&layout.data);
+	EXPECT (rects && rects->size () == 11);
+	constexpr std::array expectedRects {
+		CRect (0, 0, 20, 80),	  // 0
+		CRect (30, 30, 50, 80),	  // 1
+		CRect (60, 60, 80, 110),  // 2
+		CRect (30, 0, 80, 20),	  // 3
+		CRect (90, 0, 110, 20),	  // 4
+		CRect (60, 30, 80, 50),	  // 5
+		CRect (90, 30, 110, 50),  // 6
+		CRect (90, 60, 110, 80),  // 7
+		CRect (0, 90, 20, 110),	  // 8
+		CRect (30, 90, 50, 110),  // 9
+		CRect (90, 90, 110, 110), // 10
+	};
+	for (size_t i = 0; i < expectedRects.size (); ++i)
+	{
+		EXPECT ((*rects)[i].first == expectedRects[i]);
+		EXPECT (container->getView (static_cast<int> (i))->getViewSize () == expectedRects[i]);
+	}
+}
+
 } // namespace VSTGUI

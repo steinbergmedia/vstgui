@@ -281,11 +281,19 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 			CCoord h = 0.0;
 			for (size_t r = r0; r < r1; ++r)
 				h += rowHeights[r];
-			h += (r1 > r0 ? (r1 - r0 - 1) * (rowGap + spaceAroundY) : 0.0);
+			if (r1 > r0)
+			{
+				auto count = r1 - r0 - 1;
+				h += spaceBetweenY * count + (rowGap + spaceAroundY) * count;
+			}
 			CCoord w = 0.0;
 			for (size_t c = c0; c < c1; ++c)
 				w += colWidths[c];
-			w += (c1 > c0 ? (c1 - c0 - 1) * (colGap + spaceAroundX) : 0.0);
+			if (c1 > c0)
+			{
+				auto count = c1 - c0 - 1;
+				w += spaceBetweenX * count + (colGap + spaceAroundX) * count;
+			}
 			return CRect (x, y, x + w, y + h);
 		};
 
