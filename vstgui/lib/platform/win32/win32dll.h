@@ -131,6 +131,34 @@ struct HiDPISupport : DllBase
 		return adjustWindowRectExForDpiProc (lpRect, dwStyle, bMenu, dwExStyle, dpi);
 	}
 
+	DPI_AWARENESS getAwarenessFromDpiAwarenessContext (DPI_AWARENESS_CONTEXT context)
+	{
+		if (getAwarenessFromDpiAwarenessContextFunc)
+			return getAwarenessFromDpiAwarenessContextFunc (context);
+		return DPI_AWARENESS_INVALID;
+	}
+
+	DPI_AWARENESS_CONTEXT getThreadDpiAwarenessContext ()
+	{
+		if (getThreadDpiAwarenessContextFunc)
+			return getThreadDpiAwarenessContextFunc ();
+		return NULL;
+	}
+
+	DPI_AWARENESS_CONTEXT getWindowDpiAwarenessContext (HWND hwnd)
+	{
+		if (getWindowDpiAwarenessContextFunc)
+			return getWindowDpiAwarenessContextFunc (hwnd);
+		return NULL;
+	}
+
+	DPI_AWARENESS_CONTEXT setThreadDpiAwarenessContext (DPI_AWARENESS_CONTEXT context)
+	{
+		if (setThreadDpiAwarenessContextFunc)
+			return setThreadDpiAwarenessContextFunc (context);
+		return NULL;
+	}
+
 private:
 	using GetDpiForWindowFunc = UINT (WINAPI*) (HWND hWnd);
 	using GetDpiForMonitorFunc = HRESULT (WINAPI*) (_In_ HMONITOR hmonitor,
@@ -142,12 +170,21 @@ private:
 	using SetProcessDpiAwarenessContextFunc = BOOL (WINAPI*) (_In_ DPI_AWARENESS_CONTEXT value);
 	using AdjustWindowRectExForDpiProc = BOOL (WINAPI*) (LPRECT, DWORD, BOOL, DWORD, UINT);
 
+	using GetAwarenessFromDpiAwarenessContextFunc = DPI_AWARENESS (WINAPI *) (_In_ DPI_AWARENESS_CONTEXT value);
+	using GetThreadDpiAwarenessContextFunc = DPI_AWARENESS_CONTEXT (WINAPI *) ();
+	using GetWindowDpiAwarenessContextFunc = DPI_AWARENESS_CONTEXT (WINAPI *) (_In_ HWND hwnd);
+	using SetThreadDpiAwarenessContextFunc = DPI_AWARENESS_CONTEXT (WINAPI *) (_In_ DPI_AWARENESS_CONTEXT value);
+
 	GetDpiForWindowFunc getDPIForWindowFunc {nullptr};
 	GetDpiForMonitorFunc getDpiForMonitorFunc {nullptr};
 	SetProcessDpiAwarnessFunc setProcessDpiAwarenessFunc {nullptr};
 	EnableNonClientDpiScalingFunc enableNonClientDpiScalingFunc {nullptr};
 	SetProcessDpiAwarenessContextFunc setProcessDpiAwarenessContextFunc {nullptr};
 	AdjustWindowRectExForDpiProc adjustWindowRectExForDpiProc {nullptr};
+	GetAwarenessFromDpiAwarenessContextFunc getAwarenessFromDpiAwarenessContextFunc {nullptr};
+	GetThreadDpiAwarenessContextFunc getThreadDpiAwarenessContextFunc {nullptr};
+	GetWindowDpiAwarenessContextFunc getWindowDpiAwarenessContextFunc {nullptr};
+	SetThreadDpiAwarenessContextFunc setThreadDpiAwarenessContextFunc {nullptr};
 
 	DllBase shCore {"Shcore.dll"};
 
@@ -162,6 +199,15 @@ private:
 		setProcessDpiAwarenessContextFunc = getProcAddress<SetProcessDpiAwarenessContextFunc> ("SetProcessDpiAwarenessContext");
 		adjustWindowRectExForDpiProc =
 			getProcAddress<AdjustWindowRectExForDpiProc> ("AdjustWindowRectExForDpi");
+		getAwarenessFromDpiAwarenessContextFunc =
+			getProcAddress<GetAwarenessFromDpiAwarenessContextFunc> (
+				"GetAwarenessFromDpiAwarenessContext");
+		getThreadDpiAwarenessContextFunc =
+			getProcAddress<GetThreadDpiAwarenessContextFunc> ("GetThreadDpiAwarenessContext");
+		getWindowDpiAwarenessContextFunc =
+			getProcAddress<GetWindowDpiAwarenessContextFunc> ("GetWindowDpiAwarenessContext");
+		setThreadDpiAwarenessContextFunc =
+			getProcAddress<SetThreadDpiAwarenessContextFunc> ("SetThreadDpiAwarenessContext");
 	}
 };
 
