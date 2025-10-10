@@ -489,26 +489,13 @@ void UIColorsController::appendContextMenuItems (COptionMenu& contextMenu, CView
 	contextMenu.addEntry (item);
 	contextMenu.addSeparator ();
 
-	auto cssColorMenu = new COptionMenu ();
-	auto cssColors = getCSSNamedColors ();
-	std::for_each (cssColors.begin (), cssColors.end (), [this, cssColorMenu] (const auto& el) {
-		auto item = new CCommandMenuItem ({std::string (el.name.data (), el.name.size ())});
-		item->setActions ([this, el] (auto item) {
-			color->beginEdit ();
-			*color = el.color;
-			color->endEdit ();
-		});
-		constexpr const CCoord size = 15;
-		if (auto context = COffscreenContext::create ({size, size}))
+	auto cssColorMenu = createCSSColorMenu ([this] (auto newColor) {
+		if (color)
 		{
-			context->beginDraw ();
-			context->setFillColor (el.color);
-			context->drawRect (CRect (0, 0, size, size), kDrawFilled);
-			context->endDraw ();
-			item->setIcon (context->getBitmap ());
+			color->beginEdit ();
+			*color = newColor;
+			color->endEdit ();
 		}
-
-		cssColorMenu->addEntry (item);
 	});
 	contextMenu.addEntry (cssColorMenu, "Set to CSS Color");
 }

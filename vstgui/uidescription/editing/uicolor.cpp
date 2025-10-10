@@ -6,6 +6,9 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../../lib/coffscreencontext.h"
+#include "../../lib/controls/coptionmenu.h"
+
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
@@ -116,6 +119,35 @@ void UIColor::endEdit ()
 void UIColor::editChange ()
 {
 	forEachListener ([this] (IUIColorListener* l) { l->uiColorChanged (this); });
+}
+
+//------------------------------------------------------------------------
+SharedPointer<CBitmap> createColorIcon (CColor color, CPoint colorIconSize)
+{
+	if (auto context = COffscreenContext::create (colorIconSize))
+	{
+		context->beginDraw ();
+		context->setFillColor (color);
+		context->drawRect (CRect (0, 0, colorIconSize.x, colorIconSize.y), kDrawFilled);
+		context->endDraw ();
+		return context->getBitmap ();
+	}
+	return {};
+}
+
+//------------------------------------------------------------------------
+SharedPointer<COptionMenu> createCSSColorMenu (const std::function<void (CColor)>& callback,
+											   CPoint colorIconSize)
+{
+	auto cssColorMenu = makeOwned<COptionMenu> ();
+	auto cssColors = getCSSNamedColors ();
+	std::for_each (cssColors.begin (), cssColors.end (), [&] (const auto& el) {
+		auto item = new CCommandMenuItem ({std::string (el.name.data (), el.name.size ())});
+		item->setActions ([callback, el] (auto item) { callback (el.color); });
+		item->setIcon (createColorIcon (el.color, colorIconSize));
+		cssColorMenu->addEntry (item);
+	});
+	return cssColorMenu;
 }
 
 } // VSTGUI

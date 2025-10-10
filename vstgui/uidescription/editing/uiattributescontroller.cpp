@@ -7,6 +7,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uiactions.h"
+#include "uicolor.h"
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
 #include "../uiattributes.h"
@@ -671,22 +672,13 @@ public:
 	
 	void validateMenuEntry (CCommandMenuItem* item) override
 	{
-		const CCoord size = 15;
 		CColor color;
 		if (description->getColor (item->getTitle (), color))
 		{
-			
-			if (auto context = COffscreenContext::create ({size, size}))
-			{
-				context->beginDraw ();
-				context->setFillColor (color);
-				context->drawRect (CRect (0, 0, size, size), kDrawFilled);
-				context->endDraw ();
-				item->setIcon (context->getBitmap ());
-			}
+			item->setIcon (createColorIcon (color));
 		}
 	}
-	
+
 	void setValue (const std::string& value) override
 	{
 		MenuController::setValue (value);
