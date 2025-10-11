@@ -446,9 +446,7 @@ struct DBController : DelegationController,
 		{
 			if (*customViewName == "DataBrowser")
 			{
-				auto db = new CDataBrowser ({}, this);
-				remember (); // data browser will call forget()
-				return db;
+				return new CDataBrowser ({}, this);
 			}
 		}
 		return nullptr;
