@@ -51,6 +51,42 @@ static TCHAR gClassName[100];
 static bool bSwapped_mouse_buttons = false;
 
 //-----------------------------------------------------------------------------
+// Temporarily sets DPI awareness context of the thread to match the given HWND.
+//
+// This is needed to avoid redraw issues in some hosts (e.g. Ableton Live & Bitwig with "Auto-Scale
+// Plug-In Window" disabled) when calling InvalidRect from timers and drag & drop callbacks where
+// these hosts set the thread awareness to DPI_AWARENESS_UNAWARE.
+struct ThreadDPIAwarenessScope
+{
+	explicit ThreadDPIAwarenessScope (HWND hwnd) : oldContext (nullptr)
+	{
+		HiDPISupport& hidpi = HiDPISupport::instance ();
+
+		bool windowAware =
+			hidpi.getAwarenessFromDpiAwarenessContext (hidpi.getWindowDpiAwarenessContext (hwnd)) ==
+			DPI_AWARENESS_PER_MONITOR_AWARE;
+
+		bool threadAware =
+			hidpi.getAwarenessFromDpiAwarenessContext (hidpi.getThreadDpiAwarenessContext ()) ==
+			DPI_AWARENESS_PER_MONITOR_AWARE;
+
+		if (windowAware && !threadAware)
+			oldContext =
+				hidpi.setThreadDpiAwarenessContext (DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+		else if (!windowAware && threadAware)
+			oldContext = hidpi.setThreadDpiAwarenessContext (DPI_AWARENESS_CONTEXT_UNAWARE);
+	}
+
+	~ThreadDPIAwarenessScope ()
+	{
+		if (oldContext != nullptr)
+			HiDPISupport::instance ().setThreadDpiAwarenessContext (oldContext);
+	}
+
+	DPI_AWARENESS_CONTEXT oldContext;
+};
+
+//-----------------------------------------------------------------------------
 static bool isParentLayered (HWND parent)
 {
 	WINDOWINFO info;
@@ -201,6 +237,8 @@ void Win32Frame::initTooltip ()
 {
 	if (tooltipWindow == nullptr && windowHandle)
 	{
+		ThreadDPIAwarenessScope scope (getHWND ());
+
 		TOOLINFO    ti;
 		// Create the ToolTip control.
 		HWND hwndTT = CreateWindow (TOOLTIPS_CLASS, TEXT(""),
@@ -312,6 +350,7 @@ bool Win32Frame::getSize (CRect& size) const
 //-----------------------------------------------------------------------------
 bool Win32Frame::getCurrentMousePosition (CPoint& mousePosition) const
 {
+	ThreadDPIAwarenessScope scope (getHWND ());
 	POINT _where;
 	GetCursorPos (&_where);
 	mousePosition (static_cast<CCoord> (_where.x), static_cast<CCoord> (_where.y));
@@ -412,6 +451,7 @@ bool Win32Frame::invalidRect (const CRect& rect)
 	if (!rect.isEmpty ())
 	{
 		RECT r = {(LONG)rect.left, (LONG)rect.top, (LONG)ceil (rect.right), (LONG)ceil (rect.bottom)};
+		ThreadDPIAwarenessScope scope (getHWND ());
 		InvalidateRect (windowHandle, &r, true);
 	}
 	return true;
