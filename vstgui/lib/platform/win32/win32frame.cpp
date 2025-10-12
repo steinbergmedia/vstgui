@@ -20,6 +20,7 @@
 #include "win32datapackage.h"
 #include "win32dragging.h"
 #include "win32directcomposition.h"
+#include "win32dll.h"
 #include "win32viewlayer.h"
 #include "../iplatformtextinputclient.h"
 #include "../common/genericoptionmenu.h"
