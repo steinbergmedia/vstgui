@@ -337,19 +337,25 @@ set(${target}_linux_sources
     platform/linux/x11timer.h
     platform/linux/x11utils.cpp
     platform/linux/x11utils.h
-    platform/linux/waylandframe.cpp
-    platform/linux/waylandframe.h
-    platform/linux/waylandplatform.cpp
-    platform/linux/waylandplatform.h
-    platform/linux/waylandutils.cpp
-    platform/linux/waylandutils.h
-    platform/linux/waylandclientcontext.cpp
-    platform/linux/waylandclientcontext.h
     platform/linux/linuxfactory.cpp
     platform/linux/linuxfactory.h
     platform/linux/linuxtaskexecutor.cpp
     platform/linux/linuxtaskexecutor.h
 )
+
+if(LINUX AND VSTGUI_ENABLE_WAYLAND_SUPPORT)
+    set(${target}_linux_sources
+        ${${target}_linux_sources}
+        platform/linux/waylandframe.cpp
+        platform/linux/waylandframe.h
+        platform/linux/waylandplatform.cpp
+        platform/linux/waylandplatform.h
+        platform/linux/waylandutils.cpp
+        platform/linux/waylandutils.h
+        platform/linux/waylandclientcontext.cpp
+        platform/linux/waylandclientcontext.h
+    )
+endif()
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
@@ -375,7 +381,7 @@ target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 vstgui_source_group_by_folder(${target})
 
-if(LINUX)
+if(LINUX AND VSTGUI_ENABLE_WAYLAND_SUPPORT)
     # Fetch wayland-server-delegate to get iwaylandclientcontext.h
     include (FetchContent)
     FetchContent_Declare(
@@ -389,6 +395,8 @@ if(LINUX)
         PRIVATE
             ${ccl_wayland_server_delegate_SOURCE_DIR}
     )
+
+    target_link_libraries(${target} PRIVATE ${WAYLAND_LIBRARIES})
 endif()
 
 if(LINUX)
@@ -398,7 +406,7 @@ if(LINUX)
     target_include_directories(${target} PRIVATE ${CAIRO_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${PANGO_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${FONTCONFIG_INCLUDE_DIRS})
-    target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES} ${WAYLAND_LIBRARIES})
+    target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES})
 endif()
 
 if(CMAKE_HOST_APPLE)
