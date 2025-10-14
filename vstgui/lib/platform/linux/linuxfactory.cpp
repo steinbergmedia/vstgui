@@ -7,8 +7,10 @@
 #include "cairogradient.h"
 #include "cairographicscontext.h"
 #include "x11frame.h"
+#if VSTGUI_ENABLE_WAYLAND_SUPPORT
 #include "waylandframe.h"
 #include "waylandplatform.h"
+#endif
 #include "../iplatformframecallback.h"
 #include "../common/fileresourceinputstream.h"
 #include "../iplatformresourceinputstream.h"
@@ -120,11 +122,13 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 		auto x11Parent = reinterpret_cast<XID> (parent);
 		return makeOwned<X11::Frame> (frame, size, x11Parent, config);
 	}
+#if VSTGUI_ENABLE_WAYLAND_SUPPORT
 	if (parentType == PlatformType::kWaylandSurfaceID)
 	{
 		//		auto surface = reinterpret_cast<xdg_surface*> (parent);
 		return makeOwned<Wayland::Frame> (frame, size, config);
 	}
+#endif
 	return nullptr;
 }
 
@@ -202,6 +206,7 @@ PlatformStringPtr LinuxFactory::createString (UTF8StringPtr utf8String) const no
 //-----------------------------------------------------------------------------
 PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
+#if VSTGUI_ENABLE_WAYLAND_SUPPORT
 	if (auto runLoop = Wayland::RunLoop::instance ().get ())
 	{
 		struct Timer : public IPlatformTimer,
@@ -236,6 +241,7 @@ PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) co
 		auto timer = makeOwned<Timer> (callback);
 		return timer;
 	}
+#endif
 	return makeOwned<X11::Timer> (callback);
 }
 

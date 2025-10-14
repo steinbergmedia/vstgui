@@ -397,6 +397,7 @@ if(LINUX AND VSTGUI_ENABLE_WAYLAND_SUPPORT)
     )
 
     target_link_libraries(${target} PRIVATE ${WAYLAND_LIBRARIES})
+    target_compile_definitions(${target} PRIVATE VSTGUI_ENABLE_WAYLAND_SUPPORT=1)
 endif()
 
 if(LINUX)
