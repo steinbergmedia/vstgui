@@ -1512,7 +1512,8 @@ bool NSViewFrame::getGlobalPosition (CPoint& pos) const
 bool NSViewFrame::setSize (const CRect& newSize)
 {
 	NSRect r = nsRectFromCRect (newSize);
-	if (NSEqualRects (r, [nsView frame]))
+	if (NSEqualRects (r, [nsView frame]) &&
+		(!caLayer || NSEqualRects ([caLayer frame], [nsView bounds])))
 		return true;
 
 	NSUInteger oldResizeMask = [nsView autoresizingMask];
