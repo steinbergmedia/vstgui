@@ -5,34 +5,10 @@
 #pragma once
 
 #include "iplatformframe.h"
+#include "platform_linux.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-
-//------------------------------------------------------------------------
-class IEventHandler
-{
-public:
-	virtual void onEvent () = 0;
-};
-
-//------------------------------------------------------------------------
-class ITimerHandler
-{
-public:
-	virtual void onTimer () = 0;
-};
-
-//------------------------------------------------------------------------
-class IRunLoop : public virtual IReference
-{
-public:
-	virtual bool registerEventHandler (int fd, IEventHandler* handler) = 0;
-	virtual bool unregisterEventHandler (IEventHandler* handler) = 0;
-
-	virtual bool registerTimer (uint64_t interval, ITimerHandler* handler) = 0;
-	virtual bool unregisterTimer (ITimerHandler* handler) = 0;
-};
 
 //------------------------------------------------------------------------
 namespace X11 {
