@@ -83,11 +83,16 @@ function(vstgui_add_resources target resources)
             COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${sourcePath}"
             "${destination}/${directoryName}"
+            COMMAND ${CMAKE_COMMAND} 
+            -E echo 
+                "[VSTGUI] Copied directory ${sourcePath} to ${destination}"
           )
       else()
           add_custom_command(
             OUTPUT "${destination}/${resourceName}"
             MAIN_DEPENDENCY "${sourcePath}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+            "${destination}"
             COMMAND ${CMAKE_COMMAND} -E copy
             "${sourcePath}"
             "${destination}"
