@@ -42,3 +42,4 @@ vstgui/gdkmm
 vstgui/gtk
 vstgui/.vscode/ipch
 .vs
+.vscode

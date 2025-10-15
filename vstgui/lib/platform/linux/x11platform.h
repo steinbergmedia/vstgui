@@ -50,7 +50,7 @@ struct IFrameEventHandler
 //------------------------------------------------------------------------
 struct RunLoop
 {
-	static void init (const SharedPointer<IRunLoop>& runLoop);
+	static void init ();
 	static void exit ();
 	static const SharedPointer<IRunLoop> get ();
 

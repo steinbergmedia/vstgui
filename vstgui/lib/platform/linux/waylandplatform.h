@@ -34,8 +34,7 @@ class Timer;
 struct RunLoop
 {
 	using IWaylandClientContext = WaylandServerDelegate::IWaylandClientContext;
-	static void init (const SharedPointer<IRunLoop>& runLoop,
-					  const SharedPointer<IWaylandHost>& waylandHost);
+	static void init (const SharedPointer<IWaylandHost>& waylandHost);
 	static void exit ();
 	static const SharedPointer<IRunLoop> get ();
 

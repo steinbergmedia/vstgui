@@ -4,6 +4,7 @@
 // Originally written and contributed to VSTGUI by PreSonus Software Ltd.
 
 #include "waylandplatform.h"
+#include "linuxfactory.h"
 #include "../../cfileselector.h"
 #include "../../cframe.h"
 #include "../../cstring.h"
@@ -97,9 +98,8 @@ const VirtMap shiftKeyMap = {{XKB_KEY_KP_Page_Up, VirtualKey::PageUp},
 } // anonymous
 
 //------------------------------------------------------------------------
-struct RunLoop::Impl : IEventHandler				   
+struct RunLoop::Impl : IEventHandler
 {
-	SharedPointer<IRunLoop> runLoop;
 	SharedPointer<IWaylandHost> waylandHost;
 	std::atomic<uint32_t> useCount {0};
 	cairo_device_t* device {nullptr};
@@ -112,13 +112,11 @@ struct RunLoop::Impl : IEventHandler
 	{
 	}
 
-	void init (const SharedPointer<IRunLoop>& inRunLoop,
-			   const SharedPointer<IWaylandHost>& inWaylandHost)
+	void init (const SharedPointer<IWaylandHost>& inWaylandHost)
 	{
 		if (++useCount != 1)
 			return;
 
-		runLoop = inRunLoop;
 		waylandHost = inWaylandHost;
 
 		if (waylandHost == nullptr)
@@ -130,7 +128,7 @@ struct RunLoop::Impl : IEventHandler
 
 		clientContext.initWayland (display);
 
-		runLoop->registerEventHandler (wl_display_get_fd (display), this);
+		RunLoop::get ()->registerEventHandler (wl_display_get_fd (display), this);
 		flush ();
 	}
 
@@ -143,8 +141,7 @@ struct RunLoop::Impl : IEventHandler
 		cairo_device_destroy (device);
 		device = nullptr;
 
-		runLoop->unregisterEventHandler (this);
-		runLoop = nullptr;
+		RunLoop::get ()->unregisterEventHandler (this);
 
 		flush ();
 
@@ -181,10 +178,9 @@ RunLoop& RunLoop::instance ()
 }
 
 //------------------------------------------------------------------------
-void RunLoop::init (const SharedPointer<IRunLoop>& runLoop,
-					const SharedPointer<IWaylandHost>& waylandHost)
+void RunLoop::init (const SharedPointer<IWaylandHost>& waylandHost)
 {
-	instance ().impl->init (runLoop, waylandHost);
+	instance ().impl->init (waylandHost);
 }
 
 //------------------------------------------------------------------------
@@ -194,7 +190,10 @@ void RunLoop::exit () { instance ().impl->exit (); }
 void RunLoop::flush () { instance ().impl->flush (); }
 
 //------------------------------------------------------------------------
-const SharedPointer<IRunLoop> RunLoop::get () { return instance ().impl->runLoop; }
+const SharedPointer<IRunLoop> RunLoop::get ()
+{
+	return getPlatformFactory ().asLinuxFactory ()->getRunLoop ();
+}
 
 //------------------------------------------------------------------------
 wl_display* RunLoop::getDisplay () { return instance ().impl->display; }

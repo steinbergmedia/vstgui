@@ -206,7 +206,12 @@ Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, IPlatformFrameCo
 	auto cfg = dynamic_cast<FrameConfig*> (config);
 	if (cfg && cfg->runLoop)
 	{
-		RunLoop::init (cfg->runLoop, cfg->waylandHost);
+		if (auto f = getPlatformFactory ().asLinuxFactory ())
+		{
+			if (f->getRunLoop () == nullptr)
+				f->setRunLoop (cfg->runLoop);
+		}
+		RunLoop::init (cfg->waylandHost);
 	}
 
 	impl = std::unique_ptr<Impl> (
