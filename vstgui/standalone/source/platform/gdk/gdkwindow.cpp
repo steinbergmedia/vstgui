@@ -6,6 +6,7 @@
 #include "gdkapplication.h"
 #include "gdkrunloop.h"
 #include "../../application.h"
+#include "../../../include/iasync.h"
 #include "../../../../lib/cframe.h"
 #include "../../../../lib/platform/platform_x11.h"
 #include <gtkmm.h>
@@ -72,9 +73,9 @@ void sendXEmbedProtocolMessage (::Window receiver, ::Window parentWindow, XEmbed
 } // anonymous
 
 //------------------------------------------------------------------------
-class Window
-: public IGdkWindow
-, public IWindow
+class Window : public IGdkWindow,
+			   public IWindow,
+			   public std::enable_shared_from_this<Window>
 {
 public:
 	~Window () noexcept override;
@@ -346,8 +347,12 @@ void Window::hide ()
 //------------------------------------------------------------------------
 void Window::close ()
 {
-	gtkWindow.close ();
-	delegate->onClosed ();
+	auto self = shared_from_this ();
+	auto call = [self] () {
+		self->gtkWindow.close ();
+		self->delegate->onClosed ();
+	};
+	Async::schedule (Async::mainQueue (), call);
 }
 
 //------------------------------------------------------------------------
