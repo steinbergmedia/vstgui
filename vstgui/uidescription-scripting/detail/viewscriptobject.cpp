@@ -112,7 +112,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 							 var->getReturnVar ()->setDouble (value);
 						 else if constexpr (std::is_same_v<T, std::string>)
 							 var->getReturnVar ()->setString (value);
-						 else if constexpr (std::is_same_v<T, nullptr_t>)
+						 else if constexpr (std::is_same_v<T, std::nullptr_t>)
 							 var->getReturnVar ()->setUndefined ();
 					 },
 					 value);

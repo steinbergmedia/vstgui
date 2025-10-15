@@ -86,7 +86,7 @@ struct IScriptContext
 struct IScriptControllerExtension
 {
 	/** A property value is either an integer, double, string or undefined (nullptr_t) */
-	using PropertyValue = std::variant<nullptr_t, int64_t, double, std::string>;
+	using PropertyValue = std::variant<std::nullptr_t, int64_t, double, std::string>;
 
 	/** Verify the script for a view
 	 *
