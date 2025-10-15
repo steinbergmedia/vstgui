@@ -61,67 +61,70 @@ public:
 		ofes = dynamic_cast<IViewFactoryEditingSupport*> (orig);
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const
+	CView* createView (const UIAttributes& attributes,
+					   const IUIDescription* description) const override
 	{
 		return of->createView (attributes, description);
 	}
 	bool applyAttributeValues (CView* view, const UIAttributes& attributes,
-							   const IUIDescription* desc) const
+							   const IUIDescription* desc) const override
 	{
 		return of->applyAttributeValues (view, attributes, desc);
 	}
 	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
 										 const UIAttributes& attributes,
-										 const IUIDescription* desc) const
+										 const IUIDescription* desc) const override
 	{
 		return of->applyCustomViewAttributeValues (customView, baseViewName, attributes, desc);
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
-							const IUIDescription* desc) const
+							const IUIDescription* desc) const override
 	{
 		return of->getAttributeValue (view, attributeName, stringValue, desc);
 	}
-	bool viewIsTypeOf (CView* view, const std::string& typeName) const
+	bool viewIsTypeOf (CView* view, const std::string& typeName) const override
 	{
 		return of->viewIsTypeOf (view, typeName);
 	}
-	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const
+	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const override
 	{
 		return ofes ? ofes->getAttributeNamesForView (view, attributeNames) : false;
 	}
-	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const
+	IViewCreator::AttrType getAttributeType (CView* view,
+											 const std::string& attributeName) const override
 	{
 		return ofes ? ofes->getAttributeType (view, attributeName)
 					: IViewCreator::AttrType::kUnknownType;
 	}
 	void collectRegisteredViewNames (StringPtrList& viewNames,
-									 IdStringPtr baseClassNameFilter) const
+									 IdStringPtr baseClassNameFilter) const override
 	{
 		if (ofes)
 			ofes->collectRegisteredViewNames (viewNames, baseClassNameFilter);
 	}
-	bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const
+	bool getAttributesForView (CView* view, const IUIDescription* desc,
+							   UIAttributes& attr) const override
 	{
 		return ofes ? ofes->getAttributesForView (view, desc, attr) : false;
 	}
 	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName,
-										 StringPtrList& values) const
+										 StringPtrList& values) const override
 	{
 		return ofes ? ofes->getPossibleAttributeListValues (view, attributeName, values) : false;
 	}
 	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue,
-								 double& maxValue) const
+								 double& maxValue) const override
 	{
 		return ofes ? ofes->getAttributeValueRange (view, attributeName, minValue, maxValue)
 					: false;
 	}
 	ViewAndDisplayNameList
-		collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter) const
+		collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter) const override
 	{
 		return ofes ? ofes->collectRegisteredViewAndDisplayNames (baseClassNameFilter)
 					: ViewAndDisplayNameList {};
 	}
-	UTF8StringPtr getViewDisplayName (CView* view) const
+	UTF8StringPtr getViewDisplayName (CView* view) const override
 	{
 		return ofes ? ofes->getViewDisplayName (view) : "";
 	}
