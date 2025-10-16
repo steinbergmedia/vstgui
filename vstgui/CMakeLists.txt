@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.25.0)
 
 if(NOT PROJECT_NAME)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14 CACHE STRING "")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15 CACHE STRING "")
     project(vstgui)
     set(VSTGUI_MAIN_PROJECT_BUILD 1)
 endif()
@@ -28,7 +28,8 @@ function(vstgui_source_group_by_folder target)
         set(SOURCE_GROUP_DELIMITER "/")
         set(last_dir "")
         set(files "")
-        foreach(file ${${target}_sources})
+        get_property(sources TARGET ${target} PROPERTY SOURCES)
+        foreach(file ${sources})
             get_filename_component(dir "${file}" DIRECTORY)
             string(FIND "${dir}" ${target} isTargetFolder)
             if(${isTargetFolder} EQUAL 0)
@@ -52,6 +53,9 @@ endfunction(vstgui_source_group_by_folder)
 
 ##########################################################################################
 if(LINUX)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+    find_package (Wayland REQUIRED COMPONENTS client server protocols)
     find_package(X11 REQUIRED)
     find_package(Freetype REQUIRED)
     find_package(PkgConfig REQUIRED)
@@ -80,7 +84,9 @@ if(LINUX)
         ${CAIRO_LIBRARIES}
         ${PANGO_LIBRARIES}
         ${FONTCONFIG_LIBRARIES}
+        Threads::Threads
         dl
+        vstgui_wayland_protocols
     )
 endif()
 
@@ -110,6 +116,14 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(uidescription)
 
+#### UIDescription Scripting
+option(VSTGUI_UISCRIPTING "Add Scripting Support to the UIDescription editor" ON)
+if(VSTGUI_UISCRIPTING)
+    add_compile_definitions(VSTGUI_UISCRIPTING)
+    add_subdirectory(uidescription-scripting)
+endif(VSTGUI_UISCRIPTING)
+
+##########################################################################################
 if(LINUX)
     set(VSTGUI_DISABLE_UNITTESTS  1)
 endif()

@@ -83,6 +83,7 @@ public:
 	WindowType getType () const override { return windowType; }
 	WindowStyle getStyle () const override { return windowStyle; }
 	const UTF8String& getAutoSaveFrameName () const override { return autoSaveFrameName; }
+	void setAutoSaveFrameName (const UTF8String& name) override { autoSaveFrameName = name; }
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override
 	{
@@ -245,8 +246,11 @@ CRect Window::getFocusViewRect () const
 }
 
 //------------------------------------------------------------------------
-CPoint Window::constraintSize (const CPoint& newSize)
+CPoint Window::constraintSize (const CPoint& _newSize)
 {
+	CPoint newSize (_newSize);
+	if (frame)
+		newSize = frame->checkSizeConstraint (newSize);
 	return controller ? controller->constraintSize (*this, newSize) : newSize;
 }
 
@@ -350,8 +354,22 @@ bool Window::canHandleCommand (const Command& command)
 {
 	if (command == Commands::CloseWindow)
 		return controller->canClose (*this);
+	if (auto focusView = frame->getFocusView ())
+	{
+		if (auto viewController = getViewController (focusView, false))
+		{
+			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController))
+			{
+				if (commandHandler->canHandleCommand (command))
+					return true;
+			}
+		}
+	}
 	if (auto commandHandler = dynamicPtrCast<ICommandHandler> (controller))
-		return commandHandler->canHandleCommand (command);
+	{
+		if (commandHandler->canHandleCommand (command))
+			return true;
+	}
 	return false;
 }
 
@@ -363,8 +381,22 @@ bool Window::handleCommand (const Command& command)
 		close ();
 		return true;
 	}
+	if (auto focusView = frame->getFocusView ())
+	{
+		if (auto viewController = getViewController (focusView, false))
+		{
+			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController))
+			{
+				if (commandHandler->handleCommand (command))
+					return true;
+			}
+		}
+	}
 	if (auto commandHandler = dynamicPtrCast<ICommandHandler> (controller))
-		return commandHandler->handleCommand (command);
+	{
+		if (commandHandler->handleCommand (command))
+			return true;
+	}
 	return false;
 }
 

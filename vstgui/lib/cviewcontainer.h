@@ -12,6 +12,7 @@
 #endif
 #include <list>
 #include <memory>
+#include <optional>
 
 namespace VSTGUI {
 
@@ -102,6 +103,30 @@ public:
 	template<typename Proc>
 	void forEachChild (Proc proc) const;
 
+	template<typename Proc>
+	CView* findFirstViewIf (Proc filter) const;
+
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name View Layouter Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	/** set a view layouter
+	 *
+	 *	Per default the view container has an AutoSizeLayouter set.
+	 *	Use this method to set a custom layouter.
+	 *	To reset the layouter to the default AutoSizeLayouter use setViewLayouter (nullptr).
+	 */
+	void setViewLayouter (const SharedPointer<IViewLayouter>& layouter);
+	/** get the current view layouter */
+	SharedPointer<IViewLayouter> getViewLayouter () const;
+	/** calculate the view layout for the new size */
+	std::optional<ViewLayout> calculateViewLayout (const CRect& newSize) const;
+	/** apply a previously calculated view layout */
+	bool applyViewLayout (const ViewLayout& layout);
+	/** check if a view layout is currently applied */
+	bool inApplyViewLayout () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -122,6 +147,13 @@ public:
 	virtual void setBackgroundColorDrawStyle (CDrawStyle style);
 	CDrawStyle getBackgroundColorDrawStyle () const;
 	//@}
+
+	/** set custom initial focus view
+	 *  which is first focused when advanceNextFocusView is called without oldFocus view
+	 */
+	void setInitialFocusView (CView* view);
+	/** get custom initial focus view */
+	CView* getInitialFocusView () const;
 
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 	virtual bool invalidateDirtyViews ();
@@ -247,10 +279,12 @@ public:
 	const CViewContainer* asViewContainer () const final { return this; }
 
 protected:
-	enum {
-		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1)
+	enum
+	{
+		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1),
+		kInApplyLayout = 1 << (CView::kLastCViewFlag + 2),
 	};
-	
+
 	~CViewContainer () noexcept override;
 	void beforeDelete () override;
 	
@@ -261,6 +295,8 @@ protected:
 	
 	const ViewList& getChildren () const;
 private:
+	static constexpr CViewAttributeID kInitialFocusViewAttribute = 'cifv';
+
 	void dispatchEventToSubViews (Event& event);
 	
 	void clearMouseDownView ();
@@ -304,6 +340,17 @@ inline void CViewContainer::forEachChild (Proc proc) const
 	{
 		proc (child);
 	}
+}
+
+template<typename Proc>
+inline CView* CViewContainer::findFirstViewIf (Proc filter) const
+{
+	for (const auto& child : getChildren ())
+	{
+		if (filter (child))
+			return child;
+	}
+	return nullptr;
 }
 
 } // VSTGUI

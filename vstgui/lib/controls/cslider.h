@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../ccolor.h"
+#include "../enumbitset.h"
 #include "ccontrol.h"
 
 namespace VSTGUI {
@@ -12,27 +13,17 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 class CSliderBase : public CControl, protected CMouseWheelEditingSupport
 {
-private:
-	enum StyleEnum
-	{
-		StyleHorizontal = 0,
-		StyleVertical,
-		StyleLeft,
-		StyleRight,
-		StyleTop,
-		StyleBottom,
-	};
-
 public:
-	enum Style
+	enum Style : int32_t
 	{
-		kHorizontal = 1 << StyleHorizontal,
-		kVertical = 1 << StyleVertical,
-		kLeft = 1 << StyleLeft,
-		kRight = 1 << StyleRight,
-		kTop = 1 << StyleTop,
-		kBottom = 1 << StyleBottom,
+		kHorizontal,
+		kVertical,
+		kLeft,
+		kRight,
+		kTop,
+		kBottom,
 	};
+	using Styles = EnumBitset<Style>;
 
 	CSliderBase (const CRect& size, IControlListener* listener, int32_t tag);
 	CSliderBase (const CSliderBase& slider);
@@ -40,8 +31,8 @@ public:
 	void setOffsetHandle (const CPoint& val);
 	CPoint getOffsetHandle () const;
 
-	void setStyle (int32_t style);
-	int32_t getStyle () const;
+	void setStyle (Styles style);
+	Styles getStyle () const;
 	bool isStyleHorizontal () const;
 	bool isStyleRight () const;
 	bool isStyleBottom () const;
@@ -102,11 +93,11 @@ class CSlider : public CSliderBase
 private:
 public:
 	CSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
-	         int32_t iMaxPos, CBitmap* handle, CBitmap* background,
-	         const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft | kHorizontal);
+			 int32_t iMaxPos, CBitmap* handle, CBitmap* background,
+			 const CPoint& offset = CPoint (0, 0), Styles style = {{kLeft, kHorizontal}});
 	CSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle,
-	         int32_t rangeHandle, CBitmap* handle, CBitmap* background,
-	         const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft | kHorizontal);
+			 int32_t rangeHandle, CBitmap* handle, CBitmap* background,
+			 const CPoint& offset = CPoint (0, 0), Styles style = {{kLeft, kHorizontal}});
 	CSlider (const CSlider& slider);
 
 //------------------------------------------------------------------------
@@ -176,12 +167,12 @@ class CVerticalSlider : public CSlider
 {
 public:
 	CVerticalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
-	                 int32_t iMaxPos, CBitmap* handle, CBitmap* background,
-	                 const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
+					 int32_t iMaxPos, CBitmap* handle, CBitmap* background,
+					 const CPoint& offset = CPoint (0, 0), Styles style = kBottom);
 	CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-	                 const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle,
-	                 CBitmap* background, const CPoint& offset = CPoint (0, 0),
-	                 const int32_t style = kBottom);
+					 const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle,
+					 CBitmap* background, const CPoint& offset = CPoint (0, 0),
+					 Styles style = kBottom);
 	CVerticalSlider (const CVerticalSlider& slider) = default;
 };
 
@@ -194,12 +185,12 @@ class CHorizontalSlider : public CSlider
 {
 public:
 	CHorizontalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
-	                   int32_t iMaxPos, CBitmap* handle, CBitmap* background,
-	                   const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
+					   int32_t iMaxPos, CBitmap* handle, CBitmap* background,
+					   const CPoint& offset = CPoint (0, 0), Styles style = kRight);
 	CHorizontalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-	                   const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle,
-	                   CBitmap* background, const CPoint& offset = CPoint (0, 0),
-	                   const int32_t style = kRight);
+					   const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle,
+					   CBitmap* background, const CPoint& offset = CPoint (0, 0),
+					   Styles style = kRight);
 	CHorizontalSlider (const CHorizontalSlider& slider) = default;
 };
 

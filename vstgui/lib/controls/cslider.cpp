@@ -20,7 +20,7 @@ struct CSliderBase::Impl
 {
 	SharedPointer<CVSTGUITimer> rampTimer;
 
-	int32_t style {0};
+	Styles style {};
 	float zoomFactor {10.f};
 
 	CSliderMode mode {CSliderMode::UseGlobal};
@@ -118,7 +118,7 @@ CPoint CSliderBase::getControlSizePrivate () const
 }
 
 //------------------------------------------------------------------------
-void CSliderBase::setStyle (int32_t _style)
+void CSliderBase::setStyle (Styles _style)
 {
 	vstgui_assert (((_style & kHorizontal) || (_style & kVertical)) &&
 	               !((_style & kVertical) && (_style & kHorizontal)));
@@ -127,10 +127,7 @@ void CSliderBase::setStyle (int32_t _style)
 }
 
 //------------------------------------------------------------------------
-int32_t CSliderBase::getStyle () const
-{
-	return impl->style;
-}
+auto CSliderBase::getStyle () const -> Styles { return impl->style; }
 
 //------------------------------------------------------------------------
 bool CSliderBase::isStyleHorizontal () const
@@ -622,8 +619,8 @@ By clicking Alt+Left Mouse the default value is used.
  */
 //------------------------------------------------------------------------
 CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag, int32_t iMinPos,
-                  int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset,
-                  const int32_t style)
+				  int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset,
+				  Styles style)
 : CSliderBase (rect, listener, tag)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
@@ -662,8 +659,8 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag, in
  */
 //------------------------------------------------------------------------
 CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-                  const CPoint& offsetHandle, int32_t _rangeHandle, CBitmap* handle,
-                  CBitmap* background, const CPoint& offset, const int32_t style)
+				  const CPoint& offsetHandle, int32_t _rangeHandle, CBitmap* handle,
+				  CBitmap* background, const CPoint& offset, Styles style)
 : CSliderBase (rect, listener, tag)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
@@ -972,8 +969,8 @@ This is the vertical slider. See CSlider.
  */
 //------------------------------------------------------------------------
 CVerticalSlider::CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-                                  int32_t iMinPos, int32_t iMaxPos, CBitmap* handle,
-                                  CBitmap* background, const CPoint& offset, const int32_t style)
+								  int32_t iMinPos, int32_t iMaxPos, CBitmap* handle,
+								  CBitmap* background, const CPoint& offset, Styles style)
 : CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style | kVertical)
 {
 }
@@ -993,10 +990,10 @@ CVerticalSlider::CVerticalSlider (const CRect& rect, IControlListener* listener,
  */
 //------------------------------------------------------------------------
 CVerticalSlider::CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-                                  const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle,
-                                  CBitmap* background, const CPoint& offset, const int32_t style)
+								  const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle,
+								  CBitmap* background, const CPoint& offset, Styles style)
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset,
-           style | kVertical)
+		   style | kVertical)
 {
 }
 
@@ -1021,9 +1018,8 @@ This is the horizontal slider. See CSlider.
  */
 //------------------------------------------------------------------------
 CHorizontalSlider::CHorizontalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-                                      int32_t iMinPos, int32_t iMaxPos, CBitmap* handle,
-                                      CBitmap* background, const CPoint& offset,
-                                      const int32_t style)
+									  int32_t iMinPos, int32_t iMaxPos, CBitmap* handle,
+									  CBitmap* background, const CPoint& offset, Styles style)
 : CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style | kHorizontal)
 {
 }
@@ -1043,11 +1039,11 @@ CHorizontalSlider::CHorizontalSlider (const CRect& rect, IControlListener* liste
  */
 //------------------------------------------------------------------------
 CHorizontalSlider::CHorizontalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-                                      const CPoint& offsetHandle, int32_t rangeHandle,
-                                      CBitmap* handle, CBitmap* background, const CPoint& offset,
-                                      const int32_t style)
+									  const CPoint& offsetHandle, int32_t rangeHandle,
+									  CBitmap* handle, CBitmap* background, const CPoint& offset,
+									  Styles style)
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset,
-           style | kHorizontal)
+		   style | kHorizontal)
 {
 }
 

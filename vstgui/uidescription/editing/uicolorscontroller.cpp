@@ -10,11 +10,13 @@
 #include "uicolorchoosercontroller.h"
 #include "uieditcontroller.h"
 #include "uibasedatasource.h"
+#include "../../lib/ccolor.h"
 #include "../../lib/cdropsource.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/dragging.h"
 #include "../../lib/optional.h"
 #include "../../lib/idatapackage.h"
+#include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csearchtextedit.h"
 
 namespace VSTGUI {
@@ -47,6 +49,8 @@ protected:
 	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
+								   int32_t column, CDataBrowser* browser) override;
 
 	CCoord getColorIconWith ();
 
@@ -230,6 +234,9 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
                                                       const CButtonState& buttons, int32_t row,
                                                       int32_t column, CDataBrowser* browser)
 {
+	if (row < 0 || column < 0)
+		return UIBaseDataSource::dbOnMouseMoved (where, buttons, row, column, browser);
+
 	auto r = browser->getCellBounds ({row, column});
 	r.left = r.right - getColorIconWith ();
 	r.inset (2, 2);
@@ -257,8 +264,10 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 					}
 
 					auto df = makeOwned<DragCallbackFunctions> ();
-					df->endedFunc = [browser] (IDraggingSession*, CPoint, DragOperation) {
+					df->endedFunc = [browser, Self = shared (this)] (IDraggingSession*, CPoint,
+																	 DragOperation) {
 						browser->getFrame ()->setCursor (kCursorDefault);
+						Self->allowDrag = false;
 					};
 					browser->doDrag (DragDescription (dropSource, -r.getSize () / 2., dragBitmap), df);
 				}
@@ -274,6 +283,15 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 }
 
 //----------------------------------------------------------------------------------------------------
+CMouseEventResult UIColorsDataSource::dbOnMouseUp (const CPoint& where, const CButtonState& buttons,
+												   int32_t row, int32_t column,
+												   CDataBrowser* browser)
+{
+	allowDrag = false;
+	return UIBaseDataSource::dbOnMouseUp (where, buttons, row, column, browser);
+}
+
+//----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	actionPerformer->performColorNameChange (oldName, newName);
@@ -283,15 +301,17 @@ bool UIColorsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser)
 {
-	IDataPackage::Type type;
-	const void* item;
-	if (drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
+	for (const auto& item : drag)
 	{
-		if (CColor::isColorRepresentation (static_cast<UTF8StringPtr> (item)))
+		if (item.type != IDataPackage::kText)
+			continue;
+		std::string_view text (static_cast<const char*> (item.data), item.dataSize);
+		if (CColor::isColorRepresentation (text))
 		{
 			CColor c;
-			c.fromString (static_cast<UTF8StringPtr> (item));
+			c.fromString (text);
 			dragColor = Optional<CColor> (c);
+			break;
 		}
 	}
 }
@@ -455,6 +475,29 @@ IController* UIColorsController::createSubController (IdStringPtr name, const IU
 	if (std::strcmp (name, "ColorChooserController") == 0)
 		return new UIColorChooserController (this, color);
 	return controller->createSubController (name, description);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsController::appendContextMenuItems (COptionMenu& contextMenu, CView* view,
+												 const CPoint& where)
+{
+	auto item = new CCommandMenuItem ({"Add Color"});
+	item->setActions ([this] (auto) { dataSource->add (); });
+	contextMenu.addEntry (item);
+	item = new CCommandMenuItem ({"Remove Color"});
+	item->setActions ([this] (auto) { dataSource->remove (); });
+	contextMenu.addEntry (item);
+	contextMenu.addSeparator ();
+
+	auto cssColorMenu = createCSSColorMenu ([this] (auto newColor) {
+		if (color)
+		{
+			color->beginEdit ();
+			*color = newColor;
+			color->endEdit ();
+		}
+	});
+	contextMenu.addEntry (cssColorMenu, "Set to CSS Color");
 }
 
 } // VSTGUI

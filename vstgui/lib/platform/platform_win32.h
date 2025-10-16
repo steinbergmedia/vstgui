@@ -15,12 +15,15 @@
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
+struct IIMETextInputClient;
+
 //-----------------------------------------------------------------------------
 // extens IPlatformFrame on Microsoft Windows
 class IWin32PlatformFrame
 {
 public:
 	virtual HWND getHWND () const = 0;
+	virtual void setTextInputClient (IIMETextInputClient* client) = 0;
 };
 
 //-----------------------------------------------------------------------------

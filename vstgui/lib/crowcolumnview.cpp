@@ -312,9 +312,11 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 	{
 		if (isAttached () && isAnimateViewResizing () && viewResizeAnimationTime > 0)
 		{
-			view->addAnimation ("CRowColumnResizing",
-								new Animation::ViewSizeAnimation (newSize, false),
-								new Animation::LinearTimingFunction (viewResizeAnimationTime));
+			view->setAttribute (ViewAnimatesResizingAttr, true);
+			view->addAnimation (
+				"CRowColumnResizing", new Animation::ViewSizeAnimation (newSize, false),
+				new Animation::LinearTimingFunction (viewResizeAnimationTime),
+				[] (CView* v, auto, auto) { v->removeAttribute (ViewAnimatesResizingAttr); }, true);
 		}
 		else
 		{
@@ -473,7 +475,9 @@ CMessageResult CRowColumnView::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgViewSizeChanged)
 	{
-		if (isAttached ())
+		bool animatesResizing = false;
+		static_cast<CView*> (sender)->getAttribute (ViewAnimatesResizingAttr, animatesResizing);
+		if (isAttached () && !animatesResizing)
 			layoutViews ();
 	}
 	return CViewContainer::notify (sender, message);

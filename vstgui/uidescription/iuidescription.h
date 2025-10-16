@@ -7,13 +7,11 @@
 #include "../lib/vstguifwd.h"
 #include "../lib/cfont.h"
 #include "../lib/cstring.h"
+#include "uidescriptionfwd.h"
 #include <string>
 #include <list>
 
 namespace VSTGUI {
-
-class IController;
-class IViewFactory;
 
 //-----------------------------------------------------------------------------
 class IUIDescription
@@ -48,6 +46,10 @@ public:
 	virtual void collectControlTagNames (std::list<const std::string*>& names) const = 0;
 
 	virtual const IViewFactory* getViewFactory () const = 0;
+
+	virtual bool setCustomAttributes (UTF8StringPtr name,
+									  const SharedPointer<UIAttributes>& attr) = 0;
+	virtual SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const = 0;
 
 	static IdStringPtr kCustomViewName;
 };

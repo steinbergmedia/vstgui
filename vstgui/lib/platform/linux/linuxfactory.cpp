@@ -7,6 +7,10 @@
 #include "cairogradient.h"
 #include "cairographicscontext.h"
 #include "x11frame.h"
+#if VSTGUI_ENABLE_WAYLAND_SUPPORT
+#include "waylandframe.h"
+#include "waylandplatform.h"
+#endif
 #include "../iplatformframecallback.h"
 #include "../common/fileresourceinputstream.h"
 #include "../iplatformresourceinputstream.h"
@@ -14,6 +18,7 @@
 #include "linuxstring.h"
 #include "x11timer.h"
 #include "x11fileselector.h"
+#include "linuxtaskexecutor.h"
 #include "linuxfactory.h"
 #include <list>
 #include <memory>
@@ -21,6 +26,10 @@
 #include <X11/X.h>
 #include <dlfcn.h>
 #include <link.h>
+
+struct wl_display;
+struct xdg_surface;
+struct xdg_toplevel;
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -30,6 +39,8 @@ struct LinuxFactory::Impl
 {
 	std::string resPath;
 	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {std::make_unique<CairoGraphicsDeviceFactory> ()};
+	PlatformTaskExecutorPtr taskExecutor {std::make_unique<LinuxTaskExecutor> ()};
+	SharedPointer<IRunLoop> runLoop {};
 
 	void setupResPath (void* handle)
 	{
@@ -67,6 +78,9 @@ LinuxFactory::LinuxFactory (void* soHandle)
 }
 
 //-----------------------------------------------------------------------------
+void LinuxFactory::finalize () noexcept { impl->taskExecutor->waitAllTasksExecuted (); }
+
+//-----------------------------------------------------------------------------
 void LinuxFactory::setResourcePath (const std::string& path) const noexcept
 {
 	impl->resPath = path;
@@ -77,6 +91,29 @@ std::string LinuxFactory::getResourcePath () const noexcept
 {
 	return impl->resPath;
 }
+
+//-----------------------------------------------------------------------------
+void LinuxFactory::setScheduleMainQueueTaskFunc (
+	LinuxTaskExecutor::ScheduleMainQueueTaskFunc&& func) const noexcept
+{
+	if (auto lte = dynamic_cast<LinuxTaskExecutor*> (impl->taskExecutor.get ()))
+	{
+		lte->setScheduleMainQueueTaskFunc (std::move (func));
+	}
+	else
+	{
+		vstgui_assert (false, "cannot set the func on a custom task executor");
+	}
+}
+
+//-----------------------------------------------------------------------------
+void LinuxFactory::setRunLoop (const SharedPointer<IRunLoop>& runLoop) const noexcept
+{
+	impl->runLoop = runLoop;
+}
+
+//-----------------------------------------------------------------------------
+const SharedPointer<IRunLoop>& LinuxFactory::getRunLoop () const noexcept { return impl->runLoop; }
 
 //-----------------------------------------------------------------------------
 uint64_t LinuxFactory::getTicks () const noexcept
@@ -95,6 +132,13 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 		auto x11Parent = reinterpret_cast<XID> (parent);
 		return makeOwned<X11::Frame> (frame, size, x11Parent, config);
 	}
+#if VSTGUI_ENABLE_WAYLAND_SUPPORT
+	if (parentType == PlatformType::kWaylandSurfaceID)
+	{
+		//		auto surface = reinterpret_cast<xdg_surface*> (parent);
+		return makeOwned<Wayland::Frame> (frame, size, config);
+	}
+#endif
 	return nullptr;
 }
 
@@ -172,6 +216,42 @@ PlatformStringPtr LinuxFactory::createString (UTF8StringPtr utf8String) const no
 //-----------------------------------------------------------------------------
 PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
+#if VSTGUI_ENABLE_WAYLAND_SUPPORT
+	if (auto runLoop = Wayland::RunLoop::instance ().get ())
+	{
+		struct Timer : public IPlatformTimer,
+					   public VSTGUI::ITimerHandler
+		{
+			Timer (IPlatformTimerCallback* callback) : callback (callback) {}
+			~Timer () noexcept { stop (); }
+
+			bool start (uint32_t periodMs) override
+			{
+				if (auto runLoop = Wayland::RunLoop::instance ().get ())
+				{
+					runLoop->registerTimer (periodMs, this);
+					return true;
+				}
+				return false;
+			}
+			bool stop () override
+			{
+				if (auto runLoop = Wayland::RunLoop::instance ().get ())
+				{
+					runLoop->unregisterTimer (this);
+					return true;
+				}
+				return false;
+			}
+
+			void onTimer () override { callback->fire (); }
+
+			IPlatformTimerCallback* callback;
+		};
+		auto timer = makeOwned<Timer> (callback);
+		return timer;
+	}
+#endif
 	return makeOwned<X11::Timer> (callback);
 }
 
@@ -207,6 +287,21 @@ PlatformFileSelectorPtr LinuxFactory::createFileSelector (PlatformFileSelectorSt
 const IPlatformGraphicsDeviceFactory& LinuxFactory::getGraphicsDeviceFactory () const noexcept
 {
 	return *impl->graphicsDeviceFactory.get ();
+}
+
+//-----------------------------------------------------------------------------
+const IPlatformTaskExecutor& LinuxFactory::getTaskExecutor () const noexcept
+{
+	return *impl->taskExecutor;
+}
+
+//-----------------------------------------------------------------------------
+bool LinuxFactory::replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) const noexcept
+{
+	if (!replaceFunc)
+		return false;
+	impl->taskExecutor = replaceFunc (std::move (impl->taskExecutor));
+	return true;
 }
 
 //-----------------------------------------------------------------------------

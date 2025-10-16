@@ -37,6 +37,7 @@ void initPlatform (PlatformInstanceHandle instance)
 void exitPlatform ()
 {
 	vstgui_assert (gPlatformFactory);
+	gPlatformFactory->finalize ();
 	setPlatformFactory (nullptr);
 }
 

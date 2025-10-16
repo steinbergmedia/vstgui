@@ -11,6 +11,7 @@
 #include "itouchevent.h"
 #include "iscalefactorchangedlistener.h"
 #include "idatapackage.h"
+#include "iviewlayouter.h"
 #include "animation/animator.h"
 #include "controls/ctextedit.h"
 #include "platform/platformfactory.h"
@@ -82,6 +83,7 @@ struct CFrame::Impl
 	DispatchList<IFocusViewObserver*> focusViewObservers;
 	DispatchList<IKeyboardHook*> keyboardHooks;
 	FunctionQueue postEventFunctionQueue;
+	std::optional<ViewLayout> lastCheckSizeConstraintLayout;
 
 	ModalViewSessionID modalViewSessionIDCounter {0};
 	double userScaleFactor {1.};
@@ -537,6 +539,8 @@ void CFrame::dispatchEventToChildren (Event& event)
 //-----------------------------------------------------------------------------
 void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 {
+	if (static_cast<uint32_t> (event.virt) > static_cast<uint32_t> (VirtualKey::Equals))
+		event.virt = VirtualKey::None;
 	dispatchKeyboardEventToHooks (event);
 	if (event.consumed)
 		return;
@@ -667,7 +671,13 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			if (view->asViewContainer ())
 			{
 				if (auto parent = view->getParentView ())
-					parent->translateToLocal (p, true);
+				{
+					if (parent != this)
+					{
+						p.offsetInverse (parent->getViewSize ().getTopLeft ());
+						parent->translateToLocal (p, true);
+					}
+				}
 			}
 			else
 				view->translateToLocal (p, true);
@@ -876,7 +886,26 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 //-----------------------------------------------------------------------------
 void CFrame::setViewSize (const CRect& rect, bool invalid)
 {
+	if (pImpl->lastCheckSizeConstraintLayout)
+	{
+		auto layout = std::move (*pImpl->lastCheckSizeConstraintLayout);
+		pImpl->lastCheckSizeConstraintLayout = {};
+		if (layout.size == rect)
+		{
+			if (applyViewLayout (layout))
+				return;
+		}
+	}
 	CViewContainer::setViewSize (rect, invalid);
+}
+
+//-----------------------------------------------------------------------------
+CPoint CFrame::checkSizeConstraint (const CPoint& newSize) const
+{
+	pImpl->lastCheckSizeConstraintLayout = calculateViewLayout ({0., 0., newSize.x, newSize.y});
+	if (pImpl->lastCheckSizeConstraintLayout)
+		return pImpl->lastCheckSizeConstraintLayout->size.getSize ();
+	return getViewSize ().getSize ();
 }
 
 //-----------------------------------------------------------------------------
@@ -904,12 +933,12 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	{
 		if (pImpl->platformFrame->setSize (newSize))
 		{
-			CViewContainer::setViewSize (newSize);
+			setViewSize (newSize);
 			return true;
 		}
 		return false;
 	}
-	CViewContainer::setViewSize (newSize);
+	setViewSize (newSize);
 	return true;
 }
 

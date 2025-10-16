@@ -9,11 +9,14 @@ set(${target}_sources
     compresseduidescription.h
     cstream.cpp
     cstream.h
+    cstream_zlib.cpp
+    cstream_zlib.h
     delegationcontroller.h
     doc.h
     icontentprovider.h
     icontroller.h
     iuidescription.h
+    iuidescriptionaddon.h
     iviewcreator.h
     iviewfactory.h
     uiattributes.cpp
@@ -22,6 +25,8 @@ set(${target}_sources
     uicontentprovider.h
     uidescription.cpp
     uidescription.h
+    uidescriptionaddonregistry.cpp
+    uidescriptionaddonregistry.h
     uidescriptionlistener.h
     uidescriptionfwd.h
     uiviewcreator.cpp
@@ -179,14 +184,15 @@ endif()
 add_library(${target} STATIC ${${target}_sources})
 
 add_dependencies(${target} vstgui)
+target_precompile_headers(${target} PRIVATE icontroller.h uiattributes.h iviewcreator.h uidescription.h)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 17)
+vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 vstgui_source_group_by_folder(${target})
 
 ##########################################################################################
 if(LINUX)
     set (VSTGUI_GENERATED_DIR ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.generated)
-    
+
     execute_process(
         COMMAND
             ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh ${VSTGUI_GENERATED_DIR}
@@ -223,3 +229,4 @@ endif()
 if(CMAKE_HOST_APPLE)
   target_compile_options(${target} PRIVATE -Wall -Werror)
 endif()
+

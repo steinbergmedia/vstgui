@@ -72,7 +72,7 @@ void ViewSizeAnimation::animationFinished (CView* view, IdStringPtr name, bool w
 		{
 			view->invalid ();
 			view->setViewSize (newRect);
-			view->setMouseableArea (newRect);
+			view->setMouseableArea (view->getViewSize ());
 			view->invalid ();
 		}
 	}
@@ -90,7 +90,7 @@ void ViewSizeAnimation::animationTick (CView* view, IdStringPtr name, float pos)
 	{
 		view->invalid ();
 		view->setViewSize (r);
-		view->setMouseableArea (r);
+		view->setMouseableArea (view->getViewSize ());
 		view->invalid ();
 	}
 }
@@ -364,4 +364,24 @@ void ControlValueAnimation::animationFinished (CView* view, IdStringPtr name, bo
 	}
 }
 
+//------------------------------------------------------------------------
+FuncAnimation::FuncAnimation (StartFunc&& start, TickFunc&& tick, FinishedFunc&& finished)
+: start (std::move (start)), tick (std::move (tick)), finished (std::move (finished))
+{
+}
+
+//------------------------------------------------------------------------
+void FuncAnimation::animationStart (CView* view, IdStringPtr name) { start (view, name); }
+
+//------------------------------------------------------------------------
+void FuncAnimation::animationTick (CView* view, IdStringPtr name, float pos)
+{
+	tick (view, name, pos);
+}
+
+//------------------------------------------------------------------------
+void FuncAnimation::animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
+{
+	finished (view, name, wasCanceled);
+}
 }} // namespaces

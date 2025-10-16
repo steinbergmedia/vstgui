@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -9,6 +9,7 @@
 #import "lib/platform/mac/cgbitmap.cpp"
 #import "lib/platform/mac/quartzgraphicspath.cpp"
 #import "lib/platform/mac/macstring.mm"
+#import "lib/platform/mac/mactaskexecutor.mm"
 #import "lib/platform/mac/mactimer.cpp"
 #import "lib/platform/mac/macfactory.mm"
 #import "lib/platform/mac/cfontmac.mm"

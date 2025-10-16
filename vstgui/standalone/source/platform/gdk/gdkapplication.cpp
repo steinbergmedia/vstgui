@@ -82,6 +82,7 @@ private:
 bool Application::init (int argc, char* argv[])
 {
 	gdk_set_allowed_backends ("x11");
+	getPlatformFactory ().asLinuxFactory ()->setRunLoop (&RunLoop::instance ());
 	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
 	app = Gtk::Application::create (argc, argv, appInfo.uri.data ());
 	Glib::set_application_name (appInfo.name.getString ());
@@ -107,6 +108,17 @@ bool Application::init (int argc, char* argv[])
 				config.callback (AlertResult::Error);
 		};
 
+		getPlatformFactory ().asLinuxFactory ()->setScheduleMainQueueTaskFunc ([] (auto&& task) {
+			auto idleSource = Glib::IdleSource::create ();
+			idleSource->set_priority (Glib::PRIORITY_DEFAULT);
+			idleSource->connect ([task = std::move (task), idleSource] () {
+				task ();
+				idleSource->destroy ();
+				return true;
+			});
+			idleSource->attach ();
+		});
+
 		auto appAccess = Detail::getApplicationPlatformAccess ();
 		vstgui_assert (appAccess);
 		IPlatformApplication::OpenFilesList openFilesList;
@@ -116,6 +128,7 @@ bool Application::init (int argc, char* argv[])
 		isInitialized = true;
 		doCommandUpdate ();
 	});
+
 	return true;
 }
 

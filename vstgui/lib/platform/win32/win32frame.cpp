@@ -8,6 +8,7 @@
 
 #include <commctrl.h>
 #include <cmath>
+#include <codecvt>
 #include <windowsx.h>
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dgraphicspath.h"
@@ -19,7 +20,9 @@
 #include "win32datapackage.h"
 #include "win32dragging.h"
 #include "win32directcomposition.h"
+#include "win32dll.h"
 #include "win32viewlayer.h"
+#include "../iplatformtextinputclient.h"
 #include "../common/genericoptionmenu.h"
 #include "../common/generictextedit.h"
 #include "../../cdropsource.h"
@@ -37,6 +40,7 @@
 // windows libraries VSTGUI depends on
 #ifdef _MSC_VER
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "Imm32.lib")
 #endif
 
 namespace VSTGUI {
@@ -46,6 +50,42 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 static TCHAR gClassName[100];
 static bool bSwapped_mouse_buttons = false;
+
+//-----------------------------------------------------------------------------
+// Temporarily sets DPI awareness context of the thread to match the given HWND.
+//
+// This is needed to avoid redraw issues in some hosts (e.g. Ableton Live & Bitwig with "Auto-Scale
+// Plug-In Window" disabled) when calling InvalidRect from timers and drag & drop callbacks where
+// these hosts set the thread awareness to DPI_AWARENESS_UNAWARE.
+struct ThreadDPIAwarenessScope
+{
+	explicit ThreadDPIAwarenessScope (HWND hwnd) : oldContext (nullptr)
+	{
+		HiDPISupport& hidpi = HiDPISupport::instance ();
+
+		bool windowAware =
+			hidpi.getAwarenessFromDpiAwarenessContext (hidpi.getWindowDpiAwarenessContext (hwnd)) ==
+			DPI_AWARENESS_PER_MONITOR_AWARE;
+
+		bool threadAware =
+			hidpi.getAwarenessFromDpiAwarenessContext (hidpi.getThreadDpiAwarenessContext ()) ==
+			DPI_AWARENESS_PER_MONITOR_AWARE;
+
+		if (windowAware && !threadAware)
+			oldContext =
+				hidpi.setThreadDpiAwarenessContext (DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+		else if (!windowAware && threadAware)
+			oldContext = hidpi.setThreadDpiAwarenessContext (DPI_AWARENESS_CONTEXT_UNAWARE);
+	}
+
+	~ThreadDPIAwarenessScope ()
+	{
+		if (oldContext != nullptr)
+			HiDPISupport::instance ().setThreadDpiAwarenessContext (oldContext);
+	}
+
+	DPI_AWARENESS_CONTEXT oldContext;
+};
 
 //-----------------------------------------------------------------------------
 static bool isParentLayered (HWND parent)
@@ -198,6 +238,8 @@ void Win32Frame::initTooltip ()
 {
 	if (tooltipWindow == nullptr && windowHandle)
 	{
+		ThreadDPIAwarenessScope scope (getHWND ());
+
 		TOOLINFO    ti;
 		// Create the ToolTip control.
 		HWND hwndTT = CreateWindow (TOOLTIPS_CLASS, TEXT(""),
@@ -309,6 +351,7 @@ bool Win32Frame::getSize (CRect& size) const
 //-----------------------------------------------------------------------------
 bool Win32Frame::getCurrentMousePosition (CPoint& mousePosition) const
 {
+	ThreadDPIAwarenessScope scope (getHWND ());
 	POINT _where;
 	GetCursorPos (&_where);
 	mousePosition (static_cast<CCoord> (_where.x), static_cast<CCoord> (_where.y));
@@ -409,6 +452,7 @@ bool Win32Frame::invalidRect (const CRect& rect)
 	if (!rect.isEmpty ())
 	{
 		RECT r = {(LONG)rect.left, (LONG)rect.top, (LONG)ceil (rect.right), (LONG)ceil (rect.bottom)};
+		ThreadDPIAwarenessScope scope (getHWND ());
 		InvalidateRect (windowHandle, &r, true);
 	}
 	return true;
@@ -743,6 +787,24 @@ static void setupMouseEventFromWParam (MouseEvent& event, WPARAM wParam)
 		event.modifiers.add (ModifierKey::Super);
 }
 
+//------------------------------------------------------------------------
+static std::u32string convert (std::wstring_view s)
+{
+	std::string bytes;
+	bytes.reserve (s.size () * 2);
+
+	for (const char16_t c : s)
+	{
+		bytes.push_back (static_cast<char> (c / 256));
+		bytes.push_back (static_cast<char> (c % 256));
+	}
+
+#pragma warning(disable : 4996) // deprecated
+	std::wstring_convert<std::codecvt_utf16<char32_t>, char32_t> convert;
+	return convert.from_bytes (bytes);
+#pragma warning(3 : 4996) // deprecated
+}
+
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -951,9 +1013,89 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			}
 			break;
 		}
+		case WM_IME_STARTCOMPOSITION:
+		{
+			if (!textInputClient)
+				break;
+			return 0;
+		}
+		case WM_IME_ENDCOMPOSITION:
+		{
+			if (!textInputClient)
+				break;
+			textInputClient->ime_unmarkText ();
+			return 0;
+		}
+		case WM_IME_COMPOSITION:
+		{
+			if (!textInputClient)
+				break;
+
+			static constexpr auto getCompositionString = [] (auto context, auto which) {
+				auto requiredBytes = ImmGetCompositionStringW (context, which, nullptr, 0);
+				if (requiredBytes > 0)
+				{
+					std::wstring str;
+					str.resize (requiredBytes / sizeof (char16_t));
+					if (ImmGetCompositionStringW (context, which, str.data (), requiredBytes) ==
+						requiredBytes)
+					{
+						return str;
+					}
+				}
+				return std::wstring ();
+			};
+
+			if (auto immContext = ImmGetContext (hwnd))
+			{
+				if (lParam & GCS_RESULTSTR)
+				{
+					auto str = getCompositionString (immContext, GCS_RESULTSTR);
+					auto u32str = convert (str);
+					textInputClient->ime_insertText (u32str);
+				}
+				if (lParam & GCS_COMPSTR)
+				{
+					auto str = getCompositionString (immContext, GCS_COMPSTR);
+					auto u32str = convert (str);
+					textInputClient->ime_setMarkedText (u32str);
+				}
+				ImmReleaseContext (hwnd, immContext);
+			}
+			break;
+		}
+		case WM_IME_REQUEST:
+		{
+			if (!textInputClient)
+				break;
+			if (wParam == IMR_QUERYCHARPOSITION)
+			{
+				IIMETextInputClient::CharPosition cp {};
+				if (textInputClient->ime_queryCharacterPosition (cp))
+				{
+					auto charPos = reinterpret_cast<IMECHARPOSITION*> (lParam);
+					charPos->dwSize = sizeof (IMECHARPOSITION);
+					charPos->cLineHeight = static_cast<UINT> (std::ceil (cp.lineHeight));
+					charPos->pt = {static_cast<INT> (cp.position.x),
+								   static_cast<INT> (cp.position.y)};
+					charPos->dwCharPos = cp.characterPosition;
+					charPos->rcDocument.left = static_cast<LONG> (cp.documentRect.left);
+					charPos->rcDocument.top = static_cast<LONG> (cp.documentRect.top);
+					charPos->rcDocument.right = static_cast<LONG> (cp.documentRect.right);
+					charPos->rcDocument.bottom = static_cast<LONG> (cp.documentRect.bottom);
+					MapWindowPoints (hwnd, nullptr, &charPos->pt, 1);
+					MapWindowRect (hwnd, nullptr, &charPos->rcDocument);
+					return 1;
+				}
+			}
+			break;
+		}
 	}
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
+
+//------------------------------------------------------------------------
+void Win32Frame::setTextInputClient (IIMETextInputClient* client) { textInputClient = client; }
 
 //-----------------------------------------------------------------------------
 Optional<UTF8String> Win32Frame::convertCurrentKeyEventToText ()

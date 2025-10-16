@@ -9,7 +9,7 @@
 #include "uiactions.h"
 #include "uieditview.h"
 #include "uieditcontroller.h"
-#include "../uiviewfactory.h"
+#include "../iviewfactory.h"
 #include "../uiattributes.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/events.h"
@@ -93,6 +93,7 @@ void UIEditMenuController::createFileMenu (COptionMenu* menu)
 void UIEditMenuController::createEditMenu (COptionMenu* menu)
 {
 	int32_t index = 0;
+	menu->setStyle (menu->getStyle () | COptionMenu::kMultipleCheckStyle);
 	addEntriesToMenu (UIEditing::editMenu, menu, this, index);
 }
 
@@ -213,15 +214,21 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		}
 		else if (cmdName == "Add New Template")
 		{
-			auto submenu = makeOwned<COptionMenu> ();
-			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ("CViewContainer");
-			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-			for (auto& entry : viewAndDisplayNames)
+			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
+					description->getViewFactory ()))
 			{
-				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{entry.second.data (), this, "AddTemplate", entry.first->data ()}));
+				auto submenu = makeOwned<COptionMenu> ();
+				auto viewAndDisplayNames =
+					factory->collectRegisteredViewAndDisplayNames ("CViewContainer");
+				viewAndDisplayNames.sort (
+					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+				for (auto& entry : viewAndDisplayNames)
+				{
+					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
+						entry.second.data (), this, "AddTemplate", entry.first->data ()}));
+				}
+				item.setSubmenu (submenu);
 			}
-			item.setSubmenu (submenu);
 			return true;
 		}
 		else if (cmdName == "Delete Template")
@@ -275,14 +282,20 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			item.setEnabled (enable);
 			if (enable == false)
 				return true;
-			auto submenu = makeOwned<COptionMenu> ();
-			item.setSubmenu (submenu);
-			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ("CViewContainer");
-			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-			for (auto& entry : viewAndDisplayNames)
+			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
+					description->getViewFactory ()))
 			{
-				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{entry.second.data (), this, "Embed", entry.first->data ()}));
+				auto submenu = makeOwned<COptionMenu> ();
+				item.setSubmenu (submenu);
+				auto viewAndDisplayNames =
+					factory->collectRegisteredViewAndDisplayNames ("CViewContainer");
+				viewAndDisplayNames.sort (
+					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+				for (auto& entry : viewAndDisplayNames)
+				{
+					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
+						entry.second.data (), this, "Embed", entry.first->data ()}));
+				}
 			}
 			return true;
 		}
@@ -321,17 +334,19 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				return true;
 			}
 
-			auto submenu = makeOwned<COptionMenu> ();
-			item.setSubmenu (submenu);
-			const UIViewFactory* factory =
-			    dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
-			viewAndDisplayNames.sort (
-			    [] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-			for (auto& entry : viewAndDisplayNames)
+			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
+					description->getViewFactory ()))
 			{
-				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
-				    entry.second.data (), this, "Transform View Type", entry.first->data ()}));
+				auto submenu = makeOwned<COptionMenu> ();
+				item.setSubmenu (submenu);
+				auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
+				viewAndDisplayNames.sort (
+					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+				for (auto& entry : viewAndDisplayNames)
+				{
+					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
+						entry.second.data (), this, "Transform View Type", entry.first->data ()}));
+				}
 			}
 			return true;
 		}
@@ -361,17 +376,20 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 	{
 		if (cmdName == "Select Children Of Type")
 		{
-			auto submenu = makeOwned<COptionMenu> ();
-			item.setSubmenu (submenu);
-			const UIViewFactory* factory =
-			    dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
-			viewAndDisplayNames.sort (
-			    [] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-			for (auto& entry : viewAndDisplayNames)
+			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
+					description->getViewFactory ()))
 			{
-				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
-				    entry.second.data (), this, "Select Children Of Type", entry.first->data ()}));
+				auto submenu = makeOwned<COptionMenu> ();
+				item.setSubmenu (submenu);
+				auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
+				viewAndDisplayNames.sort (
+					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+				for (auto& entry : viewAndDisplayNames)
+				{
+					submenu->addEntry (new CCommandMenuItem (
+						CCommandMenuItem::Desc {entry.second.data (), this,
+												"Select Children Of Type", entry.first->data ()}));
+				}
 			}
 			return true;
 		}
@@ -510,8 +528,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		for (auto& entry : *selection)
 		{
 			IAction* action = new TransformViewTypeOperation (
-			    selection, entry, cmdName, description,
-			    dynamic_cast<const UIViewFactory*> (description->getViewFactory ()));
+				selection, entry, cmdName, description, description->getViewFactory ());
 			undoManager->pushAndPerform (action);
 		}
 		undoManager->endGroupAction ();
@@ -519,7 +536,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	}
 	else if (cmdCategory == "Select Children Of Type")
 	{
-		auto viewFactory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+		const auto* viewFactory = description->getViewFactory ();
 		if (!viewFactory)
 			return false;
 		std::vector<CView*> newSelection;
@@ -773,9 +790,8 @@ void UIEditMenuController::controlEndEdit (CControl* pControl)
 //------------------------------------------------------------------------
 void UIEditMenuController::getChildrenOfType (CViewContainer* container, UTF8StringView type, std::vector<CView*>& result) const
 {
-	auto viewFactory = static_cast<const UIViewFactory*> (description->getViewFactory ());
 	container->forEachChild ([&] (auto view) {
-		if (type == viewFactory->getViewName (view))
+		if (type == IViewFactory::getViewName (view))
 			result.emplace_back (view);
 		if (auto c = view->asViewContainer ())
 		{

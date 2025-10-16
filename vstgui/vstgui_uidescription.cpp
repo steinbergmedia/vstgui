@@ -6,9 +6,11 @@
 
 #include "uidescription/compresseduidescription.cpp"
 #include "uidescription/cstream.cpp"
+#include "uidescription/cstream_zlib.cpp"
 #include "uidescription/uiattributes.cpp"
 #include "uidescription/uicontentprovider.cpp"
 #include "uidescription/uidescription.cpp"
+#include "uidescription/uidescriptionaddonregistry.cpp"
 #include "uidescription/uiviewcreator.cpp"
 #include "uidescription/uiviewfactory.cpp"
 #include "uidescription/uiviewswitchcontainer.cpp"

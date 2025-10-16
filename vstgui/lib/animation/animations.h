@@ -114,6 +114,31 @@ protected:
 	bool forceEndValueOnFinish;
 };
 
+//------------------------------------------------------------------------
+/// @brief animation via custom functions
+/// @ingroup AnimationTargets
+///	@ingroup new_in_4_14
+//------------------------------------------------------------------------
+class FuncAnimation : public IAnimationTarget,
+					  public NonAtomicReferenceCounted
+{
+public:
+	using StartFunc = std::function<void (CView*, IdStringPtr)>;
+	using TickFunc = std::function<void (CView*, IdStringPtr, float)>;
+	using FinishedFunc = std::function<void (CView*, IdStringPtr, bool)>;
+
+	FuncAnimation (StartFunc&& start, TickFunc&& tick, FinishedFunc&& finished);
+
+	void animationStart (CView* view, IdStringPtr name) override;
+	void animationTick (CView* view, IdStringPtr name, float pos) override;
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) override;
+
+private:
+	StartFunc start;
+	TickFunc tick;
+	FinishedFunc finished;
+};
+
 } // Animation
 } // VSTGUI
 

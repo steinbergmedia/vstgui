@@ -23,10 +23,12 @@ TEST_CASE (CVuMeterCreatorTest, OffBitmap)
 TEST_CASE (CVuMeterCreatorTest, Orientation)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CVuMeter> (kCVuMeter, kAttrOrientation, "horizontal", &uidesc,
-	                         [&] (CVuMeter* v) { return v->getStyle () == CVuMeter::kHorizontal; });
-	testAttribute<CVuMeter> (kCVuMeter, kAttrOrientation, "vertical", &uidesc,
-	                         [&] (CVuMeter* v) { return v->getStyle () == CVuMeter::kVertical; });
+	testAttribute<CVuMeter> (kCVuMeter, kAttrOrientation, "horizontal", &uidesc, [&] (CVuMeter* v) {
+		return v->getStyle () == CVuMeter::Style::kHorizontal;
+	});
+	testAttribute<CVuMeter> (kCVuMeter, kAttrOrientation, "vertical", &uidesc, [&] (CVuMeter* v) {
+		return v->getStyle () == CVuMeter::Style::kVertical;
+	});
 }
 
 TEST_CASE (CVuMeterCreatorTest, NumLed)

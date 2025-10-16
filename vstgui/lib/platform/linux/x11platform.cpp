@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "x11platform.h"
+#include "linuxfactory.h"
 #include "../../cfileselector.h"
 #include "../../cframe.h"
 #include "../../cstring.h"
@@ -109,7 +110,6 @@ struct RunLoop::Impl : IEventHandler
 {
 	using WindowEventHandlerMap = std::unordered_map<uint32_t, IFrameEventHandler*>;
 
-	SharedPointer<IRunLoop> runLoop;
 	std::atomic<uint32_t> useCount {0};
 	xcb_connection_t* xcbConnection {nullptr};
 	xcb_cursor_context_t* cursorContext {nullptr};
@@ -122,14 +122,13 @@ struct RunLoop::Impl : IEventHandler
 	KeyboardEvent lastUnprocessedKeyEvent;
 	uint32_t lastUtf32KeyEventChar {0};
 
-	void init (const SharedPointer<IRunLoop>& inRunLoop)
+	void init ()
 	{
 		if (++useCount != 1)
 			return;
-		runLoop = inRunLoop;
 		int screenNo;
 		xcbConnection = xcb_connect (nullptr, &screenNo);
-		runLoop->registerEventHandler (xcb_get_file_descriptor (xcbConnection), this);
+		RunLoop::get ()->registerEventHandler (xcb_get_file_descriptor (xcbConnection), this);
 		auto screen = xcb_aux_get_screen (xcbConnection, screenNo);
 		xcb_cursor_context_new (xcbConnection, screen, &cursorContext);
 
@@ -188,8 +187,7 @@ struct RunLoop::Impl : IEventHandler
 
 			xcb_disconnect (xcbConnection);
 		}
-		runLoop->unregisterEventHandler (this);
-		runLoop = nullptr;
+		RunLoop::get ()->unregisterEventHandler (this);
 	}
 
 	template<typename T>
@@ -385,10 +383,7 @@ RunLoop& RunLoop::instance ()
 }
 
 //------------------------------------------------------------------------
-void RunLoop::init (const SharedPointer<IRunLoop>& runLoop)
-{
-	instance ().impl->init (runLoop);
-}
+void RunLoop::init () { instance ().impl->init (); }
 
 //------------------------------------------------------------------------
 void RunLoop::exit ()
@@ -399,7 +394,7 @@ void RunLoop::exit ()
 //------------------------------------------------------------------------
 const SharedPointer<IRunLoop> RunLoop::get ()
 {
-	return instance ().impl->runLoop;
+	return getPlatformFactory ().asLinuxFactory ()->getRunLoop ();
 }
 
 //------------------------------------------------------------------------

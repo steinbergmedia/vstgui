@@ -643,7 +643,12 @@ Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 	auto cfg = dynamic_cast<FrameConfig*> (config);
 	if (cfg && cfg->runLoop)
 	{
-		RunLoop::init (cfg->runLoop);
+		RunLoop::init ();
+		if (auto f = getPlatformFactory ().asLinuxFactory ())
+		{
+			if (f->getRunLoop () == nullptr)
+				f->setRunLoop (cfg->runLoop);
+		}
 	}
 
 	impl = std::unique_ptr<Impl> (new Impl (parent, {size.getWidth (), size.getHeight ()}, frame));

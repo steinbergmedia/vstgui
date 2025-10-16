@@ -29,6 +29,7 @@
 #include "lib/csplitview.cpp"
 #include "lib/cstring.cpp"
 #include "lib/ctabview.cpp"
+#include "lib/ctexteditor.cpp"
 #include "lib/ctooltipsupport.cpp"
 #include "lib/cview.cpp"
 #include "lib/cviewcontainer.cpp"
@@ -36,6 +37,7 @@
 #include "lib/events.cpp"
 #include "lib/genericstringlistdatabrowsersource.cpp"
 #include "lib/pixelbuffer.cpp"
+#include "lib/tasks.cpp"
 #include "lib/vstguidebug.cpp"
 #include "lib/vstguiinit.cpp"
 
@@ -71,3 +73,6 @@
 #include "lib/platform/common/fileresourceinputstream.cpp"
 #include "lib/platform/common/genericoptionmenu.cpp"
 #include "lib/platform/common/generictextedit.cpp"
+
+#include "lib/viewlayouter/autosizeviewlayouter.cpp"
+#include "lib/viewlayouter/gridlayouter.cpp"

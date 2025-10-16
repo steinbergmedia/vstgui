@@ -140,12 +140,11 @@ public:
 	// we accept strings which look like : '#ff3355' (rgb) and '#ff3355bb' (rgba)
 	static bool dragContainerHasColor (IDataPackage* drag, CColor* color)
 	{
-		IDataPackage::Type type;
-		const void* item;
-		if (drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
+		for (auto item : drag)
 		{
-			auto text = static_cast<UTF8StringPtr> (item);
-			std::string colorString (text);
+			if (item.type != IDataPackage::kText)
+				continue;
+			std::string colorString (static_cast<const char*> (item.data), item.dataSize);
 			if (colorString.length () == 7)
 			{
 				if (colorString[0] == '#')

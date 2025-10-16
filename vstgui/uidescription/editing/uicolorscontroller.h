@@ -18,7 +18,9 @@ class UIColorsDataSource;
 class UIColor;
 
 //----------------------------------------------------------------------------------------------------
-class UIColorsController : public NonAtomicReferenceCounted, public DelegationController
+class UIColorsController : public NonAtomicReferenceCounted,
+						   public DelegationController,
+						   public IContextMenuController2
 {
 public:
 	UIColorsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
@@ -30,6 +32,9 @@ protected:
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl* pControl) override;
 	IController* createSubController (IdStringPtr name, const IUIDescription* description) override;
+
+	void appendContextMenuItems (COptionMenu& contextMenu, CView* view,
+								 const CPoint& where) override;
 
 	SharedPointer<UIDescription> editDescription;
 	IActionPerformer* actionPerformer;

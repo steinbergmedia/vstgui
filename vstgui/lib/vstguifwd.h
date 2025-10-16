@@ -194,6 +194,8 @@ class ITextEditListener;
 class ITextLabelListener;
 class IListControlDrawer;
 class IListControlConfigurator;
+class IViewLayouter;
+struct ViewLayout;
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 class ITouchEvent;
@@ -352,6 +354,7 @@ class IPlatformGraphicsDeviceFactory;
 class IPlatformGraphicsDevice;
 class IPlatformGraphicsDeviceContext;
 class IPlatformGraphicsDeviceContextBitmapExt;
+class IPlatformTaskExecutor;
 
 struct PlatformFileExtension;
 struct PlatformFileSelectorConfig;
@@ -374,5 +377,6 @@ using PlatformGraphicsPathFactoryPtr = std::shared_ptr<IPlatformGraphicsPathFact
 using PlatformFileSelectorPtr = std::shared_ptr<IPlatformFileSelector>;
 using PlatformGraphicsDevicePtr = std::shared_ptr<IPlatformGraphicsDevice>;
 using PlatformGraphicsDeviceContextPtr = std::shared_ptr<IPlatformGraphicsDeviceContext>;
+using PlatformTaskExecutorPtr = std::unique_ptr<IPlatformTaskExecutor>;
 
 } // VSTGUI

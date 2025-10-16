@@ -17,6 +17,10 @@
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/crect.h"
+#include "vstgui/lib/ccolor.h"
+#include "vstgui/lib/cdatabrowser.h"
+#include "vstgui/lib/cdrawcontext.h"
+#include "vstgui/lib/idatabrowserdelegate.h"
 #include "vstgui/lib/iviewlistener.h"
 #include "vstgui/lib/controls/ccontrol.h"
 #include "vstgui/lib/controls/clistcontrol.h"
@@ -28,6 +32,16 @@
 #include "vstgui/lib/cexternalview.h"
 #include "vstgui/contrib/datepicker.h"
 #include "vstgui/contrib/evbutton.h"
+
+#include "vstgui/lib/ctexteditor.h"
+
+#ifdef VSTGUI_UISCRIPTING
+#include "vstgui/uidescription/cstream.h"
+#include "vstgui/uidescription-scripting/uiscripting.h"
+#include <filesystem>
+#include <iostream>
+#include <fstream>
+#endif
 
 #include <memory>
 
@@ -43,6 +57,7 @@ namespace MyApp {
 using namespace VSTGUI;
 using namespace VSTGUI::Standalone;
 
+class AppTextEditorController;
 //------------------------------------------------------------------------
 class Delegate : public Application::DelegateAdapter,
 				 public ICommandHandler,
@@ -50,6 +65,7 @@ class Delegate : public Application::DelegateAdapter,
 {
 public:
 	Delegate ();
+	virtual ~Delegate ();
 
 	// Application::IDelegate
 	void finishLaunching () override;
@@ -66,6 +82,7 @@ public:
 
 private:
 	std::shared_ptr<TestModel> model;
+	std::unique_ptr<AppTextEditorController> textEditorController;
 };
 
 //------------------------------------------------------------------------
@@ -79,6 +96,8 @@ static Command NewMetalExampleWindow {CommandGroup::File, "New Metal Example Win
 #elif WINDOWS
 static Command NewDirect3DExampleWindow {CommandGroup::File, "New Direct3D Example Window"};
 #endif
+static Command IncreaseTextSize {CommandGroup::Edit, "Increase Text Size"};
+static Command DecreaseTextSize {CommandGroup::Edit, "Decrease Text Size"};
 
 //------------------------------------------------------------------------
 class DisabledControlsController : public DelegationController,
@@ -139,13 +158,17 @@ public:
 	CListControlRowDesc getRowDesc (int32_t row) const override
 	{
 		if (row == 0)
-			return {getRowHeight () * 2., 0};
+			return {getRowHeight () * 2., {}};
 		return {getRowHeight (), getFlags ()};
 	}
 };
 
 //------------------------------------------------------------------------
 class WeekdaysController : public DelegationController
+#ifdef VSTGUI_UISCRIPTING
+,
+						   public ScriptControllerExtensionAdapter
+#endif
 {
 public:
 	WeekdaysController (IController* parent) : DelegationController (parent) {}
@@ -164,6 +187,190 @@ public:
 		}
 		return controller->verifyView (view, attributes, description);
 	}
+#ifdef VSTGUI_UISCRIPTING
+	bool getProperty (CView* view, std::string_view name, PropertyValue& value) const override
+	{
+		using namespace std::literals;
+		if (name == "integer"sv)
+			value = static_cast<int64_t> (24);
+		else if (name == "double"sv)
+			value = 13.3333;
+		else if (name == "string"sv)
+			value = "Hello World"s;
+		else
+			value = nullptr;
+		return true;
+	}
+	bool setProperty (CView* view, std::string_view name, const PropertyValue& value) override
+	{
+		std::visit ([] (auto&& v) { std::cout << v << '\n'; }, value);
+		return true;
+	}
+	std::optional<std::string> verifyScript (CView* view, const std::string& script,
+											 const IScriptContext*) override
+	{
+		return {script};
+	}
+#endif
+};
+
+//------------------------------------------------------------------------
+class AppTextEditorController : public TextEditorControllerAdapter
+{
+public:
+	AppTextEditorController ()
+	{
+		style.selectionBackColor = MakeCColor (120, 120, 255, 150);
+		style.backColor = MakeCColor (255, 255, 255, 220);
+		style.cursorColor = style.textColor = kBlackCColor;
+		style.frameColor = kBlackCColor; // MakeCColor (50, 50, 50, 200);
+		style.font = makeOwned<CFontDesc> (*kNormalFont);
+		style.lineNumbersFont = makeOwned<CFontDesc> (*kNormalFontSmall);
+		style.lineSpacing = 0.;
+	}
+	~AppTextEditorController () noexcept
+	{
+		std::for_each (textEditors.begin (), textEditors.end (),
+					   [] (const auto& el) { el->resetController (); });
+	}
+	void setFonts (const SharedPointer<CFontDesc>& textFont,
+				   const SharedPointer<CFontDesc>& lineNumbersFont)
+	{
+		style.font = textFont;
+		style.lineNumbersFont = lineNumbersFont;
+	}
+	void onTextEditorCreated (const ITextEditor& te) override
+	{
+		textEditors.emplace_back (&te);
+		te.setStyle (style);
+		te.setPlainText (text);
+	}
+	void onTextEditorDestroyed (const ITextEditor& te) override
+	{
+		text = te.getPlainText ();
+		te.resetController ();
+		auto it = std::find (textEditors.begin (), textEditors.end (), &te);
+		textEditors.erase (it);
+	}
+	void onTextEditorTextChanged (const ITextEditor& te) override {}
+
+	void increaseTextSize ()
+	{
+		style.font->setSize (style.font->getSize () + 1);
+		style.lineNumbersFont->setSize (style.lineNumbersFont->getSize () + 1);
+		std::for_each (textEditors.begin (), textEditors.end (),
+					   [&] (const auto& el) { el->setStyle (style); });
+	}
+	void decreaseTextSize ()
+	{
+		style.font->setSize (style.font->getSize () - 1);
+		style.lineNumbersFont->setSize (style.lineNumbersFont->getSize () - 1);
+		std::for_each (textEditors.begin (), textEditors.end (),
+					   [&] (const auto& el) { el->setStyle (style); });
+	}
+
+	bool canHandleCommand (ITextEditor::Command cmd)
+	{
+		if (textEditors.empty ())
+			return false;
+		return textEditors.front ()->canHandleCommand (cmd);
+	}
+	bool handleCommand (ITextEditor::Command cmd)
+	{
+		if (textEditors.empty ())
+			return false;
+		return textEditors.front ()->handleCommand (cmd);
+	}
+
+private:
+	using TextEditors = std::vector<const ITextEditor*>;
+	TextEditors textEditors;
+	ITextEditor::Style style {};
+	std::string text {"Welcome to the VSTGUI Text Editor example.\n"
+					  "Here you can edit text, use commands like undo, redo, cut, copy, paste,\n"
+					  "select all and find next/previous.\n"
+					  "\n"
+					  "Have fun!"};
+};
+
+//------------------------------------------------------------------------
+class TextEditorViewController : public DelegationController,
+								 public ICommandHandler
+{
+public:
+	TextEditorViewController (IController* parent, AppTextEditorController& textEditorController)
+	: DelegationController (parent), textEditorController (textEditorController)
+	{
+		IApplication::instance ().registerCommand (Commands::FindNext, 'g');
+		IApplication::instance ().registerCommand (Commands::FindPrevious, 'G');
+		IApplication::instance ().registerCommand (IncreaseTextSize, '=');
+		IApplication::instance ().registerCommand (DecreaseTextSize, '-');
+	}
+
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
+		{
+			if (*customViewName == "TextEditor")
+			{
+				return createNewTextEditor (CRect (), &textEditorController);
+			}
+		}
+		return controller->createView (attributes, description);
+	}
+	bool canHandleCommand (const Command& command) override
+	{
+		if (command == IncreaseTextSize || command == DecreaseTextSize)
+			return true;
+		if (command == Commands::Undo)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Undo);
+		if (command == Commands::Redo)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Redo);
+		if (command == Commands::Cut)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Cut);
+		if (command == Commands::Copy)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Copy);
+		if (command == Commands::Paste)
+			return textEditorController.canHandleCommand (ITextEditor::Command::Paste);
+		if (command == Commands::SelectAll)
+			return textEditorController.canHandleCommand (ITextEditor::Command::SelectAll);
+		if (command == Commands::FindNext)
+			return textEditorController.canHandleCommand (ITextEditor::Command::FindNext);
+		if (command == Commands::FindPrevious)
+			return textEditorController.canHandleCommand (ITextEditor::Command::FindPrevious);
+		return false;
+	}
+	bool handleCommand (const Command& command) override
+	{
+		if (command == IncreaseTextSize)
+		{
+			textEditorController.increaseTextSize ();
+			return true;
+		}
+		if (command == DecreaseTextSize)
+		{
+			textEditorController.decreaseTextSize ();
+			return true;
+		}
+		if (command == Commands::Undo)
+			return textEditorController.handleCommand (ITextEditor::Command::Undo);
+		if (command == Commands::Redo)
+			return textEditorController.handleCommand (ITextEditor::Command::Redo);
+		if (command == Commands::Cut)
+			return textEditorController.handleCommand (ITextEditor::Command::Cut);
+		if (command == Commands::Copy)
+			return textEditorController.handleCommand (ITextEditor::Command::Copy);
+		if (command == Commands::Paste)
+			return textEditorController.handleCommand (ITextEditor::Command::Paste);
+		if (command == Commands::SelectAll)
+			return textEditorController.handleCommand (ITextEditor::Command::SelectAll);
+		if (command == Commands::FindNext)
+			return textEditorController.handleCommand (ITextEditor::Command::FindNext);
+		if (command == Commands::FindPrevious)
+			return textEditorController.handleCommand (ITextEditor::Command::FindPrevious);
+		return false;
+	}
+	AppTextEditorController& textEditorController;
 };
 
 //------------------------------------------------------------------------
@@ -219,15 +426,144 @@ public:
 };
 
 //------------------------------------------------------------------------
+struct DBController : DelegationController,
+					  DataBrowserDelegateAdapter,
+					  NonAtomicReferenceCounted
+{
+	static constexpr size_t NumColumns = 20u;
+
+	DBController (IController* base) : DelegationController (base)
+	{
+		for (auto i = 0u; i < 200u; ++i)
+		{
+			data.push_back ({});
+			data[i][0] = i;
+		}
+	}
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
+		{
+			if (*customViewName == "DataBrowser")
+			{
+				return new CDataBrowser ({}, this);
+			}
+		}
+		return nullptr;
+	}
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription* description) override
+	{
+		if (auto db = dynamic_cast<CDataBrowser*> (view))
+		{
+			auto style = db->getStyle ();
+			style |= CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines |
+					 CDataBrowser::kDrawColumnLines;
+			db->setStyle (style);
+		}
+		return controller->verifyView (view, attributes, description);
+	}
+
+	int32_t dbGetNumRows (CDataBrowser* browser) override
+	{
+		return static_cast<int32_t> (data.size ());
+	}
+	int32_t dbGetNumColumns (CDataBrowser* browser) override
+	{
+		return static_cast<int32_t> (NumColumns);
+	}
+	CCoord dbGetRowHeight (CDataBrowser* browser) override { return 15.; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override { return 30.; }
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override
+	{
+		if (row < 0 || row >= data.size ())
+			return;
+		if (column < 0 || column >= data[row].size ())
+			return;
+		if (flags & kRowSelected)
+		{
+			context->setFillColor (selectColor);
+			context->drawRect (size, kDrawFilled);
+		}
+		auto str = toString (data[row][column]);
+		context->setFont (font);
+		context->setFontColor (kBlackCColor);
+		context->drawString (str, size);
+	}
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags,
+					   CDataBrowser* browser) override
+	{
+		context->setFillColor (kWhiteCColor);
+		context->drawRect (size, kDrawFilled);
+
+		UTF8String str;
+		str += 0x41 + column;
+		context->setFont (font);
+		context->setFontColor (kBlackCColor);
+		context->drawString (str, size);
+	}
+
+	using RowData = std::array<size_t, NumColumns>;
+	using DBData = std::vector<RowData>;
+
+	DBData data;
+	CFontRef font {kSystemFont};
+	CColor selectColor {MakeCColor (255, 255, 255, 40)};
+};
+
+//------------------------------------------------------------------------
 Delegate::Delegate ()
 : Application::DelegateAdapter ({"VSTGUI Standalone", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 {
 	CFrame::kDefaultKnobMode = CKnobMode::kLinearMode;
 }
 
+Delegate::~Delegate () = default;
+
 //------------------------------------------------------------------------
 void Delegate::finishLaunching ()
 {
+#ifdef VSTGUI_UISCRIPTING
+	UIScripting::ReadScriptContentsFunc loadScriptFromRepositoryPath = {};
+#if DEBUG
+	// in Debug mode, we want to load the scripts from the repository instead of from the app
+	// resource folder as the scripts in the app resource folder are only synchronized when we build
+	// the app and not in-between.
+	loadScriptFromRepositoryPath = [] (auto filename) -> std::string {
+		std::filesystem::path path (__FILE__);
+		if (!path.empty ())
+		{
+			path = path.parent_path ().parent_path ();
+			path.append ("resource");
+			path.append ("scripts");
+			path.append (filename);
+			if (std::filesystem::exists (path))
+			{
+				std::ifstream f (path, std::ios::in | std::ios::binary);
+				const auto sz = std::filesystem::file_size (path);
+				std::string result (sz, '\0');
+				f.read (result.data (), sz);
+				return result;
+			}
+		}
+		return {};
+	};
+#endif
+
+	UIScripting::init ({}, loadScriptFromRepositoryPath);
+
+#endif
+
+	textEditorController = std::make_unique<AppTextEditorController> ();
+#if MAC
+	auto font = makeOwned<CFontDesc> ("Menlo", 12);
+	textEditorController->setFonts (font, font);
+#elif WINDOWS
+	auto font = makeOwned<CFontDesc> ("Consolas", 12);
+	textEditorController->setFonts (font, font);
+#endif
+
 	model = std::make_shared<TestModel> ();
 	IApplication::instance ().registerCommand (Commands::NewDocument, 'n');
 	IApplication::instance ().registerCommand (NewPopup, 'N');
@@ -285,6 +621,7 @@ bool Delegate::handleCommand (const Command& command)
 			config.uiDescFileName = "test.uidesc";
 			config.windowConfig.style.border ().size ();
 			config.windowConfig.style.movableByWindowBackground ();
+			config.windowConfig.style.size ();
 			auto customization = UIDesc::Customization::make ();
 			customization->addCreateViewControllerFunc (
 				"DisabledControlsController",
@@ -300,6 +637,16 @@ bool Delegate::handleCommand (const Command& command)
 				"DatePickerController",
 				[] (const UTF8StringView&, IController* parent, const IUIDescription*) {
 					return new DatePickerController (parent);
+				});
+			customization->addCreateViewControllerFunc (
+				"TextEditorController",
+				[this] (const UTF8StringView&, IController* parent, const IUIDescription*) {
+					return new TextEditorViewController (parent, *textEditorController.get ());
+				});
+			customization->addCreateViewControllerFunc (
+				"DBController",
+				[this] (const UTF8StringView&, IController* parent, const IUIDescription*) {
+					return new DBController (parent);
 				});
 			config.customization = customization;
 		}

@@ -195,6 +195,8 @@ public:
 	virtual void setContentView (const SharedPointer<CFrame>& frame) = 0;
 	/** Set the path the contents of this window represents. */
 	virtual void setRepresentedPath (const UTF8String& path) = 0;
+	/** Set the auto save frame name of the window. */
+	virtual void setAutoSaveFrameName (const UTF8String& name) = 0;
 	/** Change window style.
 	 *	May not change every style. Depends on the platform.
 	 *	Returns effective style.

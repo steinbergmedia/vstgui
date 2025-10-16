@@ -14,11 +14,11 @@ namespace Platform {
 namespace GDK {
 
 //------------------------------------------------------------------------
-class RunLoop : public VSTGUI::X11::IRunLoop
+class RunLoop : public VSTGUI::IRunLoop
 {
 public:
-	using IEventHandler = VSTGUI::X11::IEventHandler;
-	using ITimerHandler = VSTGUI::X11::ITimerHandler;
+	using IEventHandler = VSTGUI::IEventHandler;
+	using ITimerHandler = VSTGUI::ITimerHandler;
 
 	static RunLoop& instance ();
 

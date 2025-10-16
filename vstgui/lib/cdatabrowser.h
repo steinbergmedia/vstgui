@@ -115,7 +115,6 @@ protected:
 	bool removed (CView* parent) override;
 	bool wantsFocus () const override;
 
-	void recalculateSubViews () override;
 	void validateSelection ();
 
 	IDataBrowserDelegate* db;

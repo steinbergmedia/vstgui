@@ -34,8 +34,8 @@ protected:
 	};
 
 public:
-	CScrollView (const CRect& size, const CRect& containerSize, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
-	CScrollView (const CScrollView& scrollView);
+	CScrollView (const CRect& size, const CRect& containerSize, int32_t style,
+				 CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
 
 	/** Scroll View Style Flags */
 	enum CScrollViewStyle
@@ -60,34 +60,60 @@ public:
 	/// @name CScrollView Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	int32_t getStyle () const { return style; }
+	int32_t getStyle () const;
 	void setStyle (int32_t newStyle);
-	
-	int32_t getActiveScrollbars () const { return activeScrollbarStyle; }
 
-	CCoord getScrollbarWidth () const { return scrollbarWidth; }
+	int32_t getActiveScrollbars () const;
+
+	CCoord getScrollbarWidth () const;
 	void setScrollbarWidth (CCoord width);
 
 	/** set the virtual size of this container */
 	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);
-	const CRect& getContainerSize () const { return containerSize; }
+	const CRect& getContainerSize () const;
 	/** get scroll offset */
 	const CPoint& getScrollOffset () const;
+	/** set scroll offset */
+	void setScrollOffset (CPoint newOffset);
 	void resetScrollOffset ();
 
 	/** get the vertical scrollbar */
-	CScrollbar* getVerticalScrollbar () const { return vsb; }
+	CScrollbar* getVerticalScrollbar () const;
 	/** get the horizontal scrollbar */
-	CScrollbar* getHorizontalScrollbar () const { return hsb; }
+	CScrollbar* getHorizontalScrollbar () const;
 
 	/** set scrollview to show rect */
 	virtual void makeRectVisible (const CRect& rect);
 
 	/** calculate the maximum rect where the scrollbars are inactive */
 	CRect calculateOptimalContainerSize () const;
+
+	/** returns the visible rect of the client */
+	CRect getVisibleClientRect () const;
+
+	enum class Edge
+	{
+		Top,
+		Left,
+	};
+	/** set a static edge view
+	 *
+	 *	An edge view can be set for the top and left edge. The top edge view will have the same
+	 *	width as the scroll view. The bottom of the left edge view will always be the bottom
+	 *	of the scroll view and its top will either be the bottom of the top edge view or the top of
+	 *	the scroll view itself.
+	 *
+	 *	@param edge the edge where to place the view
+	 *	@param view the view to set (if this is a nullptr then the previously set view is removed)
+	 *
+	 *	@ingroup new_in_4_15
+	 */
+	void setEdgeView (Edge edge, CView* view);
+	CView* getEdgeView (Edge edge) const;
 	//@}
 
 	// overwrite
+	bool attached (CView* parent) override;
 	bool addView (CView* pView, CView* pBefore = nullptr) override;
 	bool removeView (CView* pView, bool withForget = true) override;
 	bool removeAll (bool withForget = true) override;
@@ -103,28 +129,28 @@ public:
 	void setAutosizeFlags (int32_t flags) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	CLASS_METHODS(CScrollView, CViewContainer)
-//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY (CScrollView, CViewContainer)
+	//-----------------------------------------------------------------------------
 protected:
-	~CScrollView () noexcept override = default;
-	virtual void recalculateSubViews ();
+	~CScrollView () noexcept override;
+
+	void recalculateLayout ();
+	void preLayouting () const;
+	void syncScrollbars (bool keepVisibleArea);
+	void syncHScrollbar (bool keepVisibleArea);
+	void syncVScrollbar (bool keepVisibleArea);
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewWillDelete (CView* view) override;
 
-	CScrollContainer* sc;
-	CScrollbar* vsb;
-	CScrollbar* hsb;
+	CScrollContainer* getScrollContainer () const;
 
-	CRect containerSize;
-	CCoord scrollbarWidth;
-	int32_t style;
-	int32_t activeScrollbarStyle;
-	bool recalculateSubViewsRecursionGard {false};
-	enum {
-		kHSBTag,
-		kVSBTag
-	};
+	static constexpr int32_t kHSBTag = 0;
+	static constexpr int32_t kVSBTag = 1;
+
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 } // VSTGUI

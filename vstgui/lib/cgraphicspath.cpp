@@ -165,6 +165,11 @@ CGraphicsPath::CGraphicsPath (const PlatformGraphicsPathFactoryPtr& factory,
 {
 }
 
+//------------------------------------------------------------------------
+CGraphicsPath::CGraphicsPath (const CGraphicsPath& p) : elements (p.elements), factory (p.factory)
+{
+}
+
 //-----------------------------------------------------------------------------
 CGraphicsPath::~CGraphicsPath () noexcept {}
 

@@ -17,6 +17,7 @@
 #include "../../lib/cgraphicspath.h"
 #include "../../lib/cdrawcontext.h"
 #include "../../lib/events.h"
+#include "../../lib/controls/coptionmenu.h"
 #include <algorithm>
 
 namespace VSTGUI {
@@ -40,7 +41,10 @@ public:
 	~UIColorStopEditView () override;
 
 	void setGradient (CGradient* gradient);
-	
+
+	void selectNextColorStop ();
+	void selectPrevColorStop ();
+	void setEditColor (CColor color);
 	void setCurrentStartOffset (double startOffset);
 	double getSelectedColorStart () const { return editStartOffset; }
 	const GradientColorStopMap& getColorStopMap () const { return colorStopMap; }
@@ -61,8 +65,6 @@ private:
 
 	void addColorStop (double startOffset);
 	void removeColorStop (double startOffset);
-	void selectNextColorStop ();
-	void selectPrevColorStop ();
 
 	SharedPointer<UIColor> editColor;
 	SharedPointer<CGradient> gradient;
@@ -117,6 +119,17 @@ void UIColorStopEditView::selectPrevColorStop ()
 	*editColor = pos->second;
 	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorStopEditView::setEditColor (CColor color)
+{
+	if (editColor)
+	{
+		editColor->beginEdit ();
+		*editColor = color;
+		editColor->endEdit ();
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -386,9 +399,11 @@ public:
 	void onDialogButton2Clicked (UIDialogController*) override;
 	void onDialogShow (UIDialogController*) override;
 protected:
-	enum {
+	enum
+	{
 		kApplyTag = 1,
 		kPositionTag = 2,
+		kFunctionMenuTag = 3,
 	};
 	void uiColorChanged (UIColor* c) override;
 	void onChange () override;
@@ -505,6 +520,28 @@ void UIGradientEditorController::valueChanged (CControl* pControl)
 	}
 }
 
+//------------------------------------------------------------------------
+SharedPointer<COptionMenu> createColorMenu (IUIDescription& desc,
+											const std::function<void (CColor)>& callback)
+{
+	std::list<const std::string*> names;
+	desc.collectColorNames (names);
+	if (names.empty ())
+		return {};
+	auto menu = makeOwned<COptionMenu> ();
+	std::for_each (names.begin (), names.end (), [&] (const auto& el) {
+		CColor color;
+		if (desc.getColor (el->data (), color))
+		{
+			auto item = new CCommandMenuItem (UTF8String (*el));
+			item->setActions ([callback, color] (auto item) { callback (color); });
+			item->setIcon (createColorIcon (color));
+			menu->addEntry (item);
+		}
+	});
+	return menu;
+}
+
 //----------------------------------------------------------------------------------------------------
 CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
@@ -519,6 +556,43 @@ CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& 
 			});
 			positionEdit = control;
 			updatePositionEdit ();
+		}
+	}
+	else if (auto menu = dynamic_cast<COptionMenu*> (view))
+	{
+		if (menu->getTag () == kFunctionMenuTag)
+		{
+			auto item = new CCommandMenuItem ({"Select Next Color Stop"});
+			item->setActions ([this] (auto) {
+				if (colorStopEditView)
+				{
+					colorStopEditView->selectNextColorStop ();
+				}
+			});
+			menu->addEntry (item);
+			item = new CCommandMenuItem ({"Select Previous Color Stop"});
+			item->setActions ([this] (auto) {
+				if (colorStopEditView)
+				{
+					colorStopEditView->selectPrevColorStop ();
+				}
+			});
+			menu->addEntry (item);
+			menu->addSeparator ();
+			auto descColorMenu = createColorMenu (*editDescription, [this] (auto color) {
+				if (colorStopEditView)
+				{
+					colorStopEditView->setEditColor (color);
+				}
+			});
+			menu->addEntry (descColorMenu, "Set to Description Color");
+			auto cssColorMenu = createCSSColorMenu ([this] (auto color) {
+				if (colorStopEditView)
+				{
+					colorStopEditView->setEditColor (color);
+				}
+			});
+			menu->addEntry (cssColorMenu, "Set to CSS Color");
 		}
 	}
 	return view;

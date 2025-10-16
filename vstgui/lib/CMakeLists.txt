@@ -61,6 +61,8 @@ set(${target}_common_sources
     clayeredviewcontainer.h
     clinestyle.cpp
     clinestyle.h
+    ctexteditor.h
+    ctexteditor.cpp
     coffscreencontext.cpp
     coffscreencontext.h
     controls/cautoanimation.cpp
@@ -143,6 +145,7 @@ set(${target}_common_sources
     cvstguitimer.h
     dragging.h
     dispatchlist.h
+    enumbitset.h
     events.cpp
     events.h
     finally.h
@@ -155,6 +158,7 @@ set(${target}_common_sources
     ifocusdrawing.h
     iscalefactorchangedlistener.h
     itouchevent.h
+    iviewlayouter.h
     iviewlistener.h
     malloc.h
     optional.h
@@ -172,13 +176,17 @@ set(${target}_common_sources
     platform/iplatformoptionmenu.h
     platform/iplatformresourceinputstream.h
     platform/iplatformstring.h
+    platform/iplatformtaskexecutor.h
     platform/iplatformtextedit.h
+    platform/iplatformtextinputclient.h
     platform/iplatformtimer.h
     platform/iplatformviewlayer.h
     platform/platformfactory.cpp
     platform/platformfactory.h
     platform/platformfwd.h
     platform/platform_macos.h
+    platform/platform_linux.h
+    platform/platform_wayland.h
     platform/platform_win32.h
     platform/platform_x11.h
     platform/std_unorderedmap.h
@@ -189,7 +197,15 @@ set(${target}_common_sources
     platform/common/generictextedit.cpp
     platform/common/generictextedit.h
     platform/common/gradientbase.h
-    platform/common/stb_textedit.h
+    platform/common/threadpooltaskexecutor.h
+    viewlayouter/autosizeviewlayouter.cpp
+    viewlayouter/autosizeviewlayouter.h
+    viewlayouter/baseviewlayouter.h
+    viewlayouter/gridlayouter.cpp
+    viewlayouter/gridlayouter.h
+    viewlayouter/noviewlayouter.h
+    tasks.cpp
+    tasks.h
     vstguibase.h
     vstguidebug.cpp
     vstguidebug.h
@@ -234,6 +250,8 @@ set(${target}_mac_sources
     platform/mac/macglobals.h
     platform/mac/macstring.h
     platform/mac/macstring.mm
+    platform/mac/mactaskexecutor.mm
+    platform/mac/mactaskexecutor.h
     platform/mac/mactimer.cpp
     platform/mac/mactimer.h
     platform/mac/quartzgraphicspath.cpp
@@ -260,6 +278,8 @@ set(${target}_win32_sources
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
     platform/win32/win32bitmapbase.h
+    platform/win32/win32taskexecutor.cpp
+    platform/win32/win32taskexecutor.h
     platform/win32/win32dll.h
     platform/win32/win32datapackage.cpp
     platform/win32/win32datapackage.h
@@ -320,7 +340,23 @@ set(${target}_linux_sources
     platform/linux/x11utils.h
     platform/linux/linuxfactory.cpp
     platform/linux/linuxfactory.h
+    platform/linux/linuxtaskexecutor.cpp
+    platform/linux/linuxtaskexecutor.h
 )
+
+if(LINUX AND VSTGUI_ENABLE_WAYLAND_SUPPORT)
+    set(${target}_linux_sources
+        ${${target}_linux_sources}
+        platform/linux/waylandframe.cpp
+        platform/linux/waylandframe.h
+        platform/linux/waylandplatform.cpp
+        platform/linux/waylandplatform.h
+        platform/linux/waylandutils.cpp
+        platform/linux/waylandutils.h
+        platform/linux/waylandclientcontext.cpp
+        platform/linux/waylandclientcontext.h
+    )
+endif()
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
@@ -341,9 +377,29 @@ endif()
 ##########################################################################################
 add_library(${target} STATIC ${${target}_sources})
 
+target_precompile_headers(${target} PRIVATE cviewcontainer.h cdrawcontext.h)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_set_cxx_version(${target} 17)
+vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
 vstgui_source_group_by_folder(${target})
+
+if(LINUX AND VSTGUI_ENABLE_WAYLAND_SUPPORT)
+    # Fetch wayland-server-delegate to get iwaylandclientcontext.h
+    include (FetchContent)
+    FetchContent_Declare(
+        ccl_wayland_server_delegate
+        GIT_REPOSITORY https://github.com/cclsoftware/wayland-server-delegate.git
+        GIT_TAG 86c32c61f0c861448635c041da5c343ce097ccff
+    )
+    FetchContent_MakeAvailable(ccl_wayland_server_delegate)
+
+    target_include_directories(${target}
+        PRIVATE
+            ${ccl_wayland_server_delegate_SOURCE_DIR}
+    )
+
+    target_link_libraries(${target} PRIVATE ${WAYLAND_LIBRARIES})
+    target_compile_definitions(${target} PRIVATE VSTGUI_ENABLE_WAYLAND_SUPPORT=1)
+endif()
 
 if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})

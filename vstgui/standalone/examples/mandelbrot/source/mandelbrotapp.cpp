@@ -8,7 +8,8 @@
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/icommand.h"
 #include "vstgui/standalone/include/iwindow.h"
-#include <atomic>
+#include "vstgui/lib/platform/platformfactory.h"
+#include "vstgui/lib/platform/common/threadpooltaskexecutor.h"
 
 //------------------------------------------------------------------------
 namespace Mandelbrot {
@@ -23,6 +24,9 @@ struct AppDelegate : DelegateAdapter, WindowListenerAdapter, ICommandHandler
 
 	void finishLaunching () override
 	{
+		getPlatformFactory ().replaceTaskExecutor ([] (auto&& executor) {
+			return std::make_unique<Tasks::ThreadPoolTaskExecutor> (std::move (executor));
+		});
 		IApplication::instance ().registerCommand (Commands::NewDocument, 'n');
 		if (!handleCommand (Commands::NewDocument))
 			IApplication::instance ().quit ();

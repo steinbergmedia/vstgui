@@ -711,6 +711,34 @@ void CDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gra
 }
 
 //------------------------------------------------------------------------
+bool CDrawContext::drawLinearGradientLine (const DrawLinearGradientLineCallback& cb)
+{
+	if (auto ext =
+			std::dynamic_pointer_cast<IPlatformGraphicsDeviceContextGradientExt> (impl->device))
+	{
+		struct Tmp : IDrawLinearGradientLine
+		{
+			std::shared_ptr<IPlatformGraphicsDeviceContextGradientExt> obj;
+			bool draw (const PointList& line, const CGradient& gradient, CCoord lineWidth,
+					   CLineStyle::LineCap cap, CLineStyle::LineJoin join) const override
+			{
+				const auto& platformGradient = gradient.getPlatformGradient ();
+				if (!platformGradient)
+					return false;
+				return obj->drawLinearGradientLine (line, *gradient.getPlatformGradient ().get (),
+													lineWidth, static_cast<LineCap> (cap),
+													static_cast<LineJoin> (join));
+			}
+		};
+		Tmp t;
+		t.obj = ext;
+		cb (t);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 CGraphicsPath* CDrawContext::createGraphicsPath ()
 {
 	if (impl->device)

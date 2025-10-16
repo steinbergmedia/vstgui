@@ -23,7 +23,7 @@ RunLoop& RunLoop::instance ()
 //------------------------------------------------------------------------
 struct ExternalEventHandler
 {
-	VSTGUI::X11::IEventHandler* eventHandler{nullptr};
+	VSTGUI::IEventHandler* eventHandler{nullptr};
 	GSource* source{nullptr};
 	GIOChannel* ioChannel{nullptr};
 };
@@ -31,7 +31,7 @@ struct ExternalEventHandler
 //------------------------------------------------------------------------
 struct ExternalTimerHandler
 {
-	VSTGUI::X11::ITimerHandler* timerHandler{nullptr};
+	VSTGUI::ITimerHandler* timerHandler{nullptr};
 	GSource* source{nullptr};
 };
 
@@ -62,7 +62,7 @@ RunLoop::~RunLoop () noexcept
 //------------------------------------------------------------------------
 static gboolean eventHandlerProc (GIOChannel* channel, GIOCondition condition, gpointer userData)
 {
-	auto handler = static_cast<VSTGUI::X11::IEventHandler*> (userData);
+	auto handler = static_cast<VSTGUI::IEventHandler*> (userData);
 	handler->onEvent ();
 	return G_SOURCE_CONTINUE;
 };

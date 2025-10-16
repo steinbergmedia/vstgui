@@ -26,6 +26,7 @@
 #include "../cstream.h"
 #include "../uiattributes.h"
 #include "../uicontentprovider.h"
+#include "../uidescriptionaddonregistry.h"
 #include "../xmlparser.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
@@ -493,6 +494,8 @@ UIEditController::UIEditController (UIDescription* description)
 , templateController (nullptr)
 , dirty (false)
 {
+	UIDescriptionAddOnRegistry::forEach (
+		[this] (auto& addOn) { addOn.onEditingStart (editDescription); });
 	editorDesc = getEditorDescription ();
 	undoManager->registerListener (this);
 	editDescription->registerListener (this);
@@ -515,6 +518,8 @@ UIEditController::~UIEditController ()
 		templateController->unregisterListener (this);
 	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
+	UIDescriptionAddOnRegistry::forEach (
+		[this] (auto& addOn) { addOn.onEditingEnd (editDescription); });
 	editorDesc = nullptr;
 	templateController = nullptr;
 	undoManager->clear ();
@@ -1384,9 +1389,8 @@ void UIEditController::doSelectAllChildren ()
 	UISelection::DeferChange dc (*selection);
 	CViewContainer* container = selection->first ()->asViewContainer ();
 	selection->clear ();
-	auto factory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	container->forEachChild ([&] (CView* view) {
-		if (factory->getViewName (view))
+		if (IViewFactory::getViewName (view))
 			selection->add (view);
 	});
 }
@@ -1396,12 +1400,11 @@ void UIEditController::doSelectParents ()
 {
 	UISelection::DeferChange dc (*selection);
 	std::vector<CView*> parents;
-	auto factory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	for (auto& view : *selection)
 	{
 		if (auto parent = view->getParentView ())
 		{
-			while (factory->getViewName (parent) == nullptr)
+			while (IViewFactory::getViewName (parent) == nullptr)
 			{
 				parent = parent->getParentView ();
 			}

@@ -222,12 +222,6 @@ void CDataBrowser::valueChanged (CControl *pControl)
 }
 
 //-----------------------------------------------------------------------------------------------
-void CDataBrowser::recalculateSubViews ()
-{
-	CScrollView::recalculateSubViews ();
-}
-
-//-----------------------------------------------------------------------------------------------
 /**
  * @param rememberSelection if true selection will be remembered
  */
@@ -241,36 +235,25 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	int32_t numRows = db->dbGetNumRows (this);
 	int32_t numColumns = db->dbGetNumColumns (this);
 	CCoord allRowsHeight = rowHeight * numRows;
-	if (style & kDrawRowLines)
+	if (getStyle () & kDrawRowLines)
 		allRowsHeight += numRows * lineWidth;
 	CCoord allColumnsWidth = 0;
 	for (int32_t i = 0; i < numColumns; i++)
 		allColumnsWidth += db->dbGetCurrentColumnWidth (i, this);
-	if (style & kDrawColumnLines)
+	if (getStyle () & kDrawColumnLines)
 		allColumnsWidth += numColumns * lineWidth;
 	CRect newContainerSize (0, 0, allColumnsWidth, allRowsHeight);
-	if (style & kDrawHeader)
+	if (getStyle () & kDrawHeader)
 	{
-
-		newContainerSize.offset (0, headerHeight+lineWidth);
-
-		CRect headerSize (0, 0, newContainerSize.getWidth (), headerHeight+lineWidth);
-		if (style & kHorizontalScrollbar && hsb)
-			headerSize.right += hsb->getWidth ();
+		CRect headerSize (0, 0, newContainerSize.getWidth (), headerHeight + lineWidth);
 		if (dbHeader == nullptr)
 		{
-			CRect hcs (headerSize);
-			if (!(style & kDontDrawFrame))
-				hcs.left = hcs.top = 1;
-			hcs.setWidth (getViewSize ().getWidth () - ((style & kDontDrawFrame) ? 0 : 2));
-			dbHeaderContainer = new CViewContainer (hcs);
+			dbHeaderContainer = new CViewContainer (headerSize);
 			dbHeaderContainer->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->setTransparency (true);
-			headerSize.offset (-headerSize.left, -headerSize.top);
 			dbHeader = new CDataBrowserHeader (headerSize, db, this);
-			dbHeader->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->addView (dbHeader);
-			CViewContainer::addView (dbHeaderContainer, nullptr);
+			setEdgeView (Edge::Top, dbHeaderContainer);
 		}
 		else
 		{
@@ -301,14 +284,14 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		scrollbar->setWheelInc (wheelInc);
 	}
 
-	if (style & kDrawHeader)
+	if (getStyle () & kDrawHeader)
 	{
 		for (const auto& pV : getChildren ())
 		{
 			CRect viewSize = pV->getViewSize ();
 			if (pV != dbHeaderContainer && viewSize.top < headerHeight+lineWidth)
 			{
-				if (style & kOverlayScrollbars && pV.cast<CScrollView> ())
+				if (getStyle () & kOverlayScrollbars && pV.cast<CScrollView> ())
 					continue;
 
 				bool autoSizingEnabled = false;
@@ -498,13 +481,13 @@ void CDataBrowser::validateSelection ()
 CRect CDataBrowser::getCellBounds (const Cell& cell)
 {
 	CCoord lineWidth = 0;
-	if (style & kDrawRowLines || style & kDrawColumnLines)
+	if (getStyle () & kDrawRowLines || getStyle () & kDrawColumnLines)
 	{
 		CColor lineColor;
 		db->dbGetLineWidthAndColor (lineWidth, lineColor, this);
 	}
 	CCoord rowHeight = db->dbGetRowHeight (this);
-	if (style & kDrawRowLines)
+	if (getStyle () & kDrawRowLines)
 		rowHeight += lineWidth;
 	CRect result (0, rowHeight * cell.row, 0, rowHeight * (cell.row+1));
 	for (int32_t i = 0; i <= cell.column; i++)
@@ -513,7 +496,7 @@ CRect CDataBrowser::getCellBounds (const Cell& cell)
 		if (i != cell.column)
 		{
 			result.offset (colWidth, 0);
-			if (style & kDrawColumnLines)
+			if (getStyle () & kDrawColumnLines)
 				result.offset (lineWidth, 0);
 		}
 		result.setWidth (colWidth);
