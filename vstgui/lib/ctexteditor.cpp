@@ -168,8 +168,8 @@ inline bool isStopChar (char32_t character)
 //------------------------------------------------------------------------
 struct Line
 {
-	Range range;
-	UTF8String text;
+	Range range {};
+	UTF8String text {};
 	CCoord width {};
 };
 using Lines = std::vector<Line>;
