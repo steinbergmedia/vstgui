@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <limits>
+#include <cstdint>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
