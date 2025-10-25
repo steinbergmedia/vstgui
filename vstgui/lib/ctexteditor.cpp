@@ -755,22 +755,40 @@ void TextEditorView::parentSizeChanged ()
 			auto origContainerSizeWidth = containerSize.getWidth ();
 			auto origContainerSizeHeight = containerSize.getHeight ();
 			if (origContainerSizeWidth <= This->md.maxWidth)
+			{
 				containerSize.bottom -= This->md.scrollView->getScrollbarWidth ();
+			}
 			if (origContainerSizeHeight <= This->md.maxHeight)
+			{
 				containerSize.right -= This->md.scrollView->getScrollbarWidth ();
+			}
 			// test again something could have changed above
 			if (containerSize.getWidth () <= This->md.maxWidth &&
 				origContainerSizeHeight == containerSize.getHeight ())
+			{
 				containerSize.bottom -= This->md.scrollView->getScrollbarWidth ();
+			}
 			if (containerSize.getHeight () <= This->md.maxHeight &&
 				origContainerSizeWidth == containerSize.getWidth ())
+			{
 				containerSize.right -= This->md.scrollView->getScrollbarWidth ();
+			}
+			if (containerSize.right > viewSize.right && viewSize.left < 0)
+			{
+				viewSize.offset (containerSize.right - viewSize.right, 0.);
+				if (viewSize.left > 0)
+					viewSize.offset (-viewSize.left, 0.);
+			}
 			if (containerSize.getWidth () > This->md.maxWidth)
 			{
+				if (viewSize.left < 0)
+					viewSize.left = 0;
 				viewSize.setWidth (containerSize.getWidth ());
 			}
 			if (containerSize.getHeight () > This->md.maxHeight)
 			{
+				if (viewSize.top < 0)
+					viewSize.top = 0;
 				viewSize.setHeight (containerSize.getHeight ());
 			}
 			This->setViewSize (viewSize);
@@ -787,7 +805,7 @@ void TextEditorView::parentSizeChanged ()
 		}
 		else
 		{
-			Call::later (std::move (func));
+			Call::later (std::move (func), 1);
 		}
 	}
 	else
