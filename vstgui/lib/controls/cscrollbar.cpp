@@ -91,8 +91,8 @@ void CScrollbar::calculateScrollerLength ()
 			factor = 0;
 		newScrollerLength = (CCoord) (getViewSize ().getHeight () * factor);
 	}
-	if (newScrollerLength < minScrollerLenght && newScrollerLength > 0.)
-		newScrollerLength = minScrollerLenght;
+	if (newScrollerLength < minScrollerLength && newScrollerLength > 0.)
+		newScrollerLength = minScrollerLength;
 	if (newScrollerLength != scrollerLength)
 	{
 		scrollerLength = newScrollerLength;
@@ -178,9 +178,9 @@ void CScrollbar::setOverlayStyle (bool state)
 //------------------------------------------------------------------------
 void CScrollbar::setMinScrollerLength (CCoord length)
 {
-	if (minScrollerLenght != length)
+	if (minScrollerLength != length)
 	{
-		minScrollerLenght = length;
+		minScrollerLength = length;
 		calculateScrollerLength ();
 		setDirty ();
 	}

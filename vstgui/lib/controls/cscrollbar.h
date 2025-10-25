@@ -48,7 +48,7 @@ public:
 	virtual void setOverlayStyle (bool state);
 
 	void setMinScrollerLength (CCoord length);
-	CCoord getMinScrollerLength () const { return minScrollerLenght; }
+	CCoord getMinScrollerLength () const { return minScrollerLength; }
 
 	virtual void onVisualChange ();
 	CRect getScrollerRect ();
@@ -84,7 +84,7 @@ protected:
 	
 	float stepValue;
 	CCoord scrollerLength;
-	CCoord minScrollerLenght {8.0};
+	CCoord minScrollerLength {8.0};
 
 	CColor frameColor;
 	CColor scrollerColor;
