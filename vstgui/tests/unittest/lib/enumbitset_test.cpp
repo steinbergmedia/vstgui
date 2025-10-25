@@ -69,7 +69,7 @@ TEST_CASE (EnumBitsetTest, AssignmentTest)
 		f = f2;
 		EXPECT_EQ (f.value (), f2.value ());
 
-		f2.exlusive (Flag::Three);
+		f2.exclusive (Flag::Three);
 		EXPECT_EQ (f2.value (), 4);
 	}
 	{
@@ -83,7 +83,7 @@ TEST_CASE (EnumBitsetTest, AssignmentTest)
 		f = f2;
 		EXPECT_EQ (f.value (), f2.value ());
 
-		f2.exlusive (FlagMask::Three);
+		f2.exclusive (FlagMask::Three);
 		EXPECT_EQ (f2.value (), 4);
 	}
 }
