@@ -329,6 +329,13 @@ public:
 
 	inline I* get () const noexcept { return ptr; }
 
+	inline void reset () noexcept
+	{
+		if (ptr)
+			ptr->forget ();
+		ptr = nullptr;
+	}
+
 	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
 
 	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
