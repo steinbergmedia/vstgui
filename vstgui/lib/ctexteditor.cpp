@@ -749,6 +749,10 @@ void TextEditorView::parentSizeChanged ()
 			if (!This->isAttached () || !This->md.scrollView)
 				return;
 			auto viewSize = This->getViewSize ();
+			if (viewSize.top > 0)
+			{
+				viewSize.top = 0;
+			}
 			viewSize.setHeight (This->md.maxHeight);
 			viewSize.setWidth (This->md.maxWidth);
 			auto containerSize = This->md.scrollView->calculateOptimalContainerSize ();
