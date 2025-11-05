@@ -93,8 +93,8 @@ public:
 	IViewCreator::AttrType getAttributeType (CView* view,
 											 const std::string& attributeName) const override
 	{
-		return ofes ? ofes->getAttributeType (view, attributeName) :
-		              IViewCreator::AttrType::kUnknownType;
+		return ofes ? ofes->getAttributeType (view, attributeName)
+					: IViewCreator::AttrType::kUnknownType;
 	}
 	void collectRegisteredViewNames (StringPtrList& viewNames,
 									 IdStringPtr baseClassNameFilter) const override
@@ -115,14 +115,14 @@ public:
 	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue,
 								 double& maxValue) const override
 	{
-		return ofes ? ofes->getAttributeValueRange (view, attributeName, minValue, maxValue) :
-		              false;
+		return ofes ? ofes->getAttributeValueRange (view, attributeName, minValue, maxValue)
+					: false;
 	}
 	ViewAndDisplayNameList
 		collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter) const override
 	{
-		return ofes ? ofes->collectRegisteredViewAndDisplayNames (baseClassNameFilter) :
-		              ViewAndDisplayNameList {};
+		return ofes ? ofes->collectRegisteredViewAndDisplayNames (baseClassNameFilter)
+					: ViewAndDisplayNameList {};
 	}
 	UTF8StringPtr getViewDisplayName (CView* view) const override
 	{
