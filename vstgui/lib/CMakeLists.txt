@@ -185,9 +185,10 @@ set(${target}_common_sources
     platform/platformfactory.h
     platform/platformfwd.h
     platform/platform_macos.h
+    platform/platform_linux.h
+    platform/platform_wayland.h
     platform/platform_win32.h
     platform/platform_x11.h
-    platform/platform_wayland.h
     platform/std_unorderedmap.h
     platform/common/fileresourceinputstream.cpp
     platform/common/fileresourceinputstream.h

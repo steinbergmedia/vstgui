@@ -3,15 +3,10 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 // Originally written and contributed to VSTGUI by PreSonus Software Ltd.
 
-// TODO: Get rid of all X11 references resp. find a generic way for both platforms
-
 #pragma once
 
 #include "iplatformframe.h"
-
-// TODO: Get rid of this header (IRunLoop, IEventHandler & ITimerHandler is needed by both X11 and
-// Wayland)
-#include "platform_x11.h"
+#include "platform_linux.h"
 
 struct wl_surface;
 struct wl_display;

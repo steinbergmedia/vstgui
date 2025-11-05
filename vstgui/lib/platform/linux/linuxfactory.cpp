@@ -40,6 +40,7 @@ struct LinuxFactory::Impl
 	std::string resPath;
 	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {std::make_unique<CairoGraphicsDeviceFactory> ()};
 	PlatformTaskExecutorPtr taskExecutor {std::make_unique<LinuxTaskExecutor> ()};
+	SharedPointer<IRunLoop> runLoop {};
 
 	void setupResPath (void* handle)
 	{
@@ -104,6 +105,15 @@ void LinuxFactory::setScheduleMainQueueTaskFunc (
 		vstgui_assert (false, "cannot set the func on a custom task executor");
 	}
 }
+
+//-----------------------------------------------------------------------------
+void LinuxFactory::setRunLoop (const SharedPointer<IRunLoop>& runLoop) const noexcept
+{
+	impl->runLoop = runLoop;
+}
+
+//-----------------------------------------------------------------------------
+const SharedPointer<IRunLoop>& LinuxFactory::getRunLoop () const noexcept { return impl->runLoop; }
 
 //-----------------------------------------------------------------------------
 uint64_t LinuxFactory::getTicks () const noexcept

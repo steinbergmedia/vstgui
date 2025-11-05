@@ -109,7 +109,6 @@ CairoGraphicsDevice::~CairoGraphicsDevice () noexcept
 {
 	if (impl->device)
 	{
-		cairo_device_finish (impl->device);
 		cairo_device_destroy (impl->device);
 	}
 }

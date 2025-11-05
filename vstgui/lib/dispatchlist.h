@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "vstguidebug.h"
 #include <vector>
 #include <algorithm>
 
@@ -15,6 +16,10 @@ class DispatchList
 {
 public:
 	DispatchList () = default;
+	~DispatchList () noexcept
+	{
+		vstgui_assert (inForEach == false, "destroyed while iterate over entries");
+	}
 
 	void add (const T& obj);
 	void add (T&& obj);
