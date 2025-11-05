@@ -52,7 +52,7 @@ T clampNorm (T value)
 }
 
 //------------------------------------------------------------------------
-/** Returns the value projected lineary between stepOffset and stepOffset + steps */
+/** Returns the value projected linearly between stepOffset and stepOffset + steps */
 template<typename NormT, typename StepT = int32_t>
 StepT normalizedToSteps (NormT value, StepT numSteps, StepT stepStart = static_cast<StepT> (0))
 {

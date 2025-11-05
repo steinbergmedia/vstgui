@@ -34,7 +34,7 @@ public:
 	/** adds an animation.
 		Animation and timingFunction is now owned by the animator.
 		An already running animation for view with name will be canceled.
-		The notification function will be called when the animation has finished or on cancelation
+		The notification function will be called when the animation has finished or on cancellation
 		of the animation if notifyOnCancel is true (new in 4.11)
 	*/
 	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target,

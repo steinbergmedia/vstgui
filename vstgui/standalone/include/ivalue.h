@@ -55,7 +55,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-/** extension to IValue for a non continous value with discrete steps
+/** extension to IValue for a non continuous value with discrete steps
  *
  *	@ingroup standalone
  */

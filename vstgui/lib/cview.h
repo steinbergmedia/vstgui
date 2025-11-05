@@ -122,7 +122,7 @@ public:
 
 	/** turn on/off mouse usage for this view */
 	virtual void setMouseEnabled (bool bEnable = true);
-	/** get the state of wheather this view uses the mouse or not */
+	/** get the state of whether this view uses the mouse or not */
 	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }
 
 	/** set the area in which the view reacts to the mouse */

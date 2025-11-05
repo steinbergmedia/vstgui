@@ -32,8 +32,8 @@ Optional<Path> getDirectoryName (const Path& path)
 	return {path.substr (0, pos + strlen (PathSeparator))};
 }
 
-static constexpr uint32_t PersistentIdentifer = 'imst';
-static constexpr uint32_t PersistentIdentiferNew = 'ist2';
+static constexpr uint32_t PersistentIdentifier = 'imst';
+static constexpr uint32_t PersistentIdentifierNew = 'ist2';
 static constexpr uint32_t PersistentVersion = 1;
 
 //------------------------------------------------------------------------
@@ -89,13 +89,13 @@ DocumentContextPtr DocumentContext::loadDocument (const Path& path)
 	uint32_t identifier;
 	if (!(stream >> identifier))
 		return nullptr;
-	if (!(identifier == PersistentIdentifer || identifier == PersistentIdentiferNew))
+	if (!(identifier == PersistentIdentifier || identifier == PersistentIdentifierNew))
 		return nullptr;
 
 	auto doc = std::make_shared<Document> ();
 	doc->path = path;
 
-	if (identifier == PersistentIdentiferNew)
+	if (identifier == PersistentIdentifierNew)
 	{
 		uint32_t persistentVersion = 0;
 		if (!(stream >> persistentVersion))
@@ -140,7 +140,7 @@ bool DocumentContext::save ()
 	                  kLittleEndianByteOrder))
 		return false;
 
-	if (!(stream << PersistentIdentiferNew))
+	if (!(stream << PersistentIdentifierNew))
 		return false;
 	if (!(stream << PersistentVersion))
 		return false;
