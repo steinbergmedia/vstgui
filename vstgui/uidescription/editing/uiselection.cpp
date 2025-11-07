@@ -80,7 +80,7 @@ void UISelection::remove (CView* view)
 	if (contains (view))
 	{
 		willChange ();
-		viewList.remove (view);
+		viewList.remove (shared (view));
 		didChange ();
 	}
 }

@@ -218,7 +218,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 	{
 		if (*name == "view" && view)
 		{
-			auto controller = dialogController.cast<IController> ();
+			auto controller = dynamic_cast<IController*> (dialogController.get ());
 			if (auto subView = dialogDescription->createView (templateName.c_str (), controller))
 			{
 				subView->setAttribute (kCViewControllerAttribute, controller);

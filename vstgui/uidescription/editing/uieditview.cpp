@@ -211,7 +211,7 @@ template<typename T>
 void collectExternalViewsOnInlineEditing (CViewContainer* container, T& array)
 {
 	container->forEachChild ([&] (auto view) {
-		if (view.template cast<ExternalView::IViewEmbedder> ())
+		if (dynamic_cast<ExternalView::IViewEmbedder*> (view.get ()))
 			array.emplace_back (view);
 		else if (auto c = view->asViewContainer ())
 			collectExternalViewsOnInlineEditing (c, array);
@@ -1218,7 +1218,7 @@ SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (IDataPackage* drag
 SharedPointer<IDropTarget> UIEditView::getDropTarget ()
 {
 	if (editing)
-		return this;
+		return shared (this);
 	return CViewContainer::getDropTarget ();
 }
 

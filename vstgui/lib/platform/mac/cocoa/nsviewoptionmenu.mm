@@ -16,7 +16,9 @@
 #import "objcclassbuilder.h"
 
 @interface NSObject (VSTGUI_NSMenu_Private)
-- (id)initWithOptionMenu:(id)menu;
+- (id)initWithOptionMenu:(VSTGUI::COptionMenu*)menu;
+- (VSTGUI::COptionMenu*)selectedMenu;
+- (int32_t)selectedItem;
 @end
 
 namespace VSTGUI {
@@ -51,8 +53,6 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 			.addMethod (@selector (optionMenu), OptionMenu)
 			.addMethod (@selector (selectedMenu), SelectedMenu)
 			.addMethod (@selector (selectedItem), SelectedItem)
-			.addMethod (@selector (setSelectedMenu:), SetSelectedMenu)
-			.addMethod (@selector (setSelectedItem:), SetSelectedItem)
 			.addIvar<VSTGUI_NSMenu::Var*> (privateVarName)
 			.finalize ();
 	}
@@ -63,13 +63,13 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 	//------------------------------------------------------------------------------------
 	struct Var
 	{
-		COptionMenu* _optionMenu {nullptr};
-		COptionMenu* _selectedMenu {nullptr};
+		SharedPointer<COptionMenu> _optionMenu {};
+		SharedPointer<COptionMenu> _selectedMenu {};
 		int32_t _selectedItem {0};
 	};
 
 	//------------------------------------------------------------------------------------
-	static id Init (id self, SEL _cmd, void* _menu)
+	static id Init (id self, SEL _cmd, COptionMenu* menu)
 	{
 		instance ().menuClassCount++;
 		auto obj = makeInstance (self);
@@ -77,15 +77,14 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 		if (self)
 		{
 			NSMenu* nsMenu = (NSMenu*)self;
-			COptionMenu* menu = (COptionMenu*)_menu;
 			Var* var = new Var;
 			var->_optionMenu = menu;
 			setVar (self, var);
 
 			int32_t index = -1;
 			bool multipleCheck = menu->isMultipleCheckStyle ();
-			CConstMenuItemIterator it = menu->getItems ()->begin ();
-			while (it != menu->getItems ()->end ())
+			CConstMenuItemIterator it = menu->getItemList ().begin ();
+			while (it != menu->getItemList ().end ())
 			{
 				CMenuItem* item = (*it);
 				it++;
@@ -113,8 +112,8 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 				if (item->getSubmenu ())
 				{
 					nsItem = [nsMenu addItemWithTitle:itemTitle action:nil keyEquivalent:@""];
-					NSMenu* subMenu = [[[[self class] alloc]
-						initWithOptionMenu:(id)item->getSubmenu ()] autorelease];
+					NSMenu* subMenu =
+						[[[[self class] alloc] initWithOptionMenu:item->getSubmenu ()] autorelease];
 					[nsMenu setSubmenu:subMenu forItem:nsItem];
 					if (multipleCheck && item->isChecked ())
 						[nsItem setState:NSControlStateValueOn];
@@ -225,8 +224,11 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 			id menu = self;
 			while ([menu supermenu])
 				menu = [menu supermenu];
-			[menu performSelector:@selector (setSelectedMenu:) withObject:(id)var->_optionMenu];
-			[menu performSelector:@selector (setSelectedItem:) withObject:(id)[item tag]];
+			if (Var* superVar = getVar (menu))
+			{
+				superVar->_selectedMenu = var->_optionMenu;
+				superVar->_selectedItem = (int32_t)[item tag];
+			}
 		}
 	}
 
@@ -238,10 +240,10 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 	}
 
 	//------------------------------------------------------------------------------------
-	static void* SelectedMenu (id self, SEL _cmd)
+	static COptionMenu* SelectedMenu (id self, SEL _cmd)
 	{
 		Var* var = getVar (self);
-		return var ? var->_selectedMenu : nullptr;
+		return var ? var->_selectedMenu.get () : nullptr;
 	}
 
 	//------------------------------------------------------------------------------------
@@ -250,26 +252,11 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 		Var* var = getVar (self);
 		return var ? var->_selectedItem : 0;
 	}
-
-	//------------------------------------------------------------------------------------
-	static void SetSelectedMenu (id self, SEL _cmd, void* menu)
-	{
-		Var* var = getVar (self);
-		if (var)
-			var->_selectedMenu = (COptionMenu*)menu;
-	}
-
-	//------------------------------------------------------------------------------------
-	static void SetSelectedItem (id self, SEL _cmd, int32_t item)
-	{
-		Var* var = getVar (self);
-		if (var)
-			var->_selectedItem = item;
-	}
 };
 
 //-----------------------------------------------------------------------------
-void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
+void NSViewOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
+							  const Callback& callback)
 {
 	vstgui_assert (optionMenu && callback, "arguments are required");
 
@@ -290,7 +277,7 @@ void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 
 	bool multipleCheck = optionMenu->isMultipleCheckStyle ();
 	NSView* view = nsViewFrame->getNSView ();
-	NSMenu* nsMenu = [VSTGUI_NSMenu::alloc () initWithOptionMenu:(id)optionMenu];
+	NSMenu* nsMenu = [VSTGUI_NSMenu::alloc () initWithOptionMenu:optionMenu];
 	CPoint p = globalSize.getTopLeft ();
 	NSRect cellFrameRect = {};
 	cellFrameRect.origin = nsPointFromCPoint (p);
@@ -317,8 +304,8 @@ void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 
 	[menuContainer removeFromSuperviewWithoutNeedingDisplay];
 	[menuContainer release];
-	result.menu = (COptionMenu*)[nsMenu performSelector:@selector (selectedMenu)];
-	result.index = (int32_t) (intptr_t)[nsMenu performSelector:@selector (selectedItem)];
+	result.menu = [nsMenu selectedMenu];
+	result.index = [nsMenu selectedItem];
 	[nsMenu release];
 
 	callback (optionMenu, result);

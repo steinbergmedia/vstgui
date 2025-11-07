@@ -465,8 +465,8 @@ void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
 			auto menuHandler = makeOwned<WindowContextMenuCommandHandler> (this);
 			for (const auto& cat : commandList)
 			{
-				auto item = new CMenuItem (cat.first);
-				auto catMenu = new COptionMenu ();
+				auto item = makeOwned<CMenuItem> (cat.first);
+				auto catMenu = makeOwned<COptionMenu> ();
 				item->setSubmenu (catMenu);
 				for (const auto& entry : cat.second)
 				{
@@ -478,7 +478,7 @@ void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
 					{
 						auto catItem =
 							new CCommandMenuItem ({entry.name, menuHandler, entry.group, entry.name});
-						catMenu->addEntry (catItem);
+						catMenu->addEntry (owned (catItem));
 					}
 				}
 				if (catMenu->getNbEntries () > 0)

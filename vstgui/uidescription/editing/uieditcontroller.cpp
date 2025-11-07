@@ -426,7 +426,7 @@ public:
 		{
 			for (auto i = 50; i <= 250; i += 25)
 			{
-				auto item = new CCommandMenuItem ("Zoom " + toString (i) + "%");
+				auto item = makeOwned<CCommandMenuItem> ("Zoom " + toString (i) + "%");
 				item->setActions ([this, i] (CCommandMenuItem*) {
 					updateZoom (static_cast<float> (i));
 				});
@@ -1970,7 +1970,7 @@ void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, CView* 
 	if (view != editView)
 		return;
 	auto editMenu = getMenuController ()->getEditMenu ();
-	for (auto& entry : *editMenu->getItems ())
+	for (auto& entry : editMenu->getItemList ())
 	{
 		if (auto item = entry.cast<CCommandMenuItem> ())
 		{

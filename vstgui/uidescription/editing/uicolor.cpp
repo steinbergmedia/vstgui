@@ -130,7 +130,7 @@ SharedPointer<CBitmap> createColorIcon (CColor color, CPoint colorIconSize)
 		context->setFillColor (color);
 		context->drawRect (CRect (0, 0, colorIconSize.x, colorIconSize.y), kDrawFilled);
 		context->endDraw ();
-		return context->getBitmap ();
+		return shared (context->getBitmap ());
 	}
 	return {};
 }
@@ -142,7 +142,8 @@ SharedPointer<COptionMenu> createCSSColorMenu (const std::function<void (CColor)
 	auto cssColorMenu = makeOwned<COptionMenu> ();
 	auto cssColors = getCSSNamedColors ();
 	std::for_each (cssColors.begin (), cssColors.end (), [&] (const auto& el) {
-		auto item = new CCommandMenuItem ({std::string (el.name.data (), el.name.size ())});
+		auto item = makeOwned<CCommandMenuItem> (
+			CCommandMenuItem::Desc {std::string (el.name.data (), el.name.size ())});
 		item->setActions ([callback, el] (auto item) { callback (el.color); });
 		item->setIcon (createColorIcon (el.color, colorIconSize));
 		cssColorMenu->addEntry (item);

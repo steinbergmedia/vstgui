@@ -503,7 +503,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 	auto dataSource = dynamic_cast<UITemplatesDataSource*> (templateDataBrowser->getDelegate ());
 	auto templateName = dataSource->getStringList()->at (static_cast<uint32_t> (cell.row));
 	vstgui_assert (dataSource);
-	auto item = new CCommandMenuItem ("Duplicate Template '" + templateName + "'");
+	auto item = makeOwned<CCommandMenuItem> ("Duplicate Template '" + templateName + "'");
 	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
 		std::list<const std::string*> tmp;
 		editDescription->collectTemplateViewNames (tmp);
@@ -512,7 +512,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 		actionPerformer->performDuplicateTemplate (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data (), newName.data ());
 	});
 	contextMenu.addEntry (item);
-	item = new CCommandMenuItem ("Delete Template '" + templateName + "'");
+	item = makeOwned<CCommandMenuItem> ("Delete Template '" + templateName + "'");
 	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
 		actionPerformer->performDeleteTemplate (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
 	});

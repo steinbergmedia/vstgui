@@ -34,8 +34,10 @@ public:
 		kSeparator	= 1 << 3
 	};
 
-	CMenuItem (const UTF8String& title, const UTF8String& keycode = "", int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags);
-	CMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon = nullptr);
+	CMenuItem (const UTF8String& title, const UTF8String& keycode = "", int32_t keyModifiers = 0,
+			   const SharedPointer<CBitmap>& icon = {}, int32_t flags = kNoFlags);
+	CMenuItem (const UTF8String& title, const SharedPointer<COptionMenu>& submenu,
+			   const SharedPointer<CBitmap>& icon = {});
 	CMenuItem (const UTF8String& title, int32_t tag);
 	CMenuItem (const CMenuItem& item);
 
@@ -44,25 +46,27 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** set title of menu item */
-	virtual void setTitle (const UTF8String& title);
+	void setTitle (const UTF8String& title);
 	/** set submenu of menu item */
-	virtual void setSubmenu (COptionMenu* submenu);
+	void setSubmenu (const SharedPointer<COptionMenu>& submenu);
+	/** remove the submenu of the item */
+	void removeSubmenu ();
 	/** set keycode and key modifiers of menu item */
-	virtual void setKey (const UTF8String& keyCode, int32_t keyModifiers = 0);
+	void setKey (const UTF8String& keyCode, int32_t keyModifiers = 0);
 	/** set virtual key and key modifiers of menu item */
-	virtual void setVirtualKey (VirtualKey virtualKey, int32_t keyModifiers = 0);
+	void setVirtualKey (VirtualKey virtualKey, int32_t keyModifiers = 0);
 	/** set menu item enabled state */
-	virtual void setEnabled (bool state = true);
+	void setEnabled (bool state = true);
 	/** set menu item checked state */
-	virtual void setChecked (bool state = true);
+	void setChecked (bool state = true);
 	/** set menu item title state */
-	virtual void setIsTitle (bool state = true);
+	void setIsTitle (bool state = true);
 	/** set menu item separator state */
-	virtual void setIsSeparator (bool state = true);
+	void setIsSeparator (bool state = true);
 	/** set menu item icon */
-	virtual void setIcon (CBitmap* icon);
+	void setIcon (const SharedPointer<CBitmap>& icon);
 	/** set menu item tag */
-	virtual void setTag (int32_t tag);
+	void setTag (int32_t tag);
 
 	/** returns whether the item is enabled or not */
 	bool isEnabled () const;
@@ -82,14 +86,15 @@ public:
 	/** returns the virtual key of the item */
 	VirtualKey getVirtualKey () const;
 	/** returns the submenu of the item */
-	COptionMenu* getSubmenu () const;
+	SharedPointer<COptionMenu> getSubmenu () const;
 	/** returns the icon of the item */
-	CBitmap* getIcon () const;
+	SharedPointer<CBitmap> getIcon () const;
 	/** returns the tag of the item */
 	int32_t getTag () const;
 	//@}
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
+	void setSubmenu (COptionMenu* submenu);
 	int32_t getVirtualKeyCode () const;
 	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);
 #endif
@@ -126,10 +131,9 @@ public:
 		~Desc () noexcept = default;
 
 		Desc (const UTF8String& title, const UTF8String& keycode = nullptr,
-		                 int32_t keyModifiers = 0, CBitmap* icon = nullptr,
-		                 int32_t flags = kNoFlags, ICommandMenuItemTarget* target = nullptr,
-		                 const UTF8String& commandCategory = nullptr,
-		                 const UTF8String& commandName = nullptr)
+			  int32_t keyModifiers = 0, const SharedPointer<CBitmap>& icon = {},
+			  int32_t flags = kNoFlags, ICommandMenuItemTarget* target = nullptr,
+			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
 		: title (title)
 		, commandCategory (commandCategory)
 		, commandName (commandName)
@@ -141,7 +145,8 @@ public:
 		{
 		}
 
-		Desc (const UTF8String& title, int32_t tag, ICommandMenuItemTarget* target = nullptr,
+		Desc (const UTF8String& title, int32_t tag,
+			  const SharedPointer<ICommandMenuItemTarget>& target = {},
 			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
 		: title (title)
 		, commandCategory (commandCategory)
@@ -151,9 +156,8 @@ public:
 		{
 		}
 
-		Desc (const UTF8String& title, ICommandMenuItemTarget* target,
-		                 const UTF8String& commandCategory = nullptr,
-		                 const UTF8String& commandName = nullptr)
+		Desc (const UTF8String& title, const SharedPointer<ICommandMenuItemTarget>& target,
+			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
 		: title (title)
 		, commandCategory (commandCategory)
 		, commandName (commandName)
@@ -179,11 +183,11 @@ public:
 	const UTF8String& getCommandName () const { return commandName; }
 	bool isCommandName (const UTF8String& name) const;
 
-	void setItemTarget (ICommandMenuItemTarget* target);
-	ICommandMenuItemTarget* getItemTarget () const { return itemTarget; }
+	void setItemTarget (const SharedPointer<ICommandMenuItemTarget>& target);
+	SharedPointer<ICommandMenuItemTarget> getItemTarget () const { return itemTarget; }
 
-	using ValidateCallbackFunction = std::function<void(CCommandMenuItem* item)>;
-	using SelectedCallbackFunction = std::function<void(CCommandMenuItem* item)>;
+	using ValidateCallbackFunction = std::function<void (SharedPointer<CCommandMenuItem> item)>;
+	using SelectedCallbackFunction = std::function<void (SharedPointer<CCommandMenuItem> item)>;
 
 	void setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate = [](CCommandMenuItem*){});
 	//@}
@@ -219,7 +223,9 @@ private:
 	};
 public:
 	COptionMenu ();
-	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background = nullptr, CBitmap* bgWhenClick = nullptr, const int32_t style = 0);
+	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag,
+				 const SharedPointer<CBitmap>& background = {},
+				 const SharedPointer<CBitmap>& bgWhenClick = {}, const int32_t style = 0);
 	COptionMenu (const COptionMenu& menu);
 	~COptionMenu () noexcept override;
 
@@ -238,20 +244,31 @@ public:
 	/// @name COptionMenu Methods
 	//-----------------------------------------------------------------------------
 	//@{
+#if VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR
 	/** add a new entry */
-	virtual CMenuItem* addEntry (CMenuItem* item, int32_t index = -1);
+	SharedPointer<CMenuItem> addEntry (const SharedPointer<CMenuItem>& item, int32_t index = -1);
+	/** add a new entry */
+	template<typename T>
+	SharedPointer<T> addEntry (const SharedPointer<T>& item, int32_t index = -1)
+	{
+		static_assert (std::is_base_of_v<CMenuItem, T>, "Needs CMenuItems");
+		return addEntry (item.template cast<CMenuItem> (), index).template cast<T> ();
+	}
 	/** add a new submenu entry */
-	virtual CMenuItem* addEntry (COptionMenu* submenu, const UTF8String& title);
+	SharedPointer<CMenuItem> addEntry (const SharedPointer<COptionMenu>& submenu,
+									   const UTF8String& title);
+#endif
 	/** add a new entry */
-	virtual CMenuItem* addEntry (const UTF8String& title, int32_t index = -1, int32_t itemFlags = CMenuItem::kNoFlags);
+	virtual SharedPointer<CMenuItem> addEntry (const UTF8String& title, int32_t index = -1,
+											   int32_t itemFlags = CMenuItem::kNoFlags);
 	/** add a new separator entry */
-	virtual CMenuItem* addSeparator (int32_t index = -1);
+	virtual SharedPointer<CMenuItem> addSeparator (int32_t index = -1);
 	/** get current entry */
-	virtual CMenuItem* getCurrent () const;
+	virtual SharedPointer<CMenuItem> getCurrent () const;
 	/** TODO: Doc */
 	virtual int32_t getCurrentIndex (bool countSeparator = false) const;
 	/** get entry at index position */
-	virtual CMenuItem* getEntry (int32_t index) const;
+	virtual SharedPointer<CMenuItem> getEntry (int32_t index) const;
 	/** get number of entries */
 	virtual int32_t getNbEntries () const;
 	/** set current entry */
@@ -261,6 +278,10 @@ public:
 	/** remove all entries */
 	virtual	bool removeAllEntry ();
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	virtual SharedPointer<CMenuItem> addEntry (CMenuItem* item, int32_t index = -1);
+	virtual SharedPointer<CMenuItem> addEntry (COptionMenu* submenu, const UTF8String& title);
+#endif
 	/** change check state of entry at index */
 	virtual bool checkEntry (int32_t index, bool state);
 	/** check entry at index and uncheck every other item */
@@ -275,7 +296,7 @@ public:
 	/** get last index of choosen entry */
 	int32_t getLastResult () const { return lastResult; }
 	/** get last menu and index of choosen entry */
-	COptionMenu* getLastItemMenu (int32_t& idxInMenu) const;
+	SharedPointer<COptionMenu> getLastItemMenu (int32_t& idxInMenu) const;
 
 	/** set prefix numbering */
 	virtual void setPrefixNumbers (int32_t preCount);
@@ -283,17 +304,20 @@ public:
 	int32_t getPrefixNumbers () const { return prefixNumbers; }
 
 	/** get a submenu */
-	COptionMenu* getSubMenu (int32_t idx) const;
+	SharedPointer<COptionMenu> getSubMenu (int32_t idx) const;
 
 	/** popup callback function */
-	using PopupCallback = std::function<void (COptionMenu* menu)>;
+	using PopupCallback = std::function<void (SharedPointer<COptionMenu> menu)>;
 
 	/** pops up the menu */
 	bool popup (const PopupCallback& callback = {});
 	/** pops up the menu at frameLocation */
 	bool popup (CFrame* frame, const CPoint& frameLocation, const PopupCallback& callback = {});
 
-	CMenuItemList* getItems () const { return menuItems; }
+	VSTGUI_DEPRECATED_MSG (
+		CMenuItemList* getItems () const { return const_cast<CMenuItemList*> (&menuItems); },
+		"Use COptionMenu::getItemList() instead")
+	const CMenuItemList& getItemList () const { return menuItems; }
 
 	/** remove separators as first and last item and double separators */
 	void cleanupSeparators (bool deep);
@@ -317,12 +341,12 @@ public:
 	void looseFocus () override;
 
 	CLASS_METHODS(COptionMenu, CParamDisplay)
-protected:
+private:
 	bool doPopup ();
 	void beforePopup ();
 	void afterPopup ();
 
-	CMenuItemList* menuItems;
+	CMenuItemList menuItems;
 
 	bool inPopup {false};
 	int32_t currentIndex {-1};
@@ -331,7 +355,7 @@ protected:
 	int32_t lastResult {-1};
 	int32_t prefixNumbers {0};
 	SharedPointer<CBitmap> bgWhenClick;
-	COptionMenu* lastMenu {nullptr};
+	SharedPointer<COptionMenu> lastMenu;
 	using MenuListenerList = DispatchList<IOptionMenuListener*>;
 	std::unique_ptr<MenuListenerList> listeners;
 };

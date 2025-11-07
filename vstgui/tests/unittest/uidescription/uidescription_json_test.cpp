@@ -1554,7 +1554,7 @@ TEST_CASE (UIDescriptionJSONTests, StoreRestoreViews)
 	customAttributes.setAttribute ("Test", "Value");
 
 	EXPECT (desc.storeViews ({view.cast<CViewContainer> ()->getView (0)}, memoryStream,
-	                         &customAttributes));
+							 shared (&customAttributes)));
 	memoryStream.rewind ();
 
 	UIAttributes* customAttributesRestored = nullptr;
@@ -1748,7 +1748,7 @@ TEST_CASE (UIDescriptionJSONTests, SharedResources)
 	UIDescription resDesc (&resProvider);
 	EXPECT (resDesc.parse () == true);
 
-	desc.setSharedResources (&resDesc);
+	desc.setSharedResources (shared (&resDesc));
 	EXPECT (desc.getSharedResources () == &resDesc);
 	EXPECT (desc.getColor ("c1", color1) == true);
 	EXPECT (resDesc.getColor ("c1", color2) == true);

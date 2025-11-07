@@ -849,7 +849,7 @@ protected:
 
 	bool run (bool replace) override
 	{
-		SharedPointer<CBitmap> inputBitmap = getInputBitmap ();
+		SharedPointer<CBitmap> inputBitmap = shared (getInputBitmap ());
 		if (inputBitmap == nullptr)
 			return false;
 		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));

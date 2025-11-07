@@ -11,7 +11,7 @@ namespace VSTGUI {
 SharedPointer<IViewLayouter> AutoSizeViewLayouter::get () noexcept
 {
 	static AutoSizeViewLayouter instance;
-	return {&instance};
+	return shared (static_cast<IViewLayouter*> (&instance));
 }
 
 //------------------------------------------------------------------------

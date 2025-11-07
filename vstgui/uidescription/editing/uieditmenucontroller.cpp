@@ -55,13 +55,15 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 			auto subMenu = makeOwned<COptionMenu> ();
 			if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuCheckStyle)
 				subMenu->setStyle (COptionMenu::kMultipleCheckStyle|COptionMenu::kCheckStyle);
-			menu->addEntry (new CMenuItem (entries[index].name, subMenu));
+			menu->addEntry (makeOwned<CMenuItem> (entries[index].name, subMenu));
 			index++;
-			addEntriesToMenu(entries, subMenu, menuItemTarget, index);
+			addEntriesToMenu (entries, subMenu, menuItemTarget, index);
 		}
 		else
 		{
-			CMenuItem* item = menu->addEntry (new CCommandMenuItem ({entries[index].name, menuItemTarget, entries[index].category, entries[index].name}));
+			CMenuItem* item = menu->addEntry (makeOwned<CCommandMenuItem> (
+				CCommandMenuItem::Desc {entries[index].name, shared (menuItemTarget),
+										entries[index].category, entries[index].name}));
 			if (entries[index].key)
 			{
 				item->setKey (entries[index].key, entries[index].modifier);
@@ -224,8 +226,8 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 				for (auto& entry : viewAndDisplayNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
-						entry.second.data (), this, "AddTemplate", entry.first->data ()}));
+					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+						entry.second.data (), shared (this), "AddTemplate", entry.first->data ()}));
 				}
 				item.setSubmenu (submenu);
 			}
@@ -233,7 +235,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		}
 		else if (cmdName == "Delete Template")
 		{
-			item.setSubmenu (nullptr);
+			item.removeSubmenu ();
 			std::list<const std::string*> templateNames;
 			description->collectTemplateViewNames (templateNames);
 			item.setEnabled (templateNames.empty () == false);
@@ -244,14 +246,15 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{name->data (), this, "RemoveTemplate", name->data ()}));
+					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+						name->data (), shared (this), "RemoveTemplate", name->data ()}));
 				}
 			}
 			return true;
 		}
 		else if (cmdName == "Duplicate Template")
 		{
-			item.setSubmenu (nullptr);
+			item.removeSubmenu ();
 			std::list<const std::string*> templateNames;
 			description->collectTemplateViewNames (templateNames);
 			item.setEnabled (templateNames.empty () == false);
@@ -262,14 +265,15 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{name->data (), this, "DuplicateTemplate", name->data ()}));
+					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+						name->data (), shared (this), "DuplicateTemplate", name->data ()}));
 				}
 			}
 			return true;
 		}
 		else if (cmdName == "Embed Into")
 		{
-			item.setSubmenu (nullptr);
+			item.removeSubmenu ();
 			bool enable = selection->total () > 0;
 			for (auto view : *selection)
 			{
@@ -293,8 +297,8 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 				for (auto& entry : viewAndDisplayNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
-						entry.second.data (), this, "Embed", entry.first->data ()}));
+					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+						entry.second.data (), shared (this), "Embed", entry.first->data ()}));
 				}
 			}
 			return true;
@@ -318,7 +322,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		}
 		else if (cmdName == "Transform View Type")
 		{
-			item.setSubmenu (nullptr);
+			item.removeSubmenu ();
 			auto numViewContainers = 0u;
 			auto numNonViewContainers = 0u;
 			for (auto& entry : *selection)
@@ -344,15 +348,16 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 				for (auto& entry : viewAndDisplayNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
-						entry.second.data (), this, "Transform View Type", entry.first->data ()}));
+					submenu->addEntry (makeOwned<CCommandMenuItem> (
+						CCommandMenuItem::Desc {entry.second.data (), shared (this),
+												"Transform View Type", entry.first->data ()}));
 				}
 			}
 			return true;
 		}
 		else if (cmdName == "Insert Template")
 		{
-			item.setSubmenu (nullptr);
+			item.removeSubmenu ();
 			item.setEnabled (selection->total () == 1 && selection->first ()->asViewContainer ());
 			if (item.isEnabled () == false)
 				return true;
@@ -366,7 +371,8 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{name->data (), this, "InsertTemplate", name->data ()}));
+					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+						name->data (), shared (this), "InsertTemplate", name->data ()}));
 				}
 			}
 			return true;
@@ -386,8 +392,8 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 				for (auto& entry : viewAndDisplayNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (
-						CCommandMenuItem::Desc {entry.second.data (), this,
+					submenu->addEntry (makeOwned<CCommandMenuItem> (
+						CCommandMenuItem::Desc {entry.second.data (), shared (this),
 												"Select Children Of Type", entry.first->data ()}));
 				}
 			}
@@ -402,7 +408,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 //----------------------------------------------------------------------------------------------------
 CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, const KeyboardEvent& event)
 {
-	for (auto& item : *menu->getItems ())
+	for (auto& item : menu->getItemList ())
 	{
 		COptionMenu* subMenu = item->getSubmenu ();
 		if (subMenu)
@@ -631,10 +637,8 @@ void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 //----------------------------------------------------------------------------------------------------
 static void copyMenuItems (COptionMenu* src, COptionMenu* dst)
 {
-	auto srcItems = src->getItems ();
-	if (!srcItems)
-		return;
-	for (auto& item : *srcItems)
+	const auto& srcItems = src->getItemList ();
+	for (auto& item : srcItems)
 	{
 		item->remember ();
 		dst->addEntry (item);

@@ -437,7 +437,7 @@ public:
 		if (editButton == pControl && pControl->getValue () == pControl->getMax ())
 		{
 			auto dc = new UIDialogController (this, editButton->getFrame ());
-			dc->run ("scripteditor", "Script Editor", "Close", nullptr, this,
+			dc->run ("scripteditor", "Script Editor", "Close", nullptr, shared (this),
 					 UIEditController::getEditorDescription (), true);
 		}
 	}
@@ -601,7 +601,8 @@ public:
 
 	virtual void addMenuEntry (const std::string* entryName)
 	{
-		CCommandMenuItem* item = new CCommandMenuItem (CCommandMenuItem::Desc{entryName->data (), this});
+		auto item = makeOwned<CCommandMenuItem> (
+			CCommandMenuItem::Desc {entryName->data (), shared (this)});
 		validateMenuEntry (item);
 		menu->addEntry (item);
 		if (textLabel->getText () == *entryName)
@@ -621,7 +622,10 @@ public:
 	{
 		optMenu->removeAllEntry ();
 		if (addNoneItem)
-			optMenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{"None", 100, this}));
+		{
+			optMenu->addEntry (
+				makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"None", 100, shared (this)}));
+		}
 		StringPtrList names;
 		collectMenuItemNames (names);
 		if (sortItems)
@@ -754,7 +758,7 @@ public:
 				path->addRect (CRect (0, 0, size, size));
 				context->fillLinearGradient(path, *gradient, CPoint (0, 0), CPoint (size, 0));
 				context->endDraw ();
-				item->setIcon (context->getBitmap ());
+				item->setIcon (shared (context->getBitmap ()));
 			}
 		}
 	}

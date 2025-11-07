@@ -510,11 +510,11 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	{
 		auto it = std::find (pImpl->children.begin (), pImpl->children.end (), pBefore);
 		vstgui_assert (it != pImpl->children.end ());
-		pImpl->children.insert (it, pView);
+		pImpl->children.insert (it, shared (pView));
 	}
 	else
 	{
-		pImpl->children.emplace_back (pView);
+		pImpl->children.emplace_back (shared (pView));
 	}
 
 	pView->setSubviewState (true);
@@ -697,7 +697,7 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 			auto dest = pImpl->children.begin ();
 			std::advance (dest, newIndex);
 
-			pImpl->children.insert (dest, view);
+			pImpl->children.insert (dest, shared (view));
 			pImpl->children.erase (src);
 
 			pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
@@ -1175,7 +1175,7 @@ SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 			dropTarget = new CViewContainerDropTarget (this);
 			setAttribute (kCViewContainerDropTargetAttribute, dropTarget);
 		}
-		return dropTarget;
+		return shared (dropTarget);
 	}
 	if (auto customDropTarget = CView::getDropTarget ())
 		return customDropTarget;

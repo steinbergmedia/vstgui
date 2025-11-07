@@ -55,7 +55,7 @@ public:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	SharedPointer<IDropTarget> getDropTarget () override { return this; }
+	SharedPointer<IDropTarget> getDropTarget () override { return shared (this); }
 	DragOperation onDragEnter (DragEventData data) override
 	{
 		if (value == 0.f)

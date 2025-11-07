@@ -52,7 +52,7 @@ public:
 
 	void setListener (IGenericOptionMenuListener* listener);
 
-	void popup (COptionMenu* optionMenu, const Callback& callback) override;
+	void popup (const SharedPointer<COptionMenu>& optionMenu, const Callback& callback) override;
 
 private:
 	void removeModalView (PlatformOptionMenuResult result);

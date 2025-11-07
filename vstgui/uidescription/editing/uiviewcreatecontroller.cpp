@@ -104,7 +104,7 @@ void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, 
 		return;
 	const auto& viewName = dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row));
 	UTF8String menuEntryName = "Insert '" + viewName + "'";
-	auto item = new CCommandMenuItem (menuEntryName);
+	auto item = makeOwned<CCommandMenuItem> (menuEntryName);
 	item->setActions ([&, cell] (CCommandMenuItem* item) {
 		dataSource->addViewToCurrentEditView (cell.row);
 	});

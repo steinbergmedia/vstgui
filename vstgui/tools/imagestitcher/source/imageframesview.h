@@ -49,7 +49,7 @@ private:
 	void drawRect (CDrawContext* context, const CRect& _updateRect) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	SharedPointer<IDropTarget> getDropTarget () override { return this; }
+	SharedPointer<IDropTarget> getDropTarget () override { return shared (this); }
 	DragOperation onDragEnter (DragEventData eventData) override;
 	DragOperation onDragMove (DragEventData eventData) override;
 	void onDragLeave (DragEventData eventData) override;

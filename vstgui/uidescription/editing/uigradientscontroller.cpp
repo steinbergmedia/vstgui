@@ -533,7 +533,7 @@ SharedPointer<COptionMenu> createColorMenu (IUIDescription& desc,
 		CColor color;
 		if (desc.getColor (el->data (), color))
 		{
-			auto item = new CCommandMenuItem (UTF8String (*el));
+			auto item = makeOwned<CCommandMenuItem> (UTF8String (*el));
 			item->setActions ([callback, color] (auto item) { callback (color); });
 			item->setIcon (createColorIcon (color));
 			menu->addEntry (item);
@@ -562,7 +562,8 @@ CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& 
 	{
 		if (menu->getTag () == kFunctionMenuTag)
 		{
-			auto item = new CCommandMenuItem ({"Select Next Color Stop"});
+			auto item =
+				makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Select Next Color Stop"});
 			item->setActions ([this] (auto) {
 				if (colorStopEditView)
 				{
@@ -570,7 +571,8 @@ CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& 
 				}
 			});
 			menu->addEntry (item);
-			item = new CCommandMenuItem ({"Select Previous Color Stop"});
+			item =
+				makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Select Previous Color Stop"});
 			item->setActions ([this] (auto) {
 				if (colorStopEditView)
 				{

@@ -31,7 +31,7 @@ public:
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) override;
 
-	SharedPointer<IDropTarget> getDropTarget () override { return this; }
+	SharedPointer<IDropTarget> getDropTarget () override { return shared (this); }
 	DragOperation onDragEnter (DragEventData data) override;
 	DragOperation onDragMove (DragEventData data) override;
 	void onDragLeave (DragEventData data) override;

@@ -481,10 +481,10 @@ IController* UIColorsController::createSubController (IdStringPtr name, const IU
 void UIColorsController::appendContextMenuItems (COptionMenu& contextMenu, CView* view,
 												 const CPoint& where)
 {
-	auto item = new CCommandMenuItem ({"Add Color"});
+	auto item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Add Color"});
 	item->setActions ([this] (auto) { dataSource->add (); });
 	contextMenu.addEntry (item);
-	item = new CCommandMenuItem ({"Remove Color"});
+	item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Remove Color"});
 	item->setActions ([this] (auto) { dataSource->remove (); });
 	contextMenu.addEntry (item);
 	contextMenu.addSeparator ();

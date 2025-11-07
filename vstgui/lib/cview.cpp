@@ -1466,7 +1466,7 @@ SharedPointer<IDropTarget> CView::getDropTarget ()
 {
 	IDropTarget* dropTarget = nullptr;
 	if (getAttribute (kCViewCustomDropTargetAttrID, dropTarget))
-		return dropTarget;
+		return shared (dropTarget);
 	return nullptr;
 }
 

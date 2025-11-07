@@ -180,9 +180,15 @@
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	#define VSTGUI_OVERRIDE_VMETHOD	override
 	#define VSTGUI_FINAL_VMETHOD final
+#undef VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR
+#define VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR 1
 #else
 	#define VSTGUI_OVERRIDE_VMETHOD	static_assert (false, "VSTGUI_OVERRIDE_VMETHOD is deprecated, just use override!");
 	#define VSTGUI_FINAL_VMETHOD static_assert (false, "VSTGUI_FINAL_VMETHOD is deprecated, just use final!");
+#endif
+
+#ifndef VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR
+#define VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR !VSTGUI_ENABLE_DEPRECATED_METHODS
 #endif
 
 //----------------------------------------------------
@@ -316,7 +322,13 @@ class SharedPointer
 {
 public:
 //------------------------------------------------------------------------
-	inline SharedPointer (I* ptr, bool remember = true) noexcept;
+#if VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR
+	inline explicit SharedPointer (I* ptr) noexcept;
+#else
+	inline SharedPointer (I* ptr) noexcept;
+#endif
+	inline SharedPointer (nullptr_t ptr) noexcept;
+	inline SharedPointer (I* ptr, bool remember) noexcept;
 	inline SharedPointer (const SharedPointer&) noexcept;
 	inline SharedPointer () noexcept;
 	inline ~SharedPointer () noexcept;
@@ -336,7 +348,11 @@ public:
 		ptr = nullptr;
 	}
 
-	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
+	template<class T>
+	SharedPointer<T> cast () const
+	{
+		return SharedPointer<T> (dynamic_cast<T*> (ptr));
+	}
 
 	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
 	inline SharedPointer<I>& operator=(SharedPointer<I>&& mp) noexcept;
@@ -387,6 +403,19 @@ protected:
 	SharedPointer<CBaseObject> obj;
 };
 
+//------------------------------------------------------------------------
+template<class I>
+inline SharedPointer<I>::SharedPointer (I* _ptr) noexcept : ptr (_ptr)
+{
+	if (ptr)
+		ptr->remember ();
+}
+
+//------------------------------------------------------------------------
+template<class I>
+inline SharedPointer<I>::SharedPointer (nullptr_t _ptr) noexcept
+{
+}
 
 //------------------------------------------------------------------------
 template <class I>

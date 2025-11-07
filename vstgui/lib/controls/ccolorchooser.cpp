@@ -184,7 +184,7 @@ public:
 		return false;
 	}
 
-	SharedPointer<IDropTarget> getDropTarget () override { return this; }
+	SharedPointer<IDropTarget> getDropTarget () override { return shared (this); }
 
 	bool onDrop (DragEventData data) override
 	{

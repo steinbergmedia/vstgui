@@ -72,7 +72,7 @@ auto CoreGraphicsDevice::createBitmapContext (const PlatformBitmapPtr& bitmap) c
 							CGAffineTransformMakeScale (static_cast<CGFloat> (scaleFactor),
 														static_cast<CGFloat> (scaleFactor)));
 		auto bitmapContext = std::make_shared<CoreGraphicsBitmapContext> (
-			*this, cgContext, [cgBitmap = shared (cgBitmap)] () { cgBitmap->setDirty (); });
+			*this, cgContext, [cgBitmap] () { cgBitmap->setDirty (); });
 		CFRelease (cgContext);
 		return bitmapContext;
 	}

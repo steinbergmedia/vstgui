@@ -242,18 +242,18 @@ void UIGridController::setupMenu ()
 	gridMenu->removeAllEntry ();
 	for (auto& p : defGrids)
 	{
-		auto item = new CCommandMenuItem (CCommandMenuItem::Desc {pointToDisplayString (p)});
+		auto item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {pointToDisplayString (p)});
 		gridMenu->addEntry (item);
 		item->setActions ([this, p] (CCommandMenuItem*) { setSize (p); });
 	}
 	gridMenu->addSeparator ();
-	auto item = new CCommandMenuItem (CCommandMenuItem::Desc {"Setup..."});
+	auto item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Setup..."});
 	gridMenu->addEntry (item);
 	item->setActions ([this] (CCommandMenuItem*) {
 		syncMenuValueAndSize ();
 		auto dc = new UIDialogController (this, gridMenu->getFrame ());
-		dc->run ("grid.dialog", "Grid Setup", "Close", nullptr, this,
-		         UIEditController::getEditorDescription ());
+		dc->run ("grid.dialog", "Grid Setup", "Close", nullptr, shared (this),
+				 UIEditController::getEditorDescription ());
 	});
 	syncMenuValueAndSize ();
 }

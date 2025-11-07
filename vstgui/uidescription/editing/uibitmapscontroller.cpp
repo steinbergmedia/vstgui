@@ -307,7 +307,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, cons
 					auto dropSource = CDropSource::create (stream.getBuffer (),
 					                                       static_cast<uint32_t> (stream.tell ()),
 					                                       CDropSource::kText);
-					browser->doDrag (DragDescription (dropSource, {}, bitmap));
+					browser->doDrag (DragDescription (dropSource, {}, shared (bitmap)));
 					return kMouseMoveEventHandledButDontNeedMoreEvents;
 				}
 			}
@@ -619,7 +619,7 @@ void UIBitmapSettingsController::onUndoManagerChange () { recreateBitmap (); }
 //----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::updateNinePartTiledControls ()
 {
-	auto* nptb = bitmap.cast<CNinePartTiledBitmap> ();
+	auto nptb = bitmap.cast<CNinePartTiledBitmap> ();
 	if (nptb)
 	{
 		controls[kNinePartTiledTag]->setValueNormalized (1);
@@ -703,7 +703,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 		}
 		case kNinePartTiledTag:
 		{
-			auto* nptb = bitmap.cast<CNinePartTiledBitmap> ();
+			auto nptb = bitmap.cast<CNinePartTiledBitmap> ();
 			if (nptb)
 			{
 				origOffsets.left = nptb->getPartOffsets ().left;

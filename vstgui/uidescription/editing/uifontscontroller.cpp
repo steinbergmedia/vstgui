@@ -255,9 +255,9 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 		if (fontMenu && !font->getName ().empty ())
 		{
 			const auto& fontName = font->getName ();
-			CMenuItemList* items = fontMenu->getItems ();
+			const auto& items = fontMenu->getItemList ();
 			int32_t index = 0;
-			for (auto& item : *items)
+			for (auto& item : items)
 			{
 				if (fontName == item->getTitle ())
 				{

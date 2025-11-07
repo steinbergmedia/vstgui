@@ -22,7 +22,7 @@
 namespace VSTGUI {
 namespace GenericOptionMenuDetail {
 
-using ClickCallback = std::function<void (COptionMenu* menu, int32_t itemIndex)>;
+using ClickCallback = std::function<void (SharedPointer<COptionMenu> menu, int32_t itemIndex)>;
 
 class DataSource;
 
@@ -64,7 +64,7 @@ public:
 		maxWidth = 0.;
 		maxTitleWidth = 0.;
 		hasRightMargin = false;
-		for (auto& item : *menu->getItems ())
+		for (auto& item : menu->getItemList ())
 		{
 			if (item->isSeparator ())
 				continue;
@@ -309,7 +309,7 @@ private:
 		closeSubMenu ();
 		if (auto subMenu = item->getSubmenu ())
 		{
-			auto callback = [this] (COptionMenu* m, int32_t index) {
+			auto callback = [this] (auto m, int32_t index) {
 				if (index != ViewRemoved)
 					clickCallback (m, index);
 			};
@@ -436,7 +436,7 @@ private:
 	CCoord getSubmenuIndicatorWidth () { return dbGetHeaderHeight (nullptr); }
 
 	CViewContainer* mainContainer;
-	COptionMenu* menu;
+	SharedPointer<COptionMenu> menu;
 	CDataBrowser* db {nullptr};
 	CView* subMenuView {nullptr};
 	DataSource* parentDataSource {nullptr};
@@ -707,13 +707,14 @@ void GenericOptionMenu::viewOnEvent (CView* view, Event& event)
 }
 
 //------------------------------------------------------------------------
-void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
+void GenericOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
+							   const Callback& callback)
 {
 	impl->menu = optionMenu;
 	impl->callback = callback;
 
 	auto self = shared (this);
-	auto clickCallback = [self] (COptionMenu* menu, int32_t index) {
+	auto clickCallback = [self] (auto menu, int32_t index) {
 		self->impl->container->unregisterViewEventListener (self);
 		self->removeModalView ({menu, index});
 	};
