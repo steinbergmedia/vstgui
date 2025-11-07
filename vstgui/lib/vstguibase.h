@@ -327,7 +327,7 @@ public:
 #else
 	inline SharedPointer (I* ptr) noexcept;
 #endif
-	inline SharedPointer (nullptr_t ptr) noexcept;
+	inline SharedPointer (std::nullptr_t ptr) noexcept;
 	inline SharedPointer (I* ptr, bool remember) noexcept;
 	inline SharedPointer (const SharedPointer&) noexcept;
 	inline SharedPointer () noexcept;
@@ -413,7 +413,7 @@ inline SharedPointer<I>::SharedPointer (I* _ptr) noexcept : ptr (_ptr)
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>::SharedPointer (nullptr_t _ptr) noexcept
+inline SharedPointer<I>::SharedPointer (std::nullptr_t _ptr) noexcept
 {
 }
 
