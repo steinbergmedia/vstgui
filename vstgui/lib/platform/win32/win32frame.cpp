@@ -587,12 +587,13 @@ public:
 //------------------------------------------------------------------------------------
 DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	Win32LegacyDragSupport dragSupport;
+	auto dragSupport = makeOwned<Win32LegacyDragSupport> ();
 
 	Win32DraggingSession session (this);
-	if (session.doDrag (DragDescription (source, offset, dragBitmap), &dragSupport))
+	if (session.doDrag (DragDescription (shared (source), offset, shared (dragBitmap)),
+						dragSupport))
 	{
-		switch (dragSupport.result)
+		switch (dragSupport->result)
 		{
 			case DragOperation::Copy: return kDragCopied;
 			case DragOperation::Move: return kDragMoved;

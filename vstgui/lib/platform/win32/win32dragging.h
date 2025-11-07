@@ -82,7 +82,7 @@ class Win32DataObject final
 , public ::IDataObject
 {
 public:
-	Win32DataObject (IDataPackage* dataPackage);
+	Win32DataObject (SharedPointer<IDataPackage> dataPackage);
 	~Win32DataObject () noexcept;
 
 	// IUnknown
@@ -101,7 +101,7 @@ public:
 	STDMETHOD (DUnadvise) (DWORD connection) override;
 	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise) override;
 private:
-	IDataPackage* dataPackage;
+	SharedPointer<IDataPackage> dataPackage;
 };
 
 } // VSTGUI

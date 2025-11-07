@@ -344,7 +344,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
 //-----------------------------------------------------------------------------
 // DataObject
 //-----------------------------------------------------------------------------
-Win32DataObject::Win32DataObject (IDataPackage* dataPackage)
+Win32DataObject::Win32DataObject (SharedPointer<IDataPackage> dataPackage)
 : dataPackage (dataPackage)
 {
 	dataPackage->remember ();
