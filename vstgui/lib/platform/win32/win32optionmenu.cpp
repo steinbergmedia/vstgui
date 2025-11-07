@@ -33,8 +33,8 @@ SharedPointer<COptionMenu> getItemMenu (int32_t idx, int32_t& idxInMenu, int32_t
 	}
 
 	SharedPointer<COptionMenu> menu {};
-	CMenuItemIterator it = _menu->getItems ()->begin ();
-	while (it != _menu->getItems ()->end ())
+	auto it = _menu->getItemList ().begin ();
+	while (it != _menu->getItemList ().end ())
 	{
 		if ((*it)->getSubmenu ())
 		{
@@ -129,8 +129,8 @@ HMENU Win32OptionMenu::createMenu (SharedPointer<COptionMenu> _menu, int32_t& of
 	int32_t nbEntries = _menu->getNbEntries ();
 	offsetIdx += nbEntries;
 	int32_t inc = 0;
-	CMenuItemIterator it = _menu->getItems ()->begin ();
-	while (it != _menu->getItems ()->end ())
+	auto it = _menu->getItemList ().begin ();
+	while (it != _menu->getItemList ().end ())
 	{
 		auto item = (*it);
 		if (item->isSeparator ())
