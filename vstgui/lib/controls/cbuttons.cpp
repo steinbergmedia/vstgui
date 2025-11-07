@@ -353,9 +353,9 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 - not checked
 - half checked
 - checked
-- not checked hilighted
-- half checked hilighted
-- checked hilighted
+- not checked highlighted
+- half checked highlighted
+- checked highlighted
 */
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -509,7 +509,7 @@ void CCheckBox::draw (CDrawContext* context)
 			off.y = checkBoxSize.getHeight () * 2;
 		else
 			off.y = 0;
-		if (hilight)
+		if (highlight)
 			off.y += getDrawBackground ()->getHeight () / 2.;
 
 		getDrawBackground ()->draw (context, checkBoxSize, off);
@@ -540,11 +540,11 @@ void CCheckBox::draw (CDrawContext* context)
 			context->drawRect (checkBoxSize, kDrawFilledAndStroked);
 		}
 
-		if (hilight)
+		if (highlight)
 		{
-			CColor hilightColor = boxFrameColor;
-			hilightColor.alpha /= 2;
-			context->setFrameColor (hilightColor);
+			CColor highlightColor = boxFrameColor;
+			highlightColor.alpha /= 2;
+			context->setFrameColor (highlightColor);
 			CRect r (checkBoxSize);
 			r.inset (lineWidth, lineWidth);
 			if (auto path = owned (context->createRoundRectGraphicsPath (r, roundRectRadius)))
@@ -660,12 +660,12 @@ CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& bu
 {
 	if (isEditing ())
 	{
-		bool wasHilighted = hilight;
+		bool wasHighlighted = highlight;
 		if (getViewSize ().pointInside (where))
-			hilight = true;
+			highlight = true;
 		else
-			hilight = false;
-		if (wasHilighted != hilight)
+			highlight = false;
+		if (wasHighlighted != highlight)
 			invalid ();
 		return kMouseEventHandled;
 	}
@@ -677,7 +677,7 @@ CMouseEventResult CCheckBox::onMouseCancel ()
 {
 	if (isEditing ())
 	{
-		hilight = false;
+		highlight = false;
 		value = previousValue;
 		if (isDirty ())
 			valueChanged ();
@@ -690,7 +690,7 @@ CMouseEventResult CCheckBox::onMouseCancel ()
 //------------------------------------------------------------------------
 CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	hilight = false;
+	highlight = false;
 	if (getViewSize ().pointInside (where))
 		value = (previousValue < getMax ()) ? getMax () : getMin ();
 	else

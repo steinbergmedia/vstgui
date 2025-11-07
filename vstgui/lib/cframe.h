@@ -91,7 +91,7 @@ public:
 	Optional<ModalViewSessionID> beginModalViewSession (CView* view);
 	/** end a modal view session
 	 *
-	 *	@param session a session identifer
+	 *	@param session a session identifier
 	 *	@return true on success
 	 */
 	bool endModalViewSession (ModalViewSessionID session);

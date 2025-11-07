@@ -53,7 +53,7 @@ public:
 	 */
 	virtual IController* createController (const UTF8StringView& name, IController* parent,
 	                                       const IUIDescription* uiDesc) = 0;
-	/** Notification that the UIDescription was sucessfully parsed
+	/** Notification that the UIDescription was successfully parsed
 	 *
 	 *	This can be used to get some resources from the UIDescription instance.
 	 *	@param uiDesc the UIDescription instance
@@ -79,7 +79,7 @@ struct Config
 
 	/** Model binding
 	 *
-	 *	Additioanlly to the IModelBinding features, if this object implements the ICommandHandler
+	 *	Additionally to the IModelBinding features, if this object implements the ICommandHandler
 	 *	interface all commands send to the window will be dispatched to this object.
 	 *
 	 */

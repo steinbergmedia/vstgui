@@ -237,7 +237,7 @@ struct IStyleProvider
 	/** Get the styles of the text
 	 *
 	 *	The text editor calls this while drawing to get the styles for the text range.
-	 *	The returned styles must be orded from front to back.
+	 *	The returned styles must be ordered from front to back.
 	 *	If ranges are missing in the styles, they are rendered with the default style.
 	 *
 	 *	@param editor reference to the editor
