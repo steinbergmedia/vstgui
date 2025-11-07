@@ -86,7 +86,7 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 			CConstMenuItemIterator it = menu->getItemList ().begin ();
 			while (it != menu->getItemList ().end ())
 			{
-				CMenuItem* item = (*it);
+				auto item = (*it);
 				it++;
 				index++;
 				NSMenuItem* nsItem = nullptr;
@@ -208,7 +208,7 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 		Var* var = getVar (self);
 		if (var && var->_optionMenu)
 		{
-			CMenuItem* menuItem = var->_optionMenu->getEntry ((int32_t)[item tag]);
+			auto menuItem = var->_optionMenu->getEntry ((int32_t)[item tag]);
 			if (!menuItem->isEnabled () || menuItem->isTitle ())
 				return NO;
 		}

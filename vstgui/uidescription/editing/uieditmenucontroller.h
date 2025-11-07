@@ -153,8 +153,8 @@ public:
 	UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIEditMenuController () noexcept override;
 
-	COptionMenu* getFileMenu () const { return fileMenu; }
-	COptionMenu* getEditMenu () const { return editMenu; }
+	const SharedPointer<COptionMenu>& getFileMenu () const { return fileMenu; }
+	const SharedPointer<COptionMenu>& getEditMenu () const { return editMenu; }
 
 	void processKeyCommand (KeyboardEvent& event);
 	bool handleCommand (const UTF8StringPtr category, const UTF8StringPtr name);
@@ -169,9 +169,10 @@ protected:
 	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
 
 	bool validateMenuItem (CCommandMenuItem& item);
-	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const KeyboardEvent& event);
-	void createEditMenu (COptionMenu* menu);
-	void createFileMenu (COptionMenu* menu);
+	SharedPointer<CCommandMenuItem> findKeyCommandItem (SharedPointer<COptionMenu> menu,
+														const KeyboardEvent& event);
+	void createEditMenu (SharedPointer<COptionMenu> menu);
+	void createFileMenu (SharedPointer<COptionMenu> menu);
 
 	void viewRemoved (CView* view) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;

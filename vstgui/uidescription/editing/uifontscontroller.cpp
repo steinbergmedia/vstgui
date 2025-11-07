@@ -129,7 +129,9 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 		{
 			case kFontMainTag:
 			{
-				fontMenu = dynamic_cast<COptionMenu*> (control);
+				fontMenu = shared (dynamic_cast<COptionMenu*> (control));
+				if (!fontMenu)
+					break;
 				getPlatformFactory ().getAllFontFamilies ([&] (const std::string& name) {
 					fontMenu->addEntry (name.data ());
 					return true;
@@ -220,7 +222,7 @@ void UIFontsController::valueChanged (CControl* pControl)
 		{
 			if (fontMenu == nullptr || sizeTextEdit == nullptr || selectedFont.empty ())
 				break;
-			CMenuItem* menuItem = fontMenu->getCurrent ();
+			auto menuItem = fontMenu->getCurrent ();
 			if (menuItem)
 			{
 				int32_t style = 0;

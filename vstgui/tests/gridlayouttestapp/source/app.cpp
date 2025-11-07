@@ -333,7 +333,7 @@ private:
 				}
 				auto frame = b->getFrame ();
 				frame->addView (menu);
-				menu->popup ([this, row, frame, b] (COptionMenu* menu) {
+				menu->popup ([this, row, frame, b] (auto menu) {
 					if (menu)
 					{
 						switch (menu->getLastResult ())

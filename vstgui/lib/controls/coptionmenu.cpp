@@ -433,7 +433,7 @@ void COptionMenu::onKeyboardEvent (KeyboardEvent& event)
 				int32_t value = (int32_t)getValue ()-1;
 				if (value >= 0)
 				{
-					CMenuItem* entry = getEntry (value);
+					auto entry = getEntry (value);
 					while (entry && (entry->isSeparator () || entry->isTitle () || !entry->isEnabled () || entry->getSubmenu ()))
 						entry = getEntry (--value);
 					if (entry)
@@ -454,7 +454,7 @@ void COptionMenu::onKeyboardEvent (KeyboardEvent& event)
 				int32_t value = (int32_t)getValue ()+1;
 				if (value < getNbEntries ())
 				{
-					CMenuItem* entry = getEntry (value);
+					auto entry = getEntry (value);
 					while (entry && (entry->isSeparator () || entry->isTitle () || !entry->isEnabled () || entry->getSubmenu ()))
 						entry = getEntry (++value);
 					if (entry)
@@ -530,7 +530,7 @@ bool COptionMenu::popup (const PopupCallback& callback)
 		{
 			inPopup = true;
 			auto self = shared (this);
-			platformMenu->popup (self, [self, callback] (COptionMenu* menu,
+			platformMenu->popup (self, [self, callback] (const SharedPointer<COptionMenu>& menu,
 														 PlatformOptionMenuResult result) {
 				if (result.menu != nullptr)
 				{
@@ -760,7 +760,7 @@ int32_t COptionMenu::getCurrentIndex (bool countSeparator) const
 //------------------------------------------------------------------------
 bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 {
-	CMenuItem* item = nullptr;
+	SharedPointer<CMenuItem> item {};
 	if (countSeparator)
 	{
 		item = getEntry (index);
@@ -810,7 +810,7 @@ bool COptionMenu::removeAllEntry ()
 //------------------------------------------------------------------------
 bool COptionMenu::checkEntry (int32_t index, bool state)
 {
-	CMenuItem* item = getEntry (index);
+	auto item = getEntry (index);
 	if (item)
 	{
 		item->setChecked (state);
@@ -834,7 +834,7 @@ bool COptionMenu::checkEntryAlone (int32_t index)
 //------------------------------------------------------------------------
 bool COptionMenu::isCheckEntry (int32_t index) const
 {
-	CMenuItem* item = getEntry (index);
+	auto item = getEntry (index);
 	if (item && item->isChecked ())
 		return true;
 	return false;
@@ -843,7 +843,7 @@ bool COptionMenu::isCheckEntry (int32_t index) const
 //------------------------------------------------------------------------
 void COptionMenu::draw (CDrawContext *pContext)
 {
-	CMenuItem* item = getEntry (currentIndex);
+	auto item = getEntry (currentIndex);
 	drawBack (pContext, inPopup ? bgWhenClick : nullptr);
 	if (item)
 		drawPlatformText (pContext, item->getTitle ());
@@ -882,7 +882,7 @@ void COptionMenu::setValue (float val)
 	currentIndex = newIndex;
 	if (style & (kMultipleCheckStyle & ~kCheckStyle))
 	{
-		CMenuItem* item = getCurrent ();
+		auto item = getCurrent ();
 		if (item)
 			item->setChecked (!item->isChecked ());
 	}

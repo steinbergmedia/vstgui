@@ -38,8 +38,8 @@ void UIFocusSettingsController::onDialogButton1Clicked (UIDialogController*)
 		    (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
 	if (controls[kColorTag])
 	{
-		COptionMenu* menu = dynamic_cast<COptionMenu*> (controls[kColorTag]);
-		CMenuItem* item = menu->getCurrent ();
+		auto menu = dynamic_cast<COptionMenu*> (controls[kColorTag]);
+		auto item = menu->getCurrent ();
 		if (item)
 			fd.colorName = item->getTitle ();
 	}
@@ -75,7 +75,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			}
 			case kColorTag:
 			{
-				auto* menu = dynamic_cast<COptionMenu*>(control);
+				auto* menu = dynamic_cast<COptionMenu*> (control);
 				if (menu)
 				{
 					controls[kColorTag] = control;

@@ -18,12 +18,12 @@ class Win32OptionMenu final : public IPlatformOptionMenu
 {
 public:
 	Win32OptionMenu (HWND windowHandle);
-	
-	void popup (COptionMenu* optionMenu, const Callback& callback) override;
+
+	void popup (const SharedPointer<COptionMenu>& optionMenu, const Callback& callback) override;
 
 protected:
-	HMENU createMenu (COptionMenu* menu, int32_t& offsetIdx);
-	
+	HMENU createMenu (SharedPointer<COptionMenu> menu, int32_t& offsetIdx);
+
 	HWND windowHandle;
 	
 	std::list<HBITMAP> bitmaps;

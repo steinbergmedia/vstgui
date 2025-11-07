@@ -40,7 +40,8 @@ UIEditMenuController::~UIEditMenuController () noexcept
 }
 
 //----------------------------------------------------------------------------------------------------
-static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* menu, ICommandMenuItemTarget* menuItemTarget, int32_t& index)
+static void addEntriesToMenu (const UIEditing::MenuEntry* entries, SharedPointer<COptionMenu> menu,
+							  ICommandMenuItemTarget* menuItemTarget, int32_t& index)
 {
 	while (entries[index].category != nullptr)
 	{
@@ -61,7 +62,7 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 		}
 		else
 		{
-			CMenuItem* item = menu->addEntry (makeOwned<CCommandMenuItem> (
+			auto item = menu->addEntry (makeOwned<CCommandMenuItem> (
 				CCommandMenuItem::Desc {entries[index].name, shared (menuItemTarget),
 										entries[index].category, entries[index].name}));
 			if (entries[index].key)
@@ -85,14 +86,14 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditMenuController::createFileMenu (COptionMenu* menu)
+void UIEditMenuController::createFileMenu (SharedPointer<COptionMenu> menu)
 {
 	int32_t index = 0;
 	addEntriesToMenu (UIEditing::fileMenu, menu, this, index);
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditMenuController::createEditMenu (COptionMenu* menu)
+void UIEditMenuController::createEditMenu (SharedPointer<COptionMenu> menu)
 {
 	int32_t index = 0;
 	menu->setStyle (menu->getStyle () | COptionMenu::kMultipleCheckStyle);
@@ -406,18 +407,19 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 }
 
 //----------------------------------------------------------------------------------------------------
-CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, const KeyboardEvent& event)
+SharedPointer<CCommandMenuItem> UIEditMenuController::findKeyCommandItem (
+	SharedPointer<COptionMenu> menu, const KeyboardEvent& event)
 {
 	for (auto& item : menu->getItemList ())
 	{
-		COptionMenu* subMenu = item->getSubmenu ();
+		auto subMenu = item->getSubmenu ();
 		if (subMenu)
 		{
-			CCommandMenuItem* result = findKeyCommandItem (subMenu, event);
+			auto result = findKeyCommandItem (subMenu, event);
 			if (result)
 				return result;
 		}
-		CCommandMenuItem* result = item.cast<CCommandMenuItem>();
+		auto result = item.cast<CCommandMenuItem> ();
 		if (result)
 		{
 			int32_t modifier = 0;
@@ -591,8 +593,8 @@ bool UIEditMenuController::canHandleCommand (const UTF8StringPtr category, const
 //----------------------------------------------------------------------------------------------------
 void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 {
-	COptionMenu* baseMenu = editMenu;
-	CCommandMenuItem* item = baseMenu ? findKeyCommandItem (baseMenu, event) : nullptr;
+	auto baseMenu = editMenu;
+	auto item = baseMenu ? findKeyCommandItem (baseMenu, event) : nullptr;
 	if (item == nullptr && fileMenu)
 	{
 		baseMenu = fileMenu;
@@ -663,7 +665,7 @@ void UIEditMenuController::viewRemoved (CView* view)
 //----------------------------------------------------------------------------------------------------
 CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*)
 {
-	COptionMenu* menu = dynamic_cast<COptionMenu*>(view);
+	auto menu = shared (dynamic_cast<COptionMenu*> (view));
 	if (menu)
 	{
 		switch (menu->getTag ())

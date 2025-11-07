@@ -20,7 +20,8 @@ Win32OptionMenu::Win32OptionMenu (HWND windowHandle)
 }
 
 //------------------------------------------------------------------------
-COptionMenu* getItemMenu (int32_t idx, int32_t &idxInMenu, int32_t &offsetIdx, COptionMenu* _menu)
+SharedPointer<COptionMenu> getItemMenu (int32_t idx, int32_t& idxInMenu, int32_t& offsetIdx,
+										const SharedPointer<COptionMenu>& _menu)
 {
 	int32_t oldIDx = offsetIdx;
 	offsetIdx += _menu->getNbEntries ();
@@ -29,9 +30,9 @@ COptionMenu* getItemMenu (int32_t idx, int32_t &idxInMenu, int32_t &offsetIdx, C
 	{
 		idxInMenu = idx - oldIDx;
 		return _menu;
-	}	
+	}
 
-	COptionMenu *menu = nullptr;
+	SharedPointer<COptionMenu> menu {};
 	CMenuItemIterator it = _menu->getItems ()->begin ();
 	while (it != _menu->getItems ()->end ())
 	{
@@ -47,7 +48,7 @@ COptionMenu* getItemMenu (int32_t idx, int32_t &idxInMenu, int32_t &offsetIdx, C
 }
 
 //-----------------------------------------------------------------------------
-void Win32OptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
+void Win32OptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu, const Callback& callback)
 {
 	vstgui_assert (optionMenu && callback, "arguments are required");
 
@@ -90,7 +91,7 @@ void Win32OptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 					{
 						int32_t idx = 0;
 						offsetIndex = 0;
-						COptionMenu* resultMenu = getItemMenu (res, idx, offsetIndex, optionMenu);
+						auto resultMenu = getItemMenu (res, idx, offsetIndex, optionMenu);
 						if (resultMenu)
 						{
 							result.menu = resultMenu;
@@ -112,7 +113,7 @@ void Win32OptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 }
 
 //-----------------------------------------------------------------------------
-HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
+HMENU Win32OptionMenu::createMenu (SharedPointer<COptionMenu> _menu, int32_t& offsetIdx)
 {
 	HMENU menu = CreatePopupMenu ();
 
@@ -131,7 +132,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 	CMenuItemIterator it = _menu->getItems ()->begin ();
 	while (it != _menu->getItems ()->end ())
 	{
-		CMenuItem* item = (*it);
+		auto item = (*it);
 		if (item->isSeparator ())
 		{
 			AppendMenu (menu, MF_SEPARATOR, 0, nullptr);

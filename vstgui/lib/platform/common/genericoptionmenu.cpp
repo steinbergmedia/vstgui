@@ -27,10 +27,10 @@ using ClickCallback = std::function<void (SharedPointer<COptionMenu> menu, int32
 class DataSource;
 
 //------------------------------------------------------------------------
-template <typename Proc>
+template<typename Proc>
 CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
-                               COptionMenu* optionMenu, GenericOptionMenuTheme& theme,
-                               CRect viewRect, DataSource* parentDataSource);
+							   SharedPointer<COptionMenu> optionMenu, GenericOptionMenuTheme& theme,
+							   CRect viewRect, DataSource* parentDataSource);
 
 //------------------------------------------------------------------------
 class DataSource : public DataBrowserDelegateAdapter,
@@ -38,9 +38,9 @@ class DataSource : public DataBrowserDelegateAdapter,
                    public NonAtomicReferenceCounted
 {
 public:
-	DataSource (CViewContainer* mainContainer, COptionMenu* menu,
-	            const ClickCallback& clickCallback, GenericOptionMenuTheme theme,
-	            DataSource* parentDataSource)
+	DataSource (CViewContainer* mainContainer, SharedPointer<COptionMenu> menu,
+				const ClickCallback& clickCallback, GenericOptionMenuTheme theme,
+				DataSource* parentDataSource)
 	: mainContainer (mainContainer)
 	, menu (menu)
 	, parentDataSource (parentDataSource)
@@ -304,7 +304,7 @@ private:
 		}
 	}
 
-	void openSubMenu (CMenuItem* item, CRect cellRect)
+	void openSubMenu (const SharedPointer<CMenuItem>& item, CRect cellRect)
 	{
 		closeSubMenu ();
 		if (auto subMenu = item->getSubmenu ())
@@ -461,10 +461,10 @@ inline CColor makeDarkerColor (CColor baseColor)
 }
 
 //------------------------------------------------------------------------
-template <typename Proc>
+template<typename Proc>
 CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
-                               COptionMenu* optionMenu, GenericOptionMenuTheme& theme,
-                               CRect viewRect, DataSource* parentDataSource)
+							   SharedPointer<COptionMenu> optionMenu, GenericOptionMenuTheme& theme,
+							   CRect viewRect, DataSource* parentDataSource)
 {
 	auto frame = container->getFrame ();
 	auto dataSource =

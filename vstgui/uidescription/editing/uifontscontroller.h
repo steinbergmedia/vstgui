@@ -42,7 +42,7 @@ protected:
 	IActionPerformer* actionPerformer;
 	UIFontsDataSource* dataSource;
 
-	COptionMenu* fontMenu;
+	SharedPointer<COptionMenu> fontMenu;
 	CTextEdit* altTextEdit;
 	CTextEdit* sizeTextEdit;
 	CControl* boldControl;
