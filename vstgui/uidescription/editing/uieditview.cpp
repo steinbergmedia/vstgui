@@ -1182,7 +1182,7 @@ void UIEditView::startDrag (CPoint& where)
 	stream.end ();
 
 	auto callback = makeOwned<DragCallbackFunctions> ();
-	callback->endedFunc = [this] (IDraggingSession*, CPoint pos, DragOperation) {
+	callback->endedFunc = [this] (const auto&, CPoint pos, auto) {
 		frameToLocal (pos);
 		onMouseMoved (pos, 0);
 	};

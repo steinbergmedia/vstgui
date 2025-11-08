@@ -724,7 +724,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
 		                    shared (offscreen->getBitmap ()));
 		auto callbackFunc = makeOwned<DragCallbackFunctions> ();
 		auto Self = shared (this);
-		callbackFunc->endedFunc = [Self] (IDraggingSession*, CPoint, DragOperation) {
+		callbackFunc->endedFunc = [Self] (const auto&, auto, auto) {
 			Self->dragRow = -1;
 			Self->dragDestinationRow = -1;
 		};

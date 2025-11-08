@@ -264,8 +264,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 					}
 
 					auto df = makeOwned<DragCallbackFunctions> ();
-					df->endedFunc = [browser, Self = shared (this)] (IDraggingSession*, CPoint,
-																	 DragOperation) {
+					df->endedFunc = [browser, Self = shared (this)] (const auto&, auto, auto) {
 						browser->getFrame ()->setCursor (kCursorDefault);
 						Self->allowDrag = false;
 					};

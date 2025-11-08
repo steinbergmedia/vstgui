@@ -28,13 +28,13 @@ public:
 	Win32DraggingSession (Win32Frame* frame);
 	~Win32DraggingSession () noexcept;
 
-	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) final;
+	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const final;
 
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback);
 private:
 	Win32Frame* frame;
-	std::unique_ptr<Win32DragBitmapWindow> dragBitmapWindow;
-	std::unique_ptr<Win32MouseObserverWhileDragging> mouseObserver;
+	mutable std::unique_ptr<Win32DragBitmapWindow> dragBitmapWindow;
+	mutable std::unique_ptr<Win32MouseObserverWhileDragging> mouseObserver;
 };
 
 //-----------------------------------------------------------------------------

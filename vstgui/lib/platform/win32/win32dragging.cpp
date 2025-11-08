@@ -99,7 +99,7 @@ Win32DraggingSession::Win32DraggingSession (Win32Frame* frame)
 Win32DraggingSession::~Win32DraggingSession () noexcept = default;
 
 //-----------------------------------------------------------------------------
-bool Win32DraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset)
+bool Win32DraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const
 {
 	if (!dragBitmapWindow && bitmap)
 	{
@@ -130,7 +130,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 	{
 		CPoint location;
 		frame->getCurrentMousePosition (location);
-		callback->dragWillBegin (this, location);
+		callback->dragWillBegin (*this, location);
 
 		if (mouseObserver)
 		{
@@ -139,7 +139,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 				frame->getCurrentMousePosition (newLocation);
 				if (newLocation != location)
 				{
-					callback->dragMoved (this, newLocation);
+					callback->dragMoved (*this, newLocation);
 					location = newLocation;
 				}
 			});
@@ -167,13 +167,13 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 		if (hResult == DRAGDROP_S_DROP)
 		{
 			if (outEffect == DROPEFFECT_MOVE)
-				callback->dragEnded (this, location, DragOperation::Move);
+				callback->dragEnded (*this, location, DragOperation::Move);
 			else
-				callback->dragEnded (this, location, DragOperation::Copy);
+				callback->dragEnded (*this, location, DragOperation::Copy);
 		}
 		else
 		{
-			callback->dragEnded (this, location, DragOperation::None);
+			callback->dragEnded (*this, location, DragOperation::None);
 		}
 	}
 

@@ -56,7 +56,7 @@ enum class DragOperation
 class IDraggingSession
 {
 public:
-	virtual bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) = 0;
+	virtual bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const = 0;
 };
 
 //------------------------------------------------------------------------
@@ -133,18 +133,18 @@ public:
 	 *	@param session dragging session
 	 *	@param pos drag position in CFrame coordinates
 	 */
-	virtual void dragWillBegin (IDraggingSession* session, CPoint pos) = 0;
+	virtual void dragWillBegin (const IDraggingSession& session, CPoint pos) = 0;
 	/** the drag was moved
 	 *	@param session dragging session
 	 *	@param pos drag position in CFrame coordinates
 	 */
-	virtual void dragMoved (IDraggingSession* session, CPoint pos) = 0;
+	virtual void dragMoved (const IDraggingSession& session, CPoint pos) = 0;
 	/** the drag ended
 	 *	@param session dragging session
 	 *	@param pos drag position in CFrame coordinates
 	 *	@param result the result of the drag
 	 */
-	virtual void dragEnded (IDraggingSession* session, CPoint pos, DragOperation result) = 0;
+	virtual void dragEnded (const IDraggingSession& session, CPoint pos, DragOperation result) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -155,9 +155,9 @@ public:
 class DragCallbackAdapter : virtual public IDragCallback
 {
 public:
-	void dragWillBegin (IDraggingSession* session, CPoint pos) override {}
-	void dragMoved (IDraggingSession* session, CPoint pos) override {}
-	void dragEnded (IDraggingSession* session, CPoint pos, DragOperation result) override {}
+	void dragWillBegin (const IDraggingSession& session, CPoint pos) override {}
+	void dragMoved (const IDraggingSession& session, CPoint pos) override {}
+	void dragEnded (const IDraggingSession& session, CPoint pos, DragOperation result) override {}
 };
 
 //------------------------------------------------------------------------
@@ -168,22 +168,22 @@ public:
 class DragCallbackFunctions : virtual public IDragCallback, public NonAtomicReferenceCounted
 {
 public:
-	using Func1 = std::function<void (IDraggingSession*, CPoint)>;
-	using Func2 = std::function<void (IDraggingSession*, CPoint, DragOperation)>;
+	using Func1 = std::function<void (const IDraggingSession&, CPoint)>;
+	using Func2 = std::function<void (const IDraggingSession&, CPoint, DragOperation)>;
 
 	DragCallbackFunctions () = default;
 
-	void dragWillBegin (IDraggingSession* session, CPoint pos) override
+	void dragWillBegin (const IDraggingSession& session, CPoint pos) override
 	{
 		if (willBeginFunc)
 			willBeginFunc (session, pos);
 	}
-	void dragMoved (IDraggingSession* session, CPoint pos) override
+	void dragMoved (const IDraggingSession& session, CPoint pos) override
 	{
 		if (movedFunc)
 			movedFunc (session, pos);
 	}
-	void dragEnded (IDraggingSession* session, CPoint pos, DragOperation result) override
+	void dragEnded (const IDraggingSession& session, CPoint pos, DragOperation result) override
 	{
 		if (endedFunc)
 			endedFunc (session, pos, result);

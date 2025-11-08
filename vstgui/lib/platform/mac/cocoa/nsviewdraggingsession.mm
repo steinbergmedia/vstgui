@@ -194,7 +194,7 @@ NSViewDraggingSession::NSViewDraggingSession (NSDraggingSession* session,
 }
 
 //------------------------------------------------------------------------
-bool NSViewDraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset)
+bool NSViewDraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const
 {
 	[session enumerateDraggingItemsWithOptions:0
 	                                   forView:nil
@@ -230,7 +230,7 @@ void NSViewDraggingSession::dragWillBegin (CPoint pos)
 {
 	if (!callback)
 		return;
-	callback->dragWillBegin (this, pos);
+	callback->dragWillBegin (*this, pos);
 }
 
 //------------------------------------------------------------------------
@@ -238,7 +238,7 @@ void NSViewDraggingSession::dragMoved (CPoint pos)
 {
 	if (!callback)
 		return;
-	callback->dragMoved (this, pos);
+	callback->dragMoved (*this, pos);
 }
 
 //------------------------------------------------------------------------
@@ -246,7 +246,7 @@ void NSViewDraggingSession::dragEnded (CPoint pos, DragOperation result)
 {
 	if (!callback)
 		return;
-	callback->dragEnded (this, pos, result);
+	callback->dragEnded (*this, pos, result);
 }
 
 //-----------------------------------------------------------------------------

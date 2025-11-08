@@ -30,7 +30,7 @@ struct NSViewDraggingSession : public IDraggingSession, public NonAtomicReferenc
 	NSViewDraggingSession (NSDraggingSession* session, const DragDescription& desc,
 	                       const SharedPointer<IDragCallback>& callback);
 
-	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) override;
+	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const override;
 
 	void dragWillBegin (CPoint pos);
 	void dragMoved (CPoint pos);
@@ -40,7 +40,7 @@ private:
 	static NSImage* nsImageForDragOperation (CBitmap* bitmap);
 
 	NSDraggingSession* session;
-	DragDescription desc;
+	mutable DragDescription desc;
 	SharedPointer<IDragCallback> callback;
 };
 
