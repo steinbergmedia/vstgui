@@ -73,7 +73,7 @@ public:
 	CCoord getHeight () const;
 	//@}
 
-	CBitmap* getBitmap () const { return bitmap; }
+	const SharedPointer<CBitmap>& getBitmap () const { return bitmap; }
 
 	COffscreenContext (const PlatformGraphicsDeviceContextPtr device, const CRect& surfaceRect,
 					   const PlatformBitmapPtr& platformBitmap);

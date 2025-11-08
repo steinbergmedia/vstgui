@@ -758,7 +758,7 @@ public:
 				path->addRect (CRect (0, 0, size, size));
 				context->fillLinearGradient(path, *gradient, CPoint (0, 0), CPoint (size, 0));
 				context->endDraw ();
-				item->setIcon (shared (context->getBitmap ()));
+				item->setIcon (context->getBitmap ());
 			}
 		}
 	}

@@ -130,7 +130,7 @@ SharedPointer<CBitmap> createColorIcon (CColor color, CPoint colorIconSize)
 		context->setFillColor (color);
 		context->drawRect (CRect (0, 0, colorIconSize.x, colorIconSize.y), kDrawFilled);
 		context->endDraw ();
-		return shared (context->getBitmap ());
+		return context->getBitmap ();
 	}
 	return {};
 }

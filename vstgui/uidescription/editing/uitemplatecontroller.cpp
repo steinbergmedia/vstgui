@@ -720,8 +720,8 @@ CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
 		
 		auto startPos = dragStartMouseObserver.getInitPosition ();
 		DragDescription dd (CDropSource::create (&row, sizeof (int32_t), IDataPackage::kBinary),
-		                    {cellBounds.left - startPos.x, cellBounds.top - startPos.y},
-		                    shared (offscreen->getBitmap ()));
+							{cellBounds.left - startPos.x, cellBounds.top - startPos.y},
+							offscreen->getBitmap ());
 		auto callbackFunc = makeOwned<DragCallbackFunctions> ();
 		auto Self = shared (this);
 		callbackFunc->endedFunc = [Self] (const auto&, auto, auto) {

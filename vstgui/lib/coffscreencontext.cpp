@@ -93,7 +93,7 @@ SharedPointer<CBitmap> renderBitmapOffscreen (
 	context->beginDraw ();
 	drawCallback (*context);
 	context->endDraw ();
-	return shared (context->getBitmap ());
+	return context->getBitmap ();
 }
 
 } // VSTGUI
