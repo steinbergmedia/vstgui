@@ -67,7 +67,7 @@ public:
 struct DragEventData
 {
 	/** drag data package */
-	IDataPackage* drag;
+	const SharedPointer<IDataPackage>& drag;
 	/** mouse position */
 	CPoint pos;
 	/** key modifiers */

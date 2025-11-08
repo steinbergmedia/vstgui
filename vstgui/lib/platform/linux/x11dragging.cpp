@@ -295,10 +295,7 @@ DragEventData XdndHandler::getEventData () const
 {
 	assert (package);
 
-	DragEventData eventData;
-
-	eventData.drag = package.get ();
-	eventData.pos = getEventPosition ();
+	DragEventData eventData {package, getEventPosition ()};
 	// TODO: the modifiers
 
 	return eventData;

@@ -57,7 +57,7 @@ public:
 private:
 	int32_t refCount;
 	Win32Frame* pFrame;
-	Win32DataPackage* dragData;
+	SharedPointer<Win32DataPackage> dragData;
 };
 
 //-----------------------------------------------------------------------------

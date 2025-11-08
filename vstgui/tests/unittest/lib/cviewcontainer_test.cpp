@@ -507,10 +507,7 @@ TEST_CASE (CViewContainerTest, DragEvents)
 	container->addView (v1);
 	container->addView (v2);
 
-	DragEventData data;
-	data.drag = nullptr;
-	data.pos = CPoint (10, 10);
-	data.modifiers.clear ();
+	DragEventData data {{nullptr}, CPoint (10, 10)};
 
 	auto dropTarget = container->getDropTarget ();
 	dropTarget->onDragEnter (data);
@@ -539,10 +536,7 @@ TEST_CASE (CViewContainerTest, DragMoveBetweenTwoViews)
 	container->addView (v1);
 	container->addView (v2);
 
-	DragEventData data;
-	data.drag = nullptr;
-	data.pos = CPoint (10, 10);
-	data.modifiers.clear ();
+	DragEventData data {{nullptr}, CPoint (10, 10)};
 
 	auto dropTarget = container->getDropTarget ();
 	dropTarget->onDragEnter (data);

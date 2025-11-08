@@ -184,12 +184,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 }
 
 //-----------------------------------------------------------------------------
-CDropTarget::CDropTarget (Win32Frame* pFrame)
-: refCount (0)
-, pFrame (pFrame)
-, dragData (nullptr)
-{
-}
+CDropTarget::CDropTarget (Win32Frame* pFrame) : refCount (0), pFrame (pFrame) {}
 
 //-----------------------------------------------------------------------------
 CDropTarget::~CDropTarget () noexcept
@@ -232,10 +227,9 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObjec
 {
 	if (dataObject && pFrame)
 	{
-		dragData = new Win32DataPackage (dataObject);
+		dragData = makeOwned<Win32DataPackage> (dataObject);
 
-		DragEventData data;
-		data.drag = dragData;
+		DragEventData data {dragData};
 		pFrame->getCurrentMousePosition (data.pos);
 		pFrame->getCurrentModifiers (data.modifiers);
 		auto result = pFrame->getFrame ()->platformOnDragEnter (data);
@@ -256,8 +250,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL 
 {
 	if (dragData && pFrame)
 	{
-		DragEventData data;
-		data.drag = dragData;
+		DragEventData data {dragData};
 		pFrame->getCurrentMousePosition (data.pos);
 		pFrame->getCurrentModifiers (data.modifiers);
 		auto result = pFrame->getFrame ()->platformOnDragMove (data);
@@ -276,13 +269,11 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragLeave ()
 {
 	if (dragData && pFrame)
 	{
-		DragEventData data;
-		data.drag = dragData;
+		DragEventData data {dragData};
 		pFrame->getCurrentMousePosition (data.pos);
 		pFrame->getCurrentModifiers (data.modifiers);
 		pFrame->getFrame ()->platformOnDragLeave (data);
-		dragData->forget ();
-		dragData = nullptr;
+		dragData.reset ();
 	}
 	return S_OK;
 }
@@ -292,13 +283,11 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DW
 {
 	if (dragData && pFrame)
 	{
-		DragEventData data;
-		data.drag = dragData;
+		DragEventData data {dragData};
 		pFrame->getCurrentMousePosition (data.pos);
 		pFrame->getCurrentModifiers (data.modifiers);
 		pFrame->getFrame ()->platformOnDrop (data);
-		dragData->forget ();
-		dragData = nullptr;
+		dragData.reset ();
 	}
 	return S_OK;
 }
@@ -347,14 +336,10 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
 Win32DataObject::Win32DataObject (SharedPointer<IDataPackage> dataPackage)
 : dataPackage (dataPackage)
 {
-	dataPackage->remember ();
 }
 
 //-----------------------------------------------------------------------------
-Win32DataObject::~Win32DataObject () noexcept
-{
-	dataPackage->forget ();
-}
+Win32DataObject::~Win32DataObject () noexcept {}
 
 //-----------------------------------------------------------------------------
 COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::QueryInterface (REFIID riid, void** object)
