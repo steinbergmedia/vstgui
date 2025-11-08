@@ -580,7 +580,7 @@ SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
 class Win32LegacyDragSupport final : virtual public DragCallbackAdapter, virtual public NonAtomicReferenceCounted
 {
 public:
-	void dragEnded (IDraggingSession*, CPoint, DragOperation r) final { result = r; }
+	void dragEnded (const IDraggingSession&, CPoint, DragOperation r) final { result = r; }
 	DragOperation result {DragOperation::None};
 };
 
