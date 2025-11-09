@@ -53,7 +53,7 @@ public:
 
 	//@}
 
-	void setBackground (CBitmap* background) override;
+	void setBackground (const SharedPointer<CBitmap>& background) override;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,

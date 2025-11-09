@@ -41,7 +41,7 @@ public:
 	: CView (CRect (0, 0, 0, 0))
 	, zoom (1.)
 	{
-		setBackground (bitmap);
+		setBackground (shared (bitmap));
 	}
 	
 	void draw (CDrawContext* context) override
@@ -161,7 +161,7 @@ public:
 		}
 	}
 
-	void setBackground (CBitmap *background) override
+	void setBackground (const SharedPointer<CBitmap>& background) override
 	{
 		auto platformBitmap = background ? background->getPlatformBitmap () : nullptr;
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
@@ -1124,7 +1124,7 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 {
 	if (dataSource)
 	{
-		CBitmap* bitmap = dataSource->getSelectedBitmap ();
+		auto bitmap = shared (dataSource->getSelectedBitmap ());
 		UTF8StringPtr selectedBitmapName = dataSource->getSelectedBitmapName ();
 		if (bitmapView)
 		{

@@ -7,6 +7,7 @@
 #include "../algorithm.h"
 #include "../events.h"
 #include "../cframe.h"
+#include "../cbitmap.h"
 #include "../cgraphicspath.h"
 #include "../cvstguitimer.h"
 #include "../dispatchlist.h"
@@ -68,7 +69,7 @@ CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag, 
 	impl = std::unique_ptr<Impl> (new Impl);
 	setTransparency (false);
 	setMouseEnabled (true);
-	setBackground (pBackground);
+	setBackground (shared (pBackground));
 	registerViewEventListener (impl.get ());
 }
 

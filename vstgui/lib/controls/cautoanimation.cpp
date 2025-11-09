@@ -119,7 +119,7 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 	{
 		if (auto bitmap = getDrawBackground ())
 		{
-			if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+			if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 			{
 				auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
 				mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
@@ -218,7 +218,7 @@ void CAutoAnimation::updateMinMaxFromBackground ()
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			auto numFrames = getMultiFrameBitmapRangeLength (*mfb);
 			setMin (0.f);
@@ -232,7 +232,7 @@ void CAutoAnimation::updateMinMaxFromBackground ()
 }
 
 //------------------------------------------------------------------------
-void CAutoAnimation::setBackground (CBitmap* background)
+void CAutoAnimation::setBackground (const SharedPointer<CBitmap>& background)
 {
 	CControl::setBackground (background);
 	updateMinMaxFromBackground ();
@@ -243,7 +243,7 @@ void CAutoAnimation::nextPixmap ()
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (bitmap.cast<CMultiFrameBitmap> ())
 		{
 			if (getValue () == getMax ())
 				setValue (getMin ());
@@ -264,7 +264,7 @@ void CAutoAnimation::previousPixmap ()
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (bitmap.cast<CMultiFrameBitmap> ())
 		{
 			if (getValue () == getMin ())
 				setValue (getMax ());

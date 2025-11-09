@@ -52,7 +52,7 @@ CSwitchBase::CSwitchBase (const CSwitchBase& other) : CControl (other)
 //------------------------------------------------------------------------
 int32_t CSwitchBase::normalizedToIndex (float norm) const
 {
-	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
+	if (auto mfb = getDrawBackground ().cast<CMultiFrameBitmap> ())
 	{
 		return getMultiFrameBitmapIndex (*mfb, norm);
 	}
@@ -70,7 +70,7 @@ int32_t CSwitchBase::normalizedToIndex (float norm) const
 //------------------------------------------------------------------------
 float CSwitchBase::indexToNormalized (int32_t index) const
 {
-	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
+	if (auto mfb = getDrawBackground ().cast<CMultiFrameBitmap> ())
 	{
 		return getNormValueFromMultiFrameBitmapIndex (*mfb, static_cast<uint16_t> (index));
 	}
@@ -87,7 +87,7 @@ void CSwitchBase::draw (CDrawContext* pContext)
 	if (auto bitmap = getDrawBackground ())
 	{
 		float norm = getValueNormalized ();
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			auto frameIndex = getMultiFrameBitmapIndex (*mfb, norm);
 			if (inverseBitmap)
@@ -116,7 +116,7 @@ bool CSwitchBase::sizeToFit ()
 	if (auto bitmap = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			vs.setSize (mfb->getFrameSize ());
 		}
@@ -266,7 +266,7 @@ CVerticalSwitch::CVerticalSwitch (const CVerticalSwitch& v)
 //------------------------------------------------------------------------
 double CVerticalSwitch::calculateCoef () const
 {
-	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
+	if (auto mfb = getDrawBackground ().cast<CMultiFrameBitmap> ())
 	{
 		return mfb->getFrameSize ().y / static_cast<double> (getMultiFrameBitmapRangeLength (*mfb));
 	}
@@ -280,7 +280,7 @@ double CVerticalSwitch::calculateCoef () const
 //------------------------------------------------------------------------
 float CVerticalSwitch::calcNormFromPoint (const CPoint& where) const
 {
-	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
+	if (auto mfb = getDrawBackground ().cast<CMultiFrameBitmap> ())
 	{
 		return static_cast<int32_t> ((where.y - getViewSize ().top) / getCoef ()) /
 			   static_cast<float> (getMultiFrameBitmapRangeLength (*mfb) - 1);
@@ -383,7 +383,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CHorizontalSwitch& v)
 //------------------------------------------------------------------------
 double CHorizontalSwitch::calculateCoef () const
 {
-	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
+	if (auto mfb = getDrawBackground ().cast<CMultiFrameBitmap> ())
 	{
 		return mfb->getFrameSize ().x / static_cast<double> (getMultiFrameBitmapRangeLength (*mfb));
 	}
@@ -397,7 +397,7 @@ double CHorizontalSwitch::calculateCoef () const
 //------------------------------------------------------------------------
 float CHorizontalSwitch::calcNormFromPoint (const CPoint& where) const
 {
-	if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
+	if (auto mfb = getDrawBackground ().cast<CMultiFrameBitmap> ())
 	{
 		return static_cast<int32_t> ((where.x - getViewSize ().left) / getCoef ()) /
 			   static_cast<float> (getMultiFrameBitmapRangeLength (*mfb) - 1);
@@ -551,7 +551,7 @@ void CRockerSwitch::draw (CDrawContext *pContext)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			uint16_t frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
@@ -747,7 +747,7 @@ bool CRockerSwitch::sizeToFit ()
 	if (auto bitmap = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			vs.setSize (mfb->getFrameSize ());
 		}

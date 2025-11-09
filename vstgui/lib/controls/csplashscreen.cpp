@@ -21,7 +21,7 @@ public:
 	                          const CPoint& offset)
 	: CControl (size, listener), offset (offset)
 	{
-		setBackground (bitmap);
+		setBackground (shared (bitmap));
 	}
 
 	void draw (CDrawContext *pContext) override
@@ -182,7 +182,7 @@ void CSplashScreen::unSplash ()
 CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap)
 : CSplashScreen (size, nullptr, tag, splashBitmap, CRect (0, 0, 0, 0))
 {
-	CView::setBackground (background);
+	CView::setBackground (shared (background));
 }
 
 //------------------------------------------------------------------------
@@ -190,7 +190,7 @@ void CAnimationSplashScreen::setSplashBitmap (CBitmap* bitmap)
 {
 	if (modalView)
 	{
-		modalView->setBackground (bitmap);
+		modalView->setBackground (shared (bitmap));
 	}
 }
 

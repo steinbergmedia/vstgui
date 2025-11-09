@@ -191,7 +191,7 @@ public:
 	// overrides
 	void draw (CDrawContext* pContext) override;
 	bool sizeToFit () override;
-	void setBackground (CBitmap* background) override;
+	void setBackground (const SharedPointer<CBitmap>& background) override;
 
 	CLASS_METHODS(CAnimKnob, CKnobBase)
 protected:

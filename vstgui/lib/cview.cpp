@@ -1149,7 +1149,7 @@ VSTGUIEditorInterface* CView::getEditor () const
 /**
  * @param background new background bitmap
  */
-void CView::setBackground (CBitmap* background)
+void CView::setBackground (const SharedPointer<CBitmap>& background)
 {
 	if (hasViewFlag (kHasBackground))
 	{
@@ -1172,25 +1172,25 @@ void CView::setBackground (CBitmap* background)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* CView::getBackground () const
+SharedPointer<CBitmap> CView::getBackground () const
 {
 	CBitmap* result = nullptr;
 	if (hasViewFlag (kHasBackground))
 		getAttribute (kCViewBackgroundBitmapAttrID, result);
-	return result;
+	return shared (result);
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* CView::getDisabledBackground () const
+SharedPointer<CBitmap> CView::getDisabledBackground () const
 {
 	CBitmap* result = nullptr;
 	if (hasViewFlag (kHasDisabledBackground))
 		getAttribute (kCViewDisabledBackgroundBitmapAttrID, result);
-	return result;
+	return shared (result);
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* CView::getDrawBackground () const
+SharedPointer<CBitmap> CView::getDrawBackground () const
 {
 	return (hasViewFlag (kHasDisabledBackground) ?
 	            (getMouseEnabled () ? getBackground () : getDisabledBackground ()) :
@@ -1201,7 +1201,7 @@ CBitmap* CView::getDrawBackground () const
 /**
  * @param background new disabled background bitmap
  */
-void CView::setDisabledBackground (CBitmap* background)
+void CView::setDisabledBackground (const SharedPointer<CBitmap>& background)
 {
 	if (hasViewFlag (kHasDisabledBackground))
 	{

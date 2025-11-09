@@ -115,7 +115,7 @@ CTabView::CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background, 
 , lastChild (nullptr)
 , currentChild (nullptr)
 {
-	setBackground (background);
+	setBackground (shared (background));
 	if (tabBitmap)
 	{
 		tabBitmap->remember ();
@@ -138,7 +138,7 @@ CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background
 , lastChild (nullptr)
 , currentChild (nullptr)
 {
-	setBackground (background);
+	setBackground (shared (background));
 	setTransparency (true);
 }
 

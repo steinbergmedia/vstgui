@@ -305,17 +305,17 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** set the background image of this view */
-	virtual void setBackground (CBitmap* background);
+	virtual void setBackground (const SharedPointer<CBitmap>& background);
 	/** get the background image of this view */
-	CBitmap* getBackground () const;
+	SharedPointer<CBitmap> getBackground () const;
 
 	/** set background image used when the mouse is not enabled */
-	virtual void setDisabledBackground (CBitmap* background);
+	virtual void setDisabledBackground (const SharedPointer<CBitmap>& background);
 	/** get background image used when the mouse is not enabled */
-	CBitmap* getDisabledBackground () const;
+	SharedPointer<CBitmap> getDisabledBackground () const;
 
 	/** get the bitmap which is drawn depending on the enabled state. */
-	CBitmap* getDrawBackground () const;
+	SharedPointer<CBitmap> getDrawBackground () const;
 	//@}
 
 	//-----------------------------------------------------------------------------

@@ -109,7 +109,7 @@ public:
 	CMouseEventResult onMouseCancel () override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	bool sizeToFit () override;
-	void setBackground (CBitmap *background) override;
+	void setBackground (const SharedPointer<CBitmap>& background) override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	CLASS_METHODS(CCheckBox, CControl)

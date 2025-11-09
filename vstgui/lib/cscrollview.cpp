@@ -388,7 +388,7 @@ CScrollView::CScrollView (const CRect& size, const CRect& containerSize, int32_t
 	impl->scrollContainer->registerViewListener (this);
 
 	if (pBackground)
-		setBackground(pBackground);
+		setBackground (shared (pBackground));
 	recalculateLayout ();
 }
 

@@ -798,9 +798,9 @@ bool CAnimKnob::sizeToFit ()
 	if (auto bitmap = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
-			vs.setSize (frameBitmap->getFrameSize ());
+			vs.setSize (mfb->getFrameSize ());
 		}
 		else
 		{
@@ -855,7 +855,7 @@ void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 #endif
 
 //-----------------------------------------------------------------------------------------------
-void CAnimKnob::setBackground (CBitmap *background)
+void CAnimKnob::setBackground (const SharedPointer<CBitmap>& background)
 {
 	CKnobBase::setBackground (background);
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -878,7 +878,7 @@ void CAnimKnob::draw (CDrawContext *pContext)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
 			if (bInverseBitmap)

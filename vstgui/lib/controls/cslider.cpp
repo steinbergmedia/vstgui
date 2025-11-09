@@ -626,7 +626,7 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag, in
 	impl = std::unique_ptr<Impl> (new Impl);
 
 	setBackgroundOffset (offset);
-	setBackground (background);
+	setBackground (shared (background));
 	setStyle (style);
 	setHandle (handle);
 
@@ -666,7 +666,7 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag,
 	impl = std::unique_ptr<Impl> (new Impl);
 
 	setBackgroundOffset (offset);
-	setBackground (background);
+	setBackground (shared (background));
 	setStyle (style);
 	setHandle (handle);
 

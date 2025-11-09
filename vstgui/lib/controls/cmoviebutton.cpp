@@ -67,7 +67,7 @@ void CMovieButton::draw (CDrawContext *pContext)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
@@ -166,7 +166,7 @@ bool CMovieButton::sizeToFit ()
 	if (auto bitmap = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			vs.setSize (mfb->getFrameSize ());
 		}

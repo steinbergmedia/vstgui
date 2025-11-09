@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../enumbitset.h"
+#include "../cbitmap.h"
 #include "ccontrol.h"
 
 namespace VSTGUI {
@@ -36,7 +37,7 @@ public:
 
 	virtual CBitmap* getOnBitmap () const { return getBackground (); }
 	virtual CBitmap* getOffBitmap () const { return offBitmap; }
-	virtual void setOnBitmap (CBitmap* bitmap) { setBackground (bitmap); }
+	virtual void setOnBitmap (CBitmap* bitmap) { setBackground (shared (bitmap)); }
 	virtual void setOffBitmap (CBitmap* bitmap);
 	
 	int32_t getNbLed () const { return nbLed; }

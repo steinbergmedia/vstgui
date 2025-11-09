@@ -5,6 +5,7 @@
 #include "viewcreator.h"
 
 #include "../../lib/cview.h"
+#include "../../lib/cbitmap.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
@@ -118,9 +119,9 @@ bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
 
 	CBitmap* bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrBitmap), bitmap, description))
-		view->setBackground (bitmap);
+		view->setBackground (shared (bitmap));
 	if (stringToBitmap (attributes.getAttributeValue (kAttrDisabledBitmap), bitmap, description))
-		view->setDisabledBackground (bitmap);
+		view->setDisabledBackground (shared (bitmap));
 	bool b;
 	if (attributes.getBooleanAttribute (kAttrTransparent, b))
 		view->setTransparency (b);

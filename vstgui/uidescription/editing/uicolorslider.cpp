@@ -7,6 +7,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../../lib/coffscreencontext.h"
+#include "../../lib/cbitmap.h"
 
 namespace VSTGUI {
 

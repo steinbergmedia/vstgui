@@ -203,7 +203,7 @@ void CKickButton::draw (CDrawContext *pContext)
 
 	if (auto bitmap = getDrawBackground ())
 	{
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			auto index = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
 			mfb->drawFrame (pContext, index, getViewSize ().getTopLeft ());
@@ -317,7 +317,7 @@ bool CKickButton::sizeToFit ()
 	if (auto bitmap = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			vs.setSize (mfb->getFrameSize ());
 		}
@@ -405,7 +405,7 @@ void CCheckBox::setFont (CFontRef newFont)
 }
 
 //------------------------------------------------------------------------
-void CCheckBox::setBackground (CBitmap *background)
+void CCheckBox::setBackground (const SharedPointer<CBitmap>& background)
 {
 	CView::setBackground (background);
 	if (style & kAutoSizeToFit)

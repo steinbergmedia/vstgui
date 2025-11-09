@@ -163,14 +163,15 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 			CViewContainer::draw (offscreenContext);
 			dontDrawBackground = false;
 			offscreenContext->endDraw ();
-			CBitmap* bitmap = offscreenContext->getBitmap ();
+			auto bitmap = offscreenContext->getBitmap ();
 			if (bitmap)
 			{
 				setBackground (bitmap);
 				SharedPointer<BitmapFilter::IFilter> setColorFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kSetColor));
 				if (setColorFilter)
 				{
-					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
+					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
+												 bitmap.get ());
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputColor, kBlackCColor);
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kIgnoreAlphaColorValue, (int32_t)1);
 					if (setColorFilter->run (true))
@@ -179,7 +180,8 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 						if (boxBlurFilter)
 						{
 							auto boxSizes = boxesForGauss<3> (shadowBlurSize);
-							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
+							boxBlurFilter->setProperty (
+								BitmapFilter::Standard::Property::kInputBitmap, bitmap.get ());
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[0]);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kAlphaChannelOnly, 1);
 							if (boxBlurFilter->run (true))
