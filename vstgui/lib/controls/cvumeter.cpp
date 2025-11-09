@@ -28,8 +28,8 @@ CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, in
 {
 	setDecreaseStepValue (0.1f);
 
-	setOnBitmap (onBitmap);
-	setOffBitmap (offBitmap);
+	setOnBitmap (shared (onBitmap));
+	setOffBitmap (shared (offBitmap));
 
 	rectOn  (size.left, size.top, size.right, size.bottom);
 	rectOff (size.left, size.top, size.right, size.bottom);
@@ -40,14 +40,13 @@ CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, in
 //------------------------------------------------------------------------
 CVuMeter::CVuMeter (const CVuMeter& v)
 : CControl (v)
-, offBitmap (nullptr)
+, offBitmap (v.offBitmap)
 , nbLed (v.nbLed)
 , style (v.style)
 , decreaseValue (v.decreaseValue)
 , rectOn (v.rectOn)
 , rectOff (v.rectOff)
 {
-	setOffBitmap (v.offBitmap);
 	setWantsIdle (true);
 }
 
@@ -69,11 +68,11 @@ void CVuMeter::setViewSize (const CRect& newSize, bool invalid)
 //------------------------------------------------------------------------
 bool CVuMeter::sizeToFit ()
 {
-	if (getDrawBackground ())
+	if (auto bmp = getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (getDrawBackground ()->getWidth ());
-		vs.setHeight (getDrawBackground ()->getHeight ());
+		vs.setWidth (bmp->getWidth ());
+		vs.setHeight (bmp->getHeight ());
 		setViewSize (vs);
 		setMouseableArea (vs);
 		return true;
@@ -82,14 +81,7 @@ bool CVuMeter::sizeToFit ()
 }
 
 //-----------------------------------------------------------------------------
-void CVuMeter::setOffBitmap (CBitmap* bitmap)
-{
-	if (offBitmap)
-		offBitmap->forget ();
-	offBitmap = bitmap;
-	if (offBitmap)
-		offBitmap->remember ();
-}
+void CVuMeter::setOffBitmap (const SharedPointer<CBitmap>& bitmap) { offBitmap = bitmap; }
 
 //------------------------------------------------------------------------
 void CVuMeter::setDirty (bool state)
@@ -107,7 +99,8 @@ void CVuMeter::onIdle ()
 //------------------------------------------------------------------------
 void CVuMeter::draw (CDrawContext *_pContext)
 {
-	if (!getOnBitmap ())
+	auto bmp = getOnBitmap ();
+	if (!bmp)
 		return;
 
 	CRect _rectOn (rectOn);
@@ -127,7 +120,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (style == Style::kHorizontal)
 	{
-		auto tmp = (CCoord)(((int32_t)(nbLed * newValue + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
+		auto tmp = (CCoord)(((int32_t)(nbLed * newValue + 0.5f) / (float)nbLed) * bmp->getWidth ());
 		pointOff (tmp, 0);
 
 		_rectOff.left += tmp;
@@ -135,19 +128,20 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	}
 	else 
 	{
-		auto tmp = (CCoord)(((int32_t)(nbLed * (1.f - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getHeight ());
+		auto tmp = (CCoord)(((int32_t)(nbLed * (1.f - newValue) + 0.5f) / (float)nbLed) *
+							bmp->getHeight ());
 		pointOn (0, tmp);
 
 		_rectOff.bottom = tmp + rectOff.top;
 		_rectOn.top     += tmp;
 	}
 
-	if (getOffBitmap ())
+	if (auto offBmp = getOffBitmap ())
 	{
-		getOffBitmap ()->draw (pContext, _rectOff, pointOff);
+		offBmp->draw (pContext, _rectOff, pointOff);
 	}
 
-	getOnBitmap ()->draw (pContext, _rectOn, pointOn);
+	bmp->draw (pContext, _rectOn, pointOn);
 
 	setDirty (false);
 }

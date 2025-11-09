@@ -55,7 +55,7 @@ bool VuMeterCreator::apply (CView* view, const UIAttributes& attributes,
 
 	CBitmap* bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrOffBitmap), bitmap, description))
-		vuMeter->setOffBitmap (bitmap);
+		vuMeter->setOffBitmap (shared (bitmap));
 
 	const auto* attr = attributes.getAttributeValue (kAttrOrientation);
 	if (attr)

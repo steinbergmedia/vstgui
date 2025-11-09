@@ -35,11 +35,11 @@ public:
 	float getDecreaseStepValue () const { return decreaseValue; }
 	virtual void setDecreaseStepValue (float value) { decreaseValue = value; }
 
-	virtual CBitmap* getOnBitmap () const { return getBackground (); }
-	virtual CBitmap* getOffBitmap () const { return offBitmap; }
-	virtual void setOnBitmap (CBitmap* bitmap) { setBackground (shared (bitmap)); }
-	virtual void setOffBitmap (CBitmap* bitmap);
-	
+	SharedPointer<CBitmap> getOnBitmap () const { return getBackground (); }
+	SharedPointer<CBitmap> getOffBitmap () const { return offBitmap; }
+	void setOnBitmap (const SharedPointer<CBitmap>& bitmap) { setBackground (bitmap); }
+	void setOffBitmap (const SharedPointer<CBitmap>& bitmap);
+
 	int32_t getNbLed () const { return nbLed; }
 	void setNbLed (int32_t nb) { nbLed = nb; invalid (); }
 
@@ -62,7 +62,7 @@ public:
 protected:
 	~CVuMeter () noexcept override;
 
-	CBitmap* offBitmap;
+	SharedPointer<CBitmap> offBitmap;
 
 	int32_t nbLed;
 	Style style;
