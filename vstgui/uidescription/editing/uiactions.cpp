@@ -879,7 +879,7 @@ BitmapChangeAction::BitmapChangeAction (UIDescription* description, UTF8StringPt
 , performOrUndo (performOrUndo)
 , isNewBitmap (!description->hasBitmapName (name))
 {
-	CBitmap* bitmap = description->getBitmap (name);
+	auto bitmap = description->getBitmap (name);
 	if (bitmap)
 		originalPath = bitmap->getResourceDescription().u.name;
 }
@@ -959,7 +959,7 @@ NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (UIDescription*
 {
 	if (rect)
 		newRect = new CRect (*rect);
-	CBitmap* bitmap = description->getBitmap (name);
+	auto bitmap = description->getBitmap (name);
 	if (bitmap)
 	{
 		CNinePartTiledBitmap* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*>(bitmap);
@@ -995,7 +995,7 @@ void NinePartTiledBitmapChangeAction::perform ()
 {
 	if (performOrUndo)
 	{
-		CBitmap* bitmap = description->getBitmap (name.c_str ());
+		auto bitmap = description->getBitmap (name.c_str ());
 		if (bitmap)
 			description->changeBitmap (name.c_str (), bitmap->getResourceDescription ().u.name, newRect);
 	}
@@ -1006,7 +1006,7 @@ void NinePartTiledBitmapChangeAction::undo ()
 {
 	if (performOrUndo == false)
 	{
-		CBitmap* bitmap = description->getBitmap (name.c_str ());
+		auto bitmap = description->getBitmap (name.c_str ());
 		if (bitmap)
 			description->changeBitmap (name.c_str (), bitmap->getResourceDescription ().u.name, oldRect);
 	}
@@ -1022,7 +1022,7 @@ MultiFrameBitmapChangeAction::MultiFrameBitmapChangeAction (
 {
 	if (desc)
 		newDesc = std::make_unique<CMultiFrameBitmapDescription> (*desc);
-	CBitmap* bitmap = description->getBitmap (name);
+	auto bitmap = description->getBitmap (name);
 	if (bitmap)
 	{
 		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
@@ -1046,7 +1046,7 @@ void MultiFrameBitmapChangeAction::perform ()
 {
 	if (performOrUndo)
 	{
-		CBitmap* bitmap = description->getBitmap (name.data ());
+		auto bitmap = description->getBitmap (name.data ());
 		if (bitmap)
 			description->changeMultiFrameBitmap (
 				name.data (), bitmap->getResourceDescription ().u.name, newDesc.get ());
@@ -1058,7 +1058,7 @@ void MultiFrameBitmapChangeAction::undo ()
 {
 	if (performOrUndo == false)
 	{
-		CBitmap* bitmap = description->getBitmap (name.data ());
+		auto bitmap = description->getBitmap (name.data ());
 		if (bitmap)
 			description->changeMultiFrameBitmap (
 				name.data (), bitmap->getResourceDescription ().u.name, oldDesc.get ());

@@ -266,7 +266,7 @@ bool ViewCreator::getAttributeValue (CView* view, const string& attributeName, s
 	}
 	else if (attributeName == kAttrBitmap)
 	{
-		CBitmap* bitmap = view->getBackground ();
+		auto bitmap = view->getBackground ();
 		if (bitmap)
 			bitmapToString (bitmap, stringValue, desc);
 		else
@@ -275,7 +275,7 @@ bool ViewCreator::getAttributeValue (CView* view, const string& attributeName, s
 	}
 	else if (attributeName == kAttrDisabledBitmap)
 	{
-		CBitmap* bitmap = view->getDisabledBackground ();
+		auto bitmap = view->getDisabledBackground ();
 		if (bitmap)
 			bitmapToString (bitmap, stringValue, desc);
 		else

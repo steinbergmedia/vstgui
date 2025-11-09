@@ -327,7 +327,7 @@ bool SliderCreator::getAttributeValue (CView* view, const string& attributeName,
 		return false;
 	if (attributeName == kAttrHandleBitmap)
 	{
-		CBitmap* bitmap = slider->getHandle ();
+		auto bitmap = slider->getHandle ();
 		if (bitmap)
 		{
 			bitmapToString (bitmap, stringValue, desc);

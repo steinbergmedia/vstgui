@@ -120,7 +120,7 @@ bool AnimationSplashScreenCreator::getAttributeValue (CView* view, const string&
 
 	if (attributeName == kAttrSplashBitmap)
 	{
-		CBitmap* bitmap = splashScreen->getSplashBitmap ();
+		auto bitmap = splashScreen->getSplashBitmap ();
 		if (bitmap)
 			bitmapToString (bitmap, stringValue, desc);
 		else

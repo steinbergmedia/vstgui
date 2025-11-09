@@ -314,7 +314,7 @@ bool KnobCreator::getAttributeValue (CView* view, const string& attributeName, s
 	}
 	if (attributeName == kAttrHandleBitmap)
 	{
-		CBitmap* bitmap = knob->getHandleBitmap ();
+		auto bitmap = knob->getHandleBitmap ();
 		if (bitmap)
 		{
 			return bitmapToString (bitmap, stringValue, desc);

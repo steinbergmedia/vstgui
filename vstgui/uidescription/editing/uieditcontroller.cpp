@@ -746,7 +746,8 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 					{
 						if (segmentBitmapNames[segmentBitmapNameIndex])
 						{
-							CBitmap* bitmap = editorDesc->getBitmap (segmentBitmapNames[segmentBitmapNameIndex++]);
+							auto bitmap = editorDesc->getBitmap (
+								segmentBitmapNames[segmentBitmapNameIndex++]);
 							if (!bitmap)
 								continue;
 							segment.icon = bitmap;

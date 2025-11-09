@@ -411,7 +411,7 @@ private:
 
 	bool run (bool replace) override
 	{
-		CBitmap* inputBitmap = getInputBitmap ();
+		auto inputBitmap = getInputBitmap ();
 		if (inputBitmap == nullptr)
 			return false;
 		const auto& radiusProp = getProperty (Property::kRadius);
@@ -695,7 +695,7 @@ protected:
 		outSize.makeIntegral ();
 		if (outSize.getWidth () <= 0 || outSize.getHeight () <= 0)
 			return false;
-		CBitmap* inputBitmap = getInputBitmap ();
+		auto inputBitmap = getInputBitmap ();
 		if (inputBitmap == nullptr)
 			return false;
 		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (outSize.getWidth (), outSize.getHeight ()));

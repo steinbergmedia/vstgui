@@ -105,7 +105,7 @@ bool VuMeterCreator::getAttributeValue (CView* view, const string& attributeName
 		return false;
 	if (attributeName == kAttrOffBitmap)
 	{
-		CBitmap* bitmap = vuMeter->getOffBitmap ();
+		auto bitmap = vuMeter->getOffBitmap ();
 		if (bitmap)
 		{
 			bitmapToString (bitmap, stringValue, desc);

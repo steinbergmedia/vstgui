@@ -949,7 +949,7 @@ void CTextButton::draw (CDrawContext* context)
 	CRect titleRect = getViewSize ();
 	titleRect.inset (lineWidth / 2., lineWidth / 2.);
 
-	CBitmap* iconToDraw = nullptr;
+	SharedPointer<CBitmap> iconToDraw;
 	if (!getMouseEnabled () && getDisabledBackground ())
 		iconToDraw = getDisabledBackground ();
 	else

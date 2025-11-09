@@ -37,16 +37,14 @@ public:
 	const CLineStyle lineOnOffDash2Style {CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0,
 										  2, kDefaultOnOffDashLength2};
 
-	UIBitmapView (CBitmap* bitmap = nullptr)
-	: CView (CRect (0, 0, 0, 0))
-	, zoom (1.)
+	UIBitmapView (SharedPointer<CBitmap> bitmap = {}) : CView (CRect (0, 0, 0, 0)), zoom (1.)
 	{
-		setBackground (shared (bitmap));
+		setBackground (bitmap);
 	}
 	
 	void draw (CDrawContext* context) override
 	{
-		if (CBitmap* bitmap = getBackground ())
+		if (auto bitmap = getBackground ())
 		{
 			CGraphicsTransform matrix;
 			matrix.scale (zoom, zoom);
@@ -54,7 +52,7 @@ public:
 			CRect r (getViewSize ());
 			matrix.inverse ().transform (r);
 			bitmap->CBitmap::draw (context, r);
-			if (auto nptBitmap = dynamic_cast<CNinePartTiledBitmap*> (bitmap))
+			if (auto nptBitmap = bitmap.cast<CNinePartTiledBitmap> ())
 			{
 				const CNinePartTiledDescription& offsets = nptBitmap->getPartOffsets ();
 
@@ -84,7 +82,7 @@ public:
 				context->drawLine (CPoint (r2.left + offsets.left, r2.top), CPoint (r2.left + offsets.left, r2.bottom));
 				context->drawLine (CPoint (r2.right - offsets.right, r2.top), CPoint (r2.right - offsets.right, r2.bottom));
 			}
-			else if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+			else if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 			{
 				auto desc = mfb->getMultiFrameDesc ();
 				auto columns = desc.framesPerRow;
@@ -141,7 +139,7 @@ public:
 
 	void updateSize ()
 	{
-		if (CBitmap* bitmap = getBackground ())
+		if (auto bitmap = getBackground ())
 		{
 			CCoord width = bitmap ? bitmap->getWidth () : 0;
 			CCoord height = bitmap ? bitmap->getHeight () : 0;
@@ -188,8 +186,8 @@ class UIBitmapsDataSource : public UIBaseDataSource
 {
 public:
 	UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate);
-	
-	CBitmap* getSelectedBitmap ();
+
+	SharedPointer<CBitmap> getSelectedBitmap ();
 	UTF8StringPtr getSelectedBitmapName ();
 
 	bool add () override;
@@ -307,7 +305,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, cons
 					auto dropSource = CDropSource::create (stream.getBuffer (),
 					                                       static_cast<uint32_t> (stream.tell ()),
 					                                       CDropSource::kText);
-					browser->doDrag (DragDescription (dropSource, {}, shared (bitmap)));
+					browser->doDrag (DragDescription (dropSource, {}, bitmap));
 					return kMouseMoveEventHandledButDontNeedMoreEvents;
 				}
 			}
@@ -436,11 +434,14 @@ bool UIBitmapsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPt
 }
 
 //----------------------------------------------------------------------------------------------------
-CBitmap* UIBitmapsDataSource::getSelectedBitmap ()
+SharedPointer<CBitmap> UIBitmapsDataSource::getSelectedBitmap ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).data ());
+	{
+		return shared (
+			description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).data ()));
+	}
 	return nullptr;
 }
 
@@ -1124,7 +1125,7 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 {
 	if (dataSource)
 	{
-		auto bitmap = shared (dataSource->getSelectedBitmap ());
+		auto bitmap = dataSource->getSelectedBitmap ();
 		UTF8StringPtr selectedBitmapName = dataSource->getSelectedBitmapName ();
 		if (bitmapView)
 		{

@@ -307,7 +307,7 @@ bool TextButtonCreator::getAttributeValue (CView* view, const string& attributeN
 	}
 	else if (attributeName == kAttrIcon)
 	{
-		CBitmap* bitmap = button->getIcon ();
+		auto bitmap = button->getIcon ();
 		if (bitmap)
 		{
 			return bitmapToString (bitmap, stringValue, desc);
@@ -315,7 +315,7 @@ bool TextButtonCreator::getAttributeValue (CView* view, const string& attributeN
 	}
 	else if (attributeName == kAttrIconHighlighted)
 	{
-		CBitmap* bitmap = button->getIconHighlighted ();
+		auto bitmap = button->getIconHighlighted ();
 		if (bitmap)
 		{
 			return bitmapToString (bitmap, stringValue, desc);

@@ -1153,7 +1153,7 @@ void CView::setBackground (const SharedPointer<CBitmap>& background)
 {
 	if (hasViewFlag (kHasBackground))
 	{
-		CBitmap* old;
+		CBitmap* old = nullptr;
 		if (getAttribute (kCViewBackgroundBitmapAttrID, old))
 		{
 			old->forget ();
@@ -1205,7 +1205,7 @@ void CView::setDisabledBackground (const SharedPointer<CBitmap>& background)
 {
 	if (hasViewFlag (kHasDisabledBackground))
 	{
-		CBitmap* old;
+		CBitmap* old = nullptr;
 		if (getAttribute (kCViewDisabledBackgroundBitmapAttrID, old))
 		{
 			old->forget ();

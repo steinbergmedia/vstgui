@@ -938,7 +938,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 	auto* bitmapNode = dynamic_cast<Detail::UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kBitmap), name));
 	if (bitmapNode)
 	{
-		CBitmap* bitmap = bitmapNode->getBitmap (impl->filePath);
+		auto bitmap = bitmapNode->getBitmap (impl->filePath);
 		if (impl->bitmapCreator && bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
 			auto platformBitmap = impl->bitmapCreator->createBitmap (*bitmapNode->getAttributes ());
@@ -1073,7 +1073,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					if (nameWithoutScaleFactor == bitmapName)
 					{
 						childNode->setScaledBitmapsAdded ();
-						CBitmap* childBitmap = getBitmap (childNodeBitmapName->c_str ());
+						auto childBitmap = getBitmap (childNodeBitmapName->c_str ());
 						if (childBitmap && childBitmap->getPlatformBitmap ())
 							bitmap->addBitmap (childBitmap->getPlatformBitmap ());
 					}
