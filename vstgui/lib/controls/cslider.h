@@ -116,8 +116,8 @@ public:
 	/** get background draw offset */
 	CPoint getBackgroundOffset () const;
 
-	virtual void setHandle (CBitmap* pHandle);
-	virtual CBitmap* getHandle () const;
+	void setHandle (const SharedPointer<CBitmap>& pHandle);
+	SharedPointer<CBitmap> getHandle () const;
 	//@}
 
 //------------------------------------------------------------------------

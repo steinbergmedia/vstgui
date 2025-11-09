@@ -5,6 +5,7 @@
 #include "sliderviewcreator.h"
 
 #include "../../lib/controls/cslider.h"
+#include "../../lib/cbitmap.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
@@ -241,7 +242,7 @@ bool SliderCreator::apply (CView* view, const UIAttributes& attributes,
 
 	CBitmap* bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
-		slider->setHandle (bitmap);
+		slider->setHandle (shared (bitmap));
 
 	CPoint p;
 	if (attributes.getPointAttribute (kAttrBitmapOffset, p))

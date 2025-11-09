@@ -628,7 +628,7 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag, in
 	setBackgroundOffset (offset);
 	setBackground (shared (background));
 	setStyle (style);
-	setHandle (handle);
+	setHandle (shared (handle));
 
 	if (style & kHorizontal)
 	{
@@ -668,7 +668,7 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag,
 	setBackgroundOffset (offset);
 	setBackground (shared (background));
 	setStyle (style);
-	setHandle (handle);
+	setHandle (shared (handle));
 
 	if (isStyleHorizontal ())
 		setHandleRangePrivate (_rangeHandle - getHandleSizePrivate ().x);
@@ -848,7 +848,7 @@ void CSlider::draw (CDrawContext* pContext)
 }
 
 //------------------------------------------------------------------------
-void CSlider::setHandle (CBitmap* _pHandle)
+void CSlider::setHandle (const SharedPointer<CBitmap>& _pHandle)
 {
 	impl->pHandle = _pHandle;
 	if (impl->pHandle)
@@ -863,10 +863,7 @@ void CSlider::setHandle (CBitmap* _pHandle)
 }
 
 //------------------------------------------------------------------------
-CBitmap* CSlider::getHandle () const
-{
-	return impl->pHandle;
-}
+SharedPointer<CBitmap> CSlider::getHandle () const { return impl->pHandle; }
 
 //------------------------------------------------------------------------
 void CSlider::setDrawStyle (int32_t style)
