@@ -17,17 +17,14 @@ CXYPad::CXYPad (const CRect& size)
 }
 
 //------------------------------------------------------------------------
-void CXYPad::setHandleBitmap (CBitmap* bitmap)
+void CXYPad::setHandleBitmap (const SharedPointer<CBitmap>& bitmap)
 {
 	handle = bitmap;
 	invalid ();
 }
 
 //------------------------------------------------------------------------
-CBitmap* CXYPad::getHandleBitmap () const
-{
-	return handle;
-}
+SharedPointer<CBitmap> CXYPad::getHandleBitmap () const { return handle; }
 
 //------------------------------------------------------------------------
 void CXYPad::draw (CDrawContext* context)
