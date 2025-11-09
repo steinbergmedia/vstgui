@@ -104,8 +104,9 @@ public:
 /// @endcond
 
 //-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, CBitmap* tabBitmap, const SharedPointer<CBitmap>& background,
-					TabPosition tabPosition, int32_t style)
+CTabView::CTabView (const CRect& size, const SharedPointer<CBitmap>& tabBitmap,
+					const SharedPointer<CBitmap>& background, TabPosition tabPosition,
+					int32_t style)
 : CViewContainer (size)
 , numberOfChilds (0)
 , tabPosition (tabPosition)
@@ -119,7 +120,6 @@ CTabView::CTabView (const CRect& size, CBitmap* tabBitmap, const SharedPointer<C
 	setBackground (background);
 	if (tabBitmap)
 	{
-		tabBitmap->remember ();
 		tabSize.right = tabBitmap->getWidth ();
 		tabSize.bottom = tabBitmap->getHeight ();
 	}
@@ -162,14 +162,13 @@ void CTabView::setAutosizeFlags (int32_t flags)
 }
 
 //-----------------------------------------------------------------------------
-bool CTabView::addTab (CView* view, UTF8StringPtr name, CBitmap* inTabBitmap)
+bool CTabView::addTab (CView* view, UTF8StringPtr name, const SharedPointer<CBitmap>& inTabBitmap)
 {
 	if (!view)
 		return false;
-	if (inTabBitmap == nullptr)
-		inTabBitmap = tabBitmap;
 
-	auto* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, shared (inTabBitmap), name);
+	auto* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, inTabBitmap ? inTabBitmap : tabBitmap,
+							  name);
 	b->setTransparency (true);
 
 	return addTab (view, b);

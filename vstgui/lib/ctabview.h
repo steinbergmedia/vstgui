@@ -36,8 +36,9 @@ public:
 		kAlignBottom = kAlignRight
 	};
 
-	CTabView (const CRect& size, CBitmap* tabBitmap, const SharedPointer<CBitmap>& background = {},
-			  TabPosition tabPosition = kPositionTop, int32_t style = 0);
+	CTabView (const CRect& size, const SharedPointer<CBitmap>& tabBitmap,
+			  const SharedPointer<CBitmap>& background = {}, TabPosition tabPosition = kPositionTop,
+			  int32_t style = 0);
 	CTabView (const CRect& size, const CRect& tabSize,
 			  const SharedPointer<CBitmap>& background = {}, TabPosition tabPosition = kPositionTop,
 			  int32_t style = 0);
@@ -47,7 +48,8 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** add a tab */
-	virtual bool addTab (CView* view, UTF8StringPtr name = nullptr, CBitmap* tabBitmap = nullptr);
+	virtual bool addTab (CView* view, UTF8StringPtr name = nullptr,
+						 const SharedPointer<CBitmap>& tabBitmap = {});
 	/** add a tab */
 	virtual bool addTab (CView* view, CControl* button);
 	/** remove a tab */
@@ -87,7 +89,7 @@ protected:
 	int32_t style;
 	CRect tabSize;
 	CPoint tabViewInset;
-	CBitmap* tabBitmap;
+	SharedPointer<CBitmap> tabBitmap;
 	CTabChildView* firstChild;
 	CTabChildView* lastChild;
 	CTabChildView* currentChild;
