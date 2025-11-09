@@ -846,7 +846,7 @@ CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag
 //-----------------------------------------------------------------------------------------------
 void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 {
-	if (dynamic_cast<CMultiFrameBitmap*> (getDrawBackground ()))
+	if (getDrawBackground ().cast<CMultiFrameBitmap> ())
 		return;
 	IMultiBitmapControl::setHeightOfOneImage (height);
 	if (getDrawBackground () && heightOfOneImage > 0)
@@ -859,10 +859,10 @@ void CAnimKnob::setBackground (const SharedPointer<CBitmap>& background)
 {
 	CKnobBase::setBackground (background);
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (background))
+	if (auto mfb = background.cast<CMultiFrameBitmap> ())
 	{
-		heightOfOneImage = frameBitmap->getFrameSize ().y;
-		setNumSubPixmaps (frameBitmap->getNumFrames ());
+		heightOfOneImage = mfb->getFrameSize ().y;
+		setNumSubPixmaps (mfb->getNumFrames ());
 		return;
 	}
 
