@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -178,7 +178,7 @@ public:
 	void setCommandCategory (const UTF8String& category);
 	const UTF8String& getCommandCategory () const { return commandCategory; }
 	bool isCommandCategory (const UTF8String& category) const;
-	
+
 	void setCommandName (const UTF8String& name);
 	const UTF8String& getCommandName () const { return commandName; }
 	bool isCommandName (const UTF8String& name) const;
@@ -293,9 +293,9 @@ public:
 	/** Windows only */
 	virtual int32_t getNbItemsPerColumn () const { return nbItemsPerColumn; }
 
-	/** get last index of choosen entry */
+	/** get last index of chosen entry */
 	int32_t getLastResult () const { return lastResult; }
-	/** get last menu and index of choosen entry */
+	/** get last menu and index of chosen entry */
 	SharedPointer<COptionMenu> getLastItemMenu (int32_t& idxInMenu) const;
 
 	/** set prefix numbering */

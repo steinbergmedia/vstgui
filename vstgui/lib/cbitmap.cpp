@@ -24,7 +24,7 @@ File format support is handled in a platform dependent way. On Windows GDI+ is u
 For cross platform compatibility it is recommended to use PNG files.
 @section loading Loading Bitmaps
 You load a bitmap via a CResourceDescription which can hold a string or a number.
-If you use names, you need to use the real filename with extension. Then it gets automaticly
+If you use names, you need to use the real filename with extension. Then it gets automatically
 loaded on Mac OS X out of the Resources folder of the vst bundle. On Windows you also specify the resource in the .rc file with the real filename.
 @code
 // using a number

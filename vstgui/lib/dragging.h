@@ -44,7 +44,7 @@ enum class DragOperation
 	Copy,
 	/** the drag will be or was moved*/
 	Move,
-	/** no drag operation will occure or was happening */
+	/** no drag operation will occur or was happening */
 	None
 };
 
@@ -90,7 +90,7 @@ struct DragEventData
  *	- when the mouse leaves the view, the drop targets @b onDragLeave() is called and its reference
  *		count is decreased.
  *
- *	- when the drag is droped, the drop targets @b onDrop() is called and then its reference count
+ *	- when the drag is dropped, the drop targets @b onDrop() is called and then its reference count
  *		is decreased. Note that no @b onDragLeave() is called.
  *
  *	@ingroup new_in_4_7

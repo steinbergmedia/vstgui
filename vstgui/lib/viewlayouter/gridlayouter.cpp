@@ -311,11 +311,9 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 			CCoord itemHeight = h;
 
 			// Determine intrinsic size when not stretching
-			CCoord intrinsicW = w;
-			CCoord intrinsicH = h;
 			CRect vs = child->getViewSize ();
-			intrinsicW = std::max<CCoord> (0.0, std::min (vs.getWidth (), w));
-			intrinsicH = std::max<CCoord> (0.0, std::min (vs.getHeight (), h));
+			CCoord intrinsicW = std::max<CCoord> (0.0, std::min (vs.getWidth (), w));
+			CCoord intrinsicH = std::max<CCoord> (0.0, std::min (vs.getHeight (), h));
 
 			// Horizontal sizing and positioning
 			switch (gridProps.justifyItems)

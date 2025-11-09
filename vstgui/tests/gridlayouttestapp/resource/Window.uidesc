@@ -771,13 +771,13 @@
 							"CScrollView": {
 								"attributes": {
 									"auto-drag-scrolling": "false",
-									"auto-hide-scrollbars": "false",
+									"auto-hide-scrollbars": "true",
 									"autosize": "left right top bottom ",
 									"background-color": "~ BlackCColor",
 									"background-color-draw-style": "filled and stroked",
 									"bordered": "false",
 									"class": "CScrollView",
-									"container-size": "200, 210",
+									"container-size": "200, 165",
 									"custom-view-name": "DataBrowser",
 									"follow-focus-view": "false",
 									"horizontal-scrollbar": "false",
@@ -906,13 +906,13 @@
 							"CScrollView": {
 								"attributes": {
 									"auto-drag-scrolling": "false",
-									"auto-hide-scrollbars": "false",
+									"auto-hide-scrollbars": "true",
 									"autosize": "left right top bottom ",
 									"background-color": "~ BlackCColor",
 									"background-color-draw-style": "filled and stroked",
 									"bordered": "false",
 									"class": "CScrollView",
-									"container-size": "200, 60",
+									"container-size": "212, 53.3333",
 									"custom-view-name": "DataBrowser",
 									"follow-focus-view": "false",
 									"horizontal-scrollbar": "false",
@@ -1041,13 +1041,13 @@
 							"CScrollView": {
 								"attributes": {
 									"auto-drag-scrolling": "false",
-									"auto-hide-scrollbars": "false",
+									"auto-hide-scrollbars": "true",
 									"autosize": "left right top bottom ",
 									"background-color": "~ BlackCColor",
 									"background-color-draw-style": "filled and stroked",
 									"bordered": "false",
 									"class": "CScrollView",
-									"container-size": "202, 53.3333",
+									"container-size": "214, 53.3333",
 									"custom-view-name": "DataBrowser",
 									"follow-focus-view": "false",
 									"horizontal-scrollbar": "false",

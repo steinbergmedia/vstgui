@@ -123,7 +123,7 @@ struct CFrame::Impl
 // CFrame Implementation
 //-----------------------------------------------------------------------------
 /*! @class CFrame
-It creates a platform dependend view object. 
+It creates a platform dependent view object. 
 
 On Mac OS X it is a HIView or NSView.\n 
 On Windows it's a WS_CHILD Window.
