@@ -79,7 +79,7 @@ public:
 					   const PlatformBitmapPtr& platformBitmap);
 
 protected:
-	explicit COffscreenContext (CBitmap* bitmap);
+	explicit COffscreenContext (const SharedPointer<CBitmap>& bitmap);
 	explicit COffscreenContext (const CRect& surfaceRect);
 
 	SharedPointer<CBitmap> bitmap;

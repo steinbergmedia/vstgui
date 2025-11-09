@@ -11,8 +11,8 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-COffscreenContext::COffscreenContext (CBitmap* bitmap)
-: CDrawContext (CRect (0, 0, bitmap->getWidth (), bitmap->getHeight ()))
+COffscreenContext::COffscreenContext (const SharedPointer<CBitmap>& bitmap)
+: CDrawContext (CRect (0, 0, bitmap ? bitmap->getWidth () : 0, bitmap ? bitmap->getHeight () : 0))
 , bitmap (bitmap)
 {
 }
@@ -27,9 +27,10 @@ COffscreenContext::COffscreenContext (const CRect& surfaceRect)
 COffscreenContext::COffscreenContext (const PlatformGraphicsDeviceContextPtr device,
 									  const CRect& surfaceRect,
 									  const PlatformBitmapPtr& platformBitmap)
-: CDrawContext (device, surfaceRect, platformBitmap->getScaleFactor ())
+: CDrawContext (device, surfaceRect, platformBitmap ? platformBitmap->getScaleFactor () : 1.)
 , bitmap (makeOwned<CBitmap> (platformBitmap))
 {
+	vstgui_assert (platformBitmap);
 }
 
 //-----------------------------------------------------------------------------
