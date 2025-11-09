@@ -22,14 +22,14 @@ namespace VSTGUI {
  * @param style kHorizontal or kVertical
  */
 //------------------------------------------------------------------------
-CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed,
-					Style style)
+CVuMeter::CVuMeter (const CRect& size, const SharedPointer<CBitmap>& onBitmap,
+					const SharedPointer<CBitmap>& offBitmap, int32_t nbLed, Style style)
 : CControl (size, nullptr, 0), offBitmap (nullptr), nbLed (nbLed), style (style)
 {
 	setDecreaseStepValue (0.1f);
 
-	setOnBitmap (shared (onBitmap));
-	setOffBitmap (shared (offBitmap));
+	setOnBitmap (onBitmap);
+	setOffBitmap (offBitmap);
 
 	rectOn  (size.left, size.top, size.right, size.bottom);
 	rectOff (size.left, size.top, size.right, size.bottom);

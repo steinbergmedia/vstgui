@@ -24,7 +24,8 @@ public:
 		kVertical,
 	};
 
-	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed,
+	CVuMeter (const CRect& size, const SharedPointer<CBitmap>& onBitmap,
+			  const SharedPointer<CBitmap>& offBitmap, int32_t nbLed,
 			  Style style = Style::kVertical);
 	CVuMeter (const CVuMeter& vuMeter);
   
