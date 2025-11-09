@@ -120,8 +120,8 @@ public:
 	const CLineStyle::CoordVector& getCoronaDashDotLengths () const;
 	virtual void setCoronaDashDotLengths (const CLineStyle::CoordVector& lengths);
 
-	CBitmap* getHandleBitmap () const { return pHandle; }
-	void setHandleBitmap (CBitmap* bitmap);
+	SharedPointer<CBitmap> getHandleBitmap () const { return pHandle; }
+	void setHandleBitmap (const SharedPointer<CBitmap>& bitmap);
 	//@}
 
 	// overrides
@@ -150,7 +150,7 @@ protected:
 	CCoord coronaOutlineWidthAdd;
 
 	CLineStyle coronaLineStyle;
-	CBitmap* pHandle;
+	SharedPointer<CBitmap> pHandle;
 };
 
 //-----------------------------------------------------------------------------

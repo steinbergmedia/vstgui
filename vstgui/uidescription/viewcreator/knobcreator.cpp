@@ -191,7 +191,7 @@ bool KnobCreator::apply (CView* view, const UIAttributes& attributes,
 
 	CBitmap* bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
-		knob->setHandleBitmap (bitmap);
+		knob->setHandleBitmap (shared (bitmap));
 
 	int32_t drawStyle = knob->getDrawStyle ();
 	applyStyleMask (attributes.getAttributeValue (kAttrCircleDrawing), CKnob::kHandleCircleDrawing,

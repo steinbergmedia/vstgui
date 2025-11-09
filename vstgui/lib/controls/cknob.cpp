@@ -401,18 +401,18 @@ By clicking alt modifier and left mouse button the value changes with a vertical
  * @param drawStyle draw style
  */
 //------------------------------------------------------------------------
-CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset, int32_t drawStyle)
+CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
+			  CBitmap* handle, const CPoint& offset, int32_t drawStyle)
 : CKnobBase (size, listener, tag, background)
 , offset (offset)
 , drawStyle (drawStyle)
 , handleLineWidth (1.)
 , coronaInset (0)
 , coronaOutlineWidthAdd (2.)
-, pHandle (handle)
+, pHandle (shared (handle))
 {
 	if (pHandle)
 	{
-		pHandle->remember ();
 		inset = (CCoord)((float)pHandle->getWidth () / 2.f + 2.5f);
 	}
 	else
@@ -441,16 +441,10 @@ CKnob::CKnob (const CKnob& v)
 , coronaLineStyle (v.coronaLineStyle)
 , pHandle (v.pHandle)
 {
-	if (pHandle)
-		pHandle->remember ();
 }
 
 //------------------------------------------------------------------------
-CKnob::~CKnob () noexcept
-{
-	if (pHandle)
-		pHandle->forget ();
-}
+CKnob::~CKnob () noexcept {}
 
 //------------------------------------------------------------------------
 bool CKnob::drawFocusOnTop ()
@@ -724,18 +718,12 @@ void CKnob::setDrawStyle (int32_t style)
 }
 
 //------------------------------------------------------------------------
-void CKnob::setHandleBitmap (CBitmap* bitmap)
+void CKnob::setHandleBitmap (const SharedPointer<CBitmap>& bitmap)
 {
-	if (pHandle)
-	{
-		pHandle->forget ();
-		pHandle = nullptr;
-	}
-
+	pHandle.reset ();
 	if (bitmap)
 	{
 		pHandle = bitmap;
-		pHandle->remember ();
 		inset = (CCoord)((float)pHandle->getWidth () / 2.f + 2.5f);
 	}
 	setDirty ();
