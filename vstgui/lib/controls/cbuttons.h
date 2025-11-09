@@ -224,11 +224,11 @@ public:
 	virtual void setStyle (Style style);
 	Style getStyle () const { return style; }
 
-	virtual void setIcon (CBitmap* bitmap);
-	CBitmap* getIcon () const;
-	
-	virtual void setIconHighlighted (CBitmap* bitmap);
-	CBitmap* getIconHighlighted () const;
+	virtual void setIcon (const SharedPointer<CBitmap>& bitmap);
+	SharedPointer<CBitmap> getIcon () const;
+
+	virtual void setIconHighlighted (const SharedPointer<CBitmap>& bitmap);
+	SharedPointer<CBitmap> getIconHighlighted () const;
 
 	virtual void setIconPosition (CDrawMethods::IconPosition pos);
 	CDrawMethods::IconPosition getIconPosition () const { return iconPosition; }

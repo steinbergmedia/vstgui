@@ -113,9 +113,9 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 
 	CBitmap* bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrIcon), bitmap, description))
-		button->setIcon (bitmap);
+		button->setIcon (shared (bitmap));
 	if (stringToBitmap (attributes.getAttributeValue (kAttrIconHighlighted), bitmap, description))
-		button->setIconHighlighted (bitmap);
+		button->setIconHighlighted (shared (bitmap));
 
 	attr = attributes.getAttributeValue (kAttrIconPosition);
 	if (attr)

@@ -771,16 +771,10 @@ CGradient* CTextButton::getGradientHighlighted () const
 }
 
 //------------------------------------------------------------------------
-CBitmap* CTextButton::getIcon () const
-{
-	return icon;
-}
+SharedPointer<CBitmap> CTextButton::getIcon () const { return icon; }
 
 //------------------------------------------------------------------------
-CBitmap* CTextButton::getIconHighlighted () const
-{
-	return iconHighlighted;
-}
+SharedPointer<CBitmap> CTextButton::getIconHighlighted () const { return iconHighlighted; }
 
 //------------------------------------------------------------------------
 void CTextButton::setTitle (const UTF8String& newTitle)
@@ -860,7 +854,7 @@ void CTextButton::setStyle (Style _style)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setIcon (CBitmap* bitmap)
+void CTextButton::setIcon (const SharedPointer<CBitmap>& bitmap)
 {
 	if (icon != bitmap)
 	{
@@ -870,7 +864,7 @@ void CTextButton::setIcon (CBitmap* bitmap)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setIconHighlighted (CBitmap* bitmap)
+void CTextButton::setIconHighlighted (const SharedPointer<CBitmap>& bitmap)
 {
 	if (iconHighlighted != bitmap)
 	{
