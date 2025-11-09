@@ -68,8 +68,8 @@ public:
 	/// @name CAnimationSplashScreen Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setSplashBitmap (CBitmap* bitmap);
-	CBitmap* getSplashBitmap () const;
+	virtual void setSplashBitmap (const SharedPointer<CBitmap>& bitmap);
+	SharedPointer<CBitmap> getSplashBitmap () const;
 
 	virtual void setSplashRect (const CRect& splashRect);
 	const CRect& getSplashRect () const;

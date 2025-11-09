@@ -186,20 +186,20 @@ CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag, 
 }
 
 //------------------------------------------------------------------------
-void CAnimationSplashScreen::setSplashBitmap (CBitmap* bitmap)
+void CAnimationSplashScreen::setSplashBitmap (const SharedPointer<CBitmap>& bitmap)
 {
 	if (modalView)
 	{
-		modalView->setBackground (shared (bitmap));
+		modalView->setBackground (bitmap);
 	}
 }
 
 //------------------------------------------------------------------------
-CBitmap* CAnimationSplashScreen::getSplashBitmap () const
+SharedPointer<CBitmap> CAnimationSplashScreen::getSplashBitmap () const
 {
 	if (modalView)
 		return modalView->getBackground ();
-	return nullptr;
+	return {nullptr};
 }
 
 //------------------------------------------------------------------------

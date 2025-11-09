@@ -5,6 +5,7 @@
 #include "animationsplashscreencreator.h"
 
 #include "../../lib/controls/csplashscreen.h"
+#include "../../lib/cbitmap.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
@@ -55,7 +56,7 @@ bool AnimationSplashScreenCreator::apply (CView* view, const UIAttributes& attri
 
 	CBitmap* bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrSplashBitmap), bitmap, description))
-		splashScreen->setSplashBitmap (bitmap);
+		splashScreen->setSplashBitmap (shared (bitmap));
 
 	CPoint p;
 	if (attributes.getPointAttribute (kAttrSplashOrigin, p))
