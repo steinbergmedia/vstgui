@@ -23,7 +23,8 @@ public:
 	bool getInverseBitmap () const { return inverseBitmap; }
 
 protected:
-	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
+	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
+				 const SharedPointer<CBitmap>& background);
 	CSwitchBase (const CSwitchBase& other);
 	~CSwitchBase () noexcept override = default;
 
@@ -74,7 +75,7 @@ class CVerticalSwitch : public CSwitchBase
 {
 public:
 	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-					 CBitmap* background);
+					 const SharedPointer<CBitmap>& background);
 	CVerticalSwitch (const CVerticalSwitch& vswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
@@ -103,7 +104,7 @@ class CHorizontalSwitch : public CSwitchBase
 {
 public:
 	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-					   CBitmap* background);
+					   const SharedPointer<CBitmap>& background);
 	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
@@ -147,8 +148,8 @@ public:
 		kVertical = 1 << StyleVertical,
 	};
 
-	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-				   const int32_t style = kHorizontal);
+	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+				   const SharedPointer<CBitmap>& background, const int32_t style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);
 
 	void draw (CDrawContext*) override;

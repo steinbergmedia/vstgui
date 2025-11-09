@@ -25,7 +25,8 @@ class CMovieButton : public CControl,
 #endif
 {
 public:
-	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
+	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
+				  const SharedPointer<CBitmap>& background);
 	CMovieButton (const CMovieButton& movieButton);
 
 	void draw (CDrawContext*) override;

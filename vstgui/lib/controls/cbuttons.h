@@ -23,7 +23,8 @@ namespace VSTGUI {
 class COnOffButton : public CControl
 {
 public:
-	COnOffButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, CBitmap* background = nullptr, int32_t style = 0);
+	COnOffButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1,
+				  const SharedPointer<CBitmap>& background = {}, int32_t style = 0);
 	COnOffButton (const COnOffButton& onOffButton);
 
 	//-----------------------------------------------------------------------------
@@ -58,7 +59,9 @@ protected:
 class CCheckBox : public CControl
 {
 public:
-	CCheckBox (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, UTF8StringPtr title = nullptr, CBitmap* bitmap = nullptr, int32_t style = 0);
+	CCheckBox (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1,
+			   UTF8StringPtr title = nullptr, const SharedPointer<CBitmap>& background = {},
+			   int32_t style = 0);
 	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles
@@ -144,7 +147,8 @@ class CKickButton : public CControl,
 #endif
 {
 public:
-	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
+	CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
+				 const SharedPointer<CBitmap>& background);
 	CKickButton (const CKickButton& kickButton);
 
 	void draw (CDrawContext*) override;

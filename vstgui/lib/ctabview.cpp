@@ -20,9 +20,9 @@ class CTabButton : public COnOffButton, public DropTargetAdapter
 //-----------------------------------------------------------------------------
 {
 public:
-	CTabButton (const CRect &size, IControlListener *listener, int32_t tag, CBitmap *background, UTF8StringPtr inName)
-	: COnOffButton (size, listener, tag, background)
-	, name (inName)
+	CTabButton (const CRect& size, IControlListener* listener, int32_t tag,
+				const SharedPointer<CBitmap>& background, UTF8StringPtr inName)
+	: COnOffButton (size, listener, tag, background), name (inName)
 	{
 		activeTextColor = kBlackCColor;
 		inactiveTextColor (90, 90, 90, 255);
@@ -104,7 +104,8 @@ public:
 /// @endcond
 
 //-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background, TabPosition tabPosition, int32_t style)
+CTabView::CTabView (const CRect& size, CBitmap* tabBitmap, const SharedPointer<CBitmap>& background,
+					TabPosition tabPosition, int32_t style)
 : CViewContainer (size)
 , numberOfChilds (0)
 , tabPosition (tabPosition)
@@ -115,7 +116,7 @@ CTabView::CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background, 
 , lastChild (nullptr)
 , currentChild (nullptr)
 {
-	setBackground (shared (background));
+	setBackground (background);
 	if (tabBitmap)
 	{
 		tabBitmap->remember ();
@@ -126,7 +127,9 @@ CTabView::CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background, 
 }
 
 //-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background, TabPosition tabPosition, int32_t style)
+CTabView::CTabView (const CRect& size, const CRect& tabSize,
+					const SharedPointer<CBitmap>& background, TabPosition tabPosition,
+					int32_t style)
 : CViewContainer (size)
 , numberOfChilds (0)
 , currentTab (-1)
@@ -138,7 +141,7 @@ CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background
 , lastChild (nullptr)
 , currentChild (nullptr)
 {
-	setBackground (shared (background));
+	setBackground (background);
 	setTransparency (true);
 }
 
@@ -166,7 +169,7 @@ bool CTabView::addTab (CView* view, UTF8StringPtr name, CBitmap* inTabBitmap)
 	if (inTabBitmap == nullptr)
 		inTabBitmap = tabBitmap;
 
-	auto* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, inTabBitmap, name);
+	auto* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, shared (inTabBitmap), name);
 	b->setTransparency (true);
 
 	return addTab (view, b);

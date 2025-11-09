@@ -25,7 +25,7 @@ bool CMovieBitmap::useLegacyFrameCalculation = false;
  */
 //------------------------------------------------------------------------
 CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
-							CBitmap* background)
+							const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -47,9 +47,10 @@ CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
+CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
+							int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background,
+							const CPoint& offset)
+: CControl (size, listener, tag, shared (background)), offset (offset)
 {
 	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);

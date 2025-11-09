@@ -37,7 +37,8 @@ protected:
 	};
 
 public:
-	CParamDisplay (const CRect& size, CBitmap* background = nullptr, int32_t style = 0);
+	CParamDisplay (const CRect& size, const SharedPointer<CBitmap>& background = {},
+				   int32_t style = 0);
 	CParamDisplay (const CParamDisplay& paramDisplay);
 	
 	//-----------------------------------------------------------------------------

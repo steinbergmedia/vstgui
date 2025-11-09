@@ -36,8 +36,11 @@ public:
 		kAlignBottom = kAlignRight
 	};
 
-	CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background = nullptr, TabPosition tabPosition = kPositionTop, int32_t style = 0);
-	CTabView (const CRect& size, const CRect& tabSize, CBitmap* background = nullptr, TabPosition tabPosition = kPositionTop, int32_t style = 0);
+	CTabView (const CRect& size, CBitmap* tabBitmap, const SharedPointer<CBitmap>& background = {},
+			  TabPosition tabPosition = kPositionTop, int32_t style = 0);
+	CTabView (const CRect& size, const CRect& tabSize,
+			  const SharedPointer<CBitmap>& background = {}, TabPosition tabPosition = kPositionTop,
+			  int32_t style = 0);
 
 	//-----------------------------------------------------------------------------
 	/// @name Tab View Functions

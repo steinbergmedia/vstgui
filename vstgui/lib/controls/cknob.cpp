@@ -33,7 +33,8 @@ struct CKnobBase::MouseEditingState
 };
 
 //------------------------------------------------------------------------
-CKnobBase::CKnobBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background)
+CKnobBase::CKnobBase (const CRect& size, IControlListener* listener, int32_t tag,
+					  const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 	rangeAngle = 1.f;
@@ -401,15 +402,16 @@ By clicking alt modifier and left mouse button the value changes with a vertical
  * @param drawStyle draw style
  */
 //------------------------------------------------------------------------
-CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-			  CBitmap* handle, const CPoint& offset, int32_t drawStyle)
+CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag,
+			  const SharedPointer<CBitmap>& background, const SharedPointer<CBitmap>& handle,
+			  const CPoint& offset, int32_t drawStyle)
 : CKnobBase (size, listener, tag, background)
 , offset (offset)
 , drawStyle (drawStyle)
 , handleLineWidth (1.)
 , coronaInset (0)
 , coronaOutlineWidthAdd (2.)
-, pHandle (shared (handle))
+, pHandle (handle)
 {
 	if (pHandle)
 	{
@@ -747,7 +749,7 @@ CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
-					  CBitmap* background)
+					  const SharedPointer<CBitmap>& background)
 : CKnobBase (size, listener, tag, background), bInverseBitmap (false)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -755,10 +757,10 @@ CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag
 	setNumSubPixmaps (0);
 	if (background)
 	{
-		if (auto frameBitmap = dynamic_cast<CMultiFrameBitmap*> (background))
+		if (auto mfb = background.cast<CMultiFrameBitmap> ())
 		{
-			heightOfOneImage = frameBitmap->getFrameSize ().y;
-			setNumSubPixmaps (frameBitmap->getNumFrames ());
+			heightOfOneImage = mfb->getFrameSize ().y;
+			setNumSubPixmaps (mfb->getNumFrames ());
 		}
 		else
 		{
@@ -822,7 +824,7 @@ bool CAnimKnob::sizeToFit ()
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
 					  int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background,
 					  const CPoint& offset)
-: CKnobBase (size, listener, tag, background), bInverseBitmap (false)
+: CKnobBase (size, listener, tag, shared (background)), bInverseBitmap (false)
 {
 	vstgui_assert (background && !dynamic_cast<CMultiFrameBitmap*> (background),
 				   "Use the other constrcutor when using a CMultiFrameBitmap");

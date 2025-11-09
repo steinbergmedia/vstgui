@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../cview.h"
+#include "../cbitmap.h"
 #include "../ifocusdrawing.h"
 
 namespace VSTGUI {
@@ -27,7 +28,8 @@ static constexpr auto sqrt2 = 1.41421356237309504880;
 class CControl : public CView, public IFocusDrawing
 {
 public:
-	CControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = 0, CBitmap* pBackground = nullptr);
+	CControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = 0,
+			  const SharedPointer<CBitmap>& background = {});
 	CControl (const CControl& c);
 
 	//-----------------------------------------------------------------------------

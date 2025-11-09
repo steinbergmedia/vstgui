@@ -25,7 +25,8 @@ class CMovieBitmap : public CControl,
 #endif
 {
 public:
-	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
+	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
+				  const SharedPointer<CBitmap>& background);
 	CMovieBitmap (const CMovieBitmap& movieBitmap);
 
 	void draw (CDrawContext*) override;

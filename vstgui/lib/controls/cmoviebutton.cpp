@@ -21,7 +21,7 @@ namespace VSTGUI {
  */
 //------------------------------------------------------------------------
 CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
-							CBitmap* background)
+							const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background), buttonState (value)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -42,10 +42,9 @@ CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
-, buttonState (value)
+CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
+							CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, shared (background)), offset (offset), buttonState (value)
 {
 	setHeightOfOneImage (heightOfOneImage);
 	setWantsFocus (true);

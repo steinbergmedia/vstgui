@@ -28,7 +28,9 @@ private:
 public:
 	using PlatformTextEditPtr = SharedPointer<IPlatformTextEdit>;
 
-	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
+	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
+			   UTF8StringPtr txt = nullptr, const SharedPointer<CBitmap>& background = {},
+			   const int32_t style = 0);
 	CTextEdit (const CTextEdit& textEdit);
 
 	enum Style

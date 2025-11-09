@@ -60,16 +60,14 @@ struct CControl::Impl : ViewEventListenerAdapter
 /*! @class CControl
 This object manages the tag identification and the value of a control object.
 */
-CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag, CBitmap *pBackground)
-: CView (size)
-, listener (listener)
-, tag (tag)
-, value (0)
+CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag,
+					const SharedPointer<CBitmap>& pBackground)
+: CView (size), listener (listener), tag (tag), value (0)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	setTransparency (false);
 	setMouseEnabled (true);
-	setBackground (shared (pBackground));
+	setBackground (pBackground);
 	registerViewEventListener (impl.get ());
 }
 

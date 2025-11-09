@@ -7,12 +7,14 @@
 #include "../cframe.h"
 #include "../cgraphicspath.h"
 #include "../cdrawcontext.h"
+#include "../cbitmap.h"
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 CSearchTextEdit::CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
-                                  UTF8StringPtr txt, CBitmap* background, const int32_t style)
+								  UTF8StringPtr txt, const SharedPointer<CBitmap>& background,
+								  const int32_t style)
 : CTextEdit (size, listener, tag, nullptr, background, style)
 {
 	setPlaceholderString ("Search");

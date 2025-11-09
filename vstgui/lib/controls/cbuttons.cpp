@@ -31,9 +31,9 @@ When its value changes, the listener is called.
  * @param style style, currently not used
  */
 //------------------------------------------------------------------------
-COnOffButton::COnOffButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, int32_t style)
-: CControl (size, listener, tag, background)
-, style (style)
+COnOffButton::COnOffButton (const CRect& size, IControlListener* listener, int32_t tag,
+							const SharedPointer<CBitmap>& background, int32_t style)
+: CControl (size, listener, tag, background), style (style)
 {
 	setWantsFocus (true);
 }
@@ -153,11 +153,11 @@ Use a CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
-						  CBitmap* background)
+						  const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (dynamic_cast<CMultiFrameBitmap*> (background) == nullptr)
+	if (background.cast<CMultiFrameBitmap> () == nullptr)
 	{
 		heightOfOneImage = size.getHeight ();
 	}
@@ -177,9 +177,9 @@ CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t
  * @param offset of background
  */
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
+CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
+						  CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, shared (background)), offset (offset)
 {
 	setHeightOfOneImage (heightOfOneImage);
 	setWantsFocus (true);
@@ -359,7 +359,8 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 */
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
+CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag,
+					  UTF8StringPtr title, const SharedPointer<CBitmap>& bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
 , style (style)
 , fontColor (kWhiteCColor)

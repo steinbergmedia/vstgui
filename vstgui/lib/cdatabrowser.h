@@ -34,7 +34,8 @@ protected:
 	};
 	
 public:
-	CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
+	CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style = 0,
+				  CCoord scrollbarWidth = 16, const SharedPointer<CBitmap>& background = {});
 
 	enum CDataBrowserStyle 
 	{

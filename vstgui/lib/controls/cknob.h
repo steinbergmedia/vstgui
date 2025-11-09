@@ -53,7 +53,8 @@ public:
 	
 	CLASS_METHODS_VIRTUAL(CKnobBase, CControl)
 protected:
-	CKnobBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
+	CKnobBase (const CRect& size, IControlListener* listener, int32_t tag,
+			   const SharedPointer<CBitmap>& background);
 	CKnobBase (const CKnobBase& knob);
 	void compute ();
 
@@ -88,8 +89,10 @@ public:
 		kCoronaLineCapButt			= 1 << 6,
 		kSkipHandleDrawing			= 1 << 7,
 	};
-	
-	CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);
+
+	CKnob (const CRect& size, IControlListener* listener, int32_t tag,
+		   const SharedPointer<CBitmap>& background, const SharedPointer<CBitmap>& handle,
+		   const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);
 	CKnob (const CKnob& knob);
 
 	//-----------------------------------------------------------------------------
@@ -166,7 +169,8 @@ class CAnimKnob : public CKnobBase,
 #endif
 {
 public:
-	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
+	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
+			   const SharedPointer<CBitmap>& background);
 	CAnimKnob (const CAnimKnob& knob);
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS

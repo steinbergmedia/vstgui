@@ -65,7 +65,8 @@ and another click on the displayed area will leave the modal mode.
  */
 //------------------------------------------------------------------------
 CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
-                              CBitmap* background, const CRect& toDisplay, const CPoint& offset)
+							  const SharedPointer<CBitmap>& background, const CRect& toDisplay,
+							  const CPoint& offset)
 : CControl (size, listener, tag, background), toDisplay (toDisplay), offset (offset)
 {
 	modalView = new CDefaultSplashScreenView (toDisplay, this, background, offset);
@@ -179,10 +180,12 @@ void CSplashScreen::unSplash ()
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap)
+CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag,
+												const SharedPointer<CBitmap>& background,
+												const SharedPointer<CBitmap>& splashBitmap)
 : CSplashScreen (size, nullptr, tag, splashBitmap, CRect (0, 0, 0, 0))
 {
-	CView::setBackground (shared (background));
+	CView::setBackground (background);
 }
 
 //------------------------------------------------------------------------

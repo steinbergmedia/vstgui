@@ -17,7 +17,7 @@ bool CSwitchBase::useLegacyIndexCalculation = false;
 
 //------------------------------------------------------------------------
 CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
-						  CBitmap* background)
+						  const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 	setDefaultValue (0.f);
@@ -27,9 +27,9 @@ CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
-                          int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions,
-                          CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, background), offset (offset)
+						  int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions,
+						  CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, shared (background)), offset (offset)
 {
 	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
@@ -225,7 +225,7 @@ Use a CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-								  CBitmap* background)
+								  const SharedPointer<CBitmap>& background)
 : CSwitchBase (size, listener, tag, background)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -342,7 +342,7 @@ Use a CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-									  CBitmap* background)
+									  const SharedPointer<CBitmap>& background)
 : CSwitchBase (size, listener, tag, background)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -460,7 +460,7 @@ When the mouse button is relaxed, the second subbitmap is framed. */
  */
 //------------------------------------------------------------------------
 CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-							  CBitmap* background, const int32_t style)
+							  const SharedPointer<CBitmap>& background, const int32_t style)
 : CControl (size, listener, tag, background), style (style), resetValueTimer (nullptr)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -485,8 +485,9 @@ CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int
  * @param style
  */
 //------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset, const int32_t style)
-: CControl (size, listener, tag, background)
+CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+							  CBitmap* background, const CPoint& offset, const int32_t style)
+: CControl (size, listener, tag, shared (background))
 , offset (offset)
 , style (style)
 , resetValueTimer (nullptr)
@@ -513,8 +514,10 @@ CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int
  * @param style
  */
 //------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset, const int32_t style)
-: CControl (size, listener, tag, background)
+CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+							  CCoord heightOfOneImage, CBitmap* background, const CPoint& offset,
+							  const int32_t style)
+: CControl (size, listener, tag, shared (background))
 , offset (offset)
 , style (style)
 , resetValueTimer (nullptr)

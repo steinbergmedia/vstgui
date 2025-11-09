@@ -6,6 +6,7 @@
 #include "../platform/iplatformfont.h"
 #include "../cdrawmethods.h"
 #include "../cdrawcontext.h"
+#include "../cbitmap.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -24,9 +25,9 @@ namespace VSTGUI {
  * @param style the display style (see CParamDisplay for styles)
  */
 //------------------------------------------------------------------------
-CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, CBitmap* background, const int32_t style)
-: CParamDisplay (size, background, style)
-, textTruncateMode (kTruncateNone)
+CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt,
+						const SharedPointer<CBitmap>& background, const int32_t style)
+: CParamDisplay (size, background, style), textTruncateMode (kTruncateNone)
 {
 	setText (txt);
 }

@@ -32,7 +32,7 @@ A bitmap can be used as background.
  */
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt,
-                      CBitmap* background, const int32_t style)
+					  const SharedPointer<CBitmap>& background, const int32_t style)
 : CTextLabel (size, txt, background, style)
 {
 	this->listener = listener;

@@ -24,7 +24,7 @@ class CAutoAnimation : public CControl,
 {
 public:
 	CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
-					CBitmap* background);
+					const SharedPointer<CBitmap>& background);
 	CAutoAnimation (const CAutoAnimation& autoAnimation);
 
 	void draw (CDrawContext*) override;

@@ -334,7 +334,7 @@ struct CScrollView::Impl
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CRect& size, const CRect& containerSize, int32_t style,
-						  CCoord scrollbarWidth, CBitmap* pBackground)
+						  CCoord scrollbarWidth, const SharedPointer<CBitmap>& pBackground)
 : CViewContainer (size)
 {
 	impl = std::make_unique<Impl> ();
@@ -388,7 +388,7 @@ CScrollView::CScrollView (const CRect& size, const CRect& containerSize, int32_t
 	impl->scrollContainer->registerViewListener (this);
 
 	if (pBackground)
-		setBackground (shared (pBackground));
+		setBackground (pBackground);
 	recalculateLayout ();
 }
 

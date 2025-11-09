@@ -35,7 +35,7 @@ protected:
 
 public:
 	CScrollView (const CRect& size, const CRect& containerSize, int32_t style,
-				 CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
+				 CCoord scrollbarWidth = 16, const SharedPointer<CBitmap>& background = {});
 
 	/** Scroll View Style Flags */
 	enum CScrollViewStyle

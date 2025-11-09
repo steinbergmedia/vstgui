@@ -27,7 +27,7 @@ the current value of this control). Use a CMultiFrameBitmap for its background b
  */
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
-								CBitmap* background)
+								const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -52,7 +52,7 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
 								CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, background), offset (offset)
+: CControl (size, listener, tag, shared (background)), offset (offset)
 {
 	heightOfOneImage = size.getHeight ();
 	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
@@ -74,7 +74,7 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
 								int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background,
 								const CPoint& offset)
-: CControl (size, listener, tag, background), offset (offset)
+: CControl (size, listener, tag, shared (background)), offset (offset)
 {
 	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);

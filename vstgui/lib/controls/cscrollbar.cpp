@@ -11,6 +11,7 @@
 #include "../cdrawcontext.h"
 #include "../events.h"
 #include "../algorithm.h"
+#include "../cbitmap.h"
 
 namespace VSTGUI {
 

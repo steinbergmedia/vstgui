@@ -18,7 +18,9 @@ namespace VSTGUI {
 class CSplashScreen : public CControl, public IControlListener
 {
 public:
-	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
+	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
+				   const SharedPointer<CBitmap>& background, const CRect& toDisplay,
+				   const CPoint& offset = CPoint (0, 0));
 	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CView* splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
 
@@ -61,7 +63,9 @@ protected:
 class CAnimationSplashScreen : public CSplashScreen
 {
 public:
-	CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap);
+	CAnimationSplashScreen (const CRect& size, int32_t tag,
+							const SharedPointer<CBitmap>& background,
+							const SharedPointer<CBitmap>& splashBitmap);
 	CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen) = default;
 
 	//-----------------------------------------------------------------------------
