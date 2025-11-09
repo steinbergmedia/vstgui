@@ -198,7 +198,7 @@ void CParamDisplay::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
+void CParamDisplay::drawBack (CDrawContext* pContext, const SharedPointer<CBitmap>& newBack)
 {
 	pContext->setDrawMode (kAliasing);
 	auto lineWidth = getFrameWidth ();

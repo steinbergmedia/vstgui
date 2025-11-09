@@ -57,7 +57,7 @@ public:
 	STBTextEditView (IPlatformTextEditCallback* callback);
 
 	void draw (CDrawContext* pContext) override;
-	void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr) override;
+	void drawBack (CDrawContext* pContext, const SharedPointer<CBitmap>& newBack = {}) override;
 	void setText (const UTF8String& txt) override;
 
 	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
@@ -710,7 +710,7 @@ void STBTextEditView::draw (CDrawContext* context)
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::drawBack (CDrawContext* context, CBitmap* newBack)
+void STBTextEditView::drawBack (CDrawContext* context, const SharedPointer<CBitmap>& newBack)
 {
 	CTextLabel::drawBack (context, newBack);
 

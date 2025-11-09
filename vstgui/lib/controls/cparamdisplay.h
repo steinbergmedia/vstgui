@@ -121,7 +121,7 @@ public:
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
 	~CParamDisplay () noexcept override;
-	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr);
+	virtual void drawBack (CDrawContext* pContext, const SharedPointer<CBitmap>& newBack = {});
 
 	virtual void drawPlatformText (CDrawContext* pContext, const UTF8String& string);
 	virtual void drawPlatformText (CDrawContext* pContext, const UTF8String& string,

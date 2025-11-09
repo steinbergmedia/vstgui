@@ -59,7 +59,7 @@ void CXYPad::draw (CDrawContext* context)
 }
 
 //------------------------------------------------------------------------
-void CXYPad::drawBack (CDrawContext* context, CBitmap* newBack)
+void CXYPad::drawBack (CDrawContext* context, const SharedPointer<CBitmap>&)
 {
 	CParamDisplay::drawBack (context);
 }
