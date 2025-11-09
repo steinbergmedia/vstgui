@@ -324,7 +324,7 @@ CRect CView::getMouseableArea () const
 /**
  * @param path the path to use for hit testing. The path will be translated by this views origin, so that the path must not be set again, if the view is moved. Otherwise when the size of the view changes, the path must also be set again.
  */
-void CView::setHitTestPath (CGraphicsPath* path)
+void CView::setHitTestPath (const SharedPointer<CGraphicsPath>& path)
 {
 	if (auto p = getHitTestPath ())
 	{
@@ -334,17 +334,17 @@ void CView::setHitTestPath (CGraphicsPath* path)
 	if (path)
 	{
 		path->remember ();
-		setAttribute (kCViewHitTestPathAttrID, path);
+		setAttribute (kCViewHitTestPathAttrID, path.get ());
 	}
 }
 
 //-----------------------------------------------------------------------------
-CGraphicsPath* CView::getHitTestPath () const
+SharedPointer<CGraphicsPath> CView::getHitTestPath () const
 {
 	CGraphicsPath* path = nullptr;
 	if (getAttribute (kCViewHitTestPathAttrID, path))
-		return path;
-	return nullptr;
+		return shared (path);
+	return {};
 }
 
 //-----------------------------------------------------------------------------

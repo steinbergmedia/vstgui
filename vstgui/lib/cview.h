@@ -163,7 +163,7 @@ public:
 	/// @name Hit testing Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void setHitTestPath (CGraphicsPath* path);
+	void setHitTestPath (const SharedPointer<CGraphicsPath>& path);
 	/** check if where hits this view
 	 *
 	 *	the default behaviour is to return true if where is inside the view size of this view, but if you set a hit test path
@@ -471,8 +471,8 @@ protected:
 
 	~CView () noexcept override;
 
-	CGraphicsPath* getHitTestPath () const;
-	
+	SharedPointer<CGraphicsPath> getHitTestPath () const;
+
 	bool hasViewFlag (int32_t bit) const;
 	void setViewFlag (int32_t bit, bool state);
 	
