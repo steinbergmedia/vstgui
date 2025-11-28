@@ -124,12 +124,12 @@ inline size_t replaceTabs (std::string& str, uint32_t tabWidth, size_t lineOffse
 {
 	if (tabWidth < 1)
 		return 0;
-	auto numReplacedChars = 0u;
+	size_t numReplacedChars = 0u;
 	auto whiteSpace = ' ';
 	std::string::size_type pos = std::string::npos;
 	while ((pos = str.find_first_of ('\t')) != std::string::npos)
 	{
-		auto numWhiteSpace = tabWidth - ((pos + lineOffset) % tabWidth);
+		size_t numWhiteSpace = tabWidth - ((pos + lineOffset) % tabWidth);
 		std::string s (numWhiteSpace, whiteSpace);
 		str.replace (pos, 1, s);
 		numReplacedChars += numWhiteSpace - 1;
