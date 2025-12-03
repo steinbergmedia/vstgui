@@ -48,7 +48,7 @@ TEST_CASE (Algorithm, NormalizedToSteps)
 }
 
 //------------------------------------------------------------------------
-TEST_CASE (Agorithm, StepsToNormalized)
+TEST_CASE (Algorithm, StepsToNormalized)
 {
 	EXPECT_EQ (stepsToNormalized<double> (1, 1), 1.);
 	EXPECT_EQ (stepsToNormalized<double> (0, 1), 0.);
