@@ -630,7 +630,7 @@ struct DrawContextObject::Impl
 		auto destRect = getRect (var, "destRect"sv, signature);
 		auto offsetPointVar = getOptionalArgument (var, "offsetPoint?"sv);
 		auto alphaVar = getOptionalArgument (var, "alpha?"sv);
-		auto bitmap = uiDesc->getBitmap (nameVar->getString ().data ());
+		auto bitmap = shared (uiDesc->getBitmap (nameVar->getString ().data ()));
 		if (!bitmap)
 			throw CScriptException ("bitmap not found in uiDescription");
 		auto offset = offsetPointVar ? fromScriptPoint (*offsetPointVar) : CPoint (0, 0);

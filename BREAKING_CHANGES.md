@@ -7,13 +7,16 @@ and begin applying the necessary modifications to their code.
 
 ### Version 4.xx
 
-- When compiling with the **VSTGUI_ENABLE_DEPRECATED_METHODS=0** flag, the SharedPointer
-constructor is marked explicit. Consequently, your code must be adapted in situations
+When compiling with the **VSTGUI_ENABLE_DEPRECATED_METHODS=0** flag, the SharedPointer
+constructor is marked explicit now. Consequently, your code must be adapted in situations
 where a shared pointer is assigned from a naked pointer.
+Most likely in the following scenarios:
+
+- All constructors having CBitmaps as arguments now take them as a SharedPointer.
 - Changed ```IDraggingSession``` and related callback methods to use const references instead of pointers
 - ```COffscreenContext::getBitmap()``` returns a ```SharedPointer<CBitmap>``` now instead of a naked pointer
 - The following methods now take a ```SharedPointer<CBitmap>``` instead of a naked pointer
-and their getter methods return also a ```SharedPointer<CBitmap>``` now:
+and their possible getter methods return also a ```SharedPointer<CBitmap>``` now:
 	* CView::setBackground
 	* CView::setDisabledBackground
 	* CVUMeter::setOnBitmap
@@ -26,7 +29,10 @@ and their getter methods return also a ```SharedPointer<CBitmap>``` now:
 	* COptionMenu::setIcon
 	* CParamDisplay::drawBack
 	* CTabView::addTab
-- All constructors having CBitmaps as arguments now take them as a SharedPointer too.
+	* CDrawMethods::drawIconAndText
+	* CDrawContext::fillRectWithBitmap
+	* CDrawContext::drawBitmapNinePartTiled
+	* CDrawContext::drawBitmap
 	
 ### Version 4.14
 

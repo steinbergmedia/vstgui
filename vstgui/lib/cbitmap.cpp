@@ -79,9 +79,8 @@ CBitmap::CBitmap (const PlatformBitmapPtr& platformBitmap)
 //-----------------------------------------------------------------------------
 void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offset, float alpha)
 {
-	drawClipped (context, rect, [&] () {
-		context->drawBitmap (this, rect, offset, alpha);
-	});
+	drawClipped (context, rect,
+				 [&] () { context->drawBitmap (shared (this), rect, offset, alpha); });
 }
 
 //-----------------------------------------------------------------------------
@@ -291,7 +290,7 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (const PlatformBitmapPtr& platformBit
 //-----------------------------------------------------------------------------
 void CNinePartTiledBitmap::draw (CDrawContext* inContext, const CRect& inDestRect, const CPoint& offset, float inAlpha)
 {
-	inContext->drawBitmapNinePartTiled (this, inDestRect, offsets, inAlpha);
+	inContext->drawBitmapNinePartTiled (shared (this), inDestRect, offsets, inAlpha);
 }
 
 //------------------------------------------------------------------------

@@ -86,10 +86,10 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 }
 
 //------------------------------------------------------------------------
-void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition,
-                      CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect,
-                      const UTF8String& title, CFontRef font, CColor textColor,
-                      TextTruncateMode textTruncateMode)
+void drawIconAndText (CDrawContext* context, const SharedPointer<CBitmap>& iconToDraw,
+					  IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin,
+					  CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor,
+					  TextTruncateMode textTruncateMode)
 {
 	if (iconToDraw)
 	{

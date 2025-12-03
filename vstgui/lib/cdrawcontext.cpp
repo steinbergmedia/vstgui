@@ -405,7 +405,8 @@ void CDrawContext::drawString (UTF8StringPtr string, const CRect& rect, const CH
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha)
+void CDrawContext::fillRectWithBitmap (const SharedPointer<CBitmap>& bitmap, const CRect& srcRect,
+									   const CRect& dstRect, float alpha)
 {
 	if (srcRect.isEmpty () || dstRect.isEmpty ())
 		return;
@@ -464,7 +465,8 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest, const CNinePartTiledDescription& desc, float alpha)
+void CDrawContext::drawBitmapNinePartTiled (const SharedPointer<CBitmap>& bitmap, const CRect& dest,
+											const CNinePartTiledDescription& desc, float alpha)
 {
 	if (impl->device)
 	{
@@ -620,8 +622,8 @@ void CDrawContext::drawPoint (const CPoint& point, const CColor& color)
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset,
-							   float alpha)
+void CDrawContext::drawBitmap (const SharedPointer<CBitmap>& bitmap, const CRect& dest,
+							   const CPoint& offset, float alpha)
 {
 	if (impl->device)
 	{

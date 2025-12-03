@@ -6,6 +6,7 @@
 
 #include "vstguifwd.h"
 
+#include "cbitmap.h"
 #include "cpoint.h"
 #include "crect.h"
 #include "cfont.h"
@@ -68,12 +69,12 @@ public:
 	/** draw a point */
 	void drawPoint (const CPoint& point, const CColor& color);
 	/** don't call directly, please use CBitmap::draw instead */
-	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0),
-					 float alpha = 1.f);
-	void drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest,
+	void drawBitmap (const SharedPointer<CBitmap>& bitmap, const CRect& dest,
+					 const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
+	void drawBitmapNinePartTiled (const SharedPointer<CBitmap>& bitmap, const CRect& dest,
 								  const CNinePartTiledDescription& desc, float alpha = 1.f);
-	void fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect,
-							 float alpha);
+	void fillRectWithBitmap (const SharedPointer<CBitmap>& bitmap, const CRect& srcRect,
+							 const CRect& dstRect, float alpha);
 
 	/** clears the rect (makes r = 0, g = 0, b = 0, a = 0) */
 	void clearRect (const CRect& rect);
