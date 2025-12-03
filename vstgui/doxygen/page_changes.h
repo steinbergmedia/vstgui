@@ -5,6 +5,9 @@
 /**
 @page page_news_and_changes New stuff in VSTGUI 4
 
+@note This document will no longer be updated. The content has been relocated to NEWS.md and BREAKING_CHANGES.md within the root folder of this repository. New additions will be made in these files.
+
+
 @tableofcontents
 
 - @ref version4_introduction @n
