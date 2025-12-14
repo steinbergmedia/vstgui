@@ -103,8 +103,11 @@ public:
 	void setRoundRadius (CCoord newRoundRadius);
 	CCoord getRoundRadius () const { return roundRadius; }
 
-	void setFont (CFontRef font);
-	CFontRef getFont () const { return font; }
+	void setFont (const SharedPointer<CFontDesc>& font);
+	SharedPointer<CFontDesc> getFont () const { return font; }
+	VSTGUI_DEPRECATED_MSG (
+		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		"Use `setFont (shared (yourFont);` instead")
 
 	void setTextAlignment (CHoriTxtAlign alignment);
 	CHoriTxtAlign getTextAlignment () const { return textAlignment; }

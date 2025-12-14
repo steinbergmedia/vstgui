@@ -26,14 +26,14 @@ struct GlobalFonts
 static GlobalFonts globalFonts;
 
 //-----------------------------------------------------------------------------
-CFontRef kSystemFont = nullptr;
-CFontRef kNormalFontVeryBig = nullptr;
-CFontRef kNormalFontBig = nullptr;
-CFontRef kNormalFont = nullptr;
-CFontRef kNormalFontSmall = nullptr;
-CFontRef kNormalFontSmaller = nullptr;
-CFontRef kNormalFontVerySmall = nullptr;
-CFontRef kSymbolFont = nullptr;
+SharedPointer<CFontDesc> kSystemFont = {};
+SharedPointer<CFontDesc> kNormalFontVeryBig = {};
+SharedPointer<CFontDesc> kNormalFontBig = {};
+SharedPointer<CFontDesc> kNormalFont = {};
+SharedPointer<CFontDesc> kNormalFontSmall = {};
+SharedPointer<CFontDesc> kNormalFontSmaller = {};
+SharedPointer<CFontDesc> kNormalFontVerySmall = {};
+SharedPointer<CFontDesc> kSymbolFont = {};
 
 //-----------------------------------------------------------------------------
 void CFontDesc::init ()

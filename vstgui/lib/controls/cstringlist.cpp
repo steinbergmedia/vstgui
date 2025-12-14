@@ -52,10 +52,7 @@ void StringListControlDrawer::setStringProvider (const Func& getStringFunc)
 }
 
 //------------------------------------------------------------------------
-void StringListControlDrawer::setFont (CFontRef f)
-{
-	impl->font = f;
-}
+void StringListControlDrawer::setFont (const SharedPointer<CFontDesc>& f) { impl->font = f; }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setFontColor (CColor color)
@@ -112,10 +109,7 @@ void StringListControlDrawer::setTextAlign (CHoriTxtAlign align)
 }
 
 //------------------------------------------------------------------------
-CFontRef StringListControlDrawer::getFont () const
-{
-	return impl->font;
-}
+SharedPointer<CFontDesc> StringListControlDrawer::getFont () const { return impl->font; }
 
 //------------------------------------------------------------------------
 CColor StringListControlDrawer::getFontColor () const

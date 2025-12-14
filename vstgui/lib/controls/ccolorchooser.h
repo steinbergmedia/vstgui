@@ -29,7 +29,7 @@ public:
 //-----------------------------------------------------------------------------
 struct CColorChooserUISettings
 {
-	CFontRef font {kNormalFont};
+	SharedPointer<CFontDesc> font {kNormalFont};
 	CColor fontColor {kWhiteCColor};
 	CColor checkerBoardColor1 {kWhiteCColor};
 	CColor checkerBoardColor2 {kBlackCColor};

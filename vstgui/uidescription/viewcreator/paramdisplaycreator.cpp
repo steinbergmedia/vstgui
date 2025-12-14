@@ -59,7 +59,7 @@ bool ParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
 		CFontRef font = description->getFont (fontAttr->c_str ());
 		if (font)
 		{
-			display->setFont (font);
+			display->setFont (shared (font));
 		}
 	}
 

@@ -30,7 +30,10 @@ public:
 	void setStringProvider (Func&& getStringFunc);
 	void setStringProvider (const Func& getStringFunc);
 
-	void setFont (CFontRef f);
+	VSTGUI_DEPRECATED_MSG (
+		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		"Use `setFont (shared (yourFont);` instead")
+	void setFont (const SharedPointer<CFontDesc>& f);
 	void setFontColor (CColor color);
 	void setSelectedFontColor (CColor color);
 	void setBackColor (CColor color);
@@ -41,7 +44,7 @@ public:
 	void setTextInset (CCoord inset);
 	void setTextAlign (CHoriTxtAlign align);
 
-	CFontRef getFont () const;
+	SharedPointer<CFontDesc> getFont () const;
 	CColor getFontColor () const;
 	CColor getSelectedFontColor () const;
 	CColor getBackColor () const;

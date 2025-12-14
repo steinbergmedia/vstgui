@@ -80,10 +80,13 @@ public:
 	//@{
 	virtual void setTitle (const UTF8String& newTitle);
 	const UTF8String& getTitle () const { return title; }
-	
-	virtual void setFont (CFontRef newFont);
-	const CFontRef getFont () const { return font; }
-	
+
+	virtual void setFont (const SharedPointer<CFontDesc>& newFont);
+	SharedPointer<CFontDesc> getFont () const { return font; }
+	VSTGUI_DEPRECATED_MSG (
+		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		"Use `setFont (shared (yourFont);` instead")
+
 	virtual void setFontColor (const CColor& newColor) { fontColor = newColor; invalid (); }
 	const CColor& getFontColor () const { return fontColor; }
 
@@ -201,9 +204,12 @@ public:
 	virtual void setTitle (const UTF8String& newTitle);
 	const UTF8String& getTitle () const { return title; }
 
-	virtual void setFont (CFontRef newFont);
-	CFontRef getFont () const { return font; }
-	
+	virtual void setFont (const SharedPointer<CFontDesc>& newFont);
+	SharedPointer<CFontDesc> getFont () const { return font; }
+	VSTGUI_DEPRECATED_MSG (
+		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		"Use `setFont (shared (yourFont);` instead")
+
 	virtual void setTextColor (const CColor& color);
 	const CColor& getTextColor () const { return textColor; }
 	virtual void setTextColorHighlighted (const CColor& color);

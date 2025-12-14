@@ -64,7 +64,7 @@ struct UIEditControllerGlobalResources
 	CColor dataSourceRowBackColor;
 	CColor dataSourceRowAlternateBackColor;
 	CColor shadingLineColor;
-	CFontRef dataSourceFont;
+	SharedPointer<CFontDesc> dataSourceFont;
 
 	void init (const IUIDescription& desc)
 	{
@@ -74,7 +74,7 @@ struct UIEditControllerGlobalResources
 		desc.getColor ("db.row.back", dataSourceRowBackColor);
 		desc.getColor ("db.row.alternate.back", dataSourceRowAlternateBackColor);
 		desc.getColor ("shading.light.frame", shadingLineColor);
-		dataSourceFont = desc.getFont ("db.font");
+		dataSourceFont = shared (desc.getFont ("db.font"));
 	}
 };
 static UIEditControllerGlobalResources gUIEditorControllerResources;
@@ -400,7 +400,7 @@ public:
 				description->getColor ("control.font", fontColor);
 				description->getColor ("control.frame", frameColor);
 				description->getColor ("control.back", backColor);
-				zoomValueControl->setFont (font);
+				zoomValueControl->setFont (shared (font));
 				zoomValueControl->setFontColor (fontColor);
 				zoomValueControl->setBackColor (backColor);
 				zoomValueControl->setFrameColor (frameColor);
@@ -685,7 +685,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
-			label->setFont (font);
+			label->setFont (shared (font));
 			label->setFontColor (labelColor);
 			label->setAutosizeFlags (kAutosizeAll);
 			splitView->addViewToSeparator (0, label);

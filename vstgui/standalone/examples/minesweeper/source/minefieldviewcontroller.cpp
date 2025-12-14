@@ -69,7 +69,7 @@ CView* MinefieldViewController::createView (const UIAttributes& attributes,
 		description->getColor ("card.flaged.frame", flagedFrameColor);
 		description->getColor ("card.flaged.back", flagedBackColor);
 		if (auto f = description->getFont ("emoji"))
-			emojiFont = *f;
+			emojiFont = shared (f);
 		smallEmojiFont = emojiFont;
 		if (dataBrowser)
 			dataBrowser->unregisterViewListener (this);
@@ -164,7 +164,7 @@ void MinefieldViewController::drawOpenCell (const CRect& r, CDrawContext& contex
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawQuestionMark (const CRect& r, CDrawContext& context,
-                                                CFontRef f) const
+												const SharedPointer<CFontDesc>& f) const
 {
 	context.setFont (f);
 	context.setFontColor (kRedCColor);
@@ -173,7 +173,7 @@ void MinefieldViewController::drawQuestionMark (const CRect& r, CDrawContext& co
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawQuestionMarkCell (const CRect& r, CDrawContext& context,
-                                                    CFontRef f) const
+													const SharedPointer<CFontDesc>& f) const
 {
 	context.setFrameColor (flagedFrameColor);
 	context.setFillColor (flagedBackColor);
@@ -182,7 +182,8 @@ void MinefieldViewController::drawQuestionMarkCell (const CRect& r, CDrawContext
 }
 
 //------------------------------------------------------------------------
-void MinefieldViewController::drawFlag (const CRect& r, CDrawContext& context, CFontRef f) const
+void MinefieldViewController::drawFlag (const CRect& r, CDrawContext& context,
+										const SharedPointer<CFontDesc>& f) const
 {
 	context.setFont (f);
 	context.setFontColor (kRedCColor);
@@ -191,7 +192,7 @@ void MinefieldViewController::drawFlag (const CRect& r, CDrawContext& context, C
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawFlaggedCell (const CRect& r, CDrawContext& context,
-                                               CFontRef f) const
+											   const SharedPointer<CFontDesc>& f) const
 {
 	context.setFrameColor (flagedFrameColor);
 	context.setFillColor (flagedBackColor);
@@ -201,7 +202,7 @@ void MinefieldViewController::drawFlaggedCell (const CRect& r, CDrawContext& con
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawMinedCell (const CRect& r, CDrawContext& context,
-                                             CFontRef f) const
+											 const SharedPointer<CFontDesc>& f) const
 {
 	context.setFont (f);
 	context.setFontColor (kBlackCColor);
@@ -210,7 +211,7 @@ void MinefieldViewController::drawMinedCell (const CRect& r, CDrawContext& conte
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawExplosionCell (const CRect& r, CDrawContext& context,
-                                                 CFontRef f) const
+												 const SharedPointer<CFontDesc>& f) const
 {
 	context.setFont (f);
 	context.setFontColor (kRedCColor);
@@ -218,8 +219,9 @@ void MinefieldViewController::drawExplosionCell (const CRect& r, CDrawContext& c
 }
 
 //------------------------------------------------------------------------
-void MinefieldViewController::drawCellNeighbours (const CRect& r, CDrawContext& context, CFontRef f,
-                                                  uint32_t neighbours)
+void MinefieldViewController::drawCellNeighbours (const CRect& r, CDrawContext& context,
+												  const SharedPointer<CFontDesc>& f,
+												  uint32_t neighbours)
 {
 	if (neighbours == 0)
 		return;
@@ -243,11 +245,11 @@ void MinefieldViewController::dbDrawCell (CDrawContext* context, const CRect& si
 	{
 		if (model->isFlag (row, column))
 		{
-			drawFlaggedCell (r, *context, &emojiFont);
+			drawFlaggedCell (r, *context, emojiFont);
 		}
 		else if (model->isQuestion (row, column))
 		{
-			drawQuestionMarkCell (r, *context, &emojiFont);
+			drawQuestionMarkCell (r, *context, emojiFont);
 		}
 		else
 		{
@@ -259,20 +261,20 @@ void MinefieldViewController::dbDrawCell (CDrawContext* context, const CRect& si
 	if (model->isMine (row, column))
 	{
 		if (model->isTrapMine (row, column))
-			drawExplosionCell (r, *context, &emojiFont);
+			drawExplosionCell (r, *context, emojiFont);
 		else
-			drawMinedCell (r, *context, &emojiFont);
+			drawMinedCell (r, *context, emojiFont);
 	}
 	else
 	{
 		auto value = model->getNumberOfMinesNearby (row, column);
-		drawCellNeighbours (r, *context, &font, value);
+		drawCellNeighbours (r, *context, font, value);
 	}
 	if (model->isFlag (row, column))
 	{
 		r.setWidth (r.getWidth () / 2.);
 		r.setHeight (r.getHeight () / 2.);
-		drawFlag (r, *context, &smallEmojiFont);
+		drawFlag (r, *context, smallEmojiFont);
 	}
 }
 
@@ -419,9 +421,9 @@ void MinefieldViewController::updateCellSize (CPoint newSize)
 	cellSize.x = newSize.x / numCols;
 	cellSize.y = newSize.y / numRows;
 	dataBrowser->recalculateLayout ();
-	font.setSize (cellSize.y / 2.);
-	emojiFont.setSize (cellSize.y / 2.);
-	smallEmojiFont.setSize (font.getSize () / 2.);
+	font->setSize (cellSize.y / 2.);
+	emojiFont->setSize (cellSize.y / 2.);
+	smallEmojiFont->setSize (font->getSize () / 2.);
 }
 
 //------------------------------------------------------------------------

@@ -114,7 +114,7 @@ bool StringListControlCreator::apply (CView* view, const UIAttributes& attribute
 	if (const auto* fontAttr = attributes.getAttributeValue (kAttrFont))
 	{
 		if (auto font = description->getFont (fontAttr->data ()))
-			drawer->setFont (font);
+			drawer->setFont (shared (font));
 	}
 	if (const auto* textAlignmentAttr = attributes.getAttributeValue (kAttrTextAlignment))
 	{

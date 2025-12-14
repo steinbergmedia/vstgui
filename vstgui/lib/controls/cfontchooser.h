@@ -18,14 +18,14 @@ namespace VSTGUI {
 class IFontChooserDelegate
 {
 public:
-	virtual void fontChanged (CFontChooser* chooser, CFontRef newFont) = 0;
+	virtual void fontChanged (CFontChooser* chooser, SharedPointer<CFontDesc> newFont) = 0;
 };
 
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 struct CFontChooserUIDefinition
 {
-	CFontRef font;
+	SharedPointer<CFontDesc> font;
 	int32_t rowHeight;
 	CColor fontColor;
 	CColor selectionColor;
@@ -38,24 +38,32 @@ struct CFontChooserUIDefinition
 	CColor scrollbarFrameColor;
 	CColor scrollbarBackgroundColor;
 	CCoord scrollbarWidth;
-	
-	CFontChooserUIDefinition (CFontRef font = kSystemFont,
-				 const CColor& fontColor = kWhiteCColor,
-				 const CColor& selectionColor = kBlueCColor,
-				 const CColor& rowlineColor = kGreyCColor,
-				 const CColor& rowBackColor = kTransparentCColor,
-				 const CColor& rowAlternateBackColor = kTransparentCColor,
-				 const CColor& previewTextColor = kBlackCColor,
-				 const CColor& previewBackgroundColor = kWhiteCColor,
-				 const CColor& scrollbarScrollerColor = kBlueCColor,
-				 const CColor& scrollbarFrameColor = kBlackCColor,
-				 const CColor& scrollbarBackgroundColor = kGreyCColor,
-				 int32_t rowHeight = -1,
-				 CCoord scrollbarWidth = 16)
-	: font (font), rowHeight (rowHeight), fontColor (fontColor), selectionColor (selectionColor), rowlineColor (rowlineColor)
-	, rowBackColor (rowBackColor), rowAlternateBackColor (rowAlternateBackColor), previewTextColor (previewTextColor), previewBackgroundColor (previewBackgroundColor)
-	, scrollbarScrollerColor (scrollbarScrollerColor), scrollbarFrameColor (scrollbarFrameColor)
-	, scrollbarBackgroundColor (scrollbarBackgroundColor), scrollbarWidth (scrollbarWidth)
+
+	CFontChooserUIDefinition (SharedPointer<CFontDesc> font = kSystemFont,
+							  const CColor& fontColor = kWhiteCColor,
+							  const CColor& selectionColor = kBlueCColor,
+							  const CColor& rowlineColor = kGreyCColor,
+							  const CColor& rowBackColor = kTransparentCColor,
+							  const CColor& rowAlternateBackColor = kTransparentCColor,
+							  const CColor& previewTextColor = kBlackCColor,
+							  const CColor& previewBackgroundColor = kWhiteCColor,
+							  const CColor& scrollbarScrollerColor = kBlueCColor,
+							  const CColor& scrollbarFrameColor = kBlackCColor,
+							  const CColor& scrollbarBackgroundColor = kGreyCColor,
+							  int32_t rowHeight = -1, CCoord scrollbarWidth = 16)
+	: font (font)
+	, rowHeight (rowHeight)
+	, fontColor (fontColor)
+	, selectionColor (selectionColor)
+	, rowlineColor (rowlineColor)
+	, rowBackColor (rowBackColor)
+	, rowAlternateBackColor (rowAlternateBackColor)
+	, previewTextColor (previewTextColor)
+	, previewBackgroundColor (previewBackgroundColor)
+	, scrollbarScrollerColor (scrollbarScrollerColor)
+	, scrollbarFrameColor (scrollbarFrameColor)
+	, scrollbarBackgroundColor (scrollbarBackgroundColor)
+	, scrollbarWidth (scrollbarWidth)
 	{}
 };
 
@@ -64,11 +72,15 @@ struct CFontChooserUIDefinition
 class CFontChooser : public CViewContainer, public IControlListener, public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont = nullptr, const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());
+	CFontChooser (IFontChooserDelegate* delegate, const SharedPointer<CFontDesc>& initialFont = {},
+				  const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());
 	~CFontChooser () noexcept override;
 
-	void setFont (CFontRef font);
-	
+	void setFont (const SharedPointer<CFontDesc>& font);
+	VSTGUI_DEPRECATED_MSG (
+		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		"Use `setFont (shared (yourFont);` instead")
+
 protected:
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 	void valueChanged (CControl* pControl) override;
@@ -84,8 +96,8 @@ protected:
 	CCheckBox* strikeoutBox;
 	CView* fontPreviewView;
 	GenericStringListDataBrowserSource::StringVector fontNames;
-	
-	CFontRef selFont;
+
+	SharedPointer<CFontDesc> selFont;
 };
 
 } // VSTGUI

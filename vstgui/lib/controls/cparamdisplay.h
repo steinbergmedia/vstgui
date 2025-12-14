@@ -45,8 +45,12 @@ public:
 	/// @name CParamDisplay Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setFont (CFontRef fontID);
-	const CFontRef getFont () const { return fontID; }
+	virtual void setFont (const SharedPointer<CFontDesc>& fontID);
+	SharedPointer<CFontDesc> getFont () const { return fontID; }
+
+	VSTGUI_DEPRECATED_MSG (
+		void setFont (CFontRef inFontID) { setFont (shared (inFontID)); },
+		"Use `setFont (shared (yourFont);` instead")
 
 	virtual void setFontColor (CColor color);
 	CColor getFontColor () const { return fontColor; }
@@ -139,7 +143,7 @@ protected:
 	int32_t		style;
 	uint8_t		valuePrecision;
 
-	CFontRef	fontID;
+	SharedPointer<CFontDesc> fontID;
 	CColor		fontColor;
 	CColor		backColor;
 	CColor		frameColor;

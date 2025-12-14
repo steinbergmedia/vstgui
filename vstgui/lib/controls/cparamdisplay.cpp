@@ -33,7 +33,7 @@ CParamDisplay::CParamDisplay (const CRect& size, const SharedPointer<CBitmap>& b
 	setBit (style, kAntialias, true);
 	backOffset (0, 0);
 
-	fontID      = kNormalFont; fontID->remember ();
+	fontID = kNormalFont;
 	fontColor   = kWhiteCColor;
 	backColor   = kBlackCColor;
 	frameColor  = kBlackCColor;
@@ -60,15 +60,10 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , frameWidth (v.frameWidth)
 , textRotation (v.textRotation)
 {
-	fontID->remember ();
 }
 
 //------------------------------------------------------------------------
-CParamDisplay::~CParamDisplay () noexcept
-{
-	if (fontID)
-		fontID->forget ();
-}
+CParamDisplay::~CParamDisplay () noexcept {}
 
 //------------------------------------------------------------------------
 bool CParamDisplay::removed (CView* parent)
@@ -365,14 +360,13 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, const UTF8String& 
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setFont (CFontRef inFontID)
+void CParamDisplay::setFont (const SharedPointer<CFontDesc>& inFontID)
 {
-	if (fontID)
-		fontID->forget ();
-	fontID = inFontID;
-	if (fontID)
-		fontID->remember ();
-	drawStyleChanged ();
+	if (fontID != inFontID)
+	{
+		fontID = inFontID;
+		drawStyleChanged ();
+	}
 }
 
 //------------------------------------------------------------------------

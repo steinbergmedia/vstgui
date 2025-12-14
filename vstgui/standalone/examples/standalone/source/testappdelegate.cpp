@@ -508,7 +508,7 @@ struct DBController : DelegationController,
 	using DBData = std::vector<RowData>;
 
 	DBData data;
-	CFontRef font {kSystemFont};
+	SharedPointer<CFontDesc> font {kSystemFont};
 	CColor selectColor {MakeCColor (255, 255, 255, 40)};
 };
 

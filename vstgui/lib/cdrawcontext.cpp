@@ -279,7 +279,8 @@ void CDrawContext::setFontColor (const CColor& color) { impl->currentState.fontC
 CColor CDrawContext::getFontColor () const { return impl->currentState.fontColor; }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const int32_t& style)
+void CDrawContext::setFont (const SharedPointer<CFontDesc>& newFont, const CCoord& size,
+							const int32_t& style)
 {
 	if (newFont == nullptr)
 		return;
@@ -298,7 +299,7 @@ void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const in
 }
 
 //-----------------------------------------------------------------------------
-const CFontRef CDrawContext::getFont () const { return impl->currentState.font; }
+SharedPointer<CFontDesc> CDrawContext::getFont () const { return impl->currentState.font; }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setGlobalAlpha (float newAlpha)
@@ -749,7 +750,8 @@ CGraphicsPath* CDrawContext::createGraphicsPath ()
 }
 
 //------------------------------------------------------------------------
-CGraphicsPath* CDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
+CGraphicsPath* CDrawContext::createTextPath (const SharedPointer<CFontDesc>& font,
+											 UTF8StringPtr text)
 {
 	if (impl->device)
 	{

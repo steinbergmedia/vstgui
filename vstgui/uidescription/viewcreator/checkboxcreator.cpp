@@ -63,7 +63,7 @@ bool CheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
 		CFontRef font = description->getFont (attr->c_str ());
 		if (font)
 		{
-			checkbox->setFont (font);
+			checkbox->setFont (shared (font));
 		}
 	}
 

@@ -201,7 +201,7 @@ void CSegmentButton::setRoundRadius (CCoord newRoundRadius)
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::setFont (CFontRef newFont)
+void CSegmentButton::setFont (const SharedPointer<CFontDesc>& newFont)
 {
 	if (font != newFont)
 	{

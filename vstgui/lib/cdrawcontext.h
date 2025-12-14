@@ -150,9 +150,14 @@ public:
 	/** get current font color */
 	CColor getFontColor () const;
 	/** set current font */
-	void setFont (const CFontRef font, const CCoord& size = 0, const int32_t& style = -1);
+	void setFont (const SharedPointer<CFontDesc>& font, const CCoord& size = 0,
+				  const int32_t& style = -1);
 	/** get current font */
-	const CFontRef getFont () const;
+	SharedPointer<CFontDesc> getFont () const;
+
+	VSTGUI_DEPRECATED_MSG (
+		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		"Use `setFont (shared (yourFont);` instead")
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -218,7 +223,7 @@ public:
 	/** create a graphics path object, you need to forget it after usage */
 	CGraphicsPath* createGraphicsPath ();
 	/** create a graphics path from a text */
-	CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text);
+	CGraphicsPath* createTextPath (const SharedPointer<CFontDesc>& font, UTF8StringPtr text);
 
 	/** create a rect with round corners as graphics path, you need to forget it after usage */
 	CGraphicsPath* createRoundRectGraphicsPath (const CRect& size, CCoord radius);

@@ -665,7 +665,7 @@ struct DrawContextObject::Impl
 		checkContextOrThrow ();
 		auto fontVar = getArgument (var, "name"sv, signature);
 		if (auto font = uiDesc->getFont (fontVar->getString ().data ()))
-			context->setFont (font);
+			context->setFont (shared (font));
 	}
 	void setFontColor (CScriptVar* var) const
 	{

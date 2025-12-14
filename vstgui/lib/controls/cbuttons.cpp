@@ -398,7 +398,7 @@ void CCheckBox::setTitle (const UTF8String& newTitle)
 }
 
 //------------------------------------------------------------------------
-void CCheckBox::setFont (CFontRef newFont)
+void CCheckBox::setFont (const SharedPointer<CFontDesc>& newFont)
 {
 	font = newFont;
 	if (font && style & kAutoSizeToFit)
@@ -447,7 +447,7 @@ void CCheckBox::setRoundRectRadius (CCoord radius)
 
 /// @cond ignore
 //------------------------------------------------------------------------
-static CCoord getFontCapHeight (CFontRef font)
+static CCoord getFontCapHeight (const SharedPointer<CFontDesc>& font)
 {
 	CCoord c = font->getSize ();
 	IPlatformFont* pf = font->getPlatformFont ();
@@ -785,7 +785,7 @@ void CTextButton::setTitle (const UTF8String& newTitle)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setFont (CFontRef newFont)
+void CTextButton::setFont (const SharedPointer<CFontDesc>& newFont)
 {
 	font = newFont;
 	invalid ();

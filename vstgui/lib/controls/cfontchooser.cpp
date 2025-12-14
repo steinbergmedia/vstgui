@@ -23,16 +23,15 @@ namespace CFontChooserInternal {
 class FontPreviewView : public CView
 {
 public:
-	FontPreviewView (const CRect& size, const CColor& color = kWhiteCColor) : CView (size), font (nullptr), fontColor (color) {}
-	~FontPreviewView () noexcept override { if (font) font->forget (); }
-	
-	void setFont (CFontRef newFont)
+	FontPreviewView (const CRect& size, const CColor& color = kWhiteCColor)
+	: CView (size), fontColor (color)
 	{
-		if (font)
-			font->forget ();
+	}
+	~FontPreviewView () noexcept override {}
+
+	void setFont (const SharedPointer<CFontDesc>& newFont)
+	{
 		font = newFont;
-		if (font)
-			font->remember ();
 		invalid ();
 	}
 
@@ -62,7 +61,7 @@ public:
 	}
 	
 protected:
-	CFontRef font;
+	SharedPointer<CFontDesc> font;
 	CColor fontColor;
 };
 
@@ -81,11 +80,10 @@ enum {
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont, const CFontChooserUIDefinition& uiDef)
-: CViewContainer (CRect (0, 0, 300, 500))
-, delegate (nullptr)
-, fontBrowser (nullptr)
-, selFont (nullptr)
+CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
+							const SharedPointer<CFontDesc>& initialFont,
+							const CFontChooserUIDefinition& uiDef)
+: CViewContainer (CRect (0, 0, 300, 500)), delegate (nullptr), fontBrowser (nullptr)
 {
 	std::list<std::string> fnList;
 	getPlatformFactory ().getAllFontFamilies ([&fnList] (const std::string& name) {
@@ -183,20 +181,14 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 }
 
 //-----------------------------------------------------------------------------
-CFontChooser::~CFontChooser () noexcept
-{
-	if (selFont)
-		selFont->forget ();
-}
+CFontChooser::~CFontChooser () noexcept {}
 
 //-----------------------------------------------------------------------------
-void CFontChooser::setFont (CFontRef font)
+void CFontChooser::setFont (const SharedPointer<CFontDesc>& font)
 {
 	if (font)
 	{
-		if (selFont)
-			selFont->forget ();
-		selFont = new CFontDesc (*font);
+		selFont = owned (new CFontDesc (*font));
 		sizeEdit->setValue ((float)font->getSize ());
 		boldBox->setValue ((font->getStyle () & kBoldFace) ? 1.f : 0.f);
 		italicBox->setValue ((font->getStyle () & kItalicFace) ? 1.f : 0.f);

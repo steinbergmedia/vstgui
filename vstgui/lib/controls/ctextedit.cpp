@@ -264,7 +264,7 @@ void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 //------------------------------------------------------------------------
 CFontRef CTextEdit::platformGetFont () const
 {
-	CFontRef font = getFont ();
+	auto font = getFont ();
 	CCoord fontSize = font->getSize ();
 	fontSize *= getGlobalTransform ().m11;
 	if (fontSize == font->getSize ())

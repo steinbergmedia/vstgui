@@ -39,8 +39,9 @@ public:
 	const StringVector* getStringList () const { return stringList; }
 
 	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor,
-	              const CColor& rowBackColor, const CColor& rowAlteranteBackColor,
-	              CFontRef font = nullptr, int32_t rowHeight = -1, CCoord textInset = 2.);
+				  const CColor& rowBackColor, const CColor& rowAlteranteBackColor,
+				  const SharedPointer<CFontDesc>& font = {}, int32_t rowHeight = -1,
+				  CCoord textInset = 2.);
 
 protected:
 	void drawRowBackground (CDrawContext* context, const CRect& size, int32_t row, int32_t flags,

@@ -53,14 +53,19 @@ private:
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) override;
 	void drawClosedCell (const CRect& r, CDrawContext& context) const;
 	void drawOpenCell (const CRect& r, CDrawContext& context) const;
-	void drawQuestionMark (const CRect& r, CDrawContext& context, CFontRef f) const;
-	void drawQuestionMarkCell (const CRect& r, CDrawContext& context, CFontRef f) const;
-	void drawFlag (const CRect& r, CDrawContext& context, CFontRef f) const;
-	void drawFlaggedCell (const CRect& r, CDrawContext& context, CFontRef f) const;
-	void drawMinedCell (const CRect& r, CDrawContext& context, CFontRef f) const;
-	void drawExplosionCell (const CRect& r, CDrawContext& context, CFontRef f) const;
-	void drawCellNeighbours (const CRect& r, CDrawContext& context, CFontRef f,
-	                         uint32_t neighbours);
+	void drawQuestionMark (const CRect& r, CDrawContext& context,
+						   const SharedPointer<CFontDesc>& f) const;
+	void drawQuestionMarkCell (const CRect& r, CDrawContext& context,
+							   const SharedPointer<CFontDesc>& f) const;
+	void drawFlag (const CRect& r, CDrawContext& context, const SharedPointer<CFontDesc>& f) const;
+	void drawFlaggedCell (const CRect& r, CDrawContext& context,
+						  const SharedPointer<CFontDesc>& f) const;
+	void drawMinedCell (const CRect& r, CDrawContext& context,
+						const SharedPointer<CFontDesc>& f) const;
+	void drawExplosionCell (const CRect& r, CDrawContext& context,
+							const SharedPointer<CFontDesc>& f) const;
+	void drawCellNeighbours (const CRect& r, CDrawContext& context,
+							 const SharedPointer<CFontDesc>& f, uint32_t neighbours);
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
 	                 int32_t flags, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
@@ -90,9 +95,9 @@ private:
 	CColor flagedFrameColor {kGreyCColor};
 	CColor flagedBackColor {kTransparentCColor};
 	CPoint cellSize {30, 30};
-	CFontDesc font {*kSystemFont};
-	CFontDesc smallEmojiFont {*kSymbolFont};
-	CFontDesc emojiFont {*kSymbolFont};
+	SharedPointer<CFontDesc> font {kSystemFont};
+	SharedPointer<CFontDesc> smallEmojiFont {kSymbolFont};
+	SharedPointer<CFontDesc> emojiFont {kSymbolFont};
 	IValue& flagsValue;
 	IValue& timeValue;
 	WonCallbackFunc wonCallback;

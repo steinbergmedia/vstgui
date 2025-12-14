@@ -33,7 +33,25 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CDrawContext::fillRectWithBitmap
 	* CDrawContext::drawBitmapNinePartTiled
 	* CDrawContext::drawBitmap
-	
+
+- The global fonts (kSystemFont, kNormalFont, etc) are now ```SharedPointer<CFontDesc>``` instead of naked pointers.
+- The following methods now take ```SharedPointer<CFontDesc>``` instead of a naked pointer:
+	* CParamDisplay::setFont
+	* CCheckBox::setFont
+	* CTextButton::setFont
+	* CDrawContext::setFont
+	* CFontChooser::CFontChooser
+	* CFontChooser::setFont
+	* CSegmentButton::setFont
+	* StringListControlDrawer::setFont
+	* CTabView::setTabFontStyle
+	* CDrawContext::createTextPath
+	* CDrawMethods::createTruncatedText
+	* CDrawMethods::drawIconAndText
+	* IFontChooserDelegate::fontChanged
+	* GenericStringListDataBrowserSource::setupUI
+
+
 ### Version 4.14
 
 - In CParamDisplay::drawPlatformText(..) the string argument changed from IPlatformString to UTF8Text

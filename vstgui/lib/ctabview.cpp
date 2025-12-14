@@ -26,14 +26,10 @@ public:
 	{
 		activeTextColor = kBlackCColor;
 		inactiveTextColor (90, 90, 90, 255);
-		textFont = kSystemFont; textFont->remember ();
+		textFont = kSystemFont;
 	}
 
-	~CTabButton () noexcept override
-	{
-		if (textFont)
-			textFont->forget ();
-	}
+	~CTabButton () noexcept override {}
 
 	void draw (CDrawContext *pContext) override
 	{
@@ -66,14 +62,14 @@ public:
 		return DragOperation::None;
 	}
 
-	void setTextFont (CFontRef font) { if (textFont) textFont->forget (); textFont = font; textFont->remember ();}
+	void setTextFont (const SharedPointer<CFontDesc>& font) { textFont = font; }
 	void setActiveTextColor (const CColor& color) { activeTextColor = color; }
 	void setInactiveTextColor (const CColor& color) { inactiveTextColor = color; }
 
 	CLASS_METHODS (CTabButton, COnOffButton)
 protected:
 	UTF8String name;
-	CFontRef textFont;
+	SharedPointer<CFontDesc> textFont;
 	CColor activeTextColor;
 	CColor inactiveTextColor;
 };
@@ -408,7 +404,8 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 }
 
 //-----------------------------------------------------------------------------
-void CTabView::setTabFontStyle (const CFontRef font, CCoord fontSize, CColor selectedColor, CColor deselectedColor)
+void CTabView::setTabFontStyle (const SharedPointer<CFontDesc>& font, CCoord fontSize,
+								CColor selectedColor, CColor deselectedColor)
 {
 	auto tabFont = makeOwned<CFontDesc> (*font);
 	tabFont->setSize (fontSize);
