@@ -44,6 +44,7 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CGradient::create
 	* CGraphicsPath::createGradient
 	* COffscreenContext::getBitmap
+	* CBitmapPixelAccess::create
 	* CTextButton::getGradient
 	* CTextButton::getGradientHighlighted
 	* CSegmentButton::getGradient

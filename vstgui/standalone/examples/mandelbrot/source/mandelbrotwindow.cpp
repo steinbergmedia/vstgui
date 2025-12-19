@@ -94,7 +94,7 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
                                        uint32_t id, const std::atomic<uint32_t>& taskID,
                                        ReadyCallback readyCallback)
 {
-	if (auto pa = owned (CBitmapPixelAccess::create (bitmap)))
+	if (auto pa = CBitmapPixelAccess::create (bitmap))
 	{
 		const auto numLinesPerTask =
 		    static_cast<uint32_t> (size.y / (std::thread::hardware_concurrency () * 8));

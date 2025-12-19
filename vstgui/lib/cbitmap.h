@@ -383,8 +383,8 @@ public:
 	/** create an accessor.
 		can return 0 if platform implementation does not support this.
 		result needs to be forgotten before the CBitmap reflects the change to the pixels */
-	static CBitmapPixelAccess* create (const SharedPointer<CBitmap>& bitmap,
-									   bool alphaPremultiplied = true);
+	static SharedPointer<CBitmapPixelAccess> create (const SharedPointer<CBitmap>& bitmap,
+													 bool alphaPremultiplied = true);
 	//-----------------------------------------------------------------------------
 protected:
 	CBitmapPixelAccess ();

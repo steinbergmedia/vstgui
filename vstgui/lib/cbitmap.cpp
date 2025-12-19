@@ -348,21 +348,37 @@ public:
 /// @endcond
 
 //------------------------------------------------------------------------
-CBitmapPixelAccess* CBitmapPixelAccess::create (const SharedPointer<CBitmap>& bitmap,
-												bool alphaPremultiplied)
+SharedPointer<CBitmapPixelAccess> CBitmapPixelAccess::create (const SharedPointer<CBitmap>& bitmap,
+															  bool alphaPremultiplied)
 {
 	if (bitmap == nullptr || bitmap->getPlatformBitmap () == nullptr)
 		return nullptr;
 	auto pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
 	if (pixelAccess == nullptr)
 		return nullptr;
-	CBitmapPixelAccess* result = nullptr;
+	SharedPointer<CBitmapPixelAccess> result;
 	switch (pixelAccess->getPixelFormat ())
 	{
-		case IPlatformBitmapPixelAccess::kARGB: result = new CBitmapPixelAccessOrder<1,2,3,0> (); break;
-		case IPlatformBitmapPixelAccess::kRGBA: result = new CBitmapPixelAccessOrder<0,1,2,3> (); break;
-		case IPlatformBitmapPixelAccess::kABGR: result = new CBitmapPixelAccessOrder<3,2,1,0> (); break;
-		case IPlatformBitmapPixelAccess::kBGRA: result = new CBitmapPixelAccessOrder<2,1,0,3> (); break;
+		case IPlatformBitmapPixelAccess::kARGB:
+		{
+			result = makeOwned<CBitmapPixelAccessOrder<1, 2, 3, 0>> ();
+			break;
+		}
+		case IPlatformBitmapPixelAccess::kRGBA:
+		{
+			result = makeOwned<CBitmapPixelAccessOrder<0, 1, 2, 3>> ();
+			break;
+		}
+		case IPlatformBitmapPixelAccess::kABGR:
+		{
+			result = makeOwned<CBitmapPixelAccessOrder<3, 2, 1, 0>> ();
+			break;
+		}
+		case IPlatformBitmapPixelAccess::kBGRA:
+		{
+			result = makeOwned<CBitmapPixelAccessOrder<2, 1, 0, 3>> ();
+			break;
+		}
 	}
 	if (result)
 		result->init (bitmap, pixelAccess);

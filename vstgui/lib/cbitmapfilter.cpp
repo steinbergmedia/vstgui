@@ -434,7 +434,7 @@ private:
 		bool alphaChannelOnly = alphaChannelOnlyProp.getInteger () > 0 ? true : false;
 		if (replace)
 		{
-			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
+			auto inputAccessor = CBitmapPixelAccess::create (inputBitmap);
 			if (inputAccessor == nullptr)
 				return false;
 			run (*inputAccessor, *inputAccessor, radius, alphaChannelOnly);
@@ -443,8 +443,8 @@ private:
 		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
 		if (outputBitmap)
 		{
-			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
-			SharedPointer<CBitmapPixelAccess> outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
+			auto inputAccessor = CBitmapPixelAccess::create (inputBitmap);
+			auto outputAccessor = CBitmapPixelAccess::create (outputBitmap);
 			if (inputAccessor == nullptr || outputAccessor == nullptr)
 				return false;
 
@@ -701,9 +701,9 @@ protected:
 		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (outSize.getWidth (), outSize.getHeight ()));
 		if (outputBitmap == nullptr)
 			return false;
-		
-		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
-		SharedPointer<CBitmapPixelAccess> outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
+
+		auto inputAccessor = CBitmapPixelAccess::create (inputBitmap);
+		auto outputAccessor = CBitmapPixelAccess::create (outputBitmap);
 		if (inputAccessor == nullptr || outputAccessor == nullptr)
 			return false;
 		process (*inputAccessor, *outputAccessor);
@@ -852,7 +852,7 @@ protected:
 		auto inputBitmap = getInputBitmap ();
 		if (inputBitmap == nullptr)
 			return false;
-		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
+		auto inputAccessor = CBitmapPixelAccess::create (inputBitmap);
 		if (inputAccessor == nullptr)
 			return false;
 		SharedPointer<CBitmap> outputBitmap;
@@ -862,7 +862,7 @@ protected:
 			outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
 			if (outputBitmap == nullptr)
 				return false;
-			outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
+			outputAccessor = CBitmapPixelAccess::create (outputBitmap);
 			if (outputAccessor == nullptr)
 				return false;
 		}

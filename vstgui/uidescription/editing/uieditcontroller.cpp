@@ -605,7 +605,7 @@ enum {
 static SharedPointer<CBitmap> createColorBitmap (CPoint size, CColor color)
 {
 	auto bitmap = makeOwned<CBitmap> (size);
-	if (auto pixelAccessor = owned (CBitmapPixelAccess::create (bitmap)))
+	if (auto pixelAccessor = CBitmapPixelAccess::create (bitmap))
 	{
 		for (auto y = 0u; y < static_cast<uint32_t> (size.y); y++)
 		{
