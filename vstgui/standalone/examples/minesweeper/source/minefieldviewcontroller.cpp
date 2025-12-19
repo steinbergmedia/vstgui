@@ -69,7 +69,7 @@ CView* MinefieldViewController::createView (const UIAttributes& attributes,
 		description->getColor ("card.flaged.frame", flagedFrameColor);
 		description->getColor ("card.flaged.back", flagedBackColor);
 		if (auto f = description->getFont ("emoji"))
-			emojiFont = shared (f);
+			emojiFont = f;
 		smallEmojiFont = emojiFont;
 		if (dataBrowser)
 			dataBrowser->unregisterViewListener (this);
