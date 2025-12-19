@@ -336,7 +336,11 @@ public:
 	inline I* operator=(I* ptr) noexcept;
 	inline SharedPointer<I>& operator=(const SharedPointer<I>& ) noexcept;
 
+#if VSTGUI_PREVENT_SHARED_POINTER_DIRECT_POINTER_ACCESS
+	inline operator bool () const noexcept { return get () != nullptr; }
+#else
 	inline operator I* ()  const noexcept { return ptr; }      // act as I*
+#endif
 	inline I* operator->() const noexcept { return ptr; }      // act as I*
 
 	inline I* get () const noexcept { return ptr; }
@@ -393,6 +397,19 @@ protected:
 
 	I* ptr {nullptr};
 };
+
+#if VSTGUI_PREVENT_SHARED_POINTER_DIRECT_POINTER_ACCESS
+template<typename T>
+bool operator== (const SharedPointer<T>& lhs, std::nullptr_t rhs)
+{
+	return lhs.get () == rhs;
+}
+template<typename T>
+bool operator== (std::nullptr_t lhs, const SharedPointer<T>& rhs)
+{
+	return lhs == rhs.get ();
+}
+#endif
 
 //-----------------------------------------------------------------------------
 class CBaseObjectGuard
