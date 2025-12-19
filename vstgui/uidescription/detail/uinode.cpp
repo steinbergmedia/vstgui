@@ -217,24 +217,15 @@ void UIControlTagNode::setTagString (const std::string& str)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 UIBitmapNode::UIBitmapNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
-: UINode (name, attributes), bitmap (nullptr), filterProcessed (false), scaledBitmapsAdded (false)
+: UINode (name, attributes), filterProcessed (false), scaledBitmapsAdded (false)
 {
 }
 
 //-----------------------------------------------------------------------------
-UIBitmapNode::~UIBitmapNode () noexcept
-{
-	if (bitmap)
-		bitmap->forget ();
-}
+UIBitmapNode::~UIBitmapNode () noexcept {}
 
 //-----------------------------------------------------------------------------
-void UIBitmapNode::freePlatformResources ()
-{
-	if (bitmap)
-		bitmap->forget ();
-	bitmap = nullptr;
-}
+void UIBitmapNode::freePlatformResources () { bitmap.reset (); }
 
 //-----------------------------------------------------------------------------
 bool UIBitmapNode::imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2)
@@ -333,14 +324,15 @@ void UIBitmapNode::removeXMLData ()
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* UIBitmapNode::createBitmap (const std::string& str, const BitmapVariant& variant) const
+SharedPointer<CBitmap> UIBitmapNode::createBitmap (const std::string& str,
+												   const BitmapVariant& variant) const
 {
 
 	if (auto partDesc = std::get_if<CNinePartTiledDescription> (&variant))
-		return new CNinePartTiledBitmap (CResourceDescription (str.data ()), *partDesc);
+		return makeOwned<CNinePartTiledBitmap> (CResourceDescription (str.data ()), *partDesc);
 	else if (auto multiFrameDesc = std::get_if<CMultiFrameBitmapDescription> (&variant))
-		return new CMultiFrameBitmap (CResourceDescription (str.data ()), *multiFrameDesc);
-	return new CBitmap (CResourceDescription (str.c_str ()));
+		return makeOwned<CMultiFrameBitmap> (CResourceDescription (str.data ()), *multiFrameDesc);
+	return makeOwned<CBitmap> (CResourceDescription (str.c_str ()));
 }
 
 //------------------------------------------------------------------------
@@ -373,7 +365,7 @@ PlatformBitmapPtr UIBitmapNode::createBitmapFromDataNode () const
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
+SharedPointer<CBitmap> UIBitmapNode::getBitmap (const std::string& pathHint)
 {
 	if (bitmap == nullptr)
 	{
@@ -436,9 +428,7 @@ void UIBitmapNode::setBitmap (UTF8StringPtr bitmapName)
 {
 	std::string name (bitmapName);
 	attributes->setAttribute ("path", name);
-	if (bitmap)
-		bitmap->forget ();
-	bitmap = nullptr;
+	bitmap.reset ();
 	double scaleFactor = 1.;
 	if (Detail::decodeScaleFactorFromName (name, scaleFactor))
 		attributes->setDoubleAttribute ("scale-factor", scaleFactor);
@@ -450,14 +440,13 @@ void UIBitmapNode::setMultiFrameDesc (const CMultiFrameBitmapDescription* desc)
 {
 	if (bitmap)
 	{
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap); mfb && desc)
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> (); mfb && desc)
 		{
 			mfb->setMultiFrameDesc (*desc);
 		}
 		else
 		{
-			bitmap->forget ();
-			bitmap = nullptr;
+			bitmap.reset ();
 		}
 	}
 	if (desc)
@@ -479,7 +468,7 @@ void UIBitmapNode::setNinePartTiledOffset (const CRect* offsets)
 {
 	if (bitmap)
 	{
-		auto* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*> (bitmap);
+		auto tiledBitmap = bitmap.cast<CNinePartTiledBitmap> ();
 		if (offsets && tiledBitmap)
 		{
 			tiledBitmap->setPartOffsets (CNinePartTiledDescription (
@@ -487,8 +476,7 @@ void UIBitmapNode::setNinePartTiledOffset (const CRect* offsets)
 		}
 		else
 		{
-			bitmap->forget ();
-			bitmap = nullptr;
+			bitmap.reset ();
 		}
 	}
 	if (offsets)
@@ -500,9 +488,7 @@ void UIBitmapNode::setNinePartTiledOffset (const CRect* offsets)
 //-----------------------------------------------------------------------------
 void UIBitmapNode::invalidBitmap ()
 {
-	if (bitmap)
-		bitmap->forget ();
-	bitmap = nullptr;
+	bitmap.reset ();
 	filterProcessed = false;
 }
 
@@ -510,27 +496,18 @@ void UIBitmapNode::invalidBitmap ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 UIFontNode::UIFontNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
-: UINode (name, attributes), font (nullptr)
+: UINode (name, attributes)
 {
 }
 
 //-----------------------------------------------------------------------------
-UIFontNode::~UIFontNode () noexcept
-{
-	if (font)
-		font->forget ();
-}
+UIFontNode::~UIFontNode () noexcept {}
 
 //-----------------------------------------------------------------------------
-void UIFontNode::freePlatformResources ()
-{
-	if (font)
-		font->forget ();
-	font = nullptr;
-}
+void UIFontNode::freePlatformResources () { font.reset (); }
 
 //-----------------------------------------------------------------------------
-CFontRef UIFontNode::getFont ()
+SharedPointer<CFontDesc> UIFontNode::getFont ()
 {
 	if (font == nullptr)
 	{
@@ -579,19 +556,16 @@ CFontRef UIFontNode::getFont ()
 				}
 			}
 			if (font == nullptr)
-				font = new CFontDesc (nameAttr->c_str (), size, fontStyle);
+				font = makeOwned<CFontDesc> (nameAttr->c_str (), size, fontStyle);
 		}
 	}
 	return font;
 }
 
 //-----------------------------------------------------------------------------
-void UIFontNode::setFont (CFontRef newFont)
+void UIFontNode::setFont (const SharedPointer<CFontDesc>& newFont)
 {
-	if (font)
-		font->forget ();
 	font = newFont;
-	font->remember ();
 
 	std::string name (*attributes->getAttributeValue ("name"));
 	std::string alternativeNames;
@@ -686,13 +660,10 @@ UIGradientNode::UIGradientNode (const std::string& name,
 }
 
 //-----------------------------------------------------------------------------
-void UIGradientNode::freePlatformResources ()
-{
-	gradient = nullptr;
-}
+void UIGradientNode::freePlatformResources () { gradient.reset (); }
 
 //-----------------------------------------------------------------------------
-CGradient* UIGradientNode::getGradient ()
+SharedPointer<CGradient> UIGradientNode::getGradient ()
 {
 	if (gradient == nullptr)
 	{

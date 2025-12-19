@@ -428,12 +428,12 @@ TEST_CASE (UIDescriptionXMLTests, Bitmaps)
 	desc.changeBitmap ("added bitmap node", "path to bitmap", &ninePartTiledOffset);
 	EXPECT (desc.hasBitmapName ("added bitmap node"));
 	bitmap = desc.getBitmap ("added bitmap node");
-	EXPECT (dynamic_cast<CNinePartTiledBitmap*> (bitmap));
-	auto& offsets = dynamic_cast<CNinePartTiledBitmap*> (bitmap)->getPartOffsets ();
+	EXPECT (bitmap.cast<CNinePartTiledBitmap> ());
+	auto& offsets = bitmap.cast<CNinePartTiledBitmap> ()->getPartOffsets ();
 	EXPECT (offsets.left == 10 && offsets.top == 10 && offsets.right == 10 && offsets.bottom == 10);
 	desc.changeBitmap ("added bitmap node", "added bitmap node", nullptr);
 	bitmap = desc.getBitmap ("added bitmap node");
-	EXPECT (dynamic_cast<CNinePartTiledBitmap*> (bitmap) == nullptr);
+	EXPECT (bitmap.cast<CNinePartTiledBitmap> () == nullptr);
 }
 
 TEST_CASE (UIDescriptionXMLTests, Tags)

@@ -630,7 +630,7 @@ struct DrawContextObject::Impl
 		auto destRect = getRect (var, "destRect"sv, signature);
 		auto offsetPointVar = getOptionalArgument (var, "offsetPoint?"sv);
 		auto alphaVar = getOptionalArgument (var, "alpha?"sv);
-		auto bitmap = shared (uiDesc->getBitmap (nameVar->getString ().data ()));
+		auto bitmap = uiDesc->getBitmap (nameVar->getString ().data ());
 		if (!bitmap)
 			throw CScriptException ("bitmap not found in uiDescription");
 		auto offset = offsetPointVar ? fromScriptPoint (*offsetPointVar) : CPoint (0, 0);
@@ -665,7 +665,7 @@ struct DrawContextObject::Impl
 		checkContextOrThrow ();
 		auto fontVar = getArgument (var, "name"sv, signature);
 		if (auto font = uiDesc->getFont (fontVar->getString ().data ()))
-			context->setFont (shared (font));
+			context->setFont (font);
 	}
 	void setFontColor (CScriptVar* var) const
 	{

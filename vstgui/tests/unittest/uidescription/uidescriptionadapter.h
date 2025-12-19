@@ -13,10 +13,10 @@ class UIDescriptionAdapter : public IUIDescription
 {
 public:
 	CView* createView (UTF8StringPtr name, IController* controller) const override { return nullptr; }
-	CBitmap* getBitmap (UTF8StringPtr name) const override { return nullptr; }
-	CFontRef getFont (UTF8StringPtr name) const override { return nullptr; }
+	SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const override { return nullptr; }
+	SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const override { return nullptr; }
 	bool getColor (UTF8StringPtr name, CColor& color) const override { return false; }
-	CGradient* getGradient (UTF8StringPtr name) const override { return nullptr; }
+	SharedPointer<CGradient> getGradient (UTF8StringPtr name) const override { return nullptr; }
 	int32_t getTagForName (UTF8StringPtr name) const override { return -1; }
 	IControlListener* getControlListener (UTF8StringPtr name) const override { return nullptr; }
 	IController* getController () const override { return nullptr; }

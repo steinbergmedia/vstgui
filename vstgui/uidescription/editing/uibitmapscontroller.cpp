@@ -439,8 +439,7 @@ SharedPointer<CBitmap> UIBitmapsDataSource::getSelectedBitmap ()
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 	{
-		return shared (
-			description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).data ()));
+		return description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).data ());
 	}
 	return nullptr;
 }

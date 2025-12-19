@@ -14,7 +14,6 @@ Most likely in the following scenarios:
 
 - All constructors having CBitmaps as arguments now take them as a SharedPointer.
 - Changed ```IDraggingSession``` and related callback methods to use const references instead of pointers
-- ```COffscreenContext::getBitmap()``` returns a ```SharedPointer<CBitmap>``` now instead of a naked pointer
 - The following methods now take a ```SharedPointer<CBitmap>``` instead of a naked pointer
 and their possible getter methods return also a ```SharedPointer<CBitmap>``` now:
 	* CView::setBackground
@@ -33,6 +32,15 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CDrawContext::fillRectWithBitmap
 	* CDrawContext::drawBitmapNinePartTiled
 	* CDrawContext::drawBitmap
+
+- The following methods return a SharedPointer<...> now instead of a naked pointer
+	* COffscreenContext::getBitmap
+	* IUIDescription::getBitmap
+	* IUIDescription::getGradient
+	* IUIDescription::getFont
+	* Standalone::ISharedUIResources::getBitmap
+	* Standalone::ISharedUIResources::getGradient
+	* Standalone::ISharedUIResources::getFont
 
 - The global fonts (kSystemFont, kNormalFont, etc) are now ```SharedPointer<CFontDesc>``` instead of naked pointers.
 - The following methods now take ```SharedPointer<CFontDesc>``` instead of a naked pointer:

@@ -124,7 +124,7 @@ class UIBitmapNode : public UINode
 {
 public:
 	UIBitmapNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
-	CBitmap* getBitmap (const std::string& pathHint);
+	SharedPointer<CBitmap> getBitmap (const std::string& pathHint);
 	void setBitmap (UTF8StringPtr bitmapName);
 	void setMultiFrameDesc (const CMultiFrameBitmapDescription* desc);
 	void setNinePartTiledOffset (const CRect* offsets);
@@ -144,11 +144,12 @@ protected:
 	~UIBitmapNode () noexcept override;
 	using BitmapVariant =
 		std::variant<uint32_t, CNinePartTiledDescription, CMultiFrameBitmapDescription>;
-	CBitmap* createBitmap (const std::string& str, const BitmapVariant& variant) const;
+	SharedPointer<CBitmap> createBitmap (const std::string& str,
+										 const BitmapVariant& variant) const;
 	PlatformBitmapPtr createBitmapFromDataNode () const;
 	static bool imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2);
 	UINode* dataNode () const;
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 	bool filterProcessed;
 	bool scaledBitmapsAdded;
 };
@@ -158,8 +159,8 @@ class UIFontNode : public UINode
 {
 public:
 	UIFontNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
-	CFontRef getFont ();
-	void setFont (CFontRef newFont);
+	SharedPointer<CFontDesc> getFont ();
+	void setFont (const SharedPointer<CFontDesc>& newFont);
 	void setAlternativeFontNames (UTF8StringPtr fontNames);
 	bool getAlternativeFontNames (std::string& fontNames);
 
@@ -167,7 +168,7 @@ public:
 
 protected:
 	~UIFontNode () noexcept override;
-	CFontRef font;
+	SharedPointer<CFontDesc> font;
 };
 
 //-----------------------------------------------------------------------------
@@ -187,7 +188,7 @@ class UIGradientNode : public UINode
 {
 public:
 	UIGradientNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
-	CGradient* getGradient ();
+	SharedPointer<CGradient> getGradient ();
 	void setGradient (CGradient* g);
 
 	void freePlatformResources () override;

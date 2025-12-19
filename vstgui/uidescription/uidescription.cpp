@@ -172,7 +172,7 @@ void UIDescription::addDefaultNodes ()
 	{
 		struct DefaultFont {
 			UTF8StringPtr name;
-			CFontRef font;
+			SharedPointer<CFontDesc> font;
 		};
 
 		const DefaultFont defaultFonts [] = {
@@ -933,7 +933,7 @@ IControlListener* UIDescription::getControlListener (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
+SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 {
 	auto* bitmapNode = dynamic_cast<Detail::UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kBitmap), name));
 	if (bitmapNode)
@@ -1038,7 +1038,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 			}
 			for (auto& filter : filters)
 			{
-				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
+				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap.get ());
 				if (filter->run ())
 				{
 					auto obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
@@ -1087,7 +1087,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-CFontRef UIDescription::getFont (UTF8StringPtr name) const
+SharedPointer<CFontDesc> UIDescription::getFont (UTF8StringPtr name) const
 {
 	auto* fontNode = dynamic_cast<Detail::UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kFont), name));
 	if (fontNode)
@@ -1110,7 +1110,7 @@ bool UIDescription::getColor (UTF8StringPtr name, CColor& color) const
 }
 
 //-----------------------------------------------------------------------------
-CGradient* UIDescription::getGradient (UTF8StringPtr name) const
+SharedPointer<CGradient> UIDescription::getGradient (UTF8StringPtr name) const
 {
 	auto* gradientNode = dynamic_cast<Detail::UIGradientNode*> (findChildNodeByNameAttribute (getBaseNode(Detail::MainNodeNames::kGradient), name));
 	if (gradientNode)
@@ -1287,7 +1287,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 	{
 		if (!node->noExport ())
 		{
-			node->setFont (newFont);
+			node->setFont (shared (newFont));
 			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescFontChanged (this);
 			});
@@ -1300,7 +1300,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
 			auto* newNode = new Detail::UIFontNode ("font", attr);
-			newNode->setFont (newFont);
+			newNode->setFont (shared (newFont));
 			fontsNode->getChildren ().add (newNode);
 			fontsNode->sortChildren ();
 			impl->forEachListener ([this] (UIDescriptionListener* l) {

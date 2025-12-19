@@ -962,8 +962,7 @@ NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (UIDescription*
 	auto bitmap = description->getBitmap (name);
 	if (bitmap)
 	{
-		CNinePartTiledBitmap* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*>(bitmap);
-		if (tiledBitmap)
+		if (auto tiledBitmap = bitmap.cast<CNinePartTiledBitmap> ())
 		{
 			const CNinePartTiledDescription& offset = tiledBitmap->getPartOffsets ();
 			oldRect = new CRect;
@@ -1025,7 +1024,7 @@ MultiFrameBitmapChangeAction::MultiFrameBitmapChangeAction (
 	auto bitmap = description->getBitmap (name);
 	if (bitmap)
 	{
-		if (auto mfb = dynamic_cast<CMultiFrameBitmap*> (bitmap))
+		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			oldDesc = std::make_unique<CMultiFrameBitmapDescription> ();
 			oldDesc->frameSize = mfb->getFrameSize ();

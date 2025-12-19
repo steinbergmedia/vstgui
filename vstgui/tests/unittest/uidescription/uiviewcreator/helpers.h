@@ -40,7 +40,7 @@ public:
 		return nullptr;
 	}
 
-	CFontRef getFont (UTF8StringPtr name) const override
+	SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const override
 	{
 		if (UTF8StringView (name) == kFontName)
 			return font;
@@ -54,7 +54,7 @@ public:
 		return nullptr;
 	}
 
-	CBitmap* getBitmap (UTF8StringPtr name) const override
+	SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const override
 	{
 		if (UTF8StringView (name) == kBitmapName)
 			return bitmap;
@@ -68,7 +68,7 @@ public:
 		return nullptr;
 	}
 
-	CGradient* getGradient (UTF8StringPtr name) const override
+	SharedPointer<CGradient> getGradient (UTF8StringPtr name) const override
 	{
 		if (UTF8StringView (name) == kGradientName)
 			return gradient;

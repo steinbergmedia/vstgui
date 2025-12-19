@@ -5,7 +5,9 @@
 #pragma once
 
 #include "../lib/vstguifwd.h"
+#include "../lib/cbitmap.h"
 #include "../lib/cfont.h"
+#include "../lib/cgradient.h"
 #include "../lib/cstring.h"
 #include "uidescriptionfwd.h"
 #include <string>
@@ -21,10 +23,10 @@ public:
 
 	virtual CView* createView (UTF8StringPtr name, IController* controller) const = 0;
 
-	virtual CBitmap* getBitmap (UTF8StringPtr name) const = 0;
-	virtual CFontRef getFont (UTF8StringPtr name) const = 0;
+	virtual SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const = 0;
+	virtual SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const = 0;
 	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;
-	virtual CGradient* getGradient (UTF8StringPtr name) const = 0;
+	virtual SharedPointer<CGradient> getGradient (UTF8StringPtr name) const = 0;
 	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
 	virtual IControlListener* getControlListener (UTF8StringPtr name) const = 0;
 	virtual IController* getController () const = 0;

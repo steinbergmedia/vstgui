@@ -66,9 +66,9 @@ public:
 	void cleanup ();
 
 	Optional<CColor> getColor (const UTF8String& name) const override;
-	Optional<CBitmap*> getBitmap (const UTF8String& name) const override;
-	Optional<CGradient*> getGradient (const UTF8String& name) const override;
-	Optional<CFontDesc*> getFont (const UTF8String& name) const override;
+	Optional<SharedPointer<CBitmap>> getBitmap (const UTF8String& name) const override;
+	Optional<SharedPointer<CGradient>> getGradient (const UTF8String& name) const override;
+	Optional<SharedPointer<CFontDesc>> getFont (const UTF8String& name) const override;
 
 	SharedPointer<UIDescription> get () const
 	{
@@ -168,7 +168,7 @@ Optional<CColor> SharedUIResources::getColor (const UTF8String& name) const
 }
 
 //------------------------------------------------------------------------
-Optional<CBitmap*> SharedUIResources::getBitmap (const UTF8String& name) const
+Optional<SharedPointer<CBitmap>> SharedUIResources::getBitmap (const UTF8String& name) const
 {
 	if (load ())
 	{
@@ -181,7 +181,7 @@ Optional<CBitmap*> SharedUIResources::getBitmap (const UTF8String& name) const
 }
 
 //------------------------------------------------------------------------
-Optional<CGradient*> SharedUIResources::getGradient (const UTF8String& name) const
+Optional<SharedPointer<CGradient>> SharedUIResources::getGradient (const UTF8String& name) const
 {
 	if (load ())
 	{
@@ -194,7 +194,7 @@ Optional<CGradient*> SharedUIResources::getGradient (const UTF8String& name) con
 }
 
 //------------------------------------------------------------------------
-Optional<CFontDesc*> SharedUIResources::getFont (const UTF8String& name) const
+Optional<SharedPointer<CFontDesc>> SharedUIResources::getFont (const UTF8String& name) const
 {
 	if (load ())
 	{

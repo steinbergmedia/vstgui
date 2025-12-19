@@ -67,10 +67,10 @@ public:
 	void setController (IController* controller) const;
 
 	CView* createView (UTF8StringPtr name, IController* controller) const override;
-	CBitmap* getBitmap (UTF8StringPtr name) const override;
-	CFontRef getFont (UTF8StringPtr name) const override;
+	SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const override;
+	SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const override;
 	bool getColor (UTF8StringPtr name, CColor& color) const override;
-	CGradient* getGradient (UTF8StringPtr name) const override;
+	SharedPointer<CGradient> getGradient (UTF8StringPtr name) const override;
 	int32_t getTagForName (UTF8StringPtr name) const override;
 	IControlListener* getControlListener (UTF8StringPtr name) const override;
 	IController* getController () const override;

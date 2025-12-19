@@ -74,7 +74,7 @@ struct UIEditControllerGlobalResources
 		desc.getColor ("db.row.back", dataSourceRowBackColor);
 		desc.getColor ("db.row.alternate.back", dataSourceRowAlternateBackColor);
 		desc.getColor ("shading.light.frame", shadingLineColor);
-		dataSourceFont = shared (desc.getFont ("db.font"));
+		dataSourceFont = desc.getFont ("db.font");
 	}
 };
 static UIEditControllerGlobalResources gUIEditorControllerResources;
