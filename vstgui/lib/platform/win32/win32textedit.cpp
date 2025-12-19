@@ -31,8 +31,8 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 , oldWndProcEdit (nullptr)
 {
 	CRect rect = textEdit->platformGetSize ();
-	CFontRef fontID = textEdit->platformGetFont ();
-	
+	auto fontID = textEdit->platformGetFont ();
+
 	CHoriTxtAlign horiTxtAlign = textEdit->platformGetHoriTxtAlign ();
 	int wstyle = 0;
 	if (horiTxtAlign == kLeftText)

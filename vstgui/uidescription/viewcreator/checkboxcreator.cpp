@@ -60,10 +60,10 @@ bool CheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrFont);
 	if (attr)
 	{
-		CFontRef font = description->getFont (attr->c_str ());
+		auto font = description->getFont (attr->c_str ());
 		if (font)
 		{
-			checkbox->setFont (shared (font));
+			checkbox->setFont (font);
 		}
 	}
 

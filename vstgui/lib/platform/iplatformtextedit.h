@@ -21,7 +21,7 @@ class IPlatformTextEditCallback
 public:
 	virtual CColor platformGetBackColor () const = 0;
 	virtual CColor platformGetFontColor () const = 0;
-	virtual CFontRef platformGetFont () const = 0;
+	virtual SharedPointer<CFontDesc> platformGetFont () const = 0;
 	virtual CHoriTxtAlign platformGetHoriTxtAlign () const = 0; 
 	virtual const UTF8String& platformGetText () const = 0;
 	virtual const UTF8String& platformGetPlaceholderText () const = 0;

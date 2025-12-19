@@ -37,7 +37,8 @@ public:
 	virtual void performGradientChange (UTF8StringPtr gradientName,
 										const SharedPointer<CGradient>& newGradient,
 										bool remove = false) = 0;
-	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) = 0;
+	virtual void performFontChange (UTF8StringPtr fontName, const SharedPointer<CFontDesc>& newFont,
+									bool remove = false) = 0;
 
 	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 	virtual void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;

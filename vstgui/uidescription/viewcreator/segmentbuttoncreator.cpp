@@ -98,10 +98,10 @@ bool SegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
 	const auto* attr = attributes.getAttributeValue (kAttrFont);
 	if (attr)
 	{
-		CFontRef font = description->getFont (attr->c_str ());
+		auto font = description->getFont (attr->c_str ());
 		if (font)
 		{
-			button->setFont (shared (font));
+			button->setFont (font);
 		}
 	}
 

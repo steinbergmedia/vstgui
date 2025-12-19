@@ -452,7 +452,8 @@ protected:
 class FontChangeAction : public IAction
 {
 public:
-	FontChangeAction (UIDescription* description, UTF8StringPtr name, CFontRef font, bool remove, bool performOrUndo);
+	FontChangeAction (UIDescription* description, UTF8StringPtr name,
+					  const SharedPointer<CFontDesc>& font, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;

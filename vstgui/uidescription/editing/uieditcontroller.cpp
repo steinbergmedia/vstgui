@@ -398,12 +398,12 @@ public:
 					return true;
 				});
 				zoomValueControl->setValue (100.f);
-				CFontRef font = description->getFont ("control.font");
+				auto font = description->getFont ("control.font");
 				CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;
 				description->getColor ("control.font", fontColor);
 				description->getColor ("control.frame", frameColor);
 				description->getColor ("control.back", backColor);
-				zoomValueControl->setFont (shared (font));
+				zoomValueControl->setFont (font);
 				zoomValueControl->setFontColor (fontColor);
 				zoomValueControl->setBackColor (backColor);
 				zoomValueControl->setFrameColor (frameColor);
@@ -649,7 +649,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 		splitViews.emplace_back (splitView);
 		if (splitViews.size () == 1)
 		{
-			CFontRef font = description->getFont ("control.font");
+			auto font = description->getFont ("control.font");
 			CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;
 			description->getColor ("control.font", fontColor);
 			description->getColor ("control.frame", frameColor);
@@ -688,7 +688,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
-			label->setFont (shared (font));
+			label->setFont (font);
 			label->setFontColor (labelColor);
 			label->setAutosizeFlags (kAutosizeAll);
 			splitView->addViewToSeparator (0, label);
@@ -1712,7 +1712,8 @@ void UIEditController::performGradientChange (UTF8StringPtr gradientName,
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove)
+void UIEditController::performFontChange (UTF8StringPtr fontName,
+										  const SharedPointer<CFontDesc>& newFont, bool remove)
 {
 	std::list<CView*> views;
 	getTemplateViews (views);

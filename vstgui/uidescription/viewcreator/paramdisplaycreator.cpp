@@ -56,10 +56,10 @@ bool ParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
 	const auto* fontAttr = attributes.getAttributeValue (kAttrFont);
 	if (fontAttr)
 	{
-		CFontRef font = description->getFont (fontAttr->c_str ());
+		auto font = description->getFont (fontAttr->c_str ());
 		if (font)
 		{
-			display->setFont (shared (font));
+			display->setFont (font);
 		}
 	}
 

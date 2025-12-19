@@ -262,7 +262,7 @@ void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 }
 
 //------------------------------------------------------------------------
-CFontRef CTextEdit::platformGetFont () const
+SharedPointer<CFontDesc> CTextEdit::platformGetFont () const
 {
 	auto font = getFont ();
 	CCoord fontSize = font->getSize ();

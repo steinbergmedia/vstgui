@@ -1185,8 +1185,10 @@ void GradientNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-FontChangeAction::FontChangeAction (UIDescription* description, UTF8StringPtr name, CFontRef font, bool remove, bool performOrUndo)
-: description(description)
+FontChangeAction::FontChangeAction (UIDescription* description, UTF8StringPtr name,
+									const SharedPointer<CFontDesc>& font, bool remove,
+									bool performOrUndo)
+: description (description)
 , name (name)
 , font (font)
 , remove (remove)

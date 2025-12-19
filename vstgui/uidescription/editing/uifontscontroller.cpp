@@ -251,7 +251,7 @@ void UIFontsController::valueChanged (CControl* pControl)
 void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
 {
 	selectedFont = selectedRow != CDataBrowser::kNoSelection ? dataSource->getStringList ()->at (static_cast<uint32_t> (selectedRow)).data () : "";
-	CFontRef font = editDescription->getFont (selectedFont.data ());
+	auto font = editDescription->getFont (selectedFont.data ());
 	if (font)
 	{
 		if (fontMenu && !font->getName ().empty ())

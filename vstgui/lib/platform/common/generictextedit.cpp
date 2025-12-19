@@ -195,7 +195,7 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 	vstgui_assert (view);
 	view->getParentView ()->asViewContainer ()->addView (impl->view);
 
-	auto font = shared (callback->platformGetFont ());
+	auto font = callback->platformGetFont ();
 	auto fontSize = font->getSize () / impl->view->getGlobalTransform ().m11;
 	if (fontSize != font->getSize ())
 	{

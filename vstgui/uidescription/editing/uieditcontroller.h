@@ -104,7 +104,8 @@ protected:
 	void performGradientChange (UTF8StringPtr gradientName,
 								const SharedPointer<CGradient>& newGradient,
 								bool remove = false) override;
-	void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) override;
+	void performFontChange (UTF8StringPtr fontName, const SharedPointer<CFontDesc>& newFont,
+							bool remove = false) override;
 	void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;

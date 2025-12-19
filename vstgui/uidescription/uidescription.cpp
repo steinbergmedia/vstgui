@@ -1149,25 +1149,40 @@ UTF8StringPtr UIDescription::lookupColorName (const CColor& color) const
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupFontName (const SharedPointer<CFontDesc>& font) const
 {
-	return font ? lookupName<Detail::UIFontNode> (font, Detail::MainNodeNames::kFont, [] (const UIDescription* desc, Detail::UIFontNode* node, const CFontRef& font) {
-		return node->getFont () && node->getFont () == font;
-	}) : nullptr;
+	return font ? lookupName<Detail::UIFontNode> (
+					  font, Detail::MainNodeNames::kFont,
+					  [] (const UIDescription* desc, Detail::UIFontNode* node,
+						  const SharedPointer<CFontDesc>& font) {
+						  return node->getFont () && node->getFont () == font;
+					  })
+				: nullptr;
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const
 {
-	return bitmap ? lookupName<Detail::UIBitmapNode> (bitmap, Detail::MainNodeNames::kBitmap, [] (const UIDescription* desc, Detail::UIBitmapNode* node, const CBitmap* bitmap) {
-		return node->getBitmap (desc->impl->filePath) == bitmap;
-	}) : nullptr;
+	return bitmap ? lookupName<Detail::UIBitmapNode> (
+						bitmap, Detail::MainNodeNames::kBitmap,
+						[] (const UIDescription* desc, Detail::UIBitmapNode* node,
+							const SharedPointer<CBitmap> bitmap) {
+							return node->getBitmap (desc->impl->filePath) == bitmap;
+						})
+				  : nullptr;
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupGradientName (const SharedPointer<CGradient>& gradient) const
 {
-	return gradient ? lookupName<Detail::UIGradientNode> (gradient, Detail::MainNodeNames::kGradient, [] (const UIDescription* desc, Detail::UIGradientNode* node, const CGradient* gradient) {
-		return node->getGradient() == gradient || (node->getGradient () && gradient->getColorStops () == node->getGradient ()->getColorStops ());
-	}) : nullptr;
+	return gradient ? lookupName<Detail::UIGradientNode> (
+						  gradient, Detail::MainNodeNames::kGradient,
+						  [] (const UIDescription* desc, Detail::UIGradientNode* node,
+							  const SharedPointer<CGradient> gradient) {
+							  return node->getGradient () == gradient ||
+									 (node->getGradient () &&
+									  gradient->getColorStops () ==
+										  node->getGradient ()->getColorStops ());
+						  })
+					: nullptr;
 }
 	
 //-----------------------------------------------------------------------------
@@ -1279,7 +1294,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
+void UIDescription::changeFont (UTF8StringPtr name, const SharedPointer<CFontDesc>& newFont)
 {
 	UINode* fontsNode = getBaseNode (Detail::MainNodeNames::kFont);
 	auto* node = dynamic_cast<Detail::UIFontNode*> (findChildNodeByNameAttribute (fontsNode, name));
@@ -1287,7 +1302,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 	{
 		if (!node->noExport ())
 		{
-			node->setFont (shared (newFont));
+			node->setFont (newFont);
 			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescFontChanged (this);
 			});
@@ -1300,7 +1315,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
 			auto* newNode = new Detail::UIFontNode ("font", attr);
-			newNode->setFont (shared (newFont));
+			newNode->setFont (newFont);
 			fontsNode->getChildren ().add (newNode);
 			fontsNode->sortChildren ();
 			impl->forEachListener ([this] (UIDescriptionListener* l) {

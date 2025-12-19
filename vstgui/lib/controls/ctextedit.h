@@ -98,7 +98,7 @@ protected:
 
 	CColor platformGetBackColor () const override { return getBackColor (); }
 	CColor platformGetFontColor () const override { return getFontColor (); }
-	CFontRef platformGetFont () const override;
+	SharedPointer<CFontDesc> platformGetFont () const override;
 	CHoriTxtAlign platformGetHoriTxtAlign () const override { return getHoriAlign (); }
 	const UTF8String& platformGetText () const override { return text; }
 	const UTF8String& platformGetPlaceholderText () const override { return placeholderString; }
