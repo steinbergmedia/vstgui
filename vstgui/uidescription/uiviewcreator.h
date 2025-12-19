@@ -19,7 +19,8 @@ namespace UIViewCreator {
 
 VSTGUI_DEPRECATED (extern bool parseSize (const std::string& str, CPoint& point);)
 VSTGUI_DEPRECATED (extern bool pointToString (const CPoint& p, std::string& string);)
-extern bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription* desc);
+extern bool bitmapToString (const SharedPointer<CBitmap>& bitmap, std::string& string,
+							const IUIDescription* desc);
 extern bool colorToString (const CColor& color, std::string& string, const IUIDescription* desc);
 extern bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc);
 extern bool stringToColor (std::string_view value, CColor& color, const IUIDescription* desc);

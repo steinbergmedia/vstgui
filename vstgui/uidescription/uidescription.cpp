@@ -1155,7 +1155,7 @@ UTF8StringPtr UIDescription::lookupFontName (const CFontRef font) const
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr UIDescription::lookupBitmapName (const CBitmap* bitmap) const
+UTF8StringPtr UIDescription::lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const
 {
 	return bitmap ? lookupName<Detail::UIBitmapNode> (bitmap, Detail::MainNodeNames::kBitmap, [] (const UIDescription* desc, Detail::UIBitmapNode* node, const CBitmap* bitmap) {
 		return node->getBitmap (desc->impl->filePath) == bitmap;

@@ -406,7 +406,8 @@ bool pointToString (const CPoint& p, std::string& string)
 #endif
 
 //-----------------------------------------------------------------------------
-bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription* desc)
+bool bitmapToString (const SharedPointer<CBitmap>& bitmap, std::string& string,
+					 const IUIDescription* desc)
 {
 	UTF8StringPtr bitmapName = desc->lookupBitmapName (bitmap);
 	if (bitmapName)

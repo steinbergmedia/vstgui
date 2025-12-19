@@ -23,7 +23,10 @@ public:
 
 	UTF8StringPtr lookupColorName (const CColor& color) const override { return nullptr; }
 	UTF8StringPtr lookupFontName (const CFontRef font) const override { return nullptr; }
-	UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const override { return nullptr; }
+	UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const override
+	{
+		return nullptr;
+	}
 	UTF8StringPtr lookupGradientName (const CGradient* gradient) const override { return nullptr; }
 	UTF8StringPtr lookupControlTagName (const int32_t tag) const override { return nullptr; }
 

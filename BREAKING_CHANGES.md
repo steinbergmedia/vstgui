@@ -32,6 +32,8 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CDrawContext::fillRectWithBitmap
 	* CDrawContext::drawBitmapNinePartTiled
 	* CDrawContext::drawBitmap
+	* IUIDescription::lookupBitmapName
+	* UIViewCreator::bitmapToString
 
 - The following methods return a SharedPointer<...> now instead of a naked pointer
 	* COffscreenContext::getBitmap

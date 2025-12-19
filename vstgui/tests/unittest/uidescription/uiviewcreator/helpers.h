@@ -61,7 +61,7 @@ public:
 		return nullptr;
 	}
 
-	UTF8StringPtr lookupBitmapName (const CBitmap* inBitmap) const override
+	UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& inBitmap) const override
 	{
 		if (inBitmap == bitmap)
 			return kBitmapName;

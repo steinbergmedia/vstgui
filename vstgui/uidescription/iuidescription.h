@@ -33,7 +33,7 @@ public:
 
 	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
 	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
-	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
+	virtual UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const = 0;
 	virtual UTF8StringPtr lookupGradientName (const CGradient* gradient) const = 0;
 	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
 
