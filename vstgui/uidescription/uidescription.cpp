@@ -1147,7 +1147,7 @@ UTF8StringPtr UIDescription::lookupColorName (const CColor& color) const
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr UIDescription::lookupFontName (const CFontRef font) const
+UTF8StringPtr UIDescription::lookupFontName (const SharedPointer<CFontDesc>& font) const
 {
 	return font ? lookupName<Detail::UIFontNode> (font, Detail::MainNodeNames::kFont, [] (const UIDescription* desc, Detail::UIFontNode* node, const CFontRef& font) {
 		return node->getFont () && node->getFont () == font;

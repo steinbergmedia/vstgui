@@ -47,7 +47,7 @@ public:
 		return nullptr;
 	}
 
-	UTF8StringPtr lookupFontName (const CFontRef f) const override
+	UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& f) const override
 	{
 		if (f == this->font)
 			return kFontName;

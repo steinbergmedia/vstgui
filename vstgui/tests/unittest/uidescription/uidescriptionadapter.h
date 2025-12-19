@@ -22,7 +22,10 @@ public:
 	IController* getController () const override { return nullptr; }
 
 	UTF8StringPtr lookupColorName (const CColor& color) const override { return nullptr; }
-	UTF8StringPtr lookupFontName (const CFontRef font) const override { return nullptr; }
+	UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& font) const override
+	{
+		return nullptr;
+	}
 	UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const override
 	{
 		return nullptr;

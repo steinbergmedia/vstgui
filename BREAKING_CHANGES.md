@@ -60,6 +60,7 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CDrawMethods::drawIconAndText
 	* IFontChooserDelegate::fontChanged
 	* GenericStringListDataBrowserSource::setupUI
+	* IUIDescription::lookupFontName
 
 
 ### Version 4.14
