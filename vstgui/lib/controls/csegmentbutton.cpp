@@ -171,7 +171,7 @@ void CSegmentButton::setTextTruncateMode (CDrawMethods::TextTruncateMode mode)
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::setGradient (CGradient* newGradient)
+void CSegmentButton::setGradient (const SharedPointer<CGradient>& newGradient)
 {
 	if (gradient != newGradient)
 	{
@@ -181,7 +181,7 @@ void CSegmentButton::setGradient (CGradient* newGradient)
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::setGradientHighlighted (CGradient* newGradient)
+void CSegmentButton::setGradientHighlighted (const SharedPointer<CGradient>& newGradient)
 {
 	if (gradientHighlighted != newGradient)
 	{

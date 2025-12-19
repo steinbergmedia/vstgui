@@ -1163,7 +1163,7 @@ UTF8StringPtr UIDescription::lookupBitmapName (const SharedPointer<CBitmap>& bit
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr UIDescription::lookupGradientName (const CGradient* gradient) const
+UTF8StringPtr UIDescription::lookupGradientName (const SharedPointer<CGradient>& gradient) const
 {
 	return gradient ? lookupName<Detail::UIGradientNode> (gradient, Detail::MainNodeNames::kGradient, [] (const UIDescription* desc, Detail::UIGradientNode* node, const CGradient* gradient) {
 		return node->getGradient() == gradient || (node->getGradient () && gradient->getColorStops () == node->getGradient ()->getColorStops ());

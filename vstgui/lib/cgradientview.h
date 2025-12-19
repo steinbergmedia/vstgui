@@ -41,7 +41,7 @@ public:
 	void setRadialRadius (CCoord radius);
 
 	GradientStyle getGradientStyle () const { return gradientStyle; }
-	CGradient* getGradient () const { return gradient; }
+	SharedPointer<CGradient> getGradient () const { return gradient; }
 	const CColor& getFrameColor () const { return frameColor; }
 	double getGradientAngle () const { return gradientAngle; }
 	CCoord getRoundRectRadius () const { return roundRectRadius; }

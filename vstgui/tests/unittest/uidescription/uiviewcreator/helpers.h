@@ -75,7 +75,7 @@ public:
 		return nullptr;
 	}
 
-	UTF8StringPtr lookupGradientName (const CGradient* g) const override
+	UTF8StringPtr lookupGradientName (const SharedPointer<CGradient>& g) const override
 	{
 		if (g == this->gradient)
 			return kGradientName;

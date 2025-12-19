@@ -29,8 +29,9 @@ extern void applyStyleMask (const std::string* value, int32_t mask, int32_t& sty
 
 extern bool getStandardAttributeListValues (const std::string& attributeName,
                                             std::list<const std::string*>& values);
-extern void addGradientToUIDescription (const IUIDescription* description, CGradient* gradient,
-                                        UTF8StringPtr baseName);
+extern void addGradientToUIDescription (const IUIDescription* description,
+										const SharedPointer<CGradient>& gradient,
+										UTF8StringPtr baseName);
 
 //------------------------------------------------------------------------
 } // UIViewCreator

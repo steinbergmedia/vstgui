@@ -94,12 +94,12 @@ public:
 	void setTextTruncateMode (CDrawMethods::TextTruncateMode mode);
 	CDrawMethods::TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }
 
-	void setGradient (CGradient* newGradient);
-	CGradient* getGradient () const { return gradient; }
-	
-	void setGradientHighlighted (CGradient* newGradient);
-	CGradient* getGradientHighlighted () const { return gradientHighlighted; }
-	
+	void setGradient (const SharedPointer<CGradient>& newGradient);
+	SharedPointer<CGradient> getGradient () const { return gradient; }
+
+	void setGradientHighlighted (const SharedPointer<CGradient>& newGradient);
+	SharedPointer<CGradient> getGradientHighlighted () const { return gradientHighlighted; }
+
 	void setRoundRadius (CCoord newRoundRadius);
 	CCoord getRoundRadius () const { return roundRadius; }
 

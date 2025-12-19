@@ -222,7 +222,7 @@ bool GradientViewCreator::getAttributeValue (CView* view, const string& attribut
 	}
 	if (attributeName == kAttrGradient)
 	{
-		CGradient* gradient = gv->getGradient ();
+		auto gradient = gv->getGradient ();
 		UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
 		stringValue = gradientName ? gradientName : "";
 		return true;

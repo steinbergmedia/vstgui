@@ -30,7 +30,10 @@ public:
 	{
 		return nullptr;
 	}
-	UTF8StringPtr lookupGradientName (const CGradient* gradient) const override { return nullptr; }
+	UTF8StringPtr lookupGradientName (const SharedPointer<CGradient>& gradient) const override
+	{
+		return nullptr;
+	}
 	UTF8StringPtr lookupControlTagName (const int32_t tag) const override { return nullptr; }
 
 	bool getVariable (UTF8StringPtr name, double& value) const override { return false; }

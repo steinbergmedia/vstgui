@@ -361,8 +361,7 @@ bool SegmentButtonCreator::getAttributeValue (CView* view, const string& attribu
 	}
 	else if (attributeName == kAttrGradient)
 	{
-		CGradient* gradient = button->getGradient ();
-		if (gradient)
+		if (auto gradient = button->getGradient ())
 		{
 			UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
 			stringValue = gradientName ? gradientName : "";
@@ -371,8 +370,7 @@ bool SegmentButtonCreator::getAttributeValue (CView* view, const string& attribu
 	}
 	else if (attributeName == kAttrGradientHighlighted)
 	{
-		CGradient* gradient = button->getGradientHighlighted ();
-		if (gradient)
+		if (auto gradient = button->getGradientHighlighted ())
 		{
 			UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
 			stringValue = gradientName ? gradientName : "";

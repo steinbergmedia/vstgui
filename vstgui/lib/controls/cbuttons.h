@@ -214,12 +214,12 @@ public:
 	const CColor& getTextColor () const { return textColor; }
 	virtual void setTextColorHighlighted (const CColor& color);
 	const CColor& getTextColorHighlighted () const { return textColorHighlighted; }
-	
-	virtual void setGradient (CGradient* gradient);
-	CGradient* getGradient () const;
-	virtual void setGradientHighlighted (CGradient* gradient);
-	CGradient* getGradientHighlighted () const;
-	
+
+	virtual void setGradient (const SharedPointer<CGradient>& gradient);
+	SharedPointer<CGradient> getGradient () const;
+	virtual void setGradientHighlighted (const SharedPointer<CGradient>& gradient);
+	SharedPointer<CGradient> getGradientHighlighted () const;
+
 	virtual void setFrameColor (const CColor& color);
 	const CColor& getFrameColor () const { return frameColor; }
 	virtual void setFrameColorHighlighted (const CColor& color);

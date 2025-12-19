@@ -760,13 +760,10 @@ void CTextButton::setViewSize (const CRect& rect, bool invalid)
 }
 
 //------------------------------------------------------------------------
-CGradient* CTextButton::getGradient () const
-{
-	return gradient;
-}
+SharedPointer<CGradient> CTextButton::getGradient () const { return gradient; }
 
 //------------------------------------------------------------------------
-CGradient* CTextButton::getGradientHighlighted () const
+SharedPointer<CGradient> CTextButton::getGradientHighlighted () const
 {
 	return gradientHighlighted;
 }
@@ -799,14 +796,14 @@ void CTextButton::setTextColor (const CColor& color)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setGradient (CGradient* newGradient)
+void CTextButton::setGradient (const SharedPointer<CGradient>& newGradient)
 {
 	gradient = newGradient;
 	invalid ();
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setGradientHighlighted (CGradient* newGradient)
+void CTextButton::setGradientHighlighted (const SharedPointer<CGradient>& newGradient)
 {
 	gradientHighlighted = newGradient;
 	invalid ();

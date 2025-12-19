@@ -497,7 +497,8 @@ void applyStyleMask (const std::string* value, int32_t mask, int32_t& style)
 }
 
 //------------------------------------------------------------------------
-void addGradientToUIDescription (const IUIDescription* description, CGradient* gradient, UTF8StringPtr baseName)
+void addGradientToUIDescription (const IUIDescription* description,
+								 const SharedPointer<CGradient>& gradient, UTF8StringPtr baseName)
 {
 	if (!description->lookupGradientName (gradient))
 	{

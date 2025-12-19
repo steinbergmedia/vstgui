@@ -346,14 +346,14 @@ bool TextButtonCreator::getAttributeValue (CView* view, const string& attributeN
 	}
 	else if (attributeName == kAttrGradient)
 	{
-		CGradient* gradient = button->getGradient ();
+		auto gradient = button->getGradient ();
 		UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
 		stringValue = gradientName ? gradientName : "";
 		return true;
 	}
 	else if (attributeName == kAttrGradientHighlighted)
 	{
-		CGradient* gradient = button->getGradientHighlighted ();
+		auto gradient = button->getGradientHighlighted ();
 		UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
 		stringValue = gradientName ? gradientName : "";
 		return true;

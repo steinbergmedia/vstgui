@@ -79,7 +79,7 @@ public:
 	UTF8StringPtr lookupColorName (const CColor& color) const override;
 	UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& font) const override;
 	UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const override;
-	UTF8StringPtr lookupGradientName (const CGradient* gradient) const override;
+	UTF8StringPtr lookupGradientName (const SharedPointer<CGradient>& gradient) const override;
 	UTF8StringPtr lookupControlTagName (const int32_t tag) const override;
 
 	bool getVariable (UTF8StringPtr name, double& value) const override;
