@@ -333,13 +333,13 @@ public:
 	inline SharedPointer () noexcept;
 	inline ~SharedPointer () noexcept;
 
-	inline I* operator=(I* ptr) noexcept;
 	inline SharedPointer<I>& operator=(const SharedPointer<I>& ) noexcept;
 
+	inline explicit operator bool () const noexcept { return get () != nullptr; }
 #if VSTGUI_PREVENT_SHARED_POINTER_DIRECT_POINTER_ACCESS
-	inline operator bool () const noexcept { return get () != nullptr; }
 #else
 	inline operator I* ()  const noexcept { return ptr; }      // act as I*
+	inline I* operator= (I* ptr) noexcept;
 #endif
 	inline I* operator->() const noexcept { return ptr; }      // act as I*
 
@@ -398,18 +398,19 @@ protected:
 	I* ptr {nullptr};
 };
 
-#if VSTGUI_PREVENT_SHARED_POINTER_DIRECT_POINTER_ACCESS
+//------------------------------------------------------------------------
 template<typename T>
 bool operator== (const SharedPointer<T>& lhs, std::nullptr_t rhs)
 {
 	return lhs.get () == rhs;
 }
+
+//------------------------------------------------------------------------
 template<typename T>
 bool operator== (std::nullptr_t lhs, const SharedPointer<T>& rhs)
 {
 	return lhs == rhs.get ();
 }
-#endif
 
 //-----------------------------------------------------------------------------
 class CBaseObjectGuard
@@ -485,6 +486,7 @@ inline SharedPointer<I>& SharedPointer<I>::operator=(SharedPointer<I>&& mp) noex
 	return *this;
 }
 
+#if !VSTGUI_PREVENT_SHARED_POINTER_DIRECT_POINTER_ACCESS
 //------------------------------------------------------------------------
 template <class I>
 inline I* SharedPointer<I>::operator=(I* _ptr) noexcept
@@ -499,12 +501,20 @@ inline I* SharedPointer<I>::operator=(I* _ptr) noexcept
 	}
 	return ptr;
 }
+#endif
 
 //------------------------------------------------------------------------
 template <class I>
 inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& _ptr) noexcept
 {
-	operator= (_ptr.ptr);
+	if (_ptr.get () != ptr)
+	{
+		if (ptr)
+			ptr->forget ();
+		ptr = _ptr.get ();
+		if (ptr)
+			ptr->remember ();
+	}
 	return *this;
 }
 
