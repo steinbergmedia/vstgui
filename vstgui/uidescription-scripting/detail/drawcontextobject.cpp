@@ -497,8 +497,8 @@ struct DrawContextObject::Impl
 		auto endColorPosition = getDouble (var, "endColorPosition", signature);
 		auto startColor = getColor (var, uiDesc, "startColor"sv, signature);
 		auto endColor = getColor (var, uiDesc, "endColor"sv, signature);
-		if (auto gradient = owned (
-				CGradient::create (startColorPosition, endColorPosition, startColor, endColor)))
+		if (auto gradient =
+				CGradient::create (startColorPosition, endColorPosition, startColor, endColor))
 		{
 			GradientScriptObject obj (gradient, uiDesc);
 			var->setReturnVar (obj);

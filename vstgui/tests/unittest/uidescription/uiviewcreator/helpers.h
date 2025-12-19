@@ -105,8 +105,7 @@ public:
 	CColor color {20, 30, 50, 255};
 	SharedPointer<CFontDesc> font = owned (new CFontDesc ("Arial", 12));
 	SharedPointer<CBitmap> bitmap = owned (new CBitmap (1, 1));
-	SharedPointer<CGradient> gradient =
-	    owned (CGradient::create (0, 1, kBlackCColor, kWhiteCColor));
+	SharedPointer<CGradient> gradient = CGradient::create (0, 1, kBlackCColor, kWhiteCColor);
 	IControlListener* listener {nullptr};
 };
 

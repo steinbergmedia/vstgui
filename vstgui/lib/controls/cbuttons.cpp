@@ -736,10 +736,11 @@ CTextButton::CTextButton (const CRect& size, IControlListener* listener, int32_t
 {
 	setTextColor (kBlackCColor);
 	setTextColorHighlighted (kWhiteCColor);
-	
-	gradient = owned (CGradient::create (0, 1, CColor (220, 220, 220, 255), CColor (180, 180, 180, 255)));
-	gradientHighlighted = owned (CGradient::create (0, 1, CColor (180, 180, 180, 255), CColor (100, 100, 100, 255)));
-	
+
+	gradient = CGradient::create (0, 1, CColor (220, 220, 220, 255), CColor (180, 180, 180, 255));
+	gradientHighlighted =
+		CGradient::create (0, 1, CColor (180, 180, 180, 255), CColor (100, 100, 100, 255));
+
 	setFrameColor (kBlackCColor);
 	setFrameColorHighlighted (kBlackCColor);
 	setWantsFocus (true);
@@ -938,9 +939,11 @@ void CTextButton::draw (CDrawContext* context)
 		auto path = getPath (context, lineWidth);
 		if (path)
 		{
-			CGradient* drawGradient = highlight ? gradientHighlighted : gradient;
-			if (drawGradient)
-				context->fillLinearGradient (path, *drawGradient, r.getTopLeft (), r.getBottomLeft (), false);
+			if (auto drawGradient = highlight ? gradientHighlighted : gradient)
+			{
+				context->fillLinearGradient (path, *drawGradient.get (), r.getTopLeft (),
+											 r.getBottomLeft (), false);
+			}
 			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 	}

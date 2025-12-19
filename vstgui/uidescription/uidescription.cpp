@@ -1311,7 +1311,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
+void UIDescription::changeGradient (UTF8StringPtr name, const SharedPointer<CGradient>& newGradient)
 {
 	UINode* gradientsNode = getBaseNode (Detail::MainNodeNames::kGradient);
 	auto* node = dynamic_cast<Detail::UIGradientNode*> (findChildNodeByNameAttribute (gradientsNode, name));

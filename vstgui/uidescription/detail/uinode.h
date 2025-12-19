@@ -189,7 +189,7 @@ class UIGradientNode : public UINode
 public:
 	UIGradientNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
 	SharedPointer<CGradient> getGradient ();
-	void setGradient (CGradient* g);
+	void setGradient (const SharedPointer<CGradient>& g);
 
 	void freePlatformResources () override;
 

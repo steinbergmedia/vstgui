@@ -101,7 +101,9 @@ protected:
 	void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) override;
 	void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) override;
 	void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) override;
-	void performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove = false) override;
+	void performGradientChange (UTF8StringPtr gradientName,
+								const SharedPointer<CGradient>& newGradient,
+								bool remove = false) override;
 	void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) override;
 	void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;

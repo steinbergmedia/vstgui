@@ -103,7 +103,7 @@ bool GradientViewCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrGradient);
 	if (attr)
 	{
-		CGradient* gradient = description->getGradient (attr->c_str ());
+		auto gradient = description->getGradient (attr->c_str ());
 		gv->setGradient (gradient);
 	}
 	else
@@ -125,8 +125,7 @@ bool GradientViewCreator::apply (CView* view, const UIAttributes& attributes,
 			hasOldGradient = false;
 		if (hasOldGradient)
 		{
-			SharedPointer<CGradient> gradient =
-			    owned (CGradient::create (startOffset, 1. - endOffset, startColor, endColor));
+			auto gradient = CGradient::create (startOffset, 1. - endOffset, startColor, endColor);
 			gv->setGradient (gradient);
 			addGradientToUIDescription (description, gradient, "GradientView");
 		}

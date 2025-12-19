@@ -1366,7 +1366,7 @@ TEST_CASE (UIDescriptionJSONTests, Gradient)
 	desc.changeGradientName ("g1", "gradient");
 	EXPECT (desc.hasGradientName ("gradient"));
 	EXPECT (desc.hasGradientName ("g1") == false);
-	auto newGradient = owned (CGradient::create (0., 1., kWhiteCColor, kBlackCColor));
+	auto newGradient = CGradient::create (0., 1., kWhiteCColor, kBlackCColor);
 	desc.changeGradient ("gradient", newGradient);
 	EXPECT (desc.getGradient ("gradient") == newGradient);
 	desc.changeGradient ("gradientnew", newGradient);
@@ -1686,7 +1686,7 @@ TEST_CASE (UIDescriptionJSONTests, Listeners)
 	mok.setTestCase (UIDescTestCase::GradientChanged);
 	EXPECT (mok.callCount () == 0);
 
-	auto gradient = owned (CGradient::create (0., 0., newColor, newColor));
+	auto gradient = CGradient::create (0., 0., newColor, newColor);
 	desc.changeGradient ("NewGradient", gradient);
 	EXPECT (mok.callCount () == 1);
 	desc.changeGradient ("NewGradient", gradient);

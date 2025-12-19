@@ -39,6 +39,8 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CDrawContext::createGraphicsPath
 	* CDrawContext::createTextPath
 	* CDrawContext::createRoundRectGraphicsPath
+	* CGradient::create
+	* CGraphicsPath::createGradient
 	* COffscreenContext::getBitmap
 	* CTextButton::getGradient
 	* CTextButton::getGradientHighlighted
@@ -75,6 +77,7 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CTextButton::setGradientHighlighted
 	* CSegmentButton::setGradient
 	* CSegmentButton::setGradientHighlighted
+	* CGradientView::setGradient
 	* IUIDescription::lookupGradientName
 	* UIViewCreator::addGradientToUIDescription
 

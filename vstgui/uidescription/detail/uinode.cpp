@@ -684,13 +684,13 @@ SharedPointer<CGradient> UIGradientNode::getGradient ()
 			}
 		}
 		if (colorStops.size () > 1)
-			gradient = owned (CGradient::create (colorStops));
+			gradient = CGradient::create (colorStops);
 	}
 	return gradient;
 }
 
 //-----------------------------------------------------------------------------
-void UIGradientNode::setGradient (CGradient* g)
+void UIGradientNode::setGradient (const SharedPointer<CGradient>& g)
 {
 	gradient = g;
 	getChildren ().removeAll ();

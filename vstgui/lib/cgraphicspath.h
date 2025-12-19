@@ -30,8 +30,8 @@ public:
 	 * @param color2 the second color of the gradient
 	 * @return a new gradient object
 	*/
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1,
-							   const CColor& color2);
+	SharedPointer<CGradient> createGradient (double color1Start, double color2Start,
+											 const CColor& color1, const CColor& color2);
 	//@}
 
 	//-----------------------------------------------------------------------------

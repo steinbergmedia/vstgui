@@ -414,7 +414,9 @@ protected:
 class GradientChangeAction : public IAction
 {
 public:
-	GradientChangeAction (UIDescription* description, UTF8StringPtr name, CGradient* gradient, bool remove, bool performOrUndo);
+	GradientChangeAction (UIDescription* description, UTF8StringPtr name,
+						  const SharedPointer<CGradient>& gradient, bool remove,
+						  bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;

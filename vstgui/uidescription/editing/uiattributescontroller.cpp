@@ -749,7 +749,7 @@ public:
 	void validateMenuEntry (CCommandMenuItem* item) override
 	{
 		const CCoord size = 15;
-		if (CGradient* gradient = description->getGradient (item->getTitle ()))
+		if (auto gradient = description->getGradient (item->getTitle ()))
 		{
 			if (auto context = COffscreenContext::create ({size, size}))
 			{
@@ -757,7 +757,8 @@ public:
 				if (auto path = context->createGraphicsPath ())
 				{
 					path->addRect (CRect (0, 0, size, size));
-					context->fillLinearGradient (path, *gradient, CPoint (0, 0), CPoint (size, 0));
+					context->fillLinearGradient (path, *gradient.get (), CPoint (0, 0),
+												 CPoint (size, 0));
 				}
 				context->endDraw ();
 				item->setIcon (context->getBitmap ());

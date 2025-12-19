@@ -1103,8 +1103,10 @@ void BitmapFilterChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-GradientChangeAction::GradientChangeAction (UIDescription* description, UTF8StringPtr name, CGradient* gradient, bool remove, bool performOrUndo)
-: description(description)
+GradientChangeAction::GradientChangeAction (UIDescription* description, UTF8StringPtr name,
+											const SharedPointer<CGradient>& gradient, bool remove,
+											bool performOrUndo)
+: description (description)
 , name (name)
 , gradient (gradient)
 , remove (remove)

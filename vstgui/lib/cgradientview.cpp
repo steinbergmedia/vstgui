@@ -31,7 +31,7 @@ void CGradientView::setGradientStyle (GradientStyle style)
 }
 
 //------------------------------------------------------------------------
-void CGradientView::setGradient (CGradient* newGradient)
+void CGradientView::setGradient (const SharedPointer<CGradient>& newGradient)
 {
 	if (gradient != newGradient)
 	{

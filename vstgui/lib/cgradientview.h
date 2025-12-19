@@ -31,7 +31,7 @@ public:
 	};
 	
 	void setGradientStyle (GradientStyle style);
-	void setGradient (CGradient* gradient);
+	void setGradient (const SharedPointer<CGradient>& gradient);
 	void setFrameColor (const CColor& newColor);
 	void setGradientAngle (double angle);
 	void setRoundRectRadius (CCoord radius);

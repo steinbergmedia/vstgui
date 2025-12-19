@@ -162,11 +162,10 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 			hasOldGradient = false;
 		if (hasOldGradient)
 		{
-			SharedPointer<CGradient> gradient =
-			    owned (CGradient::create (0, 1, startColor, endColor));
+			auto gradient = CGradient::create (0, 1, startColor, endColor);
 			button->setGradient (gradient);
 			addGradientToUIDescription (description, gradient, "TextButton");
-			gradient = owned (CGradient::create (0, 1, highlightedStartColor, highlightedEndColor));
+			gradient = CGradient::create (0, 1, highlightedStartColor, highlightedEndColor);
 			button->setGradientHighlighted (gradient);
 			addGradientToUIDescription (description, gradient, "TextButton Highlighted");
 		}

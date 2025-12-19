@@ -273,13 +273,15 @@ public:
 			context->setLineWidth (lineWidth);
 			context->setFrameColor (gUIEditorControllerResources.shadingLineColor);
 
-			CGradient* shading = UIEditController::getEditorDescription ()->getGradient ("shading.light");
+			auto shading = UIEditController::getEditorDescription ()->getGradient ("shading.light");
 			if (shading)
 			{
 				path->addRect (size);
 				if (horizontal)
 				{
-					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.right, size.top));
+					context->fillLinearGradient (path, *shading.get (),
+												 CPoint (size.left, size.top),
+												 CPoint (size.right, size.top));
 					if (drawBottomLine)
 						context->drawLine (CPoint (size.left, size.top), CPoint (size.left, size.bottom));
 					if (drawTopLine)
@@ -287,7 +289,9 @@ public:
 				}
 				else
 				{
-					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
+					context->fillLinearGradient (path, *shading.get (),
+												 CPoint (size.left, size.top),
+												 CPoint (size.left, size.bottom));
 					if (drawTopLine)
 						context->drawLine (CPoint (size.left, size.top), CPoint (size.right, size.top));
 					if (drawBottomLine)
@@ -1692,7 +1696,9 @@ void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8String
 }
 
 //------------------------------------------------------------------------
-void UIEditController::performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove)
+void UIEditController::performGradientChange (UTF8StringPtr gradientName,
+											  const SharedPointer<CGradient>& newGradient,
+											  bool remove)
 {
 	std::list<CView*> views;
 	getTemplateViews (views);

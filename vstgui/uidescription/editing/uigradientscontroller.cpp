@@ -40,7 +40,7 @@ public:
 	UIColorStopEditView (UIColor* editColor);
 	~UIColorStopEditView () override;
 
-	void setGradient (CGradient* gradient);
+	void setGradient (const SharedPointer<CGradient>& gradient);
 
 	void selectNextColorStop ();
 	void selectPrevColorStop ();
@@ -292,7 +292,7 @@ void UIColorStopEditView::uiColorChanged (UIColor* c)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorStopEditView::setGradient (CGradient* inGradient)
+void UIColorStopEditView::setGradient (const SharedPointer<CGradient>& inGradient)
 {
 	colorStopMap = inGradient->getColorStops ();
 	auto it = colorStopMap.find (editStartOffset);
@@ -392,7 +392,9 @@ class UIGradientEditorController : public NonAtomicReferenceCounted,
                                    public IController
 {
 public:
-	UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer);
+	UIGradientEditorController (const std::string& gradientName,
+								const SharedPointer<CGradient>& gradient,
+								UIDescription* description, IActionPerformer* actionPerformer);
 	~UIGradientEditorController () override;
 
 	void valueChanged (CControl* pControl) override;
@@ -424,11 +426,14 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIGradientEditorController::UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer)
-: editDescription(description)
+UIGradientEditorController::UIGradientEditorController (const std::string& gradientName,
+														const SharedPointer<CGradient>& gradient,
+														UIDescription* description,
+														IActionPerformer* actionPerformer)
+: editDescription (description)
 , gradient (gradient)
 , editColor (makeOwned<UIColor> ())
-, actionPerformer(actionPerformer)
+, actionPerformer (actionPerformer)
 , gradientName (gradientName)
 {
 	*editColor = gradient->getColorStops ().begin ()->second;
@@ -445,7 +450,7 @@ UIGradientEditorController::~UIGradientEditorController ()
 //----------------------------------------------------------------------------------------------------
 void UIGradientEditorController::apply ()
 {
-	CGradient* g = editDescription->getGradient (gradientName.data ());
+	auto g = editDescription->getGradient (gradientName.data ());
 	if (g->getColorStops () != gradient->getColorStops ())
 		actionPerformer->performGradientChange (gradientName.data (), gradient);
 }
@@ -628,7 +633,7 @@ public:
 	UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIGradientsDataSource () override = default;
 
-	CGradient* getSelectedGradient ();
+	SharedPointer<CGradient> getSelectedGradient ();
 	std::string getSelectedGradientName ();
 	
 protected:
@@ -662,7 +667,7 @@ void UIGradientsDataSource::onUIDescGradientChanged (UIDescription* desc)
 }
 
 //----------------------------------------------------------------------------------------------------
-CGradient* UIGradientsDataSource::getSelectedGradient ()
+SharedPointer<CGradient> UIGradientsDataSource::getSelectedGradient ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
@@ -739,8 +744,7 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 	CRect r (size);
 	r.right -= getGradientIconWidth ();
 	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
-	CGradient* gradient = nullptr;
-	if ((gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).data ())))
+	if (auto gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).data ()))
 	{
 		if (auto path = context->createGraphicsPath ())
 		{
@@ -754,7 +758,7 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 			r.inset (3, 2);
 			path->addRect (r);
 			path->closeSubpath ();
-			context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getTopRight ());
+			context->fillLinearGradient (path, *gradient.get (), r.getTopLeft (), r.getTopRight ());
 			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 	}
@@ -869,7 +873,7 @@ void UIGradientsController::dbSelectionChanged (int32_t selectedRow, GenericStri
 {
 	if (dataSource)
 	{
-		CGradient* gradient = dataSource->getSelectedGradient ();
+		auto gradient = dataSource->getSelectedGradient ();
 		if (editButton)
 			editButton->setMouseEnabled (gradient ? true : false);
 	}

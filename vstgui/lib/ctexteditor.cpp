@@ -2792,12 +2792,11 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 		button->setAutosizeFlags (kAutosizeTop | kAutosizeRight);
 		button->setFrameWidth (1.);
 		button->setRoundRadius (2.);
-		auto gradient =
-			owned (CGradient::create (0., 1., md.style->backColor, md.style->backColor));
+		auto gradient = CGradient::create (0., 1., md.style->backColor, md.style->backColor);
 		button->setGradient (gradient);
 		auto isOnOffStyle = button->getStyle () == CTextButton::Style::kOnOffStyle;
 		if (isOnOffStyle)
-			gradient = owned (CGradient::create (0., 1., md.style->textColor, md.style->textColor));
+			gradient = CGradient::create (0., 1., md.style->textColor, md.style->textColor);
 		button->setGradientHighlighted (gradient);
 		button->setTextColor (md.style->textColor);
 		auto color = md.style->frameColor;

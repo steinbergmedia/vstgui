@@ -100,7 +100,7 @@ public:
 
 	void changeColor (UTF8StringPtr name, const CColor& newColor);
 	void changeFont (UTF8StringPtr name, CFontRef newFont);
-	void changeGradient (UTF8StringPtr name, CGradient* newGradient);
+	void changeGradient (UTF8StringPtr name, const SharedPointer<CGradient>& newGradient);
 	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = nullptr);
 	void changeMultiFrameBitmap (UTF8StringPtr name, UTF8StringPtr newName,
 								 const CMultiFrameBitmapDescription* = nullptr);
