@@ -483,7 +483,7 @@ void VST3Editor::init ()
 		#if DEBUG
 		else
 		{
-			auto* debugAttr = new UIAttributes ();
+			auto debugAttr = VSTGUI::makeOwned<UIAttributes> ();
 			debugAttr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			debugAttr->setAttribute ("size", "300, 300");
 			description->addNewTemplate (viewName.c_str (), debugAttr);
@@ -497,7 +497,7 @@ void VST3Editor::init ()
 	#if DEBUG
 	else
 	{
-		auto* attr = new UIAttributes ();
+		auto attr = VSTGUI::makeOwned<UIAttributes> ();
 		attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 		attr->setAttribute ("size", "300, 300");
 		description->addNewTemplate (viewName.c_str (), attr);
@@ -812,9 +812,10 @@ protected:
 //-----------------------------------------------------------------------------
 static void addCOptionMenuEntriesToIContextMenu (VST3Editor* editor, COptionMenu* menu, Steinberg::Vst::IContextMenu* contextMenu)
 {
-	for (CConstMenuItemIterator it = menu->getItems ()->begin (), end = menu->getItems ()->end (); it != end; ++it)
+	for (auto it = menu->getItemList ().begin (), end = menu->getItemList ().end (); it != end;
+		 ++it)
 	{
-		auto* commandItem = (*it).cast<CCommandMenuItem>();
+		auto commandItem = (*it).cast<CCommandMenuItem> ();
 		if (commandItem)
 			commandItem->validate ();
 
@@ -878,8 +879,9 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 			{
 				snprintf (zoomFactorString, std::size (zoomFactorString), "%d%%",
 						  static_cast<int> ((*it) * 100));
-				CMenuItem* item = zoomMenu->addEntry (new CCommandMenuItem (
-				    {zoomFactorString, zoomFactorTag, this, "Zoom", zoomFactorString}));
+				CMenuItem* item = zoomMenu->addEntry (
+					new CCommandMenuItem ({zoomFactorString, zoomFactorTag, VSTGUI::shared (this),
+										   "Zoom", zoomFactorString}));
 				if (getZoomFactor () == *it)
 					item->setChecked (true);
 			}
@@ -893,15 +895,18 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 				controllerMenu = new COptionMenu ();
 			else
 				controllerMenu->addSeparator ();
-			CMenuItem* item = controllerMenu->addEntry (new CCommandMenuItem (
-			    {"Open UIDescription Editor", this, "File", "Open UIDescription Editor"}));
+			CMenuItem* item = controllerMenu->addEntry (
+				new CCommandMenuItem ({"Open UIDescription Editor", VSTGUI::shared (this), "File",
+									   "Open UIDescription Editor"}));
 			item->setKey ("e", kControl);
-			item = controllerMenu->addEntry (new CCommandMenuItem (
-				{"Show 'Open UI Editor' Button", this, "File", "Show Editor Button"}));
+			item = controllerMenu->addEntry (
+				new CCommandMenuItem ({"Show 'Open UI Editor' Button", VSTGUI::shared (this),
+									   "File", "Show Editor Button"}));
 			if (enableShowEditButton ())
 				item->setChecked ();
-			item = controllerMenu->addEntry (new CCommandMenuItem (
-				{"Save Editor Screenshot", this, "File", "Save Editor Screenshot"}));
+			item = controllerMenu->addEntry (
+				new CCommandMenuItem ({"Save Editor Screenshot", VSTGUI::shared (this), "File",
+									   "Save Editor Screenshot"}));
 		}
 	#endif
 		CViewContainer::ViewList views;
@@ -960,7 +965,7 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 			if (controllerMenu && controllerMenu->getNbEntries () > 0)
 			{
 				controllerMenu->remember ();
-				SharedPointer<CFrame> blockFrame = getFrame ();
+				SharedPointer<CFrame> blockFrame = shared (getFrame ());
 				getFrame ()->doAfterEventProcessing ([=, mousePosition = event.mousePosition] () {
 					controllerMenu->setStyle (COptionMenu::kPopupStyle |
 					                          COptionMenu::kMultipleCheckStyle);
@@ -1775,7 +1780,7 @@ void VST3Editor::saveScreenshot ()
 					offscreen->beginDraw ();
 					frame->draw (offscreen);
 					offscreen->endDraw ();
-					return shared (offscreen->getBitmap ());
+					return offscreen->getBitmap ();
 				}
 				return nullptr;
 			};
@@ -2026,21 +2031,25 @@ bool VST3Editor::enableEditing (bool state)
 				if (fileMenu)
 				{
 					CMenuItem* item = fileMenu->addEntry (
-					    new CCommandMenuItem ({"Save", this, "File", "Save"}), 0);
+						new CCommandMenuItem ({"Save", VSTGUI::shared (this), "File", "Save"}), 0);
 					item->setKey ("s", kControl);
 					item = fileMenu->addEntry (
-					    new CCommandMenuItem ({"Save As..", this, "File", "Save As"}), 1);
+						new CCommandMenuItem (
+							{"Save As..", VSTGUI::shared (this), "File", "Save As"}),
+						1);
 					item->setKey ("s", kShift | kControl);
-					item = fileMenu->addEntry (new CCommandMenuItem (
-					    {"Close Editor", this, "File", "Close UIDescription Editor"}));
+					item = fileMenu->addEntry (
+						new CCommandMenuItem ({"Close Editor", VSTGUI::shared (this), "File",
+											   "Close UIDescription Editor"}));
 					item->setKey ("e", kControl);
 				}
 				COptionMenu* editMenu = editController->getMenuController ()->getEditMenu ();
 				if (editMenu)
 				{
 					editMenu->addSeparator ();
-					editMenu->addEntry (new CCommandMenuItem (
-					    {"Sync Parameter Tags", this, "Edit", "Sync Parameter Tags"}));
+					editMenu->addEntry (
+						new CCommandMenuItem ({"Sync Parameter Tags", VSTGUI::shared (this), "Edit",
+											   "Sync Parameter Tags"}));
 				}
 				return true;
 			}

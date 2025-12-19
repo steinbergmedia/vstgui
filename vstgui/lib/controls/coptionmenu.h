@@ -132,7 +132,7 @@ public:
 
 		Desc (const UTF8String& title, const UTF8String& keycode = nullptr,
 			  int32_t keyModifiers = 0, const SharedPointer<CBitmap>& icon = {},
-			  int32_t flags = kNoFlags, ICommandMenuItemTarget* target = nullptr,
+			  int32_t flags = kNoFlags, const SharedPointer<ICommandMenuItemTarget>& target = {},
 			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
 		: title (title)
 		, commandCategory (commandCategory)
@@ -147,7 +147,7 @@ public:
 
 		Desc (const UTF8String& title, int32_t tag,
 			  const SharedPointer<ICommandMenuItemTarget>& target = {},
-			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
+			  const UTF8String& commandCategory = {}, const UTF8String& commandName = {})
 		: title (title)
 		, commandCategory (commandCategory)
 		, commandName (commandName)
@@ -157,7 +157,7 @@ public:
 		}
 
 		Desc (const UTF8String& title, const SharedPointer<ICommandMenuItemTarget>& target,
-			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
+			  const UTF8String& commandCategory = {}, const UTF8String& commandName = {})
 		: title (title)
 		, commandCategory (commandCategory)
 		, commandName (commandName)
