@@ -8,9 +8,9 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-template <typename EventType>
-inline uint32_t dispatchMouseEvent (CView* view, CPoint pos, MouseEventButtonState buttons = {},
-                                    Modifiers mods = {})
+template<typename EventType, typename ViewT>
+inline uint32_t dispatchMouseEvent (ViewT view, CPoint pos, MouseEventButtonState buttons = {},
+									Modifiers mods = {})
 {
 	EventType event;
 	event.mousePosition = pos;
@@ -21,7 +21,8 @@ inline uint32_t dispatchMouseEvent (CView* view, CPoint pos, MouseEventButtonSta
 }
 
 //------------------------------------------------------------------------
-inline uint32_t dispatchMouseCancelEvent (CView* view)
+template<typename ViewT>
+inline uint32_t dispatchMouseCancelEvent (ViewT view)
 {
 	MouseCancelEvent event;
 	view->dispatchEvent (event);
@@ -29,8 +30,9 @@ inline uint32_t dispatchMouseCancelEvent (CView* view)
 }
 
 //------------------------------------------------------------------------
-inline uint32_t dispatchMouseWheelEvent (CView* view, CPoint pos, double deltaX, double deltaY,
-                                         Modifiers mods = {})
+template<typename ViewT>
+inline uint32_t dispatchMouseWheelEvent (ViewT view, CPoint pos, double deltaX, double deltaY,
+										 Modifiers mods = {})
 {
 	MouseWheelEvent event;
 	event.mousePosition = pos;
