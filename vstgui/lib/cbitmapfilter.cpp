@@ -375,13 +375,13 @@ bool FilterBase::registerProperty (IdStringPtr name, const Property& defaultProp
 }
 
 //----------------------------------------------------------------------------------------------------
-CBitmap* FilterBase::getInputBitmap () const
+SharedPointer<CBitmap> FilterBase::getInputBitmap () const
 {
 	auto it = properties.find (Standard::Property::kInputBitmap);
 	if (it != properties.end ())
 	{
 		auto obj = (*it).second.getObject ();
-		return obj ? dynamic_cast<CBitmap*>(obj) : nullptr;
+		return obj ? shared (dynamic_cast<CBitmap*> (obj)) : nullptr;
 	}
 	return nullptr;
 }
@@ -849,7 +849,7 @@ protected:
 
 	bool run (bool replace) override
 	{
-		SharedPointer<CBitmap> inputBitmap = shared (getInputBitmap ());
+		auto inputBitmap = getInputBitmap ();
 		if (inputBitmap == nullptr)
 			return false;
 		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));

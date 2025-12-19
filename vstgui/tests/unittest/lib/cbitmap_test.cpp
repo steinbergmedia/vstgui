@@ -36,11 +36,11 @@ TEST_CASE (CBitmap, ScaleFactor)
 //------------------------------------------------------------------------
 TEST_CASE (CBitmap, PixelAccess)
 {
-	CBitmap bitmap (10, 10);
-	EXPECT_EQ (bitmap.getWidth (), 10);
-	EXPECT_EQ (bitmap.getHeight (), 10);
+	auto bitmap = makeOwned<CBitmap> (10, 10);
+	EXPECT_EQ (bitmap->getWidth (), 10);
+	EXPECT_EQ (bitmap->getHeight (), 10);
 
-	auto accessor = owned (CBitmapPixelAccess::create (&bitmap));
+	auto accessor = owned (CBitmapPixelAccess::create (bitmap));
 	EXPECT (accessor);
 	uint32_t x = 0;
 	uint32_t y = 0;
@@ -71,16 +71,16 @@ TEST_CASE (CBitmap, PixelAccess)
 //------------------------------------------------------------------------
 TEST_CASE (CBitmap, PixelAccess2)
 {
-	CBitmap bitmap (10, 10);
+	auto bitmap = makeOwned<CBitmap> (10, 10);
 	CColor color (255, 1, 2, 150);
-	if (auto accessor = owned (CBitmapPixelAccess::create (&bitmap)))
+	if (auto accessor = owned (CBitmapPixelAccess::create (bitmap)))
 	{
 		do
 		{
 			accessor->setColor (color);
 		} while (++(*accessor));
 	}
-	if (auto accessor = owned (CBitmapPixelAccess::create (&bitmap)))
+	if (auto accessor = owned (CBitmapPixelAccess::create (bitmap)))
 	{
 		do
 		{

@@ -54,9 +54,9 @@ bool AnimationSplashScreenCreator::apply (CView* view, const UIAttributes& attri
 	if (!splashScreen)
 		return false;
 
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrSplashBitmap), bitmap, description))
-		splashScreen->setSplashBitmap (shared (bitmap));
+		splashScreen->setSplashBitmap (bitmap);
 
 	CPoint p;
 	if (attributes.getPointAttribute (kAttrSplashOrigin, p))

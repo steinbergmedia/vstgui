@@ -214,7 +214,7 @@ protected:
 	FilterBase (UTF8StringPtr description);
 
 	bool registerProperty (IdStringPtr name, const Property& defaultProperty);
-	CBitmap* getInputBitmap () const;
+	SharedPointer<CBitmap> getInputBitmap () const;
 
 	UTF8StringPtr getDescription () const override;
 	bool setProperty (IdStringPtr name, const Property& property) override;

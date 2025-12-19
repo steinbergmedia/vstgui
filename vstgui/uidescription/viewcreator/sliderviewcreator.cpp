@@ -240,9 +240,9 @@ bool SliderCreator::apply (CView* view, const UIAttributes& attributes,
 	if (!slider)
 		return false;
 
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
-		slider->setHandle (shared (bitmap));
+		slider->setHandle (bitmap);
 
 	CPoint p;
 	if (attributes.getPointAttribute (kAttrBitmapOffset, p))

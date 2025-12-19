@@ -310,7 +310,8 @@ CBitmapPixelAccess::CBitmapPixelAccess ()
 }
 
 //------------------------------------------------------------------------
-void CBitmapPixelAccess::init (CBitmap* _bitmap, IPlatformBitmapPixelAccess* _pixelAccess)
+void CBitmapPixelAccess::init (const SharedPointer<CBitmap>& _bitmap,
+							   IPlatformBitmapPixelAccess* _pixelAccess)
 {
 	bitmap = _bitmap;
 	pixelAccess = _pixelAccess;
@@ -347,7 +348,8 @@ public:
 /// @endcond
 
 //------------------------------------------------------------------------
-CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremultiplied)
+CBitmapPixelAccess* CBitmapPixelAccess::create (const SharedPointer<CBitmap>& bitmap,
+												bool alphaPremultiplied)
 {
 	if (bitmap == nullptr || bitmap->getPlatformBitmap () == nullptr)
 		return nullptr;

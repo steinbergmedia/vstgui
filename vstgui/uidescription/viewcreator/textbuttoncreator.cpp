@@ -111,11 +111,11 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 		button->setStyle (*attr == strTrue ? CTextButton::kKickStyle : CTextButton::kOnOffStyle);
 	}
 
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrIcon), bitmap, description))
-		button->setIcon (shared (bitmap));
+		button->setIcon (bitmap);
 	if (stringToBitmap (attributes.getAttributeValue (kAttrIconHighlighted), bitmap, description))
-		button->setIconHighlighted (shared (bitmap));
+		button->setIconHighlighted (bitmap);
 
 	attr = attributes.getAttributeValue (kAttrIconPosition);
 	if (attr)

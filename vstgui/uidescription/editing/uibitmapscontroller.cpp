@@ -533,7 +533,7 @@ class UIBitmapSettingsController : public NonAtomicReferenceCounted,
 								   public IUIUndoManagerListener
 {
 public:
-	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName,
+	UIBitmapSettingsController (const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName,
 								UIDescription* description, IActionPerformer* actionPerformer,
 								UIUndoManager* undoManager);
 	~UIBitmapSettingsController () noexcept override;
@@ -590,7 +590,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap,
+UIBitmapSettingsController::UIBitmapSettingsController (const SharedPointer<CBitmap>& bitmap,
 														const std::string& bitmapName,
 														UIDescription* description,
 														IActionPerformer* actionPerformer,

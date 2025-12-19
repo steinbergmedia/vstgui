@@ -189,9 +189,9 @@ bool KnobCreator::apply (CView* view, const UIAttributes& attributes,
 		knob->setCoronaDashDotLengths (lengths);
 	}
 
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
-		knob->setHandleBitmap (shared (bitmap));
+		knob->setHandleBitmap (bitmap);
 
 	int32_t drawStyle = knob->getDrawStyle ();
 	applyStyleMask (attributes.getAttributeValue (kAttrCircleDrawing), CKnob::kHandleCircleDrawing,

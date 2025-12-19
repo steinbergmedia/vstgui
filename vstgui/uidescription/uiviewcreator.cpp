@@ -474,12 +474,13 @@ bool stringToColor (const std::string* value, CColor& color, const IUIDescriptio
 }
 
 //-----------------------------------------------------------------------------
-bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IUIDescription* desc)
+bool stringToBitmap (const std::string* value, SharedPointer<CBitmap>& bitmap,
+					 const IUIDescription* desc)
 {
 	if (value)
 	{
 		if (*value == "")
-			bitmap = nullptr;
+			bitmap.reset ();
 		else
 			bitmap = desc->getBitmap (value->c_str ());
 		return true;

@@ -53,9 +53,9 @@ bool XYPadCreator::apply (CView* view, const UIAttributes& attributes,
 	if (!pad)
 		return false;
 
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
-		pad->setHandleBitmap (shared (bitmap));
+		pad->setHandleBitmap (bitmap);
 
 	return true;
 }

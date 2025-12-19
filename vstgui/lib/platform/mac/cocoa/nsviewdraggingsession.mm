@@ -250,7 +250,7 @@ void NSViewDraggingSession::dragEnded (CPoint pos, DragOperation result)
 }
 
 //-----------------------------------------------------------------------------
-NSImage* NSViewDraggingSession::nsImageForDragOperation (CBitmap* bitmap)
+NSImage* NSViewDraggingSession::nsImageForDragOperation (const SharedPointer<CBitmap>& bitmap)
 {
 	return [bitmapToNSImage (bitmap) autorelease];
 }

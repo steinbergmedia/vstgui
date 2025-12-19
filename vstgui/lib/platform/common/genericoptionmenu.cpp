@@ -350,7 +350,7 @@ private:
 		}
 	}
 
-	void drawItemIcon (CDrawContext* context, CRect size, CBitmap* bitmap)
+	void drawItemIcon (CDrawContext* context, CRect size, const SharedPointer<CBitmap>& bitmap)
 	{
 		ConcatClip cc (*context, size);
 		CRect iconRect;

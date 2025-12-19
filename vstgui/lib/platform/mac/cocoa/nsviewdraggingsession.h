@@ -37,7 +37,7 @@ struct NSViewDraggingSession : public IDraggingSession, public NonAtomicReferenc
 	void dragEnded (CPoint pos, DragOperation result);
 
 private:
-	static NSImage* nsImageForDragOperation (CBitmap* bitmap);
+	static NSImage* nsImageForDragOperation (const SharedPointer<CBitmap>& bitmap);
 
 	NSDraggingSession* session;
 	mutable DragDescription desc;

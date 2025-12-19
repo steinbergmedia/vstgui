@@ -1802,7 +1802,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 		                          [event type] == MacEventType::LeftMouseDragged))
 			return kDragRefused;
 		NSPoint nsLocation = [event locationInWindow];
-		NSImage* nsImage = bitmapToNSImage (dragBitmap);
+		NSImage* nsImage = bitmapToNSImage (shared (dragBitmap));
 		if (nsImage)
 		{
 			nsLocation = [nsView convertPoint:nsLocation fromView:nil];

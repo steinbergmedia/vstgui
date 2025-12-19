@@ -117,11 +117,11 @@ bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
 		view->setMouseableArea (viewSize);
 	}
 
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrBitmap), bitmap, description))
-		view->setBackground (shared (bitmap));
+		view->setBackground (bitmap);
 	if (stringToBitmap (attributes.getAttributeValue (kAttrDisabledBitmap), bitmap, description))
-		view->setDisabledBackground (shared (bitmap));
+		view->setDisabledBackground (bitmap);
 	bool b;
 	if (attributes.getBooleanAttribute (kAttrTransparent, b))
 		view->setTransparency (b);
