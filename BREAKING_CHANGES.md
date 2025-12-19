@@ -36,6 +36,9 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* UIViewCreator::bitmapToString
 
 - The following methods return a SharedPointer<...> now instead of a naked pointer
+	* CDrawContext::createGraphicsPath
+	* CDrawContext::createTextPath
+	* CDrawContext::createRoundRectGraphicsPath
 	* COffscreenContext::getBitmap
 	* CTextButton::getGradient
 	* CTextButton::getGradientHighlighted
@@ -74,6 +77,11 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CSegmentButton::setGradientHighlighted
 	* IUIDescription::lookupGradientName
 	* UIViewCreator::addGradientToUIDescription
+
+- The following methods now take ```SharedPointer<CGraphicsPath>``` instead of a naked pointer:
+	* CDrawContext::drawGraphicsPath
+	* CDrawContext::fillLinearGradient
+	* CDrawContext::fillRadialGradient
 
 ### Version 4.14
 

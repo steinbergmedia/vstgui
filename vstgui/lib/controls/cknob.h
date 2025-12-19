@@ -142,7 +142,8 @@ protected:
 	virtual void drawHandleAsCircle (CDrawContext* pContext) const;
 	virtual void drawHandleAsLine (CDrawContext* pContext) const;
 
-	static void addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle);
+	static void addArc (const SharedPointer<CGraphicsPath>& path, const CRect& r, double startAngle,
+						double sweepAngle);
 
 	CPoint offset;
 	

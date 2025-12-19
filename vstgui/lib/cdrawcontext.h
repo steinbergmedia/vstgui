@@ -221,12 +221,13 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** create a graphics path object, you need to forget it after usage */
-	CGraphicsPath* createGraphicsPath ();
+	SharedPointer<CGraphicsPath> createGraphicsPath ();
 	/** create a graphics path from a text */
-	CGraphicsPath* createTextPath (const SharedPointer<CFontDesc>& font, UTF8StringPtr text);
+	SharedPointer<CGraphicsPath> createTextPath (const SharedPointer<CFontDesc>& font,
+												 UTF8StringPtr text);
 
 	/** create a rect with round corners as graphics path, you need to forget it after usage */
-	CGraphicsPath* createRoundRectGraphicsPath (const CRect& size, CCoord radius);
+	SharedPointer<CGraphicsPath> createRoundRectGraphicsPath (const CRect& size, CCoord radius);
 
 	enum PathDrawMode
 	{
@@ -235,14 +236,16 @@ public:
 		kPathStroked
 	};
 
-	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled,
+	void drawGraphicsPath (const SharedPointer<CGraphicsPath>& path,
+						   PathDrawMode mode = kPathFilled,
 						   CGraphicsTransform* transformation = nullptr);
-	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient,
+	void fillLinearGradient (const SharedPointer<CGraphicsPath>& path, const CGradient& gradient,
 							 const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false,
 							 CGraphicsTransform* transformation = nullptr);
-	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center,
-							 CCoord radius, const CPoint& originOffset = CPoint (0, 0),
-							 bool evenOdd = false, CGraphicsTransform* transformation = nullptr);
+	void fillRadialGradient (const SharedPointer<CGraphicsPath>& path, const CGradient& gradient,
+							 const CPoint& center, CCoord radius,
+							 const CPoint& originOffset = CPoint (0, 0), bool evenOdd = false,
+							 CGraphicsTransform* transformation = nullptr);
 	//@}
 
 	struct IDrawLinearGradientLine

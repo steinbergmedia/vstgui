@@ -217,7 +217,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, const SharedPointer<CBitma
 			{
 				CRect pathRect = getViewSize ();
 				pathRect.inset (lineWidth/2., lineWidth/2.);
-				SharedPointer<CGraphicsPath> path = owned (pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius));
+				auto path = pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius);
 				if (path)
 				{
 					pContext->setDrawMode (kAntiAliasing);
@@ -234,7 +234,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, const SharedPointer<CBitma
 			else
 			{
 				pContext->setDrawMode (kAntiAliasing);
-				SharedPointer<CGraphicsPath> path = owned (pContext->createGraphicsPath ());
+				auto path = pContext->createGraphicsPath ();
 				if (path)
 				{
 					CRect frameRect = getViewSize ();
@@ -282,7 +282,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, const SharedPointer<CBitma
 			pContext->setFrameColor (frameColor);
 
 		CPoint p;
-		SharedPointer<CGraphicsPath> path = owned (pContext->createGraphicsPath ());
+		auto path = pContext->createGraphicsPath ();
 		if (path)
 		{
 			path->beginSubpath (p (r.left, r.bottom));
@@ -301,7 +301,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, const SharedPointer<CBitma
 		else
 			pContext->setFrameColor (backColor);
 
-		path = owned (pContext->createGraphicsPath ());
+		path = pContext->createGraphicsPath ();
 		if (path)
 		{
 			path->beginSubpath (p (r.right, r.top));

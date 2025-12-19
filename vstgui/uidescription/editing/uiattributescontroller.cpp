@@ -754,9 +754,11 @@ public:
 			if (auto context = COffscreenContext::create ({size, size}))
 			{
 				context->beginDraw ();
-				SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
-				path->addRect (CRect (0, 0, size, size));
-				context->fillLinearGradient(path, *gradient, CPoint (0, 0), CPoint (size, 0));
+				if (auto path = context->createGraphicsPath ())
+				{
+					path->addRect (CRect (0, 0, size, size));
+					context->fillLinearGradient (path, *gradient, CPoint (0, 0), CPoint (size, 0));
+				}
 				context->endDraw ();
 				item->setIcon (context->getBitmap ());
 			}
@@ -800,9 +802,11 @@ protected:
 			if (gradient == nullptr)
 				return;
 			CRect r = getViewSize ();
-			SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
-			path->addRect (r);
-			context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getTopRight ());
+			if (auto path = context->createGraphicsPath ())
+			{
+				path->addRect (r);
+				context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getTopRight ());
+			}
 		}
 		SharedPointer<CGradient> gradient;
 	};

@@ -308,13 +308,17 @@ void UIColorStopEditView::draw (CDrawContext* context)
 
 	context->setDrawMode (kAliasing);
 
-	SharedPointer<CGraphicsPath> gradientPath = owned (context->createGraphicsPath ());
+	auto gradientPath = context->createGraphicsPath ();
+	if (!gradientPath)
+		return;
 	gradientPath->addRect (CRect (stopWidth / 2., 0., getWidth () - stopWidth / 2., getHeight ()));
 	context->fillLinearGradient (gradientPath, *gradient, CPoint (stopWidth / 2., 0), CPoint (getWidth () - stopWidth / 2, 0));
 
 	CCoord width = getWidth () - stopWidth;
 	CCoord height = (getHeight () / 2.);
-	SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
+	auto path = context->createGraphicsPath ();
+	if (!path)
+		return;
 	path->beginSubpath (CPoint (stopWidth / 2., 0));
 	path->addLine (CPoint (0, height));
 	path->addLine (CPoint (stopWidth, height));
@@ -738,19 +742,21 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 	CGradient* gradient = nullptr;
 	if ((gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).data ())))
 	{
-		context->setFrameColor (kBlackCColor);
-		context->setLineWidth (context->getHairlineSize ());
-		context->setLineStyle (kLineSolid);
-		context->setDrawMode (kAliasing);
-		r = size;
-		r.left = r.right - (getGradientIconWidth ());
-		r.offset (-0.5, -0.5);
-		r.inset (3, 2);
-		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
-		path->addRect (r);
-		path->closeSubpath ();
-		context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getTopRight ());
-		context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		if (auto path = context->createGraphicsPath ())
+		{
+			context->setFrameColor (kBlackCColor);
+			context->setLineWidth (context->getHairlineSize ());
+			context->setLineStyle (kLineSolid);
+			context->setDrawMode (kAliasing);
+			r = size;
+			r.left = r.right - (getGradientIconWidth ());
+			r.offset (-0.5, -0.5);
+			r.inset (3, 2);
+			path->addRect (r);
+			path->closeSubpath ();
+			context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getTopRight ());
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		}
 	}
 }
 

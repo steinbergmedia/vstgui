@@ -74,7 +74,7 @@ void CSearchTextEdit::drawClearMark (CDrawContext* context) const
 	if (!((platformControl && !platformControl->getText ().empty ()) || !getText ().empty ()))
 		return;
 
-	auto path = owned (context->createGraphicsPath ());
+	auto path = context->createGraphicsPath ();
 	if (path == nullptr)
 		return;
 

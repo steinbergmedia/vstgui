@@ -439,7 +439,7 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 	{
 		CRect r (getViewSize ());
 		r.inset (lineWidth / 2., lineWidth / 2.);
-		path = owned (pContext->createGraphicsPath ());
+		path = pContext->createGraphicsPath ();
 		if (!path)
 			return;
 		path->addRoundRect (r, getRoundRadius ());

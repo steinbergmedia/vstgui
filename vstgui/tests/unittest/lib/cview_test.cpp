@@ -290,7 +290,7 @@ TEST_CASE (CViewTest, PathHitTest)
 	v->setViewSize ({0., 0., 100., 100.});
 	{
 		auto drawContext = COffscreenContext::create ({100., 100.});
-		auto path = owned (drawContext->createGraphicsPath ());
+		auto path = drawContext->createGraphicsPath ();
 		path->addRect ({10., 10., 80., 80.});
 		v->setHitTestPath (path);
 	}

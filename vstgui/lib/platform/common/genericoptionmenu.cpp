@@ -321,7 +321,7 @@ private:
 
 	void drawCheckMark (CDrawContext* context, CRect size, bool selected)
 	{
-		if (auto checkMarkPath = owned (context->createGraphicsPath ()))
+		if (auto checkMarkPath = context->createGraphicsPath ())
 		{
 			CRect r (0., 0., size.getHeight () * 0.4, size.getHeight () * 0.4);
 			r.centerInside (size);
@@ -335,7 +335,7 @@ private:
 
 	void drawSubmenuIndicator (CDrawContext* context, CRect size, bool selected)
 	{
-		if (auto path = owned (context->createGraphicsPath ()))
+		if (auto path = context->createGraphicsPath ())
 		{
 			CRect r = size;
 			r.setWidth (r.getWidth () / 2.);

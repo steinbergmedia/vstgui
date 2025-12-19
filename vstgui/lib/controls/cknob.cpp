@@ -499,7 +499,8 @@ void CKnob::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle)
+void CKnob::addArc (const SharedPointer<CGraphicsPath>& path, const CRect& r, double startAngle,
+					double sweepAngle)
 {
 	CCoord w = r.getWidth ();
 	CCoord h = r.getHeight ();
@@ -515,7 +516,7 @@ void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, doub
 //------------------------------------------------------------------------
 void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 {
-	auto path = owned (pContext->createGraphicsPath ());
+	auto path = pContext->createGraphicsPath ();
 	if (path == nullptr)
 		return;
 	CRect corona (getViewSize ());
@@ -542,7 +543,7 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 //------------------------------------------------------------------------
 void CKnob::drawCorona (CDrawContext* pContext) const
 {
-	auto path = owned (pContext->createGraphicsPath ());
+	auto path = pContext->createGraphicsPath ();
 	if (path == nullptr)
 		return;
 	float coronaValue = getValueNormalized ();

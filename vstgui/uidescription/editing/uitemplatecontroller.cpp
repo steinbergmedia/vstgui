@@ -93,7 +93,7 @@ public:
 		}
 		if (headerGradient)
 		{
-			if (auto path = owned (context->createGraphicsPath ()))
+			if (auto path = context->createGraphicsPath ())
 			{
 				path->addRect (size);
 				context->fillLinearGradient (path, *headerGradient, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
@@ -120,7 +120,7 @@ public:
 
 	static void drawTriangle (CDrawContext* context, const CRect& size)
 	{
-		if (auto path = owned (context->createGraphicsPath ()))
+		if (auto path = context->createGraphicsPath ())
 		{
 			CRect r (size);
 			r.left = r.right - r.getHeight ();

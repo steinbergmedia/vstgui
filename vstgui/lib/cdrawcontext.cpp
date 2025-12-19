@@ -501,7 +501,8 @@ void CDrawContext::drawBitmapNinePartTiled (const SharedPointer<CBitmap>& bitmap
 }
 
 //-----------------------------------------------------------------------------
-CGraphicsPath* CDrawContext::createRoundRectGraphicsPath (const CRect& size, CCoord radius)
+SharedPointer<CGraphicsPath> CDrawContext::createRoundRectGraphicsPath (const CRect& size,
+																		CCoord radius)
 {
 	if (auto path = createGraphicsPath ())
 	{
@@ -662,7 +663,7 @@ static PlatformGraphicsPathDrawMode convert (CDrawContext::PathDrawMode mode)
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode,
+void CDrawContext::drawGraphicsPath (const SharedPointer<CGraphicsPath>& path, PathDrawMode mode,
 									 CGraphicsTransform* transformation)
 {
 	if (impl->device)
@@ -675,9 +676,10 @@ void CDrawContext::drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode,
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::fillLinearGradient (CGraphicsPath* path, const CGradient& gradient,
-									   const CPoint& startPoint, const CPoint& endPoint,
-									   bool evenOdd, CGraphicsTransform* transformation)
+void CDrawContext::fillLinearGradient (const SharedPointer<CGraphicsPath>& path,
+									   const CGradient& gradient, const CPoint& startPoint,
+									   const CPoint& endPoint, bool evenOdd,
+									   CGraphicsTransform* transformation)
 {
 	if (impl->device)
 	{
@@ -694,9 +696,9 @@ void CDrawContext::fillLinearGradient (CGraphicsPath* path, const CGradient& gra
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::fillRadialGradient (CGraphicsPath* path, const CGradient& gradient,
-									   const CPoint& center, CCoord radius,
-									   const CPoint& originOffset, bool evenOdd,
+void CDrawContext::fillRadialGradient (const SharedPointer<CGraphicsPath>& path,
+									   const CGradient& gradient, const CPoint& center,
+									   CCoord radius, const CPoint& originOffset, bool evenOdd,
 									   CGraphicsTransform* transformation)
 {
 	if (impl->device)
@@ -742,16 +744,16 @@ bool CDrawContext::drawLinearGradientLine (const DrawLinearGradientLineCallback&
 }
 
 //------------------------------------------------------------------------
-CGraphicsPath* CDrawContext::createGraphicsPath ()
+SharedPointer<CGraphicsPath> CDrawContext::createGraphicsPath ()
 {
 	if (impl->device)
-		return new CGraphicsPath (impl->device->getGraphicsPathFactory (), nullptr);
+		return makeOwned<CGraphicsPath> (impl->device->getGraphicsPathFactory (), nullptr);
 	return nullptr;
 }
 
 //------------------------------------------------------------------------
-CGraphicsPath* CDrawContext::createTextPath (const SharedPointer<CFontDesc>& font,
-											 UTF8StringPtr text)
+SharedPointer<CGraphicsPath> CDrawContext::createTextPath (const SharedPointer<CFontDesc>& font,
+														   UTF8StringPtr text)
 {
 	if (impl->device)
 	{
@@ -760,7 +762,7 @@ CGraphicsPath* CDrawContext::createTextPath (const SharedPointer<CFontDesc>& fon
 		if (platformFont && pathFactory)
 		{
 			if (auto textPath = pathFactory->createTextPath (platformFont, text))
-				return new CGraphicsPath (pathFactory, std::move (textPath));
+				return makeOwned<CGraphicsPath> (pathFactory, std::move (textPath));
 		}
 	}
 	return nullptr;

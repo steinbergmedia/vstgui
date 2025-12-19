@@ -531,7 +531,7 @@ void CCheckBox::draw (CDrawContext* context)
 		context->setDrawMode (kAntiAliasing);
 		context->setFrameColor (boxFrameColor);
 		context->setFillColor (boxFillColor);
-		if (auto path = owned (context->createRoundRectGraphicsPath (checkBoxSize, roundRectRadius)))
+		if (auto path = context->createRoundRectGraphicsPath (checkBoxSize, roundRectRadius))
 		{
 			context->drawGraphicsPath (path, CDrawContext::kPathFilled);
 			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
@@ -548,7 +548,7 @@ void CCheckBox::draw (CDrawContext* context)
 			context->setFrameColor (highlightColor);
 			CRect r (checkBoxSize);
 			r.inset (lineWidth, lineWidth);
-			if (auto path = owned (context->createRoundRectGraphicsPath (r, roundRectRadius)))
+			if (auto path = context->createRoundRectGraphicsPath (r, roundRectRadius))
 			{
 				context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 			}
@@ -584,7 +584,7 @@ void CCheckBox::draw (CDrawContext* context)
 			}
 			else if (norm > 0.5f)
 			{
-				SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
+				auto path = context->createGraphicsPath ();
 				if (path)
 				{
 					path->beginSubpath (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.));
@@ -935,7 +935,7 @@ void CTextButton::draw (CDrawContext* context)
 	r.inset (lineWidth / 2., lineWidth / 2.);
 	if (gradient && gradientHighlighted)
 	{
-		CGraphicsPath* path = getPath (context, lineWidth);
+		auto path = getPath (context, lineWidth);
 		if (path)
 		{
 			CGradient* drawGradient = highlight ? gradientHighlighted : gradient;
@@ -976,13 +976,13 @@ bool CTextButton::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-CGraphicsPath* CTextButton::getPath (CDrawContext* context, CCoord lineWidth)
+SharedPointer<CGraphicsPath> CTextButton::getPath (CDrawContext* context, CCoord lineWidth)
 {
 	if (_path == nullptr)
 	{
 		CRect r (getViewSize ());
 		r.inset (lineWidth / 2., lineWidth / 2.);
-		_path = owned (context->createRoundRectGraphicsPath (r, roundRadius));
+		_path = context->createRoundRectGraphicsPath (r, roundRadius);
 	}
 	return _path;
 }

@@ -132,7 +132,7 @@ void CGradientView::draw (CDrawContext* context)
 	{
 		CRect r = getViewSize ();
 		r.inset (lineWidth / 2., lineWidth / 2.);
-		path = owned (context->createRoundRectGraphicsPath (r, roundRectRadius));
+		path = context->createRoundRectGraphicsPath (r, roundRectRadius);
 	}
 	if (path && gradient)
 	{

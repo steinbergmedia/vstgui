@@ -852,7 +852,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			{
 				if (frame && _focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
 				{
-					SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
+					auto focusPath = pContext->createGraphicsPath ();
 					if (focusPath)
 					{
 						if (_focusDrawing->getFocusPath (*focusPath))
@@ -903,7 +903,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 
 	if (frame && _focusView)
 	{
-		SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
+		auto focusPath = pContext->createGraphicsPath ();
 		if (focusPath)
 		{
 			if (_focusDrawing)

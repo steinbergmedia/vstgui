@@ -471,7 +471,7 @@ struct DrawContextObject::Impl
 		checkContextOrThrow ();
 		auto rect = getRect (var, "rect"sv, signature);
 		auto radius = getDouble (var, "radius"sv, signature);
-		if (auto path = owned (context->createRoundRectGraphicsPath (rect, radius)))
+		if (auto path = context->createRoundRectGraphicsPath (rect, radius))
 		{
 			GraphicsPathScriptObject obj (path);
 			var->setReturnVar (obj);
@@ -482,7 +482,7 @@ struct DrawContextObject::Impl
 	{
 		static constexpr auto signature = "drawContext.createGraphicsPath();"sv;
 		checkContextOrThrow ();
-		if (auto path = owned (context->createGraphicsPath ()))
+		if (auto path = context->createGraphicsPath ())
 		{
 			GraphicsPathScriptObject obj (path);
 			var->setReturnVar (obj);

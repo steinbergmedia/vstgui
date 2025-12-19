@@ -759,7 +759,7 @@ void CSlider::draw (CDrawContext* pContext)
 		{
 			pContext->setFrameColor (impl->frameColor);
 			pContext->setFillColor (impl->backColor);
-			if (auto path = owned (pContext->createGraphicsPath ()))
+			if (auto path = pContext->createGraphicsPath ())
 			{
 				if (impl->drawStyle & kDrawFrame)
 					r.inset (lineWidth / 2., lineWidth / 2.);
@@ -825,7 +825,7 @@ void CSlider::draw (CDrawContext* pContext)
 			if (r.getWidth () >= 0.5 && r.getHeight () >= 0.5)
 			{
 				pContext->setFillColor (impl->valueColor);
-				if (auto path = owned (pContext->createGraphicsPath ()))
+				if (auto path = pContext->createGraphicsPath ())
 				{
 					path->addRect (r);
 					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);

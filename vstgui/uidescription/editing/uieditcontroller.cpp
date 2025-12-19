@@ -263,8 +263,7 @@ public:
 
 	static void drawGradient (CDrawContext* context, const CRect& _size, bool horizontal, bool drawTopLine = true, bool drawBottomLine = true)
 	{
-		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
-		if (path)
+		if (auto path = context->createGraphicsPath ())
 		{
 			auto lineWidth = 1.;
 

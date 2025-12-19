@@ -384,7 +384,8 @@ void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
 		pContext->setFrameColor (frameColor);
 
 		CCoord wideness = (direction == kVertical ? getWidth() : getHeight()) / 2 - 2;
-		auto path = (wideness > 2) ? owned (pContext->createGraphicsPath ()) : nullptr;
+		SharedPointer<CGraphicsPath> path =
+			(wideness > 2) ? pContext->createGraphicsPath () : nullptr;
 		if (path)
 		{
 			if (wideness > 4)
