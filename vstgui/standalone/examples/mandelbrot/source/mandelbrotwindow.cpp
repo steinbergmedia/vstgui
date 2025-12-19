@@ -103,7 +103,7 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 
 		auto asyncGroup = Async::Group::make (Async::backgroundQueue ());
 
-		auto pixelAccess = shared (pa->getPlatformBitmapPixelAccess ());
+		auto pixelAccess = pa->getPlatformBitmapPixelAccess ();
 		auto colorToInt32 = getColorToInt32 (pixelAccess->getPixelFormat ());
 		for (auto y = 0u; y < static_cast<uint32_t> (size.y); y += numLinesPerTask)
 		{

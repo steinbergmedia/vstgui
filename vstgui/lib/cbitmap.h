@@ -376,7 +376,10 @@ public:
 	inline uint32_t getBitmapWidth () const { return maxX+1; }
 	inline uint32_t getBitmapHeight () const { return maxY+1; }
 
-	inline IPlatformBitmapPixelAccess* getPlatformBitmapPixelAccess () const { return pixelAccess; }
+	inline SharedPointer<IPlatformBitmapPixelAccess> getPlatformBitmapPixelAccess () const
+	{
+		return pixelAccess;
+	}
 	/** create an accessor.
 		can return 0 if platform implementation does not support this.
 		result needs to be forgotten before the CBitmap reflects the change to the pixels */
