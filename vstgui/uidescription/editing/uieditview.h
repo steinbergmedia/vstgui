@@ -41,8 +41,8 @@ public:
 	void doKeyMove (const CPoint& delta);
 	void doKeySize (const CPoint& delta);
 
-	void setUndoManager (UIUndoManager* manager);
-	UIUndoManager* getUndoManager ();
+	void setUndoManager (const SharedPointer<UIUndoManager>& manager);
+	SharedPointer<UIUndoManager> getUndoManager ();
 
 	void setSelection (const SharedPointer<UISelection>& selection);
 	SharedPointer<UISelection> getSelection ();

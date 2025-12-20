@@ -44,7 +44,8 @@ class UITemplateController
 {
 public:
 	UITemplateController (IController* baseController, UIDescription* description,
-						  const SharedPointer<UISelection>& selection, UIUndoManager* undoManager,
+						  const SharedPointer<UISelection>& selection,
+						  const SharedPointer<UIUndoManager>& undoManager,
 						  IActionPerformer* actionPerformer);
 	~UITemplateController () override;
 

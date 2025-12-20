@@ -406,13 +406,13 @@ void UIEditView::enableAutosizing (bool state)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setUndoManager (UIUndoManager* manager)
+void UIEditView::setUndoManager (const SharedPointer<UIUndoManager>& manager)
 {
 	undoManger = manager;
 }
 
 //----------------------------------------------------------------------------------------------------
-UIUndoManager* UIEditView::getUndoManager ()
+SharedPointer<UIUndoManager> UIEditView::getUndoManager ()
 {
 	if (undoManger == nullptr)
 		undoManger = makeOwned<UIUndoManager> ();

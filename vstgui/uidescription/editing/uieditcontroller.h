@@ -49,7 +49,7 @@ public:
 	bool usesDarkTheme () const;
 	CView* createEditView ();
 	UIEditMenuController* getMenuController () const { return menuController; }
-	UIUndoManager* getUndoManager () const { return undoManager; }
+	SharedPointer<UIUndoManager> getUndoManager () const { return undoManager; }
 	const std::string& getEditTemplateName () const { return editTemplateName; }
 	SharedPointer<UIAttributes> getSettings ();
 	int32_t getSaveOptions ();

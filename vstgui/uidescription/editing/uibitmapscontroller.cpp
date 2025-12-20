@@ -535,7 +535,7 @@ class UIBitmapSettingsController : public NonAtomicReferenceCounted,
 public:
 	UIBitmapSettingsController (const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName,
 								UIDescription* description, IActionPerformer* actionPerformer,
-								UIUndoManager* undoManager);
+								const SharedPointer<UIUndoManager>& undoManager);
 	~UIBitmapSettingsController () noexcept override;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
@@ -561,7 +561,7 @@ protected:
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIBitmapView> bitmapView;
 	IActionPerformer* actionPerformer {nullptr};
-	UIUndoManager* undoManager {nullptr};
+	SharedPointer<UIUndoManager> undoManager;
 	std::string bitmapName;
 	CRect origOffsets;
 	CMultiFrameBitmapDescription origMultiFrameDesc;
@@ -590,11 +590,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIBitmapSettingsController::UIBitmapSettingsController (const SharedPointer<CBitmap>& bitmap,
-														const std::string& bitmapName,
-														UIDescription* description,
-														IActionPerformer* actionPerformer,
-														UIUndoManager* undoManager)
+UIBitmapSettingsController::UIBitmapSettingsController (
+	const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName, UIDescription* description,
+	IActionPerformer* actionPerformer, const SharedPointer<UIUndoManager>& undoManager)
 : bitmap (bitmap)
 , editDescription (description)
 , actionPerformer (actionPerformer)
@@ -986,7 +984,7 @@ bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result
 //----------------------------------------------------------------------------------------------------
 UIBitmapsController::UIBitmapsController (IController* baseController, UIDescription* description,
 										  IActionPerformer* actionPerformer,
-										  UIUndoManager* undoManager)
+										  const SharedPointer<UIUndoManager>& undoManager)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)

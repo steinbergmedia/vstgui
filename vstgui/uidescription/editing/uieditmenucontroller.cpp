@@ -23,7 +23,8 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 UIEditMenuController::UIEditMenuController (IController* baseController,
 											const SharedPointer<UISelection>& selection,
-											UIUndoManager* undoManager, UIDescription* description,
+											const SharedPointer<UIUndoManager>& undoManager,
+											UIDescription* description,
 											IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , selection (selection)

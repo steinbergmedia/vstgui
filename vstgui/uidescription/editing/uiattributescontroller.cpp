@@ -890,7 +890,7 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UIAttributesController::UIAttributesController (IController* baseController,
 												const SharedPointer<UISelection>& selection,
-												UIUndoManager* undoManager,
+												const SharedPointer<UIUndoManager>& undoManager,
 												UIDescription* description)
 : DelegationController (baseController)
 , selection (selection)

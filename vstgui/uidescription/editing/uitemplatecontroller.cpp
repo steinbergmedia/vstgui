@@ -163,7 +163,8 @@ class UIViewListDataSource : public UINavigationDataSource, public IUIUndoManage
 {
 public:
 	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory,
-						  const SharedPointer<UISelection>& selection, UIUndoManager* undoManager,
+						  const SharedPointer<UISelection>& selection,
+						  const SharedPointer<UIUndoManager>& undoManager,
 						  GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIViewListDataSource () override;
 
@@ -241,7 +242,7 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UITemplateController::UITemplateController (IController* baseController, UIDescription* description,
 											const SharedPointer<UISelection>& selection,
-											UIUndoManager* undoManager,
+											const SharedPointer<UIUndoManager>& undoManager,
 											IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
@@ -529,7 +530,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::UIViewListDataSource (
 	CViewContainer* view, const IViewFactory* viewFactory,
-	const SharedPointer<UISelection>& selection, UIUndoManager* undoManager,
+	const SharedPointer<UISelection>& selection, const SharedPointer<UIUndoManager>& undoManager,
 	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)

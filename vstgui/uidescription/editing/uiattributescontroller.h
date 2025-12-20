@@ -34,7 +34,8 @@ class UIAttributesController : public NonAtomicReferenceCounted,
 {
 public:
 	UIAttributesController (IController* baseController,
-							const SharedPointer<UISelection>& selection, UIUndoManager* undoManager,
+							const SharedPointer<UISelection>& selection,
+							const SharedPointer<UIUndoManager>& undoManager,
 							UIDescription* description);
 	~UIAttributesController () override;
 	
