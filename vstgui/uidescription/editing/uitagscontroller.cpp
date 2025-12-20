@@ -17,7 +17,8 @@ namespace VSTGUI {
 class UITagsDataSource : public UIBaseDataSource
 {
 public:
-	UITagsDataSource (UIDescription* description, IActionPerformer* actionPerformer);
+	UITagsDataSource (const SharedPointer<UIDescription>& description,
+					  IActionPerformer* actionPerformer);
 	~UITagsDataSource () override = default;
 
 protected:
@@ -41,7 +42,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UITagsDataSource::UITagsDataSource (UIDescription* description, IActionPerformer* actionPerformer)
+UITagsDataSource::UITagsDataSource (const SharedPointer<UIDescription>& description,
+									IActionPerformer* actionPerformer)
 : UIBaseDataSource (description, actionPerformer)
 {
 }
@@ -161,7 +163,9 @@ void UITagsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITagsController::UITagsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
+UITagsController::UITagsController (IController* baseController,
+									const SharedPointer<UIDescription>& description,
+									IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)

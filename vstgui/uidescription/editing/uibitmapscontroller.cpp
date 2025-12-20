@@ -185,7 +185,9 @@ protected:
 class UIBitmapsDataSource : public UIBaseDataSource
 {
 public:
-	UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIBitmapsDataSource (const SharedPointer<UIDescription>& description,
+						 IActionPerformer* actionPerformer,
+						 GenericStringListDataBrowserSourceSelectionChanged* delegate);
 
 	SharedPointer<CBitmap> getSelectedBitmap ();
 	UTF8StringPtr getSelectedBitmapName ();
@@ -220,9 +222,10 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate)
-: UIBaseDataSource (description, actionPerformer, delegate)
-, dragContainsBitmaps (false)
+UIBitmapsDataSource::UIBitmapsDataSource (
+	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer,
+	GenericStringListDataBrowserSourceSelectionChanged* delegate)
+: UIBaseDataSource (description, actionPerformer, delegate), dragContainsBitmaps (false)
 {
 }
 
@@ -534,7 +537,8 @@ class UIBitmapSettingsController : public NonAtomicReferenceCounted,
 {
 public:
 	UIBitmapSettingsController (const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName,
-								UIDescription* description, IActionPerformer* actionPerformer,
+								const SharedPointer<UIDescription>& description,
+								IActionPerformer* actionPerformer,
 								const SharedPointer<UIUndoManager>& undoManager);
 	~UIBitmapSettingsController () noexcept override;
 
@@ -591,8 +595,9 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIBitmapSettingsController::UIBitmapSettingsController (
-	const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName, UIDescription* description,
-	IActionPerformer* actionPerformer, const SharedPointer<UIUndoManager>& undoManager)
+	const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName,
+	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer,
+	const SharedPointer<UIUndoManager>& undoManager)
 : bitmap (bitmap)
 , editDescription (description)
 , actionPerformer (actionPerformer)
@@ -982,7 +987,8 @@ bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIBitmapsController::UIBitmapsController (IController* baseController, UIDescription* description,
+UIBitmapsController::UIBitmapsController (IController* baseController,
+										  const SharedPointer<UIDescription>& description,
 										  IActionPerformer* actionPerformer,
 										  const SharedPointer<UIUndoManager>& undoManager)
 : DelegationController (baseController)

@@ -394,7 +394,8 @@ class UIGradientEditorController : public NonAtomicReferenceCounted,
 public:
 	UIGradientEditorController (const std::string& gradientName,
 								const SharedPointer<CGradient>& gradient,
-								UIDescription* description, IActionPerformer* actionPerformer);
+								const SharedPointer<UIDescription>& description,
+								IActionPerformer* actionPerformer);
 	~UIGradientEditorController () override;
 
 	void valueChanged (CControl* pControl) override;
@@ -426,10 +427,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIGradientEditorController::UIGradientEditorController (const std::string& gradientName,
-														const SharedPointer<CGradient>& gradient,
-														UIDescription* description,
-														IActionPerformer* actionPerformer)
+UIGradientEditorController::UIGradientEditorController (
+	const std::string& gradientName, const SharedPointer<CGradient>& gradient,
+	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer)
 : editDescription (description)
 , gradient (gradient)
 , editColor (makeOwned<UIColor> ())
@@ -630,7 +630,9 @@ CView* UIGradientEditorController::createView (const UIAttributes& attributes, c
 class UIGradientsDataSource : public UIBaseDataSource
 {
 public:
-	UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIGradientsDataSource (const SharedPointer<UIDescription>& description,
+						   IActionPerformer* actionPerformer,
+						   GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIGradientsDataSource () override = default;
 
 	SharedPointer<CGradient> getSelectedGradient ();
@@ -654,8 +656,8 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIGradientsDataSource::UIGradientsDataSource (
-    UIDescription* description, IActionPerformer* actionPerformer,
-    GenericStringListDataBrowserSourceSelectionChanged* delegate)
+	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer,
+	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
 }
@@ -784,7 +786,9 @@ bool UIGradientsDataSource::performNameChange (UTF8StringPtr oldName, UTF8String
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIGradientsController::UIGradientsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
+UIGradientsController::UIGradientsController (IController* baseController,
+											  const SharedPointer<UIDescription>& description,
+											  IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)

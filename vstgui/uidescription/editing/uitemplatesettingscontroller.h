@@ -22,7 +22,9 @@ class UITemplateSettingsController : public NonAtomicReferenceCounted,
                                      public IController
 {
 public:
-	UITemplateSettingsController (const std::string& templateName, UIDescription* description, IActionPerformer* actionPerformer);
+	UITemplateSettingsController (const std::string& templateName,
+								  const SharedPointer<UIDescription>& description,
+								  IActionPerformer* actionPerformer);
 	~UITemplateSettingsController () override = default;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;

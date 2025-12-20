@@ -22,7 +22,8 @@ class UIFocusSettingsController : public NonAtomicReferenceCounted,
                                   public IController
 {
 public:
-	UIFocusSettingsController (UIDescription* description, IActionPerformer* actionPerformer);
+	UIFocusSettingsController (const SharedPointer<UIDescription>& description,
+							   IActionPerformer* actionPerformer);
 	~UIFocusSettingsController () override = default;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;

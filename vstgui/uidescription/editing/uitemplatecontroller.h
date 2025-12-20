@@ -43,7 +43,8 @@ class UITemplateController
   public ListenerProvider<UITemplateController, IUITemplateControllerListener>
 {
 public:
-	UITemplateController (IController* baseController, UIDescription* description,
+	UITemplateController (IController* baseController,
+						  const SharedPointer<UIDescription>& description,
 						  const SharedPointer<UISelection>& selection,
 						  const SharedPointer<UIUndoManager>& undoManager,
 						  IActionPerformer* actionPerformer);

@@ -25,7 +25,8 @@ namespace VSTGUI {
 class UIColorsDataSource : public UIBaseDataSource, public UIColorListenerAdapter
 {
 public:
-	UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer, UIColor* color);
+	UIColorsDataSource (const SharedPointer<UIDescription>& description,
+						IActionPerformer* actionPerformer, UIColor* color);
 	~UIColorsDataSource () override;
 
 protected:
@@ -67,11 +68,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIColorsDataSource::UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer, UIColor* color)
-: UIBaseDataSource (description, actionPerformer)
-, color (color)
-, editing (false)
-, dragRow (-1)
+UIColorsDataSource::UIColorsDataSource (const SharedPointer<UIDescription>& description,
+										IActionPerformer* actionPerformer, UIColor* color)
+: UIBaseDataSource (description, actionPerformer), color (color), editing (false), dragRow (-1)
 {
 	color->registerListener (this);
 }
@@ -394,7 +393,9 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIColorsController::UIColorsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
+UIColorsController::UIColorsController (IController* baseController,
+										const SharedPointer<UIDescription>& description,
+										IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)

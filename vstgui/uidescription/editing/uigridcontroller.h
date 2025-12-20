@@ -20,7 +20,7 @@ namespace VSTGUI {
 class UIGridController : public UIGrid, public DelegationController, public IDialogController
 {
 public:
-	UIGridController (IController* baseController, UIDescription* description);
+	UIGridController (IController* baseController, const SharedPointer<UIDescription>& description);
 	~UIGridController () override;
 	
 protected:

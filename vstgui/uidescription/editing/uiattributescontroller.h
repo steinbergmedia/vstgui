@@ -36,7 +36,7 @@ public:
 	UIAttributesController (IController* baseController,
 							const SharedPointer<UISelection>& selection,
 							const SharedPointer<UIUndoManager>& undoManager,
-							UIDescription* description);
+							const SharedPointer<UIDescription>& description);
 	~UIAttributesController () override;
 	
 	void beginLiveAttributeChange (const std::string& name, const std::string& currentValue);

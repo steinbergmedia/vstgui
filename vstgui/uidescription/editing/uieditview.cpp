@@ -436,7 +436,7 @@ SharedPointer<UISelection> UIEditView::getSelection ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setGridProcessor (IGridProcessor* inGrid)
+void UIEditView::setGridProcessor (const SharedPointer<IGridProcessor>& inGrid)
 {
 	gridProcessor = inGrid;
 }

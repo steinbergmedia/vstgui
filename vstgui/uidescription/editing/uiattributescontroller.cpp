@@ -578,8 +578,15 @@ protected:
 class MenuController : public TextController, public OptionMenuListenerAdapter, public CommandMenuItemTargetAdapter
 {
 public:
-	MenuController (IController* baseController, const std::string& attrName, UIDescription* description, bool addNoneItem = true, bool sortItems = true)
-	: TextController (baseController, attrName), description (description), addNoneItem (addNoneItem), sortItems (sortItems) {}
+	MenuController (IController* baseController, const std::string& attrName,
+					const SharedPointer<UIDescription>& description, bool addNoneItem = true,
+					bool sortItems = true)
+	: TextController (baseController, attrName)
+	, description (description)
+	, addNoneItem (addNoneItem)
+	, sortItems (sortItems)
+	{
+	}
 
 	~MenuController () override
 	{
@@ -669,8 +676,11 @@ protected:
 class ColorController : public MenuController
 {
 public:
-	ColorController (IController* baseController, const std::string& attrName, UIDescription* description)
-	: MenuController (baseController, attrName, description) {}
+	ColorController (IController* baseController, const std::string& attrName,
+					 const SharedPointer<UIDescription>& description)
+	: MenuController (baseController, attrName, description)
+	{
+	}
 
 	void collectMenuItemNames (StringPtrList& names) override
 	{
@@ -741,8 +751,11 @@ protected:
 class GradientController : public MenuController
 {
 public:
-	GradientController (IController* baseController, const std::string& attrName, UIDescription* description)
-	: MenuController (baseController, attrName, description) {}
+	GradientController (IController* baseController, const std::string& attrName,
+						const SharedPointer<UIDescription>& description)
+	: MenuController (baseController, attrName, description)
+	{
+	}
 
 	void collectMenuItemNames (StringPtrList& names) override
 	{
@@ -821,8 +834,11 @@ protected:
 class TagController : public MenuController
 {
 public:
-	TagController (IController* baseController, const std::string& attrName, UIDescription* description)
-	: MenuController (baseController, attrName, description, true, false) {}
+	TagController (IController* baseController, const std::string& attrName,
+				   const SharedPointer<UIDescription>& description)
+	: MenuController (baseController, attrName, description, true, false)
+	{
+	}
 
 	void collectMenuItemNames (StringPtrList& names) override
 	{
@@ -835,8 +851,11 @@ public:
 class BitmapController : public MenuController
 {
 public:
-	BitmapController (IController* baseController, const std::string& attrName, UIDescription* description)
-	: MenuController (baseController, attrName, description) {}
+	BitmapController (IController* baseController, const std::string& attrName,
+					  const SharedPointer<UIDescription>& description)
+	: MenuController (baseController, attrName, description)
+	{
+	}
 
 	void collectMenuItemNames (StringPtrList& names) override
 	{
@@ -849,8 +868,11 @@ public:
 class FontController : public MenuController
 {
 public:
-	FontController (IController* baseController, const std::string& attrName, UIDescription* description)
-	: MenuController (baseController, attrName, description) {}
+	FontController (IController* baseController, const std::string& attrName,
+					const SharedPointer<UIDescription>& description)
+	: MenuController (baseController, attrName, description)
+	{
+	}
 
 	void collectMenuItemNames (StringPtrList& names) override
 	{
@@ -864,7 +886,8 @@ class ListController : public MenuController
 {
 public:
 	ListController (IController* baseController, const std::string& attrName,
-					UIDescription* description, const SharedPointer<UISelection>& selection)
+					const SharedPointer<UIDescription>& description,
+					const SharedPointer<UISelection>& selection)
 	: MenuController (baseController, attrName, description, false, false), selection (selection)
 	{
 	}
@@ -883,15 +906,13 @@ protected:
 	SharedPointer<UISelection> selection;
 };
 
-
-} // VSTGUI
-
+} // UIAttributeControllers
 
 //----------------------------------------------------------------------------------------------------
 UIAttributesController::UIAttributesController (IController* baseController,
 												const SharedPointer<UISelection>& selection,
 												const SharedPointer<UIUndoManager>& undoManager,
-												UIDescription* description)
+												const SharedPointer<UIDescription>& description)
 : DelegationController (baseController)
 , selection (selection)
 , undoManager (undoManager)

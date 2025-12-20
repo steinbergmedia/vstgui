@@ -23,7 +23,9 @@ class UIColorsController : public NonAtomicReferenceCounted,
 						   public IContextMenuController2
 {
 public:
-	UIColorsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
+	UIColorsController (IController* baseController,
+						const SharedPointer<UIDescription>& description,
+						IActionPerformer* actionPerformer);
 	~UIColorsController () override;
 
 protected:

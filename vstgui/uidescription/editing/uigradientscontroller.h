@@ -23,7 +23,9 @@ class UIGradientsController : public NonAtomicReferenceCounted,
                               public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIGradientsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
+	UIGradientsController (IController* baseController,
+						   const SharedPointer<UIDescription>& description,
+						   IActionPerformer* actionPerformer);
 	~UIGradientsController () override;
 
 protected:

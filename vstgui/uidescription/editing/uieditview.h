@@ -47,7 +47,7 @@ public:
 	void setSelection (const SharedPointer<UISelection>& selection);
 	SharedPointer<UISelection> getSelection ();
 
-	void setGridProcessor (IGridProcessor* grid);
+	void setGridProcessor (const SharedPointer<IGridProcessor>& grid);
 
 	void setupColors (const IUIDescription* description);
 	

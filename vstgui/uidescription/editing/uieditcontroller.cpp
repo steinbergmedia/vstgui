@@ -488,7 +488,7 @@ private:
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIEditController::UIEditController (UIDescription* description)
+UIEditController::UIEditController (const SharedPointer<UIDescription>& description)
 : editDescription (description)
 , selection (makeOwned<UISelection> ())
 , undoManager (makeOwned<UIUndoManager> ())
@@ -528,6 +528,15 @@ UIEditController::~UIEditController ()
 	undoManager->clear ();
 	gUIDescription.tryFree ();
 }
+
+//----------------------------------------------------------------------------------------------------
+SharedPointer<UIEditMenuController> UIEditController::getMenuController () const
+{
+	return menuController;
+}
+
+//----------------------------------------------------------------------------------------------------
+SharedPointer<UIUndoManager> UIEditController::getUndoManager () const { return undoManager; }
 
 //----------------------------------------------------------------------------------------------------
 CView* UIEditController::createEditView ()

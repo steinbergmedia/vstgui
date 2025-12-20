@@ -20,8 +20,10 @@ namespace VSTGUI {
 class UIFontsDataSource : public UIBaseDataSource
 {
 public:
-	UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate);
-	
+	UIFontsDataSource (const SharedPointer<UIDescription>& description,
+					   IActionPerformer* actionPerformer,
+					   GenericStringListDataBrowserSourceSelectionChanged* delegate);
+
 protected:
 	void onUIDescFontChanged (UIDescription* desc) override;
 	void getNames (std::list<const std::string*>& names) override;
@@ -34,7 +36,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIFontsDataSource::UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIFontsDataSource::UIFontsDataSource (const SharedPointer<UIDescription>& description,
+									  IActionPerformer* actionPerformer,
+									  GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
 }
@@ -75,7 +79,9 @@ bool UIFontsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIFontsController::UIFontsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
+UIFontsController::UIFontsController (IController* baseController,
+									  const SharedPointer<UIDescription>& description,
+									  IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)

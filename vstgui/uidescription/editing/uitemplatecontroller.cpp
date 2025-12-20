@@ -145,8 +145,10 @@ protected:
 class UITemplatesDataSource : public UINavigationDataSource
 {
 public:
-	UITemplatesDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName);
-	
+	UITemplatesDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate,
+						   const SharedPointer<UIDescription>& description,
+						   IActionPerformer* actionPerformer, const std::string* templateName);
+
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) override;
@@ -240,7 +242,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UITemplateController::UITemplateController (IController* baseController, UIDescription* description,
+UITemplateController::UITemplateController (IController* baseController,
+											const SharedPointer<UIDescription>& description,
 											const SharedPointer<UISelection>& selection,
 											const SharedPointer<UIUndoManager>& undoManager,
 											IActionPerformer* actionPerformer)
@@ -872,10 +875,11 @@ void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size,
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITemplatesDataSource::UITemplatesDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName)
-: UINavigationDataSource (delegate)
-, description (description)
-, actionPerformer (actionPerformer)
+UITemplatesDataSource::UITemplatesDataSource (
+	GenericStringListDataBrowserSourceSelectionChanged* delegate,
+	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer,
+	const std::string* templateName)
+: UINavigationDataSource (delegate), description (description), actionPerformer (actionPerformer)
 {
 	headerTitle = "Templates";
 	if (templateName)

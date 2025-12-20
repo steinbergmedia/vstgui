@@ -21,7 +21,8 @@ namespace VSTGUI {
 class UIViewCreatorDataSource : public UIBaseDataSource
 {
 public:
-	UIViewCreatorDataSource (const IViewFactory* factory, UIDescription* description);
+	UIViewCreatorDataSource (const IViewFactory* factory,
+							 const SharedPointer<UIDescription>& description);
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
@@ -41,9 +42,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIViewCreatorController::UIViewCreatorController (IController* baseController, UIDescription* description)
-: DelegationController (baseController)
-, description (description)
+UIViewCreatorController::UIViewCreatorController (IController* baseController,
+												  const SharedPointer<UIDescription>& description)
+: DelegationController (baseController), description (description)
 {
 }
 
@@ -115,7 +116,7 @@ void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewCreatorDataSource::UIViewCreatorDataSource (const IViewFactory* factory,
-												  UIDescription* description)
+												  const SharedPointer<UIDescription>& description)
 : UIBaseDataSource (description, nullptr, nullptr), factory (factory)
 {
 }

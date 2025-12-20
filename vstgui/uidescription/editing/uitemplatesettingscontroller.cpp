@@ -16,7 +16,9 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITemplateSettingsController::UITemplateSettingsController (const std::string& templateName, UIDescription* description, IActionPerformer* actionPerformer)
+UITemplateSettingsController::UITemplateSettingsController (
+	const std::string& templateName, const SharedPointer<UIDescription>& description,
+	IActionPerformer* actionPerformer)
 : description (description)
 , templateName (templateName)
 , newTemplateName (templateName)

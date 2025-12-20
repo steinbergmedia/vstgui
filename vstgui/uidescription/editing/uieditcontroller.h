@@ -12,7 +12,6 @@
 #include "../icontroller.h"
 #include "../uidescriptionlistener.h"
 #include "iaction.h"
-#include "uiundomanager.h"
 #include "uitemplatecontroller.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
@@ -26,6 +25,7 @@ class UISelection;
 class UITemplateController;
 class UIEditMenuController;
 class UIGridController;
+class UIUndoManager;
 class UIZoomSettingController;
 class GenericStringListDataBrowserSource;
 class CCommandMenuItem;
@@ -44,12 +44,12 @@ class UIEditController : public CBaseObject,
                          public IUITemplateControllerListener
 {
 public:
-	UIEditController (UIDescription* description);
+	UIEditController (const SharedPointer<UIDescription>& description);
 	void setDarkTheme (bool state); // must be called before createEditView
 	bool usesDarkTheme () const;
 	CView* createEditView ();
-	UIEditMenuController* getMenuController () const { return menuController; }
-	SharedPointer<UIUndoManager> getUndoManager () const { return undoManager; }
+	SharedPointer<UIEditMenuController> getMenuController () const;
+	SharedPointer<UIUndoManager> getUndoManager () const;
 	const std::string& getEditTemplateName () const { return editTemplateName; }
 	SharedPointer<UIAttributes> getSettings ();
 	int32_t getSaveOptions ();

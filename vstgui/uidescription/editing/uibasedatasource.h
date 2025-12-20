@@ -25,8 +25,12 @@ class UIBaseDataSource : public GenericStringListDataBrowserSource, public ICont
 public:
 	using StringVector = GenericStringListDataBrowserSource::StringVector;
 
-	UIBaseDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr)
-	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionPerformer (actionPerformer)
+	UIBaseDataSource (const SharedPointer<UIDescription>& description,
+					  IActionPerformer* actionPerformer,
+					  GenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr)
+	: GenericStringListDataBrowserSource (0, delegate)
+	, description (description)
+	, actionPerformer (actionPerformer)
 	{
 		description->registerListener (this);
 		textInset.x = 4;

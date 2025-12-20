@@ -18,7 +18,8 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIGridController::UIGridController (IController* baseController, UIDescription* description)
+UIGridController::UIGridController (IController* baseController,
+									const SharedPointer<UIDescription>& description)
 : DelegationController (baseController), editDescription (description)
 {
 	auto attributes = editDescription->getCustomAttributes ("UIGridController", true);

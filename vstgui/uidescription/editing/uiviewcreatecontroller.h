@@ -21,7 +21,8 @@ class UIViewCreatorDataSource;
 class UIViewCreatorController : public NonAtomicReferenceCounted, public DelegationController, public IContextMenuController
 {
 public:
-	UIViewCreatorController (IController* baseController, UIDescription* description);
+	UIViewCreatorController (IController* baseController,
+							 const SharedPointer<UIDescription>& description);
 	~UIViewCreatorController () override;
 	
 	IController* getBaseController () const { return controller; }

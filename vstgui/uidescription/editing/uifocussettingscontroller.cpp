@@ -19,9 +19,9 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIFocusSettingsController::UIFocusSettingsController (UIDescription* description, IActionPerformer* actionPerformer)
-: editDescription (description)
-, actionPerformer (actionPerformer)
+UIFocusSettingsController::UIFocusSettingsController (
+	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer)
+: editDescription (description), actionPerformer (actionPerformer)
 {
 	originalSettings = editDescription->getFocusDrawingSettings ();
 	for (auto& control : controls)
