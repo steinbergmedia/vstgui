@@ -33,7 +33,9 @@ class UIAttributesController : public NonAtomicReferenceCounted,
 							   public ViewListenerAdapter
 {
 public:
-	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
+	UIAttributesController (IController* baseController,
+							const SharedPointer<UISelection>& selection, UIUndoManager* undoManager,
+							UIDescription* description);
 	~UIAttributesController () override;
 	
 	void beginLiveAttributeChange (const std::string& name, const std::string& currentValue);
@@ -62,8 +64,8 @@ protected:
 	void onUIDescTemplateChanged (UIDescription* desc) override;
 	void onUIDescGradientChanged (UIDescription* desc) override;
 
-	void selectionDidChange (UISelection* selection) override;
-	void selectionViewsDidChange (UISelection* selection) override;
+	void selectionDidChange (const UISelection& selection) override;
+	void selectionViewsDidChange (const UISelection& selection) override;
 
 	void onUndoManagerChange () override;
 

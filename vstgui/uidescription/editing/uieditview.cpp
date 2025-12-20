@@ -40,17 +40,18 @@ class UISelectionView : public UIOverlayView, public UISelectionListenerAdapter
 //----------------------------------------------------------------------------------------------------
 {
 public:
-	UISelectionView (CViewContainer* editView, UISelection* selection, const CColor& selectionColor, CCoord handleSize);
+	UISelectionView (CViewContainer* editView, const SharedPointer<UISelection>& selection,
+					 const CColor& selectionColor, CCoord handleSize);
 	~UISelectionView () override;
 
 private:
 	void draw (CDrawContext* pContext) override;
 	void drawResizeHandle (const CPoint& p, CDrawContext* pContext);
 
-	void selectionWillChange (UISelection*) override { onSelectionChanged (); }
-	void selectionDidChange (UISelection*) override { onSelectionChanged (); }
-	void selectionViewsWillChange (UISelection*) override { onSelectionChanged (); }
-	void selectionViewsDidChange (UISelection*) override { onSelectionChanged (); }
+	void selectionWillChange (const UISelection&) override { onSelectionChanged (); }
+	void selectionDidChange (const UISelection&) override { onSelectionChanged (); }
+	void selectionViewsWillChange (const UISelection&) override { onSelectionChanged (); }
+	void selectionViewsDidChange (const UISelection&) override { onSelectionChanged (); }
 
 	void onSelectionChanged ();
 
@@ -60,7 +61,9 @@ private:
 };
 
 //----------------------------------------------------------------------------------------------------
-UISelectionView::UISelectionView (CViewContainer* editView, UISelection* selection, const CColor& selectionColor, CCoord handleSize)
+UISelectionView::UISelectionView (CViewContainer* editView,
+								  const SharedPointer<UISelection>& selection,
+								  const CColor& selectionColor, CCoord handleSize)
 : UIOverlayView (editView)
 , selection (selection)
 , selectionColor (selectionColor)
@@ -417,13 +420,13 @@ UIUndoManager* UIEditView::getUndoManager ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setSelection (UISelection* inSelection)
+void UIEditView::setSelection (const SharedPointer<UISelection>& inSelection)
 {
 	selection = inSelection;
 }
 
 //----------------------------------------------------------------------------------------------------
-UISelection* UIEditView::getSelection ()
+SharedPointer<UISelection> UIEditView::getSelection ()
 {
 	if (selection == nullptr)
 	{
@@ -481,7 +484,7 @@ CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 			{
 				lines = new UICrossLines (this, UICrossLines::kSelectionStyle, crosslineBackgroundColor, crosslineForegroundColor);
 				overlayView->addView (lines);
-				lines->update (selection);
+				lines->update (*selection.get ());
 				getFrame ()->setCursor (kCursorMoveObject);
 			}
 			editTimer = nullptr;
@@ -768,7 +771,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 				lines = new UICrossLines (this, crossLineMode, crosslineBackgroundColor, crosslineForegroundColor);
 				overlayView->addView (lines);
 				if (crossLineMode == UICrossLines::kSelectionStyle)
-					lines->update (selection);
+					lines->update (*selection.get ());
 				else
 					lines->update (CPoint (mouseStartPoint.x, mouseStartPoint.y));
 			}
@@ -1043,12 +1046,12 @@ void UIEditView::doDragEditingMove (CPoint& where)
 			{
 				lines = new UICrossLines (this, UICrossLines::kSelectionStyle, crosslineBackgroundColor, crosslineForegroundColor);
 				overlayView->addView (lines);
-				lines->update (selection);
+				lines->update (*selection.get ());
 			}
 			getFrame ()->setCursor (kCursorMoveObject);
 		}
 		if (lines)
-			lines->update (selection);
+			lines->update (*selection.get ());
 	}
 }
 
@@ -1140,7 +1143,7 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 	if (lines)
 	{
 		if (lines->getStyle () == UICrossLines::kSelectionStyle)
-			lines->update (selection);
+			lines->update (*selection.get ());
 		else
 			lines->update (mouseStartPoint);
 	}
@@ -1156,7 +1159,7 @@ CMouseEventResult UIEditView::onMouseExited (CPoint& where, const CButtonState& 
 //----------------------------------------------------------------------------------------------------
 void UIEditView::startDrag (CPoint& where)
 {
-	auto bitmap = createBitmapFromSelection (selection, getFrame (), this);
+	auto bitmap = createBitmapFromSelection (*selection.get (), getFrame (), this);
 	if (bitmap == nullptr)
 		return;
 	where.makeIntegral ();

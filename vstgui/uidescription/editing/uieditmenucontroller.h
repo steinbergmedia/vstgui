@@ -150,7 +150,9 @@ class UIEditMenuController : public CBaseObject,
 							 public ViewListenerAdapter
 {
 public:
-	UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description, IActionPerformer* actionPerformer);
+	UIEditMenuController (IController* baseController, const SharedPointer<UISelection>& selection,
+						  UIUndoManager* undoManager, UIDescription* description,
+						  IActionPerformer* actionPerformer);
 	~UIEditMenuController () noexcept override;
 
 	const SharedPointer<COptionMenu>& getFileMenu () const { return fileMenu; }

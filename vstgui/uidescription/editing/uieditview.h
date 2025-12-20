@@ -44,9 +44,9 @@ public:
 	void setUndoManager (UIUndoManager* manager);
 	UIUndoManager* getUndoManager ();
 
-	void setSelection (UISelection* selection);
-	UISelection* getSelection ();
-	
+	void setSelection (const SharedPointer<UISelection>& selection);
+	SharedPointer<UISelection> getSelection ();
+
 	void setGridProcessor (IGridProcessor* grid);
 
 	void setupColors (const IUIDescription* description);

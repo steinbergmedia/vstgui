@@ -1013,7 +1013,7 @@ void UIEditController::doCopy (bool cut)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::addSelectionToCurrentView (UISelection* copySelection)
+void UIEditController::addSelectionToCurrentView (const SharedPointer<UISelection>& copySelection)
 {
 	if (selection->total () == 0)
 		return;
@@ -1044,12 +1044,11 @@ void UIEditController::doPaste ()
 			if (size > 0)
 			{
 				CMemoryStream stream ((const int8_t*)data, size, false);
-				auto* copySelection = new UISelection ();
+				auto copySelection = makeOwned<UISelection> ();
 				if (copySelection->restore (stream, editDescription))
 				{
 					addSelectionToCurrentView (copySelection);
 				}
-				copySelection->forget ();
 			}
 		}
 	}

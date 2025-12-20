@@ -218,14 +218,14 @@ void UISelection::invalidRects () const
 void UISelection::willChange ()
 {
 	if (++inChange == 1)
-		forEachListener ([this] (IUISelectionListener* l) { l->selectionWillChange (this); });
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionWillChange (*this); });
 }
 
 //----------------------------------------------------------------------------------------------------
 void UISelection::didChange ()
 {
 	if (--inChange == 0)
-		forEachListener ([this] (IUISelectionListener* l) { l->selectionDidChange (this); });
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionDidChange (*this); });
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -234,7 +234,7 @@ void UISelection::viewsWillChange ()
 	if (++inViewsChange == 1)
 	{
 		invalidRects ();
-		forEachListener ([this] (IUISelectionListener* l) { l->selectionViewsWillChange (this); });
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionViewsWillChange (*this); });
 	}
 }
 
@@ -244,7 +244,7 @@ void UISelection::viewsDidChange ()
 	if (--inViewsChange == 0)
 	{
 		invalidRects ();
-		forEachListener ([this] (IUISelectionListener* l) { l->selectionViewsDidChange (this); });
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionViewsDidChange (*this); });
 	}
 }
 
@@ -292,10 +292,10 @@ bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame* frame,
-                                                  CViewContainer* anchorView)
+SharedPointer<CBitmap> createBitmapFromSelection (const UISelection& selection, CFrame* frame,
+												  CViewContainer* anchorView)
 {
-	CRect selectionRect = selection->getBounds ();
+	CRect selectionRect = selection.getBounds ();
 	auto scaleFactor = frame->getScaleFactor ();
 	auto bitmap = renderBitmapOffscreen (selectionRect.getSize (), scaleFactor, [&] (auto& context) {
 		CGraphicsTransform tm;
@@ -315,9 +315,9 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 			anchorView->getFrame ()->setZoom (1.);
 		}
 		CDrawContext::Transform tr (context, tm);
-		for (auto view : *selection)
+		for (auto view : selection)
 		{
-			if (!selection->containsParent (view))
+			if (!selection.containsParent (view))
 			{
 				CPoint p;
 				p = view->translateToGlobal (p);

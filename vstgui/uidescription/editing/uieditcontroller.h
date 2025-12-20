@@ -56,7 +56,7 @@ public:
 	
 	void onZoomChanged (double zoom);
 
-	void addSelectionToCurrentView (UISelection* selection);
+	void addSelectionToCurrentView (const SharedPointer<UISelection>& selection);
 
 	static SharedPointer<UIDescription> getEditorDescription ();
 	static void setupDataSource (GenericStringListDataBrowserSource* source);

@@ -27,12 +27,12 @@ UICrossLines::~UICrossLines ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UICrossLines::update (UISelection* selection)
+void UICrossLines::update (const UISelection& selection)
 {
 	invalid ();
 
 	CPoint p;
-	currentRect = selection->getBounds ();
+	currentRect = selection.getBounds ();
 	localToFrame (p);
 	currentRect.offset (-p.x, -p.y);
 

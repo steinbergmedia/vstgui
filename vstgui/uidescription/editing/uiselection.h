@@ -23,21 +23,21 @@ class IUISelectionListener
 {
 public:
 	virtual ~IUISelectionListener () noexcept = default;
-	
-	virtual void selectionWillChange (UISelection* selection) = 0;
-	virtual void selectionDidChange (UISelection* selection) = 0;
-	virtual void selectionViewsWillChange (UISelection* selection) = 0;
-	virtual void selectionViewsDidChange (UISelection* selection) = 0;
+
+	virtual void selectionWillChange (const UISelection& selection) = 0;
+	virtual void selectionDidChange (const UISelection& selection) = 0;
+	virtual void selectionViewsWillChange (const UISelection& selection) = 0;
+	virtual void selectionViewsDidChange (const UISelection& selection) = 0;
 };
 
 //----------------------------------------------------------------------------------------------------
 class UISelectionListenerAdapter : public IUISelectionListener
 {
 public:
-	void selectionWillChange (UISelection* selection) override {}
-	void selectionDidChange (UISelection* selection) override {}
-	void selectionViewsWillChange (UISelection* selection) override {}
-	void selectionViewsDidChange (UISelection* selection) override {}
+	void selectionWillChange (const UISelection& selection) override {}
+	void selectionDidChange (const UISelection& selection) override {}
+	void selectionViewsWillChange (const UISelection& selection) override {}
+	void selectionViewsDidChange (const UISelection& selection) override {}
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -125,7 +125,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame* frame, CViewContainer* anchorView = nullptr);
+SharedPointer<CBitmap> createBitmapFromSelection (const UISelection& selection, CFrame* frame,
+												  CViewContainer* anchorView = nullptr);
 
 } // VSTGUI
 

@@ -43,7 +43,9 @@ class UITemplateController
   public ListenerProvider<UITemplateController, IUITemplateControllerListener>
 {
 public:
-	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);
+	UITemplateController (IController* baseController, UIDescription* description,
+						  const SharedPointer<UISelection>& selection, UIUndoManager* undoManager,
+						  IActionPerformer* actionPerformer);
 	~UITemplateController () override;
 
 	const UTF8String* getSelectedTemplateName () const { return selectedTemplateName; }

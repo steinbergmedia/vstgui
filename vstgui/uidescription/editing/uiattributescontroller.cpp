@@ -146,8 +146,11 @@ protected:
 class AutosizeController : public Controller
 {
 public:
-	AutosizeController (IController* baseController, UISelection* selection, const std::string& attrName)
-	: Controller (baseController, attrName), selection (selection) {}
+	AutosizeController (IController* baseController, const SharedPointer<UISelection>& selection,
+						const std::string& attrName)
+	: Controller (baseController, attrName), selection (selection)
+	{
+	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
@@ -860,8 +863,11 @@ public:
 class ListController : public MenuController
 {
 public:
-	ListController (IController* baseController, const std::string& attrName, UIDescription* description, UISelection* selection)
-	: MenuController (baseController, attrName, description, false, false), selection (selection) {}
+	ListController (IController* baseController, const std::string& attrName,
+					UIDescription* description, const SharedPointer<UISelection>& selection)
+	: MenuController (baseController, attrName, description, false, false), selection (selection)
+	{
+	}
 
 	void collectMenuItemNames (StringPtrList& names) override
 	{
@@ -882,7 +888,10 @@ protected:
 
 
 //----------------------------------------------------------------------------------------------------
-UIAttributesController::UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description)
+UIAttributesController::UIAttributesController (IController* baseController,
+												const SharedPointer<UISelection>& selection,
+												UIUndoManager* undoManager,
+												UIDescription* description)
 : DelegationController (baseController)
 , selection (selection)
 , undoManager (undoManager)
@@ -1110,7 +1119,7 @@ void UIAttributesController::onUIDescGradientChanged (UIDescription* desc)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::selectionDidChange (UISelection*)
+void UIAttributesController::selectionDidChange (const UISelection&)
 {
 	if (!rebuildRequested && attributeView)
 	{
@@ -1131,7 +1140,7 @@ void UIAttributesController::selectionDidChange (UISelection*)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::selectionViewsDidChange (UISelection*)
+void UIAttributesController::selectionViewsDidChange (const UISelection&)
 {
 	validateAttributeViews ();
 }

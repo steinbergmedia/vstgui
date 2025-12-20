@@ -52,7 +52,7 @@ template <class T>
 class BaseSelectionOperation : public IAction, protected std::list<T>
 {
 public:
-	BaseSelectionOperation (UISelection* selection) : selection (selection) {}
+	BaseSelectionOperation (const SharedPointer<UISelection>& selection) : selection (selection) {}
 
 protected:
 	SharedPointer<UISelection> selection;	
@@ -62,7 +62,7 @@ protected:
 class SizeToFitOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
 {
 public:
-	SizeToFitOperation (UISelection* selection);
+	SizeToFitOperation (const SharedPointer<UISelection>& selection);
 	~SizeToFitOperation () override = default;
 
 	UTF8StringPtr getName () override;
@@ -75,7 +75,7 @@ public:
 class UnembedViewOperation : public BaseSelectionOperation<SharedPointer<CView> >
 {
 public:
-	UnembedViewOperation (UISelection* selection, const IViewFactory* factory);
+	UnembedViewOperation (const SharedPointer<UISelection>& selection, const IViewFactory* factory);
 	~UnembedViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
@@ -94,7 +94,7 @@ protected:
 class EmbedViewOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
 {
 public:
-	EmbedViewOperation (UISelection* selection, CViewContainer* newContainer);
+	EmbedViewOperation (const SharedPointer<UISelection>& selection, CViewContainer* newContainer);
 	~EmbedViewOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -110,7 +110,9 @@ protected:
 class ViewCopyOperation : public IAction, protected std::list<SharedPointer<CView> >
 {
 public:
-	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, IUIDescription* desc);
+	ViewCopyOperation (const SharedPointer<UISelection>& copySelection,
+					   const SharedPointer<UISelection>& workingSelection, CViewContainer* parent,
+					   const CPoint& offset, IUIDescription* desc);
 	~ViewCopyOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -127,7 +129,8 @@ protected:
 class ViewSizeChangeOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
 {
 public:
-	ViewSizeChangeOperation (UISelection* selection, bool sizing, bool autosizingEnabled);
+	ViewSizeChangeOperation (const SharedPointer<UISelection>& selection, bool sizing,
+							 bool autosizingEnabled);
 	~ViewSizeChangeOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -154,7 +157,7 @@ struct DeleteOperationViewAndNext
 class DeleteOperation : public IAction, protected std::multimap<SharedPointer<CViewContainer>, DeleteOperationViewAndNext>
 {
 public:
-	DeleteOperation (UISelection* selection);
+	DeleteOperation (const SharedPointer<UISelection>& selection);
 	~DeleteOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -168,7 +171,8 @@ protected:
 class InsertViewOperation : public IAction
 {
 public:
-	InsertViewOperation (CViewContainer* parent, CView* view, UISelection* selection);
+	InsertViewOperation (CViewContainer* parent, CView* view,
+						 const SharedPointer<UISelection>& selection);
 	~InsertViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
@@ -184,8 +188,9 @@ protected:
 class TransformViewTypeOperation : public IAction
 {
 public:
-	TransformViewTypeOperation (UISelection* selection, CView* view, IdStringPtr viewClassName,
-								UIDescription* desc, const IViewFactory* factory);
+	TransformViewTypeOperation (const SharedPointer<UISelection>& selection, CView* view,
+								IdStringPtr viewClassName, UIDescription* desc,
+								const IViewFactory* factory);
 	~TransformViewTypeOperation () override;
 
 	UTF8StringPtr getName () override;
@@ -207,7 +212,8 @@ protected:
 class AttributeChangeAction : public IAction, protected std::map<SharedPointer<CView>, std::string>
 {
 public:
-	AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue);
+	AttributeChangeAction (UIDescription* desc, const SharedPointer<UISelection>& selection,
+						   const std::string& attrName, const std::string& attrValue);
 	~AttributeChangeAction () override = default;
 
 	UTF8StringPtr getName () override;
@@ -505,7 +511,8 @@ protected:
 class HierarchyMoveViewOperation : public IAction
 {
 public:
-	HierarchyMoveViewOperation (CView* view, UISelection* selection, int32_t dir);
+	HierarchyMoveViewOperation (CView* view, const SharedPointer<UISelection>& selection,
+								int32_t dir);
 	~HierarchyMoveViewOperation () override = default;
 
 	UTF8StringPtr getName () override;

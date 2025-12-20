@@ -18,8 +18,8 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-SizeToFitOperation::SizeToFitOperation (UISelection* selection)
-: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
+SizeToFitOperation::SizeToFitOperation (const SharedPointer<UISelection>& selection)
+: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect>> (selection)
 {
 	for (auto view : *selection)
 		emplace_back (view, view->getViewSize ());
@@ -61,7 +61,8 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewFactory* factory)
+UnembedViewOperation::UnembedViewOperation (const SharedPointer<UISelection>& selection,
+											const IViewFactory* factory)
 : BaseSelectionOperation<SharedPointer<CView>> (selection), factory (factory)
 {
 	containerView = selection->first ()->asViewContainer ();
@@ -135,8 +136,9 @@ void UnembedViewOperation::undo ()
 }
 
 //-----------------------------------------------------------------------------
-EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* newContainer)
-: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
+EmbedViewOperation::EmbedViewOperation (const SharedPointer<UISelection>& selection,
+										CViewContainer* newContainer)
+: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect>> (selection)
 , newContainer (owned (newContainer))
 {
 	parent = selection->first ()->getParentView ()->asViewContainer ();
@@ -214,9 +216,10 @@ void EmbedViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection,
-                                      CViewContainer* parent, const CPoint& offset,
-                                      IUIDescription* desc)
+ViewCopyOperation::ViewCopyOperation (const SharedPointer<UISelection>& copySelection,
+									  const SharedPointer<UISelection>& workingSelection,
+									  CViewContainer* parent, const CPoint& offset,
+									  IUIDescription* desc)
 : parent (parent), copySelection (copySelection), workingSelection (workingSelection)
 {
 	CRect selectionBounds = copySelection->getBounds ();
@@ -279,8 +282,9 @@ void ViewCopyOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool sizing, bool autosizingEnabled)
-: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
+ViewSizeChangeOperation::ViewSizeChangeOperation (const SharedPointer<UISelection>& selection,
+												  bool sizing, bool autosizingEnabled)
+: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect>> (selection)
 , first (true)
 , sizing (sizing)
 , autosizing (autosizingEnabled)
@@ -355,7 +359,7 @@ bool ViewSizeChangeOperation::didChange ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-DeleteOperation::DeleteOperation (UISelection* selection)
+DeleteOperation::DeleteOperation (const SharedPointer<UISelection>& selection)
 : selection (selection)
 {
 	for (auto view : *selection)
@@ -418,10 +422,9 @@ void DeleteOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-InsertViewOperation::InsertViewOperation (CViewContainer* parent, CView* view, UISelection* selection)
-: parent (parent)
-, view (view)
-, selection (selection)
+InsertViewOperation::InsertViewOperation (CViewContainer* parent, CView* view,
+										  const SharedPointer<UISelection>& selection)
+: parent (parent), view (view), selection (selection)
 {
 }
 
@@ -450,8 +453,8 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, CView* view,
-														IdStringPtr viewClassName,
+TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISelection>& selection,
+														CView* view, IdStringPtr viewClassName,
 														UIDescription* desc,
 														const IViewFactory* factory)
 : view (view)
@@ -555,11 +558,11 @@ void TransformViewTypeOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-AttributeChangeAction::AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue)
-: desc (desc)
-, selection (selection)
-, attrName (attrName)
-, attrValue (attrValue)
+AttributeChangeAction::AttributeChangeAction (UIDescription* desc,
+											  const SharedPointer<UISelection>& selection,
+											  const std::string& attrName,
+											  const std::string& attrValue)
+: desc (desc), selection (selection), attrName (attrName), attrValue (attrValue)
 {
 	const auto* viewFactory = desc->getViewFactory ();
 	std::string attrOldValue;
@@ -1299,11 +1302,10 @@ void AlternateFontChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view, UISelection* selection, int32_t dir)
-: view (view)
-, parent (nullptr)
-, selection (selection)
-, dir (dir)
+HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view,
+														const SharedPointer<UISelection>& selection,
+														int32_t dir)
+: view (view), parent (nullptr), selection (selection), dir (dir)
 {
 	parent = view->getParentView ()->asViewContainer ();
 }

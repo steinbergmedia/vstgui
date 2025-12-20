@@ -162,7 +162,9 @@ protected:
 class UIViewListDataSource : public UINavigationDataSource, public IUIUndoManagerListener
 {
 public:
-	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,GenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory,
+						  const SharedPointer<UISelection>& selection, UIUndoManager* undoManager,
+						  GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIViewListDataSource () override;
 
 	CViewContainer* getView () const { return view; }
@@ -237,7 +239,10 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UITemplateController::UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer)
+UITemplateController::UITemplateController (IController* baseController, UIDescription* description,
+											const SharedPointer<UISelection>& selection,
+											UIUndoManager* undoManager,
+											IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , selection (selection)
@@ -523,8 +528,9 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::UIViewListDataSource (
-	CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection,
-	UIUndoManager* undoManager, GenericStringListDataBrowserSourceSelectionChanged* delegate)
+	CViewContainer* view, const IViewFactory* viewFactory,
+	const SharedPointer<UISelection>& selection, UIUndoManager* undoManager,
+	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
 , viewFactory (viewFactory)
