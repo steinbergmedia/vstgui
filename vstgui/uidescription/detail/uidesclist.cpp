@@ -10,12 +10,10 @@ namespace VSTGUI {
 namespace Detail {
 
 //-----------------------------------------------------------------------------
-UIDescList::UIDescList (bool ownsObjects) : ownsObjects (ownsObjects)
-{
-}
+UIDescList::UIDescList () {}
 
 //------------------------------------------------------------------------
-UIDescList::UIDescList (const UIDescList& uiDesc) : ownsObjects (false)
+UIDescList::UIDescList (const UIDescList& uiDesc)
 {
 	for (auto& child : uiDesc)
 		add (child);
@@ -28,35 +26,27 @@ UIDescList::~UIDescList () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void UIDescList::add (UINode* obj)
+void UIDescList::add (const SharedPointer<UINode>& obj)
 {
-	if (!ownsObjects)
-		obj->remember ();
 	UIDescListContainerType::emplace_back (obj);
 }
 
 //-----------------------------------------------------------------------------
-void UIDescList::remove (UINode* obj)
+void UIDescList::remove (const SharedPointer<UINode>& obj)
 {
 	UIDescListContainerType::iterator pos =
 	    std::find (UIDescListContainerType::begin (), UIDescListContainerType::end (), obj);
 	if (pos != UIDescListContainerType::end ())
 	{
 		UIDescListContainerType::erase (pos);
-		obj->forget ();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void UIDescList::removeAll ()
-{
-	for (const_reverse_iterator it = rbegin (), end = rend (); it != end; ++it)
-		(*it)->forget ();
-	clear ();
-}
+void UIDescList::removeAll () { clear (); }
 
 //-----------------------------------------------------------------------------
-UINode* UIDescList::findChildNode (UTF8StringView nodeName) const
+SharedPointer<UINode> UIDescList::findChildNode (UTF8StringView nodeName) const
 {
 	for (const auto& node : *this)
 	{
@@ -68,8 +58,8 @@ UINode* UIDescList::findChildNode (UTF8StringView nodeName) const
 }
 
 //-----------------------------------------------------------------------------
-UINode* UIDescList::findChildNodeWithAttributeValue (const std::string& attributeName,
-                                                     const std::string& attributeValue) const
+SharedPointer<UINode> UIDescList::findChildNodeWithAttributeValue (
+	const std::string& attributeName, const std::string& attributeValue) const
 {
 	for (const auto& node : *this)
 	{
@@ -84,7 +74,7 @@ UINode* UIDescList::findChildNodeWithAttributeValue (const std::string& attribut
 //-----------------------------------------------------------------------------
 void UIDescList::sort ()
 {
-	std::sort (begin (), end (), [] (const UINode* n1, const UINode* n2) {
+	std::sort (begin (), end (), [] (const auto& n1, const auto& n2) {
 		const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
 		const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
 		if (str1 && str2)
@@ -101,7 +91,7 @@ UIDescListWithFastFindAttributeNameChild::UIDescListWithFastFindAttributeNameChi
 }
 
 //------------------------------------------------------------------------
-void UIDescListWithFastFindAttributeNameChild::add (UINode* obj)
+void UIDescListWithFastFindAttributeNameChild::add (const SharedPointer<UINode>& obj)
 {
 	UIDescList::add (obj);
 	const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
@@ -110,7 +100,7 @@ void UIDescListWithFastFindAttributeNameChild::add (UINode* obj)
 }
 
 //------------------------------------------------------------------------
-void UIDescListWithFastFindAttributeNameChild::remove (UINode* obj)
+void UIDescListWithFastFindAttributeNameChild::remove (const SharedPointer<UINode>& obj)
 {
 	const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
 	if (nameAttributeValue)
@@ -130,8 +120,8 @@ void UIDescListWithFastFindAttributeNameChild::removeAll ()
 }
 
 //------------------------------------------------------------------------
-UINode* UIDescListWithFastFindAttributeNameChild::findChildNodeWithAttributeValue (
-    const std::string& attributeName, const std::string& attributeValue) const
+SharedPointer<UINode> UIDescListWithFastFindAttributeNameChild::findChildNodeWithAttributeValue (
+	const std::string& attributeName, const std::string& attributeValue) const
 {
 	if (attributeName != "name")
 		return UIDescList::findChildNodeWithAttributeValue (attributeName, attributeValue);
@@ -143,7 +133,8 @@ UINode* UIDescListWithFastFindAttributeNameChild::findChildNodeWithAttributeValu
 
 //------------------------------------------------------------------------
 void UIDescListWithFastFindAttributeNameChild::nodeAttributeChanged (
-    UINode* node, const std::string& attributeName, const std::string& oldAttributeValue)
+	const SharedPointer<UINode>& node, const std::string& attributeName,
+	const std::string& oldAttributeValue)
 {
 	if (attributeName != "name")
 		return;

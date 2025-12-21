@@ -26,11 +26,11 @@ struct UIXMLParser : public Xml::IHandler
 	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
 	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
 
-	const SharedPointer<UINode> getNodes () const { return nodes; }
+	const SharedPointer<UINode>& getNodes () const { return nodes; }
 
 private:
 	SharedPointer<UINode> nodes;
-	std::deque<UINode*> nodeStack;
+	std::deque<SharedPointer<UINode>> nodeStack;
 	bool restoreViewsMode {false};
 };
 
@@ -40,13 +40,14 @@ class UIXMLDescWriter
 public:
 	using UINode = Detail::UINode;
 	using UICommentNode = Detail::UICommentNode;
-	bool write (OutputStream& stream, UINode* rootNode);
+	bool write (OutputStream& stream, const UINode& rootNode);
+
 protected:
 	static void encodeAttributeString (std::string& str);
 
-	bool writeNode (UINode* node, OutputStream& stream);
-	bool writeComment (UICommentNode* node, OutputStream& stream);
-	bool writeNodeData (UINode::DataStorage& str, OutputStream& stream);
+	bool writeNode (const UINode& node, OutputStream& stream);
+	bool writeComment (const UICommentNode& node, OutputStream& stream);
+	bool writeNodeData (const UINode::DataStorage& str, OutputStream& stream);
 	bool writeAttributes (UIAttributes* attr, OutputStream& stream);
 	int32_t intendLevel;
 };

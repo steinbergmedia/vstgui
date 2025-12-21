@@ -165,11 +165,12 @@ protected:
 	const CResourceDescription& getUIDescFile () const;
 private:
 	void postParsing ();
-	CView* createViewFromNode (UINode* node) const;
-	UINode* getBaseNode (UTF8StringPtr name, bool create = true) const;
-	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
-	UINode* findNodeForView (CView* view) const;
-	bool updateAttributesForView (UINode* node, CView* view, bool deep = true);
+	CView* createViewFromNode (const SharedPointer<UINode>& node) const;
+	SharedPointer<UINode> getBaseNode (UTF8StringPtr name, bool create = true) const;
+	SharedPointer<UINode> findChildNodeByNameAttribute (const SharedPointer<UINode>& node,
+														UTF8StringPtr nameAttribute) const;
+	SharedPointer<UINode> findNodeForView (CView* view) const;
+	bool updateAttributesForView (const SharedPointer<UINode>& node, CView* view, bool deep = true);
 	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName);
 	template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const;
 	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName);

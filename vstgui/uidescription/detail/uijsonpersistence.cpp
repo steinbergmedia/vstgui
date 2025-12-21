@@ -156,19 +156,21 @@ struct Handler
 		{
 			auto attrs = newAttributesWithNameAttr (keyStr);
 			attrs->setAttribute (attributeRGBAStr, {str, length});
-			nodeStack.back ()->getChildren ().add (new UIColorNode (colorStr, attrs));
+			nodeStack.back ()->getChildren ().add (makeOwned<UIColorNode> (colorStr, attrs));
 		}
 		else if (state == State::InControlTagRootNode)
 		{
 			auto attrs = newAttributesWithNameAttr (keyStr);
 			attrs->setAttribute (attributeTagStr, {str, length});
-			nodeStack.back ()->getChildren ().add (new UIControlTagNode (controlTagStr, attrs));
+			nodeStack.back ()->getChildren ().add (
+				makeOwned<UIControlTagNode> (controlTagStr, attrs));
 		}
 		else if (state == State::InVariableRootNode)
 		{
 			auto attrs = newAttributesWithNameAttr (keyStr);
 			attrs->setAttribute (attributeValueStr, {str, length});
-			nodeStack.back ()->getChildren ().add (new UIVariableNode (controlTagStr, attrs));
+			nodeStack.back ()->getChildren ().add (
+				makeOwned<UIVariableNode> (controlTagStr, attrs));
 		}
 		else if (state == State::DataNode && keyStr == "data")
 		{
@@ -190,7 +192,7 @@ struct Handler
 
 	bool StartObject ()
 	{
-		UINode* newNode = nullptr;
+		SharedPointer<UINode> newNode;
 		State newState {};
 		switch (state)
 		{
@@ -241,44 +243,44 @@ struct Handler
 					newState = State::InVariableRootNode;
 				else
 					return false;
-				newNode = new UINode (keyStr, nullptr, needsFastChildNameAttributeLookup);
+				newNode = makeOwned<UINode> (keyStr, nullptr, needsFastChildNameAttributeLookup);
 				break;
 			}
 			case State::InBitmapRootNode:
 			{
-				newNode = new UIBitmapNode (bitmapStr, newAttributesWithNameAttr (keyStr));
+				newNode = makeOwned<UIBitmapNode> (bitmapStr, newAttributesWithNameAttr (keyStr));
 				newState = State::BitmapNode;
 				break;
 			}
 			case State::InFontRootNode:
 			{
-				newNode = new UIFontNode (fontStr, newAttributesWithNameAttr (keyStr));
+				newNode = makeOwned<UIFontNode> (fontStr, newAttributesWithNameAttr (keyStr));
 				newState = State::FontNode;
 				break;
 			}
 			case State::InCustomRootNode:
 			{
-				newNode = new UINode (attributesStr, newAttributesWithNameAttr (keyStr));
+				newNode = makeOwned<UINode> (attributesStr, newAttributesWithNameAttr (keyStr));
 				newState = State::DataNode;
 				break;
 			}
 			case State::InTemplateRootNode:
 			{
-				newNode = new UINode (templateStr, newAttributesWithNameAttr (keyStr));
+				newNode = makeOwned<UINode> (templateStr, newAttributesWithNameAttr (keyStr));
 				newState = State::TemplateNode;
 				break;
 			}
 			case State::BitmapNode:
 			{
 				vstgui_assert (keyStr == keyDataStr);
-				newNode = new UINode (keyStr);
+				newNode = makeOwned<UINode> (keyStr);
 				newState = State::DataNode;
 				break;
 			}
 			case State::GradientNode:
 			{
 				vstgui_assert (keyStr.empty ());
-				newNode = new UINode (colorStopStr);
+				newNode = makeOwned<UINode> (colorStopStr);
 				newState = State::DataNode;
 				break;
 			}
@@ -293,7 +295,7 @@ struct Handler
 			case State::ChildrenNode:
 			{
 				auto attr = makeOwned<UIAttributes> (15);
-				newNode = new UINode (viewStr, attr);
+				newNode = makeOwned<UINode> (viewStr, attr);
 				newState = State::ViewNode;
 				break;
 			}
@@ -336,7 +338,8 @@ struct Handler
 	{
 		if (state == State::InGradientRootNode)
 		{
-			auto newNode = new UIGradientNode (gradientStr, newAttributesWithNameAttr (keyStr));
+			auto newNode =
+				makeOwned<UIGradientNode> (gradientStr, newAttributesWithNameAttr (keyStr));
 			pushNode (newNode);
 			pushState (State::GradientNode);
 			keyStr.clear ();
@@ -363,7 +366,7 @@ struct Handler
 		return true;
 	}
 
-	void pushNode (UINode* newNode)
+	void pushNode (const SharedPointer<UINode>& newNode)
 	{
 		if (newNode)
 		{
@@ -393,7 +396,7 @@ struct Handler
 	}
 
 	SharedPointer<UINode> rootNode;
-	std::deque<UINode*> nodeStack;
+	std::deque<SharedPointer<UINode>> nodeStack;
 	std::deque<State> stateStack {State::Uninitialized};
 	State state {};
 	std::string keyStr;
@@ -445,7 +448,7 @@ struct OutputStreamWrapper
 using DefaultOutputStreamWrapper = OutputStreamWrapper<uint8_t>;
 
 //------------------------------------------------------------------------
-static const std::string* getNodeAttributeName (const UINode* node)
+static const std::string* getNodeAttributeName (const SharedPointer<UINode>& node)
 {
 	if (auto attributes = node->getAttributes ())
 		return attributes->getAttributeValue (attributeNameStr);
@@ -453,7 +456,7 @@ static const std::string* getNodeAttributeName (const UINode* node)
 }
 
 //------------------------------------------------------------------------
-static const std::string* getNodeAttributeViewClass (const UINode* node)
+static const std::string* getNodeAttributeViewClass (const SharedPointer<UINode>& node)
 {
 	if (auto attributes = node->getAttributes ())
 		return attributes->getAttributeValue (attributeClassStr);
@@ -482,8 +485,8 @@ void writeAttributes (const UIAttributes& attributes, JSONWriter& writer,
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter>
-void writeNode (const UINode* node, JSONWriter& writer)
+template<typename JSONWriter>
+void writeNode (const SharedPointer<UINode>& node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	if (name)
@@ -507,8 +510,8 @@ void writeNode (const UINode* node, JSONWriter& writer)
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter>
-void writeGradientNode (const UINode* node, JSONWriter& writer)
+template<typename JSONWriter>
+void writeGradientNode (const SharedPointer<UINode>& node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	vstgui_assert (name);
@@ -525,8 +528,9 @@ void writeGradientNode (const UINode* node, JSONWriter& writer)
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter>
-void writeSingleAttributeNode (const char* attrName, const UINode* node, JSONWriter& writer)
+template<typename JSONWriter>
+void writeSingleAttributeNode (const char* attrName, const SharedPointer<UINode>& node,
+							   JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	vstgui_assert (name);
@@ -539,8 +543,8 @@ void writeSingleAttributeNode (const char* attrName, const UINode* node, JSONWri
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter>
-void writeColorAttributeNode (const UINode* node, JSONWriter& writer)
+template<typename JSONWriter>
+void writeColorAttributeNode (const SharedPointer<UINode>& node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	vstgui_assert (name);
@@ -552,15 +556,16 @@ void writeColorAttributeNode (const UINode* node, JSONWriter& writer)
 	}
 	else
 	{
-		auto colorNode = dynamic_cast<const UIColorNode*> (node);
+		auto colorNode = node.cast<UIColorNode> ();
 		vstgui_assert (colorNode);
 		writer.String (colorNode->getColor ().toString ().getString ());
 	}
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter, typename Proc>
-void writeResourceNode (const char* name, const UINode* resNode, Proc proc, JSONWriter& writer)
+template<typename JSONWriter, typename Proc>
+void writeResourceNode (const char* name, const SharedPointer<UINode>& resNode, Proc proc,
+						JSONWriter& writer)
 {
 	writer.Key (name);
 	writer.StartObject ();
@@ -575,8 +580,9 @@ void writeResourceNode (const char* name, const UINode* resNode, Proc proc, JSON
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter>
-void writeTemplateNode (const std::string* name, const UINode* node, JSONWriter& writer)
+template<typename JSONWriter>
+void writeTemplateNode (const std::string* name, const SharedPointer<UINode>& node,
+						JSONWriter& writer)
 {
 	if (name)
 		writer.Key (*name);
@@ -599,8 +605,8 @@ void writeTemplateNode (const std::string* name, const UINode* node, JSONWriter&
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter>
-void writeViewNodes (const std::vector<const UINode*>& views, JSONWriter& writer)
+template<typename JSONWriter>
+void writeViewNodes (const std::vector<SharedPointer<UINode>>& views, JSONWriter& writer)
 {
 	if (views.empty ())
 		return;
@@ -614,8 +620,8 @@ void writeViewNodes (const std::vector<const UINode*>& views, JSONWriter& writer
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter>
-void writeTemplates (const std::vector<const UINode*>& templates, JSONWriter& writer)
+template<typename JSONWriter>
+void writeTemplates (const std::vector<SharedPointer<UINode>>& templates, JSONWriter& writer)
 {
 	if (templates.empty ())
 		return;
@@ -629,24 +635,24 @@ void writeTemplates (const std::vector<const UINode*>& templates, JSONWriter& wr
 }
 
 //------------------------------------------------------------------------
-template <typename JSONWriter>
-bool writeRootNode (UINode* rootNode, JSONWriter& writer)
+template<typename JSONWriter>
+bool writeRootNode (const UINode& rootNode, JSONWriter& writer)
 {
 	writer.StartObject ();
-	writer.Key (rootNode->getName ());
+	writer.Key (rootNode.getName ());
 	writer.StartObject ();
-	writeAttributes (*rootNode->getAttributes (), writer);
+	writeAttributes (*rootNode.getAttributes (), writer);
 	bool result = true;
-	std::vector<const UINode*> templateNodes;
-	std::vector<const UINode*> viewNodes;
-	const UINode* bitmapsNode = nullptr;
-	const UINode* fontsNode = nullptr;
-	const UINode* colorsNode = nullptr;
-	const UINode* controlTagsNode = nullptr;
-	const UINode* variablesNode = nullptr;
-	const UINode* gradientsNode = nullptr;
-	const UINode* customNode = nullptr;
-	for (const auto& child : rootNode->getChildren ())
+	std::vector<SharedPointer<UINode>> templateNodes;
+	std::vector<SharedPointer<UINode>> viewNodes;
+	SharedPointer<UINode> bitmapsNode;
+	SharedPointer<UINode> fontsNode;
+	SharedPointer<UINode> colorsNode;
+	SharedPointer<UINode> controlTagsNode;
+	SharedPointer<UINode> variablesNode;
+	SharedPointer<UINode> gradientsNode;
+	SharedPointer<UINode> customNode;
+	for (const auto& child : rootNode.getChildren ())
 	{
 		if (child->getName () == MainNodeNames::kTemplate)
 			templateNodes.emplace_back (child);
@@ -676,11 +682,12 @@ bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	}
 	if (variablesNode)
 	{
-		writeResourceNode (MainNodeNames::kVariable, variablesNode,
-		                   [] (UINode* node, JSONWriter& writer) {
-			                   writeSingleAttributeNode (attributeValueStr, node, writer);
-		                   },
-		                   writer);
+		writeResourceNode (
+			MainNodeNames::kVariable, variablesNode,
+			[] (auto node, JSONWriter& writer) {
+				writeSingleAttributeNode (attributeValueStr, node, writer);
+			},
+			writer);
 	}
 	if (bitmapsNode)
 	{
@@ -702,11 +709,12 @@ bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 	}
 	if (controlTagsNode)
 	{
-		writeResourceNode (MainNodeNames::kControlTag, controlTagsNode,
-		                   [] (UINode* node, JSONWriter& writer) {
-			                   writeSingleAttributeNode (attributeTagStr, node, writer);
-		                   },
-		                   writer);
+		writeResourceNode (
+			MainNodeNames::kControlTag, controlTagsNode,
+			[] (auto node, JSONWriter& writer) {
+				writeSingleAttributeNode (attributeTagStr, node, writer);
+			},
+			writer);
 	}
 	if (customNode)
 	{
@@ -720,7 +728,7 @@ bool writeRootNode (UINode* rootNode, JSONWriter& writer)
 }
 
 //------------------------------------------------------------------------
-bool write (OutputStream& stream, UINode* rootNode, bool pretty)
+bool write (OutputStream& stream, const UINode& rootNode, bool pretty)
 {
 	DefaultOutputStreamWrapper output (stream);
 

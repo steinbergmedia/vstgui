@@ -29,8 +29,8 @@ void UIXMLParser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName,
 	std::string name (elementName);
 	if (nodes)
 	{
-		UINode* parent = nodeStack.back ();
-		UINode* newNode = nullptr;
+		auto parent = nodeStack.back ();
+		SharedPointer<UINode> newNode;
 		if (restoreViewsMode)
 		{
 			if (name != "view" && name != MainNodeNames::kCustom)
@@ -45,58 +45,65 @@ void UIXMLParser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName,
 			{
 				// only allowed second level elements
 				if (name == MainNodeNames::kControlTag || name == MainNodeNames::kColor || name == MainNodeNames::kBitmap)
-					newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes), true);
+					newNode =
+						makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes), true);
 				else if (name == MainNodeNames::kFont || name == MainNodeNames::kTemplate
 					  || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom
 					  || name == MainNodeNames::kVariable || name == MainNodeNames::kGradient)
-					newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kBitmap)
 			{
 				if (name == "bitmap")
-					newNode = new UIBitmapNode (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode =
+						makeOwned<UIBitmapNode> (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kFont)
 			{
 				if (name == "font")
-					newNode = new UIFontNode (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode =
+						makeOwned<UIFontNode> (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kColor)
 			{
 				if (name == "color")
-					newNode = new UIColorNode (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode =
+						makeOwned<UIColorNode> (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kControlTag)
 			{
 				if (name == "control-tag")
-					newNode = new UIControlTagNode (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeOwned<UIControlTagNode> (
+						name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kVariable)
 			{
 				if (name == "var")
-					newNode = new UIVariableNode (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeOwned<UIVariableNode> (
+						name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kGradient)
 			{
 				if (name == "gradient")
-					newNode = new UIGradientNode (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeOwned<UIGradientNode> (
+						name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else
-				newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
+				newNode = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
 		}
 		if (newNode)
 		{
@@ -165,13 +172,13 @@ void UIXMLParser::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 	#endif
 		return;
 	}
-	UINode* parent = nodeStack.back ();
+	auto parent = nodeStack.back ();
 	if (parent && comment)
 	{
 		std::string commentStr (comment);
 		if (!commentStr.empty ())
 		{
-			UICommentNode* commentNode = new UICommentNode (comment);
+			auto commentNode = makeOwned<UICommentNode> (comment);
 			parent->getChildren ().add (commentNode);
 		}
 	}
@@ -179,7 +186,7 @@ void UIXMLParser::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 }
 
 //-----------------------------------------------------------------------------
-bool UIXMLDescWriter::write (OutputStream& stream, UINode* rootNode)
+bool UIXMLDescWriter::write (OutputStream& stream, const UINode& rootNode)
 {
 	intendLevel = 0;
 	stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -227,7 +234,7 @@ bool UIXMLDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 }
 
 //-----------------------------------------------------------------------------
-bool UIXMLDescWriter::writeNodeData (UINode::DataStorage& str, OutputStream& stream)
+bool UIXMLDescWriter::writeNodeData (const UINode::DataStorage& str, OutputStream& stream)
 {
 	for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
 	uint32_t i = 0;
@@ -246,60 +253,57 @@ bool UIXMLDescWriter::writeNodeData (UINode::DataStorage& str, OutputStream& str
 }
 
 //-----------------------------------------------------------------------------
-bool UIXMLDescWriter::writeComment (UICommentNode* node, OutputStream& stream)
+bool UIXMLDescWriter::writeComment (const UICommentNode& node, OutputStream& stream)
 {
 	stream << "<!--";
-	stream << node->getData ();
+	stream << node.getData ();
 	stream << "-->\n";
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-bool UIXMLDescWriter::writeNode (UINode* node, OutputStream& stream)
+bool UIXMLDescWriter::writeNode (const UINode& node, OutputStream& stream)
 {
-	if (!node)
-		return false;
-
 	bool result = true;
-	if (node->noExport ())
+	if (node.noExport ())
 		return result;
 	for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
-	if (auto* commentNode = dynamic_cast<UICommentNode*> (node))
+	if (auto* commentNode = dynamic_cast<const UICommentNode*> (&node))
 	{
-		return writeComment (commentNode, stream);
+		return writeComment (*commentNode, stream);
 	}
 	stream << "<";
-	stream << node->getName ();
-	result = writeAttributes (node->getAttributes (), stream);
+	stream << node.getName ();
+	result = writeAttributes (node.getAttributes (), stream);
 	if (result)
 	{
-		UIDescList& children = node->getChildren ();
+		auto& children = node.getChildren ();
 		if (!children.empty ())
 		{
 			stream << ">\n";
 			intendLevel++;
-			if (!node->getData ().empty ())
-				result = writeNodeData (node->getData (), stream);
+			if (!node.getData ().empty ())
+				result = writeNodeData (node.getData (), stream);
 			for (auto& childNode : children)
 			{
-				if (!writeNode (childNode, stream))
+				if (!writeNode (*childNode.get (), stream))
 					return false;
 			}
 			intendLevel--;
 			for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
 			stream << "</";
-			stream << node->getName ();
+			stream << node.getName ();
 			stream << ">\n";
 		}
-		else if (!node->getData ().empty ())
+		else if (!node.getData ().empty ())
 		{
 			stream << ">\n";
 			intendLevel++;
-			result = writeNodeData (node->getData (), stream);
+			result = writeNodeData (node.getData (), stream);
 			intendLevel--;
 			for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
 			stream << "</";
-			stream << node->getName ();
+			stream << node.getName ();
 			stream << ">\n";
 		}
 		else

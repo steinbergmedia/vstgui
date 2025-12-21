@@ -68,8 +68,8 @@ bool UINode::hasChildren () const
 }
 
 //-----------------------------------------------------------------------------
-void UINode::childAttributeChanged (UINode* child, const char* attributeName,
-                                    const char* oldAttributeValue)
+void UINode::childAttributeChanged (const SharedPointer<UINode>& child, const char* attributeName,
+									const char* oldAttributeValue)
 {
 	children->nodeAttributeChanged (child, attributeName, oldAttributeValue);
 }
@@ -269,7 +269,7 @@ bool UIBitmapNode::hasXMLData () const
 //-----------------------------------------------------------------------------
 void UIBitmapNode::createXMLData (const std::string& pathHint)
 {
-	UINode* node = getChildren ().findChildNode ("data");
+	auto node = getChildren ().findChildNode ("data");
 	if (node)
 	{
 		if (node->getData ().empty ())
@@ -304,7 +304,7 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 				{
 					auto result = Base64Codec::encode (buffer.data (),
 					                                   static_cast<uint32_t> (buffer.size ()));
-					UINode* dataNode = new UINode ("data");
+					auto dataNode = makeOwned<UINode> ("data");
 					dataNode->getAttributes ()->setAttribute ("encoding", "base64");
 					dataNode->getData ().append (reinterpret_cast<const char*> (result.data.get ()),
 					                             static_cast<std::streamsize> (result.dataSize));
@@ -318,7 +318,7 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 //-----------------------------------------------------------------------------
 void UIBitmapNode::removeXMLData ()
 {
-	UINode* node = getChildren ().findChildNode ("data");
+	auto node = getChildren ().findChildNode ("data");
 	if (node)
 		getChildren ().remove (node);
 }
@@ -336,9 +336,9 @@ SharedPointer<CBitmap> UIBitmapNode::createBitmap (const std::string& str,
 }
 
 //------------------------------------------------------------------------
-UINode* UIBitmapNode::dataNode () const
+SharedPointer<UINode> UIBitmapNode::dataNode () const
 {
-	UINode* node = getChildren ().findChildNode ("data");
+	auto node = getChildren ().findChildNode ("data");
 	return (node && !node->getData ().empty ()) ? node : nullptr;
 }
 
@@ -700,7 +700,7 @@ void UIGradientNode::setGradient (const SharedPointer<CGradient>& g)
 	const GradientColorStopMap colorStops = gradient->getColorStops ();
 	for (const auto& colorStop : colorStops)
 	{
-		UINode* node = new UINode ("color-stop");
+		auto node = makeOwned<UINode> ("color-stop");
 		node->getAttributes ()->setDoubleAttribute ("start", colorStop.first);
 		std::string colorString;
 		UIViewCreator::colorToString (colorStop.second, colorString, nullptr);

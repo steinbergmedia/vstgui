@@ -51,8 +51,8 @@ public:
 	const SharedPointer<UIAttributes>& getAttributes () const { return attributes; }
 	UIDescList& getChildren () const { return *children; }
 	bool hasChildren () const;
-	void childAttributeChanged (UINode* child, const char* attributeName,
-	                            const char* oldAttributeValue);
+	void childAttributeChanged (const SharedPointer<UINode>& child, const char* attributeName,
+								const char* oldAttributeValue);
 
 	enum
 	{
@@ -148,7 +148,7 @@ protected:
 										 const BitmapVariant& variant) const;
 	PlatformBitmapPtr createBitmapFromDataNode () const;
 	static bool imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2);
-	UINode* dataNode () const;
+	SharedPointer<UINode> dataNode () const;
 	SharedPointer<CBitmap> bitmap;
 	bool filterProcessed;
 	bool scaledBitmapsAdded;

@@ -14,7 +14,7 @@ namespace Detail {
 
 class UINode;
 
-using UIDescListContainerType = std::vector<UINode*>;
+using UIDescListContainerType = std::vector<SharedPointer<UINode>>;
 //-----------------------------------------------------------------------------
 class UIDescList : public NonAtomicReferenceCounted, private UIDescListContainerType
 {
@@ -29,44 +29,42 @@ public:
 	using UIDescListContainerType::empty;
 	using UIDescListContainerType::size;
 
-	explicit UIDescList (bool ownsObjects = true);
+	UIDescList ();
 	UIDescList (const UIDescList& uiDesc);
 	~UIDescList () noexcept override;
 
-	virtual void add (UINode* obj);
-	virtual void remove (UINode* obj);
+	virtual void add (const SharedPointer<UINode>& obj);
+	virtual void remove (const SharedPointer<UINode>& obj);
 	virtual void removeAll ();
-	virtual UINode* findChildNode (UTF8StringView nodeName) const;
-	virtual UINode* findChildNodeWithAttributeValue (const std::string& attributeName,
-	                                                 const std::string& attributeValue) const;
+	virtual SharedPointer<UINode> findChildNode (UTF8StringView nodeName) const;
+	virtual SharedPointer<UINode> findChildNodeWithAttributeValue (
+		const std::string& attributeName, const std::string& attributeValue) const;
 
-	virtual void nodeAttributeChanged (UINode* child, const std::string& attributeName,
-	                                   const std::string& oldAttributeValue)
+	virtual void nodeAttributeChanged (const SharedPointer<UINode>& child,
+									   const std::string& attributeName,
+									   const std::string& oldAttributeValue)
 	{
 	}
 
 	void sort ();
-
-protected:
-	bool ownsObjects;
 };
 
 //-----------------------------------------------------------------------------
 class UIDescListWithFastFindAttributeNameChild : public UIDescList
 {
 private:
-	using ChildMap = std::unordered_map<std::string, UINode*>;
+	using ChildMap = std::unordered_map<std::string, SharedPointer<UINode>>;
 
 public:
 	UIDescListWithFastFindAttributeNameChild ();
 
-	void add (UINode* obj) override;
-	void remove (UINode* obj) override;
+	void add (const SharedPointer<UINode>& obj) override;
+	void remove (const SharedPointer<UINode>& obj) override;
 	void removeAll () override;
-	UINode* findChildNodeWithAttributeValue (const std::string& attributeName,
-	                                         const std::string& attributeValue) const override;
-	void nodeAttributeChanged (UINode* node, const std::string& attributeName,
-	                           const std::string& oldAttributeValue) override;
+	SharedPointer<UINode> findChildNodeWithAttributeValue (
+		const std::string& attributeName, const std::string& attributeValue) const override;
+	void nodeAttributeChanged (const SharedPointer<UINode>& node, const std::string& attributeName,
+							   const std::string& oldAttributeValue) override;
 
 private:
 	ChildMap childMap;
