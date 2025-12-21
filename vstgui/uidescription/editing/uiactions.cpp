@@ -219,7 +219,7 @@ void EmbedViewOperation::undo ()
 ViewCopyOperation::ViewCopyOperation (const SharedPointer<UISelection>& copySelection,
 									  const SharedPointer<UISelection>& workingSelection,
 									  CViewContainer* parent, const CPoint& offset,
-									  IUIDescription* desc)
+									  const SharedPointer<IUIDescription>& desc)
 : parent (parent), copySelection (copySelection), workingSelection (workingSelection)
 {
 	CRect selectionBounds = copySelection->getBounds ();
@@ -455,7 +455,7 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISelection>& selection,
 														CView* view, IdStringPtr viewClassName,
-														UIDescription* desc,
+														const SharedPointer<UIDescription>& desc,
 														const IViewFactory* factory)
 : view (view)
 , newView (nullptr)
@@ -558,7 +558,7 @@ void TransformViewTypeOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-AttributeChangeAction::AttributeChangeAction (UIDescription* desc,
+AttributeChangeAction::AttributeChangeAction (const SharedPointer<UIDescription>& desc,
 											  const SharedPointer<UISelection>& selection,
 											  const std::string& attrName,
 											  const std::string& attrValue)
@@ -633,10 +633,10 @@ void AttributeChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-MultipleAttributeChangeAction::MultipleAttributeChangeAction (UIDescription* description, const std::list<CView*>& views, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue)
-: description (description)
-, oldValue (oldValue)
-, newValue (newValue)
+MultipleAttributeChangeAction::MultipleAttributeChangeAction (
+	const SharedPointer<UIDescription>& description, const std::list<CView*>& views,
+	IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue)
+: description (description), oldValue (oldValue), newValue (newValue)
 {
 	for (auto& view : views)
 		collectViewsWithAttributeValue (description->getViewFactory (), description, view, attrType,
@@ -644,11 +644,9 @@ MultipleAttributeChangeAction::MultipleAttributeChangeAction (UIDescription* des
 }
 
 //----------------------------------------------------------------------------------------------------
-void MultipleAttributeChangeAction::collectViewsWithAttributeValue (const IViewFactory* viewFactory,
-																	IUIDescription* desc,
-																	CView* startView,
-																	IViewCreator::AttrType type,
-																	const std::string& value)
+void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
+	const IViewFactory* viewFactory, const SharedPointer<IUIDescription>& desc, CView* startView,
+	IViewCreator::AttrType type, const std::string& value)
 {
 	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory);
 	if (!viewFactoryEditing)
@@ -719,8 +717,10 @@ void MultipleAttributeChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-TagChangeAction::TagChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr newTagString, bool remove, bool performOrUndo)
-: description(description)
+TagChangeAction::TagChangeAction (const SharedPointer<UIDescription>& description,
+								  UTF8StringPtr name, UTF8StringPtr newTagString, bool remove,
+								  bool performOrUndo)
+: description (description)
 , name (name)
 , newTag (newTagString ? newTagString : "")
 , remove (remove)
@@ -765,11 +765,10 @@ void TagChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-TagNameChangeAction::TagNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo)
-: description(description)
-, oldName (oldName)
-, newName (newName)
-, performOrUndo (performOrUndo)
+TagNameChangeAction::TagNameChangeAction (const SharedPointer<UIDescription>& description,
+										  UTF8StringPtr oldName, UTF8StringPtr newName,
+										  bool performOrUndo)
+: description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
 {
 }
 
@@ -796,11 +795,10 @@ void TagNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-ColorNameChangeAction::ColorNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo)
-: description(description)
-, oldName (oldName)
-, newName (newName)
-, performOrUndo (performOrUndo)
+ColorNameChangeAction::ColorNameChangeAction (const SharedPointer<UIDescription>& description,
+											  UTF8StringPtr oldName, UTF8StringPtr newName,
+											  bool performOrUndo)
+: description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
 {
 }
 
@@ -825,8 +823,10 @@ void ColorNameChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-ColorChangeAction::ColorChangeAction (UIDescription* description, UTF8StringPtr name, const CColor& color, bool remove, bool performOrUndo)
-: description(description)
+ColorChangeAction::ColorChangeAction (const SharedPointer<UIDescription>& description,
+									  UTF8StringPtr name, const CColor& color, bool remove,
+									  bool performOrUndo)
+: description (description)
 , name (name)
 , newColor (color)
 , remove (remove)
@@ -874,8 +874,10 @@ void ColorChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-BitmapChangeAction::BitmapChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr path, bool remove, bool performOrUndo)
-: description(description)
+BitmapChangeAction::BitmapChangeAction (const SharedPointer<UIDescription>& description,
+										UTF8StringPtr name, UTF8StringPtr path, bool remove,
+										bool performOrUndo)
+: description (description)
 , name (name)
 , path (path ? path : "")
 , remove (remove)
@@ -922,11 +924,10 @@ void BitmapChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-BitmapNameChangeAction::BitmapNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo)
-: description(description)
-, oldName (oldName)
-, newName (newName)
-, performOrUndo (performOrUndo)
+BitmapNameChangeAction::BitmapNameChangeAction (const SharedPointer<UIDescription>& description,
+												UTF8StringPtr oldName, UTF8StringPtr newName,
+												bool performOrUndo)
+: description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
 {
 }
 
@@ -953,7 +954,9 @@ void BitmapNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo)
+NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (
+	const SharedPointer<UIDescription>& description, UTF8StringPtr name, const CRect* rect,
+	bool performOrUndo)
 : description (description)
 , name (name)
 , oldRect (nullptr)
@@ -1018,8 +1021,8 @@ void NinePartTiledBitmapChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 MultiFrameBitmapChangeAction::MultiFrameBitmapChangeAction (
-	UIDescription* description, UTF8StringPtr name, const CMultiFrameBitmapDescription* desc,
-	bool performOrUndo)
+	const SharedPointer<UIDescription>& description, UTF8StringPtr name,
+	const CMultiFrameBitmapDescription* desc, bool performOrUndo)
 : description (description), name (name), performOrUndo (performOrUndo)
 {
 	if (desc)
@@ -1070,7 +1073,9 @@ void MultiFrameBitmapChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-BitmapFilterChangeAction::BitmapFilterChangeAction (UIDescription* description, UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& attributes, bool performOrUndo)
+BitmapFilterChangeAction::BitmapFilterChangeAction (
+	const SharedPointer<UIDescription>& description, UTF8StringPtr bitmapName,
+	const std::list<SharedPointer<UIAttributes>>& attributes, bool performOrUndo)
 : description (description)
 , bitmapName (bitmapName)
 , newAttributes (attributes)
@@ -1106,7 +1111,8 @@ void BitmapFilterChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-GradientChangeAction::GradientChangeAction (UIDescription* description, UTF8StringPtr name,
+GradientChangeAction::GradientChangeAction (const SharedPointer<UIDescription>& description,
+											UTF8StringPtr name,
 											const SharedPointer<CGradient>& gradient, bool remove,
 											bool performOrUndo)
 : description (description)
@@ -1157,11 +1163,10 @@ void GradientChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-GradientNameChangeAction::GradientNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo)
-: description(description)
-, oldName (oldName)
-, newName (newName)
-, performOrUndo (performOrUndo)
+GradientNameChangeAction::GradientNameChangeAction (const SharedPointer<UIDescription>& description,
+													UTF8StringPtr oldName, UTF8StringPtr newName,
+													bool performOrUndo)
+: description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
 {
 }
 
@@ -1188,9 +1193,9 @@ void GradientNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-FontChangeAction::FontChangeAction (UIDescription* description, UTF8StringPtr name,
-									const SharedPointer<CFontDesc>& font, bool remove,
-									bool performOrUndo)
+FontChangeAction::FontChangeAction (const SharedPointer<UIDescription>& description,
+									UTF8StringPtr name, const SharedPointer<CFontDesc>& font,
+									bool remove, bool performOrUndo)
 : description (description)
 , name (name)
 , font (font)
@@ -1242,11 +1247,10 @@ void FontChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-FontNameChangeAction::FontNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo)
-: description(description)
-, oldName (oldName)
-, newName (newName)
-, performOrUndo (performOrUndo)
+FontNameChangeAction::FontNameChangeAction (const SharedPointer<UIDescription>& description,
+											UTF8StringPtr oldName, UTF8StringPtr newName,
+											bool performOrUndo)
+: description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
 {
 }
 
@@ -1273,7 +1277,9 @@ void FontNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-AlternateFontChangeAction::AlternateFontChangeAction (UIDescription* description, UTF8StringPtr fontName, UTF8StringPtr newAlternateFontNames)
+AlternateFontChangeAction::AlternateFontChangeAction (
+	const SharedPointer<UIDescription>& description, UTF8StringPtr fontName,
+	UTF8StringPtr newAlternateFontNames)
 : description (description)
 , fontName (fontName)
 , newAlternateFontNames (newAlternateFontNames ? newAlternateFontNames : "")
@@ -1345,11 +1351,10 @@ void HierarchyMoveViewOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-TemplateNameChangeAction::TemplateNameChangeAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr oldName, UTF8StringPtr newName)
-: description (description)
-, actionPerformer (actionPerformer)
-, oldName (oldName)
-, newName (newName)
+TemplateNameChangeAction::TemplateNameChangeAction (const SharedPointer<UIDescription>& description,
+													IActionPerformer* actionPerformer,
+													UTF8StringPtr oldName, UTF8StringPtr newName)
+: description (description), actionPerformer (actionPerformer), oldName (oldName), newName (newName)
 {
 }
 
@@ -1376,7 +1381,10 @@ void TemplateNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-CreateNewTemplateAction::CreateNewTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr baseViewClassName)
+CreateNewTemplateAction::CreateNewTemplateAction (const SharedPointer<UIDescription>& description,
+												  IActionPerformer* actionPerformer,
+												  UTF8StringPtr name,
+												  UTF8StringPtr baseViewClassName)
 : description (description)
 , actionPerformer (actionPerformer)
 , name (name)
@@ -1398,7 +1406,7 @@ void CreateNewTemplateAction::perform ()
 	attr->setAttribute ("size", "400,400");
 	description->addNewTemplate (name.c_str (), attr);
 	if (view == nullptr)
-		view = description->createView (name.c_str (), description->getController ());
+		view = owned (description->createView (name.c_str (), description->getController ()));
 	actionPerformer->onTemplateCreation (name.c_str (), view);
 }
 
@@ -1411,11 +1419,10 @@ void CreateNewTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-DuplicateTemplateAction::DuplicateTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr dupName)
-: description (description)
-, actionPerformer (actionPerformer)
-, name (name)
-, dupName (dupName)
+DuplicateTemplateAction::DuplicateTemplateAction (const SharedPointer<UIDescription>& description,
+												  IActionPerformer* actionPerformer,
+												  UTF8StringPtr name, UTF8StringPtr dupName)
+: description (description), actionPerformer (actionPerformer), name (name), dupName (dupName)
 {
 }
 
@@ -1443,11 +1450,10 @@ void DuplicateTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-DeleteTemplateAction::DeleteTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, CView* view, UTF8StringPtr name)
-: description (description)
-, actionPerformer (actionPerformer)
-, view (view)
-, name (name)
+DeleteTemplateAction::DeleteTemplateAction (const SharedPointer<UIDescription>& description,
+											IActionPerformer* actionPerformer, CView* view,
+											UTF8StringPtr name)
+: description (description), actionPerformer (actionPerformer), view (view), name (name)
 {
 	attributes = const_cast<UIAttributes*> (description->getViewAttributes (name));
 }
@@ -1475,9 +1481,9 @@ void DeleteTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-ChangeFocusDrawingAction::ChangeFocusDrawingAction (UIDescription* description, const FocusDrawingSettings& newSettings)
-: description (description)
-, newSettings (newSettings)
+ChangeFocusDrawingAction::ChangeFocusDrawingAction (const SharedPointer<UIDescription>& description,
+													const FocusDrawingSettings& newSettings)
+: description (description), newSettings (newSettings)
 {
 	oldSettings = description->getFocusDrawingSettings ();
 }
@@ -1503,11 +1509,10 @@ void ChangeFocusDrawingAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-ChangeTemplateMinMaxAction::ChangeTemplateMinMaxAction (UIDescription* description, UTF8StringPtr templateName, CPoint minSize, CPoint maxSize)
-: description (description)
-, templateName (templateName)
-, minSize (minSize)
-, maxSize (maxSize)
+ChangeTemplateMinMaxAction::ChangeTemplateMinMaxAction (
+	const SharedPointer<UIDescription>& description, UTF8StringPtr templateName, CPoint minSize,
+	CPoint maxSize)
+: description (description), templateName (templateName), minSize (minSize), maxSize (maxSize)
 {
 	if (auto attr = description->getViewAttributes (templateName))
 	{

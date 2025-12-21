@@ -16,7 +16,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class IUIDescription
+class IUIDescription : public virtual IReference
 {
 public:
 	virtual ~IUIDescription () noexcept = default;

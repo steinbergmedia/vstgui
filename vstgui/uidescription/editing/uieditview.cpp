@@ -295,10 +295,8 @@ static constexpr auto kResizeHandleSize = 6.;
 static constexpr auto UIEditViewMargin = 8.;
 
 //----------------------------------------------------------------------------------------------------
-UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
-: CViewContainer (size)
-, description (uidescription)
-, gridProcessor (nullptr)
+UIEditView::UIEditView (const CRect& size, const SharedPointer<UIDescription>& uidescription)
+: CViewContainer (size), description (uidescription), gridProcessor (nullptr)
 {
 	setScale (1.);
 	setWantsFocus (true);

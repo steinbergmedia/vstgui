@@ -28,7 +28,7 @@ namespace UIEditViewInternal {
 class UIEditView : public CViewContainer, public IDropTarget
 {
 public:
-	UIEditView (const CRect& size, UIDescription* uidescription);
+	UIEditView (const CRect& size, const SharedPointer<UIDescription>& uidescription);
 	~UIEditView () override;
 
 	void enableEditing (bool state);
@@ -124,7 +124,7 @@ protected:
 	SharedPointer<UIUndoManager> undoManger;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UISelection> dragSelection;
-	UIDescription* description {nullptr};
+	SharedPointer<UIDescription> description;
 	SharedPointer<IGridProcessor> gridProcessor;
 	
 	UIEditViewInternal::UIHighlightView* highlightView {nullptr};

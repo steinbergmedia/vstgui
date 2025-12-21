@@ -112,7 +112,7 @@ class ViewCopyOperation : public IAction, protected std::list<SharedPointer<CVie
 public:
 	ViewCopyOperation (const SharedPointer<UISelection>& copySelection,
 					   const SharedPointer<UISelection>& workingSelection, CViewContainer* parent,
-					   const CPoint& offset, IUIDescription* desc);
+					   const CPoint& offset, const SharedPointer<IUIDescription>& desc);
 	~ViewCopyOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -189,7 +189,7 @@ class TransformViewTypeOperation : public IAction
 {
 public:
 	TransformViewTypeOperation (const SharedPointer<UISelection>& selection, CView* view,
-								IdStringPtr viewClassName, UIDescription* desc,
+								IdStringPtr viewClassName, const SharedPointer<UIDescription>& desc,
 								const IViewFactory* factory);
 	~TransformViewTypeOperation () override;
 
@@ -212,8 +212,9 @@ protected:
 class AttributeChangeAction : public IAction, protected std::map<SharedPointer<CView>, std::string>
 {
 public:
-	AttributeChangeAction (UIDescription* desc, const SharedPointer<UISelection>& selection,
-						   const std::string& attrName, const std::string& attrValue);
+	AttributeChangeAction (const SharedPointer<UIDescription>& desc,
+						   const SharedPointer<UISelection>& selection, const std::string& attrName,
+						   const std::string& attrValue);
 	~AttributeChangeAction () override = default;
 
 	UTF8StringPtr getName () override;
@@ -221,8 +222,8 @@ public:
 	void undo () override;
 protected:
 	void updateSelection ();
-	
-	UIDescription* desc;
+
+	SharedPointer<UIDescription> desc;
 	SharedPointer<UISelection> selection;
 	std::string attrName;
 	std::string attrValue;
@@ -233,14 +234,17 @@ protected:
 class MultipleAttributeChangeAction : public IAction, public std::vector<std::pair<SharedPointer<CView>, std::string> >
 {
 public:
-	MultipleAttributeChangeAction (UIDescription* description, const std::list<CView*>& views, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue);
+	MultipleAttributeChangeAction (const SharedPointer<UIDescription>& description,
+								   const std::list<CView*>& views, IViewCreator::AttrType attrType,
+								   UTF8StringPtr oldValue, UTF8StringPtr newValue);
 	UTF8StringPtr getName () override { return "multiple view attribute changes"; }
 	void perform () override;
 	void undo () override;
 protected:
 	void setAttributeValue (UTF8StringPtr value);
 	static void collectAllSubViews (CView* view, std::list<CView*>& views);
-	void collectViewsWithAttributeValue (const IViewFactory* viewFactory, IUIDescription* desc,
+	void collectViewsWithAttributeValue (const IViewFactory* viewFactory,
+										 const SharedPointer<IUIDescription>& desc,
 										 CView* startView, IViewCreator::AttrType type,
 										 const std::string& value);
 
@@ -253,7 +257,8 @@ protected:
 class TagChangeAction : public IAction
 {
 public:
-	TagChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr newTagString, bool remove, bool performOrUndo);
+	TagChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
+					 UTF8StringPtr newTagString, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -274,7 +279,8 @@ protected:
 class TagNameChangeAction : public IAction
 {
 public:
-	TagNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
+	TagNameChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr oldName,
+						 UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -290,7 +296,8 @@ protected:
 class ColorChangeAction : public IAction
 {
 public:
-	ColorChangeAction (UIDescription* description, UTF8StringPtr name, const CColor& color, bool remove, bool performOrUndo);
+	ColorChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
+					   const CColor& color, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -311,7 +318,8 @@ protected:
 class ColorNameChangeAction : public IAction
 {
 public:
-	ColorNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
+	ColorNameChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr oldName,
+						   UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -327,7 +335,8 @@ protected:
 class BitmapChangeAction : public IAction
 {
 public:
-	BitmapChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr path, bool remove, bool performOrUndo);
+	BitmapChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
+						UTF8StringPtr path, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -348,7 +357,8 @@ protected:
 class BitmapNameChangeAction : public IAction
 {
 public:
-	BitmapNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
+	BitmapNameChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr oldName,
+							UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -364,7 +374,8 @@ protected:
 class NinePartTiledBitmapChangeAction : public IAction
 {
 public:
-	NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo);
+	NinePartTiledBitmapChangeAction (const SharedPointer<UIDescription>& description,
+									 UTF8StringPtr name, const CRect* rect, bool performOrUndo);
 	~NinePartTiledBitmapChangeAction () override;
 	
 	UTF8StringPtr getName () override;
@@ -382,8 +393,9 @@ protected:
 class MultiFrameBitmapChangeAction : public IAction
 {
 public:
-	MultiFrameBitmapChangeAction (UIDescription* description, UTF8StringPtr name,
-								  const CMultiFrameBitmapDescription* desc, bool performOrUndo);
+	MultiFrameBitmapChangeAction (const SharedPointer<UIDescription>& description,
+								  UTF8StringPtr name, const CMultiFrameBitmapDescription* desc,
+								  bool performOrUndo);
 	~MultiFrameBitmapChangeAction () override;
 
 	UTF8StringPtr getName () override;
@@ -402,7 +414,10 @@ protected:
 class BitmapFilterChangeAction : public IAction
 {
 public:
-	BitmapFilterChangeAction (UIDescription* description, UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& attributes, bool performOrUndo);
+	BitmapFilterChangeAction (const SharedPointer<UIDescription>& description,
+							  UTF8StringPtr bitmapName,
+							  const std::list<SharedPointer<UIAttributes>>& attributes,
+							  bool performOrUndo);
 	~BitmapFilterChangeAction () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -420,7 +435,7 @@ protected:
 class GradientChangeAction : public IAction
 {
 public:
-	GradientChangeAction (UIDescription* description, UTF8StringPtr name,
+	GradientChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
 						  const SharedPointer<CGradient>& gradient, bool remove,
 						  bool performOrUndo);
 
@@ -442,7 +457,8 @@ protected:
 class GradientNameChangeAction : public IAction
 {
 public:
-	GradientNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
+	GradientNameChangeAction (const SharedPointer<UIDescription>& description,
+							  UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -458,7 +474,7 @@ protected:
 class FontChangeAction : public IAction
 {
 public:
-	FontChangeAction (UIDescription* description, UTF8StringPtr name,
+	FontChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
 					  const SharedPointer<CFontDesc>& font, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
@@ -480,7 +496,8 @@ protected:
 class FontNameChangeAction : public IAction
 {
 public:
-	FontNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
+	FontNameChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr oldName,
+						  UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -496,7 +513,8 @@ protected:
 class AlternateFontChangeAction : public IAction
 {
 public:
-	AlternateFontChangeAction (UIDescription* description, UTF8StringPtr fontName, UTF8StringPtr newAlternateFontNames);
+	AlternateFontChangeAction (const SharedPointer<UIDescription>& description,
+							   UTF8StringPtr fontName, UTF8StringPtr newAlternateFontNames);
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
@@ -529,7 +547,9 @@ protected:
 class TemplateNameChangeAction : public IAction
 {
 public:
-	TemplateNameChangeAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr oldName, UTF8StringPtr newName);
+	TemplateNameChangeAction (const SharedPointer<UIDescription>& description,
+							  IActionPerformer* actionPerformer, UTF8StringPtr oldName,
+							  UTF8StringPtr newName);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -545,7 +565,9 @@ protected:
 class CreateNewTemplateAction : public IAction
 {
 public:
-	CreateNewTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr baseViewClassName);
+	CreateNewTemplateAction (const SharedPointer<UIDescription>& description,
+							 IActionPerformer* actionPerformer, UTF8StringPtr name,
+							 UTF8StringPtr baseViewClassName);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -562,7 +584,9 @@ protected:
 class DuplicateTemplateAction : public IAction
 {
 public:
-	DuplicateTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr dupName);
+	DuplicateTemplateAction (const SharedPointer<UIDescription>& description,
+							 IActionPerformer* actionPerformer, UTF8StringPtr name,
+							 UTF8StringPtr dupName);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -579,7 +603,8 @@ protected:
 class DeleteTemplateAction : public IAction
 {
 public:
-	DeleteTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, CView* view, UTF8StringPtr name);
+	DeleteTemplateAction (const SharedPointer<UIDescription>& description,
+						  IActionPerformer* actionPerformer, CView* view, UTF8StringPtr name);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -596,7 +621,8 @@ protected:
 class ChangeFocusDrawingAction : public IAction
 {
 public:
-	ChangeFocusDrawingAction (UIDescription* description, const FocusDrawingSettings& newSettings);
+	ChangeFocusDrawingAction (const SharedPointer<UIDescription>& description,
+							  const FocusDrawingSettings& newSettings);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -611,7 +637,8 @@ protected:
 class ChangeTemplateMinMaxAction : public IAction
 {
 public:
-	ChangeTemplateMinMaxAction (UIDescription* description, UTF8StringPtr templateName, CPoint minSize, CPoint maxSize);
+	ChangeTemplateMinMaxAction (const SharedPointer<UIDescription>& description,
+								UTF8StringPtr templateName, CPoint minSize, CPoint maxSize);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
