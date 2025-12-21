@@ -54,7 +54,8 @@ public:
 
 	bool storeViews (const std::list<CView*>& views, OutputStream& stream,
 					 SharedPointer<UIAttributes> customData = {}) const;
-	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = nullptr);
+	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView>>& views,
+					   SharedPointer<UIAttributes>* customData = nullptr);
 
 	UTF8StringPtr getFilePath () const;
 	void setFilePath (UTF8StringPtr path);

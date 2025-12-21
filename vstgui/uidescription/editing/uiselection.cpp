@@ -277,14 +277,11 @@ bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
 	if (desc)
 	{
-		UIAttributes* attr = nullptr;
+		SharedPointer<UIAttributes> attr;
 		if (desc->restoreViews (stream, viewList, &attr))
 		{
 			if (attr)
-			{
 				attr->getPointAttribute ("selection-drag-offset", dragOffset);
-				attr->forget ();
-			}
 			return true;
 		}
 	}

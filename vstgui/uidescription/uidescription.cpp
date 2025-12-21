@@ -621,7 +621,8 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData)
+bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<CView>>& views,
+								  SharedPointer<UIAttributes>* customData)
 {
 	InputStreamContentProvider contentProvider (stream);
 	if (auto baseNode = Detail::UIJsonDescReader::read (contentProvider))
@@ -634,7 +635,6 @@ bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<C
 				if (customData)
 				{
 					*customData = childNode->getAttributes ();
-					(*customData)->remember ();
 				}
 			}
 			else
