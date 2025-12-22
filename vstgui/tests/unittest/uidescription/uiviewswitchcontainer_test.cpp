@@ -9,6 +9,7 @@
 #include "uidescriptionadapter.h"
 
 namespace VSTGUI {
+namespace {
 
 struct View1 : public CView
 {
@@ -39,6 +40,8 @@ struct TestUIDescription : public UIDescriptionAdapter,
 		return nullptr;
 	}
 };
+
+} // anonymous
 
 TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaIndex)
 {
