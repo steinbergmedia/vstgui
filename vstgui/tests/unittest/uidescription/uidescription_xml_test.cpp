@@ -693,7 +693,7 @@ TEST_CASE (UIDescriptionXMLTests, StoreRestoreViews)
 							 shared (&customAttributes)));
 	memoryStream.rewind ();
 
-	UIAttributes* customAttributesRestored = nullptr;
+	SharedPointer<UIAttributes> customAttributesRestored;
 	EXPECT (desc.restoreViews (memoryStream, restoredView, &customAttributesRestored));
 	EXPECT (customAttributesRestored);
 	EXPECT (*customAttributesRestored->getAttributeValue ("Test") == "Value");

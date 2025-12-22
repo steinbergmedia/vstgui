@@ -15,14 +15,14 @@ using namespace UIViewCreator;
 
 TEST_CASE (CTextLabelCreatorTest, Title)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testAttribute<CTextLabel> (kCTextLabel, kAttrTitle, "Title", &uidesc,
 	                           [] (CTextLabel* v) { return v->getText () == "Title"; });
 }
 
 TEST_CASE (CTextLabelCreatorTest, TitleWithNewLines)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	const auto title = "This\\nIs\\nA Title";
 	testAttribute<CTextLabel> (kCTextLabel, kAttrTitle, title, &uidesc, [&] (CTextLabel* v) {
 		return v->getText () == "This\nIs\nA Title";
@@ -31,7 +31,7 @@ TEST_CASE (CTextLabelCreatorTest, TitleWithNewLines)
 
 TEST_CASE (CTextLabelCreatorTest, TruncateMode)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testAttribute<CTextLabel> (kCTextLabel, kAttrTruncateMode, "head", &uidesc, [] (CTextLabel* v) {
 		return v->getTextTruncateMode () == CTextLabel::kTruncateHead;
 	});

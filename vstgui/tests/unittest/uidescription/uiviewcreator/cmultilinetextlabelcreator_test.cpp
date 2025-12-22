@@ -15,7 +15,7 @@ using namespace UIViewCreator;
 
 TEST_CASE (CMultiLineTextLabelCreatorTest, AutoHeight)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testAttribute<CMultiLineTextLabel> (
 	    kCMultiLineTextLabel, kAttrAutoHeight, true, &uidesc,
 	    [] (CMultiLineTextLabel* v) { return v->getAutoHeight () == true; });
@@ -23,7 +23,7 @@ TEST_CASE (CMultiLineTextLabelCreatorTest, AutoHeight)
 
 TEST_CASE (CMultiLineTextLabelCreatorTest, LineLayout)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testAttribute<CMultiLineTextLabel> (
 	    kCMultiLineTextLabel, kAttrLineLayout, "truncate", &uidesc, [] (CMultiLineTextLabel* v) {
 		    return v->getLineLayout () == CMultiLineTextLabel::LineLayout::truncate;
@@ -40,7 +40,7 @@ TEST_CASE (CMultiLineTextLabelCreatorTest, LineLayout)
 
 TEST_CASE (CMultiLineTextLabelCreatorTest, LineLayoutPossibleValues)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testPossibleValues (kCMultiLineTextLabel, kAttrLineLayout, &uidesc,
 	                    {"clip", "truncate", "wrap"});
 }

@@ -15,7 +15,7 @@ using namespace UIViewCreator;
 
 TEST_CASE (CSearchTextEditCreatorTest, ClearMarkInset)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	CPoint p (10, 11);
 	testAttribute<CSearchTextEdit> (
 	    kCSearchTextEdit, kAttrClearMarkInset, p, &uidesc,

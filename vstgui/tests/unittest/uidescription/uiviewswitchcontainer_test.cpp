@@ -25,7 +25,8 @@ struct View3 : public CView
 	View3 () : CView (CRect ()) { setAutosizeFlags (kAutosizeAll); }
 };
 
-struct TestUIDescription : public UIDescriptionAdapter
+struct TestUIDescription : public UIDescriptionAdapter,
+						   public NonAtomicReferenceCounted
 {
 	CView* createView (UTF8StringPtr name, IController* controller) const override
 	{

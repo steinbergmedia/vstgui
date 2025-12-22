@@ -15,14 +15,14 @@ using namespace UIViewCreator;
 
 TEST_CASE (CTextEditCreatorTest, ImmediateTextChange)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testAttribute<CTextEdit> (kCTextEdit, kAttrImmediateTextChange, true, &uidesc,
 	                          [] (CTextEdit* v) { return v->getImmediateTextChange (); });
 }
 
 TEST_CASE (CTextEditCreatorTest, DoubleClick)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testAttribute<CTextEdit> (kCTextEdit, kAttrStyleDoubleClick, true, &uidesc, [] (CTextEdit* v) {
 		return v->getStyle () & CTextEdit::kDoubleClickStyle;
 	});

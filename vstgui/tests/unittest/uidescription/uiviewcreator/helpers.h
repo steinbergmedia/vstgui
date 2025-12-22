@@ -7,9 +7,11 @@
 #include "../../../../lib/cbitmap.h"
 #include "../../../../lib/cgradient.h"
 #include "../../../../lib/cstring.h"
+#include "../../../../lib/cview.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/uiviewcreator.h"
 #include "../../../../uidescription/uiviewfactory.h"
+#include "../../../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../uidescriptionadapter.h"
 
 namespace VSTGUI {
@@ -20,7 +22,13 @@ constexpr IdStringPtr kBitmapName = "MyBitmap";
 constexpr IdStringPtr kGradientName = "MyGradient";
 constexpr IdStringPtr kTagName = "tagname";
 
-class DummyUIDescription : public UIDescriptionAdapter
+struct TestUIDescription : public UIDescriptionAdapter,
+						   public NonAtomicReferenceCounted
+{
+};
+
+class DummyUIDescription : public UIDescriptionAdapter,
+						   public NonAtomicReferenceCounted
 {
 public:
 	bool getColor (UTF8StringPtr name, CColor& c) const override

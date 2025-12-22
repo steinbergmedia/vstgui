@@ -8,14 +8,14 @@
 #include "../../../../lib/cstring.h"
 #include "../../../../uidescription/uiviewcreator.h"
 #include "../../unittests.h"
-#include "../uidescriptionadapter.h"
+#include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
 TEST_CASE (UIViewCreatorTest, BitmapToString)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	std::string str;
 	auto bitmap = makeOwned<CBitmap> (CResourceDescription ("test.png"));
 	EXPECT (bitmapToString (bitmap, str, &uidesc) == true);
@@ -27,7 +27,7 @@ TEST_CASE (UIViewCreatorTest, BitmapToString)
 
 TEST_CASE (UIViewCreatorTest, ColorToString)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	std::string str;
 	CColor c (0, 0, 0, 255);
 	EXPECT (colorToString (c, str, &uidesc) == true);
@@ -45,7 +45,7 @@ TEST_CASE (UIViewCreatorTest, ColorToString)
 
 TEST_CASE (UIViewCreatorTest, EmptyStringToTransparentColor)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	std::string str = "";
 	CColor c;
 	EXPECT (stringToColor (&str, c, &uidesc) == true);

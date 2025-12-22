@@ -15,7 +15,7 @@ using namespace UIViewCreator;
 
 TEST_CASE (COptionMenuCreatorTest, PopupStyle)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testAttribute<COptionMenu> (
 	    kCOptionMenu, kAttrMenuPopupStyle, true, &uidesc,
 	    [] (COptionMenu* v) { return v->getStyle () & COptionMenu::kPopupStyle; });
@@ -23,7 +23,7 @@ TEST_CASE (COptionMenuCreatorTest, PopupStyle)
 
 TEST_CASE (COptionMenuCreatorTest, checkStyle)
 {
-	UIDescriptionAdapter uidesc;
+	TestUIDescription uidesc;
 	testAttribute<COptionMenu> (
 	    kCOptionMenu, kAttrMenuCheckStyle, true, &uidesc,
 	    [] (COptionMenu* v) { return v->getStyle () & COptionMenu::kCheckStyle; });
