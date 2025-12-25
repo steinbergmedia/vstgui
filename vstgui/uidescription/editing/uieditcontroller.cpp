@@ -1085,7 +1085,7 @@ void UIEditController::showFocusSettings ()
 }
 
 //----------------------------------------------------------------------------------------------------
-static void toggleBoolAttribute (UIAttributes* attributes, UTF8StringPtr key)
+static void toggleBoolAttribute (const SharedPointer<UIAttributes>& attributes, UTF8StringPtr key)
 {
 	if (attributes)
 	{

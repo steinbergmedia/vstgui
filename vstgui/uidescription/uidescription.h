@@ -63,7 +63,7 @@ public:
 	void setSharedResources (const SharedPointer<UIDescription>& resources);
 	const SharedPointer<UIDescription>& getSharedResources () const;
 
-	const UIAttributes* getViewAttributes (UTF8StringPtr name) const;
+	SharedPointer<UIAttributes> getViewAttributes (UTF8StringPtr name) const;
 
 	void setController (IController* controller) const;
 

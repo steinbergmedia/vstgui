@@ -393,7 +393,7 @@ bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
 		{
 			for (auto& childNode : bitmapNodes->getChildren ())
 			{
-				UIAttributes* attr = childNode->getAttributes ();
+				auto attr = childNode->getAttributes ();
 				if (attr)
 				{
 					const std::string* path = attr->getAttributeValue ("path");
@@ -808,7 +808,7 @@ bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateN
 }
 
 //-----------------------------------------------------------------------------
-const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
+SharedPointer<UIAttributes> UIDescription::getViewAttributes (UTF8StringPtr name) const
 {
 	if (impl->nodes)
 	{

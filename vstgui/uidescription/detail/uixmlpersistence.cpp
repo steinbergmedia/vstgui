@@ -212,11 +212,11 @@ void UIXMLDescWriter::encodeAttributeString (std::string& str)
 }
 
 //-----------------------------------------------------------------------------
-bool UIXMLDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
+bool UIXMLDescWriter::writeAttributes (const UIAttributes& attr, OutputStream& stream)
 {
 	bool result = true;
 	using SortedAttributes = std::map<std::string,std::string>;
-	SortedAttributes sortedAttributes (attr->begin (), attr->end ());
+	SortedAttributes sortedAttributes (attr.begin (), attr.end ());
 	for (auto& sa : sortedAttributes)
 	{
 		if (sa.second.length () > 0)

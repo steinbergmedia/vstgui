@@ -24,7 +24,7 @@ UITemplateSettingsController::UITemplateSettingsController (
 , newTemplateName (templateName)
 , actionPerformer (actionPerformer)
 {
-	const UIAttributes* attr = description->getViewAttributes (templateName.data ());
+	auto attr = description->getViewAttributes (templateName.data ());
 	if (attr)
 	{
 		if (attr->getPointAttribute (kTemplateAttributeMinSize, minSize) == false)
@@ -163,7 +163,7 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 		{
 			if (control->getValue() == control->getMax())
 			{
-				const UIAttributes* attr = description->getViewAttributes (templateName.data ());
+				auto attr = description->getViewAttributes (templateName.data ());
 				if (attr)
 				{
 					CPoint currentSize;

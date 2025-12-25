@@ -1455,7 +1455,7 @@ DeleteTemplateAction::DeleteTemplateAction (const SharedPointer<UIDescription>& 
 											UTF8StringPtr name)
 : description (description), actionPerformer (actionPerformer), view (view), name (name)
 {
-	attributes = const_cast<UIAttributes*> (description->getViewAttributes (name));
+	attributes = description->getViewAttributes (name);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1531,7 +1531,7 @@ ChangeTemplateMinMaxAction::ChangeTemplateMinMaxAction (
 //----------------------------------------------------------------------------------------------------
 void ChangeTemplateMinMaxAction::setMinMaxSize (CPoint minimum, CPoint maximum)
 {
-	if (auto attr = const_cast<UIAttributes*> (description->getViewAttributes (templateName.data ())))
+	if (auto attr = description->getViewAttributes (templateName.data ()))
 	{
 		if (minimum.x == -1. && minimum.y == -1.)
 		{

@@ -487,7 +487,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	void updateMinMaxSizes ()
 	{
-		const UIAttributes* attr = uiDesc->getViewAttributes (templateName);
+		auto attr = uiDesc->getViewAttributes (templateName);
 		if (!attr)
 			return;
 		CPoint p;

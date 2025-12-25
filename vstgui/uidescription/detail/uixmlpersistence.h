@@ -48,7 +48,7 @@ protected:
 	bool writeNode (const UINode& node, OutputStream& stream);
 	bool writeComment (const UICommentNode& node, OutputStream& stream);
 	bool writeNodeData (const UINode::DataStorage& str, OutputStream& stream);
-	bool writeAttributes (UIAttributes* attr, OutputStream& stream);
+	bool writeAttributes (const UIAttributes& attr, OutputStream& stream);
 	int32_t intendLevel;
 };
 
