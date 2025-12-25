@@ -4,9 +4,13 @@
 
 #pragma once
 
-#include <cstdlib>
+#include <atomic>
+#include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <limits>
+#include <type_traits>
 #include <utility>
 
 //-----------------------------------------------------------------------------
@@ -23,7 +27,6 @@
 	#ifndef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
 		#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
 	#endif
-	#include <stdint.h>
 	#include <AvailabilityMacros.h>
 	#include <TargetConditionals.h>
 	#if TARGET_OS_IPHONE
@@ -56,7 +59,6 @@
 	#if __has_feature (cxx_range_for) == 0
 		#error need cxx_range_for support from compiler
 	#endif
-	#include <type_traits>
 
 	#if defined (__clang__) && __clang_major__ > 4
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
@@ -90,8 +92,6 @@
 	#elif _MSC_VER <= 1800
 		#error Visual Studio 2015 or newer needed
 	#endif
-	#include <type_traits>
-	#include <cstdint>
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
@@ -125,8 +125,6 @@
 	using std::max;
 
 #elif defined(__linux__)
-    #include <cstdint>
-    #include <type_traits>
     #include <algorithm>
     #include <climits>
     using std::min;
@@ -138,9 +136,6 @@
 #else
 #error unsupported system/compiler
 #endif
-
-#include <atomic>
-#include <utility>
 
 #ifdef UNICODE
 	#undef UNICODE
