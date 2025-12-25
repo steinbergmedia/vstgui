@@ -551,13 +551,13 @@ bool COptionMenu::popup (const PopupCallback& callback)
 					if (!preventSettingValue)
 					{
 						self->beginEdit ();
-						self->lastMenu = result.menu;
+						self->lastMenu = {result.menu};
 						self->lastResult = result.index;
-						self->lastMenu->setValue (static_cast<float> (self->lastResult));
+						result.menu->setValue (static_cast<float> (self->lastResult));
 						self->valueChanged ();
 						self->invalid ();
-						if (auto commandItem = self->lastMenu->getEntry (self->lastResult)
-												   .cast<CCommandMenuItem> ())
+						if (auto commandItem =
+								result.menu->getEntry (self->lastResult).cast<CCommandMenuItem> ())
 							commandItem->execute ();
 						self->endEdit ();
 					}
@@ -868,8 +868,13 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint& where, const CButtonState& b
 //------------------------------------------------------------------------
 SharedPointer<COptionMenu> COptionMenu::getLastItemMenu (int32_t& idxInMenu) const
 {
-	idxInMenu = lastMenu ? (int32_t)lastMenu->getValue (): -1;
-	return lastMenu;
+	if (auto m = lastMenu.lock ())
+	{
+		idxInMenu = (int32_t)m->getValue ();
+		return m;
+	}
+	idxInMenu = -1;
+	return {};
 }
 
 //------------------------------------------------------------------------

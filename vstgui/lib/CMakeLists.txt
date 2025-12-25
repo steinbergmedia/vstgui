@@ -213,6 +213,7 @@ set(${target}_common_sources
     vstguiinit.cpp
     vstguiinit.h
     vstkeycode.h
+    weakptr.h
 )
 
   ##########################################################################################

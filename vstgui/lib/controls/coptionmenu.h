@@ -10,6 +10,7 @@
 #include "../cstring.h"
 #include "../dispatchlist.h"
 #include "../cbitmap.h"
+#include "../weakptr.h"
 #include <vector>
 #include <functional>
 
@@ -212,7 +213,8 @@ using CConstMenuItemIterator = CMenuItemList::const_iterator;
 //! @brief a popup menu control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class COptionMenu : public CParamDisplay
+class COptionMenu : public CParamDisplay,
+					public WeakPointerSupport<COptionMenu>
 {
 private:
 	enum StyleEnum
@@ -355,7 +357,7 @@ private:
 	int32_t lastResult {-1};
 	int32_t prefixNumbers {0};
 	SharedPointer<CBitmap> bgWhenClick;
-	SharedPointer<COptionMenu> lastMenu;
+	WeakPointer<COptionMenu> lastMenu;
 	using MenuListenerList = DispatchList<IOptionMenuListener*>;
 	std::unique_ptr<MenuListenerList> listeners;
 };

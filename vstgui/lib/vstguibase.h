@@ -273,7 +273,15 @@ public:
 	/// @name Reference Counting Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void forget () override { if (--nbReference == 0) { beforeDelete (); delete this; } }
+	void forget () override
+	{
+		if (--nbReference == 0)
+		{
+			nbReference = std::numeric_limits<int32_t>::min () / 2;
+			beforeDelete ();
+			delete this;
+		}
+	}
 	void remember () override { nbReference++; }
 	/** get refcount */
 	virtual int32_t getNbReference () const { return nbReference; }

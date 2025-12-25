@@ -141,7 +141,7 @@ CFontDesc::CFontDesc (const CFontDesc& font)
 //------------------------------------------------------------------------
 CFontDesc::~CFontDesc () noexcept
 {
-	vstgui_assert (getNbReference () == 0, "Always use shared pointers with CFontDesc!");
+	vstgui_assert (getNbReference () <= 0, "Always use shared pointers with CFontDesc!");
 }
 
 //-----------------------------------------------------------------------------
