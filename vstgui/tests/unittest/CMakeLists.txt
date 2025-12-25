@@ -181,6 +181,10 @@ else()
 	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
 	vstgui_source_group_by_folder(${target})
 
+    if(CMAKE_HOST_APPLE)
+        add_custom_command(TARGET ${target} POST_BUILD COMMAND "codesign" "-s" "-" "--force" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unittests")
+    endif()
+
 	add_custom_command(TARGET ${target} POST_BUILD COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unittests")
 
 	##########################################################################################
