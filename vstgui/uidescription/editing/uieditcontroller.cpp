@@ -1905,7 +1905,7 @@ void UIEditController::onTemplateCreation (UTF8StringPtr name, CView* view)
 {
 	auto it = std::find (templates.begin (), templates.end (), name);
 	if (it == templates.end ())
-		templates.emplace_back (name, view);
+		templates.emplace_back (name, owned (view));
 	templateController->selectTemplate (name);
 }
 
