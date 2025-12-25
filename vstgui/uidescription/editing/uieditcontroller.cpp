@@ -1993,7 +1993,6 @@ void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, CView* 
 		}
 		if (!entry->isEnabled ())
 			continue;
-		entry->remember ();
 		contextMenu.addEntry (entry);
 	}
 }
