@@ -103,11 +103,12 @@ struct WeakPointerSupport
 					   [] (auto& wp) { wp->onPointerDestructed (); });
 	}
 
+protected:
 	WeakPointer<I> weakFromThis ()
 	{
 		return {shared (static_cast<I*> (this))};
 	}
-protected:
+
 	void addWeakPointer (WeakPointer<I>& wp) noexcept
 	{
 		std::lock_guard<std::mutex> lockGuard (m);

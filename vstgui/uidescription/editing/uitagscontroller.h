@@ -21,7 +21,7 @@ class UITagsController : public NonAtomicReferenceCounted, public DelegationCont
 {
 public:
 	UITagsController (IController* baseController, const SharedPointer<UIDescription>& description,
-					  IActionPerformer* actionPerformer);
+					  WeakPointer<IActionPerformer> actionPerformer);
 	~UITagsController () override;
 
 protected:
@@ -31,7 +31,7 @@ protected:
 	void valueChanged (CControl* pControl) override;
 
 	SharedPointer<UIDescription> editDescription;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	UITagsDataSource* dataSource;
 	
 	enum {

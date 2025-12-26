@@ -8,6 +8,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "iaction.h"
 #include "../uiattributes.h"
 #include "../uidescriptionlistener.h"
 #include "../../lib/cdatabrowser.h"
@@ -26,7 +27,7 @@ public:
 	using StringVector = GenericStringListDataBrowserSource::StringVector;
 
 	UIBaseDataSource (const SharedPointer<UIDescription>& description,
-					  IActionPerformer* actionPerformer,
+					  WeakPointer<IActionPerformer> actionPerformer,
 					  GenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr)
 	: GenericStringListDataBrowserSource (0, delegate)
 	, description (description)
@@ -49,7 +50,7 @@ public:
 	
 	virtual bool add ()
 	{
-		if (dataBrowser && actionPerformer)
+		if (dataBrowser && !actionPerformer.expired ())
 		{
 			std::string newName (filterString.empty () ? "New" : filterString.data ());
 			if (createUniqueName (newName))
@@ -68,7 +69,7 @@ public:
 
 	virtual bool remove ()
 	{
-		if (dataBrowser && actionPerformer)
+		if (dataBrowser && !actionPerformer.expired ())
 		{
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
@@ -297,7 +298,7 @@ protected:
 	SharedPointer<UIDescription> description;
 	SharedPointer<CSearchTextEdit> searchField;
 	SharedPointer<CTextEdit> textEditControl;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 
 	StringVector names;
 	UTF8String filterString;

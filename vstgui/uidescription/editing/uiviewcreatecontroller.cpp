@@ -117,7 +117,7 @@ void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, 
 //----------------------------------------------------------------------------------------------------
 UIViewCreatorDataSource::UIViewCreatorDataSource (const IViewFactory* factory,
 												  const SharedPointer<UIDescription>& description)
-: UIBaseDataSource (description, nullptr, nullptr), factory (factory)
+: UIBaseDataSource (description, {}, nullptr), factory (factory)
 {
 }
 

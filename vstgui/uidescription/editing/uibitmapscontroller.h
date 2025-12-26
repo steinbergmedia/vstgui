@@ -26,7 +26,7 @@ class UIBitmapsController : public NonAtomicReferenceCounted,
 public:
 	UIBitmapsController (IController* baseController,
 						 const SharedPointer<UIDescription>& description,
-						 IActionPerformer* actionPerformer,
+						 WeakPointer<IActionPerformer> actionPerformer,
 						 const SharedPointer<UIUndoManager>& undoManager);
 	~UIBitmapsController () override;
 
@@ -45,7 +45,7 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	IActionPerformer* actionPerformer {nullptr};
+	WeakPointer<IActionPerformer> actionPerformer {nullptr};
 	SharedPointer<UIUndoManager> undoManager;
 	UIBitmapsDataSource* dataSource {nullptr};
 	SharedPointer<CView> bitmapView;

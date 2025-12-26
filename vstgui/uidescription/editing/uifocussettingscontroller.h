@@ -23,7 +23,7 @@ class UIFocusSettingsController : public NonAtomicReferenceCounted,
 {
 public:
 	UIFocusSettingsController (const SharedPointer<UIDescription>& description,
-							   IActionPerformer* actionPerformer);
+							   WeakPointer<IActionPerformer> actionPerformer);
 	~UIFocusSettingsController () override = default;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
@@ -36,7 +36,7 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 
 	enum {
 		kEnabledTag = 0,

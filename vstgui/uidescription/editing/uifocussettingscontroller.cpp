@@ -20,7 +20,7 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIFocusSettingsController::UIFocusSettingsController (
-	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer)
+	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer)
 : editDescription (description), actionPerformer (actionPerformer)
 {
 	originalSettings = editDescription->getFocusDrawingSettings ();
@@ -46,7 +46,12 @@ void UIFocusSettingsController::onDialogButton1Clicked (UIDialogController*)
 	if (controls[kWidthTag])
 		fd.width = controls[kWidthTag]->getValue ();
 	if (originalSettings != fd)
-		actionPerformer->performChangeFocusDrawingSettings (fd);
+	{
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->performChangeFocusDrawingSettings (fd);
+		}
+	}
 }
 
 //------------------------------------------------------------------------

@@ -395,7 +395,7 @@ public:
 	UIGradientEditorController (const std::string& gradientName,
 								const SharedPointer<CGradient>& gradient,
 								const SharedPointer<UIDescription>& description,
-								IActionPerformer* actionPerformer);
+								WeakPointer<IActionPerformer> actionPerformer);
 	~UIGradientEditorController () override;
 
 	void valueChanged (CControl* pControl) override;
@@ -422,14 +422,14 @@ protected:
 	SharedPointer<CGradient> gradient;
 	SharedPointer<UIColor> editColor;
 	CTextEdit* positionEdit {nullptr};
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	std::string gradientName;
 };
 
 //----------------------------------------------------------------------------------------------------
 UIGradientEditorController::UIGradientEditorController (
 	const std::string& gradientName, const SharedPointer<CGradient>& gradient,
-	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer)
+	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer)
 : editDescription (description)
 , gradient (gradient)
 , editColor (makeOwned<UIColor> ())
@@ -452,7 +452,12 @@ void UIGradientEditorController::apply ()
 {
 	auto g = editDescription->getGradient (gradientName.data ());
 	if (g->getColorStops () != gradient->getColorStops ())
-		actionPerformer->performGradientChange (gradientName.data (), gradient);
+	{
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->performGradientChange (gradientName.data (), gradient);
+		}
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -631,7 +636,7 @@ class UIGradientsDataSource : public UIBaseDataSource
 {
 public:
 	UIGradientsDataSource (const SharedPointer<UIDescription>& description,
-						   IActionPerformer* actionPerformer,
+						   WeakPointer<IActionPerformer> actionPerformer,
 						   GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIGradientsDataSource () override = default;
 
@@ -656,7 +661,7 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIGradientsDataSource::UIGradientsDataSource (
-	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer,
+	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
 	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
@@ -695,15 +700,23 @@ void UIGradientsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIGradientsDataSource::addItem (UTF8StringPtr name)
 {
-	actionPerformer->performGradientChange (name, CGradient::create (0, 1, kWhiteCColor, kBlackCColor));
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performGradientChange (name, CGradient::create (0, 1, kWhiteCColor, kBlackCColor));
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIGradientsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performGradientChange (name, nullptr, true);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performGradientChange (name, nullptr, true);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -779,8 +792,12 @@ void UIGradientsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CT
 //----------------------------------------------------------------------------------------------------
 bool UIGradientsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionPerformer->performGradientNameChange (oldName, newName);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performGradientNameChange (oldName, newName);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -788,7 +805,7 @@ bool UIGradientsDataSource::performNameChange (UTF8StringPtr oldName, UTF8String
 //----------------------------------------------------------------------------------------------------
 UIGradientsController::UIGradientsController (IController* baseController,
 											  const SharedPointer<UIDescription>& description,
-											  IActionPerformer* actionPerformer)
+											  WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)

@@ -47,7 +47,7 @@ public:
 						  const SharedPointer<UIDescription>& description,
 						  const SharedPointer<UISelection>& selection,
 						  const SharedPointer<UIUndoManager>& undoManager,
-						  IActionPerformer* actionPerformer);
+						  WeakPointer<IActionPerformer> actionPerformer);
 	~UITemplateController () override;
 
 	const UTF8String* getSelectedTemplateName () const { return selectedTemplateName; }
@@ -72,7 +72,7 @@ protected:
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	CViewContainer* templateView;
 	CDataBrowser* templateDataBrowser;
 	UIViewListDataSource* mainViewDataSource;

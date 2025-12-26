@@ -18,7 +18,7 @@ class UITagsDataSource : public UIBaseDataSource
 {
 public:
 	UITagsDataSource (const SharedPointer<UIDescription>& description,
-					  IActionPerformer* actionPerformer);
+					  WeakPointer<IActionPerformer> actionPerformer);
 	~UITagsDataSource () override = default;
 
 protected:
@@ -43,7 +43,7 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UITagsDataSource::UITagsDataSource (const SharedPointer<UIDescription>& description,
-									IActionPerformer* actionPerformer)
+									WeakPointer<IActionPerformer> actionPerformer)
 : UIBaseDataSource (description, actionPerformer)
 {
 }
@@ -57,22 +57,34 @@ void UITagsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::addItem (UTF8StringPtr name)
 {
-	actionPerformer->performTagChange (name, "-2");
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performTagChange (name, "-2");
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performTagChange (name, nullptr, true);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performTagChange (name, nullptr, true);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionPerformer->performTagNameChange (oldName, newName);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performTagNameChange (oldName, newName);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -122,7 +134,10 @@ void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8Strin
 	{
 		if (tags.at (static_cast<uint32_t> (row)) != newText)
 		{
-			actionPerformer->performTagChange (names.at (static_cast<uint32_t> (row)).data (), newText);
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performTagChange (names.at (static_cast<uint32_t> (row)).data (), newText);
+			}
 		}
 	}
 }
@@ -165,7 +180,7 @@ void UITagsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int
 //----------------------------------------------------------------------------------------------------
 UITagsController::UITagsController (IController* baseController,
 									const SharedPointer<UIDescription>& description,
-									IActionPerformer* actionPerformer)
+									WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)

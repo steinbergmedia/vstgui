@@ -147,7 +147,8 @@ class UITemplatesDataSource : public UINavigationDataSource
 public:
 	UITemplatesDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate,
 						   const SharedPointer<UIDescription>& description,
-						   IActionPerformer* actionPerformer, const std::string* templateName);
+						   WeakPointer<IActionPerformer> actionPerformer,
+						   const std::string* templateName);
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
@@ -156,7 +157,7 @@ public:
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 protected:
 	SharedPointer<UIDescription> description;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	std::string firstSelectedTemplateName;
 };
 
@@ -246,7 +247,7 @@ UITemplateController::UITemplateController (IController* baseController,
 											const SharedPointer<UIDescription>& description,
 											const SharedPointer<UISelection>& selection,
 											const SharedPointer<UIUndoManager>& undoManager,
-											IActionPerformer* actionPerformer)
+											WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , selection (selection)
@@ -518,12 +519,21 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 		editDescription->collectTemplateViewNames (tmp);
 		std::string newName (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
 		UIEditMenuController::createUniqueTemplateName (tmp, newName);
-		actionPerformer->performDuplicateTemplate (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data (), newName.data ());
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->performDuplicateTemplate (
+				dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data (),
+				newName.data ());
+		}
 	});
 	contextMenu.addEntry (item);
 	item = makeOwned<CCommandMenuItem> ("Delete Template '" + templateName + "'");
 	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
-		actionPerformer->performDeleteTemplate (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->performDeleteTemplate (
+				dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
+		}
 	});
 	contextMenu.addEntry (item);
 }
@@ -877,7 +887,7 @@ void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size,
 //----------------------------------------------------------------------------------------------------
 UITemplatesDataSource::UITemplatesDataSource (
 	GenericStringListDataBrowserSourceSelectionChanged* delegate,
-	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer,
+	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
 	const std::string* templateName)
 : UINavigationDataSource (delegate), description (description), actionPerformer (actionPerformer)
 {
@@ -913,7 +923,10 @@ void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8
 			if (name == newText)
 				return;
 		}
-		actionPerformer->performTemplateNameChange (oldName.data (), newText);
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->performTemplateNameChange (oldName.data (), newText);
+		}
 	}
 }
 

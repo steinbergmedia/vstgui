@@ -25,7 +25,7 @@ class UIColorsController : public NonAtomicReferenceCounted,
 public:
 	UIColorsController (IController* baseController,
 						const SharedPointer<UIDescription>& description,
-						IActionPerformer* actionPerformer);
+						WeakPointer<IActionPerformer> actionPerformer);
 	~UIColorsController () override;
 
 protected:
@@ -39,7 +39,7 @@ protected:
 								 const CPoint& where) override;
 
 	SharedPointer<UIDescription> editDescription;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	UIColorsDataSource* dataSource;
 	SharedPointer<UIColor> color;
 	

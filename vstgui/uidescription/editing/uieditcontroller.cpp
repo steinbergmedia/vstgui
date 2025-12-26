@@ -502,7 +502,8 @@ UIEditController::UIEditController (const SharedPointer<UIDescription>& descript
 	editorDesc = getEditorDescription ();
 	undoManager->registerListener (this);
 	editDescription->registerListener (this);
-	menuController = makeOwned<UIEditMenuController> (this, selection, undoManager, editDescription, this);
+	menuController = makeOwned<UIEditMenuController> (this, selection, undoManager, editDescription,
+													  weakFromThis ());
 	onTemplatesChanged ();
 	if (auto theme = getSettings ()->getAttributeValue ("UI Theme"))
 	{
@@ -782,7 +783,8 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	if (subControllerName == "TemplatesController")
 	{
 //		vstgui_assert (templateController == nullptr);
-		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
+		templateController = new UITemplateController (this, editDescription, selection,
+													   undoManager, weakFromThis ());
 		templateController->registerListener (this);
 		return templateController;
 	}
@@ -801,23 +803,23 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	}
 	else if (subControllerName == "TagEditController")
 	{
-		return new UITagsController (this, editDescription, this);
+		return new UITagsController (this, editDescription, weakFromThis ());
 	}
 	else if (subControllerName == "ColorEditController")
 	{
-		return new UIColorsController (this, editDescription, this);
+		return new UIColorsController (this, editDescription, weakFromThis ());
 	}
 	else if (subControllerName == "GradientEditController")
 	{
-		return new UIGradientsController (this, editDescription, this);
+		return new UIGradientsController (this, editDescription, weakFromThis ());
 	}
 	else if (subControllerName == "BitmapEditController")
 	{
-		return new UIBitmapsController (this, editDescription, this, undoManager);
+		return new UIBitmapsController (this, editDescription, weakFromThis (), undoManager);
 	}
 	else if (subControllerName == "FontEditController")
 	{
-		return new UIFontsController (this, editDescription, this);
+		return new UIFontsController (this, editDescription, weakFromThis ());
 	}
 	else if (subControllerName == "GridController")
 	{
@@ -1071,8 +1073,8 @@ void UIEditController::showTemplateSettings ()
 		updateTemplate (editTemplateName.c_str ());
 	}
 	auto dc = new UIDialogController (this, editView->getFrame ());
-	auto tsController =
-	    makeOwned<UITemplateSettingsController> (editTemplateName, editDescription, this);
+	auto tsController = makeOwned<UITemplateSettingsController> (editTemplateName, editDescription,
+																 weakFromThis ());
 	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
 }
 
@@ -1080,7 +1082,7 @@ void UIEditController::showTemplateSettings ()
 void UIEditController::showFocusSettings ()
 {
 	auto dc = new UIDialogController (this, editView->getFrame ());
-	auto fsController = makeOwned<UIFocusSettingsController> (editDescription, this);
+	auto fsController = makeOwned<UIFocusSettingsController> (editDescription, weakFromThis ());
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 
@@ -1868,7 +1870,8 @@ void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	undoManager->pushAndPerform (new TemplateNameChangeAction (editDescription, this, oldName, newName));
+	undoManager->pushAndPerform (
+		new TemplateNameChangeAction (editDescription, weakFromThis (), oldName, newName));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1881,7 +1884,8 @@ void UIEditController::performTemplateMinMaxSizeChange (UTF8StringPtr templateNa
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName)
 {
-	undoManager->pushAndPerform (new CreateNewTemplateAction (editDescription, this, name, baseViewClassName));
+	undoManager->pushAndPerform (
+		new CreateNewTemplateAction (editDescription, weakFromThis (), name, baseViewClassName));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1889,7 +1893,8 @@ void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 {
 	auto it = std::find (templates.begin (), templates.end (), name);
 	if (it != templates.end ())
-		undoManager->pushAndPerform (new DeleteTemplateAction (editDescription, this, (*it).view, (*it).name.c_str ()));
+		undoManager->pushAndPerform (new DeleteTemplateAction (editDescription, weakFromThis (),
+															   (*it).view, (*it).name.c_str ()));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1897,7 +1902,8 @@ void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringP
 {
 	updateTemplate (name);
 	UIDescriptionListenerOff lo (this, editDescription);
-	undoManager->pushAndPerform (new DuplicateTemplateAction (editDescription, this, name, dupName));
+	undoManager->pushAndPerform (
+		new DuplicateTemplateAction (editDescription, weakFromThis (), name, dupName));
 }
 
 //----------------------------------------------------------------------------------------------------

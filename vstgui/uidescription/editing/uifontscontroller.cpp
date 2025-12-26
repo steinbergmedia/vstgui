@@ -21,7 +21,7 @@ class UIFontsDataSource : public UIBaseDataSource
 {
 public:
 	UIFontsDataSource (const SharedPointer<UIDescription>& description,
-					   IActionPerformer* actionPerformer,
+					   WeakPointer<IActionPerformer> actionPerformer,
 					   GenericStringListDataBrowserSourceSelectionChanged* delegate);
 
 protected:
@@ -37,7 +37,7 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIFontsDataSource::UIFontsDataSource (const SharedPointer<UIDescription>& description,
-									  IActionPerformer* actionPerformer,
+									  WeakPointer<IActionPerformer> actionPerformer,
 									  GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
@@ -58,22 +58,34 @@ void UIFontsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIFontsDataSource::addItem (UTF8StringPtr name)
 {
-	actionPerformer->performFontChange (name, kNormalFont);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performFontChange (name, kNormalFont);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIFontsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performFontChange (name, kNormalFont, true);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performFontChange (name, kNormalFont, true);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIFontsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionPerformer->performFontNameChange (oldName, newName);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performFontNameChange (oldName, newName);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -81,7 +93,7 @@ bool UIFontsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr 
 //----------------------------------------------------------------------------------------------------
 UIFontsController::UIFontsController (IController* baseController,
 									  const SharedPointer<UIDescription>& description,
-									  IActionPerformer* actionPerformer)
+									  WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
@@ -231,23 +243,30 @@ void UIFontsController::valueChanged (CControl* pControl)
 			auto menuItem = fontMenu->getCurrent ();
 			if (menuItem)
 			{
-				int32_t style = 0;
-				if (boldControl && boldControl->getValue () > 0)
-					style |= kBoldFace;
-				if (italicControl && italicControl->getValue () > 0)
-					style |= kItalicFace;
-				if (underlineControl && underlineControl->getValue () > 0)
-					style |= kUnderlineFace;
-				if (strikethroughControl && strikethroughControl->getValue () > 0)
-					style |= kStrikethroughFace;
-				auto font = makeOwned<CFontDesc> (menuItem->getTitle (), sizeTextEdit->getValue (), style);
-				actionPerformer->performFontChange (selectedFont.data (), font);
+				if (auto ap = actionPerformer.lock ())
+				{
+					int32_t style = 0;
+					if (boldControl && boldControl->getValue () > 0)
+						style |= kBoldFace;
+					if (italicControl && italicControl->getValue () > 0)
+						style |= kItalicFace;
+					if (underlineControl && underlineControl->getValue () > 0)
+						style |= kUnderlineFace;
+					if (strikethroughControl && strikethroughControl->getValue () > 0)
+						style |= kStrikethroughFace;
+					auto font = makeOwned<CFontDesc> (menuItem->getTitle (),
+													  sizeTextEdit->getValue (), style);
+					ap->performFontChange (selectedFont.data (), font);
+				}
 			}
 			break;
 		}
 		case kFontAltTag:
 		{
-			actionPerformer->performAlternativeFontChange (selectedFont.data (), altTextEdit->getText ());
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performAlternativeFontChange (selectedFont.data (), altTextEdit->getText ());
+			}
 			break;
 		}
 	}

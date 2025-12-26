@@ -18,7 +18,7 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 UITemplateSettingsController::UITemplateSettingsController (
 	const std::string& templateName, const SharedPointer<UIDescription>& description,
-	IActionPerformer* actionPerformer)
+	WeakPointer<IActionPerformer> actionPerformer)
 : description (description)
 , templateName (templateName)
 , newTemplateName (templateName)
@@ -47,17 +47,19 @@ UITemplateSettingsController::UITemplateSettingsController (
 //------------------------------------------------------------------------
 void UITemplateSettingsController::onDialogButton1Clicked (UIDialogController*)
 {
-	actionPerformer->beginGroupAction ("Change Template Settings");
-	if (templateName != newTemplateName)
+	if (auto ap = actionPerformer.lock ())
 	{
-		actionPerformer->performTemplateNameChange (templateName.data (), newTemplateName.data ());
+		ap->beginGroupAction ("Change Template Settings");
+		if (templateName != newTemplateName)
+		{
+			ap->performTemplateNameChange (templateName.data (), newTemplateName.data ());
+		}
+		if (minSize != originalMinSize || maxSize != originalMaxSize)
+		{
+			ap->performTemplateMinMaxSizeChange (newTemplateName.data (), minSize, maxSize);
+		}
+		ap->finishGroupAction ();
 	}
-	if (minSize != originalMinSize || maxSize != originalMaxSize)
-	{
-		actionPerformer->performTemplateMinMaxSizeChange (newTemplateName.data (), minSize,
-		                                                  maxSize);
-	}
-	actionPerformer->finishGroupAction ();
 }
 
 //------------------------------------------------------------------------

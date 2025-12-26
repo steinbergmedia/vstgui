@@ -26,7 +26,7 @@ class UIColorsDataSource : public UIBaseDataSource, public UIColorListenerAdapte
 {
 public:
 	UIColorsDataSource (const SharedPointer<UIDescription>& description,
-						IActionPerformer* actionPerformer, UIColor* color);
+						WeakPointer<IActionPerformer> actionPerformer, UIColor* color);
 	~UIColorsDataSource () override;
 
 protected:
@@ -69,7 +69,8 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIColorsDataSource::UIColorsDataSource (const SharedPointer<UIDescription>& description,
-										IActionPerformer* actionPerformer, UIColor* color)
+										WeakPointer<IActionPerformer> actionPerformer,
+										UIColor* color)
 : UIBaseDataSource (description, actionPerformer), color (color), editing (false), dragRow (-1)
 {
 	color->registerListener (this);
@@ -95,8 +96,11 @@ void UIColorsDataSource::uiColorChanged (UIColor* c)
 		int32_t selectedRow = dataBrowser->getSelectedRow ();
 		if (selectedRow != CDataBrowser::kNoSelection)
 		{
-			actionPerformer->performLiveColorChange (
-			    names.at (static_cast<uint32_t> (selectedRow)).data (), color->base ());
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data (),
+											color->base ());
+			}
 			dataBrowser->setSelectedRow (selectedRow);
 		}
 	}
@@ -108,8 +112,10 @@ void UIColorsDataSource::uiColorBeginEditing (UIColor* c)
 	int32_t selectedRow = dataBrowser->getSelectedRow ();
 	if (selectedRow != CDataBrowser::kNoSelection)
 	{
-		actionPerformer->beginLiveColorChange (
-		    names.at (static_cast<uint32_t> (selectedRow)).data ());
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->beginLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
+		}
 		editing = true;
 	}
 }
@@ -120,8 +126,10 @@ void UIColorsDataSource::uiColorEndEditing (UIColor* c)
 	int32_t selectedRow = dataBrowser->getSelectedRow ();
 	if (selectedRow != CDataBrowser::kNoSelection)
 	{
-		actionPerformer->endLiveColorChange (
-		    names.at (static_cast<uint32_t> (selectedRow)).data ());
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->endLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
+		}
 		editing = false;
 	}
 }
@@ -135,15 +143,23 @@ void UIColorsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::addItem (UTF8StringPtr name)
 {
-	actionPerformer->performColorChange (name, kWhiteCColor);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performColorChange (name, kWhiteCColor);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performColorChange (name, kWhiteCColor, true);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performColorChange (name, kWhiteCColor, true);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -292,8 +308,12 @@ CMouseEventResult UIColorsDataSource::dbOnMouseUp (const CPoint& where, const CB
 //----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionPerformer->performColorNameChange (oldName, newName);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performColorNameChange (oldName, newName);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -369,7 +389,11 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 			{
 				if (cellColor != *dragColor)
 				{
-					actionPerformer->performColorChange (names[static_cast<uint32_t> (row)].data (), *dragColor);
+					if (auto ap = actionPerformer.lock ())
+					{
+						ap->performColorChange (names[static_cast<uint32_t> (row)].data (),
+												*dragColor);
+					}
 					selectName (names[static_cast<uint32_t> (row)].data ());
 				}
 			}
@@ -379,7 +403,10 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 			std::string newName (filterString.empty () ? "New" : filterString.data ());
 			if (createUniqueName (newName))
 			{
-				actionPerformer->performColorChange (newName.data (), *dragColor);
+				if (auto ap = actionPerformer.lock ())
+				{
+					ap->performColorChange (newName.data (), *dragColor);
+				}
 				selectName (newName.data ());
 			}
 		}
@@ -395,7 +422,7 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 //----------------------------------------------------------------------------------------------------
 UIColorsController::UIColorsController (IController* baseController,
 										const SharedPointer<UIDescription>& description,
-										IActionPerformer* actionPerformer)
+										WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)

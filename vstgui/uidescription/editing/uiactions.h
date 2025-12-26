@@ -566,7 +566,7 @@ class CreateNewTemplateAction : public IAction
 {
 public:
 	CreateNewTemplateAction (const SharedPointer<UIDescription>& description,
-							 IActionPerformer* actionPerformer, UTF8StringPtr name,
+							 WeakPointer<IActionPerformer> actionPerformer, UTF8StringPtr name,
 							 UTF8StringPtr baseViewClassName);
 
 	UTF8StringPtr getName () override;
@@ -574,7 +574,7 @@ public:
 	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	SharedPointer<CView> view;
 	std::string name;
 	std::string baseViewClassName;
@@ -585,7 +585,7 @@ class DuplicateTemplateAction : public IAction
 {
 public:
 	DuplicateTemplateAction (const SharedPointer<UIDescription>& description,
-							 IActionPerformer* actionPerformer, UTF8StringPtr name,
+							 WeakPointer<IActionPerformer> actionPerformer, UTF8StringPtr name,
 							 UTF8StringPtr dupName);
 
 	UTF8StringPtr getName () override;
@@ -593,7 +593,7 @@ public:
 	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	SharedPointer<CView> view;
 	std::string name;
 	std::string dupName;
@@ -604,14 +604,15 @@ class DeleteTemplateAction : public IAction
 {
 public:
 	DeleteTemplateAction (const SharedPointer<UIDescription>& description,
-						  IActionPerformer* actionPerformer, CView* view, UTF8StringPtr name);
+						  WeakPointer<IActionPerformer> actionPerformer, CView* view,
+						  UTF8StringPtr name);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	SharedPointer<CView> view;
 	SharedPointer<UIAttributes> attributes;
 	std::string name;

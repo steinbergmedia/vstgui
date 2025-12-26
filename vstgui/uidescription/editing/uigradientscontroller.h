@@ -8,6 +8,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "iaction.h"
 #include "../delegationcontroller.h"
 #include "../../lib/cdatabrowser.h"
 #include "../../lib/genericstringlistdatabrowsersource.h"
@@ -25,7 +26,7 @@ class UIGradientsController : public NonAtomicReferenceCounted,
 public:
 	UIGradientsController (IController* baseController,
 						   const SharedPointer<UIDescription>& description,
-						   IActionPerformer* actionPerformer);
+						   WeakPointer<IActionPerformer> actionPerformer);
 	~UIGradientsController () override;
 
 protected:
@@ -40,7 +41,7 @@ protected:
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<CControl> editButton;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	UIGradientsDataSource* dataSource;
 	
 	enum {

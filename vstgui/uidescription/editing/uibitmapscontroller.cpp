@@ -186,7 +186,7 @@ class UIBitmapsDataSource : public UIBaseDataSource
 {
 public:
 	UIBitmapsDataSource (const SharedPointer<UIDescription>& description,
-						 IActionPerformer* actionPerformer,
+						 WeakPointer<IActionPerformer> actionPerformer,
 						 GenericStringListDataBrowserSourceSelectionChanged* delegate);
 
 	SharedPointer<CBitmap> getSelectedBitmap ();
@@ -223,7 +223,7 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIBitmapsDataSource::UIBitmapsDataSource (
-	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer,
+	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
 	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate), dragContainsBitmaps (false)
 {
@@ -371,6 +371,10 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 	if (!dragContainsBitmaps)
 		return false;
 
+	auto ap = actionPerformer.lock ();
+	if (!ap)
+		return false;
+
 	bool didBeganGroupAction = false;
 	UTF8String firstNewBitmapName;
 
@@ -388,7 +392,7 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 			{
 				if (!didBeganGroupAction)
 				{
-					actionPerformer->beginGroupAction ("Add Bitmaps");
+					ap->beginGroupAction ("Add Bitmaps");
 					didBeganGroupAction = true;
 				}
 				std::string name;
@@ -401,7 +405,7 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 
 	if (didBeganGroupAction)
 	{
-		actionPerformer->finishGroupAction ();
+		ap->finishGroupAction ();
 		vstgui_assert (!firstNewBitmapName.empty ());
 		selectName (firstNewBitmapName);
 	}
@@ -418,22 +422,34 @@ void UIBitmapsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::addItem (UTF8StringPtr name)
 {
-	actionPerformer->performBitmapChange (name, nullptr);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performBitmapChange (name, nullptr);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performBitmapChange (name, nullptr, true);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performBitmapChange (name, nullptr, true);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionPerformer->performBitmapNameChange (oldName, newName);
-	return true;
+	if (auto ap = actionPerformer.lock ())
+	{
+		ap->performBitmapNameChange (oldName, newName);
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -485,8 +501,11 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 				}
 			}
 		}
-		actionPerformer->performBitmapChange (outName.data (), pathStr.data ());
-		result = true;
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->performBitmapChange (outName.data (), pathStr.data ());
+			result = true;
+		}
 	}
 	return result;
 }
@@ -502,26 +521,31 @@ bool UIBitmapsDataSource::add ()
 		fs->setAllowMultiFileSelection (true);
 		if (fs->runModal ())
 		{
-			auto numFiles = static_cast<uint32_t> (fs->getNumSelectedFiles ());
-			if (numFiles > 1)
-				actionPerformer->beginGroupAction ("Add Bitmaps");
-			for (uint32_t i = 0; i < numFiles; i++)
+			if (auto ap = actionPerformer.lock ())
 			{
-				UTF8StringPtr path = fs->getSelectedFile (i);
-				if (path)
+				auto numFiles = static_cast<uint32_t> (fs->getNumSelectedFiles ());
+				if (numFiles > 1)
+					ap->beginGroupAction ("Add Bitmaps");
+				for (uint32_t i = 0; i < numFiles; i++)
 				{
-					std::string newName;
-					if (addBitmap (path, newName) && i == numFiles - 1)
+					UTF8StringPtr path = fs->getSelectedFile (i);
+					if (path)
 					{
-						int32_t row = selectName (newName.data ());
-						if (row != -1)
-							dbOnMouseDown (CPoint (0, 0), CButtonState (kLButton|kDoubleClick), row, 0, dataBrowser);
-						result = true;
+						std::string newName;
+						if (addBitmap (path, newName) && i == numFiles - 1)
+						{
+							int32_t row = selectName (newName.data ());
+							if (row != -1)
+								dbOnMouseDown (CPoint (0, 0),
+											   CButtonState (kLButton | kDoubleClick), row, 0,
+											   dataBrowser);
+							result = true;
+						}
 					}
 				}
+				if (numFiles > 1)
+					ap->finishGroupAction ();
 			}
-			if (numFiles > 1)
-				actionPerformer->finishGroupAction ();
 		}
 	}
 	return result;
@@ -538,7 +562,7 @@ class UIBitmapSettingsController : public NonAtomicReferenceCounted,
 public:
 	UIBitmapSettingsController (const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName,
 								const SharedPointer<UIDescription>& description,
-								IActionPerformer* actionPerformer,
+								WeakPointer<IActionPerformer> actionPerformer,
 								const SharedPointer<UIUndoManager>& undoManager);
 	~UIBitmapSettingsController () noexcept override;
 
@@ -564,7 +588,7 @@ protected:
 	SharedPointer<CBitmap> bitmap;
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIBitmapView> bitmapView;
-	IActionPerformer* actionPerformer {nullptr};
+	WeakPointer<IActionPerformer> actionPerformer;
 	SharedPointer<UIUndoManager> undoManager;
 	std::string bitmapName;
 	CRect origOffsets;
@@ -596,7 +620,7 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UIBitmapSettingsController::UIBitmapSettingsController (
 	const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName,
-	const SharedPointer<UIDescription>& description, IActionPerformer* actionPerformer,
+	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
 	const SharedPointer<UIUndoManager>& undoManager)
 : bitmap (bitmap)
 , editDescription (description)
@@ -699,8 +723,11 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			auto* edit = dynamic_cast<CTextEdit*>(control);
 			if (edit)
 			{
-				actionPerformer->performBitmapChange (bitmapName.data (), edit->getText ());
-				recreateBitmap ();
+				if (auto ap = actionPerformer.lock ())
+				{
+					ap->performBitmapChange (bitmapName.data (), edit->getText ());
+					recreateBitmap ();
+				}
 			}
 			break;
 		}
@@ -721,8 +748,12 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				controls[kMultiFrameTag]->valueChanged ();
 				controls[kMultiFrameTag]->invalid ();
 			}
-			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), checked ? &origOffsets : nullptr);
-			recreateBitmap ();
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performBitmapNinePartTiledChange (bitmapName.data (),
+													  checked ? &origOffsets : nullptr);
+				recreateBitmap ();
+			}
 			break;
 		}
 		case kNinePartTiledLeftTag:
@@ -735,8 +766,11 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			r.top = controls[kNinePartTiledTopTag]->getValue ();
 			r.right = controls[kNinePartTiledRightTag]->getValue ();
 			r.bottom = controls[kNinePartTiledBottomTag]->getValue ();
-			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), &r);
-			recreateBitmap ();
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performBitmapNinePartTiledChange (bitmapName.data (), &r);
+				recreateBitmap ();
+			}
 			SharedPointer<CTextEdit> textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
@@ -761,9 +795,12 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				controls[kNinePartTiledTag]->valueChanged ();
 				controls[kNinePartTiledTag]->invalid ();
 			}
-			actionPerformer->performBitmapMultiFrameChange (
-				bitmapName.data (), checked ? &origMultiFrameDesc : nullptr);
-			recreateBitmap ();
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performBitmapMultiFrameChange (bitmapName.data (),
+												   checked ? &origMultiFrameDesc : nullptr);
+				recreateBitmap ();
+			}
 			break;
 		}
 		case kMultiFrameFramesTag:
@@ -782,8 +819,11 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				desc.frameSize.x = bitmapSize.x;
 				desc.frameSize.y = bitmapSize.y / desc.numFrames;
 			}
-			actionPerformer->performBitmapMultiFrameChange (bitmapName.data (), &desc);
-			recreateBitmap ();
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performBitmapMultiFrameChange (bitmapName.data (), &desc);
+				recreateBitmap ();
+			}
 			auto textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
@@ -989,7 +1029,7 @@ bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result
 //----------------------------------------------------------------------------------------------------
 UIBitmapsController::UIBitmapsController (IController* baseController,
 										  const SharedPointer<UIDescription>& description,
-										  IActionPerformer* actionPerformer,
+										  WeakPointer<IActionPerformer> actionPerformer,
 										  const SharedPointer<UIUndoManager>& undoManager)
 : DelegationController (baseController)
 , editDescription (description)
@@ -1106,9 +1146,11 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 			UTF8StringPtr bitmapName = dataSource->getSelectedBitmapName ();
 			if (bitmapName)
 			{
-				auto* edit = dynamic_cast<CTextEdit*>(pControl);
-				if (edit)
-					actionPerformer->performBitmapChange (bitmapName, edit->getText ());
+				if (auto edit = dynamic_cast<CTextEdit*> (pControl))
+				{
+					if (auto ap = actionPerformer.lock ())
+						ap->performBitmapChange (bitmapName, edit->getText ());
+				}
 			}
 			break;
 		}

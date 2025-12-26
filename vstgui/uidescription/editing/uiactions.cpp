@@ -1352,7 +1352,7 @@ void HierarchyMoveViewOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 TemplateNameChangeAction::TemplateNameChangeAction (const SharedPointer<UIDescription>& description,
-													IActionPerformer* actionPerformer,
+													WeakPointer<IActionPerformer> actionPerformer,
 													UTF8StringPtr oldName, UTF8StringPtr newName)
 : description (description), actionPerformer (actionPerformer), oldName (oldName), newName (newName)
 {
@@ -1367,14 +1367,16 @@ UTF8StringPtr TemplateNameChangeAction::getName ()
 //----------------------------------------------------------------------------------------------------
 void TemplateNameChangeAction::perform ()
 {
-	actionPerformer->onTemplateNameChange (oldName.c_str (), newName.c_str ());
+	if (auto ap = actionPerformer.lock ())
+		ap->onTemplateNameChange (oldName.c_str (), newName.c_str ());
 	description->changeTemplateName (oldName.c_str (), newName.c_str ());
 }
 
 //----------------------------------------------------------------------------------------------------
 void TemplateNameChangeAction::undo ()
 {
-	actionPerformer->onTemplateNameChange (newName.c_str (), oldName.c_str ());
+	if (auto ap = actionPerformer.lock ())
+		ap->onTemplateNameChange (newName.c_str (), oldName.c_str ());
 	description->changeTemplateName (newName.c_str (), oldName.c_str ());
 }
 
@@ -1382,7 +1384,7 @@ void TemplateNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 CreateNewTemplateAction::CreateNewTemplateAction (const SharedPointer<UIDescription>& description,
-												  IActionPerformer* actionPerformer,
+												  WeakPointer<IActionPerformer> actionPerformer,
 												  UTF8StringPtr name,
 												  UTF8StringPtr baseViewClassName)
 : description (description)
@@ -1407,7 +1409,8 @@ void CreateNewTemplateAction::perform ()
 	description->addNewTemplate (name.c_str (), attr);
 	if (view == nullptr)
 		view = owned (description->createView (name.c_str (), description->getController ()));
-	actionPerformer->onTemplateCreation (name.c_str (), view);
+	if (auto ap = actionPerformer.lock ())
+		ap->onTemplateCreation (name.c_str (), view);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1420,7 +1423,7 @@ void CreateNewTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 DuplicateTemplateAction::DuplicateTemplateAction (const SharedPointer<UIDescription>& description,
-												  IActionPerformer* actionPerformer,
+												  WeakPointer<IActionPerformer> actionPerformer,
 												  UTF8StringPtr name, UTF8StringPtr dupName)
 : description (description), actionPerformer (actionPerformer), name (name), dupName (dupName)
 {
@@ -1438,7 +1441,8 @@ void DuplicateTemplateAction::perform ()
 	description->duplicateTemplate (name.c_str (), dupName.c_str ());
 	if (view == nullptr)
 		view = owned (description->createView (dupName.c_str (), description->getController ()));
-	actionPerformer->onTemplateCreation (dupName.c_str (), view);
+	if (auto ap = actionPerformer.lock ())
+		ap->onTemplateCreation (dupName.c_str (), view);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1451,8 +1455,8 @@ void DuplicateTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 DeleteTemplateAction::DeleteTemplateAction (const SharedPointer<UIDescription>& description,
-											IActionPerformer* actionPerformer, CView* view,
-											UTF8StringPtr name)
+											WeakPointer<IActionPerformer> actionPerformer,
+											CView* view, UTF8StringPtr name)
 : description (description), actionPerformer (actionPerformer), view (view), name (name)
 {
 	attributes = description->getViewAttributes (name);
@@ -1474,7 +1478,8 @@ void DeleteTemplateAction::perform ()
 //----------------------------------------------------------------------------------------------------
 void DeleteTemplateAction::undo ()
 {
-	actionPerformer->onTemplateCreation (name.c_str (), view);
+	if (auto ap = actionPerformer.lock ())
+		ap->onTemplateCreation (name.c_str (), view);
 	description->addNewTemplate (name.c_str (), attributes);
 }
 

@@ -24,7 +24,7 @@ class UITemplateSettingsController : public NonAtomicReferenceCounted,
 public:
 	UITemplateSettingsController (const std::string& templateName,
 								  const SharedPointer<UIDescription>& description,
-								  IActionPerformer* actionPerformer);
+								  WeakPointer<IActionPerformer> actionPerformer);
 	~UITemplateSettingsController () override = default;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
@@ -55,7 +55,7 @@ protected:
 		kNumTags
 	};
 	CControl* controls[kNumTags];
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 };
 
 } // VSTGUI

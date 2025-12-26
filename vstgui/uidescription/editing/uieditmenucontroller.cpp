@@ -25,7 +25,7 @@ UIEditMenuController::UIEditMenuController (IController* baseController,
 											const SharedPointer<UISelection>& selection,
 											const SharedPointer<UIUndoManager>& undoManager,
 											const SharedPointer<UIDescription>& description,
-											IActionPerformer* actionPerformer)
+											WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , selection (selection)
 , undoManager (undoManager)
@@ -502,14 +502,20 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		std::string templateName (cmdName);
 		if (createUniqueTemplateName (tmp, templateName))
 		{
-			actionPerformer->performCreateNewTemplate (templateName.c_str (), cmdName);
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performCreateNewTemplate (templateName.c_str (), cmdName);
+			}
 		}
 		return true;
 	}
 	else if (cmdCategory == "RemoveTemplate")
 	{
-		actionPerformer->performDeleteTemplate (cmdName);
-		return kMessageNotified;
+		if (auto ap = actionPerformer.lock ())
+		{
+			ap->performDeleteTemplate (cmdName);
+		}
+		return true;
 	}
 	else if (cmdCategory == "DuplicateTemplate")
 	{
@@ -518,7 +524,10 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		std::string templateName (cmdName);
 		if (createUniqueTemplateName (tmp, templateName))
 		{
-			actionPerformer->performDuplicateTemplate (cmdName, templateName.c_str ());
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->performDuplicateTemplate (cmdName, templateName.c_str ());
+			}
 		}
 		return true;
 	}

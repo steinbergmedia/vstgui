@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../../lib/vstguifwd.h"
+#include "../../lib/weakptr.h"
 
 #if VSTGUI_LIVE_EDITING
 #include "../../lib/cfont.h"
@@ -25,7 +26,8 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class IActionPerformer
+class IActionPerformer : public virtual IReference,
+						 public WeakPointerSupport<IActionPerformer>
 {
 public:
 	virtual ~IActionPerformer () {}

@@ -8,6 +8,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "iaction.h"
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "../delegationcontroller.h"
@@ -153,7 +154,7 @@ public:
 	UIEditMenuController (IController* baseController, const SharedPointer<UISelection>& selection,
 						  const SharedPointer<UIUndoManager>& undoManager,
 						  const SharedPointer<UIDescription>& description,
-						  IActionPerformer* actionPerformer);
+						  WeakPointer<IActionPerformer> actionPerformer);
 	~UIEditMenuController () noexcept override;
 
 	const SharedPointer<COptionMenu>& getFileMenu () const { return fileMenu; }
@@ -189,7 +190,7 @@ protected:
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> description;
 	SharedPointer<CVSTGUITimer> highlightTimer;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 
 	SharedPointer<COptionMenu> fileMenu;
 	SharedPointer<COptionMenu> editMenu;

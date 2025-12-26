@@ -25,7 +25,7 @@ class UIFontsController : public NonAtomicReferenceCounted,
 {
 public:
 	UIFontsController (IController* baseController, const SharedPointer<UIDescription>& description,
-					   IActionPerformer* actionPerformer);
+					   WeakPointer<IActionPerformer> actionPerformer);
 	~UIFontsController () override;
 
 protected:
@@ -40,7 +40,7 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	UIFontsDataSource* dataSource;
 
 	SharedPointer<COptionMenu> fontMenu;
