@@ -1437,7 +1437,7 @@ void DuplicateTemplateAction::perform ()
 {
 	description->duplicateTemplate (name.c_str (), dupName.c_str ());
 	if (view == nullptr)
-		view = description->createView (dupName.c_str (), description->getController ());
+		view = owned (description->createView (dupName.c_str (), description->getController ()));
 	actionPerformer->onTemplateCreation (dupName.c_str (), view);
 }
 

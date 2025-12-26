@@ -62,7 +62,7 @@ public:
 	virtual void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName) = 0;
 	virtual void performDeleteTemplate (UTF8StringPtr name) = 0;
 	virtual void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) = 0;
-	virtual void onTemplateCreation (UTF8StringPtr name, CView* view) = 0;
+	virtual void onTemplateCreation (UTF8StringPtr name, const SharedPointer<CView>& view) = 0;
 	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 
 	virtual void performChangeFocusDrawingSettings (const FocusDrawingSettings& newSettings) = 0;

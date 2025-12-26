@@ -103,6 +103,10 @@ struct WeakPointerSupport
 					   [] (auto& wp) { wp->onPointerDestructed (); });
 	}
 
+	WeakPointer<I> weakFromThis ()
+	{
+		return {shared (static_cast<I*> (this))};
+	}
 protected:
 	void addWeakPointer (WeakPointer<I>& wp) noexcept
 	{

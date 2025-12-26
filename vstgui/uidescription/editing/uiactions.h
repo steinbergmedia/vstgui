@@ -548,7 +548,7 @@ class TemplateNameChangeAction : public IAction
 {
 public:
 	TemplateNameChangeAction (const SharedPointer<UIDescription>& description,
-							  IActionPerformer* actionPerformer, UTF8StringPtr oldName,
+							  WeakPointer<IActionPerformer> actionPerformer, UTF8StringPtr oldName,
 							  UTF8StringPtr newName);
 
 	UTF8StringPtr getName () override;
@@ -556,7 +556,7 @@ public:
 	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
-	IActionPerformer* actionPerformer;
+	WeakPointer<IActionPerformer> actionPerformer;
 	std::string oldName;
 	std::string newName;
 };

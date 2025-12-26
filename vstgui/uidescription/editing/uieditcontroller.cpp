@@ -1901,11 +1901,11 @@ void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringP
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::onTemplateCreation (UTF8StringPtr name, CView* view)
+void UIEditController::onTemplateCreation (UTF8StringPtr name, const SharedPointer<CView>& view)
 {
 	auto it = std::find (templates.begin (), templates.end (), name);
 	if (it == templates.end ())
-		templates.emplace_back (name, owned (view));
+		templates.emplace_back (name, view);
 	templateController->selectTemplate (name);
 }
 

@@ -127,7 +127,7 @@ protected:
 	void performDeleteTemplate (UTF8StringPtr name) override;
 	void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) override;
 
-	void onTemplateCreation (UTF8StringPtr name, CView* view) override;
+	void onTemplateCreation (UTF8StringPtr name, const SharedPointer<CView>& view) override;
 	void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 
 	void performChangeFocusDrawingSettings (const FocusDrawingSettings& newSettings) override;
