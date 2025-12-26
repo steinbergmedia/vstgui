@@ -15,11 +15,9 @@ class UIAttributes;
 struct FocusDrawingSettings;
 
 //----------------------------------------------------------------------------------------------------
-class IAction
+class IAction : public NonAtomicReferenceCounted
 {
 public:
-	virtual ~IAction () {}
-	
 	virtual UTF8StringPtr getName () = 0;
 	virtual void perform () = 0;
 	virtual void undo () = 0;
@@ -31,7 +29,7 @@ class IActionPerformer : public virtual IReference,
 {
 public:
 	virtual ~IActionPerformer () {}
-	virtual void performAction (IAction* action) = 0;
+	virtual void performAction (const SharedPointer<IAction>& action) = 0;
 
 	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) = 0;
 	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) = 0;

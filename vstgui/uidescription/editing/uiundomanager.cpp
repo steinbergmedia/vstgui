@@ -21,29 +21,23 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIGroupAction : public IAction, public std::list<IAction*>
+class UIGroupAction : public IAction,
+					  public std::list<SharedPointer<IAction>>
 {
 public:
-	static void doPerform (IAction* action) { action->perform (); }
-	static void doUndo (IAction* action) { action->undo (); }
-	static void doDelete (IAction* action) { delete action; }
-
 	UIGroupAction (UTF8StringPtr name) : name (name) {}
-	~UIGroupAction () override
-	{
-		std::for_each (begin (), end (), doDelete);
-	}
+	~UIGroupAction () override = default;
 
 	UTF8StringPtr getName () override { return name.c_str (); }
 
 	void perform () override
 	{
-		std::for_each (begin (), end (), doPerform);
+		std::for_each (begin (), end (), [] (auto& action) { action->perform (); });
 	}
 	
 	void undo () override
 	{
-		std::for_each (rbegin (), rend (), doUndo);
+		std::for_each (rbegin (), rend (), [] (auto& action) { action->undo (); });
 	}
 
 protected:
@@ -53,19 +47,16 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UIUndoManager::UIUndoManager ()
 {
-	emplace_back (new UndoStackTop);
+	emplace_back (makeOwned<UndoStackTop> ());
 	position = begin ();
 	savePosition = begin ();
 }
 
 //----------------------------------------------------------------------------------------------------
-UIUndoManager::~UIUndoManager ()
-{
-	std::for_each (begin (), end (), [] (IAction* action) { delete action; });
-}
+UIUndoManager::~UIUndoManager () = default;
 
 //----------------------------------------------------------------------------------------------------
-void UIUndoManager::pushAndPerform (IAction* action)
+void UIUndoManager::pushAndPerform (const SharedPointer<IAction>& action)
 {
 	if (groupQueue.empty () == false)
 	{
@@ -80,7 +71,6 @@ void UIUndoManager::pushAndPerform (IAction* action)
 		{
 			if (position == savePosition)
 				savePosition = end ();
-			delete (*position);
 			position++;
 		}
 		erase (oldStack, end ());
@@ -159,9 +149,8 @@ UTF8StringPtr UIUndoManager::getRedoName ()
 //----------------------------------------------------------------------------------------------------
 void UIUndoManager::clear ()
 {
-	std::for_each (begin (), end (), [] (IAction* action) { delete action; });
-	std::list<IAction*>::clear ();
-	emplace_back (new UndoStackTop);
+	std::list<SharedPointer<IAction>>::clear ();
+	emplace_back (makeOwned<UndoStackTop> ());
 	position = end ();
 	savePosition = begin ();
 	forEachListener ([] (IUIUndoManagerListener* l) { l->onUndoManagerChange (); });
@@ -170,22 +159,17 @@ void UIUndoManager::clear ()
 //----------------------------------------------------------------------------------------------------
 void UIUndoManager::startGroupAction (UTF8StringPtr name)
 {
-	UIGroupAction* action = new UIGroupAction (name);
-	groupQueue.emplace_back (action);
+	groupQueue.emplace_back (makeOwned<UIGroupAction> (name));
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIUndoManager::endGroupAction ()
 {
-	UIGroupAction* action = groupQueue.back ();
+	auto action = groupQueue.back ();
 	if (action)
 	{
 		groupQueue.pop_back ();
-		if (action->empty ())
-		{
-			delete action;
-		}
-		else
+		if (!action->empty ())
 		{
 			pushAndPerform (action);
 		}
@@ -195,12 +179,9 @@ void UIUndoManager::endGroupAction ()
 //----------------------------------------------------------------------------------------------------
 void UIUndoManager::cancelGroupAction ()
 {
-	UIGroupAction* action = groupQueue.back ();
+	auto action = groupQueue.back ();
 	if (action)
-	{
 		groupQueue.pop_back ();
-		delete action;
-	}
 }
 
 //----------------------------------------------------------------------------------------------------

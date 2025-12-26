@@ -917,7 +917,6 @@ UIAttributesController::UIAttributesController (IController* baseController,
 , selection (selection)
 , undoManager (undoManager)
 , editDescription (description)
-, liveAction (nullptr)
 , viewNameLabel (nullptr)
 , attributeView (nullptr)
 , currentAttributeName (nullptr)
@@ -944,9 +943,10 @@ UIAttributesController::~UIAttributesController ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::beginLiveAttributeChange (const std::string& name, const std::string& currentValue)
 {
-	liveAction = new AttributeChangeAction (editDescription, selection, name, currentValue);
+	liveAction = makeOwned<AttributeChangeAction> (editDescription, selection, name, currentValue);
 	undoManager->startGroupAction (liveAction->getName ());
-	undoManager->pushAndPerform (new AttributeChangeAction (editDescription, selection, name, currentValue));
+	undoManager->pushAndPerform (
+		makeOwned<AttributeChangeAction> (editDescription, selection, name, currentValue));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -956,7 +956,7 @@ void UIAttributesController::endLiveAttributeChange ()
 	{
 		liveAction->undo ();
 		undoManager->pushAndPerform (liveAction);
-		liveAction = nullptr;
+		liveAction.reset ();
 		undoManager->endGroupAction ();
 	}
 }
@@ -964,10 +964,9 @@ void UIAttributesController::endLiveAttributeChange ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::performAttributeChange (const std::string& name, const std::string& value)
 {
-	IAction* action = new AttributeChangeAction (editDescription, selection, name, value);
+	auto action = makeOwned<AttributeChangeAction> (editDescription, selection, name, value);
 	if (liveAction)
 	{
-		delete liveAction;
 		liveAction = action;
 		action->perform ();
 	}

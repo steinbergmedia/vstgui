@@ -97,7 +97,7 @@ protected:
 	void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) override;
 
 	// IActionPerformer
-	void performAction (IAction* action) override;
+	void performAction (const SharedPointer<IAction>& action) override;
 	void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) override;
 	void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) override;
 	void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) override;

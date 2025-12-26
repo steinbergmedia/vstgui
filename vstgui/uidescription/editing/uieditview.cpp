@@ -823,9 +823,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 	{
 		if (moveSizeOperation->didChange ())
 			getUndoManager ()->pushAndPerform (moveSizeOperation);
-		else
-			delete moveSizeOperation;
-		moveSizeOperation = nullptr;
+		moveSizeOperation.reset ();
 	}
 	onMouseMoved (where, CButtonState (buttons.getModifierState ()));
 	return kMouseEventHandled;
@@ -944,8 +942,7 @@ void UIEditView::onKeyboardEvent (KeyboardEvent& event)
 		if (moveSizeOperation)
 		{
 			moveSizeOperation->undo ();
-			delete moveSizeOperation;
-			moveSizeOperation = nullptr;
+			moveSizeOperation.reset ();
 		}
 		mouseEditMode = MouseEditMode::NoEditing;
 		getFrame ()->setCursor (kCursorDefault);
@@ -963,12 +960,12 @@ void UIEditView::doKeyMove (const CPoint& delta)
 		if (getSelection ()->contains (getEditView ()))
 			return;
 		if (!moveSizeOperation)
-			moveSizeOperation = new ViewSizeChangeOperation (selection, false, autosizing);
+			moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, false, autosizing);
 		getSelection ()->moveBy (delta);
 		if (moveSizeOperation)
 		{
 			getUndoManager ()->pushAndPerform (moveSizeOperation);
-			moveSizeOperation = nullptr;
+			moveSizeOperation.reset ();
 		}
 	}
 }
@@ -979,7 +976,7 @@ void UIEditView::doKeySize (const CPoint& delta)
 	if (delta.x != 0. || delta.y != 0.)
 	{
 		if (!moveSizeOperation)
-			moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
+			moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, true, autosizing);
 		getSelection ()->viewsWillChange ();
 		for (auto view : *selection)
 		{
@@ -992,7 +989,7 @@ void UIEditView::doKeySize (const CPoint& delta)
 		}
 		getSelection ()->viewsDidChange ();
 		getUndoManager ()->pushAndPerform (moveSizeOperation);
-		moveSizeOperation = nullptr;
+		moveSizeOperation.reset ();
 	}
 }
 
@@ -1034,7 +1031,7 @@ void UIEditView::doDragEditingMove (CPoint& where)
 	if (diff.x != 0. || diff.y != 0.)
 	{
 		if (!moveSizeOperation)
-			moveSizeOperation = new ViewSizeChangeOperation (selection, false, autosizing);
+			moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, false, autosizing);
 		getSelection ()->moveBy (diff);
 		mouseStartPoint = where;
 		if (editTimer)
@@ -1057,7 +1054,7 @@ void UIEditView::doDragEditingMove (CPoint& where)
 void UIEditView::doSizeEditingMove (CPoint& where)
 {
 	if (!moveSizeOperation)
-		moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
+		moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, true, autosizing);
 	if (gridProcessor)
 		gridProcessor->process (where);
 	if (mouseStartPoint == where)
@@ -1256,7 +1253,8 @@ bool UIEditView::onDrop (DragEventData data)
 			where2.offset (-containerOffset.x, -containerOffset.y);
 
 			where2.makeIntegral ();
-			IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, description);
+			auto action = makeOwned<ViewCopyOperation> (dragSelection, getSelection (),
+														viewContainer, where2, description);
 			getUndoManager()->pushAndPerform (action);
 		}
 		dragSelection = nullptr;
@@ -1383,8 +1381,8 @@ void UIEditView::onDoubleClickEditing (CView* view)
 		const auto& text = textEdit->getText ();
 		if (text != attrValue)
 		{
-			auto action = new AttributeChangeAction (description, selection,
-			                                         UIViewCreator::kAttrTitle, text.getString ());
+			auto action = makeOwned<AttributeChangeAction> (
+				description, selection, UIViewCreator::kAttrTitle, text.getString ());
 			getUndoManager ()->pushAndPerform (action);
 		}
 		textEdit->getParentView ()->asViewContainer ()->removeView (textEdit);

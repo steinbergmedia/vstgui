@@ -130,7 +130,7 @@ protected:
 	UIEditViewInternal::UIHighlightView* highlightView {nullptr};
 	CLayeredViewContainer* overlayView {nullptr};
 	UICrossLines* lines {nullptr};
-	ViewSizeChangeOperation* moveSizeOperation {nullptr};
+	SharedPointer<ViewSizeChangeOperation> moveSizeOperation;
 	SharedPointer<CVSTGUITimer> editTimer;
 	DragStartMouseObserver dragStartMouseObserver;
 	

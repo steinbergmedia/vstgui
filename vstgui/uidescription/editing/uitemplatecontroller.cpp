@@ -807,7 +807,8 @@ bool UIViewListDataSource::dbOnDropInCell (int32_t row, int32_t column, const CP
 	if (row != dragRow && dragDestinationRow != -1 && row != -1)
 	{
 		int32_t dir = dragDestinationRow - dragRow;
-		undoManager->pushAndPerform (new HierarchyMoveViewOperation (subviews[dragRow], selection, dir));
+		undoManager->pushAndPerform (
+			makeOwned<HierarchyMoveViewOperation> (subviews[dragRow], selection, dir));
 		result = true;
 	}
 	dragRow = dragDestinationRow = -1;

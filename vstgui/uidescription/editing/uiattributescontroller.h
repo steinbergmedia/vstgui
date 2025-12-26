@@ -75,7 +75,7 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> editDescription;
-	IAction* liveAction;
+	SharedPointer<IAction> liveAction;
 
 	using UIAttributeControllerList = std::list<UIAttributeControllers::Controller*>;
 	UIAttributeControllerList attributeControllers;

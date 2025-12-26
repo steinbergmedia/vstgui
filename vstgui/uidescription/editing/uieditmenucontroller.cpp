@@ -478,19 +478,20 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		}
 		else if (cmdName == "Delete")
 		{
-			IAction* action = new DeleteOperation (selection);
+			auto action = makeOwned<DeleteOperation> (selection);
 			undoManager->pushAndPerform (action);
 			return true;
 		}
 		else if (cmdName == "Unembed Views")
 		{
-			IAction* action = new UnembedViewOperation (selection, description->getViewFactory ());
+			auto action =
+				makeOwned<UnembedViewOperation> (selection, description->getViewFactory ());
 			undoManager->pushAndPerform (action);
 			return true;
 		}
 		else if (cmdName == "Size To Fit")
 		{
-			IAction* action = new SizeToFitOperation (selection);
+			auto action = makeOwned<SizeToFitOperation> (selection);
 			undoManager->pushAndPerform (action);
 			return true;
 		}
@@ -538,7 +539,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		viewAttr.setAttribute (UIViewCreator::kAttrClass, std::string (cmdName));
 		if (auto newContainer = viewFactory->createView (viewAttr, description)->asViewContainer ())
 		{
-			IAction* action = new EmbedViewOperation (selection, newContainer);
+			auto action = makeOwned<EmbedViewOperation> (selection, newContainer);
 			undoManager->pushAndPerform (action);
 		}
 		return true;
@@ -548,7 +549,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		undoManager->startGroupAction ("Transform View Type");
 		for (auto& entry : *selection)
 		{
-			IAction* action = new TransformViewTypeOperation (
+			auto action = makeOwned<TransformViewTypeOperation> (
 				selection, entry, cmdName, description, description->getViewFactory ());
 			undoManager->pushAndPerform (action);
 		}
@@ -578,7 +579,8 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 			CView* view = description->createView (cmdName, description->getController ());
 			if (view)
 			{
-				undoManager->pushAndPerform (new InsertViewOperation (parent, view, selection));
+				undoManager->pushAndPerform (
+					makeOwned<InsertViewOperation> (parent, view, selection));
 			}
 		}
 		return true;

@@ -1020,7 +1020,7 @@ void UIEditController::doCopy (bool cut)
 	auto dataSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), IDataPackage::kText);
 	editView->getFrame ()->setClipboard (dataSource);
 	if (cut)
-		undoManager->pushAndPerform (new DeleteOperation (selection));
+		undoManager->pushAndPerform (makeOwned<DeleteOperation> (selection));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1036,7 +1036,8 @@ void UIEditController::addSelectionToCurrentView (const SharedPointer<UISelectio
 		offset = selection->first ()->getViewSize ().getTopLeft ();
 		offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 	}
-	IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, editDescription);
+	auto action =
+		makeOwned<ViewCopyOperation> (copySelection, selection, container, offset, editDescription);
 	undoManager->pushAndPerform (action);
 	if (!editTemplateName.empty ())
 		updateTemplate (editTemplateName.c_str ());
@@ -1391,7 +1392,7 @@ bool UIEditController::doZOrderAction (bool lower)
 	{
 		CView* view = selection->first ();
 		undoManager->pushAndPerform (
-		    new HierarchyMoveViewOperation (view, selection, lower ? -1 : 1));
+			makeOwned<HierarchyMoveViewOperation> (view, selection, lower ? -1 : 1));
 		return true;
 	}
 	return false;
@@ -1633,7 +1634,7 @@ void UIEditController::setDirty (bool state)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performAction (IAction* action)
+void UIEditController::performAction (const SharedPointer<IAction>& action)
 {
 	undoManager->pushAndPerform (action);
 }
@@ -1653,7 +1654,8 @@ void UIEditController::finishGroupAction ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performChangeFocusDrawingSettings (const FocusDrawingSettings& newSettings)
 {
-	undoManager->pushAndPerform (new ChangeFocusDrawingAction (editDescription, newSettings));
+	undoManager->pushAndPerform (
+		makeOwned<ChangeFocusDrawingAction> (editDescription, newSettings));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1669,11 +1671,13 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	auto* action = new ColorChangeAction (editDescription, colorName, newColor, remove, true);
+	auto action = makeOwned<ColorChangeAction> (editDescription, colorName, newColor, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Color" : action->isAddColor () ? "Add New Color" : "Change Color");
 	undoManager->pushAndPerform (action);
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType, colorName, remove ? "" : colorName));
-	undoManager->pushAndPerform (new ColorChangeAction (editDescription, colorName, newColor, remove, false));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, IViewCreator::kColorType, colorName, remove ? "" : colorName));
+	undoManager->pushAndPerform (
+		makeOwned<ColorChangeAction> (editDescription, colorName, newColor, remove, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1683,11 +1687,13 @@ void UIEditController::performTagChange (UTF8StringPtr tagName, UTF8StringPtr ta
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	auto* action = new TagChangeAction (editDescription, tagName, tagStr, remove, true);
+	auto action = makeOwned<TagChangeAction> (editDescription, tagName, tagStr, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Tag" : action->isAddTag () ? "Add New Tag" : "Change Tag");
 	undoManager->pushAndPerform (action);
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kTagType, tagName, remove ? "" : tagName));
-	undoManager->pushAndPerform (new TagChangeAction (editDescription, tagName, tagStr, remove, false));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, IViewCreator::kTagType, tagName, remove ? "" : tagName));
+	undoManager->pushAndPerform (
+		makeOwned<TagChangeAction> (editDescription, tagName, tagStr, remove, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1697,11 +1703,14 @@ void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8String
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	auto* action = new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, true);
+	auto action =
+		makeOwned<BitmapChangeAction> (editDescription, bitmapName, bitmapPath, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Bitmap" : action->isAddBitmap () ? "Add New Bitmap" :"Change Bitmap");
 	undoManager->pushAndPerform (action);
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, bitmapName, remove ? "" : bitmapName));
-	undoManager->pushAndPerform (new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, false));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, IViewCreator::kBitmapType, bitmapName, remove ? "" : bitmapName));
+	undoManager->pushAndPerform (
+		makeOwned<BitmapChangeAction> (editDescription, bitmapName, bitmapPath, remove, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1712,12 +1721,16 @@ void UIEditController::performGradientChange (UTF8StringPtr gradientName,
 {
 	std::list<CView*> views;
 	getTemplateViews (views);
-	
-	auto* action = new GradientChangeAction (editDescription, gradientName, newGradient, remove, true);
+
+	auto action =
+		makeOwned<GradientChangeAction> (editDescription, gradientName, newGradient, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Bitmap" : action->isAddGradient () ? "Add New Gradient" :"Change Gradient");
 	undoManager->pushAndPerform (action);
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kGradientType, gradientName, remove ? "" : gradientName));
-	undoManager->pushAndPerform (new GradientChangeAction (editDescription, gradientName, newGradient, remove, false));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, IViewCreator::kGradientType, gradientName,
+		remove ? "" : gradientName));
+	undoManager->pushAndPerform (makeOwned<GradientChangeAction> (editDescription, gradientName,
+																  newGradient, remove, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1728,11 +1741,13 @@ void UIEditController::performFontChange (UTF8StringPtr fontName,
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	auto* action = new FontChangeAction (editDescription, fontName, newFont, remove, true);
+	auto action = makeOwned<FontChangeAction> (editDescription, fontName, newFont, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Font" : action->isAddFont () ? "Add New Font" : "Change Font");
 	undoManager->pushAndPerform (action);
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kFontType, fontName, remove ? "" : fontName));
-	undoManager->pushAndPerform (new FontChangeAction (editDescription, fontName, newFont, remove, false));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, IViewCreator::kFontType, fontName, remove ? "" : fontName));
+	undoManager->pushAndPerform (
+		makeOwned<FontChangeAction> (editDescription, fontName, newFont, remove, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1743,9 +1758,12 @@ template<typename NameChangeAction, IViewCreator::AttrType attrType> void UIEdit
 	getTemplateViews (views);
 
 	undoManager->startGroupAction (groupActionName);
-	undoManager->pushAndPerform (new NameChangeAction (editDescription, oldName, newName, true));
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, attrType, oldName, newName));
-	undoManager->pushAndPerform (new NameChangeAction (editDescription, oldName, newName, false));
+	undoManager->pushAndPerform (
+		makeOwned<NameChangeAction> (editDescription, oldName, newName, true));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, attrType, oldName, newName));
+	undoManager->pushAndPerform (
+		makeOwned<NameChangeAction> (editDescription, oldName, newName, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1788,11 +1806,11 @@ void UIEditController::performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
 
 	undoManager->startGroupAction ("Change MultiFrame Bitmap");
 	undoManager->pushAndPerform (
-		new MultiFrameBitmapChangeAction (editDescription, bitmapName, desc, true));
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (
+		makeOwned<MultiFrameBitmapChangeAction> (editDescription, bitmapName, desc, true));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
 		editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
 	undoManager->pushAndPerform (
-		new MultiFrameBitmapChangeAction (editDescription, bitmapName, desc, false));
+		makeOwned<MultiFrameBitmapChangeAction> (editDescription, bitmapName, desc, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1803,9 +1821,12 @@ void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapNam
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change NinePartTiled Bitmap");
-	undoManager->pushAndPerform (new NinePartTiledBitmapChangeAction (editDescription, bitmapName, offsets, true));
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
-	undoManager->pushAndPerform (new NinePartTiledBitmapChangeAction (editDescription, bitmapName, offsets, false));
+	undoManager->pushAndPerform (
+		makeOwned<NinePartTiledBitmapChangeAction> (editDescription, bitmapName, offsets, true));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
+	undoManager->pushAndPerform (
+		makeOwned<NinePartTiledBitmapChangeAction> (editDescription, bitmapName, offsets, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1816,9 +1837,12 @@ void UIEditController::performBitmapFiltersChange (UTF8StringPtr bitmapName, con
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change Bitmap Filter");
-	undoManager->pushAndPerform (new BitmapFilterChangeAction (editDescription, bitmapName, filterDescription, true));
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
-	undoManager->pushAndPerform (new BitmapFilterChangeAction (editDescription, bitmapName, filterDescription, false));
+	undoManager->pushAndPerform (
+		makeOwned<BitmapFilterChangeAction> (editDescription, bitmapName, filterDescription, true));
+	undoManager->pushAndPerform (makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
+	undoManager->pushAndPerform (makeOwned<BitmapFilterChangeAction> (editDescription, bitmapName,
+																	  filterDescription, false));
 	undoManager->endGroupAction ();
 }
 
@@ -1826,7 +1850,8 @@ void UIEditController::performBitmapFiltersChange (UTF8StringPtr bitmapName, con
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts)
 {
-	undoManager->pushAndPerform (new AlternateFontChangeAction (editDescription, fontName, newAlternativeFonts));
+	undoManager->pushAndPerform (
+		makeOwned<AlternateFontChangeAction> (editDescription, fontName, newAlternativeFonts));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1843,18 +1868,17 @@ void UIEditController::performLiveColorChange (UTF8StringPtr _colorName, const C
 {
 	std::string colorName (_colorName);
 
-	IAction* action =
-	    new ColorChangeAction (editDescription, colorName.data (), newColor, false, true);
-	action->perform ();
-	delete action;
+	auto colorChangeAction =
+		makeOwned<ColorChangeAction> (editDescription, colorName.data (), newColor, false, true);
+	colorChangeAction->perform ();
+	colorChangeAction.reset ();
 
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	action = new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType,
-	                                            colorName.data (), colorName.data ());
-	action->perform ();
-	delete action;
+	auto attrChangeAction = makeOwned<MultipleAttributeChangeAction> (
+		editDescription, views, IViewCreator::kColorType, colorName.data (), colorName.data ());
+	attrChangeAction->perform ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1871,21 +1895,21 @@ void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
 void UIEditController::performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	undoManager->pushAndPerform (
-		new TemplateNameChangeAction (editDescription, weakFromThis (), oldName, newName));
+		makeOwned<TemplateNameChangeAction> (editDescription, weakFromThis (), oldName, newName));
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performTemplateMinMaxSizeChange (UTF8StringPtr templateName, CPoint minSize, CPoint maxSize)
 {
 	undoManager->pushAndPerform (
-	    new ChangeTemplateMinMaxAction (editDescription, templateName, minSize, maxSize));
+		makeOwned<ChangeTemplateMinMaxAction> (editDescription, templateName, minSize, maxSize));
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName)
 {
-	undoManager->pushAndPerform (
-		new CreateNewTemplateAction (editDescription, weakFromThis (), name, baseViewClassName));
+	undoManager->pushAndPerform (makeOwned<CreateNewTemplateAction> (
+		editDescription, weakFromThis (), name, baseViewClassName));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1893,8 +1917,8 @@ void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 {
 	auto it = std::find (templates.begin (), templates.end (), name);
 	if (it != templates.end ())
-		undoManager->pushAndPerform (new DeleteTemplateAction (editDescription, weakFromThis (),
-															   (*it).view, (*it).name.c_str ()));
+		undoManager->pushAndPerform (makeOwned<DeleteTemplateAction> (
+			editDescription, weakFromThis (), (*it).view, (*it).name.c_str ()));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1903,7 +1927,7 @@ void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringP
 	updateTemplate (name);
 	UIDescriptionListenerOff lo (this, editDescription);
 	undoManager->pushAndPerform (
-		new DuplicateTemplateAction (editDescription, weakFromThis (), name, dupName));
+		makeOwned<DuplicateTemplateAction> (editDescription, weakFromThis (), name, dupName));
 }
 
 //----------------------------------------------------------------------------------------------------
