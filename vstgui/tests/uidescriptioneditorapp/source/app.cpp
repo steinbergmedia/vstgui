@@ -298,11 +298,11 @@ public:
 		CMemoryStream jsonData (1024, 1024, false);
 
 		Detail::UIXMLDescWriter xmlWriter;
-		if (!xmlWriter.write (xmlData, node))
+		if (!xmlWriter.write (xmlData, *node.get ()))
 			return;
 		xmlData.rewind ();
 
-		if (!Detail::UIJsonDescWriter::write (jsonData, node))
+		if (!Detail::UIJsonDescWriter::write (jsonData, *node.get ()))
 			return;
 		jsonData.end ();
 		jsonData.rewind ();

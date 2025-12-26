@@ -274,7 +274,7 @@ bool UIXMLDescWriter::writeNode (const UINode& node, OutputStream& stream)
 	}
 	stream << "<";
 	stream << node.getName ();
-	result = writeAttributes (node.getAttributes (), stream);
+	result = writeAttributes (*node.getAttributes ().get (), stream);
 	if (result)
 	{
 		auto& children = node.getChildren ();
