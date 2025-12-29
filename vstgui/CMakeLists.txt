@@ -114,6 +114,7 @@ endif()
 
 ##########################################################################################
 add_subdirectory(lib)
+add_subdirectory(plugin-bindings)
 add_subdirectory(uidescription)
 
 #### UIDescription Scripting
