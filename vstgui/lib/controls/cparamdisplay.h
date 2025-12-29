@@ -49,7 +49,7 @@ public:
 	SharedPointer<CFontDesc> getFont () const { return fontID; }
 
 	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontRef inFontID) { setFont (shared (inFontID)); },
+		void setFont (CFontDesc* inFontID) { setFont (shared (inFontID)); },
 		"Use `setFont (shared (yourFont);` instead")
 
 	virtual void setFontColor (CColor color);

@@ -84,7 +84,7 @@ public:
 	virtual void setFont (const SharedPointer<CFontDesc>& newFont);
 	SharedPointer<CFontDesc> getFont () const { return font; }
 	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
 		"Use `setFont (shared (yourFont);` instead")
 
 	virtual void setFontColor (const CColor& newColor) { fontColor = newColor; invalid (); }
@@ -207,7 +207,7 @@ public:
 	virtual void setFont (const SharedPointer<CFontDesc>& newFont);
 	SharedPointer<CFontDesc> getFont () const { return font; }
 	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
 		"Use `setFont (shared (yourFont);` instead")
 
 	virtual void setTextColor (const CColor& color);

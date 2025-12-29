@@ -226,7 +226,9 @@ class GenericStringListDataBrowserSource;
 class StaticListControlConfigurator;
 class StringListControlDrawer;
 
-using CFontRef = CFontDesc*;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+using CFontRef = CFontDesc*; ///< deprecated
+#endif
 
 // views
 class CFrame;

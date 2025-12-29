@@ -31,7 +31,7 @@ public:
 	void setStringProvider (const Func& getStringFunc);
 
 	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
 		"Use `setFont (shared (yourFont);` instead")
 	void setFont (const SharedPointer<CFontDesc>& f);
 	void setFontColor (CColor color);

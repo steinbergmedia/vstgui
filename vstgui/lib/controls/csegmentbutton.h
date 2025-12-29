@@ -106,7 +106,7 @@ public:
 	void setFont (const SharedPointer<CFontDesc>& font);
 	SharedPointer<CFontDesc> getFont () const { return font; }
 	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontRef inFont) { setFont (shared (inFont)); },
+		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
 		"Use `setFont (shared (yourFont);` instead")
 
 	void setTextAlignment (CHoriTxtAlign alignment);
