@@ -90,6 +90,8 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CDrawContext::fillLinearGradient
 	* CDrawContext::fillRadialGradient
 
+- IScriptControllerExtension interface was changed to use references instead of pointers to indicate that these objects are always valid when these methods are called.
+
 ### Version 4.14
 
 - In CParamDisplay::drawPlatformText(..) the string argument changed from IPlatformString to UTF8Text

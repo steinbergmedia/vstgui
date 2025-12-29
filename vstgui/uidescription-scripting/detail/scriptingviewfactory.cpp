@@ -21,7 +21,7 @@ JavaScriptViewFactory::~JavaScriptViewFactory () noexcept
 	std::for_each (viewControllerLinks.begin (), viewControllerLinks.end (),
 				   [this] (const auto& el) {
 					   el.first->unregisterViewListener (this);
-					   el.second->scriptContextDestroyed (scriptContext);
+					   el.second->scriptContextDestroyed (*scriptContext);
 				   });
 }
 
@@ -37,7 +37,7 @@ CView* JavaScriptViewFactory::createView (const UIAttributes& attributes,
 			if (auto scriptViewController =
 					dynamic_cast<IScriptControllerExtension*> (description->getController ()))
 			{
-				verifiedScript = scriptViewController->verifyScript (view, *value, scriptContext);
+				verifiedScript = scriptViewController->verifyScript (*view, *value, *scriptContext);
 				view->registerViewListener (const_cast<JavaScriptViewFactory*> (this));
 				viewControllerLinks.emplace_back (view, scriptViewController);
 			}
@@ -122,7 +122,7 @@ void JavaScriptViewFactory::viewWillDelete (CView* view)
 							[view] (const auto& el) { return el.first == view; });
 	if (it != viewControllerLinks.end ())
 	{
-		it->second->scriptContextDestroyed (scriptContext);
+		it->second->scriptContextDestroyed (*scriptContext);
 		viewControllerLinks.erase (it);
 	}
 	view->unregisterViewListener (this);

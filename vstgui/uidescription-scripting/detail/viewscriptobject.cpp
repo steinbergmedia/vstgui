@@ -98,7 +98,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 					 return;
 				 }
 				 IScriptControllerExtension::PropertyValue value;
-				 if (!controller->getProperty (view, name->getString (), value))
+				 if (!controller->getProperty (*view, name->getString (), value))
 				 {
 					 var->getReturnVar ()->setUndefined ();
 					 return;
@@ -136,7 +136,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 					 propValue = value->getDouble ();
 				 else if (value->isString ())
 					 propValue = value->getString ().data ();
-				 auto result = controller->setProperty (view, name->getString (), propValue);
+				 auto result = controller->setProperty (*view, name->getString (), propValue);
 				 var->getReturnVar ()->setInt (result);
 			 },
 			 {"name", "value"});

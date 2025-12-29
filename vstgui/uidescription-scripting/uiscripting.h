@@ -97,8 +97,8 @@ struct IScriptControllerExtension
 	 *	@param context The script context where the script is executed in
 	 *	@return Optional new script. If the optional is empty the original script is used.
 	 */
-	virtual std::optional<std::string> verifyScript (CView* view, const std::string& script,
-													 const IScriptContext* context) = 0;
+	virtual std::optional<std::string> verifyScript (CView& view, const std::string& script,
+													 const IScriptContext& context) = 0;
 
 	/** Notification that the script context is destroyed
 	 *
@@ -106,7 +106,7 @@ struct IScriptControllerExtension
 	 *
 	 *	@param context The context which is destroyed
 	 */
-	virtual void scriptContextDestroyed (const IScriptContext* context) = 0;
+	virtual void scriptContextDestroyed (const IScriptContext& context) = 0;
 
 	/** Get a property
 	 *
@@ -120,7 +120,7 @@ struct IScriptControllerExtension
 	 *	@param value The property value
 	 *	@return True on success.
 	 */
-	virtual bool getProperty (CView* view, std::string_view name, PropertyValue& value) const = 0;
+	virtual bool getProperty (CView& view, std::string_view name, PropertyValue& value) const = 0;
 
 	/** Set a property
 	 *
@@ -131,21 +131,21 @@ struct IScriptControllerExtension
 	 *	@param value The value of the property
 	 *	@return True on success.
 	 */
-	virtual bool setProperty (CView* view, std::string_view name, const PropertyValue& value) = 0;
+	virtual bool setProperty (CView& view, std::string_view name, const PropertyValue& value) = 0;
 };
 
 //------------------------------------------------------------------------
 /** Adapter for IScriptControllerExtension */
 struct ScriptControllerExtensionAdapter : IScriptControllerExtension
 {
-	std::optional<std::string> verifyScript (CView*, const std::string&,
-											 const IScriptContext*) override
+	std::optional<std::string> verifyScript (CView&, const std::string&,
+											 const IScriptContext&) override
 	{
 		return {};
 	}
-	void scriptContextDestroyed (const IScriptContext* context) override {}
-	bool getProperty (CView*, std::string_view, PropertyValue&) const override { return false; }
-	bool setProperty (CView*, std::string_view, const PropertyValue&) override { return false; }
+	void scriptContextDestroyed (const IScriptContext& context) override {}
+	bool getProperty (CView&, std::string_view, PropertyValue&) const override { return false; }
+	bool setProperty (CView&, std::string_view, const PropertyValue&) override { return false; }
 };
 
 //------------------------------------------------------------------------

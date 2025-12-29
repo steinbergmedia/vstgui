@@ -188,7 +188,7 @@ public:
 		return controller->verifyView (view, attributes, description);
 	}
 #ifdef VSTGUI_UISCRIPTING
-	bool getProperty (CView* view, std::string_view name, PropertyValue& value) const override
+	bool getProperty (CView& view, std::string_view name, PropertyValue& value) const override
 	{
 		using namespace std::literals;
 		if (name == "integer"sv)
@@ -201,13 +201,13 @@ public:
 			value = nullptr;
 		return true;
 	}
-	bool setProperty (CView* view, std::string_view name, const PropertyValue& value) override
+	bool setProperty (CView& view, std::string_view name, const PropertyValue& value) override
 	{
 		std::visit ([] (auto&& v) { std::cout << v << '\n'; }, value);
 		return true;
 	}
-	std::optional<std::string> verifyScript (CView* view, const std::string& script,
-											 const IScriptContext*) override
+	std::optional<std::string> verifyScript (CView& view, const std::string& script,
+											 const IScriptContext&) override
 	{
 		return {script};
 	}
