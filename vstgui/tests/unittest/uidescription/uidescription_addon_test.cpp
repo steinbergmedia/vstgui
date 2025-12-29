@@ -54,16 +54,26 @@ TEST_CASE (UIDescriptionAddOnTest, BasicFunctionality)
 {
 	struct BaseAddOn : UIDescriptionAddOnAdapter
 	{
-		void afterParsing (IUIDescription* desc) override { afterParsingCalled = true; }
-		void beforeSaving (IUIDescription* desc) override { beforeSavingCalled = true; }
-		void onDestroy (IUIDescription* desc) override { onDestroyCalled = true; }
-		CreateTemplateViewFunc onCreateTemplateView (const IUIDescription* desc,
+		void afterParsing (const SharedPointer<IUIDescription>& desc) override
+		{
+			afterParsingCalled = true;
+		}
+		void beforeSaving (const SharedPointer<IUIDescription>& desc) override
+		{
+			beforeSavingCalled = true;
+		}
+		void onDestroy (const SharedPointer<IUIDescription>& desc) override
+		{
+			onDestroyCalled = true;
+		}
+		CreateTemplateViewFunc onCreateTemplateView (const SharedPointer<IUIDescription>& desc,
 													 const CreateTemplateViewFunc& f) override
 		{
 			onCreateTemplateViewCalled = true;
 			return f;
 		}
-		IViewFactory* getViewFactory (IUIDescription* desc, IViewFactory* of) override
+		IViewFactory* getViewFactory (const SharedPointer<IUIDescription>& desc,
+									  IViewFactory* of) override
 		{
 			getViewFactoryCalled = true;
 			return of;
