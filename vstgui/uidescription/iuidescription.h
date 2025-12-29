@@ -9,6 +9,7 @@
 #include "../lib/cfont.h"
 #include "../lib/cgradient.h"
 #include "../lib/cstring.h"
+#include "../lib/weakptr.h"
 #include "uidescriptionfwd.h"
 #include <string>
 #include <list>
@@ -16,7 +17,8 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class IUIDescription : public virtual IReference
+class IUIDescription : public virtual IReference,
+					   public WeakPointerSupport<IUIDescription>
 {
 public:
 	virtual ~IUIDescription () noexcept = default;

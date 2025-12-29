@@ -39,7 +39,7 @@ struct IViewScriptObjectContext
 {
 	virtual ~IViewScriptObjectContext () = default;
 
-	virtual IUIDescription* getUIDescription () const = 0;
+	virtual SharedPointer<IUIDescription> getUIDescription () const = 0;
 	virtual ViewScriptObject* addView (CView* view) = 0;
 	virtual ViewScriptMap::iterator removeView (CView* view) = 0;
 	virtual ScriptObject evalScript (std::string_view script) noexcept = 0;

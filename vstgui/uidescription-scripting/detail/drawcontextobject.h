@@ -22,7 +22,7 @@ struct DrawContextObject : ScriptObject,
 	DrawContextObject ();
 	~DrawContextObject () noexcept override;
 
-	void setDrawContext (CDrawContext* context, IUIDescription* uiDesc);
+	void setDrawContext (CDrawContext* context, const SharedPointer<IUIDescription>& uiDesc);
 
 	void onDestroy (CScriptVar* v) override;
 

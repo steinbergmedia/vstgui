@@ -93,6 +93,15 @@ protected:
 
 //------------------------------------------------------------------------
 template<class I>
+bool operator== (const WeakPointer<I>& lhs, const WeakPointer<I>& rhs)
+{
+	auto lhsp = lhs.lock ();
+	auto rhsp = rhs.lock ();
+	return lhsp.get () == rhsp.get ();
+}
+
+//------------------------------------------------------------------------
+template<class I>
 struct WeakPointerSupport
 {
 	WeakPointerSupport () {}

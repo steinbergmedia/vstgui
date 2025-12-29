@@ -42,7 +42,8 @@ public:
 	using OnScriptExceptionFunc = UIScripting::OnScriptExceptionFunc;
 	using ReadScriptContentsFunc = UIScripting::ReadScriptContentsFunc;
 
-	ScriptContext (IUIDescription* uiDesc, OnScriptExceptionFunc&& onExceptionFunc,
+	ScriptContext (const SharedPointer<IUIDescription>& uiDesc,
+				   OnScriptExceptionFunc&& onExceptionFunc,
 				   ReadScriptContentsFunc&& readContentsFunc);
 	~ScriptContext () noexcept;
 
@@ -95,7 +96,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 	using TimerScriptObject = ScriptingInternal::TimerScriptObject;
 	using UIDescScriptObject = ScriptingInternal::UIDescScriptObject;
 
-	IUIDescription* uiDesc {nullptr};
+	WeakPointer<IUIDescription> uiDesc;
 
 	std::unique_ptr<CTinyJS> jsContext;
 	OnScriptExceptionFunc onScriptException;
@@ -105,7 +106,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 
 	UIDescScriptObject uiDescObject;
 
-	Impl (IUIDescription* uiDesc, OnScriptExceptionFunc&& onExceptionFunc,
+	Impl (SharedPointer<IUIDescription> uiDesc, OnScriptExceptionFunc&& onExceptionFunc,
 		  ReadScriptContentsFunc&& readContentsFunc)
 	: uiDesc (uiDesc)
 	, onScriptException (std::move (onExceptionFunc))
@@ -226,7 +227,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		}
 	}
 	CScriptVar* getRoot () const override { return jsContext->getRoot (); }
-	IUIDescription* getUIDescription () const override { return uiDesc; }
+	SharedPointer<IUIDescription> getUIDescription () const override { return uiDesc.lock (); }
 
 	void installListeners (CView* view)
 	{
@@ -617,7 +618,8 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-ScriptContext::ScriptContext (IUIDescription* uiDesc, OnScriptExceptionFunc&& onExceptionFunc,
+ScriptContext::ScriptContext (const SharedPointer<IUIDescription>& uiDesc,
+							  OnScriptExceptionFunc&& onExceptionFunc,
 							  ReadScriptContentsFunc&& readContentsFunc)
 {
 	impl =
@@ -670,7 +672,19 @@ struct UIScripting::Impl
 	using JSViewFactoryPtr = std::unique_ptr<ScriptingInternal::JavaScriptViewFactory>;
 	using ScriptContextPtr = std::unique_ptr<ScriptingInternal::ScriptContext>;
 
-	std::unordered_map<const IUIDescription*, std::pair<JSViewFactoryPtr, ScriptContextPtr>> map;
+	struct Hasher
+	{
+		std::size_t operator() (const WeakPointer<IUIDescription>& s) const noexcept
+		{
+			if (auto uiDesc = s.lock ())
+				return std::hash<IUIDescription*> () (uiDesc.get ());
+			return {};
+		}
+	};
+
+	std::unordered_map<WeakPointer<IUIDescription>, std::pair<JSViewFactoryPtr, ScriptContextPtr>,
+					   Hasher>
+		map;
 
 	static OnScriptExceptionFunc onScriptExceptionFunc;
 	static ReadScriptContentsFunc readScriptContentsFunc;
@@ -712,22 +726,22 @@ UIScripting::UIScripting () { impl = std::make_unique<Impl> (); }
 UIScripting::~UIScripting () noexcept = default;
 
 //------------------------------------------------------------------------
-void UIScripting::afterParsing (IUIDescription* desc) {}
+void UIScripting::afterParsing (const SharedPointer<IUIDescription>& desc) {}
 
 //------------------------------------------------------------------------
-void UIScripting::beforeSaving (IUIDescription* desc) {}
+void UIScripting::beforeSaving (const SharedPointer<IUIDescription>& desc) {}
 
 //------------------------------------------------------------------------
-void UIScripting::onDestroy (IUIDescription* desc)
+void UIScripting::onDestroy (const SharedPointer<IUIDescription>& desc)
 {
-	auto it = impl->map.find (desc);
+	auto it = impl->map.find (WeakPointer<IUIDescription> (desc));
 	if (it != impl->map.end ())
 		impl->map.erase (it);
 }
 
 //------------------------------------------------------------------------
-auto UIScripting::onCreateTemplateView (const IUIDescription* desc, const CreateTemplateViewFunc& f)
-	-> CreateTemplateViewFunc
+auto UIScripting::onCreateTemplateView (const SharedPointer<IUIDescription>& desc,
+										const CreateTemplateViewFunc& f) -> CreateTemplateViewFunc
 {
 	return [=] (auto name, auto controller) {
 		return f (name, controller);
@@ -735,11 +749,12 @@ auto UIScripting::onCreateTemplateView (const IUIDescription* desc, const Create
 }
 
 //------------------------------------------------------------------------
-IViewFactory* UIScripting::getViewFactory (IUIDescription* desc, IViewFactory* originalFactory)
+IViewFactory* UIScripting::getViewFactory (const SharedPointer<IUIDescription>& desc,
+										   IViewFactory* originalFactory)
 {
 	using namespace ScriptingInternal;
 
-	auto it = impl->map.find (desc);
+	auto it = impl->map.find (WeakPointer<IUIDescription> (desc));
 	if (it != impl->map.end ())
 		return it->second.first.get ();
 	auto onScriptException = Impl::onScriptExceptionFunc;
@@ -766,9 +781,9 @@ IViewFactory* UIScripting::getViewFactory (IUIDescription* desc, IViewFactory* o
 }
 
 //------------------------------------------------------------------------
-void UIScripting::onEditingStart (IUIDescription* desc)
+void UIScripting::onEditingStart (const SharedPointer<IUIDescription>& desc)
 {
-	auto it = impl->map.find (desc);
+	auto it = impl->map.find (WeakPointer<IUIDescription> (desc));
 	if (it != impl->map.end ())
 	{
 		it->second.second->reset ();
@@ -777,9 +792,9 @@ void UIScripting::onEditingStart (IUIDescription* desc)
 }
 
 //------------------------------------------------------------------------
-void UIScripting::onEditingEnd (IUIDescription* desc)
+void UIScripting::onEditingEnd (const SharedPointer<IUIDescription>& desc)
 {
-	auto it = impl->map.find (desc);
+	auto it = impl->map.find (WeakPointer<IUIDescription> (desc));
 	if (it != impl->map.end ())
 		it->second.first->setScriptingDisabled (false);
 }

@@ -121,8 +121,9 @@ UIDescription::UIDescription (const CResourceDescription& uidescFile, IViewFacto
 		setFilePath (uidescFile.u.name);
 	if (impl->viewFactory == nullptr)
 		impl->viewFactory = getGenericViewFactory ();
-	UIDescriptionAddOnRegistry::forEach (
-		[&] (auto& addOn) { impl->viewFactory = addOn.getViewFactory (this, impl->viewFactory); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) {
+		impl->viewFactory = addOn.getViewFactory (shared (this), impl->viewFactory);
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -133,14 +134,15 @@ UIDescription::UIDescription (IContentProvider* contentProvider, IViewFactory* _
 	impl->contentProvider = contentProvider;
 	if (impl->viewFactory == nullptr)
 		impl->viewFactory = getGenericViewFactory ();
-	UIDescriptionAddOnRegistry::forEach (
-		[&] (auto& addOn) { impl->viewFactory = addOn.getViewFactory (this, impl->viewFactory); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) {
+		impl->viewFactory = addOn.getViewFactory (shared (this), impl->viewFactory);
+	});
 }
 
 //-----------------------------------------------------------------------------
 UIDescription::~UIDescription () noexcept
 {
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.onDestroy (this); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.onDestroy (shared (this)); });
 }
 
 //------------------------------------------------------------------------
@@ -311,7 +313,7 @@ bool UIDescription::parse ()
 void UIDescription::postParsing ()
 {
 	addDefaultNodes ();
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.afterParsing (this); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.afterParsing (shared (this)); });
 }
 
 //-----------------------------------------------------------------------------
@@ -484,7 +486,7 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags, Attribute
 	}
 	impl->nodes->getAttributes ()->setAttribute ("version", "1");
 
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.beforeSaving (this); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.beforeSaving (shared (this)); });
 
 	BufferedOutputStream bufferedStream (stream);
 	if (flags & kWriteAsXML)
@@ -784,8 +786,9 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 		return nullptr;
 	};
 
-	UIDescriptionAddOnRegistry::forEach (
-		[&] (auto& addOn) { f = std::move (addOn.onCreateTemplateView (this, f)); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) {
+		f = std::move (addOn.onCreateTemplateView (shared (const_cast<UIDescription*> (this)), f));
+	});
 	return f (name, _controller);
 }
 

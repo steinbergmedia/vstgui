@@ -17,33 +17,38 @@ struct UIDescScriptObject : ScriptObject
 	using CScriptException = TJS::CScriptException;
 
 	UIDescScriptObject () = default;
-	UIDescScriptObject (IUIDescription* desc, TJS::CTinyJS* scriptContext)
+	UIDescScriptObject (WeakPointer<IUIDescription> desc, TJS::CTinyJS* scriptContext)
 	{
 		using namespace std::literals;
 
 		addFunc ("colorNames"sv, [desc] (CScriptVar* var) {
 			StringList names;
-			desc->collectColorNames (names);
+			if (auto descObj = desc.lock ())
+				descObj->collectColorNames (names);
 			var->setReturnVar (createArrayFromNames (names));
 		});
 		addFunc ("fontNames"sv, [desc] (CScriptVar* var) {
 			StringList names;
-			desc->collectFontNames (names);
+			if (auto descObj = desc.lock ())
+				descObj->collectFontNames (names);
 			var->setReturnVar (createArrayFromNames (names));
 		});
 		addFunc ("bitmapNames"sv, [desc] (CScriptVar* var) {
 			StringList names;
-			desc->collectBitmapNames (names);
+			if (auto descObj = desc.lock ())
+				descObj->collectBitmapNames (names);
 			var->setReturnVar (createArrayFromNames (names));
 		});
 		addFunc ("gradientNames"sv, [desc] (CScriptVar* var) {
 			StringList names;
-			desc->collectGradientNames (names);
+			if (auto descObj = desc.lock ())
+				descObj->collectGradientNames (names);
 			var->setReturnVar (createArrayFromNames (names));
 		});
 		addFunc ("controlTagNames"sv, [desc] (CScriptVar* var) {
 			StringList names;
-			desc->collectControlTagNames (names);
+			if (auto descObj = desc.lock ())
+				descObj->collectControlTagNames (names);
 			var->setReturnVar (createArrayFromNames (names));
 		});
 		addFunc ("getTagForName"sv,
@@ -53,9 +58,12 @@ struct UIDescScriptObject : ScriptObject
 					 {
 						 throw CScriptException ("Expect 'name' argument for getTagForName ");
 					 }
-					 auto name = param->getString ();
-					 auto tag = desc->getTagForName (name.data ());
-					 var->setReturnVar (new CScriptVar (static_cast<int64_t> (tag)));
+					 if (auto descObj = desc.lock ())
+					 {
+						 auto name = param->getString ();
+						 auto tag = descObj->getTagForName (name.data ());
+						 var->setReturnVar (new CScriptVar (static_cast<int64_t> (tag)));
+					 }
 				 },
 				 {"name"});
 		addFunc ("lookupTagName"sv,
@@ -69,10 +77,13 @@ struct UIDescScriptObject : ScriptObject
 					 {
 						 throw CScriptException ("Expect 'tag' argument to be an integer ");
 					 }
-					 if (auto tagName =
-							 desc->lookupControlTagName (static_cast<int32_t> (param->getInt ())))
+					 if (auto descObj = desc.lock ())
 					 {
-						 var->setReturnVar (new CScriptVar (std::string (tagName)));
+						 if (auto tagName = descObj->lookupControlTagName (
+								 static_cast<int32_t> (param->getInt ())))
+						 {
+							 var->setReturnVar (new CScriptVar (std::string (tagName)));
+						 }
 					 }
 				 },
 				 {"tag"});

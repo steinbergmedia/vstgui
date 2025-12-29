@@ -90,7 +90,9 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CDrawContext::fillLinearGradient
 	* CDrawContext::fillRadialGradient
 
-- IScriptControllerExtension interface was changed to use references instead of pointers to indicate that these objects are always valid when these methods are called.
+The IScriptControllerExtension interface was changed to use references instead of pointers to indicate that these objects are always valid when these methods are called.
+
+The IUIDescriptionAddOn interface was changed to take shared pointers for IUIDescription.
 
 ### Version 4.14
 

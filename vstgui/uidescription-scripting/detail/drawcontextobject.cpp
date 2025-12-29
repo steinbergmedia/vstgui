@@ -145,13 +145,16 @@ static int64_t getOptionalInt (CScriptVar* var, std::string_view varName,
 }
 
 //------------------------------------------------------------------------
-static CColor getColor (CScriptVar* var, const IUIDescription* uiDesc, std::string_view varName,
-						std::string_view signature)
+static CColor getColor (CScriptVar* var, WeakPointer<IUIDescription> uiDesc,
+						std::string_view varName, std::string_view signature)
 {
+	auto uiDescObj = uiDesc.lock ();
+	if (!uiDescObj)
+		throw CScriptException ("Internal Error");
 	auto colorVar = getArgument (var, varName, signature);
 	auto colorStr = colorVar->getString ();
 	CColor color {};
-	if (!UIViewCreator::stringToColor (colorStr, color, uiDesc))
+	if (!UIViewCreator::stringToColor (colorStr, color, uiDescObj))
 	{
 		string str ("'");
 		str += colorStr;
@@ -289,7 +292,7 @@ TJS::CScriptVar* makeTransformMatrixObject ()
 //------------------------------------------------------------------------
 struct GradientScriptObject : ScriptObject
 {
-	GradientScriptObject (const SharedPointer<CGradient>& g, const IUIDescription* uiDesc)
+	GradientScriptObject (const SharedPointer<CGradient>& g, WeakPointer<IUIDescription> uiDesc)
 	: ScriptObject (new CScriptVar ("", SCRIPTVAR_OBJECT))
 	{
 		scriptVar->setCustomData (g);
@@ -298,7 +301,7 @@ struct GradientScriptObject : ScriptObject
 				 {"position"sv, "color"sv});
 	}
 
-	static void addColorStop (const SharedPointer<CGradient>& g, const IUIDescription* uiDesc,
+	static void addColorStop (const SharedPointer<CGradient>& g, WeakPointer<IUIDescription> uiDesc,
 							  CScriptVar* var)
 	{
 		static constexpr auto signature = "gradient.addColorStop(position, color);"sv;
@@ -411,10 +414,10 @@ ScriptObject makeGraphicsPathScriptObject (const SharedPointer<CGraphicsPath>& p
 struct DrawContextObject::Impl
 {
 	CDrawContext* context {nullptr};
-	IUIDescription* uiDesc {nullptr};
+	WeakPointer<IUIDescription> uiDesc;
 	mutable int32_t globalStatesStored {0};
 
-	void setContext (CDrawContext* inContext, IUIDescription* inUIDesc)
+	void setContext (CDrawContext* inContext, const SharedPointer<IUIDescription>& inUIDesc)
 	{
 		if (context)
 		{
@@ -626,11 +629,14 @@ struct DrawContextObject::Impl
 		static constexpr auto signature =
 			"drawContext.drawBitmap(name, destRect, offsetPoint?, alpha?);"sv;
 		checkContextOrThrow ();
+		auto uiDescObj = uiDesc.lock ();
+		if (!uiDescObj)
+			throw CScriptException ("Internal Error");
 		auto nameVar = getArgument (var, "name"sv, signature);
 		auto destRect = getRect (var, "destRect"sv, signature);
 		auto offsetPointVar = getOptionalArgument (var, "offsetPoint?"sv);
 		auto alphaVar = getOptionalArgument (var, "alpha?"sv);
-		auto bitmap = uiDesc->getBitmap (nameVar->getString ().data ());
+		auto bitmap = uiDescObj->getBitmap (nameVar->getString ().data ());
 		if (!bitmap)
 			throw CScriptException ("bitmap not found in uiDescription");
 		auto offset = offsetPointVar ? fromScriptPoint (*offsetPointVar) : CPoint (0, 0);
@@ -663,17 +669,23 @@ struct DrawContextObject::Impl
 	{
 		static constexpr auto signature = "drawContext.setFont(name);"sv;
 		checkContextOrThrow ();
+		auto uiDescObj = uiDesc.lock ();
+		if (!uiDescObj)
+			throw CScriptException ("Internal Error");
 		auto fontVar = getArgument (var, "name"sv, signature);
-		if (auto font = uiDesc->getFont (fontVar->getString ().data ()))
+		if (auto font = uiDescObj->getFont (fontVar->getString ().data ()))
 			context->setFont (font);
 	}
 	void setFontColor (CScriptVar* var) const
 	{
 		static constexpr auto signature = "drawContext.setFontColor(color);"sv;
 		checkContextOrThrow ();
+		auto uiDescObj = uiDesc.lock ();
+		if (!uiDescObj)
+			throw CScriptException ("Internal Error");
 		auto colorVar = getArgument (var, "color"sv, signature);
 		CColor color {};
-		UIViewCreator::stringToColor (colorVar->getString (), color, uiDesc);
+		UIViewCreator::stringToColor (colorVar->getString (), color, uiDescObj);
 		context->setFontColor (color);
 	}
 	void setFillColor (CScriptVar* var) const
@@ -853,7 +865,8 @@ DrawContextObject::~DrawContextObject () noexcept
 }
 
 //------------------------------------------------------------------------
-void DrawContextObject::setDrawContext (CDrawContext* inContext, IUIDescription* inUIDesc)
+void DrawContextObject::setDrawContext (CDrawContext* inContext,
+										const SharedPointer<IUIDescription>& inUIDesc)
 {
 	impl->setContext (inContext, inUIDesc);
 }
