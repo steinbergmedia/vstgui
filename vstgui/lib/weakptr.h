@@ -108,8 +108,11 @@ struct WeakPointerSupport
 	~WeakPointerSupport () noexcept
 	{
 		std::lock_guard<std::mutex> lockGuard (m);
-		std::for_each (weakPointerList.begin (), weakPointerList.end (),
-					   [] (auto& wp) { wp->onPointerDestructed (); });
+		if (weakPointerList)
+		{
+			std::for_each (weakPointerList->begin (), weakPointerList->end (),
+						   [] (auto& wp) { wp->onPointerDestructed (); });
+		}
 	}
 
 protected:
@@ -121,20 +124,28 @@ protected:
 	void addWeakPointer (WeakPointer<I>& wp) noexcept
 	{
 		std::lock_guard<std::mutex> lockGuard (m);
-		weakPointerList.push_back (&wp);
+		if (!weakPointerList)
+			weakPointerList = std::make_unique<std::vector<WeakPointer<I>*>> ();
+		weakPointerList->push_back (&wp);
 	}
 
 	void removeWeakPointer (WeakPointer<I>& wp) noexcept
 	{
 		std::lock_guard<std::mutex> lockGuard (m);
-		auto it = std::find (weakPointerList.begin (), weakPointerList.end (), &wp);
-		if (it != weakPointerList.end ())
-			weakPointerList.erase (it);
+		if (!weakPointerList)
+			return;
+		auto it = std::find (weakPointerList->begin (), weakPointerList->end (), &wp);
+		if (it != weakPointerList->end ())
+		{
+			weakPointerList->erase (it);
+			if (weakPointerList->empty ())
+				weakPointerList.reset ();
+		}
 	}
 
 private:
 	std::mutex m;
-	std::vector<WeakPointer<I>*> weakPointerList;
+	std::unique_ptr<std::vector<WeakPointer<I>*>> weakPointerList;
 
 	friend struct WeakPointer<I>;
 };
