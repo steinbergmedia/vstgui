@@ -5,6 +5,7 @@
 #pragma once
 
 #include "iuidescription.h"
+#include "iviewfactory.h"
 #include "uidescriptionfwd.h"
 #include <list>
 #include <string>
@@ -31,8 +32,10 @@ protected:
 		LastSaveFlagBit,
 	};
 public:
-	UIDescription (const CResourceDescription& uidescFile, IViewFactory* viewFactory = nullptr);
-	UIDescription (IContentProvider* contentProvider, IViewFactory* viewFactory = nullptr);
+	UIDescription (const CResourceDescription& uidescFile,
+				   const SharedPointer<IViewFactory>& viewFactory = {});
+	UIDescription (IContentProvider* contentProvider,
+				   const SharedPointer<IViewFactory>& viewFactory = {});
 	~UIDescription () noexcept override;
 
 	virtual bool parse ();
@@ -75,8 +78,8 @@ public:
 	int32_t getTagForName (UTF8StringPtr name) const override;
 	IControlListener* getControlListener (UTF8StringPtr name) const override;
 	IController* getController () const override;
-	const IViewFactory* getViewFactory () const override;
-	
+	const IViewFactory& getViewFactory () const override;
+
 	UTF8StringPtr lookupColorName (const CColor& color) const override;
 	UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& font) const override;
 	UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const override;

@@ -5,9 +5,38 @@
 #pragma once
 
 #include "../../../uidescription/iuidescription.h"
+#include "../../../uidescription/iviewfactory.h"
 #include "../../../uidescription/uiattributes.h"
 
 namespace VSTGUI {
+
+class ViewFactoryAdapter : public NonAtomicReferenceCounted,
+						   public IViewFactory
+{
+public:
+	CView* createView (const UIAttributes& attributes,
+					   const IUIDescription* description) const override
+	{
+		return nullptr;
+	}
+	bool applyAttributeValues (CView* view, const UIAttributes& attributes,
+							   const IUIDescription* desc) const override
+	{
+		return false;
+	}
+	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
+										 const UIAttributes& attributes,
+										 const IUIDescription* desc) const override
+	{
+		return false;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+							const IUIDescription* desc) const override
+	{
+		return false;
+	}
+	bool viewIsTypeOf (CView* view, const std::string& typeName) const override { return false; }
+};
 
 class UIDescriptionAdapter : public IUIDescription
 {
@@ -46,7 +75,7 @@ public:
 	void collectGradientNames (std::list<const std::string*>& names) const override {}
 	void collectControlTagNames (std::list<const std::string*>& names) const override {}
 
-	const IViewFactory* getViewFactory () const override { return nullptr; }
+	const IViewFactory& getViewFactory () const override { return viewFactory; }
 
 	bool setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr) override
 	{
@@ -56,6 +85,8 @@ public:
 	{
 		return {};
 	}
+
+	ViewFactoryAdapter viewFactory;
 };
 
 }

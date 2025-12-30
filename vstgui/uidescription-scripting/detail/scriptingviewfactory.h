@@ -20,7 +20,7 @@ struct JavaScriptViewFactory : ViewFactoryDelegate,
 	static constexpr CViewAttributeID scriptAttrID = 'scri';
 
 	JavaScriptViewFactory (ScriptingInternal::IScriptContextInternal* scripting,
-						   IViewFactory* origFactory);
+						   const SharedPointer<IViewFactory>& origFactory);
 	~JavaScriptViewFactory () noexcept;
 
 	CView* createView (const UIAttributes& attributes,

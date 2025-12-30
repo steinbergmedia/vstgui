@@ -62,7 +62,7 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UnembedViewOperation::UnembedViewOperation (const SharedPointer<UISelection>& selection,
-											const IViewFactory* factory)
+											const IViewFactory& factory)
 : BaseSelectionOperation<SharedPointer<CView>> (selection), factory (factory)
 {
 	containerView = selection->first ()->asViewContainer ();
@@ -74,7 +74,7 @@ UnembedViewOperation::UnembedViewOperation (const SharedPointer<UISelection>& se
 void UnembedViewOperation::collectSubviews (CViewContainer* container, bool deep)
 {
 	container->forEachChild ([&] (CView* view) {
-		if (factory->getViewName (view))
+		if (factory.getViewName (view))
 		{
 			emplace_back (view);
 		}
@@ -456,7 +456,7 @@ void InsertViewOperation::undo ()
 TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISelection>& selection,
 														CView* view, IdStringPtr viewClassName,
 														const SharedPointer<UIDescription>& desc,
-														const IViewFactory* factory)
+														const IViewFactory& factory)
 : view (view)
 , newView (nullptr)
 , insertIndex (-1)
@@ -465,13 +465,13 @@ TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISe
 , factory (factory)
 , description (desc)
 {
-	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (factory))
+	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (&factory))
 	{
 		UIAttributes attr;
 		if (vfEditingSupport->getAttributesForView (view, desc, attr))
 		{
 			attr.setAttribute (UIViewCreator::kAttrClass, viewClassName);
-			newView = factory->createView (attr, desc);
+			newView = factory.createView (attr, desc);
 			ViewIterator it (parent);
 			while (*it)
 			{
@@ -500,7 +500,7 @@ UTF8StringPtr TransformViewTypeOperation::getName ()
 //-----------------------------------------------------------------------------
 void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewContainer* dst)
 {
-	if (dynamic_cast<const IViewFactoryEditingSupport*> (factory))
+	if (dynamic_cast<const IViewFactoryEditingSupport*> (&factory))
 	{
 		if (src && dst)
 		{
@@ -564,11 +564,11 @@ AttributeChangeAction::AttributeChangeAction (const SharedPointer<UIDescription>
 											  const std::string& attrValue)
 : desc (desc), selection (selection), attrName (attrName), attrValue (attrValue)
 {
-	const auto* viewFactory = desc->getViewFactory ();
+	const auto& viewFactory = desc->getViewFactory ();
 	std::string attrOldValue;
 	for (auto view : *selection)
 	{
-		viewFactory->getAttributeValue (view, attrName, attrOldValue, desc);
+		viewFactory.getAttributeValue (view, attrName, attrOldValue, desc);
 		insert (std::make_pair (view, attrOldValue));
 	}
 	name = "'" + attrName + "' change";
@@ -599,14 +599,14 @@ void AttributeChangeAction::updateSelection ()
 //-----------------------------------------------------------------------------
 void AttributeChangeAction::perform ()
 {
-	const IViewFactory* viewFactory = desc->getViewFactory ();
+	const IViewFactory& viewFactory = desc->getViewFactory ();
 	UIAttributes attr;
 	attr.setAttribute (attrName, attrValue);
 	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		element.first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory->applyAttributeValues (element.first, attr, desc);
+		viewFactory.applyAttributeValues (element.first, attr, desc);
 		element.first->invalid ();	// and afterwards also
 	}
 	selection->viewsDidChange ();
@@ -616,14 +616,14 @@ void AttributeChangeAction::perform ()
 //-----------------------------------------------------------------------------
 void AttributeChangeAction::undo ()
 {
-	const IViewFactory* viewFactory = desc->getViewFactory ();
+	const IViewFactory& viewFactory = desc->getViewFactory ();
 	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		UIAttributes attr;
 		attr.setAttribute (attrName, element.second);
 		element.first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory->applyAttributeValues (element.first, attr, desc);
+		viewFactory.applyAttributeValues (element.first, attr, desc);
 		element.first->invalid ();	// and afterwards also
 	}
 	selection->viewsDidChange ();
@@ -645,10 +645,10 @@ MultipleAttributeChangeAction::MultipleAttributeChangeAction (
 
 //----------------------------------------------------------------------------------------------------
 void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
-	const IViewFactory* viewFactory, const SharedPointer<IUIDescription>& desc, CView* startView,
+	const IViewFactory& viewFactory, const SharedPointer<IUIDescription>& desc, CView* startView,
 	IViewCreator::AttrType type, const std::string& value)
 {
-	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory);
+	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory);
 	if (!viewFactoryEditing)
 		return;
 	std::list<CView*> views;
@@ -663,7 +663,7 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
 				if (viewFactoryEditing->getAttributeType (view, attrName) == type)
 				{
 					std::string typeValue;
-					if (viewFactory->getAttributeValue (view, attrName, typeValue, desc))
+					if (viewFactory.getAttributeValue (view, attrName, typeValue, desc))
 					{
 						if (typeValue == value)
 						{
@@ -691,13 +691,13 @@ void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<C
 //----------------------------------------------------------------------------------------------------
 void MultipleAttributeChangeAction::setAttributeValue (UTF8StringPtr value)
 {
-	const IViewFactory* viewFactory = description->getViewFactory ();
+	const IViewFactory& viewFactory = description->getViewFactory ();
 	for (auto& element : *this)
 	{
 		CView* view = element.first;
 		UIAttributes newAttr;
 		newAttr.setAttribute (element.second, value);
-		viewFactory->applyAttributeValues (view, newAttr, description);
+		viewFactory.applyAttributeValues (view, newAttr, description);
 		view->invalid ();
 	}
 }

@@ -70,11 +70,7 @@ protected:
 /// @endcond
 
 //-----------------------------------------------------------------------------
-static UIViewFactory* getGenericViewFactory ()
-{
-	static UIViewFactory genericViewFactory;
-	return &genericViewFactory;
-}
+static SharedPointer<IViewFactory> getGenericViewFactory () { return makeOwned<UIViewFactory> (); }
 
 IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
 
@@ -87,7 +83,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	std::string filePath;
 	
 	mutable IController* controller {nullptr};
-	IViewFactory* viewFactory {nullptr};
+	SharedPointer<IViewFactory> viewFactory;
 	IContentProvider* contentProvider {nullptr};
 	IBitmapCreator* bitmapCreator { nullptr};
 	IBitmapCreator2* bitmapCreator2 { nullptr};
@@ -112,7 +108,8 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 };
 
 //-----------------------------------------------------------------------------
-UIDescription::UIDescription (const CResourceDescription& uidescFile, IViewFactory* _viewFactory)
+UIDescription::UIDescription (const CResourceDescription& uidescFile,
+							  const SharedPointer<IViewFactory>& _viewFactory)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->uidescFile = uidescFile;
@@ -127,7 +124,8 @@ UIDescription::UIDescription (const CResourceDescription& uidescFile, IViewFacto
 }
 
 //-----------------------------------------------------------------------------
-UIDescription::UIDescription (IContentProvider* contentProvider, IViewFactory* _viewFactory)
+UIDescription::UIDescription (IContentProvider* contentProvider,
+							  const SharedPointer<IViewFactory>& _viewFactory)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->viewFactory = _viewFactory;
@@ -329,9 +327,10 @@ IController* UIDescription::getController () const
 }
 
 //-----------------------------------------------------------------------------
-const IViewFactory* UIDescription::getViewFactory () const
+const IViewFactory& UIDescription::getViewFactory () const
 {
-	return impl->viewFactory;
+	vstgui_assert (impl->viewFactory);
+	return *impl->viewFactory.get ();
 }
 
 //-----------------------------------------------------------------------------
@@ -598,7 +597,7 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 		else
 		{
 		#if VSTGUI_LIVE_EDITING
-			if (auto* factory = dynamic_cast<IViewFactoryEditingSupport*> (impl->viewFactory))
+			if (auto factory = impl->viewFactory.cast<IViewFactoryEditingSupport> ())
 			{
 				auto attr = makeOwned<UIAttributes> ();
 				if (factory->getAttributesForView (view, const_cast<UIDescription*> (this), *attr) == false)
@@ -1681,7 +1680,7 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node, 
 {
 	bool result = false;
 #if VSTGUI_LIVE_EDITING
-	auto* factory = dynamic_cast<IViewFactoryEditingSupport*> (impl->viewFactory);
+	auto factory = impl->viewFactory.cast<IViewFactoryEditingSupport> ();
 	std::list<std::string> attributeNames;
 	CViewContainer* container = view->asViewContainer ();
 	if (factory->getAttributeNamesForView (view, attributeNames))

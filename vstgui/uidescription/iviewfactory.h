@@ -13,7 +13,7 @@ class UIAttributes;
 class IUIDescription;
 
 //-----------------------------------------------------------------------------
-class IViewFactory
+class IViewFactory : virtual public IReference
 {
 public:
 	virtual ~IViewFactory () noexcept = default;
@@ -29,7 +29,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-class IViewFactoryEditingSupport
+class IViewFactoryEditingSupport : virtual public IReference
 {
 public:
 	using StringPtrList = std::list<const std::string*>;
@@ -52,13 +52,13 @@ public:
 
 //------------------------------------------------------------------------
 class ViewFactoryDelegate : public IViewFactory,
-							public IViewFactoryEditingSupport
+							public IViewFactoryEditingSupport,
+							public NonAtomicReferenceCounted
 {
 public:
-	ViewFactoryDelegate (IViewFactory* orig)
+	ViewFactoryDelegate (const SharedPointer<IViewFactory>& orig) : of (orig)
 	{
-		of = orig;
-		ofes = dynamic_cast<IViewFactoryEditingSupport*> (orig);
+		ofes = orig.cast<IViewFactoryEditingSupport> ();
 	}
 
 	CView* createView (const UIAttributes& attributes,
@@ -130,12 +130,12 @@ public:
 	}
 
 protected:
-	IViewFactory* getViewFactory () const { return of; }
+	IViewFactory& getViewFactory () const { return *of.get (); }
 	IViewFactoryEditingSupport* getViewFactoryEditingSupport () const { return ofes; }
 
 private:
-	IViewFactory* of {nullptr};
-	IViewFactoryEditingSupport* ofes {nullptr};
+	SharedPointer<IViewFactory> of;
+	SharedPointer<IViewFactoryEditingSupport> ofes;
 };
 
 //------------------------------------------------------------------------

@@ -165,7 +165,7 @@ protected:
 class UIViewListDataSource : public UINavigationDataSource, public IUIUndoManagerListener
 {
 public:
-	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory,
+	UIViewListDataSource (CViewContainer* view, const IViewFactory& viewFactory,
 						  const SharedPointer<UISelection>& selection,
 						  const SharedPointer<UIUndoManager>& undoManager,
 						  GenericStringListDataBrowserSourceSelectionChanged* delegate);
@@ -192,7 +192,7 @@ protected:
 			}
 		}
 		if (const auto* vfEditingSupport =
-				dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory))
+				dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory))
 			return vfEditingSupport->getViewDisplayName (v);
 		return {};
 	}
@@ -229,7 +229,7 @@ protected:
 	void onUndoManagerChange () override;
 
 	CViewContainer* view;
-	const IViewFactory* viewFactory;
+	const IViewFactory& viewFactory;
 	UIViewListDataSource* next;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
@@ -404,7 +404,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 			CViewContainer* parentView = static_cast<CViewContainer*>(templateDataBrowser->getParentView ());
 			if (parentView)
 			{
-				const IViewFactory* viewFactory = editDescription->getViewFactory ();
+				const IViewFactory& viewFactory = editDescription->getViewFactory ();
 				mainViewDataSource = new UIViewListDataSource (templateView, viewFactory, selection, undoManager, this);
 				UIEditController::setupDataSource (mainViewDataSource);
 				CRect r (templateDataBrowser->getViewSize ());
@@ -542,7 +542,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::UIViewListDataSource (
-	CViewContainer* view, const IViewFactory* viewFactory,
+	CViewContainer* view, const IViewFactory& viewFactory,
 	const SharedPointer<UISelection>& selection, const SharedPointer<UIUndoManager>& undoManager,
 	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)

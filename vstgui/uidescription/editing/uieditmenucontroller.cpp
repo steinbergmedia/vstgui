@@ -222,7 +222,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		else if (cmdName == "Add New Template")
 		{
 			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
-					description->getViewFactory ()))
+					&description->getViewFactory ()))
 			{
 				auto submenu = makeOwned<COptionMenu> ();
 				auto viewAndDisplayNames =
@@ -292,7 +292,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			if (enable == false)
 				return true;
 			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
-					description->getViewFactory ()))
+					&description->getViewFactory ()))
 			{
 				auto submenu = makeOwned<COptionMenu> ();
 				item.setSubmenu (submenu);
@@ -344,7 +344,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			}
 
 			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
-					description->getViewFactory ()))
+					&description->getViewFactory ()))
 			{
 				auto submenu = makeOwned<COptionMenu> ();
 				item.setSubmenu (submenu);
@@ -388,7 +388,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		if (cmdName == "Select Children Of Type")
 		{
 			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
-					description->getViewFactory ()))
+					&description->getViewFactory ()))
 			{
 				auto submenu = makeOwned<COptionMenu> ();
 				item.setSubmenu (submenu);
@@ -534,10 +534,10 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	}
 	else if (cmdCategory == "Embed")
 	{
-		const IViewFactory* viewFactory = description->getViewFactory ();
+		const IViewFactory& viewFactory = description->getViewFactory ();
 		UIAttributes viewAttr;
 		viewAttr.setAttribute (UIViewCreator::kAttrClass, std::string (cmdName));
-		if (auto newContainer = viewFactory->createView (viewAttr, description)->asViewContainer ())
+		if (auto newContainer = viewFactory.createView (viewAttr, description)->asViewContainer ())
 		{
 			auto action = makeOwned<EmbedViewOperation> (selection, newContainer);
 			undoManager->pushAndPerform (action);
@@ -558,9 +558,6 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	}
 	else if (cmdCategory == "Select Children Of Type")
 	{
-		const auto* viewFactory = description->getViewFactory ();
-		if (!viewFactory)
-			return false;
 		std::vector<CView*> newSelection;
 		for (auto& entry : *selection)
 		{

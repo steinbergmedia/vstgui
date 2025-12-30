@@ -75,7 +75,7 @@ public:
 class UnembedViewOperation : public BaseSelectionOperation<SharedPointer<CView> >
 {
 public:
-	UnembedViewOperation (const SharedPointer<UISelection>& selection, const IViewFactory* factory);
+	UnembedViewOperation (const SharedPointer<UISelection>& selection, const IViewFactory& factory);
 	~UnembedViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
@@ -85,7 +85,7 @@ public:
 
 protected:
 	void collectSubviews (CViewContainer* container, bool deep);
-	const IViewFactory* factory;
+	const IViewFactory& factory;
 	SharedPointer<CViewContainer> containerView;
 	CViewContainer* parent;
 };
@@ -190,7 +190,7 @@ class TransformViewTypeOperation : public IAction
 public:
 	TransformViewTypeOperation (const SharedPointer<UISelection>& selection, CView* view,
 								IdStringPtr viewClassName, const SharedPointer<UIDescription>& desc,
-								const IViewFactory* factory);
+								const IViewFactory& factory);
 	~TransformViewTypeOperation () override;
 
 	UTF8StringPtr getName () override;
@@ -204,7 +204,7 @@ protected:
 	int32_t insertIndex;
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<UISelection> selection;
-	const IViewFactory* factory;
+	const IViewFactory& factory;
 	SharedPointer<UIDescription> description;
 };
 
@@ -243,7 +243,7 @@ public:
 protected:
 	void setAttributeValue (UTF8StringPtr value);
 	static void collectAllSubViews (CView* view, std::list<CView*>& views);
-	void collectViewsWithAttributeValue (const IViewFactory* viewFactory,
+	void collectViewsWithAttributeValue (const IViewFactory& viewFactory,
 										 const SharedPointer<IUIDescription>& desc,
 										 CView* startView, IViewCreator::AttrType type,
 										 const std::string& value);

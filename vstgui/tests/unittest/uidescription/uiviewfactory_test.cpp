@@ -184,7 +184,7 @@ struct ViewCreator : public ViewCreatorAdapter
 
 ViewCreator viewCreator;
 
-static SharedPointer<CView> createView (IViewFactory* factory)
+static SharedPointer<CView> createView (const SharedPointer<IViewFactory>& factory)
 {
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewCreator.getViewName ());

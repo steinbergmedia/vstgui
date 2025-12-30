@@ -30,8 +30,9 @@ struct IUIDescriptionAddOn
 														 const CreateTemplateViewFunc& f) = 0;
 
 	/** the add-on can wrap the view factory or return the original one if not needed */
-	virtual IViewFactory* getViewFactory (const SharedPointer<IUIDescription>& desc,
-										  IViewFactory* originalFactory) = 0;
+	virtual SharedPointer<IViewFactory>
+		getViewFactory (const SharedPointer<IUIDescription>& desc,
+						const SharedPointer<IViewFactory>& originalFactory) = 0;
 
 	/** called when the desc is going into edit mode */
 	virtual void onEditingStart (const SharedPointer<IUIDescription>& desc) = 0;
@@ -52,8 +53,9 @@ struct UIDescriptionAddOnAdapter : IUIDescriptionAddOn
 			return f (name, controller);
 		};
 	}
-	IViewFactory* getViewFactory (const SharedPointer<IUIDescription>& desc,
-								  IViewFactory* originalFactory) override
+	SharedPointer<IViewFactory>
+		getViewFactory (const SharedPointer<IUIDescription>& desc,
+						const SharedPointer<IViewFactory>& originalFactory) override
 	{
 		return originalFactory;
 	}

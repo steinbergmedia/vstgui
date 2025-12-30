@@ -895,7 +895,7 @@ public:
 	void collectMenuItemNames (StringPtrList& names) override
 	{
 		const auto* viewFactory =
-			dynamic_cast<const IViewFactoryEditingSupport*> (description->getViewFactory ());
+			dynamic_cast<const IViewFactoryEditingSupport*> (&description->getViewFactory ());
 		if (viewFactory)
 		{
 			viewFactory->getPossibleAttributeListValues (selection->first (), attrName, names);
@@ -1174,7 +1174,7 @@ void UIAttributesController::onUndoManagerChange ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::validateAttributeViews ()
 {
-	const auto* viewFactory = static_cast<const IViewFactory*> (editDescription->getViewFactory ());
+	const auto& viewFactory = editDescription->getViewFactory ();
 
 	for (auto& controller : attributeControllers)
 	{
@@ -1184,7 +1184,8 @@ void UIAttributesController::validateAttributeViews ()
 		for (const auto& view : *selection)
 		{
 			std::string temp;
-			viewFactory->getAttributeValue (view, controller->getAttributeName (), temp, editDescription);
+			viewFactory.getAttributeValue (view, controller->getAttributeName (), temp,
+										   editDescription);
 			if (temp != attrValue && !first)
 				hasDifferentValues = true;
 			attrValue = temp;
@@ -1196,7 +1197,7 @@ void UIAttributesController::validateAttributeViews ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIAttributesController::createValueViewForAttributeType (const IViewFactory* viewFactory,
+CView* UIAttributesController::createValueViewForAttributeType (const IViewFactory& viewFactory,
 																CView* view,
 																const std::string& attrName,
 																IViewCreator::AttrType attrType)
@@ -1227,7 +1228,7 @@ CView* UIAttributesController::createValueViewForAttributeType (const IViewFacto
 		{
 			double minValue, maxValue;
 			const auto* viewFactoryEditing =
-				dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory);
+				dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory);
 			if (viewFactoryEditing->getAttributeValueRange (view, attrName, minValue, maxValue))
 			{
 				CView* valueView = editorDescription->createView ("attributes.number", this);
@@ -1275,15 +1276,15 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	
 	bool hasDifferentValues = false;
 
-	const auto* viewFactory = editDescription->getViewFactory ();
-	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (viewFactory);
+	const auto& viewFactory = editDescription->getViewFactory ();
+	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory);
 
 	std::string attrValue;
 	bool first = true;
 	for (const auto& view : *selection)
 	{
 		std::string temp;
-		viewFactory->getAttributeValue (view, attrName, temp, editDescription);
+		viewFactory.getAttributeValue (view, attrName, temp, editDescription);
 		if (temp != attrValue && !first)
 			hasDifferentValues = true;
 		attrValue = temp;
@@ -1349,7 +1350,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 void UIAttributesController::getConsolidatedAttributeNames (StringList& attrNames, const std::string& filter)
 {
 	const auto* viewFactory =
-		dynamic_cast<const IViewFactoryEditingSupport*> (editDescription->getViewFactory ());
+		dynamic_cast<const IViewFactoryEditingSupport*> (&editDescription->getViewFactory ());
 	vstgui_assert (viewFactory);
 	if (!viewFactory)
 		return;
@@ -1395,7 +1396,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 void UIAttributesController::rebuildAttributesView ()
 {
 	auto viewFactory =
-		dynamic_cast<const IViewFactoryEditingSupport*> (editDescription->getViewFactory ());
+		dynamic_cast<const IViewFactoryEditingSupport*> (&editDescription->getViewFactory ());
 	if (attributeView == nullptr || viewFactory == nullptr)
 		return;
 

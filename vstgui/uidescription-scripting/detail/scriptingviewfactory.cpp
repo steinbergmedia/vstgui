@@ -10,7 +10,7 @@ namespace ScriptingInternal {
 
 //------------------------------------------------------------------------
 JavaScriptViewFactory::JavaScriptViewFactory (IScriptContextInternal* scripting,
-											  IViewFactory* origFactory)
+											  const SharedPointer<IViewFactory>& origFactory)
 : Super (origFactory), scriptContext (scripting)
 {
 }

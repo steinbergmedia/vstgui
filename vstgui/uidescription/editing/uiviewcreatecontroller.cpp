@@ -21,7 +21,7 @@ namespace VSTGUI {
 class UIViewCreatorDataSource : public UIBaseDataSource
 {
 public:
-	UIViewCreatorDataSource (const IViewFactory* factory,
+	UIViewCreatorDataSource (const IViewFactory& factory,
 							 const SharedPointer<UIDescription>& description);
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
@@ -37,7 +37,7 @@ public:
 protected:
 	SharedPointer<UISelection> createSelection (int32_t row);
 	IViewFactoryEditingSupport::ViewAndDisplayNameList viewAndDisplayNameList;
-	const IViewFactory* factory;
+	const IViewFactory& factory;
 	DragStartMouseObserver dragStartMouseObserver;
 };
 
@@ -115,7 +115,7 @@ void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIViewCreatorDataSource::UIViewCreatorDataSource (const IViewFactory* factory,
+UIViewCreatorDataSource::UIViewCreatorDataSource (const IViewFactory& factory,
 												  const SharedPointer<UIDescription>& description)
 : UIBaseDataSource (description, {}, nullptr), factory (factory)
 {
@@ -124,7 +124,7 @@ UIViewCreatorDataSource::UIViewCreatorDataSource (const IViewFactory* factory,
 //----------------------------------------------------------------------------------------------------
 void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 {
-	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (factory))
+	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (&factory))
 	{
 		viewAndDisplayNameList = vfEditingSupport->collectRegisteredViewAndDisplayNames ();
 		for (const auto& e : viewAndDisplayNameList)
@@ -151,7 +151,7 @@ void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<UISelection> createSelectionFromViewName (
-	const std::string& viewName, const IViewFactory* factory, const UIDescription* description,
+	const std::string& viewName, const IViewFactory& factory, const UIDescription* description,
 	const SharedPointer<UIAttributes>& optionalAttributes)
 {
 	SharedPointer<UISelection> selection;
@@ -162,7 +162,7 @@ SharedPointer<UISelection> createSelectionFromViewName (
 		for (auto& a : *optionalAttributes)
 			viewAttr.setAttribute (a.first, a.second);
 	}
-	CView* view = factory->createView (viewAttr, description);
+	CView* view = factory.createView (viewAttr, description);
 	if (view)
 	{
 		if (view->getViewSize ().isEmpty ())

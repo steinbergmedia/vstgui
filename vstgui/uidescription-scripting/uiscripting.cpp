@@ -669,7 +669,7 @@ std::string ScriptContext::eval (std::string_view script) const
 //------------------------------------------------------------------------
 struct UIScripting::Impl
 {
-	using JSViewFactoryPtr = std::unique_ptr<ScriptingInternal::JavaScriptViewFactory>;
+	using JSViewFactoryPtr = SharedPointer<ScriptingInternal::JavaScriptViewFactory>;
 	using ScriptContextPtr = std::unique_ptr<ScriptingInternal::ScriptContext>;
 
 	struct Hasher
@@ -749,14 +749,14 @@ auto UIScripting::onCreateTemplateView (const SharedPointer<IUIDescription>& des
 }
 
 //------------------------------------------------------------------------
-IViewFactory* UIScripting::getViewFactory (const SharedPointer<IUIDescription>& desc,
-										   IViewFactory* originalFactory)
+SharedPointer<IViewFactory> UIScripting::getViewFactory (
+	const SharedPointer<IUIDescription>& desc, const SharedPointer<IViewFactory>& originalFactory)
 {
 	using namespace ScriptingInternal;
 
 	auto it = impl->map.find (WeakPointer<IUIDescription> (desc));
 	if (it != impl->map.end ())
-		return it->second.first.get ();
+		return it->second.first;
 	auto onScriptException = Impl::onScriptExceptionFunc;
 	if (!onScriptException)
 		onScriptException = [] (std::string_view reason) {
@@ -774,10 +774,10 @@ IViewFactory* UIScripting::getViewFactory (const SharedPointer<IUIDescription>& 
 	};
 	auto scripting = std::make_unique<ScriptContext> (desc, std::move (onScriptException),
 													  std::move (readScriptContentsFunc));
-	auto viewFactory = std::make_unique<JavaScriptViewFactory> (scripting.get (), originalFactory);
+	auto viewFactory = makeOwned<JavaScriptViewFactory> (scripting.get (), originalFactory);
 	auto result =
 		impl->map.emplace (desc, std::make_pair (std::move (viewFactory), std::move (scripting)));
-	return result.first->second.first.get ();
+	return result.first->second.first;
 }
 
 //------------------------------------------------------------------------

@@ -48,7 +48,7 @@ protected:
 	CView* createViewForAttribute (const std::string& attrName);
 	void rebuildAttributesView ();
 	void validateAttributeViews ();
-	CView* createValueViewForAttributeType (const IViewFactory* viewFactory, CView* view,
+	CView* createValueViewForAttributeType (const IViewFactory& viewFactory, CView* view,
 											const std::string& attrName,
 											IViewCreator::AttrType attrType);
 	void getConsolidatedAttributeNames (StringList& result, const std::string& filter);
