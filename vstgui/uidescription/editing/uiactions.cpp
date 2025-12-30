@@ -964,29 +964,20 @@ NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (
 , performOrUndo (performOrUndo)
 {
 	if (rect)
-		newRect = new CRect (*rect);
+		newRect = std::make_unique<CRect> (*rect);
 	auto bitmap = description->getBitmap (name);
 	if (bitmap)
 	{
 		if (auto tiledBitmap = bitmap.cast<CNinePartTiledBitmap> ())
 		{
 			const CNinePartTiledDescription& offset = tiledBitmap->getPartOffsets ();
-			oldRect = new CRect;
+			oldRect = std::make_unique<CRect> ();
 			oldRect->left = offset.left;
 			oldRect->top = offset.top;
 			oldRect->right = offset.right;
 			oldRect->bottom = offset.bottom;
 		}
 	}
-}
-
-//----------------------------------------------------------------------------------------------------
-NinePartTiledBitmapChangeAction::~NinePartTiledBitmapChangeAction ()
-{
-	if (newRect)
-		delete newRect;
-	if (oldRect)
-		delete oldRect;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1000,9 +991,11 @@ void NinePartTiledBitmapChangeAction::perform ()
 {
 	if (performOrUndo)
 	{
-		auto bitmap = description->getBitmap (name.c_str ());
-		if (bitmap)
-			description->changeBitmap (name.c_str (), bitmap->getResourceDescription ().u.name, newRect);
+		if (auto bitmap = description->getBitmap (name.data ()))
+		{
+			description->changeBitmap (name.data (), bitmap->getResourceDescription ().u.name,
+									   newRect.get ());
+		}
 	}
 }
 
@@ -1011,9 +1004,11 @@ void NinePartTiledBitmapChangeAction::undo ()
 {
 	if (performOrUndo == false)
 	{
-		auto bitmap = description->getBitmap (name.c_str ());
-		if (bitmap)
-			description->changeBitmap (name.c_str (), bitmap->getResourceDescription ().u.name, oldRect);
+		if (auto bitmap = description->getBitmap (name.data ()))
+		{
+			description->changeBitmap (name.data (), bitmap->getResourceDescription ().u.name,
+									   oldRect.get ());
+		}
 	}
 }
 

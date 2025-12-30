@@ -376,16 +376,14 @@ class NinePartTiledBitmapChangeAction : public IAction
 public:
 	NinePartTiledBitmapChangeAction (const SharedPointer<UIDescription>& description,
 									 UTF8StringPtr name, const CRect* rect, bool performOrUndo);
-	~NinePartTiledBitmapChangeAction () override;
-	
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string name;
-	CRect* oldRect;
-	CRect* newRect;
+	std::unique_ptr<CRect> oldRect;
+	std::unique_ptr<CRect> newRect;
 	bool performOrUndo;
 };
 
