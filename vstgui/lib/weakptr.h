@@ -52,7 +52,7 @@ Lifecycle:
 - Copy construction/assignment attempts to lock the source, then registers with the live target
   if available.
 - Destruction or reset() unregisters the WeakPointer from the target if it is still alive.
-- When the target object is destroyed, WeakPointerSupport<I> calls onPointerDestructed() so that
+- When the target object is destroyed, WeakPointerSupport<I> calls onObjectDestructed() so that
   the WeakPointer becomes expired() without needing explicit user action.
 
 Common patterns:
@@ -70,22 +70,25 @@ Notes:
 template<class I>
 struct WeakPointer final
 {
-	inline WeakPointer () {}
-	inline WeakPointer (const SharedPointer<I>& object);
-	inline WeakPointer (const WeakPointer<I>& object);
+	inline WeakPointer () noexcept {}
+	inline WeakPointer (const SharedPointer<I>& object) noexcept;
+	inline WeakPointer (const WeakPointer<I>& object) noexcept;
+	inline WeakPointer (WeakPointer<I>&& other) noexcept;
 	inline ~WeakPointer () noexcept;
 
 	inline WeakPointer<I>& operator= (const SharedPointer<I>& other) noexcept;
 	inline WeakPointer<I>& operator= (const WeakPointer<I>& other) noexcept;
+	inline WeakPointer<I>& operator= (WeakPointer<I>&& other) noexcept;
 
 	inline SharedPointer<I> lock () const noexcept;
 	inline void reset () noexcept;
+	inline void swap (WeakPointer<I>& other) noexcept;
 	inline bool expired () const noexcept;
 
 protected:
 	friend struct WeakPointerSupport<I>;
 
-	inline void onPointerDestructed () noexcept;
+	inline void onObjectDestructed () noexcept;
 
 	mutable std::mutex m;
 	WeakPointerSupport<I>* object {nullptr};
@@ -111,7 +114,7 @@ struct WeakPointerSupport
 		if (weakPointerList)
 		{
 			std::for_each (weakPointerList->begin (), weakPointerList->end (),
-						   [] (auto& wp) { wp->onPointerDestructed (); });
+						   [] (auto& wp) { wp->onObjectDestructed (); });
 		}
 	}
 
@@ -121,20 +124,20 @@ protected:
 		return {shared (static_cast<I*> (this))};
 	}
 
-	void addWeakPointer (WeakPointer<I>& wp) noexcept
+	void registerWeakPointer (WeakPointer<I>* wp) noexcept
 	{
 		std::lock_guard<std::mutex> lockGuard (m);
 		if (!weakPointerList)
 			weakPointerList = std::make_unique<std::vector<WeakPointer<I>*>> ();
-		weakPointerList->push_back (&wp);
+		weakPointerList->push_back (wp);
 	}
 
-	void removeWeakPointer (WeakPointer<I>& wp) noexcept
+	void unregisterWeakPointer (WeakPointer<I>* wp) noexcept
 	{
 		std::lock_guard<std::mutex> lockGuard (m);
 		if (!weakPointerList)
 			return;
-		auto it = std::find (weakPointerList->begin (), weakPointerList->end (), &wp);
+		auto it = std::find (weakPointerList->begin (), weakPointerList->end (), wp);
 		if (it != weakPointerList->end ())
 		{
 			weakPointerList->erase (it);
@@ -152,21 +155,29 @@ private:
 
 //------------------------------------------------------------------------
 template<class I>
-inline WeakPointer<I>::WeakPointer (const SharedPointer<I>& object) : object (object.get ())
+inline WeakPointer<I>::WeakPointer (const SharedPointer<I>& object) noexcept
+: object (object.get ())
 {
 	if (object)
-		object->addWeakPointer (*this);
+		object->registerWeakPointer (this);
 }
 
 //------------------------------------------------------------------------
 template<class I>
-inline WeakPointer<I>::WeakPointer (const WeakPointer<I>& other)
+inline WeakPointer<I>::WeakPointer (const WeakPointer<I>& other) noexcept
 {
 	if (auto spo = other.lock ())
 	{
 		object = spo.get ();
-		object->addWeakPointer (*this);
+		object->registerWeakPointer (this);
 	}
+}
+
+//------------------------------------------------------------------------
+template<class I>
+inline WeakPointer<I>::WeakPointer (WeakPointer<I>&& other) noexcept
+{
+	*this = std::move (other);
 }
 
 //------------------------------------------------------------------------
@@ -186,7 +197,7 @@ inline WeakPointer<I>& WeakPointer<I>::operator= (const SharedPointer<I>& other)
 	if (other)
 	{
 		object = other.get ();
-		object->addWeakPointer (*this);
+		object->registerWeakPointer (this);
 	}
 	return *this;
 }
@@ -200,9 +211,43 @@ inline WeakPointer<I>& WeakPointer<I>::operator= (const WeakPointer<I>& other) n
 	if (auto spo = other.lock ())
 	{
 		object = spo.get ();
-		object->addWeakPointer (*this);
+		object->registerWeakPointer (this);
 	}
 	return *this;
+}
+
+//------------------------------------------------------------------------
+template<class I>
+inline WeakPointer<I>& WeakPointer<I>::operator= (WeakPointer<I>&& other) noexcept
+{
+	auto tsp = lock ();
+	auto osp = other.lock ();
+	if (tsp)
+		object->unregisterWeakPointer (this);
+	if (osp)
+		other.object->unregisterWeakPointer (&other);
+	object = other.object;
+	other.object = nullptr;
+	if (object)
+		object->registerWeakPointer (this);
+	return *this;
+}
+
+//------------------------------------------------------------------------
+template<class I>
+inline void WeakPointer<I>::swap (WeakPointer<I>& other) noexcept
+{
+	auto tsp = lock ();
+	auto osp = other.lock ();
+	if (tsp)
+		object->unregisterWeakPointer (this);
+	if (osp)
+		other.object->unregisterWeakPointer (&other);
+	std::swap (object, other.object);
+	if (object)
+		object->registerWeakPointer (this);
+	if (other.object)
+		other.object->registerWeakPointer (&other);
 }
 
 //------------------------------------------------------------------------
@@ -217,7 +262,7 @@ inline SharedPointer<I> WeakPointer<I>::lock () const noexcept
 
 //------------------------------------------------------------------------
 template<class I>
-inline void WeakPointer<I>::onPointerDestructed () noexcept
+inline void WeakPointer<I>::onObjectDestructed () noexcept
 {
 	std::lock_guard<std::mutex> lockGuard (m);
 	object = nullptr;
@@ -230,7 +275,7 @@ inline void WeakPointer<I>::reset () noexcept
 	if (auto spo = lock ())
 	{
 		object = nullptr;
-		spo->removeWeakPointer (*this);
+		spo->unregisterWeakPointer (this);
 	}
 }
 

@@ -45,6 +45,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/task_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/utf8string_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/utf8stringview_test.cpp"
+	"${VSTGUI_TEST_BASE}lib/weakptr_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/canimationsplashscreencreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/canimknobcreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/ccheckboxcreator_test.cpp"
