@@ -95,7 +95,9 @@ public:
 	//@}
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	void setSubmenu (COptionMenu* submenu);
+	VSTGUI_DEPRECATED_MSG (void setSubmenu (COptionMenu* submenu);
+						   ,
+						   "use CMenuItem::setSubmenu (const SharedPointer<COptionMenu>&) instead")
 	int32_t getVirtualKeyCode () const;
 	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);
 #endif
@@ -281,8 +283,12 @@ public:
 	virtual	bool removeAllEntry ();
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	virtual SharedPointer<CMenuItem> addEntry (CMenuItem* item, int32_t index = -1);
-	virtual SharedPointer<CMenuItem> addEntry (COptionMenu* submenu, const UTF8String& title);
+	VSTGUI_DEPRECATED_MSG (
+		virtual SharedPointer<CMenuItem> addEntry (CMenuItem* item, int32_t index = -1);
+		, "use COptionMenu::addEntry (const SharedPointer<CMenuItem>&, int32_t) instead")
+	VSTGUI_DEPRECATED_MSG (
+		virtual SharedPointer<CMenuItem> addEntry (COptionMenu* submenu, const UTF8String& title);
+		, "use COptionMenu::addEntry (const SharedPointer<CMenuItem>&, const UTF8String&) instead")
 #endif
 	/** change check state of entry at index */
 	virtual bool checkEntry (int32_t index, bool state);
