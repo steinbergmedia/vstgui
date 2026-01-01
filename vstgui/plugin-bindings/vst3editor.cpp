@@ -413,19 +413,19 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPt
 						UTF8StringPtr _xmlFile)
 : VSTGUIEditor (controller), delegate (dynamic_cast<IVST3EditorDelegate*> (controller))
 {
-	description = new UIDescription (_xmlFile);
+	description = makeOwned<UIDescription> (_xmlFile);
 	viewName = _viewName;
 	xmlFile = _xmlFile;
 	init ();
 }
 
 //-----------------------------------------------------------------------------
-VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller,
-						UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
+VST3Editor::VST3Editor (const SharedPointer<UIDescription>& desc,
+						Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName,
+						UTF8StringPtr _xmlFile)
 : VSTGUIEditor (controller), delegate (dynamic_cast<IVST3EditorDelegate*> (controller))
 {
 	description = desc;
-	description->remember ();
 	viewName = _viewName;
 	if (_xmlFile)
 		xmlFile = _xmlFile;
@@ -433,10 +433,7 @@ VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* con
 }
 
 //-----------------------------------------------------------------------------
-VST3Editor::~VST3Editor ()
-{
-	description->forget ();
-}
+VST3Editor::~VST3Editor () {}
 
 //-----------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID iid, void** obj)
@@ -458,7 +455,7 @@ void VST3Editor::init ()
 	if (description->parse ())
 	{
 		// get sizes
-		const auto* attr = description->getViewAttributes (viewName.c_str ());
+		auto attr = description->getViewAttributes (viewName.c_str ());
 		if (attr)
 		{
 			const std::string* sizeStr = attr->getAttributeValue ("size");
@@ -810,7 +807,9 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-static void addCOptionMenuEntriesToIContextMenu (VST3Editor* editor, COptionMenu* menu, Steinberg::Vst::IContextMenu* contextMenu)
+static void addCOptionMenuEntriesToIContextMenu (
+	VST3Editor* editor, const SharedPointer<COptionMenu>& menu,
+	const Steinberg::IPtr<Steinberg::Vst::IContextMenu>& contextMenu)
 {
 	for (auto it = menu->getItemList ().begin (), end = menu->getItemList ().end (); it != end;
 		 ++it)
@@ -864,49 +863,53 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 
 	if (event.buttonState.isRight ())
 	{
-		COptionMenu* controllerMenu = (delegate && editingEnabled == false) ? delegate->createContextMenu (event.mousePosition, this) : nullptr;
+		SharedPointer<COptionMenu> controllerMenu =
+			(delegate && editingEnabled == false)
+				? VSTGUI::owned (delegate->createContextMenu (event.mousePosition, this))
+				: nullptr;
 		if (allowedZoomFactors.empty () == false && editingEnabled == false)
 		{
 			if (controllerMenu == nullptr)
-				controllerMenu = new COptionMenu ();
+				controllerMenu = VSTGUI::makeOwned<COptionMenu> ();
 			else
 				controllerMenu->addSeparator ();
-			auto* zoomMenu = new COptionMenu ();
+			auto zoomMenu = makeOwned<COptionMenu> ();
 			zoomMenu->setStyle (COptionMenu::kMultipleCheckStyle);
 			char zoomFactorString[128];
 			int32_t zoomFactorTag = 0;
-			for (std::vector<double>::const_iterator it = allowedZoomFactors.begin (), end = allowedZoomFactors.end (); it != end; ++it, ++zoomFactorTag)
+			for (auto it = allowedZoomFactors.begin (), end = allowedZoomFactors.end (); it != end;
+				 ++it, ++zoomFactorTag)
 			{
 				snprintf (zoomFactorString, std::size (zoomFactorString), "%d%%",
 						  static_cast<int> ((*it) * 100));
-				CMenuItem* item = zoomMenu->addEntry (
-					new CCommandMenuItem ({zoomFactorString, zoomFactorTag, VSTGUI::shared (this),
-										   "Zoom", zoomFactorString}));
+				auto item = zoomMenu->addEntry (VSTGUI::makeOwned<CCommandMenuItem> (
+					CCommandMenuItem::Desc {zoomFactorString, zoomFactorTag, VSTGUI::shared (this),
+											"Zoom", zoomFactorString}));
 				if (getZoomFactor () == *it)
 					item->setChecked (true);
 			}
-			CMenuItem* item = controllerMenu->addEntry ("UI Zoom");
+			auto item = controllerMenu->addEntry ("UI Zoom");
 			item->setSubmenu (zoomMenu);
 		}
 	#if VSTGUI_LIVE_EDITING
 		if (editingEnabled == false)
 		{
 			if (controllerMenu == nullptr)
-				controllerMenu = new COptionMenu ();
+				controllerMenu = VSTGUI::makeOwned<COptionMenu> ();
 			else
 				controllerMenu->addSeparator ();
-			CMenuItem* item = controllerMenu->addEntry (
-				new CCommandMenuItem ({"Open UIDescription Editor", VSTGUI::shared (this), "File",
-									   "Open UIDescription Editor"}));
+			auto item = controllerMenu->addEntry (VSTGUI::makeOwned<CCommandMenuItem> (
+				CCommandMenuItem::Desc {"Open UIDescription Editor", VSTGUI::shared (this), "File",
+										"Open UIDescription Editor"}));
 			item->setKey ("e", kControl);
-			item = controllerMenu->addEntry (
-				new CCommandMenuItem ({"Show 'Open UI Editor' Button", VSTGUI::shared (this),
-									   "File", "Show Editor Button"}));
+			item = controllerMenu->addEntry (VSTGUI::makeOwned<CCommandMenuItem> (
+				CCommandMenuItem::Desc {"Show 'Open UI Editor' Button", VSTGUI::shared (this),
+										"File", "Show Editor Button"}));
 			if (enableShowEditButton ())
 				item->setChecked ();
-			item = controllerMenu->addEntry (
-				new CCommandMenuItem ({"Save Editor Screenshot", VSTGUI::shared (this), "File",
-									   "Save Editor Screenshot"}));
+			item = controllerMenu->addEntry (VSTGUI::makeOwned<CCommandMenuItem> (
+				CCommandMenuItem::Desc {"Save Editor Screenshot", VSTGUI::shared (this), "File",
+										"Save Editor Screenshot"}));
 		}
 	#endif
 		CViewContainer::ViewList views;
@@ -916,7 +919,7 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 		{
 			auto createOrPrepareMenu = [&] () {
 				if (controllerMenu == nullptr)
-					controllerMenu = new COptionMenu ();
+					controllerMenu = VSTGUI::makeOwned<COptionMenu> ();
 				else
 					controllerMenu->addSeparator ();
 			};
@@ -945,16 +948,16 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 			CPoint where2 (event.mousePosition);
 			getFrame ()->getTransform ().transform (where2);
 			bool paramFound = findParameter ((Steinberg::int32)where2.x, (Steinberg::int32)where2.y, paramID) == Steinberg::kResultTrue;
-			Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, paramFound ? &paramID : nullptr);
+			auto contextMenu = Steinberg::owned (
+				handler->createContextMenu (this, paramFound ? &paramID : nullptr));
 			if (contextMenu)
 			{
 				if (controllerMenu)
 					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu,
 					                                                         contextMenu);
-				getFrame ()->doAfterEventProcessing ([=] () {
+				getFrame ()->doAfterEventProcessing ([contextMenu, where2] () {
 					contextMenu->popup (static_cast<Steinberg::UCoord> (where2.x),
-					                    static_cast<Steinberg::UCoord> (where2.y));
-					contextMenu->release ();
+										static_cast<Steinberg::UCoord> (where2.y));
 				});
 				event.consumed = true;
 			}
@@ -964,19 +967,16 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 	#endif
 			if (controllerMenu && controllerMenu->getNbEntries () > 0)
 			{
-				controllerMenu->remember ();
-				SharedPointer<CFrame> blockFrame = shared (getFrame ());
-				getFrame ()->doAfterEventProcessing ([=, mousePosition = event.mousePosition] () {
+				getFrame ()->doAfterEventProcessing ([controllerMenu,
+													  blockFrame = shared (getFrame ()),
+													  mousePosition = event.mousePosition] () {
 					controllerMenu->setStyle (COptionMenu::kPopupStyle |
 					                          COptionMenu::kMultipleCheckStyle);
 					controllerMenu->popup (blockFrame, mousePosition);
-					controllerMenu->forget ();
 				});
 				event.consumed = true;
 			}
 		}
-		if (controllerMenu)
-			controllerMenu->forget ();
 	}
 }
 
@@ -2027,29 +2027,29 @@ bool VST3Editor::enableEditing (bool state)
 				getFrame ()->setFocusDrawingEnabled (true);
 				getFrame ()->setFocusWidth (1);
 
-				COptionMenu* fileMenu = editController->getMenuController ()->getFileMenu ();
-				if (fileMenu)
+				if (auto fileMenu = editController->getMenuController ()->getFileMenu ())
 				{
-					CMenuItem* item = fileMenu->addEntry (
-						new CCommandMenuItem ({"Save", VSTGUI::shared (this), "File", "Save"}), 0);
+					auto item =
+						fileMenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+												"Save", VSTGUI::shared (this), "File", "Save"}),
+											0);
 					item->setKey ("s", kControl);
 					item = fileMenu->addEntry (
-						new CCommandMenuItem (
-							{"Save As..", VSTGUI::shared (this), "File", "Save As"}),
+						makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+							"Save As..", VSTGUI::shared (this), "File", "Save As"}),
 						1);
 					item->setKey ("s", kShift | kControl);
-					item = fileMenu->addEntry (
-						new CCommandMenuItem ({"Close Editor", VSTGUI::shared (this), "File",
-											   "Close UIDescription Editor"}));
+					item = fileMenu->addEntry (makeOwned<CCommandMenuItem> (
+						CCommandMenuItem::Desc {"Close Editor", VSTGUI::shared (this), "File",
+												"Close UIDescription Editor"}));
 					item->setKey ("e", kControl);
 				}
-				COptionMenu* editMenu = editController->getMenuController ()->getEditMenu ();
-				if (editMenu)
+				if (auto editMenu = editController->getMenuController ()->getEditMenu ())
 				{
 					editMenu->addSeparator ();
-					editMenu->addEntry (
-						new CCommandMenuItem ({"Sync Parameter Tags", VSTGUI::shared (this), "Edit",
-											   "Sync Parameter Tags"}));
+					editMenu->addEntry (makeOwned<CCommandMenuItem> (
+						CCommandMenuItem::Desc {"Sync Parameter Tags", VSTGUI::shared (this),
+												"Edit", "Sync Parameter Tags"}));
 				}
 				return true;
 			}
@@ -2177,10 +2177,7 @@ IVST3EditorDelegate* VST3Editor::getDelegate () const
 }
 
 //------------------------------------------------------------------------
-UIDescription* VST3Editor::getUIDescription () const
-{
-	return description;
-}
+SharedPointer<UIDescription> VST3Editor::getUIDescription () const { return description; }
 
 //------------------------------------------------------------------------
 //--- AspectRatioVST3Editor

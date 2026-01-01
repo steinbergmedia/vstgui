@@ -115,7 +115,9 @@ class VST3Editor : public Steinberg::Vst::VSTGUIEditor,
 {
 public:
 	VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile);
-	VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile = nullptr);
+	VST3Editor (const SharedPointer<UIDescription>& desc,
+				Steinberg::Vst::EditController* controller, UTF8StringPtr templateName,
+				UTF8StringPtr xmlFile = nullptr);
 
 	bool exchangeView (UTF8StringPtr templateName);
 	void enableTooltips (bool state);
@@ -132,7 +134,7 @@ public:
 	/** set the delegate of the editor. no reference counting is happening here. */
 	void setDelegate (IVST3EditorDelegate* delegate);
 	IVST3EditorDelegate* getDelegate () const;
-	UIDescription* getUIDescription () const;
+	SharedPointer<UIDescription> getUIDescription () const;
 
 	bool inEditMode () const;
 	const std::string& getCurrentTemplateName () const { return viewName; }
@@ -202,7 +204,7 @@ protected:
 
 	struct KeyboardHook;
 	KeyboardHook* keyboardHook {nullptr};
-	UIDescription* description {nullptr};
+	SharedPointer<UIDescription> description;
 	IVST3EditorDelegate* delegate {nullptr};
 	IController* originalController {nullptr};
 	IControlListener* openUIEditorController {nullptr};
