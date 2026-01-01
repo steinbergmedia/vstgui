@@ -69,12 +69,12 @@ public:
 	CColor getBlackKeyPressedColor () const { return blackKeyPressedColor; }
 
 	void setNoteNameFont (CFontDesc* font);
-	CFontDesc* getNoteNameFont () const { return noteNameFont; }
+	SharedPointer<CFontDesc> getNoteNameFont () const { return noteNameFont; }
 	void setDrawNoteText (bool state);
 	bool getDrawNoteText () const { return drawNoteText; }
 
-	void setBitmap (BitmapID bID, CBitmap* bitmap);
-	CBitmap* getBitmap (BitmapID bID) const;
+	void setBitmap (BitmapID bID, const SharedPointer<CBitmap>& bitmap);
+	SharedPointer<CBitmap> getBitmap (BitmapID bID) const;
 
 	void setWhiteKeyBitmapInset (const CRect& inset); // TODO: uidesc
 	void setBlackKeyBitmapInset (const CRect& inset); // TODO: uidesc

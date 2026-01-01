@@ -1047,14 +1047,14 @@ void KeyboardViewBase::setBlackKeyBitmapInset (const CRect& inset)
 }
 
 //------------------------------------------------------------------------
-void KeyboardViewBase::setBitmap (BitmapID bID, CBitmap* bitmap)
+void KeyboardViewBase::setBitmap (BitmapID bID, const SharedPointer<CBitmap>& bitmap)
 {
 	bitmaps[static_cast<size_t> (bID)] = bitmap;
 	invalid ();
 }
 
 //------------------------------------------------------------------------
-CBitmap* KeyboardViewBase::getBitmap (BitmapID bID) const
+SharedPointer<CBitmap> KeyboardViewBase::getBitmap (BitmapID bID) const
 {
 	return bitmaps[static_cast<size_t> (bID)];
 }
@@ -1248,7 +1248,7 @@ public:
 		auto kv = dynamic_cast<ViewType*> (view);
 		if (!kv)
 			return false;
-		CBitmap* bitmap;
+		SharedPointer<CBitmap> bitmap;
 		if (stringToBitmap (attributes.getAttributeValue (kAttrWhiteKeyPressed), bitmap, desc))
 			kv->setBitmap (ViewType::BitmapID::WhiteKeyPressed, bitmap);
 		if (stringToBitmap (attributes.getAttributeValue (kAttrWhiteKeyUnpressed), bitmap, desc))
