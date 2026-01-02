@@ -17,7 +17,7 @@ namespace ScriptingInternal {
 //------------------------------------------------------------------------
 struct JavaScriptDrawable
 {
-	void onDraw (CDrawContext* context, const CRect& rect, const CRect& viewSize);
+	void onDraw (CDrawContext& context, const CRect& rect, const CRect& viewSize);
 	bool onDrawFocusOnTop ();
 	bool onGetFocusPath (CGraphicsPath& outPath, CCoord focusWidth, const CRect& viewSize);
 

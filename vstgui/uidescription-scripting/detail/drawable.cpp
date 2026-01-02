@@ -19,7 +19,7 @@ using namespace TJS;
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const CRect& viewSize)
+void JavaScriptDrawable::onDraw (CDrawContext& context, const CRect& rect, const CRect& viewSize)
 {
 	if (!scriptObject)
 	{
@@ -30,23 +30,23 @@ void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const
 		auto lineWidth = 1.;
 		auto size = viewSize;
 		size.inset (lineWidth / 2., lineWidth / 2.);
-		context->setLineStyle (ls);
-		context->setLineWidth (lineWidth);
-		context->setFrameColor (kBlackCColor);
-		context->drawRect (size, kDrawStroked);
+		context.setLineStyle (ls);
+		context.setLineWidth (lineWidth);
+		context.setFrameColor (kBlackCColor);
+		context.drawRect (size, kDrawStroked);
 
 		ls.setDashPhase (dashLength * lineWidth);
-		context->setLineStyle (ls);
-		context->setFrameColor (kWhiteCColor);
-		context->drawRect (size, kDrawStroked);
+		context.setLineStyle (ls);
+		context.setFrameColor (kWhiteCColor);
+		context.drawRect (size, kDrawStroked);
 		return;
 	}
 	auto& scriptContext = scriptObject->getContext ();
-	context->saveGlobalState ();
+	context.saveGlobalState ();
 
-	drawContext.setDrawContext (context, scriptContext.getUIDescription ());
+	drawContext.setDrawContext (&context, scriptContext.getUIDescription ());
 
-	CDrawContext::Transform tm (*context, CGraphicsTransform ().translate (viewSize.getTopLeft ()));
+	CDrawContext::Transform tm (context, CGraphicsTransform ().translate (viewSize.getTopLeft ()));
 
 	auto rectVar = makeScriptRect (rect);
 	auto scriptRoot = scriptContext.getRoot ();
@@ -57,7 +57,7 @@ void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const
 
 	drawContext.setDrawContext (nullptr, nullptr);
 
-	context->restoreGlobalState ();
+	context.restoreGlobalState ();
 }
 
 //------------------------------------------------------------------------
@@ -118,7 +118,7 @@ bool JavaScriptDrawable::onGetFocusPath (CGraphicsPath& outPath, CCoord focusWid
 //------------------------------------------------------------------------
 void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
 {
-	onDraw (context, rect, getViewSize ());
+	onDraw (*context, rect, getViewSize ());
 }
 
 //------------------------------------------------------------------------
@@ -145,7 +145,7 @@ void JavaScriptDrawableControl::draw (CDrawContext* context) { drawRect (context
 //------------------------------------------------------------------------
 void JavaScriptDrawableControl::drawRect (CDrawContext* context, const CRect& rect)
 {
-	onDraw (context, rect, getViewSize ());
+	onDraw (*context, rect, getViewSize ());
 }
 
 //------------------------------------------------------------------------
