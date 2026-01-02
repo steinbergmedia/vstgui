@@ -20,7 +20,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class InputStreamContentProvider : public IContentProvider
+class InputStreamContentProvider : public IContentProvider,
+								   public AtomicReferenceCounted
 {
 public:
 	explicit InputStreamContentProvider (InputStream& stream);

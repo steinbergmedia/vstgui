@@ -10,7 +10,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class IContentProvider
+class IContentProvider : public virtual IReference
 {
 public:
 	virtual uint32_t readRawData (int8_t* buffer, uint32_t size) = 0;

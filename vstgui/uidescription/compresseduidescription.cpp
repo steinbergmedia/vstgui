@@ -12,7 +12,8 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class ZLibInputContentProvider : public IContentProvider
+class ZLibInputContentProvider : public IContentProvider,
+								 public AtomicReferenceCounted
 {
 public:
 	ZLibInputContentProvider (InputStream& source) : source (source)
@@ -65,10 +66,10 @@ bool CompressedUIDescription::parseWithStream (InputStream& stream)
 	stream >> identifier;
 	if (identifier == kUIDescIdentifier)
 	{
-		ZLibInputContentProvider zin (stream);
-		if (zin.open ())
+		auto zin = makeOwned<ZLibInputContentProvider> (stream);
+		if (zin->open ())
 		{
-			setContentProvider (&zin);
+			setContentProvider (zin);
 			result = UIDescription::parse ();
 			setContentProvider (nullptr);
 		}

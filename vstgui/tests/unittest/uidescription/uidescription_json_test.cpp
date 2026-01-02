@@ -1155,8 +1155,9 @@ using StringPtrList = std::list<const std::string*>;
 
 TEST_CASE (UIDescriptionJSONTests, ParseEmpty)
 {
-	MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (emptyUIDesc,
+													  static_cast<uint32_t> (strlen (emptyUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.getGradient ("t") == nullptr);
 	EXPECT (desc.getBitmap ("b") == nullptr);
@@ -1170,9 +1171,9 @@ TEST_CASE (UIDescriptionJSONTests, ParseEmpty)
 
 TEST_CASE (UIDescriptionJSONTests, Colors)
 {
-	MemoryContentProvider provider (colorNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (colorNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		colorNodesUIDesc, static_cast<uint32_t> (strlen (colorNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	CColor c;
 	EXPECT (desc.getColor ("c1", c));
@@ -1213,9 +1214,9 @@ TEST_CASE (UIDescriptionJSONTests, Colors)
 
 TEST_CASE (UIDescriptionJSONTests, Fonts)
 {
-	MemoryContentProvider provider (fontNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (fontNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		fontNodesUIDesc, static_cast<uint32_t> (strlen (fontNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.hasFontName ("f1"));
 	auto font = desc.getFont ("f1");
@@ -1272,9 +1273,9 @@ TEST_CASE (UIDescriptionJSONTests, Fonts)
 
 TEST_CASE (UIDescriptionJSONTests, Bitmaps)
 {
-	MemoryContentProvider provider (bitmapNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (bitmapNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		bitmapNodesUIDesc, static_cast<uint32_t> (strlen (bitmapNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.hasBitmapName ("b1"));
 	auto bitmap = desc.getBitmap ("b1");
@@ -1302,9 +1303,9 @@ TEST_CASE (UIDescriptionJSONTests, Bitmaps)
 
 TEST_CASE (UIDescriptionJSONTests, Tags)
 {
-	MemoryContentProvider provider (tagNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (tagNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		tagNodesUIDesc, static_cast<uint32_t> (strlen (tagNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.hasTagName ("t1"));
 	EXPECT (desc.getTagForName ("t1") == 1234);
@@ -1330,9 +1331,9 @@ TEST_CASE (UIDescriptionJSONTests, Tags)
 
 TEST_CASE (UIDescriptionJSONTests, LookupTagsCalculateTag)
 {
-	MemoryContentProvider provider (calculateTagNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (calculateTagNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		calculateTagNodesUIDesc, static_cast<uint32_t> (strlen (calculateTagNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	auto name = desc.lookupControlTagName (3);
 	EXPECT (name);
@@ -1341,9 +1342,9 @@ TEST_CASE (UIDescriptionJSONTests, LookupTagsCalculateTag)
 
 TEST_CASE (UIDescriptionJSONTests, Gradient)
 {
-	MemoryContentProvider provider (gradientNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (gradientNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		gradientNodesUIDesc, static_cast<uint32_t> (strlen (gradientNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.hasGradientName ("g1"));
 	auto gradient = desc.getGradient ("g1");
@@ -1377,9 +1378,9 @@ TEST_CASE (UIDescriptionJSONTests, Gradient)
 
 TEST_CASE (UIDescriptionJSONTests, Variables)
 {
-	MemoryContentProvider provider (variableNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (variableNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		variableNodesUIDesc, static_cast<uint32_t> (strlen (variableNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	double value;
 	EXPECT (desc.getVariable ("v1", value));
@@ -1399,9 +1400,9 @@ TEST_CASE (UIDescriptionJSONTests, Variables)
 
 TEST_CASE (UIDescriptionJSONTests, Calculations)
 {
-	MemoryContentProvider provider (tagNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (tagNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		tagNodesUIDesc, static_cast<uint32_t> (strlen (tagNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	double value;
 	EXPECT (desc.calculateStringValue ("1", value));
@@ -1423,8 +1424,9 @@ TEST_CASE (UIDescriptionJSONTests, Calculations)
 TEST_CASE (UIDescriptionJSONTests, WriteToStream)
 {
 	std::string str (withAllNodesUIDesc);
-	MemoryContentProvider provider (str.data (), static_cast<uint32_t> (str.size ()));
-	SaveUIDescription desc (&provider);
+	auto provider =
+		makeOwned<MemoryContentProvider> (str.data (), static_cast<uint32_t> (str.size ()));
+	SaveUIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	CMemoryStream outputStream (1024, 1024, false);
 	EXPECT (desc.saveToStream (outputStream, defaultSafeFlags, nullptr));
@@ -1436,9 +1438,9 @@ TEST_CASE (UIDescriptionJSONTests, WriteToStream)
 
 TEST_CASE (UIDescriptionJSONTests, GetViewAttributes)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	auto attributes = desc.getViewAttributes ("view");
@@ -1452,9 +1454,9 @@ TEST_CASE (UIDescriptionJSONTests, GetViewAttributes)
 
 TEST_CASE (UIDescriptionJSONTests, CollectTemplateViewNames)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	StringPtrList names;
@@ -1465,9 +1467,9 @@ TEST_CASE (UIDescriptionJSONTests, CollectTemplateViewNames)
 
 TEST_CASE (UIDescriptionJSONTests, DuplicateTemplate)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	StringPtrList names;
@@ -1484,9 +1486,9 @@ TEST_CASE (UIDescriptionJSONTests, DuplicateTemplate)
 
 TEST_CASE (UIDescriptionJSONTests, ChangeTemplateName)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	EXPECT (desc.duplicateTemplate ("view", "viewcopy"));
@@ -1498,9 +1500,9 @@ TEST_CASE (UIDescriptionJSONTests, ChangeTemplateName)
 
 TEST_CASE (UIDescriptionJSONTests, GetTemplateNameFromView)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	Controller controller;
@@ -1512,9 +1514,9 @@ TEST_CASE (UIDescriptionJSONTests, GetTemplateNameFromView)
 
 TEST_CASE (UIDescriptionJSONTests, RemoveTemplate)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	EXPECT (desc.removeTemplate ("view which does not exist") == false);
@@ -1523,9 +1525,9 @@ TEST_CASE (UIDescriptionJSONTests, RemoveTemplate)
 
 TEST_CASE (UIDescriptionJSONTests, AddNewTemplate)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	auto a = makeOwned<UIAttributes> ();
@@ -1538,9 +1540,9 @@ TEST_CASE (UIDescriptionJSONTests, AddNewTemplate)
 
 TEST_CASE (UIDescriptionJSONTests, StoreRestoreViews)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	Controller controller;
@@ -1565,9 +1567,9 @@ TEST_CASE (UIDescriptionJSONTests, StoreRestoreViews)
 
 TEST_CASE (UIDescriptionJSONTests, StoreRestoreViewsAttached)
 {
-	MemoryContentProvider provider (restoreViewUIDesc,
-	                                static_cast<uint32_t> (strlen (restoreViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		restoreViewUIDesc, static_cast<uint32_t> (strlen (restoreViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	Controller controller;
@@ -1592,9 +1594,9 @@ TEST_CASE (UIDescriptionJSONTests, StoreRestoreViewsAttached)
 
 TEST_CASE (UIDescriptionJSONTests, UpdateViewDescription)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	Controller controller;
 	auto view = owned (desc.createView ("view", &controller));
@@ -1610,9 +1612,9 @@ TEST_CASE (UIDescriptionJSONTests, UpdateViewDescription)
 
 TEST_CASE (UIDescriptionJSONTests, CustomAttributes)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	auto attr = desc.getCustomAttributes ("Test", false);
 	EXPECT (attr == nullptr);
@@ -1625,9 +1627,9 @@ TEST_CASE (UIDescriptionJSONTests, CustomAttributes)
 #ifndef _MSC_VER
 TEST_CASE (UIDescriptionJSONTests, Listeners)
 {
-	MemoryContentProvider provider (completeExample,
-	                                static_cast<uint32_t> (strlen (completeExample)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		completeExample, static_cast<uint32_t> (strlen (completeExample)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	DescriptionListenerMock mok (UIDescTestCase::TagChanged);
@@ -1716,8 +1718,9 @@ TEST_CASE (UIDescriptionJSONTests, Listeners)
 
 TEST_CASE (UIDescriptionJSONTests, FocusSettings)
 {
-	MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (emptyUIDesc,
+													  static_cast<uint32_t> (strlen (emptyUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	FocusDrawingSettings fd;
@@ -1732,8 +1735,9 @@ TEST_CASE (UIDescriptionJSONTests, FocusSettings)
 
 TEST_CASE (UIDescriptionJSONTests, SharedResources)
 {
-	MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (emptyUIDesc,
+													  static_cast<uint32_t> (strlen (emptyUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	CColor color1;
@@ -1743,9 +1747,9 @@ TEST_CASE (UIDescriptionJSONTests, SharedResources)
 	EXPECT (desc.getGradient ("g1") == nullptr);
 	EXPECT (desc.getBitmap ("b1") == nullptr);
 
-	MemoryContentProvider resProvider (sharedResourcesUIDesc,
-	                                   static_cast<uint32_t> (strlen (sharedResourcesUIDesc)));
-	UIDescription resDesc (&resProvider);
+	auto resProvider = makeOwned<MemoryContentProvider> (
+		sharedResourcesUIDesc, static_cast<uint32_t> (strlen (sharedResourcesUIDesc)));
+	UIDescription resDesc (resProvider);
 	EXPECT (resDesc.parse () == true);
 
 	desc.setSharedResources (shared (&resDesc));
@@ -1766,8 +1770,8 @@ TEST_CASE (UIDescriptionJSONTests, SharedResources)
 #if 0
 TEST_CASE (UIDescriptionJSONTests, CompleteExample)
 {
-	MemoryContentProvider provider (completeExample, strlen (completeExample));
-	SaveUIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (completeExample, strlen (completeExample));
+	SaveUIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	auto view = owned (desc.createView ("view", nullptr));
 	view = owned (desc.createView ("tab1", nullptr));

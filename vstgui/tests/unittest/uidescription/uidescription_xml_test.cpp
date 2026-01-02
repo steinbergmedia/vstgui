@@ -291,8 +291,9 @@ using StringPtrList = std::list<const std::string*>;
 
 TEST_CASE (UIDescriptionXMLTests, ParseEmpty)
 {
-	MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (emptyUIDesc,
+													  static_cast<uint32_t> (strlen (emptyUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.getGradient ("t") == nullptr);
 	EXPECT (desc.getBitmap ("b") == nullptr);
@@ -306,9 +307,9 @@ TEST_CASE (UIDescriptionXMLTests, ParseEmpty)
 
 TEST_CASE (UIDescriptionXMLTests, Colors)
 {
-	MemoryContentProvider provider (colorNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (colorNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		colorNodesUIDesc, static_cast<uint32_t> (strlen (colorNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	CColor c;
 	EXPECT (desc.getColor ("c1", c));
@@ -349,9 +350,9 @@ TEST_CASE (UIDescriptionXMLTests, Colors)
 
 TEST_CASE (UIDescriptionXMLTests, Fonts)
 {
-	MemoryContentProvider provider (fontNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (fontNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		fontNodesUIDesc, static_cast<uint32_t> (strlen (fontNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.hasFontName ("f1"));
 	auto font = desc.getFont ("f1");
@@ -408,9 +409,9 @@ TEST_CASE (UIDescriptionXMLTests, Fonts)
 
 TEST_CASE (UIDescriptionXMLTests, Bitmaps)
 {
-	MemoryContentProvider provider (bitmapNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (bitmapNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		bitmapNodesUIDesc, static_cast<uint32_t> (strlen (bitmapNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.hasBitmapName ("b1"));
 	auto bitmap = desc.getBitmap ("b1");
@@ -438,9 +439,9 @@ TEST_CASE (UIDescriptionXMLTests, Bitmaps)
 
 TEST_CASE (UIDescriptionXMLTests, Tags)
 {
-	MemoryContentProvider provider (tagNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (tagNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		tagNodesUIDesc, static_cast<uint32_t> (strlen (tagNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.hasTagName ("t1"));
 	EXPECT (desc.getTagForName ("t1") == 1234);
@@ -466,9 +467,9 @@ TEST_CASE (UIDescriptionXMLTests, Tags)
 
 TEST_CASE (UIDescriptionXMLTests, LookupTagsCalculateTag)
 {
-	MemoryContentProvider provider (calculateTagNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (calculateTagNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		calculateTagNodesUIDesc, static_cast<uint32_t> (strlen (calculateTagNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	auto name = desc.lookupControlTagName (3);
 	EXPECT (name);
@@ -477,9 +478,9 @@ TEST_CASE (UIDescriptionXMLTests, LookupTagsCalculateTag)
 
 TEST_CASE (UIDescriptionXMLTests, Gradient)
 {
-	MemoryContentProvider provider (gradientNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (gradientNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		gradientNodesUIDesc, static_cast<uint32_t> (strlen (gradientNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	EXPECT (desc.hasGradientName ("g1"));
 	auto gradient = desc.getGradient ("g1");
@@ -513,9 +514,9 @@ TEST_CASE (UIDescriptionXMLTests, Gradient)
 
 TEST_CASE (UIDescriptionXMLTests, Variables)
 {
-	MemoryContentProvider provider (variableNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (variableNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		variableNodesUIDesc, static_cast<uint32_t> (strlen (variableNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	double value;
 	EXPECT (desc.getVariable ("v1", value));
@@ -535,9 +536,9 @@ TEST_CASE (UIDescriptionXMLTests, Variables)
 
 TEST_CASE (UIDescriptionXMLTests, Calculations)
 {
-	MemoryContentProvider provider (tagNodesUIDesc,
-	                                static_cast<uint32_t> (strlen (tagNodesUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		tagNodesUIDesc, static_cast<uint32_t> (strlen (tagNodesUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	double value;
 	EXPECT (desc.calculateStringValue ("1", value));
@@ -559,8 +560,9 @@ TEST_CASE (UIDescriptionXMLTests, Calculations)
 TEST_CASE (UIDescriptionXMLTests, WriteToStream)
 {
 	std::string str (withAllNodesUIDesc);
-	MemoryContentProvider provider (str.data (), static_cast<uint32_t> (str.size ()));
-	SaveUIDescription desc (&provider);
+	auto provider =
+		makeOwned<MemoryContentProvider> (str.data (), static_cast<uint32_t> (str.size ()));
+	SaveUIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	CMemoryStream outputStream (1024, 1024, false);
 	EXPECT (desc.saveToStream (outputStream, defaultSafeFlags, nullptr));
@@ -572,9 +574,9 @@ TEST_CASE (UIDescriptionXMLTests, WriteToStream)
 
 TEST_CASE (UIDescriptionXMLTests, GetViewAttributes)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	auto attributes = desc.getViewAttributes ("view");
@@ -588,9 +590,9 @@ TEST_CASE (UIDescriptionXMLTests, GetViewAttributes)
 
 TEST_CASE (UIDescriptionXMLTests, CollectTemplateViewNames)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	StringPtrList names;
@@ -601,9 +603,9 @@ TEST_CASE (UIDescriptionXMLTests, CollectTemplateViewNames)
 
 TEST_CASE (UIDescriptionXMLTests, DuplicateTemplate)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	StringPtrList names;
@@ -620,9 +622,9 @@ TEST_CASE (UIDescriptionXMLTests, DuplicateTemplate)
 
 TEST_CASE (UIDescriptionXMLTests, ChangeTemplateName)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	EXPECT (desc.duplicateTemplate ("view", "viewcopy"));
@@ -634,9 +636,9 @@ TEST_CASE (UIDescriptionXMLTests, ChangeTemplateName)
 
 TEST_CASE (UIDescriptionXMLTests, GetTemplateNameFromView)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	Controller controller;
@@ -648,9 +650,9 @@ TEST_CASE (UIDescriptionXMLTests, GetTemplateNameFromView)
 
 TEST_CASE (UIDescriptionXMLTests, RemoveTemplate)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	EXPECT (desc.removeTemplate ("view which does not exist") == false);
@@ -659,9 +661,9 @@ TEST_CASE (UIDescriptionXMLTests, RemoveTemplate)
 
 TEST_CASE (UIDescriptionXMLTests, AddNewTemplate)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	auto a = makeOwned<UIAttributes> ();
@@ -674,9 +676,9 @@ TEST_CASE (UIDescriptionXMLTests, AddNewTemplate)
 
 TEST_CASE (UIDescriptionXMLTests, StoreRestoreViews)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	Controller controller;
@@ -701,9 +703,9 @@ TEST_CASE (UIDescriptionXMLTests, StoreRestoreViews)
 
 TEST_CASE (UIDescriptionXMLTests, StoreRestoreViewsAttached)
 {
-	MemoryContentProvider provider (restoreViewUIDesc,
-	                                static_cast<uint32_t> (strlen (restoreViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		restoreViewUIDesc, static_cast<uint32_t> (strlen (restoreViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	Controller controller;
@@ -728,9 +730,9 @@ TEST_CASE (UIDescriptionXMLTests, StoreRestoreViewsAttached)
 
 TEST_CASE (UIDescriptionXMLTests, UpdateViewDescription)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	Controller controller;
 	auto view = owned (desc.createView ("view", &controller));
@@ -746,9 +748,9 @@ TEST_CASE (UIDescriptionXMLTests, UpdateViewDescription)
 
 TEST_CASE (UIDescriptionXMLTests, CustomAttributes)
 {
-	MemoryContentProvider provider (createViewUIDesc,
-	                                static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	auto attr = desc.getCustomAttributes ("Test", false);
 	EXPECT (attr == nullptr);
@@ -760,9 +762,9 @@ TEST_CASE (UIDescriptionXMLTests, CustomAttributes)
 
 TEST_CASE (UIDescriptionXMLTests, Listeners)
 {
-	MemoryContentProvider provider (completeExample,
-	                                static_cast<uint32_t> (strlen (completeExample)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (
+		completeExample, static_cast<uint32_t> (strlen (completeExample)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	DescriptionListenerMock mok (UIDescTestCase::TagChanged);
@@ -850,8 +852,9 @@ TEST_CASE (UIDescriptionXMLTests, Listeners)
 
 TEST_CASE (UIDescriptionXMLTests, FocusSettings)
 {
-	MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (emptyUIDesc,
+													  static_cast<uint32_t> (strlen (emptyUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	FocusDrawingSettings fd;
@@ -866,8 +869,9 @@ TEST_CASE (UIDescriptionXMLTests, FocusSettings)
 
 TEST_CASE (UIDescriptionXMLTests, SharedResources)
 {
-	MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (&provider);
+	auto provider = makeOwned<MemoryContentProvider> (emptyUIDesc,
+													  static_cast<uint32_t> (strlen (emptyUIDesc)));
+	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
 	CColor color1;
@@ -877,9 +881,9 @@ TEST_CASE (UIDescriptionXMLTests, SharedResources)
 	EXPECT (desc.getGradient ("g1") == nullptr);
 	EXPECT (desc.getBitmap ("b1") == nullptr);
 
-	MemoryContentProvider resProvider (sharedResourcesUIDesc,
-	                                   static_cast<uint32_t> (strlen (sharedResourcesUIDesc)));
-	UIDescription resDesc (&resProvider);
+	auto resProvider = makeOwned<MemoryContentProvider> (
+		sharedResourcesUIDesc, static_cast<uint32_t> (strlen (sharedResourcesUIDesc)));
+	UIDescription resDesc (resProvider);
 	EXPECT (resDesc.parse () == true);
 
 	desc.setSharedResources (shared (&resDesc));

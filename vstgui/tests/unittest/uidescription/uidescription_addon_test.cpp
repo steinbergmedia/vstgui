@@ -89,9 +89,9 @@ TEST_CASE (UIDescriptionAddOnTest, BasicFunctionality)
 	auto myAddOnPtr = myAddOn.get ();
 	auto token = UIDescriptionAddOnRegistry::add (std::move (myAddOn));
 	{
-		MemoryContentProvider provider (createViewUIDesc,
-										static_cast<uint32_t> (strlen (createViewUIDesc)));
-		UIDescription desc (&provider);
+		auto provider = makeOwned<MemoryContentProvider> (
+			createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
+		UIDescription desc (provider);
 		EXPECT_TRUE (myAddOnPtr->getViewFactoryCalled);
 		EXPECT_TRUE (desc.parse ());
 		EXPECT_TRUE (myAddOnPtr->afterParsingCalled);

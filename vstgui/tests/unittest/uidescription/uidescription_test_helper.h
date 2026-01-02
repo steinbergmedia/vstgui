@@ -14,7 +14,10 @@ namespace UIDescriptionTesting {
 
 struct SaveUIDescription : public UIDescription
 {
-	SaveUIDescription (IContentProvider* xmlContentProvider) : UIDescription (xmlContentProvider) {}
+	SaveUIDescription (const SharedPointer<IContentProvider>& xmlContentProvider)
+	: UIDescription (xmlContentProvider)
+	{
+	}
 
 	using UIDescription::saveToStream;
 };

@@ -324,8 +324,9 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	bool initStatic (WindowPtr& inWindow, UTF8String inXml, const char* inTemplateName)
 	{
 		window = inWindow.get ();
-		MemoryContentProvider xmlContentProvider (inXml, static_cast<uint32_t> (inXml.length ()));
-		uiDesc = makeOwned<UIDescription> (&xmlContentProvider);
+		auto contentProvider =
+			makeOwned<MemoryContentProvider> (inXml, static_cast<uint32_t> (inXml.length ()));
+		uiDesc = makeOwned<UIDescription> (contentProvider);
 		if (!uiDesc->parse ())
 			return false;
 		if (customization)

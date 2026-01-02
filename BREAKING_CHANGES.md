@@ -96,6 +96,11 @@ The IUIDescriptionAddOn interface was changed to use shared pointers for IUIDesc
 
 The IUIDescription::getViewFactory changed the return value to be a const reference of IViewFactory.
 
+The IContentProvider inherits virtually from IReference now.
+
+One of the UIDescription constructor now takes a ```SharedPointer<IContentProvider>``` instead of a naked pointer.
+
+
 ### Version 4.14
 
 - In CParamDisplay::drawPlatformText(..) the string argument changed from IPlatformString to UTF8Text

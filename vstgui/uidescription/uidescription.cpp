@@ -84,7 +84,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	
 	mutable IController* controller {nullptr};
 	SharedPointer<IViewFactory> viewFactory;
-	IContentProvider* contentProvider {nullptr};
+	SharedPointer<IContentProvider> contentProvider;
 	SharedPointer<IBitmapCreator> bitmapCreator;
 	SharedPointer<IBitmapCreator2> bitmapCreator2;
 	AttributeSaveFilterFunc attributeSaveFilterFunc {nullptr};
@@ -124,7 +124,7 @@ UIDescription::UIDescription (const CResourceDescription& uidescFile,
 }
 
 //-----------------------------------------------------------------------------
-UIDescription::UIDescription (IContentProvider* contentProvider,
+UIDescription::UIDescription (const SharedPointer<IContentProvider>& contentProvider,
 							  const SharedPointer<IViewFactory>& _viewFactory)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
@@ -243,7 +243,7 @@ bool UIDescription::parsed () const
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setContentProvider (IContentProvider* provider)
+void UIDescription::setContentProvider (const SharedPointer<IContentProvider>& provider)
 {
 	impl->contentProvider = provider;
 }
@@ -253,8 +253,8 @@ bool UIDescription::parse ()
 {
 	if (parsed ())
 		return true;
-		
-	static auto parseUIDesc = [] (IContentProvider* contentProvider) -> SharedPointer<UINode> {
+
+	static auto parseUIDesc = [] (const auto& contentProvider) -> SharedPointer<UINode> {
 		if (auto nodes = Detail::UIJsonDescReader::read (*contentProvider))
 			return nodes;
 #if VSTGUI_ENABLE_XML_PARSER

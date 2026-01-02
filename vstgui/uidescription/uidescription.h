@@ -34,7 +34,7 @@ protected:
 public:
 	UIDescription (const CResourceDescription& uidescFile,
 				   const SharedPointer<IViewFactory>& viewFactory = {});
-	UIDescription (IContentProvider* contentProvider,
+	UIDescription (const SharedPointer<IContentProvider>& contentProvider,
 				   const SharedPointer<IViewFactory>& viewFactory = {});
 	~UIDescription () noexcept override;
 
@@ -164,7 +164,7 @@ protected:
 	bool saveToStream (OutputStream& stream, int32_t flags, AttributeSaveFilterFunc func);
 
 	bool parsed () const;
-	void setContentProvider (IContentProvider* provider);
+	void setContentProvider (const SharedPointer<IContentProvider>& provider);
 
 	const CResourceDescription& getUIDescFile () const;
 private:
