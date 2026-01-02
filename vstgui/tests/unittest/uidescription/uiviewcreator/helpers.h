@@ -118,7 +118,8 @@ public:
 };
 
 inline void testPossibleValues (const IdStringPtr className, const std::string& attrName,
-                                IUIDescription* desc, UIViewFactory::StringList expectedValues)
+								const IUIDescription& desc,
+								UIViewFactory::StringList expectedValues)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -137,7 +138,7 @@ inline void testPossibleValues (const IdStringPtr className, const std::string& 
 }
 
 inline void testMinMaxValues (const IdStringPtr className, const std::string& attrName,
-                              IUIDescription* desc, double minValue, double maxValue)
+							  const IUIDescription& desc, double minValue, double maxValue)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -149,10 +150,10 @@ inline void testMinMaxValues (const IdStringPtr className, const std::string& at
 	EXPECT (max == maxValue);
 }
 
-template <typename ViewClass, typename Proc>
+template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName,
-                    const IdStringPtr attrValue, IUIDescription* desc, const Proc& proc,
-                    bool disableRememberAttributes = false)
+					const IdStringPtr attrValue, const IUIDescription& desc, const Proc& proc,
+					bool disableRememberAttributes = false)
 {
 	UIViewFactory factory;
 	factory.disableRememberAttributes = disableRememberAttributes;
@@ -172,9 +173,9 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName,
 	EXPECT (*str == attrValue);
 }
 
-template <typename ViewClass, typename Proc>
+template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName, int32_t attrValue,
-                    IUIDescription* desc, const Proc& proc)
+					const IUIDescription& desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -193,9 +194,9 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, int
 	EXPECT (value == attrValue);
 }
 
-template <typename ViewClass, typename Proc>
+template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName, bool attrValue,
-                    IUIDescription* desc, const Proc& proc)
+					const IUIDescription& desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -214,9 +215,9 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, boo
 	EXPECT (value == attrValue);
 }
 
-template <typename ViewClass, typename Proc>
+template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName, double attrValue,
-                    IUIDescription* desc, const Proc& proc)
+					const IUIDescription& desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -235,9 +236,9 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, dou
 	EXPECT (value == attrValue);
 }
 
-template <typename ViewClass, typename Proc>
+template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName, const CRect& attrValue,
-                    IUIDescription* desc, const Proc& proc)
+					const IUIDescription& desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;
@@ -256,9 +257,9 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, con
 	EXPECT (value == attrValue);
 }
 
-template <typename ViewClass, typename Proc>
+template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName,
-                    const CPoint& attrValue, IUIDescription* desc, const Proc& proc)
+					const CPoint& attrValue, const IUIDescription& desc, const Proc& proc)
 {
 	UIViewFactory factory;
 	UIAttributes a;

@@ -8,6 +8,7 @@
 #include "../../../uidescription/uiattributes.h"
 #include "../../../uidescription/uiviewfactory.h"
 #include "../unittests.h"
+#include "uiviewcreator/helpers.h"
 #include <algorithm>
 
 namespace VSTGUI {
@@ -184,11 +185,12 @@ struct ViewCreator : public ViewCreatorAdapter
 
 ViewCreator viewCreator;
 
-static SharedPointer<CView> createView (const SharedPointer<IViewFactory>& factory)
+static SharedPointer<CView> createView (const SharedPointer<IViewFactory>& factory,
+										const IUIDescription& uidesc)
 {
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewCreator.getViewName ());
-	return owned (factory->createView (a, nullptr));
+	return owned (factory->createView (a, uidesc));
 }
 
 } // anonymous
@@ -244,8 +246,9 @@ TEST_CASE (UIViewFactoryTest, CollectRegisteredViewAndDisplayNames)
 TEST_CASE (UIViewFactoryTest, CreateView)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
-	auto v = createView (factory);
+	auto v = createView (factory, uidesc);
 	EXPECT (v != nullptr);
 	EXPECT (v.cast<View> () != nullptr);
 }
@@ -253,41 +256,45 @@ TEST_CASE (UIViewFactoryTest, CreateView)
 TEST_CASE (UIViewFactoryTest, CreateUnknownView)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, "Unknown");
-	auto view = owned (factory->createView (a, nullptr));
+	auto view = owned (factory->createView (a, uidesc));
 	EXPECT (view == nullptr);
 }
 
 TEST_CASE (UIViewFactoryTest, ApplyAttributes)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
-	auto v = createView (factory);
+	auto v = createView (factory, uidesc);
 	auto view = v.cast<View> ();
 	EXPECT (view->value == 0);
 	UIAttributes a;
 	a.setIntegerAttribute (viewAttr, 1);
-	factory->applyAttributeValues (v, a, nullptr);
+	factory->applyAttributeValues (v, a, uidesc);
 	EXPECT (view->value == 1);
 }
 
 TEST_CASE (UIViewFactoryTest, GetAttributeValue)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
-	auto v = createView (factory);
+	auto v = createView (factory, uidesc);
 	std::string value;
-	factory->getAttributeValue (v, viewAttr, value, nullptr);
+	factory->getAttributeValue (v, viewAttr, value, uidesc);
 	EXPECT (value == "0");
 }
 
 TEST_CASE (UIViewFactoryTest, GetAttributeNames)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
-	auto v = createView (factory);
+	auto v = createView (factory, uidesc);
 	UIViewFactory::StringList attributeNames;
 	EXPECT (factory->getAttributeNamesForView (v, attributeNames) == true);
 	EXPECT (attributeNames.size () == 2);
@@ -297,10 +304,11 @@ TEST_CASE (UIViewFactoryTest, GetAttributeNames)
 TEST_CASE (UIViewFactoryTest, GetAttributesForView)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
-	auto v = createView (factory);
+	auto v = createView (factory, uidesc);
 	UIAttributes a;
-	factory->getAttributesForView (v, nullptr, a);
+	factory->getAttributesForView (v, uidesc, a);
 	EXPECT (a.hasAttribute (viewAttr) == true);
 	EXPECT (a.hasAttribute (baseViewAttr) == true);
 }
@@ -308,8 +316,9 @@ TEST_CASE (UIViewFactoryTest, GetAttributesForView)
 TEST_CASE (UIViewFactoryTest, GetPossibleListValues)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
-	auto v = createView (factory);
+	auto v = createView (factory, uidesc);
 	UIViewFactory::StringPtrList values;
 	EXPECT (factory->getPossibleAttributeListValues (v, baseViewAttr, values) == true);
 	EXPECT (values.size () == 3);
@@ -318,8 +327,9 @@ TEST_CASE (UIViewFactoryTest, GetPossibleListValues)
 TEST_CASE (UIViewFactoryTest, GetAttributeValueRange)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
-	auto v = createView (factory);
+	auto v = createView (factory, uidesc);
 	double minValue;
 	double maxValue;
 	EXPECT (factory->getAttributeValueRange (v, viewAttr, minValue, maxValue) == true);
@@ -331,20 +341,22 @@ TEST_CASE (UIViewFactoryTest, GetAttributeValueRange)
 TEST_CASE (UIViewFactoryTest, DefaultViewCreation)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
 	UIAttributes a;
-	auto v = owned (factory->createView (a, nullptr));
+	auto v = owned (factory->createView (a, uidesc));
 	EXPECT (v.cast<CViewContainer> ());
 }
 
 TEST_CASE (UIViewFactoryTest, ApplyCustomViewAttributes)
 {
 	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	DummyUIDescription uidesc;
 
 	auto view = owned (new CustomView ());
 	UIAttributes a;
 	a.setAttribute (baseViewAttr, "3");
-	EXPECT (factory->applyCustomViewAttributeValues (view, "TestView", a, nullptr));
+	EXPECT (factory->applyCustomViewAttributeValues (view, "TestView", a, uidesc));
 	EXPECT (view->baseState == BaseView::State::kState3);
 }
 

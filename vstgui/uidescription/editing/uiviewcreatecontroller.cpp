@@ -151,7 +151,7 @@ void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<UISelection> createSelectionFromViewName (
-	const std::string& viewName, const IViewFactory& factory, const UIDescription* description,
+	const std::string& viewName, const IViewFactory& factory, const UIDescription& description,
 	const SharedPointer<UIAttributes>& optionalAttributes)
 {
 	SharedPointer<UISelection> selection;
@@ -187,7 +187,7 @@ SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row
 	                        [&] (const auto& entry) { return entry.second == viewDisplayName; });
 	if (it == viewAndDisplayNameList.end ())
 		return nullptr;
-	return createSelectionFromViewName (*it->first, factory, description, nullptr);
+	return createSelectionFromViewName (*it->first, factory, *description, nullptr);
 }
 
 //----------------------------------------------------------------------------------------------------

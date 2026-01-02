@@ -18,15 +18,15 @@ using namespace UIViewCreator;
 TEST_CASE (CKickButtonCreatorTest, HeightOfOneImage)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CKickButton> (kCKickButton, kAttrHeightOfOneImage, 10, &uidesc,
-	                            [] (CKickButton* v) { return v->getHeightOfOneImage () == 10; });
+	testAttribute<CKickButton> (kCKickButton, kAttrHeightOfOneImage, 10, uidesc,
+								[] (CKickButton* v) { return v->getHeightOfOneImage () == 10; });
 }
 
 TEST_CASE (CKickButtonCreatorTest, SubPixmaps)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CKickButton> (kCKickButton, kAttrSubPixmaps, 11, &uidesc,
-	                            [] (CKickButton* v) { return v->getNumSubPixmaps () == 11; });
+	testAttribute<CKickButton> (kCKickButton, kAttrSubPixmaps, 11, uidesc,
+								[] (CKickButton* v) { return v->getNumSubPixmaps () == 11; });
 }
 
 #endif

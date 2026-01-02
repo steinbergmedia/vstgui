@@ -25,11 +25,15 @@ public:
 	~UIViewFactory () noexcept override = default;
 
 	// IViewFactory
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const override;
-	bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const override;
-	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const override;
+	CView* createView (const UIAttributes& attributes,
+					   const IUIDescription& description) const override;
+	bool applyAttributeValues (CView* view, const UIAttributes& attributes,
+							   const IUIDescription& desc) const override;
+	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
+										 const UIAttributes& attributes,
+										 const IUIDescription& desc) const override;
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
-							const IUIDescription* desc) const override;
+							const IUIDescription& desc) const override;
 	bool viewIsTypeOf (CView* view, const std::string& typeName) const override;
 
 	static void registerViewCreator (const IViewCreator& viewCreator);
@@ -43,7 +47,8 @@ public:
 	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const override;
 	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const override;
 	void collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter = nullptr) const override;
-	bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const override;
+	bool getAttributesForView (CView* view, const IUIDescription& desc,
+							   UIAttributes& attr) const override;
 	// list type support
 	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const override;
 	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const override;
@@ -57,8 +62,11 @@ public:
 #endif
 
 protected:
-	void evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes, UIAttributes& evaluatedAttributes, const IUIDescription* description) const;
-	CView* createViewByName (const std::string* className, const UIAttributes& attributes, const IUIDescription* description) const;
+	void evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes,
+										UIAttributes& evaluatedAttributes,
+										const IUIDescription& description) const;
+	CView* createViewByName (const std::string* className, const UIAttributes& attributes,
+							 const IUIDescription& description) const;
 
 #if VSTGUI_LIVE_EDITING
 	static size_t createHash (const std::string& str);

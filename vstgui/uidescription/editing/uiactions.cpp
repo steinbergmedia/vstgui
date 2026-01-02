@@ -468,10 +468,10 @@ TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISe
 	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (&factory))
 	{
 		UIAttributes attr;
-		if (vfEditingSupport->getAttributesForView (view, desc, attr))
+		if (vfEditingSupport->getAttributesForView (view, *desc, attr))
 		{
 			attr.setAttribute (UIViewCreator::kAttrClass, viewClassName);
-			newView = factory.createView (attr, desc);
+			newView = factory.createView (attr, *desc);
 			ViewIterator it (parent);
 			while (*it)
 			{
@@ -568,7 +568,7 @@ AttributeChangeAction::AttributeChangeAction (const SharedPointer<UIDescription>
 	std::string attrOldValue;
 	for (auto view : *selection)
 	{
-		viewFactory.getAttributeValue (view, attrName, attrOldValue, desc);
+		viewFactory.getAttributeValue (view, attrName, attrOldValue, *desc);
 		insert (std::make_pair (view, attrOldValue));
 	}
 	name = "'" + attrName + "' change";
@@ -606,7 +606,7 @@ void AttributeChangeAction::perform ()
 	for (auto& element : *this)
 	{
 		element.first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory.applyAttributeValues (element.first, attr, desc);
+		viewFactory.applyAttributeValues (element.first, attr, *desc);
 		element.first->invalid ();	// and afterwards also
 	}
 	selection->viewsDidChange ();
@@ -623,7 +623,7 @@ void AttributeChangeAction::undo ()
 		UIAttributes attr;
 		attr.setAttribute (attrName, element.second);
 		element.first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory.applyAttributeValues (element.first, attr, desc);
+		viewFactory.applyAttributeValues (element.first, attr, *desc);
 		element.first->invalid ();	// and afterwards also
 	}
 	selection->viewsDidChange ();
@@ -663,7 +663,7 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
 				if (viewFactoryEditing->getAttributeType (view, attrName) == type)
 				{
 					std::string typeValue;
-					if (viewFactory.getAttributeValue (view, attrName, typeValue, desc))
+					if (viewFactory.getAttributeValue (view, attrName, typeValue, *desc))
 					{
 						if (typeValue == value)
 						{
@@ -697,7 +697,7 @@ void MultipleAttributeChangeAction::setAttributeValue (UTF8StringPtr value)
 		CView* view = element.first;
 		UIAttributes newAttr;
 		newAttr.setAttribute (element.second, value);
-		viewFactory.applyAttributeValues (view, newAttr, description);
+		viewFactory.applyAttributeValues (view, newAttr, *description);
 		view->invalid ();
 	}
 }

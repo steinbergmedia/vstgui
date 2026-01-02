@@ -16,15 +16,15 @@ using namespace UIViewCreator;
 TEST_CASE (CTextLabelCreatorTest, Title)
 {
 	TestUIDescription uidesc;
-	testAttribute<CTextLabel> (kCTextLabel, kAttrTitle, "Title", &uidesc,
-	                           [] (CTextLabel* v) { return v->getText () == "Title"; });
+	testAttribute<CTextLabel> (kCTextLabel, kAttrTitle, "Title", uidesc,
+							   [] (CTextLabel* v) { return v->getText () == "Title"; });
 }
 
 TEST_CASE (CTextLabelCreatorTest, TitleWithNewLines)
 {
 	TestUIDescription uidesc;
 	const auto title = "This\\nIs\\nA Title";
-	testAttribute<CTextLabel> (kCTextLabel, kAttrTitle, title, &uidesc, [&] (CTextLabel* v) {
+	testAttribute<CTextLabel> (kCTextLabel, kAttrTitle, title, uidesc, [&] (CTextLabel* v) {
 		return v->getText () == "This\nIs\nA Title";
 	});
 }
@@ -32,16 +32,16 @@ TEST_CASE (CTextLabelCreatorTest, TitleWithNewLines)
 TEST_CASE (CTextLabelCreatorTest, TruncateMode)
 {
 	TestUIDescription uidesc;
-	testAttribute<CTextLabel> (kCTextLabel, kAttrTruncateMode, "head", &uidesc, [] (CTextLabel* v) {
+	testAttribute<CTextLabel> (kCTextLabel, kAttrTruncateMode, "head", uidesc, [] (CTextLabel* v) {
 		return v->getTextTruncateMode () == CTextLabel::kTruncateHead;
 	});
-	testAttribute<CTextLabel> (kCTextLabel, kAttrTruncateMode, "tail", &uidesc, [] (CTextLabel* v) {
+	testAttribute<CTextLabel> (kCTextLabel, kAttrTruncateMode, "tail", uidesc, [] (CTextLabel* v) {
 		return v->getTextTruncateMode () == CTextLabel::kTruncateTail;
 	});
-	testAttribute<CTextLabel> (kCTextLabel, kAttrTruncateMode, "", &uidesc, [] (CTextLabel* v) {
+	testAttribute<CTextLabel> (kCTextLabel, kAttrTruncateMode, "", uidesc, [] (CTextLabel* v) {
 		return v->getTextTruncateMode () == CTextLabel::kTruncateNone;
 	});
-	testPossibleValues (kCTextLabel, kAttrTruncateMode, &uidesc, {"head", "tail", "none"});
+	testPossibleValues (kCTextLabel, kAttrTruncateMode, uidesc, {"head", "tail", "none"});
 }
 
 } // VSTGUI

@@ -15,34 +15,35 @@ using namespace UIViewCreator;
 
 TEST_CASE (CSplitViewCreatorTest, SeparatorWidth)
 {
-	testAttribute<CSplitView> (kCSplitView, kAttrSeparatorWidth, 123, nullptr,
-	                           [] (CSplitView* v) { return v->getSeparatorWidth () == 123; });
+	DummyUIDescription uidesc;
+	testAttribute<CSplitView> (kCSplitView, kAttrSeparatorWidth, 123, uidesc,
+							   [] (CSplitView* v) { return v->getSeparatorWidth () == 123; });
 }
 
 TEST_CASE (CSplitViewCreatorTest, Orientation)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CSplitView> (
-	    kCSplitView, kAttrOrientation, "horizontal", &uidesc,
-	    [&] (CSplitView* v) { return v->getStyle () == CSplitView::kHorizontal; });
+		kCSplitView, kAttrOrientation, "horizontal", uidesc,
+		[&] (CSplitView* v) { return v->getStyle () == CSplitView::kHorizontal; });
 	testAttribute<CSplitView> (
-	    kCSplitView, kAttrOrientation, "vertical", &uidesc,
-	    [&] (CSplitView* v) { return v->getStyle () == CSplitView::kVertical; });
+		kCSplitView, kAttrOrientation, "vertical", uidesc,
+		[&] (CSplitView* v) { return v->getStyle () == CSplitView::kVertical; });
 }
 
 TEST_CASE (CSplitViewCreatorTest, ResizeMethod)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CSplitView> (
-	    kCSplitView, kAttrResizeMethod, "first", &uidesc,
-	    [&] (CSplitView* v) { return v->getResizeMethod () == CSplitView::kResizeFirstView; });
+		kCSplitView, kAttrResizeMethod, "first", uidesc,
+		[&] (CSplitView* v) { return v->getResizeMethod () == CSplitView::kResizeFirstView; });
 	testAttribute<CSplitView> (
-	    kCSplitView, kAttrResizeMethod, "second", &uidesc,
-	    [&] (CSplitView* v) { return v->getResizeMethod () == CSplitView::kResizeSecondView; });
-	testAttribute<CSplitView> (
-	    kCSplitView, kAttrResizeMethod, "last", &uidesc,
-	    [&] (CSplitView* v) { return v->getResizeMethod () == CSplitView::kResizeLastView; });
-	testAttribute<CSplitView> (kCSplitView, kAttrResizeMethod, "all", &uidesc, [&] (CSplitView* v) {
+		kCSplitView, kAttrResizeMethod, "second", uidesc,
+		[&] (CSplitView* v) { return v->getResizeMethod () == CSplitView::kResizeSecondView; });
+	testAttribute<CSplitView> (kCSplitView, kAttrResizeMethod, "last", uidesc, [&] (CSplitView* v) {
+		return v->getResizeMethod () == CSplitView::kResizeLastView;
+	});
+	testAttribute<CSplitView> (kCSplitView, kAttrResizeMethod, "all", uidesc, [&] (CSplitView* v) {
 		return v->getResizeMethod () == CSplitView::kResizeAllViews;
 	});
 }
@@ -50,14 +51,13 @@ TEST_CASE (CSplitViewCreatorTest, ResizeMethod)
 TEST_CASE (CSplitViewCreatorTest, OrientationValues)
 {
 	DummyUIDescription uidesc;
-	testPossibleValues (kCSplitView, kAttrOrientation, &uidesc, {"horizontal", "vertical"});
+	testPossibleValues (kCSplitView, kAttrOrientation, uidesc, {"horizontal", "vertical"});
 }
 
 TEST_CASE (CSplitViewCreatorTest, ResizeMethodValues)
 {
 	DummyUIDescription uidesc;
-	testPossibleValues (kCSplitView, kAttrResizeMethod, &uidesc,
-	                    {"first", "second", "last", "all"});
+	testPossibleValues (kCSplitView, kAttrResizeMethod, uidesc, {"first", "second", "last", "all"});
 }
 
 } // VSTGUI

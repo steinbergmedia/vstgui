@@ -19,15 +19,15 @@ TEST_CASE (CRockerSwitchCreatorTest, HeightOfOneImage)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CRockerSwitch> (
-	    kCRockerSwitch, kAttrHeightOfOneImage, 10, &uidesc,
-	    [] (CRockerSwitch* v) { return v->getHeightOfOneImage () == 10; });
+		kCRockerSwitch, kAttrHeightOfOneImage, 10, uidesc,
+		[] (CRockerSwitch* v) { return v->getHeightOfOneImage () == 10; });
 }
 
 TEST_CASE (CRockerSwitchCreatorTest, SubPixmaps)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CRockerSwitch> (kCRockerSwitch, kAttrSubPixmaps, 11, &uidesc,
-	                              [] (CRockerSwitch* v) { return v->getNumSubPixmaps () == 11; });
+	testAttribute<CRockerSwitch> (kCRockerSwitch, kAttrSubPixmaps, 11, uidesc,
+								  [] (CRockerSwitch* v) { return v->getNumSubPixmaps () == 11; });
 }
 
 #endif

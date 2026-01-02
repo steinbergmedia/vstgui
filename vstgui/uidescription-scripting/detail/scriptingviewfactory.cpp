@@ -27,7 +27,7 @@ JavaScriptViewFactory::~JavaScriptViewFactory () noexcept
 
 //------------------------------------------------------------------------
 CView* JavaScriptViewFactory::createView (const UIAttributes& attributes,
-										  const IUIDescription* description) const
+										  const IUIDescription& description) const
 {
 	if (auto view = Super::createView (attributes, description))
 	{
@@ -35,7 +35,7 @@ CView* JavaScriptViewFactory::createView (const UIAttributes& attributes,
 		{
 			std::optional<std::string> verifiedScript;
 			if (auto scriptViewController =
-					dynamic_cast<IScriptControllerExtension*> (description->getController ()))
+					dynamic_cast<IScriptControllerExtension*> (description.getController ()))
 			{
 				verifiedScript = scriptViewController->verifyScript (*view, *value, *scriptContext);
 				view->registerViewListener (const_cast<JavaScriptViewFactory*> (this));
@@ -77,7 +77,7 @@ auto JavaScriptViewFactory::getAttributeType (CView* view, const std::string& at
 //------------------------------------------------------------------------
 bool JavaScriptViewFactory::getAttributeValue (CView* view, const std::string& attributeName,
 											   std::string& stringValue,
-											   const IUIDescription* desc) const
+											   const IUIDescription& desc) const
 {
 	if (attributeName == kAttrScript)
 	{
@@ -96,7 +96,7 @@ bool JavaScriptViewFactory::getAttributeValue (CView* view, const std::string& a
 
 //------------------------------------------------------------------------
 bool JavaScriptViewFactory::applyAttributeValues (CView* view, const UIAttributes& attributes,
-												  const IUIDescription* desc) const
+												  const IUIDescription& desc) const
 {
 	if (auto value = attributes.getAttributeValue (kAttrScript))
 	{

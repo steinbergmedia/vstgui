@@ -299,7 +299,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, cons
 			attr->setAttribute (UIViewCreator::kAttrBitmap, getSelectedBitmapName ());
 			attr->setPointAttribute (UIViewCreator::kAttrSize, bitmap->getSize ());
 			if (auto selection = createSelectionFromViewName (
-					UIViewCreator::kCView, description->getViewFactory (), description, attr))
+					UIViewCreator::kCView, description->getViewFactory (), *description, attr))
 			{
 				CMemoryStream stream (1024, 1024, false);
 				if (selection->store (stream, description))

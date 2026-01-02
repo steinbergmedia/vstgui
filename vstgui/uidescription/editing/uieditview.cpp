@@ -1363,7 +1363,7 @@ void UIEditView::onDoubleClickEditing (CView* view)
 
 	const auto& factory = description->getViewFactory ();
 	std::string attrValue;
-	if (!factory.getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue, description))
+	if (!factory.getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue, *description))
 		return;
 
 	auto frame = getFrame ();

@@ -537,7 +537,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		const IViewFactory& viewFactory = description->getViewFactory ();
 		UIAttributes viewAttr;
 		viewAttr.setAttribute (UIViewCreator::kAttrClass, std::string (cmdName));
-		if (auto newContainer = viewFactory.createView (viewAttr, description)->asViewContainer ())
+		if (auto newContainer = viewFactory.createView (viewAttr, *description)->asViewContainer ())
 		{
 			auto action = makeOwned<EmbedViewOperation> (selection, newContainer);
 			undoManager->pushAndPerform (action);

@@ -49,7 +49,7 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<UISelection> createSelectionFromViewName (
-	const std::string& viewName, const IViewFactory& factory, const UIDescription* description,
+	const std::string& viewName, const IViewFactory& factory, const UIDescription& description,
 	const SharedPointer<UIAttributes>& optionalAttributes);
 
 } // VSTGUI

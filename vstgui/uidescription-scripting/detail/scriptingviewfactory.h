@@ -24,14 +24,14 @@ struct JavaScriptViewFactory : ViewFactoryDelegate,
 	~JavaScriptViewFactory () noexcept;
 
 	CView* createView (const UIAttributes& attributes,
-					   const IUIDescription* description) const override;
+					   const IUIDescription& description) const override;
 	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const override;
 	IViewCreator::AttrType getAttributeType (CView* view,
 											 const std::string& attributeName) const override;
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
-							const IUIDescription* desc) const override;
+							const IUIDescription& desc) const override;
 	bool applyAttributeValues (CView* view, const UIAttributes& attributes,
-							   const IUIDescription* desc) const override;
+							   const IUIDescription& desc) const override;
 	void setScriptingDisabled (bool state);
 
 private:

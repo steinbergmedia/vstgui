@@ -17,32 +17,32 @@ TEST_CASE (CMultiLineTextLabelCreatorTest, AutoHeight)
 {
 	TestUIDescription uidesc;
 	testAttribute<CMultiLineTextLabel> (
-	    kCMultiLineTextLabel, kAttrAutoHeight, true, &uidesc,
-	    [] (CMultiLineTextLabel* v) { return v->getAutoHeight () == true; });
+		kCMultiLineTextLabel, kAttrAutoHeight, true, uidesc,
+		[] (CMultiLineTextLabel* v) { return v->getAutoHeight () == true; });
 }
 
 TEST_CASE (CMultiLineTextLabelCreatorTest, LineLayout)
 {
 	TestUIDescription uidesc;
 	testAttribute<CMultiLineTextLabel> (
-	    kCMultiLineTextLabel, kAttrLineLayout, "truncate", &uidesc, [] (CMultiLineTextLabel* v) {
-		    return v->getLineLayout () == CMultiLineTextLabel::LineLayout::truncate;
-	    });
+		kCMultiLineTextLabel, kAttrLineLayout, "truncate", uidesc, [] (CMultiLineTextLabel* v) {
+			return v->getLineLayout () == CMultiLineTextLabel::LineLayout::truncate;
+		});
 	testAttribute<CMultiLineTextLabel> (
-	    kCMultiLineTextLabel, kAttrLineLayout, "wrap", &uidesc, [] (CMultiLineTextLabel* v) {
-		    return v->getLineLayout () == CMultiLineTextLabel::LineLayout::wrap;
-	    });
+		kCMultiLineTextLabel, kAttrLineLayout, "wrap", uidesc, [] (CMultiLineTextLabel* v) {
+			return v->getLineLayout () == CMultiLineTextLabel::LineLayout::wrap;
+		});
 	testAttribute<CMultiLineTextLabel> (
-	    kCMultiLineTextLabel, kAttrLineLayout, "clip", &uidesc, [] (CMultiLineTextLabel* v) {
-		    return v->getLineLayout () == CMultiLineTextLabel::LineLayout::clip;
-	    });
+		kCMultiLineTextLabel, kAttrLineLayout, "clip", uidesc, [] (CMultiLineTextLabel* v) {
+			return v->getLineLayout () == CMultiLineTextLabel::LineLayout::clip;
+		});
 }
 
 TEST_CASE (CMultiLineTextLabelCreatorTest, LineLayoutPossibleValues)
 {
 	TestUIDescription uidesc;
-	testPossibleValues (kCMultiLineTextLabel, kAttrLineLayout, &uidesc,
-	                    {"clip", "truncate", "wrap"});
+	testPossibleValues (kCMultiLineTextLabel, kAttrLineLayout, uidesc,
+						{"clip", "truncate", "wrap"});
 }
 
 } // VSTGUI

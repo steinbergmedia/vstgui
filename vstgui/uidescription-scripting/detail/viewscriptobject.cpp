@@ -33,7 +33,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 				 auto value = var->getParameter ("value"sv);
 				 UIAttributes attr;
 				 attr.setAttribute (key->getString ().data (), value->getString ().data ());
-				 auto result = uiDesc->getViewFactory ().applyAttributeValues (view, attr, uiDesc);
+				 auto result = uiDesc->getViewFactory ().applyAttributeValues (view, attr, *uiDesc);
 				 var->getReturnVar ()->setInt (result);
 			 },
 			 {"key", "value"});
@@ -42,7 +42,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 				 auto key = var->getParameter ("key"sv);
 				 std::string result;
 				 if (uiDesc->getViewFactory ().getAttributeValue (view, key->getString ().data (),
-																  result, uiDesc))
+																  result, *uiDesc))
 				 {
 					 var->getReturnVar ()->setString (result);
 				 }

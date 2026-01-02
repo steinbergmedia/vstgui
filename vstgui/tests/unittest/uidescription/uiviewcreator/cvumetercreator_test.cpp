@@ -16,17 +16,17 @@ using namespace UIViewCreator;
 TEST_CASE (CVuMeterCreatorTest, OffBitmap)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CVuMeter> (kCVuMeter, kAttrOffBitmap, kBitmapName, &uidesc,
-	                         [&] (CVuMeter* v) { return v->getOffBitmap () == uidesc.bitmap; });
+	testAttribute<CVuMeter> (kCVuMeter, kAttrOffBitmap, kBitmapName, uidesc,
+							 [&] (CVuMeter* v) { return v->getOffBitmap () == uidesc.bitmap; });
 }
 
 TEST_CASE (CVuMeterCreatorTest, Orientation)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CVuMeter> (kCVuMeter, kAttrOrientation, "horizontal", &uidesc, [&] (CVuMeter* v) {
+	testAttribute<CVuMeter> (kCVuMeter, kAttrOrientation, "horizontal", uidesc, [&] (CVuMeter* v) {
 		return v->getStyle () == CVuMeter::Style::kHorizontal;
 	});
-	testAttribute<CVuMeter> (kCVuMeter, kAttrOrientation, "vertical", &uidesc, [&] (CVuMeter* v) {
+	testAttribute<CVuMeter> (kCVuMeter, kAttrOrientation, "vertical", uidesc, [&] (CVuMeter* v) {
 		return v->getStyle () == CVuMeter::Style::kVertical;
 	});
 }
@@ -34,21 +34,21 @@ TEST_CASE (CVuMeterCreatorTest, Orientation)
 TEST_CASE (CVuMeterCreatorTest, NumLed)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CVuMeter> (kCVuMeter, kAttrNumLed, 5, &uidesc,
-	                         [&] (CVuMeter* v) { return v->getNbLed () == 5; });
+	testAttribute<CVuMeter> (kCVuMeter, kAttrNumLed, 5, uidesc,
+							 [&] (CVuMeter* v) { return v->getNbLed () == 5; });
 }
 
 TEST_CASE (CVuMeterCreatorTest, DecreaseStepValue)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CVuMeter> (kCVuMeter, kAttrDecreaseStepValue, 15., &uidesc,
-	                         [&] (CVuMeter* v) { return v->getDecreaseStepValue () == 15.; });
+	testAttribute<CVuMeter> (kCVuMeter, kAttrDecreaseStepValue, 15., uidesc,
+							 [&] (CVuMeter* v) { return v->getDecreaseStepValue () == 15.; });
 }
 
 TEST_CASE (CVuMeterCreatorTest, OrientationValues)
 {
 	DummyUIDescription uidesc;
-	testPossibleValues (kCVuMeter, kAttrOrientation, &uidesc, {"horizontal", "vertical"});
+	testPossibleValues (kCVuMeter, kAttrOrientation, uidesc, {"horizontal", "vertical"});
 }
 
 } // VSTGUI

@@ -16,51 +16,52 @@ using namespace UIViewCreator;
 TEST_CASE (CCheckBoxCreatorTest, Title)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CCheckBox> (kCCheckBox, kAttrTitle, "title", &uidesc,
-	                          [] (CCheckBox* b) { return b->getTitle () == "title"; });
+	testAttribute<CCheckBox> (kCCheckBox, kAttrTitle, "title", uidesc,
+							  [] (CCheckBox* b) { return b->getTitle () == "title"; });
 }
 
 TEST_CASE (CCheckBoxCreatorTest, Font)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CCheckBox> (kCCheckBox, kAttrFont, kFontName, &uidesc,
-	                          [&] (CCheckBox* b) { return uidesc.font == b->getFont (); }, true);
+	testAttribute<CCheckBox> (
+		kCCheckBox, kAttrFont, kFontName, uidesc,
+		[&] (CCheckBox* b) { return uidesc.font == b->getFont (); }, true);
 }
 
 TEST_CASE (CCheckBoxCreatorTest, FontColor)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CCheckBox> (kCCheckBox, kAttrFontColor, kColorName, &uidesc,
-	                          [&] (CCheckBox* b) { return b->getFontColor () == uidesc.color; });
+	testAttribute<CCheckBox> (kCCheckBox, kAttrFontColor, kColorName, uidesc,
+							  [&] (CCheckBox* b) { return b->getFontColor () == uidesc.color; });
 }
 
 TEST_CASE (CCheckBoxCreatorTest, BoxFrameColor)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CCheckBox> (
-	    kCCheckBox, kAttrBoxframeColor, kColorName, &uidesc,
-	    [&] (CCheckBox* b) { return b->getBoxFrameColor () == uidesc.color; });
+		kCCheckBox, kAttrBoxframeColor, kColorName, uidesc,
+		[&] (CCheckBox* b) { return b->getBoxFrameColor () == uidesc.color; });
 }
 
 TEST_CASE (CCheckBoxCreatorTest, BoxFillColor)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CCheckBox> (kCCheckBox, kAttrBoxfillColor, kColorName, &uidesc,
-	                          [&] (CCheckBox* b) { return b->getBoxFillColor () == uidesc.color; });
+	testAttribute<CCheckBox> (kCCheckBox, kAttrBoxfillColor, kColorName, uidesc,
+							  [&] (CCheckBox* b) { return b->getBoxFillColor () == uidesc.color; });
 }
 
 TEST_CASE (CCheckBoxCreatorTest, CheckmarkColor)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CCheckBox> (
-	    kCCheckBox, kAttrCheckmarkColor, kColorName, &uidesc,
-	    [&] (CCheckBox* b) { return b->getCheckMarkColor () == uidesc.color; });
+		kCCheckBox, kAttrCheckmarkColor, kColorName, uidesc,
+		[&] (CCheckBox* b) { return b->getCheckMarkColor () == uidesc.color; });
 }
 
 TEST_CASE (CCheckBoxCreatorTest, DrawCrossbox)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CCheckBox> (kCCheckBox, kAttrDrawCrossbox, true, &uidesc, [&] (CCheckBox* b) {
+	testAttribute<CCheckBox> (kCCheckBox, kAttrDrawCrossbox, true, uidesc, [&] (CCheckBox* b) {
 		return b->getStyle () & CCheckBox::kDrawCrossBox;
 	});
 }
@@ -68,7 +69,7 @@ TEST_CASE (CCheckBoxCreatorTest, DrawCrossbox)
 TEST_CASE (CCheckBoxCreatorTest, AutoSizeToFit)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CCheckBox> (kCCheckBox, kAttrAutosizeToFit, true, &uidesc, [&] (CCheckBox* b) {
+	testAttribute<CCheckBox> (kCCheckBox, kAttrAutosizeToFit, true, uidesc, [&] (CCheckBox* b) {
 		return b->getStyle () & CCheckBox::kAutoSizeToFit;
 	});
 }
@@ -76,15 +77,15 @@ TEST_CASE (CCheckBoxCreatorTest, AutoSizeToFit)
 TEST_CASE (CCheckBoxCreatorTest, FrameWidth)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CCheckBox> (kCCheckBox, kAttrFrameWidth, 15., &uidesc,
-	                          [&] (CCheckBox* b) { return b->getFrameWidth () == 15.; });
+	testAttribute<CCheckBox> (kCCheckBox, kAttrFrameWidth, 15., uidesc,
+							  [&] (CCheckBox* b) { return b->getFrameWidth () == 15.; });
 }
 
 TEST_CASE (CCheckBoxCreatorTest, RoundRectRadius)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CCheckBox> (kCCheckBox, kAttrRoundRectRadius, 12., &uidesc,
-	                          [&] (CCheckBox* b) { return b->getRoundRectRadius () == 12.; });
+	testAttribute<CCheckBox> (kCCheckBox, kAttrRoundRectRadius, 12., uidesc,
+							  [&] (CCheckBox* b) { return b->getRoundRectRadius () == 12.; });
 }
 
 } // VSTGUI

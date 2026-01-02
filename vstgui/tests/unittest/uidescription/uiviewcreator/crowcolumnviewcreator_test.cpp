@@ -15,76 +15,87 @@ using namespace UIViewCreator;
 
 TEST_CASE (CRowColumnViewCreatorTest, RowStyle)
 {
+	DummyUIDescription uidesc;
 	testAttribute<CRowColumnView> (
-		kCRowColumnView, kAttrRowStyle, true, nullptr,
+		kCRowColumnView, kAttrRowStyle, true, uidesc,
 		[] (CRowColumnView* v) { return v->getStyle () == CRowColumnView::kRowStyle; });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, ColumnStyle)
 {
+	DummyUIDescription uidesc;
 	testAttribute<CRowColumnView> (
-		kCRowColumnView, kAttrRowStyle, false, nullptr,
+		kCRowColumnView, kAttrRowStyle, false, uidesc,
 		[] (CRowColumnView* v) { return v->getStyle () == CRowColumnView::kColumnStyle; });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, Spacing)
 {
-	testAttribute<CRowColumnView> (kCRowColumnView, kAttrSpacing, 5., nullptr,
+	DummyUIDescription uidesc;
+	testAttribute<CRowColumnView> (kCRowColumnView, kAttrSpacing, 5., uidesc,
 								   [] (CRowColumnView* v) { return v->getSpacing () == 5.; });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, Margin)
 {
+	DummyUIDescription uidesc;
 	CRect margin (5, 6, 7, 8);
-	testAttribute<CRowColumnView> (kCRowColumnView, kAttrMargin, margin, nullptr,
+	testAttribute<CRowColumnView> (kCRowColumnView, kAttrMargin, margin, uidesc,
 								   [&] (CRowColumnView* v) { return v->getMargin () == margin; });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, AnimateViewResizing)
 {
-	testAttribute<CRowColumnView> (kCRowColumnView, kAttrAnimateViewResizing, true, nullptr,
+	DummyUIDescription uidesc;
+	testAttribute<CRowColumnView> (kCRowColumnView, kAttrAnimateViewResizing, true, uidesc,
 								   [] (CRowColumnView* v) { return v->isAnimateViewResizing (); });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, EqualSizeLayoutStretch)
 {
+	DummyUIDescription uidesc;
 	testAttribute<CRowColumnView> (
-		kCRowColumnView, kAttrEqualSizeLayout, "stretch", nullptr,
+		kCRowColumnView, kAttrEqualSizeLayout, "stretch", uidesc,
 		[] (CRowColumnView* v) { return v->getLayoutStyle () == CRowColumnView::kStretchEqualy; });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, EqualSizeLayoutCenter)
 {
+	DummyUIDescription uidesc;
 	testAttribute<CRowColumnView> (
-		kCRowColumnView, kAttrEqualSizeLayout, "center", nullptr,
+		kCRowColumnView, kAttrEqualSizeLayout, "center", uidesc,
 		[] (CRowColumnView* v) { return v->getLayoutStyle () == CRowColumnView::kCenterEqualy; });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, EqualSizeLayoutRightBottom)
 {
+	DummyUIDescription uidesc;
 	testAttribute<CRowColumnView> (
-		kCRowColumnView, kAttrEqualSizeLayout, "right-bottom", nullptr, [] (CRowColumnView* v) {
+		kCRowColumnView, kAttrEqualSizeLayout, "right-bottom", uidesc, [] (CRowColumnView* v) {
 			return v->getLayoutStyle () == CRowColumnView::kRightBottomEqualy;
 		});
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, EqualSizeLayoutLeftTop)
 {
+	DummyUIDescription uidesc;
 	testAttribute<CRowColumnView> (
-		kCRowColumnView, kAttrEqualSizeLayout, "left-top", nullptr,
+		kCRowColumnView, kAttrEqualSizeLayout, "left-top", uidesc,
 		[] (CRowColumnView* v) { return v->getLayoutStyle () == CRowColumnView::kLeftTopEqualy; });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, AnimationTime)
 {
+	DummyUIDescription uidesc;
 	testAttribute<CRowColumnView> (
-		kCRowColumnView, kAttrViewResizeAnimationTime, 100, nullptr,
+		kCRowColumnView, kAttrViewResizeAnimationTime, 100, uidesc,
 		[] (CRowColumnView* v) { return v->getViewResizeAnimationTime () == 100; });
 }
 
 TEST_CASE (CRowColumnViewCreatorTest, EqualSizeLayoutValues)
 {
-	testPossibleValues (kCRowColumnView, kAttrEqualSizeLayout, nullptr,
+	DummyUIDescription uidesc;
+	testPossibleValues (kCRowColumnView, kAttrEqualSizeLayout, uidesc,
 						{"left-top", "stretch", "center", "right-bottom", "top-left", "top-center",
 						 "top-right", "middle-left", "middle-center", "middle-right", "bottom-left",
 						 "bottom-center", "bottom-right"});
@@ -92,7 +103,8 @@ TEST_CASE (CRowColumnViewCreatorTest, EqualSizeLayoutValues)
 
 TEST_CASE (CRowColumnViewCreatorTest, HideClippedSubviews)
 {
-	testAttribute<CRowColumnView> (kCRowColumnView, kAttrHideClippedSubviews, true, nullptr,
+	DummyUIDescription uidesc;
+	testAttribute<CRowColumnView> (kCRowColumnView, kAttrHideClippedSubviews, true, uidesc,
 								   [] (CRowColumnView* v) { return v->hideClippedSubviews (); });
 }
 

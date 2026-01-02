@@ -19,16 +19,16 @@ TEST_CASE (CVerticalSwitchCreatorTest, HeightOfOneImage)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CVerticalSwitch> (
-	    kCVerticalSwitch, kAttrHeightOfOneImage, 10, &uidesc,
-	    [] (CVerticalSwitch* v) { return v->getHeightOfOneImage () == 10; });
+		kCVerticalSwitch, kAttrHeightOfOneImage, 10, uidesc,
+		[] (CVerticalSwitch* v) { return v->getHeightOfOneImage () == 10; });
 }
 
 TEST_CASE (CVerticalSwitchCreatorTest, SubPixmaps)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CVerticalSwitch> (
-	    kCVerticalSwitch, kAttrSubPixmaps, 11, &uidesc,
-	    [] (CVerticalSwitch* v) { return v->getNumSubPixmaps () == 11; });
+		kCVerticalSwitch, kAttrSubPixmaps, 11, uidesc,
+		[] (CVerticalSwitch* v) { return v->getNumSubPixmaps () == 11; });
 }
 
 #endif
@@ -37,11 +37,11 @@ TEST_CASE (CVerticalSwitchCreatorTest, InverseBitmap)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CVerticalSwitch> (
-	    kCVerticalSwitch, kAttrInverseBitmap, true, &uidesc,
-	    [] (CVerticalSwitch* v) { return v->getInverseBitmap () == true; });
+		kCVerticalSwitch, kAttrInverseBitmap, true, uidesc,
+		[] (CVerticalSwitch* v) { return v->getInverseBitmap () == true; });
 	testAttribute<CVerticalSwitch> (
-	    kCVerticalSwitch, kAttrInverseBitmap, false, &uidesc,
-	    [] (CVerticalSwitch* v) { return v->getInverseBitmap () == false; });
+		kCVerticalSwitch, kAttrInverseBitmap, false, uidesc,
+		[] (CVerticalSwitch* v) { return v->getInverseBitmap () == false; });
 }
 
 } // VSTGUI

@@ -18,8 +18,8 @@ TEST_CASE (CSearchTextEditCreatorTest, ClearMarkInset)
 	TestUIDescription uidesc;
 	CPoint p (10, 11);
 	testAttribute<CSearchTextEdit> (
-	    kCSearchTextEdit, kAttrClearMarkInset, p, &uidesc,
-	    [&] (CSearchTextEdit* v) { return v->getClearMarkInset () == p; });
+		kCSearchTextEdit, kAttrClearMarkInset, p, uidesc,
+		[&] (CSearchTextEdit* v) { return v->getClearMarkInset () == p; });
 }
 
 } // VSTGUI

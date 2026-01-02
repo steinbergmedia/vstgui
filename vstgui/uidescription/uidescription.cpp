@@ -600,7 +600,8 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 			if (auto factory = impl->viewFactory.cast<IViewFactoryEditingSupport> ())
 			{
 				auto attr = makeOwned<UIAttributes> ();
-				if (factory->getAttributesForView (view, const_cast<UIDescription*> (this), *attr) == false)
+				if (factory->getAttributesForView (view, *const_cast<UIDescription*> (this),
+												   *attr) == false)
 					return false;
 				auto newNode = makeOwned<UINode> ("view", attr);
 				nodeList->add (newNode);
@@ -660,7 +661,7 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 	{
 		CView* view = createView (templateName->c_str (), impl->controller);
 		if (view)
-			impl->viewFactory->applyAttributeValues (view, *node->getAttributes (), this);
+			impl->viewFactory->applyAttributeValues (view, *node->getAttributes (), *this);
 		return view;
 	}
 
@@ -683,16 +684,18 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 		{
 			const std::string* viewClass = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrClass);
 			if (viewClass)
-				impl->viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (), *node->getAttributes (), this);
+				impl->viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (),
+																   *node->getAttributes (), *this);
 		}
 	}
 	if (result == nullptr && impl->viewFactory)
 	{
-		result = impl->viewFactory->createView (*node->getAttributes (), this);
+		result = impl->viewFactory->createView (*node->getAttributes (), *this);
 		if (result == nullptr)
 		{
 			result = new CViewContainer (CRect (0, 0, 0, 0));
-			impl->viewFactory->applyCustomViewAttributeValues (result, "CViewContainer", *node->getAttributes (), this);
+			impl->viewFactory->applyCustomViewAttributeValues (result, "CViewContainer",
+															   *node->getAttributes (), *this);
 		}
 	}
 	if (result && node->hasChildren ())
@@ -1691,7 +1694,7 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node, 
 				impl->attributeSaveFilterFunc (view, name) == false)
 				continue;
 			std::string value;
-			if (impl->viewFactory->getAttributeValue (view, name, value, this))
+			if (impl->viewFactory->getAttributeValue (view, name, value, *this))
 				node->getAttributes ()->setAttribute (name, std::move (value));
 		}
 		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass,

@@ -17,12 +17,16 @@ class IViewFactory : virtual public IReference
 {
 public:
 	virtual ~IViewFactory () noexcept = default;
-	
-	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) const = 0;
-	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const = 0;
-	virtual bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const = 0;
+
+	virtual CView* createView (const UIAttributes& attributes,
+							   const IUIDescription& description) const = 0;
+	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes,
+									   const IUIDescription& desc) const = 0;
+	virtual bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
+												 const UIAttributes& attributes,
+												 const IUIDescription& desc) const = 0;
 	virtual bool getAttributeValue (CView* view, const std::string& attributeName,
-									std::string& stringValue, const IUIDescription* desc) const = 0;
+									std::string& stringValue, const IUIDescription& desc) const = 0;
 	virtual bool viewIsTypeOf (CView* view, const std::string& typeName) const = 0;
 
 	static IdStringPtr getViewName (CView* view);
@@ -41,7 +45,8 @@ public:
 	virtual bool getAttributeNamesForView (CView* view, StringList& attributeNames) const = 0;
 	virtual IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const = 0;
 	virtual void collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter = nullptr) const = 0;
-	virtual bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const = 0;
+	virtual bool getAttributesForView (CView* view, const IUIDescription& desc,
+									   UIAttributes& attr) const = 0;
 	// list type support
 	virtual bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const = 0;
 	virtual bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const = 0;
@@ -62,23 +67,23 @@ public:
 	}
 
 	CView* createView (const UIAttributes& attributes,
-					   const IUIDescription* description) const override
+					   const IUIDescription& description) const override
 	{
 		return of->createView (attributes, description);
 	}
 	bool applyAttributeValues (CView* view, const UIAttributes& attributes,
-							   const IUIDescription* desc) const override
+							   const IUIDescription& desc) const override
 	{
 		return of->applyAttributeValues (view, attributes, desc);
 	}
 	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
 										 const UIAttributes& attributes,
-										 const IUIDescription* desc) const override
+										 const IUIDescription& desc) const override
 	{
 		return of->applyCustomViewAttributeValues (customView, baseViewName, attributes, desc);
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
-							const IUIDescription* desc) const override
+							const IUIDescription& desc) const override
 	{
 		return of->getAttributeValue (view, attributeName, stringValue, desc);
 	}
@@ -102,7 +107,7 @@ public:
 		if (ofes)
 			ofes->collectRegisteredViewNames (viewNames, baseClassNameFilter);
 	}
-	bool getAttributesForView (CView* view, const IUIDescription* desc,
+	bool getAttributesForView (CView* view, const IUIDescription& desc,
 							   UIAttributes& attr) const override
 	{
 		return ofes ? ofes->getAttributesForView (view, desc, attr) : false;

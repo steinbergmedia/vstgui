@@ -1185,7 +1185,7 @@ void UIAttributesController::validateAttributeViews ()
 		{
 			std::string temp;
 			viewFactory.getAttributeValue (view, controller->getAttributeName (), temp,
-										   editDescription);
+										   *editDescription);
 			if (temp != attrValue && !first)
 				hasDifferentValues = true;
 			attrValue = temp;
@@ -1284,7 +1284,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	for (const auto& view : *selection)
 	{
 		std::string temp;
-		viewFactory.getAttributeValue (view, attrName, temp, editDescription);
+		viewFactory.getAttributeValue (view, attrName, temp, *editDescription);
 		if (temp != attrValue && !first)
 			hasDifferentValues = true;
 		attrValue = temp;

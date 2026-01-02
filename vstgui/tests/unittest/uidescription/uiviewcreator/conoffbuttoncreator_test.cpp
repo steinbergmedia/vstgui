@@ -8,21 +8,23 @@
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../unittests.h"
+#include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
 TEST_CASE (COnOffButtonCreatorTest, Create)
 {
+	DummyUIDescription uidesc;
 	UIViewFactory factory;
 	UIAttributes a;
 	a.setAttribute (kAttrClass, kCOnOffButton);
 
-	auto view = owned (factory.createView (a, nullptr));
+	auto view = owned (factory.createView (a, uidesc));
 	auto control = view.cast<COnOffButton> ();
 	EXPECT (control);
 	UIAttributes a2;
-	EXPECT (factory.getAttributesForView (view, nullptr, a2));
+	EXPECT (factory.getAttributesForView (view, uidesc, a2));
 }
 
 } // VSTGUI

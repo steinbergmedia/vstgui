@@ -16,14 +16,14 @@ using namespace UIViewCreator;
 TEST_CASE (CTextEditCreatorTest, ImmediateTextChange)
 {
 	TestUIDescription uidesc;
-	testAttribute<CTextEdit> (kCTextEdit, kAttrImmediateTextChange, true, &uidesc,
-	                          [] (CTextEdit* v) { return v->getImmediateTextChange (); });
+	testAttribute<CTextEdit> (kCTextEdit, kAttrImmediateTextChange, true, uidesc,
+							  [] (CTextEdit* v) { return v->getImmediateTextChange (); });
 }
 
 TEST_CASE (CTextEditCreatorTest, DoubleClick)
 {
 	TestUIDescription uidesc;
-	testAttribute<CTextEdit> (kCTextEdit, kAttrStyleDoubleClick, true, &uidesc, [] (CTextEdit* v) {
+	testAttribute<CTextEdit> (kCTextEdit, kAttrStyleDoubleClick, true, uidesc, [] (CTextEdit* v) {
 		return v->getStyle () & CTextEdit::kDoubleClickStyle;
 	});
 }
@@ -31,8 +31,8 @@ TEST_CASE (CTextEditCreatorTest, DoubleClick)
 TEST_CASE (CTextEditCreatorTest, SecureStyle)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CTextEdit> (kCTextEdit, kAttrSecureStyle, true, &uidesc,
-	                          [&] (CTextEdit* v) { return v->getSecureStyle () == true; });
+	testAttribute<CTextEdit> (kCTextEdit, kAttrSecureStyle, true, uidesc,
+							  [&] (CTextEdit* v) { return v->getSecureStyle () == true; });
 }
 
 TEST_CASE (CTextEditCreatorTest, PlaceholderTitle)
@@ -40,8 +40,8 @@ TEST_CASE (CTextEditCreatorTest, PlaceholderTitle)
 	DummyUIDescription uidesc;
 	auto testValue = "This is a placeholder";
 	testAttribute<CTextEdit> (
-	    kCTextEdit, kAttrPlaceholderTitle, testValue, &uidesc,
-	    [&] (CTextEdit* b) { return b->getPlaceholderString () == testValue; });
+		kCTextEdit, kAttrPlaceholderTitle, testValue, uidesc,
+		[&] (CTextEdit* b) { return b->getPlaceholderString () == testValue; });
 }
 
 } // VSTGUI

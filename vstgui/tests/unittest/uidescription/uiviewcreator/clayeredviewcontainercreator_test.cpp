@@ -15,9 +15,10 @@ using namespace UIViewCreator;
 
 TEST_CASE (CLayeredViewContainerCreatorTest, ZIndex)
 {
+	DummyUIDescription uidesc;
 	testAttribute<CLayeredViewContainer> (
-	    kCLayeredViewContainer, kAttrZIndex, 1, nullptr,
-	    [] (CLayeredViewContainer* v) { return v->getZIndex () == 1; });
+		kCLayeredViewContainer, kAttrZIndex, 1, uidesc,
+		[] (CLayeredViewContainer* v) { return v->getZIndex () == 1; });
 }
 
 } // VSTGUI

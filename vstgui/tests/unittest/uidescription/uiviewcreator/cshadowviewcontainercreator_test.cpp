@@ -17,16 +17,16 @@ TEST_CASE (CShadowViewContainerCreatorTest, ShadowIntensity)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CShadowViewContainer> (
-	    kCShadowViewContainer, kAttrShadowIntensity, 0.5, &uidesc,
-	    [] (CShadowViewContainer* v) { return v->getShadowIntensity () == 0.5f; });
+		kCShadowViewContainer, kAttrShadowIntensity, 0.5, uidesc,
+		[] (CShadowViewContainer* v) { return v->getShadowIntensity () == 0.5f; });
 }
 
 TEST_CASE (CShadowViewContainerCreatorTest, ShadowBlurSize)
 {
 	DummyUIDescription uidesc;
 	testAttribute<CShadowViewContainer> (
-	    kCShadowViewContainer, kAttrShadowBlurSize, 0.5, &uidesc,
-	    [] (CShadowViewContainer* v) { return v->getShadowBlurSize () == 0.5f; });
+		kCShadowViewContainer, kAttrShadowBlurSize, 0.5, uidesc,
+		[] (CShadowViewContainer* v) { return v->getShadowBlurSize () == 0.5f; });
 }
 
 TEST_CASE (CShadowViewContainerCreatorTest, ShadowOffset)
@@ -34,20 +34,20 @@ TEST_CASE (CShadowViewContainerCreatorTest, ShadowOffset)
 	DummyUIDescription uidesc;
 	CPoint p (20, 20);
 	testAttribute<CShadowViewContainer> (
-	    kCShadowViewContainer, kAttrShadowOffset, p, &uidesc,
-	    [&] (CShadowViewContainer* v) { return v->getShadowOffset () == p; });
+		kCShadowViewContainer, kAttrShadowOffset, p, uidesc,
+		[&] (CShadowViewContainer* v) { return v->getShadowOffset () == p; });
 }
 
 TEST_CASE (CShadowViewContainerCreatorTest, ShadowBlurSizeMinMax)
 {
 	DummyUIDescription uidesc;
-	testMinMaxValues (kCShadowViewContainer, kAttrShadowBlurSize, &uidesc, 0.8, 20);
+	testMinMaxValues (kCShadowViewContainer, kAttrShadowBlurSize, uidesc, 0.8, 20);
 }
 
 TEST_CASE (CShadowViewContainerCreatorTest, ShadowIntensityMinMax)
 {
 	DummyUIDescription uidesc;
-	testMinMaxValues (kCShadowViewContainer, kAttrShadowIntensity, &uidesc, 0., 1.);
+	testMinMaxValues (kCShadowViewContainer, kAttrShadowIntensity, uidesc, 0., 1.);
 }
 
 } // VSTGUI

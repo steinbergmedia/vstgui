@@ -36,68 +36,74 @@ bool getViewAttributeString (CView* view, const CViewAttributeID attrID, std::st
 
 TEST_CASE (CViewCreatorTest, Origin)
 {
+	DummyUIDescription uidesc;
 	CPoint origin (20, 20);
-	testAttribute<CView> (kCView, kAttrOrigin, origin, nullptr,
-	                      [&] (CView* v) { return v->getViewSize ().getTopLeft () == origin; });
+	testAttribute<CView> (kCView, kAttrOrigin, origin, uidesc,
+						  [&] (CView* v) { return v->getViewSize ().getTopLeft () == origin; });
 }
 
 TEST_CASE (CViewCreatorTest, Size)
 {
+	DummyUIDescription uidesc;
 	CPoint size (20, 20);
-	testAttribute<CView> (kCView, kAttrSize, size, nullptr,
-	                      [&] (CView* v) { return v->getViewSize ().getSize () == size; });
+	testAttribute<CView> (kCView, kAttrSize, size, uidesc,
+						  [&] (CView* v) { return v->getViewSize ().getSize () == size; });
 }
 
 TEST_CASE (CViewCreatorTest, Bitmap)
 {
-	DummyUIDescription uiDesc;
-	testAttribute<CView> (kCView, kAttrBitmap, kBitmapName, &uiDesc,
-	                      [&] (CView* v) { return v->getBackground () == uiDesc.bitmap; });
+	DummyUIDescription uidesc;
+	testAttribute<CView> (kCView, kAttrBitmap, kBitmapName, uidesc,
+						  [&] (CView* v) { return v->getBackground () == uidesc.bitmap; });
 }
 
 TEST_CASE (CViewCreatorTest, DisabledBitmap)
 {
-	DummyUIDescription uiDesc;
-	testAttribute<CView> (kCView, kAttrDisabledBitmap, kBitmapName, &uiDesc,
-	                      [&] (CView* v) { return v->getDisabledBackground () == uiDesc.bitmap; });
+	DummyUIDescription uidesc;
+	testAttribute<CView> (kCView, kAttrDisabledBitmap, kBitmapName, uidesc,
+						  [&] (CView* v) { return v->getDisabledBackground () == uidesc.bitmap; });
 }
 
 TEST_CASE (CViewCreatorTest, Transparent)
 {
-	testAttribute<CView> (kCView, kAttrTransparent, true, nullptr,
-	                      [&] (CView* v) { return v->getTransparency (); });
-	testAttribute<CView> (kCView, kAttrTransparent, false, nullptr,
-	                      [&] (CView* v) { return v->getTransparency () == false; });
+	DummyUIDescription uidesc;
+	testAttribute<CView> (kCView, kAttrTransparent, true, uidesc,
+						  [&] (CView* v) { return v->getTransparency (); });
+	testAttribute<CView> (kCView, kAttrTransparent, false, uidesc,
+						  [&] (CView* v) { return v->getTransparency () == false; });
 }
 
 TEST_CASE (CViewCreatorTest, MouseEnabled)
 {
-	testAttribute<CView> (kCView, kAttrMouseEnabled, true, nullptr,
-	                      [&] (CView* v) { return v->getMouseEnabled (); });
-	testAttribute<CView> (kCView, kAttrMouseEnabled, false, nullptr,
-	                      [&] (CView* v) { return v->getMouseEnabled () == false; });
+	DummyUIDescription uidesc;
+	testAttribute<CView> (kCView, kAttrMouseEnabled, true, uidesc,
+						  [&] (CView* v) { return v->getMouseEnabled (); });
+	testAttribute<CView> (kCView, kAttrMouseEnabled, false, uidesc,
+						  [&] (CView* v) { return v->getMouseEnabled () == false; });
 }
 
 TEST_CASE (CViewCreatorTest, Autosize)
 {
-	testAttribute<CView> (kCView, kAttrAutosize, "left ", nullptr,
-	                      [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeLeft; });
-	testAttribute<CView> (kCView, kAttrAutosize, "top ", nullptr,
-	                      [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeTop; });
-	testAttribute<CView> (kCView, kAttrAutosize, "right ", nullptr,
-	                      [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeRight; });
-	testAttribute<CView> (kCView, kAttrAutosize, "bottom ", nullptr,
-	                      [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeBottom; });
-	testAttribute<CView> (kCView, kAttrAutosize, "row ", nullptr,
-	                      [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeRow; });
-	testAttribute<CView> (kCView, kAttrAutosize, "column ", nullptr,
-	                      [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeColumn; });
+	DummyUIDescription uidesc;
+	testAttribute<CView> (kCView, kAttrAutosize, "left ", uidesc,
+						  [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeLeft; });
+	testAttribute<CView> (kCView, kAttrAutosize, "top ", uidesc,
+						  [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeTop; });
+	testAttribute<CView> (kCView, kAttrAutosize, "right ", uidesc,
+						  [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeRight; });
+	testAttribute<CView> (kCView, kAttrAutosize, "bottom ", uidesc,
+						  [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeBottom; });
+	testAttribute<CView> (kCView, kAttrAutosize, "row ", uidesc,
+						  [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeRow; });
+	testAttribute<CView> (kCView, kAttrAutosize, "column ", uidesc,
+						  [&] (CView* v) { return v->getAutosizeFlags () & kAutosizeColumn; });
 }
 
 TEST_CASE (CViewCreatorTest, Tooltip)
 {
+	DummyUIDescription uidesc;
 	std::string tooltipStr = "This is a tooltip";
-	testAttribute<CView> (kCView, kAttrTooltip, tooltipStr.c_str (), nullptr, [&] (CView* v) {
+	testAttribute<CView> (kCView, kAttrTooltip, tooltipStr.c_str (), uidesc, [&] (CView* v) {
 		std::string str;
 		EXPECT (getViewAttributeString (v, kCViewTooltipAttribute, str));
 		return str == tooltipStr;
@@ -108,42 +114,46 @@ TEST_CASE (CViewCreatorTest, Tooltip)
 	a.setAttribute (kAttrClass, kCView);
 	a.setAttribute (kAttrTooltip, "");
 
-	auto view = owned (factory.createView (a, nullptr));
+	auto view = owned (factory.createView (a, uidesc));
 	std::string str;
 	EXPECT (getViewAttributeString (view, kCViewTooltipAttribute, str) == false);
 }
 
 TEST_CASE (CViewCreatorTest, CustomViewName)
 {
+	DummyUIDescription uidesc;
 	std::string customViewName = "CustomView";
-	testAttribute<CView> (kCView, kAttrCustomViewName, customViewName.c_str (), nullptr,
-	                      [&] (CView* v) {
-		                      std::string str;
-		                      EXPECT (getViewAttributeString (v, 'uicv', str));
+	testAttribute<CView> (kCView, kAttrCustomViewName, customViewName.c_str (), uidesc,
+						  [&] (CView* v) {
+							  std::string str;
+							  EXPECT (getViewAttributeString (v, 'uicv', str));
 		                      return str == customViewName;
-	                      });
+						  });
 }
 
 TEST_CASE (CViewCreatorTest, SubControllerName)
 {
+	DummyUIDescription uidesc;
 	std::string subControllerName = "SubController";
-	testAttribute<CView> (kCView, kAttrSubController, subControllerName.c_str (), nullptr,
-	                      [&] (CView* v) {
-		                      std::string str;
-		                      EXPECT (getViewAttributeString (v, 'uisc', str));
+	testAttribute<CView> (kCView, kAttrSubController, subControllerName.c_str (), uidesc,
+						  [&] (CView* v) {
+							  std::string str;
+							  EXPECT (getViewAttributeString (v, 'uisc', str));
 		                      return str == subControllerName;
-	                      });
+						  });
 }
 
 TEST_CASE (CViewCreatorTest, Opacity)
 {
-	testAttribute<CView> (kCView, kAttrOpacity, 0.5, nullptr,
-	                      [&] (CView* v) { return v->getAlphaValue () == 0.5; });
+	DummyUIDescription uidesc;
+	testAttribute<CView> (kCView, kAttrOpacity, 0.5, uidesc,
+						  [&] (CView* v) { return v->getAlphaValue () == 0.5; });
 }
 
 TEST_CASE (CViewCreatorTest, OpacityValueRange)
 {
-	testMinMaxValues (kCView, kAttrOpacity, nullptr, 0., 1.);
+	DummyUIDescription uidesc;
+	testMinMaxValues (kCView, kAttrOpacity, uidesc, 0., 1.);
 }
 
 } // VSTGUI

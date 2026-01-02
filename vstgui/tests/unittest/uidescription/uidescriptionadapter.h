@@ -15,23 +15,23 @@ class ViewFactoryAdapter : public NonAtomicReferenceCounted,
 {
 public:
 	CView* createView (const UIAttributes& attributes,
-					   const IUIDescription* description) const override
+					   const IUIDescription& description) const override
 	{
 		return nullptr;
 	}
 	bool applyAttributeValues (CView* view, const UIAttributes& attributes,
-							   const IUIDescription* desc) const override
+							   const IUIDescription& desc) const override
 	{
 		return false;
 	}
 	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
 										 const UIAttributes& attributes,
-										 const IUIDescription* desc) const override
+										 const IUIDescription& desc) const override
 	{
 		return false;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
-							const IUIDescription* desc) const override
+							const IUIDescription& desc) const override
 	{
 		return false;
 	}

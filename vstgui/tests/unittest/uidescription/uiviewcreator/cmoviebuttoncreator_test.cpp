@@ -18,16 +18,16 @@ using namespace UIViewCreator;
 TEST_CASE (CMovieButtonCreatorTest, HeightOfOneImage)
 {
 	DummyUIDescription uidesc;
-	testAttribute<CMovieButton> (kCMovieButton, kAttrHeightOfOneImage, 10, &uidesc,
-	                             [] (CMovieButton* v) { return v->getHeightOfOneImage () == 10; });
+	testAttribute<CMovieButton> (kCMovieButton, kAttrHeightOfOneImage, 10, uidesc,
+								 [] (CMovieButton* v) { return v->getHeightOfOneImage () == 10; });
 }
 
 TEST_CASE (CMovieButtonCreatorTest, SubPixmaps)
 {
 
 	DummyUIDescription uidesc;
-	testAttribute<CMovieButton> (kCMovieButton, kAttrSubPixmaps, 11, &uidesc,
-	                             [] (CMovieButton* v) { return v->getNumSubPixmaps () == 11; });
+	testAttribute<CMovieButton> (kCMovieButton, kAttrSubPixmaps, 11, uidesc,
+								 [] (CMovieButton* v) { return v->getNumSubPixmaps () == 11; });
 }
 
 #endif
