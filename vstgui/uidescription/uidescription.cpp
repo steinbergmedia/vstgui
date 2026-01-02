@@ -85,8 +85,8 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	mutable IController* controller {nullptr};
 	SharedPointer<IViewFactory> viewFactory;
 	IContentProvider* contentProvider {nullptr};
-	IBitmapCreator* bitmapCreator { nullptr};
-	IBitmapCreator2* bitmapCreator2 { nullptr};
+	SharedPointer<IBitmapCreator> bitmapCreator;
+	SharedPointer<IBitmapCreator2> bitmapCreator2;
 	AttributeSaveFilterFunc attributeSaveFilterFunc {nullptr};
 
 	SharedPointer<UINode> nodes;
@@ -346,13 +346,13 @@ void UIDescription::unregisterListener (UIDescriptionListener* listener)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setBitmapCreator (IBitmapCreator* creator)
+void UIDescription::setBitmapCreator (const SharedPointer<IBitmapCreator>& creator)
 {
 	impl->bitmapCreator = creator;
 }
 
 //------------------------------------------------------------------------
-void UIDescription::setBitmapCreator2 (IBitmapCreator2* creator)
+void UIDescription::setBitmapCreator2 (const SharedPointer<IBitmapCreator2>& creator)
 {
 	impl->bitmapCreator2 = creator;
 }

@@ -146,8 +146,8 @@ public:
 	void registerListener (UIDescriptionListener* listener);
 	void unregisterListener (UIDescriptionListener* listener);
 
-	void setBitmapCreator (IBitmapCreator* bitmapCreator);
-	void setBitmapCreator2 (IBitmapCreator2* bitmapCreator);
+	void setBitmapCreator (const SharedPointer<IBitmapCreator>& bitmapCreator);
+	void setBitmapCreator2 (const SharedPointer<IBitmapCreator2>& bitmapCreator);
 
 	using FocusDrawing = FocusDrawingSettings;
 	FocusDrawing getFocusDrawingSettings () const;
@@ -189,7 +189,7 @@ static constexpr auto kTemplateAttributeMinSize = "minSize";
 static constexpr auto kTemplateAttributeMaxSize = "maxSize";
 
 //-----------------------------------------------------------------------------
-class IBitmapCreator
+class IBitmapCreator : public virtual IReference
 {
 public:
 	virtual ~IBitmapCreator () noexcept = default;
@@ -198,7 +198,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IBitmapCreator2
+class IBitmapCreator2 : public virtual IReference
 {
 public:
 	virtual ~IBitmapCreator2 () noexcept = default;
