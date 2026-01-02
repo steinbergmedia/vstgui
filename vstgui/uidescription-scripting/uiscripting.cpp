@@ -186,7 +186,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 					else
 					{
 						auto scriptObj =
-							addView (child, std::make_unique<ViewScriptObject> (child, this));
+							addView (child, std::make_unique<ViewScriptObject> (child, *this));
 						ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv,
 												  scriptObj->getVar ());
 						ScriptAddChildScoped scs2 (*jsContext->getRoot (), "context"sv, context);
@@ -361,7 +361,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 			}
 			else
 			{
-				auto scriptObj = addView (view, std::make_unique<ViewScriptObject> (view, this));
+				auto scriptObj = addView (view, std::make_unique<ViewScriptObject> (view, *this));
 				ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv, scriptObj->getVar ());
 				This->evalScript (obj->getVar (), script);
 			}
@@ -543,7 +543,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		auto it = viewScriptMap.find (view);
 		if (it != viewScriptMap.end ())
 			return it->second.get ();
-		return addView (view, std::make_unique<ViewScriptObject> (view, this));
+		return addView (view, std::make_unique<ViewScriptObject> (view, *this));
 	}
 
 	void addView (CView* view, const std::string* script) noexcept

@@ -21,14 +21,14 @@ using namespace TJS;
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* context)
+ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& context)
 : view (view), context (context)
 {
 	scriptVar->setLifeTimeObserver (this);
 	auto viewType = IViewFactory::getViewName (view);
 	scriptVar->addChild ("type"sv, new CScriptVar (std::string (viewType ? viewType : "unknown")));
 	addFunc ("setAttribute"sv,
-			 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
+			 [uiDesc = context.getUIDescription (), view] (CScriptVar* var) {
 				 auto key = var->getParameter ("key"sv);
 				 auto value = var->getParameter ("value"sv);
 				 UIAttributes attr;
@@ -38,7 +38,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 			 },
 			 {"key", "value"});
 	addFunc ("getAttribute"sv,
-			 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
+			 [uiDesc = context.getUIDescription (), view] (CScriptVar* var) {
 				 auto key = var->getParameter ("key"sv);
 				 std::string result;
 				 if (uiDesc->getViewFactory ().getAttributeValue (view, key->getString ().data (),
@@ -53,7 +53,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 			 },
 			 {"key"});
 	addFunc ("isTypeOf"sv,
-			 [uiDesc = context->getUIDescription (), view] (CScriptVar* var) {
+			 [uiDesc = context.getUIDescription (), view] (CScriptVar* var) {
 				 auto typeName = var->getParameter ("typeName"sv);
 				 auto result =
 					 uiDesc->getViewFactory ().viewIsTypeOf (view, typeName->getString ().data ());
@@ -75,14 +75,14 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext* conte
 		bounds.originize ();
 		var->setReturnVar (makeScriptRect (bounds));
 	});
-	addFunc ("getParent"sv, [view, context] (CScriptVar* var) {
+	addFunc ("getParent"sv, [view, &context] (CScriptVar* var) {
 		auto parentView = view->getParentView ();
 		if (!parentView)
 		{
 			var->getReturnVar ()->setUndefined ();
 			return;
 		}
-		auto obj = context->addView (parentView);
+		auto obj = context.addView (parentView);
 		vstgui_assert (obj);
 		var->setReturnVar (obj->getVar ());
 		obj->getVar ()->release ();
@@ -200,8 +200,7 @@ void ViewScriptObject::onDestroy (CScriptVar* v)
 {
 	v->setLifeTimeObserver (nullptr);
 	scriptVar = nullptr;
-	if (context)
-		context->removeView (view);
+	context.removeView (view);
 }
 
 //------------------------------------------------------------------------

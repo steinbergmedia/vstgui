@@ -41,21 +41,19 @@ void JavaScriptDrawable::onDraw (CDrawContext* context, const CRect& rect, const
 		context->drawRect (size, kDrawStroked);
 		return;
 	}
-	auto scriptContext = scriptObject->getContext ();
-	if (!scriptContext)
-		return;
+	auto& scriptContext = scriptObject->getContext ();
 	context->saveGlobalState ();
 
-	drawContext.setDrawContext (context, scriptContext->getUIDescription ());
+	drawContext.setDrawContext (context, scriptContext.getUIDescription ());
 
 	CDrawContext::Transform tm (*context, CGraphicsTransform ().translate (viewSize.getTopLeft ()));
 
 	auto rectVar = makeScriptRect (rect);
-	auto scriptRoot = scriptContext->getRoot ();
+	auto scriptRoot = scriptContext.getRoot ();
 	ScriptAddChildScoped scs (*scriptRoot, "view"sv, *scriptObject);
 	ScriptAddChildScoped scs2 (*scriptRoot, "context"sv, drawContext);
 	ScriptAddChildScoped scs3 (*scriptRoot, "rect"sv, rectVar);
-	scriptContext->evalScript ("view.draw(context, rect);"sv);
+	scriptContext.evalScript ("view.draw(context, rect);"sv);
 
 	drawContext.setDrawContext (nullptr, nullptr);
 
@@ -68,16 +66,14 @@ void JavaScriptDrawable::setup (ViewScriptObject* inObject) { scriptObject = inO
 //------------------------------------------------------------------------
 bool JavaScriptDrawable::onDrawFocusOnTop ()
 {
-	auto scriptContext = scriptObject->getContext ();
-	if (!scriptContext)
-		return false;
+	auto& scriptContext = scriptObject->getContext ();
 
 	if (scriptObject->getVar ()->findChild ("drawFocusOnTop"sv) == nullptr)
 		return false;
 
-	auto scriptRoot = scriptContext->getRoot ();
+	auto scriptRoot = scriptContext.getRoot ();
 	ScriptAddChildScoped scs (*scriptRoot, "view"sv, *scriptObject);
-	auto boolResult = scriptContext->evalScript ("view.drawFocusOnTop();"sv);
+	auto boolResult = scriptContext.evalScript ("view.drawFocusOnTop();"sv);
 	return boolResult->isNumeric () ? boolResult->getInt () : false;
 }
 
@@ -85,36 +81,34 @@ bool JavaScriptDrawable::onDrawFocusOnTop ()
 bool JavaScriptDrawable::onGetFocusPath (CGraphicsPath& outPath, CCoord focusWidth,
 										 const CRect& viewSize)
 {
-	if (auto scriptContext = scriptObject->getContext ())
+	auto& scriptContext = scriptObject->getContext ();
+	if (scriptObject->getVar ()->findChild ("getFocusPath"sv) == nullptr)
 	{
-		if (scriptObject->getVar ()->findChild ("getFocusPath"sv) == nullptr)
+		auto r = viewSize;
+		outPath.addRect (r);
+		r.extend (focusWidth, focusWidth);
+		outPath.addRect (r);
+		return true;
+	}
+
+	auto scriptRoot = scriptContext.getRoot ();
+	auto path = makeOwned<CGraphicsPath> (outPath);
+	ScriptObject focusWidthVar;
+	focusWidthVar->setDouble (focusWidth);
+	ScriptAddChildScoped scs (*scriptRoot, "view"sv, *scriptObject);
+	ScriptAddChildScoped scs2 (*scriptRoot, "path"sv, makeGraphicsPathScriptObject (path));
+	ScriptAddChildScoped scs3 (*scriptRoot, "focusWidth"sv, focusWidthVar);
+	auto boolResult = scriptContext.evalScript ("view.getFocusPath(path, focusWidth);"sv);
+	if (boolResult->isNumeric ())
+	{
+		if (boolResult->getInt () == 1)
 		{
-			auto r = viewSize;
-			outPath.addRect (r);
-			r.extend (focusWidth, focusWidth);
-			outPath.addRect (r);
+			CGraphicsTransform tm;
+			tm.translate (viewSize.left, viewSize.top);
+			outPath.addPath (*path, &tm);
 			return true;
 		}
-
-		auto scriptRoot = scriptContext->getRoot ();
-		auto path = makeOwned<CGraphicsPath> (outPath);
-		ScriptObject focusWidthVar;
-		focusWidthVar->setDouble (focusWidth);
-		ScriptAddChildScoped scs (*scriptRoot, "view"sv, *scriptObject);
-		ScriptAddChildScoped scs2 (*scriptRoot, "path"sv, makeGraphicsPathScriptObject (path));
-		ScriptAddChildScoped scs3 (*scriptRoot, "focusWidth"sv, focusWidthVar);
-		auto boolResult = scriptContext->evalScript ("view.getFocusPath(path, focusWidth);"sv);
-		if (boolResult->isNumeric ())
-		{
-			if (boolResult->getInt () == 1)
-			{
-				CGraphicsTransform tm;
-				tm.translate (viewSize.left, viewSize.top);
-				outPath.addPath (*path, &tm);
-				return true;
-			}
-			return false;
-		}
+		return false;
 	}
 	return false;
 }

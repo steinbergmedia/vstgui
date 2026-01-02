@@ -20,16 +20,16 @@ struct IViewScriptObjectContext;
 struct ViewScriptObject : ScriptObject,
 						  TJS::IScriptVarLifeTimeObserver
 {
-	ViewScriptObject (CView* view, IViewScriptObjectContext* context);
+	ViewScriptObject (CView* view, IViewScriptObjectContext& context);
 	~ViewScriptObject () noexcept;
 
-	IViewScriptObjectContext* getContext () const { return context; }
+	IViewScriptObjectContext& getContext () const { return context; }
 
 	void onDestroy (CScriptVar* v) override;
 
 private:
 	CView* view {nullptr};
-	IViewScriptObjectContext* context {nullptr};
+	IViewScriptObjectContext& context;
 };
 
 using ViewScriptMap = std::unordered_map<CView*, std::unique_ptr<ViewScriptObject>>;
