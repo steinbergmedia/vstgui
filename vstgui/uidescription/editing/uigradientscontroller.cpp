@@ -644,7 +644,7 @@ public:
 	std::string getSelectedGradientName ();
 	
 protected:
-	void onUIDescGradientChanged (UIDescription* desc) override;
+	void onUIDescGradientChanged (UIDescription& desc) override;
 	void update () override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
@@ -668,7 +668,7 @@ UIGradientsDataSource::UIGradientsDataSource (
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGradientsDataSource::onUIDescGradientChanged (UIDescription* desc)
+void UIGradientsDataSource::onUIDescGradientChanged (UIDescription& desc)
 {
 	onUIDescriptionUpdate ();
 }

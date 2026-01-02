@@ -194,7 +194,7 @@ public:
 
 	bool add () override;
 protected:
-	void onUIDescBitmapChanged (UIDescription* desc) override;
+	void onUIDescBitmapChanged (UIDescription& desc) override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
 	bool removeItem (UTF8StringPtr name) override;
@@ -230,10 +230,7 @@ UIBitmapsDataSource::UIBitmapsDataSource (
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::onUIDescBitmapChanged (UIDescription* desc)
-{
-	onUIDescriptionUpdate ();
-}
+void UIBitmapsDataSource::onUIDescBitmapChanged (UIDescription& desc) { onUIDescriptionUpdate (); }
 
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)

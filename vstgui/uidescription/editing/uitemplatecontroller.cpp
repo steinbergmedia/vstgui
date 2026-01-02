@@ -358,7 +358,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateController::onUIDescTemplateChanged (UIDescription* desc)
+void UITemplateController::onUIDescTemplateChanged (UIDescription& desc)
 {
 	if (!templateDataBrowser)
 		return;

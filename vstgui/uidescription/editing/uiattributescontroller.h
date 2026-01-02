@@ -58,12 +58,12 @@ protected:
 	IController* createSubController (IdStringPtr name, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 
-	void onUIDescTagChanged (UIDescription* desc) override;
-	void onUIDescColorChanged (UIDescription* desc) override;
-	void onUIDescFontChanged (UIDescription* desc) override;
-	void onUIDescBitmapChanged (UIDescription* desc) override;
-	void onUIDescTemplateChanged (UIDescription* desc) override;
-	void onUIDescGradientChanged (UIDescription* desc) override;
+	void onUIDescTagChanged (UIDescription& desc) override;
+	void onUIDescColorChanged (UIDescription& desc) override;
+	void onUIDescFontChanged (UIDescription& desc) override;
+	void onUIDescBitmapChanged (UIDescription& desc) override;
+	void onUIDescTemplateChanged (UIDescription& desc) override;
+	void onUIDescGradientChanged (UIDescription& desc) override;
 
 	void selectionDidChange (const UISelection& selection) override;
 	void selectionViewsDidChange (const UISelection& selection) override;

@@ -15,45 +15,43 @@ class UIDescriptionListener
 public:
 	virtual ~UIDescriptionListener () noexcept {};
 
-	virtual bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) = 0;
-	virtual void onUIDescTagChanged (UIDescription* desc) = 0;
-	virtual void onUIDescColorChanged (UIDescription* desc) = 0;
-	virtual void onUIDescFontChanged (UIDescription* desc) = 0;
-	virtual void onUIDescBitmapChanged (UIDescription* desc) = 0;
-	virtual void onUIDescTemplateChanged (UIDescription* desc) = 0;
-	virtual void onUIDescGradientChanged (UIDescription* desc) = 0;
-	virtual void beforeUIDescSave (UIDescription* desc) = 0;
+	virtual bool doUIDescTemplateUpdate (UIDescription& desc, UTF8StringPtr name) = 0;
+	virtual void onUIDescTagChanged (UIDescription& desc) = 0;
+	virtual void onUIDescColorChanged (UIDescription& desc) = 0;
+	virtual void onUIDescFontChanged (UIDescription& desc) = 0;
+	virtual void onUIDescBitmapChanged (UIDescription& desc) = 0;
+	virtual void onUIDescTemplateChanged (UIDescription& desc) = 0;
+	virtual void onUIDescGradientChanged (UIDescription& desc) = 0;
+	virtual void beforeUIDescSave (UIDescription& desc) = 0;
 };
 
 //-----------------------------------------------------------------------------
 class UIDescriptionListenerAdapter : public UIDescriptionListener
 {
 public:
-	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override { return true; }
-	void onUIDescTagChanged (UIDescription* desc) override {}
-	void onUIDescColorChanged (UIDescription* desc) override {}
-	void onUIDescFontChanged (UIDescription* desc) override {}
-	void onUIDescBitmapChanged (UIDescription* desc) override {}
-	void onUIDescTemplateChanged (UIDescription* desc) override {}
-	void onUIDescGradientChanged (UIDescription* desc) override {}
-	void beforeUIDescSave (UIDescription* desc) override {}
+	bool doUIDescTemplateUpdate (UIDescription& desc, UTF8StringPtr name) override { return true; }
+	void onUIDescTagChanged (UIDescription& desc) override {}
+	void onUIDescColorChanged (UIDescription& desc) override {}
+	void onUIDescFontChanged (UIDescription& desc) override {}
+	void onUIDescBitmapChanged (UIDescription& desc) override {}
+	void onUIDescTemplateChanged (UIDescription& desc) override {}
+	void onUIDescGradientChanged (UIDescription& desc) override {}
+	void beforeUIDescSave (UIDescription& desc) override {}
 };
 
 //-----------------------------------------------------------------------------
 struct UIDescriptionListenerOff
 {
-	UIDescriptionListenerOff (UIDescriptionListener* listener, UIDescription* desc)
+	UIDescriptionListenerOff (UIDescriptionListener& listener, UIDescription& desc)
 	: listener (listener), desc (desc)
 	{
-		desc->unregisterListener (listener);
+		desc.unregisterListener (&listener);
 	}
-	~UIDescriptionListenerOff () noexcept
-	{
-		desc->registerListener (listener);
-	}
+	~UIDescriptionListenerOff () noexcept { desc.registerListener (&listener); }
+
 private:
-	UIDescriptionListener* listener;
-	UIDescription* desc;
+	UIDescriptionListener& listener;
+	UIDescription& desc;
 };
 
 } // VSTGUI

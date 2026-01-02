@@ -180,9 +180,9 @@ protected:
 
 	std::vector<Template> templates;
 private:
-	void beforeUIDescSave (UIDescription* desc) override;
-	void onUIDescTemplateChanged (UIDescription* desc) override;
-	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override;
+	void beforeUIDescSave (UIDescription& desc) override;
+	void onUIDescTemplateChanged (UIDescription& desc) override;
+	bool doUIDescTemplateUpdate (UIDescription& desc, UTF8StringPtr name) override;
 
 	void beforeSave ();
 	CMessageResult validateMenuItem (CCommandMenuItem* item);

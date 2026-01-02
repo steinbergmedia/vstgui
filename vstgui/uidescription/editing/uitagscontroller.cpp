@@ -29,8 +29,8 @@ protected:
 	UTF8StringPtr getDefaultsName () override;
 
 	void update () override;
-	void onUIDescTagChanged (UIDescription* desc) override;
-	
+	void onUIDescTagChanged (UIDescription& desc) override;
+
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 2; }
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
@@ -107,10 +107,7 @@ void UITagsDataSource::update ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITagsDataSource::onUIDescTagChanged (UIDescription* desc)
-{
-	onUIDescriptionUpdate ();
-}
+void UITagsDataSource::onUIDescTagChanged (UIDescription& desc) { onUIDescriptionUpdate (); }
 
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UITagsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)

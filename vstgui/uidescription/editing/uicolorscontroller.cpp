@@ -30,7 +30,7 @@ public:
 	~UIColorsDataSource () override;
 
 protected:
-	void onUIDescColorChanged (UIDescription* desc) override;
+	void onUIDescColorChanged (UIDescription& desc) override;
 	void update () override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
@@ -83,10 +83,7 @@ UIColorsDataSource::~UIColorsDataSource ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::onUIDescColorChanged (UIDescription* desc)
-{
-	onUIDescriptionUpdate ();
-}
+void UIColorsDataSource::onUIDescColorChanged (UIDescription& desc) { onUIDescriptionUpdate (); }
 
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::uiColorChanged (UIColor* c)

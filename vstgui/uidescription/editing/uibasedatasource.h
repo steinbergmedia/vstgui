@@ -161,11 +161,8 @@ protected:
 			}
 		}
 	}
-	
-	void beforeUIDescSave (UIDescription* desc) override
-	{
-		saveDefaults ();
-	};
+
+	void beforeUIDescSave (UIDescription& desc) override { saveDefaults (); };
 
 	void onUIDescriptionUpdate ()
 	{

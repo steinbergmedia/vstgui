@@ -1103,37 +1103,34 @@ IController* UIAttributesController::createSubController (IdStringPtr _name, con
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::onUIDescTagChanged (UIDescription* desc)
+void UIAttributesController::onUIDescTagChanged (UIDescription& desc) { validateAttributeViews (); }
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescColorChanged (UIDescription& desc)
 {
 	validateAttributeViews ();
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::onUIDescColorChanged (UIDescription* desc)
+void UIAttributesController::onUIDescFontChanged (UIDescription& desc)
 {
 	validateAttributeViews ();
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::onUIDescFontChanged (UIDescription* desc)
+void UIAttributesController::onUIDescBitmapChanged (UIDescription& desc)
 {
 	validateAttributeViews ();
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::onUIDescBitmapChanged (UIDescription* desc)
+void UIAttributesController::onUIDescTemplateChanged (UIDescription& desc)
 {
 	validateAttributeViews ();
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::onUIDescTemplateChanged (UIDescription* desc)
-{
-	validateAttributeViews ();
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIAttributesController::onUIDescGradientChanged (UIDescription* desc)
+void UIAttributesController::onUIDescGradientChanged (UIDescription& desc)
 {
 	validateAttributeViews ();
 }

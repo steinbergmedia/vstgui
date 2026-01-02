@@ -25,7 +25,7 @@ public:
 					   GenericStringListDataBrowserSourceSelectionChanged* delegate);
 
 protected:
-	void onUIDescFontChanged (UIDescription* desc) override;
+	void onUIDescFontChanged (UIDescription& desc) override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
 	bool removeItem (UTF8StringPtr name) override;
@@ -44,10 +44,7 @@ UIFontsDataSource::UIFontsDataSource (const SharedPointer<UIDescription>& descri
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIFontsDataSource::onUIDescFontChanged (UIDescription* desc)
-{
-	onUIDescriptionUpdate ();
-}
+void UIFontsDataSource::onUIDescFontChanged (UIDescription& desc) { onUIDescriptionUpdate (); }
 
 //----------------------------------------------------------------------------------------------------
 void UIFontsDataSource::getNames (std::list<const std::string*>& names)

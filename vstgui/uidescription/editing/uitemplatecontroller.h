@@ -58,7 +58,7 @@ public:
 	
 	static void setupDataBrowser (CDataBrowser* orignalBrowser, CDataBrowser* dataBrowser);
 protected:
-	void onUIDescTemplateChanged (UIDescription* desc) override;
+	void onUIDescTemplateChanged (UIDescription& desc) override;
 	void valueChanged (CControl* pControl) override {}
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;

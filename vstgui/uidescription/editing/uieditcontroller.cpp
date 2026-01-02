@@ -953,19 +953,13 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::onUIDescTemplateChanged (UIDescription* desc)
-{
-	onTemplatesChanged ();
-}
+void UIEditController::onUIDescTemplateChanged (UIDescription& desc) { onTemplatesChanged (); }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::beforeUIDescSave (UIDescription* desc)
-{
-	beforeSave ();
-}
+void UIEditController::beforeUIDescSave (UIDescription& desc) { beforeSave (); }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name)
+bool UIEditController::doUIDescTemplateUpdate (UIDescription& desc, UTF8StringPtr name)
 {
 	if (onlyTemplateToUpdateName.empty ())
 		return true;
@@ -1884,7 +1878,7 @@ void UIEditController::performLiveColorChange (UTF8StringPtr _colorName, const C
 //----------------------------------------------------------------------------------------------------
 void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
 {
-	UIDescriptionListenerOff lo (this, editDescription);
+	UIDescriptionListenerOff lo (*this, *editDescription);
 	CColor color;
 	editDescription->getColor (colorName, color);
 	performColorChange (colorName, color, false);
@@ -1925,7 +1919,7 @@ void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName)
 {
 	updateTemplate (name);
-	UIDescriptionListenerOff lo (this, editDescription);
+	UIDescriptionListenerOff lo (*this, *editDescription);
 	undoManager->pushAndPerform (
 		makeOwned<DuplicateTemplateAction> (editDescription, weakFromThis (), name, dupName));
 }

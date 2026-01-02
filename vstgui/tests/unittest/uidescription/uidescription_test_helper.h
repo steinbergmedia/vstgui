@@ -71,42 +71,42 @@ public:
 
 	uint32_t callCount () const { return called; }
 
-	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override
+	bool doUIDescTemplateUpdate (UIDescription& desc, UTF8StringPtr name) override
 	{
 		EXPECT (false);
 		return true;
 	}
-	void onUIDescTagChanged (UIDescription* desc) override
+	void onUIDescTagChanged (UIDescription& desc) override
 	{
 		++called;
 		EXPECT (testCase == UIDescTestCase::TagChanged)
 	}
-	void onUIDescColorChanged (UIDescription* desc) override
+	void onUIDescColorChanged (UIDescription& desc) override
 	{
 		++called;
 		EXPECT (testCase == UIDescTestCase::ColorChanged)
 	}
-	void onUIDescFontChanged (UIDescription* desc) override
+	void onUIDescFontChanged (UIDescription& desc) override
 	{
 		++called;
 		EXPECT (testCase == UIDescTestCase::FontChanged)
 	}
-	void onUIDescBitmapChanged (UIDescription* desc) override
+	void onUIDescBitmapChanged (UIDescription& desc) override
 	{
 		++called;
 		EXPECT (testCase == UIDescTestCase::BitmapChanged)
 	}
-	void onUIDescTemplateChanged (UIDescription* desc) override
+	void onUIDescTemplateChanged (UIDescription& desc) override
 	{
 		++called;
 		EXPECT (testCase == UIDescTestCase::TemplateChanged)
 	}
-	void onUIDescGradientChanged (UIDescription* desc) override
+	void onUIDescGradientChanged (UIDescription& desc) override
 	{
 		++called;
 		EXPECT (testCase == UIDescTestCase::GradientChanged)
 	}
-	void beforeUIDescSave (UIDescription* desc) override
+	void beforeUIDescSave (UIDescription& desc) override
 	{
 		++called;
 		EXPECT (testCase == UIDescTestCase::BeforeSave)
