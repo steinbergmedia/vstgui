@@ -88,21 +88,23 @@ public:
 		if (uiDesc == nullptr)
 		{
 #ifdef HAVE_EDITORUIDESC_H
-			MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
-			SharedPointer<UIDescription> editorDesc = owned (new UIDescription (&provider));
+			auto provider = makeOwned<MemoryContentProvider> (editorUIDesc, strlen (editorUIDesc));
+			SharedPointer<UIDescription> editorDesc = owned (new UIDescription (provider));
 			if (editorDesc->parse ())
 			{
 				uiDesc = editorDesc;
 			}
-			MemoryContentProvider lightUIProvider (editorUILightDesc, strlen (editorUILightDesc));
-			SharedPointer<UIDescription> lightUIDesc = owned (new UIDescription (&lightUIProvider));
+			auto lightUIProvider =
+				makeOwned<MemoryContentProvider> (editorUILightDesc, strlen (editorUILightDesc));
+			SharedPointer<UIDescription> lightUIDesc = owned (new UIDescription (lightUIProvider));
 			if (lightUIDesc->parse ())
 			{
 				lightResourceDesc = std::move (lightUIDesc);
 				uiDesc->setSharedResources (lightResourceDesc);
 			}
-			MemoryContentProvider darkUIProvider (editorUIDarkDesc, strlen (editorUIDarkDesc));
-			SharedPointer<UIDescription> darkUIDesc = owned (new UIDescription (&darkUIProvider));
+			auto darkUIProvider =
+				makeOwned<MemoryContentProvider> (editorUIDarkDesc, strlen (editorUIDarkDesc));
+			SharedPointer<UIDescription> darkUIDesc = owned (new UIDescription (darkUIProvider));
 			if (darkUIDesc->parse ())
 			{
 				darkResourceDesc = std::move (darkUIDesc);
