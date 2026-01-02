@@ -67,10 +67,10 @@ inline TJS::CScriptVar* createJSFunction (TJS::JSCallback&& proc,
 }
 
 //------------------------------------------------------------------------
-inline TJS::CScriptVar* getArgument (TJS::CScriptVar* var, std::string_view argName,
+inline TJS::CScriptVar& getArgument (TJS::CScriptVar& var, std::string_view argName,
 									 std::string_view funcSignature)
 {
-	auto child = var->findChild (argName);
+	auto child = var.findChild (argName);
 	auto result = child ? child->getVar () : nullptr;
 	if (!result || result->isUndefined ())
 	{
@@ -80,13 +80,13 @@ inline TJS::CScriptVar* getArgument (TJS::CScriptVar* var, std::string_view argN
 		s.append (funcSignature);
 		throw TJS::CScriptException (std::move (s));
 	}
-	return result;
+	return *result;
 }
 
 //------------------------------------------------------------------------
-inline TJS::CScriptVar* getOptionalArgument (TJS::CScriptVar* var, std::string_view argName)
+inline TJS::CScriptVar* getOptionalArgument (TJS::CScriptVar& var, std::string_view argName)
 {
-	if (auto child = var->findChild (argName))
+	if (auto child = var.findChild (argName))
 		return child->getVar ();
 	return nullptr;
 }
@@ -162,12 +162,12 @@ struct ScriptObject
 		validate ();
 		scriptVar->addChild (name, new CScriptVar (TJS::string {value.data (), value.size ()}));
 	}
-	void addFunc (std::string_view name, std::function<void (CScriptVar*)>&& func)
+	void addFunc (std::string_view name, std::function<void (CScriptVar&)>&& func)
 	{
 		validate ();
 		scriptVar->addChild (name, createJSFunction (std::move (func)));
 	}
-	void addFunc (std::string_view name, std::function<void (CScriptVar*)>&& func,
+	void addFunc (std::string_view name, std::function<void (CScriptVar&)>&& func,
 				  const std::initializer_list<std::string_view>& argNames)
 	{
 		validate ();

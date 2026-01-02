@@ -39,87 +39,87 @@ namespace TJS {
 using namespace std;
 using namespace std::literals;
 // ----------------------------------------------- Actual Functions
-void scTrace (CScriptVar* c, void* userdata)
+void scTrace (CScriptVar& c, void* userdata)
 {
 	CTinyJS* js = (CTinyJS*)userdata;
 	js->getRoot ()->trace ();
 }
 
-void scObjectDump (CScriptVar* c) { c->getParameter ("this"sv)->trace ("> "); }
+void scObjectDump (CScriptVar& c) { c.getParameter ("this"sv)->trace ("> "); }
 
-void scObjectClone (CScriptVar* c)
+void scObjectClone (CScriptVar& c)
 {
-	CScriptVar* obj = c->getParameter ("this"sv);
-	c->getReturnVar ()->copyValue (obj);
+	CScriptVar* obj = c.getParameter ("this"sv);
+	c.getReturnVar ()->copyValue (obj);
 }
 
-void scMathRand (CScriptVar* c) { c->getReturnVar ()->setDouble ((double)rand () / RAND_MAX); }
+void scMathRand (CScriptVar& c) { c.getReturnVar ()->setDouble ((double)rand () / RAND_MAX); }
 
-void scMathRandInt (CScriptVar* c)
+void scMathRandInt (CScriptVar& c)
 {
-	auto min = c->getParameter ("min"sv)->getInt ();
-	auto max = c->getParameter ("max"sv)->getInt ();
+	auto min = c.getParameter ("min"sv)->getInt ();
+	auto max = c.getParameter ("max"sv)->getInt ();
 	auto val = min + (int64_t)(rand () % (1 + max - min));
-	c->getReturnVar ()->setInt (val);
+	c.getReturnVar ()->setInt (val);
 }
 
-void scCharToInt (CScriptVar* c)
+void scCharToInt (CScriptVar& c)
 {
-	string str = c->getParameter ("ch"sv)->getString ();
+	string str = c.getParameter ("ch"sv)->getString ();
 	;
 	int val = 0;
 	if (str.length () > 0)
 		val = (int)str.c_str ()[0];
-	c->getReturnVar ()->setInt (val);
+	c.getReturnVar ()->setInt (val);
 }
 
-void scStringIndexOf (CScriptVar* c)
+void scStringIndexOf (CScriptVar& c)
 {
-	string str = c->getParameter ("this"sv)->getString ();
-	string search = c->getParameter ("search"sv)->getString ();
+	string str = c.getParameter ("this"sv)->getString ();
+	string search = c.getParameter ("search"sv)->getString ();
 	size_t p = str.find (search);
 	auto val = (p == string::npos) ? -1 : p;
-	c->getReturnVar ()->setInt (val);
+	c.getReturnVar ()->setInt (val);
 }
 
-void scStringSubstring (CScriptVar* c)
+void scStringSubstring (CScriptVar& c)
 {
-	string str = c->getParameter ("this"sv)->getString ();
-	auto lo = c->getParameter ("lo"sv)->getInt ();
-	auto hi = c->getParameter ("hi"sv)->getInt ();
+	string str = c.getParameter ("this"sv)->getString ();
+	auto lo = c.getParameter ("lo"sv)->getInt ();
+	auto hi = c.getParameter ("hi"sv)->getInt ();
 
 	auto l = hi - lo;
 	if (l > 0 && lo >= 0 && lo + l <= static_cast<int64_t> (str.length ()))
-		c->getReturnVar ()->setString (str.substr (lo, l));
+		c.getReturnVar ()->setString (str.substr (lo, l));
 	else
-		c->getReturnVar ()->setString ("");
+		c.getReturnVar ()->setString ("");
 }
 
-void scStringCharAt (CScriptVar* c)
+void scStringCharAt (CScriptVar& c)
 {
-	string str = c->getParameter ("this"sv)->getString ();
-	auto p = c->getParameter ("pos"sv)->getInt ();
+	string str = c.getParameter ("this"sv)->getString ();
+	auto p = c.getParameter ("pos"sv)->getInt ();
 	if (p >= 0 && p < static_cast<int64_t> (str.length ()))
-		c->getReturnVar ()->setString (str.substr (p, 1));
+		c.getReturnVar ()->setString (str.substr (p, 1));
 	else
-		c->getReturnVar ()->setString ("");
+		c.getReturnVar ()->setString ("");
 }
 
-void scStringCharCodeAt (CScriptVar* c)
+void scStringCharCodeAt (CScriptVar& c)
 {
-	string str = c->getParameter ("this"sv)->getString ();
-	auto p = c->getParameter ("pos"sv)->getInt ();
+	string str = c.getParameter ("this"sv)->getString ();
+	auto p = c.getParameter ("pos"sv)->getInt ();
 	if (p >= 0 && p < static_cast<int64_t> (str.length ()))
-		c->getReturnVar ()->setInt (str.at (p));
+		c.getReturnVar ()->setInt (str.at (p));
 	else
-		c->getReturnVar ()->setInt (0);
+		c.getReturnVar ()->setInt (0);
 }
 
-void scStringSplit (CScriptVar* c)
+void scStringSplit (CScriptVar& c)
 {
-	string str = c->getParameter ("this"sv)->getString ();
-	string sep = c->getParameter ("separator"sv)->getString ();
-	CScriptVar* result = c->getReturnVar ();
+	string str = c.getParameter ("this"sv)->getString ();
+	string sep = c.getParameter ("separator"sv)->getString ();
+	CScriptVar* result = c.getReturnVar ();
 	result->setArray ();
 	int length = 0;
 
@@ -135,56 +135,56 @@ void scStringSplit (CScriptVar* c)
 		result->setArrayIndex (length++, new CScriptVar (str));
 }
 
-void scStringFromCharCode (CScriptVar* c)
+void scStringFromCharCode (CScriptVar& c)
 {
 	char str[2];
-	str[0] = static_cast<char> (c->getParameter ("char"sv)->getInt ());
+	str[0] = static_cast<char> (c.getParameter ("char"sv)->getInt ());
 	str[1] = 0;
-	c->getReturnVar ()->setString (str);
+	c.getReturnVar ()->setString (str);
 }
 
-void scIntegerParseInt (CScriptVar* c)
+void scIntegerParseInt (CScriptVar& c)
 {
-	string str = c->getParameter ("str"sv)->getString ();
+	string str = c.getParameter ("str"sv)->getString ();
 	auto val = stringToInteger (str);
-	c->getReturnVar ()->setInt (val);
+	c.getReturnVar ()->setInt (val);
 }
 
-void scIntegerValueOf (CScriptVar* c)
+void scIntegerValueOf (CScriptVar& c)
 {
-	string str = c->getParameter ("str"sv)->getString ();
+	string str = c.getParameter ("str"sv)->getString ();
 
 	int val = 0;
 	if (str.length () == 1)
 		val = str[0];
-	c->getReturnVar ()->setInt (val);
+	c.getReturnVar ()->setInt (val);
 }
 
-void scJSONStringify (CScriptVar* c)
+void scJSONStringify (CScriptVar& c)
 {
 	ostringstream result;
-	c->getParameter ("obj"sv)->getJSON (result);
-	c->getReturnVar ()->setString (result.str ());
+	c.getParameter ("obj"sv)->getJSON (result);
+	c.getReturnVar ()->setString (result.str ());
 }
 
-void scExec (CScriptVar* c, void* data)
+void scExec (CScriptVar& c, void* data)
 {
 	CTinyJS* tinyJS = (CTinyJS*)data;
-	string str = c->getParameter ("jsCode"sv)->getString ();
+	string str = c.getParameter ("jsCode"sv)->getString ();
 	tinyJS->execute (str);
 }
 
-void scEval (CScriptVar* c, void* data)
+void scEval (CScriptVar& c, void* data)
 {
 	CTinyJS* tinyJS = (CTinyJS*)data;
-	string str = c->getParameter ("jsCode"sv)->getString ();
-	c->setReturnVar (tinyJS->evaluateComplex (str).getVar ());
+	string str = c.getParameter ("jsCode"sv)->getString ();
+	c.setReturnVar (tinyJS->evaluateComplex (str).getVar ());
 }
 
-void scArrayContains (CScriptVar* c)
+void scArrayContains (CScriptVar& c)
 {
-	CScriptVar* obj = c->getParameter ("obj"sv);
-	CScriptVarLink* v = c->getParameter ("this"sv)->getFirstChild ();
+	CScriptVar* obj = c.getParameter ("obj"sv);
+	CScriptVarLink* v = c.getParameter ("this"sv)->getFirstChild ();
 
 	bool contains = false;
 	while (v)
@@ -197,16 +197,16 @@ void scArrayContains (CScriptVar* c)
 		v = v->getNextSibling ();
 	}
 
-	c->getReturnVar ()->setInt (contains);
+	c.getReturnVar ()->setInt (contains);
 }
 
-void scArrayRemove (CScriptVar* c)
+void scArrayRemove (CScriptVar& c)
 {
-	CScriptVar* obj = c->getParameter ("obj"sv);
+	CScriptVar* obj = c.getParameter ("obj"sv);
 	vector<int> removedIndices;
 	CScriptVarLink* v;
 	// remove
-	v = c->getParameter ("this"sv)->getFirstChild ();
+	v = c.getParameter ("this"sv)->getFirstChild ();
 	while (v)
 	{
 		if (v->getVar ()->equals (obj))
@@ -216,7 +216,7 @@ void scArrayRemove (CScriptVar* c)
 		v = v->getNextSibling ();
 	}
 	// renumber
-	v = c->getParameter ("this"sv)->getFirstChild ();
+	v = c.getParameter ("this"sv)->getFirstChild ();
 	while (v)
 	{
 		int n = v->getIntName ();
@@ -230,10 +230,10 @@ void scArrayRemove (CScriptVar* c)
 	}
 }
 
-void scArrayJoin (CScriptVar* c)
+void scArrayJoin (CScriptVar& c)
 {
-	string sep = c->getParameter ("separator"sv)->getString ();
-	CScriptVar* arr = c->getParameter ("this"sv);
+	string sep = c.getParameter ("separator"sv)->getString ();
+	CScriptVar* arr = c.getParameter ("this"sv);
 
 	ostringstream sstr;
 	int l = arr->getArrayLength ();
@@ -244,20 +244,21 @@ void scArrayJoin (CScriptVar* c)
 		sstr << arr->getArrayIndex (i)->getString ();
 	}
 
-	c->getReturnVar ()->setString (sstr.str ());
+	c.getReturnVar ()->setString (sstr.str ());
 }
 
 // ----------------------------------------------- Register Functions
 void registerFunctions (CTinyJS* tinyJS)
 {
 
-	tinyJS->addNative ("function exec(jsCode)"sv, [=] (auto scriptVar) {
+	tinyJS->addNative ("function exec(jsCode)"sv, [=] (auto& scriptVar) {
 		scExec (scriptVar, tinyJS);
 	}); // execute the given code
-	tinyJS->addNative ("function eval(jsCode)"sv, [=] (auto scriptVar) {
+	tinyJS->addNative ("function eval(jsCode)"sv, [=] (auto& scriptVar) {
 		scEval (scriptVar, tinyJS);
 	}); // execute the given string (an expression) and return the result
-	tinyJS->addNative ("function trace()"sv, [=] (auto scriptVar) { scTrace (scriptVar, tinyJS); });
+	tinyJS->addNative ("function trace()"sv,
+					   [=] (auto& scriptVar) { scTrace (scriptVar, tinyJS); });
 	tinyJS->addNative ("function Object.dump()"sv, scObjectDump);
 	tinyJS->addNative ("function Object.clone()"sv, scObjectClone);
 	tinyJS->addNative ("function Math.rand()"sv, scMathRand);

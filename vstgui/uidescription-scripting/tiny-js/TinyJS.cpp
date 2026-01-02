@@ -1608,7 +1608,7 @@ void CScriptVar::setCallback (const JSCallback& callback) { variant = callback; 
 
 void CScriptVar::setCallback (JSCallback&& callback) { variant = std::move (callback); }
 
-void CScriptVar::callCallback (CScriptVar* var)
+void CScriptVar::callCallback (CScriptVar& var)
 {
 	if (auto call = std::get_if<JSCallback> (&variant))
 	{
@@ -1891,7 +1891,7 @@ CScriptVarLink* CTinyJS::functionCall (bool& execute, CScriptVarLink* function, 
 		{
 			try
 			{
-				function->getVar ()->callCallback (functionRoot);
+				function->getVar ()->callCallback (*functionRoot);
 			}
 			catch (CScriptException& e)
 			{

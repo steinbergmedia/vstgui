@@ -73,12 +73,12 @@ struct TimerScriptObject : ScriptObject
 			},
 			static_cast<uint32_t> (fireTime), false);
 		scriptVar->setCustomData (t);
-		addFunc ("invalid"sv, [t] (auto v) mutable {
+		addFunc ("invalid"sv, [t] (auto& v) mutable {
 			t = nullptr;
-			v->setCustomData (nullptr);
+			v.setCustomData (nullptr);
 		});
-		addFunc ("start"sv, [t] (auto) { t->start (); });
-		addFunc ("stop"sv, [t] (auto) { t->stop (); });
+		addFunc ("start"sv, [t] (auto&) { t->start (); });
+		addFunc ("stop"sv, [t] (auto&) { t->stop (); });
 		setOnDestroy ([cb] (auto) { cb->release (); });
 	}
 };
@@ -128,10 +128,10 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		jsContext->getRoot ()->addChild ("uiDesc"sv, uiDescObject);
 
 		jsContext->addNative (
-			"function createTimer(context, fireTime, callback)"sv, [this] (CScriptVar* var) {
-				auto context = var->getParameter ("context"sv);
-				auto fireTime = var->getParameter ("fireTime"sv);
-				auto callback = var->getParameter ("callback"sv);
+			"function createTimer(context, fireTime, callback)"sv, [this] (CScriptVar& var) {
+				auto context = var.getParameter ("context"sv);
+				auto fireTime = var.getParameter ("fireTime"sv);
+				auto callback = var.getParameter ("callback"sv);
 				if (!fireTime->isInt ())
 				{
 					throw CScriptException ("Expect integer as first parameter on timer creation");
@@ -149,13 +149,13 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 						return evalScript (callback, "timerCallback (timerContext);"sv,
 										   "timerCallback");
 					});
-				var->setReturnVar (timerObj);
+				var.setReturnVar (timerObj);
 			});
 		jsContext->addNative (
-			"function iterateSubViews(view, context, callback)"sv, [this] (CScriptVar* var) {
-				auto view = var->getParameter ("view"sv);
-				auto context = var->getParameter ("context"sv);
-				auto callback = var->getParameter ("callback"sv);
+			"function iterateSubViews(view, context, callback)"sv, [this] (CScriptVar& var) {
+				auto view = var.getParameter ("view"sv);
+				auto context = var.getParameter ("context"sv);
+				auto callback = var.getParameter ("callback"sv);
 				if (!view->isObject ())
 				{
 					throw CScriptException ("Expect object as first parameter on iterateSubViews");
@@ -195,11 +195,11 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 				});
 			});
 		jsContext->addNative ("function log(obj)",
-							  [this] (CScriptVar* var) { log (var->getParameter ("obj"sv)); });
+							  [this] (CScriptVar& var) { log (var.getParameter ("obj"sv)); });
 
-		jsContext->addNative ("function makeTransformMatrix()", [] (CScriptVar* var) {
+		jsContext->addNative ("function makeTransformMatrix()", [] (CScriptVar& var) {
 			auto tm = makeTransformMatrixObject ();
-			var->setReturnVar (tm);
+			var.setReturnVar (tm);
 			tm->release ();
 		});
 	}

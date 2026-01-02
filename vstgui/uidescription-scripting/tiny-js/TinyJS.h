@@ -244,7 +244,7 @@ private:
 
 class CScriptVar;
 
-using JSCallback = std::function<void (CScriptVar* var)>;
+using JSCallback = std::function<void (CScriptVar& var)>;
 
 class CScriptVarLink
 {
@@ -308,6 +308,10 @@ public:
 	CScriptVar (int64_t val);
 	/** Create an integer */
 	CScriptVar (bool val);
+
+	CScriptVar (const CScriptVar&) = delete;
+	CScriptVar& operator= (const CScriptVar&) = delete;
+
 	virtual ~CScriptVar (void);
 
 	/** If this is a function, get the result value (for use by native functions) */
@@ -387,7 +391,7 @@ public:
 	/** Moves in the callback for native functions */
 	void setCallback (JSCallback&& callback);
 
-	void callCallback (CScriptVar* var);
+	void callCallback (CScriptVar& var);
 
 	void setFunctionScript (std::string_view str);
 
