@@ -606,7 +606,7 @@ void KeyboardViewBase::setKeyRange (NoteIndex _startNote, NumNotes _numKeys)
 }
 
 //------------------------------------------------------------------------
-void KeyboardViewBase::setNoteNameFont (CFontDesc* font)
+void KeyboardViewBase::setNoteNameFont (const SharedPointer<CFontDesc>& font)
 {
 	if (font != noteNameFont)
 	{

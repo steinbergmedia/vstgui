@@ -68,7 +68,7 @@ public:
 	CColor getBlackKeyColor () const { return blackKeyColor; }
 	CColor getBlackKeyPressedColor () const { return blackKeyPressedColor; }
 
-	void setNoteNameFont (CFontDesc* font);
+	void setNoteNameFont (const SharedPointer<CFontDesc>& font);
 	SharedPointer<CFontDesc> getNoteNameFont () const { return noteNameFont; }
 	void setDrawNoteText (bool state);
 	bool getDrawNoteText () const { return drawNoteText; }
