@@ -34,8 +34,8 @@ protected:
 	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
 
 	void setupDataSource (UTF8StringPtr filter = nullptr);
-	
-	UIViewCreatorDataSource* dataSource {nullptr};
+
+	SharedPointer<UIViewCreatorDataSource> dataSource;
 	CDataBrowser* dataBrowser {nullptr};
 	SharedPointer<UIDescription> description;
 	std::vector<std::string> filteredViewNames;

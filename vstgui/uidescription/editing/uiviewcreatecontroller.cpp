@@ -49,11 +49,7 @@ UIViewCreatorController::UIViewCreatorController (IController* baseController,
 }
 
 //----------------------------------------------------------------------------------------------------
-UIViewCreatorController::~UIViewCreatorController ()
-{
-	if (dataSource)
-		dataSource->forget ();
-}
+UIViewCreatorController::~UIViewCreatorController () {}
 
 //----------------------------------------------------------------------------------------------------
 CView* UIViewCreatorController::createView (const UIAttributes& attributes, const IUIDescription* _description)
@@ -64,7 +60,8 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes, cons
 		if (*name == "ViewDataBrowser")
 		{
 			vstgui_assert (dataBrowser == nullptr);
-			dataSource = new UIViewCreatorDataSource (description->getViewFactory (), description);
+			dataSource =
+				makeOwned<UIViewCreatorDataSource> (description->getViewFactory (), description);
 			UIEditController::setupDataSource (dataSource);
 			dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 			return dataBrowser;
@@ -77,7 +74,7 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes, cons
 CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* desc)
 {
 	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
-	if (searchField && searchField->getTag () == kSearchFieldTag)
+	if (dataSource && searchField && searchField->getTag () == kSearchFieldTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
 	}
