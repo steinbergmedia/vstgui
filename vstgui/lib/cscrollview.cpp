@@ -840,7 +840,7 @@ bool CScrollView::removeAll (bool withForget)
 uint32_t CScrollView::getNbViews () const { return impl->scrollContainer->getNbViews (); }
 
 //-----------------------------------------------------------------------------
-CView* CScrollView::getView (uint32_t index) const
+SharedPointer<CView> CScrollView::getView (uint32_t index) const
 {
 	return impl->scrollContainer->getView (index);
 }

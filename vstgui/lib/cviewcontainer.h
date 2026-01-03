@@ -79,11 +79,13 @@ public:
 	/** get the number of child views */
 	virtual uint32_t getNbViews () const;
 	/** get the child view at index */
-	virtual CView* getView (uint32_t index) const;
+	virtual SharedPointer<CView> getView (uint32_t index) const;
 	/** get the view at point where */
-	virtual CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const;
+	virtual SharedPointer<CView>
+		getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const;
 	/** get the container at point where */
-	virtual CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const;
+	virtual SharedPointer<CViewContainer> getContainerAt (
+		const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const;
 	/** get all views at point where, top->down */
 	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const;
 	/** change view z order position */
@@ -151,9 +153,9 @@ public:
 	/** set custom initial focus view
 	 *  which is first focused when advanceNextFocusView is called without oldFocus view
 	 */
-	void setInitialFocusView (CView* view);
+	void setInitialFocusView (const SharedPointer<CView>& view);
 	/** get custom initial focus view */
-	CView* getInitialFocusView () const;
+	SharedPointer<CView> getInitialFocusView () const;
 
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 	virtual bool invalidateDirtyViews ();

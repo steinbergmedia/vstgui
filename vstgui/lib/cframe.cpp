@@ -600,7 +600,7 @@ void CFrame::dispatchMouseDownEvent (MouseDownEvent& event)
 	if (pImpl->focusView && dynamic_cast<CTextEdit*> (pImpl->focusView))
 		setFocusView (nullptr);
 
-	if (auto modalView = shared (getModalView ()))
+	if (auto modalView = getModalView ())
 	{
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
@@ -641,7 +641,7 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 		return;
 	event.mousePosition = originMousePosition;
 
-	if (auto modalView = shared (getModalView ()))
+	if (auto modalView = getModalView ())
 	{
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
@@ -702,7 +702,7 @@ void CFrame::dispatchMouseUpEvent (MouseUpEvent& event)
 	if (event.consumed)
 		return;
 
-	if (auto modalView = shared (getModalView ()))
+	if (auto modalView = getModalView ())
 	{
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
@@ -997,7 +997,7 @@ void CFrame::endLegacyModalViewSession ()
 #endif
 
 //-----------------------------------------------------------------------------
-CView* CFrame::getModalView () const
+SharedPointer<CView> CFrame::getModalView () const
 {
 	if (!pImpl->modalViewSessionStack.empty ())
 		return pImpl->modalViewSessionStack.top ().view;
@@ -1363,7 +1363,7 @@ bool CFrame::removeAll (bool withForget)
 }
 
 //-----------------------------------------------------------------------------
-CView* CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) const
+SharedPointer<CView> CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) const
 {
 	if (auto modalView = getModalView ())
 	{
@@ -1386,7 +1386,8 @@ CView* CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) co
 }
 
 //-----------------------------------------------------------------------------
-CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOptions& options) const
+SharedPointer<CViewContainer> CFrame::getContainerAt (const CPoint& where,
+													  const GetViewOptions& options) const
 {
 	if (auto modalView = getModalView ())
 	{
@@ -1394,7 +1395,7 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOption
 		getTransform ().inverse ().transform (where2);
 		if (modalView->getViewSize ().pointInside (where2))
 		{
-			if (auto container = modalView->asViewContainer ())
+			if (auto container = shared (modalView->asViewContainer ()))
 			{
 				if (options.getDeep ())
 					return container->getContainerAt (where2, options);

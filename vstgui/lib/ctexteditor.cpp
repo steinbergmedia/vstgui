@@ -2861,7 +2861,7 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	findPanel->addView (wholeWordButton);
 	findPanel->addView (prevButton);
 	findPanel->addView (nextButton);
-	findPanel->setInitialFocusView (editfield);
+	findPanel->setInitialFocusView (shared (editfield));
 
 	controller->setFindString (md.findString);
 	md.findPanelController = controller;

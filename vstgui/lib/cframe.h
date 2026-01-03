@@ -77,7 +77,7 @@ public:
 	/** set a modal view. deprecated use beginModalViewSession instead */
 	bool setModalView (CView* pView);)
 	/** get the currently active modal view or nullptr if there is none */
-	CView* getModalView () const;
+	SharedPointer<CView> getModalView () const;
 
 	/** begin a new modal view session
 	 *
@@ -212,8 +212,11 @@ public:
 
 	bool removeView (CView* pView, bool withForget = true) override;
 	bool removeAll (bool withForget = true) override;
-	CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const override;
-	CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
+	SharedPointer<CView> getViewAt (
+		const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const override;
+	SharedPointer<CViewContainer>
+		getContainerAt (const CPoint& where,
+						const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool hitTestSubViews (const CPoint& where, const Event& event) override;
 	CPoint& frameToLocal (CPoint& point) const override { return point; }

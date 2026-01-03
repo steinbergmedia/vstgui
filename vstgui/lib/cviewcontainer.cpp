@@ -665,7 +665,7 @@ uint32_t CViewContainer::getNbViews () const
  * @param index the index of the view to return
  * @return view at index. NULL if view at index does not exist.
  */
-CView* CViewContainer::getView (uint32_t index) const
+SharedPointer<CView> CViewContainer::getView (uint32_t index) const
 {
 	auto it = pImpl->children.begin ();
 	std::advance (it, index);
@@ -1270,7 +1270,7 @@ void CViewContainer::takeFocus ()
 }
 
 //------------------------------------------------------------------------
-void CViewContainer::setInitialFocusView (CView* view)
+void CViewContainer::setInitialFocusView (const SharedPointer<CView>& view)
 {
 	if (auto oldInitialFocusView = getInitialFocusView ())
 	{
@@ -1288,11 +1288,11 @@ void CViewContainer::setInitialFocusView (CView* view)
 }
 
 //------------------------------------------------------------------------
-CView* CViewContainer::getInitialFocusView () const
+SharedPointer<CView> CViewContainer::getInitialFocusView () const
 {
 	CView* initialFocusView = nullptr;
 	getAttribute (kInitialFocusViewAttribute, initialFocusView);
-	return initialFocusView;
+	return shared (initialFocusView);
 }
 
 //-----------------------------------------------------------------------------
@@ -1389,7 +1389,8 @@ bool CViewContainer::isDirty () const
  * @param options search options
  * @return view at position p or null
  */
-CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options) const
+SharedPointer<CView> CViewContainer::getViewAt (const CPoint& p,
+												const GetViewOptions& options) const
 {
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
@@ -1409,10 +1410,16 @@ CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options
 			}
 			if (options.getDeep ())
 			{
-				if (auto container = pV->asViewContainer ())
+				if (auto container = shared (pV->asViewContainer ()))
 				{
-					CView* view = container->getViewAt (where, options);
-					return options.getIncludeViewContainer () ? (view ? view : container) : view;
+					auto view = container->getViewAt (where, options);
+					if (options.getIncludeViewContainer ())
+					{
+						if (view)
+							return view;
+						return container.cast<CView> ();
+					}
+					return view;
 				}
 			}
 			if (!options.getIncludeViewContainer () && pV->asViewContainer ())
@@ -1475,7 +1482,8 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
  * @param options search search options
  * @return view container at position p or null
  */
-CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOptions& options) const
+SharedPointer<CViewContainer> CViewContainer::getContainerAt (const CPoint& p,
+															  const GetViewOptions& options) const
 {
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
@@ -1502,7 +1510,7 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOp
 		}
 	}
 
-	return const_cast<CViewContainer*>(this);
+	return shared (const_cast<CViewContainer*> (this));
 }
 
 //-----------------------------------------------------------------------------

@@ -56,9 +56,9 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaIndex)
 	container->attached (rootView);
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);
-	EXPECT (dynamic_cast<View1*> (viewSwitch->getView (0)));
+	EXPECT (viewSwitch->getView (0).cast<View1> ());
 	viewSwitch->setCurrentViewIndex (1);
-	EXPECT (dynamic_cast<View2*> (viewSwitch->getView (0)));
+	EXPECT (viewSwitch->getView (0).cast<View2> ());
 	container->removed (rootView);
 }
 
@@ -77,10 +77,10 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaControl)
 	EXPECT (container->addView (control));
 	EXPECT (container->addView (viewSwitch));
 	container->attached (rootView);
-	EXPECT (dynamic_cast<View1*> (viewSwitch->getView (0)));
+	EXPECT (viewSwitch->getView (0).cast<View1> ());
 	control->setValue (1.f);
 	control->valueChanged ();
-	EXPECT (dynamic_cast<View2*> (viewSwitch->getView (0)));
+	EXPECT (viewSwitch->getView (0).cast<View2> ());
 	container->removed (rootView);
 }
 
@@ -97,7 +97,7 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, AutosizeAll)
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);
 	auto view = viewSwitch->getView (0);
-	EXPECT (dynamic_cast<View3*> (view));
+	EXPECT (view.cast<View3> ());
 	EXPECT (view->getViewSize () == container->getViewSize ());
 	container->removed (rootView);
 }
@@ -115,7 +115,7 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, NoAnimation)
 	container->attached (rootView);
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);
-	EXPECT (dynamic_cast<View1*> (viewSwitch->getView (0)));
+	EXPECT (viewSwitch->getView (0).cast<View1> ());
 	container->removed (rootView);
 }
 

@@ -245,7 +245,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 			container->setAutosizeFlags (view->getAutosizeFlags ());
 			while (shadowViewContainer->hasChildren ())
 			{
-				auto child = shared (shadowViewContainer->getView (0));
+				auto child = shadowViewContainer->getView (0);
 				shadowViewContainer->removeView (child, false);
 				container->addView (child);
 			}

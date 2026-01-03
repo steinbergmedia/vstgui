@@ -103,8 +103,10 @@ protected:
 
 	void draw (CDrawContext *pContext) override;
 	void drawRect (CDrawContext *pContext, const CRect& updateRect) override;
-	CView* getViewAt (const CPoint& p, const GetViewOptions& options = GetViewOptions ()) const override;
-	CViewContainer* getContainerAt (const CPoint& p, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
+	SharedPointer<CView> getViewAt (
+		const CPoint& p, const GetViewOptions& options = GetViewOptions ()) const override;
+	SharedPointer<CViewContainer> getContainerAt (
+		const CPoint& p, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool advanceNextFocusView (CView* oldFocus, bool reverse) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void onZoomGestureEvent (ZoomGestureEvent& event) override;

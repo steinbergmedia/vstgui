@@ -358,6 +358,8 @@ public:
 	template<class T>
 	SharedPointer<T> cast () const
 	{
+		if constexpr (std::is_base_of_v<T, I>)
+			return SharedPointer<T> (static_cast<T*> (ptr));
 		return SharedPointer<T> (dynamic_cast<T*> (ptr));
 	}
 

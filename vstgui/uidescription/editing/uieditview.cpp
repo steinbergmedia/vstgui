@@ -536,9 +536,9 @@ void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditView::getViewAt (const CPoint& p, const GetViewOptions& options) const
+SharedPointer<CView> UIEditView::getViewAt (const CPoint& p, const GetViewOptions& options) const
 {
-	CView* view = CViewContainer::getViewAt (p, options);
+	auto view = CViewContainer::getViewAt (p, options);
 	if (editing)
 	{
 		while (view && IViewFactory::getViewName (view) == nullptr)
@@ -550,9 +550,10 @@ CView* UIEditView::getViewAt (const CPoint& p, const GetViewOptions& options) co
 }
 
 //----------------------------------------------------------------------------------------------------
-CViewContainer* UIEditView::getContainerAt (const CPoint& p, const GetViewOptions& options) const
+SharedPointer<CViewContainer> UIEditView::getContainerAt (const CPoint& p,
+														  const GetViewOptions& options) const
 {
-	CViewContainer* view = CViewContainer::getContainerAt (p, options);
+	auto view = CViewContainer::getContainerAt (p, options);
 	if (editing)
 	{
 		while (view && IViewFactory::getViewName (view) == nullptr)
@@ -692,8 +693,8 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 
 	CView* selectionHitView = nullptr;
 	MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
-	auto mouseHitView = shared (
-		getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ()));
+	auto mouseHitView =
+		getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 	if (selectionHitView == nullptr && mouseHitView == nullptr)
 	{
 		getSelection ()->clear ();
@@ -807,8 +808,8 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 	}
 	else if (mouseEditMode != MouseEditMode::NoEditing && !moveSizeOperation && buttons == kLButton && !lines)
 	{
-		auto view = shared (getViewAt (
-			where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ()));
+		auto view = getViewAt (
+			where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 		if (view == this)
 			view = nullptr;
 		if (view)
@@ -1246,7 +1247,7 @@ bool UIEditView::onDrop (DragEventData data)
 			gridProcessor->process (where2);
 			getTransform ().transform (where2);
 		}
-		auto viewContainer = shared (getContainerAt (where2, GetViewOptions ().deep ()));
+		auto viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
 		if (viewContainer && viewContainer != this)
 		{
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
@@ -1323,7 +1324,7 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 					CRect visibleRect = getVisibleViewSize ();
 					where2.offset (getViewSize ().left, getViewSize ().top);
 					where2.offset (-visibleRect.left, -visibleRect.top);
-					auto container = shared (getContainerAt (where2, GetViewOptions ().deep ()));
+					auto container = getContainerAt (where2, GetViewOptions ().deep ());
 					if (container == this)
 					{
 						container = nullptr;
