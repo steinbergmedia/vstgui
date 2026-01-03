@@ -585,7 +585,7 @@ bool CSplitView::removeView (CView* pView, bool withForget)
 			++it;
 			if (*it)
 			{
-				if (auto* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it))
+				if (auto sepView = (*it).cast<CSplitViewSeparatorView> ())
 				{
 					CViewContainer::removeView (sepView, true);
 				}
@@ -626,7 +626,7 @@ void CSplitView::storeViewSizes ()
 		ViewIterator it (this);
 		while (*it)
 		{
-			auto* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it);
+			auto sepView = (*it).cast<CSplitViewSeparatorView> ();
 			if (sepView == nullptr)
 			{
 				CRect r ((*it)->getViewSize ());
@@ -658,7 +658,7 @@ bool CSplitView::attached (CView* parent)
 		ViewIterator it (this);
 		while (*it)
 		{
-			if (auto* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it))
+			if (auto sepView = (*it).cast<CSplitViewSeparatorView> ())
 			{
 				r = sepView->getViewSize ();
 				r.offset (offset.x, offset.y);
@@ -754,7 +754,7 @@ bool CSplitView::addViewToSeparator (int32_t sepIndex, CView* view)
 	ViewIterator it (this);
 	while (*it)
 	{
-		if (auto* sepView = dynamic_cast<CSplitViewSeparatorView*>(*it))
+		if (auto sepView = (*it).cast<CSplitViewSeparatorView> ())
 		{
 			if (sepIndex == 0)
 			{

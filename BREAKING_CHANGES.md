@@ -90,6 +90,10 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* CDrawContext::fillLinearGradient
 	* CDrawContext::fillRadialGradient
 
+- The following methods now return a ```SharedPointer<CView>``` instead of a naked pointer:
+	* CViewContainer::findFirstView
+	* CViewContainer::Iterator::operator*
+
 The IScriptControllerExtension interface was changed to use references instead of pointers to indicate that these objects are always valid when these methods are called.
 
 The IUIDescriptionAddOn interface was changed to use shared pointers for IUIDescription and IViewFactory.
