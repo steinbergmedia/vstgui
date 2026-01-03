@@ -103,15 +103,12 @@ UIFontsController::UIFontsController (IController* baseController,
 , strikethroughControl (nullptr)
 , underlineControl (nullptr)
 {
-	dataSource = new UIFontsDataSource (editDescription, actionPerformer, this);
+	dataSource = makeOwned<UIFontsDataSource> (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
 }
 
 //----------------------------------------------------------------------------------------------------
-UIFontsController::~UIFontsController ()
-{
-	dataSource->forget ();
-}
+UIFontsController::~UIFontsController () {}
 
 //----------------------------------------------------------------------------------------------------
 CView* UIFontsController::createView (const UIAttributes& attributes, const IUIDescription* description)

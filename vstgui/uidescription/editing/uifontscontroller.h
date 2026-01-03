@@ -41,7 +41,7 @@ protected:
 
 	SharedPointer<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;
-	UIFontsDataSource* dataSource;
+	SharedPointer<UIFontsDataSource> dataSource;
 
 	SharedPointer<COptionMenu> fontMenu;
 	CTextEdit* altTextEdit;
