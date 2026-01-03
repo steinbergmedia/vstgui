@@ -104,7 +104,7 @@ public:
 	void forEachChild (Proc proc) const;
 
 	template<typename Proc>
-	CView* findFirstViewIf (Proc filter) const;
+	SharedPointer<CView> findFirstViewIf (Proc filter) const;
 
 	//@}
 
@@ -253,8 +253,8 @@ public:
 			--iterator;
 			return *this;
 		}
-		
-		CView* operator* () const
+
+		ViewList::value_type operator* () const
 		{
 			if constexpr (reverse)
 				return (iterator == children.rend ()) ? nullptr : *iterator;
@@ -343,7 +343,7 @@ inline void CViewContainer::forEachChild (Proc proc) const
 }
 
 template<typename Proc>
-inline CView* CViewContainer::findFirstViewIf (Proc filter) const
+inline SharedPointer<CView> CViewContainer::findFirstViewIf (Proc filter) const
 {
 	for (const auto& child : getChildren ())
 	{
