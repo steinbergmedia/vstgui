@@ -94,8 +94,8 @@ public:
 	void viewsWillChange ();
 	void viewsDidChange ();
 
-	bool store (OutputStream& stream, IUIDescription* uiDescription);
-	bool restore (InputStream& stream, IUIDescription* uiDescription);
+	bool store (OutputStream& stream, const SharedPointer<IUIDescription>& uiDescription);
+	bool restore (InputStream& stream, const SharedPointer<IUIDescription>& uiDescription);
 
 	struct DeferChange
 	{
@@ -125,8 +125,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> createBitmapFromSelection (const UISelection& selection, CFrame* frame,
-												  CViewContainer* anchorView = nullptr);
+SharedPointer<CBitmap>
+	createBitmapFromSelection (const UISelection& selection, double scaleFactor = 1.,
+							   const SharedPointer<CViewContainer>& anchorView = {});
 
 } // VSTGUI
 

@@ -1157,7 +1157,8 @@ CMouseEventResult UIEditView::onMouseExited (CPoint& where, const CButtonState& 
 //----------------------------------------------------------------------------------------------------
 void UIEditView::startDrag (CPoint& where)
 {
-	auto bitmap = createBitmapFromSelection (*selection.get (), getFrame (), this);
+	auto bitmap = createBitmapFromSelection (*selection.get (), getFrame ()->getScaleFactor (),
+											 shared (this));
 	if (bitmap == nullptr)
 		return;
 	where.makeIntegral ();

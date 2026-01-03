@@ -248,10 +248,9 @@ void UISelection::viewsDidChange ()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::store (OutputStream& stream, IUIDescription* uiDescription)
+bool UISelection::store (OutputStream& stream, const SharedPointer<IUIDescription>& uiDescription)
 {
-	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
-	if (desc)
+	if (auto desc = uiDescription.cast<UIDescription> ())
 	{
 		std::list<CView*> views;
 		for (auto view : *this)
@@ -270,11 +269,10 @@ bool UISelection::store (OutputStream& stream, IUIDescription* uiDescription)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
+bool UISelection::restore (InputStream& stream, const SharedPointer<IUIDescription>& uiDescription)
 {
 	clear ();
-	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
-	if (desc)
+	if (auto desc = uiDescription.cast<UIDescription> ())
 	{
 		SharedPointer<UIAttributes> attr;
 		if (desc->restoreViews (stream, viewList, &attr))
@@ -288,11 +286,10 @@ bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> createBitmapFromSelection (const UISelection& selection, CFrame* frame,
-												  CViewContainer* anchorView)
+SharedPointer<CBitmap> createBitmapFromSelection (const UISelection& selection, double scaleFactor,
+												  const SharedPointer<CViewContainer>& anchorView)
 {
 	CRect selectionRect = selection.getBounds ();
-	auto scaleFactor = frame->getScaleFactor ();
 	auto bitmap = renderBitmapOffscreen (selectionRect.getSize (), scaleFactor, [&] (auto& context) {
 		CGraphicsTransform tm;
 		CGraphicsTransform invTm;

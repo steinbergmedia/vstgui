@@ -218,8 +218,8 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 				auto dropSource = CDropSource::create (stream.getBuffer (),
 				                                       static_cast<uint32_t> (stream.tell ()),
 				                                       CDropSource::kText);
-				auto bitmap =
-					createBitmapFromSelection (*selection.get (), dataBrowser->getFrame ());
+				auto bitmap = createBitmapFromSelection (
+					*selection.get (), dataBrowser->getFrame ()->getScaleFactor ());
 				browser->doDrag (DragDescription (dropSource, CPoint (), bitmap));
 			}
 		}
