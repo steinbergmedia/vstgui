@@ -161,7 +161,7 @@ IControlListener* UIGridController::getControlListener (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGridController::onDialogButton1Clicked (UIDialogController*)
+void UIGridController::onDialogButton1Clicked (UIDialogController&)
 {
 	gridList = nullptr;
 	gridXEdit = nullptr;
@@ -171,12 +171,10 @@ void UIGridController::onDialogButton1Clicked (UIDialogController*)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGridController::onDialogButton2Clicked (UIDialogController*)
-{
-}
+void UIGridController::onDialogButton2Clicked (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-void UIGridController::onDialogShow (UIDialogController*)
+void UIGridController::onDialogShow (UIDialogController&)
 {
 	if (gridList)
 		gridList->valueChanged ();

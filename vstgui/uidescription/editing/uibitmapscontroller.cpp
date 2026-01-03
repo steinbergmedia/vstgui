@@ -569,9 +569,9 @@ public:
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
 
-	void onDialogButton1Clicked (UIDialogController*) override;
-	void onDialogButton2Clicked (UIDialogController*) override;
-	void onDialogShow (UIDialogController*) override;
+	void onDialogButton1Clicked (UIDialogController&) override;
+	void onDialogButton2Clicked (UIDialogController&) override;
+	void onDialogShow (UIDialogController&) override;
 
 	void onUndoManagerChange () override;
 
@@ -852,17 +852,13 @@ void UIBitmapSettingsController::controlEndEdit (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapSettingsController::onDialogButton1Clicked (UIDialogController*)
-{
-}
+void UIBitmapSettingsController::onDialogButton1Clicked (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapSettingsController::onDialogButton2Clicked (UIDialogController*)
-{
-}
+void UIBitmapSettingsController::onDialogButton2Clicked (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapSettingsController::onDialogShow (UIDialogController*)
+void UIBitmapSettingsController::onDialogShow (UIDialogController&)
 {
 	bitmapView->setBackground (bitmap);
 	updateNinePartTiledControls ();

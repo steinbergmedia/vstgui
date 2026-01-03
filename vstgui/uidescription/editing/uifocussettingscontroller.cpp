@@ -29,7 +29,7 @@ UIFocusSettingsController::UIFocusSettingsController (
 }
 
 //------------------------------------------------------------------------
-void UIFocusSettingsController::onDialogButton1Clicked (UIDialogController*)
+void UIFocusSettingsController::onDialogButton1Clicked (UIDialogController&)
 {
 	FocusDrawingSettings fd;
 
@@ -55,14 +55,10 @@ void UIFocusSettingsController::onDialogButton1Clicked (UIDialogController*)
 }
 
 //------------------------------------------------------------------------
-void UIFocusSettingsController::onDialogButton2Clicked (UIDialogController*)
-{
-}
+void UIFocusSettingsController::onDialogButton2Clicked (UIDialogController&) {}
 
 //------------------------------------------------------------------------
-void UIFocusSettingsController::onDialogShow (UIDialogController*)
-{
-}
+void UIFocusSettingsController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
 CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)

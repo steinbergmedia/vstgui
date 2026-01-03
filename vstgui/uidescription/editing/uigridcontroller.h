@@ -29,9 +29,9 @@ protected:
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void setSize (const CPoint& p) override;
 
-	void onDialogButton1Clicked (UIDialogController*) override;
-	void onDialogButton2Clicked (UIDialogController*) override;
-	void onDialogShow (UIDialogController*) override;
+	void onDialogButton1Clicked (UIDialogController&) override;
+	void onDialogButton2Clicked (UIDialogController&) override;
+	void onDialogShow (UIDialogController&) override;
 
 	void syncMenuValueAndSize ();
 	void loadDefGrids ();

@@ -477,9 +477,9 @@ public:
 		return nullptr;
 	}
 
-	void onDialogButton1Clicked (UIDialogController*) override {}
-	void onDialogButton2Clicked (UIDialogController*) override {}
-	void onDialogShow (UIDialogController*) override {}
+	void onDialogButton1Clicked (UIDialogController&) override {}
+	void onDialogButton2Clicked (UIDialogController&) override {}
+	void onDialogShow (UIDialogController&) override {}
 
 	void onTextEditorCreated (const ITextEditor& te) override
 	{

@@ -402,9 +402,10 @@ public:
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
-	void onDialogButton1Clicked (UIDialogController*) override;
-	void onDialogButton2Clicked (UIDialogController*) override;
-	void onDialogShow (UIDialogController*) override;
+	void onDialogButton1Clicked (UIDialogController&) override;
+	void onDialogButton2Clicked (UIDialogController&) override;
+	void onDialogShow (UIDialogController&) override;
+
 protected:
 	enum
 	{
@@ -490,20 +491,13 @@ void UIGradientEditorController::onChange ()
 }
 
 //------------------------------------------------------------------------
-void UIGradientEditorController::onDialogButton1Clicked (UIDialogController*)
-{
-	apply ();
-}
+void UIGradientEditorController::onDialogButton1Clicked (UIDialogController&) { apply (); }
 
 //------------------------------------------------------------------------
-void UIGradientEditorController::onDialogButton2Clicked (UIDialogController*)
-{
-}
+void UIGradientEditorController::onDialogButton2Clicked (UIDialogController&) {}
 
 //------------------------------------------------------------------------
-void UIGradientEditorController::onDialogShow (UIDialogController*)
-{
-}
+void UIGradientEditorController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
 IController* UIGradientEditorController::createSubController (UTF8StringPtr name, const IUIDescription* description)

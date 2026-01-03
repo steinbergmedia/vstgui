@@ -23,9 +23,9 @@ class UIDialogController;
 class IDialogController : public virtual IReference
 {
 public:
-	virtual void onDialogButton1Clicked (UIDialogController*) = 0;
-	virtual void onDialogButton2Clicked (UIDialogController*) = 0;
-	virtual void onDialogShow (UIDialogController*) = 0;
+	virtual void onDialogButton1Clicked (UIDialogController&) = 0;
+	virtual void onDialogButton2Clicked (UIDialogController&) = 0;
+	virtual void onDialogShow (UIDialogController&) = 0;
 };
 
 //----------------------------------------------------------------------------------------------------

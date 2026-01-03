@@ -70,7 +70,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 			frame->setFocusView (button1);
 		setOpenGLViewsVisible (false);
 		if (dialogController)
-			dialogController->onDialogShow (this);
+			dialogController->onDialogShow (*this);
 
 		using namespace Animation;
 		view->addAnimation (
@@ -147,13 +147,13 @@ void UIDialogController::valueChanged (CControl* control)
 			case kButton1Tag:
 			{
 				if (dialogController)
-					dialogController->onDialogButton1Clicked (this);
+					dialogController->onDialogButton1Clicked (*this);
 				break;
 			}
 			case kButton2Tag:
 			{
 				if (dialogController)
-					dialogController->onDialogButton2Clicked (this);
+					dialogController->onDialogButton2Clicked (*this);
 				break;
 			}
 		}

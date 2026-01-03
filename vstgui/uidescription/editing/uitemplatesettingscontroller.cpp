@@ -45,7 +45,7 @@ UITemplateSettingsController::UITemplateSettingsController (
 }
 
 //------------------------------------------------------------------------
-void UITemplateSettingsController::onDialogButton1Clicked (UIDialogController*)
+void UITemplateSettingsController::onDialogButton1Clicked (UIDialogController&)
 {
 	if (auto ap = actionPerformer.lock ())
 	{
@@ -63,14 +63,10 @@ void UITemplateSettingsController::onDialogButton1Clicked (UIDialogController*)
 }
 
 //------------------------------------------------------------------------
-void UITemplateSettingsController::onDialogButton2Clicked (UIDialogController*)
-{
-}
+void UITemplateSettingsController::onDialogButton2Clicked (UIDialogController&) {}
 
 //------------------------------------------------------------------------
-void UITemplateSettingsController::onDialogShow (UIDialogController*)
-{
-}
+void UITemplateSettingsController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
 CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*)
