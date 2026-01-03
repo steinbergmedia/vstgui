@@ -32,8 +32,8 @@ protected:
 
 	SharedPointer<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;
-	UITagsDataSource* dataSource;
-	
+	SharedPointer<UITagsDataSource> dataSource;
+
 	enum {
 		kAddTag = 0,
 		kRemoveTag,

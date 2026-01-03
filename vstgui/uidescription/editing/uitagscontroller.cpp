@@ -181,16 +181,11 @@ UITagsController::UITagsController (IController* baseController,
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (nullptr)
 {
 }
 
 //----------------------------------------------------------------------------------------------------
-UITagsController::~UITagsController ()
-{
-	if (dataSource)
-		dataSource->forget ();
-}
+UITagsController::~UITagsController () {}
 
 //----------------------------------------------------------------------------------------------------
 CView* UITagsController::createView (const UIAttributes& attributes, const IUIDescription* description)
@@ -200,7 +195,7 @@ CView* UITagsController::createView (const UIAttributes& attributes, const IUIDe
 	{
 		if (*name == "TagsBrowser")
 		{
-			dataSource = new UITagsDataSource (editDescription, actionPerformer);
+			dataSource = makeOwned<UITagsDataSource> (editDescription, actionPerformer);
 			UIEditController::setupDataSource (dataSource);
 			return new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 		}
@@ -212,7 +207,7 @@ CView* UITagsController::createView (const UIAttributes& attributes, const IUIDe
 CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
-	if (searchField && searchField->getTag () == kSearchTag)
+	if (dataSource && searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
 		return searchField;
