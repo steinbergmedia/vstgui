@@ -426,15 +426,12 @@ UIColorsController::UIColorsController (IController* baseController,
 , dataSource (nullptr)
 , color (makeOwned<UIColor> ())
 {
-	dataSource = new UIColorsDataSource (editDescription, actionPerformer, color);
+	dataSource = makeOwned<UIColorsDataSource> (editDescription, actionPerformer, color);
 	UIEditController::setupDataSource (dataSource);
 }
 
 //----------------------------------------------------------------------------------------------------
-UIColorsController::~UIColorsController ()
-{
-	dataSource->forget ();
-}
+UIColorsController::~UIColorsController () {}
 
 //----------------------------------------------------------------------------------------------------
 CView* UIColorsController::createView (const UIAttributes& attributes, const IUIDescription* description)

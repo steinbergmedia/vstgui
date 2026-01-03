@@ -40,7 +40,7 @@ protected:
 
 	SharedPointer<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;
-	UIColorsDataSource* dataSource;
+	SharedPointer<UIColorsDataSource> dataSource;
 	SharedPointer<UIColor> color;
 	
 	enum {
