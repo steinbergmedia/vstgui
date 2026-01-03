@@ -75,7 +75,7 @@ protected:
 	WeakPointer<IActionPerformer> actionPerformer;
 	CViewContainer* templateView;
 	CDataBrowser* templateDataBrowser;
-	UIViewListDataSource* mainViewDataSource;
+	SharedPointer<UIViewListDataSource> mainViewDataSource;
 	GenericStringListDataBrowserSource::StringVector templateNames;
 	const UTF8String* selectedTemplateName;
 };

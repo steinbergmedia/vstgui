@@ -255,7 +255,6 @@ UITemplateController::UITemplateController (IController* baseController,
 , actionPerformer (actionPerformer)
 , templateView (nullptr)
 , templateDataBrowser (nullptr)
-, mainViewDataSource (nullptr)
 , selectedTemplateName (nullptr)
 {
 	editDescription->registerListener (this);
@@ -266,8 +265,6 @@ UITemplateController::~UITemplateController ()
 {
 	if (templateDataBrowser)
 		templateDataBrowser->unregisterViewListener (this);
-	if (mainViewDataSource)
-		mainViewDataSource->forget ();
 	editDescription->unregisterListener (this);
 }
 
@@ -396,8 +393,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 		if (mainViewDataSource)
 		{
 			mainViewDataSource->remove ();
-			mainViewDataSource->forget ();
-			mainViewDataSource = nullptr;
+			mainViewDataSource.reset ();
 		}
 		if (templateView && templateDataBrowser)
 		{
@@ -405,7 +401,8 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 			if (parentView)
 			{
 				const IViewFactory& viewFactory = editDescription->getViewFactory ();
-				mainViewDataSource = new UIViewListDataSource (templateView, viewFactory, selection, undoManager, this);
+				mainViewDataSource = makeOwned<UIViewListDataSource> (templateView, viewFactory,
+																	  selection, undoManager, this);
 				UIEditController::setupDataSource (mainViewDataSource);
 				CRect r (templateDataBrowser->getViewSize ());
 				r.offset (r.getWidth (), 0);
