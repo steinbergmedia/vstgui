@@ -162,7 +162,7 @@ SharedPointer<UISelection> createSelectionFromViewName (
 		for (auto& a : *optionalAttributes)
 			viewAttr.setAttribute (a.first, a.second);
 	}
-	CView* view = factory.createView (viewAttr, description);
+	auto view = shared (factory.createView (viewAttr, description));
 	if (view)
 	{
 		if (view->getViewSize ().isEmpty ())
@@ -173,7 +173,6 @@ SharedPointer<UISelection> createSelectionFromViewName (
 		}
 		selection = makeOwned<UISelection> ();
 		selection->add (view);
-		view->forget ();
 	}
 	return selection;
 }

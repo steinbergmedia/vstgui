@@ -349,7 +349,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 		}
 		else if (templateView)
 		{
-			selection->setExclusive (templateView);
+			selection->setExclusive (shared (templateView));
 		}
 		else
 			selection->clear ();
@@ -700,7 +700,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, cons
 	{
 		if (buttons.isDoubleClick ())
 		{
-			CView* subview = getSubview (row);
+			auto subview = shared (getSubview (row));
 			if (subview)
 			{
 				if (buttons.getModifierState () & kControl)
@@ -847,7 +847,7 @@ void UIViewListDataSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser
 		if (event.virt == VirtualKey::Return)
 		{
 			int32_t row = browser->getSelectedRow ();
-			CView* subview = getSubview (row);
+			auto subview = shared (getSubview (row));
 			if (subview)
 			{
 				selection->setExclusive (subview);

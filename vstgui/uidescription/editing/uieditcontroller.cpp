@@ -1400,7 +1400,7 @@ void UIEditController::doSelectAllChildren ()
 	UISelection::DeferChange dc (*selection);
 	CViewContainer* container = selection->first ()->asViewContainer ();
 	selection->clear ();
-	container->forEachChild ([&] (CView* view) {
+	container->forEachChild ([&] (auto view) {
 		if (IViewFactory::getViewName (view))
 			selection->add (view);
 	});
@@ -1410,7 +1410,7 @@ void UIEditController::doSelectAllChildren ()
 void UIEditController::doSelectParents ()
 {
 	UISelection::DeferChange dc (*selection);
-	std::vector<CView*> parents;
+	std::vector<SharedPointer<CView>> parents;
 	for (auto& view : *selection)
 	{
 		if (auto parent = view->getParentView ())

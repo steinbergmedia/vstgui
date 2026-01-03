@@ -558,7 +558,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	}
 	else if (cmdCategory == "Select Children Of Type")
 	{
-		std::vector<CView*> newSelection;
+		std::vector<SharedPointer<CView>> newSelection;
 		for (auto& entry : *selection)
 		{
 			if (auto viewContainer = entry->asViewContainer ())
@@ -806,7 +806,8 @@ void UIEditMenuController::controlEndEdit (CControl* pControl)
 }
 
 //------------------------------------------------------------------------
-void UIEditMenuController::getChildrenOfType (CViewContainer* container, UTF8StringView type, std::vector<CView*>& result) const
+void UIEditMenuController::getChildrenOfType (CViewContainer* container, UTF8StringView type,
+											  std::vector<SharedPointer<CView>>& result) const
 {
 	container->forEachChild ([&] (auto view) {
 		if (type == IViewFactory::getViewName (view))

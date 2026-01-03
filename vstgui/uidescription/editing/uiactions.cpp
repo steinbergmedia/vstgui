@@ -101,7 +101,7 @@ void UnembedViewOperation::perform ()
 	const_reverse_iterator it = rbegin ();
 	while (it != rend ())
 	{
-		CView* view = (*it);
+		auto view = (*it);
 		CRect viewSize = view->getViewSize ();
 		CRect mouseSize = view->getMouseableArea ();
 		containerView->removeView (view, false);
@@ -201,7 +201,7 @@ void EmbedViewOperation::undo ()
 	const_reverse_iterator it = rbegin ();
 	while (it != rend ())
 	{
-		CView* view = (*it).first;
+		auto view = (*it).first;
 		newContainer->removeView (view, false);
 		CRect r = (*it).second;
 		view->setViewSize (r);
@@ -318,7 +318,7 @@ void ViewSizeChangeOperation::undo ()
 	selection->clear ();
 	for (auto& element : *this)
 	{
-		CView* view = element.first;
+		auto view = element.first;
 		CRect size (element.second);
 		view->invalid ();
 		element.second = view->getViewSize ();
@@ -536,7 +536,7 @@ void TransformViewTypeOperation::perform ()
 		if (insertIndex >= 0)
 			parent->changeViewZOrder (newView, static_cast<uint32_t> (insertIndex));
 		exchangeSubViews (view->asViewContainer (), newView->asViewContainer ());
-		selection->setExclusive (newView);
+		selection->setExclusive (shared (newView));
 	}
 }
 

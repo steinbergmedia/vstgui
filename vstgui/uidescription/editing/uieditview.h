@@ -36,7 +36,7 @@ public:
 	void setScale (double scale);
 
 	void setEditView (CView* view);
-	CView* getEditView () const;
+	SharedPointer<CView> getEditView () const;
 
 	void doKeyMove (const CPoint& delta);
 	void doKeySize (const CPoint& delta);
@@ -86,7 +86,7 @@ protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
-	std::vector<CView*> findChildsInArea (CViewContainer* view, CRect r) const;
+	std::vector<SharedPointer<CView>> findChildsInArea (CViewContainer* view, CRect r) const;
 
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);

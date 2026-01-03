@@ -160,11 +160,12 @@ class UIHighlightView : public UIOverlayView
 public:
 	UIHighlightView (CViewContainer* editView, const CColor& viewHighlightColor);
 
-	void setHighlightView (CView* view);
+	void setHighlightView (const SharedPointer<CView>& view);
+
 private:
 	void draw (CDrawContext* pContext) override;
 
-	CView* highlightView;
+	SharedPointer<CView> highlightView;
 	CColor strokeColor;
 	CColor fillColor;
 };
@@ -183,7 +184,7 @@ UIHighlightView::UIHighlightView (CViewContainer* editView, const CColor& viewHi
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIHighlightView::setHighlightView (CView* view)
+void UIHighlightView::setHighlightView (const SharedPointer<CView>& view)
 {
 	if (highlightView != view)
 	{
@@ -466,9 +467,9 @@ void UIEditView::setEditView (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditView::getEditView () const
+SharedPointer<CView> UIEditView::getEditView () const
 {
-	return getView (0);
+	return getChildren ().empty () ? nullptr : getChildren ().front ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -691,7 +692,8 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 
 	CView* selectionHitView = nullptr;
 	MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
-	CView* mouseHitView = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
+	auto mouseHitView = shared (
+		getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ()));
 	if (selectionHitView == nullptr && mouseHitView == nullptr)
 	{
 		getSelection ()->clear ();
@@ -805,7 +807,8 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 	}
 	else if (mouseEditMode != MouseEditMode::NoEditing && !moveSizeOperation && buttons == kLButton && !lines)
 	{
-		CView* view = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
+		auto view = shared (getViewAt (
+			where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ()));
 		if (view == this)
 			view = nullptr;
 		if (view)
@@ -994,10 +997,10 @@ void UIEditView::doKeySize (const CPoint& delta)
 }
 
 //----------------------------------------------------------------------------------------------------
-std::vector<CView*> UIEditView::findChildsInArea (CViewContainer* view, CRect r) const
+std::vector<SharedPointer<CView>> UIEditView::findChildsInArea (CViewContainer* view, CRect r) const
 {
-	std::vector<CView*> views;
-	view->forEachChild ([&] (CView* child) {
+	std::vector<SharedPointer<CView>> views;
+	view->forEachChild ([&] (auto child) {
 		if (r.rectOverlap (child->getViewSize ()))
 		{
 			if (auto container = child->asViewContainer ())
@@ -1319,7 +1322,7 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 					CRect visibleRect = getVisibleViewSize ();
 					where2.offset (getViewSize ().left, getViewSize ().top);
 					where2.offset (-visibleRect.left, -visibleRect.top);
-					auto container = getContainerAt (where2, GetViewOptions ().deep ());
+					auto container = shared (getContainerAt (where2, GetViewOptions ().deep ()));
 					if (container == this)
 					{
 						container = nullptr;
@@ -1369,7 +1372,7 @@ void UIEditView::onDoubleClickEditing (CView* view)
 	auto frame = getFrame ();
 	frame->setCursor (kCursorDefault);
 
-	auto r = selection->getGlobalViewCoordinates (view);
+	auto r = selection->getGlobalViewCoordinates (shared (view));
 	r.offsetInverse (getViewSize ().getTopLeft ());
 	translateToLocal (r, true);
 	auto textEdit = new CTextEdit (r, nullptr, 0);

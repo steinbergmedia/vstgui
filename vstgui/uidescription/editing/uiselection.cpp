@@ -63,7 +63,7 @@ void UISelection::setStyle (int32_t _style)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelection::add (CView* view)
+void UISelection::add (const SharedPointer<CView>& view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
 	willChange ();
@@ -74,19 +74,19 @@ void UISelection::add (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelection::remove (CView* view)
+void UISelection::remove (const SharedPointer<CView>& view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
 	if (contains (view))
 	{
 		willChange ();
-		viewList.remove (shared (view));
+		viewList.remove (view);
 		didChange ();
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelection::setExclusive (CView* view)
+void UISelection::setExclusive (const SharedPointer<CView>& view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
 	if (viewList.size () == 1 && viewList.front () == view)
@@ -105,16 +105,15 @@ void UISelection::clear ()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::contains (CView* view) const
+bool UISelection::contains (const SharedPointer<CView>& view) const
 {
 	return std::find (begin (), end (), view) != end ();
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::containsParent (CView* view) const
+bool UISelection::containsParent (const SharedPointer<CView>& view) const
 {
-	CView* parent = view->getParentView ();
-	if (parent)
+	if (auto parent = shared (view->getParentView ()))
 	{
 		if (contains (parent))
 			return true;
@@ -130,7 +129,7 @@ int32_t UISelection::total () const
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UISelection::first () const
+SharedPointer<CView> UISelection::first () const
 {
 	if (!viewList.empty ())
 		return *begin ();
@@ -156,7 +155,7 @@ CRect UISelection::getBounds () const
 }
 
 //----------------------------------------------------------------------------------------------------
-CRect UISelection::getGlobalViewCoordinates (CView* view)
+CRect UISelection::getGlobalViewCoordinates (const SharedPointer<CView>& view)
 {
 	CRect result = view->translateToGlobal (view->getViewSize ());
 	if (auto frame = view->getFrame ())

@@ -184,8 +184,9 @@ protected:
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
 
-	void getChildrenOfType (CViewContainer* container, UTF8StringView type, std::vector<CView*>& result) const;
-	
+	void getChildrenOfType (CViewContainer* container, UTF8StringView type,
+							std::vector<SharedPointer<CView>>& result) const;
+
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> description;

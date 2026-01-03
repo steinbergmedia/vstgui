@@ -67,19 +67,19 @@ public:
 	
 	void setStyle (int32_t style);
 
-	void add (CView* view);
-	void remove (CView* view);
-	void setExclusive (CView* view);
+	void add (const SharedPointer<CView>& view);
+	void remove (const SharedPointer<CView>& view);
+	void setExclusive (const SharedPointer<CView>& view);
 	void clear ();
 
-	CView* first () const;
+	SharedPointer<CView> first () const;
 
-	bool contains (CView* view) const;
-	bool containsParent (CView* view) const;
+	bool contains (const SharedPointer<CView>& view) const;
+	bool containsParent (const SharedPointer<CView>& view) const;
 
 	int32_t total () const;
 	CRect getBounds () const;
-	static CRect getGlobalViewCoordinates (CView* view);
+	static CRect getGlobalViewCoordinates (const SharedPointer<CView>& view);
 
 	void moveBy (const CPoint& p);
 	void sizeBy (const CRect& r);
