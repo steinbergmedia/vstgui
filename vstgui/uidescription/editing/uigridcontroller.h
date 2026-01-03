@@ -37,7 +37,7 @@ protected:
 	void loadDefGrids ();
 	void saveDefGrids ();
 	UTF8String pointToDisplayString (const CPoint& p) const;
-	void setupTextEdit (CTextEdit* te) const;
+	void setupTextEdit (const SharedPointer<CTextEdit>& te) const;
 	void setupMenu ();
 
 	SharedPointer<UIDescription> editDescription;

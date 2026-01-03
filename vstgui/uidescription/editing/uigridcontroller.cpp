@@ -143,12 +143,12 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 		if (textEdit->getTag () == kGridXTag)
 		{
 			gridXEdit = textEdit;
-			setupTextEdit (textEdit);
+			setupTextEdit (gridXEdit);
 		}
 		else if (textEdit->getTag () == kGridYTag)
 		{
 			gridYEdit = textEdit;
-			setupTextEdit (textEdit);
+			setupTextEdit (gridYEdit);
 		}
 	}
 	return DelegationController::verifyView (view, attributes, description);
@@ -274,7 +274,7 @@ void UIGridController::syncMenuValueAndSize ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGridController::setupTextEdit (CTextEdit* te) const
+void UIGridController::setupTextEdit (const SharedPointer<CTextEdit>& te) const
 {
 	te->setPrecision (0);
 	te->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) {
