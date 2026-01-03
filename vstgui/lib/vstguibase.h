@@ -367,7 +367,7 @@ public:
 	template<typename T>
 	inline SharedPointer (const SharedPointer<T>& op) noexcept
 	{
-		*this = static_cast<I*> (op.get ());
+		*this = shared (static_cast<I*> (op.get ()));
 	}
 
 	template<typename T>
@@ -413,6 +413,13 @@ template<typename T>
 bool operator== (std::nullptr_t lhs, const SharedPointer<T>& rhs)
 {
 	return lhs == rhs.get ();
+}
+
+//------------------------------------------------------------------------
+template<typename T>
+bool operator== (const SharedPointer<T>& lhs, const SharedPointer<T>& rhs)
+{
+	return lhs.get () == rhs.get ();
 }
 
 //-----------------------------------------------------------------------------
