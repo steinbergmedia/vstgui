@@ -84,17 +84,18 @@ public:
 	void undo () override;
 
 protected:
-	void collectSubviews (CViewContainer* container, bool deep);
+	void collectSubviews (const SharedPointer<CViewContainer>& container, bool deep);
 	const IViewFactory& factory;
 	SharedPointer<CViewContainer> containerView;
-	CViewContainer* parent;
+	SharedPointer<CViewContainer> parent;
 };
 
 //-----------------------------------------------------------------------------
 class EmbedViewOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
 {
 public:
-	EmbedViewOperation (const SharedPointer<UISelection>& selection, CViewContainer* newContainer);
+	EmbedViewOperation (const SharedPointer<UISelection>& selection,
+						const SharedPointer<CViewContainer>& newContainer);
 	~EmbedViewOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -103,7 +104,7 @@ public:
 
 protected:
 	SharedPointer<CViewContainer> newContainer;
-	CViewContainer* parent;
+	SharedPointer<CViewContainer> parent;
 };
 
 //-----------------------------------------------------------------------------
@@ -111,8 +112,9 @@ class ViewCopyOperation : public IAction, protected std::list<SharedPointer<CVie
 {
 public:
 	ViewCopyOperation (const SharedPointer<UISelection>& copySelection,
-					   const SharedPointer<UISelection>& workingSelection, CViewContainer* parent,
-					   const CPoint& offset, const SharedPointer<IUIDescription>& desc);
+					   const SharedPointer<UISelection>& workingSelection,
+					   const SharedPointer<CViewContainer>& parent, const CPoint& offset,
+					   const SharedPointer<IUIDescription>& desc);
 	~ViewCopyOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -145,16 +147,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-struct DeleteOperationViewAndNext
-{
-	DeleteOperationViewAndNext (CView* view, CView* nextView) : view (view), nextView (nextView) {}
-	DeleteOperationViewAndNext (const DeleteOperationViewAndNext& copy) : view (copy.view), nextView (copy.nextView) {}
-	SharedPointer<CView> view;
-	SharedPointer<CView> nextView;
-};
-
-//----------------------------------------------------------------------------------------------------
-class DeleteOperation : public IAction, protected std::multimap<SharedPointer<CViewContainer>, DeleteOperationViewAndNext>
+class DeleteOperation : public IAction
 {
 public:
 	DeleteOperation (const SharedPointer<UISelection>& selection);
@@ -164,14 +157,22 @@ public:
 	void perform () override;
 	void undo () override;
 protected:
+	struct ViewAndNext
+	{
+		SharedPointer<CView> view;
+		SharedPointer<CView> nextView;
+	};
+
 	SharedPointer<UISelection> selection;
+	std::multimap<SharedPointer<CViewContainer>, ViewAndNext> map;
 };
 
 //-----------------------------------------------------------------------------
 class InsertViewOperation : public IAction
 {
 public:
-	InsertViewOperation (CViewContainer* parent, CView* view,
+	InsertViewOperation (const SharedPointer<CViewContainer>& parent,
+						 const SharedPointer<CView>& view,
 						 const SharedPointer<UISelection>& selection);
 	~InsertViewOperation () override = default;
 
@@ -188,19 +189,22 @@ protected:
 class TransformViewTypeOperation : public IAction
 {
 public:
-	TransformViewTypeOperation (const SharedPointer<UISelection>& selection, CView* view,
-								IdStringPtr viewClassName, const SharedPointer<UIDescription>& desc,
+	TransformViewTypeOperation (const SharedPointer<UISelection>& selection,
+								const SharedPointer<CView>& view, IdStringPtr viewClassName,
+								const SharedPointer<UIDescription>& desc,
 								const IViewFactory& factory);
 	~TransformViewTypeOperation () override;
 
 	UTF8StringPtr getName () override;
 
-	void exchangeSubViews (CViewContainer* src, CViewContainer* dst);
 	void perform () override;
 	void undo () override;
 protected:
+	void exchangeSubViews (const SharedPointer<CViewContainer>& src,
+						   const SharedPointer<CViewContainer>& dst);
+
 	SharedPointer<CView> view;
-	CView* newView;
+	SharedPointer<CView> newView;
 	int32_t insertIndex;
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<UISelection> selection;
@@ -235,18 +239,20 @@ class MultipleAttributeChangeAction : public IAction, public std::vector<std::pa
 {
 public:
 	MultipleAttributeChangeAction (const SharedPointer<UIDescription>& description,
-								   const std::list<CView*>& views, IViewCreator::AttrType attrType,
-								   UTF8StringPtr oldValue, UTF8StringPtr newValue);
+								   const std::list<SharedPointer<CView>>& views,
+								   IViewCreator::AttrType attrType, UTF8StringPtr oldValue,
+								   UTF8StringPtr newValue);
 	UTF8StringPtr getName () override { return "multiple view attribute changes"; }
 	void perform () override;
 	void undo () override;
 protected:
 	void setAttributeValue (UTF8StringPtr value);
-	static void collectAllSubViews (CView* view, std::list<CView*>& views);
+	static void collectAllSubViews (const SharedPointer<CView>& view,
+									std::list<SharedPointer<CView>>& views);
 	void collectViewsWithAttributeValue (const IViewFactory& viewFactory,
 										 const SharedPointer<IUIDescription>& desc,
-										 CView* startView, IViewCreator::AttrType type,
-										 const std::string& value);
+										 const SharedPointer<CView>& startView,
+										 IViewCreator::AttrType type, const std::string& value);
 
 	SharedPointer<UIDescription> description;
 	std::string oldValue;
@@ -527,8 +533,8 @@ protected:
 class HierarchyMoveViewOperation : public IAction
 {
 public:
-	HierarchyMoveViewOperation (CView* view, const SharedPointer<UISelection>& selection,
-								int32_t dir);
+	HierarchyMoveViewOperation (const SharedPointer<CView>& view,
+								const SharedPointer<UISelection>& selection, int32_t dir);
 	~HierarchyMoveViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
@@ -602,8 +608,8 @@ class DeleteTemplateAction : public IAction
 {
 public:
 	DeleteTemplateAction (const SharedPointer<UIDescription>& description,
-						  WeakPointer<IActionPerformer> actionPerformer, CView* view,
-						  UTF8StringPtr name);
+						  WeakPointer<IActionPerformer> actionPerformer,
+						  const SharedPointer<CView>& view, UTF8StringPtr name);
 
 	UTF8StringPtr getName () override;
 	void perform () override;

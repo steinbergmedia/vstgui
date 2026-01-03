@@ -1025,10 +1025,10 @@ void UIEditController::addSelectionToCurrentView (const SharedPointer<UISelectio
 	if (selection->total () == 0)
 		return;
 	CPoint offset;
-	CViewContainer* container = selection->first ()->asViewContainer ();
+	auto container = shared (selection->first ()->asViewContainer ());
 	if (container == nullptr)
 	{
-		container = selection->first ()->getParentView ()->asViewContainer ();
+		container = shared (selection->first ()->getParentView ()->asViewContainer ());
 		offset = selection->first ()->getViewSize ().getTopLeft ();
 		offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 	}
@@ -1386,9 +1386,8 @@ bool UIEditController::doZOrderAction (bool lower)
 {
 	if (selection->total () == 1)
 	{
-		CView* view = selection->first ();
 		undoManager->pushAndPerform (
-			makeOwned<HierarchyMoveViewOperation> (view, selection, lower ? -1 : 1));
+			makeOwned<HierarchyMoveViewOperation> (selection->first (), selection, lower ? -1 : 1));
 		return true;
 	}
 	return false;
@@ -1655,7 +1654,7 @@ void UIEditController::performChangeFocusDrawingSettings (const FocusDrawingSett
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::getTemplateViews (std::list<CView*>& views) const
+void UIEditController::getTemplateViews (std::list<SharedPointer<CView>>& views) const
 {
 	for (const auto& templateDesc : templates)
 		views.emplace_back (templateDesc.view);
@@ -1664,7 +1663,7 @@ void UIEditController::getTemplateViews (std::list<CView*>& views) const
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	auto action = makeOwned<ColorChangeAction> (editDescription, colorName, newColor, remove, true);
@@ -1680,7 +1679,7 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagStr, bool remove)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	auto action = makeOwned<TagChangeAction> (editDescription, tagName, tagStr, remove, true);
@@ -1696,7 +1695,7 @@ void UIEditController::performTagChange (UTF8StringPtr tagName, UTF8StringPtr ta
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	auto action =
@@ -1715,7 +1714,7 @@ void UIEditController::performGradientChange (UTF8StringPtr gradientName,
 											  const SharedPointer<CGradient>& newGradient,
 											  bool remove)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	auto action =
@@ -1734,7 +1733,7 @@ void UIEditController::performGradientChange (UTF8StringPtr gradientName,
 void UIEditController::performFontChange (UTF8StringPtr fontName,
 										  const SharedPointer<CFontDesc>& newFont, bool remove)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	auto action = makeOwned<FontChangeAction> (editDescription, fontName, newFont, remove, true);
@@ -1750,7 +1749,7 @@ void UIEditController::performFontChange (UTF8StringPtr fontName,
 //----------------------------------------------------------------------------------------------------
 template<typename NameChangeAction, IViewCreator::AttrType attrType> void UIEditController::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	undoManager->startGroupAction (groupActionName);
@@ -1797,7 +1796,7 @@ void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8Strin
 void UIEditController::performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
 													  const CMultiFrameBitmapDescription* desc)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change MultiFrame Bitmap");
@@ -1813,7 +1812,7 @@ void UIEditController::performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change NinePartTiled Bitmap");
@@ -1829,7 +1828,7 @@ void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapNam
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change Bitmap Filter");
@@ -1869,7 +1868,7 @@ void UIEditController::performLiveColorChange (UTF8StringPtr _colorName, const C
 	colorChangeAction->perform ();
 	colorChangeAction.reset ();
 
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	getTemplateViews (views);
 
 	auto attrChangeAction = makeOwned<MultipleAttributeChangeAction> (

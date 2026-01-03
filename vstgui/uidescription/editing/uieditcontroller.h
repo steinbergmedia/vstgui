@@ -176,7 +176,7 @@ protected:
 	void updateTemplate (UTF8StringPtr name);
 	void updateTemplate (const std::vector<Template>::const_iterator& it);
 	void onTemplatesChanged ();
-	void getTemplateViews (std::list<CView*>& views) const;
+	void getTemplateViews (std::list<SharedPointer<CView>>& views) const;
 
 	std::vector<Template> templates;
 private:

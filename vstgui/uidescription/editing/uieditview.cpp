@@ -1246,7 +1246,7 @@ bool UIEditView::onDrop (DragEventData data)
 			gridProcessor->process (where2);
 			getTransform ().transform (where2);
 		}
-		CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
+		auto viewContainer = shared (getContainerAt (where2, GetViewOptions ().deep ()));
 		if (viewContainer && viewContainer != this)
 		{
 			where2.offset (-getViewSize ().left, -getViewSize ().top);

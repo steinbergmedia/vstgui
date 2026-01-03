@@ -537,7 +537,8 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		const IViewFactory& viewFactory = description->getViewFactory ();
 		UIAttributes viewAttr;
 		viewAttr.setAttribute (UIViewCreator::kAttrClass, std::string (cmdName));
-		if (auto newContainer = viewFactory.createView (viewAttr, *description)->asViewContainer ())
+		if (auto newContainer =
+				shared (viewFactory.createView (viewAttr, *description)->asViewContainer ()))
 		{
 			auto action = makeOwned<EmbedViewOperation> (selection, newContainer);
 			undoManager->pushAndPerform (action);
@@ -571,9 +572,9 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	}
 	else if (cmdCategory == "InsertTemplate")
 	{
-		if (auto parent = selection->first ()->asViewContainer ())
+		if (auto parent = shared (selection->first ()->asViewContainer ()))
 		{
-			CView* view = description->createView (cmdName, description->getController ());
+			auto view = shared (description->createView (cmdName, description->getController ()));
 			if (view)
 			{
 				undoManager->pushAndPerform (

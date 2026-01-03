@@ -67,20 +67,21 @@ UnembedViewOperation::UnembedViewOperation (const SharedPointer<UISelection>& se
 {
 	containerView = selection->first ()->asViewContainer ();
 	collectSubviews (containerView, true);
-	parent = containerView->getParentView ()->asViewContainer ();
+	parent = shared (containerView->getParentView ()->asViewContainer ());
 }
 
 //----------------------------------------------------------------------------------------------------
-void UnembedViewOperation::collectSubviews (CViewContainer* container, bool deep)
+void UnembedViewOperation::collectSubviews (const SharedPointer<CViewContainer>& container,
+											bool deep)
 {
-	container->forEachChild ([&] (CView* view) {
+	container->forEachChild ([&] (auto& view) {
 		if (factory.getViewName (view))
 		{
 			emplace_back (view);
 		}
 		else if (deep)
 		{
-			if (auto c = view->asViewContainer ())
+			if (auto c = shared (view->asViewContainer ()))
 				collectSubviews (c, false);
 		}
 	});
@@ -137,11 +138,11 @@ void UnembedViewOperation::undo ()
 
 //-----------------------------------------------------------------------------
 EmbedViewOperation::EmbedViewOperation (const SharedPointer<UISelection>& selection,
-										CViewContainer* newContainer)
+										const SharedPointer<CViewContainer>& newContainer)
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect>> (selection)
-, newContainer (owned (newContainer))
+, newContainer (newContainer)
 {
-	parent = selection->first ()->getParentView ()->asViewContainer ();
+	parent = shared (selection->first ()->getParentView ()->asViewContainer ());
 	for (auto view : *selection)
 	{
 		if (view->getParentView () == parent)
@@ -153,7 +154,7 @@ EmbedViewOperation::EmbedViewOperation (const SharedPointer<UISelection>& select
 	CRect r = selection->first ()->getViewSize ();
 	for (auto& element : *this)
 	{
-		CView* view = element.first;
+		auto view = element.first;
 		CRect viewSize = view->getViewSize ();
 		if (viewSize.left < r.left)
 			r.left = viewSize.left;
@@ -181,7 +182,7 @@ void EmbedViewOperation::perform ()
 	CRect parentRect = newContainer->getViewSize ();
 	for (auto& element : *this)
 	{
-		CView* view = element.first;
+		auto view = element.first;
 		parent->removeView (view, false);
 		CRect r = view->getViewSize ();
 		r.offset (-parentRect.left, -parentRect.top);
@@ -218,7 +219,8 @@ void EmbedViewOperation::undo ()
 //-----------------------------------------------------------------------------
 ViewCopyOperation::ViewCopyOperation (const SharedPointer<UISelection>& copySelection,
 									  const SharedPointer<UISelection>& workingSelection,
-									  CViewContainer* parent, const CPoint& offset,
+									  const SharedPointer<CViewContainer>& parent,
+									  const CPoint& offset,
 									  const SharedPointer<IUIDescription>& desc)
 : parent (parent), copySelection (copySelection), workingSelection (workingSelection)
 {
@@ -257,8 +259,8 @@ void ViewCopyOperation::perform ()
 	for (auto& view : *this)
 	{
 		parent->addView (view);
-		(view)->remember ();
-		(view)->invalid ();
+		view->remember ();
+		view->invalid ();
 		workingSelection->add (view);
 	}
 }
@@ -367,7 +369,7 @@ DeleteOperation::DeleteOperation (const SharedPointer<UISelection>& selection)
 		CViewContainer* container = view->getParentView ()->asViewContainer ();
 		if (dynamic_cast<UIEditView*>(container) == nullptr)
 		{
-			CView* nextView = nullptr;
+			SharedPointer<CView> nextView;
 			ViewIterator it (container);
 			while (*it)
 			{
@@ -382,7 +384,7 @@ DeleteOperation::DeleteOperation (const SharedPointer<UISelection>& selection)
 				}
 				++it;
 			}
-			insert (std::make_pair (container, DeleteOperationViewAndNext (view, nextView)));
+			map.emplace (container, ViewAndNext {view, nextView});
 		}
 	}
 }
@@ -390,7 +392,7 @@ DeleteOperation::DeleteOperation (const SharedPointer<UISelection>& selection)
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr DeleteOperation::getName ()
 {
-	if (size () > 1)
+	if (map.size () > 1)
 		return "Delete Views";
 	return "Delete View";
 }
@@ -399,7 +401,7 @@ UTF8StringPtr DeleteOperation::getName ()
 void DeleteOperation::perform ()
 {
 	selection->clear ();
-	for (auto& element : *this)
+	for (auto& element : map)
 		element.first->removeView (element.second.view);
 }
 
@@ -408,7 +410,7 @@ void DeleteOperation::undo ()
 {
 	selection->clear ();
 	UISelection::DeferChange dc (*selection);
-	for (auto& element : *this)
+	for (auto& element : map)
 	{
 		if (element.second.nextView)
 			element.first->addView (element.second.view, element.second.nextView);
@@ -422,7 +424,8 @@ void DeleteOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-InsertViewOperation::InsertViewOperation (CViewContainer* parent, CView* view,
+InsertViewOperation::InsertViewOperation (const SharedPointer<CViewContainer>& parent,
+										  const SharedPointer<CView>& view,
 										  const SharedPointer<UISelection>& selection)
 : parent (parent), view (view), selection (selection)
 {
@@ -454,11 +457,11 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISelection>& selection,
-														CView* view, IdStringPtr viewClassName,
+														const SharedPointer<CView>& view,
+														IdStringPtr viewClassName,
 														const SharedPointer<UIDescription>& desc,
 														const IViewFactory& factory)
 : view (view)
-, newView (nullptr)
 , insertIndex (-1)
 , parent (view->getParentView ()->asViewContainer ())
 , selection (selection)
@@ -471,7 +474,7 @@ TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISe
 		if (vfEditingSupport->getAttributesForView (view, *desc, attr))
 		{
 			attr.setAttribute (UIViewCreator::kAttrClass, viewClassName);
-			newView = factory.createView (attr, *desc);
+			newView = owned (factory.createView (attr, *desc));
 			ViewIterator it (parent);
 			while (*it)
 			{
@@ -485,11 +488,7 @@ TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISe
 }
 
 //-----------------------------------------------------------------------------
-TransformViewTypeOperation::~TransformViewTypeOperation ()
-{
-	if (newView)
-		newView->forget ();
-}
+TransformViewTypeOperation::~TransformViewTypeOperation () {}
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr TransformViewTypeOperation::getName ()
@@ -498,20 +497,21 @@ UTF8StringPtr TransformViewTypeOperation::getName ()
 }
 
 //-----------------------------------------------------------------------------
-void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewContainer* dst)
+void TransformViewTypeOperation::exchangeSubViews (const SharedPointer<CViewContainer>& src,
+												   const SharedPointer<CViewContainer>& dst)
 {
 	if (dynamic_cast<const IViewFactoryEditingSupport*> (&factory))
 	{
 		if (src && dst)
 		{
-			std::list<CView*> temp;
+			std::list<SharedPointer<CView>> temp;
 
-			src->forEachChild ([&] (CView* childView) {
+			src->forEachChild ([&] (auto& childView) {
 				if (IViewFactory::getViewName (childView))
 				{
 					temp.emplace_back (childView);
 				}
-				else if (auto container = childView->asViewContainer ())
+				else if (auto container = shared (childView->asViewContainer ()))
 				{
 					exchangeSubViews (container, dst);
 				}
@@ -535,8 +535,8 @@ void TransformViewTypeOperation::perform ()
 		parent->addView (newView);
 		if (insertIndex >= 0)
 			parent->changeViewZOrder (newView, static_cast<uint32_t> (insertIndex));
-		exchangeSubViews (view->asViewContainer (), newView->asViewContainer ());
-		selection->setExclusive (shared (newView));
+		exchangeSubViews (shared (view->asViewContainer ()), shared (newView->asViewContainer ()));
+		selection->setExclusive (newView);
 	}
 }
 
@@ -550,7 +550,7 @@ void TransformViewTypeOperation::undo ()
 		parent->addView (view);
 		if (insertIndex >= 0)
 			parent->changeViewZOrder (view, static_cast<uint32_t> (insertIndex));
-		exchangeSubViews (newView->asViewContainer (), view->asViewContainer ());
+		exchangeSubViews (shared (newView->asViewContainer ()), shared (view->asViewContainer ()));
 		selection->setExclusive (view);
 	}
 }
@@ -634,7 +634,7 @@ void AttributeChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 MultipleAttributeChangeAction::MultipleAttributeChangeAction (
-	const SharedPointer<UIDescription>& description, const std::list<CView*>& views,
+	const SharedPointer<UIDescription>& description, const std::list<SharedPointer<CView>>& views,
 	IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue)
 : description (description), oldValue (oldValue), newValue (newValue)
 {
@@ -645,13 +645,13 @@ MultipleAttributeChangeAction::MultipleAttributeChangeAction (
 
 //----------------------------------------------------------------------------------------------------
 void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
-	const IViewFactory& viewFactory, const SharedPointer<IUIDescription>& desc, CView* startView,
-	IViewCreator::AttrType type, const std::string& value)
+	const IViewFactory& viewFactory, const SharedPointer<IUIDescription>& desc,
+	const SharedPointer<CView>& startView, IViewCreator::AttrType type, const std::string& value)
 {
 	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory);
 	if (!viewFactoryEditing)
 		return;
-	std::list<CView*> views;
+	std::list<SharedPointer<CView>> views;
 	collectAllSubViews (startView, views);
 	for (auto& view : views)
 	{
@@ -677,14 +677,13 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
 }
 
 //----------------------------------------------------------------------------------------------------
-void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<CView*>& views)
+void MultipleAttributeChangeAction::collectAllSubViews (const SharedPointer<CView>& view,
+														std::list<SharedPointer<CView>>& views)
 {
 	views.emplace_back (view);
 	if (auto container = view->asViewContainer ())
 	{
-		container->forEachChild ([&] (CView* view) {
-			collectAllSubViews (view, views);
-		});
+		container->forEachChild ([&] (auto view) { collectAllSubViews (view, views); });
 	}
 }
 
@@ -694,7 +693,7 @@ void MultipleAttributeChangeAction::setAttributeValue (UTF8StringPtr value)
 	const IViewFactory& viewFactory = description->getViewFactory ();
 	for (auto& element : *this)
 	{
-		CView* view = element.first;
+		auto view = element.first;
 		UIAttributes newAttr;
 		newAttr.setAttribute (element.second, value);
 		viewFactory.applyAttributeValues (view, newAttr, *description);
@@ -1303,12 +1302,12 @@ void AlternateFontChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view,
+HierarchyMoveViewOperation::HierarchyMoveViewOperation (const SharedPointer<CView>& view,
 														const SharedPointer<UISelection>& selection,
 														int32_t dir)
-: view (view), parent (nullptr), selection (selection), dir (dir)
+: view (view), selection (selection), dir (dir)
 {
-	parent = view->getParentView ()->asViewContainer ();
+	parent = shared (view->getParentView ()->asViewContainer ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1451,7 +1450,7 @@ void DuplicateTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 DeleteTemplateAction::DeleteTemplateAction (const SharedPointer<UIDescription>& description,
 											WeakPointer<IActionPerformer> actionPerformer,
-											CView* view, UTF8StringPtr name)
+											const SharedPointer<CView>& view, UTF8StringPtr name)
 : description (description), actionPerformer (actionPerformer), view (view), name (name)
 {
 	attributes = description->getViewAttributes (name);
