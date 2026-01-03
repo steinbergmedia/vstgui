@@ -192,7 +192,8 @@ public:
 	using ValidateCallbackFunction = std::function<void (SharedPointer<CCommandMenuItem> item)>;
 	using SelectedCallbackFunction = std::function<void (SharedPointer<CCommandMenuItem> item)>;
 
-	void setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate = [](CCommandMenuItem*){});
+	void setActions (
+		SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate = [] (auto) {});
 	//@}
 
 	void execute ();
