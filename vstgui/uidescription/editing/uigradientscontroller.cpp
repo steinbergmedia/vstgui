@@ -803,17 +803,13 @@ UIGradientsController::UIGradientsController (IController* baseController,
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (nullptr)
 {
-	dataSource = new UIGradientsDataSource (editDescription, actionPerformer, this);
+	dataSource = makeOwned<UIGradientsDataSource> (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
 }
 
 //----------------------------------------------------------------------------------------------------
-UIGradientsController::~UIGradientsController ()
-{
-	dataSource->forget ();
-}
+UIGradientsController::~UIGradientsController () {}
 
 //----------------------------------------------------------------------------------------------------
 CView* UIGradientsController::createView (const UIAttributes& attributes, const IUIDescription* description)

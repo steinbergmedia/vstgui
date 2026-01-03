@@ -42,8 +42,8 @@ protected:
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<CControl> editButton;
 	WeakPointer<IActionPerformer> actionPerformer;
-	UIGradientsDataSource* dataSource;
-	
+	SharedPointer<UIGradientsDataSource> dataSource;
+
 	enum {
 		kAddTag = 0,
 		kRemoveTag,
