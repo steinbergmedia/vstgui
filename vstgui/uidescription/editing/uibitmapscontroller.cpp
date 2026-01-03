@@ -1029,15 +1029,12 @@ UIBitmapsController::UIBitmapsController (IController* baseController,
 , actionPerformer (actionPerformer)
 , undoManager (undoManager)
 {
-	dataSource = new UIBitmapsDataSource (editDescription, actionPerformer, this);
+	dataSource = makeOwned<UIBitmapsDataSource> (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
 }
 
 //----------------------------------------------------------------------------------------------------
-UIBitmapsController::~UIBitmapsController ()
-{
-	dataSource->forget ();
-}
+UIBitmapsController::~UIBitmapsController () {}
 
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsController::showSettingsDialog ()

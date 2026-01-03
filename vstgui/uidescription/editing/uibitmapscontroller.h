@@ -45,9 +45,9 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	WeakPointer<IActionPerformer> actionPerformer {nullptr};
+	WeakPointer<IActionPerformer> actionPerformer;
 	SharedPointer<UIUndoManager> undoManager;
-	UIBitmapsDataSource* dataSource {nullptr};
+	SharedPointer<UIBitmapsDataSource> dataSource;
 	SharedPointer<CView> bitmapView;
 	SharedPointer<CTextEdit> bitmapPathEdit;
 	SharedPointer<CControl> settingButton;
