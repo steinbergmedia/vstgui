@@ -64,7 +64,7 @@ protected:
 	virtual void platformOpenGLViewSizeChanged () {}
 	/** subclasses should return a pixelformat here if they don't want to use the default one */
 	virtual PixelFormat* getPixelFormat () { return nullptr; }
-	IPlatformOpenGLView* getPlatformOpenGLView () const { return platformOpenGLView; }
+	SharedPointer<IPlatformOpenGLView> getPlatformOpenGLView () const { return platformOpenGLView; }
 	//@}
 
 private:

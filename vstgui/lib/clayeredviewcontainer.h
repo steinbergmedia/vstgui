@@ -27,8 +27,8 @@ class CLayeredViewContainer : public CViewContainer,
 public:
 	explicit CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
 	~CLayeredViewContainer () noexcept override = default;
-	
-	IPlatformViewLayer* getPlatformLayer () const { return layer; }
+
+	SharedPointer<IPlatformViewLayer> getPlatformLayer () const { return layer; }
 
 	void setZIndex (uint32_t zIndex);
 	uint32_t getZIndex () const { return zIndex; }
