@@ -273,28 +273,84 @@ public:
 	/// @name Attribute Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	/** get the size of an attribute */
-	bool getAttributeSize (const CViewAttributeID id, uint32_t& outSize) const;
-	/** get an attribute */
-	bool getAttribute (const CViewAttributeID id, const uint32_t inSize, void* outData, uint32_t& outSize) const;
-	/** set an attribute */
-	bool setAttribute (const CViewAttributeID id, const uint32_t inSize, const void* inData);
-	/** remove an attribute */
-	bool removeAttribute (const CViewAttributeID id);
+	enum class AttrType : uint8_t
+	{
+		NotFound,
+		Memory,
+		Object
+	};
+	/** get the type of an attribute
+	 *	@param aId the ID of the Attribute
+	 *	@return the type of the attribute
+	 */
+	AttrType getAttributeType (const CViewAttributeID aId) const;
+	/** get the size of an attribute
+	 *	@param aId the ID of the Attribute
+	 *	@param outSize on return the size of the attribute
+	 *	@return true if attribute exists. outSize is valid then.
+	 */
+	bool getAttributeSize (const CViewAttributeID aId, uint32_t& outSize) const;
+	/** get an attribute
+	 *	@param aId the ID of the Attribute
+	 *	@param inSize the size of the outData pointer
+	 *	@param outData a pointer where to copy the attribute data
+	 *	@param outSize the size in bytes which was copied into outData
+	 *	@return true if attribute exists and outData was big enough. outSize and outData is valid
+	 *			then.
+	 */
+	bool getAttribute (const CViewAttributeID aId, const uint32_t inSize, void* outData,
+					   uint32_t& outSize) const;
+	/** set an attribute
+	 *	copies data into the attribute. If it does not exist, creates a new attribute.
+	 *	@param aId the ID of the Attribute
+	 *	@param inSize the size of the outData pointer
+	 *	@param inData a pointer to the data
+	 *	@return true if attribute was set
+	 */
+	bool setAttribute (const CViewAttributeID aId, const uint32_t inSize, const void* inData);
+	/** remove an attribute
+	 *	@param aId the ID of the Attribute
+	 *	@return true if attribute existed and was removed
+	 */
+	bool removeAttribute (const CViewAttributeID aId);
+	/** set an attribute object
+	 *	@param aId the ID of the Attribute
+	 *	@param object the object to set
+	 *	@return true if attribute was set
+	 */
+	bool setAttributeObj (const CViewAttributeID aId, const SharedPointer<IReference>& object);
+	/** get an attribute
+	 *	@param aId the ID of the Attribute
+	 *	@param outObject a shared pointer where to store the object
+	 *	@return true if attribute exists and outObject contains the object
+	 */
+	bool getAttributeObj (const CViewAttributeID aId, SharedPointer<IReference>& outObject) const;
 
 	/** set an attribute */
 	template<typename T>
-	bool setAttribute (const CViewAttributeID id, const T& data)
+	bool setAttribute (const CViewAttributeID aId, const T& data)
 	{
-		return setAttribute (id, sizeof (T), &data);
+		if constexpr (std::is_convertible_v<T, SharedPointer<IReference>>)
+			return setAttributeObj (aId, data);
+		return setAttribute (aId, sizeof (T), &data);
 	}
 	
 	/** get an attribute */
-	template <typename T>
-	bool getAttribute (const CViewAttributeID id, T& data) const
+	template<typename T>
+	bool getAttribute (const CViewAttributeID aId, T& data) const
 	{
+		if constexpr (std::is_convertible_v<T, SharedPointer<IReference>>)
+		{
+			SharedPointer<IReference> obj;
+			if (getAttributeObj (aId, obj))
+			{
+				data = obj.cast<typename T::Type> ();
+				return data.get () != nullptr;
+			}
+			return false;
+		}
 		uint32_t outSize;
-		if (getAttribute (id, sizeof (T), &data, outSize))
+		if (getAttribute (aId, sizeof (T), &data, outSize))
 			return outSize == sizeof (T);
 		return false;
 	}

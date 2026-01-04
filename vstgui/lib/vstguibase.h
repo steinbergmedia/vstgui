@@ -324,6 +324,7 @@ template <class I>
 class SharedPointer
 {
 public:
+	using Type = I;
 //------------------------------------------------------------------------
 #if VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR
 	inline explicit SharedPointer (I* ptr) noexcept;

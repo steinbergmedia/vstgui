@@ -18,6 +18,7 @@
 #include "platform/iplatformframe.h"
 #include <cassert>
 #include <unordered_map>
+#include <variant>
 #if DEBUG
 #include <list>
 #include <typeinfo>
@@ -175,7 +176,9 @@ static constexpr CViewAttributeID kCViewDisabledBackgroundBitmapAttrID = 'cvdb';
 //-----------------------------------------------------------------------------
 struct CView::Impl
 {
-	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
+	using AttributeEntryPtr = std::unique_ptr<CViewInternal::AttributeEntry>;
+	using Attribute = std::variant<AttributeEntryPtr, SharedPointer<IReference>>;
+	using ViewAttributes = std::unordered_map<CViewAttributeID, Attribute>;
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
 	using ViewEventListenerDispatcher = DispatchList<IViewEventListener*>;
 
@@ -230,7 +233,17 @@ CView::CView (const CView& v)
 	setDisabledBackground (v.getDisabledBackground ());
 
 	for (auto& attribute : v.pImpl->attributes)
-		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
+	{
+		if (auto mem = std::get_if<Impl::AttributeEntryPtr> (&attribute.second))
+		{
+			setAttribute (attribute.first, mem->get ()->getSize (), mem->get ()->getData ());
+		}
+		else
+		{
+			setAttributeObj (attribute.first,
+							 std::get<SharedPointer<IReference>> (attribute.second));
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -326,24 +339,18 @@ CRect CView::getMouseableArea () const
  */
 void CView::setHitTestPath (const SharedPointer<CGraphicsPath>& path)
 {
-	if (auto p = getHitTestPath ())
-	{
-		p->forget ();
-		removeAttribute (kCViewHitTestPathAttrID);
-	}
 	if (path)
-	{
-		path->remember ();
-		setAttribute (kCViewHitTestPathAttrID, path.get ());
-	}
+		setAttribute (kCViewHitTestPathAttrID, path);
+	else
+		removeAttribute (kCViewHitTestPathAttrID);
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<CGraphicsPath> CView::getHitTestPath () const
 {
-	CGraphicsPath* path = nullptr;
+	SharedPointer<CGraphicsPath> path;
 	if (getAttribute (kCViewHitTestPathAttrID, path))
-		return shared (path);
+		return path;
 	return {};
 }
 
@@ -1151,21 +1158,15 @@ VSTGUIEditorInterface* CView::getEditor () const
  */
 void CView::setBackground (const SharedPointer<CBitmap>& background)
 {
-	if (hasViewFlag (kHasBackground))
-	{
-		CBitmap* old = nullptr;
-		if (getAttribute (kCViewBackgroundBitmapAttrID, old))
-		{
-			old->forget ();
-			removeAttribute (kCViewBackgroundBitmapAttrID);
-		}
-		setViewFlag (kHasBackground, false);
-	}
 	if (background)
 	{
-		background->remember ();
 		setAttribute (kCViewBackgroundBitmapAttrID, background);
 		setViewFlag (kHasBackground, true);
+	}
+	else
+	{
+		removeAttribute (kCViewBackgroundBitmapAttrID);
+		setViewFlag (kHasBackground, false);
 	}
 	if (getMouseEnabled () == true)
 		setDirty (true);
@@ -1174,19 +1175,19 @@ void CView::setBackground (const SharedPointer<CBitmap>& background)
 //-----------------------------------------------------------------------------
 SharedPointer<CBitmap> CView::getBackground () const
 {
-	CBitmap* result = nullptr;
+	SharedPointer<CBitmap> result;
 	if (hasViewFlag (kHasBackground))
 		getAttribute (kCViewBackgroundBitmapAttrID, result);
-	return shared (result);
+	return result;
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<CBitmap> CView::getDisabledBackground () const
 {
-	CBitmap* result = nullptr;
+	SharedPointer<CBitmap> result;
 	if (hasViewFlag (kHasDisabledBackground))
 		getAttribute (kCViewDisabledBackgroundBitmapAttrID, result);
-	return shared (result);
+	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -1203,61 +1204,42 @@ SharedPointer<CBitmap> CView::getDrawBackground () const
  */
 void CView::setDisabledBackground (const SharedPointer<CBitmap>& background)
 {
-	if (hasViewFlag (kHasDisabledBackground))
-	{
-		CBitmap* old = nullptr;
-		if (getAttribute (kCViewDisabledBackgroundBitmapAttrID, old))
-		{
-			old->forget ();
-			removeAttribute (kCViewDisabledBackgroundBitmapAttrID);
-		}
-		setViewFlag (kHasDisabledBackground, false);
-	}
 	if (background)
 	{
-		background->remember ();
 		setAttribute (kCViewDisabledBackgroundBitmapAttrID, background);
 		setViewFlag (kHasDisabledBackground, true);
+	}
+	else
+	{
+		removeAttribute (kCViewDisabledBackgroundBitmapAttrID);
+		setViewFlag (kHasDisabledBackground, false);
 	}
 	if (getMouseEnabled () == false)
 		setDirty (true);
 }
 
+//------------------------------------------------------------------------
+auto CView::getAttributeType (const CViewAttributeID aId) const -> AttrType
+{
+	auto it = pImpl->attributes.find (aId);
+	if (it != pImpl->attributes.end ())
+	{
+		if (std::holds_alternative<SharedPointer<IReference>> (it->second))
+			return AttrType::Object;
+		return AttrType::Memory;
+	}
+	return AttrType::NotFound;
+}
+
 //-----------------------------------------------------------------------------
-/**
- * @param aId the ID of the Attribute
- * @param outSize on return the size of the attribute
- * @return true if attribute exists. outSize is valid then.
- */
 bool CView::getAttributeSize (const CViewAttributeID aId, uint32_t& outSize) const
 {
 	auto it = pImpl->attributes.find (aId);
 	if (it != pImpl->attributes.end ())
 	{
-		outSize = it->second->getSize ();
-		return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-/**
- * @param aId the ID of the Attribute
- * @param inSize the size of the outData pointer
- * @param outData a pointer where to copy the attribute data
- * @param outSize the size in bytes which was copied into outData
- * @return true if attribute exists and outData was big enough. outSize and outData is valid then.
- */
-bool CView::getAttribute (const CViewAttributeID aId, const uint32_t inSize, void* outData, uint32_t& outSize) const
-{
-	auto it = pImpl->attributes.find (aId);
-	if (it != pImpl->attributes.end ())
-	{
-		if (inSize >= it->second->getSize ())
+		if (auto mem = std::get_if<Impl::AttributeEntryPtr> (&it->second))
 		{
-			outSize = it->second->getSize ();
-			if (outSize > 0)
-				std::memcpy (outData, it->second->getData (), static_cast<size_t> (outSize));
+			outSize = mem->get ()->getSize ();
 			return true;
 		}
 	}
@@ -1265,21 +1247,45 @@ bool CView::getAttribute (const CViewAttributeID aId, const uint32_t inSize, voi
 }
 
 //-----------------------------------------------------------------------------
-/**
- * copies data into the attribute. If it does not exist, creates a new attribute.
- * @param aId the ID of the Attribute
- * @param inSize the size of the outData pointer
- * @param inData a pointer to the data
- * @return true if attribute was set
- */
+bool CView::getAttribute (const CViewAttributeID aId, const uint32_t inSize, void* outData, uint32_t& outSize) const
+{
+	auto it = pImpl->attributes.find (aId);
+	if (it != pImpl->attributes.end ())
+	{
+		if (auto mem = std::get_if<Impl::AttributeEntryPtr> (&it->second))
+		{
+			if (inSize >= mem->get ()->getSize ())
+			{
+				outSize = mem->get ()->getSize ();
+				if (outSize > 0)
+					std::memcpy (outData, mem->get ()->getData (), static_cast<size_t> (outSize));
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 bool CView::setAttribute (const CViewAttributeID aId, const uint32_t inSize, const void* inData)
 {
 	if (inData == nullptr || inSize <= 0)
 		return false;
+	bool addNew = true;
 	auto it = pImpl->attributes.find (aId);
 	if (it != pImpl->attributes.end ())
-		it->second->updateData (inSize, inData);
-	else
+	{
+		if (auto mem = std::get_if<Impl::AttributeEntryPtr> (&it->second))
+		{
+			mem->get ()->updateData (inSize, inData);
+			addNew = false;
+		}
+		else
+		{
+			pImpl->attributes.erase (it);
+		}
+	}
+	if (addNew)
 		pImpl->attributes.emplace (aId, std::unique_ptr<CViewInternal::AttributeEntry> (new CViewInternal::AttributeEntry (inSize, inData)));
 	return true;
 }
@@ -1290,8 +1296,30 @@ bool CView::removeAttribute (const CViewAttributeID aId)
 	auto it = pImpl->attributes.find (aId);
 	if (it != pImpl->attributes.end ())
 	{
-		pImpl->attributes.erase (aId);
+		pImpl->attributes.erase (it);
 		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool CView::setAttributeObj (const CViewAttributeID aId, const SharedPointer<IReference>& object)
+{
+	removeAttribute (aId);
+	return pImpl->attributes.emplace (aId, object).second;
+}
+
+//------------------------------------------------------------------------
+bool CView::getAttributeObj (const CViewAttributeID aId, SharedPointer<IReference>& object) const
+{
+	auto it = pImpl->attributes.find (aId);
+	if (it != pImpl->attributes.end ())
+	{
+		if (auto obj = std::get_if<SharedPointer<IReference>> (&it->second))
+		{
+			object = *obj;
+			return true;
+		}
 	}
 	return false;
 }
@@ -1464,23 +1492,18 @@ void CView::callMouseListenerEnteredExited (bool mouseEntered)
 //-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CView::getDropTarget ()
 {
-	IDropTarget* dropTarget = nullptr;
+	SharedPointer<IDropTarget> dropTarget;
 	if (getAttribute (kCViewCustomDropTargetAttrID, dropTarget))
-		return shared (dropTarget);
-	return nullptr;
+		return dropTarget;
+	return {};
 }
 
 //-----------------------------------------------------------------------------
-void CView::setDropTarget (const SharedPointer<IDropTarget>& dt)
+void CView::setDropTarget (const SharedPointer<IDropTarget>& dropTarget)
 {
-	IDropTarget* dropTarget = nullptr;
-	if (getAttribute (kCViewCustomDropTargetAttrID, dropTarget))
-		dropTarget->forget ();
-	dropTarget = dt;
 	if (dropTarget)
 	{
 		setAttribute (kCViewCustomDropTargetAttrID, dropTarget);
-		dropTarget->remember ();
 	}
 	else
 	{
