@@ -171,7 +171,6 @@ void CViewContainer::beforeDelete ()
 	if (getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
 	{
 		removeAttribute (kCViewContainerDropTargetAttribute);
-		dropTarget->forget ();
 	}
 
 	// remove all views
@@ -1169,13 +1168,13 @@ SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 {
 	if (getFrame () == this)
 	{
-		IDropTarget* dropTarget = nullptr;
+		SharedPointer<IDropTarget> dropTarget;
 		if (!getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
 		{
-			dropTarget = new CViewContainerDropTarget (this);
+			dropTarget = makeOwned<CViewContainerDropTarget> (this);
 			setAttribute (kCViewContainerDropTargetAttribute, dropTarget);
 		}
-		return shared (dropTarget);
+		return dropTarget;
 	}
 	if (auto customDropTarget = CView::getDropTarget ())
 		return customDropTarget;
@@ -1272,14 +1271,9 @@ void CViewContainer::takeFocus ()
 //------------------------------------------------------------------------
 void CViewContainer::setInitialFocusView (const SharedPointer<CView>& view)
 {
-	if (auto oldInitialFocusView = getInitialFocusView ())
-	{
-		oldInitialFocusView->forget ();
-	}
 	if (view)
 	{
 		setAttribute (kInitialFocusViewAttribute, view);
-		view->remember ();
 	}
 	else
 	{
@@ -1290,9 +1284,9 @@ void CViewContainer::setInitialFocusView (const SharedPointer<CView>& view)
 //------------------------------------------------------------------------
 SharedPointer<CView> CViewContainer::getInitialFocusView () const
 {
-	CView* initialFocusView = nullptr;
+	SharedPointer<CView> initialFocusView;
 	getAttribute (kInitialFocusViewAttribute, initialFocusView);
-	return shared (initialFocusView);
+	return initialFocusView;
 }
 
 //-----------------------------------------------------------------------------
