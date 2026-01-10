@@ -42,7 +42,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIViewCreatorController::UIViewCreatorController (IController* baseController,
+UIViewCreatorController::UIViewCreatorController (const SharedPointer<IController>& baseController,
 												  const SharedPointer<UIDescription>& description)
 : DelegationController (baseController), description (description)
 {
@@ -135,10 +135,10 @@ void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 {
-	UIViewCreatorController* controller = dynamic_cast<UIViewCreatorController*> (getViewController (dataBrowser, true));
+	auto controller = getViewController (dataBrowser, true).cast<UIViewCreatorController> ();
 	if (controller)
 	{
-		if (UIEditController* editController = dynamic_cast<UIEditController*> (controller->getBaseController ()))
+		if (auto editController = controller->getBaseController ().cast<UIEditController> ())
 		{
 			SharedPointer<UISelection> selection = createSelection (row);
 			editController->addSelectionToCurrentView (selection);

@@ -189,8 +189,8 @@ bool UIViewSwitchContainer::removed (CView* parent)
 
 //-----------------------------------------------------------------------------
 UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (
-    UIViewSwitchContainer* viewSwitch, const IUIDescription* uiDescription,
-    IController* uiController)
+	UIViewSwitchContainer* viewSwitch, const IUIDescription* uiDescription,
+	const SharedPointer<IController>& uiController)
 : IViewSwitchController (viewSwitch)
 , uiDescription (uiDescription)
 , uiController (uiController)

@@ -23,7 +23,7 @@ class UIColorsController : public NonAtomicReferenceCounted,
 						   public IContextMenuController2
 {
 public:
-	UIColorsController (IController* baseController,
+	UIColorsController (const SharedPointer<IController>& baseController,
 						const SharedPointer<UIDescription>& description,
 						WeakPointer<IActionPerformer> actionPerformer);
 	~UIColorsController () override;
@@ -33,7 +33,8 @@ protected:
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl* pControl) override;
-	IController* createSubController (IdStringPtr name, const IUIDescription* description) override;
+	SharedPointer<IController> createSubController (IdStringPtr name,
+													const IUIDescription* description) override;
 
 	void appendContextMenuItems (COptionMenu& contextMenu, CView* view,
 								 const CPoint& where) override;

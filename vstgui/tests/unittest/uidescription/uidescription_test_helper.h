@@ -22,7 +22,8 @@ struct SaveUIDescription : public UIDescription
 	using UIDescription::saveToStream;
 };
 
-struct Controller : public IController
+struct Controller : public IController,
+					public NonAtomicReferenceCounted
 {
 	void valueChanged (CControl* pControl) override {};
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
@@ -39,8 +40,8 @@ struct Controller : public IController
 	{
 		return view;
 	}
-	IController* createSubController (UTF8StringPtr name,
-	                                  const IUIDescription* description) override
+	SharedPointer<IController> createSubController (UTF8StringPtr name,
+													const IUIDescription* description) override
 	{
 		return nullptr;
 	}

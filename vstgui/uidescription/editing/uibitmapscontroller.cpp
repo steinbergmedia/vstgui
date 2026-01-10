@@ -1020,7 +1020,7 @@ bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIBitmapsController::UIBitmapsController (IController* baseController,
+UIBitmapsController::UIBitmapsController (const SharedPointer<IController>& baseController,
 										  const SharedPointer<UIDescription>& description,
 										  WeakPointer<IActionPerformer> actionPerformer,
 										  const SharedPointer<UIUndoManager>& undoManager)
@@ -1039,7 +1039,7 @@ UIBitmapsController::~UIBitmapsController () {}
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsController::showSettingsDialog ()
 {
-	auto* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
+	auto* dc = new UIDialogController (shared (this), bitmapPathEdit->getFrame ());
 	auto fsController = makeOwned<UIBitmapSettingsController> (
 		dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription,
 		actionPerformer, undoManager);

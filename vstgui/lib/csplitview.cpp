@@ -7,7 +7,6 @@
 #include "cdrawcontext.h"
 #include "events.h"
 #include "viewlayouter/baseviewlayouter.h"
-#include "../uidescription/icontroller.h"
 #include <list>
 
 namespace VSTGUI {
@@ -41,14 +40,13 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-static ISplitViewController* getSplitViewController (const CView* view)
+static SharedPointer<ISplitViewController> getSplitViewController (const CSplitView* view)
 {
-	IController* controller = getViewController (view, true);
-	if (controller)
+	if (auto controller = getViewController (view, true))
 	{
-		return dynamic_cast<ISplitViewController*> (controller);
+		return controller.cast<ISplitViewController> ();
 	}
-	return nullptr;
+	return {};
 }
 
 //-----------------------------------------------------------------------------

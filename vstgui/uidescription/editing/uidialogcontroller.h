@@ -35,7 +35,7 @@ class UIDialogController : public NonAtomicReferenceCounted,
                            public ViewListenerAdapter
 {
 public:
-	UIDialogController (IController* baseController, CFrame* frame);
+	UIDialogController (const SharedPointer<IController>& baseController, CFrame* frame);
 	~UIDialogController () override = default;
 
 	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1,

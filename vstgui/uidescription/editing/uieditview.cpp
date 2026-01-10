@@ -1204,7 +1204,7 @@ SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (IDataPackage* drag
 	{
 		auto oldController = description->getController ();
 		if (auto* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : nullptr)
-			description->setController (controller);
+			description->setController (shared (controller));
 		CMemoryStream stream (static_cast<const int8_t*> (dragData), size, false);
 		auto newSelection = makeOwned<UISelection> ();
 		if (newSelection->restore (stream, description))
@@ -1416,12 +1416,9 @@ bool UIEditView::attached (CView* parent)
 	{
 		editing = !editing;
 		enableEditing (!editing);
-		IController* controller = getViewController (this, true);
-		if (controller)
+		if (auto controller = getViewController (this, true).cast<CBaseObject> ())
 		{
-			CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
-			if (obj)
-				obj->notify (this, kMsgAttached);
+			controller->notify (this, kMsgAttached);
 		}
 		return true;
 	}
@@ -1437,12 +1434,9 @@ bool UIEditView::removed (CView* parent)
 		frame->setViewAddedRemovedObserver (nullptr);
 		editingViewAddedObserver.reset ();
 	}
-	IController* controller = getViewController (this, true);
-	if (controller)
+	if (auto controller = getViewController (this, true).cast<CBaseObject> ())
 	{
-		CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
-		if (obj)
-			obj->notify (this, kMsgRemoved);
+		controller->notify (this, kMsgRemoved);
 	}
 	if (overlayView)
 	{

@@ -90,7 +90,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 	addFunc ("getControllerProperty"sv,
 			 [view] (CScriptVar& var) {
 				 auto viewController = getViewController (view, true);
-				 auto controller = dynamic_cast<IScriptControllerExtension*> (viewController);
+				 auto controller = viewController.cast<IScriptControllerExtension> ();
 				 auto name = var.getParameter ("name"sv);
 				 if (!controller || !name)
 				 {
@@ -121,7 +121,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 	addFunc ("setControllerProperty"sv,
 			 [view] (CScriptVar& var) {
 				 auto viewController = getViewController (view, true);
-				 auto controller = dynamic_cast<IScriptControllerExtension*> (viewController);
+				 auto controller = viewController.cast<IScriptControllerExtension> ();
 				 auto name = var.getParameter ("name"sv);
 				 auto value = var.getParameter ("value"sv);
 				 if (!controller || !name || !value || !(value->isNumeric () || value->isString ()))

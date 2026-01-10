@@ -83,6 +83,12 @@ static UIEditControllerGlobalResources gUIEditorControllerResources;
 class UIEditControllerDescription
 {
 public:
+	static UIEditControllerDescription& instance ()
+	{
+		static UIEditControllerDescription gInstance;
+		return gInstance;
+	}
+
 	SharedPointer<UIDescription> get () const
 	{
 		if (uiDesc == nullptr)
@@ -177,12 +183,10 @@ private:
 	mutable SharedPointer<UIDescription> darkResourceDesc;
 };
 
-static UIEditControllerDescription gUIDescription;
-
 //----------------------------------------------------------------------------------------------------
 SharedPointer<UIDescription> UIEditController::getEditorDescription ()
 {
-	return gUIDescription.get ();
+	return UIEditControllerDescription::instance ().get ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -199,14 +203,14 @@ void UIEditController::setupDataSource (GenericStringListDataBrowserSource* sour
 //----------------------------------------------------------------------------------------------------
 void UIEditController::setDarkTheme (bool state)
 {
-	gUIDescription.setDarkTheme (state);
+	UIEditControllerDescription::instance ().setDarkTheme (state);
 	getSettings ()->setAttribute ("UI Theme", usesDarkTheme () ? "Dark" : "Light");
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIEditController::usesDarkTheme () const
 {
-	return gUIDescription.usesDarkTheme ();
+	return UIEditControllerDescription::instance ().usesDarkTheme ();
 }
 
 //------------------------------------------------------------------------
@@ -494,7 +498,7 @@ UIEditController::UIEditController (const SharedPointer<UIDescription>& descript
 : editDescription (description)
 , selection (makeOwned<UISelection> ())
 , undoManager (makeOwned<UIUndoManager> ())
-, gridController (makeOwned<UIGridController> (this, description))
+, gridController (makeOwned<UIGridController> (shared (this), description))
 , editView (nullptr)
 , templateController (nullptr)
 , dirty (false)
@@ -504,8 +508,8 @@ UIEditController::UIEditController (const SharedPointer<UIDescription>& descript
 	editorDesc = getEditorDescription ();
 	undoManager->registerListener (this);
 	editDescription->registerListener (this);
-	menuController = makeOwned<UIEditMenuController> (this, selection, undoManager, editDescription,
-													  weakFromThis ());
+	menuController = makeOwned<UIEditMenuController> (shared (this), selection, undoManager,
+													  editDescription, weakFromThis ());
 	onTemplatesChanged ();
 	if (auto theme = getSettings ()->getAttributeValue ("UI Theme"))
 	{
@@ -529,7 +533,7 @@ UIEditController::~UIEditController ()
 	editorDesc = nullptr;
 	templateController = nullptr;
 	undoManager->clear ();
-	gUIDescription.tryFree ();
+	UIEditControllerDescription::instance ().tryFree ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -546,7 +550,7 @@ CView* UIEditController::createEditView ()
 {
 	if (editorDesc->parse ())
 	{
-		IController* controller = this;
+		auto controller = shared (this);
 		CView* view = editorDesc->createView ("view", controller);
 		if (view)
 		{
@@ -709,8 +713,8 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			CRect scaleMenuRect (0, 0, 50, splitView->getSeparatorWidth ());
 			scaleMenuRect.offset (splitView->getWidth ()-scaleMenuRect.getWidth (), 0);
 			scaleMenuRect.inset (2, 2);
-			
-			zoomSettingController = new UIZoomSettingController (this); // not owned, shared with control
+
+			zoomSettingController = makeOwned<UIZoomSettingController> (this);
 			auto* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
 			textEdit->setAttribute (kCViewControllerAttribute, zoomSettingController);
 			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), editorDesc);
@@ -779,53 +783,53 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UIEditController::createSubController (UTF8StringPtr name, const IUIDescription* description)
+SharedPointer<IController> UIEditController::createSubController (UTF8StringPtr name,
+																  const IUIDescription* description)
 {
 	UTF8StringView subControllerName (name);
 	if (subControllerName == "TemplatesController")
 	{
-//		vstgui_assert (templateController == nullptr);
-		templateController = new UITemplateController (this, editDescription, selection,
-													   undoManager, weakFromThis ());
+		templateController = makeOwned<UITemplateController> (
+			shared (this), editDescription, selection, undoManager, weakFromThis ());
 		templateController->registerListener (this);
 		return templateController;
 	}
 	else if (subControllerName == "MenuController")
 	{
-		menuController->remember ();
 		return menuController;
 	}
 	else if (subControllerName == "ViewCreatorController")
 	{
-		return new UIViewCreatorController (this, editDescription);
+		return makeOwned<UIViewCreatorController> (shared (this), editDescription);
 	}
 	else if (subControllerName == "AttributesController")
 	{
-		return new UIAttributesController (this, selection, undoManager, editDescription);
+		return makeOwned<UIAttributesController> (shared (this), selection, undoManager,
+												  editDescription);
 	}
 	else if (subControllerName == "TagEditController")
 	{
-		return new UITagsController (this, editDescription, weakFromThis ());
+		return makeOwned<UITagsController> (shared (this), editDescription, weakFromThis ());
 	}
 	else if (subControllerName == "ColorEditController")
 	{
-		return new UIColorsController (this, editDescription, weakFromThis ());
+		return makeOwned<UIColorsController> (shared (this), editDescription, weakFromThis ());
 	}
 	else if (subControllerName == "GradientEditController")
 	{
-		return new UIGradientsController (this, editDescription, weakFromThis ());
+		return makeOwned<UIGradientsController> (shared (this), editDescription, weakFromThis ());
 	}
 	else if (subControllerName == "BitmapEditController")
 	{
-		return new UIBitmapsController (this, editDescription, weakFromThis (), undoManager);
+		return makeOwned<UIBitmapsController> (shared (this), editDescription, weakFromThis (),
+											   undoManager);
 	}
 	else if (subControllerName == "FontEditController")
 	{
-		return new UIFontsController (this, editDescription, weakFromThis ());
+		return makeOwned<UIFontsController> (shared (this), editDescription, weakFromThis ());
 	}
 	else if (subControllerName == "GridController")
 	{
-		gridController->remember ();
 		return gridController;
 	}
 	return nullptr;
@@ -1069,7 +1073,7 @@ void UIEditController::showTemplateSettings ()
 	{
 		updateTemplate (editTemplateName.c_str ());
 	}
-	auto dc = new UIDialogController (this, editView->getFrame ());
+	auto dc = new UIDialogController (shared (this), editView->getFrame ());
 	auto tsController = makeOwned<UITemplateSettingsController> (editTemplateName, editDescription,
 																 weakFromThis ());
 	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
@@ -1078,7 +1082,7 @@ void UIEditController::showTemplateSettings ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::showFocusSettings ()
 {
-	auto dc = new UIDialogController (this, editView->getFrame ());
+	auto dc = new UIDialogController (shared (this), editView->getFrame ());
 	auto fsController = makeOwned<UIFocusSettingsController> (editDescription, weakFromThis ());
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }

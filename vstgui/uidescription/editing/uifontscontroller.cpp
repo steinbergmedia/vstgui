@@ -88,7 +88,7 @@ bool UIFontsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIFontsController::UIFontsController (IController* baseController,
+UIFontsController::UIFontsController (const SharedPointer<IController>& baseController,
 									  const SharedPointer<UIDescription>& description,
 									  WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)

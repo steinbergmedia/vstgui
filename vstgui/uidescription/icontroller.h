@@ -16,14 +16,23 @@ class IUIDescription;
 /// @brief extension to IControlListener used by UIDescription
 /// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class IController : public IControlListener
+class IController : public IControlListener,
+					public virtual IReference
 {
 public:
 	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return registeredTag; }
 	virtual IControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
 	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) { return nullptr; }
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) { return view; }
-	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) { return nullptr; }
+	virtual SharedPointer<IController> createSubController (UTF8StringPtr name,
+															const IUIDescription* description)
+	{
+		return nullptr;
+	}
+};
+
+class IControllerAddOn : public virtual IReference
+{
 };
 
 //-----------------------------------------------------------------------------
@@ -32,7 +41,7 @@ public:
 //!			this interface implemented and calls the appendContextMenuItems before showing the context menu to the user
 //! @ingroup new_in_4_3
 //-----------------------------------------------------------------------------
-class IContextMenuController
+class IContextMenuController : public IControllerAddOn
 {
 public:
 	virtual ~IContextMenuController () noexcept = default;
@@ -41,7 +50,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IContextMenuController2
+class IContextMenuController2 : public IControllerAddOn
 {
 public:
 	virtual ~IContextMenuController2 () noexcept = default;
@@ -51,9 +60,9 @@ public:
 
 //-----------------------------------------------------------------------------
 /** helper method to get the controller of a view */
-inline IController* getViewController (const CView* view, bool deep = false)
+inline SharedPointer<IController> getViewController (const CView* view, bool deep = false)
 {
-	IController* controller = nullptr;
+	SharedPointer<IController> controller;
 	if (!view->getAttribute (kCViewControllerAttribute, controller) && deep)
 	{
 		if (view->getParentView () && view->getParentView () != view)
@@ -67,14 +76,14 @@ inline IController* getViewController (const CView* view, bool deep = false)
 //-----------------------------------------------------------------------------
 /** helper method to find a specific controller inside a view hierarchy */
 template<typename T>
-inline T* findViewController (const CViewContainer* view)
+inline SharedPointer<T> findViewController (const CViewContainer* view)
 {
-	if (auto ctrler = dynamic_cast<T*> (getViewController (view)))
+	if (auto ctrler = getViewController (view).cast<T> ())
 		return ctrler;
 	ViewIterator iterator (view);
 	while (*iterator)
 	{
-		if (auto ctrler = dynamic_cast<T*> (getViewController (*iterator)))
+		if (auto ctrler = getViewController ((*iterator)).cast<T> ())
 			return ctrler;
 		if (auto container = (*iterator)->asViewContainer ())
 		{

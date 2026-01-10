@@ -21,7 +21,7 @@ class UIColorChooserController : public NonAtomicReferenceCounted,
                                  public UIColorListenerAdapter
 {
 public:
-	UIColorChooserController (IController* baseController, UIColor* color);
+	UIColorChooserController (const SharedPointer<IController>& baseController, UIColor* color);
 	~UIColorChooserController () override;
 	
 protected:

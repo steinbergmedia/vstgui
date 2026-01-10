@@ -4,6 +4,7 @@
 
 #include "commands.h"
 #include "windowcontroller.h"
+#include "vstgui/uidescription/icontroller.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
 #include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/windowlistener.h"

@@ -29,8 +29,8 @@ class EnterHighScoreViewController final : public DelegationController,
 public:
 	using OnEndEditFunc = std::function<void ()>;
 
-	EnterHighScoreViewController (IValue& nameValue, IValue& okValue, IController* parent,
-	                              OnEndEditFunc&& func)
+	EnterHighScoreViewController (IValue& nameValue, IValue& okValue,
+								  const SharedPointer<IController>& parent, OnEndEditFunc&& func)
 	: DelegationController (parent)
 	, nameValue (nameValue)
 	, okValue (okValue)
@@ -155,10 +155,10 @@ WindowController::WindowController ()
 	IApplication::instance ().registerCommand (ToggleHighscoresCommand, '/');
 
 	addCreateViewControllerFunc (
-	    "MinefieldController", [this] (const auto& name, auto* parent, auto* uidesc) {
-		    if (!minefieldViewController)
-		    {
-			    auto flagsValue = modelBinding.getValue (valueFlags);
+		"MinefieldController", [this] (const auto& name, const auto& parent, auto* uidesc) {
+			if (!minefieldViewController)
+			{
+				auto flagsValue = modelBinding.getValue (valueFlags);
 			    auto timeValue = modelBinding.getValue (valueTime);
 			    minefieldViewController = owned (new MinefieldViewController (
 			        *flagsValue, *timeValue, parent,
@@ -168,31 +168,31 @@ WindowController::WindowController ()
 				    minefieldViewController->setMouseMode (valueObject->getValue () >= 0.5 ? true :
 				                                                                             false);
 			    }
-		    }
-		    minefieldViewController->remember ();
+			}
+			minefieldViewController->remember ();
 		    return minefieldViewController;
-	    });
+		});
 
 	addCreateViewControllerFunc (
-	    "NewHighScoreViewController", [this] (const auto& name, auto* parent, auto* uidesc) {
-		    if (!enterHighscoreViewController)
-		    {
-			    auto nameValue = modelBinding.getValue (valueNewHighScoreName);
+		"NewHighScoreViewController", [this] (const auto& name, const auto& parent, auto* uidesc) {
+			if (!enterHighscoreViewController)
+			{
+				auto nameValue = modelBinding.getValue (valueNewHighScoreName);
 			    auto okValue = modelBinding.getValue (valueNewHighScoreOK);
 			    enterHighscoreViewController = owned (new EnterHighScoreViewController (
 			        *nameValue, *okValue, parent, [this] () { showHighscores (); }));
-		    }
-		    enterHighscoreViewController->remember ();
+			}
+			enterHighscoreViewController->remember ();
 		    return enterHighscoreViewController;
-	    });
+		});
 
 	addCreateViewControllerFunc (
-	    "HighScoreViewController", [this] (const auto& name, auto* parent, auto* uidesc) {
-		    if (!highscoreViewController)
-			    highscoreViewController = owned (new HighScoreViewController (parent));
-		    highscoreViewController->remember ();
+		"HighScoreViewController", [this] (const auto& name, const auto& parent, auto* uidesc) {
+			if (!highscoreViewController)
+				highscoreViewController = owned (new HighScoreViewController (parent));
+			highscoreViewController->remember ();
 		    return highscoreViewController;
-	    });
+		});
 
 	modelBinding.addValue (
 	    Value::make (valueRows, 0, Value::makeRangeConverter (8, 30, 0)),

@@ -74,7 +74,8 @@ protected:
 	void valueChanged (CControl* pControl) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
+	SharedPointer<IController> createSubController (UTF8StringPtr name,
+													const IUIDescription* description) override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 

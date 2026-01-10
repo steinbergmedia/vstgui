@@ -1505,8 +1505,8 @@ TEST_CASE (UIDescriptionJSONTests, GetTemplateNameFromView)
 	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
-	Controller controller;
-	auto view = owned (desc.createView ("view", &controller));
+	auto controller = makeOwned<Controller> ();
+	auto view = owned (desc.createView ("view", controller));
 	std::string name;
 	desc.getTemplateNameFromView (view, name);
 	EXPECT (name == "view");
@@ -1545,8 +1545,8 @@ TEST_CASE (UIDescriptionJSONTests, StoreRestoreViews)
 	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
-	Controller controller;
-	auto view = owned (desc.createView ("view", &controller));
+	auto controller = makeOwned<Controller> ();
+	auto view = owned (desc.createView ("view", controller));
 	EXPECT (view);
 
 	CMemoryStream memoryStream (1024, 1024, false);
@@ -1572,8 +1572,8 @@ TEST_CASE (UIDescriptionJSONTests, StoreRestoreViewsAttached)
 	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 
-	Controller controller;
-	auto view = owned (desc.createView ("view", &controller));
+	auto controller = makeOwned<Controller> ();
+	auto view = owned (desc.createView ("view", controller));
 	EXPECT (view);
 
 	CMemoryStream memoryStream (1024, 1024, false);
@@ -1598,8 +1598,8 @@ TEST_CASE (UIDescriptionJSONTests, UpdateViewDescription)
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
 	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
-	Controller controller;
-	auto view = owned (desc.createView ("view", &controller));
+	auto controller = makeOwned<Controller> ();
+	auto view = owned (desc.createView ("view", controller));
 	EXPECT (view);
 	EXPECT (view->getTransparency () == false);
 	view->setTransparency (true);

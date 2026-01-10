@@ -35,7 +35,7 @@ CView* JavaScriptViewFactory::createView (const UIAttributes& attributes,
 		{
 			std::optional<std::string> verifiedScript;
 			if (auto scriptViewController =
-					dynamic_cast<IScriptControllerExtension*> (description.getController ()))
+					description.getController ().cast<IScriptControllerExtension> ())
 			{
 				verifiedScript = scriptViewController->verifyScript (*view, *value, *scriptContext);
 				view->registerViewListener (const_cast<JavaScriptViewFactory*> (this));

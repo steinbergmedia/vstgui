@@ -321,10 +321,11 @@ public:
 };
 
 //------------------------------------------------------------------------
-class ViewCreator : public DelegationController
+class ViewCreator : public DelegationController,
+					public NonAtomicReferenceCounted
 {
 public:
-	ViewCreator (IController* parent) : DelegationController (parent) {}
+	ViewCreator (const SharedPointer<IController>& parent) : DelegationController (parent) {}
 
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
 	{
@@ -376,8 +377,9 @@ void makeDrawDeviceTestsWindow ()
 
 	auto drawDeviceTestsCustomization = std::make_shared<DrawDeviceTestsCustomization> ();
 	drawDeviceTestsCustomization->addCreateViewControllerFunc (
-	    "ViewCreator",
-	    [] (const auto& name, auto parent, const auto uiDesc) { return new ViewCreator (parent); });
+		"ViewCreator", [] (const auto& name, auto parent, const auto uiDesc) {
+			return makeOwned<ViewCreator> (parent);
+		});
 
 	UIDesc::Config config;
 	config.uiDescFileName = "DrawDeviceTests.uidesc";

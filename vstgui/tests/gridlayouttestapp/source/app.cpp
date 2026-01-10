@@ -57,7 +57,7 @@ struct BaseController : public DelegationController,
 	using Base = BaseController<DataType>;
 	using OnUpdateFunc = std::function<void ()>;
 
-	BaseController (IController* base, DataType& data, OnUpdateFunc&& onUpdate)
+	BaseController (const SharedPointer<IController>& base, DataType& data, OnUpdateFunc&& onUpdate)
 	: DelegationController (base), data (data), onUpdate (std::move (onUpdate))
 	{
 	}
@@ -191,8 +191,8 @@ private:
 //------------------------------------------------------------------------
 struct GridAreaController : public BaseController<std::vector<GridLayoutProperties::GridArea>&>
 {
-	GridAreaController (IController* base, std::vector<GridLayoutProperties::GridArea>& areas,
-						OnUpdateFunc&& onUpdate)
+	GridAreaController (const SharedPointer<IController>& base,
+						std::vector<GridLayoutProperties::GridArea>& areas, OnUpdateFunc&& onUpdate)
 	: Base (base, areas, std::move (onUpdate))
 	{
 	}
@@ -257,8 +257,8 @@ private:
 struct AutoSizeController : public BaseController<std::vector<GridLayoutProperties::SizeSpec>&>
 {
 	using OnUpdateFunc = std::function<void ()>;
-	AutoSizeController (IController* base, std::vector<GridLayoutProperties::SizeSpec>& data,
-						OnUpdateFunc&& onUpdate)
+	AutoSizeController (const SharedPointer<IController>& base,
+						std::vector<GridLayoutProperties::SizeSpec>& data, OnUpdateFunc&& onUpdate)
 	: Base (base, data, std::move (onUpdate))
 	{
 	}
@@ -579,9 +579,10 @@ struct GridLayoutWindowController : public WindowControllerAdapter,
 };
 
 //------------------------------------------------------------------------
-struct GridLayoutPropertiesWindowController : DelegationController
+struct GridLayoutPropertiesWindowController : DelegationController,
+											  NonAtomicReferenceCounted
 {
-	GridLayoutPropertiesWindowController (IController* baseController)
+	GridLayoutPropertiesWindowController (const SharedPointer<IController>& baseController)
 	: DelegationController (baseController)
 	{
 	}
@@ -735,29 +736,33 @@ public:
 		auto customization = UIDesc::Customization::make ();
 		customization->addCreateViewControllerFunc (
 			"AutoRowsController",
-			[this] (const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc) {
-				autoRowsController =
-					new AutoSizeController (parent, autoRows, [this] () { modelUpdated (); });
+			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
+					const IUIDescription* uiDesc) {
+				autoRowsController = makeOwned<AutoSizeController> (parent, autoRows,
+																	[this] () { modelUpdated (); });
 				return autoRowsController;
 			});
 		customization->addCreateViewControllerFunc (
 			"AutoColumnsController",
-			[this] (const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc) {
-				autoColumnsController =
-					new AutoSizeController (parent, autoColumns, [this] () { modelUpdated (); });
+			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
+					const IUIDescription* uiDesc) {
+				autoColumnsController = makeOwned<AutoSizeController> (
+					parent, autoColumns, [this] () { modelUpdated (); });
 				return autoColumnsController;
 			});
 		customization->addCreateViewControllerFunc (
 			"GridAreaController",
-			[this] (const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc) {
-				gridAreaController =
-					new GridAreaController (parent, gridAreas, [this] () { modelUpdated (); });
+			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
+					const IUIDescription* uiDesc) {
+				gridAreaController = makeOwned<GridAreaController> (parent, gridAreas,
+																	[this] () { modelUpdated (); });
 				return gridAreaController;
 			});
 		customization->addCreateViewControllerFunc (
 			"GridLayoutPropertiesWindowController",
-			[this] (const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc) {
-				return new GridLayoutPropertiesWindowController (parent);
+			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
+					const IUIDescription* uiDesc) {
+				return makeOwned<GridLayoutPropertiesWindowController> (parent);
 			});
 
 		UIDesc::Config config;

@@ -24,7 +24,8 @@ class UIFontsController : public NonAtomicReferenceCounted,
                           public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIFontsController (IController* baseController, const SharedPointer<UIDescription>& description,
+	UIFontsController (const SharedPointer<IController>& baseController,
+					   const SharedPointer<UIDescription>& description,
 					   WeakPointer<IActionPerformer> actionPerformer);
 	~UIFontsController () override;
 

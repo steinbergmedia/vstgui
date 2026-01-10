@@ -84,7 +84,9 @@ protected:
 class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController, public IControlListener
 {
 public:
-	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, const IUIDescription* uiDescription, IController* uiController);
+	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch,
+									   const IUIDescription* uiDescription,
+									   const SharedPointer<IController>& uiController);
 
 	CView* createViewForIndex (int32_t index) override;
 	void switchContainerAttached () override;
@@ -99,7 +101,7 @@ protected:
 	void valueChanged (CControl* pControl) override;
 
 	const IUIDescription* uiDescription;
-	IController* uiController;
+	SharedPointer<IController> uiController;
 	int32_t switchControlTag;
 	int32_t currentIndex;
 	SharedPointer<CControl> switchControl;

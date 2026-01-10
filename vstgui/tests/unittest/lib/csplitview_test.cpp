@@ -12,7 +12,9 @@ namespace VSTGUI {
 
 namespace {
 
-class SplitViewController : public IController, public ISplitViewController
+class SplitViewController : public IController,
+							public ISplitViewController,
+							public NonAtomicReferenceCounted
 {
 public:
 	void valueChanged (CControl* pControl) override {}
@@ -276,7 +278,7 @@ TEST_CASE (CSplitViewTest, SetSeparatorWidth)
 
 TEST_CASE (CSplitViewTest, ControllerHorizontal)
 {
-	auto controller = new SplitViewController ();
+	auto controller = makeOwned<SplitViewController> ();
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto sv = owned (new CSplitView (CRect (0, 0, 100, 100)));
 	sv->setAttribute (kCViewControllerAttribute, controller);
@@ -312,7 +314,7 @@ TEST_CASE (CSplitViewTest, ControllerHorizontal)
 
 TEST_CASE (CSplitViewTest, ControllerVertical)
 {
-	auto controller = new SplitViewController ();
+	auto controller = makeOwned<SplitViewController> ();
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto sv = owned (new CSplitView (CRect (0, 0, 100, 100)));
 	sv->setAttribute (kCViewControllerAttribute, controller);

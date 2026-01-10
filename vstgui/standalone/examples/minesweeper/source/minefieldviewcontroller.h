@@ -35,8 +35,9 @@ public:
 
 	using WonCallbackFunc = std::function<void (int32_t secondsToWin)>;
 
-	MinefieldViewController (IValue& flagsValue, IValue& timeValue, IController* parent,
-	                         WonCallbackFunc&& wonCallback);
+	MinefieldViewController (IValue& flagsValue, IValue& timeValue,
+							 const SharedPointer<IController>& parent,
+							 WonCallbackFunc&& wonCallback);
 
 	void startGame (uint32_t rows, uint32_t cols, uint32_t mines);
 	void setMouseMode (bool state);

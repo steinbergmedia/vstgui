@@ -119,12 +119,13 @@ public:
 
 	const ValueList& getValues () const override { return values; }
 
-	IController* createController (const UTF8StringView& name, IController* parent,
-	                               const IUIDescription* uiDesc) override
+	SharedPointer<IController> createController (const UTF8StringView& name,
+												 const SharedPointer<IController>& parent,
+												 const IUIDescription* uiDesc) override
 	{
 		if (name == "ButtonController")
 		{
-			return new ButtonController (*this, parent);
+			return makeOwned<ButtonController> (*this, parent);
 		}
 		return nullptr;
 	}
@@ -215,9 +216,11 @@ public:
 	}
 
 private:
-	struct ButtonController : DelegationController
+	struct ButtonController : DelegationController,
+							  NonAtomicReferenceCounted
 	{
-		ButtonController (AlertBoxController& alertBoxController, IController* parent)
+		ButtonController (AlertBoxController& alertBoxController,
+						  const SharedPointer<IController>& parent)
 		: DelegationController (parent), alertBoxController (alertBoxController)
 		{
 		}

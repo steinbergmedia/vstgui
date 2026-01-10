@@ -35,9 +35,11 @@ namespace UIAttributeControllers {
 class Controller : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
-	Controller (IController* baseController, const std::string& attrName)
-	: DelegationController (baseController), attrName (attrName), differentValues (false) {}
-	
+	Controller (const SharedPointer<IController>& baseController, const std::string& attrName)
+	: DelegationController (baseController), attrName (attrName), differentValues (false)
+	{
+	}
+
 	const std::string& getAttributeName () const { return attrName; }
 	virtual void setValue (const std::string& value) = 0;
 	
@@ -45,7 +47,10 @@ public:
 	bool hasDifferentValues () const { return differentValues; }
 protected:
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
-	UIAttributesController* getAttributesController () const { return dynamic_cast<UIAttributesController*> (controller); }
+	SharedPointer<UIAttributesController> getAttributesController () const
+	{
+		return controller.cast<UIAttributesController> ();
+	}
 	void performValueChange (UTF8StringPtr value)
 	{
 		hasDifferentValues (false);
@@ -62,8 +67,11 @@ protected:
 class TextAlignmentController : public Controller
 {
 public:
-	TextAlignmentController (IController* baseController, const std::string& attrName)
-	: Controller (baseController, attrName) {}
+	TextAlignmentController (const SharedPointer<IController>& baseController,
+							 const std::string& attrName)
+	: Controller (baseController, attrName)
+	{
+	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
@@ -146,8 +154,8 @@ protected:
 class AutosizeController : public Controller
 {
 public:
-	AutosizeController (IController* baseController, const SharedPointer<UISelection>& selection,
-						const std::string& attrName)
+	AutosizeController (const SharedPointer<IController>& baseController,
+						const SharedPointer<UISelection>& selection, const std::string& attrName)
 	: Controller (baseController, attrName), selection (selection)
 	{
 	}
@@ -270,8 +278,11 @@ protected:
 class BooleanController : public Controller
 {
 public:
-	BooleanController (IController* baseController, const std::string& attrName)
-	: Controller (baseController, attrName), control (nullptr) {}
+	BooleanController (const SharedPointer<IController>& baseController,
+					   const std::string& attrName)
+	: Controller (baseController, attrName), control (nullptr)
+	{
+	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
@@ -312,8 +323,10 @@ protected:
 class TextController : public Controller, public ViewListenerAdapter, public ITextLabelListener
 {
 public:
-	TextController (IController* baseController, const std::string& attrName)
-	: Controller (baseController, attrName) {}
+	TextController (const SharedPointer<IController>& baseController, const std::string& attrName)
+	: Controller (baseController, attrName)
+	{
+	}
 
 	~TextController () override
 	{
@@ -439,7 +452,7 @@ public:
 		TextController::valueChanged (pControl);
 		if (editButton == pControl && pControl->getValue () == pControl->getMax ())
 		{
-			auto dc = new UIDialogController (this, editButton->getFrame ());
+			auto dc = new UIDialogController (shared (this), editButton->getFrame ());
 			dc->run ("scripteditor", "Script Editor", "Close", nullptr, shared (this),
 					 UIEditController::getEditorDescription (), true);
 		}
@@ -508,7 +521,7 @@ protected:
 class NumberController : public TextController
 {
 public:
-	NumberController (IController* baseController, const std::string& attrName)
+	NumberController (const SharedPointer<IController>& baseController, const std::string& attrName)
 	: TextController (baseController, attrName)
 	{
 	}
@@ -578,7 +591,7 @@ protected:
 class MenuController : public TextController, public OptionMenuListenerAdapter, public CommandMenuItemTargetAdapter
 {
 public:
-	MenuController (IController* baseController, const std::string& attrName,
+	MenuController (const SharedPointer<IController>& baseController, const std::string& attrName,
 					const SharedPointer<UIDescription>& description, bool addNoneItem = true,
 					bool sortItems = true)
 	: TextController (baseController, attrName)
@@ -676,7 +689,7 @@ protected:
 class ColorController : public MenuController
 {
 public:
-	ColorController (IController* baseController, const std::string& attrName,
+	ColorController (const SharedPointer<IController>& baseController, const std::string& attrName,
 					 const SharedPointer<UIDescription>& description)
 	: MenuController (baseController, attrName, description)
 	{
@@ -751,7 +764,8 @@ protected:
 class GradientController : public MenuController
 {
 public:
-	GradientController (IController* baseController, const std::string& attrName,
+	GradientController (const SharedPointer<IController>& baseController,
+						const std::string& attrName,
 						const SharedPointer<UIDescription>& description)
 	: MenuController (baseController, attrName, description)
 	{
@@ -834,7 +848,7 @@ protected:
 class TagController : public MenuController
 {
 public:
-	TagController (IController* baseController, const std::string& attrName,
+	TagController (const SharedPointer<IController>& baseController, const std::string& attrName,
 				   const SharedPointer<UIDescription>& description)
 	: MenuController (baseController, attrName, description, true, false)
 	{
@@ -851,7 +865,7 @@ public:
 class BitmapController : public MenuController
 {
 public:
-	BitmapController (IController* baseController, const std::string& attrName,
+	BitmapController (const SharedPointer<IController>& baseController, const std::string& attrName,
 					  const SharedPointer<UIDescription>& description)
 	: MenuController (baseController, attrName, description)
 	{
@@ -868,7 +882,7 @@ public:
 class FontController : public MenuController
 {
 public:
-	FontController (IController* baseController, const std::string& attrName,
+	FontController (const SharedPointer<IController>& baseController, const std::string& attrName,
 					const SharedPointer<UIDescription>& description)
 	: MenuController (baseController, attrName, description)
 	{
@@ -885,7 +899,7 @@ public:
 class ListController : public MenuController
 {
 public:
-	ListController (IController* baseController, const std::string& attrName,
+	ListController (const SharedPointer<IController>& baseController, const std::string& attrName,
 					const SharedPointer<UIDescription>& description,
 					const SharedPointer<UISelection>& selection)
 	: MenuController (baseController, attrName, description, false, false), selection (selection)
@@ -909,7 +923,7 @@ protected:
 } // UIAttributeControllers
 
 //----------------------------------------------------------------------------------------------------
-UIAttributesController::UIAttributesController (IController* baseController,
+UIAttributesController::UIAttributesController (const SharedPointer<IController>& baseController,
 												const SharedPointer<UISelection>& selection,
 												const SharedPointer<UIUndoManager>& undoManager,
 												const SharedPointer<UIDescription>& description)
@@ -1045,58 +1059,71 @@ IControlListener* UIAttributesController::getControlListener (UTF8StringPtr name
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UIAttributesController::createSubController (IdStringPtr _name, const IUIDescription* description)
+SharedPointer<IController> UIAttributesController::createSubController (
+	IdStringPtr _name, const IUIDescription* description)
 {
 	UTF8StringView name (_name);
 	if (currentAttributeName)
 	{
 		if (name == "TextController")
 		{
-			return new UIAttributeControllers::TextController (this, *currentAttributeName);
+			return makeOwned<UIAttributeControllers::TextController> (shared (this),
+																	  *currentAttributeName);
 		}
 		else if (name == "NumberController")
 		{
-			return new UIAttributeControllers::NumberController (this, *currentAttributeName);
+			return makeOwned<UIAttributeControllers::NumberController> (shared (this),
+																		*currentAttributeName);
 		}
 		else if (name == "BooleanController")
 		{
-			return new UIAttributeControllers::BooleanController (this, *currentAttributeName);
+			return makeOwned<UIAttributeControllers::BooleanController> (shared (this),
+																		 *currentAttributeName);
 		}
 		else if (name == "ColorController")
 		{
-			return new UIAttributeControllers::ColorController (this, *currentAttributeName, editDescription);
+			return makeOwned<UIAttributeControllers::ColorController> (
+				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "GradientController")
 		{
-			return new UIAttributeControllers::GradientController (this, *currentAttributeName, editDescription);
+			return makeOwned<UIAttributeControllers::GradientController> (
+				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "TagController")
 		{
-			return new UIAttributeControllers::TagController (this, *currentAttributeName, editDescription);
+			return makeOwned<UIAttributeControllers::TagController> (
+				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "BitmapController")
 		{
-			return new UIAttributeControllers::BitmapController (this, *currentAttributeName, editDescription);
+			return makeOwned<UIAttributeControllers::BitmapController> (
+				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "FontController")
 		{
-			return new UIAttributeControllers::FontController (this, *currentAttributeName, editDescription);
+			return makeOwned<UIAttributeControllers::FontController> (
+				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "ListController")
 		{
-			return new UIAttributeControllers::ListController (this, *currentAttributeName, editDescription, selection);
+			return makeOwned<UIAttributeControllers::ListController> (
+				shared (this), *currentAttributeName, editDescription, selection);
 		}
 		else if (name == "TextAlignmentController")
 		{
-			return new UIAttributeControllers::TextAlignmentController (this, *currentAttributeName);
+			return makeOwned<UIAttributeControllers::TextAlignmentController> (
+				shared (this), *currentAttributeName);
 		}
 		else if (name == "AutosizeController")
 		{
-			return new UIAttributeControllers::AutosizeController (this, selection, *currentAttributeName);
+			return makeOwned<UIAttributeControllers::AutosizeController> (shared (this), selection,
+																		  *currentAttributeName);
 		}
 		else if (name == "ScriptController")
 		{
-			return new UIAttributeControllers::ScriptController (this, *currentAttributeName);
+			return makeOwned<UIAttributeControllers::ScriptController> (shared (this),
+																		*currentAttributeName);
 		}
 	}
 	return controller->createSubController (name, description);
@@ -1205,21 +1232,21 @@ CView* UIAttributesController::createValueViewForAttributeType (const IViewFacto
 	switch (attrType)
 	{
 		case IViewCreator::kFontType:
-			return editorDescription->createView ("attributes.font", this);
+			return editorDescription->createView ("attributes.font", shared (this));
 		case IViewCreator::kBitmapType:
-			return editorDescription->createView ("attributes.bitmap", this);
+			return editorDescription->createView ("attributes.bitmap", shared (this));
 		case IViewCreator::kTagType:
-			return editorDescription->createView ("attributes.tag", this);
+			return editorDescription->createView ("attributes.tag", shared (this));
 		case IViewCreator::kColorType:
-			return editorDescription->createView ("attributes.color", this);
+			return editorDescription->createView ("attributes.color", shared (this));
 		case IViewCreator::kGradientType:
-			return editorDescription->createView ("attributes.gradient", this);
+			return editorDescription->createView ("attributes.gradient", shared (this));
 		case IViewCreator::kBooleanType:
-			return editorDescription->createView ("attributes.boolean", this);
+			return editorDescription->createView ("attributes.boolean", shared (this));
 		case IViewCreator::kListType:
-			return editorDescription->createView ("attributes.list", this);
+			return editorDescription->createView ("attributes.list", shared (this));
 		case IViewCreator::kScriptType:
-			return editorDescription->createView ("attributes.script", this);
+			return editorDescription->createView ("attributes.script", shared (this));
 		case IViewCreator::kFloatType:
 		case IViewCreator::kIntegerType:
 		{
@@ -1228,7 +1255,8 @@ CView* UIAttributesController::createValueViewForAttributeType (const IViewFacto
 				dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory);
 			if (viewFactoryEditing->getAttributeValueRange (view, attrName, minValue, maxValue))
 			{
-				CView* valueView = editorDescription->createView ("attributes.number", this);
+				CView* valueView =
+					editorDescription->createView ("attributes.number", shared (this));
 				if (valueView)
 				{
 					if (auto container = valueView->asViewContainer ())
@@ -1247,7 +1275,7 @@ CView* UIAttributesController::createValueViewForAttributeType (const IViewFacto
 		default:
 			break;
 	}
-	return editorDescription->createView ("attributes.text", this);
+	return editorDescription->createView ("attributes.text", shared (this));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1293,11 +1321,13 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	
 	if (attrName == "text-alignment")
 	{
-		valueView = UIEditController::getEditorDescription ()->createView ("attributes.text.alignment", this);
+		valueView = UIEditController::getEditorDescription ()->createView (
+			"attributes.text.alignment", shared (this));
 	}
 	else if (attrName == "autosize")
 	{
-		valueView = UIEditController::getEditorDescription ()->createView ("attributes.view.autosize", this);
+		valueView = UIEditController::getEditorDescription ()->createView (
+			"attributes.view.autosize", shared (this));
 	}
 	
 	if (valueView == nullptr)
@@ -1308,7 +1338,8 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	}
 	if (valueView == nullptr) // fallcack if attributes.text template not defined
 	{
-		IController* controller = new UIAttributeControllers::TextController (this, *currentAttributeName);
+		auto controller = makeOwned<UIAttributeControllers::TextController> (shared (this),
+																			 *currentAttributeName);
 		auto* textEdit = new CTextEdit (r, this, -1);
 		textEdit->setText (attrValue.c_str ());
 		textEdit->setTransparency (true);
@@ -1320,16 +1351,12 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	}
 	if (valueView)
 	{
-		IController* controller = getViewController (valueView, true);
-		if (controller)
+		if (auto controller =
+				getViewController (valueView, true).cast<UIAttributeControllers::Controller> ())
 		{
-			auto* c = dynamic_cast<UIAttributeControllers::Controller*>(controller);
-			if (c)
-			{
-				c->hasDifferentValues (hasDifferentValues);
-				c->setValue (attrValue);
-				attributeControllers.emplace_back (c);
-			}
+			controller->hasDifferentValues (hasDifferentValues);
+			controller->setValue (attrValue);
+			attributeControllers.emplace_back (controller);
 		}
 		r.setHeight (valueView->getHeight ());
 		valueView->setViewSize (r);

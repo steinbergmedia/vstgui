@@ -32,11 +32,12 @@ using namespace VSTGUI::Standalone;
 static CFileExtension pngFileExtension ("PNG File", "png", "image/png", 0, "public.png");
 
 //------------------------------------------------------------------------
-class ImageViewController : public DelegationController
+class ImageViewController : public DelegationController,
+							public NonAtomicReferenceCounted
 {
 public:
 	using Proc = std::function<void (ImageFramesView*)>;
-	ImageViewController (Proc&& proc, IController* parent)
+	ImageViewController (Proc&& proc, const SharedPointer<IController>& parent)
 	: DelegationController (parent), proc (std::move (proc))
 	{
 	}
@@ -77,11 +78,12 @@ private:
 };
 
 //------------------------------------------------------------------------
-class MovieBitmapController : public DelegationController
+class MovieBitmapController : public DelegationController,
+							  public NonAtomicReferenceCounted
 {
 public:
 	using Proc = std::function<void (CMovieBitmap*)>;
-	MovieBitmapController (Proc&& proc, IController* parent)
+	MovieBitmapController (Proc&& proc, const SharedPointer<IController>& parent)
 	: DelegationController (parent), proc (std::move (proc))
 	{
 	}
@@ -101,10 +103,12 @@ private:
 };
 
 //------------------------------------------------------------------------
-class SplitViewController : public DelegationController, public ISplitViewController
+class SplitViewController : public DelegationController,
+							public ISplitViewController,
+							public NonAtomicReferenceCounted
 {
 public:
-	SplitViewController (IController* parent, const IUIDescription* desc)
+	SplitViewController (const SharedPointer<IController>& parent, const IUIDescription* desc)
 	: DelegationController (parent), desc (desc)
 	{
 	}
@@ -138,7 +142,7 @@ public:
 	{
 		if (!gradientAdded)
 		{
-			if (auto view = desc->createView ("SplitViewSeperatorView", this))
+			if (auto view = desc->createView ("SplitViewSeperatorView", shared (this)))
 			{
 				if (auto container = view->asViewContainer ())
 				{
@@ -263,23 +267,23 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 }
 
 //------------------------------------------------------------------------
-IController* DocumentWindowController::createController (const UTF8StringView& name,
-                                                         IController* parent,
-                                                         const IUIDescription* uiDesc)
+SharedPointer<IController> DocumentWindowController::createController (
+	const UTF8StringView& name, const SharedPointer<IController>& parent,
+	const IUIDescription* uiDesc)
 {
 	if (name == "ImageViewController")
-		return new ImageViewController (
-		    [&] (ImageFramesView* view) {
-			    imageView = view;
-			    imageView->setImageList (&imageList);
-			    imageView->setDocContext (docContext);
-		    },
-		    parent);
+		return makeOwned<ImageViewController> (
+			[&] (ImageFramesView* view) {
+				imageView = view;
+				imageView->setImageList (&imageList);
+				imageView->setDocContext (docContext);
+			},
+			parent);
 	if (name == "MovieBitmapController")
-		return new MovieBitmapController ([&] (CMovieBitmap* view) { movieBitmapView = view; },
-		                                  parent);
+		return makeOwned<MovieBitmapController> (
+			[&] (CMovieBitmap* view) { movieBitmapView = view; }, parent);
 	if (name == "SplitViewController")
-		return new SplitViewController (parent, uiDesc);
+		return makeOwned<SplitViewController> (parent, uiDesc);
 	return nullptr;
 }
 

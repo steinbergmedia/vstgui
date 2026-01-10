@@ -68,16 +68,17 @@ public:
 
 	SharedPointer<UIAttributes> getViewAttributes (UTF8StringPtr name) const;
 
-	void setController (IController* controller) const;
+	void setController (const SharedPointer<IController>& controller) const;
 
-	CView* createView (UTF8StringPtr name, IController* controller) const override;
+	CView* createView (UTF8StringPtr name,
+					   const SharedPointer<IController>& controller) const override;
 	SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const override;
 	SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const override;
 	bool getColor (UTF8StringPtr name, CColor& color) const override;
 	SharedPointer<CGradient> getGradient (UTF8StringPtr name) const override;
 	int32_t getTagForName (UTF8StringPtr name) const override;
 	IControlListener* getControlListener (UTF8StringPtr name) const override;
-	IController* getController () const override;
+	SharedPointer<IController> getController () const override;
 	const IViewFactory& getViewFactory () const override;
 
 	UTF8StringPtr lookupColorName (const CColor& color) const override;

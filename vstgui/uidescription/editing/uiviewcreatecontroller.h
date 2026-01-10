@@ -21,11 +21,12 @@ class UIViewCreatorDataSource;
 class UIViewCreatorController : public NonAtomicReferenceCounted, public DelegationController, public IContextMenuController
 {
 public:
-	UIViewCreatorController (IController* baseController,
+	UIViewCreatorController (const SharedPointer<IController>& baseController,
 							 const SharedPointer<UIDescription>& description);
 	~UIViewCreatorController () override;
-	
-	IController* getBaseController () const { return controller; }
+
+	SharedPointer<IController> getBaseController () const { return controller; }
+
 protected:
 	void valueChanged (CControl* pControl) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;

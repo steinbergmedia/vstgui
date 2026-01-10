@@ -5,6 +5,7 @@
 #include "../../../uidescription/uidescriptionaddonregistry.h"
 #include "../../../uidescription/uidescription.h"
 #include "../../../uidescription/uicontentprovider.h"
+#include "../../../uidescription/icontroller.h"
 #include "../../../lib/cview.h"
 #include "../unittests.h"
 

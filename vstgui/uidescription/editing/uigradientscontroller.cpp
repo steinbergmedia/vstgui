@@ -401,7 +401,8 @@ public:
 	void valueChanged (CControl* pControl) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
+	SharedPointer<IController> createSubController (UTF8StringPtr name,
+													const IUIDescription* description) override;
 	void onDialogButton1Clicked (UIDialogController&) override;
 	void onDialogButton2Clicked (UIDialogController&) override;
 	void onDialogShow (UIDialogController&) override;
@@ -500,11 +501,12 @@ void UIGradientEditorController::onDialogButton2Clicked (UIDialogController&) {}
 void UIGradientEditorController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-IController* UIGradientEditorController::createSubController (UTF8StringPtr name, const IUIDescription* description)
+SharedPointer<IController> UIGradientEditorController::createSubController (
+	UTF8StringPtr name, const IUIDescription* description)
 {
 	if (UTF8StringView (name) == "ColorChooserController")
 	{
-		return new UIColorChooserController (this, editColor);
+		return makeOwned<UIColorChooserController> (shared (this), editColor);
 	}
 	return nullptr;
 }
@@ -797,7 +799,7 @@ bool UIGradientsDataSource::performNameChange (UTF8StringPtr oldName, UTF8String
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIGradientsController::UIGradientsController (IController* baseController,
+UIGradientsController::UIGradientsController (const SharedPointer<IController>& baseController,
 											  const SharedPointer<UIDescription>& description,
 											  WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
@@ -899,7 +901,7 @@ void UIGradientsController::dbRowDoubleClick (int32_t row, GenericStringListData
 //----------------------------------------------------------------------------------------------------
 void UIGradientsController::showEditDialog ()
 {
-	UIDialogController* dc = new UIDialogController (this, editButton->getFrame ());
+	UIDialogController* dc = new UIDialogController (shared (this), editButton->getFrame ());
 	auto fsController = makeOwned<UIGradientEditorController> (
 	    dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription,
 	    actionPerformer);

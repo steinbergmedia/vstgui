@@ -10,7 +10,8 @@ namespace VSTGUI {
 
 namespace {
 
-class Controller : public IController
+class Controller : public IController,
+				   public NonAtomicReferenceCounted
 {
 public:
 	mutable bool funcCalled {false};
@@ -56,104 +57,110 @@ public:
 		return view;
 	}
 
-	IController* createSubController (UTF8StringPtr name,
-	                                  const IUIDescription* description) override
+	SharedPointer<IController> createSubController (UTF8StringPtr name,
+													const IUIDescription* description) override
 	{
 		funcCalled = true;
 		return nullptr;
 	}
 };
 
+struct DelegationControllerAdapter : DelegationController,
+									 NonAtomicReferenceCounted
+{
+	using DelegationController::DelegationController;
+};
+
 } // anonymous
 
 TEST_CASE (DelegationControllerTest, ValueChanged)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.valueChanged (nullptr);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, ControlModifierClicked)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.controlModifierClicked (nullptr, kLButton);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, ControlBeginEdit)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.controlBeginEdit (nullptr);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, ControlEndEdit)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.controlEndEdit (nullptr);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, ControlTagWillChange)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.controlTagWillChange (nullptr);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, ControlTagDidChange)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.controlTagDidChange (nullptr);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, GetTagForName)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.getTagForName ("", 0);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, GetControlListener)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.getControlListener ("");
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, CreateView)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	UIAttributes a;
 	dc.createView (a, nullptr);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, VerifyView)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	UIAttributes a;
 	dc.verifyView (nullptr, a, nullptr);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, CreateSubController)
 {
-	Controller myController;
-	DelegationController dc (&myController);
+	auto myController = makeOwned<Controller> ();
+	DelegationControllerAdapter dc (myController);
 	dc.createSubController ("", nullptr);
-	EXPECT (myController.funcCalled);
+	EXPECT (myController->funcCalled);
 }
 
 } // VSTGUI

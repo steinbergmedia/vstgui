@@ -5,6 +5,7 @@
 #include "../../../lib/controls/cbuttons.h"
 #include "../../../lib/cstring.h"
 #include "../../../uidescription/uiviewswitchcontainer.h"
+#include "../../../uidescription/icontroller.h"
 #include "../unittests.h"
 #include "uidescriptionadapter.h"
 
@@ -29,7 +30,8 @@ struct View3 : public CView
 struct TestUIDescription : public UIDescriptionAdapter,
 						   public NonAtomicReferenceCounted
 {
-	CView* createView (UTF8StringPtr name, IController* controller) const override
+	CView* createView (UTF8StringPtr name,
+					   const SharedPointer<IController>& controller) const override
 	{
 		if (UTF8StringView (name) == "v1")
 			return new View1 ();

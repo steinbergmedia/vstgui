@@ -33,7 +33,7 @@ class UIAttributesController : public NonAtomicReferenceCounted,
 							   public ViewListenerAdapter
 {
 public:
-	UIAttributesController (IController* baseController,
+	UIAttributesController (const SharedPointer<IController>& baseController,
 							const SharedPointer<UISelection>& selection,
 							const SharedPointer<UIUndoManager>& undoManager,
 							const SharedPointer<UIDescription>& description);
@@ -55,7 +55,8 @@ protected:
 
 	void valueChanged (CControl* pControl) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	IController* createSubController (IdStringPtr name, const IUIDescription* description) override;
+	SharedPointer<IController> createSubController (IdStringPtr name,
+													const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 
 	void onUIDescTagChanged (UIDescription& desc) override;

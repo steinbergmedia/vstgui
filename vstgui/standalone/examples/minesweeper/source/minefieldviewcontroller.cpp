@@ -18,8 +18,8 @@ namespace Standalone {
 namespace Minesweeper {
 
 MinefieldViewController::MinefieldViewController (IValue& flagsValue, IValue& timeValue,
-                                                  IController* parent,
-                                                  WonCallbackFunc&& wonCallback)
+												  const SharedPointer<IController>& parent,
+												  WonCallbackFunc&& wonCallback)
 : DelegationController (parent)
 , flagsValue (flagsValue)
 , timeValue (timeValue)

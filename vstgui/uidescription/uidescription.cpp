@@ -23,6 +23,7 @@
 #include "../lib/cbitmap.h"
 #include "../lib/cbitmapfilter.h"
 #include "../lib/dispatchlist.h"
+#include "../lib/finally.h"
 #include "../lib/platform/std_unorderedmap.h"
 #include "../lib/platform/iplatformbitmap.h"
 #include "../lib/platform/iplatformfont.h"
@@ -43,33 +44,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-/// @cond ignore
-//-----------------------------------------------------------------------------
-template <class T> class ScopePointer
-{
-public:
-	ScopePointer (T** pointer, T* obj) : pointer (pointer), oldObject (nullptr)
-	{
-		if (pointer)
-		{
-			oldObject = *pointer;
-			*pointer = obj;
-		}
-	}
-	~ScopePointer () noexcept
-	{
-		if (pointer)
-			*pointer = oldObject;
-	}
-protected:
-	T** pointer;
-	T* oldObject;
-};
-
-
-/// @endcond
-
-//-----------------------------------------------------------------------------
 static SharedPointer<IViewFactory> getGenericViewFactory () { return makeOwned<UIViewFactory> (); }
 
 IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
@@ -81,8 +55,8 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	
 	CResourceDescription uidescFile;
 	std::string filePath;
-	
-	mutable IController* controller {nullptr};
+
+	mutable SharedPointer<IController> controller;
 	SharedPointer<IViewFactory> viewFactory;
 	SharedPointer<IContentProvider> contentProvider;
 	SharedPointer<IBitmapCreator> bitmapCreator;
@@ -92,7 +66,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	SharedPointer<UINode> nodes;
 	SharedPointer<UIDescription> sharedResources;
 
-	mutable std::deque<IController*> subControllerStack;
+	mutable std::deque<SharedPointer<IController>> subControllerStack;
 
 	Optional<SharedPointer<UINode>> variableBaseNode;
 
@@ -315,16 +289,13 @@ void UIDescription::postParsing ()
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setController (IController* inController) const
+void UIDescription::setController (const SharedPointer<IController>& inController) const
 {
 	impl->controller = inController;
 }
 
 //-----------------------------------------------------------------------------
-IController* UIDescription::getController () const
-{
-	return impl->controller;
-}
+SharedPointer<IController> UIDescription::getController () const { return impl->controller; }
 
 //-----------------------------------------------------------------------------
 const IViewFactory& UIDescription::getViewFactory () const
@@ -663,7 +634,7 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 		return view;
 	}
 
-	IController* subController = nullptr;
+	SharedPointer<IController> subController;
 	CView* result = nullptr;
 	if (impl->controller)
 	{
@@ -744,14 +715,6 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 			result->setAttribute (kCViewControllerAttribute, subController);
 		setController (impl->subControllerStack.back ());
 		impl->subControllerStack.pop_back ();
-		if (result == nullptr)
-		{
-			auto obj = dynamic_cast<IReference*> (subController);
-			if (obj)
-				obj->forget ();
-			else
-				delete subController;
-		}
 	}
 	return result;
 }
@@ -760,14 +723,18 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 CViewAttributeID UIDescription::kTemplateNameAttributeID = 'uitl';
 
 //-----------------------------------------------------------------------------
-CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) const
+CView* UIDescription::createView (UTF8StringPtr name,
+								  const SharedPointer<IController>& _controller) const
 {
 	if (impl->nodes == nullptr)
 		return {};
 
 	IUIDescriptionAddOn::CreateTemplateViewFunc f =
-		[this] (UTF8StringPtr name, IController* _controller) mutable -> CView* {
-		ScopePointer<IController> sp (&impl->controller, _controller);
+		[this] (UTF8StringPtr name,
+				const SharedPointer<IController>& _controller) mutable -> CView* {
+		auto oldController = impl->controller;
+		auto cleanup = finally ([&] () { impl->controller = oldController; });
+		impl->controller = _controller;
 		for (const auto& itNode : impl->nodes->getChildren ())
 		{
 			if (itNode->getName () == Detail::MainNodeNames::kTemplate)

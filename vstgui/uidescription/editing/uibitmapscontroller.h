@@ -24,7 +24,7 @@ class UIBitmapsController : public NonAtomicReferenceCounted,
                             public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIBitmapsController (IController* baseController,
+	UIBitmapsController (const SharedPointer<IController>& baseController,
 						 const SharedPointer<UIDescription>& description,
 						 WeakPointer<IActionPerformer> actionPerformer,
 						 const SharedPointer<UIUndoManager>& undoManager);

@@ -7,6 +7,7 @@
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
 #include "viewlayouter/baseviewlayouter.h"
+#include "../uidescription/icontroller.h"
 
 namespace VSTGUI {
 class CSplitViewSeparatorView;
@@ -95,7 +96,7 @@ protected:
 	Extension to IController 
 */
 //-----------------------------------------------------------------------------
-class ISplitViewController
+class ISplitViewController : public IControllerAddOn
 {
 public:
 	virtual ~ISplitViewController () noexcept = default;

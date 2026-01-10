@@ -22,7 +22,7 @@ class HighScoreViewController final : public DelegationController,
                                       public NonAtomicReferenceCounted
 {
 public:
-	HighScoreViewController (IController* parent);
+	HighScoreViewController (const SharedPointer<IController>& parent);
 
 	void setHighScoreList (const std::shared_ptr<HighScoreList>& list);
 

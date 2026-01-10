@@ -243,7 +243,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UITemplateController::UITemplateController (IController* baseController,
+UITemplateController::UITemplateController (const SharedPointer<IController>& baseController,
 											const SharedPointer<UIDescription>& description,
 											const SharedPointer<UISelection>& selection,
 											const SharedPointer<UIUndoManager>& undoManager,
@@ -491,7 +491,8 @@ CView* UITemplateController::verifyView (CView* view, const UIAttributes& attrib
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UITemplateController::createSubController (UTF8StringPtr name, const IUIDescription* description)
+SharedPointer<IController> UITemplateController::createSubController (
+	UTF8StringPtr name, const IUIDescription* description)
 {
 	return DelegationController::createSubController (name, description);
 }

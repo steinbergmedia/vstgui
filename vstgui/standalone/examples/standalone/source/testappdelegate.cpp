@@ -101,10 +101,14 @@ static Command DecreaseTextSize {CommandGroup::Edit, "Decrease Text Size"};
 
 //------------------------------------------------------------------------
 class DisabledControlsController : public DelegationController,
-								   public ViewListenerAdapter
+								   public ViewListenerAdapter,
+								   public NonAtomicReferenceCounted
 {
 public:
-	DisabledControlsController (IController* parent) : DelegationController (parent) {}
+	DisabledControlsController (const SharedPointer<IController>& parent)
+	: DelegationController (parent)
+	{
+	}
 	~DisabledControlsController ()
 	{
 		for (auto control : controls)
@@ -164,14 +168,15 @@ public:
 };
 
 //------------------------------------------------------------------------
-class WeekdaysController : public DelegationController
+class WeekdaysController : public DelegationController,
+						   public NonAtomicReferenceCounted
 #ifdef VSTGUI_UISCRIPTING
 ,
 						   public ScriptControllerExtensionAdapter
 #endif
 {
 public:
-	WeekdaysController (IController* parent) : DelegationController (parent) {}
+	WeekdaysController (const SharedPointer<IController>& parent) : DelegationController (parent) {}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
 					   const IUIDescription* description) override
@@ -295,10 +300,12 @@ private:
 
 //------------------------------------------------------------------------
 class TextEditorViewController : public DelegationController,
-								 public ICommandHandler
+								 public ICommandHandler,
+								 public NonAtomicReferenceCounted
 {
 public:
-	TextEditorViewController (IController* parent, AppTextEditorController& textEditorController)
+	TextEditorViewController (const SharedPointer<IController>& parent,
+							  AppTextEditorController& textEditorController)
 	: DelegationController (parent), textEditorController (textEditorController)
 	{
 		IApplication::instance ().registerCommand (Commands::FindNext, 'g');
@@ -374,10 +381,13 @@ public:
 };
 
 //------------------------------------------------------------------------
-class DatePickerController : public DelegationController
+class DatePickerController : public DelegationController,
+							 public NonAtomicReferenceCounted
 {
 public:
-	DatePickerController (IController* parent) : DelegationController (parent) {}
+	DatePickerController (const SharedPointer<IController>& parent) : DelegationController (parent)
+	{
+	}
 
 #if MAC || WINDOWS
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
@@ -432,7 +442,7 @@ struct DBController : DelegationController,
 {
 	static constexpr size_t NumColumns = 20u;
 
-	DBController (IController* base) : DelegationController (base)
+	DBController (const SharedPointer<IController>& base) : DelegationController (base)
 	{
 		for (auto i = 0u; i < 200u; ++i)
 		{
@@ -625,29 +635,29 @@ bool Delegate::handleCommand (const Command& command)
 			auto customization = UIDesc::Customization::make ();
 			customization->addCreateViewControllerFunc (
 				"DisabledControlsController",
-				[] (const UTF8StringView&, IController* parent, const IUIDescription*) {
-					return new DisabledControlsController (parent);
+				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
+					const IUIDescription*) {
+					return makeOwned<DisabledControlsController> (parent);
 				});
 			customization->addCreateViewControllerFunc (
 				"WeekdaysController",
-				[] (const UTF8StringView&, IController* parent, const IUIDescription*) {
-					return new WeekdaysController (parent);
-				});
+				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
+					const IUIDescription*) { return makeOwned<WeekdaysController> (parent); });
 			customization->addCreateViewControllerFunc (
 				"DatePickerController",
-				[] (const UTF8StringView&, IController* parent, const IUIDescription*) {
-					return new DatePickerController (parent);
-				});
+				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
+					const IUIDescription*) { return makeOwned<DatePickerController> (parent); });
 			customization->addCreateViewControllerFunc (
 				"TextEditorController",
-				[this] (const UTF8StringView&, IController* parent, const IUIDescription*) {
-					return new TextEditorViewController (parent, *textEditorController.get ());
+				[this] (const UTF8StringView&, const SharedPointer<IController>& parent,
+						const IUIDescription*) {
+					return makeOwned<TextEditorViewController> (parent,
+																*textEditorController.get ());
 				});
 			customization->addCreateViewControllerFunc (
 				"DBController",
-				[this] (const UTF8StringView&, IController* parent, const IUIDescription*) {
-					return new DBController (parent);
-				});
+				[this] (const UTF8StringView&, const SharedPointer<IController>& parent,
+						const IUIDescription*) { return makeOwned<DBController> (parent); });
 			config.customization = customization;
 		}
 		if (auto window = UIDesc::makeWindow (config))

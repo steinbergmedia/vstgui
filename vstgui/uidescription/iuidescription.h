@@ -23,7 +23,8 @@ class IUIDescription : public virtual IReference,
 public:
 	virtual ~IUIDescription () noexcept = default;
 
-	virtual CView* createView (UTF8StringPtr name, IController* controller) const = 0;
+	virtual CView* createView (UTF8StringPtr name,
+							   const SharedPointer<IController>& controller) const = 0;
 
 	virtual SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const = 0;
 	virtual SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const = 0;
@@ -31,7 +32,7 @@ public:
 	virtual SharedPointer<CGradient> getGradient (UTF8StringPtr name) const = 0;
 	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
 	virtual IControlListener* getControlListener (UTF8StringPtr name) const = 0;
-	virtual IController* getController () const = 0;
+	virtual SharedPointer<IController> getController () const = 0;
 
 	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
 	virtual UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& font) const = 0;

@@ -12,7 +12,10 @@ namespace VSTGUI {
 class DelegationController : public IController
 {
 public:
-	explicit DelegationController (IController* controller) : controller (controller) {}
+	explicit DelegationController (const SharedPointer<IController>& controller)
+	: controller (controller)
+	{
+	}
 
 	// IControlListener
 	void valueChanged (CControl* pControl) override { controller->valueChanged (pControl); }
@@ -26,9 +29,14 @@ public:
 	IControlListener* getControlListener (UTF8StringPtr name) override { return controller->getControlListener (name); }
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override { return controller->createView (attributes, description); }
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override { return controller->verifyView (view, attributes, description); }
-	IController* createSubController (IdStringPtr name, const IUIDescription* description) override { return controller->createSubController (name, description); }
+	SharedPointer<IController> createSubController (IdStringPtr name,
+													const IUIDescription* description) override
+	{
+		return controller->createSubController (name, description);
+	}
+
 protected:
-	IController* controller;
+	SharedPointer<IController> controller;
 };
 
 } // VSTGUI

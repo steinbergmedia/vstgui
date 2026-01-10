@@ -21,7 +21,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIEditMenuController::UIEditMenuController (IController* baseController,
+UIEditMenuController::UIEditMenuController (const SharedPointer<IController>& baseController,
 											const SharedPointer<UISelection>& selection,
 											const SharedPointer<UIUndoManager>& undoManager,
 											const SharedPointer<UIDescription>& description,
@@ -405,7 +405,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			return true;
 		}
 	}
-	if (auto obj = dynamic_cast<ICommandMenuItemTarget*> (controller))
+	if (auto obj = controller.cast<ICommandMenuItemTarget> ())
 		return obj->validateCommandMenuItem (&item);
 	return false;
 }
@@ -583,7 +583,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		}
 		return true;
 	}
-	if (auto obj = dynamic_cast<ICommandMenuItemTarget*> (controller))
+	if (auto obj = controller.cast<ICommandMenuItemTarget> ())
 	{
 		CCommandMenuItem item (CCommandMenuItem::Desc{"", 0, nullptr, category, name});
 		if (obj->onCommandMenuItemSelected (&item))

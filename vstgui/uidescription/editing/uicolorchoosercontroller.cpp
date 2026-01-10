@@ -66,9 +66,9 @@ private:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIColorChooserController::UIColorChooserController (IController* baseController, UIColor* color)
-: DelegationController (baseController)
-, color (color)
+UIColorChooserController::UIColorChooserController (
+	const SharedPointer<IController>& baseController, UIColor* color)
+: DelegationController (baseController), color (color)
 {
 	color->registerListener (this);
 }

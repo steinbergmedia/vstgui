@@ -202,7 +202,8 @@ struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 };
 
 //------------------------------------------------------------------------
-struct MetalController : DelegationController
+struct MetalController : DelegationController,
+						 NonAtomicReferenceCounted
 {
 	using DelegationController::DelegationController;
 
@@ -227,8 +228,9 @@ struct MetalController : DelegationController
 WindowPtr makeNewMetalExampleWindow ()
 {
 	auto customization = UIDesc::Customization::make ();
-	customization->addCreateViewControllerFunc (
-		"MetalController", [] (auto, auto parent, auto) { return new MetalController (parent); });
+	customization->addCreateViewControllerFunc ("MetalController", [] (auto, auto parent, auto) {
+		return makeOwned<MetalController> (parent);
+	});
 
 	UIDesc::Config config;
 	config.uiDescFileName = "metalwindow.uidesc";

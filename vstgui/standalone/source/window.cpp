@@ -358,7 +358,7 @@ bool Window::canHandleCommand (const Command& command)
 	{
 		if (auto viewController = getViewController (focusView, false))
 		{
-			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController))
+			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController.get ()))
 			{
 				if (commandHandler->canHandleCommand (command))
 					return true;
@@ -385,7 +385,7 @@ bool Window::handleCommand (const Command& command)
 	{
 		if (auto viewController = getViewController (focusView, false))
 		{
-			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController))
+			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController.get ()))
 			{
 				if (commandHandler->handleCommand (command))
 					return true;
@@ -441,8 +441,8 @@ void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
 		for (const auto& view : views)
 		{
 			auto viewController = getViewController (view);
-			auto contextMenuController = dynamic_cast<IContextMenuController*> (viewController);
-			auto contextMenuController2 = dynamic_cast<IContextMenuController2*> (viewController);
+			auto contextMenuController = viewController.cast<IContextMenuController> ();
+			auto contextMenuController2 = viewController.cast<IContextMenuController2> ();
 			if (contextMenuController == nullptr && contextMenuController2 == nullptr)
 				continue;
 			if (contextMenu->getNbEntries () != 0)

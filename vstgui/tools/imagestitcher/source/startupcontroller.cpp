@@ -10,6 +10,7 @@
 #include "vstgui/standalone/include/iappdelegate.h"
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/iasync.h"
+#include "vstgui/uidescription/icontroller.h"
 #include <cassert>
 #include <memory>
 

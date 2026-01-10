@@ -59,10 +59,13 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* IUIDescription::getBitmap
 	* IUIDescription::getGradient
 	* IUIDescription::getFont
+	* IUIDescription::getController
+	* IController::createSubController
 	* BitmapFilter::FilterBase::getInputBitmap
 	* Standalone::ISharedUIResources::getBitmap
 	* Standalone::ISharedUIResources::getGradient
 	* Standalone::ISharedUIResources::getFont
+	* Standalone::ICustomization::createController
 
 - The global fonts (kSystemFont, kNormalFont, etc) are now ```SharedPointer<CFontDesc>``` instead of naked pointers.
 - The following methods now take ```SharedPointer<CFontDesc>``` instead of a naked pointer:
@@ -98,6 +101,13 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 
 - The following methods now take a ```SharedPointer<CView>``` instead of a naked pointer:
 	* CViewContainer::setInitialFocusView
+
+- The following methods now take a ```SharedPointer<IController>``` instead of a naked pointer:
+	* IUIDescription::createView
+	* UIDescription::setController
+	* DelegationController::DelegationController
+
+THe IController interface now inherits virtually from IReference
 
 The IScriptControllerExtension interface was changed to use references instead of pointers to indicate that these objects are always valid when these methods are called.
 

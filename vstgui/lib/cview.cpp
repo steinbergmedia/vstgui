@@ -272,17 +272,7 @@ void CView::beforeDelete ()
 	setDropTarget (nullptr);
 	setBackground (nullptr);
 	setDisabledBackground (nullptr);
-	
-	IController* controller = nullptr;
-	if (getAttribute (kCViewControllerAttribute, controller) == true)
-	{
-		auto obj = dynamic_cast<IReference*> (controller);
-		if (obj)
-			obj->forget ();
-		else
-			delete controller;
-	}
-	
+
 	pImpl->attributes.clear ();
 	
 #if VSTGUI_CHECK_VIEW_RELEASING

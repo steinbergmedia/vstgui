@@ -43,7 +43,7 @@ class UITemplateController
   public ListenerProvider<UITemplateController, IUITemplateControllerListener>
 {
 public:
-	UITemplateController (IController* baseController,
+	UITemplateController (const SharedPointer<IController>& baseController,
 						  const SharedPointer<UIDescription>& description,
 						  const SharedPointer<UISelection>& selection,
 						  const SharedPointer<UIUndoManager>& undoManager,
@@ -62,7 +62,8 @@ protected:
 	void valueChanged (CControl* pControl) override {}
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
+	SharedPointer<IController> createSubController (UTF8StringPtr name,
+													const IUIDescription* description) override;
 
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 

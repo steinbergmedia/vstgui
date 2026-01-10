@@ -175,7 +175,7 @@ void UITagsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITagsController::UITagsController (IController* baseController,
+UITagsController::UITagsController (const SharedPointer<IController>& baseController,
 									const SharedPointer<UIDescription>& description,
 									WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)

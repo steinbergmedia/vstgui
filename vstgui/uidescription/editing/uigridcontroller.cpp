@@ -18,7 +18,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIGridController::UIGridController (IController* baseController,
+UIGridController::UIGridController (const SharedPointer<IController>& baseController,
 									const SharedPointer<UIDescription>& description)
 : DelegationController (baseController), editDescription (description)
 {
@@ -250,7 +250,7 @@ void UIGridController::setupMenu ()
 	gridMenu->addEntry (item);
 	item->setActions ([this] (CCommandMenuItem*) {
 		syncMenuValueAndSize ();
-		auto dc = new UIDialogController (this, gridMenu->getFrame ());
+		auto dc = new UIDialogController (shared (this), gridMenu->getFrame ());
 		dc->run ("grid.dialog", "Grid Setup", "Close", nullptr, shared (this),
 				 UIEditController::getEditorDescription ());
 	});

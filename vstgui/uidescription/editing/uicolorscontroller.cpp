@@ -417,7 +417,7 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIColorsController::UIColorsController (IController* baseController,
+UIColorsController::UIColorsController (const SharedPointer<IController>& baseController,
 										const SharedPointer<UIDescription>& description,
 										WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
@@ -491,10 +491,11 @@ void UIColorsController::valueChanged (CControl* pControl)
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UIColorsController::createSubController (IdStringPtr name, const IUIDescription* description)
+SharedPointer<IController>
+	UIColorsController::createSubController (IdStringPtr name, const IUIDescription* description)
 {
 	if (std::strcmp (name, "ColorChooserController") == 0)
-		return new UIColorChooserController (this, color);
+		return makeOwned<UIColorChooserController> (shared (this), color);
 	return controller->createSubController (name, description);
 }
 

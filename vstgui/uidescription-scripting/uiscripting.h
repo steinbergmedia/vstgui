@@ -85,7 +85,7 @@ struct IScriptContext
  *
  *	@ingroup new_in_4_15
  */
-struct IScriptControllerExtension
+struct IScriptControllerExtension : public IControllerAddOn
 {
 	/** A property value is either an integer, double, string or undefined (nullptr_t) */
 	using PropertyValue = std::variant<std::nullptr_t, int64_t, double, std::string>;

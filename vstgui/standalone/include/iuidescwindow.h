@@ -51,8 +51,9 @@ public:
 	 *	@param parent the parent controller
 	 *	@param uiDesc the UIDescription instance
 	 */
-	virtual IController* createController (const UTF8StringView& name, IController* parent,
-	                                       const IUIDescription* uiDesc) = 0;
+	virtual SharedPointer<IController> createController (const UTF8StringView& name,
+														 const SharedPointer<IController>& parent,
+														 const IUIDescription* uiDesc) = 0;
 	/** Notification that the UIDescription was successfully parsed
 	 *
 	 *	This can be used to get some resources from the UIDescription instance.

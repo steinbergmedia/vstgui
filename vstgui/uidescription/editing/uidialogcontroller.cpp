@@ -23,9 +23,9 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIDialogController::UIDialogController (IController* baseController, CFrame* frame)
-: DelegationController (baseController)
-, frame (frame)
+UIDialogController::UIDialogController (const SharedPointer<IController>& baseController,
+										CFrame* frame)
+: DelegationController (baseController), frame (frame)
 {
 }
 
@@ -44,7 +44,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	dialogController = _dialogController;
 	dialogDescription = _description;
 	resizable = _resizable;
-	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", this);
+	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", shared (this));
 	if (view)
 	{
 		auto* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
@@ -218,7 +218,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 	{
 		if (*name == "view" && view)
 		{
-			auto controller = dynamic_cast<IController*> (dialogController.get ());
+			auto controller = dialogController.cast<IController> ();
 			if (auto subView = dialogDescription->createView (templateName.c_str (), controller))
 			{
 				subView->setAttribute (kCViewControllerAttribute, controller);

@@ -279,7 +279,7 @@ protected:
 using ValueWrapperPtr = std::unique_ptr<ValueWrapper>;
 
 //------------------------------------------------------------------------
-struct WindowController::Impl : public IController, public ICommandHandler
+struct WindowController::Impl : public ICommandHandler
 {
 	using ValueWrapperList = std::vector<ValueWrapperPtr>;
 
@@ -300,10 +300,12 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		{
 			for (auto control : vw->getControls ())
 			{
-				if (control->getListener () == this)
+				if (control->getListener () == iController)
 					control->setListener (nullptr);
 			}
 		}
+		iController->impl = nullptr;
+		iController.reset ();
 	}
 
 	virtual bool init (WindowPtr& inWindow, const char* inFileName, const char* inTemplateName)
@@ -506,7 +508,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		frame->removeAll ();
 		updateMinMaxSizes ();
-		auto view = uiDesc->createView (templateName, this);
+		auto view = uiDesc->createView (templateName, iController);
 		if (!view)
 		{
 			return;
@@ -555,7 +557,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 			{
 				if (auto viewController = getViewController (view, true))
 				{
-					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*> (viewController))
+					if (auto viewCommandHandler =
+							dynamic_cast<ICommandHandler*> (viewController.get ()))
 					{
 						canHandle = viewCommandHandler->canHandleCommand (command);
 					}
@@ -584,7 +587,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 			{
 				if (auto viewController = getViewController (view, true))
 				{
-					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*> (viewController))
+					if (auto viewCommandHandler =
+							dynamic_cast<ICommandHandler*> (viewController.get ()))
 					{
 						handled = viewCommandHandler->handleCommand (command);
 					}
@@ -605,65 +609,91 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		}
 	}
 
-	// IController
-	void valueChanged (CControl* control) override {}
-	int32_t controlModifierClicked (CControl* control, CButtonState button) override { return 0; }
-	void controlBeginEdit (CControl* control) override {}
-	void controlEndEdit (CControl* control) override {}
-	void controlTagWillChange (CControl* control) override
+	struct IControllerAdapter : IController,
+								AtomicReferenceCounted
 	{
-		if (control->getTag () < 0)
-			return;
-		auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
-		if (index < valueWrappers.size ())
-			valueWrappers[index]->removeControl (control);
-	}
-	void controlTagDidChange (CControl* control) override
-	{
-		if (control->getTag () < 0)
-			return;
-		auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
-		if (index < valueWrappers.size ())
-			valueWrappers[index]->addControl (control);
-	}
+		Impl* impl;
+		IControllerAdapter (Impl* impl) : impl (impl) {}
 
-	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
-	{
-		if (auto index =
-		        indexOfTest (valueWrappers.begin (), valueWrappers.end (),
-		                     [&] (const ValueWrapperPtr& v) { return v->getID () == name; }))
-			return *index;
-		return registeredTag;
-	}
-
-	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
-	{
-		return nullptr;
-	}
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-	                   const IUIDescription* description) override
-	{
-		auto* control = dynamic_cast<CControl*> (view);
-		if (control)
+		// IController
+		void valueChanged (CControl* control) override {}
+		int32_t controlModifierClicked (CControl* control, CButtonState button) override
 		{
-			if (control->getListener () == nullptr)
-				control->setListener (this);
-			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
-			if (index < valueWrappers.size ())
-			{
-				valueWrappers[index]->updateControlOnStateChange (control);
-			}
+			return 0;
 		}
-		return view;
-	}
-	IController* createSubController (UTF8StringPtr name,
-	                                  const IUIDescription* description) override
-	{
-		if (customization)
-			return customization->createController (name, this, description);
-		return nullptr;
-	}
+		void controlBeginEdit (CControl* control) override {}
+		void controlEndEdit (CControl* control) override {}
+		void controlTagWillChange (CControl* control) override
+		{
+			if (!impl)
+				return;
+			if (control->getTag () < 0)
+				return;
+			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
+			if (index < impl->valueWrappers.size ())
+				impl->valueWrappers[index]->removeControl (control);
+		}
+		void controlTagDidChange (CControl* control) override
+		{
+			if (!impl)
+				return;
+			if (control->getTag () < 0)
+				return;
+			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
+			if (index < impl->valueWrappers.size ())
+				impl->valueWrappers[index]->addControl (control);
+		}
+
+		int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
+		{
+			if (!impl)
+				return registeredTag;
+			if (auto index =
+					indexOfTest (impl->valueWrappers.begin (), impl->valueWrappers.end (),
+								 [&] (const ValueWrapperPtr& v) { return v->getID () == name; }))
+				return *index;
+			return registeredTag;
+		}
+
+		IControlListener* getControlListener (UTF8StringPtr controlTagName) override
+		{
+			return this;
+		}
+		CView* createView (const UIAttributes& attributes,
+						   const IUIDescription* description) override
+		{
+			return nullptr;
+		}
+		CView* verifyView (CView* view, const UIAttributes& attributes,
+						   const IUIDescription* description) override
+		{
+			if (!impl)
+				return view;
+			auto* control = dynamic_cast<CControl*> (view);
+			if (control)
+			{
+				if (control->getListener () == nullptr)
+					control->setListener (this);
+				auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
+				if (index < impl->valueWrappers.size ())
+				{
+					impl->valueWrappers[index]->updateControlOnStateChange (control);
+				}
+			}
+			return view;
+		}
+		SharedPointer<IController> createSubController (UTF8StringPtr name,
+														const IUIDescription* description) override
+		{
+			if (!impl)
+				return {};
+			if (impl->customization)
+				return impl->customization->createController (name, shared (this), description);
+			return {};
+		}
+	};
+
+	SharedPointer<IControllerAdapter> iController {makeOwned<IControllerAdapter> (this)};
 
 	WindowController& controller;
 	IWindow* window {nullptr};
@@ -689,6 +719,12 @@ struct WindowController::EditImpl : WindowController::Impl
 		IApplication::instance ().registerCommand (Commands::Debug::RecreateView, 0);
 		if (IApplication::instance ().getDelegate ().getSharedUIResourceFilename ())
 			IApplication::instance ().registerCommand (Commands::Debug::ResaveSharedResources, 0);
+	}
+
+	~EditImpl () noexcept override
+	{
+		if (uiDesc && uiDesc->getController () == iController)
+			uiDesc->setController ({});
 	}
 
 	bool init (WindowPtr& inWindow, const char* fileName, const char* templateName) override
@@ -871,13 +907,14 @@ struct WindowController::EditImpl : WindowController::Impl
 		{
 			save ();
 			uiEditController = nullptr;
+			uiDesc->setController ({});
 		}
 
 		frame->removeAll ();
 		if (state)
 		{
-			uiDesc->setController (this);
-			uiEditController = new UIEditController (uiDesc);
+			uiDesc->setController (iController);
+			uiEditController = makeOwned<UIEditController> (uiDesc);
 			auto view = uiEditController->createEditView ();
 			auto viewSize = view->getViewSize ().getSize ();
 			frame->getTransform ().transform (viewSize);

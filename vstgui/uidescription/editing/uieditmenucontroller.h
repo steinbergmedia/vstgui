@@ -151,7 +151,8 @@ class UIEditMenuController : public CBaseObject,
 							 public ViewListenerAdapter
 {
 public:
-	UIEditMenuController (IController* baseController, const SharedPointer<UISelection>& selection,
+	UIEditMenuController (const SharedPointer<IController>& baseController,
+						  const SharedPointer<UISelection>& selection,
 						  const SharedPointer<UIUndoManager>& undoManager,
 						  const SharedPointer<UIDescription>& description,
 						  WeakPointer<IActionPerformer> actionPerformer);

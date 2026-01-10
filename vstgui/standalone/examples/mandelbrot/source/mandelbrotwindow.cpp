@@ -132,9 +132,11 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 }
 
 //------------------------------------------------------------------------
-struct ProgressController : DelegationController, ValueListenerAdapter
+struct ProgressController : DelegationController,
+							ValueListenerAdapter,
+							NonAtomicReferenceCounted
 {
-	ProgressController (ValuePtr progressValue, IController* parent)
+	ProgressController (ValuePtr progressValue, const SharedPointer<IController>& parent)
 	: DelegationController (parent), progressValue (progressValue)
 	{
 		progressValue->registerListener (this);
@@ -191,7 +193,8 @@ struct ViewController : DelegationController,
                         IScaleFactorChangedListener,
                         AtomicReferenceCounted
 {
-	ViewController (IController* parent, Model::Ptr model, ValuePtr progressValue)
+	ViewController (const SharedPointer<IController>& parent, Model::Ptr model,
+					ValuePtr progressValue)
 	: DelegationController (parent), model (model), progressValue (progressValue)
 	{
 		model->registerListener (this);
@@ -220,10 +223,11 @@ struct ViewController : DelegationController,
 		return controller->createView (attributes, description);
 	}
 
-	IController* createSubController (IdStringPtr name, const IUIDescription* description) override
+	SharedPointer<IController> createSubController (IdStringPtr name,
+													const IUIDescription* description) override
 	{
 		if (UTF8StringView (name) == "ProgressController")
-			return new ProgressController (progressValue, this);
+			return makeOwned<ProgressController> (progressValue, shared (this));
 		return controller->createSubController (name, description);
 	}
 
@@ -384,9 +388,9 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 	auto customization = WindowCustomization::make (modelBinding->getMaxIterationsValue ());
 
 	customization->addCreateViewControllerFunc (
-	    "mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto uiDesc) {
-		    return new ViewController (parent, model, modelBinding->getProgressValue ());
-	    });
+		"mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto uiDesc) {
+			return makeOwned<ViewController> (parent, model, modelBinding->getProgressValue ());
+		});
 
 	UIDesc::Config config;
 	config.uiDescFileName = "Window.uidesc";

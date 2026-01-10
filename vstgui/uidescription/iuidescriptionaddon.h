@@ -22,7 +22,7 @@ struct IUIDescriptionAddOn
 	virtual void onDestroy (const SharedPointer<IUIDescription>& desc) = 0;
 
 	using CreateTemplateViewFunc =
-		std::function<CView*(UTF8StringPtr name, IController* controller)>;
+		std::function<CView*(UTF8StringPtr name, const SharedPointer<IController>& controller)>;
 	/** called when a new template view should be created. The provided CreateTemplateViewFunc can
 	 *	be used to create the view in a normal way
 	 */
@@ -49,7 +49,7 @@ struct UIDescriptionAddOnAdapter : IUIDescriptionAddOn
 	CreateTemplateViewFunc onCreateTemplateView (const SharedPointer<IUIDescription>& desc,
 												 const CreateTemplateViewFunc& f) override
 	{
-		return [=] (UTF8StringPtr name, IController* controller) {
+		return [=] (UTF8StringPtr name, const SharedPointer<IController>& controller) {
 			return f (name, controller);
 		};
 	}

@@ -17,7 +17,7 @@ namespace Standalone {
 namespace Minesweeper {
 
 //------------------------------------------------------------------------
-HighScoreViewController::HighScoreViewController (IController* parent)
+HighScoreViewController::HighScoreViewController (const SharedPointer<IController>& parent)
 : DelegationController (parent)
 {
 	columnWidths[0] = 0.06;
