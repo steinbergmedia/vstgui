@@ -332,7 +332,8 @@ public:
 	{
 		if constexpr (std::is_convertible_v<T, SharedPointer<IReference>>)
 			return setAttributeObj (aId, data);
-		return setAttribute (aId, sizeof (T), &data);
+		else
+			return setAttribute (aId, sizeof (T), &data);
 	}
 	
 	/** get an attribute */
@@ -347,11 +348,13 @@ public:
 				data = obj.cast<typename T::Type> ();
 				return data.get () != nullptr;
 			}
-			return false;
 		}
-		uint32_t outSize;
-		if (getAttribute (aId, sizeof (T), &data, outSize))
-			return outSize == sizeof (T);
+		else
+		{
+			uint32_t outSize;
+			if (getAttribute (aId, sizeof (T), &data, outSize))
+				return outSize == sizeof (T);
+		}
 		return false;
 	}
 	//@}

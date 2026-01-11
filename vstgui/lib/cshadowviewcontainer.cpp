@@ -116,7 +116,7 @@ CMessageResult CShadowViewContainer::notify (CBaseObject* sender, IdStringPtr me
 }
 
 //-----------------------------------------------------------------------------
-template <size_t numBoxes>
+template<int32_t numBoxes>
 static std::array<int32_t, numBoxes> boxesForGauss (double sigma)
 {
 	std::array<int32_t, numBoxes> boxes;

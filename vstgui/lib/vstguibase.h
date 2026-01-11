@@ -361,7 +361,8 @@ public:
 	{
 		if constexpr (std::is_base_of_v<T, I>)
 			return SharedPointer<T> (static_cast<T*> (ptr));
-		return SharedPointer<T> (dynamic_cast<T*> (ptr));
+		else
+			return SharedPointer<T> (dynamic_cast<T*> (ptr));
 	}
 
 	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
