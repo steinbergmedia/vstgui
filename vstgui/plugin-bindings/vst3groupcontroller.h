@@ -7,7 +7,8 @@
 #include "../lib/controls/ccontrol.h"
 #include "../uidescription/uidescriptionfwd.h"
 #include "../uidescription/icontroller.h"
-#include "base/source/fobject.h"
+#include "pluginterfaces/base/iupdatehandler.h"
+#include "pluginterfaces/base/funknownimpl.h"
 #include "public.sdk/source/vst/vstparameters.h"
 #include "public.sdk/source/vst/vsteditcontroller.h"
 #include <vector>
@@ -15,7 +16,8 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class GroupController : public Steinberg::FObject, public IController
+class GroupController : public IController,
+						public NonAtomicReferenceCounted
 {
 public:
 	GroupController (Steinberg::Vst::Parameter* parameter, Steinberg::Vst::EditController* editController);
@@ -27,11 +29,19 @@ public:
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
 
-//-----------------------------------------------------------------------------
-	OBJ_METHODS(GroupController, FObject)
+	//-----------------------------------------------------------------------------
 protected:
-	void PLUGIN_API update (Steinberg::FUnknown* changedUnknown, Steinberg::int32 message) override;
+	struct ParameterObserver
+	: Steinberg::U::ImplementsNonDestroyable<Steinberg::U::Directly<Steinberg::IDependent>>
+	{
+		ParameterObserver (GroupController& controller) : controller (controller) {}
 
+		void PLUGIN_API update (Steinberg::FUnknown* changedUnknown,
+								Steinberg::int32 message) override;
+		GroupController& controller;
+	};
+
+	ParameterObserver observer {*this};
 	Steinberg::Vst::Parameter* parameter;
 	Steinberg::Vst::EditController* editController;
 	

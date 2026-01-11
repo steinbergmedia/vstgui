@@ -7,9 +7,9 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-PadController::PadController (IController* baseController,
-                              Steinberg::Vst::EditController* editController,
-                              Steinberg::Vst::Parameter* xParam, Steinberg::Vst::Parameter* yParam)
+PadController::PadController (const SharedPointer<IController>& baseController,
+							  Steinberg::Vst::EditController* editController,
+							  Steinberg::Vst::Parameter* xParam, Steinberg::Vst::Parameter* yParam)
 : DelegationController (baseController)
 , editController (editController)
 , xParam (xParam)
@@ -17,18 +17,18 @@ PadController::PadController (IController* baseController,
 , padControl (nullptr)
 {
 	if (xParam)
-		xParam->addDependent (this);
+		xParam->addDependent (&observer);
 	if (yParam)
-		yParam->addDependent (this);
+		yParam->addDependent (&observer);
 }
 
 //------------------------------------------------------------------------
 PadController::~PadController ()
 {
 	if (xParam)
-		xParam->removeDependent (this);
+		xParam->removeDependent (&observer);
 	if (yParam)
-		yParam->removeDependent (this);
+		yParam->removeDependent (&observer);
 }
 
 //------------------------------------------------------------------------
@@ -40,7 +40,7 @@ CView* PadController::verifyView (CView* view, const UIAttributes& attributes,
 	{
 		padControl = pad;
 		padControl->setListener (this);
-		update (xParam, kChanged);
+		observer.update (xParam, Steinberg::IDependent::kChanged);
 	}
 	return view;
 }
@@ -98,29 +98,29 @@ void PadController::controlEndEdit (CControl* pControl)
 }
 
 //------------------------------------------------------------------------
-void PLUGIN_API PadController::update (Steinberg::FUnknown* changedUnknown,
-                                       Steinberg::int32 message)
+void PLUGIN_API PadController::ParameterObserver::update (Steinberg::FUnknown* changedUnknown,
+														  Steinberg::int32 message)
 {
-	if (padControl)
+	if (controller.padControl)
 	{
 		auto* p = Steinberg::FCast<Steinberg::Vst::Parameter> (changedUnknown);
-		if (p && (p == xParam || p == yParam))
+		if (p && (p == controller.xParam || p == controller.yParam))
 		{
 			if (message == kChanged)
 			{
-				float value =
-				    CXYPad::calculateValue (xParam->getNormalized (), yParam->getNormalized ());
-				padControl->setValue (value);
-				padControl->invalid ();
+				float value = CXYPad::calculateValue (controller.xParam->getNormalized (),
+													  controller.yParam->getNormalized ());
+				controller.padControl->setValue (value);
+				controller.padControl->invalid ();
 			}
 			else if (message == kWillDestroy)
 			{
-				if (xParam)
-					xParam->removeDependent (this);
-				if (yParam)
-					yParam->removeDependent (this);
-				xParam = nullptr;
-				yParam = nullptr;
+				if (controller.xParam)
+					controller.xParam->removeDependent (this);
+				if (controller.yParam)
+					controller.yParam->removeDependent (this);
+				controller.xParam = nullptr;
+				controller.yParam = nullptr;
 			}
 		}
 	}

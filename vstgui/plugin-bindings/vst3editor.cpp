@@ -928,12 +928,13 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 				auto viewController = getViewController (view);
 				if (!viewController)
 					continue;
-				if (auto ctrler = dynamic_cast<IContextMenuController2*> (viewController))
+				if (auto ctrler = viewController.cast<IContextMenuController2> ())
 				{
 					createOrPrepareMenu ();
 					ctrler->appendContextMenuItems (*controllerMenu, view, view->translateToLocal (nonScaledPos));
 				}
-				else if (auto contextMenuController = dynamic_cast<IContextMenuController*> (viewController))
+				else if (auto contextMenuController =
+							 viewController.cast<IContextMenuController> ())
 				{
 					createOrPrepareMenu ();
 					contextMenuController->appendContextMenuItems (*controllerMenu, view->translateToLocal (nonScaledPos));
@@ -1023,9 +1024,10 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 }
 
 //-----------------------------------------------------------------------------
-IController* VST3Editor::createSubController (UTF8StringPtr name, const IUIDescription* desc)
+SharedPointer<IController> VST3Editor::createSubController (UTF8StringPtr name,
+															const IUIDescription* desc)
 {
-	return delegate ? delegate->createSubController (name, desc, this) : nullptr;
+	return delegate ? VSTGUI::owned (delegate->createSubController (name, desc, this)) : nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -1594,7 +1596,7 @@ static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 {
 	int32_t flags = 0;
 #if VSTGUI_LIVE_EDITING
-	auto* editController = dynamic_cast<UIEditController*> (getViewController (frame->getView (0)));
+	auto editController = getViewController (frame->getView (0)).cast<UIEditController> ();
 	if (editController)
 	{
 		UIAttributes* attributes = editController->getSettings ();
@@ -2008,7 +2010,7 @@ bool VST3Editor::enableEditing (bool state)
 
 			getFrame ()->setTransform (CGraphicsTransform ());
 			nonEditRect = getFrame ()->getViewSize ();
-			description->setController (this);
+			description->setController (VSTGUI::shared (this));
 			auto* editController = new UIEditController (description);
 			CView* view = editController->createEditView ();
 			if (view)
@@ -2059,7 +2061,7 @@ bool VST3Editor::enableEditing (bool state)
 	#endif
 		{
 			editingEnabled = false;
-			CView* view = description->createView (viewName.c_str (), this);
+			CView* view = description->createView (viewName.c_str (), VSTGUI::shared (this));
 			if (view)
 			{
 				double scaleFactor = getAbsScaleFactor ();

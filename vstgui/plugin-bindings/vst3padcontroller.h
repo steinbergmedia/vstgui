@@ -9,16 +9,19 @@
 #include "../uidescription/uidescription.h"
 #include "public.sdk/source/vst/vsteditcontroller.h"
 #include "public.sdk/source/vst/vstparameters.h"
-#include "base/source/fobject.h"
+#include "pluginterfaces/base/iupdatehandler.h"
+#include "pluginterfaces/base/funknownimpl.h"
 
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class PadController : public Steinberg::FObject, public DelegationController
+class PadController : public DelegationController,
+					  NonAtomicReferenceCounted
 {
 public:
-	PadController (IController* baseController, Steinberg::Vst::EditController* editController,
-	               Steinberg::Vst::Parameter* xParam, Steinberg::Vst::Parameter* yParam);
+	PadController (const SharedPointer<IController>& baseController,
+				   Steinberg::Vst::EditController* editController,
+				   Steinberg::Vst::Parameter* xParam, Steinberg::Vst::Parameter* yParam);
 	~PadController () override;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
@@ -28,11 +31,19 @@ public:
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
 
-//-----------------------------------------------------------------------------
-	OBJ_METHODS (PadController, FObject)
+	//-----------------------------------------------------------------------------
 protected:
-	void PLUGIN_API update (Steinberg::FUnknown* changedUnknown, Steinberg::int32 message) override;
+	struct ParameterObserver
+	: Steinberg::U::ImplementsNonDestroyable<Steinberg::U::Directly<Steinberg::IDependent>>
+	{
+		ParameterObserver (PadController& controller) : controller (controller) {}
 
+		void PLUGIN_API update (Steinberg::FUnknown* changedUnknown,
+								Steinberg::int32 message) override;
+		PadController& controller;
+	};
+
+	ParameterObserver observer {*this};
 	Steinberg::Vst::EditController* editController;
 	Steinberg::Vst::Parameter* xParam;
 	Steinberg::Vst::Parameter* yParam;

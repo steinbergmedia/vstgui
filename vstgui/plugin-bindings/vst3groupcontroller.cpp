@@ -12,15 +12,12 @@ GroupController::GroupController (Steinberg::Vst::Parameter* parameter, Steinber
 : parameter (parameter)
 , editController (editController)
 {
-	parameter->addDependent (this);
+	parameter->addDependent (&observer);
 	vstgui_assert (parameter->getInfo ().stepCount > 0);
 }
 
 //------------------------------------------------------------------------
-GroupController::~GroupController ()
-{
-	parameter->removeDependent (this);
-}
+GroupController::~GroupController () { parameter->removeDependent (&observer); }
 
 //------------------------------------------------------------------------
 CView* GroupController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
@@ -55,17 +52,18 @@ void GroupController::controlBeginEdit (CControl* pControl)
 void GroupController::controlEndEdit (CControl* pControl)
 {
 	editController->endEdit (parameter->getInfo ().id);
-	update (parameter, kChanged);
+	observer.update (parameter, Steinberg::IDependent::kChanged);
 }
 
 //------------------------------------------------------------------------
-void PLUGIN_API GroupController::update (Steinberg::FUnknown* changedUnknown, Steinberg::int32 message)
+void PLUGIN_API GroupController::ParameterObserver::update (Steinberg::FUnknown* changedUnknown,
+															Steinberg::int32 message)
 {
 	auto* p = Steinberg::FCast<Steinberg::Vst::Parameter> (changedUnknown);
-	if (p && p == parameter)
+	if (p && p == controller.parameter)
 	{
-		Steinberg::Vst::ParamValue plainValue = parameter->toPlain (parameter->getNormalized ());
-		for (const auto& c : controls)
+		auto plainValue = controller.parameter->toPlain (controller.parameter->getNormalized ());
+		for (const auto& c : controller.controls)
 		{
 			if (c->getTag () == plainValue)
 			{
