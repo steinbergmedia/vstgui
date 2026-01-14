@@ -30,9 +30,9 @@ UIColorSlider::~UIColorSlider ()
 void UIColorSlider::draw (CDrawContext* context)
 {
 	if (getHandle () == nullptr)
-		updateHandle (context);
+		updateHandle (context->getScaleFactor ());
 	if (getBackground () == nullptr)
-		updateBackground (context);
+		updateBackground (context->getScaleFactor ());
 	CSlider::draw (context);
 }
 
@@ -52,9 +52,8 @@ void UIColorSlider::setViewSize (const CRect& rect, bool invalid)
 void UIColorSlider::uiColorChanged (UIColor& c) { setBackground (nullptr); }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorSlider::updateBackground (CDrawContext* context)
+void UIColorSlider::updateBackground (double scaleFactor)
 {
-	double scaleFactor = context->getScaleFactor ();
 	if (auto offscreen = COffscreenContext::create ({getWidth (), getHeight ()}, scaleFactor))
 	{
 		const int32_t kNumPoints = (style <= kLightness) ? 360 : 256;
@@ -141,9 +140,9 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorSlider::updateHandle (CDrawContext* context)
+void UIColorSlider::updateHandle (double scaleFactor)
 {
-	if (auto offscreen = COffscreenContext::create ({7., getHeight ()}, context->getScaleFactor ()))
+	if (auto offscreen = COffscreenContext::create ({7., getHeight ()}, scaleFactor))
 	{
 		auto lineWidth = 1.;
 		offscreen->beginDraw ();

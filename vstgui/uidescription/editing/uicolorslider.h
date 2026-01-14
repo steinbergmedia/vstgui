@@ -38,8 +38,8 @@ protected:
 	void draw (CDrawContext* context) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void uiColorChanged (UIColor& c) override;
-	void updateBackground (CDrawContext* context);
-	void updateHandle (CDrawContext* context);
+	void updateBackground (double scaleFactor);
+	void updateHandle (double scaleFactor);
 
 	SharedPointer<UIColor> color;
 	int32_t style;
