@@ -37,7 +37,7 @@ protected:
 	SharedPointer<IController> createSubController (IdStringPtr name,
 													const IUIDescription& description) override;
 
-	void appendContextMenuItems (COptionMenu& contextMenu, CView* view,
+	void appendContextMenuItems (COptionMenu& contextMenu, CView& view,
 								 const CPoint& where) override;
 
 	SharedPointer<UIDescription> editDescription;

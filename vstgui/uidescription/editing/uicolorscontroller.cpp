@@ -502,7 +502,7 @@ SharedPointer<IController>
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsController::appendContextMenuItems (COptionMenu& contextMenu, CView* view,
+void UIColorsController::appendContextMenuItems (COptionMenu& contextMenu, CView& view,
 												 const CPoint& where)
 {
 	auto item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Add Color"});

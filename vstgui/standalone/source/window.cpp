@@ -450,7 +450,7 @@ void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
 			CPoint p (event.mousePosition);
 			view->frameToLocal (p);
 			if (contextMenuController2)
-				contextMenuController2->appendContextMenuItems (*contextMenu, view, p);
+				contextMenuController2->appendContextMenuItems (*contextMenu, *view, p);
 			else if (contextMenuController)
 				contextMenuController->appendContextMenuItems (*contextMenu, p);
 		}

@@ -116,6 +116,9 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 - The following functions now take a const reference instead of a const naked pointer
 	* getViewController
 	* findViewController
+	
+- The following functions now take a reference instead of a naked pointer
+	* IContextMenuController2::appendContextMenuItems
 
 THe IController interface now inherits virtually from IReference
 

@@ -500,10 +500,11 @@ SharedPointer<IController> UITemplateController::createSubController (
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where)
+void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CView& view,
+												   const CPoint& where)
 {
 	CPoint w (where);
-	view->localToFrame (w);
+	view.localToFrame (w);
 	templateDataBrowser->frameToLocal (w);
 	if (!templateDataBrowser->hitTest (w))
 		return;

@@ -61,8 +61,9 @@ class IContextMenuController2 : public IControllerAddOn
 {
 public:
 	virtual ~IContextMenuController2 () noexcept = default;
-	
-	virtual void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) = 0;
+
+	virtual void appendContextMenuItems (COptionMenu& contextMenu, CView& view,
+										 const CPoint& where) = 0;
 };
 
 //-----------------------------------------------------------------------------

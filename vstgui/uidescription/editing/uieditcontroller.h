@@ -87,7 +87,8 @@ protected:
 	void onUndoManagerChange () override;
 
 	// IContextMenuController2
-	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
+	void appendContextMenuItems (COptionMenu& contextMenu, CView& view,
+								 const CPoint& where) override;
 
 	// ISplitViewController
 	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) override;

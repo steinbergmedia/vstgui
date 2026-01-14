@@ -68,7 +68,8 @@ protected:
 
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 
-	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
+	void appendContextMenuItems (COptionMenu& contextMenu, CView& view,
+								 const CPoint& where) override;
 	void viewWillDelete (CView* view) override;
 
 	SharedPointer<UIDescription> editDescription;

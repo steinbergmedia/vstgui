@@ -429,10 +429,11 @@ public:
 		if (pControl == zoomValueControl)
 			editController->onZoomChanged (pControl->getValue () / 100.f);
 	}
-	
-	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override
+
+	void appendContextMenuItems (COptionMenu& contextMenu, CView& view,
+								 const CPoint& where) override
 	{
-		if (view == zoomValueControl)
+		if (&view == zoomValueControl)
 		{
 			for (auto i = 50; i <= 250; i += 25)
 			{
@@ -461,7 +462,7 @@ public:
 				popupTimer = nullptr;
 				auto menu = makeOwned<COptionMenu> ();
 				menu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
-				appendContextMenuItems (*menu, zoomValueControl, CPoint ());
+				appendContextMenuItems (*menu, *zoomValueControl, CPoint ());
 				menu->popup (zoomValueControl->getFrame (),
 				             zoomValueControl->translateToGlobal (
 				                 zoomValueControl->getViewSize ().getTopLeft (), true));
@@ -2006,12 +2007,13 @@ void UIEditController::onTemplatesChanged ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where)
+void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, CView& inView,
+											   const CPoint& where)
 {
-	auto vc = view->asViewContainer ();
+	auto vc = inView.asViewContainer ();
 	if (!vc || editView == nullptr)
 		return;
-	view = vc->getViewAt (where, GetViewOptions ().deep ().includeViewContainer ());
+	auto view = vc->getViewAt (where, GetViewOptions ().deep ().includeViewContainer ());
 	while (view && view != editView)
 	{
 		view = view->getParentView ();
