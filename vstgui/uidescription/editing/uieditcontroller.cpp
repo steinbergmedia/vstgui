@@ -584,7 +584,7 @@ CView* UIEditController::createView (const UIAttributes& attributes,
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
 			editView->setGridProcessor (gridController);
-			editView->setupColors (&description);
+			editView->setupColors (description);
 			return editView;
 		}
 		else if (*name == "ShadingViewHorizontal")
@@ -852,7 +852,7 @@ void UIEditController::valueChanged (CControl* control)
 			{
 				selection->clear ();
 				if (auto container = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
-					resetScrollViewOffsets (container);
+					resetScrollViewOffsets (*container);
 				editView->enableEditing (control->getValue () == control->getMax () ? true : false);
 				break;
 			}
@@ -884,13 +884,13 @@ void UIEditController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 bool UIEditController::validateCommandMenuItem (CCommandMenuItem* item)
 {
-	return validateMenuItem (item) == kMessageNotified;
+	return validateMenuItem (*item) == kMessageNotified;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIEditController::onCommandMenuItemSelected (CCommandMenuItem* item)
 {
-	return onMenuItemSelection (item) == kMessageNotified;
+	return onMenuItemSelection (*item) == kMessageNotified;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -915,11 +915,10 @@ void UIEditController::onTemplateSelectionChanged ()
 				{
 					if (*name == it.name)
 					{
-						CView* view = it.view;
+						auto view = it.view;
 						editView->setEditView (view);
-						templateController->setTemplateView (static_cast<CViewContainer*> (view));
+						templateController->setTemplateView (view.cast<CViewContainer> ());
 						editTemplateName = *templateController->getSelectedTemplateName ();
-						view->remember ();
 						break;
 					}
 				}
@@ -1105,10 +1104,10 @@ static void toggleBoolAttribute (const SharedPointer<UIAttributes>& attributes, 
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
+CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem& item)
 {
-	UTF8StringView cmdCategory (item->getCommandCategory ());
-	UTF8StringView cmdName (item->getCommandName ());
+	UTF8StringView cmdCategory (item.getCommandCategory ());
+	UTF8StringView cmdName (item.getCommandName ());
 
 	if (cmdCategory == "Edit")
 	{
@@ -1158,22 +1157,22 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 	}
 	else if (cmdCategory == "SelectionMoveByGrid")
 	{
-		if (doSelectionMove (item->getCommandName (), true))
+		if (doSelectionMove (item.getCommandName (), true))
 			return kMessageNotified;
 	}
 	else if (cmdCategory == "SelectionSizeByGrid")
 	{
-		if (doSelectionSize (item->getCommandName (), true))
+		if (doSelectionSize (item.getCommandName (), true))
 			return kMessageNotified;
 	}
 	else if (cmdCategory == "SelectionMoveByPixel")
 	{
-		if (doSelectionMove (item->getCommandName (), false))
+		if (doSelectionMove (item.getCommandName (), false))
 			return kMessageNotified;
 	}
 	else if (cmdCategory == "SelectionSizeByPixel")
 	{
-		if (doSelectionSize (item->getCommandName (), false))
+		if (doSelectionSize (item.getCommandName (), false))
 			return kMessageNotified;
 	}
 	else if (cmdCategory == "SelectionZOrder")
@@ -1197,7 +1196,8 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 		}
 		if (cmdName == "Select View in Hierarchy Browser")
 		{
-			doSelectViewInHierarchyBrowser (selection->first ());
+			if (auto view = selection->first ())
+				doSelectViewInHierarchyBrowser (*view);
 			return kMessageNotified;
 		}
 	}
@@ -1223,35 +1223,35 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
+CMessageResult UIEditController::validateMenuItem (CCommandMenuItem& item)
 {
-	UTF8StringView cmdCategory (item->getCommandCategory ());
-	UTF8StringView cmdName (item->getCommandName ());
-	
+	UTF8StringView cmdCategory (item.getCommandCategory ());
+	UTF8StringView cmdName (item.getCommandName ());
+
 	if (cmdCategory == "Edit")
 	{
 		if (cmdName == "Template Settings...")
 		{
-			item->setEnabled (editTemplateName.empty () ? false : true);
+			item.setEnabled (editTemplateName.empty () ? false : true);
 			return kMessageNotified;
 		}
 		else if (cmdName == "Copy" || cmdName == "Cut")
 		{
 			if (editView && selection->first () && selection->contains (editView->getEditView ()) == false)
-				item->setEnabled (true);
+				item.setEnabled (true);
 			else
-				item->setEnabled (false);
+				item.setEnabled (false);
 			return kMessageNotified;
 		}
 		else if (cmdName == "Paste")
 		{
-			item->setEnabled (false);
+			item.setEnabled (false);
 			if (editView && selection->first ())
 			{
 				if (auto clipboard = editView->getFrame ()->getClipboard ())
 				{
 					if (clipboard->getDataType (0) == IDataPackage::kText)
-						item->setEnabled (true);
+						item.setEnabled (true);
 				}
 			}
 			return kMessageNotified;
@@ -1269,7 +1269,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			bool encodeBitmaps = false;
 			if (attr && attr->getBooleanAttribute (kEncodeBitmapsSettingsKey, encodeBitmaps))
 			{
-				item->setChecked (encodeBitmaps);
+				item.setChecked (encodeBitmaps);
 			}
 			return kMessageNotified;
 		}
@@ -1279,7 +1279,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			bool encodeBitmaps = false;
 			if (attr && attr->getBooleanAttribute (kWriteWindowsRCFileSettingsKey, encodeBitmaps))
 			{
-				item->setChecked (encodeBitmaps);
+				item.setChecked (encodeBitmaps);
 			}
 			return kMessageNotified;
 		}
@@ -1296,7 +1296,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			if (selection->contains (editView->getEditView ()))
 				enableItem = false;
 		}
-		item->setEnabled (enableItem);
+		item.setEnabled (enableItem);
 		return kMessageNotified;
 	}
 	else if (cmdCategory == "SelectionZOrder")
@@ -1322,7 +1322,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 				}
 			}
 		}
-		item->setEnabled (enableItem);
+		item.setEnabled (enableItem);
 		return kMessageNotified;
 	}
 	else if (cmdCategory == "Selection")
@@ -1331,20 +1331,20 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 		{
 			bool enable = selection->total () == 1 && selection->first () &&
 			              selection->first ()->asViewContainer ();
-			item->setEnabled (enable);
+			item.setEnabled (enable);
 			return kMessageNotified;
 		}
 		if (cmdName == "Select Parent(s)")
 		{
 			bool enable =
 			    selection->total () > 0 && selection->first () != editView->getEditView ();
-			item->setEnabled (enable);
-			item->setTitle (selection->total () > 1 ? "Select Parents" : "Select Parent");
+			item.setEnabled (enable);
+			item.setTitle (selection->total () > 1 ? "Select Parents" : "Select Parent");
 			return kMessageNotified;
 		}
 		if (cmdName == "Select View in Hierarchy Browser")
 		{
-			item->setEnabled (selection->total () == 1);
+			item.setEnabled (selection->total () == 1);
 			return kMessageNotified;
 		}
 	}
@@ -1438,9 +1438,9 @@ void UIEditController::doSelectParents ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::doSelectViewInHierarchyBrowser (CView* view)
+void UIEditController::doSelectViewInHierarchyBrowser (CView& view)
 {
-	templateController->navigateTo (view);
+	templateController->navigateTo (&view);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1477,16 +1477,16 @@ void UIEditController::onUndoManagerChanged ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::resetScrollViewOffsets (CViewContainer* view)
+void UIEditController::resetScrollViewOffsets (CViewContainer& view)
 {
-	view->forEachChild ([&] (CView* view) {
+	view.forEachChild ([&] (CView* view) {
 		auto* scrollView = dynamic_cast<CScrollView*>(view);
 		if (scrollView)
 		{
 			scrollView->resetScrollOffset ();
 		}
 		if (auto container = view->asViewContainer ())
-			resetScrollViewOffsets (container);
+			resetScrollViewOffsets (*container);
 	});
 }
 
@@ -1531,12 +1531,12 @@ int32_t UIEditController::getSaveOptions ()
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIEditController::getSplitViewIndex (CSplitView* splitView)
+int32_t UIEditController::getSplitViewIndex (const CSplitView& splitView)
 {
 	int32_t index = 0;
 	for (auto& sv : splitViews)
 	{
-		if (sv == splitView)
+		if (sv == &splitView)
 			return index;
 		index++;
 	}
@@ -1552,7 +1552,7 @@ bool UIEditController::getSplitViewSizeConstraint (int32_t index, CCoord& minSiz
 //----------------------------------------------------------------------------------------------------
 ISplitViewSeparatorDrawer* UIEditController::getSplitViewSeparatorDrawer (CSplitView* splitView)
 {
-	int32_t si = getSplitViewIndex (splitView);
+	int32_t si = getSplitViewIndex (*splitView);
 	if (si >= 0)
 	{
 		return this;
@@ -1563,7 +1563,7 @@ ISplitViewSeparatorDrawer* UIEditController::getSplitViewSeparatorDrawer (CSplit
 //----------------------------------------------------------------------------------------------------
 bool UIEditController::storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView)
 {
-	int32_t si = getSplitViewIndex (splitView);
+	int32_t si = getSplitViewIndex (*splitView);
 	if (si >= 0)
 	{
 		std::stringstream str;
@@ -1589,7 +1589,7 @@ bool UIEditController::restoreViewSize (int32_t index, CCoord& size, CSplitView*
 	getSettings ()->getIntegerAttribute ("Version", version);
 	if (version == 0)
 		return false;
-	int32_t si = getSplitViewIndex (splitView);
+	int32_t si = getSplitViewIndex (*splitView);
 	if (si >= 0)
 	{
 		std::stringstream str;
@@ -1961,7 +1961,7 @@ void UIEditController::updateTemplate (const std::vector<Template>::const_iterat
 	{
 		CView* view = (*it).view;
 		if (auto container = view->asViewContainer ())
-			resetScrollViewOffsets (container);
+			resetScrollViewOffsets (*container);
 		editDescription->updateViewDescription ((*it).name.c_str (), view);
 	}
 }

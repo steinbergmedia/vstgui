@@ -66,9 +66,9 @@ public:
 protected:
 	~UIEditController () override;
 
-	static void resetScrollViewOffsets (CViewContainer* view);
+	static void resetScrollViewOffsets (CViewContainer& view);
 
-	int32_t getSplitViewIndex (CSplitView* splitView);
+	int32_t getSplitViewIndex (const CSplitView& splitView);
 	void setDirty (bool state);
 
 	void valueChanged (CControl* pControl) override;
@@ -188,8 +188,8 @@ private:
 	bool doUIDescTemplateUpdate (UIDescription& desc, UTF8StringPtr name) override;
 
 	void beforeSave ();
-	CMessageResult validateMenuItem (CCommandMenuItem* item);
-	CMessageResult onMenuItemSelection (CCommandMenuItem* item);
+	CMessageResult validateMenuItem (CCommandMenuItem& item);
+	CMessageResult onMenuItemSelection (CCommandMenuItem& item);
 	void doCopy (bool cut = false);
 	void doPaste ();
 	void showTemplateSettings ();
@@ -199,7 +199,7 @@ private:
 	bool doZOrderAction (bool lower);
 	void doSelectAllChildren ();
 	void doSelectParents ();
-	void doSelectViewInHierarchyBrowser (CView* view);
+	void doSelectViewInHierarchyBrowser (CView& view);
 	void doChangeTheme (bool dark);
 	
 	void onUndoManagerChanged ();

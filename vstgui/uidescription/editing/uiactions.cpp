@@ -229,7 +229,7 @@ ViewCopyOperation::ViewCopyOperation (const SharedPointer<UISelection>& copySele
 	{
 		if (!copySelection->containsParent (view))
 		{
-			CRect viewSize = UISelection::getGlobalViewCoordinates (view);
+			CRect viewSize = UISelection::getGlobalViewCoordinates (*view);
 			CRect newSize (0, 0, view->getWidth (), view->getHeight ());
 			newSize.offset (offset.x, offset.y);
 			newSize.offset (viewSize.left - selectionBounds.left, viewSize.top - selectionBounds.top);

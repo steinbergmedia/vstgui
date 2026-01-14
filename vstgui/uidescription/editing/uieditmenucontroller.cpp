@@ -563,7 +563,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		for (auto& entry : *selection)
 		{
 			if (auto viewContainer = entry->asViewContainer ())
-				getChildrenOfType (viewContainer, cmdName, newSelection);
+				getChildrenOfType (*viewContainer, cmdName, newSelection);
 		}
 		selection->clear ();
 		for (auto& view : newSelection)
@@ -808,15 +808,15 @@ void UIEditMenuController::controlEndEdit (CControl* pControl)
 }
 
 //------------------------------------------------------------------------
-void UIEditMenuController::getChildrenOfType (CViewContainer* container, UTF8StringView type,
+void UIEditMenuController::getChildrenOfType (CViewContainer& container, UTF8StringView type,
 											  std::vector<SharedPointer<CView>>& result) const
 {
-	container->forEachChild ([&] (auto view) {
+	container.forEachChild ([&] (auto view) {
 		if (type == IViewFactory::getViewName (*view))
 			result.emplace_back (view);
 		if (auto c = view->asViewContainer ())
 		{
-			getChildrenOfType (c, type, result);
+			getChildrenOfType (*c, type, result);
 		}
 	});
 }

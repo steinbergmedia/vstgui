@@ -35,7 +35,7 @@ public:
 	void enableAutosizing (bool state);
 	void setScale (double scale);
 
-	void setEditView (CView* view);
+	void setEditView (const SharedPointer<CView>& view);
 	SharedPointer<CView> getEditView () const;
 
 	void doKeyMove (const CPoint& delta);
@@ -49,8 +49,8 @@ public:
 
 	void setGridProcessor (const SharedPointer<IGridProcessor>& grid);
 
-	void setupColors (const IUIDescription* description);
-	
+	void setupColors (const IUIDescription& description);
+
 	static IdStringPtr kMsgAttached;
 	static IdStringPtr kMsgRemoved;
 protected:
@@ -90,10 +90,10 @@ protected:
 
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);
-	void onDoubleClickEditing (CView* view);
+	void onDoubleClickEditing (CView& view);
 
 	void startDrag (CPoint& where);
-	SharedPointer<UISelection> getSelectionOutOfDrag (IDataPackage* drag) const;
+	SharedPointer<UISelection> getSelectionOutOfDrag (const IDataPackage& drag) const;
 
 	SharedPointer<IDropTarget> getDropTarget () override;
 	bool onDrop (DragEventData data) override;

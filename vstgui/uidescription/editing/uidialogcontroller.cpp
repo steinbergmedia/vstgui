@@ -33,9 +33,9 @@ UIDialogController::UIDialogController (const SharedPointer<IController>& baseCo
 void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle,
 							  UTF8StringPtr _button1, UTF8StringPtr _button2,
 							  const SharedPointer<IDialogController>& _dialogController,
-							  UIDescription* _description, bool _resizable)
+							  const SharedPointer<UIDescription>& _description, bool _resizable)
 {
-	collectOpenGLViews (frame);
+	collectOpenGLViews (*frame);
 
 	templateName = _templateName;
 	dialogTitle = _dialogTitle;
@@ -308,15 +308,15 @@ void UIDialogController::onKeyboardEvent (KeyboardEvent& event, CFrame* inFrame)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIDialogController::collectOpenGLViews (CViewContainer* container)
+void UIDialogController::collectOpenGLViews (CViewContainer& container)
 {
 #if VSTGUI_OPENGL_SUPPORT
-	container->forEachChild ([this] (CView* view) {
+	container.forEachChild ([this] (CView* view) {
 		auto openGLView = dynamic_cast<COpenGLView*> (view);
 		if (openGLView && openGLView->isVisible ())
 			openglViews.emplace_back (openGLView);
 		else if (auto childContainer = view->asViewContainer ())
-			collectOpenGLViews (childContainer);
+			collectOpenGLViews (*childContainer);
 	});
 #endif
 }

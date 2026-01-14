@@ -143,11 +143,11 @@ CRect UISelection::getBounds () const
 	if (viewList.empty ())
 		return result;
 	const_iterator it = begin ();
-	result = getGlobalViewCoordinates (*it);
+	result = getGlobalViewCoordinates (*(*it));
 	++it;
 	while (it != end ())
 	{
-		CRect vs = getGlobalViewCoordinates (*it);
+		CRect vs = getGlobalViewCoordinates (*(*it));
 		result.unite (vs);
 		++it;
 	}
@@ -155,10 +155,10 @@ CRect UISelection::getBounds () const
 }
 
 //----------------------------------------------------------------------------------------------------
-CRect UISelection::getGlobalViewCoordinates (const SharedPointer<CView>& view)
+CRect UISelection::getGlobalViewCoordinates (const CView& view)
 {
-	CRect result = view->translateToGlobal (view->getViewSize ());
-	if (auto frame = view->getFrame ())
+	CRect result = view.translateToGlobal (view.getViewSize ());
+	if (auto frame = view.getFrame ())
 		return frame->getTransform ().inverse ().transform (result);
 	return result;
 }

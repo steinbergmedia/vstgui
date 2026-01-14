@@ -105,7 +105,7 @@ void UISelectionView::draw (CDrawContext* pContext)
 	frameToLocal (p);
 	for (auto view : *selection)
 	{
-		CRect vs = selection->getGlobalViewCoordinates (view);
+		CRect vs = selection->getGlobalViewCoordinates (*view);
 		vs.offsetInverse (p);
 		vs.extend (lineWidth, lineWidth);
 		pContext->setFrameColor (lightColor);
@@ -145,7 +145,7 @@ void UISelectionView::onSelectionChanged ()
 	frameToLocal (p);
 	for (auto view : *selection)
 	{
-		CRect vs = selection->getGlobalViewCoordinates (view);
+		CRect vs = selection->getGlobalViewCoordinates (*view);
 		vs.offsetInverse (p);
 		vs.extend (handleInset + 2, handleInset + 2);
 		invalidRect (vs);
@@ -198,7 +198,7 @@ void UIHighlightView::draw (CDrawContext* pContext)
 {
 	if (highlightView == nullptr)
 		return;
-	CRect r = UISelection::getGlobalViewCoordinates (highlightView);
+	CRect r = UISelection::getGlobalViewCoordinates (*highlightView);
 	CPoint p;
 	frameToLocal (p);
 	r.offsetInverse (p);
@@ -441,7 +441,7 @@ void UIEditView::setGridProcessor (const SharedPointer<IGridProcessor>& inGrid)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setEditView (CView* view)
+void UIEditView::setEditView (const SharedPointer<CView>& view)
 {
 	if (view != getEditView ())
 	{
@@ -621,7 +621,7 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 	for (auto it = getSelection ()->rbegin (), end = getSelection ()->rend (); it != end; ++it)
 	{
 		auto view = (*it);
-		CRect r = getSelection ()->getGlobalViewCoordinates (view);
+		CRect r = getSelection ()->getGlobalViewCoordinates (*view);
 		bool isMainView = (mainView == view) ? true : false;
 		r.offset (p);
 		r.extend (kResizeHandleSize, kResizeHandleSize);
@@ -728,7 +728,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 	{
 		if (buttons.isDoubleClick ())
 		{
-			onDoubleClickEditing (selectionHitView);
+			onDoubleClickEditing (*selectionHitView);
 			return kMouseEventHandled;
 		}
 		if (buttons.isAltSet () && !getSelection ()->contains (getEditView ()))
@@ -1195,12 +1195,12 @@ void UIEditView::startDrag (CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (IDataPackage* drag) const
+SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (const IDataPackage& drag) const
 {
 	IDataPackage::Type type;
 	const void* dragData;
 	uint32_t size;
-	if ((size = drag->getData (0, dragData, type)) > 0 && type == IDataPackage::kText)
+	if ((size = drag.getData (0, dragData, type)) > 0 && type == IDataPackage::kText)
 	{
 		auto oldController = description->getController ();
 		if (auto* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : nullptr)
@@ -1270,15 +1270,19 @@ bool UIEditView::onDrop (DragEventData data)
 //----------------------------------------------------------------------------------------------------
 DragOperation UIEditView::onDragEnter (DragEventData data)
 {
-	dragSelection = getSelectionOutOfDrag (data.drag);
-	if (dragSelection)
+	if (data.drag)
 	{
-		if (!lines)
+		dragSelection = getSelectionOutOfDrag (*data.drag);
+		if (dragSelection)
 		{
-			lines = new UICrossLines (this, UICrossLines::kDragStyle, crosslineBackgroundColor, crosslineForegroundColor);
-			overlayView->addView (lines);
+			if (!lines)
+			{
+				lines = new UICrossLines (this, UICrossLines::kDragStyle, crosslineBackgroundColor,
+										  crosslineForegroundColor);
+				overlayView->addView (lines);
+			}
+			return onDragMove (data);
 		}
-		return onDragMove (data);
 	}
 	return DragOperation::None;
 }
@@ -1341,7 +1345,7 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 }
 
 //-----------------------------------------------------------------------------
-void UIEditView::onDoubleClickEditing (CView* view)
+void UIEditView::onDoubleClickEditing (CView& view)
 {
 	struct AttributeInlineEditorController : ViewListenerAdapter
 	{
@@ -1368,13 +1372,13 @@ void UIEditView::onDoubleClickEditing (CView* view)
 
 	const auto& factory = description->getViewFactory ();
 	std::string attrValue;
-	if (!factory.getAttributeValue (*view, UIViewCreator::kAttrTitle, attrValue, *description))
+	if (!factory.getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue, *description))
 		return;
 
 	auto frame = getFrame ();
 	frame->setCursor (kCursorDefault);
 
-	auto r = selection->getGlobalViewCoordinates (shared (view));
+	auto r = selection->getGlobalViewCoordinates (view);
 	r.offsetInverse (getViewSize ().getTopLeft ());
 	translateToLocal (r, true);
 	auto textEdit = new CTextEdit (r, nullptr, 0);
@@ -1448,14 +1452,14 @@ bool UIEditView::removed (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-void UIEditView::setupColors (const IUIDescription* desc)
+void UIEditView::setupColors (const IUIDescription& desc)
 {
-	desc->getColor ("editView.crosslines.background", crosslineBackgroundColor);
-	desc->getColor ("editView.crosslines.foreground", crosslineForegroundColor);
-	desc->getColor ("editView.lasso.fill", lassoFillColor);
-	desc->getColor ("editView.lasso.frame", lassoFrameColor);
-	desc->getColor ("editView.view.highlight", viewHighlightColor);
-	desc->getColor ("editView.view.selection", viewSelectionColor);
+	desc.getColor ("editView.crosslines.background", crosslineBackgroundColor);
+	desc.getColor ("editView.crosslines.foreground", crosslineForegroundColor);
+	desc.getColor ("editView.lasso.fill", lassoFillColor);
+	desc.getColor ("editView.lasso.frame", lassoFrameColor);
+	desc.getColor ("editView.view.highlight", viewHighlightColor);
+	desc.getColor ("editView.view.selection", viewSelectionColor);
 }
 
 } // VSTGUI

@@ -79,7 +79,7 @@ public:
 
 	int32_t total () const;
 	CRect getBounds () const;
-	static CRect getGlobalViewCoordinates (const SharedPointer<CView>& view);
+	static CRect getGlobalViewCoordinates (const CView& view);
 
 	void moveBy (const CPoint& p);
 	void sizeBy (const CRect& r);

@@ -40,7 +40,7 @@ public:
 
 	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1,
 			  UTF8StringPtr button2, const SharedPointer<IDialogController>& controller,
-			  UIDescription* description, bool resizable = false);
+			  const SharedPointer<UIDescription>& description, bool resizable = false);
 
 protected:
 	void valueChanged (CControl* pControl) override;
@@ -53,7 +53,7 @@ protected:
 	
 	void close ();
 	void layoutButtons ();
-	void collectOpenGLViews (CViewContainer* container);
+	void collectOpenGLViews (CViewContainer& container);
 	void setOpenGLViewsVisible (bool state);
 
 	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
@@ -61,7 +61,7 @@ protected:
 	CFrame* frame;
 	Optional<ModalViewSessionID> modalSession;
 	SharedPointer<IDialogController> dialogController;
-	UIDescription* dialogDescription;
+	SharedPointer<UIDescription> dialogDescription;
 	SharedPointer<CControl> button1;
 	SharedPointer<CControl> button2;
 	CView* customViewEmbedder {nullptr};
