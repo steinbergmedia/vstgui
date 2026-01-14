@@ -5,6 +5,7 @@
 #include "../../../uidescription/delegationcontroller.h"
 #include "../../../uidescription/uiattributes.h"
 #include "../unittests.h"
+#include "uiviewcreator/helpers.h"
 
 namespace VSTGUI {
 
@@ -44,21 +45,21 @@ public:
 		return this;
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		funcCalled = true;
 		return nullptr;
 	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-	                   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		funcCalled = true;
 		return view;
 	}
 
 	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription* description) override
+													const IUIDescription& description) override
 	{
 		funcCalled = true;
 		return nullptr;
@@ -139,27 +140,30 @@ TEST_CASE (DelegationControllerTest, GetControlListener)
 
 TEST_CASE (DelegationControllerTest, CreateView)
 {
+	DummyUIDescription uiDesc;
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	UIAttributes a;
-	dc.createView (a, nullptr);
+	dc.createView (a, uiDesc);
 	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, VerifyView)
 {
+	DummyUIDescription uiDesc;
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	UIAttributes a;
-	dc.verifyView (nullptr, a, nullptr);
+	dc.verifyView (nullptr, a, uiDesc);
 	EXPECT (myController->funcCalled);
 }
 
 TEST_CASE (DelegationControllerTest, CreateSubController)
 {
+	DummyUIDescription uiDesc;
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
-	dc.createSubController ("", nullptr);
+	dc.createSubController ("", uiDesc);
 	EXPECT (myController->funcCalled);
 }
 

@@ -101,7 +101,7 @@ protected:
 	CColor getSelectedRowBackground () const { return selectedRowBackground; }
 
 private:
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto customName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -116,15 +116,15 @@ private:
 	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		if (view == browser)
 		{
 			auto style =
 				browser->getStyle () | CDataBrowser::kDrawRowLines | CDataBrowser::kDrawColumnLines;
 			browser->setStyle (style);
-			description->getColor ("control.text", textColor);
-			description->getColor ("selection.background", selectedRowBackground);
+			description.getColor ("control.text", textColor);
+			description.getColor ("selection.background", selectedRowBackground);
 			browser->recalculateLayout ();
 			if (!data.empty ())
 				browser->selectRow (0);
@@ -588,7 +588,7 @@ struct GridLayoutPropertiesWindowController : DelegationController,
 	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		if (!container)
 		{
@@ -737,7 +737,7 @@ public:
 		customization->addCreateViewControllerFunc (
 			"AutoRowsController",
 			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
-					const IUIDescription* uiDesc) {
+					const IUIDescription& uiDesc) {
 				autoRowsController = makeOwned<AutoSizeController> (parent, autoRows,
 																	[this] () { modelUpdated (); });
 				return autoRowsController;
@@ -745,7 +745,7 @@ public:
 		customization->addCreateViewControllerFunc (
 			"AutoColumnsController",
 			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
-					const IUIDescription* uiDesc) {
+					const IUIDescription& uiDesc) {
 				autoColumnsController = makeOwned<AutoSizeController> (
 					parent, autoColumns, [this] () { modelUpdated (); });
 				return autoColumnsController;
@@ -753,7 +753,7 @@ public:
 		customization->addCreateViewControllerFunc (
 			"GridAreaController",
 			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
-					const IUIDescription* uiDesc) {
+					const IUIDescription& uiDesc) {
 				gridAreaController = makeOwned<GridAreaController> (parent, gridAreas,
 																	[this] () { modelUpdated (); });
 				return gridAreaController;
@@ -761,7 +761,7 @@ public:
 		customization->addCreateViewControllerFunc (
 			"GridLayoutPropertiesWindowController",
 			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
-					const IUIDescription* uiDesc) {
+					const IUIDescription& uiDesc) {
 				return makeOwned<GridLayoutPropertiesWindowController> (parent);
 			});
 

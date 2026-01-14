@@ -7,6 +7,7 @@
 #include "../../../uidescription/iuidescription.h"
 #include "../../../uidescription/iviewfactory.h"
 #include "../../../uidescription/uiattributes.h"
+#include "../../../uidescription/icontroller.h"
 
 namespace VSTGUI {
 

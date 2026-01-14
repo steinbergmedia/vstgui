@@ -563,8 +563,9 @@ public:
 								const SharedPointer<UIUndoManager>& undoManager);
 	~UIBitmapSettingsController () noexcept override;
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override;
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
 	void valueChanged (CControl* pControl) override;
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
@@ -866,7 +867,8 @@ void UIBitmapSettingsController::onDialogShow (UIDialogController&)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& attributes,
+											   const IUIDescription& description)
 {
 	auto* control = dynamic_cast<CControl*>(view);
 	if (control && control->getTag () >= 0 && control->getTag () < kNumTags)
@@ -983,7 +985,8 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UIBitmapSettingsController::createView (const UIAttributes& attributes,
+											   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -1048,7 +1051,8 @@ void UIBitmapsController::showSettingsDialog ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapsController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UIBitmapsController::createView (const UIAttributes& attributes,
+										const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -1068,7 +1072,8 @@ CView* UIBitmapsController::createView (const UIAttributes& attributes, const IU
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attributes,
+										const IUIDescription& description)
 {
 	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)

@@ -379,8 +379,9 @@ public:
 			return;
 		updateZoom (100.f);
 	}
-	
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override
 	{
 		if (!zoomValueControl)
 		{
@@ -404,11 +405,11 @@ public:
 					return true;
 				});
 				zoomValueControl->setValue (100.f);
-				auto font = description->getFont ("control.font");
+				auto font = description.getFont ("control.font");
 				CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;
-				description->getColor ("control.font", fontColor);
-				description->getColor ("control.frame", frameColor);
-				description->getColor ("control.back", backColor);
+				description.getColor ("control.font", fontColor);
+				description.getColor ("control.frame", frameColor);
+				description.getColor ("control.back", backColor);
 				zoomValueControl->setFont (font);
 				zoomValueControl->setFontColor (fontColor);
 				zoomValueControl->setBackColor (backColor);
@@ -569,7 +570,8 @@ CView* UIEditController::createEditView ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UIEditController::createView (const UIAttributes& attributes,
+									 const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -581,7 +583,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
 			editView->setGridProcessor (gridController);
-			editView->setupColors (description);
+			editView->setupColors (&description);
 			return editView;
 		}
 		else if (*name == "ShadingViewHorizontal")
@@ -652,7 +654,8 @@ static const BackgroundColors& editViewBackgroundColors ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes,
+									 const IUIDescription& description)
 {
 	if (view == editView)
 	{
@@ -665,13 +668,14 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 		splitViews.emplace_back (splitView);
 		if (splitViews.size () == 1)
 		{
-			auto font = description->getFont ("control.font");
+			auto font = description.getFont ("control.font");
 			CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;
-			description->getColor ("control.font", fontColor);
-			description->getColor ("control.frame", frameColor);
-			description->getColor ("control.back", backColor);
-			auto gradient = description->getGradient ("Default TextButton Gradient");
-			auto gradientHighlighted = description->getGradient ("Default TextButton Gradient Highlighted");
+			description.getColor ("control.font", fontColor);
+			description.getColor ("control.frame", frameColor);
+			description.getColor ("control.back", backColor);
+			auto gradient = description.getGradient ("Default TextButton Gradient");
+			auto gradientHighlighted =
+				description.getGradient ("Default TextButton Gradient Highlighted");
 
 			// Add Background Menu
 			CRect backSelectRect (0., 0., 20. * editViewBackgroundColors ().size (), splitView->getSeparatorWidth ());
@@ -700,7 +704,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 
 			// Add Title
 			CColor labelColor = kBlackCColor;
-			description->getColor ("control.font", labelColor);
+			description.getColor ("control.font", labelColor);
 			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
@@ -717,7 +721,8 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			zoomSettingController = makeOwned<UIZoomSettingController> (this);
 			auto* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
 			textEdit->setAttribute (kCViewControllerAttribute, zoomSettingController);
-			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), editorDesc);
+			CView* zoomView =
+				zoomSettingController->verifyView (textEdit, UIAttributes (), *editorDesc);
 			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
 			splitView->addViewToSeparator (0, zoomView);
 			zoomSettingController->restoreSetting (*getSettings ());
@@ -784,7 +789,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<IController> UIEditController::createSubController (UTF8StringPtr name,
-																  const IUIDescription* description)
+																  const IUIDescription& description)
 {
 	UTF8StringView subControllerName (name);
 	if (subControllerName == "TemplatesController")

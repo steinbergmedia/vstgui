@@ -145,7 +145,7 @@ struct ProgressController : DelegationController,
 	~ProgressController () noexcept override { progressValue->unregisterListener (this); }
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-	                   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		assert (control == nullptr);
 		control = dynamic_cast<CControl*> (view);
@@ -201,7 +201,7 @@ struct ViewController : DelegationController,
 	}
 	~ViewController () noexcept override { model->unregisterListener (this); }
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -224,7 +224,7 @@ struct ViewController : DelegationController,
 	}
 
 	SharedPointer<IController> createSubController (IdStringPtr name,
-													const IUIDescription* description) override
+													const IUIDescription& description) override
 	{
 		if (UTF8StringView (name) == "ProgressController")
 			return makeOwned<ProgressController> (progressValue, shared (this));
@@ -388,7 +388,7 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 	auto customization = WindowCustomization::make (modelBinding->getMaxIterationsValue ());
 
 	customization->addCreateViewControllerFunc (
-		"mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto uiDesc) {
+		"mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto& uiDesc) {
 			return makeOwned<ViewController> (parent, model, modelBinding->getProgressValue ());
 		});
 

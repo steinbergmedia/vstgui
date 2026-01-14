@@ -113,7 +113,7 @@ void UIGridController::valueChanged (CControl* control)
 
 //----------------------------------------------------------------------------------------------------
 CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes,
-                                     const IUIDescription* description)
+									 const IUIDescription& description)
 {
 	if (auto menu = dynamic_cast<COptionMenu*> (view))
 	{

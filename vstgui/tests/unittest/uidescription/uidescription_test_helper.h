@@ -31,17 +31,17 @@ struct Controller : public IController,
 		return registeredTag;
 	}
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		return nullptr;
 	}
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-	                   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		return view;
 	}
 	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription* description) override
+													const IUIDescription& description) override
 	{
 		return nullptr;
 	}

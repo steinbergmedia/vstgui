@@ -399,10 +399,11 @@ public:
 	~UIGradientEditorController () override;
 
 	void valueChanged (CControl* pControl) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override;
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
 	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription* description) override;
+													const IUIDescription& description) override;
 	void onDialogButton1Clicked (UIDialogController&) override;
 	void onDialogButton2Clicked (UIDialogController&) override;
 	void onDialogShow (UIDialogController&) override;
@@ -502,7 +503,7 @@ void UIGradientEditorController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<IController> UIGradientEditorController::createSubController (
-	UTF8StringPtr name, const IUIDescription* description)
+	UTF8StringPtr name, const IUIDescription& description)
 {
 	if (UTF8StringView (name) == "ColorChooserController")
 	{
@@ -553,7 +554,8 @@ SharedPointer<COptionMenu> createColorMenu (IUIDescription& desc,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& attributes,
+											   const IUIDescription& description)
 {
 	if (auto control = dynamic_cast<CTextEdit*>(view))
 	{
@@ -611,7 +613,8 @@ CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGradientEditorController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UIGradientEditorController::createView (const UIAttributes& attributes,
+											   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -814,7 +817,8 @@ UIGradientsController::UIGradientsController (const SharedPointer<IController>& 
 UIGradientsController::~UIGradientsController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGradientsController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UIGradientsController::createView (const UIAttributes& attributes,
+										  const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -829,7 +833,8 @@ CView* UIGradientsController::createView (const UIAttributes& attributes, const 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGradientsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIGradientsController::verifyView (CView* view, const UIAttributes& attributes,
+										  const IUIDescription& description)
 {
 	CControl* control = dynamic_cast<CControl*> (view);
 	if (control)

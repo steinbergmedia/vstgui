@@ -200,7 +200,8 @@ bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorChooserController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UIColorChooserController::createView (const UIAttributes& attributes,
+											 const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -208,7 +209,7 @@ CView* UIColorChooserController::createView (const UIAttributes& attributes, con
 		if (*name == "UIColorSlider")
 		{
 			const std::string* controlTagStr = attributes.getAttributeValue ("control-tag");
-			int32_t tag = controlTagStr ? description->getTagForName (controlTagStr->c_str ()) : -1;
+			int32_t tag = controlTagStr ? description.getTagForName (controlTagStr->c_str ()) : -1;
 			if (tag != -1)
 			{
 				return new UIColorSlider (color, tag);
@@ -220,7 +221,8 @@ CView* UIColorChooserController::createView (const UIAttributes& attributes, con
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& attributes,
+											 const IUIDescription& description)
 {
 	auto* control = dynamic_cast<CControl*>(view);
 	if (control && control->getTag () >= 0)

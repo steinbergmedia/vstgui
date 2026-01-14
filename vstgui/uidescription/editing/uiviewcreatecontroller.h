@@ -29,8 +29,9 @@ public:
 
 protected:
 	void valueChanged (CControl* pControl) override;
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
 

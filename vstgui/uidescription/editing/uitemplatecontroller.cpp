@@ -456,7 +456,8 @@ void UITemplateController::viewWillDelete (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UITemplateController::createView (const UIAttributes& attributes,
+										 const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -485,14 +486,15 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UITemplateController::verifyView (CView* view, const UIAttributes& attributes,
+										 const IUIDescription& description)
 {
 	return DelegationController::verifyView (view, attributes, description);
 }
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<IController> UITemplateController::createSubController (
-	UTF8StringPtr name, const IUIDescription* description)
+	UTF8StringPtr name, const IUIDescription& description)
 {
 	return DelegationController::createSubController (name, description);
 }

@@ -434,7 +434,8 @@ UIColorsController::UIColorsController (const SharedPointer<IController>& baseCo
 UIColorsController::~UIColorsController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorsController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UIColorsController::createView (const UIAttributes& attributes,
+									   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -449,7 +450,8 @@ CView* UIColorsController::createView (const UIAttributes& attributes, const IUI
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIColorsController::verifyView (CView* view, const UIAttributes& attributes,
+									   const IUIDescription& description)
 {
 	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
@@ -492,7 +494,7 @@ void UIColorsController::valueChanged (CControl* pControl)
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<IController>
-	UIColorsController::createSubController (IdStringPtr name, const IUIDescription* description)
+	UIColorsController::createSubController (IdStringPtr name, const IUIDescription& description)
 {
 	if (std::strcmp (name, "ColorChooserController") == 0)
 		return makeOwned<UIColorChooserController> (shared (this), color);

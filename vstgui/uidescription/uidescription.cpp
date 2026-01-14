@@ -641,14 +641,15 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 		const auto* subControllerName = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrSubController);
 		if (subControllerName)
 		{
-			subController = impl->controller->createSubController (subControllerName->c_str (), this);
+			subController =
+				impl->controller->createSubController (subControllerName->c_str (), *this);
 			if (subController)
 			{
 				impl->subControllerStack.emplace_back (impl->controller);
 				setController (subController);
 			}
 		}
-		result = impl->controller->createView (*node->getAttributes (), this);
+		result = impl->controller->createView (*node->getAttributes (), *this);
 		if (result && impl->viewFactory)
 		{
 			const std::string* viewClass = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrClass);
@@ -708,7 +709,7 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 		}
 	}
 	if (result && impl->controller)
-		result = impl->controller->verifyView (result, *node->getAttributes (), this);
+		result = impl->controller->verifyView (result, *node->getAttributes (), *this);
 	if (subController)
 	{
 		if (result)
@@ -932,7 +933,7 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 		}
 		if (impl->bitmapCreator2 && bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
-			if (auto b = impl->bitmapCreator2->createBitmap (*bitmapNode->getAttributes (), this))
+			if (auto b = impl->bitmapCreator2->createBitmap (*bitmapNode->getAttributes (), *this))
 			{
 				bitmap->setPlatformBitmap (b->getPlatformBitmap ());
 				auto it = b->begin ();

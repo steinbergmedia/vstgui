@@ -332,7 +332,7 @@ struct WindowController::Impl : public ICommandHandler
 		if (!uiDesc->parse ())
 			return false;
 		if (customization)
-			customization->onUIDescriptionParsed (uiDesc);
+			customization->onUIDescriptionParsed (*uiDesc);
 
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
@@ -484,7 +484,7 @@ struct WindowController::Impl : public ICommandHandler
 			return false;
 		}
 		if (customization)
-			customization->onUIDescriptionParsed (uiDesc);
+			customization->onUIDescriptionParsed (*uiDesc);
 		return true;
 	}
 
@@ -660,12 +660,12 @@ struct WindowController::Impl : public ICommandHandler
 			return this;
 		}
 		CView* createView (const UIAttributes& attributes,
-						   const IUIDescription* description) override
+						   const IUIDescription& description) override
 		{
 			return nullptr;
 		}
 		CView* verifyView (CView* view, const UIAttributes& attributes,
-						   const IUIDescription* description) override
+						   const IUIDescription& description) override
 		{
 			if (!impl)
 				return view;
@@ -683,7 +683,7 @@ struct WindowController::Impl : public ICommandHandler
 			return view;
 		}
 		SharedPointer<IController> createSubController (UTF8StringPtr name,
-														const IUIDescription* description) override
+														const IUIDescription& description) override
 		{
 			if (!impl)
 				return {};

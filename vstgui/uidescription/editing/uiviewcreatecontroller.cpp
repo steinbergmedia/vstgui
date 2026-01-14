@@ -52,7 +52,8 @@ UIViewCreatorController::UIViewCreatorController (const SharedPointer<IControlle
 UIViewCreatorController::~UIViewCreatorController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIViewCreatorController::createView (const UIAttributes& attributes, const IUIDescription* _description)
+CView* UIViewCreatorController::createView (const UIAttributes& attributes,
+											const IUIDescription& _description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -71,7 +72,8 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes, cons
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* desc)
+CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& attributes,
+											const IUIDescription& desc)
 {
 	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (dataSource && searchField && searchField->getTag () == kSearchFieldTag)

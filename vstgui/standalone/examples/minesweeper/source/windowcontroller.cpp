@@ -41,7 +41,7 @@ public:
 	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-	                   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr)
@@ -155,7 +155,7 @@ WindowController::WindowController ()
 	IApplication::instance ().registerCommand (ToggleHighscoresCommand, '/');
 
 	addCreateViewControllerFunc (
-		"MinefieldController", [this] (const auto& name, const auto& parent, auto* uidesc) {
+		"MinefieldController", [this] (const auto& name, const auto& parent, auto& uidesc) {
 			if (!minefieldViewController)
 			{
 				auto flagsValue = modelBinding.getValue (valueFlags);
@@ -169,12 +169,11 @@ WindowController::WindowController ()
 				                                                                             false);
 			    }
 			}
-			minefieldViewController->remember ();
-		    return minefieldViewController;
+			return minefieldViewController;
 		});
 
 	addCreateViewControllerFunc (
-		"NewHighScoreViewController", [this] (const auto& name, const auto& parent, auto* uidesc) {
+		"NewHighScoreViewController", [this] (const auto& name, const auto& parent, auto& uidesc) {
 			if (!enterHighscoreViewController)
 			{
 				auto nameValue = modelBinding.getValue (valueNewHighScoreName);
@@ -182,16 +181,14 @@ WindowController::WindowController ()
 			    enterHighscoreViewController = owned (new EnterHighScoreViewController (
 			        *nameValue, *okValue, parent, [this] () { showHighscores (); }));
 			}
-			enterHighscoreViewController->remember ();
-		    return enterHighscoreViewController;
+			return enterHighscoreViewController;
 		});
 
 	addCreateViewControllerFunc (
-		"HighScoreViewController", [this] (const auto& name, const auto& parent, auto* uidesc) {
+		"HighScoreViewController", [this] (const auto& name, const auto& parent, auto& uidesc) {
 			if (!highscoreViewController)
 				highscoreViewController = owned (new HighScoreViewController (parent));
-			highscoreViewController->remember ();
-		    return highscoreViewController;
+			return highscoreViewController;
 		});
 
 	modelBinding.addValue (

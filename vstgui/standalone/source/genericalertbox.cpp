@@ -121,7 +121,7 @@ public:
 
 	SharedPointer<IController> createController (const UTF8StringView& name,
 												 const SharedPointer<IController>& parent,
-												 const IUIDescription* uiDesc) override
+												 const IUIDescription& uiDesc) override
 	{
 		if (name == "ButtonController")
 		{
@@ -209,10 +209,10 @@ public:
 			button->setGradient (focusedButtonGradient);
 	}
 
-	void onUIDescriptionParsed (const IUIDescription* uiDesc) override
+	void onUIDescriptionParsed (const IUIDescription& uiDesc) override
 	{
-		focusedButtonGradient = uiDesc->getGradient ("Focused TextButton Gradient");
-		normalButtonGradient = uiDesc->getGradient ("Default TextButton Gradient");
+		focusedButtonGradient = uiDesc.getGradient ("Focused TextButton Gradient");
+		normalButtonGradient = uiDesc.getGradient ("Default TextButton Gradient");
 	}
 
 private:
@@ -226,11 +226,11 @@ private:
 		}
 
 		CView* verifyView (CView* view, const UIAttributes& attributes,
-		                   const IUIDescription* description) override
+						   const IUIDescription& description) override
 		{
 			if (auto button = dynamic_cast<CTextButton*> (view))
 			{
-				UTF8StringView tagName = description->lookupControlTagName (button->getTag ());
+				UTF8StringView tagName = description.lookupControlTagName (button->getTag ());
 				if (!setupButton (button, tagName))
 				{
 					view->forget ();

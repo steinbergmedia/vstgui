@@ -27,10 +27,17 @@ public:
 	// IController
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override { return controller->getTagForName (name, registeredTag); }
 	IControlListener* getControlListener (UTF8StringPtr name) override { return controller->getControlListener (name); }
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override { return controller->createView (attributes, description); }
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override { return controller->verifyView (view, attributes, description); }
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	{
+		return controller->createView (attributes, description);
+	}
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override
+	{
+		return controller->verifyView (view, attributes, description);
+	}
 	SharedPointer<IController> createSubController (IdStringPtr name,
-													const IUIDescription* description) override
+													const IUIDescription& description) override
 	{
 		return controller->createSubController (name, description);
 	}

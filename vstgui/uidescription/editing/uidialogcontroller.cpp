@@ -174,7 +174,7 @@ IControlListener* UIDialogController::getControlListener (UTF8StringPtr controlT
 
 //----------------------------------------------------------------------------------------------------
 CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes,
-                                       const IUIDescription* description)
+									   const IUIDescription& description)
 {
 	if (auto control = dynamic_cast<CControl*> (view))
 	{

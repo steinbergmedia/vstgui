@@ -45,7 +45,8 @@ public:
 protected:
 	void valueChanged (CControl* pControl) override;
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override;
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewRemoved (CView* view) override;

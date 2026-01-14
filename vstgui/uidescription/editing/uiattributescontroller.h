@@ -54,9 +54,10 @@ protected:
 	void getConsolidatedAttributeNames (StringList& result, const std::string& filter);
 
 	void valueChanged (CControl* pControl) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override;
 	SharedPointer<IController> createSubController (IdStringPtr name,
-													const IUIDescription* description) override;
+													const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 
 	void onUIDescTagChanged (UIDescription& desc) override;

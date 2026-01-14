@@ -26,7 +26,8 @@ public:
 							   WeakPointer<IActionPerformer> actionPerformer);
 	~UIFocusSettingsController () override = default;
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override;
 	void valueChanged (CControl* control) override;
 	void onDialogButton1Clicked (UIDialogController&) override;
 	void onDialogButton2Clicked (UIDialogController&) override;

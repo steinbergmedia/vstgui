@@ -327,7 +327,7 @@ class ViewCreator : public DelegationController,
 public:
 	ViewCreator (const SharedPointer<IController>& parent) : DelegationController (parent) {}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -377,7 +377,7 @@ void makeDrawDeviceTestsWindow ()
 
 	auto drawDeviceTestsCustomization = std::make_shared<DrawDeviceTestsCustomization> ();
 	drawDeviceTestsCustomization->addCreateViewControllerFunc (
-		"ViewCreator", [] (const auto& name, auto parent, const auto uiDesc) {
+		"ViewCreator", [] (const auto& name, auto parent, const auto& uiDesc) {
 			return makeOwned<ViewCreator> (parent);
 		});
 

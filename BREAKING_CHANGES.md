@@ -107,6 +107,12 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* UIDescription::setController
 	* DelegationController::DelegationController
 
+- The following methods now take a ```const IUIDescription&``` instead of a naked pointer:
+	* IController::createView
+	* IController::verifyView
+	* IController::createSubController
+	* Standalone::ICustomization::createController
+
 THe IController interface now inherits virtually from IReference
 
 The IScriptControllerExtension interface was changed to use references instead of pointers to indicate that these objects are always valid when these methods are called.

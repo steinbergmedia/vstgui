@@ -207,7 +207,7 @@ struct MetalController : DelegationController,
 {
 	using DelegationController::DelegationController;
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto viewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -228,7 +228,7 @@ struct MetalController : DelegationController,
 WindowPtr makeNewMetalExampleWindow ()
 {
 	auto customization = UIDesc::Customization::make ();
-	customization->addCreateViewControllerFunc ("MetalController", [] (auto, auto parent, auto) {
+	customization->addCreateViewControllerFunc ("MetalController", [] (auto, auto parent, auto&) {
 		return makeOwned<MetalController> (parent);
 	});
 

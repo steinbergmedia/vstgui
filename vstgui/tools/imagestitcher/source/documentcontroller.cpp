@@ -42,7 +42,7 @@ public:
 	{
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -50,9 +50,9 @@ public:
 			{
 				auto imageView = new ImageFramesView ();
 				CColor color;
-				if (description->getColor ("Focus", color))
+				if (description.getColor ("Focus", color))
 					imageView->setSelectionColor (color);
-				if (description->getColor ("font.color", color))
+				if (description.getColor ("font.color", color))
 					imageView->setTextColor (color);
 				return imageView;
 			}
@@ -60,7 +60,7 @@ public:
 		return controller->createView (attributes, description);
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attr, const IUIDescription* desc) override
+	CView* verifyView (CView* view, const UIAttributes& attr, const IUIDescription& desc) override
 	{
 		if (auto name = attr.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -88,7 +88,7 @@ public:
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attr, const IUIDescription* desc) override
+	CView* verifyView (CView* view, const UIAttributes& attr, const IUIDescription& desc) override
 	{
 		if (auto mb = dynamic_cast<CMovieBitmap*> (view))
 		{
@@ -108,7 +108,7 @@ class SplitViewController : public DelegationController,
 							public NonAtomicReferenceCounted
 {
 public:
-	SplitViewController (const SharedPointer<IController>& parent, const IUIDescription* desc)
+	SplitViewController (const SharedPointer<IController>& parent, const IUIDescription& desc)
 	: DelegationController (parent), desc (desc)
 	{
 	}
@@ -142,7 +142,7 @@ public:
 	{
 		if (!gradientAdded)
 		{
-			if (auto view = desc->createView ("SplitViewSeperatorView", shared (this)))
+			if (auto view = desc.createView ("SplitViewSeperatorView", shared (this)))
 			{
 				if (auto container = view->asViewContainer ())
 				{
@@ -162,7 +162,7 @@ public:
 	}
 
 private:
-	const IUIDescription* desc {nullptr};
+	const IUIDescription& desc;
 	bool gradientAdded {false};
 };
 
@@ -269,7 +269,7 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 //------------------------------------------------------------------------
 SharedPointer<IController> DocumentWindowController::createController (
 	const UTF8StringView& name, const SharedPointer<IController>& parent,
-	const IUIDescription* uiDesc)
+	const IUIDescription& uiDesc)
 {
 	if (name == "ImageViewController")
 		return makeOwned<ImageViewController> (
@@ -288,9 +288,7 @@ SharedPointer<IController> DocumentWindowController::createController (
 }
 
 //------------------------------------------------------------------------
-void DocumentWindowController::onUIDescriptionParsed (const IUIDescription* uiDesc)
-{
-}
+void DocumentWindowController::onUIDescriptionParsed (const IUIDescription& uiDesc) {}
 
 //------------------------------------------------------------------------
 void DocumentWindowController::onSetContentView (IWindow& w, const SharedPointer<CFrame>& cv)

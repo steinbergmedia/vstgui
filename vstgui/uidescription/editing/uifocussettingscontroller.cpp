@@ -61,7 +61,8 @@ void UIFocusSettingsController::onDialogButton2Clicked (UIDialogController&) {}
 void UIFocusSettingsController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes,
+											  const IUIDescription& description)
 {
 	auto* control = dynamic_cast<CControl*>(view);
 	if (control)

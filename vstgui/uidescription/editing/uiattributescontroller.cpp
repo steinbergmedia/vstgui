@@ -73,7 +73,8 @@ public:
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override
 	{
 		auto* control = dynamic_cast<CControl*>(view);
 		if (control)
@@ -160,7 +161,8 @@ public:
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override
 	{
 		auto* control = dynamic_cast<CControl*>(view);
 		if (control)
@@ -284,7 +286,8 @@ public:
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override
 	{
 		if (control == nullptr)
 		{
@@ -336,8 +339,9 @@ public:
 			textLabel->unregisterTextLabelListener (this);
 		}
 	}
-	
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override
 	{
 		if (textLabel == nullptr)
 		{
@@ -436,7 +440,7 @@ public:
 	using TextController::TextController;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		if (editButton == nullptr)
 		{
@@ -458,7 +462,7 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -470,12 +474,12 @@ public:
 				if (textEditor)
 				{
 					ITextEditor::Style style {};
-					description->getColor ("control.back", style.backColor);
-					description->getColor ("control.font", style.textColor);
-					description->getColor ("control.frame", style.selectionBackColor);
-					description->getColor ("control.frame", style.lineNumberTextColor);
-					description->getColor ("control.frame", style.frameColor);
-					if (auto font = description->getFont ("scripteditor.font"))
+					description.getColor ("control.back", style.backColor);
+					description.getColor ("control.font", style.textColor);
+					description.getColor ("control.frame", style.selectionBackColor);
+					description.getColor ("control.frame", style.lineNumberTextColor);
+					description.getColor ("control.frame", style.frameColor);
+					if (auto font = description.getFont ("scripteditor.font"))
 					{
 						style.font = font;
 						style.lineNumbersFont = makeOwned<CFontDesc> (*font);
@@ -527,7 +531,7 @@ public:
 	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		if (slider == nullptr)
 		{
@@ -606,8 +610,8 @@ public:
 		if (menu)
 			menu->unregisterOptionMenuListener (this);
 	}
-	
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*) override
+
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription&) override
 	{
 		if (menu == nullptr)
 		{
@@ -615,7 +619,7 @@ public:
 			if (menu)
 				menu->registerOptionMenuListener (this);
 		}
-		return TextController::verifyView (view, attributes, description);
+		return TextController::verifyView (view, attributes, *description);
 	}
 
 	using StringPtrList =std::list<const std::string*>;
@@ -734,7 +738,7 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "ColorView")
@@ -813,7 +817,7 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "GradientView")
@@ -1011,7 +1015,8 @@ void UIAttributesController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attributes,
+										   const IUIDescription& description)
 {
 	if (attributeView == nullptr)
 	{
@@ -1060,7 +1065,7 @@ IControlListener* UIAttributesController::getControlListener (UTF8StringPtr name
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<IController> UIAttributesController::createSubController (
-	IdStringPtr _name, const IUIDescription* description)
+	IdStringPtr _name, const IUIDescription& description)
 {
 	UTF8StringView name (_name);
 	if (currentAttributeName)

@@ -204,14 +204,14 @@ void HighScoreViewController::dbDrawCell (CDrawContext* context, const CRect& si
 
 //------------------------------------------------------------------------
 CView* HighScoreViewController::createView (const UIAttributes& attributes,
-                                            const IUIDescription* description)
+											const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr && *attr == "DataBrowser")
 	{
-		if (auto f = description->getFont ("highscore"))
+		if (auto f = description.getFont ("highscore"))
 			font = f;
-		description->getColor ("highscore.font", fontColor);
+		description.getColor ("highscore.font", fontColor);
 		return new CDataBrowser ({}, this, CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines,
 		                         0.);
 	}

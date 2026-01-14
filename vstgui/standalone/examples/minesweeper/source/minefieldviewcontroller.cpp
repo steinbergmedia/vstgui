@@ -57,18 +57,18 @@ void MinefieldViewController::setMouseMode (bool state)
 
 //------------------------------------------------------------------------
 CView* MinefieldViewController::createView (const UIAttributes& attributes,
-                                            const IUIDescription* description)
+											const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr && *attr == "MinefieldView")
 	{
-		description->getColor ("card.closed.frame", closedFrameColor);
-		description->getColor ("card.closed.back", closedBackColor);
-		description->getColor ("card.opened.frame", openedFrameColor);
-		description->getColor ("card.opened.back", openedBackColor);
-		description->getColor ("card.flaged.frame", flagedFrameColor);
-		description->getColor ("card.flaged.back", flagedBackColor);
-		if (auto f = description->getFont ("emoji"))
+		description.getColor ("card.closed.frame", closedFrameColor);
+		description.getColor ("card.closed.back", closedBackColor);
+		description.getColor ("card.opened.frame", openedFrameColor);
+		description.getColor ("card.opened.back", openedBackColor);
+		description.getColor ("card.flaged.frame", flagedFrameColor);
+		description.getColor ("card.flaged.back", flagedBackColor);
+		if (auto f = description.getFont ("emoji"))
 			emojiFont = f;
 		smallEmojiFont = emojiFont;
 		if (dataBrowser)
@@ -83,7 +83,7 @@ CView* MinefieldViewController::createView (const UIAttributes& attributes,
 
 //------------------------------------------------------------------------
 CView* MinefieldViewController::verifyView (CView* view, const UIAttributes& attributes,
-                                            const IUIDescription* description)
+											const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr)

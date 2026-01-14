@@ -188,7 +188,8 @@ UITagsController::UITagsController (const SharedPointer<IController>& baseContro
 UITagsController::~UITagsController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UITagsController::createView (const UIAttributes& attributes, const IUIDescription* description)
+CView* UITagsController::createView (const UIAttributes& attributes,
+									 const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -204,7 +205,8 @@ CView* UITagsController::createView (const UIAttributes& attributes, const IUIDe
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes,
+									 const IUIDescription& description)
 {
 	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (dataSource && searchField && searchField->getTag () == kSearchTag)

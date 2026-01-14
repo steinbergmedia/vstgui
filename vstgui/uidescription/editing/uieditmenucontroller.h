@@ -180,7 +180,8 @@ protected:
 	void createFileMenu (SharedPointer<COptionMenu> menu);
 
 	void viewRemoved (CView* view) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+					   const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override { return this; }
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;

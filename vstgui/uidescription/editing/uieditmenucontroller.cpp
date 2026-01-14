@@ -676,7 +676,8 @@ void UIEditMenuController::viewRemoved (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*)
+CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes,
+										 const IUIDescription&)
 {
 	auto menu = shared (dynamic_cast<COptionMenu*> (view));
 	if (menu)

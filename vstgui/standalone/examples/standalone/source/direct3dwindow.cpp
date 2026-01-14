@@ -651,11 +651,12 @@ struct ExampleRenderer : public ExternalView::IDirect3D12Renderer
 };
 
 //------------------------------------------------------------------------
-struct Direct3DController : DelegationController
+struct Direct3DController : DelegationController,
+							AtomicReferenceCounted
 {
 	using DelegationController::DelegationController;
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto viewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -677,9 +678,9 @@ struct Direct3DController : DelegationController
 WindowPtr makeNewDirect3DExampleWindow ()
 {
 	auto customization = UIDesc::Customization::make ();
-	customization->addCreateViewControllerFunc ("Direct3DController", [] (auto, auto parent, auto) {
-		return new Direct3DController (parent);
-	});
+	customization->addCreateViewControllerFunc (
+		"Direct3DController",
+		[] (auto, auto parent, auto&) { return makeOwned<Direct3DController> (parent); });
 
 	UIDesc::Config config;
 	config.uiDescFileName = "direct3dwindow.uidesc";

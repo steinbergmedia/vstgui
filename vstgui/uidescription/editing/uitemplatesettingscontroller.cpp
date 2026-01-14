@@ -69,7 +69,8 @@ void UITemplateSettingsController::onDialogButton2Clicked (UIDialogController&) 
 void UITemplateSettingsController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*)
+CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes& attributes,
+												 const IUIDescription&)
 {
 	CTextEdit* control = dynamic_cast<CTextEdit*>(view);
 	if (control)

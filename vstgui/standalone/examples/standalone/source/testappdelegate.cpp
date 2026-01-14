@@ -119,7 +119,7 @@ public:
 	}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		if (auto control = dynamic_cast<CControl*> (view))
 		{
@@ -179,7 +179,7 @@ public:
 	WeekdaysController (const SharedPointer<IController>& parent) : DelegationController (parent) {}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		if (auto listControl = dynamic_cast<CListControl*> (view))
 		{
@@ -314,7 +314,7 @@ public:
 		IApplication::instance ().registerCommand (DecreaseTextSize, '-');
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -390,7 +390,7 @@ public:
 	}
 
 #if MAC || WINDOWS
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -450,7 +450,7 @@ struct DBController : DelegationController,
 			data[i][0] = i;
 		}
 	}
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -462,7 +462,7 @@ struct DBController : DelegationController,
 		return nullptr;
 	}
 	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription* description) override
+					   const IUIDescription& description) override
 	{
 		if (auto db = dynamic_cast<CDataBrowser*> (view))
 		{
@@ -636,28 +636,28 @@ bool Delegate::handleCommand (const Command& command)
 			customization->addCreateViewControllerFunc (
 				"DisabledControlsController",
 				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
-					const IUIDescription*) {
+					const IUIDescription&) {
 					return makeOwned<DisabledControlsController> (parent);
 				});
 			customization->addCreateViewControllerFunc (
 				"WeekdaysController",
 				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
-					const IUIDescription*) { return makeOwned<WeekdaysController> (parent); });
+					const IUIDescription&) { return makeOwned<WeekdaysController> (parent); });
 			customization->addCreateViewControllerFunc (
 				"DatePickerController",
 				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
-					const IUIDescription*) { return makeOwned<DatePickerController> (parent); });
+					const IUIDescription&) { return makeOwned<DatePickerController> (parent); });
 			customization->addCreateViewControllerFunc (
 				"TextEditorController",
 				[this] (const UTF8StringView&, const SharedPointer<IController>& parent,
-						const IUIDescription*) {
+						const IUIDescription&) {
 					return makeOwned<TextEditorViewController> (parent,
 																*textEditorController.get ());
 				});
 			customization->addCreateViewControllerFunc (
 				"DBController",
 				[this] (const UTF8StringView&, const SharedPointer<IController>& parent,
-						const IUIDescription*) { return makeOwned<DBController> (parent); });
+						const IUIDescription&) { return makeOwned<DBController> (parent); });
 			config.customization = customization;
 		}
 		if (auto window = UIDesc::makeWindow (config))

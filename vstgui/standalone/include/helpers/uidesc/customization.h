@@ -22,12 +22,12 @@ class CustomizationAdapter : public ICustomization
 public:
 	SharedPointer<IController> createController (const UTF8StringView& name,
 												 const SharedPointer<IController>& parent,
-												 const IUIDescription* uiDesc) override
+												 const IUIDescription& uiDesc) override
 	{
 		return {};
 	}
 
-	void onUIDescriptionParsed (const IUIDescription* uiDesc) override {}
+	void onUIDescriptionParsed (const IUIDescription& uiDesc) override {}
 };
 
 //------------------------------------------------------------------------
@@ -72,7 +72,7 @@ public:
 
 	using CreateViewControllerFunc = std::function<SharedPointer<IController> (
 		const UTF8StringView& name, const SharedPointer<IController>& parent,
-		const IUIDescription* uiDesc)>;
+		const IUIDescription& uiDesc)>;
 
 	void addCreateViewControllerFunc (const UTF8String& name, CreateViewControllerFunc func)
 	{
@@ -81,7 +81,7 @@ public:
 
 	SharedPointer<IController> createController (const UTF8StringView& name,
 												 const SharedPointer<IController>& parent,
-												 const IUIDescription* uiDesc) override
+												 const IUIDescription& uiDesc) override
 	{
 		auto it = createViewControllerMap.find (std::string (name));
 		if (it != createViewControllerMap.end ())
