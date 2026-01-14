@@ -1410,7 +1410,7 @@ void UIEditController::doSelectAllChildren ()
 	CViewContainer* container = selection->first ()->asViewContainer ();
 	selection->clear ();
 	container->forEachChild ([&] (auto view) {
-		if (IViewFactory::getViewName (view))
+		if (IViewFactory::getViewName (*view))
 			selection->add (view);
 	});
 }
@@ -1424,7 +1424,7 @@ void UIEditController::doSelectParents ()
 	{
 		if (auto parent = view->getParentView ())
 		{
-			while (IViewFactory::getViewName (parent) == nullptr)
+			while (IViewFactory::getViewName (*parent) == nullptr)
 			{
 				parent = parent->getParentView ();
 			}

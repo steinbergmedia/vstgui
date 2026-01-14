@@ -75,7 +75,7 @@ void UnembedViewOperation::collectSubviews (const SharedPointer<CViewContainer>&
 											bool deep)
 {
 	container->forEachChild ([&] (auto& view) {
-		if (factory.getViewName (view))
+		if (factory.getViewName (*view))
 		{
 			emplace_back (view);
 		}
@@ -471,7 +471,7 @@ TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISe
 	if (const auto* vfEditingSupport = dynamic_cast<const IViewFactoryEditingSupport*> (&factory))
 	{
 		UIAttributes attr;
-		if (vfEditingSupport->getAttributesForView (view, *desc, attr))
+		if (vfEditingSupport->getAttributesForView (*view, *desc, attr))
 		{
 			attr.setAttribute (UIViewCreator::kAttrClass, viewClassName);
 			newView = owned (factory.createView (attr, *desc));
@@ -507,7 +507,7 @@ void TransformViewTypeOperation::exchangeSubViews (const SharedPointer<CViewCont
 			std::list<SharedPointer<CView>> temp;
 
 			src->forEachChild ([&] (auto& childView) {
-				if (IViewFactory::getViewName (childView))
+				if (IViewFactory::getViewName (*childView))
 				{
 					temp.emplace_back (childView);
 				}
@@ -568,7 +568,7 @@ AttributeChangeAction::AttributeChangeAction (const SharedPointer<UIDescription>
 	std::string attrOldValue;
 	for (auto view : *selection)
 	{
-		viewFactory.getAttributeValue (view, attrName, attrOldValue, *desc);
+		viewFactory.getAttributeValue (*view, attrName, attrOldValue, *desc);
 		insert (std::make_pair (view, attrOldValue));
 	}
 	name = "'" + attrName + "' change";
@@ -606,7 +606,7 @@ void AttributeChangeAction::perform ()
 	for (auto& element : *this)
 	{
 		element.first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory.applyAttributeValues (element.first, attr, *desc);
+		viewFactory.applyAttributeValues (*element.first, attr, *desc);
 		element.first->invalid ();	// and afterwards also
 	}
 	selection->viewsDidChange ();
@@ -623,7 +623,7 @@ void AttributeChangeAction::undo ()
 		UIAttributes attr;
 		attr.setAttribute (attrName, element.second);
 		element.first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory.applyAttributeValues (element.first, attr, *desc);
+		viewFactory.applyAttributeValues (*element.first, attr, *desc);
 		element.first->invalid ();	// and afterwards also
 	}
 	selection->viewsDidChange ();
@@ -656,14 +656,14 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
 	for (auto& view : views)
 	{
 		std::list<std::string> attrNames;
-		if (viewFactoryEditing->getAttributeNamesForView (view, attrNames))
+		if (viewFactoryEditing->getAttributeNamesForView (*view, attrNames))
 		{
 			for (auto& attrName : attrNames)
 			{
-				if (viewFactoryEditing->getAttributeType (view, attrName) == type)
+				if (viewFactoryEditing->getAttributeType (*view, attrName) == type)
 				{
 					std::string typeValue;
-					if (viewFactory.getAttributeValue (view, attrName, typeValue, *desc))
+					if (viewFactory.getAttributeValue (*view, attrName, typeValue, *desc))
 					{
 						if (typeValue == value)
 						{
@@ -696,7 +696,7 @@ void MultipleAttributeChangeAction::setAttributeValue (UTF8StringPtr value)
 		auto view = element.first;
 		UIAttributes newAttr;
 		newAttr.setAttribute (element.second, value);
-		viewFactory.applyAttributeValues (view, newAttr, *description);
+		viewFactory.applyAttributeValues (*view, newAttr, *description);
 		view->invalid ();
 	}
 }

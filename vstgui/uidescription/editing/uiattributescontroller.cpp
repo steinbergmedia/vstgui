@@ -916,7 +916,7 @@ public:
 			dynamic_cast<const IViewFactoryEditingSupport*> (&description->getViewFactory ());
 		if (viewFactory)
 		{
-			viewFactory->getPossibleAttributeListValues (selection->first (), attrName, names);
+			viewFactory->getPossibleAttributeListValues (*selection->first (), attrName, names);
 		}
 	}
 	
@@ -1213,7 +1213,7 @@ void UIAttributesController::validateAttributeViews ()
 		for (const auto& view : *selection)
 		{
 			std::string temp;
-			viewFactory.getAttributeValue (view, controller->getAttributeName (), temp,
+			viewFactory.getAttributeValue (*view, controller->getAttributeName (), temp,
 										   *editDescription);
 			if (temp != attrValue && !first)
 				hasDifferentValues = true;
@@ -1258,7 +1258,7 @@ CView* UIAttributesController::createValueViewForAttributeType (const IViewFacto
 			double minValue, maxValue;
 			const auto* viewFactoryEditing =
 				dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory);
-			if (viewFactoryEditing->getAttributeValueRange (view, attrName, minValue, maxValue))
+			if (viewFactoryEditing->getAttributeValueRange (*view, attrName, minValue, maxValue))
 			{
 				CView* valueView =
 					editorDescription->createView ("attributes.number", shared (this));
@@ -1314,7 +1314,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	for (const auto& view : *selection)
 	{
 		std::string temp;
-		viewFactory.getAttributeValue (view, attrName, temp, *editDescription);
+		viewFactory.getAttributeValue (*view, attrName, temp, *editDescription);
 		if (temp != attrValue && !first)
 			hasDifferentValues = true;
 		attrValue = temp;
@@ -1338,7 +1338,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	if (valueView == nullptr)
 	{
 		CView* firstView = selection->first ();
-		auto attrType = viewFactoryEditing->getAttributeType (firstView, attrName);
+		auto attrType = viewFactoryEditing->getAttributeType (*firstView, attrName);
 		valueView = createValueViewForAttributeType (viewFactory, firstView, attrName, attrType);
 	}
 	if (valueView == nullptr) // fallcack if attributes.text template not defined
@@ -1386,7 +1386,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 	for (const auto& view : *selection)
 	{
 		StringList temp;
-		if (viewFactory->getAttributeNamesForView (view, temp))
+		if (viewFactory->getAttributeNamesForView (*view, temp))
 		{
 			StringList toRemove;
 			if (attrNames.empty ())
@@ -1444,7 +1444,7 @@ void UIAttributesController::rebuildAttributesView ()
 			UTF8StringPtr viewname = nullptr;
 			for (const auto& view : *selection)
 			{
-				UTF8StringPtr name = viewFactory->getViewDisplayName (view);
+				UTF8StringPtr name = viewFactory->getViewDisplayName (*view);
 				if (viewname != nullptr && UTF8StringView (name) != viewname)
 				{
 					viewname = nullptr;

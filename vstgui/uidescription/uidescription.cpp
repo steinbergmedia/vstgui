@@ -569,7 +569,7 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 			if (auto factory = impl->viewFactory.cast<IViewFactoryEditingSupport> ())
 			{
 				auto attr = makeOwned<UIAttributes> ();
-				if (factory->getAttributesForView (view, *const_cast<UIDescription*> (this),
+				if (factory->getAttributesForView (*view, *const_cast<UIDescription*> (this),
 												   *attr) == false)
 					return false;
 				auto newNode = makeOwned<UINode> ("view", attr);
@@ -630,7 +630,7 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 	{
 		CView* view = createView (templateName->c_str (), impl->controller);
 		if (view)
-			impl->viewFactory->applyAttributeValues (view, *node->getAttributes (), *this);
+			impl->viewFactory->applyAttributeValues (*view, *node->getAttributes (), *this);
 		return view;
 	}
 
@@ -654,7 +654,7 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 		{
 			const std::string* viewClass = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrClass);
 			if (viewClass)
-				impl->viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (),
+				impl->viewFactory->applyCustomViewAttributeValues (*result, viewClass->c_str (),
 																   *node->getAttributes (), *this);
 		}
 	}
@@ -664,7 +664,7 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 		if (result == nullptr)
 		{
 			result = new CViewContainer (CRect (0, 0, 0, 0));
-			impl->viewFactory->applyCustomViewAttributeValues (result, "CViewContainer",
+			impl->viewFactory->applyCustomViewAttributeValues (*result, "CViewContainer",
 															   *node->getAttributes (), *this);
 		}
 	}
@@ -1624,7 +1624,7 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node, 
 	auto factory = impl->viewFactory.cast<IViewFactoryEditingSupport> ();
 	std::list<std::string> attributeNames;
 	CViewContainer* container = view->asViewContainer ();
-	if (factory->getAttributeNamesForView (view, attributeNames))
+	if (factory->getAttributeNamesForView (*view, attributeNames))
 	{
 		for (auto& name : attributeNames)
 		{
@@ -1632,11 +1632,11 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node, 
 				impl->attributeSaveFilterFunc (view, name) == false)
 				continue;
 			std::string value;
-			if (impl->viewFactory->getAttributeValue (view, name, value, *this))
+			if (impl->viewFactory->getAttributeValue (*view, name, value, *this))
 				node->getAttributes ()->setAttribute (name, std::move (value));
 		}
 		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass,
-											  IViewFactory::getViewName (view));
+											  IViewFactory::getViewName (*view));
 		result = true;
 	}
 	if (deep && container && dynamic_cast<UIViewSwitchContainer*> (container) == nullptr)

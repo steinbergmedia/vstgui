@@ -119,6 +119,17 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	
 - The following functions now take a reference instead of a naked pointer
 	* IContextMenuController2::appendContextMenuItems
+	* IViewFactory::applyAttributeValues
+	* IViewFactory::applyCustomViewAttributeValues
+	* IViewFactory::getAttributeValue
+	* IViewFactory::viewIsTypeOf
+	* IViewFactory::getViewName
+	* IViewFactoryEditingSupport::getAttributeNamesForView
+	* IViewFactoryEditingSupport::getAttributesForView
+	* IViewFactoryEditingSupport::getPossibleAttributeListValues
+	* IViewFactoryEditingSupport::getAttributeValueRange
+	* IViewFactoryEditingSupport::getViewDisplayName
+	
 
 THe IController interface now inherits virtually from IReference
 

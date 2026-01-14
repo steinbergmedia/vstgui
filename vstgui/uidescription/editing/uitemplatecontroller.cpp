@@ -193,7 +193,7 @@ protected:
 		}
 		if (const auto* vfEditingSupport =
 				dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory))
-			return vfEditingSupport->getViewDisplayName (v);
+			return vfEditingSupport->getViewDisplayName (*v);
 		return {};
 	}
 	const UTF8String& getHeaderTitle () const override
@@ -425,7 +425,7 @@ void UITemplateController::navigateTo (CView* view)
 			return; // view is not a child of the templateView
 		if (parent == templateView)
 			break;
-		if (IViewFactory::getViewName (parent) == nullptr)
+		if (IViewFactory::getViewName (*parent) == nullptr)
 		{
 			v = parent;
 			continue;

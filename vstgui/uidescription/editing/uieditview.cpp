@@ -541,7 +541,7 @@ SharedPointer<CView> UIEditView::getViewAt (const CPoint& p, const GetViewOption
 	auto view = CViewContainer::getViewAt (p, options);
 	if (editing)
 	{
-		while (view && IViewFactory::getViewName (view) == nullptr)
+		while (view && IViewFactory::getViewName (*view) == nullptr)
 		{
 			view = view->getParentView ();
 		}
@@ -556,7 +556,7 @@ SharedPointer<CViewContainer> UIEditView::getContainerAt (const CPoint& p,
 	auto view = CViewContainer::getContainerAt (p, options);
 	if (editing)
 	{
-		while (view && IViewFactory::getViewName (view) == nullptr)
+		while (view && IViewFactory::getViewName (*view) == nullptr)
 		{
 			view = view->getParentView ()->asViewContainer ();
 		}
@@ -802,7 +802,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		auto result = findChildsInArea (getEditView ()->asViewContainer (), area);
 		for (auto& view : result)
 		{
-			if (IViewFactory::getViewName (view) && !getSelection ()->contains (view))
+			if (IViewFactory::getViewName (*view) && !getSelection ()->contains (view))
 				getSelection ()->add (view);
 		}
 	}
@@ -1368,7 +1368,7 @@ void UIEditView::onDoubleClickEditing (CView* view)
 
 	const auto& factory = description->getViewFactory ();
 	std::string attrValue;
-	if (!factory.getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue, *description))
+	if (!factory.getAttributeValue (*view, UIViewCreator::kAttrTitle, attrValue, *description))
 		return;
 
 	auto frame = getFrame ();

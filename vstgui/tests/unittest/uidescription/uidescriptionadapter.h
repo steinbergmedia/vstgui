@@ -20,23 +20,23 @@ public:
 	{
 		return nullptr;
 	}
-	bool applyAttributeValues (CView* view, const UIAttributes& attributes,
+	bool applyAttributeValues (CView& view, const UIAttributes& attributes,
 							   const IUIDescription& desc) const override
 	{
 		return false;
 	}
-	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
+	bool applyCustomViewAttributeValues (CView& customView, IdStringPtr baseViewName,
 										 const UIAttributes& attributes,
 										 const IUIDescription& desc) const override
 	{
 		return false;
 	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	bool getAttributeValue (CView& view, const std::string& attributeName, std::string& stringValue,
 							const IUIDescription& desc) const override
 	{
 		return false;
 	}
-	bool viewIsTypeOf (CView* view, const std::string& typeName) const override { return false; }
+	bool viewIsTypeOf (CView& view, const std::string& typeName) const override { return false; }
 };
 
 class UIDescriptionAdapter : public IUIDescription

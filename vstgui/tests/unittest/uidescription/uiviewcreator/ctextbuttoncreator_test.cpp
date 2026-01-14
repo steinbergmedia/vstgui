@@ -203,7 +203,7 @@ TEST_CASE (CTextButtonCreatorTest, LegacyGradient)
 	EXPECT (*view->getGradientHighlighted () != *defTB->getGradientHighlighted ());
 
 	UIAttributes a2;
-	factory.getAttributesForView (view, uidesc, a2);
+	factory.getAttributesForView (*view, uidesc, a2);
 	auto str = a2.getAttributeValue (kAttrGradient);
 	EXPECT (str);
 	str = a2.getAttributeValue (kAttrGradientHighlighted);

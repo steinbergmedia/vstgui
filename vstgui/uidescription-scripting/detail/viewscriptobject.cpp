@@ -25,7 +25,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 : view (view), context (context)
 {
 	scriptVar->setLifeTimeObserver (this);
-	auto viewType = IViewFactory::getViewName (view);
+	auto viewType = IViewFactory::getViewName (*view);
 	scriptVar->addChild ("type"sv, new CScriptVar (std::string (viewType ? viewType : "unknown")));
 	addFunc ("setAttribute"sv,
 			 [uiDesc = context.getUIDescription (), view] (CScriptVar& var) {
@@ -33,7 +33,8 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 				 auto value = var.getParameter ("value"sv);
 				 UIAttributes attr;
 				 attr.setAttribute (key->getString ().data (), value->getString ().data ());
-				 auto result = uiDesc->getViewFactory ().applyAttributeValues (view, attr, *uiDesc);
+				 auto result =
+					 uiDesc->getViewFactory ().applyAttributeValues (*view, attr, *uiDesc);
 				 var.getReturnVar ()->setInt (result);
 			 },
 			 {"key", "value"});
@@ -41,7 +42,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 			 [uiDesc = context.getUIDescription (), view] (CScriptVar& var) {
 				 auto key = var.getParameter ("key"sv);
 				 std::string result;
-				 if (uiDesc->getViewFactory ().getAttributeValue (view, key->getString ().data (),
+				 if (uiDesc->getViewFactory ().getAttributeValue (*view, key->getString ().data (),
 																  result, *uiDesc))
 				 {
 					 var.getReturnVar ()->setString (result);
@@ -56,7 +57,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 			 [uiDesc = context.getUIDescription (), view] (CScriptVar& var) {
 				 auto typeName = var.getParameter ("typeName"sv);
 				 auto result =
-					 uiDesc->getViewFactory ().viewIsTypeOf (view, typeName->getString ().data ());
+					 uiDesc->getViewFactory ().viewIsTypeOf (*view, typeName->getString ().data ());
 				 var.getReturnVar ()->setInt (result);
 			 },
 			 {"typeName"});

@@ -27,14 +27,14 @@ public:
 	// IViewFactory
 	CView* createView (const UIAttributes& attributes,
 					   const IUIDescription& description) const override;
-	bool applyAttributeValues (CView* view, const UIAttributes& attributes,
+	bool applyAttributeValues (CView& view, const UIAttributes& attributes,
 							   const IUIDescription& desc) const override;
-	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
+	bool applyCustomViewAttributeValues (CView& customView, IdStringPtr baseViewName,
 										 const UIAttributes& attributes,
 										 const IUIDescription& desc) const override;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	bool getAttributeValue (CView& view, const std::string& attributeName, std::string& stringValue,
 							const IUIDescription& desc) const override;
-	bool viewIsTypeOf (CView* view, const std::string& typeName) const override;
+	bool viewIsTypeOf (CView& view, const std::string& typeName) const override;
 
 	static void registerViewCreator (const IViewCreator& viewCreator);
 	static void unregisterViewCreator (const IViewCreator& viewCreator);
@@ -44,17 +44,20 @@ public:
 	using StringList = std::list<std::string>;
 	using ViewAndDisplayNameList = std::list<std::pair<const std::string*, const std::string>>;
 
-	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const override;
-	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const override;
+	bool getAttributeNamesForView (CView& view, StringList& attributeNames) const override;
+	IViewCreator::AttrType getAttributeType (CView& view,
+											 const std::string& attributeName) const override;
 	void collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter = nullptr) const override;
-	bool getAttributesForView (CView* view, const IUIDescription& desc,
+	bool getAttributesForView (CView& view, const IUIDescription& desc,
 							   UIAttributes& attr) const override;
 	// list type support
-	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const override;
-	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const override;
+	bool getPossibleAttributeListValues (CView& view, const std::string& attributeName,
+										 StringPtrList& values) const override;
+	bool getAttributeValueRange (CView& view, const std::string& attributeName, double& minValue,
+								 double& maxValue) const override;
 
 	ViewAndDisplayNameList collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter = nullptr) const override;
-	UTF8StringPtr getViewDisplayName (CView* view) const override;
+	UTF8StringPtr getViewDisplayName (CView& view) const override;
 
 #if ENABLE_UNIT_TESTS
 	bool disableRememberAttributes {false};
@@ -62,7 +65,7 @@ public:
 #endif
 
 protected:
-	void evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes,
+	void evaluateAttributesAndRemember (CView& view, const UIAttributes& attributes,
 										UIAttributes& evaluatedAttributes,
 										const IUIDescription& description) const;
 	CView* createViewByName (const std::string* className, const UIAttributes& attributes,
@@ -70,8 +73,8 @@ protected:
 
 #if VSTGUI_LIVE_EDITING
 	static size_t createHash (const std::string& str);
-	void rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value) const;
-	bool getRememberedAttribute (CView* view, IdStringPtr attrName, std::string& value) const;
+	void rememberAttribute (CView& view, IdStringPtr attrName, const std::string& value) const;
+	bool getRememberedAttribute (CView& view, IdStringPtr attrName, std::string& value) const;
 #endif
 };
 

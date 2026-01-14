@@ -812,7 +812,7 @@ void UIEditMenuController::getChildrenOfType (CViewContainer* container, UTF8Str
 											  std::vector<SharedPointer<CView>>& result) const
 {
 	container->forEachChild ([&] (auto view) {
-		if (type == IViewFactory::getViewName (view))
+		if (type == IViewFactory::getViewName (*view))
 			result.emplace_back (view);
 		if (auto c = view->asViewContainer ())
 		{

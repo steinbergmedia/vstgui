@@ -24,7 +24,7 @@ TEST_CASE (CXYPadCreatorTest, Create)
 	auto control = view.cast<CXYPad> ();
 	EXPECT (control);
 	UIAttributes a2;
-	EXPECT (factory.getAttributesForView (view, uidesc, a2));
+	EXPECT (factory.getAttributesForView (*view, uidesc, a2));
 }
 
 } // VSTGUI

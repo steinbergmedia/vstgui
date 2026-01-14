@@ -24,7 +24,7 @@ TEST_CASE (COnOffButtonCreatorTest, Create)
 	auto control = view.cast<COnOffButton> ();
 	EXPECT (control);
 	UIAttributes a2;
-	EXPECT (factory.getAttributesForView (view, uidesc, a2));
+	EXPECT (factory.getAttributesForView (*view, uidesc, a2));
 }
 
 } // VSTGUI

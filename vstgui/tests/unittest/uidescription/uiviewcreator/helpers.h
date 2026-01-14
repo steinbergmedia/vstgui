@@ -126,7 +126,7 @@ inline void testPossibleValues (const IdStringPtr className, const std::string& 
 	a.setAttribute (UIViewCreator::kAttrClass, className);
 	auto view = owned (factory.createView (a, desc));
 	UIViewFactory::StringPtrList values;
-	EXPECT (factory.getPossibleAttributeListValues (view, attrName, values));
+	EXPECT (factory.getPossibleAttributeListValues (*view, attrName, values));
 	for (auto& v : expectedValues)
 	{
 		EXPECT (std::find_if (values.begin (), values.end (),
@@ -145,7 +145,7 @@ inline void testMinMaxValues (const IdStringPtr className, const std::string& at
 	a.setAttribute (UIViewCreator::kAttrClass, className);
 	auto view = owned (factory.createView (a, desc));
 	double min, max;
-	EXPECT (factory.getAttributeValueRange (view, attrName, min, max));
+	EXPECT (factory.getAttributeValueRange (*view, attrName, min, max));
 	EXPECT (min == minValue);
 	EXPECT (max == maxValue);
 }
@@ -167,7 +167,7 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName,
 	EXPECT (proc (view));
 
 	UIAttributes a2;
-	factory.getAttributesForView (view, desc, a2);
+	factory.getAttributesForView (*view, desc, a2);
 	auto str = a2.getAttributeValue (attrName);
 	EXPECT (str);
 	EXPECT (*str == attrValue);
@@ -188,7 +188,7 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, int
 	EXPECT (proc (view));
 
 	UIAttributes a2;
-	factory.getAttributesForView (view, desc, a2);
+	factory.getAttributesForView (*view, desc, a2);
 	int32_t value;
 	a2.getIntegerAttribute (attrName, value);
 	EXPECT (value == attrValue);
@@ -209,7 +209,7 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, boo
 	EXPECT (proc (view));
 
 	UIAttributes a2;
-	factory.getAttributesForView (view, desc, a2);
+	factory.getAttributesForView (*view, desc, a2);
 	bool value;
 	a2.getBooleanAttribute (attrName, value);
 	EXPECT (value == attrValue);
@@ -230,7 +230,7 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, dou
 	EXPECT (proc (view));
 
 	UIAttributes a2;
-	factory.getAttributesForView (view, desc, a2);
+	factory.getAttributesForView (*view, desc, a2);
 	double value;
 	a2.getDoubleAttribute (attrName, value);
 	EXPECT (value == attrValue);
@@ -251,7 +251,7 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, con
 	EXPECT (proc (view));
 
 	UIAttributes a2;
-	factory.getAttributesForView (view, desc, a2);
+	factory.getAttributesForView (*view, desc, a2);
 	CRect value;
 	a2.getRectAttribute (attrName, value);
 	EXPECT (value == attrValue);
@@ -272,7 +272,7 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName,
 	EXPECT (proc (view));
 
 	UIAttributes a2;
-	factory.getAttributesForView (view, desc, a2);
+	factory.getAttributesForView (*view, desc, a2);
 	CPoint value;
 	a2.getPointAttribute (attrName, value);
 	EXPECT (value == attrValue);

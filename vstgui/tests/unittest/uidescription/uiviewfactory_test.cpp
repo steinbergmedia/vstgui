@@ -274,7 +274,7 @@ TEST_CASE (UIViewFactoryTest, ApplyAttributes)
 	EXPECT (view->value == 0);
 	UIAttributes a;
 	a.setIntegerAttribute (viewAttr, 1);
-	factory->applyAttributeValues (v, a, uidesc);
+	factory->applyAttributeValues (*v, a, uidesc);
 	EXPECT (view->value == 1);
 }
 
@@ -285,7 +285,7 @@ TEST_CASE (UIViewFactoryTest, GetAttributeValue)
 
 	auto v = createView (factory, uidesc);
 	std::string value;
-	factory->getAttributeValue (v, viewAttr, value, uidesc);
+	factory->getAttributeValue (*v, viewAttr, value, uidesc);
 	EXPECT (value == "0");
 }
 
@@ -296,7 +296,7 @@ TEST_CASE (UIViewFactoryTest, GetAttributeNames)
 
 	auto v = createView (factory, uidesc);
 	UIViewFactory::StringList attributeNames;
-	EXPECT (factory->getAttributeNamesForView (v, attributeNames) == true);
+	EXPECT (factory->getAttributeNamesForView (*v, attributeNames) == true);
 	EXPECT (attributeNames.size () == 2);
 	EXPECT (attributeNames.front () == viewAttr);
 }
@@ -308,7 +308,7 @@ TEST_CASE (UIViewFactoryTest, GetAttributesForView)
 
 	auto v = createView (factory, uidesc);
 	UIAttributes a;
-	factory->getAttributesForView (v, uidesc, a);
+	factory->getAttributesForView (*v, uidesc, a);
 	EXPECT (a.hasAttribute (viewAttr) == true);
 	EXPECT (a.hasAttribute (baseViewAttr) == true);
 }
@@ -320,7 +320,7 @@ TEST_CASE (UIViewFactoryTest, GetPossibleListValues)
 
 	auto v = createView (factory, uidesc);
 	UIViewFactory::StringPtrList values;
-	EXPECT (factory->getPossibleAttributeListValues (v, baseViewAttr, values) == true);
+	EXPECT (factory->getPossibleAttributeListValues (*v, baseViewAttr, values) == true);
 	EXPECT (values.size () == 3);
 }
 
@@ -332,10 +332,10 @@ TEST_CASE (UIViewFactoryTest, GetAttributeValueRange)
 	auto v = createView (factory, uidesc);
 	double minValue;
 	double maxValue;
-	EXPECT (factory->getAttributeValueRange (v, viewAttr, minValue, maxValue) == true);
+	EXPECT (factory->getAttributeValueRange (*v, viewAttr, minValue, maxValue) == true);
 	EXPECT (minValue == -10.);
 	EXPECT (maxValue == 10.);
-	EXPECT (factory->getAttributeValueRange (v, baseViewAttr, minValue, maxValue) == false);
+	EXPECT (factory->getAttributeValueRange (*v, baseViewAttr, minValue, maxValue) == false);
 }
 
 TEST_CASE (UIViewFactoryTest, DefaultViewCreation)
@@ -356,7 +356,7 @@ TEST_CASE (UIViewFactoryTest, ApplyCustomViewAttributes)
 	auto view = owned (new CustomView ());
 	UIAttributes a;
 	a.setAttribute (baseViewAttr, "3");
-	EXPECT (factory->applyCustomViewAttributeValues (view, "TestView", a, uidesc));
+	EXPECT (factory->applyCustomViewAttributeValues (*view, "TestView", a, uidesc));
 	EXPECT (view->baseState == BaseView::State::kState3);
 }
 

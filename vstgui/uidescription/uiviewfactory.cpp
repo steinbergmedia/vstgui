@@ -137,7 +137,7 @@ UIViewFactory::UIViewFactory ()
 }
 
 //------------------------------------------------------------------------
-bool UIViewFactory::viewIsTypeOf (CView* view, const std::string& typeName) const
+bool UIViewFactory::viewIsTypeOf (CView& view, const std::string& typeName) const
 {
 	auto viewTypeName = getViewName (view);
 	if (typeName == viewTypeName)
@@ -171,7 +171,7 @@ CView* UIViewFactory::createViewByName (const std::string* className,
 			IdStringPtr viewName = (*iter).second->getViewName ();
 			view->setAttribute (kViewNameAttribute, viewName);
 			UIAttributes evaluatedAttributes;
-			evaluateAttributesAndRemember (view, attributes, evaluatedAttributes, description);
+			evaluateAttributesAndRemember (*view, attributes, evaluatedAttributes, description);
 			while (iter != registry.end () &&
 				   (*iter).second->apply (view, evaluatedAttributes, &description))
 			{
@@ -203,7 +203,7 @@ CView* UIViewFactory::createView (const UIAttributes& attributes,
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::applyAttributeValues (CView* view, const UIAttributes& attributes,
+bool UIViewFactory::applyAttributeValues (CView& view, const UIAttributes& attributes,
 										  const IUIDescription& desc) const
 {
 	bool result = false;
@@ -214,7 +214,7 @@ bool UIViewFactory::applyAttributeValues (CView* view, const UIAttributes& attri
 	evaluateAttributesAndRemember (view, attributes, evaluatedAttributes, desc);
 
 	while (iter != registry.end () &&
-		   (result = (*iter).second->apply (view, evaluatedAttributes, &desc)) &&
+		   (result = (*iter).second->apply (&view, evaluatedAttributes, &desc)) &&
 		   (*iter).second->getBaseViewName ())
 	{
 		iter = registry.find ((*iter).second->getBaseViewName ());
@@ -223,7 +223,7 @@ bool UIViewFactory::applyAttributeValues (CView* view, const UIAttributes& attri
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName,
+bool UIViewFactory::applyCustomViewAttributeValues (CView& customView, IdStringPtr baseViewName,
 													const UIAttributes& attributes,
 													const IUIDescription& desc) const
 {
@@ -233,12 +233,12 @@ bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringP
 	if (iter != registry.end ())
 	{
 		IdStringPtr viewName = (*iter).second->getViewName ();
-		customView->setAttribute (kViewNameAttribute, viewName);
+		customView.setAttribute (kViewNameAttribute, viewName);
 	}
 	UIAttributes evaluatedAttributes;
 	evaluateAttributesAndRemember (customView, attributes, evaluatedAttributes, desc);
 	while (iter != registry.end () &&
-		   (result = (*iter).second->apply (customView, evaluatedAttributes, &desc)) &&
+		   (result = (*iter).second->apply (&customView, evaluatedAttributes, &desc)) &&
 		   (*iter).second->getBaseViewName ())
 	{
 		iter = registry.find ((*iter).second->getBaseViewName ());
@@ -247,16 +247,16 @@ bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringP
 }
 
 //-----------------------------------------------------------------------------
-IdStringPtr IViewFactory::getViewName (CView* view)
+IdStringPtr IViewFactory::getViewName (CView& view)
 {
 	IdStringPtr viewName = nullptr;
 	uint32_t size = sizeof (IdStringPtr);
-	view->getAttribute (kViewNameAttribute, size, &viewName, size);
+	view.getAttribute (kViewNameAttribute, size, &viewName, size);
 	return viewName;
 }
 
 //-----------------------------------------------------------------------------
-void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes,
+void UIViewFactory::evaluateAttributesAndRemember (CView& view, const UIAttributes& attributes,
 												   UIAttributes& evaluatedAttributes,
 												   const IUIDescription& description) const
 {
@@ -293,7 +293,7 @@ void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttribut
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getAttributeValue (CView* view, const std::string& attributeName,
+bool UIViewFactory::getAttributeValue (CView& view, const std::string& attributeName,
 									   std::string& stringValue, const IUIDescription& desc) const
 {
 #if VSTGUI_LIVE_EDITING
@@ -306,8 +306,8 @@ bool UIViewFactory::getAttributeValue (CView* view, const std::string& attribute
 		auto& registry = getCreatorRegistry ();
 		auto iter = registry.find (getViewName (view));
 		while (iter != registry.end () &&
-			   !(result =
-					 (*iter).second->getAttributeValue (view, attributeName, stringValue, &desc)) &&
+			   !(result = (*iter).second->getAttributeValue (&view, attributeName, stringValue,
+															 &desc)) &&
 			   (*iter).second->getBaseViewName ())
 		{
 			iter = registry.find ((*iter).second->getBaseViewName ());
@@ -320,7 +320,7 @@ bool UIViewFactory::getAttributeValue (CView* view, const std::string& attribute
 
 #if VSTGUI_LIVE_EDITING
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getAttributeNamesForView (CView* view, StringList& attributeNames) const
+bool UIViewFactory::getAttributeNamesForView (CView& view, StringList& attributeNames) const
 {
 	bool result = false;
 	auto& registry = getCreatorRegistry ();
@@ -335,7 +335,8 @@ bool UIViewFactory::getAttributeNamesForView (CView* view, StringList& attribute
 }
 
 //-----------------------------------------------------------------------------
-IViewCreator::AttrType UIViewFactory::getAttributeType (CView* view, const std::string& attributeName) const
+IViewCreator::AttrType UIViewFactory::getAttributeType (CView& view,
+														const std::string& attributeName) const
 {
 	auto& registry = getCreatorRegistry ();
 	auto type = IViewCreator::kUnknownType;
@@ -348,7 +349,8 @@ IViewCreator::AttrType UIViewFactory::getAttributeType (CView* view, const std::
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const
+bool UIViewFactory::getPossibleAttributeListValues (CView& view, const std::string& attributeName,
+													StringPtrList& values) const
 {
 	auto& registry = getCreatorRegistry ();
 	auto iter = registry.find (getViewName (view));
@@ -360,7 +362,8 @@ bool UIViewFactory::getPossibleAttributeListValues (CView* view, const std::stri
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const
+bool UIViewFactory::getAttributeValueRange (CView& view, const std::string& attributeName,
+											double& minValue, double& maxValue) const
 {
 	minValue = maxValue = -1.;
 	auto& registry = getCreatorRegistry ();
@@ -373,7 +376,7 @@ bool UIViewFactory::getAttributeValueRange (CView* view, const std::string& attr
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getAttributesForView (CView* view, const IUIDescription& desc,
+bool UIViewFactory::getAttributesForView (CView& view, const IUIDescription& desc,
 										  UIAttributes& attr) const
 {
 	bool result = false;
@@ -462,7 +465,7 @@ auto UIViewFactory::collectRegisteredViewAndDisplayNames (IdStringPtr baseClassN
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr UIViewFactory::getViewDisplayName (CView* view) const
+UTF8StringPtr UIViewFactory::getViewDisplayName (CView& view) const
 {
 	if (auto viewName = getViewName (view))
 	{
@@ -485,26 +488,28 @@ size_t UIViewFactory::createHash (const std::string& str)
 }
 
 //-----------------------------------------------------------------------------
-void UIViewFactory::rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value) const
+void UIViewFactory::rememberAttribute (CView& view, IdStringPtr attrName,
+									   const std::string& value) const
 {
 #if ENABLE_UNIT_TESTS
 	if (disableRememberAttributes)
 		return;
 #endif
 	auto hash = createHash (attrName);
-	view->setAttribute (hash, static_cast<uint32_t> (value.size () + 1), value.c_str ());
+	view.setAttribute (hash, static_cast<uint32_t> (value.size () + 1), value.c_str ());
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getRememberedAttribute (CView* view, IdStringPtr attrName, std::string& value) const
+bool UIViewFactory::getRememberedAttribute (CView& view, IdStringPtr attrName,
+											std::string& value) const
 {
 	bool result = false;
 	size_t hash = createHash (attrName);
 	uint32_t attrSize = 0;
-	if (view->getAttributeSize (hash, attrSize))
+	if (view.getAttributeSize (hash, attrSize))
 	{
 		char* temp = new char[attrSize];
-		if (view->getAttribute (hash, attrSize, temp, attrSize))
+		if (view.getAttribute (hash, attrSize, temp, attrSize))
 		{
 			value = temp;
 			result = true;

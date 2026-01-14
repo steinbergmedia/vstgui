@@ -55,7 +55,7 @@ CView* JavaScriptViewFactory::createView (const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool JavaScriptViewFactory::getAttributeNamesForView (CView* view, StringList& attributeNames) const
+bool JavaScriptViewFactory::getAttributeNamesForView (CView& view, StringList& attributeNames) const
 {
 	if (Super::getAttributeNamesForView (view, attributeNames))
 	{
@@ -66,7 +66,7 @@ bool JavaScriptViewFactory::getAttributeNamesForView (CView* view, StringList& a
 }
 
 //------------------------------------------------------------------------
-auto JavaScriptViewFactory::getAttributeType (CView* view, const std::string& attributeName) const
+auto JavaScriptViewFactory::getAttributeType (CView& view, const std::string& attributeName) const
 	-> IViewCreator::AttrType
 {
 	if (attributeName == kAttrScript)
@@ -75,17 +75,17 @@ auto JavaScriptViewFactory::getAttributeType (CView* view, const std::string& at
 }
 
 //------------------------------------------------------------------------
-bool JavaScriptViewFactory::getAttributeValue (CView* view, const std::string& attributeName,
+bool JavaScriptViewFactory::getAttributeValue (CView& view, const std::string& attributeName,
 											   std::string& stringValue,
 											   const IUIDescription& desc) const
 {
 	if (attributeName == kAttrScript)
 	{
 		uint32_t attrSize = 0;
-		if (view->getAttributeSize (scriptAttrID, attrSize) && attrSize > 0)
+		if (view.getAttributeSize (scriptAttrID, attrSize) && attrSize > 0)
 		{
 			stringValue.resize (attrSize - 1);
-			if (!view->getAttribute (scriptAttrID, attrSize, stringValue.data (), attrSize))
+			if (!view.getAttribute (scriptAttrID, attrSize, stringValue.data (), attrSize))
 				stringValue = "";
 			return true;
 		}
@@ -95,18 +95,18 @@ bool JavaScriptViewFactory::getAttributeValue (CView* view, const std::string& a
 }
 
 //------------------------------------------------------------------------
-bool JavaScriptViewFactory::applyAttributeValues (CView* view, const UIAttributes& attributes,
+bool JavaScriptViewFactory::applyAttributeValues (CView& view, const UIAttributes& attributes,
 												  const IUIDescription& desc) const
 {
 	if (auto value = attributes.getAttributeValue (kAttrScript))
 	{
 		if (value->empty ())
-			view->removeAttribute (scriptAttrID);
+			view.removeAttribute (scriptAttrID);
 		else
-			view->setAttribute (scriptAttrID, static_cast<uint32_t> (value->size () + 1),
-								value->data ());
+			view.setAttribute (scriptAttrID, static_cast<uint32_t> (value->size () + 1),
+							   value->data ());
 		if (!disabled)
-			scriptContext->onViewCreated (view, *value);
+			scriptContext->onViewCreated (&view, *value);
 		return true;
 	}
 	return Super::applyAttributeValues (view, attributes, desc);
