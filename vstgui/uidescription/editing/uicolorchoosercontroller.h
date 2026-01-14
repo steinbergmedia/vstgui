@@ -36,7 +36,7 @@ protected:
 	void updateColorSlider (CControl* control);
 	void updateColorSliders ();
 
-	void uiColorChanged (UIColor* c) override;
+	void uiColorChanged (UIColor& c) override;
 
 	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);

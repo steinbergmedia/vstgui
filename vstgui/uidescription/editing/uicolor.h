@@ -25,19 +25,19 @@ class IUIColorListener
 {
 public:
 	virtual ~IUIColorListener () noexcept = default;
-	
-	virtual void uiColorChanged (UIColor* c) = 0;
-	virtual void uiColorBeginEditing (UIColor* c) = 0;
-	virtual void uiColorEndEditing (UIColor* c) = 0;
+
+	virtual void uiColorChanged (UIColor& c) = 0;
+	virtual void uiColorBeginEditing (UIColor& c) = 0;
+	virtual void uiColorEndEditing (UIColor& c) = 0;
 };
 
 //----------------------------------------------------------------------------------------------------
 class UIColorListenerAdapter : public IUIColorListener
 {
 public:
-	void uiColorChanged (UIColor* c) override {}
-	void uiColorBeginEditing (UIColor* c) override {}
-	void uiColorEndEditing (UIColor* c) override {}
+	void uiColorChanged (UIColor& c) override {}
+	void uiColorBeginEditing (UIColor& c) override {}
+	void uiColorEndEditing (UIColor& c) override {}
 };
 
 //----------------------------------------------------------------------------------------------------

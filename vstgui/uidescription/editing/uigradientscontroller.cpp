@@ -59,7 +59,7 @@ private:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	void uiColorChanged (UIColor* c) override;
+	void uiColorChanged (UIColor& c) override;
 
 	double gradientStartPosFromMousePos (const CPoint& where) const;
 
@@ -286,10 +286,7 @@ CMouseEventResult UIColorStopEditView::onMouseMoved (CPoint& where, const CButto
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorStopEditView::uiColorChanged (UIColor* c)
-{
-	invalid ();
-}
+void UIColorStopEditView::uiColorChanged (UIColor& c) { invalid (); }
 
 //----------------------------------------------------------------------------------------------------
 void UIColorStopEditView::setGradient (const SharedPointer<CGradient>& inGradient)
@@ -415,7 +412,7 @@ protected:
 		kPositionTag = 2,
 		kFunctionMenuTag = 3,
 	};
-	void uiColorChanged (UIColor* c) override;
+	void uiColorChanged (UIColor& c) override;
 	void onChange () override;
 	void apply ();
 	void updatePositionEdit ();
@@ -471,7 +468,7 @@ void UIGradientEditorController::updatePositionEdit ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGradientEditorController::uiColorChanged (UIColor* c)
+void UIGradientEditorController::uiColorChanged (UIColor& c)
 {
 	auto colorStopMap = gradient->getColorStops (); // create a copy
 	auto it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());

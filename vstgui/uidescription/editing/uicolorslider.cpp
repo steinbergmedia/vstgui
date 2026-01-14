@@ -49,10 +49,7 @@ void UIColorSlider::setViewSize (const CRect& rect, bool invalid)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorSlider::uiColorChanged (UIColor* c)
-{
-	setBackground (nullptr);
-}
+void UIColorSlider::uiColorChanged (UIColor& c) { setBackground (nullptr); }
 
 //----------------------------------------------------------------------------------------------------
 void UIColorSlider::updateBackground (CDrawContext* context)

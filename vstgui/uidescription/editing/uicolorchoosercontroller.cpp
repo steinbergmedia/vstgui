@@ -135,10 +135,7 @@ void UIColorChooserController::updateColorSliders ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorChooserController::uiColorChanged (UIColor* c)
-{
-	updateColorSliders ();
-}
+void UIColorChooserController::uiColorChanged (UIColor& c) { updateColorSliders (); }
 
 //----------------------------------------------------------------------------------------------------
 bool UIColorChooserController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)

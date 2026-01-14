@@ -106,19 +106,19 @@ void UIColor::setAlpha (double na)
 //----------------------------------------------------------------------------------------------------
 void UIColor::beginEdit ()
 {
-	forEachListener ([this] (IUIColorListener* l) { l->uiColorBeginEditing (this); });
+	forEachListener ([this] (IUIColorListener* l) { l->uiColorBeginEditing (*this); });
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColor::endEdit ()
 {
-	forEachListener ([this] (IUIColorListener* l) { l->uiColorEndEditing (this); });
+	forEachListener ([this] (IUIColorListener* l) { l->uiColorEndEditing (*this); });
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColor::editChange ()
 {
-	forEachListener ([this] (IUIColorListener* l) { l->uiColorChanged (this); });
+	forEachListener ([this] (IUIColorListener* l) { l->uiColorChanged (*this); });
 }
 
 //------------------------------------------------------------------------

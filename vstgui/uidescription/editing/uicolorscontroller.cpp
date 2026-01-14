@@ -55,9 +55,9 @@ protected:
 
 	CCoord getColorIconWith ();
 
-	void uiColorChanged (UIColor* c) override;
-	void uiColorBeginEditing (UIColor* c) override;
-	void uiColorEndEditing (UIColor* c) override;
+	void uiColorChanged (UIColor& c) override;
+	void uiColorBeginEditing (UIColor& c) override;
+	void uiColorEndEditing (UIColor& c) override;
 
 	SharedPointer<UIColor> color;
 	bool editing;
@@ -86,7 +86,7 @@ UIColorsDataSource::~UIColorsDataSource ()
 void UIColorsDataSource::onUIDescColorChanged (UIDescription& desc) { onUIDescriptionUpdate (); }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::uiColorChanged (UIColor* c)
+void UIColorsDataSource::uiColorChanged (UIColor& c)
 {
 	if (editing)
 	{
@@ -104,7 +104,7 @@ void UIColorsDataSource::uiColorChanged (UIColor* c)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::uiColorBeginEditing (UIColor* c)
+void UIColorsDataSource::uiColorBeginEditing (UIColor& c)
 {
 	int32_t selectedRow = dataBrowser->getSelectedRow ();
 	if (selectedRow != CDataBrowser::kNoSelection)
@@ -118,7 +118,7 @@ void UIColorsDataSource::uiColorBeginEditing (UIColor* c)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::uiColorEndEditing (UIColor* c)
+void UIColorsDataSource::uiColorEndEditing (UIColor& c)
 {
 	int32_t selectedRow = dataBrowser->getSelectedRow ();
 	if (selectedRow != CDataBrowser::kNoSelection)

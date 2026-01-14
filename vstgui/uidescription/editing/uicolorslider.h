@@ -37,7 +37,7 @@ public:
 protected:
 	void draw (CDrawContext* context) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	void uiColorChanged (UIColor* c) override;
+	void uiColorChanged (UIColor& c) override;
 	void updateBackground (CDrawContext* context);
 	void updateHandle (CDrawContext* context);
 
