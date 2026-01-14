@@ -1357,7 +1357,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	if (valueView)
 	{
 		if (auto controller =
-				getViewController (valueView, true).cast<UIAttributeControllers::Controller> ())
+				getViewController (*valueView, true).cast<UIAttributeControllers::Controller> ())
 		{
 			controller->hasDifferentValues (hasDifferentValues);
 			controller->setValue (attrValue);

@@ -40,7 +40,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-static SharedPointer<ISplitViewController> getSplitViewController (const CSplitView* view)
+static SharedPointer<ISplitViewController> getSplitViewController (const CSplitView& view)
 {
 	if (auto controller = getViewController (view, true))
 	{
@@ -246,7 +246,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 	{
 		bool isHorizontal = splitView.getStyle () == kHorizontal;
 
-		auto controller = getSplitViewController (&splitView);
+		auto controller = getSplitViewController (splitView);
 
 		auto sepIndex = 0;
 		auto view1 = result.begin ();
@@ -617,7 +617,7 @@ bool CSplitView::sizeToFit ()
 //-----------------------------------------------------------------------------
 void CSplitView::storeViewSizes ()
 {
-	ISplitViewController* controller = getSplitViewController (this);
+	ISplitViewController* controller = getSplitViewController (*this);
 	if (controller)
 	{
 		int32_t index = 0;
@@ -647,7 +647,7 @@ bool CSplitView::removed (CView* parent)
 bool CSplitView::attached (CView* parent)
 {
 	bool result = CViewContainer::attached (parent);
-	ISplitViewController* controller = getSplitViewController (this);
+	ISplitViewController* controller = getSplitViewController (*this);
 	if (controller)
 	{
 		CRect r;
@@ -740,7 +740,7 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 ISplitViewSeparatorDrawer* CSplitView::getDrawer ()
 {
 	ISplitViewSeparatorDrawer* drawer = nullptr;
-	ISplitViewController* controller = getSplitViewController (this);
+	ISplitViewController* controller = getSplitViewController (*this);
 	if (controller)
 		drawer = controller->getSplitViewSeparatorDrawer (this);
 	return drawer ? drawer : separatorDrawer;

@@ -1416,7 +1416,7 @@ bool UIEditView::attached (CView* parent)
 	{
 		editing = !editing;
 		enableEditing (!editing);
-		if (auto controller = getViewController (this, true).cast<CBaseObject> ())
+		if (auto controller = getViewController (*this, true).cast<CBaseObject> ())
 		{
 			controller->notify (this, kMsgAttached);
 		}
@@ -1434,7 +1434,7 @@ bool UIEditView::removed (CView* parent)
 		frame->setViewAddedRemovedObserver (nullptr);
 		editingViewAddedObserver.reset ();
 	}
-	if (auto controller = getViewController (this, true).cast<CBaseObject> ())
+	if (auto controller = getViewController (*this, true).cast<CBaseObject> ())
 	{
 		controller->notify (this, kMsgRemoved);
 	}

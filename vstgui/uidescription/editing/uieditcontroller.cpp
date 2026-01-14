@@ -1001,7 +1001,7 @@ void UIEditController::beforeSave ()
 		auto container = editView->getParentView ()->asViewContainer ();
 		while (container && container != container->getFrame ())
 		{
-			if (getViewController (container, false) == this)
+			if (getViewController (*container, false) == this)
 			{
 				getSettings ()->setRectAttribute ("EditorSize", container->getViewSize ());
 				break;

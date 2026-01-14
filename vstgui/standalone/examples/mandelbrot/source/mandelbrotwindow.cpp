@@ -357,7 +357,7 @@ struct WindowCustomization : public UIDesc::Customization,
 				fs->run ([frame = shared (frame)] (CNewFileSelector * fs) {
 					if (fs->getNumSelectedFiles () == 0)
 						return;
-					if (auto controller = findViewController<ViewController> (frame))
+					if (auto controller = findViewController<ViewController> (*frame))
 					{
 						auto path = fs->getSelectedFile (0);
 						assert (path != nullptr);

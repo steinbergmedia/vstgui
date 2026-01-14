@@ -555,7 +555,7 @@ struct WindowController::Impl : public ICommandHandler
 		{
 			if (auto view = currentCommandHandlerCandidate ())
 			{
-				if (auto viewController = getViewController (view, true))
+				if (auto viewController = getViewController (*view, true))
 				{
 					if (auto viewCommandHandler =
 							dynamic_cast<ICommandHandler*> (viewController.get ()))
@@ -585,7 +585,7 @@ struct WindowController::Impl : public ICommandHandler
 		{
 			if (auto view = currentCommandHandlerCandidate ())
 			{
-				if (auto viewController = getViewController (view, true))
+				if (auto viewController = getViewController (*view, true))
 				{
 					if (auto viewCommandHandler =
 							dynamic_cast<ICommandHandler*> (viewController.get ()))

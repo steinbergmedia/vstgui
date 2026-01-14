@@ -67,14 +67,15 @@ public:
 
 //-----------------------------------------------------------------------------
 /** helper method to get the controller of a view */
-inline SharedPointer<IController> getViewController (const CView* view, bool deep = false)
+inline SharedPointer<IController> getViewController (const CView& view, bool deep = false)
 {
 	SharedPointer<IController> controller;
-	if (!view->getAttribute (kCViewControllerAttribute, controller) && deep)
+	if (!view.getAttribute (kCViewControllerAttribute, controller) && deep)
 	{
-		if (view->getParentView () && view->getParentView () != view)
+		auto parentView = view.getParentView ();
+		if (parentView && parentView != &view)
 		{
-			return getViewController (view->getParentView (), deep);
+			return getViewController (*parentView, deep);
 		}
 	}
 	return controller;
@@ -83,18 +84,18 @@ inline SharedPointer<IController> getViewController (const CView* view, bool dee
 //-----------------------------------------------------------------------------
 /** helper method to find a specific controller inside a view hierarchy */
 template<typename T>
-inline SharedPointer<T> findViewController (const CViewContainer* view)
+inline SharedPointer<T> findViewController (const CViewContainer& view)
 {
 	if (auto ctrler = getViewController (view).cast<T> ())
 		return ctrler;
-	ViewIterator iterator (view);
+	ViewIterator iterator (&view);
 	while (*iterator)
 	{
-		if (auto ctrler = getViewController ((*iterator)).cast<T> ())
+		if (auto ctrler = getViewController (*(*iterator)).cast<T> ())
 			return ctrler;
 		if (auto container = (*iterator)->asViewContainer ())
 		{
-			if (auto ctrler = findViewController<T> (container))
+			if (auto ctrler = findViewController<T> (*container))
 				return ctrler;
 		}
 		++iterator;

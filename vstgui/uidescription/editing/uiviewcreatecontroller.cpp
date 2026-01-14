@@ -137,7 +137,7 @@ void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 {
-	auto controller = getViewController (dataBrowser, true).cast<UIViewCreatorController> ();
+	auto controller = getViewController (*dataBrowser, true).cast<UIViewCreatorController> ();
 	if (controller)
 	{
 		if (auto editController = controller->getBaseController ().cast<UIEditController> ())

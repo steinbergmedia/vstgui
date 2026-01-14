@@ -356,7 +356,7 @@ bool Window::canHandleCommand (const Command& command)
 		return controller->canClose (*this);
 	if (auto focusView = frame->getFocusView ())
 	{
-		if (auto viewController = getViewController (focusView, false))
+		if (auto viewController = getViewController (*focusView, false))
 		{
 			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController.get ()))
 			{
@@ -383,7 +383,7 @@ bool Window::handleCommand (const Command& command)
 	}
 	if (auto focusView = frame->getFocusView ())
 	{
-		if (auto viewController = getViewController (focusView, false))
+		if (auto viewController = getViewController (*focusView, false))
 		{
 			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController.get ()))
 			{
@@ -440,7 +440,7 @@ void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
 	{
 		for (const auto& view : views)
 		{
-			auto viewController = getViewController (view);
+			auto viewController = getViewController (*view);
 			auto contextMenuController = viewController.cast<IContextMenuController> ();
 			auto contextMenuController2 = viewController.cast<IContextMenuController2> ();
 			if (contextMenuController == nullptr && contextMenuController2 == nullptr)
