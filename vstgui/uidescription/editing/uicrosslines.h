@@ -38,7 +38,7 @@ public:
 	void invalid () override;
 	void draw (CDrawContext* pContext) override;
 protected:
-	void drawLines (CDrawContext* pContext, const CRect& size, const CRect& selectionSize);
+	void drawLines (CDrawContext& context, const CRect& size, const CRect& selectionSize) const;
 
 	CViewContainer* editView;
 	CRect currentRect;

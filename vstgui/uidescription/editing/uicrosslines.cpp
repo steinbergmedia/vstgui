@@ -94,14 +94,19 @@ void UICrossLines::invalid ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UICrossLines::drawLines (CDrawContext* pContext, const CRect& size, const CRect& selectionSize)
+void UICrossLines::drawLines (CDrawContext& context, const CRect& size,
+							  const CRect& selectionSize) const
 {
-	pContext->drawLine (CPoint (size.left, selectionSize.top), CPoint (size.right, selectionSize.top));
-	pContext->drawLine (CPoint (selectionSize.left, size.top), CPoint (selectionSize.left, size.bottom));
+	context.drawLine (CPoint (size.left, selectionSize.top),
+					  CPoint (size.right, selectionSize.top));
+	context.drawLine (CPoint (selectionSize.left, size.top),
+					  CPoint (selectionSize.left, size.bottom));
 	if (style == kSelectionStyle)
 	{
-		pContext->drawLine (CPoint (size.left, selectionSize.bottom - 1), CPoint (size.right, selectionSize.bottom - 1));
-		pContext->drawLine (CPoint (selectionSize.right-1, size.top), CPoint (selectionSize.right-1, size.bottom));
+		context.drawLine (CPoint (size.left, selectionSize.bottom - 1),
+						  CPoint (size.right, selectionSize.bottom - 1));
+		context.drawLine (CPoint (selectionSize.right - 1, size.top),
+						  CPoint (selectionSize.right - 1, size.bottom));
 	}
 }
 
@@ -127,14 +132,14 @@ void UICrossLines::draw (CDrawContext* pContext)
 	}
 
 	CRect selectionSize (currentRect);
-	drawLines (pContext, size, selectionSize);
+	drawLines (*pContext, size, selectionSize);
 
 	static const CCoord dashLength [] = {3,3};
 	static const CLineStyle lineStyle (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, dashLength);
 
 	pContext->setLineStyle (lineStyle);
 	pContext->setFrameColor (foreground);
-	drawLines (pContext, size, selectionSize);
+	drawLines (*pContext, size, selectionSize);
 }
 
 } // VSTGUI
