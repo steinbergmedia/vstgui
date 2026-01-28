@@ -48,17 +48,17 @@ UTF8StringPtr ControlCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* ControlCreator::create (const UIAttributes& attributes,
-                               const IUIDescription* description) const
+SharedPointer<CView> ControlCreator::create (const UIAttributes& attributes,
+											 const IUIDescription& description) const
 {
-	return new CControlCreatorDummyControl ();
+	return makeOwned<CControlCreatorDummyControl> ();
 }
 
 //------------------------------------------------------------------------
-bool ControlCreator::apply (CView* view, const UIAttributes& attributes,
-                            const IUIDescription* description) const
+bool ControlCreator::apply (CView& view, const UIAttributes& attributes,
+							const IUIDescription& description) const
 {
-	auto* control = dynamic_cast<CControl*> (view);
+	auto* control = dynamic_cast<CControl*> (&view);
 	if (control == nullptr)
 		return false;
 
@@ -82,10 +82,10 @@ bool ControlCreator::apply (CView* view, const UIAttributes& attributes,
 		}
 		else
 		{
-			int32_t tag = description->getTagForName (controlTagAttr->c_str ());
+			int32_t tag = description.getTagForName (controlTagAttr->c_str ());
 			if (tag != -1)
 			{
-				control->setListener (description->getControlListener (controlTagAttr->c_str ()));
+				control->setListener (description.getControlListener (controlTagAttr->c_str ()));
 				control->setTag (tag);
 			}
 			else
@@ -95,7 +95,7 @@ bool ControlCreator::apply (CView* view, const UIAttributes& attributes,
 				if (endPtr != controlTagAttr->c_str ())
 				{
 					control->setListener (
-					    description->getControlListener (controlTagAttr->c_str ()));
+						description.getControlListener (controlTagAttr->c_str ()));
 					control->setTag (tag);
 				}
 				else
@@ -137,17 +137,17 @@ auto ControlCreator::getAttributeType (const string& attributeName) const -> Att
 }
 
 //------------------------------------------------------------------------
-bool ControlCreator::getAttributeValue (CView* view, const string& attributeName,
-                                        string& stringValue, const IUIDescription* desc) const
+bool ControlCreator::getAttributeValue (CView& view, const string& attributeName,
+										string& stringValue, const IUIDescription& desc) const
 {
-	auto* control = dynamic_cast<CControl*> (view);
+	auto* control = dynamic_cast<CControl*> (&view);
 	if (control == nullptr)
 		return false;
 	if (attributeName == kAttrControlTag)
 	{
 		if (control->getTag () != -1)
 		{
-			UTF8StringPtr controlTag = desc->lookupControlTagName (control->getTag ());
+			UTF8StringPtr controlTag = desc.lookupControlTagName (control->getTag ());
 			if (controlTag)
 			{
 				stringValue = controlTag;

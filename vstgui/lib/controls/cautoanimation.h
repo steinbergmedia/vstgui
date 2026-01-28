@@ -17,10 +17,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class CAutoAnimation : public CControl,
 					   public MultiFrameBitmapView<CAutoAnimation>
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-,
-					   public IMultiBitmapControl
-#endif
 {
 public:
 	CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
@@ -29,8 +25,8 @@ public:
 
 	void draw (CDrawContext*) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	bool attached (CView* parent) override;
-	bool removed (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CAutoAnimation Methods
@@ -55,21 +51,6 @@ public:
 
 	void setBackground (const SharedPointer<CBitmap>& background) override;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-					const CPoint& offset);
-	CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
-					CCoord heightOfOneImage, CBitmap* background,
-					const CPoint& offset = CPoint (0, 0));
-	void setNumSubPixmaps (int32_t numSubPixmaps) override
-	{
-		IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps);
-		invalid ();
-	}
-
-	void setBitmapOffset (const CPoint& off);
-	CPoint getBitmapOffset () const;
-#endif
 	CLASS_METHODS(CAutoAnimation, CControl)
 protected:
 	~CAutoAnimation () noexcept override = default;
@@ -80,11 +61,6 @@ protected:
 	uint32_t animationFrameTime {0u};
 	SharedPointer<CVSTGUITimer> timer;
 	bool bWindowOpened {false};
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CPoint offset {};
-	CCoord totalHeightOfBitmap {0};
-#endif
 };
 
 } // VSTGUI

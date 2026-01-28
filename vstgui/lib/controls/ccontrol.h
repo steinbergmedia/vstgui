@@ -36,10 +36,10 @@ public:
 	/// @name Value Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setValue (float val);
-	virtual float getValue () const { return value; }
+	virtual bool setValue (float val);
+	virtual float getValue () const;
 
-	virtual void setValueNormalized (float val);
+	virtual bool setValueNormalized (float val);
 	virtual float getValueNormalized () const;
 
 	virtual void setMin (float val);
@@ -64,16 +64,16 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setTag (int32_t val);
-	virtual int32_t getTag () const { return tag; }
+	virtual int32_t getTag () const;
 
 	virtual void beginEdit ();
 	virtual void endEdit ();
 	bool isEditing () const;
 
 	/** get main listener */
-	virtual IControlListener* getListener () const { return listener; }
+	virtual IControlListener* getListener () const;
 	/** set main listener */
-	virtual void setListener (IControlListener* l) { listener = l; }
+	virtual void setListener (IControlListener* l);
 
 	/** register a sub listener */
 	void registerControlListener (IControlListener* listener);
@@ -90,12 +90,12 @@ public:
 	//@}
 
 	// overrides
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void draw (CDrawContext* pContext) override = 0;
-	bool isDirty () const override;
-	void setDirty (bool val = true) override;
 
 	bool drawFocusOnTop () override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 	using CheckDefaultValueEventFuncT = bool (*) (CControl*, MouseDownEvent&);
 	/** Function to check if a mouse down event should reset the value to its default value for a
@@ -105,54 +105,14 @@ public:
 	/** zoom modifier key, per default is the shift key */
 	inline static int32_t kZoomModifier = kShift;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	/** \deprecated default value modifier key, per default is the control key */
-	inline static int32_t kDefaultValueModifier = kControl;
-
-	using CheckDefaultValueFuncT = bool (*) (CControl*, CButtonState);
-	/** \deprecated Function to check if the button state is the state to set the control value to
-	 * its default value. The default implementation uses the kDefaultValueModifier (see above). Use
-	 * this to change this to double click per example. But consider to change this to the same
-	 * behaviour as the host you are running in for best user experience. */
-	static CheckDefaultValueFuncT CheckDefaultValueFunc;
-#endif
-
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
 	~CControl () noexcept override;
-	VSTGUI_DEPRECATED (static int32_t mapVstKeyModifier (int32_t vstModifier);)
-
-	IControlListener* listener;
-	int32_t  tag;
-	float value;
 
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 };
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-// IMultiBitmapControl Declaration
-//! @brief interface for controls with sub images
-//-----------------------------------------------------------------------------
-class IMultiBitmapControl
-{
-public:
-	virtual ~IMultiBitmapControl() {}
-	virtual void setHeightOfOneImage (const CCoord& height) { heightOfOneImage = height; }
-	virtual CCoord getHeightOfOneImage () const { return heightOfOneImage; }
-
-	virtual void setNumSubPixmaps (int32_t numSubPixmaps) { subPixmaps = numSubPixmaps; }
-	virtual int32_t getNumSubPixmaps () const { return subPixmaps; }
-
-	virtual void autoComputeHeightOfOneImage ();
-protected:
-	IMultiBitmapControl () : heightOfOneImage (0), subPixmaps (0) {}
-	CCoord heightOfOneImage;
-	int32_t subPixmaps;
-};
-#endif
 
 //-----------------------------------------------------------------------------
 // CMouseWheelEditingSupport Declaration

@@ -39,17 +39,17 @@ UTF8StringPtr CheckBoxCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* CheckBoxCreator::create (const UIAttributes& attributes,
-                                const IUIDescription* description) const
+SharedPointer<CView> CheckBoxCreator::create (const UIAttributes& attributes,
+											  const IUIDescription& description) const
 {
-	return new CCheckBox (CRect (0, 0, 100, 20), nullptr, -1, "Title");
+	return makeOwned<CCheckBox> (CRect (0, 0, 100, 20), nullptr, -1, "Title");
 }
 
 //------------------------------------------------------------------------
-bool CheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
-                             const IUIDescription* description) const
+bool CheckBoxCreator::apply (CView& view, const UIAttributes& attributes,
+							 const IUIDescription& description) const
 {
-	auto* checkbox = dynamic_cast<CCheckBox*> (view);
+	auto* checkbox = dynamic_cast<CCheckBox*> (&view);
 	if (!checkbox)
 		return false;
 
@@ -60,7 +60,7 @@ bool CheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrFont);
 	if (attr)
 	{
-		auto font = description->getFont (attr->c_str ());
+		auto font = description.getFont (attr->c_str ());
 		if (font)
 		{
 			checkbox->setFont (font);
@@ -138,10 +138,10 @@ auto CheckBoxCreator::getAttributeType (const string& attributeName) const -> At
 }
 
 //------------------------------------------------------------------------
-bool CheckBoxCreator::getAttributeValue (CView* view, const string& attributeName,
-                                         string& stringValue, const IUIDescription* desc) const
+bool CheckBoxCreator::getAttributeValue (CView& view, const string& attributeName,
+										 string& stringValue, const IUIDescription& desc) const
 {
-	auto* checkbox = dynamic_cast<CCheckBox*> (view);
+	auto* checkbox = dynamic_cast<CCheckBox*> (&view);
 	if (!checkbox)
 		return false;
 
@@ -152,7 +152,7 @@ bool CheckBoxCreator::getAttributeValue (CView* view, const string& attributeNam
 	}
 	else if (attributeName == kAttrFont)
 	{
-		UTF8StringPtr fontName = desc->lookupFontName (checkbox->getFont ());
+		UTF8StringPtr fontName = desc.lookupFontName (checkbox->getFont ());
 		if (fontName)
 		{
 			stringValue = fontName;

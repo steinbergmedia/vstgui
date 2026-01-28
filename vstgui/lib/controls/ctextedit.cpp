@@ -35,8 +35,8 @@ CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag
 					  const SharedPointer<CBitmap>& background, const int32_t style)
 : CTextLabel (size, txt, background, style)
 {
-	this->listener = listener;
-	this->tag = tag;
+	setListener (listener);
+	setTag (tag);
 
 	setWantsFocus (true);
 }
@@ -55,11 +55,7 @@ CTextEdit::CTextEdit (const CTextEdit& v)
 }
 
 //------------------------------------------------------------------------
-CTextEdit::~CTextEdit () noexcept
-{
-	listener = nullptr;
-	vstgui_assert (platformControl == nullptr);
-}
+CTextEdit::~CTextEdit () noexcept { vstgui_assert (platformControl == nullptr); }
 
 //------------------------------------------------------------------------
 void CTextEdit::setStringToValueFunction (const StringToValueFunction& stringToValueFunc)
@@ -111,9 +107,9 @@ void CTextEdit::unregisterTextEditListener (ITextEditListener* listener)
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setValue (float val)
+bool CTextEdit::setValue (float val)
 {
-	CTextLabel::setValue (val);
+	auto result = CTextLabel::setValue (val);
 	bool converted = false;
 	std::string string;
 	if (valueToStringFunction)
@@ -135,6 +131,7 @@ void CTextEdit::setValue (float val)
 	}
 	else
 		setText (UTF8String (std::move (string)));
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -191,7 +188,6 @@ void CTextEdit::draw (CDrawContext *pContext)
 			drawPlatformText (pContext, placeholderString);
 			pContext->restoreGlobalState ();
 		}
-		setDirty (false);
 		return;
 	}
 	drawBack (pContext);
@@ -215,7 +211,6 @@ void CTextEdit::draw (CDrawContext *pContext)
 	}
 	else
 		CTextLabel::draw (pContext);
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -223,16 +218,19 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const CButtonState& but
 {
 	if (buttons & kLButton)
 	{
-		if (getFrame ()->getFocusView () != this)
+		if (auto frame = getFrame ())
 		{
-			if (isDoubleClickStyle ())
+			if (frame->getFocusView ().get () != this)
 			{
-				if (!(buttons & kDoubleClick))
-					return kMouseEventNotHandled;
+				if (isDoubleClickStyle ())
+				{
+					if (!(buttons & kDoubleClick))
+						return kMouseEventNotHandled;
+				}
+
+				takeFocus ();
+				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
-		
-			takeFocus ();
-			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 	}
 	return kMouseEventNotHandled;
@@ -243,19 +241,23 @@ void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 {
 	if (!platformControl || event.type != EventType::KeyDown)
 		return;
-	
+
+	auto lifeGuard = shared (this);
+
 	if (event.virt == VirtualKey::Escape)
 	{
 		bWasReturnPressed = false;
 		platformControl->setText (text);
-		getFrame ()->setFocusView (nullptr);
+		if (auto frame = getFrame ())
+			frame->setFocusView (nullptr);
 		looseFocus ();
 		event.consumed = true;
 	}
 	else if (event.virt == VirtualKey::Return)
 	{
 		bWasReturnPressed = true;
-		getFrame ()->setFocusView (nullptr);
+		if (auto frame = getFrame ())
+			frame->setFocusView (nullptr);
 		looseFocus ();
 		event.consumed = true;
 	}
@@ -269,7 +271,7 @@ SharedPointer<CFontDesc> CTextEdit::platformGetFont () const
 	fontSize *= getGlobalTransform ().m11;
 	if (fontSize == font->getSize ())
 		return font;
-	platformFont = makeOwned<CFontDesc> (*font);
+	platformFont = makeOwned<CFontDesc> (*font.get ());
 	platformFont->setSize (fontSize);
 	return platformFont;
 }
@@ -291,15 +293,19 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 {
 	remember ();
 	bWasReturnPressed = returnPressed;
-	if (getFrame ()->getFocusView () == this)
-		getFrame ()->setFocusView (nullptr);
+	if (auto frame = getFrame ())
+	{
+		if (frame->getFocusView ().get () == this)
+			frame->setFocusView (nullptr);
+	}
 	forget ();
 }
 
 //------------------------------------------------------------------------
 void CTextEdit::platformOnKeyboardEvent (KeyboardEvent& event)
 {
-	dynamic_cast<IPlatformFrameCallback*> (getFrame ())->platformOnEvent (event);
+	if (auto frame = getFrame ())
+		static_cast<IPlatformFrameCallback*> (frame.get ())->platformOnEvent (event);
 	if (event.consumed)
 		return;
 	if (event.virt == VirtualKey::Return)
@@ -349,9 +355,14 @@ void CTextEdit::createPlatformTextEdit ()
 		return;
 	
 	bWasReturnPressed = false;
-	platformControl = getFrame ()->getPlatformFrame ()->createPlatformTextEdit (this);
-	textEditListeners.forEach (
-	    [this] (ITextEditListener* l) { l->onTextEditPlatformControlTookFocus (this); });
+	if (auto frame = getFrame ())
+	{
+		platformControl = frame->getPlatformFrame ()->createPlatformTextEdit (this);
+		textEditListeners.forEach (
+			[this] (ITextEditListener* l) { l->onTextEditPlatformControlTookFocus (this); });
+		if (frame->getFocusView ().get () != this)
+			frame->setFocusView (shared (this));
+	}
 }
 
 //------------------------------------------------------------------------
@@ -368,8 +379,6 @@ void CTextEdit::takeFocus ()
 	if (!getFrame ())
 		return;
 	createPlatformTextEdit ();
-	if (getFrame()->getFocusView () != this)
-		getFrame()->setFocusView (this);
 	CTextLabel::takeFocus ();
 	invalid ();
 }
@@ -380,7 +389,7 @@ void CTextEdit::looseFocus ()
 	if (platformControl == nullptr)
 		return;
 
-	CBaseObjectGuard guard (this);
+	auto guard = shared (this);
 
 	auto _platformControl = std::move (platformControl);
 	updateText (_platformControl);
@@ -391,7 +400,7 @@ void CTextEdit::looseFocus ()
 	    [this] (ITextEditListener* l) { l->onTextEditPlatformControlLostFocus (this); });
 
 	// if you want to destroy the text edit do it with the loose focus message
-	CView* receiver = getParentView () ? getParentView () : getFrame ();
+	auto receiver = getParentView ();
 	while (receiver)
 	{
 		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)
@@ -403,7 +412,7 @@ void CTextEdit::looseFocus ()
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::updateText (IPlatformTextEdit* pte)
+void CTextEdit::updateText (const PlatformTextEditPtr& pte)
 {
 	auto newText = pte->getText ();
 	if (newText != getText ())

@@ -146,7 +146,8 @@ void CGradientView::draw (CDrawContext* context)
 			CPoint colorEndPoint (0, getViewSize ().getHeight ());
 			colorEndPoint.x = getViewSize ().left + getViewSize ().getWidth () / 2 + cos (radians (gradientAngle+90)) * getViewSize ().getWidth () / 2;
 			colorEndPoint.y = getViewSize ().top + getViewSize ().getHeight () / 2 + sin (radians (gradientAngle+90)) * getViewSize ().getHeight () / 2;
-			context->fillLinearGradient (path, *gradient, colorStartPoint, colorEndPoint, false);
+			context->fillLinearGradient (path, *gradient.get (), colorStartPoint, colorEndPoint,
+										 false);
 		}
 		else
 		{
@@ -154,7 +155,9 @@ void CGradientView::draw (CDrawContext* context)
 			center.x *= getViewSize ().getWidth ();
 			center.y *= getViewSize ().getHeight ();
 			center.offset (getViewSize ().left, getViewSize ().top);
-			context->fillRadialGradient (path, *gradient, center, radialRadius * std::max (getViewSize ().getWidth (), getViewSize ().getHeight ()));
+			context->fillRadialGradient (
+				path, *gradient.get (), center,
+				radialRadius * std::max (getViewSize ().getWidth (), getViewSize ().getHeight ()));
 		}
 		
 		if (frameColor.alpha != 0 && lineWidth > 0.)

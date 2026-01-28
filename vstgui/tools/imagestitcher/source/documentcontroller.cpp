@@ -5,6 +5,7 @@
 #include "documentcontroller.h"
 #include "imageframesview.h"
 #include "vstgui/lib/cbitmap.h"
+#include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cdatabrowser.h"
 #include "vstgui/lib/cgradientview.h"
 #include "vstgui/lib/coffscreencontext.h"
@@ -36,19 +37,20 @@ class ImageViewController : public DelegationController,
 							public NonAtomicReferenceCounted
 {
 public:
-	using Proc = std::function<void (ImageFramesView*)>;
+	using Proc = std::function<void (const SharedPointer<ImageFramesView>&)>;
 	ImageViewController (Proc&& proc, const SharedPointer<IController>& parent)
 	: DelegationController (parent), proc (std::move (proc))
 	{
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
 			if (*name == "ImageView")
 			{
-				auto imageView = new ImageFramesView ();
+				auto imageView = makeOwned<ImageFramesView> ();
 				CColor color;
 				if (description.getColor ("Focus", color))
 					imageView->setSelectionColor (color);
@@ -60,13 +62,14 @@ public:
 		return controller->createView (attributes, description);
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attr, const IUIDescription& desc) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view, const UIAttributes& attr,
+									 const IUIDescription& desc) override
 	{
 		if (auto name = attr.getAttributeValue (IUIDescription::kCustomViewName))
 		{
 			if (*name == "ImageView")
 			{
-				proc (dynamic_cast<ImageFramesView*> (view));
+				proc (view.cast<ImageFramesView> ());
 				return view;
 			}
 		}
@@ -82,15 +85,16 @@ class MovieBitmapController : public DelegationController,
 							  public NonAtomicReferenceCounted
 {
 public:
-	using Proc = std::function<void (CMovieBitmap*)>;
+	using Proc = std::function<void (const SharedPointer<CMovieBitmap>&)>;
 	MovieBitmapController (Proc&& proc, const SharedPointer<IController>& parent)
 	: DelegationController (parent), proc (std::move (proc))
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attr, const IUIDescription& desc) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view, const UIAttributes& attr,
+									 const IUIDescription& desc) override
 	{
-		if (auto mb = dynamic_cast<CMovieBitmap*> (view))
+		if (auto mb = view.cast<CMovieBitmap> ())
 		{
 			proc (mb);
 			return view;
@@ -114,7 +118,7 @@ public:
 	}
 
 	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize,
-	                                 CSplitView* splitView) override
+									 CSplitView& splitView) override
 	{
 		if (index == 0)
 		{
@@ -130,15 +134,15 @@ public:
 		}
 		return false;
 	}
-	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) override
+	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView& splitView) override
 	{
 		return nullptr;
 	}
-	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) override
+	bool storeViewSize (int32_t index, const CCoord& size, CSplitView& splitView) override
 	{
 		return false;
 	}
-	bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) override
+	bool restoreViewSize (int32_t index, CCoord& size, CSplitView& splitView) override
 	{
 		if (!gradientAdded)
 		{
@@ -148,14 +152,13 @@ public:
 				{
 					auto gradientView = container->getView (0);
 					gradientView->removeAttribute ('cvcr');
-					container->removeView (gradientView, false);
-					auto viewSize = splitView->getViewSize ();
-					auto sepWidth = splitView->getSeparatorWidth ();
+					container->removeSubview (gradientView);
+					auto viewSize = splitView.getViewSize ();
+					auto sepWidth = splitView.getSeparatorWidth ();
 					gradientView->setViewSize (CRect (0, 0, sepWidth, viewSize.getHeight ()));
-					splitView->addViewToSeparator (0, gradientView);
+					splitView.addViewToSeparator (0, gradientView);
 					gradientAdded = true;
 				}
-				view->forget ();
 			}
 		}
 		return false;
@@ -273,15 +276,15 @@ SharedPointer<IController> DocumentWindowController::createController (
 {
 	if (name == "ImageViewController")
 		return makeOwned<ImageViewController> (
-			[&] (ImageFramesView* view) {
+			[&] (auto&& view) {
 				imageView = view;
 				imageView->setImageList (&imageList);
 				imageView->setDocContext (docContext);
 			},
 			parent);
 	if (name == "MovieBitmapController")
-		return makeOwned<MovieBitmapController> (
-			[&] (CMovieBitmap* view) { movieBitmapView = view; }, parent);
+		return makeOwned<MovieBitmapController> ([&] (auto&& view) { movieBitmapView = view; },
+												 parent);
 	if (name == "SplitViewController")
 		return makeOwned<SplitViewController> (parent, uiDesc);
 	return nullptr;
@@ -358,19 +361,18 @@ static bool exportImage (const SharedPointer<CBitmap>& image, UTF8StringPtr path
 //------------------------------------------------------------------------
 void DocumentWindowController::doExport ()
 {
-	auto fs =
-	    owned (CNewFileSelector::create (contentView, CNewFileSelector::Style::kSelectSaveFile));
+	auto fs = CNewFileSelector::create (contentView, CNewFileSelector::Style::kSelectSaveFile);
 	if (!fs)
 		return;
 	fs->setTitle ("Export Stitched Image");
 	fs->setDefaultExtension (pngFileExtension);
 	// TODO: set filename depending on doc name
-	fs->run ([this] (CNewFileSelector* fs) {
-		if (fs->getNumSelectedFiles () == 0)
+	fs->run ([this] (CNewFileSelector& fs) {
+		if (fs.getNumSelectedFiles () == 0)
 			return;
 		if (auto image = createStitchedBitmap ())
 		{
-			if (!exportImage (image, fs->getSelectedFile (0)))
+			if (!exportImage (image, fs.getSelectedFile (0)))
 			{
 				AlertBoxForWindowConfig alert;
 				alert.window = window;
@@ -391,21 +393,20 @@ void DocumentWindowController::doSave ()
 //------------------------------------------------------------------------
 void DocumentWindowController::doSaveAs (std::function<void (bool saved)>&& customAction)
 {
-	auto fs =
-	    owned (CNewFileSelector::create (contentView, CNewFileSelector::Style::kSelectSaveFile));
+	auto fs = CNewFileSelector::create (contentView, CNewFileSelector::Style::kSelectSaveFile);
 	if (!fs)
 		return;
 	fs->setTitle ("Choose Save Destination");
 	fs->setDefaultExtension (imageStitchExtension);
 	fs->setInitialDirectory (docContext->getPath ().data ());
 	fs->setDefaultSaveName (getDisplayFilename (docContext->getPath ()).data ());
-	fs->run ([this, customAction = std::move (customAction)] (CNewFileSelector * fs) {
-		if (fs->getNumSelectedFiles () == 0)
+	fs->run ([this, customAction = std::move (customAction)] (CNewFileSelector& fs) {
+		if (fs.getNumSelectedFiles () == 0)
 		{
 			customAction (false);
 			return;
 		}
-		docContext->setPath (fs->getSelectedFile (0));
+		docContext->setPath (fs.getSelectedFile (0));
 		if (docContext->save ())
 		{
 			window->setTitle (getDisplayFilename (docContext->getPath ()));
@@ -454,18 +455,18 @@ void DocumentWindowController::onNumFramesPerRowChanged (uint16_t newNumFramesPe
 //------------------------------------------------------------------------
 void DocumentWindowController::doOpenDocument (std::function<void (bool saved)>&& customAction)
 {
-	auto fs = owned (CNewFileSelector::create (contentView));
+	auto fs = CNewFileSelector::create (contentView);
 	if (!fs)
 		return;
 	fs->setTitle ("Choose Document");
 	fs->setDefaultExtension (imageStitchExtension);
-	fs->run ([this, customAction = std::move (customAction)] (CNewFileSelector * fs) {
-		if (fs->getNumSelectedFiles () == 0)
+	fs->run ([this, customAction = std::move (customAction)] (CNewFileSelector& fs) {
+		if (fs.getNumSelectedFiles () == 0)
 		{
 			customAction (false);
 			return;
 		}
-		if (auto newDocContext = DocumentContext::loadDocument (fs->getSelectedFile (0)))
+		if (auto newDocContext = DocumentContext::loadDocument (fs.getSelectedFile (0)))
 		{
 			docContext->replaceDocument (newDocContext->getDocument ());
 			window->setTitle (getDisplayFilename (docContext->getPath ()));
@@ -481,14 +482,14 @@ void DocumentWindowController::doOpenDocument (std::function<void (bool saved)>&
 //------------------------------------------------------------------------
 void DocumentWindowController::doAddPathCommand ()
 {
-	auto fs = owned (CNewFileSelector::create (contentView));
+	auto fs = CNewFileSelector::create (contentView);
 	if (!fs)
 		return;
 	fs->setAllowMultiFileSelection (true);
 	fs->setTitle ("Choose Images");
 	fs->setDefaultExtension (pngFileExtension);
-	fs->run ([this] (CNewFileSelector* fs) {
-		auto numFiles = fs->getNumSelectedFiles ();
+	fs->run ([this] (CNewFileSelector& fs) {
+		auto numFiles = fs.getNumSelectedFiles ();
 		if (numFiles == 0)
 			return;
 		std::string alertDescription;
@@ -496,7 +497,7 @@ void DocumentWindowController::doAddPathCommand ()
 		doDeselectAllCommand ();
 		for (auto i = 0u; i < numFiles; ++i)
 		{
-			auto path = fs->getSelectedFile (i);
+			auto path = fs.getSelectedFile (i);
 			auto result = docContext->insertImagePathAtIndex (pos, path);
 			if (result != DocumentContextResult::Success)
 			{
@@ -524,7 +525,8 @@ void DocumentWindowController::doAddPathCommand ()
 						alertDescription += "\n";
 						break;
 					}
-					case DocumentContextResult::Success: break;
+					case DocumentContextResult::Success:
+						break;
 				}
 			}
 			else
@@ -696,7 +698,7 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 	auto col = 0;
 	for (const auto& image : imageList)
 	{
-		image.bitmap->draw (offscreen, r);
+		image.bitmap->draw (offscreen.get (), r);
 		if (++col >= numCols)
 		{
 			col = 0;

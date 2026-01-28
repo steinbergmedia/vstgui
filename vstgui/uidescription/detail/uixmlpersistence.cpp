@@ -15,7 +15,7 @@ namespace VSTGUI {
 namespace Detail {
 
 //-----------------------------------------------------------------------------
-SharedPointer<UINode> UIXMLParser::parse (IContentProvider* provider)
+SharedPointer<UINode> UIXMLParser::parse (IContentProvider& provider)
 {
 	Xml::Parser parser;
 	if (parser.parse (provider, this))
@@ -37,7 +37,7 @@ void UIXMLParser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName,
 			{
 				parser->stop ();
 			}
-			newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
+			newNode = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
 		}
 		else
 		{

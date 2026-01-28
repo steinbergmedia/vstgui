@@ -18,7 +18,7 @@ namespace {
 
 struct DummyListener : public IControlListener
 {
-	void valueChanged (CControl* pControl) override {}
+	void valueChanged (CControl& pControl) override {}
 };
 
 } // anonymous

@@ -25,14 +25,8 @@ UIViewSwitchContainer::~UIViewSwitchContainer () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void UIViewSwitchContainer::setController (IViewSwitchController* _controller)
+void UIViewSwitchContainer::setController (const SharedPointer<IViewSwitchController>& _controller)
 {
-	if (controller)
-	{
-		auto obj = dynamic_cast<IReference*> (controller);
-		if (obj)
-			obj->forget ();
-	}
 	controller = _controller;
 }
 
@@ -43,7 +37,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 
 	if (controller && viewIndex != currentViewIndex)
 	{
-		CView* view = controller->createViewForIndex (viewIndex);
+		auto view = controller->createViewForIndex (viewIndex);
 		if (view)
 		{
 			if (view->getAutosizeFlags () & kAutosizeAll)
@@ -56,15 +50,16 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 			if (isAttached () && animationTime)
 			{
 				removeAnimation ("UIViewSwitchContainer::setCurrentViewIndex");
-				CView* oldView = getView (0);
+				auto oldView = getView (0);
 				if (oldView)
 				{
-					IAnimationTarget* animation = nullptr;
+					SharedPointer<IAnimationTarget> animation;
 					switch (animationStyle)
 					{
 						case kFadeInOut:
 						{
-							animation = new ExchangeViewAnimation (oldView, view, ExchangeViewAnimation::kAlphaValueFade);
+							animation = makeOwned<ExchangeViewAnimation> (
+								oldView, view, ExchangeViewAnimation::kAlphaValueFade);
 							break;
 						}
 						case kMoveInOut:
@@ -74,7 +69,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 							{
 								style = ExchangeViewAnimation::kPushInFromRight;
 							}
-							animation = new ExchangeViewAnimation (oldView, view, style);
+							animation = makeOwned<ExchangeViewAnimation> (oldView, view, style);
 							break;
 						}
 						case kPushInOut:
@@ -84,38 +79,42 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 							{
 								style = ExchangeViewAnimation::kPushInOutFromRight;
 							}
-							animation = new ExchangeViewAnimation (oldView, view, style);
+							animation = makeOwned<ExchangeViewAnimation> (oldView, view, style);
 							break;
 						}
 					}
 					if (animation)
 					{
-						ITimingFunction* tf = nullptr;
+						SharedPointer<ITimingFunction> tf;
 						switch (timingFunction)
 						{
 							case kEasyIn:
 							{
-								tf = new CubicBezierTimingFunction (CubicBezierTimingFunction::easyIn (animationTime));
+								tf = makeOwned<CubicBezierTimingFunction> (
+									CubicBezierTimingFunction::easyIn (animationTime));
 								break;
 							}
 							case kEasyOut:
 							{
-								tf = new CubicBezierTimingFunction (CubicBezierTimingFunction::easyOut (animationTime));
+								tf = makeOwned<CubicBezierTimingFunction> (
+									CubicBezierTimingFunction::easyOut (animationTime));
 								break;
 							}
 							case kEasyInOut:
 							{
-								tf = new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (animationTime));
+								tf = makeOwned<CubicBezierTimingFunction> (
+									CubicBezierTimingFunction::easyInOut (animationTime));
 								break;
 							}
 							case kEasy:
 							{
-								tf = new CubicBezierTimingFunction (CubicBezierTimingFunction::easy (animationTime));
+								tf = makeOwned<CubicBezierTimingFunction> (
+									CubicBezierTimingFunction::easy (animationTime));
 								break;
 							}
 							default:
 							{
-								tf = new LinearTimingFunction (animationTime);
+								tf = makeOwned<LinearTimingFunction> (animationTime);
 								break;
 							}
 						}
@@ -124,19 +123,19 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 					else
 					{
 						removeAll ();
-						addView (view);
+						addSubview (view);
 					}
 				}
 				else
 				{
 					removeAll ();
-					addView (view);
+					addSubview (view);
 				}
 			}
 			else
 			{
 				CViewContainer::removeAll ();
-				CViewContainer::addView (view);
+				CViewContainer::addSubview (view);
 			}
 			currentViewIndex = viewIndex;
 			invalid ();
@@ -163,7 +162,7 @@ void UIViewSwitchContainer::setTimingFunction (TimingFunction t)
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewSwitchContainer::attached (CView* parent)
+bool UIViewSwitchContainer::attached (const SharedPointer<CViewContainer>& parent)
 {
 	bool result = CViewContainer::attached (parent);
 	CViewContainer::removeAll ();
@@ -173,7 +172,7 @@ bool UIViewSwitchContainer::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewSwitchContainer::removed (CView* parent)
+bool UIViewSwitchContainer::removed (const SharedPointer<CViewContainer>& parent)
 {
 	if (isAttached ())
 	{
@@ -189,7 +188,7 @@ bool UIViewSwitchContainer::removed (CView* parent)
 
 //-----------------------------------------------------------------------------
 UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (
-	UIViewSwitchContainer* viewSwitch, const IUIDescription* uiDescription,
+	const SharedPointer<UIViewSwitchContainer>& viewSwitch, const IUIDescription& uiDescription,
 	const SharedPointer<IController>& uiController)
 : IViewSwitchController (viewSwitch)
 , uiDescription (uiDescription)
@@ -202,24 +201,26 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (
 }
 
 //-----------------------------------------------------------------------------
-CView* UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
+SharedPointer<CView> UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 {
 	if (index >= 0 && index < (int32_t)templateNames.size ())
 	{
-		return uiDescription->createView (templateNames[static_cast<uint32_t> (index)].c_str (), uiController);
+		return uiDescription.createView (templateNames[static_cast<uint32_t> (index)].c_str (),
+										 uiController);
 	}
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-static CControl* findControlForTag (CViewContainer* parent, int32_t tag, bool reverse = true)
+static SharedPointer<CControl> findControlForTag (const SharedPointer<CViewContainer>& parent,
+												  int32_t tag, bool reverse = true)
 {
-	CControl* result = nullptr;
+	SharedPointer<CControl> result;
 	ViewIterator it (parent);
 	while (*it)
 	{
-		CView* view = *it;
-		auto* control = dynamic_cast<CControl*> (view);
+		auto view = *it;
+		auto control = view.cast<CControl> ();
 		if (control)
 		{
 			if (control->getTag () == tag)
@@ -235,25 +236,25 @@ static CControl* findControlForTag (CViewContainer* parent, int32_t tag, bool re
 		++it;
 	}
 	if (result == nullptr && !reverse && parent->getParentView ())
-		return findControlForTag (parent->getParentView ()->asViewContainer (), tag, reverse);
+		return findControlForTag (parent->getParentView (), tag, reverse);
 	return result;
 }
 
 //-----------------------------------------------------------------------------
 void UIDescriptionViewSwitchController::switchContainerAttached ()
 {
-	if (switchControlTag != -1)
+	if (auto vs = viewSwitch.lock (); vs && switchControlTag != -1)
 	{
 		// find the switch Control
-		switchControl = findControlForTag (viewSwitch->getParentView ()->asViewContainer (), switchControlTag, false);
+		switchControl = findControlForTag (vs->getParentView (), switchControlTag, false);
 		if (switchControl == nullptr)
 		{
-			switchControl = findControlForTag (viewSwitch->getFrame (), switchControlTag, true);
+			switchControl = findControlForTag (vs->getFrame (), switchControlTag, true);
 		}
 		if (switchControl)
 		{
 			switchControl->registerControlListener (this);
-			valueChanged (switchControl);
+			valueChanged (*switchControl.get ());
 		}
 	}
 }
@@ -270,13 +271,13 @@ void UIDescriptionViewSwitchController::switchContainerRemoved ()
 }
 
 //-----------------------------------------------------------------------------
-void UIDescriptionViewSwitchController::valueChanged (CControl* pControl)
+void UIDescriptionViewSwitchController::valueChanged (CControl& pControl)
 {
-	auto norm = pControl->getValueNormalized ();
+	auto norm = pControl.getValueNormalized ();
 	auto index = std::min (static_cast<int32_t> (norm * static_cast<float> (templateNames.size ())), static_cast<int32_t> (templateNames.size () - 1));
-	if (index != currentIndex)
+	if (auto vs = viewSwitch.lock (); vs && index != currentIndex)
 	{
-		viewSwitch->setCurrentViewIndex (index);
+		vs->setCurrentViewIndex (index);
 		currentIndex = index;
 	}
 }

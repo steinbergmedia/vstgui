@@ -21,9 +21,10 @@ class AlphaValueAnimation : public IAnimationTarget, public NonAtomicReferenceCo
 public:
 	AlphaValueAnimation (float endValue, bool forceEndValueOnFinish = false);
 
-	void animationStart (CView* view, IdStringPtr name) override;
-	void animationTick (CView* view, IdStringPtr name, float pos) override;
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) override;
+	void animationStart (CView& view, IdStringPtr name) override;
+	void animationTick (CView& view, IdStringPtr name, float pos) override;
+	void animationFinished (CView& view, IdStringPtr name, bool wasCanceled) override;
+
 protected:
 	float startValue;
 	float endValue;
@@ -40,9 +41,10 @@ class ViewSizeAnimation : public IAnimationTarget, public NonAtomicReferenceCoun
 public:
 	ViewSizeAnimation (const CRect& newRect, bool forceEndValueOnFinish = false);
 
-	void animationStart (CView* view, IdStringPtr name) override;
-	void animationTick (CView* view, IdStringPtr name, float pos) override;
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) override;
+	void animationStart (CView& view, IdStringPtr name) override;
+	void animationTick (CView& view, IdStringPtr name, float pos) override;
+	void animationFinished (CView& view, IdStringPtr name, bool wasCanceled) override;
+
 protected:
 	CRect startRect;
 	CRect newRect;
@@ -68,12 +70,14 @@ public:
 	};
 
 	/** oldView must be a subview of the animation view */
-	ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style = kAlphaValueFade);
+	ExchangeViewAnimation (const SharedPointer<CView>& oldView, const SharedPointer<CView>& newView,
+						   AnimationStyle style = kAlphaValueFade);
 	~ExchangeViewAnimation () noexcept override;
 
-	void animationStart (CView* view, IdStringPtr name) override;
-	void animationTick (CView* view, IdStringPtr name, float pos) override;
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) override;
+	void animationStart (CView& view, IdStringPtr name) override;
+	void animationTick (CView& view, IdStringPtr name, float pos) override;
+	void animationFinished (CView& view, IdStringPtr name, bool wasCanceled) override;
+
 protected:
 
 	void init ();
@@ -85,7 +89,7 @@ protected:
 	void doPushInOutFromLeft (float pos);
 	void doPushInOutFromRight (float pos);
 
-	void updateViewSize (CView* view, const CRect& rect);
+	void updateViewSize (CView& view, const CRect& rect);
 
 	SharedPointer<CView> newView;
 	SharedPointer<CView> viewToRemove;
@@ -105,9 +109,10 @@ class ControlValueAnimation : public IAnimationTarget, public NonAtomicReference
 public:
 	ControlValueAnimation (float endValue, bool forceEndValueOnFinish = false);
 
-	void animationStart (CView* view, IdStringPtr name) override;
-	void animationTick (CView* view, IdStringPtr name, float pos) override;
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) override;
+	void animationStart (CView& view, IdStringPtr name) override;
+	void animationTick (CView& view, IdStringPtr name, float pos) override;
+	void animationFinished (CView& view, IdStringPtr name, bool wasCanceled) override;
+
 protected:
 	float startValue;
 	float endValue;
@@ -123,15 +128,15 @@ class FuncAnimation : public IAnimationTarget,
 					  public NonAtomicReferenceCounted
 {
 public:
-	using StartFunc = std::function<void (CView*, IdStringPtr)>;
-	using TickFunc = std::function<void (CView*, IdStringPtr, float)>;
-	using FinishedFunc = std::function<void (CView*, IdStringPtr, bool)>;
+	using StartFunc = std::function<void (CView&, IdStringPtr)>;
+	using TickFunc = std::function<void (CView&, IdStringPtr, float)>;
+	using FinishedFunc = std::function<void (CView&, IdStringPtr, bool)>;
 
 	FuncAnimation (StartFunc&& start, TickFunc&& tick, FinishedFunc&& finished);
 
-	void animationStart (CView* view, IdStringPtr name) override;
-	void animationTick (CView* view, IdStringPtr name, float pos) override;
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) override;
+	void animationStart (CView& view, IdStringPtr name) override;
+	void animationTick (CView& view, IdStringPtr name, float pos) override;
+	void animationFinished (CView& view, IdStringPtr name, bool wasCanceled) override;
 
 private:
 	StartFunc start;

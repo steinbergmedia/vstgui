@@ -48,17 +48,17 @@ UTF8StringPtr ViewContainerCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* ViewContainerCreator::create (const UIAttributes& attributes,
-                                     const IUIDescription* description) const
+SharedPointer<CView> ViewContainerCreator::create (const UIAttributes& attributes,
+												   const IUIDescription& description) const
 {
-	return new CViewContainer (CRect (0, 0, 100, 100));
+	return makeOwned<CViewContainer> (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------
-bool ViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+bool ViewContainerCreator::apply (CView& view, const UIAttributes& attributes,
+								  const IUIDescription& description) const
 {
-	CViewContainer* viewContainer = view->asViewContainer ();
+	auto viewContainer = view.asViewContainer ();
 	if (viewContainer == nullptr)
 		return false;
 	CColor backColor;
@@ -98,10 +98,10 @@ auto ViewContainerCreator::getAttributeType (const string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool ViewContainerCreator::getAttributeValue (CView* view, const string& attributeName,
-                                              string& stringValue, const IUIDescription* desc) const
+bool ViewContainerCreator::getAttributeValue (CView& view, const string& attributeName,
+											  string& stringValue, const IUIDescription& desc) const
 {
-	CViewContainer* vc = view->asViewContainer ();
+	auto vc = view.asViewContainer ();
 	if (vc == nullptr)
 		return false;
 	if (attributeName == kAttrBackgroundColor)

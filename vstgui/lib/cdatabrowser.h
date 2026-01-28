@@ -110,18 +110,18 @@ public:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 protected:
 	~CDataBrowser () noexcept override;
-	void valueChanged (CControl *pControl) override;
+	void valueChanged (CControl& control) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-	bool attached (CView *parent) override;
-	bool removed (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	bool wantsFocus () const override;
 
 	void validateSelection ();
 
 	IDataBrowserDelegate* db;
-	CDataBrowserView* dbView;
-	CDataBrowserHeader* dbHeader;
-	CViewContainer* dbHeaderContainer;
+	SharedPointer<CDataBrowserView> dbView;
+	SharedPointer<CDataBrowserHeader> dbHeader;
+	SharedPointer<CViewContainer> dbHeaderContainer;
 	Selection selection;
 };
 

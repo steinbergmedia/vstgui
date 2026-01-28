@@ -15,8 +15,8 @@ class ViewFactoryAdapter : public NonAtomicReferenceCounted,
 						   public IViewFactory
 {
 public:
-	CView* createView (const UIAttributes& attributes,
-					   const IUIDescription& description) const override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) const override
 	{
 		return nullptr;
 	}
@@ -42,8 +42,8 @@ public:
 class UIDescriptionAdapter : public IUIDescription
 {
 public:
-	CView* createView (UTF8StringPtr name,
-					   const SharedPointer<IController>& controller) const override
+	SharedPointer<CView> createView (UTF8StringPtr name,
+									 const SharedPointer<IController>& controller) const override
 	{
 		return nullptr;
 	}

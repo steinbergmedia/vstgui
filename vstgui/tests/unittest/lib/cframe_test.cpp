@@ -22,17 +22,17 @@ public:
 		enteredViews.clear ();
 		exitedViews.clear ();
 	}
-	void onMouseEntered (CView* view, CFrame* frame) override { enteredViews.push_back (view); }
-	void onMouseExited (CView* view, CFrame* frame) override { exitedViews.push_back (view); }
-	void onMouseEvent (MouseEvent&, CFrame*) override {}
+	void onMouseEntered (CView& view, CFrame& frame) override { enteredViews.push_back (&view); }
+	void onMouseExited (CView& view, CFrame& frame) override { exitedViews.push_back (&view); }
+	void onMouseEvent (MouseEvent&, CFrame&) override {}
 
 	std::vector<CView*> enteredViews;
 	std::vector<CView*> exitedViews;
 };
 
-bool contains (const std::vector<CView*>& c, CView* view)
+bool contains (const std::vector<CView*>& c, const SharedPointer<CView>& view)
 {
-	auto it = std::find (c.begin (), c.end (), view);
+	auto it = std::find (c.begin (), c.end (), view.get ());
 	return it != c.end ();
 }
 
@@ -49,18 +49,6 @@ public:
 		return kMouseEventHandled;
 	}
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	int32_t onKeyDown (VstKeyCode& key) override
-	{
-		onKeyDownCalled = true;
-		return 1;
-	}
-	int32_t onKeyUp (VstKeyCode& key) override
-	{
-		onKeyUpCalled = true;
-		return 1;
-	}
-#else
 	void onKeyboardEvent (KeyboardEvent& event) override
 	{
 		if (event.type == EventType::KeyDown)
@@ -74,7 +62,6 @@ public:
 			event.consumed = true;
 		}
 	}
-#endif
 };
 
 class ContainerTestingKeyboardEvents : public CViewContainer
@@ -85,22 +72,6 @@ public:
 
 	ContainerTestingKeyboardEvents () : CViewContainer (CRect (0, 0, 20, 20)) {}
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	int32_t onKeyDown (VstKeyCode& key) override
-	{
-		if (onKeyDownCalled)
-			return -1;
-		onKeyDownCalled = true;
-		return 1;
-	}
-	int32_t onKeyUp (VstKeyCode& key) override
-	{
-		if (onKeyUpCalled)
-			return -1;
-		onKeyUpCalled = true;
-		return 1;
-	}
-#else
 	void onKeyboardEvent (KeyboardEvent& event) override
 	{
 		if (event.type == EventType::KeyDown)
@@ -114,7 +85,6 @@ public:
 			event.consumed = true;
 		}
 	}
-#endif
 };
 
 class KeyboardHook : public IKeyboardHook
@@ -123,7 +93,7 @@ public:
 	bool keyDownCalled {false};
 	bool keyUpCalled {false};
 
-	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override
+	void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) override
 	{
 		if (event.type == EventType::KeyDown)
 		{
@@ -180,13 +150,13 @@ TEST_CASE (CFrameTest, MouseEnterExit)
 	MouseObserver observer;
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 	frame->registerMouseObserver (&observer);
-	auto v1 = new View ();
-	auto v2 = new View ();
+	auto v1 = makeOwned<View> ();
+	auto v2 = makeOwned<View> ();
 	CRect r2 (10, 10, 20, 20);
 	v2->setViewSize (r2);
 	v2->setMouseableArea (r2);
-	frame->addView (v1);
-	frame->addView (v2);
+	frame->addSubview (v1);
+	frame->addSubview (v2);
 	frame->attached (frame);
 	dispatchMouseEvent<MouseMoveEvent> (frame, {30., 30.});
 	EXPECT (observer.enteredViews.size () == 0);
@@ -210,17 +180,17 @@ TEST_CASE (CFrameTest, MouseEnterExitInContainer)
 	MouseObserver observer;
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 	frame->registerMouseObserver (&observer);
-	auto v1 = new View ();
-	auto v2 = new View ();
+	auto v1 = makeOwned<View> ();
+	auto v2 = makeOwned<View> ();
 	CRect r2 (10, 10, 20, 20);
 	v2->setViewSize (r2);
 	v2->setMouseableArea (r2);
-	auto container = new CViewContainer (CRect (0, 0, 80, 80));
-	auto container2 = new CViewContainer (CRect (0, 0, 50, 50));
-	frame->addView (container);
-	container->addView (container2);
-	container2->addView (v1);
-	container2->addView (v2);
+	auto container = makeOwned<CViewContainer> (CRect (0, 0, 80, 80));
+	auto container2 = makeOwned<CViewContainer> (CRect (0, 0, 50, 50));
+	frame->addSubview (container);
+	container->addSubview (container2);
+	container2->addSubview (v1);
+	container2->addSubview (v2);
 	frame->attached (frame);
 	dispatchMouseEvent<MouseMoveEvent> (frame, {90., 90.});
 	EXPECT (observer.enteredViews.size () == 0);
@@ -316,11 +286,11 @@ TEST_CASE (CFrameTest, MouseMoveInContainer)
 	};
 
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto container = new TestViewContainer (CRect (10, 10, 80, 80));
-	frame->addView (container);
+	auto container = makeOwned<TestViewContainer> (CRect (10, 10, 80, 80));
+	frame->addSubview (container);
 
-	auto testView = new TestView ({10, 10, 60, 60});
-	container->addView (testView);
+	auto testView = makeOwned<TestView> (CRect {10, 10, 60, 60});
+	container->addSubview (testView);
 
 	frame->attached (frame);
 
@@ -347,13 +317,13 @@ TEST_CASE (CFrameTest, RemoveViewWhileMouseInside)
 	MouseObserver observer;
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 	frame->registerMouseObserver (&observer);
-	auto v1 = new View ();
-	frame->addView (v1);
+	auto v1 = makeOwned<View> ();
+	frame->addSubview (v1);
 	frame->attached (frame);
 	dispatchMouseEvent<MouseMoveEvent> (frame, {5., 5.});
 	EXPECT (contains (observer.enteredViews, v1));
 	observer.reset ();
-	frame->removeView (v1);
+	frame->removeSubview (v1);
 	EXPECT (contains (observer.exitedViews, v1));
 	frame->unregisterMouseObserver (&observer);
 }
@@ -381,12 +351,12 @@ TEST_CASE (CFrameTest, FocusSettings)
 TEST_CASE (CFrameTest, SetModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto view = shared (new View ());
+	auto view = makeOwned<View> ();
 	EXPECT (frame->getModalView () == nullptr);
 	auto session = frame->beginModalViewSession (view);
 	EXPECT (session);
 	EXPECT (frame->getModalView () == view);
-	auto container = shared (new CViewContainer (CRect (0, 0, 0, 0)));
+	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
 	auto session2 = frame->beginModalViewSession (container);
 	EXPECT (session2)
 	EXPECT (frame->getModalView () == container);
@@ -400,8 +370,8 @@ TEST_CASE (CFrameTest, SetModalView)
 TEST_CASE (CFrameTest, KeyDownEvent)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto view = new View ();
-	frame->addView (view);
+	auto view = makeOwned<View> ();
+	frame->addSubview (view);
 	frame->attached (frame);
 	frame->onActivate (true);
 	KeyboardEvent event;
@@ -414,10 +384,10 @@ TEST_CASE (CFrameTest, KeyDownEvent)
 	event.consumed = false;
 	EXPECT (view->onKeyDownCalled);
 	frame->removeAll ();
-	auto container = new ContainerTestingKeyboardEvents ();
-	auto view2 = new CView (CRect (0, 0, 10, 10));
-	container->addView (view2);
-	frame->addView (container);
+	auto container = makeOwned<ContainerTestingKeyboardEvents> ();
+	auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
+	container->addSubview (view2);
+	frame->addSubview (container);
 	frame->setFocusView (view2);
 	frame->dispatchEvent (event);
 	EXPECT (event.consumed == true);
@@ -431,7 +401,7 @@ TEST_CASE (CFrameTest, KeyDownEvent)
 	EXPECT (event.consumed == true);
 	event.consumed = false;
 	EXPECT (frame->getFocusView () == view2);
-	auto view3 = shared (new View ());
+	auto view3 = makeOwned<View> ();
 	auto modalSession = frame->beginModalViewSession (view3);
 	frame->dispatchEvent (event);
 	EXPECT (event.consumed == true);
@@ -442,8 +412,8 @@ TEST_CASE (CFrameTest, KeyDownEvent)
 TEST_CASE (CFrameTest, KeyUpEvent)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto view = new View ();
-	frame->addView (view);
+	auto view = makeOwned<View> ();
+	frame->addSubview (view);
 	frame->attached (frame);
 	frame->onActivate (true);
 	KeyboardEvent event;
@@ -456,16 +426,16 @@ TEST_CASE (CFrameTest, KeyUpEvent)
 	event.consumed = false;
 	EXPECT (view->onKeyUpCalled);
 	frame->removeAll ();
-	auto container = new ContainerTestingKeyboardEvents ();
-	auto view2 = new CView (CRect (0, 0, 10, 10));
-	container->addView (view2);
-	frame->addView (container);
+	auto container = makeOwned<ContainerTestingKeyboardEvents> ();
+	auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
+	container->addSubview (view2);
+	frame->addSubview (container);
 	frame->setFocusView (view2);
 	frame->dispatchEvent (event);
 	EXPECT (event.consumed == true);
 	event.consumed = false;
 	EXPECT (container->onKeyUpCalled);
-	auto view3 = shared (new View ());
+	auto view3 = makeOwned<View> ();
 	auto modalSession = frame->beginModalViewSession (view3);
 	frame->dispatchEvent (event);
 	EXPECT (event.consumed == true);
@@ -476,9 +446,9 @@ TEST_CASE (CFrameTest, KeyUpEvent)
 TEST_CASE (CFrameTest, AdvanceNextFocusView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto view = new View ();
+	auto view = makeOwned<View> ();
 	frame->attached (frame);
-	frame->addView (view);
+	frame->addSubview (view);
 	frame->onActivate (true);
 	EXPECT (frame->getFocusView () == nullptr);
 	view->setWantsFocus (true);
@@ -486,40 +456,40 @@ TEST_CASE (CFrameTest, AdvanceNextFocusView)
 	EXPECT (frame->getFocusView () == view);
 	frame->removeAll ();
 
-	auto container = new CViewContainer ({0., 0., 20., 20.});
-	auto view2 = new View ();
-	container->addView (view2);
-	frame->addView (container);
+	auto container = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	auto view2 = makeOwned<View> ();
+	container->addSubview (view2);
+	frame->addSubview (container);
 
 	EXPECT (frame->getFocusView () == nullptr);
 	view2->setWantsFocus (true);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view2);
-	auto container2 = new CViewContainer ({0., 0., 20., 20.});
-	auto view3 = new View ();
-	container2->addView (view3);
-	container->addView (container2);
+	auto container2 = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	auto view3 = makeOwned<View> ();
+	container2->addSubview (view3);
+	container->addSubview (container2);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == nullptr);
 	view3->setWantsFocus (true);
 	frame->setFocusView (view2);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view3);
-	auto view4 = new View ();
+	auto view4 = makeOwned<View> ();
 	view4->setWantsFocus (true);
-	container2->addView (view4);
+	container2->addSubview (view4);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view4);
-	auto container3 = new CViewContainer ({0., 0., 20., 20.});
-	auto view5 = new View ();
+	auto container3 = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	auto view5 = makeOwned<View> ();
 	view5->setWantsFocus (true);
-	container3->addView (view5);
-	container->addView (container3);
+	container3->addSubview (view5);
+	container->addSubview (container3);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view5);
-	auto view6 = new View ();
+	auto view6 = makeOwned<View> ();
 	view6->setWantsFocus (true);
-	frame->addView (view6);
+	frame->addSubview (view6);
 	frame->advanceNextFocusView (nullptr);
 	EXPECT (frame->getFocusView () == view6);
 }
@@ -527,7 +497,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusView)
 TEST_CASE (CFrameTest, AdvanceNextFocusViewInModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto view = shared (new View ());
+	auto view = makeOwned<View> ();
 	frame->attached (frame);
 	auto modalSession = frame->beginModalViewSession (view);
 	EXPECT (frame->getFocusView () == nullptr);
@@ -536,33 +506,33 @@ TEST_CASE (CFrameTest, AdvanceNextFocusViewInModalView)
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view);
 	frame->endModalViewSession (*modalSession);
-	auto container = shared (new CViewContainer ({0., 0., 20., 20.}));
-	auto view2 = new View ();
-	container->addView (view2);
+	auto container = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	auto view2 = makeOwned<View> ();
+	container->addSubview (view2);
 	modalSession = frame->beginModalViewSession (container);
 	EXPECT (frame->getFocusView () == nullptr);
 	view2->setWantsFocus (true);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view2);
-	auto container2 = new CViewContainer ({0., 0., 20., 20.});
-	auto view3 = new View ();
-	container2->addView (view3);
-	container->addView (container2);
+	auto container2 = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	auto view3 = makeOwned<View> ();
+	container2->addSubview (view3);
+	container->addSubview (container2);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view2);
 	view3->setWantsFocus (true);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view3);
-	auto view4 = new View ();
+	auto view4 = makeOwned<View> ();
 	view4->setWantsFocus (true);
-	container2->addView (view4);
+	container2->addSubview (view4);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view4);
-	auto container3 = new CViewContainer ({0., 0., 20., 20.});
-	auto view5 = new View ();
+	auto container3 = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	auto view5 = makeOwned<View> ();
 	view5->setWantsFocus (true);
-	container3->addView (view5);
-	container->addView (container3);
+	container3->addSubview (view5);
+	container->addSubview (container3);
 	frame->advanceNextFocusView (frame->getFocusView ());
 	EXPECT (frame->getFocusView () == view5);
 
@@ -572,9 +542,9 @@ TEST_CASE (CFrameTest, AdvanceNextFocusViewInModalView)
 TEST_CASE (CFrameTest, GetViewAtModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto container = new CViewContainer ({0., 0., 20., 20.});
-	auto view = new View ();
-	container->addView (view);
+	auto container = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	auto view = makeOwned<View> ();
+	container->addSubview (view);
 	frame->attached (frame);
 	auto modalSession = frame->beginModalViewSession (container);
 	EXPECT (frame->getViewAt (CPoint (1, 1)) == container);
@@ -586,12 +556,12 @@ TEST_CASE (CFrameTest, GetViewAtModalView)
 TEST_CASE (CFrameTest, GetContainerAtModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto container = new CViewContainer ({0., 0., 20., 20.});
+	auto container = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
 	CRect r (0, 0, 50, 50);
 	container->setViewSize (r);
 	container->setMouseableArea (r);
-	auto container2 = new CViewContainer ({0., 0., 20., 20.});
-	container->addView (container2);
+	auto container2 = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	container->addSubview (container2);
 	frame->attached (frame);
 	EXPECT (frame->getContainerAt (CPoint (1, 1)) == frame);
 	auto modalSession = frame->beginModalViewSession (container);
@@ -608,9 +578,9 @@ TEST_CASE (CFrameTest, GetContainerAtModalView)
 TEST_CASE (CFrameTest, MouseDownModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto container = new CViewContainer ({0., 0., 20., 20.});
-	auto view1 = new View ();
-	container->addView (view1);
+	auto container = makeOwned<CViewContainer> (CRect {0., 0., 20., 20.});
+	auto view1 = makeOwned<View> ();
+	container->addSubview (view1);
 	frame->attached (frame);
 	auto modalSession = frame->beginModalViewSession (container);
 	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (frame, {80., 80.}, MouseButton::Left),
@@ -626,12 +596,12 @@ TEST_CASE (CFrameTest, MouseDownModalView)
 TEST_CASE (CFrameTest, Activate)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto view = new View ();
+	auto view = makeOwned<View> ();
 	view->setWantsFocus (true);
-	auto view2 = new View ();
+	auto view2 = makeOwned<View> ();
 	view2->setWantsFocus (true);
-	frame->addView (view);
-	frame->addView (view2);
+	frame->addSubview (view);
+	frame->addSubview (view2);
 	frame->attached (frame);
 	EXPECT (frame->getFocusView () == nullptr);
 	frame->onActivate (false);
@@ -695,7 +665,7 @@ TEST_CASE (CFrameTest, CollectInvalidRectsOnMouseDown)
 	auto platformHandle = UnitTest::PlatformParentHandle::create ();
 	auto frame = new CFrame (CRect (0, 0, 100, 100), nullptr);
 	auto view = new CollectInvalidRectView ();
-	frame->addView (view);
+	frame->addSubview (view);
 	frame->open (platformHandle->getHandle (), platformHandle->getType ());
 	platformHandle->forceRedraw ();
 	EXPECT (view->callCount == 1);
@@ -709,28 +679,6 @@ TEST_CASE (CFrameTest, CollectInvalidRectsOnMouseDown)
 	EXPECT (view->callCount == 2);
 	frame->close ();
 }
-#endif
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#include "../../../lib/private/disabledeprecatedmessage.h"
-
-TEST_CASE (CFameLegacyTest, SetModalView)
-{
-	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	auto view = owned (new View ());
-	EXPECT (frame->getModalView () == nullptr);
-	EXPECT (frame->setModalView (view));
-	EXPECT (frame->getModalView () == view);
-	auto container = owned (new CViewContainer (CRect (0, 0, 0, 0)));
-	EXPECT (frame->setModalView (container) == false);
-	EXPECT (frame->setModalView (nullptr));
-	EXPECT (frame->setModalView (container));
-	EXPECT (frame->getModalView () == container);
-	EXPECT (frame->setModalView (nullptr));
-	EXPECT (frame->getModalView () == nullptr);
-}
-
-#include "../../../lib/private/enabledeprecatedmessage.h"
 #endif
 
 } // VSTGUI

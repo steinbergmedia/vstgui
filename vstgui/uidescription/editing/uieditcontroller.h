@@ -47,7 +47,7 @@ public:
 	UIEditController (const SharedPointer<UIDescription>& description);
 	void setDarkTheme (bool state); // must be called before createEditView
 	bool usesDarkTheme () const;
-	CView* createEditView ();
+	SharedPointer<CView> createEditView ();
 	SharedPointer<UIEditMenuController> getMenuController () const;
 	SharedPointer<UIUndoManager> getUndoManager () const;
 	const std::string& getEditTemplateName () const { return editTemplateName; }
@@ -59,7 +59,7 @@ public:
 	void addSelectionToCurrentView (const SharedPointer<UISelection>& selection);
 
 	static SharedPointer<UIDescription> getEditorDescription ();
-	static void setupDataSource (GenericStringListDataBrowserSource* source);
+	static void setupDataSource (const SharedPointer<GenericStringListDataBrowserSource>& source);
 	static bool std__stringCompare (const std::string* lhs, const std::string* rhs);
 	static const UTF8StringPtr kEncodeBitmapsSettingsKey;
 	static const UTF8StringPtr kWriteWindowsRCFileSettingsKey;
@@ -71,10 +71,12 @@ protected:
 	int32_t getSplitViewIndex (const CSplitView& splitView);
 	void setDirty (bool state);
 
-	void valueChanged (CControl* pControl) override;
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	void valueChanged (CControl& pControl) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	SharedPointer<IController> createSubController (UTF8StringPtr name,
 													const IUIDescription& description) override;
 
@@ -91,13 +93,15 @@ protected:
 								 const CPoint& where) override;
 
 	// ISplitViewController
-	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) override;
-	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) override;
-	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) override;
-	bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) override;
+	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize,
+									 CSplitView& splitView) override;
+	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView& splitView) override;
+	bool storeViewSize (int32_t index, const CCoord& size, CSplitView& splitView) override;
+	bool restoreViewSize (int32_t index, CCoord& size, CSplitView& splitView) override;
 
 	// ISplitViewSeparatorDrawer
-	void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) override;
+	void drawSplitViewSeparator (CDrawContext& context, const CRect& size, int32_t flags,
+								 int32_t index, CSplitView& splitView) override;
 
 	// IActionPerformer
 	void performAction (const SharedPointer<IAction>& action) override;
@@ -139,19 +143,19 @@ protected:
 	void finishGroupAction () override;
 
 	// IKeyboardHook
-	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
+	void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) override;
 
 	// CommandMenuItemTargetAdapter
-	bool validateCommandMenuItem (CCommandMenuItem* item) override;
-	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
+	bool validateCommandMenuItem (CCommandMenuItem& item) override;
+	bool onCommandMenuItemSelected (CCommandMenuItem& item) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIDescription> editorDesc;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIGridController> gridController;
-	CView* baseView {nullptr};
-	UIEditView* editView {nullptr};
+	SharedPointer<CView> baseView;
+	SharedPointer<UIEditView> editView;
 	SharedPointer<UITemplateController> templateController;
 	SharedPointer<UIEditMenuController> menuController;
 	SharedPointer<UIZoomSettingController> zoomSettingController;
@@ -168,7 +172,7 @@ protected:
 		std::string name;
 		SharedPointer<CView> view;
 
-		Template (const std::string& n, CView* v) : name (n), view (v) {}
+		Template (const std::string& n, const SharedPointer<CView>& v) : name (n), view (v) {}
 		Template (const Template& c) : name (c.name), view (c.view) {}
 		bool operator==(const Template& t) { return name == t.name && view == t.view; }
 		bool operator==(const std::string& n) { return name == n; }

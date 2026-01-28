@@ -12,8 +12,18 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
-template<class I>
-struct WeakPointerSupport;
+//------------------------------------------------------------------------
+struct IWeakPointer
+{
+	virtual void onObjectDestructed () noexcept = 0;
+};
+
+//------------------------------------------------------------------------
+struct IWeakPointerSupport
+{
+	virtual void registerWeakPointer (IWeakPointer* wp) noexcept = 0;
+	virtual void unregisterWeakPointer (IWeakPointer* wp) noexcept = 0;
+};
 
 //------------------------------------------------------------------------
 /** A non-owning, thread-safe weak reference wrapper for objects managed by VSTGUI's SharedPointer.
@@ -68,15 +78,17 @@ Notes:
   contention.
  */
 template<class I>
-struct WeakPointer final
+struct WeakPointer final : IWeakPointer
 {
 	inline WeakPointer () noexcept {}
-	inline WeakPointer (const SharedPointer<I>& object) noexcept;
+	template<typename T>
+	inline WeakPointer (const SharedPointer<T>& object) noexcept;
 	inline WeakPointer (const WeakPointer<I>& object) noexcept;
 	inline WeakPointer (WeakPointer<I>&& other) noexcept;
 	inline ~WeakPointer () noexcept;
 
-	inline WeakPointer<I>& operator= (const SharedPointer<I>& other) noexcept;
+	template<typename T>
+	inline WeakPointer<I>& operator= (const SharedPointer<T>& other) noexcept;
 	inline WeakPointer<I>& operator= (const WeakPointer<I>& other) noexcept;
 	inline WeakPointer<I>& operator= (WeakPointer<I>&& other) noexcept;
 
@@ -86,12 +98,12 @@ struct WeakPointer final
 	inline bool expired () const noexcept;
 
 protected:
-	friend struct WeakPointerSupport<I>;
+	friend struct IWeakPointerSupport;
 
-	inline void onObjectDestructed () noexcept;
+	inline void onObjectDestructed () noexcept override;
 
-	mutable std::mutex m;
-	WeakPointerSupport<I>* object {nullptr};
+	mutable std::recursive_mutex m;
+	IWeakPointerSupport* object {nullptr};
 };
 
 //------------------------------------------------------------------------
@@ -105,12 +117,28 @@ bool operator== (const WeakPointer<I>& lhs, const WeakPointer<I>& rhs)
 
 //------------------------------------------------------------------------
 template<class I>
-struct WeakPointerSupport
+bool operator== (const WeakPointer<I>& lhs, const I* rhs)
+{
+	auto lhsp = lhs.lock ();
+	return lhsp.get () == rhs;
+}
+
+//------------------------------------------------------------------------
+template<class I>
+bool operator== (const I* lhs, const WeakPointer<I>& rhs)
+{
+	auto rhsp = rhs.lock ();
+	return rhsp.get () == lhs;
+}
+
+//------------------------------------------------------------------------
+template<class I>
+struct WeakPointerSupport : IWeakPointerSupport
 {
 	WeakPointerSupport () {}
 	~WeakPointerSupport () noexcept
 	{
-		std::lock_guard<std::mutex> lockGuard (m);
+		std::lock_guard<std::recursive_mutex> lockGuard (m);
 		if (weakPointerList)
 		{
 			std::for_each (weakPointerList->begin (), weakPointerList->end (),
@@ -118,23 +146,23 @@ struct WeakPointerSupport
 		}
 	}
 
-protected:
 	WeakPointer<I> weakFromThis ()
 	{
 		return {shared (static_cast<I*> (this))};
 	}
 
-	void registerWeakPointer (WeakPointer<I>* wp) noexcept
+private:
+	void registerWeakPointer (IWeakPointer* wp) noexcept override
 	{
-		std::lock_guard<std::mutex> lockGuard (m);
+		std::lock_guard<std::recursive_mutex> lockGuard (m);
 		if (!weakPointerList)
-			weakPointerList = std::make_unique<std::vector<WeakPointer<I>*>> ();
+			weakPointerList = std::make_unique<std::vector<IWeakPointer*>> ();
 		weakPointerList->push_back (wp);
 	}
 
-	void unregisterWeakPointer (WeakPointer<I>* wp) noexcept
+	void unregisterWeakPointer (IWeakPointer* wp) noexcept override
 	{
-		std::lock_guard<std::mutex> lockGuard (m);
+		std::lock_guard<std::recursive_mutex> lockGuard (m);
 		if (!weakPointerList)
 			return;
 		auto it = std::find (weakPointerList->begin (), weakPointerList->end (), wp);
@@ -146,20 +174,20 @@ protected:
 		}
 	}
 
-private:
-	std::mutex m;
-	std::unique_ptr<std::vector<WeakPointer<I>*>> weakPointerList;
+	std::recursive_mutex m;
+	std::unique_ptr<std::vector<IWeakPointer*>> weakPointerList;
 
 	friend struct WeakPointer<I>;
+	friend struct IWeakPointer;
 };
 
 //------------------------------------------------------------------------
 template<class I>
-inline WeakPointer<I>::WeakPointer (const SharedPointer<I>& object) noexcept
-: object (object.get ())
+template<typename T>
+inline WeakPointer<I>::WeakPointer (const SharedPointer<T>& obj) noexcept : object (obj.get ())
 {
 	if (object)
-		object->registerWeakPointer (this);
+		static_cast<IWeakPointerSupport*> (object)->registerWeakPointer (this);
 }
 
 //------------------------------------------------------------------------
@@ -169,7 +197,7 @@ inline WeakPointer<I>::WeakPointer (const WeakPointer<I>& other) noexcept
 	if (auto spo = other.lock ())
 	{
 		object = spo.get ();
-		object->registerWeakPointer (this);
+		static_cast<IWeakPointerSupport*> (object)->registerWeakPointer (this);
 	}
 }
 
@@ -190,10 +218,11 @@ inline WeakPointer<I>::~WeakPointer () noexcept
 
 //------------------------------------------------------------------------
 template<class I>
-inline WeakPointer<I>& WeakPointer<I>::operator= (const SharedPointer<I>& other) noexcept
+template<typename T>
+inline WeakPointer<I>& WeakPointer<I>::operator= (const SharedPointer<T>& other) noexcept
 {
 	reset ();
-	std::lock_guard<std::mutex> lockGuard (m);
+	std::lock_guard<std::recursive_mutex> lockGuard (m);
 	if (other)
 	{
 		object = other.get ();
@@ -207,7 +236,7 @@ template<class I>
 inline WeakPointer<I>& WeakPointer<I>::operator= (const WeakPointer<I>& other) noexcept
 {
 	reset ();
-	std::lock_guard<std::mutex> lockGuard (m);
+	std::lock_guard<std::recursive_mutex> lockGuard (m);
 	if (auto spo = other.lock ())
 	{
 		object = spo.get ();
@@ -254,7 +283,7 @@ inline void WeakPointer<I>::swap (WeakPointer<I>& other) noexcept
 template<class I>
 inline SharedPointer<I> WeakPointer<I>::lock () const noexcept
 {
-	std::lock_guard<std::mutex> lockGuard (m);
+	std::lock_guard<std::recursive_mutex> lockGuard (m);
 	if (!expired ())
 		return shared (static_cast<I*> (object));
 	return {};
@@ -264,7 +293,7 @@ inline SharedPointer<I> WeakPointer<I>::lock () const noexcept
 template<class I>
 inline void WeakPointer<I>::onObjectDestructed () noexcept
 {
-	std::lock_guard<std::mutex> lockGuard (m);
+	std::lock_guard<std::recursive_mutex> lockGuard (m);
 	object = nullptr;
 }
 
@@ -272,10 +301,11 @@ inline void WeakPointer<I>::onObjectDestructed () noexcept
 template<class I>
 inline void WeakPointer<I>::reset () noexcept
 {
+	std::lock_guard<std::recursive_mutex> lockGuard (m);
 	if (auto spo = lock ())
 	{
 		object = nullptr;
-		spo->unregisterWeakPointer (this);
+		static_cast<IWeakPointerSupport*> (spo.get ())->unregisterWeakPointer (this);
 	}
 }
 

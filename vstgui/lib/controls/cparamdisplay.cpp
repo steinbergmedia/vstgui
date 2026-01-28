@@ -38,8 +38,6 @@ CParamDisplay::CParamDisplay (const CRect& size, const SharedPointer<CBitmap>& b
 	backColor   = kBlackCColor;
 	frameColor  = kBlackCColor;
 	shadowColor = kRedCColor;
-	if (hasBit (style, kNoDrawStyle))
-		setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -66,7 +64,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 CParamDisplay::~CParamDisplay () noexcept {}
 
 //------------------------------------------------------------------------
-bool CParamDisplay::removed (CView* parent)
+bool CParamDisplay::removed (const SharedPointer<CViewContainer>& parent)
 {
 	return CControl::removed (parent);
 }
@@ -139,28 +137,27 @@ void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& func)
 }
 
 //------------------------------------------------------------------------
-bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
+bool CParamDisplay::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	if (wantsFocus ())
 	{
         auto lineWidth = getFrameWidth ();
         if (lineWidth < 0.)
-            lineWidth = 1.;
-		CCoord focusWidth = getFrame ()->getFocusWidth ();
+			lineWidth = 1.;
 		CRect r (getViewSize ());
 		if (hasBit (style, kRoundRectStyle))
 		{
 			r.inset (lineWidth / 2., lineWidth / 2.);
 			outPath.addRoundRect (r, roundRectRadius);
 			outPath.closeSubpath ();
-			r.extend (focusWidth, focusWidth);
+			r.extend (focusLineWidth, focusLineWidth);
 			outPath.addRoundRect (r, roundRectRadius);
 		}
 		else
 		{
 			r.inset (lineWidth / 2., lineWidth / 2.);
 			outPath.addRect (r);
-			r.extend (focusWidth, focusWidth);
+			r.extend (focusLineWidth, focusLineWidth);
 			outPath.addRect (r);
 		}
 	}
@@ -177,19 +174,18 @@ void CParamDisplay::draw (CDrawContext *pContext)
 
 	bool converted = false;
 	if (valueToStringFunction)
-		converted = valueToStringFunction (value, string, this);
+		converted = valueToStringFunction (getValue (), string, this);
 	if (!converted)
 	{
 		char tmp[255];
 		char precisionStr[10];
 		snprintf (precisionStr, 10, "%%.%hhuf", valuePrecision);
-		snprintf (tmp, 255, precisionStr, value);
+		snprintf (tmp, 255, precisionStr, getValue ());
 		string = tmp;
 	}
 
 	drawBack (pContext);
 	drawPlatformText (pContext, UTF8String (string));
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -479,10 +475,7 @@ void CParamDisplay::setFrameWidth (const CCoord& width)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawStyleChanged ()
-{
-	setDirty ();
-}
+void CParamDisplay::drawStyleChanged () { invalid (); }
 
 //------------------------------------------------------------------------
 void CParamDisplay::setBackOffset (const CPoint &offset)

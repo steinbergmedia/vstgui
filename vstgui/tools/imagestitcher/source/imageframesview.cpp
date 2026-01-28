@@ -23,7 +23,7 @@ using namespace VSTGUI::Standalone;
 //------------------------------------------------------------------------
 ImageFramesView::ImageFramesView () : CView (CRect (0, 0, 10, 10))
 {
-	font = makeOwned<CFontDesc> (*kSystemFont);
+	font = makeOwned<CFontDesc> (*kSystemFont.get ());
 	font->setSize (8);
 	setSelectionColor (MakeCColor (164, 205, 255, 255));
 }
@@ -47,7 +47,7 @@ void ImageFramesView::makeRectVisible (CRect r) const
 {
 	if (!isAttached ())
 		return;
-	if (auto scrollView = dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
+	if (auto scrollView = getParentView ()->getParentView ().cast<CScrollView> ())
 	{
 		scrollView->makeRectVisible (r);
 	}
@@ -77,7 +77,7 @@ void ImageFramesView::updateViewSize ()
 		}
 		if (isAttached ())
 		{
-			if (auto scrollView = dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
+			if (auto scrollView = getParentView ()->getParentView ().cast<CScrollView> ())
 			{
 				auto parentSize = scrollView->getViewSize ();
 				if (parentSize.getWidth () > r.getWidth ())
@@ -141,8 +141,8 @@ void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
 	CRect updateRect (_updateRect);
 	updateRect.offsetInverse (topLeft);
 
-	context->setFillColor (getFrame ()->getFocusView () == this ? activeSelectionColor :
-	                                                              inactiveSelectionColor);
+	context->setFillColor (getFrame ()->getFocusView ().get () == this ? activeSelectionColor
+																	   : inactiveSelectionColor);
 
 	context->setFontColor (textColor);
 	context->setFont (font);
@@ -326,7 +326,8 @@ void ImageFramesView::enlargeSelection (size_t index)
 static constexpr size_t DragPackageID = 'isdp';
 
 //------------------------------------------------------------------------
-bool ImageFramesView::getIndicesFromDataPackage (IDataPackage* package, std::vector<size_t>* result)
+bool ImageFramesView::getIndicesFromDataPackage (const SharedPointer<IDataPackage>& package,
+												 std::vector<size_t>* result)
 {
 	if (package->getDataType (0) == IDataPackage::kBinary)
 	{
@@ -352,7 +353,7 @@ bool ImageFramesView::getIndicesFromDataPackage (IDataPackage* package, std::vec
 }
 
 //------------------------------------------------------------------------
-std::vector<Path> ImageFramesView::getDragPngImagePaths (IDataPackage* drag)
+std::vector<Path> ImageFramesView::getDragPngImagePaths (const SharedPointer<IDataPackage>& drag)
 {
 	std::vector<Path> result;
 	auto count = drag->getCount ();
@@ -371,7 +372,7 @@ std::vector<Path> ImageFramesView::getDragPngImagePaths (IDataPackage* drag)
 }
 
 //------------------------------------------------------------------------
-bool ImageFramesView::dragHasPngImages (IDataPackage* drag)
+bool ImageFramesView::dragHasPngImages (const SharedPointer<IDataPackage>& drag)
 {
 	auto count = drag->getCount ();
 	for (auto i = 0u; i < count; ++i)
@@ -487,7 +488,7 @@ CMouseEventResult ImageFramesView::onMouseDown (CPoint& where, const CButtonStat
 			}
 		}
 		if (auto frame = getFrame ())
-			frame->setFocusView (this);
+			frame->setFocusView (shared (this));
 		dragStartMouseObserver.init (where);
 		return kMouseEventHandled;
 	}

@@ -13,6 +13,7 @@
 #include "../icontroller.h"
 #include "../../lib/controls/ctextedit.h"
 #include <string>
+#include <array>
 
 namespace VSTGUI {
 
@@ -26,9 +27,10 @@ public:
 							   WeakPointer<IActionPerformer> actionPerformer);
 	~UIFocusSettingsController () override = default;
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
-	void valueChanged (CControl* control) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	void valueChanged (CControl& control) override;
 	void onDialogButton1Clicked (UIDialogController&) override;
 	void onDialogButton2Clicked (UIDialogController&) override;
 	void onDialogShow (UIDialogController&) override;
@@ -46,7 +48,7 @@ protected:
 		kWidthTag,
 		kNumTags
 	};
-	CControl* controls[kNumTags];
+	std::array<SharedPointer<CControl>, kNumTags> controls;
 	FocusDrawingSettings originalSettings;
 };
 

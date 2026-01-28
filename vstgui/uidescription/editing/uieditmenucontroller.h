@@ -165,13 +165,12 @@ public:
 	bool handleCommand (const UTF8StringPtr category, const UTF8StringPtr name);
 	bool canHandleCommand (const UTF8StringPtr category, const UTF8StringPtr name) const;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-	void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
 
 	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name);
 protected:
-	bool validateCommandMenuItem (CCommandMenuItem* item) override;
-	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
+	bool validateCommandMenuItem (CCommandMenuItem& item) override;
+	bool onCommandMenuItemSelected (CCommandMenuItem& item) override;
 
 	bool validateMenuItem (CCommandMenuItem& item);
 	SharedPointer<CCommandMenuItem> findKeyCommandItem (SharedPointer<COptionMenu> menu,
@@ -180,11 +179,12 @@ protected:
 	void createFileMenu (SharedPointer<COptionMenu> menu);
 
 	void viewRemoved (CView* view) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override { return this; }
-	void controlBeginEdit (CControl* pControl) override;
-	void controlEndEdit (CControl* pControl) override;
+	void controlBeginEdit (CControl& pControl) override;
+	void controlEndEdit (CControl& pControl) override;
 
 	void getChildrenOfType (CViewContainer& container, UTF8StringView type,
 							std::vector<SharedPointer<CView>>& result) const;

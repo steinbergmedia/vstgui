@@ -538,7 +538,6 @@ namespace Application {
 //------------------------------------------------------------------------
 Init::Init (DelegatePtr&& delegate, Configuration&& config)
 {
-	CView::kDirtyCallAlwaysOnMainThread = true;
 	Detail::Application::instance ().setDelegate (std::move (delegate));
 	Detail::Application::instance ().setConfiguration (std::move (config));
 }

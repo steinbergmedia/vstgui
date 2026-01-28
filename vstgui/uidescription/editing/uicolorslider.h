@@ -31,7 +31,7 @@ public:
 		kBlue,
 		kAlpha
 	};
-	UIColorSlider (UIColor* color, int32_t style);
+	UIColorSlider (const SharedPointer<UIColor>& color, int32_t style);
 	~UIColorSlider () override;
 
 protected:

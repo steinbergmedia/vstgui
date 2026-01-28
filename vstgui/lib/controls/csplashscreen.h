@@ -21,7 +21,8 @@ public:
 	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
 				   const SharedPointer<CBitmap>& background, const CRect& toDisplay,
 				   const CPoint& offset = CPoint (0, 0));
-	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CView* splashView);
+	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
+				   const SharedPointer<CView>& splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
 
 	void draw (CDrawContext*) override;
@@ -45,12 +46,12 @@ public:
 protected:
 	~CSplashScreen () noexcept override;
 	using CControl::valueChanged;
-	void valueChanged (CControl *pControl) override;
+	void valueChanged (CControl& control) override;
 
 	CRect toDisplay;
 	CRect keepSize;
 	CPoint offset;
-	CView* modalView{nullptr};
+	SharedPointer<CView> modalView;
 	Optional<ModalViewSessionID> modalViewSessionID;
 };
 
@@ -85,7 +86,8 @@ public:
 	uint32_t getAnimationTime () const { return animationTime; }
 
 	/** create the animation. subclasses can override this to add special animations */
-	virtual bool createAnimation (uint32_t animationIndex, uint32_t animationTime, CView* splashView, bool removeViewAnimation);
+	virtual bool createAnimation (uint32_t animationIndex, uint32_t animationTime,
+								  const SharedPointer<CView>& splashView, bool removeViewAnimation);
 	//@}
 
 	void unSplash () override;

@@ -53,14 +53,13 @@ void COnOffButton::draw (CDrawContext *pContext)
 	{
 		CCoord off;
 
-		if (value == getMax ())
+		if (getValue () == getMax ())
 			off = getDrawBackground ()->getHeight () / 2;
 		else
 			off = 0;
 
 		getDrawBackground ()->draw (pContext, getViewSize (), CPoint (0, off));
 	}
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -86,9 +85,8 @@ CMouseEventResult COnOffButton::onMouseUp (CPoint& where, const CButtonState& bu
 	{
 		if (getViewSize ().pointInside (where))
 		{
-			value = (value == getMax ()) ? getMin () : getMax ();
-			invalid ();
-			valueChanged ();
+			if (setValue ((getValue () == getMax ()) ? getMin () : getMax ()))
+				valueChanged ();
 		}
 		endEdit ();
 	}
@@ -110,7 +108,7 @@ void COnOffButton::onKeyboardEvent (KeyboardEvent& event)
 		return;
 	if (event.virt == VirtualKey::Return && event.modifiers.empty ())
 	{
-		value = (value == getMax ()) ? getMin () : getMax ();
+		setValue ((getValue () == getMax ()) ? getMin () : getMax ());
 		invalid ();
 		beginEdit ();
 		valueChanged ();
@@ -156,45 +154,11 @@ CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t
 						  const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (background.cast<CMultiFrameBitmap> () == nullptr)
-	{
-		heightOfOneImage = size.getHeight ();
-	}
-#endif
 	setWantsFocus (true);
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-/**
- * CKickButton constructor.
- * @param size the size of this view
- * @param listener the listener
- * @param tag the control tag
- * @param heightOfOneImage height of one sub bitmap in background
- * @param background the bitmap
- * @param offset of background
- */
-//------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
-						  CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, shared (background)), offset (offset)
-{
-	setHeightOfOneImage (heightOfOneImage);
-	setWantsFocus (true);
-}
-#endif
-
-//------------------------------------------------------------------------
-CKickButton::CKickButton (const CKickButton& v) : CControl (v)
-{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	offset = v.offset;
-	setHeightOfOneImage (v.heightOfOneImage);
-#endif
-	setWantsFocus (true);
-}
+CKickButton::CKickButton (const CKickButton& v) : CControl (v) { setWantsFocus (true); }
 
 //------------------------------------------------------------------------
 void CKickButton::draw (CDrawContext *pContext)
@@ -205,24 +169,14 @@ void CKickButton::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
-			auto index = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+			auto index = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
 			mfb->drawFrame (pContext, index, getViewSize ().getTopLeft ());
 		}
 		else
 		{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			CPoint where (offset.x, offset.y);
-
-			if (value == getMax ())
-				where.y += heightOfOneImage;
-
-			bitmap->draw (pContext, getViewSize (), where);
-#else
 			bitmap->draw (pContext, getViewSize ());
-#endif
 		}
 	}
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -239,8 +193,7 @@ CMouseEventResult CKickButton::onMouseCancel ()
 {
 	if (isEditing ())
 	{
-		value = getMin ();
-		if (isDirty ())
+		if (setValue (getMin ()))
 		{
 			valueChanged ();
 			invalid ();
@@ -255,12 +208,10 @@ CMouseEventResult CKickButton::onMouseUp (CPoint& where, const CButtonState& but
 {
 	if (isEditing ())
 	{
-		if (value > 0.f)
+		if (getValue () > 0.f)
 			valueChanged ();
-		value = getMin ();
+		setValue (getMin ());
 		valueChanged ();
-		if (isDirty ())
-			invalid ();
 		endEdit ();
 	}
 	return kMouseEventHandled;
@@ -273,12 +224,10 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const CButtonState& 
 	{
 		if (where.x >= getViewSize ().left && where.y >= getViewSize ().top  &&
 			where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
-			value = getMax ();
+			setValue (getMax ());
 		else
-			value = getMin ();
-		
-		if (isDirty ())
-			invalid ();
+			setValue (getMin ());
+
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -291,19 +240,17 @@ void CKickButton::onKeyboardEvent (KeyboardEvent& event)
 	{
 		if (event.type == EventType::KeyDown)
 		{
-			if (value != getMax ())
+			if (getValue () != getMax ())
 			{
 				beginEdit ();
-				value = getMax ();
-				invalid ();
+				setValue (getMax ());
 				valueChanged ();
 			}
 			event.consumed = true;
 		}
 		else if (event.type == EventType::KeyUp && isEditing ())
 		{
-			value = getMin ();
-			invalid ();
+			setValue (getMin ());
 			valueChanged ();
 			endEdit ();
 			event.consumed = true;
@@ -323,11 +270,7 @@ bool CKickButton::sizeToFit ()
 		}
 		else
 		{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			vs.setHeight (heightOfOneImage);
-#else
 			vs.setHeight (bitmap->getHeight ());
-#endif
 			vs.setWidth (bitmap->getWidth ());
 		}
 		setViewSize (vs, true);
@@ -450,7 +393,7 @@ void CCheckBox::setRoundRectRadius (CCoord radius)
 static CCoord getFontCapHeight (const SharedPointer<CFontDesc>& font)
 {
 	CCoord c = font->getSize ();
-	IPlatformFont* pf = font->getPlatformFont ();
+	auto pf = font->getPlatformFont ();
 	if (pf)
 	{
 		CCoord capHeight = pf->getCapHeight ();
@@ -612,16 +555,13 @@ void CCheckBox::draw (CDrawContext* context)
 		
 		context->drawString (title.getPlatformString (), p, true);
 	}
-	
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
-bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
+bool CCheckBox::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	if (wantsFocus ())
 	{
-		CCoord focusWidth = getFrame ()->getFocusWidth ();
 		CRect checkBoxSize (getViewSize ());
 		if (getDrawBackground ())
 		{
@@ -638,7 +578,7 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 			checkBoxSize.offset (1, std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
 		}
 		outPath.addRoundRect (checkBoxSize, roundRectRadius);
-		checkBoxSize.extend (focusWidth, focusWidth);
+		checkBoxSize.extend (focusLineWidth, focusLineWidth);
 		outPath.addRoundRect (checkBoxSize, roundRectRadius);
 	}
 	return true;
@@ -650,7 +590,7 @@ CMouseEventResult CCheckBox::onMouseDown (CPoint& where, const CButtonState& but
 	if (buttons.isLeftButton ())
 	{
 		beginEdit ();
-		previousValue = value;
+		previousValue = getValue ();
 		return onMouseMoved (where, buttons);
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -679,8 +619,7 @@ CMouseEventResult CCheckBox::onMouseCancel ()
 	if (isEditing ())
 	{
 		highlight = false;
-		value = previousValue;
-		if (isDirty ())
+		if (setValue (previousValue))
 			valueChanged ();
 		invalid ();
 		endEdit ();
@@ -692,15 +631,13 @@ CMouseEventResult CCheckBox::onMouseCancel ()
 CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	highlight = false;
+	bool changed = false;
 	if (getViewSize ().pointInside (where))
-		value = (previousValue < getMax ()) ? getMax () : getMin ();
+		changed = setValue ((previousValue < getMax ()) ? getMax () : getMin ());
 	else
-		value = previousValue;
-	if (isDirty ())
-	{
+		changed = setValue (previousValue);
+	if (changed)
 		valueChanged ();
-		invalid ();
-	}
 	endEdit ();
 	return kMouseEventHandled;
 }
@@ -711,8 +648,7 @@ void CCheckBox::onKeyboardEvent (KeyboardEvent& event)
 	if (event.type == EventType::KeyDown && event.virt == VirtualKey::Return &&
 	    event.modifiers.empty ())
 	{
-		value = (value < getMax ()) ? getMax () : getMin ();
-		invalid ();
+		setValue ((getValue () < getMax ()) ? getMax () : getMin ());
 		beginEdit ();
 		valueChanged ();
 		endEdit ();
@@ -747,7 +683,7 @@ CTextButton::CTextButton (const CRect& size, IControlListener* listener, int32_t
 }
 
 //------------------------------------------------------------------------
-bool CTextButton::removed (CView* parent)
+bool CTextButton::removed (const SharedPointer<CViewContainer>& parent)
 {
 	invalidPath ();
 	return CControl::removed (parent);
@@ -924,7 +860,7 @@ bool CTextButton::sizeToFit ()
 //------------------------------------------------------------------------
 void CTextButton::draw (CDrawContext* context)
 {
-	bool highlight = value == getMax () ? true : false;
+	bool highlight = getValue () == getMax () ? true : false;
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
 		lineWidth = context->getHairlineSize ();
@@ -955,16 +891,16 @@ void CTextButton::draw (CDrawContext* context)
 		iconToDraw = getDisabledBackground ();
 	else
 		iconToDraw = highlight ? (iconHighlighted ? iconHighlighted : icon) : (icon ? icon : iconHighlighted);
-	CDrawMethods::drawIconAndText (context, iconToDraw, iconPosition, getTextAlignment (), getTextMargin (), titleRect, title, getFont (), highlight ? getTextColorHighlighted () : getTextColor ());
-	setDirty (false);
+	CDrawMethods::drawIconAndText (context, iconToDraw, iconPosition, getTextAlignment (),
+								   getTextMargin (), titleRect, title, getFont (),
+								   highlight ? getTextColorHighlighted () : getTextColor ());
 }
 
 //------------------------------------------------------------------------
-bool CTextButton::getFocusPath (CGraphicsPath& outPath)
+bool CTextButton::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	CRect r (getViewSize ());
-	CCoord focusWidth = getFrame ()->getFocusWidth ();
-	r.inset (-focusWidth, -focusWidth);
+	r.inset (-focusLineWidth, -focusLineWidth);
 	outPath.addRoundRect (r, roundRadius);
 	outPath.closeSubpath ();
 	r = getViewSize ();
@@ -1001,7 +937,7 @@ CMouseEventResult CTextButton::onMouseDown (CPoint& where, const CButtonState& b
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
-	fEntryState = value;
+	fEntryState = getValue ();
 	beginEdit ();
 	return onMouseMoved (where, buttons);
 }
@@ -1011,9 +947,7 @@ CMouseEventResult CTextButton::onMouseCancel ()
 {
 	if (isEditing ())
 	{
-		value = fEntryState;
-		if (isDirty ())
-			invalid ();
+		setValue (fEntryState);
 		endEdit ();
 	}
 	return kMouseEventHandled;
@@ -1024,16 +958,15 @@ CMouseEventResult CTextButton::onMouseUp (CPoint& where, const CButtonState& but
 {
 	if (isEditing ())
 	{
-		if (value != fEntryState)
+		if (getValue () != fEntryState)
 		{
 			valueChanged ();
 			if (style == kKickStyle)
 			{
-				value = getMin ();  // set button to UNSELECTED state
-				valueChanged ();
+				if (setValue (getMin ())) // set button to UNSELECTED state
+					valueChanged ();
 			}
-			if (isDirty ())
-				invalid ();
+			invalid ();
 		}
 		endEdit ();
 	}
@@ -1047,12 +980,10 @@ CMouseEventResult CTextButton::onMouseMoved (CPoint& where, const CButtonState& 
 	{
 		if (where.x >= getViewSize ().left && where.y >= getViewSize ().top  &&
 			where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
-			value = fEntryState == getMin () ? getMax () : getMin ();
+			setValue (fEntryState == getMin () ? getMax () : getMin ());
 		else
-			value = fEntryState == getMin () ? getMin () : getMax ();
-		
-		if (isDirty ())
-			invalid ();
+			setValue (fEntryState == getMin () ? getMin () : getMax ());
+
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -1067,26 +998,23 @@ void CTextButton::onKeyboardEvent (KeyboardEvent& event)
 	{
 		if (style == kKickStyle)
 		{
-			if (value != getMax ())
+			if (getValue () != getMax ())
 			{
 				beginEdit ();
-				value = getMax ();
-				invalid ();
-				valueChanged ();
-				value = getMin ();
-				invalid ();
-				valueChanged ();
+				if (setValue (getMax ()))
+					valueChanged ();
+				if (setValue (getMin ()))
+					valueChanged ();
 				endEdit ();
 			}
 		}
 		else
 		{
 			beginEdit ();
-			if (value == getMin ())
-				value = getMax ();
+			if (getValue () == getMin ())
+				setValue (getMax ());
 			else
-				value = getMin ();
-			invalid ();
+				setValue (getMin ());
 			valueChanged ();
 			endEdit ();
 		}

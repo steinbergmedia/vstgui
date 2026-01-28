@@ -13,24 +13,6 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-
-TEST_CASE (CAnimKnobCreatorTest, HeightOfOneImage)
-{
-	DummyUIDescription uidesc;
-	testAttribute<CAnimKnob> (kCAnimKnob, kAttrHeightOfOneImage, 10, uidesc,
-							  [] (CAnimKnob* v) { return v->getHeightOfOneImage () == 10; });
-}
-
-TEST_CASE (CAnimKnobCreatorTest, SubPixmaps)
-{
-	DummyUIDescription uidesc;
-	testAttribute<CAnimKnob> (kCAnimKnob, kAttrSubPixmaps, 11, uidesc,
-							  [] (CAnimKnob* v) { return v->getNumSubPixmaps () == 11; });
-}
-
-#endif
-
 TEST_CASE (CAnimKnobCreatorTest, InverseBitmap)
 {
 	DummyUIDescription uidesc;

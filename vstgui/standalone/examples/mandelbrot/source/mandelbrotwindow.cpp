@@ -45,9 +45,9 @@ inline CColor calculateColor (uint32_t iteration, double maxIterationInv)
 {
 	CColor color;
 	const auto t = static_cast<double> (iteration) * maxIterationInv;
-	color.setNormRed (9. * (1. - t) * t * t * t);
-	color.setNormGreen (15. * (1. - t) * (1. - t) * t * t);
-	color.setNormBlue (8.5 * (1. - t) * (1. - t) * (1. - t) * t);
+	color.setNormRed (std::clamp (9. * (1. - t) * t * t * t, 0., 1.));
+	color.setNormGreen (std::clamp (15. * (1. - t) * (1. - t) * t * t, 0., 1.));
+	color.setNormBlue (std::clamp (8.5 * (1. - t) * (1. - t) * (1. - t) * t, 0., 1.));
 	return color;
 }
 
@@ -89,17 +89,17 @@ inline std::function<uint32_t (CColor)> getColorToInt32 (IPlatformBitmapPixelAcc
 }
 
 //------------------------------------------------------------------------
-template <typename ReadyCallback>
-inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitmap, CPoint size,
-                                       uint32_t id, const std::atomic<uint32_t>& taskID,
-                                       ReadyCallback readyCallback)
+template<typename ReadyCallback>
+inline void calculateMandelbrotBitmap (Model::Ptr model, SharedPointer<CBitmap> bitmap, CPoint size,
+									   uint32_t id, const std::atomic<uint32_t>& taskID,
+									   ReadyCallback readyCallback)
 {
 	if (auto pa = CBitmapPixelAccess::create (bitmap))
 	{
 		const auto numLinesPerTask =
 		    static_cast<uint32_t> (size.y / (std::thread::hardware_concurrency () * 8));
 
-		const auto maxIterationInv = 1. / model.getIterations ();
+		const auto maxIterationInv = 1. / model->getIterations ();
 
 		auto asyncGroup = Async::Group::make (Async::backgroundQueue ());
 
@@ -114,7 +114,7 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 						break;
 					auto pixelPtr = reinterpret_cast<uint32_t*> (
 					    pixelAccess->getAddress () + (y + i) * pixelAccess->getBytesPerRow ());
-					calculateLine (y + i, size, model, [&] (auto x, auto iteration) {
+					calculateLine (y + i, size, *model.get (), [&] (auto x, auto iteration) {
 						auto color = calculateColor (iteration, maxIterationInv);
 						*pixelPtr = colorToInt32 (color);
 						pixelPtr++;
@@ -144,11 +144,12 @@ struct ProgressController : DelegationController,
 
 	~ProgressController () noexcept override { progressValue->unregisterListener (this); }
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		assert (control == nullptr);
-		control = dynamic_cast<CControl*> (view);
+		control = view.cast<CControl> ();
 		assert (control);
 
 		return controller->verifyView (view, attributes, description);
@@ -162,27 +163,27 @@ struct ProgressController : DelegationController,
 		if (newValue >= 0.5)
 		{
 			control->setValue (0.f);
-			auto tf = new Animation::LinearTimingFunction (800);
-			control->addAnimation ("Animation", new Animation::ControlValueAnimation (1.f),
-			                       new Animation::RepeatTimingFunction (tf, -1, false));
+			auto tf = makeOwned<Animation::LinearTimingFunction> (800);
+			control->addAnimation ("Animation", makeOwned<Animation::ControlValueAnimation> (1.f),
+								   makeOwned<Animation::RepeatTimingFunction> (tf, -1, false));
 			control->setAlphaValue (0.f);
-			control->addAnimation ("Alpha", new Animation::AlphaValueAnimation (1.f),
-			                       new Animation::CubicBezierTimingFunction (
-			                           Animation::CubicBezierTimingFunction::easyIn (200)));
+			control->addAnimation ("Alpha", makeOwned<Animation::AlphaValueAnimation> (1.f),
+								   makeOwned<Animation::CubicBezierTimingFunction> (
+									   Animation::CubicBezierTimingFunction::easyIn (200)));
 		}
 		else
 		{
 			control->addAnimation (
-			    "Alpha", new Animation::AlphaValueAnimation (0.f),
-			    new Animation::CubicBezierTimingFunction (
-			        Animation::CubicBezierTimingFunction::easyOut (100)),
-			    [] (CView* view, const IdStringPtr, Animation::IAnimationTarget*) {
-				    view->removeAnimation ("Animation");
-			    });
+				"Alpha", makeOwned<Animation::AlphaValueAnimation> (0.f),
+				makeOwned<Animation::CubicBezierTimingFunction> (
+					Animation::CubicBezierTimingFunction::easyOut (100)),
+				[] (CView& view, const IdStringPtr, Animation::IAnimationTarget&) {
+					view.removeAnimation ("Animation");
+				});
 		}
 	}
 
-	CControl* control {nullptr};
+	SharedPointer<CControl> control;
 	ValuePtr progressValue;
 };
 
@@ -201,13 +202,14 @@ struct ViewController : DelegationController,
 	}
 	~ViewController () noexcept override { model->unregisterListener (this); }
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
 			if (*name == "MandelbrotView")
 			{
-				mandelbrotView = new View ([&] (auto box) {
+				mandelbrotView = makeOwned<View> ([&] (auto box) {
 					auto min =
 					    pixelToPoint (model->getMax (), model->getMin (),
 					                  mandelbrotView->getViewSize ().getSize (), box.getTopLeft ());
@@ -250,7 +252,7 @@ struct ViewController : DelegationController,
 	}
 	void viewWillDelete (CView* view) override
 	{
-		assert (mandelbrotView == view);
+		assert (mandelbrotView.get () == view);
 		++taskID; // cancel background calculation
 		mandelbrotView->unregisterViewListener (this);
 		mandelbrotView = nullptr;
@@ -280,14 +282,14 @@ struct ViewController : DelegationController,
 		bitmap->getPlatformBitmap ()->setScaleFactor (scaleFactor);
 		auto id = ++taskID;
 		auto This = shared (this);
-		calculateMandelbrotBitmap (*model.get (), bitmap, size, id, taskID,
-		                           [This] (uint32_t id, SharedPointer<CBitmap> bitmap) {
+		calculateMandelbrotBitmap (model, bitmap, size, id, taskID,
+								   [This] (uint32_t id, SharedPointer<CBitmap> bitmap) {
 			                           if (id == This->taskID && This->mandelbrotView)
 			                           {
 				                           This->mandelbrotView->setBackground (bitmap);
 				                           Value::performSingleEdit (*This->progressValue, 0.);
 			                           }
-		                           });
+								   });
 	}
 
 	void saveBitmap (OutputStream& stream)
@@ -308,8 +310,7 @@ struct ViewController : DelegationController,
 
 	Model::Ptr model;
 	ValuePtr progressValue;
-	CControl* progressControl {nullptr};
-	CView* mandelbrotView {nullptr};
+	SharedPointer<CView> mandelbrotView;
 	double scaleFactor {1.};
 	std::atomic<uint32_t> taskID {0};
 };
@@ -334,7 +335,7 @@ struct WindowCustomization : public UIDesc::Customization,
 		if (!contentView)
 			return;
 		if (auto touchBarExt =
-		        dynamic_cast<IPlatformFrameTouchBarExtension*> (contentView->getPlatformFrame ()))
+				contentView->getPlatformFrame ().cast<IPlatformFrameTouchBarExtension> ())
 		{
 			installTouchbarSupport (touchBarExt, maxIterations);
 		}
@@ -350,16 +351,15 @@ struct WindowCustomization : public UIDesc::Customization,
 	{
 		if (frame && command == saveCommand)
 		{
-			if (auto fs =
-			        owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile)))
+			if (auto fs = CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile))
 			{
 				fs->addFileExtension ({"PNG File", "png", "image/png"});
-				fs->run ([frame = shared (frame)] (CNewFileSelector * fs) {
-					if (fs->getNumSelectedFiles () == 0)
+				fs->run ([frame = this->frame] (CNewFileSelector& fs) {
+					if (fs.getNumSelectedFiles () == 0)
 						return;
-					if (auto controller = findViewController<ViewController> (*frame))
+					if (auto controller = findViewController<ViewController> (*frame.get ()))
 					{
-						auto path = fs->getSelectedFile (0);
+						auto path = fs.getSelectedFile (0);
 						assert (path != nullptr);
 						CFileStream stream;
 						if (!stream.open (path, CFileStream::kWriteMode | CFileStream::kBinaryMode |
@@ -375,7 +375,7 @@ struct WindowCustomization : public UIDesc::Customization,
 	}
 	
 	ValuePtr maxIterations;
-	CFrame* frame {nullptr};
+	SharedPointer<CFrame> frame;
 };
 
 //------------------------------------------------------------------------

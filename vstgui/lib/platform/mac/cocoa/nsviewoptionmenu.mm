@@ -78,7 +78,7 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 		{
 			NSMenu* nsMenu = (NSMenu*)self;
 			Var* var = new Var;
-			var->_optionMenu = menu;
+			var->_optionMenu = shared (menu);
 			setVar (self, var);
 
 			int32_t index = -1;
@@ -112,8 +112,8 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 				if (item->getSubmenu ())
 				{
 					nsItem = [nsMenu addItemWithTitle:itemTitle action:nil keyEquivalent:@""];
-					NSMenu* subMenu =
-						[[[[self class] alloc] initWithOptionMenu:item->getSubmenu ()] autorelease];
+					NSMenu* subMenu = [[[[self class] alloc]
+						initWithOptionMenu:item->getSubmenu ().get ()] autorelease];
 					[nsMenu setSubmenu:subMenu forItem:nsItem];
 					if (multipleCheck && item->isChecked ())
 						[nsItem setState:NSControlStateValueOn];
@@ -236,7 +236,7 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 	static void* OptionMenu (id self, SEL _cmd)
 	{
 		Var* var = getVar (self);
-		return var ? var->_optionMenu : nullptr;
+		return var ? var->_optionMenu.get () : nullptr;
 	}
 
 	//------------------------------------------------------------------------------------
@@ -262,14 +262,14 @@ void NSViewOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
 
 	PlatformOptionMenuResult result = {};
 
-	CFrame* frame = optionMenu->getFrame ();
+	auto frame = optionMenu->getFrame ();
 	if (!frame || !frame->getPlatformFrame ())
 	{
 		callback (optionMenu, result);
 		return;
 	}
 
-	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
+	auto nsViewFrame = frame->getPlatformFrame ().cast<NSViewFrame> ();
 	nsViewFrame->setMouseCursor (kCursorDefault);
 
 	CRect globalSize = optionMenu->translateToGlobal (optionMenu->getViewSize ());
@@ -277,7 +277,7 @@ void NSViewOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
 
 	bool multipleCheck = optionMenu->isMultipleCheckStyle ();
 	NSView* view = nsViewFrame->getNSView ();
-	NSMenu* nsMenu = [VSTGUI_NSMenu::alloc () initWithOptionMenu:optionMenu];
+	NSMenu* nsMenu = [VSTGUI_NSMenu::alloc () initWithOptionMenu:optionMenu.get ()];
 	CPoint p = globalSize.getTopLeft ();
 	NSRect cellFrameRect = {};
 	cellFrameRect.origin = nsPointFromCPoint (p);
@@ -304,7 +304,7 @@ void NSViewOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
 
 	[menuContainer removeFromSuperviewWithoutNeedingDisplay];
 	[menuContainer release];
-	result.menu = [nsMenu selectedMenu];
+	result.menu = shared ([nsMenu selectedMenu]);
 	result.index = [nsMenu selectedItem];
 	[nsMenu release];
 

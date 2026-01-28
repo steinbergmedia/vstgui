@@ -49,25 +49,25 @@ public:
 	void setColor (const CColor& newColor);
 //-----------------------------------------------------------------------------
 protected:
-	void valueChanged (CControl* pControl) override;
-	void controlBeginEdit (CControl* pControl) override;
-	void controlEndEdit (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
+	void controlBeginEdit (CControl& pControl) override;
+	void controlEndEdit (CControl& pControl) override;
 	void updateState ();
 
 	/// @cond ignore
 
 	IColorChooserDelegate* delegate;
 	CColor color;
-	
-	CSlider* redSlider;
-	CSlider* greenSlider;
-	CSlider* blueSlider;
-	CSlider* hueSlider;
-	CSlider* saturationSlider;
-	CSlider* brightnessSlider;
-	CSlider* alphaSlider;
-	CTextEdit* editFields[8];
-	CColorChooserInternal::ColorView* colorView;
+
+	SharedPointer<CSlider> redSlider;
+	SharedPointer<CSlider> greenSlider;
+	SharedPointer<CSlider> blueSlider;
+	SharedPointer<CSlider> hueSlider;
+	SharedPointer<CSlider> saturationSlider;
+	SharedPointer<CSlider> brightnessSlider;
+	SharedPointer<CSlider> alphaSlider;
+	SharedPointer<CTextEdit> editFields[8];
+	SharedPointer<CColorChooserInternal::ColorView> colorView;
 
 	//-----------------------------------------------------------------------------
 	enum {

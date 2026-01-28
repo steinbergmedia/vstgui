@@ -243,7 +243,8 @@ CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color) const
 
 //-----------------------------------------------------------------------------
 CTLineRef CoreTextFont::createCTLine (const PlatformGraphicsDeviceContextPtr& context,
-									  MacString* macString, const CColor& color) const
+									  const SharedPointer<MacString>& macString,
+									  const CColor& color) const
 {
 	if (macString->getCTLineFontRef () == this && macString->getCTLineColor () == color)
 	{
@@ -284,10 +285,10 @@ CTLineRef CoreTextFont::createCTLine (const PlatformGraphicsDeviceContextPtr& co
 
 //-----------------------------------------------------------------------------
 void CoreTextFont::drawString (const PlatformGraphicsDeviceContextPtr& context,
-							   IPlatformString* string, const CPoint& point, const CColor& color,
-							   bool antialias) const
+							   const PlatformStringPtr& string, const CPoint& point,
+							   const CColor& color, bool antialias) const
 {
-	MacString* macString = dynamic_cast<MacString*> (string);
+	auto macString = string.cast<MacString> ();
 	if (macString == nullptr)
 		return;
 
@@ -307,10 +308,10 @@ void CoreTextFont::drawString (const PlatformGraphicsDeviceContextPtr& context,
 
 //-----------------------------------------------------------------------------
 CCoord CoreTextFont::getStringWidth (const PlatformGraphicsDeviceContextPtr& context,
-									 IPlatformString* string, bool antialias) const
+									 const PlatformStringPtr& string, bool antialias) const
 {
 	CCoord result = 0;
-	MacString* macString = dynamic_cast<MacString*> (string);
+	auto macString = string.cast<MacString> ();
 	if (macString == nullptr)
 		return result;
 

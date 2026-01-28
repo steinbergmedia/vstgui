@@ -21,8 +21,7 @@ public:
 
 	CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime = 100, bool doStart = true);
-	CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime = 100, bool doStart = false);
-	
+
 	/** starts the timer */
 	bool start ();
 	/** stops the timer, returns whether timer was running or not */
@@ -33,9 +32,6 @@ public:
 	/** get fire time in milliseconds*/
 	uint32_t getFireTime () const { return fireTime; }
 
-//-----------------------------------------------------------------------------
-	/** message string posted to CBaseObject's notify method */
-	static IdStringPtr kMsgTimer;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:

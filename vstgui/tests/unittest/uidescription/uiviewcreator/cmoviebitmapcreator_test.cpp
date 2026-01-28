@@ -13,22 +13,4 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-
-TEST_CASE (CMovieBitmapCreatorTest, HeightOfOneImage)
-{
-	DummyUIDescription uidesc;
-	testAttribute<CMovieBitmap> (kCMovieBitmap, kAttrHeightOfOneImage, 10, uidesc,
-								 [] (CMovieBitmap* v) { return v->getHeightOfOneImage () == 10; });
-}
-
-TEST_CASE (CMovieBitmapCreatorTest, SubPixmaps)
-{
-	DummyUIDescription uidesc;
-	testAttribute<CMovieBitmap> (kCMovieBitmap, kAttrSubPixmaps, 11, uidesc,
-								 [] (CMovieBitmap* v) { return v->getNumSubPixmaps () == 11; });
-}
-
-#endif
-
 } // VSTGUI

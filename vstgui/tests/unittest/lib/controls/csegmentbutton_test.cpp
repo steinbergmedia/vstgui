@@ -248,16 +248,16 @@ TEST_CASE (CSegmentButtonTest, HorizontalSegmentSizeCalculation)
 {
 	const auto numSegments = 5;
 	CRect r (0, 0, 100, 100);
-	auto b = new CSegmentButton (r);
+	auto b = makeOwned<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT (s.rect == CRect (0, 0, 0, 0));
-	auto root = owned (new CViewContainer (r));
-	auto parent = new CViewContainer (r);
-	root->addView (parent);
-	parent->addView (b);
+	auto root = makeOwned<CViewContainer> (r);
+	auto parent = makeOwned<CViewContainer> (r);
+	root->addSubview (parent);
+	parent->addSubview (b);
 	parent->attached (root);
 	EXPECT (b->getSegments ()[0].rect == CRect (0, 0, 20, 100));
 	EXPECT (b->getSegments ()[1].rect == CRect (20, 0, 40, 100));
@@ -271,16 +271,16 @@ TEST_CASE (CSegmentButtonTest, VerticalSegmentSizeCalculation)
 {
 	const auto numSegments = 5;
 	CRect r (0, 0, 100, 100);
-	auto b = new CSegmentButton (r);
+	auto b = makeOwned<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kVertical);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT (s.rect == CRect (0, 0, 0, 0));
-	auto root = owned (new CViewContainer (r));
-	auto parent = new CViewContainer (r);
-	root->addView (parent);
-	parent->addView (b);
+	auto root = makeOwned<CViewContainer> (r);
+	auto parent = makeOwned<CViewContainer> (r);
+	root->addSubview (parent);
+	parent->addSubview (b);
 	parent->attached (root);
 	EXPECT (b->getSegments ()[0].rect == CRect (0, 0, 100, 20));
 	EXPECT (b->getSegments ()[1].rect == CRect (0, 20, 100, 40));
@@ -293,17 +293,17 @@ TEST_CASE (CSegmentButtonTest, VerticalSegmentSizeCalculation)
 TEST_CASE (CSegmentButtonTest, UpdateViewSize)
 {
 	const auto numSegments = 5;
-	auto b = new CSegmentButton (CRect (0, 0, 50, 100));
+	auto b = makeOwned<CSegmentButton> (CRect (0, 0, 50, 100));
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT (s.rect == CRect (0, 0, 0, 0));
 	CRect r (0, 0, 100, 100);
-	auto root = owned (new CViewContainer (r));
-	auto parent = new CViewContainer (r);
-	root->addView (parent);
-	parent->addView (b);
+	auto root = makeOwned<CViewContainer> (r);
+	auto parent = makeOwned<CViewContainer> (r);
+	root->addSubview (parent);
+	parent->addSubview (b);
 	parent->attached (root);
 	EXPECT (b->getSegments ()[0].rect == CRect (0, 0, 10, 100));
 	EXPECT (b->getSegments ()[1].rect == CRect (10, 0, 20, 100));
@@ -323,16 +323,16 @@ TEST_CASE (CSegmentButtonTest, MouseDownEvent)
 {
 	const auto numSegments = 5;
 	CRect r (0, 0, 100, 100);
-	auto b = new CSegmentButton (r);
+	auto b = makeOwned<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT (s.rect == CRect (0, 0, 0, 0));
-	auto root = owned (new CViewContainer (r));
-	auto parent = new CViewContainer (r);
-	root->addView (parent);
-	parent->addView (b);
+	auto root = makeOwned<CViewContainer> (r);
+	auto parent = makeOwned<CViewContainer> (r);
+	root->addSubview (parent);
+	parent->addSubview (b);
 	parent->attached (root);
 	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {0., 0.}, MouseButton::Left),
 			   EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
@@ -358,16 +358,16 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventWithManySegments)
 	// Create segment button with 32 segments and attach it
 	const auto numSegments = 32;
 	CRect r (0, 0, 20 * numSegments, 100);
-	auto b = new CSegmentButton (r);
+	auto b = makeOwned<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT_EQ (s.rect, CRect (0, 0, 0, 0));
-	auto root = owned (new CViewContainer (r));
-	auto parent = new CViewContainer (r);
-	root->addView (parent);
-	parent->addView (b);
+	auto root = makeOwned<CViewContainer> (r);
+	auto parent = makeOwned<CViewContainer> (r);
+	root->addSubview (parent);
+	parent->addSubview (b);
 	parent->attached (root);
 
 	// Select the e.g. 20th segment
@@ -386,16 +386,16 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventOnLastSegment)
 	// 31 segments causing rounding errors inside segment button.
 	const auto numSegments = 31;
 	CRect r (0, 0, 20 * numSegments, 100);
-	auto b = new CSegmentButton (r);
+	auto b = makeOwned<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT_EQ (s.rect, CRect (0, 0, 0, 0));
-	auto root = owned (new CViewContainer (r));
-	auto parent = new CViewContainer (r);
-	root->addView (parent);
-	parent->addView (b);
+	auto root = makeOwned<CViewContainer> (r);
+	auto parent = makeOwned<CViewContainer> (r);
+	root->addSubview (parent);
+	parent->addSubview (b);
 	parent->attached (root);
 
 	// Select the last segment

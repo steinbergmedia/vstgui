@@ -32,8 +32,8 @@ public:
 	CExternalView (const CRect& r, const ExternalViewPtr& view);
 	~CExternalView () noexcept;
 
-	bool attached (CView* parent) override;
-	bool removed (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	void takeFocus () override;
 	void looseFocus () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -60,10 +60,10 @@ public:
 	CExternalControl (const CRect& r, const ExternalControlPtr& control);
 	~CExternalControl () noexcept;
 
-	void setValue (float val) override;
+	bool setValue (float val) override;
 
-	bool attached (CView* parent) override;
-	bool removed (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	void takeFocus () override;
 	void looseFocus () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -76,7 +76,7 @@ public:
 	CLASS_METHODS_NOCOPY (CExternalControl, CControl)
 private:
 	void draw (CDrawContext* pContext) override {}
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

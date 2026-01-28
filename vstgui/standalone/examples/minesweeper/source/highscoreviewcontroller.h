@@ -39,7 +39,8 @@ private:
 	                   CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
 	                 int32_t flags, CDataBrowser* browser) override;
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	void dbAttached (CDataBrowser* browser) override;
 	void dbRemoved (CDataBrowser* browser) override;
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) override;

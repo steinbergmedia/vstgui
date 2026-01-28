@@ -17,18 +17,17 @@ namespace VSTGUI {
 class CDefaultSplashScreenView : public CControl
 {
 public:
-	CDefaultSplashScreenView (const CRect& size, IControlListener* listener, CBitmap* bitmap,
-	                          const CPoint& offset)
+	CDefaultSplashScreenView (const CRect& size, IControlListener* listener,
+							  const SharedPointer<CBitmap>& bitmap, const CPoint& offset)
 	: CControl (size, listener), offset (offset)
 	{
-		setBackground (shared (bitmap));
+		setBackground (bitmap);
 	}
 
 	void draw (CDrawContext *pContext) override
 	{
 		if (getDrawBackground ())
 			getDrawBackground ()->draw (pContext, getViewSize (), offset);
-		setDirty (false);
 	}
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override
@@ -69,7 +68,7 @@ CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int
 							  const CPoint& offset)
 : CControl (size, listener, tag, background), toDisplay (toDisplay), offset (offset)
 {
-	modalView = new CDefaultSplashScreenView (toDisplay, this, background, offset);
+	modalView = makeOwned<CDefaultSplashScreenView> (toDisplay, this, background, offset);
 }
 
 //------------------------------------------------------------------------
@@ -81,9 +80,9 @@ CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int
  * @param splashView the view to show
  */
 //------------------------------------------------------------------------
-CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CView* splashView)
-: CControl (size, listener, tag)
-, modalView (splashView)
+CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
+							  const SharedPointer<CView>& splashView)
+: CControl (size, listener, tag), modalView (splashView)
 {
 }
 
@@ -94,21 +93,14 @@ CSplashScreen::CSplashScreen (const CSplashScreen& v)
 , keepSize (v.keepSize)
 , offset (v.offset)
 {
-	modalView = static_cast<CView*> (v.modalView->newCopy ());
+	modalView = owned (v.modalView->newCopy ()).cast<CView> ();
 }
 
 //------------------------------------------------------------------------
-CSplashScreen::~CSplashScreen () noexcept
-{
-	if (modalView)
-		modalView->forget ();
-}
+CSplashScreen::~CSplashScreen () noexcept {}
 
 //------------------------------------------------------------------------
-void CSplashScreen::draw (CDrawContext *pContext)
-{
-	setDirty (false);
-}
+void CSplashScreen::draw (CDrawContext* pContext) {}
 
 //------------------------------------------------------------------------
 bool CSplashScreen::hitTest (const CPoint& where, const Event& event)
@@ -130,8 +122,8 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const CButtonState&
 {
 	if (buttons & kLButton)
 	{
-		value = (value == getMax ()) ? getMin () : getMax ();
-		if (value == getMax () && !modalViewSessionID && modalView)
+		setValue ((getValue () == getMax ()) ? getMin () : getMax ());
+		if (getValue () == getMax () && !modalViewSessionID && modalView)
 		{
 			if (auto frame = getFrame ())
 			{
@@ -139,7 +131,6 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const CButtonState&
 				{
 					if ((modalViewSessionID = frame->beginModalViewSession (modalView)))
 					{
-						modalView->remember ();
 						CControl::valueChanged ();
 					}
 				}
@@ -151,9 +142,9 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const CButtonState&
 }
 
 //------------------------------------------------------------------------
-void CSplashScreen::valueChanged (CControl *pControl)
+void CSplashScreen::valueChanged (CControl& control)
 {
-	if (pControl == modalView)
+	if (&control == modalView.get ())
 	{
 		unSplash ();
 		CControl::valueChanged ();
@@ -163,7 +154,7 @@ void CSplashScreen::valueChanged (CControl *pControl)
 //------------------------------------------------------------------------
 void CSplashScreen::unSplash ()
 {
-	value = getMin ();
+	setValue (getMin ());
 
 	if (auto frame = getFrame ())
 	{
@@ -227,7 +218,7 @@ const CRect& CAnimationSplashScreen::getSplashRect () const
 CMouseEventResult CAnimationSplashScreen::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	CMouseEventResult result = CSplashScreen::onMouseDown (where, buttons);
-	if (modalView && value == getMax ())
+	if (modalView && getValue () == getMax ())
 	{
 		createAnimation (animationIndex, animationTime, modalView, false);
 	}
@@ -237,7 +228,7 @@ CMouseEventResult CAnimationSplashScreen::onMouseDown (CPoint& where, const CBut
 //------------------------------------------------------------------------
 void CAnimationSplashScreen::unSplash ()
 {
-	value = getMin ();
+	setValue (getMin ());
 
 	if (auto frame = getFrame ())
 	{
@@ -259,11 +250,7 @@ void CAnimationSplashScreen::unSplash ()
 }
 
 //------------------------------------------------------------------------
-void CAnimationSplashScreen::draw (CDrawContext *pContext)
-{
-	CView::draw (pContext);
-	setDirty (false);
-}
+void CAnimationSplashScreen::draw (CDrawContext* pContext) { CView::draw (pContext); }
 
 //------------------------------------------------------------------------
 bool CAnimationSplashScreen::sizeToFit ()
@@ -273,9 +260,9 @@ bool CAnimationSplashScreen::sizeToFit ()
 		CRect r = modalView->getViewSize ();
 		r.setWidth (modalView->getBackground ()->getWidth ());
 		r.setHeight (modalView->getBackground ()->getHeight ());
-		if (getFrame ())
+		if (auto frame = getFrame ())
 		{
-			r.centerInside (getFrame ()->getViewSize ());
+			r.centerInside (frame->getViewSize ());
 		}
 		modalView->setViewSize (r);
 		modalView->setMouseableArea (r);
@@ -293,7 +280,8 @@ bool CAnimationSplashScreen::sizeToFit ()
 
 //------------------------------------------------------------------------
 bool CAnimationSplashScreen::createAnimation (uint32_t animIndex, uint32_t animTime,
-                                              CView* splashView, bool removeViewAnimation)
+											  const SharedPointer<CView>& splashView,
+											  bool removeViewAnimation)
 {
 	if (!isAttached ())
 		return false;
@@ -304,29 +292,32 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animIndex, uint32_t animT
 			if (removeViewAnimation)
 			{
 				splashView->setMouseEnabled (false);
-				splashView->addAnimation (
-				    "AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f),
-				    new Animation::PowerTimingFunction (animTime, 2),
-				    [this] (CView*, const IdStringPtr, Animation::IAnimationTarget*) {
-					    if (modalView)
-					    {
-						    modalView->invalid ();
-						    modalView->setMouseEnabled (true);
-					    }
-					    if (modalViewSessionID)
-					    {
-						    if (auto frame = getFrame ())
-							    frame->endModalViewSession (*modalViewSessionID);
-						    modalViewSessionID = {};
-					    }
-					    setMouseEnabled (true);
-				    });
+				splashView->addAnimation ("AnimationSplashScreenAnimation",
+										  makeOwned<Animation::AlphaValueAnimation> (0.f),
+										  makeOwned<Animation::PowerTimingFunction> (animTime, 2),
+										  [this] (auto&, auto, auto&) {
+											  if (modalView)
+											  {
+												  modalView->invalid ();
+												  modalView->setMouseEnabled (true);
+											  }
+											  if (modalViewSessionID)
+											  {
+												  if (auto frame = getFrame ())
+													  frame->endModalViewSession (
+														  *modalViewSessionID);
+												  modalViewSessionID = {};
+											  }
+											  setMouseEnabled (true);
+										  });
 			}
 			else
 			{
 				setMouseEnabled (false);
 				splashView->setAlphaValue (0.f);
-				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::PowerTimingFunction (animTime, 2));
+				splashView->addAnimation ("AnimationSplashScreenAnimation",
+										  makeOwned<Animation::AlphaValueAnimation> (1.f),
+										  makeOwned<Animation::PowerTimingFunction> (animTime, 2));
 			}
 			return true;
 		}

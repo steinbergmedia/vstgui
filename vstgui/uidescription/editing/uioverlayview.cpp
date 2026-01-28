@@ -10,7 +10,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIOverlayView::UIOverlayView (CViewContainer* view)
+UIOverlayView::UIOverlayView (const SharedPointer<CViewContainer>& view)
 : CView ({}), targetView (view), targetViewParent (view->getParentView ())
 {
 	setMouseEnabled (false);
@@ -26,17 +26,17 @@ UIOverlayView::~UIOverlayView ()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIOverlayView::attached (CView* parent)
+bool UIOverlayView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	auto result = CView::attached (parent);
-	viewSizeChanged (targetViewParent, {});
+	viewSizeChanged (targetViewParent.get (), {});
 	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIOverlayView::viewSizeChanged (CView* view, const CRect& oldSize)
 {
-	if (view == targetView)
+	if (view == targetView.get ())
 		invalid ();
 	CRect r = targetView->getVisibleViewSize ();
 	CPoint p;

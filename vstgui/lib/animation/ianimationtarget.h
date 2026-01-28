@@ -13,17 +13,17 @@ namespace Animation {
 /// @brief Animation target interface
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class IAnimationTarget
+class IAnimationTarget : public virtual IReference
 {
 public:
 	virtual ~IAnimationTarget () noexcept = default;
 
 	/** animation starts */
-	virtual void animationStart (CView* view, IdStringPtr name) = 0;
+	virtual void animationStart (CView& view, IdStringPtr name) = 0;
 	/** pos is a normalized value between zero and one */
-	virtual void animationTick (CView* view, IdStringPtr name, float pos) = 0;
+	virtual void animationTick (CView& view, IdStringPtr name, float pos) = 0;
 	/** animation ended */
-	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) = 0;
+	virtual void animationFinished (CView& view, IdStringPtr name, bool wasCanceled) = 0;
 };
 
 } // Animation

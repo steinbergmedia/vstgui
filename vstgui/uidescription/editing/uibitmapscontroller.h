@@ -31,11 +31,13 @@ public:
 	~UIBitmapsController () override;
 
 protected:
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
-	void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
 
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 	void dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source) override;

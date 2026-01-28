@@ -82,6 +82,7 @@ set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE
 if(CMAKE_HOST_APPLE)
 	target_link_libraries(${target} PRIVATE
 		"-framework Metal"
+		"-framework OpenGL"
 	)
 endif()
 

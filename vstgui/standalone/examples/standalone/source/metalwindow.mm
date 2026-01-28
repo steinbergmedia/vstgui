@@ -207,7 +207,8 @@ struct MetalController : DelegationController,
 {
 	using DelegationController::DelegationController;
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto viewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -216,7 +217,7 @@ struct MetalController : DelegationController,
 				auto renderer = std::make_shared<ExampleMetalRenderer> ();
 				if (auto metalView = ExternalView::MetalView::make (renderer))
 				{
-					return new CExternalView ({}, metalView);
+					return makeOwned<CExternalView> (CRect {}, metalView);
 				}
 			}
 		}

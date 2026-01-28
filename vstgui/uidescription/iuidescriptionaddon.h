@@ -21,8 +21,8 @@ struct IUIDescriptionAddOn
 	/** called when the desc is going to be destroyed */
 	virtual void onDestroy (const SharedPointer<IUIDescription>& desc) = 0;
 
-	using CreateTemplateViewFunc =
-		std::function<CView*(UTF8StringPtr name, const SharedPointer<IController>& controller)>;
+	using CreateTemplateViewFunc = std::function<SharedPointer<CView> (
+		UTF8StringPtr name, const SharedPointer<IController>& controller)>;
 	/** called when a new template view should be created. The provided CreateTemplateViewFunc can
 	 *	be used to create the view in a normal way
 	 */

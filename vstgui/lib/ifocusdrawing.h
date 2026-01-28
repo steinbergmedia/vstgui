@@ -24,7 +24,7 @@ public:
 	/** draw focus before view will be drawn or afterwards */
 	virtual bool drawFocusOnTop () = 0;
 	/** the graphics path will be drawn filled with the evenodd method and the color set in CFrame::setFocusColor() */
-	virtual bool getFocusPath (CGraphicsPath& outPath) = 0;
+	virtual bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) = 0;
 };
 
 } // VSTGUI

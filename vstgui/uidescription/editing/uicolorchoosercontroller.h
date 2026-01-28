@@ -21,19 +21,22 @@ class UIColorChooserController : public NonAtomicReferenceCounted,
                                  public UIColorListenerAdapter
 {
 public:
-	UIColorChooserController (const SharedPointer<IController>& baseController, UIColor* color);
+	UIColorChooserController (const SharedPointer<IController>& baseController,
+							  const SharedPointer<UIColor>& color);
 	~UIColorChooserController () override;
 	
 protected:
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
-	void valueChanged (CControl* pControl) override;
-	void controlBeginEdit (CControl* pControl) override;
-	void controlEndEdit (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
+	void controlBeginEdit (CControl& pControl) override;
+	void controlEndEdit (CControl& pControl) override;
 
-	void updateColorSlider (CControl* control);
+	void updateColorSlider (CControl& control);
 	void updateColorSliders ();
 
 	void uiColorChanged (UIColor& c) override;

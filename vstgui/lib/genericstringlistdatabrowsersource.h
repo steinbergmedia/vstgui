@@ -98,8 +98,6 @@ protected:
 	void dbAttached (CDataBrowser* browser) override;
 	void dbRemoved (CDataBrowser* browser) override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-
 	const StringVector* stringList;
 	int32_t rowHeight;
 	CColor fontColor;
@@ -110,7 +108,7 @@ protected:
 	CPoint textInset;
 	CHoriTxtAlign textAlignment;
 	SharedPointer<CFontDesc> drawFont;
-	CDataBrowser* dataBrowser;
+	SharedPointer<CDataBrowser> dataBrowser;
 	GenericStringListDataBrowserSourceSelectionChanged* delegate;
 
 	SharedPointer<CVSTGUITimer> timer;

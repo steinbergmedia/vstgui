@@ -19,10 +19,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class CMovieBitmap : public CControl,
 					 public MultiFrameBitmapView<CMovieBitmap>
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-,
-					 public IMultiBitmapControl
-#endif
 {
 public:
 	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
@@ -32,22 +28,9 @@ public:
 	void draw (CDrawContext*) override;
 	bool sizeToFit () override;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
-				  CCoord heightOfOneImage, CBitmap* background,
-				  const CPoint& offset = CPoint (0, 0));
-	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
-#endif
-
-	VSTGUI_DEPRECATED_MSG (static bool useLegacyFrameCalculation;
-						   , "Use CMultiFrameBitmap::normalizedValueToFrameIndex() instead")
-
 	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
 	~CMovieBitmap () noexcept override = default;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CPoint offset {};
-#endif
 };
 
 } // VSTGUI

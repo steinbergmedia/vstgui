@@ -47,17 +47,17 @@ UTF8StringPtr SplitViewCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* SplitViewCreator::create (const UIAttributes& attributes,
-                                 const IUIDescription* description) const
+SharedPointer<CView> SplitViewCreator::create (const UIAttributes& attributes,
+											   const IUIDescription& description) const
 {
-	return new CSplitView (CRect (0, 0, 100, 100));
+	return makeOwned<CSplitView> (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------
-bool SplitViewCreator::apply (CView* view, const UIAttributes& attributes,
-                              const IUIDescription* description) const
+bool SplitViewCreator::apply (CView& view, const UIAttributes& attributes,
+							  const IUIDescription& description) const
 {
-	auto* splitView = dynamic_cast<CSplitView*> (view);
+	auto* splitView = dynamic_cast<CSplitView*> (&view);
 	if (!splitView)
 		return false;
 
@@ -114,10 +114,10 @@ auto SplitViewCreator::getAttributeType (const string& attributeName) const -> A
 }
 
 //------------------------------------------------------------------------
-bool SplitViewCreator::getAttributeValue (CView* view, const string& attributeName,
-                                          string& stringValue, const IUIDescription* desc) const
+bool SplitViewCreator::getAttributeValue (CView& view, const string& attributeName,
+										  string& stringValue, const IUIDescription& desc) const
 {
-	auto* splitView = dynamic_cast<CSplitView*> (view);
+	auto* splitView = dynamic_cast<CSplitView*> (&view);
 	if (!splitView)
 		return false;
 	if (attributeName == kAttrSeparatorWidth)

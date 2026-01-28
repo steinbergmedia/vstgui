@@ -19,10 +19,11 @@ public:
 	virtual ~IFontPainter () noexcept = default;
 
 	virtual void drawString (const PlatformGraphicsDeviceContextPtr& context,
-							 IPlatformString* string, const CPoint& p, const CColor& color,
+							 const PlatformStringPtr& string, const CPoint& p, const CColor& color,
 							 bool antialias = true) const = 0;
 	virtual CCoord getStringWidth (const PlatformGraphicsDeviceContextPtr& context,
-								   IPlatformString* string, bool antialias = true) const = 0;
+								   const PlatformStringPtr& string,
+								   bool antialias = true) const = 0;
 };
 
 //-----------------------------------------------------------------------------

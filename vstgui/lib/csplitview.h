@@ -64,20 +64,21 @@ public:
 
 	ISplitViewSeparatorDrawer* getDrawer ();
 	void storeViewSizes ();
-	
-	bool addViewToSeparator (int32_t sepIndex, CView* view);
+
+	bool addViewToSeparator (int32_t sepIndex, const SharedPointer<CView>& view);
 	//@}
 	
 	// overrides
-	bool addView (CView* pView, CView* pBefore = nullptr) override;
-	bool removeView (CView* pView, bool withForget = true) override;
-	bool removeAll (bool withForget = true) override;
+	bool insertSubview (const SharedPointer<CView>& view,
+						const Optional<size_t>& position) override;
+	bool removeSubview (const SharedPointer<CView>& view) override;
+	bool removeAll () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	bool sizeToFit () override;
-	bool removed (CView* parent) override;
-	bool attached (CView* parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 
-	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, CRect newSize);
+	bool requestNewSeparatorSize (CSplitViewSeparatorView& separatorView, CRect newSize);
 	//-----------------------------------------------------------------------------
 protected:
 	struct SplitViewLayouter;
@@ -102,13 +103,14 @@ public:
 	virtual ~ISplitViewController () noexcept = default;
 
 	/** return the minimum and maximum size (width or height) of a view. */
-	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) = 0;
+	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize,
+											 CSplitView& splitView) = 0;
 	/** return the separator drawer. */
-	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) = 0;
+	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView& splitView) = 0;
 	/** store the size of the view. */
-	virtual bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) = 0;
+	virtual bool storeViewSize (int32_t index, const CCoord& size, CSplitView& splitView) = 0;
 	/** restore the size of the view. */
-	virtual bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) = 0;
+	virtual bool restoreViewSize (int32_t index, CCoord& size, CSplitView& splitView) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -126,7 +128,8 @@ public:
 	};
 	/** TODO: Doc 
 	*/
-	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) = 0;
+	virtual void drawSplitViewSeparator (CDrawContext& context, const CRect& size, int32_t flags,
+										 int32_t index, CSplitView& splitView) = 0;
 };
 
 } // VSTGUI

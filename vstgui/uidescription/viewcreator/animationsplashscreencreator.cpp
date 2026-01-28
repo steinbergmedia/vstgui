@@ -40,17 +40,17 @@ UTF8StringPtr AnimationSplashScreenCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* AnimationSplashScreenCreator::create (const UIAttributes& attributes,
-                                             const IUIDescription* description) const
+SharedPointer<CView> AnimationSplashScreenCreator::create (const UIAttributes& attributes,
+														   const IUIDescription& description) const
 {
-	return new CAnimationSplashScreen (CRect (0, 0, 0, 0), -1, nullptr, nullptr);
+	return makeOwned<CAnimationSplashScreen> (CRect (0, 0, 0, 0), -1, nullptr, nullptr);
 }
 
 //------------------------------------------------------------------------
-bool AnimationSplashScreenCreator::apply (CView* view, const UIAttributes& attributes,
-                                          const IUIDescription* description) const
+bool AnimationSplashScreenCreator::apply (CView& view, const UIAttributes& attributes,
+										  const IUIDescription& description) const
 {
-	auto* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
+	auto splashScreen = dynamic_cast<CAnimationSplashScreen*> (&view);
 	if (!splashScreen)
 		return false;
 
@@ -110,11 +110,11 @@ auto AnimationSplashScreenCreator::getAttributeType (const string& attributeName
 }
 
 //------------------------------------------------------------------------
-bool AnimationSplashScreenCreator::getAttributeValue (CView* view, const string& attributeName,
-                                                      string& stringValue,
-                                                      const IUIDescription* desc) const
+bool AnimationSplashScreenCreator::getAttributeValue (CView& view, const string& attributeName,
+													  string& stringValue,
+													  const IUIDescription& desc) const
 {
-	auto* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
+	auto* splashScreen = dynamic_cast<CAnimationSplashScreen*> (&view);
 	if (!splashScreen)
 		return false;
 

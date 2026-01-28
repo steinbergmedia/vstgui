@@ -16,7 +16,8 @@ namespace Animation {
 /// @ingroup AnimationTimingFunctions
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class TimingFunctionBase : public ITimingFunction
+class TimingFunctionBase : public ITimingFunction,
+						   public NonAtomicReferenceCounted
 {
 public:
 	explicit TimingFunctionBase (uint32_t length) : length (length) {}
@@ -111,7 +112,7 @@ public:
 		EasyOut,
 		EasyInOut
 	};
-	static CubicBezierTimingFunction* make (Style style, uint32_t time);
+	static SharedPointer<CubicBezierTimingFunction> make (Style style, uint32_t time);
 
 private:
 	static CPoint lerp (CPoint p1, CPoint p2, float pos);
@@ -124,16 +125,18 @@ private:
 /// @ingroup AnimationTimingFunctions
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class RepeatTimingFunction : public ITimingFunction
+class RepeatTimingFunction : public ITimingFunction,
+							 public NonAtomicReferenceCounted
 {
 public:
-	RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse = true);
+	RepeatTimingFunction (const SharedPointer<TimingFunctionBase>& tf, int32_t repeatCount,
+						  bool autoReverse = true);
 	~RepeatTimingFunction () noexcept override;
 
 	float getPosition (uint32_t milliseconds) override;
 	bool isDone (uint32_t milliseconds) override;
 protected:
-	TimingFunctionBase* tf;
+	SharedPointer<TimingFunctionBase> tf;
 	int32_t repeatCount;
 	uint32_t runCounter;
 	bool autoReverse;

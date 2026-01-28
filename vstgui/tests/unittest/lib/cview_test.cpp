@@ -178,16 +178,16 @@ TEST_CASE (CViewTest, ViewListener)
 {
 	ViewListener listener;
 	{
-		auto v = new View ();
+		auto v = makeOwned<View> ();
 		v->registerViewListener (&listener);
 		v->setViewSize (CRect (1, 2, 3, 4));
 		auto container1 = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto container2 = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-		container2->addView (v);
+		container2->addSubview (v);
 		container2->attached (container1);
 		v->takeFocus ();
 		v->looseFocus ();
-		container2->removeView (v);
+		container2->removeSubview (v);
 		container2->removed (container1);
 	}
 	EXPECT (listener.sizeChangedCalled);
@@ -203,8 +203,8 @@ TEST_CASE (CViewTest, CoordCalculations)
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
 	container->attached (parent);
-	auto v = new View ();
-	container->addView (v);
+	auto v = makeOwned<View> ();
+	container->addSubview (v);
 	CPoint p (0, 0);
 	v->localToFrame (p);
 	EXPECT (p.x == 50 && p.y == 50);
@@ -219,24 +219,24 @@ TEST_CASE (CViewTest, VisibleViewSize)
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
 	container->attached (parent);
-	auto v = new View ();
+	auto v = makeOwned<View> ();
 	v->setViewSize (CRect (20, 20, 150, 150));
-	container->addView (v);
+	container->addSubview (v);
 	auto visible = v->getVisibleViewSize ();
 	EXPECT (visible == CRect (20, 20, 50, 50));
-	container->removeView (v);
+	container->removeSubview (v);
 	container->removed (parent);
 }
 
 TEST_CASE (CViewTest, GlobalTransform)
 {
 	auto container1 = owned (new CViewContainer (CRect (0, 0, 10, 10)));
-	auto container2 = new CViewContainer (CRect (0, 0, 10, 10));
+	auto container2 = makeOwned<CViewContainer> (CRect (0, 0, 10, 10));
 	container1->setTransform (CGraphicsTransform ().translate (10, 20));
 	container2->setTransform (CGraphicsTransform ().translate (15, 35));
-	container1->addView (container2);
-	auto v = new View ();
-	container2->addView (v);
+	container1->addSubview (container2);
+	auto v = makeOwned<View> ();
+	container2->addSubview (v);
 	container2->attached (container1);
 	auto transform = v->getGlobalTransform ();
 	EXPECT (transform.dx == 25 && transform.dy == 55);
@@ -257,7 +257,7 @@ TEST_CASE (CViewTest, GlobalTransform)
 
 TEST_CASE (CViewTest, HitTest)
 {
-	auto v = owned (new View ());
+	auto v = makeOwned<View> ();
 	v->setMouseableArea (CRect (20, 20, 40, 40));
 	EXPECT (v->hitTest (CPoint (5, 5)) == false);
 	EXPECT (v->hitTest (CPoint (20, 20)) == true);
@@ -289,7 +289,6 @@ TEST_CASE (CViewTest, DefaultHandling)
 
 	EXPECT (v->getDropTarget () == nullptr);
 	EXPECT (v->getEditor () == nullptr);
-	EXPECT (v->isDirty () == false);
 	EXPECT (v->sizeToFit () == false);
 	EXPECT (v->getBackground () == nullptr);
 	EXPECT (v->getDisabledBackground () == nullptr);
@@ -506,8 +505,8 @@ TEST_CASE (CViewTest, IdleAfterAttached)
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
 	container->attached (parent);
-	auto v = new View ();
-	container->addView (v);
+	auto v = makeOwned<View> ();
+	container->addSubview (v);
 	v->setWantsIdle (true);
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
 	EXPECT (v->onIdleCalled == true);
@@ -515,7 +514,7 @@ TEST_CASE (CViewTest, IdleAfterAttached)
 	v->onIdleCalled = false;
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
 	EXPECT (v->onIdleCalled == false);
-	container->removeView (v);
+	container->removeSubview (v);
 	container->removed (parent);
 }
 
@@ -523,13 +522,13 @@ TEST_CASE (CViewTest, IdleBeforeAttached)
 {
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
-	auto v = new View ();
-	container->addView (v);
+	auto v = makeOwned<View> ();
+	container->addSubview (v);
 	v->setWantsIdle (true);
 	container->attached (parent);
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, true);
 	EXPECT (v->onIdleCalled == true);
-	container->removeView (v);
+	container->removeSubview (v);
 	container->removed (parent);
 }
 

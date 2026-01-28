@@ -25,18 +25,20 @@ struct SaveUIDescription : public UIDescription
 struct Controller : public IController,
 					public NonAtomicReferenceCounted
 {
-	void valueChanged (CControl* pControl) override {};
+	void valueChanged (CControl& pControl) override {};
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
 	{
 		return registeredTag;
 	}
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		return nullptr;
 	}
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		return view;
 	}

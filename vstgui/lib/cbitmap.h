@@ -389,7 +389,8 @@ public:
 protected:
 	CBitmapPixelAccess ();
 	~CBitmapPixelAccess () noexcept override = default;
-	void init (const SharedPointer<CBitmap>& bitmap, IPlatformBitmapPixelAccess* pixelAccess);
+	void init (const SharedPointer<CBitmap>& bitmap,
+			   const SharedPointer<IPlatformBitmapPixelAccess>& pixelAccess);
 
 	SharedPointer<CBitmap> bitmap;
 	SharedPointer<IPlatformBitmapPixelAccess> pixelAccess;

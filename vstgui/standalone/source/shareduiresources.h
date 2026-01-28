@@ -52,11 +52,11 @@ enum class UIDescCheckFilePathResult
 
 //------------------------------------------------------------------------
 UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (
-    UIDescription& uiDesc, CFrame* _frame,
-    UTF8StringPtr notFoundText = "The uidesc file location cannot be found.");
+	UIDescription& uiDesc, SharedPointer<CFrame> frame,
+	UTF8StringPtr notFoundText = "The uidesc file location cannot be found.");
 
 //------------------------------------------------------------------------
-bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame);
+bool initUIDescAsNew (UIDescription& uiDesc, SharedPointer<CFrame> frame);
 
 #endif // VSTGUI_LIVE_EDITING
 

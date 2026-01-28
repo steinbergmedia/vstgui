@@ -295,8 +295,9 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, cons
 			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute (UIViewCreator::kAttrBitmap, getSelectedBitmapName ());
 			attr->setPointAttribute (UIViewCreator::kAttrSize, bitmap->getSize ());
-			if (auto selection = createSelectionFromViewName (
-					UIViewCreator::kCView, description->getViewFactory (), *description, attr))
+			if (auto selection = createSelectionFromViewName (UIViewCreator::kCView,
+															  description->getViewFactory (),
+															  *description.get (), attr))
 			{
 				CMemoryStream stream (1024, 1024, false);
 				if (selection->store (stream, description))
@@ -511,7 +512,7 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 bool UIBitmapsDataSource::add ()
 {
 	bool result = false;
-	auto fs = owned (CNewFileSelector::create (dataBrowser->getFrame ()));
+	auto fs = CNewFileSelector::create (dataBrowser->getFrame ());
 	if (fs)
 	{
 		fs->addFileExtension (CFileExtension ("PNG", "PNG", "image/png"));
@@ -535,7 +536,7 @@ bool UIBitmapsDataSource::add ()
 							if (row != -1)
 								dbOnMouseDown (CPoint (0, 0),
 											   CButtonState (kLButton | kDoubleClick), row, 0,
-											   dataBrowser);
+											   dataBrowser.get ());
 							result = true;
 						}
 					}
@@ -563,12 +564,14 @@ public:
 								const SharedPointer<UIUndoManager>& undoManager);
 	~UIBitmapSettingsController () noexcept override;
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	void valueChanged (CControl* pControl) override;
-	void controlBeginEdit (CControl* pControl) override;
-	void controlEndEdit (CControl* pControl) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	void valueChanged (CControl& pControl) override;
+	void controlBeginEdit (CControl& pControl) override;
+	void controlEndEdit (CControl& pControl) override;
 
 	void onDialogButton1Clicked (UIDialogController&) override;
 	void onDialogButton2Clicked (UIDialogController&) override;
@@ -612,7 +615,7 @@ protected:
 		kMultiFrameDescValidTag,
 		kNumTags
 	};
-	std::array<CControl*, kNumTags> controls;
+	std::array<SharedPointer<CControl>, kNumTags> controls;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -659,7 +662,7 @@ void UIBitmapSettingsController::updateNinePartTiledControls ()
 		controls[kNinePartTiledTag]->setValueNormalized (0.);
 		for (int32_t i = kNinePartTiledLeftTag; i <= kNinePartTiledBottomTag; i++)
 		{
-			auto* label = dynamic_cast<CTextLabel*>(controls[i]);
+			auto label = controls[i].cast<CTextLabel> ();
 			if (label)
 				label->setText ("");
 		}
@@ -690,7 +693,7 @@ void UIBitmapSettingsController::updateMultiFrameControls ()
 		controls[kMultiFrameTag]->setValueNormalized (0.f);
 		for (int32_t i = kMultiFrameFramesTag; i <= kMultiFrameSizeHeight; i++)
 		{
-			auto* label = dynamic_cast<CTextLabel*> (controls[i]);
+			auto label = controls[i].cast<CTextLabel> ();
 			if (label)
 				label->setText ("");
 		}
@@ -711,14 +714,14 @@ void UIBitmapSettingsController::recreateBitmap ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapSettingsController::valueChanged (CControl* control)
+void UIBitmapSettingsController::valueChanged (CControl& control)
 {
-	auto tag = control->getTag ();
+	auto tag = control.getTag ();
 	switch (tag)
 	{
 		case kBitmapPathTag:
 		{
-			auto* edit = dynamic_cast<CTextEdit*>(control);
+			auto* edit = dynamic_cast<CTextEdit*> (&control);
 			if (edit)
 			{
 				if (auto ap = actionPerformer.lock ())
@@ -739,7 +742,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				origOffsets.right = nptb->getPartOffsets ().right;
 				origOffsets.bottom = nptb->getPartOffsets ().bottom;
 			}
-			bool checked = control->getValue () == control->getMax ();
+			bool checked = control.getValue () == control.getMax ();
 			if (checked && controls[kMultiFrameTag]->getValue () == 1.f)
 			{
 				controls[kMultiFrameTag]->setValue (0.f);
@@ -769,7 +772,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				ap->performBitmapNinePartTiledChange (bitmapName.data (), &r);
 				recreateBitmap ();
 			}
-			SharedPointer<CTextEdit> textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
+			auto textEdit = dynamic_cast<CTextEdit*> (&control);
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
 				textEdit->getFrame ()->doAfterEventProcessing ([=] () {
@@ -786,7 +789,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				origMultiFrameDesc.framesPerRow = mfb->getNumFramesPerRow ();
 				origMultiFrameDesc.frameSize = mfb->getFrameSize ();
 			}
-			bool checked = control->getValue () == control->getMax ();
+			bool checked = control.getValue () == control.getMax ();
 			if (checked && controls[kNinePartTiledTag]->getValue () == 1.f)
 			{
 				controls[kNinePartTiledTag]->setValue (0.f);
@@ -822,7 +825,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				ap->performBitmapMultiFrameChange (bitmapName.data (), &desc);
 				recreateBitmap ();
 			}
-			auto textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
+			auto textEdit = dynamic_cast<CTextEdit*> (&control);
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
 				textEdit->getFrame ()->doAfterEventProcessing ([=] () { textEdit->takeFocus (); });
@@ -831,26 +834,22 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 		}
 		case kZoomTag:
 		{
-			CCoord zoom = floor (control->getValue () / 10. + 0.5);
-			control->setValue ((float)zoom * 10.f);
+			CCoord zoom = floor (control.getValue () / 10. + 0.5);
+			control.setValue ((float)zoom * 10.f);
 			controls[kZoomTextTag]->setValue ((float)zoom * 10.f);
 			bitmapView->setZoom (zoom / 10.);
 			controls[kZoomTextTag]->invalid ();
-			control->invalid ();
+			control.invalid ();
 			break;
 		}
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapSettingsController::controlBeginEdit (CControl* control)
-{
-}
+void UIBitmapSettingsController::controlBeginEdit (CControl& control) {}
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapSettingsController::controlEndEdit (CControl* control)
-{
-}
+void UIBitmapSettingsController::controlEndEdit (CControl& control) {}
 
 //----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::onDialogButton1Clicked (UIDialogController&) {}
@@ -867,10 +866,11 @@ void UIBitmapSettingsController::onDialogShow (UIDialogController&)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& attributes,
-											   const IUIDescription& description)
+SharedPointer<CView> UIBitmapSettingsController::verifyView (const SharedPointer<CView>& view,
+															 const UIAttributes& attributes,
+															 const IUIDescription& description)
 {
-	auto* control = dynamic_cast<CControl*>(view);
+	auto control = view.cast<CControl> ();
 	if (control && control->getTag () >= 0 && control->getTag () < kNumTags)
 	{
 		controls[control->getTag ()] = control;
@@ -878,14 +878,14 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 		{
 			case kBitmapPathTag:
 			{
-				auto* bitmapPathEdit = dynamic_cast<CTextEdit*> (control);
+				auto bitmapPathEdit = control.cast<CTextEdit> ();
 				if (bitmapPathEdit)
 					bitmapPathEdit->setText (bitmap->getResourceDescription ().u.name);
 				break;
 			}
 			case kBitmapWidthTag:
 			{
-				auto* label = dynamic_cast<CTextLabel*>(control);
+				auto label = control.cast<CTextLabel> ();
 				if (label)
 				{
 					float width = bitmap->getPlatformBitmap () ? (float)bitmap->getPlatformBitmap ()->getSize ().x : 0.f;
@@ -898,7 +898,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			}
 			case kBitmapHeightTag:
 			{
-				auto* label = dynamic_cast<CTextLabel*>(control);
+				auto label = control.cast<CTextLabel> ();
 				if (label)
 				{
 					float height = bitmap->getPlatformBitmap () ? (float)bitmap->getPlatformBitmap ()->getSize ().y : 0.f;
@@ -927,7 +927,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			case kNinePartTiledLeftTag:
 			case kNinePartTiledRightTag:
 			{
-				auto* textEdit = dynamic_cast<CTextEdit*>(control);
+				auto textEdit = control.cast<CTextEdit> ();
 				if (textEdit)
 				{
 					textEdit->setPrecision (0);
@@ -939,7 +939,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			case kNinePartTiledTopTag:
 			case kNinePartTiledBottomTag:
 			{
-				auto* textEdit = dynamic_cast<CTextEdit*>(control);
+				auto textEdit = control.cast<CTextEdit> ();
 				if (textEdit)
 				{
 					textEdit->setPrecision (0);
@@ -957,7 +957,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			case kMultiFrameSizeWidth:
 			case kMultiFrameSizeHeight:
 			{
-				if (auto textEdit = dynamic_cast<CTextEdit*> (control))
+				if (auto textEdit = control.cast<CTextEdit> ())
 				{
 					textEdit->setPrecision (0);
 					textEdit->setStringToValueFunction (stringToValue);
@@ -972,7 +972,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			}
 			case kZoomTextTag:
 			{
-				auto* label = dynamic_cast<CTextLabel*>(control);
+				auto label = control.cast<CTextLabel> ();
 				if (label)
 				{
 					label->setValueToStringFunction (valueToString);
@@ -985,15 +985,15 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapSettingsController::createView (const UIAttributes& attributes,
-											   const IUIDescription& description)
+SharedPointer<CView> UIBitmapSettingsController::createView (const UIAttributes& attributes,
+															 const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "BitmapView")
 		{
-			bitmapView = new UIBitmapView ();
+			bitmapView = makeOwned<UIBitmapView> ();
 			return bitmapView;
 		}
 	}
@@ -1051,20 +1051,23 @@ void UIBitmapsController::showSettingsDialog ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapsController::createView (const UIAttributes& attributes,
-										const IUIDescription& description)
+SharedPointer<CView> UIBitmapsController::createView (const UIAttributes& attributes,
+													  const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "BitmapsBrowser")
 		{
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			auto dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+														CDataBrowser::kDrawRowLines |
+															CScrollView::kHorizontalScrollbar |
+															CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 		else if (*name == "BitmapView")
 		{
-			bitmapView = new UIBitmapView ();
+			bitmapView = makeOwned<UIBitmapView> ();
 			return bitmapView;
 		}
 	}
@@ -1072,16 +1075,17 @@ CView* UIBitmapsController::createView (const UIAttributes& attributes,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attributes,
-										const IUIDescription& description)
+SharedPointer<CView> UIBitmapsController::verifyView (const SharedPointer<CView>& view,
+													  const UIAttributes& attributes,
+													  const IUIDescription& description)
 {
-	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
+	auto searchField = view.cast<CSearchTextEdit> ();
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
 		return searchField;
 	}
-	auto* textEdit = dynamic_cast<CTextEdit*>(view);
+	auto textEdit = view.cast<CTextEdit> ();
 	if (textEdit)
 	{
 		switch (textEdit->getTag ())
@@ -1096,7 +1100,7 @@ CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attribu
 	}
 	else
 	{
-		auto* control = dynamic_cast<CControl*> (view);
+		auto control = view.cast<CControl> ();
 		if (control)
 		{
 			if (control->getTag () == kSettingsTag)
@@ -1116,13 +1120,13 @@ IControlListener* UIBitmapsController::getControlListener (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsController::valueChanged (CControl* pControl)
+void UIBitmapsController::valueChanged (CControl& pControl)
 {
-	switch (pControl->getTag ())
+	switch (pControl.getTag ())
 	{
 		case kAddTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 			{
 				dataSource->add ();
 			}
@@ -1130,7 +1134,7 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 		}
 		case kRemoveTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 			{
 				dataSource->remove ();
 			}
@@ -1141,7 +1145,7 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 			UTF8StringPtr bitmapName = dataSource->getSelectedBitmapName ();
 			if (bitmapName)
 			{
-				if (auto edit = dynamic_cast<CTextEdit*> (pControl))
+				if (auto edit = dynamic_cast<CTextEdit*> (&pControl))
 				{
 					if (auto ap = actionPerformer.lock ())
 						ap->performBitmapChange (bitmapName, edit->getText ());
@@ -1151,7 +1155,7 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 		}
 		case kSettingsTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 			{
 				showSettingsDialog ();
 			}

@@ -54,26 +54,25 @@ UTF8StringPtr UIViewSwitchContainerCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* UIViewSwitchContainerCreator::create (const UIAttributes& attributes,
-                                             const IUIDescription* description) const
+SharedPointer<CView> UIViewSwitchContainerCreator::create (const UIAttributes& attributes,
+														   const IUIDescription& description) const
 {
-	UIViewSwitchContainer* vsc = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
-	new UIDescriptionViewSwitchController (vsc, description, description->getController ());
+	auto vsc = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
+	makeOwned<UIDescriptionViewSwitchController> (vsc, description, description.getController ());
 	return vsc;
 }
 
 //------------------------------------------------------------------------
-bool UIViewSwitchContainerCreator::apply (CView* view, const UIAttributes& attributes,
-                                          const IUIDescription* description) const
+bool UIViewSwitchContainerCreator::apply (CView& view, const UIAttributes& attributes,
+										  const IUIDescription& description) const
 {
-	auto* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
+	auto* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (&view);
 	if (!viewSwitch)
 		return false;
 	const auto* attr = attributes.getAttributeValue (kAttrTemplateNames);
 	if (attr)
 	{
-		auto* controller =
-		    dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+		auto controller = viewSwitch->getController ().cast<UIDescriptionViewSwitchController> ();
 		if (controller)
 		{
 			controller->setTemplateNames (attr->c_str ());
@@ -82,11 +81,10 @@ bool UIViewSwitchContainerCreator::apply (CView* view, const UIAttributes& attri
 	attr = attributes.getAttributeValue (kAttrTemplateSwitchControl);
 	if (attr)
 	{
-		auto* controller =
-		    dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+		auto controller = viewSwitch->getController ().cast<UIDescriptionViewSwitchController> ();
 		if (controller)
 		{
-			int32_t tag = description->getTagForName (attr->c_str ());
+			int32_t tag = description.getTagForName (attr->c_str ());
 			controller->setSwitchControlTag (tag);
 		}
 	}
@@ -154,17 +152,16 @@ auto UIViewSwitchContainerCreator::getAttributeType (const string& attributeName
 }
 
 //------------------------------------------------------------------------
-bool UIViewSwitchContainerCreator::getAttributeValue (CView* view, const string& attributeName,
-                                                      string& stringValue,
-                                                      const IUIDescription* desc) const
+bool UIViewSwitchContainerCreator::getAttributeValue (CView& view, const string& attributeName,
+													  string& stringValue,
+													  const IUIDescription& desc) const
 {
-	auto* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
+	auto* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (&view);
 	if (!viewSwitch)
 		return false;
 	if (attributeName == kAttrTemplateNames)
 	{
-		auto* controller =
-		    dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+		auto controller = viewSwitch->getController ().cast<UIDescriptionViewSwitchController> ();
 		if (controller)
 		{
 			controller->getTemplateNames (stringValue);
@@ -173,12 +170,11 @@ bool UIViewSwitchContainerCreator::getAttributeValue (CView* view, const string&
 	}
 	else if (attributeName == kAttrTemplateSwitchControl)
 	{
-		auto* controller =
-		    dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+		auto controller = viewSwitch->getController ().cast<UIDescriptionViewSwitchController> ();
 		if (controller)
 		{
 			UTF8StringPtr controlTag =
-			    desc->lookupControlTagName (controller->getSwitchControlTag ());
+				desc.lookupControlTagName (controller->getSwitchControlTag ());
 			if (controlTag)
 			{
 				stringValue = controlTag;

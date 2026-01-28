@@ -93,15 +93,7 @@ public:
 	/** returns the tag of the item */
 	int32_t getTag () const;
 	//@}
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	VSTGUI_DEPRECATED_MSG (void setSubmenu (COptionMenu* submenu);
-						   ,
-						   "use CMenuItem::setSubmenu (const SharedPointer<COptionMenu>&) instead")
-	int32_t getVirtualKeyCode () const;
-	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);
-#endif
-//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 protected:
 	CMenuItem ();
 	~CMenuItem () noexcept override;
@@ -216,8 +208,7 @@ using CConstMenuItemIterator = CMenuItemList::const_iterator;
 //! @brief a popup menu control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class COptionMenu : public CParamDisplay,
-					public WeakPointerSupport<COptionMenu>
+class COptionMenu : public CParamDisplay
 {
 private:
 	enum StyleEnum
@@ -249,7 +240,6 @@ public:
 	/// @name COptionMenu Methods
 	//-----------------------------------------------------------------------------
 	//@{
-#if VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR
 	/** add a new entry */
 	SharedPointer<CMenuItem> addEntry (const SharedPointer<CMenuItem>& item, int32_t index = -1);
 	/** add a new entry */
@@ -262,7 +252,6 @@ public:
 	/** add a new submenu entry */
 	SharedPointer<CMenuItem> addEntry (const SharedPointer<COptionMenu>& submenu,
 									   const UTF8String& title);
-#endif
 	/** add a new entry */
 	virtual SharedPointer<CMenuItem> addEntry (const UTF8String& title, int32_t index = -1,
 											   int32_t itemFlags = CMenuItem::kNoFlags);
@@ -283,14 +272,6 @@ public:
 	/** remove all entries */
 	virtual	bool removeAllEntry ();
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	VSTGUI_DEPRECATED_MSG (
-		virtual SharedPointer<CMenuItem> addEntry (CMenuItem* item, int32_t index = -1);
-		, "use COptionMenu::addEntry (const SharedPointer<CMenuItem>&, int32_t) instead")
-	VSTGUI_DEPRECATED_MSG (
-		virtual SharedPointer<CMenuItem> addEntry (COptionMenu* submenu, const UTF8String& title);
-		, "use COptionMenu::addEntry (const SharedPointer<CMenuItem>&, const UTF8String&) instead")
-#endif
 	/** change check state of entry at index */
 	virtual bool checkEntry (int32_t index, bool state);
 	/** check entry at index and uncheck every other item */
@@ -321,11 +302,8 @@ public:
 	/** pops up the menu */
 	bool popup (const PopupCallback& callback = {});
 	/** pops up the menu at frameLocation */
-	bool popup (CFrame* frame, const CPoint& frameLocation, const PopupCallback& callback = {});
+	bool popup (CFrame& frame, const CPoint& frameLocation, const PopupCallback& callback = {});
 
-	VSTGUI_DEPRECATED_MSG (
-		CMenuItemList* getItems () const { return const_cast<CMenuItemList*> (&menuItems); },
-		"Use COptionMenu::getItemList() instead")
 	const CMenuItemList& getItemList () const { return menuItems; }
 
 	/** remove separators as first and last item and double separators */
@@ -336,7 +314,7 @@ public:
 	//@}
 
 	// overrides
-	void setValue (float val) override;
+	bool setValue (float val) override;
 	void setMin (float val) override {}
 	float getMin () const override { return 0; }
 	void setMax (float val) override {}

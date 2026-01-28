@@ -161,7 +161,7 @@ auto CFontDesc::getPlatformFont () const -> const PlatformFontPtr
 //-----------------------------------------------------------------------------
 const IFontPainter* CFontDesc::getFontPainter () const
 {
-	IPlatformFont* pf = getPlatformFont ();
+	auto pf = getPlatformFont ();
 	if (pf)
 		return pf->getPainter ();
 	return nullptr;

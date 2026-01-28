@@ -107,7 +107,6 @@ void CSearchTextEdit::draw (CDrawContext *pContext)
 
 	if (platformControl)
 	{
-		setDirty (false);
 		return;
 	}
 
@@ -124,7 +123,6 @@ void CSearchTextEdit::draw (CDrawContext *pContext)
 	else
 		drawPlatformText (pContext, getText (), getTextRect ());
 
-	setDirty (false);
 	setFontColor (origFontColor);
 }
 
@@ -150,10 +148,10 @@ CRect CSearchTextEdit::platformGetSize () const
 CRect CSearchTextEdit::platformGetVisibleSize () const
 {
 	CRect rect = getTextRect ();
-	if (getParentView ())
-		rect = getParentView ()->asViewContainer ()->getVisibleSize (rect);
-	else if (getFrame ())
-		rect = getFrame ()->getVisibleSize (rect);
+	if (auto parent = getParentView ())
+		rect = parent->asViewContainer ()->getVisibleSize (rect);
+	else if (auto frame = getFrame ())
+		rect = frame->getVisibleSize (rect);
 
 	return translateToGlobal (rect);
 }

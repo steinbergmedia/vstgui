@@ -25,9 +25,10 @@ public:
 	~UIGridController () override;
 	
 protected:
-	void valueChanged (CControl* pControl) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	void valueChanged (CControl& pControl) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void setSize (const CPoint& p) override;
 

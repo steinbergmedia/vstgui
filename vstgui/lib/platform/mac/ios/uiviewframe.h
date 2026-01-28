@@ -43,13 +43,8 @@ public:
 	void* getPlatformRepresentation () const override { return (__bridge void*)uiView; }
 	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
 	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
-#if VSTGUI_OPENGL_SUPPORT
-	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
-#endif
-	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
-#endif
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (
+		IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
 
 	PlatformType getPlatformType () const override { return PlatformType::kUIView; }

@@ -55,7 +55,7 @@ protected:
 	{
 		hasDifferentValues (false);
 		std::string valueStr = value ? value : "";
-		UIAttributesController* attrController = getAttributesController ();
+		auto attrController = getAttributesController ();
 		if (attrController)
 			attrController->performAttributeChange (attrName, valueStr);
 	}
@@ -73,10 +73,11 @@ public:
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
-		auto* control = dynamic_cast<CControl*>(view);
+		auto control = view.cast<CControl> ();
 		if (control)
 		{
 			int32_t tag = control->getTag ();
@@ -111,11 +112,11 @@ public:
 		}
 	}
 
-	void valueChanged (CControl* control) override
+	void valueChanged (CControl& control) override
 	{
-		if (control->getValue () == control->getMax ())
+		if (control.getValue () == control.getMax ())
 		{
-			switch (control->getTag ())
+			switch (control.getTag ())
 			{
 				case kLeftTag:
 				{
@@ -136,8 +137,8 @@ public:
 		}
 		else
 		{
-			control->setValue (control->getMax ());
-			control->invalid ();
+			control.setValue (control.getMax ());
+			control.invalid ();
 		}
 	}
 
@@ -148,7 +149,7 @@ protected:
 		kRightTag
 	};
 
-	CControl* controls[3];
+	std::array<SharedPointer<CControl>, 3> controls;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -161,10 +162,11 @@ public:
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
-		auto* control = dynamic_cast<CControl*>(view);
+		auto control = view.cast<CControl> ();
 		if (control)
 		{
 			int32_t tag = control->getTag ();
@@ -172,7 +174,7 @@ public:
 				controls[tag] = control;
 			if (tag >= kRowTag && tag <= kColTag)
 			{
-				for (const auto& selView : *selection)
+				for (const auto& selView : *selection.get ())
 				{
 					if (selView->asViewContainer () == nullptr)
 					{
@@ -209,20 +211,20 @@ public:
 		}
 	}
 
-	void valueChanged (CControl* control) override
+	void valueChanged (CControl& control) override
 	{
-		if (control == controls[kRowTag])
+		if (&control == controls[kRowTag].get ())
 		{
-			if (control->getValue () == control->getMax ())
+			if (control.getValue () == control.getMax ())
 			{
-				controls[kColTag]->setValue (control->getMin ());
+				controls[kColTag]->setValue (control.getMin ());
 			}
 		}
-		else if (control == controls[kColTag])
+		else if (&control == controls[kColTag].get ())
 		{
-			if (control->getValue () == control->getMax ())
+			if (control.getValue () == control.getMax ())
 			{
-				controls[kRowTag]->setValue (control->getMin ());
+				controls[kRowTag]->setValue (control.getMin ());
 			}
 		}
 		std::string str;
@@ -272,7 +274,7 @@ protected:
 		kColTag
 	};
 
-	CControl* controls[6];
+	std::array<SharedPointer<CControl>, 6> controls;
 	SharedPointer<UISelection> selection;
 };
 
@@ -286,18 +288,19 @@ public:
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (control == nullptr)
 		{
-			control = dynamic_cast<CControl*>(view);
+			control = view.cast<CControl> ();
 		}
 		return controller->verifyView (view, attributes, description);
 	}
-	void valueChanged (CControl* pControl) override
+	void valueChanged (CControl& pControl) override
 	{
-		if (pControl->getValue () == control->getMax ())
+		if (pControl.getValue () == control->getMax ())
 			performValueChange ("true");
 		else
 			performValueChange ("false");
@@ -319,7 +322,7 @@ public:
 	}
 
 protected:
-	CControl* control;
+	SharedPointer<CControl> control;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -340,12 +343,13 @@ public:
 		}
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (textLabel == nullptr)
 		{
-			auto* edit = dynamic_cast<CTextLabel*>(view);
+			auto edit = view.cast<CTextLabel> ();
 			if (edit)
 			{
 				textLabel = edit;
@@ -356,20 +360,14 @@ public:
 		}
 		return controller->verifyView (view, attributes, description);
 	}
-	
-	void controlBeginEdit (VSTGUI::CControl* pControl) override
-	{
-		Controller::controlBeginEdit (pControl);
-	}
 
-	void controlEndEdit (VSTGUI::CControl* pControl) override
-	{
-		Controller::controlEndEdit (pControl);
-	}
+	void controlBeginEdit (CControl& pControl) override { Controller::controlBeginEdit (pControl); }
 
-	void valueChanged (CControl* pControl) override
+	void controlEndEdit (CControl& pControl) override { Controller::controlEndEdit (pControl); }
+
+	void valueChanged (CControl& pControl) override
 	{
-		if (textLabel == pControl)
+		if (textLabel.get () == &pControl)
 		{
 			textLabel->setFontColor (originalTextColor);
 			performValueChange (textLabel->getText ());
@@ -408,7 +406,7 @@ public:
 
 	void viewLostFocus (CView* view) override
 	{
-		if (view == textLabel)
+		if (view == textLabel.get ())
 		{
 			SharedPointer<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
@@ -439,22 +437,23 @@ class ScriptController : public TextController,
 public:
 	using TextController::TextController;
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (editButton == nullptr)
 		{
-			auto button = dynamic_cast<CTextButton*> (view);
+			auto button = view.cast<CTextButton> ();
 			if (button)
 				editButton = button;
 		}
 		return TextController::verifyView (view, attributes, description);
 	}
 
-	void valueChanged (CControl* pControl) override
+	void valueChanged (CControl& pControl) override
 	{
 		TextController::valueChanged (pControl);
-		if (editButton == pControl && pControl->getValue () == pControl->getMax ())
+		if (editButton.get () == &pControl && pControl.getValue () == pControl.getMax ())
 		{
 			auto dc = new UIDialogController (shared (this), editButton->getFrame ());
 			dc->run ("scripteditor", "Script Editor", "Close", nullptr, shared (this),
@@ -462,7 +461,8 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -482,7 +482,7 @@ public:
 					if (auto font = description.getFont ("scripteditor.font"))
 					{
 						style.font = font;
-						style.lineNumbersFont = makeOwned<CFontDesc> (*font);
+						style.lineNumbersFont = makeOwned<CFontDesc> (*font.get ());
 						style.lineNumbersFont->setSize (style.lineNumbersFont->getSize () - 2);
 					}
 					textEditor->setStyle (style);
@@ -530,21 +530,22 @@ public:
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (slider == nullptr)
 		{
-			auto* sliderView = dynamic_cast<CSlider*> (view);
+			auto sliderView = view.cast<CSlider> ();
 			if (sliderView)
 				slider = sliderView;
 		}
 		return TextController::verifyView (view, attributes, description);
 	}
 
-	void controlBeginEdit (VSTGUI::CControl* pControl) override
+	void controlBeginEdit (CControl& pControl) override
 	{
-		if (pControl == slider)
+		if (&pControl == slider.get ())
 		{
 			getAttributesController ()->beginLiveAttributeChange (
 				attrName, UIAttributes::doubleToString (slider->getValue ()));
@@ -552,19 +553,19 @@ public:
 		TextController::controlBeginEdit (pControl);
 	}
 
-	void controlEndEdit (VSTGUI::CControl* pControl) override
+	void controlEndEdit (CControl& pControl) override
 	{
-		if (pControl == slider)
+		if (&pControl == slider.get ())
 		{
 			getAttributesController ()->endLiveAttributeChange ();
 		}
 		TextController::controlEndEdit (pControl);
 	}
 
-	void valueChanged (CControl* pControl) override
+	void valueChanged (CControl& pControl) override
 	{
 		TextController::valueChanged (pControl);
-		if (slider == pControl)
+		if (slider.get () == &pControl)
 		{
 			performValueChange (UIAttributes::doubleToString (slider->getValue ()).data ());
 		}
@@ -611,26 +612,28 @@ public:
 			menu->unregisterOptionMenuListener (this);
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription&) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& desc) override
 	{
 		if (menu == nullptr)
 		{
-			menu = dynamic_cast<COptionMenu*>(view);
+			menu = view.cast<COptionMenu> ();
 			if (menu)
 				menu->registerOptionMenuListener (this);
 		}
-		return TextController::verifyView (view, attributes, *description);
+		return TextController::verifyView (view, attributes, desc);
 	}
 
 	using StringPtrList =std::list<const std::string*>;
 	virtual void collectMenuItemNames (StringPtrList& names) = 0;
-	virtual void validateMenuEntry (CCommandMenuItem* item) {}
+	virtual void validateMenuEntry (CCommandMenuItem& item) {}
 
 	virtual void addMenuEntry (const std::string* entryName)
 	{
 		auto item = makeOwned<CCommandMenuItem> (
 			CCommandMenuItem::Desc {entryName->data (), shared (this)});
-		validateMenuEntry (item);
+		validateMenuEntry (*item.get ());
 		menu->addEntry (item);
 		if (textLabel->getText () == *entryName)
 		{
@@ -645,7 +648,7 @@ public:
 		TextController::setValue (value);
 	}
 
-	void onOptionMenuPrePopup (COptionMenu* optMenu) override
+	void onOptionMenuPrePopup (const SharedPointer<COptionMenu>& optMenu) override
 	{
 		optMenu->removeAllEntry ();
 		if (addNoneItem)
@@ -663,9 +666,9 @@ public:
 			addMenuEntry (name);
 	}
 
-	bool onCommandMenuItemSelected (CCommandMenuItem* item) override
+	bool onCommandMenuItemSelected (CCommandMenuItem& item) override
 	{
-		performValueChange (item->getTag () == 100 ? UTF8String ("") : item->getTitle ());
+		performValueChange (item.getTag () == 100 ? UTF8String ("") : item.getTitle ());
 		return true;
 	}
 
@@ -703,13 +706,13 @@ public:
 	{
 		description->collectColorNames (names);
 	}
-	
-	void validateMenuEntry (CCommandMenuItem* item) override
+
+	void validateMenuEntry (CCommandMenuItem& item) override
 	{
 		CColor color;
-		if (description->getColor (item->getTitle (), color))
+		if (description->getColor (item.getTitle (), color))
 		{
-			item->setIcon (createColorIcon (color));
+			item.setIcon (createColorIcon (color));
 		}
 	}
 
@@ -738,12 +741,13 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "ColorView")
 		{
-			colorView = new ColorView ();
+			colorView = makeOwned<ColorView> ();
 			return colorView;
 		}
 		return nullptr;
@@ -779,11 +783,11 @@ public:
 	{
 		description->collectGradientNames (names);
 	}
-	
-	void validateMenuEntry (CCommandMenuItem* item) override
+
+	void validateMenuEntry (CCommandMenuItem& item) override
 	{
 		const CCoord size = 15;
-		if (auto gradient = description->getGradient (item->getTitle ()))
+		if (auto gradient = description->getGradient (item.getTitle ()))
 		{
 			if (auto context = COffscreenContext::create ({size, size}))
 			{
@@ -795,7 +799,7 @@ public:
 												 CPoint (size, 0));
 				}
 				context->endDraw ();
-				item->setIcon (context->getBitmap ());
+				item.setIcon (context->getBitmap ());
 			}
 		}
 	}
@@ -817,12 +821,13 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "GradientView")
 		{
-			gradientView = new GradientView ();
+			gradientView = makeOwned<GradientView> ();
 			return gradientView;
 		}
 		return nullptr;
@@ -840,7 +845,8 @@ protected:
 			if (auto path = context->createGraphicsPath ())
 			{
 				path->addRect (r);
-				context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getTopRight ());
+				context->fillLinearGradient (path, *gradient.get (), r.getTopLeft (),
+											 r.getTopRight ());
 			}
 		}
 		SharedPointer<CGradient> gradient;
@@ -916,7 +922,8 @@ public:
 			dynamic_cast<const IViewFactoryEditingSupport*> (&description->getViewFactory ());
 		if (viewFactory)
 		{
-			viewFactory->getPossibleAttributeListValues (*selection->first (), attrName, names);
+			viewFactory->getPossibleAttributeListValues (*selection->first ().get (), attrName,
+														 names);
 		}
 	}
 	
@@ -993,13 +1000,13 @@ void UIAttributesController::performAttributeChange (const std::string& name, co
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::valueChanged (CControl* control)
+void UIAttributesController::valueChanged (CControl& control)
 {
-	switch (control->getTag ())
+	switch (control.getTag ())
 	{
 		case kSearchFieldTag:
 		{
-			if (auto sf = dynamic_cast<CSearchTextEdit*> (control))
+			if (auto sf = dynamic_cast<CSearchTextEdit*> (&control))
 			{
 				filterString = sf->getText ();
 				rebuildAttributesView ();
@@ -1015,12 +1022,13 @@ void UIAttributesController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attributes,
-										   const IUIDescription& description)
+SharedPointer<CView> UIAttributesController::verifyView (const SharedPointer<CView>& view,
+														 const UIAttributes& attributes,
+														 const IUIDescription& description)
 {
 	if (attributeView == nullptr)
 	{
-		auto* rcv = dynamic_cast<CRowColumnView*>(view);
+		auto rcv = view.cast<CRowColumnView> ();
 		if (rcv)
 		{
 			attributeView = rcv;
@@ -1029,7 +1037,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 	}
 	if (searchField == nullptr)
 	{
-		auto* textEdit = dynamic_cast<CTextEdit*>(view);
+		auto textEdit = view.cast<CTextEdit> ();
 		if (textEdit && textEdit->getTag () == kSearchFieldTag)
 		{
 			searchField = textEdit;
@@ -1046,7 +1054,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 	}
 	if (viewNameLabel == nullptr)
 	{
-		auto* textLabel = dynamic_cast<CTextLabel*>(view);
+		auto textLabel = view.cast<CTextLabel> ();
 		if (textLabel && textLabel->getTag () == kViewNameTag)
 		{
 			viewNameLabel = textLabel;
@@ -1210,11 +1218,11 @@ void UIAttributesController::validateAttributeViews ()
 		std::string attrValue;
 		bool first = true;
 		bool hasDifferentValues = false;
-		for (const auto& view : *selection)
+		for (const auto& view : *selection.get ())
 		{
 			std::string temp;
-			viewFactory.getAttributeValue (*view, controller->getAttributeName (), temp,
-										   *editDescription);
+			viewFactory.getAttributeValue (*view.get (), controller->getAttributeName (), temp,
+										   *editDescription.get ());
 			if (temp != attrValue && !first)
 				hasDifferentValues = true;
 			attrValue = temp;
@@ -1226,10 +1234,9 @@ void UIAttributesController::validateAttributeViews ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIAttributesController::createValueViewForAttributeType (const IViewFactory& viewFactory,
-																CView* view,
-																const std::string& attrName,
-																IViewCreator::AttrType attrType)
+SharedPointer<CView> UIAttributesController::createValueViewForAttributeType (
+	const IViewFactory& viewFactory, const SharedPointer<CView>& view, const std::string& attrName,
+	IViewCreator::AttrType attrType)
 {
 	auto editorDescription = UIEditController::getEditorDescription ();
 	if (!editDescription)
@@ -1258,15 +1265,15 @@ CView* UIAttributesController::createValueViewForAttributeType (const IViewFacto
 			double minValue, maxValue;
 			const auto* viewFactoryEditing =
 				dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory);
-			if (viewFactoryEditing->getAttributeValueRange (*view, attrName, minValue, maxValue))
+			if (viewFactoryEditing->getAttributeValueRange (*view.get (), attrName, minValue,
+															maxValue))
 			{
-				CView* valueView =
-					editorDescription->createView ("attributes.number", shared (this));
+				auto valueView = editorDescription->createView ("attributes.number", shared (this));
 				if (valueView)
 				{
 					if (auto container = valueView->asViewContainer ())
 					{
-						std::vector<CSlider*> sliders;
+						std::vector<SharedPointer<CSlider>> sliders;
 						if (container->getChildViewsOfType<CSlider> (sliders) == 1)
 						{
 							sliders[0]->setMin (static_cast<float> (minValue));
@@ -1284,17 +1291,18 @@ CView* UIAttributesController::createValueViewForAttributeType (const IViewFacto
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIAttributesController::createViewForAttribute (const std::string& attrName)
+SharedPointer<CView> UIAttributesController::createViewForAttribute (const std::string& attrName)
 {
 	const CCoord height = 18;
 	const CCoord width = 160;
 	const CCoord margin = 2;
-	CViewContainer* result = new CViewContainer (CRect (0, 0, width, height+2));
+	auto result = makeOwned<CViewContainer> (CRect (0, 0, width, height + 2));
 	result->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeColumn);
 	result->setTransparency (true);
 
 	CCoord middle = width/2;
-	CTextLabel* label = new CTextLabel (CRect (5, 1, middle - margin, height+1), attrName.c_str ());
+	auto label =
+		makeOwned<CTextLabel> (CRect (5, 1, middle - margin, height + 1), attrName.c_str ());
 	label->setTextTruncateMode (CTextLabel::kTruncateHead);
 	label->setTransparency (true);
 	label->setHoriAlign (kRightText);
@@ -1302,8 +1310,8 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	label->setFont (kNormalFontSmall);
 	label->setAutosizeFlags (kAutosizeAll);
 
-	result->addView (label);
-	
+	result->addSubview (label);
+
 	bool hasDifferentValues = false;
 
 	const auto& viewFactory = editDescription->getViewFactory ();
@@ -1311,10 +1319,10 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 
 	std::string attrValue;
 	bool first = true;
-	for (const auto& view : *selection)
+	for (const auto& view : *selection.get ())
 	{
 		std::string temp;
-		viewFactory.getAttributeValue (*view, attrName, temp, *editDescription);
+		viewFactory.getAttributeValue (*view.get (), attrName, temp, *editDescription.get ());
 		if (temp != attrValue && !first)
 			hasDifferentValues = true;
 		attrValue = temp;
@@ -1322,8 +1330,8 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	}
 
 	CRect r (middle+margin, 1, width-5, height+1);
-	CView* valueView = nullptr;
-	
+	SharedPointer<CView> valueView;
+
 	if (attrName == "text-alignment")
 	{
 		valueView = UIEditController::getEditorDescription ()->createView (
@@ -1337,27 +1345,27 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	
 	if (valueView == nullptr)
 	{
-		CView* firstView = selection->first ();
-		auto attrType = viewFactoryEditing->getAttributeType (*firstView, attrName);
+		auto firstView = selection->first ();
+		auto attrType = viewFactoryEditing->getAttributeType (*firstView.get (), attrName);
 		valueView = createValueViewForAttributeType (viewFactory, firstView, attrName, attrType);
 	}
 	if (valueView == nullptr) // fallcack if attributes.text template not defined
 	{
 		auto controller = makeOwned<UIAttributeControllers::TextController> (shared (this),
 																			 *currentAttributeName);
-		auto* textEdit = new CTextEdit (r, this, -1);
+		auto textEdit = makeOwned<CTextEdit> (r, this, -1);
 		textEdit->setText (attrValue.c_str ());
 		textEdit->setTransparency (true);
 		textEdit->setFontColor (kBlackCColor);
 		textEdit->setFont (kNormalFontSmall);
-		textEdit->setListener (controller);
+		textEdit->setListener (controller.get ());
 		valueView = textEdit;
 		valueView->setAttribute (kCViewControllerAttribute, controller);
 	}
 	if (valueView)
 	{
-		if (auto controller =
-				getViewController (*valueView, true).cast<UIAttributeControllers::Controller> ())
+		if (auto controller = getViewController (*valueView.get (), true)
+								  .cast<UIAttributeControllers::Controller> ())
 		{
 			controller->hasDifferentValues (hasDifferentValues);
 			controller->setValue (attrValue);
@@ -1366,7 +1374,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 		r.setHeight (valueView->getHeight ());
 		valueView->setViewSize (r);
 		valueView->setMouseableArea (r);
-		result->addView (valueView);
+		result->addSubview (valueView);
 		r = result->getViewSize ();
 		r.setHeight (valueView->getHeight()+2);
 		result->setViewSize (r);
@@ -1383,10 +1391,10 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 	vstgui_assert (viewFactory);
 	if (!viewFactory)
 		return;
-	for (const auto& view : *selection)
+	for (const auto& view : *selection.get ())
 	{
 		StringList temp;
-		if (viewFactory->getAttributeNamesForView (*view, temp))
+		if (viewFactory->getAttributeNamesForView (*view.get (), temp))
 		{
 			StringList toRemove;
 			if (attrNames.empty ())
@@ -1442,9 +1450,9 @@ void UIAttributesController::rebuildAttributesView ()
 		if (selectedViews > 0)
 		{
 			UTF8StringPtr viewname = nullptr;
-			for (const auto& view : *selection)
+			for (const auto& view : *selection.get ())
 			{
-				UTF8StringPtr name = viewFactory->getViewDisplayName (*view);
+				UTF8StringPtr name = viewFactory->getViewDisplayName (*view.get ());
 				if (viewname != nullptr && UTF8StringView (name) != viewname)
 				{
 					viewname = nullptr;
@@ -1492,14 +1500,14 @@ void UIAttributesController::rebuildAttributesView ()
 		for (const auto& name : attrNames)
 		{
 			currentAttributeName = &name;
-			CView* view = createViewForAttribute (name);
+			auto view = createViewForAttribute (name);
 			if (view)
 			{
 				CRect r = view->getViewSize ();
 				r.setWidth (width);
 				view->setViewSize (r);
 				view->setMouseableArea (r);
-				attributeView->addView (view);
+				attributeView->addSubview (view);
 			}
 		}
 		currentAttributeName = nullptr;
@@ -1512,9 +1520,9 @@ void UIAttributesController::rebuildAttributesView ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::viewWillDelete (CView* view)
 {
-	if (view == attributeView)
+	if (view == attributeView.get ())
 		attributeView = nullptr;
-	else if (view == viewNameLabel)
+	else if (view == viewNameLabel.get ())
 		viewNameLabel = nullptr;
 
 	view->unregisterViewListener (this);

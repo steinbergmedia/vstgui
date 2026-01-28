@@ -38,7 +38,7 @@ void UIFocusSettingsController::onDialogButton1Clicked (UIDialogController&)
 		    (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
 	if (controls[kColorTag])
 	{
-		auto menu = dynamic_cast<COptionMenu*> (controls[kColorTag]);
+		auto menu = controls[kColorTag].cast<COptionMenu> ();
 		auto item = menu->getCurrent ();
 		if (item)
 			fd.colorName = item->getTitle ();
@@ -61,10 +61,11 @@ void UIFocusSettingsController::onDialogButton2Clicked (UIDialogController&) {}
 void UIFocusSettingsController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes,
-											  const IUIDescription& description)
+SharedPointer<CView> UIFocusSettingsController::verifyView (const SharedPointer<CView>& view,
+															const UIAttributes& attributes,
+															const IUIDescription& description)
 {
-	auto* control = dynamic_cast<CControl*>(view);
+	auto control = view.cast<CControl> ();
 	if (control)
 	{
 		switch (control->getTag ())
@@ -77,7 +78,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			}
 			case kColorTag:
 			{
-				auto* menu = dynamic_cast<COptionMenu*> (control);
+				auto menu = control.cast<COptionMenu> ();
 				if (menu)
 				{
 					controls[kColorTag] = control;
@@ -100,7 +101,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			case kWidthTag:
 			{
 				controls[kWidthTag] = control;
-				auto* edit = dynamic_cast<CTextEdit*>(control);
+				auto edit = control.cast<CTextEdit> ();
 				if (edit)
 				{
 					edit->setStringToValueFunction (stringToValue);
@@ -115,9 +116,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIFocusSettingsController::valueChanged (CControl* control)
-{
-}
+void UIFocusSettingsController::valueChanged (CControl& control) {}
 
 //----------------------------------------------------------------------------------------------------
 bool UIFocusSettingsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)

@@ -175,7 +175,7 @@ CRect computeGroupRect (const CViewContainer& parent, const Alignment alignment,
 {
 	CRects childrenViewSizes;
 	parent.forEachChild (
-		[&] (const CView* child) { childrenViewSizes.push_back (child->getViewSize ()); });
+		[&] (const auto& child) { childrenViewSizes.push_back (child->getViewSize ()); });
 
 	return computeGroupRect (parent.getViewSize (), childrenViewSizes, alignment, style, spacing);
 }
@@ -306,7 +306,7 @@ void CRowColumnView::setHideClippedSubviews (bool state)
 }
 
 //--------------------------------------------------------------------------------
-void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
+void CRowColumnView::resizeSubView (const SharedPointer<CView>& view, const CRect& newSize)
 {
 	if (view->getViewSize () != newSize)
 	{
@@ -314,9 +314,9 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 		{
 			view->setAttribute (ViewAnimatesResizingAttr, true);
 			view->addAnimation (
-				"CRowColumnResizing", new Animation::ViewSizeAnimation (newSize, false),
-				new Animation::LinearTimingFunction (viewResizeAnimationTime),
-				[] (CView* v, auto, auto) { v->removeAttribute (ViewAnimatesResizingAttr); }, true);
+				"CRowColumnResizing", makeOwned<Animation::ViewSizeAnimation> (newSize, false),
+				makeOwned<Animation::LinearTimingFunction> (viewResizeAnimationTime),
+				[] (CView& v, auto, auto&) { v.removeAttribute (ViewAnimatesResizingAttr); }, true);
 		}
 		else
 		{
@@ -329,7 +329,7 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 //--------------------------------------------------------------------------------
 void CRowColumnView::getMaxChildViewSize (CPoint& maxSize)
 {
-	forEachChild ([&] (CView* view) {
+	forEachChild ([&] (auto& view) {
 		const CRect& viewSize = view->getViewSize ();
 		if (viewSize.getWidth () > maxSize.x)
 			maxSize.x = viewSize.getWidth ();
@@ -352,7 +352,7 @@ void CRowColumnView::layoutViewsEqualSize ()
 								  Layouting::translate (style), spacing);
 
 	CPoint location = margin.getTopLeft ();
-	forEachChild ([&] (CView* view) {
+	forEachChild ([&] (auto& view) {
 		CRect viewSize = view->getViewSize ();
 		viewSize.originize ();
 		viewSize.offset (location.x, location.y);
@@ -417,7 +417,7 @@ void CRowColumnView::layoutViews ()
 		layoutViewsEqualSize ();
 		if (hideClippedSubviews ())
 		{
-			forEachChild ([&] (CView* view) {
+			forEachChild ([&] (auto& view) {
 				if (view->getVisibleViewSize () != view->getViewSize ())
 					view->setVisible (false);
 				else
@@ -437,7 +437,7 @@ bool CRowColumnView::sizeToFit ()
 		CPoint maxSize;
 		if (style == kRowStyle)
 		{
-			forEachChild ([&] (CView* view) {
+			forEachChild ([&] (auto& view) {
 				const CRect& size = view->getViewSize ();
 				if (size.getWidth () > maxSize.x)
 					maxSize.x = size.getWidth ();
@@ -446,7 +446,7 @@ bool CRowColumnView::sizeToFit ()
 		}
 		else
 		{
-			forEachChild ([&] (CView* view) {
+			forEachChild ([&] (auto& view) {
 				CRect size = view->getViewSize ();
 				maxSize.x += size.getWidth () + spacing;
 				if (size.bottom > maxSize.y)
@@ -489,7 +489,7 @@ CMessageResult CRowColumnView::notify (CBaseObject* sender, IdStringPtr message)
 CAutoLayoutContainerView::CAutoLayoutContainerView (const CRect& size) : CViewContainer (size) {}
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::attached (CView* parent)
+bool CAutoLayoutContainerView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (!isAttached ())
 	{
@@ -508,9 +508,10 @@ void CAutoLayoutContainerView::setViewSize (const CRect& rect, bool invalid)
 }
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::addView (CView* pView, CView* pBefore)
+bool CAutoLayoutContainerView::insertSubview (const SharedPointer<CView>& view,
+											  const Optional<size_t>& position)
 {
-	if (CViewContainer::addView (pView, pBefore))
+	if (CViewContainer::insertSubview (view, position))
 	{
 		if (isAttached ())
 			layoutViews ();
@@ -520,9 +521,9 @@ bool CAutoLayoutContainerView::addView (CView* pView, CView* pBefore)
 }
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::removeView (CView* pView, bool withForget)
+bool CAutoLayoutContainerView::removeSubview (const SharedPointer<CView>& view)
 {
-	if (CViewContainer::removeView (pView, withForget))
+	if (CViewContainer::removeSubview (view))
 	{
 		if (isAttached ())
 			layoutViews ();
@@ -532,7 +533,8 @@ bool CAutoLayoutContainerView::removeView (CView* pView, bool withForget)
 }
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::changeViewZOrder (CView* view, uint32_t newIndex)
+bool CAutoLayoutContainerView::changeViewZOrder (const SharedPointer<CView>& view,
+												 uint32_t newIndex)
 {
 	if (CViewContainer::changeViewZOrder (view, newIndex))
 	{

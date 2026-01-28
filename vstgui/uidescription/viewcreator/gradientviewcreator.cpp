@@ -47,27 +47,24 @@ UTF8StringPtr GradientViewCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* GradientViewCreator::create (const UIAttributes& attributes,
-                                    const IUIDescription* description) const
+SharedPointer<CView> GradientViewCreator::create (const UIAttributes& attributes,
+												  const IUIDescription& description) const
 {
-	CGradientView* gradientView = new CGradientView (CRect (0, 0, 100, 100));
-	if (description)
+	auto gradientView = makeOwned<CGradientView> (CRect (0, 0, 100, 100));
+	std::list<const string*> gradients;
+	description.collectGradientNames (gradients);
+	if (!gradients.empty ())
 	{
-		std::list<const string*> gradients;
-		description->collectGradientNames (gradients);
-		if (!gradients.empty ())
-		{
-			gradientView->setGradient (description->getGradient (gradients.front ()->c_str ()));
-		}
+		gradientView->setGradient (description.getGradient (gradients.front ()->c_str ()));
 	}
 	return gradientView;
 }
 
 //------------------------------------------------------------------------
-bool GradientViewCreator::apply (CView* view, const UIAttributes& attributes,
-                                 const IUIDescription* description) const
+bool GradientViewCreator::apply (CView& view, const UIAttributes& attributes,
+								 const IUIDescription& description) const
 {
-	auto* gv = dynamic_cast<CGradientView*> (view);
+	auto* gv = dynamic_cast<CGradientView*> (&view);
 	if (gv == nullptr)
 		return false;
 	CColor color;
@@ -103,7 +100,7 @@ bool GradientViewCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrGradient);
 	if (attr)
 	{
-		auto gradient = description->getGradient (attr->c_str ());
+		auto gradient = description.getGradient (attr->c_str ());
 		gv->setGradient (gradient);
 	}
 	else
@@ -173,10 +170,10 @@ auto GradientViewCreator::getAttributeType (const string& attributeName) const -
 }
 
 //------------------------------------------------------------------------
-bool GradientViewCreator::getAttributeValue (CView* view, const string& attributeName,
-                                             string& stringValue, const IUIDescription* desc) const
+bool GradientViewCreator::getAttributeValue (CView& view, const string& attributeName,
+											 string& stringValue, const IUIDescription& desc) const
 {
-	auto* gv = dynamic_cast<CGradientView*> (view);
+	auto* gv = dynamic_cast<CGradientView*> (&view);
 	if (gv == nullptr)
 		return false;
 	if (attributeName == kAttrFrameColor)
@@ -222,7 +219,7 @@ bool GradientViewCreator::getAttributeValue (CView* view, const string& attribut
 	if (attributeName == kAttrGradient)
 	{
 		auto gradient = gv->getGradient ();
-		UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
+		UTF8StringPtr gradientName = gradient ? desc.lookupGradientName (gradient) : nullptr;
 		stringValue = gradientName ? gradientName : "";
 		return true;
 	}

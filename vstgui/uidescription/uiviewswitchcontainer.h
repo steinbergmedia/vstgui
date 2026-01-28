@@ -21,8 +21,8 @@ public:
 	explicit UIViewSwitchContainer (const CRect& size);
 	~UIViewSwitchContainer () noexcept override;
 
-	IViewSwitchController* getController () const { return controller; }
-	void setController (IViewSwitchController* controller);	// owns controller if it is a CBaseObject
+	SharedPointer<IViewSwitchController> getController () const { return controller; }
+	void setController (const SharedPointer<IViewSwitchController>& controller);
 
 	void setCurrentViewIndex (int32_t viewIndex);
 	int32_t getCurrentViewIndex () const { return currentViewIndex; }
@@ -50,12 +50,12 @@ public:
 	void setTimingFunction (TimingFunction t);
 	TimingFunction getTimingFunction () const { return timingFunction; }
 
-	bool attached (CView* parent) override;
-	bool removed (CView* parent) override;
-//-----------------------------------------------------------------------------
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	//-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:
-	IViewSwitchController* controller {nullptr};
+	SharedPointer<IViewSwitchController> controller;
 	int32_t currentViewIndex {-1};
 	uint32_t animationTime {120};
 	AnimationStyle animationStyle {kFadeInOut};
@@ -63,32 +63,39 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class IViewSwitchController
+class IViewSwitchController : public virtual IReference
 {
 public:
-	explicit IViewSwitchController (UIViewSwitchContainer* viewSwitch) : viewSwitch (viewSwitch) {}
+	explicit IViewSwitchController (const SharedPointer<UIViewSwitchContainer>& viewSwitch)
+	: viewSwitch (viewSwitch)
+	{
+	}
 	virtual ~IViewSwitchController () noexcept = default;
 
-	void init () { viewSwitch->setController (this); }
+	void init ()
+	{
+		if (auto vs = viewSwitch.lock ())
+			vs->setController (shared (this));
+	}
 
-	UIViewSwitchContainer* getViewSwitchContainer () const { return viewSwitch; }
+	WeakPointer<UIViewSwitchContainer> getViewSwitchContainer () const { return viewSwitch; }
 
-	virtual CView* createViewForIndex (int32_t index) = 0;
+	virtual SharedPointer<CView> createViewForIndex (int32_t index) = 0;
 	virtual void switchContainerAttached () = 0;
 	virtual void switchContainerRemoved () = 0;
 protected:
-	UIViewSwitchContainer* viewSwitch;
+	WeakPointer<UIViewSwitchContainer> viewSwitch;
 };
 
 //-----------------------------------------------------------------------------
 class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController, public IControlListener
 {
 public:
-	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch,
-									   const IUIDescription* uiDescription,
+	UIDescriptionViewSwitchController (const SharedPointer<UIViewSwitchContainer>& viewSwitch,
+									   const IUIDescription& uiDescription,
 									   const SharedPointer<IController>& uiController);
 
-	CView* createViewForIndex (int32_t index) override;
+	SharedPointer<CView> createViewForIndex (int32_t index) override;
 	void switchContainerAttached () override;
 	void switchContainerRemoved () override;
 
@@ -98,9 +105,9 @@ public:
 	void setSwitchControlTag (int32_t tag) { switchControlTag = tag; }
 	int32_t getSwitchControlTag () const { return switchControlTag; }
 protected:
-	void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
 
-	const IUIDescription* uiDescription;
+	const IUIDescription& uiDescription;
 	SharedPointer<IController> uiController;
 	int32_t switchControlTag;
 	int32_t currentIndex;

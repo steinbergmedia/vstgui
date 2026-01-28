@@ -37,26 +37,20 @@ CListControl::CListControl (const CRect& size, IControlListener* listener, int32
 CListControl::~CListControl () = default;
 
 //------------------------------------------------------------------------
-void CListControl::setDrawer (IListControlDrawer* d)
-{
-	impl->drawer = d;
-}
+void CListControl::setDrawer (const SharedPointer<IListControlDrawer>& d) { impl->drawer = d; }
 
 //------------------------------------------------------------------------
-void CListControl::setConfigurator (IListControlConfigurator* c)
+void CListControl::setConfigurator (const SharedPointer<IListControlConfigurator>& c)
 {
 	impl->configurator = c;
 	recalculateLayout ();
 }
 
 //------------------------------------------------------------------------
-IListControlDrawer* CListControl::getDrawer () const
-{
-	return impl->drawer;
-}
+SharedPointer<IListControlDrawer> CListControl::getDrawer () const { return impl->drawer; }
 
 //------------------------------------------------------------------------
-IListControlConfigurator* CListControl::getConfigurator () const
+SharedPointer<IListControlConfigurator> CListControl::getConfigurator () const
 {
 	return impl->configurator;
 }
@@ -162,7 +156,6 @@ void CListControl::draw (CDrawContext* context)
 //------------------------------------------------------------------------
 void CListControl::drawRect (CDrawContext* context, const CRect& updateRect)
 {
-	setDirty (false);
 	ConcatClip cc (*context, updateRect);
 	if (cc.isEmpty ())
 		return;
@@ -203,9 +196,9 @@ void CListControl::drawRect (CDrawContext* context, const CRect& updateRect)
 }
 
 //------------------------------------------------------------------------
-bool CListControl::attached (CView* parent)
+bool CListControl::attached (const SharedPointer<CViewContainer>& parent)
 {
-	if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
+	if (auto scrollView = parent->getParentView ().cast<CScrollView> ())
 	{
 		impl->minHeight = scrollView->calculateOptimalContainerSize ().getHeight ();
 		struct SizeListener : ViewListenerAdapter
@@ -240,7 +233,7 @@ bool CListControl::attached (CView* parent)
 			CListControl* control {nullptr};
 			CScrollView* scrollView {nullptr};
 		};
-		new SizeListener (this, scrollView);
+		new SizeListener (this, scrollView.get ());
 	}
 	recalculateLayout ();
 	return CControl::attached (parent);
@@ -447,7 +440,7 @@ void CListControl::onKeyboardEvent (KeyboardEvent& event)
 				{
 					if (auto parent = getParentView ())
 					{
-						if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
+						if (auto scrollView = parent->getParentView ().cast<CScrollView> ())
 						{
 							scrollView->makeRectVisible (*rr);
 							onKeyboardEvent (event);
@@ -487,7 +480,7 @@ void CListControl::onKeyboardEvent (KeyboardEvent& event)
 				{
 					if (auto parent = getParentView ())
 					{
-						if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
+						if (auto scrollView = parent->getParentView ().cast<CScrollView> ())
 						{
 							scrollView->makeRectVisible (*rr);
 							onKeyboardEvent (event);
@@ -530,7 +523,7 @@ void CListControl::onKeyboardEvent (KeyboardEvent& event)
 				invalidRect (*rowRect);
 				if (auto parent = getParentView ())
 				{
-					if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
+					if (auto scrollView = parent->getParentView ().cast<CScrollView> ())
 						scrollView->makeRectVisible (*rowRect);
 				}
 			}
@@ -553,12 +546,11 @@ bool CListControl::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-bool CListControl::getFocusPath (CGraphicsPath& outPath)
+bool CListControl::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	CRect r = getVisibleViewSize ();
 	outPath.addRect (r);
-	CCoord focusWidth = getFrame ()->getFocusWidth ();
-	r.inset (focusWidth, focusWidth);
+	r.inset (focusLineWidth, focusLineWidth);
 	outPath.addRect (r);
 	return true;
 }

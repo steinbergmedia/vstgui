@@ -57,7 +57,6 @@ public:
 			glyphRect.offset (0, height);
 			text = "";
 		}
-		setDirty (false);
 	}
 	
 protected:
@@ -97,34 +96,33 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 		fontNames.emplace_back (*it);
 		++it;
 	}
-	auto* dbSource = new GenericStringListDataBrowserSource (&fontNames, this);
+	auto dbSource = makeOwned<GenericStringListDataBrowserSource> (&fontNames, this);
 	dbSource->setupUI (uiDef.selectionColor, uiDef.fontColor, uiDef.rowlineColor, uiDef.rowBackColor, uiDef.rowAlternateBackColor, uiDef.font, uiDef.rowHeight);
 	int32_t dbStyle = CDataBrowser::kDrawRowLines | CScrollView::kVerticalScrollbar | CScrollView::kDontDrawFrame | CScrollView::kOverlayScrollbars;
-	fontBrowser = new CDataBrowser (CRect (0, 0, 200, 500), dbSource, dbStyle, uiDef.scrollbarWidth);
-	dbSource->forget ();
+	fontBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 200, 500), dbSource.get (), dbStyle,
+										   uiDef.scrollbarWidth);
 	fontBrowser->setAutosizeFlags (kAutosizeLeft | kAutosizeTop | kAutosizeBottom);
 	fontBrowser->setTransparency (true);
-	CScrollbar* scrollbar = fontBrowser->getVerticalScrollbar ();
-	if (scrollbar)
+	if (auto scrollbar = fontBrowser->getVerticalScrollbar ())
 	{
 		scrollbar->setBackgroundColor (uiDef.scrollbarBackgroundColor);
 		scrollbar->setFrameColor (uiDef.scrollbarFrameColor);
 		scrollbar->setScrollerColor (uiDef.scrollbarScrollerColor);
 	}
-	addView (fontBrowser);
+	addSubview (fontBrowser);
 	CRect controlRect (210, 0, 300, 20);
-	auto* label = new CTextLabel (controlRect, "Size:");
+	auto label = makeOwned<CTextLabel> (controlRect, "Size:");
 	label->setFont (uiDef.font);
 	label->setFontColor (uiDef.fontColor);
 	label->sizeToFit ();
 	label->setHoriAlign (kLeftText);
 	label->setTransparency (true);
 	label->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
-	addView (label);
+	addSubview (label);
 	CRect teRect = label->getViewSize ();
 	teRect.left = teRect.right + 5.;
 	teRect.right = controlRect.right;
-	sizeEdit = new CTextEdit (teRect, this, CFontChooserInternal::kFontChooserSizeTag);
+	sizeEdit = makeOwned<CTextEdit> (teRect, this, CFontChooserInternal::kFontChooserSizeTag);
 	sizeEdit->setFont (uiDef.font);
 	sizeEdit->setFontColor (uiDef.fontColor);
 	sizeEdit->setHoriAlign (kLeftText);
@@ -135,43 +133,50 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 	sizeEdit->setValue (2000);
 	sizeEdit->sizeToFit ();
 	sizeEdit->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) { result = UTF8StringView (txt).toFloat (); return true; });
-	addView (sizeEdit);
+	addSubview (sizeEdit);
 	controlRect.offset (0, 20);
-	boldBox = new CCheckBox (controlRect, this, CFontChooserInternal::kFontChooserBoldTag, "Bold");
+	boldBox =
+		makeOwned<CCheckBox> (controlRect, this, CFontChooserInternal::kFontChooserBoldTag, "Bold");
 	boldBox->setFont (uiDef.font);
 	boldBox->setFontColor (uiDef.fontColor);
 	boldBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
 	boldBox->sizeToFit ();
-	addView (boldBox);
+	addSubview (boldBox);
 	controlRect.offset (0, 20);
-	italicBox = new CCheckBox (controlRect, this, CFontChooserInternal::kFontChooserItalicTag, "Italic");
+	italicBox = makeOwned<CCheckBox> (controlRect, this,
+									  CFontChooserInternal::kFontChooserItalicTag, "Italic");
 	italicBox->setFont (uiDef.font);
 	italicBox->setFontColor (uiDef.fontColor);
 	italicBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
 	italicBox->sizeToFit ();
-	addView (italicBox);
+	addSubview (italicBox);
 	controlRect.offset (0, 20);
-	underlineBox = new CCheckBox (controlRect, this, CFontChooserInternal::kFontChooserUnderlineTag, "Underline");
+	underlineBox = makeOwned<CCheckBox> (
+		controlRect, this, CFontChooserInternal::kFontChooserUnderlineTag, "Underline");
 	underlineBox->setFont (uiDef.font);
 	underlineBox->setFontColor (uiDef.fontColor);
 	underlineBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
 	underlineBox->sizeToFit ();
-	addView (underlineBox);
+	addSubview (underlineBox);
 	controlRect.offset (0, 20);
-	strikeoutBox = new CCheckBox (controlRect, this, CFontChooserInternal::kFontChooserStrikeoutTag, "Strikeout");
+	strikeoutBox = makeOwned<CCheckBox> (
+		controlRect, this, CFontChooserInternal::kFontChooserStrikeoutTag, "Strikeout");
 	strikeoutBox->setFont (uiDef.font);
 	strikeoutBox->setFontColor (uiDef.fontColor);
 	strikeoutBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
 	strikeoutBox->sizeToFit ();
-	addView (strikeoutBox);
+	addSubview (strikeoutBox);
 
-	CViewContainer* container = new CViewContainer (CRect (controlRect.left, controlRect.bottom+10, 300, 500));
+	auto container =
+		makeOwned<CViewContainer> (CRect (controlRect.left, controlRect.bottom + 10, 300, 500));
 	container->setBackgroundColor (uiDef.previewBackgroundColor);
 	container->setAutosizeFlags (kAutosizeTop | kAutosizeBottom | kAutosizeLeft | kAutosizeRight);
-	fontPreviewView = new CFontChooserInternal::FontPreviewView (CRect (10, 10, container->getWidth () - 10, container->getHeight () - 10), uiDef.previewTextColor);
+	fontPreviewView = makeOwned<CFontChooserInternal::FontPreviewView> (
+		CRect (10, 10, container->getWidth () - 10, container->getHeight () - 10),
+		uiDef.previewTextColor);
 	fontPreviewView->setAutosizeFlags (kAutosizeAll);
-	container->addView (fontPreviewView);
-	addView (container);
+	container->addSubview (fontPreviewView);
+	addSubview (container);
 
 	setFont (initialFont ? initialFont : kSystemFont);
 	
@@ -188,7 +193,7 @@ void CFontChooser::setFont (const SharedPointer<CFontDesc>& font)
 {
 	if (font)
 	{
-		selFont = owned (new CFontDesc (*font));
+		selFont = owned (new CFontDesc (*font.get ()));
 		sizeEdit->setValue ((float)font->getSize ());
 		boldBox->setValue ((font->getStyle () & kBoldFace) ? 1.f : 0.f);
 		italicBox->setValue ((font->getStyle () & kItalicFace) ? 1.f : 0.f);
@@ -207,28 +212,28 @@ void CFontChooser::setFont (const SharedPointer<CFontDesc>& font)
 			++it;
 			row++;
 		}
-		static_cast<CFontChooserInternal::FontPreviewView*> (fontPreviewView)->setFont (selFont);
+		fontPreviewView.cast<CFontChooserInternal::FontPreviewView> ()->setFont (selFont);
 	}
 	invalid ();
 }
 
 //-----------------------------------------------------------------------------
-void CFontChooser::valueChanged (CControl* pControl)
+void CFontChooser::valueChanged (CControl& pControl)
 {
 	if (selFont == nullptr)
 		return;
 
-	switch (pControl->getTag ())
+	switch (pControl.getTag ())
 	{
 		case CFontChooserInternal::kFontChooserSizeTag:
 		{
-			pControl->setValue (pControl->getValue ());
-			selFont->setSize (pControl->getValue ());
+			pControl.setValue (pControl.getValue ());
+			selFont->setSize (pControl.getValue ());
 			break;
 		}
 		case CFontChooserInternal::kFontChooserBoldTag:
 		{
-			if (pControl->getValue () == 1)
+			if (pControl.getValue () == 1)
 				selFont->setStyle (selFont->getStyle () | kBoldFace);
 			else
 				selFont->setStyle (selFont->getStyle () & ~kBoldFace);
@@ -236,7 +241,7 @@ void CFontChooser::valueChanged (CControl* pControl)
 		}
 		case CFontChooserInternal::kFontChooserItalicTag:
 		{
-			if (pControl->getValue () == 1)
+			if (pControl.getValue () == 1)
 				selFont->setStyle (selFont->getStyle () | kItalicFace);
 			else
 				selFont->setStyle (selFont->getStyle () & ~kItalicFace);
@@ -244,7 +249,7 @@ void CFontChooser::valueChanged (CControl* pControl)
 		}
 		case CFontChooserInternal::kFontChooserUnderlineTag:
 		{
-			if (pControl->getValue () == 1)
+			if (pControl.getValue () == 1)
 				selFont->setStyle (selFont->getStyle () | kUnderlineFace);
 			else
 				selFont->setStyle (selFont->getStyle () & ~kUnderlineFace);
@@ -252,7 +257,7 @@ void CFontChooser::valueChanged (CControl* pControl)
 		}
 		case CFontChooserInternal::kFontChooserStrikeoutTag:
 		{
-			if (pControl->getValue () == 1)
+			if (pControl.getValue () == 1)
 				selFont->setStyle (selFont->getStyle () | kStrikethroughFace);
 			else
 				selFont->setStyle (selFont->getStyle () & ~kStrikethroughFace);
@@ -261,7 +266,7 @@ void CFontChooser::valueChanged (CControl* pControl)
 	}
 	if (delegate)
 		delegate->fontChanged (this, selFont);
-	static_cast<CFontChooserInternal::FontPreviewView*> (fontPreviewView)->setFont (selFont);
+	fontPreviewView.cast<CFontChooserInternal::FontPreviewView> ()->setFont (selFont);
 }
 
 //-----------------------------------------------------------------------------
@@ -269,13 +274,13 @@ void CFontChooser::dbSelectionChanged (int32_t selectedRow, GenericStringListDat
 {
 	if (selectedRow >= 0 && static_cast<size_t> (selectedRow) <= fontNames.size ())
 		selFont->setName (fontNames[static_cast<size_t> (selectedRow)].data ());
-	static_cast<CFontChooserInternal::FontPreviewView*> (fontPreviewView)->setFont (selFont);
+	fontPreviewView.cast<CFontChooserInternal::FontPreviewView> ()->setFont (selFont);
 	if (delegate)
 		delegate->fontChanged (this, selFont);
 }
 
 //-----------------------------------------------------------------------------
-bool CFontChooser::attached (CView* parent)
+bool CFontChooser::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (CViewContainer::attached (parent))
 	{

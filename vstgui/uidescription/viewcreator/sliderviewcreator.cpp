@@ -24,10 +24,10 @@ auto SliderBaseCreator::modeStrings () -> ModeStrings&
 }
 
 //------------------------------------------------------------------------
-bool SliderBaseCreator::apply (CView* view, const UIAttributes& attributes,
-                               const IUIDescription* description) const
+bool SliderBaseCreator::apply (CView& view, const UIAttributes& attributes,
+							   const IUIDescription& description) const
 {
-	auto* slider = dynamic_cast<CSliderBase*> (view);
+	auto* slider = dynamic_cast<CSliderBase*> (&view);
 	if (!slider)
 		return false;
 
@@ -140,10 +140,10 @@ auto SliderBaseCreator::getAttributeType (const string& attributeName) const -> 
 }
 
 //------------------------------------------------------------------------
-bool SliderBaseCreator::getAttributeValue (CView* view, const string& attributeName,
-                                           string& stringValue, const IUIDescription* desc) const
+bool SliderBaseCreator::getAttributeValue (CView& view, const string& attributeName,
+										   string& stringValue, const IUIDescription& desc) const
 {
-	auto* slider = dynamic_cast<CSliderBase*> (view);
+	auto* slider = dynamic_cast<CSliderBase*> (&view);
 	if (!slider)
 		return false;
 
@@ -226,17 +226,17 @@ UTF8StringPtr SliderCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* SliderCreator::create (const UIAttributes& attributes,
-                              const IUIDescription* description) const
+SharedPointer<CView> SliderCreator::create (const UIAttributes& attributes,
+											const IUIDescription& description) const
 {
-	return new CSlider (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr);
+	return makeOwned<CSlider> (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr);
 }
 
 //------------------------------------------------------------------------
-bool SliderCreator::apply (CView* view, const UIAttributes& attributes,
-                           const IUIDescription* description) const
+bool SliderCreator::apply (CView& view, const UIAttributes& attributes,
+						   const IUIDescription& description) const
 {
-	auto* slider = dynamic_cast<CSlider*> (view);
+	auto* slider = dynamic_cast<CSlider*> (&view);
 	if (!slider)
 		return false;
 
@@ -319,10 +319,10 @@ auto SliderCreator::getAttributeType (const string& attributeName) const -> Attr
 }
 
 //------------------------------------------------------------------------
-bool SliderCreator::getAttributeValue (CView* view, const string& attributeName,
-                                       string& stringValue, const IUIDescription* desc) const
+bool SliderCreator::getAttributeValue (CView& view, const string& attributeName,
+									   string& stringValue, const IUIDescription& desc) const
 {
-	auto* slider = dynamic_cast<CSlider*> (view);
+	auto* slider = dynamic_cast<CSlider*> (&view);
 	if (!slider)
 		return false;
 	if (attributeName == kAttrHandleBitmap)

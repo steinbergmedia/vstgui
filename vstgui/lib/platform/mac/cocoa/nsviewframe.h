@@ -44,13 +44,9 @@ public:
 	CALayer* getCALayer () const { return caLayer; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	void* makeTouchBar () const;
-	NSViewDraggingSession* getDraggingSession () const { return draggingSession; }
+	SharedPointer<NSViewDraggingSession> getDraggingSession () const { return draggingSession; }
 	void clearDraggingSession () { draggingSession = nullptr; }
 	void setNeedsDisplayInRect (NSRect r);
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
-#endif
 
 	void setDragDataPackage (SharedPointer<IDataPackage>&& package) { dragDataPackage = std::move (package); }
 	const SharedPointer<IDataPackage>& getDragDataPackage () const { return dragDataPackage; }
@@ -79,13 +75,9 @@ public:
 	void* getPlatformRepresentation () const override { return nsView; }
 	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
 	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
-#if VSTGUI_OPENGL_SUPPORT
-	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
-#endif
-	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
-#endif
+	SharedPointer<IPlatformViewLayer>
+		createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
+								 IPlatformViewLayer* parentLayer = nullptr) override;
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
 
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
@@ -104,16 +96,13 @@ protected:
 
 	NSView* nsView {nullptr};
 	CALayer* caLayer {nullptr};
-	CocoaTooltipWindow* tooltipWindow {nullptr};
+	SharedPointer<CocoaTooltipWindow> tooltipWindow;
 	ICocoaTextInputClient* textInputClient {nullptr};
 	SharedPointer<IDataPackage> dragDataPackage;
 	SharedPointer<ITouchBarCreator> touchBarCreator;
 	SharedPointer<NSViewDraggingSession> draggingSession;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
-	
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	DragResult lastDragOperationResult;
-#endif
+
 	bool trackingAreaInitialized;
 	bool inDraw;
 	bool useInvalidRects {false};

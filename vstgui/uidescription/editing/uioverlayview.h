@@ -18,18 +18,18 @@ class UIOverlayView : public CView, public ViewListenerAdapter
 //----------------------------------------------------------------------------------------------------
 {
 public:
-	UIOverlayView (CViewContainer* view);
+	UIOverlayView (const SharedPointer<CViewContainer>& view);
 	~UIOverlayView () override;
-	
-	bool attached (CView* parent) override;
+
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 
 protected:
-	CViewContainer* getTargetView () const { return targetView; }
+	SharedPointer<CViewContainer> getTargetView () const { return targetView; }
 
 private:
-	CViewContainer* targetView;
-	CView* targetViewParent;
+	SharedPointer<CViewContainer> targetView;
+	SharedPointer<CView> targetViewParent;
 };
 
 } // VSTGUI

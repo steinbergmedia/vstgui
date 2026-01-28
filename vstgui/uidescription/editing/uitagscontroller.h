@@ -26,11 +26,13 @@ public:
 	~UITagsController () override;
 
 protected:
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
-	void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
 
 	SharedPointer<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;

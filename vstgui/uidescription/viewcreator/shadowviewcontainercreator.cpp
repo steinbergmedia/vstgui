@@ -39,17 +39,17 @@ UTF8StringPtr ShadowViewContainerCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* ShadowViewContainerCreator::create (const UIAttributes& attributes,
-                                           const IUIDescription* description) const
+SharedPointer<CView> ShadowViewContainerCreator::create (const UIAttributes& attributes,
+														 const IUIDescription& description) const
 {
-	return new CShadowViewContainer (CRect (0, 0, 200, 200));
+	return makeOwned<CShadowViewContainer> (CRect (0, 0, 200, 200));
 }
 
 //------------------------------------------------------------------------
-bool ShadowViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
-                                        const IUIDescription* description) const
+bool ShadowViewContainerCreator::apply (CView& view, const UIAttributes& attributes,
+										const IUIDescription& description) const
 {
-	auto* shadowView = dynamic_cast<CShadowViewContainer*> (view);
+	auto* shadowView = dynamic_cast<CShadowViewContainer*> (&view);
 	if (!shadowView)
 		return false;
 	double d;
@@ -85,11 +85,11 @@ auto ShadowViewContainerCreator::getAttributeType (const string& attributeName) 
 }
 
 //------------------------------------------------------------------------
-bool ShadowViewContainerCreator::getAttributeValue (CView* view, const string& attributeName,
-                                                    string& stringValue,
-                                                    const IUIDescription* desc) const
+bool ShadowViewContainerCreator::getAttributeValue (CView& view, const string& attributeName,
+													string& stringValue,
+													const IUIDescription& desc) const
 {
-	auto* shadowView = dynamic_cast<CShadowViewContainer*> (view);
+	auto* shadowView = dynamic_cast<CShadowViewContainer*> (&view);
 	if (!shadowView)
 		return false;
 	if (attributeName == kAttrShadowIntensity)

@@ -40,14 +40,6 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 		bitmap->draw (pContext, destRect, srcOffset);
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> COffscreenContext::create (CFrame* frame, CCoord width, CCoord height, double scaleFactor)
-{
-	return create ({width, height}, scaleFactor);
-}
-#endif
-
 //-----------------------------------------------------------------------------
 SharedPointer<COffscreenContext> COffscreenContext::create (const CPoint& size, double scaleFactor)
 {
@@ -92,7 +84,7 @@ SharedPointer<CBitmap> renderBitmapOffscreen (
 	if (!context)
 		return nullptr;
 	context->beginDraw ();
-	drawCallback (*context);
+	drawCallback (*context.get ());
 	context->endDraw ();
 	return context->getBitmap ();
 }

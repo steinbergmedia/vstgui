@@ -17,22 +17,21 @@ class IUIDescription;
 //------------------------------------------------------------------------
 namespace UIViewCreator {
 
-VSTGUI_DEPRECATED (extern bool parseSize (const std::string& str, CPoint& point);)
-VSTGUI_DEPRECATED (extern bool pointToString (const CPoint& p, std::string& string);)
-extern bool bitmapToString (const SharedPointer<CBitmap>& bitmap, std::string& string,
-							const IUIDescription* desc);
-extern bool colorToString (const CColor& color, std::string& string, const IUIDescription* desc);
-extern bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc);
-extern bool stringToColor (std::string_view value, CColor& color, const IUIDescription* desc);
-extern bool stringToBitmap (const std::string* value, SharedPointer<CBitmap>& bitmap,
-							const IUIDescription* desc);
-extern void applyStyleMask (const std::string* value, int32_t mask, int32_t& style);
+bool bitmapToString (const SharedPointer<CBitmap>& bitmap, std::string& string,
+					 const IUIDescription& desc);
+bool colorToString (const CColor& color, std::string& string, const IUIDescription& desc);
+bool stringToColor (const std::string* value, CColor& color, const IUIDescription& desc);
+bool stringToColor (std::string_view value, CColor& color, const IUIDescription& desc);
+bool stringToBitmap (const std::string* value, SharedPointer<CBitmap>& bitmap,
+					 const IUIDescription& desc);
+void applyStyleMask (const std::string* value, int32_t mask, int32_t& style);
 
-extern bool getStandardAttributeListValues (const std::string& attributeName,
-                                            std::list<const std::string*>& values);
-extern void addGradientToUIDescription (const IUIDescription* description,
-										const SharedPointer<CGradient>& gradient,
-										UTF8StringPtr baseName);
+bool getStandardAttributeListValues (const std::string& attributeName,
+									 std::list<const std::string*>& values);
+void addGradientToUIDescription (const IUIDescription& description,
+								 const SharedPointer<CGradient>& gradient, UTF8StringPtr baseName);
+
+void forceLinking ();
 
 //------------------------------------------------------------------------
 } // UIViewCreator

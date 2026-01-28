@@ -27,15 +27,14 @@ static SharedPointer<CListControl>
 }
 
 //------------------------------------------------------------------------
-static SharedPointer<CScrollView> createScrollViewAndEmbedListControl (CViewContainer* parent,
-                                                                       CListControl* listControl)
+static SharedPointer<CScrollView> createScrollViewAndEmbedListControl (
+	const SharedPointer<CViewContainer>& parent, const SharedPointer<CListControl>& listControl)
 {
 	auto scrollView =
 	    makeOwned<CScrollView> (CRect (0, 0, 100, listControl->getHeight () / 2),
 	                            listControl->getViewSize (), CScrollView::kVerticalScrollbar);
-	scrollView->addView (listControl);
-	listControl->remember ();
-	parent->addView (scrollView);
+	scrollView->addSubview (listControl);
+	parent->addSubview (scrollView);
 	scrollView->attached (parent);
 	return scrollView;
 }
@@ -266,7 +265,7 @@ TEST_CASE (CListControlTest, PageUp)
 	EXPECT (listControl->getValue () == 0.f);
 
 	scrollView->removed (parent);
-	parent->removeAll (false);
+	parent->removeAll ();
 }
 
 TEST_CASE (CListControlTest, PageDown)
@@ -297,7 +296,7 @@ TEST_CASE (CListControlTest, PageDown)
 	EXPECT (listControl->getValue () == 30.f);
 
 	scrollView->removed (parent);
-	parent->removeAll (false);
+	parent->removeAll ();
 }
 
 //------------------------------------------------------------------------

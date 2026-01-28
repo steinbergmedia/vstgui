@@ -17,8 +17,8 @@ struct RockerSwitchCreator : MultiBitmapControlCreator
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;
-	CView* create (const UIAttributes& attributes,
-	               const IUIDescription* description) const override;
+	SharedPointer<CView> create (const UIAttributes& attributes,
+								 const IUIDescription& description) const override;
 };
 
 //------------------------------------------------------------------------

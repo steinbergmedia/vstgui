@@ -37,7 +37,7 @@ class UIColorStopEditView
   public UIColorListenerAdapter
 {
 public:
-	UIColorStopEditView (UIColor* editColor);
+	UIColorStopEditView (const SharedPointer<UIColor>& editColor);
 	~UIColorStopEditView () override;
 
 	void setGradient (const SharedPointer<CGradient>& gradient);
@@ -54,7 +54,7 @@ public:
 private:
 	void draw (CDrawContext* context) override;
 	bool drawFocusOnTop () override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
@@ -76,7 +76,7 @@ private:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIColorStopEditView::UIColorStopEditView (UIColor* editColor)
+UIColorStopEditView::UIColorStopEditView (const SharedPointer<UIColor>& editColor)
 : CView (CRect (0, 0, 0, 0))
 , editColor (editColor)
 , editStartOffset (-1.)
@@ -103,7 +103,7 @@ void UIColorStopEditView::selectNextColorStop ()
 		pos = colorStopMap.begin ();
 	}
 	editStartOffset = pos->first;
-	*editColor = pos->second;
+	*editColor.get () = pos->second;
 	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
@@ -116,7 +116,7 @@ void UIColorStopEditView::selectPrevColorStop ()
 		pos = colorStopMap.end ();
 	pos--;
 	editStartOffset = pos->first;
-	*editColor = pos->second;
+	*editColor.get () = pos->second;
 	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
@@ -127,7 +127,7 @@ void UIColorStopEditView::setEditColor (CColor color)
 	if (editColor)
 	{
 		editColor->beginEdit ();
-		*editColor = color;
+		*editColor.get () = color;
 		editColor->endEdit ();
 	}
 }
@@ -241,7 +241,7 @@ CMouseEventResult UIColorStopEditView::onMouseDown (CPoint& where, const CButton
 	}
 	else if (buttons.isLeftButton ())
 	{
-		getFrame ()->setFocusView (this);
+		getFrame ()->setFocusView (shared (this));
 		double pos = gradientStartPosFromMousePos (where);
 		double range = (stopWidth / getWidth ()) / 2.;
 		for (auto& colorStop : colorStopMap)
@@ -256,7 +256,7 @@ CMouseEventResult UIColorStopEditView::onMouseDown (CPoint& where, const CButton
 				if (editStartOffset != colorStop.first)
 				{
 					editStartOffset = colorStop.first;
-					*editColor = colorStop.second;
+					*editColor.get () = colorStop.second;
 					forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 				}
 				mouseDownStartPosOffset = pos - editStartOffset;
@@ -309,7 +309,8 @@ void UIColorStopEditView::draw (CDrawContext* context)
 	if (!gradientPath)
 		return;
 	gradientPath->addRect (CRect (stopWidth / 2., 0., getWidth () - stopWidth / 2., getHeight ()));
-	context->fillLinearGradient (gradientPath, *gradient, CPoint (stopWidth / 2., 0), CPoint (getWidth () - stopWidth / 2, 0));
+	context->fillLinearGradient (gradientPath, *gradient.get (), CPoint (stopWidth / 2., 0),
+								 CPoint (getWidth () - stopWidth / 2, 0));
 
 	CCoord width = getWidth () - stopWidth;
 	CCoord height = (getHeight () / 2.);
@@ -369,7 +370,7 @@ bool UIColorStopEditView::drawFocusOnTop ()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath)
+bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	CRect r (getViewSize ());
 	r.inset (stopWidth / 2 - 1, -1);
@@ -395,10 +396,12 @@ public:
 								WeakPointer<IActionPerformer> actionPerformer);
 	~UIGradientEditorController () override;
 
-	void valueChanged (CControl* pControl) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
+	void valueChanged (CControl& pControl) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	SharedPointer<IController> createSubController (UTF8StringPtr name,
 													const IUIDescription& description) override;
 	void onDialogButton1Clicked (UIDialogController&) override;
@@ -421,7 +424,7 @@ protected:
 	SharedPointer<UIColorStopEditView> colorStopEditView;
 	SharedPointer<CGradient> gradient;
 	SharedPointer<UIColor> editColor;
-	CTextEdit* positionEdit {nullptr};
+	SharedPointer<CTextEdit> positionEdit;
 	WeakPointer<IActionPerformer> actionPerformer;
 	std::string gradientName;
 };
@@ -436,7 +439,7 @@ UIGradientEditorController::UIGradientEditorController (
 , actionPerformer (actionPerformer)
 , gradientName (gradientName)
 {
-	*editColor = gradient->getColorStops ().begin ()->second;
+	*editColor.get () = gradient->getColorStops ().begin ()->second;
 	editColor->registerListener (this);
 }
 
@@ -510,19 +513,19 @@ SharedPointer<IController> UIGradientEditorController::createSubController (
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGradientEditorController::valueChanged (CControl* pControl)
+void UIGradientEditorController::valueChanged (CControl& pControl)
 {
-	switch (pControl->getTag ())
+	switch (pControl.getTag ())
 	{
 		case kApplyTag:
 		{
-			if (pControl->getValue () > 0.f)
+			if (pControl.getValue () > 0.f)
 				apply ();
 			break;
 		}
 		case kPositionTag:
 		{
-			colorStopEditView->setCurrentStartOffset (pControl->getValue ());
+			colorStopEditView->setCurrentStartOffset (pControl.getValue ());
 			break;
 		}
 	}
@@ -551,10 +554,11 @@ SharedPointer<COptionMenu> createColorMenu (IUIDescription& desc,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& attributes,
-											   const IUIDescription& description)
+SharedPointer<CView> UIGradientEditorController::verifyView (const SharedPointer<CView>& view,
+															 const UIAttributes& attributes,
+															 const IUIDescription& description)
 {
-	if (auto control = dynamic_cast<CTextEdit*>(view))
+	if (auto control = view.cast<CTextEdit> ())
 	{
 		if (control->getTag () == kPositionTag)
 		{
@@ -567,7 +571,7 @@ CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& 
 			updatePositionEdit ();
 		}
 	}
-	else if (auto menu = dynamic_cast<COptionMenu*> (view))
+	else if (auto menu = view.cast<COptionMenu> ())
 	{
 		if (menu->getTag () == kFunctionMenuTag)
 		{
@@ -590,7 +594,7 @@ CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& 
 			});
 			menu->addEntry (item);
 			menu->addSeparator ();
-			auto descColorMenu = createColorMenu (*editDescription, [this] (auto color) {
+			auto descColorMenu = createColorMenu (*editDescription.get (), [this] (auto color) {
 				if (colorStopEditView)
 				{
 					colorStopEditView->setEditColor (color);
@@ -610,15 +614,15 @@ CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGradientEditorController::createView (const UIAttributes& attributes,
-											   const IUIDescription& description)
+SharedPointer<CView> UIGradientEditorController::createView (const UIAttributes& attributes,
+															 const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "ColorStopEditView")
 		{
-			colorStopEditView = new UIColorStopEditView (editColor);
+			colorStopEditView = makeOwned<UIColorStopEditView> (editColor);
 			colorStopEditView->setGradient (gradient);
 			colorStopEditView->registerListener (this);
 			return colorStopEditView;
@@ -721,7 +725,7 @@ void UIGradientsDataSource::update ()
 	UIBaseDataSource::update ();
 	if (dataBrowser)
 	{
-		dbSelectionChanged (dataBrowser);
+		dbSelectionChanged (dataBrowser.get ());
 		dataBrowser->invalid ();
 	}
 }
@@ -729,7 +733,7 @@ void UIGradientsDataSource::update ()
 //----------------------------------------------------------------------------------------------------
 CCoord UIGradientsDataSource::getGradientIconWidth ()
 {
-	return dataBrowser ? dbGetRowHeight (dataBrowser) * 2. : 0.;
+	return dataBrowser ? dbGetRowHeight (dataBrowser.get ()) * 2. : 0.;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -814,15 +818,18 @@ UIGradientsController::UIGradientsController (const SharedPointer<IController>& 
 UIGradientsController::~UIGradientsController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGradientsController::createView (const UIAttributes& attributes,
-										  const IUIDescription& description)
+SharedPointer<CView> UIGradientsController::createView (const UIAttributes& attributes,
+														const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "GradientsBrowser")
 		{
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar);
+			auto dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+														CDataBrowser::kDrawRowLines |
+															CScrollView::kHorizontalScrollbar |
+															CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -830,13 +837,14 @@ CView* UIGradientsController::createView (const UIAttributes& attributes,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGradientsController::verifyView (CView* view, const UIAttributes& attributes,
-										  const IUIDescription& description)
+SharedPointer<CView> UIGradientsController::verifyView (const SharedPointer<CView>& view,
+														const UIAttributes& attributes,
+														const IUIDescription& description)
 {
-	CControl* control = dynamic_cast<CControl*> (view);
+	auto control = view.cast<CControl> ();
 	if (control)
 	{
-		auto searchField = dynamic_cast<CSearchTextEdit*> (control);
+		auto searchField = control.cast<CSearchTextEdit> ();
 		if (searchField && searchField->getTag () == kSearchTag)
 		{
 			dataSource->setSearchFieldControl (searchField);
@@ -858,25 +866,25 @@ IControlListener* UIGradientsController::getControlListener (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGradientsController::valueChanged (CControl* pControl)
+void UIGradientsController::valueChanged (CControl& pControl)
 {
-	switch (pControl->getTag ())
+	switch (pControl.getTag ())
 	{
 		case kAddTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 				dataSource->add ();
 			break;
 		}
 		case kRemoveTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 				dataSource->remove ();
 			break;
 		}
 		case kEditTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 				showEditDialog ();
 			break;
 		}

@@ -8,14 +8,36 @@
 namespace VSTGUI {
 namespace {
 
+//------------------------------------------------------------------------
 struct WeakableObject : public NonAtomicReferenceCounted,
 						public WeakPointerSupport<WeakableObject>
 {
 	int32_t value {0};
 	explicit WeakableObject (int32_t v = 0) : value (v) {}
 	WeakPointer<WeakableObject> weakFromThisPublic () { return this->weakFromThis (); }
+
+	virtual int32_t getValue () const { return value; }
 };
 
+struct WeakableObject2 : public NonAtomicReferenceCounted,
+						 public WeakPointerSupport<WeakableObject>
+{
+	int32_t value {0};
+	explicit WeakableObject2 (int32_t v = 0) : value (v) {}
+	WeakPointer<WeakableObject> weakFromThisPublic () { return this->weakFromThis (); }
+
+	virtual int32_t getValue () const { return value; }
+};
+
+//------------------------------------------------------------------------
+struct WeakObject2 : public WeakableObject
+{
+	using WeakableObject::WeakableObject;
+
+	int32_t getValue () const override { return 100; }
+};
+
+//------------------------------------------------------------------------
 SharedPointer<WeakableObject> makeTestObject (int32_t v = 42)
 {
 	return makeOwned<WeakableObject> (v);
@@ -152,5 +174,18 @@ TEST_CASE (WeakPointerTest, MoveAssign)
 
 	EXPECT (obj1->weakFromThisPublic ().lock ()->value == 101);
 }
+
+#if 1
+TEST_CASE (WeakPointerTest, Inheritance)
+{
+	auto obj = makeOwned<WeakObject2> (1);
+	auto obj2 = obj.cast<WeakableObject> ();
+	WeakPointer<WeakObject2> weakPtr = obj2;
+	auto objPtr = weakPtr.lock ();
+	EXPECT (objPtr != nullptr);
+	EXPECT (objPtr->getValue () == 100);
+	auto obj3 = makeOwned<WeakableObject2> (1);
+}
+#endif
 
 } // VSTGUI

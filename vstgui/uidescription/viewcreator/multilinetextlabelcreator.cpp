@@ -47,19 +47,19 @@ UTF8StringPtr MultiLineTextLabelCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* MultiLineTextLabelCreator::create (const UIAttributes& attributes,
-                                          const IUIDescription* description) const
+SharedPointer<CView> MultiLineTextLabelCreator::create (const UIAttributes& attributes,
+														const IUIDescription& description) const
 {
-	return new CMultiLineTextLabel (CRect (0, 0, 100, 20));
+	return makeOwned<CMultiLineTextLabel> (CRect (0, 0, 100, 20));
 }
 
 //------------------------------------------------------------------------
-bool MultiLineTextLabelCreator::apply (CView* view, const UIAttributes& attributes,
-                                       const IUIDescription* description) const
+bool MultiLineTextLabelCreator::apply (CView& view, const UIAttributes& attributes,
+									   const IUIDescription& description) const
 {
 	using LineLayout = CMultiLineTextLabel::LineLayout;
 
-	auto label = dynamic_cast<CMultiLineTextLabel*> (view);
+	auto label = dynamic_cast<CMultiLineTextLabel*> (&view);
 	if (!label)
 		return false;
 
@@ -104,11 +104,11 @@ auto MultiLineTextLabelCreator::getAttributeType (const string& attributeName) c
 }
 
 //------------------------------------------------------------------------
-bool MultiLineTextLabelCreator::getAttributeValue (CView* view, const string& attributeName,
-                                                   string& stringValue,
-                                                   const IUIDescription* desc) const
+bool MultiLineTextLabelCreator::getAttributeValue (CView& view, const string& attributeName,
+												   string& stringValue,
+												   const IUIDescription& desc) const
 {
-	auto label = dynamic_cast<CMultiLineTextLabel*> (view);
+	auto label = dynamic_cast<CMultiLineTextLabel*> (&view);
 	if (!label)
 		return false;
 	if (attributeName == kAttrLineLayout)

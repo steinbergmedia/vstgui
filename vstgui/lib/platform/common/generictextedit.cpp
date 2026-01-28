@@ -60,14 +60,14 @@ public:
 	void drawBack (CDrawContext* pContext, const SharedPointer<CBitmap>& newBack = {}) override;
 	void setText (const UTF8String& txt) override;
 
-	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
+	void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) override;
 
-	void onMouseEntered (CView* view, CFrame* frame) override;
-	void onMouseExited (CView* view, CFrame* frame) override;
-	void onMouseEvent (MouseEvent& event, CFrame* frame) override;
+	void onMouseEntered (CView& view, CFrame& frame) override;
+	void onMouseExited (CView& view, CFrame& frame) override;
+	void onMouseEvent (MouseEvent& event, CFrame& frame) override;
 
-	bool attached (CView* parent) override;
-	bool removed (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	void drawStyleChanged () override;
 
 	void selectAll ();
@@ -182,7 +182,7 @@ private:
 //-----------------------------------------------------------------------------
 struct GenericTextEdit::Impl
 {
-	STBTextEditView* view;
+	SharedPointer<STBTextEditView> view;
 };
 
 //-----------------------------------------------------------------------------
@@ -190,16 +190,15 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 	: IPlatformTextEdit (callback)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-	impl->view = new STBTextEditView (callback);
-	auto view = dynamic_cast<CView*> (callback);
-	vstgui_assert (view);
-	view->getParentView ()->asViewContainer ()->addView (impl->view);
+	impl->view = makeOwned<STBTextEditView> (callback);
+	if (auto parent = impl->view->getParentView ())
+		parent->addSubview (impl->view);
 
 	auto font = callback->platformGetFont ();
 	auto fontSize = font->getSize () / impl->view->getGlobalTransform ().m11;
 	if (fontSize != font->getSize ())
 	{
-		font = makeOwned<CFontDesc> (*font);
+		font = makeOwned<CFontDesc> (*font.get ());
 		font->setSize (fontSize);
 	}
 	impl->view->setFont (font);
@@ -215,10 +214,8 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 //-----------------------------------------------------------------------------
 GenericTextEdit::~GenericTextEdit () noexcept
 {
-	if (impl->view->isAttached ())
-		impl->view->getParentView ()->asViewContainer ()->removeView (impl->view);
-	else
-		impl->view->forget ();
+	if (auto parent = impl->view->getParentView ())
+		parent->removeSubview (impl->view);
 }
 
 //-----------------------------------------------------------------------------
@@ -267,7 +264,7 @@ bool STBTextEditView::callSTB (Proc proc)
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
+void STBTextEditView::onKeyboardEvent (KeyboardEvent& event, CFrame& frame)
 {
 	if (event.type == EventType::KeyUp)
 		return;
@@ -317,7 +314,7 @@ void STBTextEditView::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
 	auto key = event.character;
 	if (key)
 	{
-		if (auto text = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
+		if (auto text = frame.getPlatformFrame ()->convertCurrentKeyEventToText ())
 		{
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 			auto tmp = StringConvert{}.from_bytes (text->getString ());
@@ -360,7 +357,7 @@ void STBTextEditView::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::onMouseEvent (MouseEvent& event, CFrame* frame)
+void STBTextEditView::onMouseEvent (MouseEvent& event, CFrame& frame)
 {
 	if (event.buttonState.isLeft () == false)
 		return;
@@ -461,27 +458,27 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 #endif
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::onMouseEntered (CView* view, CFrame* frame)
+void STBTextEditView::onMouseEntered (CView& view, CFrame& frame)
 {
-	if (view == this)
+	if (&view == this)
 	{
 		setCursorIsSet (true);
-		getFrame ()->setCursor (kCursorIBeam);
+		frame.setCursor (kCursorIBeam);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::onMouseExited (CView* view, CFrame* frame)
+void STBTextEditView::onMouseExited (CView& view, CFrame& frame)
 {
-	if (view == this)
+	if (&view == this)
 	{
 		setCursorIsSet (false);
-		getFrame ()->setCursor (kCursorDefault);
+		frame.setCursor (kCursorDefault);
 	}
 }
 
 //-----------------------------------------------------------------------------
-bool STBTextEditView::attached (CView* parent)
+bool STBTextEditView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (auto frame = parent->getFrame ())
 	{
@@ -494,7 +491,7 @@ bool STBTextEditView::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-bool STBTextEditView::removed (CView* parent)
+bool STBTextEditView::removed (const SharedPointer<CViewContainer>& parent)
 {
 	if (auto frame = getFrame ())
 	{
@@ -548,14 +545,18 @@ bool STBTextEditView::doCopy ()
 	auto dataPackage =
 		CDropSource::create (getText ().data (), getText ().length (), IDataPackage::kText);
 #endif
-	getFrame ()->setClipboard (dataPackage);
+	if (auto frame = getFrame ())
+		frame->setClipboard (dataPackage);
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool STBTextEditView::doPaste ()
 {
-	if (auto clipboard = getFrame ()->getClipboard ())
+	auto frame = getFrame ();
+	if (!frame)
+		return false;
+	if (auto clipboard = frame->getClipboard ())
 	{
 		auto count = clipboard->getCount ();
 		for (auto i = 0u; i < count; ++i)

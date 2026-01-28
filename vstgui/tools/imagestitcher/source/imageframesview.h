@@ -29,10 +29,10 @@ public:
 	void takeFocus () override;
 	void looseFocus () override;
 private:
-	static std::vector<Path> getDragPngImagePaths (IDataPackage* drag);
-	static bool dragHasPngImages (IDataPackage* drag);
-	static bool getIndicesFromDataPackage (IDataPackage* package,
-	                                       std::vector<size_t>* result = nullptr);
+	static std::vector<Path> getDragPngImagePaths (const SharedPointer<IDataPackage>& drag);
+	static bool dragHasPngImages (const SharedPointer<IDataPackage>& drag);
+	static bool getIndicesFromDataPackage (const SharedPointer<IDataPackage>& package,
+										   std::vector<size_t>* result = nullptr);
 
 	CPoint sizeOfOneRow () const;
 	CRect indexToRect (size_t index) const;

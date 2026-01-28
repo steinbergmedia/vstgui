@@ -113,7 +113,7 @@ bool UISelection::contains (const SharedPointer<CView>& view) const
 //----------------------------------------------------------------------------------------------------
 bool UISelection::containsParent (const SharedPointer<CView>& view) const
 {
-	if (auto parent = shared (view->getParentView ()))
+	if (auto parent = view->getParentView ())
 	{
 		if (contains (parent))
 			return true;
@@ -143,11 +143,11 @@ CRect UISelection::getBounds () const
 	if (viewList.empty ())
 		return result;
 	const_iterator it = begin ();
-	result = getGlobalViewCoordinates (*(*it));
+	result = getGlobalViewCoordinates (*(*it).get ());
 	++it;
 	while (it != end ())
 	{
-		CRect vs = getGlobalViewCoordinates (*(*it));
+		CRect vs = getGlobalViewCoordinates (*(*it).get ());
 		result.unite (vs);
 		++it;
 	}
@@ -252,7 +252,7 @@ bool UISelection::store (OutputStream& stream, const SharedPointer<IUIDescriptio
 {
 	if (auto desc = uiDescription.cast<UIDescription> ())
 	{
-		std::list<CView*> views;
+		std::list<SharedPointer<CView>> views;
 		for (auto view : *this)
 		{
 			if (!containsParent (view))

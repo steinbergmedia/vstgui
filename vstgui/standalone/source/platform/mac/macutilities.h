@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------
 inline NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 {
-	auto macStr = dynamic_cast<VSTGUI::MacString*> (str.getPlatformString ());
+	auto macStr = str.getPlatformString ().cast<VSTGUI::MacString> ();
 	if (macStr && macStr->getCFString ())
 	{
 		return (__bridge NSString*)macStr->getCFString ();

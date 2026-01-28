@@ -39,10 +39,10 @@ UTF8StringPtr MovieButtonCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* MovieButtonCreator::create (const UIAttributes& attributes,
-                                   const IUIDescription* description) const
+SharedPointer<CView> MovieButtonCreator::create (const UIAttributes& attributes,
+												 const IUIDescription& description) const
 {
-	return new CMovieButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	return makeOwned<CMovieButton> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------

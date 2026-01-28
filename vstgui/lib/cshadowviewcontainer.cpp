@@ -45,20 +45,22 @@ void CShadowViewContainer::beforeDelete ()
 }
 
 //-----------------------------------------------------------------------------
-bool CShadowViewContainer::removed (CView* parent)
+bool CShadowViewContainer::removed (const SharedPointer<CViewContainer>& parent)
 {
-	getFrame ()->unregisterScaleFactorChangedListener (this);
+	if (auto frame = getFrame ())
+		frame->unregisterScaleFactorChangedListener (this);
 	setBackground (nullptr);
 	return CViewContainer::removed (parent);
 }
 
 //-----------------------------------------------------------------------------
-bool CShadowViewContainer::attached (CView* parent)
+bool CShadowViewContainer::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (CViewContainer::attached (parent))
 	{
 		invalidateShadow ();
-		getFrame ()->registerScaleFactorChangedListener (this);
+		if (auto frame = getFrame ())
+			frame->registerScaleFactorChangedListener (this);
 		return true;
 	}
 	return false;
@@ -158,9 +160,12 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 		if (auto offscreenContext = COffscreenContext::create ({width, height}, scaleFactor))
 		{
 			offscreenContext->beginDraw ();
-			CDrawContext::Transform transform (*offscreenContext, CGraphicsTransform ().translate (-getViewSize ().left - shadowOffset.x, -getViewSize ().top - shadowOffset.y));
+			CDrawContext::Transform transform (
+				*offscreenContext.get (),
+				CGraphicsTransform ().translate (-getViewSize ().left - shadowOffset.x,
+												 -getViewSize ().top - shadowOffset.y));
 			dontDrawBackground = true;
-			CViewContainer::draw (offscreenContext);
+			CViewContainer::draw (offscreenContext.get ());
 			dontDrawBackground = false;
 			offscreenContext->endDraw ();
 			auto bitmap = offscreenContext->getBitmap ();
@@ -171,7 +176,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 				if (setColorFilter)
 				{
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
-												 bitmap.get ());
+												 bitmap.cast<IReference> ());
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputColor, kBlackCColor);
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kIgnoreAlphaColorValue, (int32_t)1);
 					if (setColorFilter->run (true))
@@ -181,7 +186,8 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 						{
 							auto boxSizes = boxesForGauss<3> (shadowBlurSize);
 							boxBlurFilter->setProperty (
-								BitmapFilter::Standard::Property::kInputBitmap, bitmap.get ());
+								BitmapFilter::Standard::Property::kInputBitmap,
+								bitmap.cast<IReference> ());
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[0]);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kAlphaChannelOnly, 1);
 							if (boxBlurFilter->run (true))
@@ -230,23 +236,23 @@ void CShadowViewContainer::setViewSize (const CRect& rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::viewContainerViewAdded (CViewContainer* container, CView* view)
+void CShadowViewContainer::viewContainerViewAdded (CViewContainer& container, CView& view)
 {
-	vstgui_assert (container == this);
+	vstgui_assert (&container == this);
 	invalidateShadow ();
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::viewContainerViewRemoved (CViewContainer* container, CView* view)
+void CShadowViewContainer::viewContainerViewRemoved (CViewContainer& container, CView& view)
 {
-	vstgui_assert (container == this);
+	vstgui_assert (&container == this);
 	invalidateShadow ();
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::viewContainerViewZOrderChanged (CViewContainer* container, CView* view)
+void CShadowViewContainer::viewContainerViewZOrderChanged (CViewContainer& container, CView& view)
 {
-	vstgui_assert (container == this);
+	vstgui_assert (&container == this);
 	invalidateShadow ();
 }
 

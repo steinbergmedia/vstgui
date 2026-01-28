@@ -67,13 +67,13 @@ public:
 	virtual ~IViewContainerListener () noexcept = default;
 
 	/** called when a new view was added to the container */
-	virtual void viewContainerViewAdded (CViewContainer* container, CView* view) = 0;
+	virtual void viewContainerViewAdded (CViewContainer& container, CView& view) = 0;
 	/** called when a view was removed from the container */
-	virtual void viewContainerViewRemoved (CViewContainer* container, CView* view) = 0;
+	virtual void viewContainerViewRemoved (CViewContainer& container, CView& view) = 0;
 	/** called when a view's z-order changed inside the container */
-	virtual void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) = 0;
+	virtual void viewContainerViewZOrderChanged (CViewContainer& container, CView& view) = 0;
 	/** called when the transform matrix of the container changed */
-	virtual void viewContainerTransformChanged (CViewContainer* container) = 0;
+	virtual void viewContainerTransformChanged (CViewContainer& container) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -108,59 +108,11 @@ public:
 class ViewContainerListenerAdapter : public IViewContainerListener
 {
 public:
-	void viewContainerViewAdded (CViewContainer* container, CView* view) override {}
-	void viewContainerViewRemoved (CViewContainer* container, CView* view) override {}
-	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) override {}
-	void viewContainerTransformChanged (CViewContainer* container) override {}
+	void viewContainerViewAdded (CViewContainer& container, CView& view) override {}
+	void viewContainerViewRemoved (CViewContainer& container, CView& view) override {}
+	void viewContainerViewZOrderChanged (CViewContainer& container, CView& view) override {}
+	void viewContainerTransformChanged (CViewContainer& container) override {}
 };
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-/** @brief View Mouse Listener Interface
- *
- *	@ingroup new_in_4_7
- */
-//-----------------------------------------------------------------------------
-class [[deprecated ("Use IViewListener/IViewEventListener instead")]] IViewMouseListener
-{
-public:
-	virtual ~IViewMouseListener () noexcept = default;
-
-	virtual CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) = 0;
-	virtual CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) = 0;
-	virtual CMouseEventResult viewOnMouseMoved (CView* view, CPoint pos, CButtonState buttons) = 0;
-	virtual CMouseEventResult viewOnMouseCancel (CView* view) = 0;
-	virtual void viewOnMouseEntered (CView* view) = 0;
-	virtual void viewOnMouseExited (CView* view) = 0;
-	virtual void viewOnMouseEnabled (CView* view, bool state) = 0;
-};
-
-#include "private/disabledeprecatedmessage.h"
-//-----------------------------------------------------------------------------
-/** @brief View Mouse Listener Interface Adapter
- *
- *	@ingroup new_in_4_7
- */
-//-----------------------------------------------------------------------------
-class [[deprecated (
-	"Use ViewListenerAdapter/ViewEventListenerAdapter instead")]] ViewMouseListenerAdapter
-: public IViewMouseListener {public: CMouseEventResult viewOnMouseDown (
-	  CView * view, CPoint pos, CButtonState buttons) override {return kMouseEventNotImplemented;
-	}
-	CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) override
-	{
-		return kMouseEventNotImplemented;
-	}
-	CMouseEventResult viewOnMouseMoved (CView* view, CPoint pos, CButtonState buttons) override
-	{
-		return kMouseEventNotImplemented;
-	}
-	CMouseEventResult viewOnMouseCancel (CView* view) override { return kMouseEventNotImplemented; }
-	void viewOnMouseEntered (CView* view) override {}
-	void viewOnMouseExited (CView* view) override {}
-	void viewOnMouseEnabled (CView* view, bool state) override {}
-};
-#include "private/enabledeprecatedmessage.h"
-#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-
+//------------------------------------------------------------------------
 } // VSTGUI

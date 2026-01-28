@@ -18,10 +18,10 @@ TEST_CASE (UIViewCreatorTest, BitmapToString)
 	TestUIDescription uidesc;
 	std::string str;
 	auto bitmap = makeOwned<CBitmap> (CResourceDescription ("test.png"));
-	EXPECT (bitmapToString (bitmap, str, &uidesc) == true);
+	EXPECT (bitmapToString (bitmap, str, uidesc) == true);
 	EXPECT (str == "test.png");
 	auto bitmap2 = makeOwned<CBitmap> (CResourceDescription (100));
-	EXPECT (bitmapToString (bitmap2, str, &uidesc) == true);
+	EXPECT (bitmapToString (bitmap2, str, uidesc) == true);
 	EXPECT (str == "100");
 }
 
@@ -30,16 +30,16 @@ TEST_CASE (UIViewCreatorTest, ColorToString)
 	TestUIDescription uidesc;
 	std::string str;
 	CColor c (0, 0, 0, 255);
-	EXPECT (colorToString (c, str, &uidesc) == true);
+	EXPECT (colorToString (c, str, uidesc) == true);
 	EXPECT (str == "#000000ff")
 	c = CColor (0, 0, 255, 0);
-	EXPECT (colorToString (c, str, &uidesc) == true);
+	EXPECT (colorToString (c, str, uidesc) == true);
 	EXPECT (str == "#0000ff00")
 	c = CColor (0, 255, 0, 0);
-	EXPECT (colorToString (c, str, &uidesc) == true);
+	EXPECT (colorToString (c, str, uidesc) == true);
 	EXPECT (str == "#00ff0000")
 	c = CColor (255, 0, 0, 0);
-	EXPECT (colorToString (c, str, &uidesc) == true);
+	EXPECT (colorToString (c, str, uidesc) == true);
 	EXPECT (str == "#ff000000")
 }
 
@@ -48,7 +48,7 @@ TEST_CASE (UIViewCreatorTest, EmptyStringToTransparentColor)
 	TestUIDescription uidesc;
 	std::string str = "";
 	CColor c;
-	EXPECT (stringToColor (&str, c, &uidesc) == true);
+	EXPECT (stringToColor (&str, c, uidesc) == true);
 	EXPECT (c == kTransparentCColor);
 }
 

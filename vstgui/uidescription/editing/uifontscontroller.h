@@ -30,11 +30,13 @@ public:
 	~UIFontsController () override;
 
 protected:
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
-	void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
 
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 
@@ -46,13 +48,13 @@ protected:
 	SharedPointer<UIFontsDataSource> dataSource;
 
 	SharedPointer<COptionMenu> fontMenu;
-	CTextEdit* altTextEdit;
-	CTextEdit* sizeTextEdit;
-	CControl* boldControl;
-	CControl* italicControl;
-	CControl* strikethroughControl;
-	CControl* underlineControl;
-	
+	SharedPointer<CTextEdit> altTextEdit;
+	SharedPointer<CTextEdit> sizeTextEdit;
+	SharedPointer<CControl> boldControl;
+	SharedPointer<CControl> italicControl;
+	SharedPointer<CControl> strikethroughControl;
+	SharedPointer<CControl> underlineControl;
+
 	std::string selectedFont;
 
 	enum {

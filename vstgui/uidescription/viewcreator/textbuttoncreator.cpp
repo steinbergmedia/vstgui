@@ -50,24 +50,24 @@ UTF8StringPtr TextButtonCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* TextButtonCreator::create (const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+SharedPointer<CView> TextButtonCreator::create (const UIAttributes& attributes,
+												const IUIDescription& description) const
 {
-	CTextButton* button = new CTextButton (CRect (0, 0, 100, 20), nullptr, -1, "");
-	if (!description->lookupGradientName (button->getGradient ()))
+	auto button = makeOwned<CTextButton> (CRect (0, 0, 100, 20), nullptr, -1, "");
+	if (!description.lookupGradientName (button->getGradient ()))
 		addGradientToUIDescription (description, button->getGradient (),
 		                            "Default TextButton Gradient");
-	if (!description->lookupGradientName (button->getGradientHighlighted ()))
+	if (!description.lookupGradientName (button->getGradientHighlighted ()))
 		addGradientToUIDescription (description, button->getGradientHighlighted (),
 		                            "Default TextButton Gradient Highlighted");
 	return button;
 }
 
 //------------------------------------------------------------------------
-bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
-                               const IUIDescription* description) const
+bool TextButtonCreator::apply (CView& view, const UIAttributes& attributes,
+							   const IUIDescription& description) const
 {
-	auto* button = dynamic_cast<CTextButton*> (view);
+	auto* button = dynamic_cast<CTextButton*> (&view);
 	if (!button)
 		return false;
 
@@ -78,7 +78,7 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrFont);
 	if (attr)
 	{
-		auto font = description->getFont (attr->c_str ());
+		auto font = description.getFont (attr->c_str ());
 		if (font)
 		{
 			button->setFont (font);
@@ -136,11 +136,11 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 	}
 	const auto* gradientName = attributes.getAttributeValue (kAttrGradient);
 	if (gradientName)
-		button->setGradient (description->getGradient (gradientName->c_str ()));
+		button->setGradient (description.getGradient (gradientName->c_str ()));
 	const auto* gradientHighlightedName = attributes.getAttributeValue (kAttrGradientHighlighted);
 	if (gradientHighlightedName)
 		button->setGradientHighlighted (
-		    description->getGradient (gradientHighlightedName->c_str ()));
+			description.getGradient (gradientHighlightedName->c_str ()));
 
 	if (gradientName == nullptr && gradientHighlightedName == nullptr)
 	{
@@ -248,10 +248,10 @@ bool TextButtonCreator::getPossibleListValues (const string& attributeName,
 }
 
 //------------------------------------------------------------------------
-bool TextButtonCreator::getAttributeValue (CView* view, const string& attributeName,
-                                           string& stringValue, const IUIDescription* desc) const
+bool TextButtonCreator::getAttributeValue (CView& view, const string& attributeName,
+										   string& stringValue, const IUIDescription& desc) const
 {
-	auto* button = dynamic_cast<CTextButton*> (view);
+	auto* button = dynamic_cast<CTextButton*> (&view);
 	if (!button)
 		return false;
 	if (attributeName == kAttrTitle)
@@ -261,7 +261,7 @@ bool TextButtonCreator::getAttributeValue (CView* view, const string& attributeN
 	}
 	else if (attributeName == kAttrFont)
 	{
-		UTF8StringPtr fontName = desc->lookupFontName (button->getFont ());
+		UTF8StringPtr fontName = desc.lookupFontName (button->getFont ());
 		if (fontName)
 		{
 			stringValue = fontName;
@@ -346,14 +346,14 @@ bool TextButtonCreator::getAttributeValue (CView* view, const string& attributeN
 	else if (attributeName == kAttrGradient)
 	{
 		auto gradient = button->getGradient ();
-		UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
+		UTF8StringPtr gradientName = gradient ? desc.lookupGradientName (gradient) : nullptr;
 		stringValue = gradientName ? gradientName : "";
 		return true;
 	}
 	else if (attributeName == kAttrGradientHighlighted)
 	{
 		auto gradient = button->getGradientHighlighted ();
-		UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
+		UTF8StringPtr gradientName = gradient ? desc.lookupGradientName (gradient) : nullptr;
 		stringValue = gradientName ? gradientName : "";
 		return true;
 	}

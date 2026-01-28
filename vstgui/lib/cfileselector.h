@@ -56,31 +56,19 @@ Running the file selector
 @code
 void MyClass::runFileSelector ()
 {
-	CNewFileSelector* selector = CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectFile);
+	auto selector = CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectFile);
 	if (selector)
 	{
 		selector->addFileExtension (CFileExtension ("AIFF", "aif", "audio/aiff"));
 		selector->setDefaultExtension (CFileExtension ("WAVE", "wav"));
 		selector->setTitle("Choose An Audio File");
-		selector->run (this);
-		selector->forget ();
+		selector->run ([] (CNewFileSelector& sel) {
+			if (sel.getNumSelectedFiles () > 0)
+			{
+				// do anything with the selected files here
+			}
+		});
 	}
-}
-@endcode
-Getting results
-@code
-CMessageResult MyClass::notify (CBaseObject* sender, IdStringPtr message)
-{
-	if (message == CNewFileSelector::kSelectEndMessage)
-	{
-		CNewFileSelector* sel = dynamic_cast<CNewFileSelector*>(sender);
-		if (sel)
-		{
-			// do anything with the selected files here
-			return kMessageNotified;
-		}
-	}
-	return parent::notify (sender, message);
 }
 @endcode
 */
@@ -102,14 +90,14 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** create a new instance */
-	static CNewFileSelector* create (CFrame* parent = nullptr, Style style = kSelectFile);
+	static SharedPointer<CNewFileSelector> create (const SharedPointer<CFrame>& parent,
+												   Style style = kSelectFile);
 
-	CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector, CFrame* parent);
+	CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector,
+					  const SharedPointer<CFrame>& parent);
 
-	using CallbackFunc = std::function<void(CNewFileSelector*)>;
+	using CallbackFunc = std::function<void (CNewFileSelector&)>;
 	bool run (CallbackFunc&& callback);
-	/** the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object */
-	bool run (CBaseObject* delegate);
 	/** cancel running the file selector */
 	void cancel ();
 	/** run as modal dialog */
@@ -148,9 +136,7 @@ public:
 
 	/** get the all files extension */
 	static const CFileExtension& getAllFilesExtension ();
-
-	static IdStringPtr kSelectEndMessage;
-//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY (CNewFileSelector, CBaseObject)
 protected:
 	~CNewFileSelector () noexcept override;

@@ -99,7 +99,6 @@ TEST_CASE (UIDescriptionAddOnTest, BasicFunctionality)
 		auto view = desc.createView ("view", nullptr);
 		EXPECT_NE (view, nullptr);
 		EXPECT_TRUE (myAddOnPtr->onCreateTemplateViewCalled);
-		view->forget ();
 	}
 	EXPECT_TRUE (myAddOnPtr->onDestroyCalled);
 

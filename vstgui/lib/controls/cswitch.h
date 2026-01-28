@@ -13,10 +13,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class CSwitchBase : public CControl,
 					public MultiFrameBitmapView<CSwitchBase>
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-,
-					public IMultiBitmapControl
-#endif
 {
 public:
 	void setInverseBitmap (bool state);
@@ -35,18 +31,6 @@ protected:
 	CMouseEventResult onMouseCancel () override;
 	bool sizeToFit () override;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
-				 CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background,
-				 const CPoint& offset = CPoint (0, 0));
-	void setNumSubPixmaps (int32_t numSubPixmaps) override
-	{
-		IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps);
-		invalid ();
-	}
-	const CPoint& getOffset () const { return offset; }
-#endif
-
 	double getCoef () const { return coef; }
 	int32_t normalizedToIndex (float norm) const;
 	float indexToNormalized (int32_t index) const;
@@ -54,13 +38,7 @@ protected:
 	virtual double calculateCoef () const = 0;
 	virtual float calcNormFromPoint (const CPoint& where) const = 0;
 
-	VSTGUI_DEPRECATED_MSG (static bool useLegacyIndexCalculation;
-						   , "Use CMultiFrameBitmap::normalizedValueToFrameIndex() instead")
-
 private:
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CPoint offset {};
-#endif
 	double coef;
 	float mouseStartValue;
 	bool inverseBitmap{false};
@@ -79,12 +57,6 @@ public:
 	CVerticalSwitch (const CVerticalSwitch& vswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
-					 CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background,
-					 const CPoint& offset = CPoint (0, 0));
-#endif
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
@@ -109,12 +81,6 @@ public:
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-					   int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions,
-					   CBitmap* background, const CPoint& offset = CPoint (0, 0));
-#endif
-
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
 	~CHorizontalSwitch () noexcept override = default;
@@ -130,10 +96,6 @@ protected:
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl,
 					  public MultiFrameBitmapView<CRockerSwitch>
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-,
-					  public IMultiBitmapControl
-#endif
 {
 private:
 	enum StyleEnum
@@ -163,27 +125,14 @@ public:
 
 	bool sizeToFit () override;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
-				   const CPoint& offset, const int32_t style = kHorizontal);
-	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-				   CCoord heightOfOneImage, CBitmap* background,
-				   const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
-	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
-#endif
-
 	CLASS_METHODS(CRockerSwitch, CControl)
 protected:
 	~CRockerSwitch () noexcept override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CPoint offset {};
-#endif
 	int32_t	style;
 
-	CVSTGUITimer* resetValueTimer;
+	SharedPointer<CVSTGUITimer> resetValueTimer;
+
 private:
 	float mouseStartValue;
 };

@@ -137,7 +137,7 @@ public:
 		{
 			editController->remember (); // view will forget it too
 			frame->setViewSize (view->getViewSize ());
-			frame->addView (view);
+			frame->addSubview (view);
 			window.setContentView (frame);
 
 			auto focusDrawingSettings = uidesc->getFocusDrawingSettings ();
@@ -314,7 +314,7 @@ public:
 		{
 			xmlData.rewind ();
 			Detail::UIXMLParser parser;
-			if (!parser.parse (&xmlContentProvider))
+			if (!parser.parse (xmlContentProvider))
 				return;
 		}
 		auto xmlEndTime = std::chrono::high_resolution_clock::now ();

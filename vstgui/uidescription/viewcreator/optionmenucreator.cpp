@@ -39,17 +39,17 @@ UTF8StringPtr OptionMenuCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* OptionMenuCreator::create (const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+SharedPointer<CView> OptionMenuCreator::create (const UIAttributes& attributes,
+												const IUIDescription& description) const
 {
-	return new COptionMenu (CRect (0, 0, 100, 20), nullptr, -1);
+	return makeOwned<COptionMenu> (CRect (0, 0, 100, 20), nullptr, -1);
 }
 
 //------------------------------------------------------------------------
-bool OptionMenuCreator::apply (CView* view, const UIAttributes& attributes,
-                               const IUIDescription* description) const
+bool OptionMenuCreator::apply (CView& view, const UIAttributes& attributes,
+							   const IUIDescription& description) const
 {
-	auto* menu = dynamic_cast<COptionMenu*> (view);
+	auto* menu = dynamic_cast<COptionMenu*> (&view);
 	if (!menu)
 		return false;
 
@@ -82,10 +82,10 @@ auto OptionMenuCreator::getAttributeType (const string& attributeName) const -> 
 }
 
 //------------------------------------------------------------------------
-bool OptionMenuCreator::getAttributeValue (CView* view, const string& attributeName,
-                                           string& stringValue, const IUIDescription* desc) const
+bool OptionMenuCreator::getAttributeValue (CView& view, const string& attributeName,
+										   string& stringValue, const IUIDescription& desc) const
 {
-	auto* menu = dynamic_cast<COptionMenu*> (view);
+	auto* menu = dynamic_cast<COptionMenu*> (&view);
 	if (!menu)
 		return false;
 	if (attributeName == kAttrMenuPopupStyle)

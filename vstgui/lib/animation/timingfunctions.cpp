@@ -151,44 +151,35 @@ CubicBezierTimingFunction CubicBezierTimingFunction::easyInOut (uint32_t time)
 }
 
 //------------------------------------------------------------------------
-CubicBezierTimingFunction* CubicBezierTimingFunction::make (Style style, uint32_t time)
+SharedPointer<CubicBezierTimingFunction> CubicBezierTimingFunction::make (Style style,
+																		  uint32_t time)
 {
 	using Func = CubicBezierTimingFunction;
 	switch (style)
 	{
 		case Easy:
-			return new CubicBezierTimingFunction (Func::easy (time));
+			return makeOwned<CubicBezierTimingFunction> (Func::easy (time));
 		case EasyIn:
-			return new CubicBezierTimingFunction (Func::easyIn (time));
+			return makeOwned<CubicBezierTimingFunction> (Func::easyIn (time));
 		case EasyOut:
-			return new CubicBezierTimingFunction (Func::easyOut (time));
+			return makeOwned<CubicBezierTimingFunction> (Func::easyOut (time));
 		case EasyInOut:
-			return new CubicBezierTimingFunction (Func::easyInOut (time));
+			return makeOwned<CubicBezierTimingFunction> (Func::easyInOut (time));
 	}
-	return nullptr;
+	return {};
 }
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse)
-: tf (tf)
-, repeatCount (repeatCount)
-, runCounter (0)
-, autoReverse (autoReverse)
-, isReverse (false)
+RepeatTimingFunction::RepeatTimingFunction (const SharedPointer<TimingFunctionBase>& tf,
+											int32_t repeatCount, bool autoReverse)
+: tf (tf), repeatCount (repeatCount), runCounter (0), autoReverse (autoReverse), isReverse (false)
 {
 }
 
 //-----------------------------------------------------------------------------
-RepeatTimingFunction::~RepeatTimingFunction () noexcept
-{
-	auto obj = dynamic_cast<IReference*> (tf);
-	if (obj)
-		obj->forget ();
-	else
-		delete tf;
-}
+RepeatTimingFunction::~RepeatTimingFunction () noexcept {}
 
 //-----------------------------------------------------------------------------
 float RepeatTimingFunction::getPosition (uint32_t milliseconds)

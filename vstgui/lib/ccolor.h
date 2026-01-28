@@ -125,11 +125,6 @@ struct CColor
 	bool fromString (std::string_view str);
 	static bool isColorRepresentation (std::string_view str);
 
-	VSTGUI_DEPRECATED_MSG (bool fromString (UTF8StringPtr str);
-						   , "use fromString with a std::string_view")
-	VSTGUI_DEPRECATED_MSG (static bool isColorRepresentation (UTF8StringPtr str);
-						   , "use isColorRepresentation with a std::string_view")
-
 	/** red component [0..255] */
 	uint8_t red {255};
 	/** green component [0..255] */

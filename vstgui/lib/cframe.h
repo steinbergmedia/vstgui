@@ -73,9 +73,6 @@ public:
 
 	CPoint checkSizeConstraint (const CPoint& newSize) const;
 
-	VSTGUI_DEPRECATED (
-	/** set a modal view. deprecated use beginModalViewSession instead */
-	bool setModalView (CView* pView);)
 	/** get the currently active modal view or nullptr if there is none */
 	SharedPointer<CView> getModalView () const;
 
@@ -88,16 +85,13 @@ public:
 	 *	@param view new modal view (ownership is transfered to frame, the same as addView)
 	 *	@return a unique session identifier
 	 */
-	Optional<ModalViewSessionID> beginModalViewSession (CView* view);
+	Optional<ModalViewSessionID> beginModalViewSession (const SharedPointer<CView>& view);
 	/** end a modal view session
 	 *
 	 *	@param session a session identifier
 	 *	@return true on success
 	 */
 	bool endModalViewSession (ModalViewSessionID session);
-
-	void  beginEdit (int32_t index);
-	void  endEdit (int32_t index);
 
 	/** get current mouse location */
 	bool getCurrentMouseLocation (CPoint& where) const;
@@ -106,12 +100,12 @@ public:
 	/** set mouse cursor */
 	void setCursor (CCursorType type);
 
-	void   setFocusView (CView* pView);
-	CView* getFocusView () const;
-	bool advanceNextFocusView (CView* oldFocus, bool reverse = false) override;
+	void setFocusView (const SharedPointer<CView>& view);
+	SharedPointer<CView> getFocusView () const;
+	bool advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse = false) override;
 
-	void onViewAdded (CView* pView);
-	void onViewRemoved (CView* pView);
+	void onViewAdded (CView& view);
+	void onViewRemoved (CView& vView);
 
 	/** called when the platform view/window is activated/deactivated */
 	void onActivate (bool state);
@@ -125,7 +119,7 @@ public:
 	void enableTooltips (bool state, uint32_t delayTimeInMs = 1000);
 
 	/** get animator for this frame */
-	Animation::Animator* getAnimator ();
+	SharedPointer<Animation::Animator> getAnimator ();
 
 	/** get the clipboard data. data is owned by the caller */
 	SharedPointer<IDataPackage> getClipboard ();
@@ -144,17 +138,6 @@ public:
 	void registerMouseObserver (IMouseObserver* observer);
 	/** unregister a mouse observer */
 	void unregisterMouseObserver (IMouseObserver* observer);
-
-	VSTGUI_DEPRECATED_MSG (
-		void registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener) {
-			registerScaleFactorChangedListener (listener);
-		},
-		"use registerScaleFactorChangedListener")
-	VSTGUI_DEPRECATED_MSG (
-		void unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener) {
-			unregisterScaleFactorChangedListener (listener);
-		},
-		"use unregisterScaleFactorChangedListener")
 
 	void registerScaleFactorChangedListener (IScaleFactorChangedListener* listener);
 	void unregisterScaleFactorChangedListener (IScaleFactorChangedListener* listener);
@@ -207,11 +190,11 @@ public:
 	void onStartLocalEventLoop ();
 	bool performDrag (const DragDescription& desc, const SharedPointer<IDragCallback>& callback);
 
-	void invalid () override { invalidRect (getViewSize ()); setDirty (false); }
+	void invalid () override { invalidRect (getViewSize ()); }
 	void invalidRect (const CRect& rect) override;
 
-	bool removeView (CView* pView, bool withForget = true) override;
-	bool removeAll (bool withForget = true) override;
+	bool removeSubview (const SharedPointer<CView>& view) override;
+	bool removeAll () override;
 	SharedPointer<CView> getViewAt (
 		const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const override;
 	SharedPointer<CViewContainer>
@@ -223,16 +206,16 @@ public:
 	CPoint& localToFrame (CPoint& point) const override { return point; }
 
 	// CView
-	bool attached (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void dispatchEvent (Event& event) override;
 
 	VSTGUIEditorInterface* getEditor () const override;
-	IPlatformFrame* getPlatformFrame () const;
+	PlatformFramePtr getPlatformFrame () const;
 
-	#if DEBUG
+#if DEBUG
 	void dumpHierarchy () override;
 	#endif
 
@@ -249,15 +232,15 @@ protected:
 
 	void checkMouseViews (const MouseEvent& event);
 	void clearMouseViews (const CPoint& where, Modifiers modifiers, bool callMouseExit = true);
-	void removeFromMouseViews (CView* view);
+	void removeFromMouseViews (const SharedPointer<CView>& view);
 	void setCollectInvalidRects (CollectInvalidRects* collectInvalidRects);
 
 	// keyboard hooks
 	void dispatchKeyboardEventToHooks (KeyboardEvent& event);
 
 	// mouse observers
-	void callMouseObserverMouseEntered (CView* view);
-	void callMouseObserverMouseExited (CView* view);
+	void callMouseObserverMouseEntered (CView& view);
+	void callMouseObserverMouseExited (CView& view);
 	void callMouseObserverOtherMouseEvent (MouseEvent& event);
 
 	void dispatchNewScaleFactor (double newScaleFactor);
@@ -278,9 +261,6 @@ protected:
 #endif
 
 private:
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	void endLegacyModalViewSession ();
-#endif
 	void initModalViewSession (const ModalViewSession& session);
 	void clearModalViewSessions ();
 	void dispatchKeyboardEvent (KeyboardEvent& event);
@@ -288,7 +268,7 @@ private:
 	void dispatchMouseDownEvent (MouseDownEvent& event);
 	void dispatchMouseMoveEvent (MouseMoveEvent& event);
 	void dispatchMouseUpEvent (MouseUpEvent& event);
-	void dispatchEvent (CView* view, Event& event);
+	void dispatchEvent (const SharedPointer<CView>& view, Event& event);
 	void dispatchEventToChildren (Event& event);
 
 	struct Impl;
@@ -324,23 +304,10 @@ class IMouseObserver
 {
 public:
 	virtual ~IMouseObserver() noexcept = default;
-	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
-	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
-	virtual void onMouseEvent (MouseEvent& event, CFrame* frame) = 0;
+	virtual void onMouseEntered (CView& view, CFrame& frame) = 0;
+	virtual void onMouseExited (CView& view, CFrame& frame) = 0;
+	virtual void onMouseEvent (MouseEvent& event, CFrame& frame) = 0;
 };
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-class OldMouseObserverAdapter : public IMouseObserver
-{
-public:
-	void onMouseEntered (CView* view, CFrame* frame) override {}
-	void onMouseExited (CView* view, CFrame* frame) override {}
-	void onMouseEvent (MouseEvent& event, CFrame* frame) override;
-	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons);
-	virtual CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons);
-};
-#endif
 
 //-----------------------------------------------------------------------------
 // IKeyboardHook Declaration
@@ -353,20 +320,8 @@ public:
 	virtual ~IKeyboardHook () noexcept = default;
 
 	/** the event will not be dispatched further if it is consumed. */
-	virtual void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) = 0;
+	virtual void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) = 0;
 };
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-class OldKeyboardHookAdapter : public IKeyboardHook
-{
-public:
-	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;
-	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;
-private:
-	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
-};
-#endif
 
 //-----------------------------------------------------------------------------
 // IViewAddedRemovedObserver Declaration
@@ -377,9 +332,9 @@ class IViewAddedRemovedObserver
 {
 public:
 	virtual ~IViewAddedRemovedObserver () noexcept = default;
-	
-	virtual void onViewAdded (CFrame* frame, CView* view) = 0;
-	virtual void onViewRemoved (CFrame* frame, CView* view) = 0;
+
+	virtual void onViewAdded (CFrame& frame, CView& view) = 0;
+	virtual void onViewRemoved (CFrame& frame, CView& view) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -391,8 +346,9 @@ class IFocusViewObserver
 {
 public:
 	virtual ~IFocusViewObserver () noexcept = default;
-	
-	virtual void onFocusViewChanged (CFrame* frame, CView* newFocusView, CView* oldFocusView) = 0;
+
+	virtual void onFocusViewChanged (CFrame& frame, const SharedPointer<CView>& newFocusView,
+									 const SharedPointer<CView>& oldFocusView) = 0;
 };
 
 } // VSTGUI

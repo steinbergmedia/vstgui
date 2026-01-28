@@ -199,9 +199,8 @@ void UIDescription::addDefaultNodes ()
 		{
 			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", defaultColors[i].name);
-			std::string colorStr;
-			UIViewCreator::colorToString (defaultColors[i].color, colorStr, nullptr);
-			attr->setAttribute ("rgba", colorStr);
+			auto colorStr = defaultColors[i].color.toString ();
+			attr->setAttribute ("rgba", colorStr.getString ());
 			auto node = makeOwned<Detail::UIColorNode> ("color", attr);
 			node->noExport (true);
 			colorsNode->getChildren ().add (node);
@@ -228,8 +227,8 @@ bool UIDescription::parse ()
 	if (parsed ())
 		return true;
 
-	static auto parseUIDesc = [] (const auto& contentProvider) -> SharedPointer<UINode> {
-		if (auto nodes = Detail::UIJsonDescReader::read (*contentProvider))
+	static auto parseUIDesc = [] (auto& contentProvider) -> SharedPointer<UINode> {
+		if (auto nodes = Detail::UIJsonDescReader::read (contentProvider))
 			return nodes;
 #if VSTGUI_ENABLE_XML_PARSER
 		Detail::UIXMLParser parser;
@@ -241,7 +240,7 @@ bool UIDescription::parse ()
 
 	if (impl->contentProvider)
 	{
-		if ((impl->nodes = parseUIDesc (impl->contentProvider)))
+		if ((impl->nodes = parseUIDesc (*impl->contentProvider.get ())))
 		{
 			postParsing ();
 			return true;
@@ -253,7 +252,7 @@ bool UIDescription::parse ()
 		if (resInputStream.open (impl->uidescFile))
 		{
 			InputStreamContentProvider contentProvider (resInputStream);
-			if ((impl->nodes = parseUIDesc (&contentProvider)))
+			if ((impl->nodes = parseUIDesc (contentProvider)))
 			{
 				postParsing ();
 				return true;
@@ -265,7 +264,7 @@ bool UIDescription::parse ()
 			if (fileStream.open (impl->uidescFile.u.name, CFileStream::kReadMode))
 			{
 				InputStreamContentProvider contentProvider (fileStream);
-				if ((impl->nodes = parseUIDesc (&contentProvider)))
+				if ((impl->nodes = parseUIDesc (contentProvider)))
 				{
 					postParsing ();
 					return true;
@@ -485,9 +484,10 @@ const SharedPointer<UIDescription>& UIDescription::getSharedResources () const
 }
 
 //-----------------------------------------------------------------------------
-auto UIDescription::findNodeForView (CView* view) const -> SharedPointer<UINode>
+auto UIDescription::findNodeForView (const SharedPointer<CView>& view) const
+	-> SharedPointer<UINode>
 {
-	CView* parentView = view;
+	SharedPointer<CView> parentView = view;
 	std::string templateName;
 	while (parentView && getTemplateNameFromView (parentView, templateName) == false)
 		parentView = parentView->getParentView ();
@@ -512,10 +512,10 @@ auto UIDescription::findNodeForView (CView* view) const -> SharedPointer<UINode>
 			{
 				if (view == parentView)
 					return node;
-				CViewContainer* container = parentView->asViewContainer ();
+				auto container = parentView->asViewContainer ();
 				vstgui_assert (container != nullptr);
 				auto nodeIterator = node->getChildren ().begin ();
-				CViewContainer* childContainer = nullptr;
+				SharedPointer<CViewContainer> childContainer;
 				ViewIterator it (container);
 				while (*it && nodeIterator != node->getChildren ().end ())
 				{
@@ -552,7 +552,7 @@ auto UIDescription::findNodeForView (CView* view) const -> SharedPointer<UINode>
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& stream,
+bool UIDescription::storeViews (const std::list<SharedPointer<CView>>& views, OutputStream& stream,
 								SharedPointer<UIAttributes> customData) const
 {
 	auto nodeList = makeOwned<Detail::UIDescList> ();
@@ -569,8 +569,8 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 			if (auto factory = impl->viewFactory.cast<IViewFactoryEditingSupport> ())
 			{
 				auto attr = makeOwned<UIAttributes> ();
-				if (factory->getAttributesForView (*view, *const_cast<UIDescription*> (this),
-												   *attr) == false)
+				if (factory->getAttributesForView (*view.get (), *const_cast<UIDescription*> (this),
+												   *attr.get ()) == false)
 					return false;
 				auto newNode = makeOwned<UINode> ("view", attr);
 				nodeList->add (newNode);
@@ -610,11 +610,10 @@ bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<C
 			}
 			else
 			{
-				CView* view = createViewFromNode (childNode);
+				auto view = createViewFromNode (childNode);
 				if (view)
 				{
 					views.emplace_back (view);
-					view->forget ();
 				}
 			}
 		}
@@ -623,19 +622,20 @@ bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<C
 }
 
 //-----------------------------------------------------------------------------
-CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) const
+SharedPointer<CView> UIDescription::createViewFromNode (const SharedPointer<UINode>& node) const
 {
 	const auto* templateName = node->getAttributes ()->getAttributeValue (Detail::MainNodeNames::kTemplate);
 	if (templateName)
 	{
-		CView* view = createView (templateName->c_str (), impl->controller);
+		auto view = createView (templateName->c_str (), impl->controller);
 		if (view)
-			impl->viewFactory->applyAttributeValues (*view, *node->getAttributes (), *this);
+			impl->viewFactory->applyAttributeValues (*view.get (), *node->getAttributes ().get (),
+													 *this);
 		return view;
 	}
 
 	SharedPointer<IController> subController;
-	CView* result = nullptr;
+	SharedPointer<CView> result;
 	if (impl->controller)
 	{
 		const auto* subControllerName = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrSubController);
@@ -649,39 +649,38 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 				setController (subController);
 			}
 		}
-		result = impl->controller->createView (*node->getAttributes (), *this);
+		result = impl->controller->createView (*node->getAttributes ().get (), *this);
 		if (result && impl->viewFactory)
 		{
 			const std::string* viewClass = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrClass);
 			if (viewClass)
-				impl->viewFactory->applyCustomViewAttributeValues (*result, viewClass->c_str (),
-																   *node->getAttributes (), *this);
+				impl->viewFactory->applyCustomViewAttributeValues (
+					*result.get (), viewClass->c_str (), *node->getAttributes ().get (), *this);
 		}
 	}
 	if (result == nullptr && impl->viewFactory)
 	{
-		result = impl->viewFactory->createView (*node->getAttributes (), *this);
+		result = impl->viewFactory->createView (*node->getAttributes ().get (), *this);
 		if (result == nullptr)
 		{
-			result = new CViewContainer (CRect (0, 0, 0, 0));
-			impl->viewFactory->applyCustomViewAttributeValues (*result, "CViewContainer",
-															   *node->getAttributes (), *this);
+			result = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
+			impl->viewFactory->applyCustomViewAttributeValues (
+				*result.get (), "CViewContainer", *node->getAttributes ().get (), *this);
 		}
 	}
 	if (result && node->hasChildren ())
 	{
-		CViewContainer* viewContainer = result->asViewContainer ();
+		auto viewContainer = result->asViewContainer ();
 		for (const auto& itNode : node->getChildren ())
 		{
 			if (viewContainer)
 			{
 				if (itNode->getName () == "view")
 				{
-					CView* childView = createViewFromNode (itNode);
+					auto childView = createViewFromNode (itNode);
 					if (childView)
 					{
-						if (!viewContainer->addView (childView))
-							childView->forget ();
+						viewContainer->addSubview (childView);
 					}
 				}
 			}
@@ -709,7 +708,7 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 		}
 	}
 	if (result && impl->controller)
-		result = impl->controller->verifyView (result, *node->getAttributes (), *this);
+		result = impl->controller->verifyView (result, *node->getAttributes ().get (), *this);
 	if (subController)
 	{
 		if (result)
@@ -724,15 +723,15 @@ CView* UIDescription::createViewFromNode (const SharedPointer<UINode>& node) con
 CViewAttributeID UIDescription::kTemplateNameAttributeID = 'uitl';
 
 //-----------------------------------------------------------------------------
-CView* UIDescription::createView (UTF8StringPtr name,
-								  const SharedPointer<IController>& _controller) const
+SharedPointer<CView> UIDescription::createView (UTF8StringPtr name,
+												const SharedPointer<IController>& _controller) const
 {
 	if (impl->nodes == nullptr)
 		return {};
 
 	IUIDescriptionAddOn::CreateTemplateViewFunc f =
 		[this] (UTF8StringPtr name,
-				const SharedPointer<IController>& _controller) mutable -> CView* {
+				const SharedPointer<IController>& _controller) mutable -> SharedPointer<CView> {
 		auto oldController = impl->controller;
 		auto cleanup = finally ([&] () { impl->controller = oldController; });
 		impl->controller = _controller;
@@ -743,7 +742,7 @@ CView* UIDescription::createView (UTF8StringPtr name,
 				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 				if (nodeName && *nodeName == name)
 				{
-					CView* view = createViewFromNode (itNode);
+					auto view = createViewFromNode (itNode);
 					if (view)
 						view->setAttribute (kTemplateNameAttributeID,
 											static_cast<uint32_t> (strlen (name) + 1), name);
@@ -761,7 +760,8 @@ CView* UIDescription::createView (UTF8StringPtr name,
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateName) const
+bool UIDescription::getTemplateNameFromView (const SharedPointer<CView>& view,
+											 std::string& templateName) const
 {
 	bool result = false;
 	uint32_t attrSize = 0;
@@ -922,7 +922,8 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 		auto bitmap = bitmapNode->getBitmap (impl->filePath);
 		if (impl->bitmapCreator && bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
-			auto platformBitmap = impl->bitmapCreator->createBitmap (*bitmapNode->getAttributes ());
+			auto platformBitmap =
+				impl->bitmapCreator->createBitmap (*bitmapNode->getAttributes ().get ());
 			if (platformBitmap)
 			{
 				double scaleFactor;
@@ -933,7 +934,8 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 		}
 		if (impl->bitmapCreator2 && bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
-			if (auto b = impl->bitmapCreator2->createBitmap (*bitmapNode->getAttributes (), *this))
+			if (auto b = impl->bitmapCreator2->createBitmap (*bitmapNode->getAttributes ().get (),
+															 *this))
 			{
 				bitmap->setPlatformBitmap (b->getPlatformBitmap ());
 				auto it = b->begin ();
@@ -1019,11 +1021,12 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 			}
 			for (auto& filter : filters)
 			{
-				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap.get ());
+				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
+									 bitmap.cast<IReference> ());
 				if (filter->run ())
 				{
 					auto obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
-					if (auto* outputBitmap = dynamic_cast<CBitmap*>(obj))
+					if (auto outputBitmap = obj.cast<CBitmap> ())
 					{
 						bitmap->setPlatformBitmap (outputBitmap->getPlatformBitmap ());
 					}
@@ -1114,7 +1117,7 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 		for (const auto& itNode : children)
 		{
 			auto node = itNode.cast<NodeType> ();
-			if (node && compare (this, node, obj))
+			if (node && compare (*this, node, obj))
 			{
 				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
 				return name ? name->c_str () : nullptr;
@@ -1127,9 +1130,10 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupColorName (const CColor& color) const
 {
-	return lookupName<Detail::UIColorNode> (color, Detail::MainNodeNames::kColor, [] (const UIDescription* desc, Detail::UIColorNode* node, const CColor& color) {
-		return node->getColor() == color;
-	});
+	return lookupName<Detail::UIColorNode> (color, Detail::MainNodeNames::kColor,
+											[] (const auto& desc, auto& node, const auto& color) {
+												return node->getColor () == color;
+											});
 }
 
 //-----------------------------------------------------------------------------
@@ -1137,8 +1141,7 @@ UTF8StringPtr UIDescription::lookupFontName (const SharedPointer<CFontDesc>& fon
 {
 	return font ? lookupName<Detail::UIFontNode> (
 					  font, Detail::MainNodeNames::kFont,
-					  [] (const UIDescription* desc, Detail::UIFontNode* node,
-						  const SharedPointer<CFontDesc>& font) {
+					  [] (const auto& desc, auto& node, const auto& font) {
 						  return node->getFont () && node->getFont () == font;
 					  })
 				: nullptr;
@@ -1149,9 +1152,8 @@ UTF8StringPtr UIDescription::lookupBitmapName (const SharedPointer<CBitmap>& bit
 {
 	return bitmap ? lookupName<Detail::UIBitmapNode> (
 						bitmap, Detail::MainNodeNames::kBitmap,
-						[] (const UIDescription* desc, Detail::UIBitmapNode* node,
-							const SharedPointer<CBitmap> bitmap) {
-							return node->getBitmap (desc->impl->filePath) == bitmap;
+						[] (const auto& desc, auto& node, const auto& bitmap) {
+							return node->getBitmap (desc.impl->filePath) == bitmap;
 						})
 				  : nullptr;
 }
@@ -1161,8 +1163,7 @@ UTF8StringPtr UIDescription::lookupGradientName (const SharedPointer<CGradient>&
 {
 	return gradient ? lookupName<Detail::UIGradientNode> (
 						  gradient, Detail::MainNodeNames::kGradient,
-						  [] (const UIDescription* desc, Detail::UIGradientNode* node,
-							  const SharedPointer<CGradient> gradient) {
+						  [] (const auto& desc, auto& node, const auto& gradient) {
 							  return node->getGradient () == gradient ||
 									 (node->getGradient () &&
 									  gradient->getColorStops () ==
@@ -1174,16 +1175,18 @@ UTF8StringPtr UIDescription::lookupGradientName (const SharedPointer<CGradient>&
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupControlTagName (const int32_t tag) const
 {
-	return lookupName<Detail::UIControlTagNode> (tag, Detail::MainNodeNames::kControlTag, [] (const UIDescription* desc, Detail::UIControlTagNode* node, const int32_t tag) {
-		int32_t nodeTag = node->getTag ();
-		if (nodeTag == -1 && node->getTagString ())
-		{
-			double v;
-			if (desc->calculateStringValue (node->getTagString ()->c_str (), v))
-				nodeTag = (int32_t)v;
-		}
-		return nodeTag == tag;
-	});
+	return lookupName<Detail::UIControlTagNode> (
+		tag, Detail::MainNodeNames::kControlTag,
+		[] (const auto& desc, auto& node, const auto& tag) {
+			int32_t nodeTag = node->getTag ();
+			if (nodeTag == -1 && node->getTagString ())
+			{
+				double v;
+				if (desc.calculateStringValue (node->getTagString ()->c_str (), v))
+					nodeTag = (int32_t)v;
+			}
+			return nodeTag == tag;
+		});
 }
 
 //-----------------------------------------------------------------------------
@@ -1256,9 +1259,8 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 		{
 			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
-			std::string colorStr;
-			UIViewCreator::colorToString (newColor, colorStr, nullptr);
-			attr->setAttribute ("rgba", colorStr);
+			auto colorStr = newColor.toString ();
+			attr->setAttribute ("rgba", colorStr.getString ());
 			auto newNode = makeOwned<Detail::UIColorNode> ("color", attr);
 			colorsNode->getChildren ().add (newNode);
 			colorsNode->sortChildren ();
@@ -1411,7 +1413,7 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 				continue;
 			auto filterNode = makeOwned<UINode> ("filter");
 			filterNode->getAttributes ()->setAttribute ("name", *filterName);
-			for (auto& it2 : *filter)
+			for (auto& it2 : *filter.get ())
 			{
 				if (it2.first == "name")
 					continue;
@@ -1616,35 +1618,35 @@ void UIDescription::collectControlTagNames (std::list<const std::string*>& names
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node, CView* view,
-											 bool deep)
+bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node,
+											 const SharedPointer<CView>& view, bool deep)
 {
 	bool result = false;
 #if VSTGUI_LIVE_EDITING
 	auto factory = impl->viewFactory.cast<IViewFactoryEditingSupport> ();
 	std::list<std::string> attributeNames;
-	CViewContainer* container = view->asViewContainer ();
-	if (factory->getAttributeNamesForView (*view, attributeNames))
+	auto container = view->asViewContainer ();
+	if (factory->getAttributeNamesForView (*view.get (), attributeNames))
 	{
 		for (auto& name : attributeNames)
 		{
 			if (impl->attributeSaveFilterFunc &&
-				impl->attributeSaveFilterFunc (view, name) == false)
+				impl->attributeSaveFilterFunc (view.get (), name) == false)
 				continue;
 			std::string value;
-			if (impl->viewFactory->getAttributeValue (*view, name, value, *this))
+			if (impl->viewFactory->getAttributeValue (*view.get (), name, value, *this))
 				node->getAttributes ()->setAttribute (name, std::move (value));
 		}
 		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass,
-											  IViewFactory::getViewName (*view));
+											  IViewFactory::getViewName (*view.get ()));
 		result = true;
 	}
-	if (deep && container && dynamic_cast<UIViewSwitchContainer*> (container) == nullptr)
+	if (deep && container && container.cast<UIViewSwitchContainer> () == nullptr)
 	{
 		ViewIterator it (container);
 		while (*it)
 		{
-			CView* subView = *it;
+			auto subView = *it;
 			std::string subTemplateName;
 			if (getTemplateNameFromView (subView, subTemplateName))
 			{
@@ -1691,7 +1693,7 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node, 
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
+void UIDescription::updateViewDescription (UTF8StringPtr name, const SharedPointer<CView>& view)
 {
 #if VSTGUI_LIVE_EDITING
 	bool doIt = true;
@@ -1785,7 +1787,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 	auto templateNode = findChildNodeByNameAttribute (impl->nodes, name);
 	if (templateNode)
 	{
-		auto duplicate = makeOwned<UINode> (*templateNode);
+		auto duplicate = makeOwned<UINode> (*templateNode.get ());
 		vstgui_assert (duplicate);
 		if (duplicate)
 		{

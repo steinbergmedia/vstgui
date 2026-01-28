@@ -10,6 +10,7 @@
 #include "vstkeycode.h"
 #include "cbuttonstate.h"
 #include "cgraphicstransform.h"
+#include "weakptr.h"
 #include <memory>
 
 namespace VSTGUI {
@@ -47,7 +48,8 @@ static constexpr CViewAttributeID kCViewControllerAttribute = 'ictr';
 //! @brief Base Class of all view objects
 /// @ingroup views
 //-----------------------------------------------------------------------------
-class CView : public CBaseObject
+class CView : public CBaseObject,
+			  public WeakPointerSupport<CView>
 {
 public:
 	explicit CView (const CRect& size);
@@ -66,17 +68,10 @@ public:
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }
 	virtual bool checkUpdate (const CRect& updateRect) const { return updateRect.rectOverlap (getViewSize ()); }
 
-	/** check if view is dirty */
-	virtual bool isDirty () const { return hasViewFlag (kDirty); }
-	/** set the view to dirty so that it is redrawn in the next idle. Thread Safe ! */
-	virtual void setDirty (bool val = true);
-	/** if this is true, setting a view dirty will call invalid() instead of checking it in idle. Default value is false. */
-	static bool kDirtyCallAlwaysOnMainThread;
-
 	/** mark rect as invalid */
 	virtual void invalidRect (const CRect& rect);
 	/** mark whole view as invalid */
-	virtual void invalid () { setDirty (false); invalidRect (getViewSize ()); }
+	virtual void invalid () { invalidRect (getViewSize ()); }
 
 	/** set visibility state */
 	virtual void setVisible (bool state);
@@ -145,18 +140,10 @@ public:
 	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
 	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
 	/** do not use any longer. if possible refactor your classes to use the newer mouse event methods above. */
-	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
-
-	VSTGUI_DEPRECATED(
-	/** \deprecated never called anymore, please use onMouseWheelEvent instead */
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) final { return false; })
-	VSTGUI_DEPRECATED_MSG(
-	/** \deprecated please use onMouseWheelEvent instead */
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);, "Use CView::onMouseWheelEvent instead")
-
-	VSTGUI_DEPRECATED(
-	/** get the area in which the view reacts to the mouse */
-	CRect& getMouseableArea (CRect& rect) const;)
+	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons)
+	{
+		return kMouseEventNotImplemented;
+	}
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -170,15 +157,6 @@ public:
 	 *	the path is checked if the point lies in its boundaries.
 	 */
 	virtual bool hitTest (const CPoint& where, const Event& event = noEvent ());
-
-	VSTGUI_DEPRECATED_MSG(
-	/** \deprecated check if where hits this view
-	 *
-	 *	the default behaviour is to return true if where is inside the view size of this view, but if you set a hit test path
-	 *	the path is checked if the point lies in its boundaries.
-	 */
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons);, "Use the other hitTest method")
-
 	//@}
 
 
@@ -202,10 +180,6 @@ public:
 	virtual SharedPointer<IDropTarget> getDropTarget ();
 	/** set a custom drop target */
 	void setDropTarget (const SharedPointer<IDropTarget>& dt);
-
-	VSTGUI_DEPRECATED(
-	/** \deprecated start a drag operation. See CDropSource to create the source data package */
-	DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -218,13 +192,6 @@ public:
 	 *	This happens normally only if the view is the focus view.
 	 */
 	virtual void onKeyboardEvent (KeyboardEvent& event);
-
-	VSTGUI_DEPRECATED_MSG(
-	/** called if a key down event occurs and this view has focus */
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);, "Use CView::onKeyboardEvent instead")
-	VSTGUI_DEPRECATED_MSG(
-	/** called if a key up event occurs and this view has focus */
-	virtual int32_t onKeyUp (VstKeyCode& keyCode);, "Use CView::onKeyboardEvent instead")
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -397,9 +364,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** view is removed from parent view */
-	virtual bool removed (CView* parent);
+	virtual bool removed (const SharedPointer<CViewContainer>& parent);
 	/** view is attached to a parent view */
-	virtual bool attached (CView* parent);
+	virtual bool attached (const SharedPointer<CViewContainer>& parent);
 	/** is view attached to a parentView */
 	bool isAttached () const { return hasViewFlag (kIsAttached); }
 	//@}
@@ -412,9 +379,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** get parent view */
-	CView* getParentView () const;
+	SharedPointer<CViewContainer> getParentView () const;
 	/** get frame */
-	CFrame* getFrame () const;
+	SharedPointer<CFrame> getFrame () const;
 	/** get editor */
 	virtual VSTGUIEditorInterface* getEditor () const;
 	//@}
@@ -423,9 +390,8 @@ public:
 	/// @name Animation Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	VSTGUI_DEPRECATED(void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject);)
-	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
-					   Animation::ITimingFunction* timingFunction,
+	void addAnimation (IdStringPtr name, const SharedPointer<Animation::IAnimationTarget>& target,
+					   const SharedPointer<Animation::ITimingFunction>& timingFunction,
 					   const Animation::DoneFunction& doneFunc = nullptr,
 					   bool callDoneOnCancel = false);
 	void removeAnimation (IdStringPtr name);
@@ -464,11 +430,6 @@ public:
 
 	void registerViewEventListener (IViewEventListener* listener);
 	void unregisterViewEventListener (IViewEventListener* listener);
-
-	VSTGUI_DEPRECATED_MSG(
-	void registerViewMouseListener (IViewMouseListener* listener);, "Use registerViewListener instead")
-	VSTGUI_DEPRECATED_MSG(
-	void unregisterViewMouseListener (IViewMouseListener* listener);, "Use unregisterViewListener instead")
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -487,20 +448,8 @@ public:
 	template<typename T> T translateToLocal (const T& t, bool ignoreFrame = false) const { T tmp (t); getGlobalTransform (ignoreFrame).inverse ().transform (tmp); return tmp; }
 	//@}
 
-	virtual CViewContainer* asViewContainer () { return nullptr; }
-	virtual const CViewContainer* asViewContainer () const { return nullptr; }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	enum class MouseListenerCall
-	{
-		MouseDown,
-		MouseMoved,
-		MouseUp,
-		MouseCancel
-	};
-	CMouseEventResult callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons);
-	void callMouseListenerEnteredExited (bool mouseEntered);
-#endif
+	virtual SharedPointer<CViewContainer> asViewContainer () { return {}; }
+	virtual const SharedPointer<CViewContainer> asViewContainer () const { return {}; }
 
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
@@ -512,20 +461,21 @@ public:
 	//-------------------------------------------
 	CLASS_METHODS(CView, CBaseObject)
 protected:
-	enum {
-		kMouseEnabled			= 1 << 0,
-		kTransparencyEnabled	= 1 << 1,
-		kWantsFocus				= 1 << 2,
-		kIsAttached				= 1 << 3,
-		kVisible				= 1 << 4,
-		kDirty					= 1 << 5,
-		kWantsIdle				= 1 << 6,
-		kIsSubview				= 1 << 7,
-		kHasAlpha				= 1 << 8,
-		kHasBackground			= 1 << 9,
-		kHasDisabledBackground	= 1 << 10,
-		kHasMouseableArea		= 1 << 11,
-		kLastCViewFlag			= 11
+	enum
+	{
+		kMouseEnabled = 1 << 0,
+		kTransparencyEnabled = 1 << 1,
+		kWantsFocus = 1 << 2,
+		kIsAttached = 1 << 3,
+		kVisible = 1 << 4,
+		kUnused = 1 << 5,
+		kWantsIdle = 1 << 6,
+		kIsSubview = 1 << 7,
+		kHasAlpha = 1 << 8,
+		kHasBackground = 1 << 9,
+		kHasDisabledBackground = 1 << 10,
+		kHasMouseableArea = 1 << 11,
+		kLastCViewFlag = 11
 	};
 
 	~CView () noexcept override;
@@ -536,8 +486,8 @@ protected:
 	void setViewFlag (int32_t bit, bool state);
 	
 	void setAlphaValueNoInvalidate (float value);
-	void setParentFrame (CFrame* frame);
-	void setParentView (CView* parent);
+	void setParentFrame (const SharedPointer<CFrame>& frame);
+	void setParentView (const SharedPointer<CViewContainer>& parent);
 
 private:
 	struct Impl;

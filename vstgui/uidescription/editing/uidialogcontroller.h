@@ -11,7 +11,6 @@
 #include "../delegationcontroller.h"
 #include "../../lib/cframe.h"
 #include "../../lib/iviewlistener.h"
-#include "../../lib/copenglview.h"
 #include <string>
 #include <list>
 
@@ -35,7 +34,8 @@ class UIDialogController : public NonAtomicReferenceCounted,
                            public ViewListenerAdapter
 {
 public:
-	UIDialogController (const SharedPointer<IController>& baseController, CFrame* frame);
+	UIDialogController (const SharedPointer<IController>& baseController,
+						const SharedPointer<CFrame>& frame);
 	~UIDialogController () override = default;
 
 	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1,
@@ -43,38 +43,33 @@ public:
 			  const SharedPointer<UIDescription>& description, bool resizable = false);
 
 protected:
-	void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewRemoved (CView* view) override;
 	
 	void close ();
 	void layoutButtons ();
-	void collectOpenGLViews (CViewContainer& container);
-	void setOpenGLViewsVisible (bool state);
 
-	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override;
+	void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) override;
 
-	CFrame* frame;
+	SharedPointer<CFrame> frame;
 	Optional<ModalViewSessionID> modalSession;
 	SharedPointer<IDialogController> dialogController;
 	SharedPointer<UIDescription> dialogDescription;
 	SharedPointer<CControl> button1;
 	SharedPointer<CControl> button2;
-	CView* customViewEmbedder {nullptr};
+	SharedPointer<CView> customViewEmbedder;
 	CPoint sizeDiff;
 	std::string templateName;
 	std::string dialogTitle;
 	std::string dialogButton1;
 	std::string dialogButton2;
 	bool resizable {false};
-
-#if VSTGUI_OPENGL_SUPPORT
-	std::list<SharedPointer<COpenGLView> > openglViews;
-#endif
 
 	enum {
 		kButton1Tag,

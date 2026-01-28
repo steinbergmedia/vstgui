@@ -111,7 +111,7 @@ TEST_CASE (UTF8StringTest, MacPlatformString)
 {
 	UTF8String str1 ("Test");
 	auto platformStr = str1.getPlatformString ();
-	auto macStr = dynamic_cast<MacString*> (platformStr);
+	auto macStr = platformStr.cast<MacString> ();
 	EXPECT (macStr);
 	auto cfStr = macStr->getCFString ();
 	auto cfStr2 = CFStringCreateWithCString (kCFAllocatorDefault, "Test", kCFStringEncodingUTF8);

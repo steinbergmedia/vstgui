@@ -34,7 +34,7 @@ struct StringDataPackage : IDataPackage
 
 //-----------------------------------------------------------------------------
 template<bool AsFile>
-Optional<UTF8String> getString (IDataPackage* cb)
+Optional<UTF8String> getString (const SharedPointer<IDataPackage>& cb)
 {
 	for (auto i = 0u, count = cb->getCount (); i < count; i++)
 	{

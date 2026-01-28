@@ -311,7 +311,7 @@ CBitmapPixelAccess::CBitmapPixelAccess ()
 
 //------------------------------------------------------------------------
 void CBitmapPixelAccess::init (const SharedPointer<CBitmap>& _bitmap,
-							   IPlatformBitmapPixelAccess* _pixelAccess)
+							   const SharedPointer<IPlatformBitmapPixelAccess>& _pixelAccess)
 {
 	bitmap = _bitmap;
 	pixelAccess = _pixelAccess;

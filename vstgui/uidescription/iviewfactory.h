@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../lib/vstguifwd.h"
+#include "../lib/cview.h"
 #include "iviewcreator.h"
 #include <string>
 
@@ -18,8 +19,8 @@ class IViewFactory : virtual public IReference
 public:
 	virtual ~IViewFactory () noexcept = default;
 
-	virtual CView* createView (const UIAttributes& attributes,
-							   const IUIDescription& description) const = 0;
+	virtual SharedPointer<CView> createView (const UIAttributes& attributes,
+											 const IUIDescription& description) const = 0;
 	virtual bool applyAttributeValues (CView& view, const UIAttributes& attributes,
 									   const IUIDescription& desc) const = 0;
 	virtual bool applyCustomViewAttributeValues (CView& customView, IdStringPtr baseViewName,
@@ -69,8 +70,8 @@ public:
 		ofes = orig.cast<IViewFactoryEditingSupport> ();
 	}
 
-	CView* createView (const UIAttributes& attributes,
-					   const IUIDescription& description) const override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) const override
 	{
 		return of->createView (attributes, description);
 	}
@@ -139,7 +140,10 @@ public:
 
 protected:
 	IViewFactory& getViewFactory () const { return *of.get (); }
-	IViewFactoryEditingSupport* getViewFactoryEditingSupport () const { return ofes; }
+	IViewFactoryEditingSupport* getViewFactoryEditingSupport () const
+	{
+		return const_cast<IViewFactoryEditingSupport*> (ofes.get ());
+	}
 
 private:
 	SharedPointer<IViewFactory> of;

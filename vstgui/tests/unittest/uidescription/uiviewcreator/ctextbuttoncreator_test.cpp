@@ -172,38 +172,38 @@ TEST_CASE (CTextButtonCreatorTest, LegacyGradient)
 	a.setAttribute (kAttrClass, kCTextButton);
 	a.setAttribute (kAttrGradientStartColor, kColorName);
 
-	auto v = owned (factory.createView (a, uidesc));
+	auto v = factory.createView (a, uidesc);
 	auto view = v.cast<CTextButton> ();
 	EXPECT (view);
-	EXPECT (*view->getGradient () == *defTB->getGradient ());
-	EXPECT (*view->getGradientHighlighted () == *defTB->getGradientHighlighted ());
+	EXPECT (*view->getGradient ().get () == *defTB->getGradient ().get ());
+	EXPECT (*view->getGradientHighlighted ().get () == *defTB->getGradientHighlighted ().get ());
 
 	a.setAttribute (kAttrGradientStartColorHighlighted, kColorName);
 
-	v = owned (factory.createView (a, uidesc));
+	v = factory.createView (a, uidesc);
 	view = v.cast<CTextButton> ();
 	EXPECT (view);
-	EXPECT (*view->getGradient () == *defTB->getGradient ());
-	EXPECT (*view->getGradientHighlighted () == *defTB->getGradientHighlighted ());
+	EXPECT (*view->getGradient ().get () == *defTB->getGradient ().get ());
+	EXPECT (*view->getGradientHighlighted ().get () == *defTB->getGradientHighlighted ().get ());
 
 	a.setAttribute (kAttrGradientEndColor, kColorName);
 
-	v = owned (factory.createView (a, uidesc));
+	v = factory.createView (a, uidesc);
 	view = v.cast<CTextButton> ();
 	EXPECT (view);
-	EXPECT (*view->getGradient () == *defTB->getGradient ());
-	EXPECT (*view->getGradientHighlighted () == *defTB->getGradientHighlighted ());
+	EXPECT (*view->getGradient ().get () == *defTB->getGradient ().get ());
+	EXPECT (*view->getGradientHighlighted ().get () == *defTB->getGradientHighlighted ().get ());
 
 	a.setAttribute (kAttrGradientEndColorHighlighted, kColorName);
 
-	v = owned (factory.createView (a, uidesc));
+	v = factory.createView (a, uidesc);
 	view = v.cast<CTextButton> ();
 	EXPECT (view);
-	EXPECT (*view->getGradient () != *defTB->getGradient ());
-	EXPECT (*view->getGradientHighlighted () != *defTB->getGradientHighlighted ());
+	EXPECT (*view->getGradient ().get () != *defTB->getGradient ().get ());
+	EXPECT (*view->getGradientHighlighted ().get () != *defTB->getGradientHighlighted ().get ());
 
 	UIAttributes a2;
-	factory.getAttributesForView (*view, uidesc, a2);
+	factory.getAttributesForView (*view.get (), uidesc, a2);
 	auto str = a2.getAttributeValue (kAttrGradient);
 	EXPECT (str);
 	str = a2.getAttributeValue (kAttrGradientHighlighted);

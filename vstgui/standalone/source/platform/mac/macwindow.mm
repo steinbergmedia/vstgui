@@ -116,7 +116,7 @@ public:
 	{
 		return std::move (controllerConfig);
 	}
-	void onSetContentView (CFrame* _Nullable newFrame) override;
+	void onSetContentView (const SharedPointer<CFrame>& newFrame) override;
 
 	void windowDidResize (CPoint newSize);
 	void windowWillClose ();
@@ -132,7 +132,7 @@ private:
 	NSView* _Nullable contentView {nullptr};
 	VSTGUIWindowDelegate* _Nullable nsWindowDelegate {nullptr};
 	IWindowDelegate* _Nullable delegate {nullptr};
-	CFrame* _Nullable frame {nullptr};
+	SharedPointer<CFrame> frame;
 	NSObject* sizeObserver {nullptr};
 };
 
@@ -217,7 +217,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindow.hasShadow = YES;
 	}
 
-	auto titleMacStr = dynamic_cast<MacString*> (config.title.getPlatformString ());
+	auto titleMacStr = config.title.getPlatformString ().cast<MacString> ();
 	if (titleMacStr && titleMacStr->getCFString ())
 	{
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString ();
@@ -227,8 +227,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	{
 		if (!config.groupIdentifier.empty ())
 		{
-			auto groupMacStr =
-			    dynamic_cast<MacString*> (config.groupIdentifier.getPlatformString ());
+			auto groupMacStr = config.groupIdentifier.getPlatformString ().cast<MacString> ();
 			if (groupMacStr && groupMacStr->getCFString ())
 			{
 				nsWindow.tabbingIdentifier = (__bridge NSString*)groupMacStr->getCFString ();
@@ -262,10 +261,7 @@ bool Window::isPopup () const
 }
 
 //------------------------------------------------------------------------
-void Window::onSetContentView (CFrame* _Nullable newFrame)
-{
-	frame = newFrame;
-}
+void Window::onSetContentView (const SharedPointer<CFrame>& newFrame) { frame = newFrame; }
 
 //------------------------------------------------------------------------
 void Window::windowDidResize (CPoint newSize)
@@ -373,7 +369,7 @@ void Window::setPosition (const CPoint& newPosition)
 //------------------------------------------------------------------------
 void Window::setTitle (const UTF8String& newTitle)
 {
-	auto titleMacStr = dynamic_cast<MacString*> (newTitle.getPlatformString ());
+	auto titleMacStr = newTitle.getPlatformString ().cast<MacString> ();
 	if (titleMacStr && titleMacStr->getCFString ())
 	{
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString ();
@@ -383,7 +379,7 @@ void Window::setTitle (const UTF8String& newTitle)
 //------------------------------------------------------------------------
 void Window::setRepresentedPath (const UTF8String& path)
 {
-	auto pathMacStr = dynamic_cast<MacString*> (path.getPlatformString ());
+	auto pathMacStr = path.getPlatformString ().cast<MacString> ();
 	if (pathMacStr && pathMacStr->getCFString ())
 	{
 		auto url = [NSURL fileURLWithPath:(__bridge NSString*)pathMacStr->getCFString ()];

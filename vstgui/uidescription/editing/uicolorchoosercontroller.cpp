@@ -18,10 +18,10 @@ namespace VSTGUI {
 class UIColorChooserDropTarget : public NonAtomicReferenceCounted, public DropTargetAdapter
 {
 public:
-	UIColorChooserDropTarget (UIColor* color) : color (color) {}
+	UIColorChooserDropTarget (const SharedPointer<UIColor>& color) : color (color) {}
 	DragOperation onDragEnter (DragEventData eventData) override
 	{
-		for (const auto& item : eventData.drag)
+		for (const auto& item : eventData.drag.get ())
 		{
 			if (item.type != IDataPackage::kText)
 				continue;
@@ -29,7 +29,7 @@ public:
 			if (CColor::isColorRepresentation (text))
 			{
 				CColor dragColor;
-				if (dragColor.fromString (text) && *color != dragColor)
+				if (dragColor.fromString (text) && *color.get () != dragColor)
 				{
 					colorString = text;
 					return DragOperation::Copy;
@@ -52,7 +52,7 @@ public:
 			if (dragColor.fromString (colorString))
 			{
 				color->beginEdit ();
-				*color = dragColor;
+				*color.get () = dragColor;
 				color->endEdit ();
 				return true;
 			}
@@ -61,13 +61,13 @@ public:
 	}
 
 private:
-	UIColor* color;
+	SharedPointer<UIColor> color;
 	std::string colorString;
 };
 
 //----------------------------------------------------------------------------------------------------
 UIColorChooserController::UIColorChooserController (
-	const SharedPointer<IController>& baseController, UIColor* color)
+	const SharedPointer<IController>& baseController, const SharedPointer<UIColor>& color)
 : DelegationController (baseController), color (color)
 {
 	color->registerListener (this);
@@ -80,10 +80,10 @@ UIColorChooserController::~UIColorChooserController ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorChooserController::updateColorSlider (CControl* control)
+void UIColorChooserController::updateColorSlider (CControl& control)
 {
 	float value = 0.f;
-	switch (control->getTag ())
+	switch (control.getTag ())
 	{
 		case kHueTag:
 		{
@@ -123,15 +123,15 @@ void UIColorChooserController::updateColorSlider (CControl* control)
 		default:
 			return;
 	}
-	control->setValue (value);
-	control->invalid ();
+	control.setValue (value);
+	control.invalid ();
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColorChooserController::updateColorSliders ()
 {
 	for (auto& control : controls)
-		updateColorSlider (control);
+		updateColorSlider (*control.get ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -197,8 +197,8 @@ bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorChooserController::createView (const UIAttributes& attributes,
-											 const IUIDescription& description)
+SharedPointer<CView> UIColorChooserController::createView (const UIAttributes& attributes,
+														   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -209,7 +209,7 @@ CView* UIColorChooserController::createView (const UIAttributes& attributes,
 			int32_t tag = controlTagStr ? description.getTagForName (controlTagStr->c_str ()) : -1;
 			if (tag != -1)
 			{
-				return new UIColorSlider (color, tag);
+				return makeOwned<UIColorSlider> (color, tag);
 			}
 		}
 	}
@@ -218,20 +218,21 @@ CView* UIColorChooserController::createView (const UIAttributes& attributes,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& attributes,
-											 const IUIDescription& description)
+SharedPointer<CView> UIColorChooserController::verifyView (const SharedPointer<CView>& view,
+														   const UIAttributes& attributes,
+														   const IUIDescription& description)
 {
-	auto* control = dynamic_cast<CControl*>(view);
+	auto control = view.cast<CControl> ();
 	if (control && control->getTag () >= 0)
 	{
 		controls.emplace_back (control);
-		auto* textEdit = dynamic_cast<CTextEdit*> (control);
+		auto textEdit = control.cast<CTextEdit> ();
 		if (textEdit)
 		{
 			textEdit->setValueToStringFunction (valueToString);
 			textEdit->setStringToValueFunction (stringToValue);
 		}
-		updateColorSlider (control);
+		updateColorSlider (*control.get ());
 	}
 	else if (auto container = view->asViewContainer ())
 	{
@@ -247,61 +248,61 @@ IControlListener* UIColorChooserController::getControlListener (UTF8StringPtr na
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorChooserController::controlBeginEdit (CControl* pControl)
+void UIColorChooserController::controlBeginEdit (CControl& pControl)
 {
-	if (pControl->getTag () >= kHueTag && pControl->getTag () <= kAlphaTag)
+	if (pControl.getTag () >= kHueTag && pControl.getTag () <= kAlphaTag)
 	{
 		color->beginEdit ();
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorChooserController::controlEndEdit (CControl* pControl)
+void UIColorChooserController::controlEndEdit (CControl& pControl)
 {
-	if (pControl->getTag () >= kHueTag && pControl->getTag () <= kAlphaTag)
+	if (pControl.getTag () >= kHueTag && pControl.getTag () <= kAlphaTag)
 	{
 		color->endEdit ();
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorChooserController::valueChanged (CControl* pControl)
+void UIColorChooserController::valueChanged (CControl& pControl)
 {
-	switch (pControl->getTag ())
+	switch (pControl.getTag ())
 	{
 		case kHueTag:
 		{
-			color->setHue (pControl->getValue ());
+			color->setHue (pControl.getValue ());
 			break;
 		}
 		case kSaturationTag:
 		{
-			color->setSaturation (pControl->getValue ());
+			color->setSaturation (pControl.getValue ());
 			break;
 		}
 		case kLightnessTag:
 		{
-			color->setLightness (pControl->getValue ());
+			color->setLightness (pControl.getValue ());
 			break;
 		}
 		case kRedTag:
 		{
-			color->setRed (pControl->getValue ());
+			color->setRed (pControl.getValue ());
 			break;
 		}
 		case kGreenTag:
 		{
-			color->setGreen (pControl->getValue ());
+			color->setGreen (pControl.getValue ());
 			break;
 		}
 		case kBlueTag:
 		{
-			color->setBlue (pControl->getValue ());
+			color->setBlue (pControl.getValue ());
 			break;
 		}
 		case kAlphaTag:
 		{
-			color->setAlpha (pControl->getValue ());
+			color->setAlpha (pControl.getValue ());
 			break;
 		}
 	}

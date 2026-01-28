@@ -54,19 +54,11 @@ public:
 	createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0;
 	/** create a native popup menu */
 	virtual SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () = 0;
-#if VSTGUI_OPENGL_SUPPORT
-	/** create a native opengl sub view */
-	virtual SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () = 0;
-#endif // VSTGUI_OPENGL_SUPPORT
 
 	/** create a native view layer, may return 0 if not supported */
 	virtual SharedPointer<IPlatformViewLayer> createPlatformViewLayer (
 		IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) = 0;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	/** start a drag operation */
-	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0;
-#endif
 	/** start a drag operation
 	 *
 	 *	optional callback will be remembered until the drag is dropped or canceled
@@ -103,7 +95,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformFrameTouchBarExtension /* Extents IPlatformFrame */
+class IPlatformFrameTouchBarExtension : public virtual IReference /* Extents IPlatformFrame */
 {
 public:
 	virtual ~IPlatformFrameTouchBarExtension () noexcept = default;

@@ -13,24 +13,4 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-
-TEST_CASE (CHorizontalSwitchCreatorTest, HeightOfOneImage)
-{
-	DummyUIDescription uidesc;
-	testAttribute<CHorizontalSwitch> (
-		kCHorizontalSwitch, kAttrHeightOfOneImage, 10, uidesc,
-		[] (CHorizontalSwitch* v) { return v->getHeightOfOneImage () == 10; });
-}
-
-TEST_CASE (CHorizontalSwitchCreatorTest, SubPixmaps)
-{
-	DummyUIDescription uidesc;
-	testAttribute<CHorizontalSwitch> (
-		kCHorizontalSwitch, kAttrSubPixmaps, 11, uidesc,
-		[] (CHorizontalSwitch* v) { return v->getNumSubPixmaps () == 11; });
-}
-
-#endif
-
 } // VSTGUI

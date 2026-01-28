@@ -226,10 +226,6 @@ class GenericStringListDataBrowserSource;
 class StaticListControlConfigurator;
 class StringListControlDrawer;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-using CFontRef = CFontDesc*; ///< deprecated
-#endif
-
 // views
 class CFrame;
 class CDataBrowser;
@@ -240,12 +236,8 @@ class CRowColumnView;
 class CScrollView;
 class CShadowViewContainer;
 class CSplitView;
-class CTabView;
 class CView;
 class CViewContainer;
-#if VSTGUI_OPENGL_SUPPORT
-class COpenGLView;
-#endif
 
 // controls
 class CAutoAnimation;
@@ -318,7 +310,7 @@ class LinearTimingFunction;
 class PowerTimingFunction;
 class InterpolationTimingFunction;
 class RepeatTimingFunction;
-using DoneFunction = std::function<void (CView*, const IdStringPtr, IAnimationTarget*)>;
+using DoneFunction = std::function<void (CView&, const IdStringPtr, IAnimationTarget&)>;
 } // Animation
 
 template <class I> class SharedPointer;

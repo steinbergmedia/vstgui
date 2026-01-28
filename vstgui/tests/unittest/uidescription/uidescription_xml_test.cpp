@@ -398,7 +398,7 @@ TEST_CASE (UIDescriptionXMLTests, Fonts)
 	EXPECT (numNames == 6);
 	desc.changeFontName ("f1", "font");
 	EXPECT (desc.hasFontName ("font"));
-	auto newFont = owned (new CFontDesc (*font));
+	auto newFont = owned (new CFontDesc (*font.get ()));
 	desc.changeFont ("font", newFont);
 	desc.changeFont ("font2", newFont);
 	EXPECT (desc.getFont ("font") == newFont);
@@ -642,7 +642,7 @@ TEST_CASE (UIDescriptionXMLTests, GetTemplateNameFromView)
 	EXPECT (desc.parse () == true);
 
 	auto controller = makeOwned<Controller> ();
-	auto view = owned (desc.createView ("view", controller));
+	auto view = desc.createView ("view", controller);
 	std::string name;
 	desc.getTemplateNameFromView (view, name);
 	EXPECT (name == "view");
@@ -682,7 +682,7 @@ TEST_CASE (UIDescriptionXMLTests, StoreRestoreViews)
 	EXPECT (desc.parse () == true);
 
 	auto controller = makeOwned<Controller> ();
-	auto view = owned (desc.createView ("view", controller));
+	auto view = desc.createView ("view", controller);
 	EXPECT (view);
 
 	CMemoryStream memoryStream (1024, 1024, false);
@@ -709,7 +709,7 @@ TEST_CASE (UIDescriptionXMLTests, StoreRestoreViewsAttached)
 	EXPECT (desc.parse () == true);
 
 	auto controller = makeOwned<Controller> ();
-	auto view = owned (desc.createView ("view", controller));
+	auto view = desc.createView ("view", controller);
 	EXPECT (view);
 
 	CMemoryStream memoryStream (1024, 1024, false);
@@ -735,7 +735,7 @@ TEST_CASE (UIDescriptionXMLTests, UpdateViewDescription)
 	UIDescription desc (provider);
 	EXPECT (desc.parse () == true);
 	auto controller = makeOwned<Controller> ();
-	auto view = owned (desc.createView ("view", controller));
+	auto view = desc.createView ("view", controller);
 	EXPECT (view);
 	EXPECT (view->getTransparency () == false);
 	view->setTransparency (true);
@@ -887,7 +887,7 @@ TEST_CASE (UIDescriptionXMLTests, SharedResources)
 	EXPECT (resDesc.parse () == true);
 
 	desc.setSharedResources (shared (&resDesc));
-	EXPECT (desc.getSharedResources () == &resDesc);
+	EXPECT (desc.getSharedResources ().get () == &resDesc);
 	EXPECT (desc.getColor ("c1", color1) == true);
 	EXPECT (resDesc.getColor ("c1", color2) == true);
 	EXPECT (color1 == color2);

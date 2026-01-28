@@ -70,7 +70,7 @@ void CScrollbar::setScrollSize (const CRect& ssize)
 	{
 		scrollSize = ssize;
 		calculateScrollerLength ();
-		setDirty (true);
+		invalid ();
 	}
 }
 
@@ -97,7 +97,7 @@ void CScrollbar::calculateScrollerLength ()
 	if (newScrollerLength != scrollerLength)
 	{
 		scrollerLength = newScrollerLength;
-		setDirty (true);
+		invalid ();
 	}
 }
 
@@ -155,18 +155,6 @@ void CScrollbar::doStepping ()
 }
 
 //-----------------------------------------------------------------------------
-CMessageResult CScrollbar::notify (CBaseObject* sender, IdStringPtr message)
-{
-	if (message == CVSTGUITimer::kMsgTimer && timer)
-	{
-		doStepping ();
-		timer->setFireTime (80);
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
-}
-
-//-----------------------------------------------------------------------------
 void CScrollbar::setOverlayStyle (bool state)
 {
 	if (overlayStyle != state)
@@ -183,7 +171,7 @@ void CScrollbar::setMinScrollerLength (CCoord length)
 	{
 		minScrollerLength = length;
 		calculateScrollerLength ();
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -192,7 +180,8 @@ CMouseEventResult CScrollbar::onMouseEntered (CPoint& where, const CButtonState&
 {
 	if (overlayStyle && scrollerLength != 0)
 	{
-		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
+		addAnimation ("AlphaValueAnimation", makeOwned<Animation::AlphaValueAnimation> (1.f),
+					  makeOwned<Animation::LinearTimingFunction> (100));
 	}
 	mouseIsInside = true;
 	return kMouseEventNotHandled;
@@ -203,16 +192,17 @@ CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& 
 {
 	if (overlayStyle && scrollerLength != 0)
 	{
-		Animation::ITimingFunction* timingFunction = nullptr;
+		SharedPointer<Animation::ITimingFunction> timingFunction;
 		if (getAlphaValue () == 1.f)
 		{
-			auto* interpolTimingFunction = new Animation::InterpolationTimingFunction (400);
+			auto interpolTimingFunction = makeOwned<Animation::InterpolationTimingFunction> (400);
 			interpolTimingFunction->addPoint (300.f/400.f, 1.f);
 			timingFunction = interpolTimingFunction;
 		}
 		else
-			timingFunction = new Animation::LinearTimingFunction (100);
-		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
+			timingFunction = makeOwned<Animation::LinearTimingFunction> (100);
+		addAnimation ("AlphaValueAnimation", makeOwned<Animation::AlphaValueAnimation> (0.001f),
+					  timingFunction);
 	}
 	mouseIsInside = false;
 	return kMouseEventNotHandled;
@@ -235,7 +225,12 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 	else if (scrollerArea.pointInside (where))
 	{
 		doStepping ();
-		timer = makeOwned<CVSTGUITimer> (this, 250, true);
+		timer = makeOwned<CVSTGUITimer> (
+			[this] (auto&&) {
+				doStepping ();
+				timer->setFireTime (80);
+			},
+			250);
 		return kMouseEventHandled;
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -302,9 +297,10 @@ void CScrollbar::onVisualChange ()
 	{
 		if (scrollerLength != 0)
 		{
-			auto timingFunction = new Animation::InterpolationTimingFunction (1100);
+			auto timingFunction = makeOwned<Animation::InterpolationTimingFunction> (1100);
 			timingFunction->addPoint (1000.f/1100.f, 0);
-			addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
+			addAnimation ("AlphaValueAnimation", makeOwned<Animation::AlphaValueAnimation> (0.001f),
+						  timingFunction);
 			setAlphaValue (1.f);
 		}
 		else
@@ -412,7 +408,6 @@ void CScrollbar::draw (CDrawContext* pContext)
 		CRect sr = getScrollerRect ();
 		drawScroller (pContext, sr);
 	}
-	setDirty (false);
 }
 
 }

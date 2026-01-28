@@ -39,17 +39,17 @@ UTF8StringPtr SearchTextEditCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* SearchTextEditCreator::create (const UIAttributes& attributes,
-                                      const IUIDescription* description) const
+SharedPointer<CView> SearchTextEditCreator::create (const UIAttributes& attributes,
+													const IUIDescription& description) const
 {
-	return new CSearchTextEdit (CRect (0, 0, 100, 20), nullptr, -1);
+	return makeOwned<CSearchTextEdit> (CRect (0, 0, 100, 20), nullptr, -1);
 }
 
 //------------------------------------------------------------------------
-bool SearchTextEditCreator::apply (CView* view, const UIAttributes& attributes,
-                                   const IUIDescription* description) const
+bool SearchTextEditCreator::apply (CView& view, const UIAttributes& attributes,
+								   const IUIDescription& description) const
 {
-	auto ste = dynamic_cast<CSearchTextEdit*> (view);
+	auto ste = dynamic_cast<CSearchTextEdit*> (&view);
 	if (!ste)
 		return false;
 	CPoint p;
@@ -74,11 +74,11 @@ auto SearchTextEditCreator::getAttributeType (const string& attributeName) const
 }
 
 //------------------------------------------------------------------------
-bool SearchTextEditCreator::getAttributeValue (CView* view, const string& attributeName,
-                                               string& stringValue,
-                                               const IUIDescription* desc) const
+bool SearchTextEditCreator::getAttributeValue (CView& view, const string& attributeName,
+											   string& stringValue,
+											   const IUIDescription& desc) const
 {
-	auto ste = dynamic_cast<CSearchTextEdit*> (view);
+	auto ste = dynamic_cast<CSearchTextEdit*> (&view);
 	if (!ste)
 		return false;
 	if (attributeName == kAttrClearMarkInset)

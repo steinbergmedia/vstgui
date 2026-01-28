@@ -188,8 +188,8 @@ UITagsController::UITagsController (const SharedPointer<IController>& baseContro
 UITagsController::~UITagsController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UITagsController::createView (const UIAttributes& attributes,
-									 const IUIDescription& description)
+SharedPointer<CView> UITagsController::createView (const UIAttributes& attributes,
+												   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -198,17 +198,21 @@ CView* UITagsController::createView (const UIAttributes& attributes,
 		{
 			dataSource = makeOwned<UITagsDataSource> (editDescription, actionPerformer);
 			UIEditController::setupDataSource (dataSource);
-			return new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			return makeOwned<CDataBrowser> (
+				CRect (0, 0, 0, 0), dataSource.get (),
+				CDataBrowser::kDrawColumnLines | CDataBrowser::kDrawRowLines |
+					CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 		}
 	}
 	return DelegationController::createView (attributes, description);
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes,
-									 const IUIDescription& description)
+SharedPointer<CView> UITagsController::verifyView (const SharedPointer<CView>& view,
+												   const UIAttributes& attributes,
+												   const IUIDescription& description)
 {
-	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
+	auto searchField = view.cast<CSearchTextEdit> ();
 	if (dataSource && searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
@@ -224,13 +228,13 @@ IControlListener* UITagsController::getControlListener (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITagsController::valueChanged (CControl* pControl)
+void UITagsController::valueChanged (CControl& pControl)
 {
-	switch (pControl->getTag ())
+	switch (pControl.getTag ())
 	{
 		case kAddTag:
 		{
-			if (dataSource && pControl->getValue () == pControl->getMax ())
+			if (dataSource && pControl.getValue () == pControl.getMax ())
 			{
 				dataSource->add ();
 			}
@@ -238,7 +242,7 @@ void UITagsController::valueChanged (CControl* pControl)
 		}
 		case kRemoveTag:
 		{
-			if (dataSource && pControl->getValue () == pControl->getMax ())
+			if (dataSource && pControl.getValue () == pControl.getMax ())
 			{
 				dataSource->remove ();
 			}

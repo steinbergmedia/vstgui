@@ -40,10 +40,10 @@ UTF8StringPtr StringListControlCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* StringListControlCreator::create (const UIAttributes& attributes,
-                                         const IUIDescription* description) const
+SharedPointer<CView> StringListControlCreator::create (const UIAttributes& attributes,
+													   const IUIDescription& description) const
 {
-	auto control = new CListControl (CRect (0, 0, 100, 200));
+	auto control = makeOwned<CListControl> (CRect (0, 0, 100, 200));
 	auto drawer = makeOwned<StringListControlDrawer> ();
 	control->setDrawer (drawer);
 	auto configurator = makeOwned<StaticListControlConfigurator> (12.);
@@ -100,20 +100,20 @@ auto StringListControlCreator::getAttributeType (const string& attributeName) co
 }
 
 //------------------------------------------------------------------------
-bool StringListControlCreator::apply (CView* view, const UIAttributes& attributes,
-                                      const IUIDescription* description) const
+bool StringListControlCreator::apply (CView& view, const UIAttributes& attributes,
+									  const IUIDescription& description) const
 {
-	auto control = dynamic_cast<CListControl*> (view);
+	auto control = dynamic_cast<CListControl*> (&view);
 	if (!control)
 		return false;
-	auto drawer = dynamic_cast<StringListControlDrawer*> (control->getDrawer ());
-	auto configurator = dynamic_cast<StaticListControlConfigurator*> (control->getConfigurator ());
+	auto drawer = control->getDrawer ().cast<StringListControlDrawer> ();
+	auto configurator = control->getConfigurator ().cast<StaticListControlConfigurator> ();
 	if (!drawer || !configurator)
 		return false;
 
 	if (const auto* fontAttr = attributes.getAttributeValue (kAttrFont))
 	{
-		if (auto font = description->getFont (fontAttr->data ()))
+		if (auto font = description.getFont (fontAttr->data ()))
 			drawer->setFont (font);
 	}
 	if (const auto* textAlignmentAttr = attributes.getAttributeValue (kAttrTextAlignment))
@@ -160,21 +160,21 @@ bool StringListControlCreator::apply (CView* view, const UIAttributes& attribute
 }
 
 //------------------------------------------------------------------------
-bool StringListControlCreator::getAttributeValue (CView* view, const string& attributeName,
-                                                  string& stringValue,
-                                                  const IUIDescription* desc) const
+bool StringListControlCreator::getAttributeValue (CView& view, const string& attributeName,
+												  string& stringValue,
+												  const IUIDescription& desc) const
 {
-	auto control = dynamic_cast<CListControl*> (view);
+	auto control = dynamic_cast<CListControl*> (&view);
 	if (!control)
 		return false;
-	auto drawer = dynamic_cast<StringListControlDrawer*> (control->getDrawer ());
-	auto configurator = dynamic_cast<StaticListControlConfigurator*> (control->getConfigurator ());
+	auto drawer = control->getDrawer ().cast<StringListControlDrawer> ();
+	auto configurator = control->getConfigurator ().cast<StaticListControlConfigurator> ();
 	if (!drawer || !configurator)
 		return false;
 
 	if (attributeName == kAttrFont)
 	{
-		UTF8StringPtr fontName = desc->lookupFontName (drawer->getFont ());
+		UTF8StringPtr fontName = desc.lookupFontName (drawer->getFont ());
 		if (fontName)
 		{
 			stringValue = fontName;

@@ -109,28 +109,28 @@ TEST_CASE (CGradientViewCreatorTest, LegacyGradient)
 	a.setAttribute (kAttrClass, kCGradientView);
 	a.setAttribute (kAttrGradientStartColor, kColorName);
 
-	auto v = owned (factory.createView (a, uidesc));
+	auto v = factory.createView (a, uidesc);
 	auto view = v.cast<CGradientView> ();
 	EXPECT (view);
 	EXPECT (view->getGradient () == nullptr);
 
 	a.setAttribute (kAttrGradientEndColor, kColorName);
 
-	v = owned (factory.createView (a, uidesc));
+	v = factory.createView (a, uidesc);
 	view = v.cast<CGradientView> ();
 	EXPECT (view);
 	EXPECT (view->getGradient () == nullptr);
 
 	a.setDoubleAttribute (kAttrGradientStartColorOffset, 0.);
 
-	v = owned (factory.createView (a, uidesc));
+	v = factory.createView (a, uidesc);
 	view = v.cast<CGradientView> ();
 	EXPECT (view);
 	EXPECT (view->getGradient () == nullptr);
 
 	a.setDoubleAttribute (kAttrGradientEndColorOffset, 1.);
 
-	v = owned (factory.createView (a, uidesc));
+	v = factory.createView (a, uidesc);
 	view = v.cast<CGradientView> ();
 	EXPECT (view);
 	EXPECT (view->getGradient ());

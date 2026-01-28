@@ -28,16 +28,16 @@ private:
 		return res;
 	}
 
-	static CRect calculateSize (CViewContainer* parent, CRect newSize)
+	static CRect calculateSize (SharedPointer<CViewContainer> parent, CRect newSize)
 	{
-		CFrame* frame = parent ? parent->getFrame () : nullptr;
+		auto frame = parent ? parent->getFrame () : nullptr;
 		while (parent && parent != frame)
 		{
 			CRect parentSize = parent->getViewSize ();
 			parent->getTransform ().transform (newSize);
 			newSize.offset (parentSize.left, parentSize.top);
 			newSize.bound (parentSize);
-			parent = static_cast<CViewContainer*> (parent->getParentView ());
+			parent = parent->getParentView ();
 		}
 		if (frame)
 			frame->getTransform ().transform (newSize);
@@ -47,7 +47,7 @@ private:
 public:
 	CExternalViewBaseImpl (const ExternalViewPtr& v) : view (v) {}
 
-	void updateSize (CViewContainer* parent, CRect localSize, CRect globalSize)
+	void updateSize (const SharedPointer<CViewContainer>& parent, CRect localSize, CRect globalSize)
 	{
 		if (!view)
 			return;
@@ -55,7 +55,7 @@ public:
 		view->setViewSize (fromCRect (globalSize), fromCRect (localSize));
 	}
 
-	void attach (CFrame* frame)
+	void attach (const SharedPointer<CFrame>& frame)
 	{
 		if (!frame || !view)
 			return;
@@ -122,7 +122,7 @@ CExternalView::CExternalView (const CRect& r, const ExternalViewPtr& view) : CVi
 	impl = std::make_unique<Impl> (view);
 	impl->getView ()->setTookFocusCallback ([this] () {
 		if (auto frame = getFrame ())
-			frame->setFocusView (this);
+			frame->setFocusView (shared (this));
 	});
 }
 
@@ -130,23 +130,25 @@ CExternalView::CExternalView (const CRect& r, const ExternalViewPtr& view) : CVi
 CExternalView::~CExternalView () noexcept { impl->getView ()->setTookFocusCallback (nullptr); }
 
 //------------------------------------------------------------------------
-bool CExternalView::attached (CView* parent)
+bool CExternalView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (CView::attached (parent))
 	{
-		auto frame = parent->getFrame ();
-		impl->updateSize (parent->asViewContainer (), getViewSize (),
-						  translateToGlobal (getViewSize ()));
-		impl->scaleFactorChanged (frame->getScaleFactor ());
-		impl->attach (frame);
-		frame->registerScaleFactorChangedListener (this);
-		return true;
+		if (auto frame = parent->getFrame ())
+		{
+			impl->updateSize (parent->asViewContainer (), getViewSize (),
+							  translateToGlobal (getViewSize ()));
+			impl->scaleFactorChanged (frame->getScaleFactor ());
+			impl->attach (frame);
+			frame->registerScaleFactorChangedListener (this);
+			return true;
+		}
 	}
 	return false;
 }
 
 //------------------------------------------------------------------------
-bool CExternalView::removed (CView* parent)
+bool CExternalView::removed (const SharedPointer<CViewContainer>& parent)
 {
 	if (auto frame = parent->getFrame ())
 	{
@@ -166,15 +168,13 @@ void CExternalView::looseFocus () { impl->looseFocus (); }
 void CExternalView::setViewSize (const CRect& rect, bool invalid)
 {
 	CView::setViewSize (rect, invalid);
-	impl->updateSize (getParentView () ? getParentView ()->asViewContainer () : nullptr,
-					  getViewSize (), translateToGlobal (getViewSize ()));
+	impl->updateSize (getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
 //------------------------------------------------------------------------
 void CExternalView::parentSizeChanged ()
 {
-	impl->updateSize (getParentView () ? getParentView ()->asViewContainer () : nullptr,
-					  getViewSize (), translateToGlobal (getViewSize ()));
+	impl->updateSize (getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
 //------------------------------------------------------------------------
@@ -209,7 +209,7 @@ CExternalControl::CExternalControl (const CRect& r, const ExternalControlPtr& vi
 	impl = std::make_unique<Impl> (view);
 	impl->getView ()->setTookFocusCallback ([this] () {
 		if (auto frame = getFrame ())
-			frame->setFocusView (this);
+			frame->setFocusView (shared (this));
 	});
 	auto control = dynamic_cast<ExternalView::IControlViewExtension*> (impl->getView ());
 	vstgui_assert (
@@ -236,31 +236,34 @@ CExternalControl::~CExternalControl () noexcept
 }
 
 //------------------------------------------------------------------------
-void CExternalControl::setValue (float val)
+bool CExternalControl::setValue (float val)
 {
-	CControl::setValue (val);
+	auto result = CControl::setValue (val);
 	auto control = dynamic_cast<ExternalView::IControlViewExtension*> (impl->getView ());
 	control->setValue (getValueNormalized ());
+	return result;
 }
 
 //------------------------------------------------------------------------
-bool CExternalControl::attached (CView* parent)
+bool CExternalControl::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (CControl::attached (parent))
 	{
-		auto frame = parent->getFrame ();
-		impl->updateSize (parent->asViewContainer (), getViewSize (),
-						  translateToGlobal (getViewSize ()));
-		impl->scaleFactorChanged (frame->getScaleFactor ());
-		impl->attach (frame);
-		frame->registerScaleFactorChangedListener (this);
-		return true;
+		if (auto frame = parent->getFrame ())
+		{
+			impl->updateSize (parent->asViewContainer (), getViewSize (),
+							  translateToGlobal (getViewSize ()));
+			impl->scaleFactorChanged (frame->getScaleFactor ());
+			impl->attach (frame);
+			frame->registerScaleFactorChangedListener (this);
+			return true;
+		}
 	}
 	return false;
 }
 
 //------------------------------------------------------------------------
-bool CExternalControl::removed (CView* parent)
+bool CExternalControl::removed (const SharedPointer<CViewContainer>& parent)
 {
 	if (auto frame = parent->getFrame ())
 	{
@@ -280,15 +283,13 @@ void CExternalControl::looseFocus () { impl->looseFocus (); }
 void CExternalControl::setViewSize (const CRect& rect, bool invalid)
 {
 	CControl::setViewSize (rect, invalid);
-	impl->updateSize (getParentView () ? getParentView ()->asViewContainer () : nullptr,
-					  getViewSize (), translateToGlobal (getViewSize ()));
+	impl->updateSize (getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
 //------------------------------------------------------------------------
 void CExternalControl::parentSizeChanged ()
 {
-	impl->updateSize (getParentView () ? getParentView ()->asViewContainer () : nullptr,
-					  getViewSize (), translateToGlobal (getViewSize ()));
+	impl->updateSize (getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
 //------------------------------------------------------------------------
@@ -308,7 +309,7 @@ void CExternalControl::setMouseEnabled (bool enable)
 ExternalView::IView* CExternalControl::getExternalView () const { return impl->getView (); }
 
 //------------------------------------------------------------------------
-bool CExternalControl::getFocusPath (CGraphicsPath& outPath) { return true; }
+bool CExternalControl::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) { return true; }
 
 //------------------------------------------------------------------------
 } // VSTGUI

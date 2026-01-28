@@ -4,6 +4,7 @@
 
 #include "../../../uidescription/delegationcontroller.h"
 #include "../../../uidescription/uiattributes.h"
+#include "../../../lib/controls/ccontrol.h"
 #include "../unittests.h"
 #include "uiviewcreator/helpers.h"
 
@@ -17,21 +18,21 @@ class Controller : public IController,
 public:
 	mutable bool funcCalled {false};
 
-	void valueChanged (CControl* pControl) override { funcCalled = true; }
+	void valueChanged (CControl& pControl) override { funcCalled = true; }
 
-	int32_t controlModifierClicked (CControl* pControl, CButtonState button) override
+	int32_t controlModifierClicked (CControl& pControl, CButtonState button) override
 	{
 		funcCalled = true;
 		return 0;
 	}
 
-	void controlBeginEdit (CControl* pControl) override { funcCalled = true; }
+	void controlBeginEdit (CControl& pControl) override { funcCalled = true; }
 
-	void controlEndEdit (CControl* pControl) override { funcCalled = true; }
+	void controlEndEdit (CControl& pControl) override { funcCalled = true; }
 
-	void controlTagWillChange (CControl* pControl) override { funcCalled = true; }
+	void controlTagWillChange (CControl& pControl) override { funcCalled = true; }
 
-	void controlTagDidChange (CControl* pControl) override { funcCalled = true; }
+	void controlTagDidChange (CControl& pControl) override { funcCalled = true; }
 
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
 	{
@@ -45,14 +46,16 @@ public:
 		return this;
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		funcCalled = true;
 		return nullptr;
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		funcCalled = true;
 		return view;
@@ -72,13 +75,21 @@ struct DelegationControllerAdapter : DelegationController,
 	using DelegationController::DelegationController;
 };
 
+struct DummyControl : CControl
+{
+	DummyControl () : CControl (CRect {}) {}
+	CLASS_METHODS_NOCOPY (DummyControl, CControl);
+	void draw (CDrawContext* pContext) override {};
+};
+
+DummyControl gDummyControlInstance;
 } // anonymous
 
 TEST_CASE (DelegationControllerTest, ValueChanged)
 {
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
-	dc.valueChanged (nullptr);
+	dc.valueChanged (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
 }
 
@@ -86,7 +97,7 @@ TEST_CASE (DelegationControllerTest, ControlModifierClicked)
 {
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
-	dc.controlModifierClicked (nullptr, kLButton);
+	dc.controlModifierClicked (gDummyControlInstance, kLButton);
 	EXPECT (myController->funcCalled);
 }
 
@@ -94,7 +105,7 @@ TEST_CASE (DelegationControllerTest, ControlBeginEdit)
 {
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
-	dc.controlBeginEdit (nullptr);
+	dc.controlBeginEdit (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
 }
 
@@ -102,7 +113,7 @@ TEST_CASE (DelegationControllerTest, ControlEndEdit)
 {
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
-	dc.controlEndEdit (nullptr);
+	dc.controlEndEdit (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
 }
 
@@ -110,7 +121,7 @@ TEST_CASE (DelegationControllerTest, ControlTagWillChange)
 {
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
-	dc.controlTagWillChange (nullptr);
+	dc.controlTagWillChange (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
 }
 
@@ -118,7 +129,7 @@ TEST_CASE (DelegationControllerTest, ControlTagDidChange)
 {
 	auto myController = makeOwned<Controller> ();
 	DelegationControllerAdapter dc (myController);
-	dc.controlTagDidChange (nullptr);
+	dc.controlTagDidChange (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
 }
 

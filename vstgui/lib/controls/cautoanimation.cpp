@@ -30,84 +30,10 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 								const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	heightOfOneImage = size.getHeight ();
-	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
-
-	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
-#else
-#endif
-}
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-/**
- * CAutoAnimation constructor.
- * @param size the size of this view
- * @param listener the listener
- * @param tag the control tag
- * @param background the bitmap
- * @param offset unused
- */
-//------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
-								CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, shared (background)), offset (offset)
-{
-	heightOfOneImage = size.getHeight ();
-	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
-	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
 }
 
 //------------------------------------------------------------------------
-/**
- * CAutoAnimation constructor.
- * @param size the size of this view
- * @param listener the listener
- * @param tag the control tag
- * @param subPixmaps number of sub bitmaps in background
- * @param heightOfOneImage height of one sub bitmap
- * @param background the bitmap
- * @param offset unused
- */
-//------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
-								int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background,
-								const CPoint& offset)
-: CControl (size, listener, tag, shared (background)), offset (offset)
-{
-	setNumSubPixmaps (subPixmaps);
-	setHeightOfOneImage (heightOfOneImage);
-	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
-	setMin (0.f);
-	setMax ((float)(totalHeightOfBitmap - (heightOfOneImage + 1.)));
-}
-
-//------------------------------------------------------------------------
-void CAutoAnimation::setBitmapOffset (const CPoint& off)
-{
-	offset = off;
-	invalid ();
-}
-
-//------------------------------------------------------------------------
-CPoint CAutoAnimation::getBitmapOffset () const { return offset; }
-
-#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-
-//------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
-: CControl (v)
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-, offset (v.offset)
-, totalHeightOfBitmap (v.totalHeightOfBitmap)
-#endif
-{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	setNumSubPixmaps (v.subPixmaps);
-	setHeightOfOneImage (v.heightOfOneImage);
-#endif
-}
+CAutoAnimation::CAutoAnimation (const CAutoAnimation& v) : CControl (v) {}
 
 //------------------------------------------------------------------------
 bool CAutoAnimation::isWindowOpened () const { return bWindowOpened; }
@@ -121,23 +47,15 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 		{
 			if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 			{
-				auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+				auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
 				mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 			}
 			else
 			{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-				CPoint where;
-				where.y = (int32_t)value + offset.y;
-				where.x = offset.x;
-				bitmap->draw (pContext, getViewSize (), where);
-#else
 				CView::draw (pContext);
-#endif
 			}
 		}
 	}
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -146,8 +64,8 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const CButtonState
 	if (buttons & kLButton)
 	{
 		if (!isWindowOpened ())
-		{	
-			value = 0;
+		{
+			setValue (0);
 			openWindow ();
 			invalid ();
 			valueChanged ();
@@ -155,7 +73,7 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const CButtonState
 		else
 		{                                                                       
 			// stop info animation
-			value = 0; // draw first pic of bitmap
+			setValue (0); // draw first pic of bitmap
 			invalid ();
 			closeWindow ();
 			valueChanged ();
@@ -166,7 +84,7 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const CButtonState
 }
 
 //------------------------------------------------------------------------
-bool CAutoAnimation::attached (CView* parent)
+bool CAutoAnimation::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (CControl::attached (parent))
 	{
@@ -178,7 +96,7 @@ bool CAutoAnimation::attached (CView* parent)
 }
 
 //------------------------------------------------------------------------
-bool CAutoAnimation::removed (CView* parent)
+bool CAutoAnimation::removed (const SharedPointer<CViewContainer>& parent)
 {
 	timer = nullptr;
 	return CControl::removed (parent);
@@ -220,13 +138,9 @@ void CAutoAnimation::updateMinMaxFromBackground ()
 	{
 		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
-			auto numFrames = getMultiFrameBitmapRangeLength (*mfb);
+			auto numFrames = getMultiFrameBitmapRangeLength (*mfb.get ());
 			setMin (0.f);
 			setMax (numFrames);
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			heightOfOneImage = mfb->getFrameSize ().y;
-			totalHeightOfBitmap = heightOfOneImage * numFrames;
-#endif
 		}
 	}
 }
@@ -252,11 +166,6 @@ void CAutoAnimation::nextPixmap ()
 			return;
 		}
 	}
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	value += (float)heightOfOneImage;
-	if (value >= (totalHeightOfBitmap - heightOfOneImage))
-		value = 0;
-#endif
 }
 
 //------------------------------------------------------------------------
@@ -273,11 +182,6 @@ void CAutoAnimation::previousPixmap ()
 			return;
 		}
 	}
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	value -= (float)heightOfOneImage;
-	if (value < 0.f)
-		value = (float)(totalHeightOfBitmap - heightOfOneImage - 1);
-#endif
 }
 
 //------------------------------------------------------------------------

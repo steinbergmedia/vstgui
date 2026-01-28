@@ -16,6 +16,7 @@ struct View : public VSTGUI::CView, public VSTGUI::IFocusDrawing
 {
 	using CRect = VSTGUI::CRect;
 	using CPoint = VSTGUI::CPoint;
+	using CCoord = VSTGUI::CCoord;
 	using CMouseEventResult = VSTGUI::CMouseEventResult;
 	using CButtonState = VSTGUI::CButtonState;
 	using CDrawContext = VSTGUI::CDrawContext;
@@ -33,7 +34,7 @@ struct View : public VSTGUI::CView, public VSTGUI::IFocusDrawing
 	void draw (CDrawContext* context) override;
 
 	bool drawFocusOnTop () override { return false; }
-	bool getFocusPath (CGraphicsPath& outPath) override { return false; }
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override { return false; }
 
 private:
 	CRect box;

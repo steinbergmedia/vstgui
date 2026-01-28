@@ -8,10 +8,6 @@
 #include "cbuttonstate.h"
 #include "cpoint.h"
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#include "vstkeycode.h"
-#endif
-
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -812,32 +808,6 @@ CButtonState buttonStateFromEventModifiers (const Modifiers& mods);
  *	@ingroup new_in_4_11
  */
 CButtonState buttonStateFromMouseEvent (const MouseEvent& event);
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-/** helper function to convert from new VirtualKey to old VstVirtualKey
- *
- *	returns 0 if key cannot be mapped
- *	@ingroup new_in_4_11
- */
-inline unsigned char toVstVirtualKey (VirtualKey key)
-{
-	auto k = static_cast<uint32_t> (key);
-	if (k <= static_cast<uint32_t> (VirtualKey::Equals))
-		return static_cast<unsigned char> (k);
-	return 0;
-}
-
-inline VirtualKey fromVstVirtualKey (uint32_t key)
-{
-	auto k = static_cast<VirtualKey> (key);
-	if (k <= VirtualKey::Equals)
-		return k;
-	return VirtualKey::None;
-}
-
-VstKeyCode toVstKeyCode (const KeyboardEvent& event);
-#endif
 
 //------------------------------------------------------------------------
 } // VSTGUI

@@ -40,8 +40,9 @@ public:
 		okValue.setActive (false);
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr)

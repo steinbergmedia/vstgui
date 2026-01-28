@@ -142,7 +142,7 @@ public:
 	 *	@return platform file selector or nullptr on failure
 	 */
 	virtual PlatformFileSelectorPtr createFileSelector (PlatformFileSelectorStyle style,
-														IPlatformFrame* frame) const noexcept = 0;
+														PlatformFramePtr frame) const noexcept = 0;
 
 	/** Get the graphics device factory
 	 *

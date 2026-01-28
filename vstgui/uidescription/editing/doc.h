@@ -319,7 +319,7 @@ override
 		return controller->verifyView (view, attributes, description);
 	}
 
-	void valueChanged (CControl* pControl) override
+	void valueChanged (CControl& pControl) override
 	{
 		if (pControl == controlView)
 		{

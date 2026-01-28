@@ -39,10 +39,10 @@ UTF8StringPtr RockerSwitchCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* RockerSwitchCreator::create (const UIAttributes& attributes,
-                                    const IUIDescription* description) const
+SharedPointer<CView> RockerSwitchCreator::create (const UIAttributes& attributes,
+												  const IUIDescription& description) const
 {
-	return new CRockerSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	return makeOwned<CRockerSwitch> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------

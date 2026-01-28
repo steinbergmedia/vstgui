@@ -83,9 +83,6 @@ public:
 
 	virtual void setFont (const SharedPointer<CFontDesc>& newFont);
 	SharedPointer<CFontDesc> getFont () const { return font; }
-	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
-		"Use `setFont (shared (yourFont);` instead")
 
 	virtual void setFontColor (const CColor& newColor) { fontColor = newColor; invalid (); }
 	const CColor& getFontColor () const { return fontColor; }
@@ -116,7 +113,7 @@ public:
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	bool sizeToFit () override;
 	void setBackground (const SharedPointer<CBitmap>& background) override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
@@ -144,10 +141,6 @@ private:
 //-----------------------------------------------------------------------------
 class CKickButton : public CControl,
 					public MultiFrameBitmapView<CKickButton>
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-,
-					public IMultiBitmapControl
-#endif
 {
 public:
 	CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
@@ -164,19 +157,9 @@ public:
 
 	bool sizeToFit () override;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
-	CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
-				 CCoord heightOfOneImage, CBitmap* background,
-				 const CPoint& offset = CPoint (0, 0));
-#endif
-
 	CLASS_METHODS(CKickButton, CControl)
 protected:
 	~CKickButton () noexcept override = default;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CPoint offset {};
-#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -206,9 +189,6 @@ public:
 
 	virtual void setFont (const SharedPointer<CFontDesc>& newFont);
 	SharedPointer<CFontDesc> getFont () const { return font; }
-	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
-		"Use `setFont (shared (yourFont);` instead")
 
 	virtual void setTextColor (const CColor& color);
 	const CColor& getTextColor () const { return textColor; }
@@ -252,10 +232,10 @@ public:
 
 	// overrides
 	void draw (CDrawContext* context) override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool drawFocusOnTop () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	bool removed (CView* parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	bool sizeToFit () override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;

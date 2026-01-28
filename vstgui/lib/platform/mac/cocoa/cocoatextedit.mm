@@ -114,7 +114,7 @@ struct VSTGUI_NSTextFieldT : RuntimeObjCClass<VSTGUI_NSTextFieldT<SecureT>>
 			if (auto var = obj.template getVariable<IPlatformTextEditCallback*> (textEditVarName))
 				var->set (tec);
 
-			CoreTextFont* ctf = tec->platformGetFont ()->getPlatformFont ().cast<CoreTextFont> ();
+			auto ctf = tec->platformGetFont ()->getPlatformFont ().cast<CoreTextFont> ();
 			if (ctf)
 			{
 				CTFontRef fontRef = ctf->getFontRef ();

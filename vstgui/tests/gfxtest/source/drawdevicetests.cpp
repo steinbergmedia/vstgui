@@ -64,8 +64,7 @@ public:
 private:
 	std::string getSavePath ()
 	{
-		if (auto fs =
-		        owned (CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectSaveFile)))
+		if (auto fs = CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectSaveFile))
 		{
 			fs->setDefaultExtension (CFileExtension ("PNG", "png"));
 			if (fs->runModal ())
@@ -87,7 +86,7 @@ private:
 		if (auto offscreen = COffscreenContext::create (size, scaleFactor))
 		{
 			offscreen->beginDraw ();
-			func (this, *offscreen, size);
+			func (this, *offscreen.get (), size);
 			offscreen->endDraw ();
 			auto bitmap = offscreen->getBitmap ();
 			if (auto platformBitmap = bitmap->getPlatformBitmap ())
@@ -215,7 +214,8 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
 	offscreen->endDraw ();
 	auto bitmap = offscreen->getBitmap ();
-	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap.get ());
+	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
+								bitmap.cast<IReference> ());
 	boxBlurFilter->run (true);
 	bitmap->draw (&context, {0, 0, 20, 20});
 
@@ -226,7 +226,8 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
 	offscreen->endDraw ();
 	bitmap = offscreen->getBitmap ();
-	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap.get ());
+	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
+								bitmap.cast<IReference> ());
 	boxBlurFilter->run (true);
 	bitmap->draw (&context, {20, 0, 40, 20});
 
@@ -237,7 +238,8 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
 	offscreen->endDraw ();
 	bitmap = offscreen->getBitmap ();
-	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap.get ());
+	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
+								bitmap.cast<IReference> ());
 	boxBlurFilter->run (true);
 	bitmap->draw (&context, {40, 0, 60, 20});
 
@@ -248,7 +250,8 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
 	offscreen->endDraw ();
 	bitmap = offscreen->getBitmap ();
-	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap.get ());
+	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
+								bitmap.cast<IReference> ());
 	boxBlurFilter->run (true);
 	bitmap->draw (&context, {60, 0, 80, 20});
 }
@@ -314,7 +317,6 @@ public:
 			context->setFillColor (color);
 			context->drawRect (r, kDrawFilled);
 		}
-		setDirty (false);
 	}
 	bool toggle {false};
 	CColor color {kRedCColor};
@@ -327,22 +329,24 @@ class ViewCreator : public DelegationController,
 public:
 	ViewCreator (const SharedPointer<IController>& parent) : DelegationController (parent) {}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
 			if (*customViewName == "RectsView")
 			{
-				return new CustomDrawView ([] (auto view, auto& ctx, auto size) { drawRects (ctx, size); });
+				return makeOwned<CustomDrawView> (
+					[] (auto view, auto& ctx, auto size) { drawRects (ctx, size); });
 			}
 			if (*customViewName == "BitmapsFilterView")
 			{
-				return new CustomDrawView (
-				    [] (auto view, auto& ctx, auto size) { drawBitmapFilter (view, ctx, size); });
+				return makeOwned<CustomDrawView> (
+					[] (auto view, auto& ctx, auto size) { drawBitmapFilter (view, ctx, size); });
 			}
 			else if (*customViewName == "InvalidRegionView")
 			{
-				return new InvalidateRegionTestView (CRect (0, 0, 500, 500));
+				return makeOwned<InvalidateRegionTestView> (CRect (0, 0, 500, 500));
 			}
 		}
 		return DelegationController::createView (attributes, description);

@@ -66,10 +66,6 @@ protected:
 	void freeText ();
 	void calculateTruncatedText ();
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override { return false; }
-#endif
-
 	TextTruncateMode textTruncateMode;
 	UTF8String text;
 	UTF8String truncatedText;
@@ -120,7 +116,8 @@ public:
 	void setText (const UTF8String& txt) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void setTextTruncateMode (TextTruncateMode mode) override;
-	void setValue (float val) override;
+	bool setValue (float val) override;
+
 private:
 	void drawStyleChanged () override;
 	void calculateWrapLine  (CDrawContext *context, std::pair<UTF8String, double> &element, const IFontPainter *const &fontPainter, double lineHeight, double lineWidth, double maxWidth, const CPoint &textInset, CCoord &y);

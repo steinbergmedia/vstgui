@@ -29,26 +29,47 @@ Adding CTooltipSupport is done via VSTGUI::CFrame::enableTooltips (true) */
  * @param frame CFrame object
  * @param delay tooltip delay time in milliseconds
  */
-CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delay)
-: timer (nullptr)
-, frame (frame)
-, currentView (nullptr)
-, delay (delay)
-, state (kHidden)
+CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delayTime)
+: timer (nullptr), frame (frame), currentView (nullptr), delay (delayTime), state (kHidden)
 {
-	timer = makeOwned<CVSTGUITimer> (this, delay);
+	timer = makeOwned<CVSTGUITimer> (
+		[this] (auto&&) {
+			if (state == kHiding)
+			{
+				hideTooltip ();
+				timer->setFireTime (delay);
+			}
+			else if (state == kShowing)
+			{
+				if (showTooltip ())
+				{
+					timer->setFireTime (100);
+				}
+				else
+				{
+					state = kHidden;
+					timer->stop ();
+				}
+			}
+			else if (state == kForceVisible)
+			{
+				state = kVisible;
+				timer->stop ();
+				timer->setFireTime (delay);
+			}
+		},
+		delay, false);
 }
 
 //------------------------------------------------------------------------
 CTooltipSupport::~CTooltipSupport () noexcept
 {
-	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
-	if (platformFrame)
+	if (auto platformFrame = frame->getPlatformFrame ())
 		platformFrame->hideTooltip ();
 }
 
 //------------------------------------------------------------------------
-static Buffer<char> getTooltipFromView (CView* view)
+static Buffer<char> getTooltipFromView (const SharedPointer<CView>& view)
 {
 	Buffer<char> tooltip;
 	uint32_t tooltipSize = 0;
@@ -65,7 +86,7 @@ static Buffer<char> getTooltipFromView (CView* view)
 }
 
 //------------------------------------------------------------------------
-static bool viewHasTooltip (CView* view)
+static bool viewHasTooltip (const SharedPointer<CView>& view)
 {
 	uint32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
@@ -77,7 +98,7 @@ static bool viewHasTooltip (CView* view)
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::onMouseEntered (CView* view)
+void CTooltipSupport::onMouseEntered (const SharedPointer<CView>& view)
 {
 	if (viewHasTooltip (view))
 	{
@@ -110,7 +131,7 @@ void CTooltipSupport::onMouseEntered (CView* view)
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::onMouseExited (CView* view)
+void CTooltipSupport::onMouseExited (const SharedPointer<CView>& view)
 {
 	if (currentView == view)
 	{
@@ -191,8 +212,7 @@ void CTooltipSupport::hideTooltip ()
 {
 	state = kHidden;
 	timer->stop ();
-	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
-	if (platformFrame)
+	if (auto platformFrame = frame->getPlatformFrame ())
 		platformFrame->hideTooltip ();
 
 	#if DEBUGLOG
@@ -217,9 +237,8 @@ bool CTooltipSupport::showTooltip ()
 		if (!tooltip.empty ())
 		{
 			state = kForceVisible;
-			
-			IPlatformFrame* platformFrame = frame->getPlatformFrame ();
-			if (platformFrame)
+
+			if (auto platformFrame = frame->getPlatformFrame ())
 				platformFrame->showTooltip (r, tooltip.get ());
 
 			#if DEBUGLOG
@@ -232,36 +251,4 @@ bool CTooltipSupport::showTooltip ()
 }
 
 //------------------------------------------------------------------------
-CMessageResult CTooltipSupport::notify (CBaseObject* sender, IdStringPtr msg)
-{
-	if (msg == CVSTGUITimer::kMsgTimer)
-	{
-		if (state == kHiding)
-		{
-			hideTooltip ();
-			timer->setFireTime (delay);
-		}
-		else if (state == kShowing)
-		{
-			if (showTooltip ())
-			{
-				timer->setFireTime (100);
-			}
-			else
-			{
-				state = kHidden;
-				timer->stop ();
-			}
-		}
-		else if (state == kForceVisible)
-		{
-			state = kVisible;
-			timer->stop ();
-			timer->setFireTime (delay);
-		}
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
-}
-
 } // VSTGUI

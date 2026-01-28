@@ -106,7 +106,7 @@ public:
 
 	// IPlatformWindowAccess
 	InterfacePtr getPlatformWindow () const override { return platformWindow; }
-	CFrame* getFrame () const override { return frame; }
+	SharedPointer<CFrame> getFrame () const override { return frame; }
 
 	// Platform::IWindowDelegate
 	CPoint constraintSize (const CPoint& newSize) override;
@@ -123,9 +123,9 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	// IMouseObserver
-	void onMouseEntered (CView*, CFrame* ) override {};
-	void onMouseExited (CView*, CFrame* ) override {};
-	void onMouseEvent (MouseEvent& event, CFrame*) override;
+	void onMouseEntered (CView&, CFrame&) override {};
+	void onMouseExited (CView&, CFrame&) override {};
+	void onMouseEvent (MouseEvent& event, CFrame&) override;
 
 private:
 	WindowControllerPtr controller;
@@ -291,7 +291,6 @@ void Window::onClosed ()
 	if (frame)
 	{
 		frame->unregisterMouseObserver (this);
-		frame->remember ();
 		frame->close ();
 		frame = nullptr;
 	}
@@ -356,7 +355,7 @@ bool Window::canHandleCommand (const Command& command)
 		return controller->canClose (*this);
 	if (auto focusView = frame->getFocusView ())
 	{
-		if (auto viewController = getViewController (*focusView, false))
+		if (auto viewController = getViewController (*focusView.get (), false))
 		{
 			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController.get ()))
 			{
@@ -383,7 +382,7 @@ bool Window::handleCommand (const Command& command)
 	}
 	if (auto focusView = frame->getFocusView ())
 	{
-		if (auto viewController = getViewController (*focusView, false))
+		if (auto viewController = getViewController (*focusView.get (), false))
 		{
 			if (auto commandHandler = dynamic_cast<ICommandHandler*> (viewController.get ()))
 			{
@@ -404,17 +403,17 @@ bool Window::handleCommand (const Command& command)
 struct WindowContextMenuCommandHandler : ICommandMenuItemTarget, NonAtomicReferenceCounted
 {
 	WindowContextMenuCommandHandler (Window* window) : window (window) {}
-	bool validateCommandMenuItem (CCommandMenuItem* item) override
+	bool validateCommandMenuItem (CCommandMenuItem& item) override
 	{
-		Command cmd = {item->getCommandCategory (), item->getCommandName ()};
+		Command cmd = {item.getCommandCategory (), item.getCommandName ()};
 		if (window->canHandleCommand (cmd) || getApplicationPlatformAccess ()->canHandleCommand (cmd))
 			return true;
-		item->setEnabled (false);
+		item.setEnabled (false);
 		return false;
 	}
-	bool onCommandMenuItemSelected (CCommandMenuItem* item) override
+	bool onCommandMenuItemSelected (CCommandMenuItem& item) override
 	{
-		Command cmd = {item->getCommandCategory (), item->getCommandName ()};
+		Command cmd = {item.getCommandCategory (), item.getCommandName ()};
 		if (window->handleCommand (cmd))
 			return true;
 		return getApplicationPlatformAccess ()->handleCommand (cmd);
@@ -425,7 +424,7 @@ struct WindowContextMenuCommandHandler : ICommandMenuItemTarget, NonAtomicRefere
 
 
 //------------------------------------------------------------------------
-void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
+void Window::onMouseEvent (MouseEvent& event, CFrame& inFrame)
 {
 	if (event.type != EventType::MouseDown || !event.buttonState.isRight ())
 		return;
@@ -433,14 +432,14 @@ void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
 	auto contextMenu = makeOwned<COptionMenu> ();
 
 	CPoint where (event.mousePosition);
-	inFrame->getTransform ().transform (where);
+	inFrame.getTransform ().transform (where);
 
 	CViewContainer::ViewList views;
-	if (inFrame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
+	if (inFrame.getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
 	{
 		for (const auto& view : views)
 		{
-			auto viewController = getViewController (*view);
+			auto viewController = getViewController (*view.get ());
 			auto contextMenuController = viewController.cast<IContextMenuController> ();
 			auto contextMenuController2 = viewController.cast<IContextMenuController2> ();
 			if (contextMenuController == nullptr && contextMenuController2 == nullptr)
@@ -450,9 +449,10 @@ void Window::onMouseEvent (MouseEvent& event, CFrame* inFrame)
 			CPoint p (event.mousePosition);
 			view->frameToLocal (p);
 			if (contextMenuController2)
-				contextMenuController2->appendContextMenuItems (*contextMenu, *view, p);
+				contextMenuController2->appendContextMenuItems (*contextMenu.get (), *view.get (),
+																p);
 			else if (contextMenuController)
-				contextMenuController->appendContextMenuItems (*contextMenu, p);
+				contextMenuController->appendContextMenuItems (*contextMenu.get (), p);
 		}
 	}
 	if (contextMenu->getNbEntries () == 0 &&

@@ -45,14 +45,14 @@ public:
 
 	virtual IdStringPtr getViewName () const = 0;
 	virtual IdStringPtr getBaseViewName () const = 0;
-	virtual CView* create (const UIAttributes& attributes,
-	                       const IUIDescription* description) const = 0;
-	virtual bool apply (CView* view, const UIAttributes& attributes,
-	                    const IUIDescription* description) const = 0;
+	virtual SharedPointer<CView> create (const UIAttributes& attributes,
+										 const IUIDescription& description) const = 0;
+	virtual bool apply (CView& view, const UIAttributes& attributes,
+						const IUIDescription& description) const = 0;
 	virtual bool getAttributeNames (StringList& attributeNames) const = 0;
 	virtual AttrType getAttributeType (const string& attributeName) const = 0;
-	virtual bool getAttributeValue (CView* view, const string& attributeName, string& stringValue,
-	                                const IUIDescription* desc) const = 0;
+	virtual bool getAttributeValue (CView& view, const string& attributeName, string& stringValue,
+									const IUIDescription& desc) const = 0;
 	// optional list type support
 	virtual bool getPossibleListValues (const string& attributeName,
 	                                    ConstStringPtrList& values) const = 0;
@@ -69,15 +69,15 @@ public:
 class ViewCreatorAdapter : public IViewCreator
 {
 public:
-	bool apply (CView* view, const UIAttributes& attributes,
-	            const IUIDescription* description) const override
+	bool apply (CView& view, const UIAttributes& attributes,
+				const IUIDescription& description) const override
 	{
 		return true;
 	}
 	bool getAttributeNames (StringList& attributeNames) const override { return true; }
 	AttrType getAttributeType (const string& attributeName) const override { return kUnknownType; }
-	bool getAttributeValue (CView* view, const string& attributeName, string& stringValue,
-	                        const IUIDescription* desc) const override
+	bool getAttributeValue (CView& view, const string& attributeName, string& stringValue,
+							const IUIDescription& desc) const override
 	{
 		return false;
 	}

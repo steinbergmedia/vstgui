@@ -39,17 +39,17 @@ UTF8StringPtr TextEditCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* TextEditCreator::create (const UIAttributes& attributes,
-                                const IUIDescription* description) const
+SharedPointer<CView> TextEditCreator::create (const UIAttributes& attributes,
+											  const IUIDescription& description) const
 {
-	return new CTextEdit (CRect (0, 0, 100, 20), nullptr, -1);
+	return makeOwned<CTextEdit> (CRect (0, 0, 100, 20), nullptr, -1);
 }
 
 //------------------------------------------------------------------------
-bool TextEditCreator::apply (CView* view, const UIAttributes& attributes,
-                             const IUIDescription* description) const
+bool TextEditCreator::apply (CView& view, const UIAttributes& attributes,
+							 const IUIDescription& description) const
 {
-	auto* label = dynamic_cast<CTextEdit*> (view);
+	auto* label = dynamic_cast<CTextEdit*> (&view);
 	if (!label)
 		return false;
 
@@ -95,10 +95,10 @@ auto TextEditCreator::getAttributeType (const string& attributeName) const -> At
 }
 
 //------------------------------------------------------------------------
-bool TextEditCreator::getAttributeValue (CView* view, const string& attributeName,
-                                         string& stringValue, const IUIDescription* desc) const
+bool TextEditCreator::getAttributeValue (CView& view, const string& attributeName,
+										 string& stringValue, const IUIDescription& desc) const
 {
-	auto* label = dynamic_cast<CTextEdit*> (view);
+	auto* label = dynamic_cast<CTextEdit*> (&view);
 	if (!label)
 		return false;
 	if (attributeName == kAttrSecureStyle)

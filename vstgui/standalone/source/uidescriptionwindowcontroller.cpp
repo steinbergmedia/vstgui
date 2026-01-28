@@ -105,7 +105,7 @@ public:
 		for (auto& c : controls)
 		{
 			if (auto listener = c->getListener ())
-				listener->controlBeginEdit (c);
+				listener->controlBeginEdit (*c);
 		}
 	}
 
@@ -114,7 +114,7 @@ public:
 		for (auto& c : controls)
 		{
 			if (auto listener = c->getListener ())
-				listener->controlEndEdit (c);
+				listener->controlEndEdit (*c);
 		}
 	}
 
@@ -179,17 +179,17 @@ public:
 		}
 	}
 
-	void valueChanged (CControl* control) override
+	void valueChanged (CControl& control) override
 	{
-		if (updateControl == control)
+		if (updateControl == &control)
 			return;
 
-		auto newValue = static_cast<IValue::Type> (control->getValueNormalized ());
+		auto newValue = static_cast<IValue::Type> (control.getValueNormalized ());
 		value->performEdit (newValue);
 	}
 
-	void controlBeginEdit (CControl* control) override { value->beginEdit (); }
-	void controlEndEdit (CControl* control) override { value->endEdit (); }
+	void controlBeginEdit (CControl& control) override { value->beginEdit (); }
+	void controlEndEdit (CControl& control) override { value->endEdit (); }
 
 	void addControl (CControl* control)
 	{
@@ -214,14 +214,13 @@ public:
 		}
 		else if (auto listControl = dynamic_cast<CListControl*> (control))
 		{
-			if (auto stringListDrawer =
-			        dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
+			if (auto stringListDrawer = listControl->getDrawer ().cast<StringListControlDrawer> ())
 			{
 				stringListDrawer->setStringProvider ([this] (int32_t row) {
 					auto min = this->value->getConverter ().normalizedToPlain (0.);
 					auto norm = this->value->getConverter ().plainToNormalized (row + min);
 					auto string = this->value->getConverter ().valueAsString (norm);
-					return shared (string.getPlatformString ());
+					return string.getPlatformString ();
 				});
 			}
 		}
@@ -261,8 +260,7 @@ protected:
 		}
 		else if (auto listControl = dynamic_cast<CListControl*> (control))
 		{
-			if (auto stringListDrawer =
-			        dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
+			if (auto stringListDrawer = listControl->getDrawer ().cast<StringListControlDrawer> ())
 			{
 				stringListDrawer->setStringProvider (nullptr);
 			}
@@ -300,7 +298,7 @@ struct WindowController::Impl : public ICommandHandler
 		{
 			for (auto control : vw->getControls ())
 			{
-				if (control->getListener () == iController)
+				if (control->getListener () == iController.get ())
 					control->setListener (nullptr);
 			}
 		}
@@ -332,7 +330,7 @@ struct WindowController::Impl : public ICommandHandler
 		if (!uiDesc->parse ())
 			return false;
 		if (customization)
-			customization->onUIDescriptionParsed (*uiDesc);
+			customization->onUIDescriptionParsed (*uiDesc.get ());
 
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
@@ -484,7 +482,7 @@ struct WindowController::Impl : public ICommandHandler
 			return false;
 		}
 		if (customization)
-			customization->onUIDescriptionParsed (*uiDesc);
+			customization->onUIDescriptionParsed (*uiDesc.get ());
 		return true;
 	}
 
@@ -516,7 +514,7 @@ struct WindowController::Impl : public ICommandHandler
 		auto viewSize = view->getViewSize ().getSize ();
 		frame->getTransform ().transform (viewSize);
 		frame->setSize (viewSize.x, viewSize.y);
-		frame->addView (view);
+		frame->addSubview (view);
 
 		auto focusDrawing = uiDesc->getFocusDrawingSettings ();
 		frame->setFocusDrawingEnabled (focusDrawing.enabled);
@@ -531,7 +529,7 @@ struct WindowController::Impl : public ICommandHandler
 		window->setSize (view->getViewSize ().getSize ());
 	}
 
-	CView* currentCommandHandlerCandidate ()
+	SharedPointer<CView> currentCommandHandlerCandidate ()
 	{
 		if (auto focusView = frame->getFocusView ())
 			return focusView;
@@ -555,7 +553,7 @@ struct WindowController::Impl : public ICommandHandler
 		{
 			if (auto view = currentCommandHandlerCandidate ())
 			{
-				if (auto viewController = getViewController (*view, true))
+				if (auto viewController = getViewController (*view.get (), true))
 				{
 					if (auto viewCommandHandler =
 							dynamic_cast<ICommandHandler*> (viewController.get ()))
@@ -585,7 +583,7 @@ struct WindowController::Impl : public ICommandHandler
 		{
 			if (auto view = currentCommandHandlerCandidate ())
 			{
-				if (auto viewController = getViewController (*view, true))
+				if (auto viewController = getViewController (*view.get (), true))
 				{
 					if (auto viewCommandHandler =
 							dynamic_cast<ICommandHandler*> (viewController.get ()))
@@ -616,32 +614,32 @@ struct WindowController::Impl : public ICommandHandler
 		IControllerAdapter (Impl* impl) : impl (impl) {}
 
 		// IController
-		void valueChanged (CControl* control) override {}
-		int32_t controlModifierClicked (CControl* control, CButtonState button) override
+		void valueChanged (CControl& control) override {}
+		int32_t controlModifierClicked (CControl& control, CButtonState button) override
 		{
 			return 0;
 		}
-		void controlBeginEdit (CControl* control) override {}
-		void controlEndEdit (CControl* control) override {}
-		void controlTagWillChange (CControl* control) override
+		void controlBeginEdit (CControl& control) override {}
+		void controlEndEdit (CControl& control) override {}
+		void controlTagWillChange (CControl& control) override
 		{
 			if (!impl)
 				return;
-			if (control->getTag () < 0)
+			if (control.getTag () < 0)
 				return;
-			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
+			auto index = static_cast<ValueWrapperList::size_type> (control.getTag ());
 			if (index < impl->valueWrappers.size ())
-				impl->valueWrappers[index]->removeControl (control);
+				impl->valueWrappers[index]->removeControl (&control);
 		}
-		void controlTagDidChange (CControl* control) override
+		void controlTagDidChange (CControl& control) override
 		{
 			if (!impl)
 				return;
-			if (control->getTag () < 0)
+			if (control.getTag () < 0)
 				return;
-			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
+			auto index = static_cast<ValueWrapperList::size_type> (control.getTag ());
 			if (index < impl->valueWrappers.size ())
-				impl->valueWrappers[index]->addControl (control);
+				impl->valueWrappers[index]->addControl (&control);
 		}
 
 		int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
@@ -659,17 +657,18 @@ struct WindowController::Impl : public ICommandHandler
 		{
 			return this;
 		}
-		CView* createView (const UIAttributes& attributes,
-						   const IUIDescription& description) override
+		SharedPointer<CView> createView (const UIAttributes& attributes,
+										 const IUIDescription& description) override
 		{
 			return nullptr;
 		}
-		CView* verifyView (CView* view, const UIAttributes& attributes,
-						   const IUIDescription& description) override
+		SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+										 const UIAttributes& attributes,
+										 const IUIDescription& description) override
 		{
 			if (!impl)
 				return view;
-			auto* control = dynamic_cast<CControl*> (view);
+			auto control = view.cast<CControl> ();
 			if (control)
 			{
 				if (control->getListener () == nullptr)
@@ -677,7 +676,7 @@ struct WindowController::Impl : public ICommandHandler
 				auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
 				if (index < impl->valueWrappers.size ())
 				{
-					impl->valueWrappers[index]->updateControlOnStateChange (control);
+					impl->valueWrappers[index]->updateControlOnStateChange (control.get ());
 				}
 			}
 			return view;
@@ -800,7 +799,7 @@ struct WindowController::EditImpl : WindowController::Impl
 	{
 		Detail::PreventPopupClose ppc (*window);
 
-		if (Detail::initUIDescAsNew (*uiDesc, frame))
+		if (Detail::initUIDescAsNew (*uiDesc.get (), frame))
 		{
 			enableEditing (true, true);
 			save (true);
@@ -816,7 +815,7 @@ struct WindowController::EditImpl : WindowController::Impl
 	{
 		Detail::PreventPopupClose ppc (*window);
 
-		auto result = Detail::checkAndUpdateUIDescFilePath (*uiDesc, frame);
+		auto result = Detail::checkAndUpdateUIDescFilePath (*uiDesc.get (), frame);
 		if (result == Detail::UIDescCheckFilePathResult::Exists)
 			return;
 		if (result == Detail::UIDescCheckFilePathResult::NewPathSet)
@@ -919,7 +918,7 @@ struct WindowController::EditImpl : WindowController::Impl
 			auto viewSize = view->getViewSize ().getSize ();
 			frame->getTransform ().transform (viewSize);
 			frame->setSize (viewSize.x, viewSize.y);
-			frame->addView (view);
+			frame->addSubview (view);
 			frame->enableTooltips (true);
 			CColor focusColor = kBlueCColor;
 			uiEditController->getEditorDescription ()->getColor ("focus", focusColor);

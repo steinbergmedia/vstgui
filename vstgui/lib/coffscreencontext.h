@@ -20,7 +20,7 @@ There are two usage scenarios :
 if (auto offscreen = COffscreenContext::create (frame, 100, 100))
 {
 	offscreen->beginDraw ();
-	// ... 
+	// ...
 	// draw into offscreen
 	// ...
 	offscreen->endDraw ();
@@ -31,18 +31,17 @@ if (auto offscreen = COffscreenContext::create (frame, 100, 100))
 @section offscreen_usage2 Drawing static content into a bitmap and reuse the bitmap for drawing
 
 @code
-if (cachedBitmap == 0)
+SharedPointer<CBitmap> cachedBitmap;
+if (!cachedBitmap)
 {
 	if (auto offscreen = COffscreenContext::create (frame, 100, 100))
 	{
 		offscreen->beginDraw ();
-		// ... 
+		// ...
 		// draw into offscreen
 		// ...
 		offscreen->endDraw ();
 		cachedBitmap = offscreen->getBitmap ();
-		if (cachedBitmap)
-			cachedBitmap->remember ();
 	}
 }
 if (cachedBitmap)
@@ -58,9 +57,6 @@ class COffscreenContext : public CDrawContext
 {
 public:
 	static SharedPointer<COffscreenContext> create (const CPoint& size, double scaleFactor = 1.);
-	VSTGUI_DEPRECATED (static SharedPointer<COffscreenContext> create (CFrame* frame, CCoord width,
-	                                                                   CCoord height,
-	                                                                   double scaleFactor = 1.);)
 
 	//-----------------------------------------------------------------------------
 	/// @name COffscreenContext Methods

@@ -61,7 +61,7 @@ TEST_CASE (XMLParserTest, ValidParse)
 	MemoryContentProvider provider (validXML, static_cast<uint32_t> (strlen (validXML)));
 	Handler handler;
 	Parser p;
-	EXPECT (p.parse (&provider, &handler) == true);
+	EXPECT (p.parse (provider, &handler) == true);
 }
 
 TEST_CASE (XMLParserTest, ValidParseWithJunkAtEnd)
@@ -70,7 +70,7 @@ TEST_CASE (XMLParserTest, ValidParseWithJunkAtEnd)
 	                                static_cast<uint32_t> (strlen (validXMLWithJunkAtEnd)));
 	Handler handler;
 	Parser p;
-	EXPECT (p.parse (&provider, &handler) == true);
+	EXPECT (p.parse (provider, &handler) == true);
 }
 
 TEST_CASE (XMLParserTest, InvalidParse)
@@ -78,7 +78,7 @@ TEST_CASE (XMLParserTest, InvalidParse)
 	MemoryContentProvider provider (invalidXML, static_cast<uint32_t> (strlen (invalidXML)));
 	Handler handler;
 	Parser p;
-	EXPECT (p.parse (&provider, &handler) == false);
+	EXPECT (p.parse (provider, &handler) == false);
 }
 
 TEST_CASE (XMLParserTest, StopParse)
@@ -87,7 +87,7 @@ TEST_CASE (XMLParserTest, StopParse)
 	Handler handler;
 	handler.stopOnStartElement = true;
 	Parser p;
-	EXPECT (p.parse (&provider, &handler) == false);
+	EXPECT (p.parse (provider, &handler) == false);
 }
 
 } // VSTGUI

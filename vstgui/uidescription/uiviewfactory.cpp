@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uiviewfactory.h"
+#include "uiviewcreator.h"
 #include "uiattributes.h"
 #include "../lib/cview.h"
 #include "../lib/cstring.h"
@@ -13,9 +14,9 @@ namespace VSTGUI {
 
 /** @class IViewCreator
 
-	You can register your own custom views with the UIViewFactory by inheriting from this interface and register it
-	with UIViewFactory::registerViewCreator().
-	
+	You can register your own custom views with the UIViewFactory by inheriting from this interface
+   and register it with UIViewFactory::registerViewCreator().
+
 	Example for an imaginary view class called MyView which directly inherites from CView:
 	@code
 	class MyViewCreator : public ViewCreatorAdapter
@@ -23,7 +24,7 @@ namespace VSTGUI {
 	public:
 		// register this class with the view factory
 		MyViewCreator () { UIViewFactory::registerViewCreator (*this); }
-		
+
 		// return an unique name here
 		IdStringPtr getViewName () const { return "MyView"; }
 
@@ -32,11 +33,13 @@ namespace VSTGUI {
 		IdStringPtr getBaseViewName () const { return "CView"; }
 
 		// create your view here.
-		// Note you don't need to apply attributes here as the apply method will be called with this new view
-		CView* create (const UIAttributes& attributes, const IUIDescription* description) const { return new MyView (); }
+		// Note you don't need to apply attributes here as the apply method will be called with this
+   new view SharedPointer<CView> create (const UIAttributes& attributes, const IUIDescription&
+   description) const { return new MyView (); }
 
-		// apply custom attributes to your view		
-		bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const
+		// apply custom attributes to your view
+		bool apply (CView& view, const UIAttributes& attributes, const IUIDescription& description)
+   const
 		{
 			MyView* myView = dynamic_cast<MyView*> (view);
 			if (myView == 0)
@@ -47,13 +50,13 @@ namespace VSTGUI {
 			return true;
 		}
 
-		// add your custom attributes to the list		
+		// add your custom attributes to the list
 		bool getAttributeNames (StringList& attributeNames) const
 		{
 			attributeNames.emplace_back ("my-custom-attribute");
 			return true;
 		}
-		
+
 		// return the type of your custom attributes
 		AttrType getAttributeType (const std::string& attributeName) const
 		{
@@ -61,9 +64,10 @@ namespace VSTGUI {
 				return kIntegerType;
 			return kUnknownType;
 		}
-		
+
 		// return the string value of the custom attributes of the view
-		bool getAttributeValue (CView* view, const string& attributeName, string& stringValue, const IUIDescription* desc) const
+		bool getAttributeValue (CView& view, const string& attributeName, string& stringValue, const
+   IUIDescription* desc) const
 		{
 			MyView* myView = dynamic_cast<MyView*> (view);
 			if (myView == 0)
@@ -78,7 +82,7 @@ namespace VSTGUI {
 	};
 	// create a static instance so that it registers itself with the view factory
 	MyViewCreator __gMyViewCreator;
-	
+
 	@endcode
 */
 
@@ -132,9 +136,7 @@ static ViewCreatorRegistry& getCreatorRegistry ()
 static CViewAttributeID kViewNameAttribute = 'cvcr';
 
 //-----------------------------------------------------------------------------
-UIViewFactory::UIViewFactory ()
-{
-}
+UIViewFactory::UIViewFactory () { UIViewCreator::forceLinking (); }
 
 //------------------------------------------------------------------------
 bool UIViewFactory::viewIsTypeOf (CView& view, const std::string& typeName) const
@@ -157,23 +159,24 @@ bool UIViewFactory::viewIsTypeOf (CView& view, const std::string& typeName) cons
 }
 
 //-----------------------------------------------------------------------------
-CView* UIViewFactory::createViewByName (const std::string* className,
-										const UIAttributes& attributes,
-										const IUIDescription& description) const
+SharedPointer<CView> UIViewFactory::createViewByName (const std::string* className,
+													  const UIAttributes& attributes,
+													  const IUIDescription& description) const
 {
 	auto& registry = getCreatorRegistry ();
 	auto iter = registry.find (className->c_str ());
 	if (iter != registry.end ())
 	{
-		CView* view = (*iter).second->create (attributes, &description);
+		auto view = (*iter).second->create (attributes, description);
 		if (view)
 		{
 			IdStringPtr viewName = (*iter).second->getViewName ();
 			view->setAttribute (kViewNameAttribute, viewName);
 			UIAttributes evaluatedAttributes;
-			evaluateAttributesAndRemember (*view, attributes, evaluatedAttributes, description);
+			evaluateAttributesAndRemember (*view.get (), attributes, evaluatedAttributes,
+										   description);
 			while (iter != registry.end () &&
-				   (*iter).second->apply (view, evaluatedAttributes, &description))
+				   (*iter).second->apply (*view.get (), evaluatedAttributes, description))
 			{
 				if ((*iter).second->getBaseViewName () == nullptr)
 					break;
@@ -192,8 +195,8 @@ CView* UIViewFactory::createViewByName (const std::string* className,
 }
 
 //-----------------------------------------------------------------------------
-CView* UIViewFactory::createView (const UIAttributes& attributes,
-								  const IUIDescription& description) const
+SharedPointer<CView> UIViewFactory::createView (const UIAttributes& attributes,
+												const IUIDescription& description) const
 {
 	const std::string* className = attributes.getAttributeValue (UIViewCreator::kAttrClass);
 	if (className)
@@ -214,7 +217,7 @@ bool UIViewFactory::applyAttributeValues (CView& view, const UIAttributes& attri
 	evaluateAttributesAndRemember (view, attributes, evaluatedAttributes, desc);
 
 	while (iter != registry.end () &&
-		   (result = (*iter).second->apply (&view, evaluatedAttributes, &desc)) &&
+		   (result = (*iter).second->apply (view, evaluatedAttributes, desc)) &&
 		   (*iter).second->getBaseViewName ())
 	{
 		iter = registry.find ((*iter).second->getBaseViewName ());
@@ -238,7 +241,7 @@ bool UIViewFactory::applyCustomViewAttributeValues (CView& customView, IdStringP
 	UIAttributes evaluatedAttributes;
 	evaluateAttributesAndRemember (customView, attributes, evaluatedAttributes, desc);
 	while (iter != registry.end () &&
-		   (result = (*iter).second->apply (&customView, evaluatedAttributes, &desc)) &&
+		   (result = (*iter).second->apply (customView, evaluatedAttributes, desc)) &&
 		   (*iter).second->getBaseViewName ())
 	{
 		iter = registry.find ((*iter).second->getBaseViewName ());
@@ -306,8 +309,8 @@ bool UIViewFactory::getAttributeValue (CView& view, const std::string& attribute
 		auto& registry = getCreatorRegistry ();
 		auto iter = registry.find (getViewName (view));
 		while (iter != registry.end () &&
-			   !(result = (*iter).second->getAttributeValue (&view, attributeName, stringValue,
-															 &desc)) &&
+			   !(result =
+					 (*iter).second->getAttributeValue (view, attributeName, stringValue, desc)) &&
 			   (*iter).second->getBaseViewName ())
 		{
 			iter = registry.find ((*iter).second->getBaseViewName ());

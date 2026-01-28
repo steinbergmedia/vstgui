@@ -22,12 +22,14 @@ class IController : public IControlListener,
 public:
 	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return registeredTag; }
 	virtual IControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
-	virtual CView* createView (const UIAttributes& attributes, const IUIDescription& description)
+	virtual SharedPointer<CView> createView (const UIAttributes& attributes,
+											 const IUIDescription& description)
 	{
 		return nullptr;
 	}
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes,
-							   const IUIDescription& description)
+	virtual SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+											 const UIAttributes& attributes,
+											 const IUIDescription& description)
 	{
 		return view;
 	}
@@ -74,9 +76,9 @@ inline SharedPointer<IController> getViewController (const CView& view, bool dee
 	if (!view.getAttribute (kCViewControllerAttribute, controller) && deep)
 	{
 		auto parentView = view.getParentView ();
-		if (parentView && parentView != &view)
+		if (parentView && parentView.get () != &view)
 		{
-			return getViewController (*parentView, deep);
+			return getViewController (*parentView.get (), deep);
 		}
 	}
 	return controller;
@@ -92,11 +94,11 @@ inline SharedPointer<T> findViewController (const CViewContainer& view)
 	ViewIterator iterator (&view);
 	while (*iterator)
 	{
-		if (auto ctrler = getViewController (*(*iterator)).cast<T> ())
+		if (auto ctrler = getViewController (*(*iterator).get ()).cast<T> ())
 			return ctrler;
 		if (auto container = (*iterator)->asViewContainer ())
 		{
-			if (auto ctrler = findViewController<T> (*container))
+			if (auto ctrler = findViewController<T> (*container.get ()))
 				return ctrler;
 		}
 		++iterator;

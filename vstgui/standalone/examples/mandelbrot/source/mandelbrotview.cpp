@@ -24,7 +24,7 @@ CMouseEventResult View::onMouseDown (CPoint& where, const CButtonState& buttons)
 	if (buttons.isLeftButton ())
 	{
 		setWantsFocus (true);
-		getFrame ()->setFocusView (this);
+		getFrame ()->setFocusView (shared (this));
 		box.setTopLeft (where);
 		box.setBottomRight (where);
 		return kMouseEventHandled;

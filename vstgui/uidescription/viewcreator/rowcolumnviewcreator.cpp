@@ -50,17 +50,17 @@ UTF8StringPtr RowColumnViewCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* RowColumnViewCreator::create (const UIAttributes& attributes,
-                                     const IUIDescription* description) const
+SharedPointer<CView> RowColumnViewCreator::create (const UIAttributes& attributes,
+												   const IUIDescription& description) const
 {
-	return new CRowColumnView (CRect (0, 0, 100, 100));
+	return makeOwned<CRowColumnView> (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------
-bool RowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+bool RowColumnViewCreator::apply (CView& view, const UIAttributes& attributes,
+								  const IUIDescription& description) const
 {
-	auto* rcv = dynamic_cast<CRowColumnView*> (view);
+	auto* rcv = dynamic_cast<CRowColumnView*> (&view);
 	if (rcv == nullptr)
 		return false;
 	const auto* attr = attributes.getAttributeValue (kAttrRowStyle);
@@ -136,10 +136,10 @@ auto RowColumnViewCreator::getAttributeType (const string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool RowColumnViewCreator::getAttributeValue (CView* view, const string& attributeName,
-                                              string& stringValue, const IUIDescription* desc) const
+bool RowColumnViewCreator::getAttributeValue (CView& view, const string& attributeName,
+											  string& stringValue, const IUIDescription& desc) const
 {
-	auto* rcv = dynamic_cast<CRowColumnView*> (view);
+	auto* rcv = dynamic_cast<CRowColumnView*> (&view);
 	if (rcv == nullptr)
 		return false;
 	if (attributeName == kAttrRowStyle)

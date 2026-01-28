@@ -8,11 +8,6 @@
 
 namespace VSTGUI {
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-bool CMovieBitmap::useLegacyFrameCalculation = false;
-#endif
-
 //------------------------------------------------------------------------
 // CMovieBitmap
 //------------------------------------------------------------------------
@@ -28,44 +23,10 @@ CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32
 							const SharedPointer<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	setHeightOfOneImage (size.getHeight ());
-	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
-#endif
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-/**
- * CMovieBitmap constructor.
- * @param size the size of this view
- * @param listener the listener
- * @param tag the control tag
- * @param subPixmaps number of subPixmaps
- * @param heightOfOneImage height of one image in pixel
- * @param background bitmap
- * @param offset
- */
-//------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
-							int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background,
-							const CPoint& offset)
-: CControl (size, listener, tag, shared (background)), offset (offset)
-{
-	setNumSubPixmaps (subPixmaps);
-	setHeightOfOneImage (heightOfOneImage);
-}
-#endif
-
-//------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CMovieBitmap& v) : CControl (v)
-{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	offset = v.offset;
-	setNumSubPixmaps (v.subPixmaps);
-	setHeightOfOneImage (v.heightOfOneImage);
-#endif
-}
+CMovieBitmap::CMovieBitmap (const CMovieBitmap& v) : CControl (v) {}
 
 //------------------------------------------------------------------------
 void CMovieBitmap::draw (CDrawContext *pContext)
@@ -74,35 +35,14 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
-			auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+			auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#include "../private/disabledeprecatedmessage.h"
-			CPoint where (offset.x, offset.y);
-			if (useLegacyFrameCalculation)
-			{
-				where.y += heightOfOneImage *
-						   (int32_t)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
-			}
-			else
-			{
-				auto step = static_cast<int32_t> (std::min (
-					getNumSubPixmaps () - 1.f, getValueNormalized () * getNumSubPixmaps ()));
-				where.y += heightOfOneImage * step;
-			}
-
-			bitmap->draw (pContext, getViewSize (), where);
-#include "../private/enabledeprecatedmessage.h"
-
-#else
 			bitmap->draw (pContext, getViewSize ());
-#endif
 		}
 	}
-	setDirty (false);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -117,11 +57,7 @@ bool CMovieBitmap::sizeToFit ()
 		}
 		else
 		{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			vs.setHeight (getHeightOfOneImage ());
-#else
 			vs.setHeight (bitmap->getHeight ());
-#endif
 			vs.setWidth (bitmap->getWidth ());
 		}
 		setViewSize (vs);

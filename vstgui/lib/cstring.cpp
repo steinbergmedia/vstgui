@@ -184,7 +184,7 @@ void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const noexcept
 }
 
 //-----------------------------------------------------------------------------
-IPlatformString* UTF8String::getPlatformString () const noexcept
+PlatformStringPtr UTF8String::getPlatformString () const noexcept
 {
 	if (platformString == nullptr)
 		platformString = getPlatformFactory ().createString (data ());
@@ -262,30 +262,5 @@ UTF8String trim (const UTF8String& str, TrimOptions options)
 	return UTF8String (std::move (string));
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-
-namespace String {
-
-//-----------------------------------------------------------------------------
-UTF8StringBuffer newWithString (UTF8StringPtr string)
-{
-	if (string == nullptr)
-		return nullptr;
-	UTF8StringBuffer buffer = (UTF8StringBuffer)std::malloc (UTF8StringView (string).calculateByteCount ());
-	if (buffer)
-		std::strcpy (buffer, string);
-	return buffer;
-}
-
-//-----------------------------------------------------------------------------
-void free (UTF8StringBuffer buffer)
-{
-	if (buffer)
-		std::free (buffer);
-}
-
-} // StringCreate
-
-#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-
+//------------------------------------------------------------------------
 } // VSTGUI

@@ -28,17 +28,19 @@ public:
 	SharedPointer<IController> getBaseController () const { return controller; }
 
 protected:
-	void valueChanged (CControl* pControl) override;
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	void valueChanged (CControl& pControl) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
 
 	void setupDataSource (UTF8StringPtr filter = nullptr);
 
 	SharedPointer<UIViewCreatorDataSource> dataSource;
-	CDataBrowser* dataBrowser {nullptr};
+	SharedPointer<CDataBrowser> dataBrowser;
 	SharedPointer<UIDescription> description;
 	std::vector<std::string> filteredViewNames;
 	std::vector<std::string> allViewNames;

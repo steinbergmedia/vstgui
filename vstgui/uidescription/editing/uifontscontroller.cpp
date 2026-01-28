@@ -111,15 +111,18 @@ UIFontsController::UIFontsController (const SharedPointer<IController>& baseCont
 UIFontsController::~UIFontsController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIFontsController::createView (const UIAttributes& attributes,
-									  const IUIDescription& description)
+SharedPointer<CView> UIFontsController::createView (const UIAttributes& attributes,
+													const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "FontsBrowser")
 		{
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			auto dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+														CDataBrowser::kDrawRowLines |
+															CScrollView::kHorizontalScrollbar |
+															CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -127,23 +130,24 @@ CView* UIFontsController::createView (const UIAttributes& attributes,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIFontsController::verifyView (CView* view, const UIAttributes& attributes,
-									  const IUIDescription& description)
+SharedPointer<CView> UIFontsController::verifyView (const SharedPointer<CView>& view,
+													const UIAttributes& attributes,
+													const IUIDescription& description)
 {
-	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
+	auto searchField = view.cast<CSearchTextEdit> ();
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
 		return searchField;
 	}
-	auto* control = dynamic_cast<CControl*>(view);
+	auto control = view.cast<CControl> ();
 	if (control)
 	{
 		switch (control->getTag ())
 		{
 			case kFontMainTag:
 			{
-				fontMenu = shared (dynamic_cast<COptionMenu*> (control));
+				fontMenu = control.cast<COptionMenu> ();
 				if (!fontMenu)
 					break;
 				getPlatformFactory ().getAllFontFamilies ([&] (const std::string& name) {
@@ -156,13 +160,13 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 			}
 			case kFontAltTag:
 			{
-				altTextEdit = dynamic_cast<CTextEdit*>(control);
+				altTextEdit = control.cast<CTextEdit> ();
 				control->setMouseEnabled (false);
 				break;
 			}
 			case kFontSizeTag:
 			{
-				sizeTextEdit = dynamic_cast<CTextEdit*>(control);
+				sizeTextEdit = control.cast<CTextEdit> ();
 				if (sizeTextEdit)
 				{
 					sizeTextEdit->setValueToStringFunction (valueToString);
@@ -207,13 +211,13 @@ IControlListener* UIFontsController::getControlListener (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIFontsController::valueChanged (CControl* pControl)
+void UIFontsController::valueChanged (CControl& pControl)
 {
-	switch (pControl->getTag ())
+	switch (pControl.getTag ())
 	{
 		case kAddTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 			{
 				dataSource->add ();
 			}
@@ -221,7 +225,7 @@ void UIFontsController::valueChanged (CControl* pControl)
 		}
 		case kRemoveTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 			{
 				dataSource->remove ();
 			}

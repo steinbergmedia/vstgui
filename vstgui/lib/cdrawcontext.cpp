@@ -286,7 +286,7 @@ void CDrawContext::setFont (const SharedPointer<CFontDesc>& newFont, const CCoor
 		return;
 	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
 	{
-		impl->currentState.font = makeOwned<CFontDesc> (*newFont);
+		impl->currentState.font = makeOwned<CFontDesc> (*newFont.get ());
 		if (size > 0)
 			impl->currentState.font->setSize (size);
 		if (style != -1)
@@ -330,7 +330,7 @@ void CDrawContext::clearDrawString ()
 }
 
 //------------------------------------------------------------------------
-CCoord CDrawContext::getStringWidth (IPlatformString* string)
+CCoord CDrawContext::getStringWidth (const PlatformStringPtr& string)
 {
 	CCoord result = -1;
 	if (impl->currentState.font == nullptr || string == nullptr)
@@ -343,7 +343,8 @@ CCoord CDrawContext::getStringWidth (IPlatformString* string)
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
+void CDrawContext::drawString (const PlatformStringPtr& string, const CRect& _rect,
+							   const CHoriTxtAlign hAlign, bool antialias)
 {
 	if (!string || impl->currentState.font == nullptr)
 		return;
@@ -376,7 +377,7 @@ void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, cons
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::drawString (IPlatformString* string, const CPoint& point, bool antialias)
+void CDrawContext::drawString (const PlatformStringPtr& string, const CPoint& point, bool antialias)
 {
 	if (string == nullptr || impl->currentState.font == nullptr)
 		return;
@@ -428,7 +429,7 @@ void CDrawContext::fillRectWithBitmap (const SharedPointer<CBitmap>& bitmap, con
 
 			if (auto pb = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor))
 			{
-				if (deviceBitmapExt->fillRectWithBitmap (*pb, srcRect, dstRect, alpha,
+				if (deviceBitmapExt->fillRectWithBitmap (*pb.get (), srcRect, dstRect, alpha,
 														 getBitmapInterpolationQuality ()))
 				{
 					return;
@@ -480,7 +481,7 @@ void CDrawContext::drawBitmapNinePartTiled (const SharedPointer<CBitmap>& bitmap
 
 			if (auto pb = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor))
 			{
-				if (deviceBitmapExt->drawBitmapNinePartTiled (*pb, dest, desc, alpha,
+				if (deviceBitmapExt->drawBitmapNinePartTiled (*pb.get (), dest, desc, alpha,
 															  getBitmapInterpolationQuality ()))
 				{
 					return;
@@ -634,7 +635,8 @@ void CDrawContext::drawBitmap (const SharedPointer<CBitmap>& bitmap, const CRect
 		if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
 			transformedScaleFactor *= t.m11;
 		if (auto pb = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor))
-			impl->device->drawBitmap (*pb, dest, offset, alpha, getBitmapInterpolationQuality ());
+			impl->device->drawBitmap (*pb.get (), dest, offset, alpha,
+									  getBitmapInterpolationQuality ());
 	}
 }
 

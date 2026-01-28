@@ -113,15 +113,17 @@ public:
 	{
 		for (auto control : controls)
 		{
-			control->unregisterViewListener (this);
+			if (auto c = control.lock ())
+				c->unregisterViewListener (this);
 		}
 		controls.clear ();
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
-		if (auto control = dynamic_cast<CControl*> (view))
+		if (auto control = view.cast<CControl> ())
 		{
 			control->registerViewListener (this);
 			controls.push_back (control);
@@ -147,7 +149,7 @@ public:
 		}
 	}
 
-	std::vector<CControl*> controls;
+	std::vector<WeakPointer<CControl>> controls;
 };
 
 //------------------------------------------------------------------------
@@ -178,16 +180,18 @@ class WeekdaysController : public DelegationController,
 public:
 	WeekdaysController (const SharedPointer<IController>& parent) : DelegationController (parent) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
-		if (auto listControl = dynamic_cast<CListControl*> (view))
+		if (auto listControl = view.cast<CListControl> ())
 		{
 			auto configurator =
-				dynamic_cast<StaticListControlConfigurator*> (listControl->getConfigurator ());
+				listControl->getConfigurator ().cast<StaticListControlConfigurator> ();
 			if (configurator)
 			{
-				listControl->setConfigurator (makeOwned<WeekdaysListConfigurator> (*configurator));
+				listControl->setConfigurator (
+					makeOwned<WeekdaysListConfigurator> (*configurator.get ()));
 			}
 		}
 		return controller->verifyView (view, attributes, description);
@@ -229,8 +233,8 @@ public:
 		style.backColor = MakeCColor (255, 255, 255, 220);
 		style.cursorColor = style.textColor = kBlackCColor;
 		style.frameColor = kBlackCColor; // MakeCColor (50, 50, 50, 200);
-		style.font = makeOwned<CFontDesc> (*kNormalFont);
-		style.lineNumbersFont = makeOwned<CFontDesc> (*kNormalFontSmall);
+		style.font = makeOwned<CFontDesc> (*kNormalFont.get ());
+		style.lineNumbersFont = makeOwned<CFontDesc> (*kNormalFontSmall.get ());
 		style.lineSpacing = 0.;
 	}
 	~AppTextEditorController () noexcept
@@ -314,7 +318,8 @@ public:
 		IApplication::instance ().registerCommand (DecreaseTextSize, '-');
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -390,7 +395,8 @@ public:
 	}
 
 #if MAC || WINDOWS
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -403,31 +409,31 @@ public:
 					DebugPrint ("%d.%d.%d\n", date.day, date.month, date.year);
 #endif
 				});
-				return new CExternalView (CRect (), datePicker);
+				return makeOwned<CExternalView> (CRect (), datePicker);
 			}
 			if (*customViewName == "Native Checkbox")
 			{
 				auto checkbox = std::make_shared<ExternalView::Button> (
 					ExternalView::Button::Type::Checkbox, "Checkbox");
-				return new CExternalControl (CRect (), checkbox);
+				return makeOwned<CExternalControl> (CRect (), checkbox);
 			}
 			if (*customViewName == "Native Push Button")
 			{
 				auto checkbox = std::make_shared<ExternalView::Button> (
 					ExternalView::Button::Type::Push, "Push");
-				return new CExternalControl (CRect (), checkbox);
+				return makeOwned<CExternalControl> (CRect (), checkbox);
 			}
 			if (*customViewName == "Native OnOff Button")
 			{
 				auto checkbox = std::make_shared<ExternalView::Button> (
 					ExternalView::Button::Type::OnOff, "OnOff");
-				return new CExternalControl (CRect (), checkbox);
+				return makeOwned<CExternalControl> (CRect (), checkbox);
 			}
 			if (*customViewName == "Native Radio Button")
 			{
 				auto checkbox = std::make_shared<ExternalView::Button> (
 					ExternalView::Button::Type::Radio, "Radio");
-				return new CExternalControl (CRect (), checkbox);
+				return makeOwned<CExternalControl> (CRect (), checkbox);
 			}
 		}
 		return controller->createView (attributes, description);
@@ -450,21 +456,23 @@ struct DBController : DelegationController,
 			data[i][0] = i;
 		}
 	}
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
 			if (*customViewName == "DataBrowser")
 			{
-				return new CDataBrowser ({}, this);
+				return makeOwned<CDataBrowser> (CRect {}, this);
 			}
 		}
 		return nullptr;
 	}
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
-		if (auto db = dynamic_cast<CDataBrowser*> (view))
+		if (auto db = view.cast<CDataBrowser> ())
 		{
 			auto style = db->getStyle ();
 			style |= CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines |

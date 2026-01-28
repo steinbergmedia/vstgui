@@ -34,7 +34,7 @@ public:
 	Property (Type type = kUnknown);
 	Property (int32_t intValue);
 	Property (double floatValue);
-	Property (IReference* objectValue);
+	Property (const SharedPointer<IReference>& objectValue);
 	Property (const CRect& rectValue);
 	Property (const CPoint& pointValue);
 	Property (const CColor& colorValue);
@@ -47,7 +47,7 @@ public:
 
 	int32_t getInteger () const;
 	double getFloat () const;
-	IReference* getObject () const;
+	SharedPointer<IReference> getObject () const;
 	const CRect& getRect () const;
 	const CPoint& getPoint () const;
 	const CColor& getColor () const;

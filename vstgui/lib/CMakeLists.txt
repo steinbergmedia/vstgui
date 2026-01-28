@@ -14,6 +14,9 @@ if(${VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY})
 endif()
 
 set(${target}_common_sources
+    ../../../BREAKING_CHANGES.md
+    ../../../NEWS.md
+    ../../../README.md
     animation/animations.cpp
     animation/animations.h
     animation/animator.cpp
@@ -116,8 +119,6 @@ set(${target}_common_sources
     controls/ioptionmenulistener.h
     controls/itexteditlistener.h
     controls/itextlabellistener.h
-    copenglview.cpp
-    copenglview.h
     cpoint.cpp
     cpoint.h
     crect.cpp
@@ -133,8 +134,6 @@ set(${target}_common_sources
     csplitview.h
     cstring.cpp
     cstring.h
-    ctabview.cpp
-    ctabview.h
     ctooltipsupport.cpp
     ctooltipsupport.h
     cview.cpp
@@ -204,6 +203,7 @@ set(${target}_common_sources
     viewlayouter/gridlayouter.cpp
     viewlayouter/gridlayouter.h
     viewlayouter/noviewlayouter.h
+    sharedptr.h
     tasks.cpp
     tasks.h
     vstguibase.h
@@ -424,12 +424,6 @@ if(CMAKE_HOST_APPLE)
 	set(PLATFORM_LIBRARIES
 	  ${PLATFORM_LIBRARIES}
 	  "-framework UniformTypeIdentifiers"
-	)
-  endif()
-  if(VSTGUI_ENABLE_OPENGL_SUPPORT)
-	set(PLATFORM_LIBRARIES
-	  ${PLATFORM_LIBRARIES}
-	  "-framework OpenGL"
 	)
   endif()
   target_link_libraries(${target}

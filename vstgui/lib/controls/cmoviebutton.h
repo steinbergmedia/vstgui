@@ -19,10 +19,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class CMovieButton : public CControl,
 					 public MultiFrameBitmapView<CMovieButton>
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-,
-					 public IMultiBitmapControl
-#endif
 {
 public:
 	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
@@ -38,19 +34,9 @@ public:
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	bool sizeToFit () override;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
-				  CCoord heightOfOneImage, CBitmap* background,
-				  const CPoint& offset = CPoint (0, 0));
-	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
-#endif
-
 	CLASS_METHODS(CMovieButton, CControl)
 protected:
 	~CMovieButton () noexcept override = default;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CPoint offset {};
-#endif
 	float    buttonState;
 
 private:

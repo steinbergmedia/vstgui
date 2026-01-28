@@ -23,8 +23,8 @@ class IUIDescription : public virtual IReference,
 public:
 	virtual ~IUIDescription () noexcept = default;
 
-	virtual CView* createView (UTF8StringPtr name,
-							   const SharedPointer<IController>& controller) const = 0;
+	virtual SharedPointer<CView>
+		createView (UTF8StringPtr name, const SharedPointer<IController>& controller) const = 0;
 
 	virtual SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const = 0;
 	virtual SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const = 0;

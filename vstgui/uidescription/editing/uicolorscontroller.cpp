@@ -26,7 +26,8 @@ class UIColorsDataSource : public UIBaseDataSource, public UIColorListenerAdapte
 {
 public:
 	UIColorsDataSource (const SharedPointer<UIDescription>& description,
-						WeakPointer<IActionPerformer> actionPerformer, UIColor* color);
+						WeakPointer<IActionPerformer> actionPerformer,
+						const SharedPointer<UIColor>& color);
 	~UIColorsDataSource () override;
 
 protected:
@@ -70,7 +71,7 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UIColorsDataSource::UIColorsDataSource (const SharedPointer<UIDescription>& description,
 										WeakPointer<IActionPerformer> actionPerformer,
-										UIColor* color)
+										const SharedPointer<UIColor>& color)
 : UIBaseDataSource (description, actionPerformer), color (color), editing (false), dragRow (-1)
 {
 	color->registerListener (this);
@@ -165,7 +166,7 @@ void UIColorsDataSource::update ()
 	UIBaseDataSource::update ();
 	if (dataBrowser)
 	{
-		dbSelectionChanged (dataBrowser);
+		dbSelectionChanged (dataBrowser.get ());
 		dataBrowser->invalid ();
 	}
 }
@@ -181,7 +182,7 @@ void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
 		{
 			if (c != color->base ())
 			{
-				*color = c;
+				*color.get () = c;
 			}
 		}
 	}
@@ -190,7 +191,7 @@ void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
 //----------------------------------------------------------------------------------------------------
 CCoord UIColorsDataSource::getColorIconWith ()
 {
-	return dataBrowser ? dbGetRowHeight (dataBrowser) : 0.;
+	return dataBrowser ? dbGetRowHeight (dataBrowser.get ()) : 0.;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -434,15 +435,18 @@ UIColorsController::UIColorsController (const SharedPointer<IController>& baseCo
 UIColorsController::~UIColorsController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorsController::createView (const UIAttributes& attributes,
-									   const IUIDescription& description)
+SharedPointer<CView> UIColorsController::createView (const UIAttributes& attributes,
+													 const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "ColorsBrowser")
 		{
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar);
+			auto dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+														CDataBrowser::kDrawRowLines |
+															CScrollView::kHorizontalScrollbar |
+															CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -450,10 +454,11 @@ CView* UIColorsController::createView (const UIAttributes& attributes,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorsController::verifyView (CView* view, const UIAttributes& attributes,
-									   const IUIDescription& description)
+SharedPointer<CView> UIColorsController::verifyView (const SharedPointer<CView>& view,
+													 const UIAttributes& attributes,
+													 const IUIDescription& description)
 {
-	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
+	auto searchField = view.cast<CSearchTextEdit> ();
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
@@ -469,13 +474,13 @@ IControlListener* UIColorsController::getControlListener (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsController::valueChanged (CControl* pControl)
+void UIColorsController::valueChanged (CControl& pControl)
 {
-	switch (pControl->getTag ())
+	switch (pControl.getTag ())
 	{
 		case kAddTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 			{
 				dataSource->add ();
 			}
@@ -483,7 +488,7 @@ void UIColorsController::valueChanged (CControl* pControl)
 		}
 		case kRemoveTag:
 		{
-			if (pControl->getValue () == pControl->getMax ())
+			if (pControl.getValue () == pControl.getMax ())
 			{
 				dataSource->remove ();
 			}
@@ -517,7 +522,7 @@ void UIColorsController::appendContextMenuItems (COptionMenu& contextMenu, CView
 		if (color)
 		{
 			color->beginEdit ();
-			*color = newColor;
+			*color.get () = newColor;
 			color->endEdit ();
 		}
 	});

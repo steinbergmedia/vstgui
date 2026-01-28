@@ -39,17 +39,17 @@ UTF8StringPtr XYPadCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* XYPadCreator::create (const UIAttributes& attributes,
-                             const IUIDescription* description) const
+SharedPointer<CView> XYPadCreator::create (const UIAttributes& attributes,
+										   const IUIDescription& description) const
 {
-	return new CXYPad (CRect (0, 0, 60, 60));
+	return makeOwned<CXYPad> (CRect (0, 0, 60, 60));
 }
 
 //------------------------------------------------------------------------
-bool XYPadCreator::apply (CView* view, const UIAttributes& attributes,
-						  const IUIDescription* description) const
+bool XYPadCreator::apply (CView& view, const UIAttributes& attributes,
+						  const IUIDescription& description) const
 {
-	auto pad = dynamic_cast<CXYPad*> (view);
+	auto pad = dynamic_cast<CXYPad*> (&view);
 	if (!pad)
 		return false;
 
@@ -76,10 +76,10 @@ auto XYPadCreator::getAttributeType (const string& attributeName) const -> AttrT
 }
 
 //------------------------------------------------------------------------
-bool XYPadCreator::getAttributeValue (CView* view, const string& attributeName, string& stringValue,
-									  const IUIDescription* desc) const
+bool XYPadCreator::getAttributeValue (CView& view, const string& attributeName, string& stringValue,
+									  const IUIDescription& desc) const
 {
-	auto pad = dynamic_cast<CXYPad*> (view);
+	auto pad = dynamic_cast<CXYPad*> (&view);
 	if (!pad)
 		return false;
 	if (attributeName == kAttrHandleBitmap)

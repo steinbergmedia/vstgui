@@ -45,17 +45,19 @@ public:
 protected:
 	using StringList = std::list<std::string>;
 
-	CView* createViewForAttribute (const std::string& attrName);
+	SharedPointer<CView> createViewForAttribute (const std::string& attrName);
 	void rebuildAttributesView ();
 	void validateAttributeViews ();
-	CView* createValueViewForAttributeType (const IViewFactory& viewFactory, CView* view,
-											const std::string& attrName,
-											IViewCreator::AttrType attrType);
+	SharedPointer<CView> createValueViewForAttributeType (const IViewFactory& viewFactory,
+														  const SharedPointer<CView>& view,
+														  const std::string& attrName,
+														  IViewCreator::AttrType attrType);
 	void getConsolidatedAttributeNames (StringList& result, const std::string& filter);
 
-	void valueChanged (CControl* pControl) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	void valueChanged (CControl& pControl) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	SharedPointer<IController> createSubController (IdStringPtr name,
 													const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
@@ -79,7 +81,7 @@ protected:
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<IAction> liveAction;
 
-	using UIAttributeControllerList = std::list<UIAttributeControllers::Controller*>;
+	using UIAttributeControllerList = std::list<SharedPointer<UIAttributeControllers::Controller>>;
 	UIAttributeControllerList attributeControllers;
 
 	enum {
@@ -88,8 +90,8 @@ protected:
 	};
 
 	SharedPointer<CTextEdit> searchField;
-	CTextLabel* viewNameLabel;
-	CRowColumnView* attributeView;
+	SharedPointer<CTextLabel> viewNameLabel;
+	SharedPointer<CRowColumnView> attributeView;
 	CColor attributeNameColor {kBlackCColor};
 
 	std::string filterString;

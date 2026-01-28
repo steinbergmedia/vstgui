@@ -71,7 +71,7 @@ public:
 	// overrides
 	void setText (const UTF8String& txt) override;
 	void valueChanged () override;
-	void setValue (float val) override;
+	bool setValue (float val) override;
 	void setTextRotation (double angle) override { } // not supported
 
 	void draw (CDrawContext* pContext) override;
@@ -94,7 +94,7 @@ protected:
 	~CTextEdit () noexcept override;
 
 	void createPlatformTextEdit ();
-	void updateText (IPlatformTextEdit* pte);
+	void updateText (const PlatformTextEditPtr& pte);
 
 	CColor platformGetBackColor () const override { return getBackColor (); }
 	CColor platformGetFontColor () const override { return getFontColor (); }

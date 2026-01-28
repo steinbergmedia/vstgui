@@ -51,13 +51,13 @@ void UIGridController::setSize (const CPoint& p)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGridController::valueChanged (CControl* control)
+void UIGridController::valueChanged (CControl& control)
 {
-	switch (control->getTag ())
+	switch (control.getTag ())
 	{
 		case kGridAddTag:
 		{
-			if (control->getValue () == control->getMin ())
+			if (control.getValue () == control.getMin ())
 				break;
 			defGrids.push_back ({2., 2.});
 			gridList->setMax (static_cast<float> (defGrids.size () - 1));
@@ -67,7 +67,7 @@ void UIGridController::valueChanged (CControl* control)
 		}
 		case kGridRemoveTag:
 		{
-			if (control->getValue () == control->getMin ())
+			if (control.getValue () == control.getMin ())
 				break;
 			auto index = gridList->getIntValue ();
 			if (index > 0)
@@ -84,7 +84,7 @@ void UIGridController::valueChanged (CControl* control)
 			auto index = gridList->getIntValue ();
 			if (index > 0)
 			{
-				defGrids[index].x = control->getValue ();
+				defGrids[index].x = control.getValue ();
 				gridList->invalidRow (index);
 			}
 			break;
@@ -94,7 +94,7 @@ void UIGridController::valueChanged (CControl* control)
 			auto index = gridList->getIntValue ();
 			if (index > 0)
 			{
-				defGrids[index].y = control->getValue ();
+				defGrids[index].y = control.getValue ();
 				gridList->invalidRow (index);
 			}
 			break;
@@ -112,10 +112,11 @@ void UIGridController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes,
-									 const IUIDescription& description)
+SharedPointer<CView> UIGridController::verifyView (const SharedPointer<CView>& view,
+												   const UIAttributes& attributes,
+												   const IUIDescription& description)
 {
-	if (auto menu = dynamic_cast<COptionMenu*> (view))
+	if (auto menu = view.cast<COptionMenu> ())
 	{
 		if (menu->getTag () == kGridMenuTag)
 		{
@@ -123,11 +124,11 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 			setupMenu ();
 		}
 	}
-	else if (auto listControl = dynamic_cast<CListControl*> (view))
+	else if (auto listControl = view.cast<CListControl> ())
 	{
 		if (listControl->getTag () == kGridListTag)
 		{
-			if (auto drawer = dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
+			if (auto drawer = listControl->getDrawer ().cast<StringListControlDrawer> ())
 			{
 				drawer->setStringProvider ([this] (int32_t row) {
 					return getPlatformFactory ().createString (
@@ -138,7 +139,7 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 			gridList->setMax (static_cast<float> (defGrids.size () - 1));
 		}
 	}
-	else if (auto textEdit = dynamic_cast<CTextEdit*> (view))
+	else if (auto textEdit = view.cast<CTextEdit> ())
 	{
 		if (textEdit->getTag () == kGridXTag)
 		{
@@ -243,12 +244,12 @@ void UIGridController::setupMenu ()
 	{
 		auto item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {pointToDisplayString (p)});
 		gridMenu->addEntry (item);
-		item->setActions ([this, p] (CCommandMenuItem*) { setSize (p); });
+		item->setActions ([this, p] (auto&&) { setSize (p); });
 	}
 	gridMenu->addSeparator ();
 	auto item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Setup..."});
 	gridMenu->addEntry (item);
-	item->setActions ([this] (CCommandMenuItem*) {
+	item->setActions ([this] (auto&&) {
 		syncMenuValueAndSize ();
 		auto dc = new UIDialogController (shared (this), gridMenu->getFrame ());
 		dc->run ("grid.dialog", "Grid Setup", "Close", nullptr, shared (this),

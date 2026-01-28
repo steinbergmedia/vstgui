@@ -114,9 +114,9 @@ TEST_CASE (CViewCreatorTest, Tooltip)
 	a.setAttribute (kAttrClass, kCView);
 	a.setAttribute (kAttrTooltip, "");
 
-	auto view = owned (factory.createView (a, uidesc));
+	auto view = factory.createView (a, uidesc);
 	std::string str;
-	EXPECT (getViewAttributeString (view, kCViewTooltipAttribute, str) == false);
+	EXPECT (getViewAttributeString (view.get (), kCViewTooltipAttribute, str) == false);
 }
 
 TEST_CASE (CViewCreatorTest, CustomViewName)

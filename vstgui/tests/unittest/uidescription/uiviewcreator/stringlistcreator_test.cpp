@@ -14,15 +14,15 @@ namespace VSTGUI {
 using namespace UIViewCreator;
 
 //------------------------------------------------------------------------
-static StringListControlDrawer* getDrawer (CListControl* c)
+static SharedPointer<StringListControlDrawer> getDrawer (CListControl* c)
 {
-	return dynamic_cast<StringListControlDrawer*> (c->getDrawer ());
+	return c->getDrawer ().cast<StringListControlDrawer> ();
 }
 
 //------------------------------------------------------------------------
-static StaticListControlConfigurator* getConfigurator (CListControl* c)
+static SharedPointer<StaticListControlConfigurator> getConfigurator (CListControl* c)
 {
-	return dynamic_cast<StaticListControlConfigurator*> (c->getConfigurator ());
+	return c->getConfigurator ().cast<StaticListControlConfigurator> ();
 }
 
 //------------------------------------------------------------------------

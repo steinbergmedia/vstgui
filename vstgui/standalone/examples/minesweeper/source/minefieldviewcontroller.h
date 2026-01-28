@@ -43,9 +43,11 @@ public:
 	void setMouseMode (bool state);
 
 private:
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	void onCellChanged (uint32_t row, uint32_t col) override;
 	int32_t dbGetNumRows (CDataBrowser* browser) override;
 	int32_t dbGetNumColumns (CDataBrowser* browser) override;

@@ -39,17 +39,17 @@ UTF8StringPtr VuMeterCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* VuMeterCreator::create (const UIAttributes& attributes,
-                               const IUIDescription* description) const
+SharedPointer<CView> VuMeterCreator::create (const UIAttributes& attributes,
+											 const IUIDescription& description) const
 {
-	return new CVuMeter (CRect (0, 0, 0, 0), nullptr, nullptr, 100);
+	return makeOwned<CVuMeter> (CRect (0, 0, 0, 0), nullptr, nullptr, 100);
 }
 
 //------------------------------------------------------------------------
-bool VuMeterCreator::apply (CView* view, const UIAttributes& attributes,
-                            const IUIDescription* description) const
+bool VuMeterCreator::apply (CView& view, const UIAttributes& attributes,
+							const IUIDescription& description) const
 {
-	auto* vuMeter = dynamic_cast<CVuMeter*> (view);
+	auto* vuMeter = dynamic_cast<CVuMeter*> (&view);
 	if (!vuMeter)
 		return false;
 
@@ -97,10 +97,10 @@ auto VuMeterCreator::getAttributeType (const string& attributeName) const -> Att
 }
 
 //------------------------------------------------------------------------
-bool VuMeterCreator::getAttributeValue (CView* view, const string& attributeName,
-                                        string& stringValue, const IUIDescription* desc) const
+bool VuMeterCreator::getAttributeValue (CView& view, const string& attributeName,
+										string& stringValue, const IUIDescription& desc) const
 {
-	auto* vuMeter = dynamic_cast<CVuMeter*> (view);
+	auto* vuMeter = dynamic_cast<CVuMeter*> (&view);
 	if (!vuMeter)
 		return false;
 	if (attributeName == kAttrOffBitmap)

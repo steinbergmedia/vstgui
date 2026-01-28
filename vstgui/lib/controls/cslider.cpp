@@ -353,12 +353,8 @@ void CSliderBase::doRamping ()
 		impl->meDelta = delta;
 	}
 
-	setValueNormalized (normValue);
-	if (isDirty ())
-	{
+	if (setValueNormalized (normValue))
 		valueChanged ();
-		invalid ();
-	}
 }
 
 //------------------------------------------------------------------------
@@ -396,12 +392,8 @@ CMouseEventResult CSliderBase::onMouseCancel ()
 {
 	if (isEditing ())
 	{
-		value = impl->meStartValue;
-		if (isDirty ())
-		{
+		if (setValue (impl->meStartValue))
 			valueChanged ();
-			invalid ();
-		}
 		impl->meOldButton = 0;
 		impl->rampTimer = nullptr;
 		endEdit ();
@@ -450,21 +442,21 @@ CMouseEventResult CSliderBase::onMouseMoved (CPoint& where, const CButtonState& 
 				if (impl->zoomFactor != newZoomFactor)
 				{
 					impl->zoomFactor = newZoomFactor;
-					impl->mePreviousVal = (value - getMin ()) / getRange ();
+					impl->mePreviousVal = (getValue () - getMin ()) / getRange ();
 					impl->meDelta = calculateDelta (where);
 				}
 			}
 
 			if (impl->mePreviousVal == getMin () - 1)
-				impl->mePreviousVal = (value - getMin ()) / getRange ();
+				impl->mePreviousVal = (getValue () - getMin ()) / getRange ();
 
 			if ((impl->meOldButton != buttons) && (buttons & kZoomModifier))
 			{
-				impl->mePreviousVal = (value - getMin ()) / getRange ();
+				impl->mePreviousVal = (getValue () - getMin ()) / getRange ();
 				impl->meOldButton = buttons;
 			}
 			else if (!(buttons & kZoomModifier))
-				impl->mePreviousVal = (value - getMin ()) / getRange ();
+				impl->mePreviousVal = (getValue () - getMin ()) / getRange ();
 
 			float normValue;
 			if (isStyleHorizontal ())
@@ -478,13 +470,8 @@ CMouseEventResult CSliderBase::onMouseMoved (CPoint& where, const CButtonState& 
 			if (buttons & kZoomModifier)
 				normValue = impl->mePreviousVal + ((normValue - impl->mePreviousVal) / impl->zoomFactor);
 
-			setValueNormalized (normValue);
-
-			if (isDirty ())
-			{
+			if (setValueNormalized (normValue))
 				valueChanged ();
-				invalid ();
-			}
 		}
 		return kMouseEventHandled;
 	}
@@ -510,14 +497,8 @@ void CSliderBase::onMouseWheelEvent (MouseWheelEvent& event)
 	else
 		normValue += static_cast<float> (distance) * getWheelInc ();
 
-	setValueNormalized (normValue);
-
-	if (isDirty ())
-	{
-		invalid ();
-
+	if (setValueNormalized (normValue))
 		valueChanged ();
-	}
 
 	event.consumed = true;
 }
@@ -550,18 +531,10 @@ void CSliderBase::onKeyboardEvent (KeyboardEvent& event)
 			else
 				normValue += distance * getWheelInc ();
 
-			setValueNormalized (normValue);
-
-			if (isDirty ())
+			if (setValueNormalized (normValue))
 			{
-				invalid ();
-
-				// begin of edit parameter
 				beginEdit ();
-
 				valueChanged ();
-
-				// end of edit parameter
 				endEdit ();
 			}
 			event.consumed = true;
@@ -691,20 +664,6 @@ CSlider::CSlider (const CSlider& v) : CSliderBase (v)
 CSlider::~CSlider () noexcept
 {
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-void CSlider::setOffset (const CPoint& val)
-{
-	setBackgroundOffset (val);
-}
-
-//------------------------------------------------------------------------
-CPoint CSlider::getOffset () const
-{
-	return getBackgroundOffset ();
-}
-#endif
 
 //------------------------------------------------------------------------
 bool CSlider::sizeToFit ()
@@ -844,8 +803,6 @@ void CSlider::draw (CDrawContext* pContext)
 		// draw slider at new position
 		impl->pHandle->draw (drawContext, rectNew);
 	}
-
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------

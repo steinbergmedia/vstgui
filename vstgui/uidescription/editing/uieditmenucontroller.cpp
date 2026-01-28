@@ -136,27 +136,15 @@ bool UIEditMenuController::createUniqueTemplateName (std::list<const std::string
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditMenuController::validateCommandMenuItem (CCommandMenuItem* item)
+bool UIEditMenuController::validateCommandMenuItem (CCommandMenuItem& item)
 {
-	return validateMenuItem (*item);
+	return validateMenuItem (item);
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditMenuController::onCommandMenuItemSelected (CCommandMenuItem* item)
+bool UIEditMenuController::onCommandMenuItemSelected (CCommandMenuItem& item)
 {
-	return handleCommand (item->getCommandCategory (), item->getCommandName ());
-}
-
-//----------------------------------------------------------------------------------------------------
-CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr message)
-{
-	if (message == CVSTGUITimer::kMsgTimer)
-	{
-		editLabel->setTransparency (true);
-		fileLabel->setTransparency (true);
-		highlightTimer = nullptr;
-	}
-	return kMessageUnknown;
+	return handleCommand (item.getCommandCategory (), item.getCommandName ());
 }
 
 //------------------------------------------------------------------------
@@ -213,9 +201,12 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		}
 		else if (cmdName == "Delete")
 		{
-			CView* view = selection->first ();
+			auto view = selection->first ();
 			int32_t selectionCount = selection->total ();
-			bool enable = view ? (selectionCount > 1 ? true : dynamic_cast<UIEditView*> (view->getParentView ()) == nullptr) : false;
+			bool enable =
+				view ? (selectionCount > 1 ? true
+										   : view->getParentView ().cast<UIEditView> () == nullptr)
+					 : false;
 			item.setEnabled (enable);
 			return true;
 		}
@@ -280,9 +271,9 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		{
 			item.removeSubmenu ();
 			bool enable = selection->total () > 0;
-			for (auto view : *selection)
+			for (auto view : *selection.get ())
 			{
-				if (dynamic_cast<UIEditView*>(view->getParentView()) != nullptr)
+				if (view->getParentView ().cast<UIEditView> () != nullptr)
 				{
 					enable = false;
 					break;
@@ -313,8 +304,9 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			bool enabled = false;
 			if (selection->total () == 1)
 			{
-				CViewContainer* container = selection->first ()->asViewContainer ();
-				if (container && container->hasChildren () && dynamic_cast<UIEditView*>(container->getParentView ()) == nullptr)
+				auto container = selection->first ()->asViewContainer ();
+				if (container && container->hasChildren () &&
+					container->getParentView ().cast<UIEditView> () == nullptr)
 					enabled = true;
 			}
 			item.setEnabled (enabled);
@@ -330,7 +322,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			item.removeSubmenu ();
 			auto numViewContainers = 0u;
 			auto numNonViewContainers = 0u;
-			for (auto& entry : *selection)
+			for (auto& entry : *selection.get ())
 			{
 				if (entry->asViewContainer ())
 					++numViewContainers;
@@ -406,7 +398,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		}
 	}
 	if (auto obj = controller.cast<ICommandMenuItemTarget> ())
-		return obj->validateCommandMenuItem (&item);
+		return obj->validateCommandMenuItem (item);
 	return false;
 }
 
@@ -538,7 +530,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		UIAttributes viewAttr;
 		viewAttr.setAttribute (UIViewCreator::kAttrClass, std::string (cmdName));
 		if (auto newContainer =
-				shared (viewFactory.createView (viewAttr, *description)->asViewContainer ()))
+				viewFactory.createView (viewAttr, *description.get ())->asViewContainer ())
 		{
 			auto action = makeOwned<EmbedViewOperation> (selection, newContainer);
 			undoManager->pushAndPerform (action);
@@ -548,7 +540,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	else if (cmdCategory == "Transform View Type")
 	{
 		undoManager->startGroupAction ("Transform View Type");
-		for (auto& entry : *selection)
+		for (auto& entry : *selection.get ())
 		{
 			auto action = makeOwned<TransformViewTypeOperation> (
 				selection, entry, cmdName, description, description->getViewFactory ());
@@ -560,10 +552,10 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	else if (cmdCategory == "Select Children Of Type")
 	{
 		std::vector<SharedPointer<CView>> newSelection;
-		for (auto& entry : *selection)
+		for (auto& entry : *selection.get ())
 		{
 			if (auto viewContainer = entry->asViewContainer ())
-				getChildrenOfType (*viewContainer, cmdName, newSelection);
+				getChildrenOfType (*viewContainer.get (), cmdName, newSelection);
 		}
 		selection->clear ();
 		for (auto& view : newSelection)
@@ -572,9 +564,9 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	}
 	else if (cmdCategory == "InsertTemplate")
 	{
-		if (auto parent = shared (selection->first ()->asViewContainer ()))
+		if (auto parent = selection->first ()->asViewContainer ())
 		{
-			auto view = shared (description->createView (cmdName, description->getController ()));
+			auto view = description->createView (cmdName, description->getController ());
 			if (view)
 			{
 				undoManager->pushAndPerform (
@@ -586,7 +578,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	if (auto obj = controller.cast<ICommandMenuItemTarget> ())
 	{
 		CCommandMenuItem item (CCommandMenuItem::Desc{"", 0, nullptr, category, name});
-		if (obj->onCommandMenuItemSelected (&item))
+		if (obj->onCommandMenuItemSelected (item))
 			return true;
 	}
 	return false;
@@ -615,10 +607,10 @@ void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 	}
 	if (item && item->getItemTarget ())
 	{
-		item->getItemTarget ()->validateCommandMenuItem (item);
+		item->getItemTarget ()->validateCommandMenuItem (*item.get ());
 		if (item->isEnabled ())
 		{
-			CTextLabel* label = nullptr;
+			SharedPointer<CTextLabel> label;
 			if (baseMenu)
 			{
 				switch (baseMenu->getTag ())
@@ -639,10 +631,16 @@ void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 			{
 				label->setTransparency (false);
 			}
-			item->getItemTarget ()->onCommandMenuItemSelected (item);
+			item->getItemTarget ()->onCommandMenuItemSelected (*item.get ());
 			if (label)
 			{
-				highlightTimer = makeOwned<CVSTGUITimer> (this, 90u, true);
+				highlightTimer = makeOwned<CVSTGUITimer> (
+					[this] (auto&&) {
+						editLabel->setTransparency (true);
+						fileLabel->setTransparency (true);
+						highlightTimer.reset ();
+					},
+					90u);
 			}
 			event.consumed = true;
 		}
@@ -650,25 +648,24 @@ void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 }
 
 //----------------------------------------------------------------------------------------------------
-static void copyMenuItems (COptionMenu* src, COptionMenu* dst)
+static void copyMenuItems (COptionMenu& src, COptionMenu& dst)
 {
-	const auto& srcItems = src->getItemList ();
+	const auto& srcItems = src.getItemList ();
 	for (auto& item : srcItems)
 	{
-		item->remember ();
-		dst->addEntry (item);
+		dst.addEntry (item);
 	}
 }
 
 //------------------------------------------------------------------------
 void UIEditMenuController::viewRemoved (CView* view)
 {
-	if (view == editMenu)
+	if (view == editMenu.get ())
 	{
 		view->unregisterViewListener (this);
 		editMenu = nullptr;
 	}
-	else if (view == fileMenu)
+	else if (view == fileMenu.get ())
 	{
 		view->unregisterViewListener (this);
 		fileMenu = nullptr;
@@ -676,10 +673,11 @@ void UIEditMenuController::viewRemoved (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes,
-										 const IUIDescription&)
+SharedPointer<CView> UIEditMenuController::verifyView (const SharedPointer<CView>& view,
+													   const UIAttributes& attributes,
+													   const IUIDescription&)
 {
-	auto menu = shared (dynamic_cast<COptionMenu*> (view));
+	auto menu = view.cast<COptionMenu> ();
 	if (menu)
 	{
 		switch (menu->getTag ())
@@ -687,7 +685,7 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 			case kMenuEditTag:
 			{
 				if (editMenu)
-					copyMenuItems (editMenu, menu);
+					copyMenuItems (*editMenu.get (), *menu.get ());
 				else
 				{
 					createEditMenu (menu);
@@ -699,7 +697,7 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 			case kMenuFileTag:
 			{
 				if (fileMenu)
-					copyMenuItems (fileMenu, menu);
+					copyMenuItems (*fileMenu.get (), *menu.get ());
 				else
 				{
 					createFileMenu (menu);
@@ -712,7 +710,7 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 	}
 	else
 	{
-		CTextLabel* label = dynamic_cast<CTextLabel*>(view);
+		auto label = view.cast<CTextLabel> ();
 		if (label)
 		{
 			switch (label->getTag ())
@@ -734,29 +732,29 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditMenuController::valueChanged (CControl* control)
+void UIEditMenuController::valueChanged (CControl& control)
 {
-	switch (control->getTag ())
+	switch (control.getTag ())
 	{
 		case kMenuFileTag:
 		{
-			if (fileMenu && control->getValue () == control->getMax ())
+			if (fileMenu && control.getValue () == control.getMax ())
 			{
-				CRect r (control->getViewSize ());
+				CRect r (control.getViewSize ());
 				CPoint p = r.getBottomLeft ();
-				control->localToFrame (p);
-				fileMenu->popup (control->getFrame (), p);
+				control.localToFrame (p);
+				fileMenu->popup (*control.getFrame ().get (), p);
 			}
 			break;
 		}
 		case kMenuEditTag:
 		{
-			if (editMenu && control->getValue () == control->getMax ())
+			if (editMenu && control.getValue () == control.getMax ())
 			{
-				CRect r (control->getViewSize ());
+				CRect r (control.getViewSize ());
 				CPoint p = r.getTopLeft ();
-				control->localToFrame (p);
-				editMenu->popup (control->getFrame (), p);
+				control.localToFrame (p);
+				editMenu->popup (*control.getFrame ().get (), p);
 			}
 			break;
 		}
@@ -764,10 +762,10 @@ void UIEditMenuController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditMenuController::controlBeginEdit (CControl* pControl)
+void UIEditMenuController::controlBeginEdit (CControl& pControl)
 {
-	CTextLabel* label = nullptr;
-	switch (pControl->getTag ())
+	SharedPointer<CTextLabel> label;
+	switch (pControl.getTag ())
 	{
 		case kMenuFileTag:
 		{
@@ -787,10 +785,10 @@ void UIEditMenuController::controlBeginEdit (CControl* pControl)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditMenuController::controlEndEdit (CControl* pControl)
+void UIEditMenuController::controlEndEdit (CControl& pControl)
 {
-	CTextLabel* label = nullptr;
-	switch (pControl->getTag ())
+	SharedPointer<CTextLabel> label;
+	switch (pControl.getTag ())
 	{
 		case kMenuFileTag:
 		{
@@ -811,12 +809,12 @@ void UIEditMenuController::controlEndEdit (CControl* pControl)
 void UIEditMenuController::getChildrenOfType (CViewContainer& container, UTF8StringView type,
 											  std::vector<SharedPointer<CView>>& result) const
 {
-	container.forEachChild ([&] (auto view) {
-		if (type == IViewFactory::getViewName (*view))
+	container.forEachChild ([&] (auto&& view) {
+		if (type == IViewFactory::getViewName (*view.get ()))
 			result.emplace_back (view);
 		if (auto c = view->asViewContainer ())
 		{
-			getChildrenOfType (*c, type, result);
+			getChildrenOfType (*c.get (), type, result);
 		}
 	});
 }

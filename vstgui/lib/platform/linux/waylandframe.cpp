@@ -335,15 +335,6 @@ SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 	return optionMenu;
 }
 
-#if VSTGUI_OPENGL_SUPPORT
-//------------------------------------------------------------------------
-SharedPointer<IPlatformOpenGLView> Frame::createPlatformOpenGLView ()
-{
-#warning TODO: Implementation
-	return nullptr;
-}
-#endif
-
 //------------------------------------------------------------------------
 SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
 	IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
@@ -351,14 +342,6 @@ SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
 	// optional
 	return nullptr;
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-DragResult Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
-{
-	return kDragError;
-}
-#endif
 
 //------------------------------------------------------------------------
 bool Frame::doDrag (const DragDescription& dragDescription,

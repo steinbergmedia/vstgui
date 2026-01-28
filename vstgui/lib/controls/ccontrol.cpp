@@ -24,12 +24,15 @@ struct CControl::Impl : ViewEventListenerAdapter
 	using SubListenerDispatcher = DispatchList<IControlListener*>;
 
 	SubListenerDispatcher subListeners;
+	IControlListener* listener;
+	float value;
 	float oldValue {1};
 	float defaultValue {0.5};
 	float vmin {0};
 	float vmax {1.f};
 	float wheelInc {0.1f};
 	int32_t editing {0};
+	int32_t tag {-1};
 
 	void viewOnEvent (CView* view, Event& event) override
 	{
@@ -46,7 +49,7 @@ struct CControl::Impl : ViewEventListenerAdapter
 				control->setValue (defValue);
 				control->valueChanged ();
 				control->endEdit ();
-				control->setDirty ();
+				control->invalid ();
 			}
 			mouseDownEvent.consumed = true;
 			mouseDownEvent.ignoreFollowUpMoveAndUpEvents (true);
@@ -62,21 +65,18 @@ This object manages the tag identification and the value of a control object.
 */
 CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag,
 					const SharedPointer<CBitmap>& pBackground)
-: CView (size), listener (listener), tag (tag), value (0)
+: CView (size)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
+	impl->listener = listener;
+	impl->tag = tag;
 	setTransparency (false);
 	setMouseEnabled (true);
 	setBackground (pBackground);
-	registerViewEventListener (impl.get ());
 }
 
 //------------------------------------------------------------------------
-CControl::CControl (const CControl& c)
-: CView (c)
-, listener (c.listener)
-, tag (c.tag)
-, value (c.value)
+CControl::CControl (const CControl& c) : CView (c)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->oldValue = c.impl->oldValue;
@@ -84,19 +84,42 @@ CControl::CControl (const CControl& c)
 	impl->vmin = c.impl->vmin;
 	impl->vmax = c.impl->vmax;
 	impl->wheelInc = c.impl->wheelInc;
-	registerViewEventListener (impl.get ());
+	impl->listener = c.impl->listener;
+	impl->tag = c.impl->tag;
+	impl->value = c.impl->value;
 }
 
 //------------------------------------------------------------------------
-CControl::~CControl () noexcept
+CControl::~CControl () noexcept {}
+
+//------------------------------------------------------------------------
+bool CControl::attached (const SharedPointer<CViewContainer>& parent)
+{
+	if (CView::attached (parent))
+	{
+		registerViewEventListener (impl.get ());
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool CControl::removed (const SharedPointer<CViewContainer>& parent)
 {
 	unregisterViewEventListener (impl.get ());
+	return CView::removed (parent);
 }
+
+//------------------------------------------------------------------------
+IControlListener* CControl::getListener () const { return impl->listener; }
+
+//------------------------------------------------------------------------
+void CControl::setListener (IControlListener* l) { impl->listener = l; }
 
 //------------------------------------------------------------------------
 void CControl::registerControlListener (IControlListener* subListener)
 {
-	vstgui_assert (listener != subListener, "the subListener is already the main listener");
+	vstgui_assert (impl->listener != subListener, "the subListener is already the main listener");
 	impl->subListeners.add (subListener);
 }
 
@@ -168,12 +191,15 @@ float CControl::getDefaultValue (void) const
 //------------------------------------------------------------------------
 void CControl::setTag (int32_t val)
 {
-	if (listener)
-		listener->controlTagWillChange (this);
-	tag = val;
-	if (listener)
-		listener->controlTagDidChange (this);
+	if (impl->listener)
+		impl->listener->controlTagWillChange (*this);
+	impl->tag = val;
+	if (impl->listener)
+		impl->listener->controlTagDidChange (*this);
 }
+
+//------------------------------------------------------------------------
+int32_t CControl::getTag () const { return impl->tag; }
 
 //------------------------------------------------------------------------
 bool CControl::isEditing () const
@@ -188,11 +214,9 @@ void CControl::beginEdit ()
 	impl->editing++;
 	if (impl->editing == 1)
 	{
-		if (listener)
-			listener->controlBeginEdit (this);
-		impl->subListeners.forEach ([this] (IControlListener* l) { l->controlBeginEdit (this); });
-		if (getFrame ())
-			getFrame ()->beginEdit (tag);
+		if (impl->listener)
+			impl->listener->controlBeginEdit (*this);
+		impl->subListeners.forEach ([this] (IControlListener* l) { l->controlBeginEdit (*this); });
 	}
 #if VSTGUI_CCONTROL_LOG_EDITING
 	DebugPrint("beginEdit [%d] - %d\n", tag, impl->editing);
@@ -207,11 +231,9 @@ void CControl::endEdit ()
 	--impl->editing;
 	if (impl->editing == 0)
 	{
-		if (getFrame ())
-			getFrame ()->endEdit (tag);
-		if (listener)
-			listener->controlEndEdit (this);
-		impl->subListeners.forEach ([this] (IControlListener* l) { l->controlEndEdit (this); });
+		if (impl->listener)
+			impl->listener->controlEndEdit (*this);
+		impl->subListeners.forEach ([this] (IControlListener* l) { l->controlEndEdit (*this); });
 	}
 #if VSTGUI_CCONTROL_LOG_EDITING
 	DebugPrint("endEdit [%d] - %d\n", tag, impl->editing);
@@ -219,18 +241,30 @@ void CControl::endEdit ()
 }
 
 //------------------------------------------------------------------------
-void CControl::setValue (float val) { value = clamp (val, getMin (), getMax ()); }
+float CControl::getValue () const { return impl->value; }
 
 //------------------------------------------------------------------------
-void CControl::setValueNormalized (float val)
+bool CControl::setValue (float val)
+{
+	val = clamp (val, getMin (), getMax ());
+	if (val != impl->value)
+	{
+		impl->value = val;
+		invalid ();
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool CControl::setValueNormalized (float val)
 {
 	if (getRange () == 0.f)
 	{
-		value = getMin ();
-		return;
+		return setValue (getMin ());
 	}
 	val = clampNorm (val);
-	setValue (normalizedToPlain (val, getMin (), getMax ()));
+	return setValue (normalizedToPlain (val, getMin (), getMax ()));
 }
 
 //------------------------------------------------------------------------
@@ -239,72 +273,28 @@ float CControl::getValueNormalized () const
 	auto range = getRange ();
 	if (range == 0.f)
 		return 0.f;
-	return plainToNormalized<float> (value, getMin (), getMax ());
+	return plainToNormalized<float> (impl->value, getMin (), getMax ());
 }
 
 //------------------------------------------------------------------------
 void CControl::valueChanged ()
 {
-	if (listener)
-		listener->valueChanged (this);
-	impl->subListeners.forEach ([this] (IControlListener* l) { l->valueChanged (this); });
+	if (impl->listener)
+		impl->listener->valueChanged (*this);
+	impl->subListeners.forEach ([this] (IControlListener* l) { l->valueChanged (*this); });
 }
 
 //------------------------------------------------------------------------
-bool CControl::isDirty () const
-{
-	if (getOldValue () != value || CView::isDirty ())
-		return true;
-	return false;
-}
-
-//------------------------------------------------------------------------
-void CControl::setDirty (bool val)
-{
-	CView::setDirty (val);
-	if (val)
-	{
-		if (value != -1.f)
-			setOldValue (-1.f);
-		else
-			setOldValue (0.f);
-	}
-	else
-		setOldValue (value);
-}
-
-//------------------------------------------------------------------------
-void CControl::bounceValue () { value = clamp (value, getMin (), getMax ()); }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-CControl::CheckDefaultValueFuncT CControl::CheckDefaultValueFunc = [] (CControl*,
-																	   CButtonState button) {
-#if TARGET_OS_IPHONE
-	return button.isDoubleClick ();
-#else
-	return (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier);
-#endif // TARGET_OS_IPHONE
-};
-
-#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
+void CControl::bounceValue () { impl->value = clamp (impl->value, getMin (), getMax ()); }
 
 //------------------------------------------------------------------------
 CControl::CheckDefaultValueEventFuncT CControl::CheckDefaultValueEventFunc =
 	[] (CControl* c, MouseDownEvent& event) {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		if (event.buttonState.isLeft ())
-		{
-			return CheckDefaultValueFunc (c, buttonStateFromMouseEvent (event));
-		}
-		return false;
-#else
 #if TARGET_OS_IPHONE
 		return event.buttonState.isLeft () && event.clickCount == 2;
 #else
 		return event.buttonState.isLeft () && event.modifiers.is (ModifierKey::Control);
 #endif // TARGET_OS_IPHONE
-#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 	};
 
 //------------------------------------------------------------------------
@@ -314,53 +304,20 @@ bool CControl::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-bool CControl::getFocusPath (CGraphicsPath& outPath)
+bool CControl::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	if (wantsFocus ())
 	{
-		CCoord focusWidth = getFrame ()->getFocusWidth ();
 		CRect r (getVisibleViewSize ());
 		if (!r.isEmpty ())
 		{
 			outPath.addRect (r);
-			r.extend (focusWidth, focusWidth);
+			r.extend (focusLineWidth, focusLineWidth);
 			outPath.addRect (r);
 		}
 	}
 	return true;
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
-{
-	int32_t modifiers = 0;
-	if (vstModifier & MODIFIER_SHIFT)
-		modifiers |= kShift;
-	if (vstModifier & MODIFIER_ALTERNATE)
-		modifiers |= kAlt;
-	if (vstModifier & MODIFIER_COMMAND)
-		modifiers |= kApple;
-	if (vstModifier & MODIFIER_CONTROL)
-		modifiers |= kControl;
-	return modifiers;
-}
-#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-void IMultiBitmapControl::autoComputeHeightOfOneImage ()
-{
-	auto* view = dynamic_cast<CView*>(this);
-	if (view)
-	{
-		const CRect& viewSize = view->getViewSize ();
-		heightOfOneImage = viewSize.getHeight ();
-	}
-}
-#endif
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------

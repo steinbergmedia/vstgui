@@ -24,7 +24,7 @@ namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 UIDialogController::UIDialogController (const SharedPointer<IController>& baseController,
-										CFrame* frame)
+										const SharedPointer<CFrame>& frame)
 : DelegationController (baseController), frame (frame)
 {
 }
@@ -35,8 +35,6 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 							  const SharedPointer<IDialogController>& _dialogController,
 							  const SharedPointer<UIDescription>& _description, bool _resizable)
 {
-	collectOpenGLViews (*frame);
-
 	templateName = _templateName;
 	dialogTitle = _dialogTitle;
 	dialogButton1 = _button1;
@@ -44,10 +42,10 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	dialogController = _dialogController;
 	dialogDescription = _description;
 	resizable = _resizable;
-	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", shared (this));
+	auto view = UIEditController::getEditorDescription ()->createView ("dialog", shared (this));
 	if (view)
 	{
-		auto* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
+		auto layeredView = view.cast<CLayeredViewContainer> ();
 		if (layeredView)
 			layeredView->setZIndex (std::numeric_limits<uint32_t>::max () - 1);
 
@@ -68,14 +66,13 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		view->registerViewListener (this);
 		if (button1)
 			frame->setFocusView (button1);
-		setOpenGLViewsVisible (false);
 		if (dialogController)
 			dialogController->onDialogShow (*this);
 
 		using namespace Animation;
 		view->addAnimation (
-		    "AlphaAnimation", new AlphaValueAnimation (1.f),
-		    new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)));
+			"AlphaAnimation", makeOwned<AlphaValueAnimation> (1.f),
+			makeOwned<CubicBezierTimingFunction> (CubicBezierTimingFunction::easyInOut (160)));
 
 		if (resizable)
 		{
@@ -100,7 +97,6 @@ void UIDialogController::close ()
 		button1->setListener (nullptr);
 	if (button2)
 		button2->setListener (nullptr);
-	setOpenGLViewsVisible (true);
 
 	if (modalSession)
 	{
@@ -115,9 +111,9 @@ void UIDialogController::close ()
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::viewSizeChanged (CView* view, const CRect& oldSize)
 {
-	if (view == frame && !resizable)
+	if (view == frame.get () && !resizable)
 	{
-		CView* dialog = frame->getModalView ();
+		auto dialog = frame->getModalView ();
 		CRect viewSize = dialog->getViewSize ();
 		CRect frameSize = frame->getViewSize ();
 		frame->getTransform ().inverse ().transform (frameSize);
@@ -130,7 +126,7 @@ void UIDialogController::viewSizeChanged (CView* view, const CRect& oldSize)
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::viewRemoved (CView* view)
 {
-	if (view != frame)
+	if (view != frame.get ())
 	{
 		view->unregisterViewListener (this);
 		close ();
@@ -138,11 +134,11 @@ void UIDialogController::viewRemoved (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIDialogController::valueChanged (CControl* control)
+void UIDialogController::valueChanged (CControl& control)
 {
-	if (control->getValue () == control->getMax ())
+	if (control.getValue () == control.getMax ())
 	{
-		switch (control->getTag ())
+		switch (control.getTag ())
 		{
 			case kButton1Tag:
 			{
@@ -157,12 +153,12 @@ void UIDialogController::valueChanged (CControl* control)
 				break;
 			}
 		}
-		CView* modalView = frame->getModalView ();
+		auto modalView = frame->getModalView ();
 		using namespace Animation;
 		modalView->addAnimation (
-		    "AlphaAnimation", new AlphaValueAnimation (0.f),
-		    new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)),
-		    [this] (CView*, const IdStringPtr, IAnimationTarget*) { close (); });
+			"AlphaAnimation", makeOwned<AlphaValueAnimation> (0.f),
+			makeOwned<CubicBezierTimingFunction> (CubicBezierTimingFunction::easyInOut (160)),
+			[this] (auto&&, auto&&, auto&&) { close (); });
 	}
 }
 
@@ -173,14 +169,15 @@ IControlListener* UIDialogController::getControlListener (UTF8StringPtr controlT
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes,
-									   const IUIDescription& description)
+SharedPointer<CView> UIDialogController::verifyView (const SharedPointer<CView>& view,
+													 const UIAttributes& attributes,
+													 const IUIDescription& description)
 {
-	if (auto control = dynamic_cast<CControl*> (view))
+	if (auto control = view.cast<CControl> ())
 	{
 		if (control->getTag () == kButton1Tag)
 		{
-			auto* button = dynamic_cast<CTextButton*>(control);
+			auto button = control.cast<CTextButton> ();
 			if (button)
 			{
 				button1 = button;
@@ -190,7 +187,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 		}
 		else if (control->getTag () == kButton2Tag)
 		{
-			auto* button = dynamic_cast<CTextButton*>(control);
+			auto button = control.cast<CTextButton> ();
 			if (button)
 			{
 				button2 = button;
@@ -207,7 +204,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 		}
 		else if (control->getTag () == kTitleTag)
 		{
-			auto* label = dynamic_cast<CTextLabel*>(control);
+			auto label = control.cast<CTextLabel> ();
 			if (label)
 			{
 				label->setText (dialogTitle.c_str ());
@@ -230,27 +227,26 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 				view->setViewSize (size);
 				view->setMouseableArea (size);
 				if (auto container = view->asViewContainer ())
-					container->addView (subView);
+					container->addSubview (subView);
 				if (controller)
 					dialogController->remember ();
 				customViewEmbedder = view;
 			}
 		}
 	}
-	else if (auto shadowViewContainer = dynamic_cast<CShadowViewContainer*> (view))
+	else if (auto shadowViewContainer = view.cast<CShadowViewContainer> ())
 	{
 		if (resizable)
 		{
-			auto container = new CViewContainer (view->getViewSize ());
+			auto container = makeOwned<CViewContainer> (view->getViewSize ());
 			container->setAutosizeFlags (view->getAutosizeFlags ());
 			while (shadowViewContainer->hasChildren ())
 			{
 				auto child = shadowViewContainer->getView (0);
-				shadowViewContainer->removeView (child, false);
-				container->addView (child);
+				shadowViewContainer->removeSubview (child);
+				container->addSubview (child);
 			}
-			view->forget ();
-			view = container;
+			return container;
 		}
 	}
 	return view;
@@ -281,10 +277,10 @@ void UIDialogController::layoutButtons ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIDialogController::onKeyboardEvent (KeyboardEvent& event, CFrame* inFrame)
+void UIDialogController::onKeyboardEvent (KeyboardEvent& event, CFrame& inFrame)
 {
 	auto guard = shared (this);
-	if (auto focusView = shared (inFrame->getFocusView ()))
+	if (auto focusView = inFrame.getFocusView ())
 	{
 		focusView->dispatchEvent (event);
 		if (event.consumed)
@@ -307,29 +303,7 @@ void UIDialogController::onKeyboardEvent (KeyboardEvent& event, CFrame* inFrame)
 	}
 }
 
-//----------------------------------------------------------------------------------------------------
-void UIDialogController::collectOpenGLViews (CViewContainer& container)
-{
-#if VSTGUI_OPENGL_SUPPORT
-	container.forEachChild ([this] (CView* view) {
-		auto openGLView = dynamic_cast<COpenGLView*> (view);
-		if (openGLView && openGLView->isVisible ())
-			openglViews.emplace_back (openGLView);
-		else if (auto childContainer = view->asViewContainer ())
-			collectOpenGLViews (*childContainer);
-	});
-#endif
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIDialogController::setOpenGLViewsVisible (bool state)
-{
-#if VSTGUI_OPENGL_SUPPORT
-	for (auto& v : openglViews)
-		v->setVisible (state);
-#endif
-}
-
+//------------------------------------------------------------------------
 } // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

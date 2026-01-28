@@ -36,7 +36,7 @@ GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource () noexc
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbAttached (CDataBrowser* browser)
 {
-	dataBrowser = browser;
+	dataBrowser = shared (browser);
 }
 
 //-----------------------------------------------------------------------------
@@ -144,7 +144,7 @@ void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext* contex
 	if (flags & kRowSelected)
 	{
 		CColor color (selectionColor);
-		CView* focusView = browser->getFrame ()->getFocusView ();
+		auto focusView = browser->getFrame ()->getFocusView ();
 		if (!(focusView && browser->isChild (focusView, true)))
 		{
 			double hue, saturation, value;
@@ -207,7 +207,12 @@ void GenericStringListDataBrowserSource::dbOnKeyboardEvent (KeyboardEvent& event
 	{
 		if (timer == nullptr)
 		{
-			timer = makeOwned<CVSTGUITimer> (this, 1000);
+			timer = makeOwned<CVSTGUITimer> (
+				[this] (auto&&) {
+					keyDownFindString = "";
+					timer.reset ();
+				},
+				1000);
 			timer->start ();
 		}
 		else
@@ -243,18 +248,6 @@ CMouseEventResult GenericStringListDataBrowserSource::dbOnMouseDown (const CPoin
 	if (delegate && buttons.isDoubleClick ())
 		delegate->dbRowDoubleClick (row, this);
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-}
-
-//-----------------------------------------------------------------------------
-CMessageResult GenericStringListDataBrowserSource::notify (CBaseObject* sender, IdStringPtr message)
-{
-	if (message == CVSTGUITimer::kMsgTimer)
-	{
-		keyDownFindString = "";
-		timer = nullptr;
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
 }
 
 //------------------------------------------------------------------------

@@ -13,7 +13,7 @@ namespace Animation {
 /// @brief Animation timing function interface
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class ITimingFunction
+class ITimingFunction : public virtual IReference
 {
 public:
 	virtual ~ITimingFunction () noexcept = default;

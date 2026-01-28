@@ -81,8 +81,6 @@ public:
 		context->setFrameColor (handleFrameColor);
 		context->setLineWidth (handleFrameWidth);
 		context->drawRect (rectNew, kDrawFilledAndStroked);
-
-		setDirty (false);
 	}
 
 };
@@ -126,8 +124,6 @@ public:
 		context->setFillColor (color);
 		context->setFrameColor (kBlackCColor);
 		context->drawRect (getViewSize (), kDrawFilledAndStroked);
-				
-		setDirty (false);
 	}
 
 	const CColor& getColor () const { return color; }
@@ -138,9 +134,9 @@ public:
 	}
 
 	// we accept strings which look like : '#ff3355' (rgb) and '#ff3355bb' (rgba)
-	static bool dragContainerHasColor (IDataPackage* drag, CColor* color)
+	static bool dragContainerHasColor (const SharedPointer<IDataPackage>& drag, CColor* color)
 	{
-		for (auto item : drag)
+		for (auto item : drag.get ())
 		{
 			if (item.type != IDataPackage::kText)
 				continue;
@@ -225,7 +221,8 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-static void setupParamDisplay (CParamDisplay* display, const CColorChooserUISettings& settings)
+static void setupParamDisplay (const SharedPointer<CParamDisplay>& display,
+							   const CColorChooserUISettings& settings)
 {
 	display->setFont (settings.font);
 	display->setFontColor (settings.fontColor);
@@ -315,48 +312,51 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	const CCoord labelWidth = 40;
 	const CCoord xMargin = settings.margin.x;
 	const CCoord yMargin = settings.margin.y;
-	
-	colorView = new CColorChooserInternal::ColorView (CRect (1, 1, labelWidth + xMargin + controlWidth + xMargin + editWidth, 100), initialColor, this, kColorTag, settings.checkerBoardBack, settings.checkerBoardColor1, settings.checkerBoardColor2);
+
+	colorView = makeOwned<CColorChooserInternal::ColorView> (
+		CRect (1, 1, labelWidth + xMargin + controlWidth + xMargin + editWidth, 100), initialColor,
+		this, kColorTag, settings.checkerBoardBack, settings.checkerBoardColor1,
+		settings.checkerBoardColor2);
 	colorView->setAutosizeFlags (kAutosizeAll);
-	addView (colorView);
+	addSubview (colorView);
 	CRect r (colorView->getViewSize ());
 	r.offset (labelWidth + xMargin, r.bottom + yMargin);
 	r.setWidth (controlWidth);
 	r.setHeight (controlHeight);
 
-	redSlider = new CColorChooserInternal::Slider (r, this, kRedTag);
+	redSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kRedTag);
 	redSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (redSlider);
-	
+	addSubview (redSlider);
+
 	r.offset (0, yMargin + controlHeight);
-	greenSlider = new CColorChooserInternal::Slider (r, this, kGreenTag);
+	greenSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kGreenTag);
 	greenSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (greenSlider);
+	addSubview (greenSlider);
 
 	r.offset (0, yMargin + controlHeight);
-	blueSlider = new CColorChooserInternal::Slider (r, this, kBlueTag);
+	blueSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kBlueTag);
 	blueSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (blueSlider);
+	addSubview (blueSlider);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	hueSlider = new CColorChooserInternal::Slider (r, this, kHueTag);
+	hueSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kHueTag);
 	hueSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (hueSlider);
+	addSubview (hueSlider);
 
 	r.offset (0, yMargin + controlHeight);
-	saturationSlider = new CColorChooserInternal::Slider (r, this, kSaturationTag);
+	saturationSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kSaturationTag);
 	saturationSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (saturationSlider);
+	addSubview (saturationSlider);
 
 	r.offset (0, yMargin + controlHeight);
-	brightnessSlider = new CColorChooserInternal::Slider (r, this, kBrightnessTag);
+	brightnessSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kBrightnessTag);
 	brightnessSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (brightnessSlider);
+	addSubview (brightnessSlider);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	alphaSlider = new CColorChooserInternal::Slider (r, this, kAlphaTag);
+	alphaSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kAlphaTag);
 	alphaSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (alphaSlider);
+	addSubview (alphaSlider);
 
 	CRect newSize (getViewSize ());
 	
@@ -372,139 +372,139 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	r.offset (0, r.bottom + yMargin);
 	r.setWidth (labelWidth);
 	r.setHeight (controlHeight);
-	auto* label = new CTextLabel (r, "Red");
+	auto label = makeOwned<CTextLabel> (r, "Red");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
-	addView (label);
+	addSubview (label);
 
 	r.offset (0, yMargin + controlHeight);
-	label = new CTextLabel (r, "Green");
+	label = makeOwned<CTextLabel> (r, "Green");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
-	addView (label);
+	addSubview (label);
 
 	r.offset (0, yMargin + controlHeight);
-	label = new CTextLabel (r, "Blue");
+	label = makeOwned<CTextLabel> (r, "Blue");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
-	addView (label);
+	addSubview (label);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	label = new CTextLabel (r, "Hue");
+	label = makeOwned<CTextLabel> (r, "Hue");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
-	addView (label);
+	addSubview (label);
 
 	r.offset (0, yMargin + controlHeight);
-	label = new CTextLabel (r, "Sat");
+	label = makeOwned<CTextLabel> (r, "Sat");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
-	addView (label);
+	addSubview (label);
 
 	r.offset (0, yMargin + controlHeight);
-	label = new CTextLabel (r, "Value");
+	label = makeOwned<CTextLabel> (r, "Value");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
-	addView (label);
+	addSubview (label);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	label = new CTextLabel (r, "Alpha");
+	label = makeOwned<CTextLabel> (r, "Alpha");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
-	addView (label);
+	addSubview (label);
 
 	r = colorView->getViewSize ();
 	r.offset (labelWidth + xMargin + controlWidth + xMargin, r.bottom + yMargin);
 	r.setWidth (editWidth);
 	r.setHeight (controlHeight);
-	editFields[0] = new CTextEdit (r, this, kRedTag, nullptr);
+	editFields[0] = makeOwned<CTextEdit> (r, this, kRedTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[0], settings);
 	editFields[0]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[0]->setStringToValueFunction (convertColorValue);
 	editFields[0]->setValueToStringFunction (convertColorValueToString);
-	addView (editFields[0]);
+	addSubview (editFields[0]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[1] = new CTextEdit (r, this, kGreenTag, nullptr);
+	editFields[1] = makeOwned<CTextEdit> (r, this, kGreenTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[1], settings);
 	editFields[1]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[1]->setStringToValueFunction (convertColorValue);
 	editFields[1]->setValueToStringFunction (convertColorValueToString);
-	addView (editFields[1]);
+	addSubview (editFields[1]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[2] = new CTextEdit (r, this, kBlueTag, nullptr);
+	editFields[2] = makeOwned<CTextEdit> (r, this, kBlueTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[2], settings);
 	editFields[2]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[2]->setStringToValueFunction (convertColorValue);
 	editFields[2]->setValueToStringFunction (convertColorValueToString);
-	addView (editFields[2]);
+	addSubview (editFields[2]);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	editFields[3] = new CTextEdit (r, this, kHueTag, nullptr);
+	editFields[3] = makeOwned<CTextEdit> (r, this, kHueTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[3], settings);
 	editFields[3]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[3]->setStringToValueFunction (convertColorValue);
 	editFields[3]->setValueToStringFunction (convertColorValueToString);
-	addView (editFields[3]);
+	addSubview (editFields[3]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[4] = new CTextEdit (r, this, kSaturationTag, nullptr);
+	editFields[4] = makeOwned<CTextEdit> (r, this, kSaturationTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[4], settings);
 	editFields[4]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[4]->setStringToValueFunction (convertColorValue);
 	editFields[4]->setValueToStringFunction (convertColorValueToString);
-	addView (editFields[4]);
+	addSubview (editFields[4]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[5] = new CTextEdit (r, this, kBrightnessTag, nullptr);
+	editFields[5] = makeOwned<CTextEdit> (r, this, kBrightnessTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[5], settings);
 	editFields[5]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[5]->setStringToValueFunction (convertColorValue);
 	editFields[5]->setValueToStringFunction (convertColorValueToString);
-	addView (editFields[5]);
+	addSubview (editFields[5]);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	editFields[6] = new CTextEdit (r, this, kAlphaTag, nullptr);
+	editFields[6] = makeOwned<CTextEdit> (r, this, kAlphaTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[6], settings);
 	editFields[6]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[6]->setStringToValueFunction (convertColorValue);
 	editFields[6]->setValueToStringFunction (convertColorValueToString);
-	addView (editFields[6]);
+	addSubview (editFields[6]);
 
 	updateState ();
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooser::valueChanged (CControl* control)
+void CColorChooser::valueChanged (CControl& control)
 {
-	switch (control->getTag ())
+	switch (control.getTag ())
 	{
 		case kRedTag:
 		{
-			color.setNormRed (control->getValue ());
+			color.setNormRed (control.getValue ());
 			break;
 		}
 		case kGreenTag:
 		{
-			color.setNormGreen (control->getValue ());
+			color.setNormGreen (control.getValue ());
 			break;
 		}
 		case kBlueTag:
 		{
-			color.setNormBlue (control->getValue ());
+			color.setNormBlue (control.getValue ());
 			break;
 		}
 		case kAlphaTag:
 		{
-			color.setNormAlpha (control->getValue ());
+			color.setNormAlpha (control.getValue ());
 			break;
 		}
 		case kHueTag:
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);
-			hue = control->getValue () * 359.;
+			hue = control.getValue () * 359.;
 			color.fromHSV (hue, saturation, value);
 			break;
 		}
@@ -512,7 +512,7 @@ void CColorChooser::valueChanged (CControl* control)
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);
-			saturation = control->getValue ();
+			saturation = control.getValue ();
 			color.fromHSV (hue, saturation, value);
 			break;
 		}
@@ -520,7 +520,7 @@ void CColorChooser::valueChanged (CControl* control)
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);
-			value = control->getValue ();
+			value = control.getValue ();
 			color.fromHSV (hue, saturation, value);
 			break;
 		}
@@ -535,14 +535,14 @@ void CColorChooser::valueChanged (CControl* control)
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooser::controlBeginEdit (CControl* pControl)
+void CColorChooser::controlBeginEdit (CControl& pControl)
 {
 	if (delegate)
 		delegate->onBeginColorChange (this);
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooser::controlEndEdit (CControl* pControl)
+void CColorChooser::controlEndEdit (CControl& pControl)
 {
 	if (delegate)
 		delegate->onEndColorChange (this);

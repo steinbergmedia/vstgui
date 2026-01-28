@@ -12,10 +12,8 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIColorSlider::UIColorSlider (UIColor* color, int32_t style)
-: CSlider (CRect (0, 0, 0, 0), nullptr, 0, 0, 0, nullptr, nullptr)
-, color (color)
-, style (style)
+UIColorSlider::UIColorSlider (const SharedPointer<UIColor>& color, int32_t style)
+: CSlider (CRect (0, 0, 0, 0), nullptr, 0, 0, 0, nullptr, nullptr), color (color), style (style)
 {
 	color->registerListener (this);
 }

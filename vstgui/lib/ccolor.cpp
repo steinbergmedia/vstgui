@@ -298,24 +298,6 @@ bool CColor::isColorRepresentation (std::string_view str)
 	return (str.size () == 9 && str.data ()[0] == '#');
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-bool CColor::isColorRepresentation (UTF8StringPtr str)
-{
-	if (str && isColorRepresentation ({str, strlen (str)}))
-		return true;
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool CColor::fromString (UTF8StringPtr str)
-{
-	if (!str)
-		return false;
-	return fromString ({str, strlen (str)});
-}
-#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-
 //-----------------------------------------------------------------------------
 UTF8String CColor::toString () const
 {

@@ -242,7 +242,7 @@ HIDDEN NSImage* bitmapToNSImage (const SharedPointer<CBitmap>& bitmap)
 
 	NSImage* image =
 	    [[NSImage alloc] initWithSize:NSMakeSize (bitmap->getWidth (), bitmap->getHeight ())];
-	for (auto& platformBitmap : *bitmap)
+	for (auto& platformBitmap : *bitmap.get ())
 	{
 		if (auto cgBitmap = dynamic_cast<CGBitmap*> (platformBitmap.get ()))
 		{

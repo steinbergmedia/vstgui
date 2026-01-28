@@ -154,9 +154,8 @@ protected:
 #if DEBUG_LOG
 		DebugPrint ("Animation timer started\n");
 #endif
-		timer = new CVSTGUITimer ([this] (CVSTGUITimer*) {
-			onTimer ();
-		}, 1000/60); // 60 Hz
+		timer =
+			makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 1000 / 60); // 60 Hz
 	}
 	
 	~Timer () noexcept override
@@ -164,7 +163,7 @@ protected:
 #if DEBUG_LOG
 		DebugPrint ("Animation timer stopped\n");
 #endif
-		timer->forget ();
+		timer.reset ();
 		gInstance = nullptr;
 	}
 	
@@ -183,8 +182,8 @@ protected:
 		toRemove.clear ();
 	}
 
-	CVSTGUITimer* timer;
-	
+	SharedPointer<CVSTGUITimer> timer;
+
 	using Animators = std::list<Animator*>;
 	Animators animators;
 	Animators toRemove;
@@ -197,14 +196,15 @@ Timer* Timer::gInstance = nullptr;
 class Animation : public NonAtomicReferenceCounted
 {
 public:
-	Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t,
+	Animation (const SharedPointer<CView>& view, const std::string& name,
+			   const SharedPointer<IAnimationTarget>& at, const SharedPointer<ITimingFunction>& t,
 			   DoneFunction&& notification, bool notifyOnCancel);
 	~Animation () noexcept override;
-	
+
 	std::string name;
 	SharedPointer<CView> view;
-	IAnimationTarget* animationTarget;
-	ITimingFunction* timingFunction;
+	SharedPointer<IAnimationTarget> animationTarget;
+	SharedPointer<ITimingFunction> timingFunction;
 	DoneFunction notification;
 	uint64_t startTime {0};
 	float lastPos {-1.};
@@ -213,8 +213,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at,
-					  ITimingFunction* t, DoneFunction&& notification, bool notifyOnCancel)
+Animation::Animation (const SharedPointer<CView>& view, const std::string& name,
+					  const SharedPointer<IAnimationTarget>& at,
+					  const SharedPointer<ITimingFunction>& t, DoneFunction&& notification,
+					  bool notifyOnCancel)
 : name (name)
 , view (view)
 , animationTarget (at)
@@ -228,15 +230,7 @@ Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at
 Animation::~Animation () noexcept
 {
 	if (notification)
-		notification (view, name.c_str (), animationTarget);
-	if (auto obj = dynamic_cast<IReference*> (animationTarget))
-		obj->forget ();
-	else
-		delete animationTarget;
-	if (auto obj = dynamic_cast<IReference*> (timingFunction))
-		obj->forget ();
-	else
-		delete timingFunction;
+		notification (*view.get (), name.c_str (), *animationTarget.get ());
 }
 
 } // Detail
@@ -261,9 +255,10 @@ Animator::~Animator () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target,
-							 ITimingFunction* timingFunction, DoneFunction notification,
-							 bool notifyOnCancel)
+void Animator::addAnimation (const SharedPointer<CView>& view, IdStringPtr name,
+							 const SharedPointer<IAnimationTarget>& target,
+							 const SharedPointer<ITimingFunction>& timingFunction,
+							 DoneFunction notification, bool notifyOnCancel)
 {
 	if (pImpl->animations.empty ())
 		Detail::Timer::addAnimator (this);
@@ -275,25 +270,8 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 #endif
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
-void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject)
-{
-	DoneFunction notification;
-	if (notificationObject)
-	{
-		SharedPointer<CBaseObject> nObj (notificationObject);
-		notification = [nObj] (CView* view, const IdStringPtr name, IAnimationTarget* target) {
-			FinishedMessage fmsg (view, name, target);
-			nObj->notify (&fmsg, kMsgAnimationFinished);
-		};
-	}
-	addAnimation (view, name, target, timingFunction, std::move (notification));
-}
-#endif
-
-//-----------------------------------------------------------------------------
-void Animator::removeAnimation (CView* view, IdStringPtr name)
+void Animator::removeAnimation (const SharedPointer<CView>& view, IdStringPtr name)
 {
 	pImpl->animations.forEach ([&] (const SharedPointer<Detail::Animation>& animation) {
 		if (animation->view == view && animation->name == name)
@@ -304,7 +282,7 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 			if (animation->done == false)
 			{
 				animation->done = true;
-				animation->animationTarget->animationFinished (view, name, true);
+				animation->animationTarget->animationFinished (*view.get (), name, true);
 			}
 			if (!animation->notifyOnCancel)
 				animation->notification = nullptr;
@@ -314,7 +292,7 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 }
 
 //-----------------------------------------------------------------------------
-void Animator::removeAnimations (CView* view)
+void Animator::removeAnimations (const SharedPointer<CView>& view)
 {
 	pImpl->animations.forEach ([&] (const SharedPointer<Detail::Animation>& animation) {
 		if (animation->view == view)
@@ -325,7 +303,8 @@ void Animator::removeAnimations (CView* view)
 			if (animation->done == false)
 			{
 				animation->done = true;
-				animation->animationTarget->animationFinished (view, animation->name.data (), true);
+				animation->animationTarget->animationFinished (*view.get (),
+															   animation->name.data (), true);
 			}
 			pImpl->animations.remove (animation);
 		}
@@ -343,20 +322,23 @@ void Animator::onTimer ()
 #if DEBUG_LOG
 			DebugPrint ("animation start: %p - %s\n", animation->view.cast<CView>(), animation->name.data ());
 #endif
-			animation->animationTarget->animationStart (animation->view, animation->name.data ());
+			animation->animationTarget->animationStart (*animation->view.get (),
+														animation->name.data ());
 			animation->startTime = currentTicks;
 		}
 		uint32_t time = static_cast<uint32_t> (currentTicks - animation->startTime);
 		float pos = animation->timingFunction->getPosition (time);
 		if (pos != animation->lastPos)
 		{
-			animation->animationTarget->animationTick (animation->view, animation->name.data (), pos);
+			animation->animationTarget->animationTick (*animation->view.get (),
+													   animation->name.data (), pos);
 			animation->lastPos = pos;
 		}
 		if (animation->timingFunction->isDone (time))
 		{
 			animation->done = true;
-			animation->animationTarget->animationFinished (animation->view, animation->name.data (), false);
+			animation->animationTarget->animationFinished (*animation->view.get (),
+														   animation->name.data (), false);
 #if DEBUG_LOG
 			DebugPrint ("animation finished: %p - %s\n", animation->view.cast<CView>(), animation->name.data ());
 #endif
@@ -366,9 +348,4 @@ void Animator::onTimer ()
 	if (pImpl->animations.empty ())
 		Detail::Timer::removeAnimator (this);
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-IdStringPtr kMsgAnimationFinished = "kMsgAnimationFinished";
-#endif
-
 }} // namespaces

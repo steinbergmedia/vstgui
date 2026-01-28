@@ -22,42 +22,14 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
 							const SharedPointer<CBitmap>& background)
-: CControl (size, listener, tag, background), buttonState (value)
+: CControl (size, listener, tag, background), buttonState (getValue ())
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	heightOfOneImage = size.getHeight ();
-#endif
 	setWantsFocus (true);
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-/**
- * CMovieButton constructor.
- * @param size the size of this view
- * @param listener the listener
- * @param tag the control tag
- * @param heightOfOneImage height of one image in pixel
- * @param background bitmap
- * @param offset
- */
-//------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
-							CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
-: CControl (size, listener, tag, shared (background)), offset (offset), buttonState (value)
-{
-	setHeightOfOneImage (heightOfOneImage);
-	setWantsFocus (true);
-}
-#endif
 
 //------------------------------------------------------------------------
 CMovieButton::CMovieButton (const CMovieButton& v) : CControl (v), buttonState (v.buttonState)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	offset = v.offset;
-	setHeightOfOneImage (v.heightOfOneImage);
-#endif
 	setWantsFocus (true);
 }
 
@@ -68,22 +40,16 @@ void CMovieButton::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
-			auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+			auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
 			CPoint where {};
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			if (value == getMax ())
-				where.y = heightOfOneImage;
-#endif
 			bitmap->draw (pContext, getViewSize (), where);
 		}
 	}
-	buttonState = value;
-
-	setDirty (false);
+	buttonState = getValue ();
 }
 
 //------------------------------------------------------------------------
@@ -91,7 +57,7 @@ CMouseEventResult CMovieButton::onMouseDown (CPoint& where, const CButtonState& 
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
-	fEntryState = value;
+	fEntryState = getValue ();
 	beginEdit ();
 	return onMouseMoved (where, buttons);
 }
@@ -109,19 +75,17 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const CButtonState&
 {
 	if (isEditing ())
 	{
+		bool changed = false;
 		if (where.x >= getViewSize ().left &&
 				where.y >= getViewSize ().top  &&
 				where.x <= getViewSize ().right &&
 				where.y <= getViewSize ().bottom)
-			value = (fEntryState == getMax ()) ? getMin () : getMax ();
+			changed = setValue ((fEntryState == getMax ()) ? getMin () : getMax ());
 		else
-			value = fEntryState;
-	
-		if (isDirty ())
-		{
+			changed = setValue (fEntryState);
+
+		if (changed)
 			valueChanged ();
-			invalid ();
-		}
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -132,12 +96,8 @@ CMouseEventResult CMovieButton::onMouseCancel ()
 {
 	if (isEditing ())
 	{
-		value = fEntryState;
-		if (isDirty ())
-		{
+		if (setValue (fEntryState))
 			valueChanged ();
-			invalid ();
-		}
 		endEdit ();
 	}
 	return kMouseEventHandled;
@@ -150,8 +110,7 @@ void CMovieButton::onKeyboardEvent (KeyboardEvent& event)
 		return;
 	if (event.virt == VirtualKey::Return)
 	{
-		value = (value == getMax ()) ? getMin () : getMax ();
-		invalid ();
+		setValue ((getValue () == getMax ()) ? getMin () : getMax ());
 		beginEdit ();
 		valueChanged ();
 		endEdit ();
@@ -172,11 +131,7 @@ bool CMovieButton::sizeToFit ()
 		else
 		{
 			vs.setWidth (bitmap->getWidth ());
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			vs.setHeight (getHeightOfOneImage ());
-#else
 			vs.setHeight (bitmap->getHeight ());
-#endif
 		}
 		setViewSize (vs);
 		setMouseableArea (vs);

@@ -364,9 +364,8 @@ void CGBitmap::freeCGImage ()
 class CGBitmapPixelAccess : public IPlatformBitmapPixelAccess
 {
 public:
-	CGBitmapPixelAccess (CGBitmap* bitmap, bool alphaPremultiplied)
-	: bitmap (bitmap)
-	, alphaPremultiplied (alphaPremultiplied)
+	CGBitmapPixelAccess (const SharedPointer<CGBitmap>& bitmap, bool alphaPremultiplied)
+	: bitmap (bitmap), alphaPremultiplied (alphaPremultiplied)
 	{
 		if (!alphaPremultiplied)
 		{
@@ -383,7 +382,6 @@ public:
 			assert (error == kvImageNoError);
 #endif
 		}
-		bitmap->remember ();
 	}
 	
 	~CGBitmapPixelAccess () noexcept override
@@ -404,7 +402,6 @@ public:
 #endif
 		}
 		bitmap->setDirty ();
-		bitmap->forget ();
 	}
 
 	uint8_t* getAddress () const override
@@ -427,7 +424,7 @@ public:
 	}
 	
 protected:
-	CGBitmap* bitmap;
+	SharedPointer<CGBitmap> bitmap;
 	bool alphaPremultiplied;
 };
 
@@ -442,7 +439,7 @@ SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremul
 	}
 	if (bits)
 	{
-		return makeOwned<CGBitmapPixelAccess> (this, alphaPremultiplied);
+		return makeOwned<CGBitmapPixelAccess> (shared (this), alphaPremultiplied);
 	}
 	return nullptr;
 }

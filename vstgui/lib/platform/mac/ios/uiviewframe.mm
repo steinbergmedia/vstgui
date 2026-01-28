@@ -267,14 +267,6 @@ SharedPointer<IPlatformOptionMenu> UIViewFrame::createPlatformOptionMenu ()
 	return nullptr;
 }
 
-#if VSTGUI_OPENGL_SUPPORT
-//-----------------------------------------------------------------------------
-SharedPointer<IPlatformOpenGLView> UIViewFrame::createPlatformOpenGLView ()
-{
-	return owned<IPlatformOpenGLView> (new GLKitOpenGLView (uiView));
-}
-#endif
-
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformViewLayer> UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
@@ -284,11 +276,7 @@ SharedPointer<IPlatformViewLayer> UIViewFrame::createPlatformViewLayer (IPlatfor
 	return shared<IPlatformViewLayer> (layer);
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-DragResult UIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) { return kDragError; }
-#endif
-bool UIViewFrame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) { return false; }
-
+//------------------------------------------------------------------------
 }
 
 #endif // TARGET_OS_IPHONE

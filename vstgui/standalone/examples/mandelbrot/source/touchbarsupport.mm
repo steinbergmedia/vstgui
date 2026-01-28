@@ -62,9 +62,11 @@ public:
 };
 	
 //------------------------------------------------------------------------
-void installTouchbarSupport (IPlatformFrameTouchBarExtension* tbExt, const ValuePtr& value)
+void installTouchbarSupport (
+	const VSTGUI::SharedPointer<VSTGUI::IPlatformFrameTouchBarExtension>& tbExt,
+	const ValuePtr& value)
 {
-	tbExt->setTouchBarCreator (owned<ITouchBarCreator> (new TouchBarMaker (value)));
+	tbExt->setTouchBarCreator (makeOwned<TouchBarMaker> (value));
 }
 	
 //------------------------------------------------------------------------

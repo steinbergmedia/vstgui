@@ -48,10 +48,6 @@ public:
 	virtual void setFont (const SharedPointer<CFontDesc>& fontID);
 	SharedPointer<CFontDesc> getFont () const { return fontID; }
 
-	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontDesc* inFontID) { setFont (shared (inFontID)); },
-		"Use `setFont (shared (yourFont);` instead")
-
 	virtual void setFontColor (CColor color);
 	CColor getFontColor () const { return fontColor; }
 
@@ -119,8 +115,8 @@ public:
 	//@}
 
 	void draw (CDrawContext* pContext) override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
-	bool removed (CView* parent) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:

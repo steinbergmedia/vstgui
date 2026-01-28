@@ -55,7 +55,7 @@ inline T fromUTF8String (const UTF8String& str)
 template <>
 inline CFStringRef fromUTF8String (const UTF8String& str)
 {
-	if (auto macString = dynamic_cast<MacString*> (str.getPlatformString ()))
+	if (auto macString = str.getPlatformString ().cast<MacString> ())
 		return macString->getCFString ();
 	return nullptr;
 }
@@ -65,7 +65,7 @@ inline CFStringRef fromUTF8String (const UTF8String& str)
 template <>
 inline NSString* fromUTF8String (const UTF8String& str)
 {
-	if (auto macString = dynamic_cast<MacString*> (str.getPlatformString ()))
+	if (auto macString = str.getPlatformString ().cast<MacString> ())
 		return (__bridge NSString*) (macString->getCFString ());
 	return nil;
 }

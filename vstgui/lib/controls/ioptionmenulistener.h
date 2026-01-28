@@ -16,9 +16,9 @@ class IOptionMenuListener
 {
 public:
 	/** called before the menu pops up */
-	virtual void onOptionMenuPrePopup (COptionMenu* menu) = 0;
+	virtual void onOptionMenuPrePopup (const SharedPointer<COptionMenu>& menu) = 0;
 	/** called after the menu pops up */
-	virtual void onOptionMenuPostPopup (COptionMenu* menu) = 0;
+	virtual void onOptionMenuPostPopup (const SharedPointer<COptionMenu>& menu) = 0;
 	/** called when the platform optionmenu returns the result and before the value of the option
 	 *	menu is set.
 	 *	@ingroup new_in_4_10
@@ -29,7 +29,8 @@ public:
 	 *	@return return true to prevent further propagating the call to other listeners and to
 	 *			prevent setting the value of the option menu
 	 */
-	virtual bool onOptionMenuSetPopupResult (COptionMenu* menu, COptionMenu* selectedMenu,
+	virtual bool onOptionMenuSetPopupResult (const SharedPointer<COptionMenu>& menu,
+											 const SharedPointer<COptionMenu>& selectedMenu,
 											 int32_t selectedIndex) = 0;
 };
 
@@ -37,9 +38,10 @@ public:
 class OptionMenuListenerAdapter : public IOptionMenuListener
 {
 public:
-	void onOptionMenuPrePopup (COptionMenu* menu) override {}
-	void onOptionMenuPostPopup (COptionMenu* menu) override {}
-	bool onOptionMenuSetPopupResult (COptionMenu* menu, COptionMenu* selectedMenu,
+	void onOptionMenuPrePopup (const SharedPointer<COptionMenu>& menu) override {}
+	void onOptionMenuPostPopup (const SharedPointer<COptionMenu>& menu) override {}
+	bool onOptionMenuSetPopupResult (const SharedPointer<COptionMenu>& menu,
+									 const SharedPointer<COptionMenu>& selectedMenu,
 									 int32_t selectedIndex) override
 	{
 		return false;

@@ -10,13 +10,17 @@ You can edit your plugin by doing "Right click > Open UIDescription Editor"
 
 ![Edit VST3 plugin](screenshots/editVST3.png)
 
-You can find more information about this interface in the documentation : "VSTGUI 4 > VSTGUI > New Inline UI Editor for VST3 (WYSIWYG) > The Editor".
+You can find more information about this interface in the documentation : "VSTGUI 4 > VSTGUI > New
+Inline UI Editor for VST3 (WYSIWYG) > The Editor".
 
-During this tutorial we will make a new view that will appear in the "Views Tab" at the bottom right of the editor and it allow us to drag and drop it inside our VST3 plugin.
+During this tutorial we will make a new view that will appear in the "Views Tab" at the bottom right
+of the editor and it allow us to drag and drop it inside our VST3 plugin.
 
 @section create_your_own_view_createView Create the new view class
 
-To create a new graphical view you need to create a class that inherites from *CView* or *CControl*. We recommend that you start with the *CControl* class when you plan to have an interactive view, otherwise if it only should display data use *CView*.
+To create a new graphical view you need to create a class that inherites from *CView* or *CControl*.
+We recommend that you start with the *CControl* class when you plan to have an interactive view,
+otherwise if it only should display data use *CView*.
 
 Your header file should look like this :
 
@@ -65,13 +69,18 @@ void MyControl::draw (CDrawContext* pContext)
 } // namespace VSTGUI
 ~~~~~~~~~~~~~
 
-We have two functions, the constructor which only calls the parent constructor and the *draw* function which will define the design of the view. In this example we draw a white rectangle with black borders.
+We have two functions, the constructor which only calls the parent constructor and the *draw*
+function which will define the design of the view. In this example we draw a white rectangle with
+black borders.
 
 @section create_your_own_view_registerView Register your view
 
-So now you have a basic graphical view. But it will not appear in the list when you edit your plugin.
+So now you have a basic graphical view. But it will not appear in the list when you edit your
+plugin.
 
-You need to create a new class, a "factory", that will register your view and create it. This class only needs a cpp file (if you strip dead code in your linker settings, then you need to make sure that this class is not stripped).
+You need to create a new class, a "factory", that will register your view and create it. This class
+only needs a cpp file (if you strip dead code in your linker settings, then you need to make sure
+that this class is not stripped).
 
 Let us begin by creating an empty class that inherites from  *'ViewCreatorAdapter'* :
 
@@ -96,7 +105,8 @@ public:
 } // namespace VSTGUI
 ~~~~~~~~~~~~~
 
-In the constructor we need to register our view to the UIViewFactory. If we don't do that it will not appear in the list that will allow us to add the view to our VST3 plugin.
+In the constructor we need to register our view to the UIViewFactory. If we don't do that it will
+not appear in the list that will allow us to add the view to our VST3 plugin.
 
 ~~~~~~~~~~~~~{.cpp}
 MyControlFactory () { UIViewFactory::registerViewCreator (*this); }
@@ -119,13 +129,15 @@ IdStringPtr getBaseViewName () const { return UIViewCreator::kCControl; }
 * and a creator method which returns a new view with a default size
 
 ~~~~~~~~~~~~~{.cpp}
-CView* create (const UIAttributes& attributes, const IUIDescription* description) const
+SharedPointer<CView> create (const UIAttributes& attributes, const IUIDescription& description)
+const
 {
 	return new MyControl (CRect (0, 0, 100, 100));
 }
 ~~~~~~~~~~~~~
 
-You also need to create a static variable having the same type as our factory. This variable will call the constructor of your factory. Thus, your view will be registered automatically.
+You also need to create a static variable having the same type as our factory. This variable will
+call the constructor of your factory. Thus, your view will be registered automatically.
 
 ~~~~~~~~~~~~~{.cpp}
 MyControlFactory __gMyControlFactory;
@@ -158,7 +170,8 @@ public:
 	// create your view here.
 	// Note you don't need to apply attributes here as
 	// the apply method will be called with this new view
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
+	SharedPointer<CView> create (const UIAttributes& attributes, const IUIDescription& description)
+const override
 	{
 		CRect size (CPoint (45, 45), CPoint (400, 150) );
 		return new MyControl (size);

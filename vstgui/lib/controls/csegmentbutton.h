@@ -105,9 +105,6 @@ public:
 
 	void setFont (const SharedPointer<CFontDesc>& font);
 	SharedPointer<CFontDesc> getFont () const { return font; }
-	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
-		"Use `setFont (shared (yourFont);` instead")
 
 	void setTextAlignment (CHoriTxtAlign alignment);
 	CHoriTxtAlign getTextAlignment () const { return textAlignment; }
@@ -129,15 +126,17 @@ public:
 	//@}
 	
 	// overrides
-	bool attached (CView *parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	void draw (CDrawContext* pContext) override;
 	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) override;
 	bool drawFocusOnTop () override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	void valueChanged () override;
+	float getMin () const override;
+	float getMax () const override;
 
 	static bool isHorizontalStyle (Style style)
 	{

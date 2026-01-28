@@ -13,7 +13,7 @@ namespace Standalone {
 namespace Minesweeper {
 
 //------------------------------------------------------------------------
-inline void keepChildViewsCentered (CViewContainer* view)
+inline void keepChildViewsCentered (const SharedPointer<CViewContainer>& view)
 {
 //------------------------------------------------------------------------
 	class CenteredViewHandler : public ViewListenerAdapter
@@ -53,7 +53,7 @@ inline void keepChildViewsCentered (CViewContainer* view)
 		CViewContainer* parent {nullptr};
 	};
 
-	new CenteredViewHandler (view);
+	new CenteredViewHandler (view.get ());
 }
 
 //------------------------------------------------------------------------

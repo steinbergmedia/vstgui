@@ -39,17 +39,17 @@ UTF8StringPtr LayeredViewContainerCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* LayeredViewContainerCreator::create (const UIAttributes& attributes,
-                                            const IUIDescription* description) const
+SharedPointer<CView> LayeredViewContainerCreator::create (const UIAttributes& attributes,
+														  const IUIDescription& description) const
 {
-	return new CLayeredViewContainer (CRect (0, 0, 100, 100));
+	return makeOwned<CLayeredViewContainer> (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------
-bool LayeredViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
-                                         const IUIDescription* description) const
+bool LayeredViewContainerCreator::apply (CView& view, const UIAttributes& attributes,
+										 const IUIDescription& description) const
 {
-	auto* lvc = dynamic_cast<CLayeredViewContainer*> (view);
+	auto* lvc = dynamic_cast<CLayeredViewContainer*> (&view);
 	if (lvc == nullptr)
 		return false;
 	int32_t zIndex;
@@ -74,11 +74,11 @@ auto LayeredViewContainerCreator::getAttributeType (const string& attributeName)
 }
 
 //------------------------------------------------------------------------
-bool LayeredViewContainerCreator::getAttributeValue (CView* view, const string& attributeName,
-                                                     string& stringValue,
-                                                     const IUIDescription* desc) const
+bool LayeredViewContainerCreator::getAttributeValue (CView& view, const string& attributeName,
+													 string& stringValue,
+													 const IUIDescription& desc) const
 {
-	auto* lvc = dynamic_cast<CLayeredViewContainer*> (view);
+	auto* lvc = dynamic_cast<CLayeredViewContainer*> (&view);
 	if (lvc == nullptr)
 		return false;
 	if (attributeName == kAttrZIndex)

@@ -18,8 +18,8 @@ class CTooltipSupport : public CBaseObject
 public:
 	CTooltipSupport (CFrame* frame, uint32_t delay = 1000);
 
-	void onMouseEntered (CView* view);
-	void onMouseExited (CView* view);
+	void onMouseEntered (const SharedPointer<CView>& view);
+	void onMouseExited (const SharedPointer<CView>& view);
 	void onMouseMoved (const CPoint& where);
 	void onMouseDown (const CPoint& where);
 
@@ -37,9 +37,6 @@ protected:
 		kShowing,
 		kForceVisible
 	};
-
-	// CBaseObject
-	CMessageResult notify (CBaseObject* sender, IdStringPtr msg) override;
 
 	SharedPointer<CVSTGUITimer> timer;
 	CFrame* frame;

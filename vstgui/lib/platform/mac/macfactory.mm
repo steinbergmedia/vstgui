@@ -227,10 +227,10 @@ PlatformGradientPtr MacFactory::createGradient () const noexcept
 
 //-----------------------------------------------------------------------------
 PlatformFileSelectorPtr MacFactory::createFileSelector (PlatformFileSelectorStyle style,
-														IPlatformFrame* frame) const noexcept
+														PlatformFramePtr frame) const noexcept
 {
 #if !TARGET_OS_IPHONE
-	auto nsViewFrame = dynamic_cast<NSViewFrame*> (frame);
+	auto nsViewFrame = frame.cast<NSViewFrame> ();
 	return createCocoaFileSelector (style, nsViewFrame);
 #endif
 	return nullptr;

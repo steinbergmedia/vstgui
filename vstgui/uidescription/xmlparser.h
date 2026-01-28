@@ -33,7 +33,7 @@ public:
 	Parser ();
 	virtual ~Parser () noexcept;
 
-	bool parse (IContentProvider* provider, IHandler* handler);
+	bool parse (IContentProvider& provider, IHandler* handler);
 
 	bool stop ();
 

@@ -50,8 +50,8 @@ UINode::UINode (const std::string& _name, const SharedPointer<UIDescList>& _chil
 UINode::UINode (const UINode& n)
 : name (n.name)
 , data (n.data)
-, attributes (makeOwned<UIAttributes> (*n.attributes))
-, children (makeOwned<UIDescList> (*n.children))
+, attributes (makeOwned<UIAttributes> (*n.attributes.get ()))
+, children (makeOwned<UIDescList> (*n.children.get ()))
 , flags (n.flags)
 {
 }
@@ -228,7 +228,7 @@ UIBitmapNode::~UIBitmapNode () noexcept {}
 void UIBitmapNode::freePlatformResources () { bitmap.reset (); }
 
 //-----------------------------------------------------------------------------
-bool UIBitmapNode::imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2)
+bool UIBitmapNode::imagesEqual (const PlatformBitmapPtr& b1, const PlatformBitmapPtr& b2)
 {
 	if (b1 == b2)
 		return true;
@@ -549,7 +549,7 @@ SharedPointer<CFontDesc> UIFontNode::getFont ()
 						if (std::find (fontNames.begin (), fontNames.end (),
 						               trimmedString.getString ()) != fontNames.end ())
 						{
-							font = new CFontDesc (trimmedString.data (), size, fontStyle);
+							font = makeOwned<CFontDesc> (trimmedString.data (), size, fontStyle);
 							break;
 						}
 					}
@@ -646,9 +646,8 @@ void UIColorNode::setColor (const CColor& newColor)
 	attributes->removeAll ();
 	attributes->setAttribute ("name", name);
 
-	std::string colorString;
-	UIViewCreator::colorToString (newColor, colorString, nullptr);
-	attributes->setAttribute ("rgba", colorString);
+	auto colorString = newColor.toString ();
+	attributes->setAttribute ("rgba", colorString.getString ());
 	color = newColor;
 }
 
@@ -702,9 +701,8 @@ void UIGradientNode::setGradient (const SharedPointer<CGradient>& g)
 	{
 		auto node = makeOwned<UINode> ("color-stop");
 		node->getAttributes ()->setDoubleAttribute ("start", colorStop.first);
-		std::string colorString;
-		UIViewCreator::colorToString (colorStop.second, colorString, nullptr);
-		node->getAttributes ()->setAttribute ("rgba", colorString);
+		auto colorString = colorStop.second.toString ();
+		node->getAttributes ()->setAttribute ("rgba", colorString.getString ());
 		getChildren ().add (node);
 	}
 }

@@ -77,7 +77,7 @@ protected:
 
 	void updateSize ();
 	void invalidSelection ();
-	MouseSizeMode selectionHitTest (const CPoint& where, CView** resultView);
+	MouseSizeMode selectionHitTest (const CPoint& where, SharedPointer<CView>& resultView);
 	bool hitTestSubViews (const CPoint& where, const Event& event) override;
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
@@ -86,7 +86,7 @@ protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
-	std::vector<SharedPointer<CView>> findChildsInArea (CViewContainer* view, CRect r) const;
+	std::vector<SharedPointer<CView>> findChildsInArea (CViewContainer& view, CRect r) const;
 
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);
@@ -107,14 +107,14 @@ protected:
 		const CPoint& p, const GetViewOptions& options = GetViewOptions ()) const override;
 	SharedPointer<CViewContainer> getContainerAt (
 		const CPoint& p, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
-	bool advanceNextFocusView (CView* oldFocus, bool reverse) override;
+	bool advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void onZoomGestureEvent (ZoomGestureEvent& event) override;
 
 	void looseFocus () override;
 	void takeFocus () override;
-	bool removed (CView* parent) override;
-	bool attached (CView* parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 
 	bool editing {true};
 	bool autosizing {true};
@@ -128,10 +128,10 @@ protected:
 	SharedPointer<UISelection> dragSelection;
 	SharedPointer<UIDescription> description;
 	SharedPointer<IGridProcessor> gridProcessor;
-	
-	UIEditViewInternal::UIHighlightView* highlightView {nullptr};
-	CLayeredViewContainer* overlayView {nullptr};
-	UICrossLines* lines {nullptr};
+
+	SharedPointer<UIEditViewInternal::UIHighlightView> highlightView;
+	SharedPointer<CLayeredViewContainer> overlayView;
+	SharedPointer<UICrossLines> lines;
 	SharedPointer<ViewSizeChangeOperation> moveSizeOperation;
 	SharedPointer<CVSTGUITimer> editTimer;
 	DragStartMouseObserver dragStartMouseObserver;

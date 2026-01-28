@@ -298,7 +298,7 @@ std::optional<ViewLayout> GridLayouter::calculateLayout (const CViewContainer& /
 		};
 
 		// Helper to place a single child for the given area with justify/align items handling
-		auto placeChildForArea = [&] (CView* child, size_t r0, size_t c0, size_t r1, size_t c1) {
+		auto placeChildForArea = [&] (auto& child, size_t r0, size_t c0, size_t r1, size_t c1) {
 			CRect areaRect = computeCellRect (r0, c0, r1, c1);
 			CCoord x = areaRect.left;
 			CCoord y = areaRect.top;

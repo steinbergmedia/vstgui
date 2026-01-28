@@ -53,16 +53,20 @@ public:
 	const UTF8String* getSelectedTemplateName () const { return selectedTemplateName; }
 
 	void selectTemplate (UTF8StringPtr name);
-	void setTemplateView (CViewContainer* view);
-	void navigateTo (CView* view);
-	
-	static void setupDataBrowser (CDataBrowser* orignalBrowser, CDataBrowser* dataBrowser);
+	void setTemplateView (const SharedPointer<CViewContainer>& view);
+	void navigateTo (const SharedPointer<CView>& view);
+
+	static void setupDataBrowser (const SharedPointer<CDataBrowser>& orignalBrowser,
+								  const SharedPointer<CDataBrowser>& dataBrowser);
+
 protected:
 	void onUIDescTemplateChanged (UIDescription& desc) override;
-	void valueChanged (CControl* pControl) override {}
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
+	void valueChanged (CControl& pControl) override {}
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 	SharedPointer<IController> createSubController (UTF8StringPtr name,
 													const IUIDescription& description) override;
 
@@ -76,8 +80,8 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	WeakPointer<IActionPerformer> actionPerformer;
-	CViewContainer* templateView;
-	CDataBrowser* templateDataBrowser;
+	SharedPointer<CViewContainer> templateView;
+	SharedPointer<CDataBrowser> templateDataBrowser;
 	SharedPointer<UIViewListDataSource> mainViewDataSource;
 	GenericStringListDataBrowserSource::StringVector templateNames;
 	const UTF8String* selectedTemplateName;

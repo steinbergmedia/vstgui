@@ -113,7 +113,7 @@ CMouseEventResult CKnobBase::onMouseDown (CPoint& where, const CButtonState& but
 	mouseState.startValue = getOldValue ();
 
 	mouseState.modeLinear = false;
-	mouseState.entryState = value;
+	mouseState.entryState = getValue ();
 	mouseState.range = knobRange;
 	mouseState.coef = (getMax () - getMin ()) / mouseState.range;
 	mouseState.oldButton = buttons;
@@ -166,12 +166,8 @@ CMouseEventResult CKnobBase::onMouseCancel ()
 	if (isEditing ())
 	{
 		auto& mouseState = getMouseEditingState ();
-		value = mouseState.startValue;
-		if (isDirty ())
-		{
+		if (setValue (mouseState.startValue))
 			valueChanged ();
-			invalid ();
-		}
 		endEdit ();
 		clearMouseEditingState ();
 	}
@@ -204,24 +200,22 @@ CMouseEventResult CKnobBase::onMouseMoved (CPoint& where, const CButtonState& bu
 					mouseState.coef = coef2;
 					mouseState.oldButton = buttons;
 				}
-				value = (float)(mouseState.entryState + diff * mouseState.coef);
+				setValue ((float)(mouseState.entryState + diff * mouseState.coef));
 				bounceValue ();
 			}
 			else
 			{
 				where.offset (-getViewSize ().left, -getViewSize ().top);
-				value = valueFromPoint (where);
-				if (mouseState.startValue - value > middle)
-					value = getMax ();
-				else if (value - mouseState.startValue > middle)
-					value = getMin ();
+				setValue (valueFromPoint (where));
+				if (mouseState.startValue - getValue () > middle)
+					setValue (getMax ());
+				else if (getValue () - mouseState.startValue > middle)
+					setValue (getMin ());
 				else
-					mouseState.startValue = value;
+					mouseState.startValue = getValue ();
 			}
-			if (value != getOldValue ())
+			if (getValue () != getOldValue ())
 				valueChanged ();
-			if (isDirty ())
-				invalid ();
 		}
 		return kMouseEventHandled;
 	}
@@ -238,13 +232,8 @@ void CKnobBase::onMouseWheelEvent (MouseWheelEvent& event)
 		v += 0.1f * static_cast<float> (event.deltaY) * getWheelInc ();
 	else
 		v += static_cast<float> (event.deltaY) * getWheelInc ();
-	setValueNormalized (v);
-
-	if (isDirty ())
-	{
-		invalid ();
+	if (setValueNormalized (v))
 		valueChanged ();
-	}
 	event.consumed = true;
 }
 
@@ -269,11 +258,8 @@ void CKnobBase::onKeyboardEvent (KeyboardEvent& event)
 				v += 0.1f * distance * getWheelInc ();
 			else
 				v += distance * getWheelInc ();
-			setValueNormalized (v);
-
-			if (isDirty ())
+			if (setValueNormalized (v))
 			{
-				invalid ();
 				beginEdit ();
 				valueChanged ();
 				endEdit ();
@@ -308,15 +294,12 @@ void CKnobBase::setRangeAngle (float val)
 }
 
 //------------------------------------------------------------------------
-void CKnobBase::compute ()
-{
-	setDirty ();
-}
+void CKnobBase::compute () { invalid (); }
 
 //------------------------------------------------------------------------
 void CKnobBase::valueToPoint (CPoint &point) const
 {
-	float alpha = (value - getMin()) / (getMax() - getMin());
+	float alpha = (getValue () - getMin ()) / (getMax () - getMin ());
 	alpha = startAngle + alpha*rangeAngle;
 
 	CPoint c (getViewSize ().getWidth () / 2., getViewSize ().getHeight () / 2.);
@@ -459,7 +442,7 @@ bool CKnob::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-bool CKnob::getFocusPath (CGraphicsPath &outPath)
+bool CKnob::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	if (drawStyle & kCoronaDrawing && wantsFocus ())
 	{
@@ -469,7 +452,7 @@ bool CKnob::getFocusPath (CGraphicsPath &outPath)
 		outPath.addEllipse (corona);
 		return true;
 	}
-	return CKnobBase::getFocusPath (outPath);
+	return CKnobBase::getFocusPath (outPath, focusLineWidth);
 }
 
 //------------------------------------------------------------------------
@@ -495,7 +478,6 @@ void CKnob::draw (CDrawContext *pContext)
 				drawHandleAsLine (pContext);
 		}
 	}
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -640,7 +622,7 @@ void CKnob::setCoronaInset (CCoord inset)
 	if (inset != coronaInset)
 	{
 		coronaInset = inset;
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -650,7 +632,7 @@ void CKnob::setCoronaColor (CColor color)
 	if (color != coronaColor)
 	{
 		coronaColor = color;
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -660,7 +642,7 @@ void CKnob::setColorShadowHandle (CColor color)
 	if (color != colorShadowHandle)
 	{
 		colorShadowHandle = color;
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -670,7 +652,7 @@ void CKnob::setColorHandle (CColor color)
 	if (color != colorHandle)
 	{
 		colorHandle = color;
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -680,7 +662,7 @@ void CKnob::setHandleLineWidth (CCoord width)
 	if (width != handleLineWidth)
 	{
 		handleLineWidth = width;
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -690,7 +672,7 @@ void CKnob::setCoronaOutlineWidthAdd (CCoord width)
 	if (width != coronaOutlineWidthAdd)
 	{
 		coronaOutlineWidthAdd = width;
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -706,7 +688,7 @@ void CKnob::setCoronaDashDotLengths (const CLineStyle::CoordVector& lengths)
 	if (coronaLineStyle.getDashLengths () != lengths)
 	{
 		coronaLineStyle.getDashLengths () = lengths;
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -716,7 +698,7 @@ void CKnob::setDrawStyle (int32_t style)
 	if (style != drawStyle)
 	{
 		drawStyle = style;
-		setDirty ();
+		invalid ();
 	}
 }
 
@@ -729,7 +711,7 @@ void CKnob::setHandleBitmap (const SharedPointer<CBitmap>& bitmap)
 		pHandle = bitmap;
 		inset = (CCoord)((float)pHandle->getWidth () / 2.f + 2.5f);
 	}
-	setDirty ();
+	invalid ();
 }
 
 //------------------------------------------------------------------------
@@ -753,35 +735,11 @@ CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag
 					  const SharedPointer<CBitmap>& background)
 : CKnobBase (size, listener, tag, background), bInverseBitmap (false)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	heightOfOneImage = size.getHeight ();
-	setNumSubPixmaps (0);
-	if (background)
-	{
-		if (auto mfb = background.cast<CMultiFrameBitmap> ())
-		{
-			heightOfOneImage = mfb->getFrameSize ().y;
-			setNumSubPixmaps (mfb->getNumFrames ());
-		}
-		else
-		{
-			setNumSubPixmaps ((int32_t)(background->getHeight () / heightOfOneImage));
-		}
-	}
-#endif
 	inset = 0;
 }
 
 //------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CAnimKnob& v)
-: CKnobBase (v)
-, bInverseBitmap (v.bInverseBitmap)
-{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	setNumSubPixmaps (v.subPixmaps);
-	setHeightOfOneImage (v.heightOfOneImage);
-#endif
-}
+CAnimKnob::CAnimKnob (const CAnimKnob& v) : CKnobBase (v), bInverseBitmap (v.bInverseBitmap) {}
 
 //-----------------------------------------------------------------------------------------------
 bool CAnimKnob::sizeToFit ()
@@ -796,11 +754,7 @@ bool CAnimKnob::sizeToFit ()
 		else
 		{
 			vs.setWidth (bitmap->getWidth ());
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			vs.setHeight (getHeightOfOneImage ());
-#else
 			vs.setHeight (bitmap->getHeight ());
-#endif
 		}
 		setViewSize (vs);
 		setMouseableArea (vs);
@@ -809,59 +763,10 @@ bool CAnimKnob::sizeToFit ()
 	return false;
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-/**
- * CAnimKnob constructor.
- * @param size the size of this view
- * @param listener the listener
- * @param tag the control tag
- * @param subPixmaps number of sub bitmaps in background
- * @param heightOfOneImage the height of one sub bitmap
- * @param background the background bitmap
- * @param offset unused
- */
-//------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
-					  int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background,
-					  const CPoint& offset)
-: CKnobBase (size, listener, tag, shared (background)), bInverseBitmap (false)
-{
-	vstgui_assert (background && !dynamic_cast<CMultiFrameBitmap*> (background),
-				   "Use the other constrcutor when using a CMultiFrameBitmap");
-	setNumSubPixmaps (subPixmaps);
-	setHeightOfOneImage (heightOfOneImage);
-	inset = 0;
-}
-
-//-----------------------------------------------------------------------------------------------
-void CAnimKnob::setHeightOfOneImage (const CCoord& height)
-{
-	if (getDrawBackground ().cast<CMultiFrameBitmap> ())
-		return;
-	IMultiBitmapControl::setHeightOfOneImage (height);
-	if (getDrawBackground () && heightOfOneImage > 0)
-		setNumSubPixmaps ((int32_t)(getDrawBackground ()->getHeight () / heightOfOneImage));
-}
-#endif
-
 //-----------------------------------------------------------------------------------------------
 void CAnimKnob::setBackground (const SharedPointer<CBitmap>& background)
 {
 	CKnobBase::setBackground (background);
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (auto mfb = background.cast<CMultiFrameBitmap> ())
-	{
-		heightOfOneImage = mfb->getFrameSize ().y;
-		setNumSubPixmaps (mfb->getNumFrames ());
-		return;
-	}
-
-	if (heightOfOneImage == 0)
-		heightOfOneImage = getViewSize ().getHeight ();
-	if (background && heightOfOneImage > 0)
-		setNumSubPixmaps ((int32_t)(background->getHeight () / heightOfOneImage));
-#endif
 }
 
 //------------------------------------------------------------------------
@@ -871,32 +776,16 @@ void CAnimKnob::draw (CDrawContext *pContext)
 	{
 		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
-			auto frameIndex = getMultiFrameBitmapIndex (*mfb, getValueNormalized ());
+			auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
 			if (bInverseBitmap)
-				frameIndex = getInverseIndex (*mfb, frameIndex);
+				frameIndex = getInverseIndex (*mfb.get (), frameIndex);
 			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			CPoint where (0, 0);
-			float val = getValueNormalized ();
-			if (val >= 0.f && heightOfOneImage > 0.)
-			{
-				CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
-				if (bInverseBitmap)
-					where.y = floor ((1. - val) * tmp);
-				else
-					where.y = floor (val * tmp);
-				where.y -= (int32_t)where.y % (int32_t)heightOfOneImage;
-			}
-			bitmap->draw (pContext, getViewSize (), where);
-#else
 			CView::draw (pContext);
-#endif
 		}
 	}
-	setDirty (false);
 }
 
 } // VSTGUI

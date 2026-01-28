@@ -123,8 +123,6 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 			getDrawBackground ()->draw (pContext, rectDest, where);
 		}
 	}
-		
-	setDirty (false);
 }
 
 } // VSTGUI

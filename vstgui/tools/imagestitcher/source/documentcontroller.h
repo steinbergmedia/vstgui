@@ -95,9 +95,9 @@ private:
 	void setDirty ();
 
 	DocumentContextPtr docContext;
-	CFrame* contentView {nullptr};
-	ImageFramesView* imageView {nullptr};
-	CMovieBitmap* movieBitmapView {nullptr};
+	SharedPointer<CFrame> contentView;
+	SharedPointer<ImageFramesView> imageView;
+	SharedPointer<CMovieBitmap> movieBitmapView;
 	Standalone::WindowPtr window;
 	Standalone::ValuePtr displayFrameValue;
 	Standalone::ValuePtr animationTimeValue;

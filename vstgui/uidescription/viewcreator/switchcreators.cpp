@@ -19,11 +19,7 @@ namespace UIViewCreator {
 bool SwitchBaseCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrInverseBitmap);
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	return IMultiBitmapControlCreator::getAttributeNames (attributeNames);
-#else
 	return true;
-#endif
 }
 
 //------------------------------------------------------------------------
@@ -31,18 +27,14 @@ auto SwitchBaseCreator::getAttributeType (const string& attributeName) const -> 
 {
 	if (attributeName == kAttrInverseBitmap)
 		return kBooleanType;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	return IMultiBitmapControlCreator::getAttributeType (attributeName);
-#else
 	return kUnknownType;
-#endif
 }
 
 //------------------------------------------------------------------------
-bool SwitchBaseCreator::apply (CView* view, const UIAttributes& attributes,
-                               const IUIDescription* description) const
+bool SwitchBaseCreator::apply (CView& view, const UIAttributes& attributes,
+							   const IUIDescription& description) const
 {
-	auto control = dynamic_cast<CSwitchBase*> (view);
+	auto control = dynamic_cast<CSwitchBase*> (&view);
 	if (!control)
 		return false;
 
@@ -52,18 +44,14 @@ bool SwitchBaseCreator::apply (CView* view, const UIAttributes& attributes,
 		control->setInverseBitmap (b);
 	}
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	return IMultiBitmapControlCreator::apply (view, attributes, description);
-#else
 	return true;
-#endif
 }
 
 //------------------------------------------------------------------------
-bool SwitchBaseCreator::getAttributeValue (CView* view, const string& attributeName,
-                                           string& stringValue, const IUIDescription* desc) const
+bool SwitchBaseCreator::getAttributeValue (CView& view, const string& attributeName,
+										   string& stringValue, const IUIDescription& desc) const
 {
-	auto control = dynamic_cast<CSwitchBase*> (view);
+	auto control = dynamic_cast<CSwitchBase*> (&view);
 	if (!control)
 		return false;
 
@@ -72,11 +60,7 @@ bool SwitchBaseCreator::getAttributeValue (CView* view, const string& attributeN
 		stringValue = control->getInverseBitmap () ? strTrue : strFalse;
 		return true;
 	}
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue, desc);
-#else
 	return false;
-#endif
 }
 
 //------------------------------------------------------------------------
@@ -104,10 +88,10 @@ UTF8StringPtr VerticalSwitchCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* VerticalSwitchCreator::create (const UIAttributes& attributes,
-                                      const IUIDescription* description) const
+SharedPointer<CView> VerticalSwitchCreator::create (const UIAttributes& attributes,
+													const IUIDescription& description) const
 {
-	return new CVerticalSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	return makeOwned<CVerticalSwitch> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -135,10 +119,10 @@ UTF8StringPtr HorizontalSwitchCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* HorizontalSwitchCreator::create (const UIAttributes& attributes,
-                                        const IUIDescription* description) const
+SharedPointer<CView> HorizontalSwitchCreator::create (const UIAttributes& attributes,
+													  const IUIDescription& description) const
 {
-	return new CHorizontalSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	return makeOwned<CHorizontalSwitch> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------

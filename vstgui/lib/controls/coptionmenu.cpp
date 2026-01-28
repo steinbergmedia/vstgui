@@ -127,24 +127,6 @@ void CMenuItem::setKey (const UTF8String& inKeycode, int32_t inKeyModifiers)
 	impl->virtualKey = VirtualKey::None;
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-void CMenuItem::setVirtualKey (int32_t inVirtualKeyCode, int32_t inKeyModifiers)
-{
-	setKey (nullptr, inKeyModifiers);
-	impl->virtualKey = fromVstVirtualKey (inVirtualKeyCode);
-}
-
-//------------------------------------------------------------------------
-int32_t CMenuItem::getVirtualKeyCode () const
-{
-	return toVstVirtualKey (impl->virtualKey);
-}
-
-//------------------------------------------------------------------------
-void CMenuItem::setSubmenu (COptionMenu* inSubmenu) { impl->submenu = inSubmenu; }
-#endif
-
 //------------------------------------------------------------------------
 void CMenuItem::setVirtualKey (VirtualKey inVirtualKey, int32_t inKeyModifiers)
 {
@@ -335,7 +317,7 @@ void CCommandMenuItem::execute ()
 		selectedFunc (shared (this));
 
 	if (itemTarget)
-		itemTarget->onCommandMenuItemSelected (this);
+		itemTarget->onCommandMenuItemSelected (*this);
 }
 
 //------------------------------------------------------------------------
@@ -345,7 +327,7 @@ void CCommandMenuItem::validate ()
 		validateFunc (shared (this));
 
 	if (itemTarget)
-		itemTarget->validateCommandMenuItem (this);
+		itemTarget->validateCommandMenuItem (*this);
 }
 
 //------------------------------------------------------------------------
@@ -373,8 +355,8 @@ COptionMenu::COptionMenu (const CRect& size, IControlListener* listener, int32_t
 						  const SharedPointer<CBitmap>& bgWhenClick, const int32_t style)
 : CParamDisplay (size, background, style), bgWhenClick (bgWhenClick)
 {
-	this->listener = listener;
-	this->tag = tag;
+	setListener (listener);
+	setTag (tag);
 
 	lastButton = kRButton;
 
@@ -419,10 +401,11 @@ void COptionMenu::onKeyboardEvent (KeyboardEvent& event)
 	{
 		if (event.virt == VirtualKey::Return)
 		{
-			auto self = shared (this);
-			getFrame ()->doAfterEventProcessing ([self] () {
-				self->doPopup ();
-			});
+			if (auto frame = getFrame ())
+			{
+				auto self = shared (this);
+				frame->doAfterEventProcessing ([self] () { self->doPopup (); });
+			}
 			event.consumed = true;
 			return;
 		}
@@ -479,7 +462,8 @@ void COptionMenu::onKeyboardEvent (KeyboardEvent& event)
 void COptionMenu::beforePopup ()
 {
 	if (listeners)
-		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (this); });
+		listeners->forEach (
+			[this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (shared (this)); });
 	for (auto& menuItem : menuItems)
 	{
 		if (auto commandItem = menuItem.cast<CCommandMenuItem> ())
@@ -498,7 +482,8 @@ void COptionMenu::afterPopup ()
 			menuItem->getSubmenu ()->afterPopup ();
 	}
 	if (listeners)
-		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPostPopup (this); });
+		listeners->forEach (
+			[this] (IOptionMenuListener* l) { l->onOptionMenuPostPopup (shared (this)); });
 }
 
 //------------------------------------------------------------------------
@@ -515,7 +500,8 @@ bool COptionMenu::doPopup ()
 //------------------------------------------------------------------------
 bool COptionMenu::popup (const PopupCallback& callback)
 {
-	if (!getFrame ())
+	auto frame = getFrame ();
+	if (!frame)
 		return false;
 
 	beforePopup ();
@@ -525,8 +511,8 @@ bool COptionMenu::popup (const PopupCallback& callback)
 
 	if (!menuItems.empty ())
 	{
-		getFrame ()->onStartLocalEventLoop ();
-		if (auto platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ())
+		frame->onStartLocalEventLoop ();
+		if (auto platformMenu = frame->getPlatformFrame ()->createPlatformOptionMenu ())
 		{
 			inPopup = true;
 			auto self = shared (this);
@@ -573,22 +559,22 @@ bool COptionMenu::popup (const PopupCallback& callback)
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation, const PopupCallback& callback)
+bool COptionMenu::popup (CFrame& frame, const CPoint& frameLocation, const PopupCallback& callback)
 {
-	if (frame == nullptr || menuItems.empty ())
+	if (menuItems.empty ())
 		return false;
 	if (isAttached ())
 		return false;
-	CView* oldFocusView = frame->getFocusView ();
+	auto oldFocusView = frame.getFocusView ();
 	CRect size (frameLocation, CPoint (0, 0));
 	setViewSize (size);
-	frame->addView (this);
+	frame.addSubview (shared (this));
 
-	auto prevFocusView = shared (oldFocusView);
+	auto prevFocusView = oldFocusView;
 	popup ([prevFocusView, callback] (auto menu) {
 		if (auto frame = menu->getFrame ())
 		{
-			frame->removeView (menu, false);
+			frame->removeSubview (menu);
 			frame->setFocusView (prevFocusView);
 		}
 		else
@@ -656,7 +642,6 @@ void COptionMenu::setPrefixNumbers (int32_t preCount)
 		prefixNumbers = preCount;
 }
 
-#if VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR
 //------------------------------------------------------------------------
 SharedPointer<CMenuItem> COptionMenu::addEntry (const SharedPointer<CMenuItem>& item, int32_t index)
 {
@@ -678,26 +663,6 @@ SharedPointer<CMenuItem> COptionMenu::addEntry (const SharedPointer<COptionMenu>
 	auto item = makeOwned<CMenuItem> (title, submenu);
 	return addEntry (item);
 }
-#endif
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-/**
- * @param item menu item to add. Takes ownership of item.
- * @param index position of insertation. -1 appends the item
- */
-//-----------------------------------------------------------------------------
-SharedPointer<CMenuItem> COptionMenu::addEntry (CMenuItem* item, int32_t index)
-{
-	return addEntry (owned (item), index);
-}
-
-//-----------------------------------------------------------------------------
-SharedPointer<CMenuItem> COptionMenu::addEntry (COptionMenu* submenu, const UTF8String& title)
-{
-	auto item = makeOwned<CMenuItem> (title, owned (submenu));
-	return addEntry (item);
-}
-#endif
 
 //-----------------------------------------------------------------------------
 SharedPointer<CMenuItem> COptionMenu::addEntry (const UTF8String& title, int32_t index,
@@ -786,7 +751,7 @@ bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 		item->setChecked (!item->isChecked ());
 	
 	// to force the redraw
-	setDirty ();
+	invalid ();
 
 	return true;
 }
@@ -847,7 +812,6 @@ void COptionMenu::draw (CDrawContext *pContext)
 	drawBack (pContext, inPopup ? bgWhenClick : nullptr);
 	if (item)
 		drawPlatformText (pContext, item->getTitle ());
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -856,10 +820,11 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint& where, const CButtonState& b
 	lastButton = buttons;
 	if (lastButton & (kLButton|kRButton|kApple))
 	{
-		auto self = shared (this);
-		getFrame ()->doAfterEventProcessing ([self] () {
-			self->doPopup ();
-		});
+		if (auto frame = getFrame ())
+		{
+			auto self = shared (this);
+			frame->doAfterEventProcessing ([self] () { self->doPopup (); });
+		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 	return kMouseEventNotHandled;
@@ -878,12 +843,12 @@ SharedPointer<COptionMenu> COptionMenu::getLastItemMenu (int32_t& idxInMenu) con
 }
 
 //------------------------------------------------------------------------
-void COptionMenu::setValue (float val)
+bool COptionMenu::setValue (float val)
 {
 	auto newIndex = static_cast<int32_t> (std::round (val));
 	if (newIndex < 0 || newIndex >= getNbEntries ())
-		return;
-	
+		return false;
+
 	currentIndex = newIndex;
 	if (style & (kMultipleCheckStyle & ~kCheckStyle))
 	{
@@ -894,7 +859,8 @@ void COptionMenu::setValue (float val)
 	CParamDisplay::setValue (static_cast<float> (newIndex));
 	
 	// to force the redraw
-	setDirty ();
+	invalid ();
+	return true;
 }
 
 //------------------------------------------------------------------------
@@ -914,7 +880,7 @@ void COptionMenu::takeFocus ()
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
 {
-	CView* receiver = getParentView () ? getParentView () : getFrame ();
+	auto receiver = getParentView ();
 	while (receiver)
 	{
 		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)

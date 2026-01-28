@@ -316,8 +316,9 @@ class CViewCreator : public ViewCreatorAdapter
 public:
 	IdStringPtr getViewName () const { return "CView"; }
 	IdStringPtr getBaseViewName () const { return 0; }
-	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CView (CRect (0, 0, 0, 0)); }
-	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	SharedPointer<CView> create (const UIAttributes& attributes, IUIDescription* description) const
+{ return new CView (CRect (0, 0, 0, 0)); } bool apply (CView& view, const UIAttributes& attributes,
+IUIDescription* description) const
 	{
 		auto* control = dynamic_cast<CControl*> (view);
 		if (control == 0)
@@ -390,26 +391,11 @@ public:
 namespace VSTGUI {
 namespace UIViewCreator {
 
-#if VSTGUI_ENABLED_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-bool parseSize (const std::string& str, CPoint& point)
-{
-	return UIAttributes::stringToPoint (str, point);
-}
-
-//-----------------------------------------------------------------------------
-bool pointToString (const CPoint& p, std::string& string)
-{
-	string = UIAttributes::pointToString (p);
-	return true;
-}
-#endif
-
 //-----------------------------------------------------------------------------
 bool bitmapToString (const SharedPointer<CBitmap>& bitmap, std::string& string,
-					 const IUIDescription* desc)
+					 const IUIDescription& desc)
 {
-	UTF8StringPtr bitmapName = desc->lookupBitmapName (bitmap);
+	UTF8StringPtr bitmapName = desc.lookupBitmapName (bitmap);
 	if (bitmapName)
 		string = bitmapName;
 	else
@@ -424,9 +410,9 @@ bool bitmapToString (const SharedPointer<CBitmap>& bitmap, std::string& string,
 }
 
 //-----------------------------------------------------------------------------
-bool colorToString (const CColor& color, std::string& string, const IUIDescription* desc)
+bool colorToString (const CColor& color, std::string& string, const IUIDescription& desc)
 {
-	UTF8StringPtr colorName = desc ? desc->lookupColorName (color) : nullptr;
+	UTF8StringPtr colorName = desc.lookupColorName (color);
 	if (colorName)
 		string = colorName;
 	else
@@ -443,14 +429,14 @@ bool colorToString (const CColor& color, std::string& string, const IUIDescripti
 }
 
 //------------------------------------------------------------------------
-bool stringToColor (std::string_view value, CColor& color, const IUIDescription* desc)
+bool stringToColor (std::string_view value, CColor& color, const IUIDescription& desc)
 {
 	if (value == "")
 	{
 		color = kTransparentCColor;
 		return true;
 	}
-	if (desc && desc->getColor (value.data (), color))
+	if (desc.getColor (value.data (), color))
 		return true;
 	if (color.fromString (value))
 		return true;
@@ -466,7 +452,7 @@ bool stringToColor (std::string_view value, CColor& color, const IUIDescription*
 }
 
 //-----------------------------------------------------------------------------
-bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc)
+bool stringToColor (const std::string* value, CColor& color, const IUIDescription& desc)
 {
 	if (!value)
 		return false;
@@ -475,14 +461,14 @@ bool stringToColor (const std::string* value, CColor& color, const IUIDescriptio
 
 //-----------------------------------------------------------------------------
 bool stringToBitmap (const std::string* value, SharedPointer<CBitmap>& bitmap,
-					 const IUIDescription* desc)
+					 const IUIDescription& desc)
 {
 	if (value)
 	{
 		if (*value == "")
 			bitmap.reset ();
 		else
-			bitmap = desc->getBitmap (value->c_str ());
+			bitmap = desc.getBitmap (value->c_str ());
 		return true;
 	}
 	return false;
@@ -498,12 +484,12 @@ void applyStyleMask (const std::string* value, int32_t mask, int32_t& style)
 }
 
 //------------------------------------------------------------------------
-void addGradientToUIDescription (const IUIDescription* description,
+void addGradientToUIDescription (const IUIDescription& description,
 								 const SharedPointer<CGradient>& gradient, UTF8StringPtr baseName)
 {
-	if (!description->lookupGradientName (gradient))
+	if (!description.lookupGradientName (gradient))
 	{
-		auto* uiDesc = dynamic_cast<UIDescription*>(const_cast<IUIDescription*> (description));
+		auto* uiDesc = dynamic_cast<UIDescription*> (const_cast<IUIDescription*> (&description));
 		if (uiDesc)
 		{
 			uint32_t index = 0;
@@ -517,7 +503,7 @@ void addGradientToUIDescription (const IUIDescription* description,
 					str << " ";
 					str << index;
 				}
-			} while (description->getGradient (str.str ().c_str ()) != nullptr);
+			} while (description.getGradient (str.str ().c_str ()) != nullptr);
 			uiDesc->changeGradient (str.str ().c_str (), gradient);
 		}
 	}
@@ -548,6 +534,9 @@ bool getStandardAttributeListValues (const std::string& attributeName, std::list
 	}
 	return false;
 }
+
+//------------------------------------------------------------------------
+void forceLinking () {}
 
 //------------------------------------------------------------------------
 AnimationSplashScreenCreator __gAnimationSplashScreenCreator;

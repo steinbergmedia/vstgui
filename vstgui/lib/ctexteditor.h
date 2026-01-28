@@ -30,7 +30,7 @@ struct ITextEditorController;
  *
  *	@ingroup new_in_4_15
  */
-CView* createNewTextEditor (const CRect& r, ITextEditorController* controller);
+SharedPointer<CView> createNewTextEditor (const CRect& r, ITextEditorController* controller);
 
 //------------------------------------------------------------------------
 /** text editor controller interface

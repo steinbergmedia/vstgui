@@ -48,10 +48,9 @@ Property::Property (double floatValue)
 }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (IReference* objectValue)
-: type (kObject)
+Property::Property (const SharedPointer<IReference>& objectValue) : type (kObject)
 {
-	value = static_cast<void*> (objectValue);
+	value = static_cast<void*> (objectValue.get ());
 	objectValue->remember ();
 }
 
@@ -178,10 +177,10 @@ double Property::getFloat () const
 }
 
 //----------------------------------------------------------------------------------------------------
-IReference* Property::getObject () const
+SharedPointer<IReference> Property::getObject () const
 {
 	vstgui_assert (type == kObject);
-	return static_cast<IReference*> (value);
+	return shared (static_cast<IReference*> (value));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -381,7 +380,7 @@ SharedPointer<CBitmap> FilterBase::getInputBitmap () const
 	if (it != properties.end ())
 	{
 		auto obj = (*it).second.getObject ();
-		return obj ? shared (dynamic_cast<CBitmap*> (obj)) : nullptr;
+		return obj ? obj.cast<CBitmap> () : nullptr;
 	}
 	return nullptr;
 }
@@ -437,7 +436,7 @@ private:
 			auto inputAccessor = CBitmapPixelAccess::create (inputBitmap);
 			if (inputAccessor == nullptr)
 				return false;
-			run (*inputAccessor, *inputAccessor, radius, alphaChannelOnly);
+			run (*inputAccessor.get (), *inputAccessor.get (), radius, alphaChannelOnly);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (inputBitmap));
 		}
 		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
@@ -448,7 +447,7 @@ private:
 			if (inputAccessor == nullptr || outputAccessor == nullptr)
 				return false;
 
-			run (*inputAccessor, *outputAccessor, radius, alphaChannelOnly);
+			run (*inputAccessor.get (), *outputAccessor.get (), radius, alphaChannelOnly);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
 		}
 		return false;
@@ -706,7 +705,7 @@ protected:
 		auto outputAccessor = CBitmapPixelAccess::create (outputBitmap);
 		if (inputAccessor == nullptr || outputAccessor == nullptr)
 			return false;
-		process (*inputAccessor, *outputAccessor);
+		process (*inputAccessor.get (), *outputAccessor.get ());
 		return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
 	}
 	
@@ -871,7 +870,7 @@ protected:
 			outputBitmap = inputBitmap;
 			outputAccessor = inputAccessor;
 		}
-		run (*inputAccessor, *outputAccessor);
+		run (*inputAccessor.get (), *outputAccessor.get ());
 		return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
 	}
 

@@ -52,7 +52,7 @@ public:
 	virtual void* getPlatformHandle () const = 0;
 
 	virtual PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) = 0;
-	virtual void onSetContentView (CFrame* frame) = 0;
+	virtual void onSetContentView (const SharedPointer<CFrame>& frame) = 0;
 };
 
 //------------------------------------------------------------------------

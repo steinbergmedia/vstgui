@@ -84,15 +84,9 @@ bool CVuMeter::sizeToFit ()
 void CVuMeter::setOffBitmap (const SharedPointer<CBitmap>& bitmap) { offBitmap = bitmap; }
 
 //------------------------------------------------------------------------
-void CVuMeter::setDirty (bool state)
-{
-	CView::setDirty (state);
-}
-
-//------------------------------------------------------------------------
 void CVuMeter::onIdle ()
 {
-	if (getOldValue () != value)
+	if (getOldValue () != getValue ())
 		invalid ();
 }
 
@@ -112,6 +106,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	bounceValue ();
 	
 	float newValue = getOldValue () - decreaseValue;
+	auto value = getValue ();
 	if (newValue < value)
 		newValue = value;
 	setOldValue (newValue);
@@ -142,8 +137,6 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	}
 
 	bmp->draw (pContext, _rectOn, pointOn);
-
-	setDirty (false);
 }
 
 } // VSTGUI

@@ -55,7 +55,7 @@ public:
 					   AttributeSaveFilterFunc func = nullptr);
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
-	bool storeViews (const std::list<CView*>& views, OutputStream& stream,
+	bool storeViews (const std::list<SharedPointer<CView>>& views, OutputStream& stream,
 					 SharedPointer<UIAttributes> customData = {}) const;
 	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView>>& views,
 					   SharedPointer<UIAttributes>* customData = nullptr);
@@ -70,8 +70,8 @@ public:
 
 	void setController (const SharedPointer<IController>& controller) const;
 
-	CView* createView (UTF8StringPtr name,
-					   const SharedPointer<IController>& controller) const override;
+	SharedPointer<CView> createView (UTF8StringPtr name,
+									 const SharedPointer<IController>& controller) const override;
 	SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const override;
 	SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const override;
 	bool getColor (UTF8StringPtr name, CColor& color) const override;
@@ -128,8 +128,9 @@ public:
 	bool hasBitmapName (UTF8StringPtr name) const;
 	bool hasGradientName (UTF8StringPtr name) const;
 
-	void updateViewDescription (UTF8StringPtr name, CView* view);
-	bool getTemplateNameFromView (CView* view, std::string& templateName) const;
+	void updateViewDescription (UTF8StringPtr name, const SharedPointer<CView>& view);
+	bool getTemplateNameFromView (const SharedPointer<CView>& view,
+								  std::string& templateName) const;
 	bool addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr);
 	bool removeTemplate (UTF8StringPtr name);
 	bool changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName);
@@ -170,12 +171,13 @@ protected:
 	const CResourceDescription& getUIDescFile () const;
 private:
 	void postParsing ();
-	CView* createViewFromNode (const SharedPointer<UINode>& node) const;
+	SharedPointer<CView> createViewFromNode (const SharedPointer<UINode>& node) const;
 	SharedPointer<UINode> getBaseNode (UTF8StringPtr name, bool create = true) const;
 	SharedPointer<UINode> findChildNodeByNameAttribute (const SharedPointer<UINode>& node,
 														UTF8StringPtr nameAttribute) const;
-	SharedPointer<UINode> findNodeForView (CView* view) const;
-	bool updateAttributesForView (const SharedPointer<UINode>& node, CView* view, bool deep = true);
+	SharedPointer<UINode> findNodeForView (const SharedPointer<CView>& view) const;
+	bool updateAttributesForView (const SharedPointer<UINode>& node,
+								  const SharedPointer<CView>& view, bool deep = true);
 	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName);
 	template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const;
 	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName);

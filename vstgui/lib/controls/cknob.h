@@ -129,7 +129,7 @@ public:
 
 	// overrides
 	void draw (CDrawContext* pContext) override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool drawFocusOnTop () override;
 
 	CLASS_METHODS(CKnob, CKnobBase)
@@ -164,26 +164,11 @@ protected:
 //-----------------------------------------------------------------------------
 class CAnimKnob : public CKnobBase,
 				  public MultiFrameBitmapView<CAnimKnob>
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-,
-				  public IMultiBitmapControl
-#endif
 {
 public:
 	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
 			   const SharedPointer<CBitmap>& background);
 	CAnimKnob (const CAnimKnob& knob);
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
-			   CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	void setHeightOfOneImage (const CCoord& height) override;
-	void setNumSubPixmaps (int32_t numSubPixmaps) override
-	{
-		IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps);
-		invalid ();
-	}
-#endif
 
 	//-----------------------------------------------------------------------------
 	/// @name CAnimKnob Methods

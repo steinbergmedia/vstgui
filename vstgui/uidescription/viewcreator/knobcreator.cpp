@@ -15,10 +15,10 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-bool KnobBaseCreator::apply (CView* view, const UIAttributes& attributes,
-                             const IUIDescription* description) const
+bool KnobBaseCreator::apply (CView& view, const UIAttributes& attributes,
+							 const IUIDescription& description) const
 {
-	auto* knob = dynamic_cast<CKnobBase*> (view);
+	auto* knob = dynamic_cast<CKnobBase*> (&view);
 	if (!knob)
 		return false;
 
@@ -73,10 +73,10 @@ auto KnobBaseCreator::getAttributeType (const string& attributeName) const -> At
 }
 
 //------------------------------------------------------------------------
-bool KnobBaseCreator::getAttributeValue (CView* view, const string& attributeName,
-                                         string& stringValue, const IUIDescription* desc) const
+bool KnobBaseCreator::getAttributeValue (CView& view, const string& attributeName,
+										 string& stringValue, const IUIDescription& desc) const
 {
-	auto* knob = dynamic_cast<CKnobBase*> (view);
+	auto* knob = dynamic_cast<CKnobBase*> (&view);
 	if (!knob)
 		return false;
 
@@ -135,9 +135,10 @@ UTF8StringPtr KnobCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* KnobCreator::create (const UIAttributes& attributes, const IUIDescription* description) const
+SharedPointer<CView> KnobCreator::create (const UIAttributes& attributes,
+										  const IUIDescription& description) const
 {
-	auto knob = new CKnob (CRect (0, 0, 70, 70), nullptr, -1, nullptr, nullptr);
+	auto knob = makeOwned<CKnob> (CRect (0, 0, 70, 70), nullptr, -1, nullptr, nullptr);
 	knob->setDrawStyle (CKnob::kCoronaDrawing | CKnob::kCoronaOutline | CKnob::kCoronaLineDashDot |
 	                    CKnob::kCoronaLineCapButt | CKnob::kSkipHandleDrawing);
 	knob->setCoronaColor (kRedCColor);
@@ -151,10 +152,10 @@ CView* KnobCreator::create (const UIAttributes& attributes, const IUIDescription
 }
 
 //------------------------------------------------------------------------
-bool KnobCreator::apply (CView* view, const UIAttributes& attributes,
-                         const IUIDescription* description) const
+bool KnobCreator::apply (CView& view, const UIAttributes& attributes,
+						 const IUIDescription& description) const
 {
-	auto* knob = dynamic_cast<CKnob*> (view);
+	auto* knob = dynamic_cast<CKnob*> (&view);
 	if (!knob)
 		return false;
 
@@ -275,10 +276,10 @@ auto KnobCreator::getAttributeType (const string& attributeName) const -> AttrTy
 }
 
 //------------------------------------------------------------------------
-bool KnobCreator::getAttributeValue (CView* view, const string& attributeName, string& stringValue,
-                                     const IUIDescription* desc) const
+bool KnobCreator::getAttributeValue (CView& view, const string& attributeName, string& stringValue,
+									 const IUIDescription& desc) const
 {
-	auto* knob = dynamic_cast<CKnob*> (view);
+	auto* knob = dynamic_cast<CKnob*> (&view);
 	if (!knob)
 		return false;
 

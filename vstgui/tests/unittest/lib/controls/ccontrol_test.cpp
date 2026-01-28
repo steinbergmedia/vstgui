@@ -4,6 +4,7 @@
 
 #include "../../../../lib/controls/ccontrol.h"
 #include "../../../../lib/controls/icontrollistener.h"
+#include "../../../../lib/cframe.h"
 #include "../../unittests.h"
 #include "../eventhelpers.h"
 
@@ -17,15 +18,6 @@ public:
 	Control () : CControl (CRect (0, 0, 10, 10)) {}
 	void draw (CDrawContext* pContext) override {}
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	static int32_t mapVstKeyModifier (int32_t vstModifier)
-	{
-#include "../../../../lib/private/disabledeprecatedmessage.h"
-		return CControl::mapVstKeyModifier (vstModifier);
-#include "../../../../lib/private/enabledeprecatedmessage.h"
-	}
-#endif
-
 	CLASS_METHODS (Control, CControl)
 };
 
@@ -35,9 +27,9 @@ struct Listener : IControlListener
 	bool beginEditCalled {false};
 	bool endEditCalled {false};
 
-	void valueChanged (CControl* pControl) override { valueChangedCalled = true; }
-	void controlBeginEdit (CControl* pControl) override { beginEditCalled = true; }
-	void controlEndEdit (CControl* pControl) override { endEditCalled = true; }
+	void valueChanged (CControl& pControl) override { valueChangedCalled = true; }
+	void controlBeginEdit (CControl& pControl) override { beginEditCalled = true; }
+	void controlEndEdit (CControl& pControl) override { endEditCalled = true; }
 };
 }
 
@@ -113,41 +105,35 @@ TEST_CASE (CControlTest, SetValueNormalized)
 
 TEST_CASE (CControlTest, CheckDefaultValue)
 {
-	Control c;
-	c.setValue (c.getDefaultValue () + 0.1f);
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (&c, {0., 0.}, MouseButton::Left,
+	auto frame = makeOwned<CFrame> (CRect {}, nullptr);
+	auto c = makeOwned<Control> ();
+	frame->addSubview (c);
+	frame->attached (frame);
+
+	c->setValue (c->getDefaultValue () + 0.1f);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (c, {0., 0.}, MouseButton::Left,
 												   Modifiers (ModifierKey::Control)),
 			   EventConsumeState::Handled + MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
-	EXPECT (c.getValue () == c.getDefaultValue ());
-	c.setValue (c.getDefaultValue () + 0.1f);
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (&c, {0., 0.}, MouseButton::Right,
+	EXPECT (c->getValue () == c->getDefaultValue ());
+	c->setValue (c->getDefaultValue () + 0.1f);
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (c, {0., 0.}, MouseButton::Right,
 												   Modifiers (ModifierKey::Control)),
 			   0);
-	EXPECT (c.getValue () == c.getDefaultValue () + 0.1f);
+	EXPECT (c->getValue () == c->getDefaultValue () + 0.1f);
 
 	auto oldCheckDefaultValueFunc = CControl::CheckDefaultValueEventFunc;
 	CControl::CheckDefaultValueEventFunc = [] (CControl*, MouseDownEvent& event) {
 		return (event.buttonState.isMiddle () && event.modifiers.is (ModifierKey::Shift));
 	};
 
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (&c, {0., 0.}, MouseButton::Left,
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (c, {0., 0.}, MouseButton::Left,
 												   Modifiers (ModifierKey::Control)),
 			   0);
-	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (&c, {0., 0.}, MouseButton::Middle,
+	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (c, {0., 0.}, MouseButton::Middle,
 												   Modifiers (ModifierKey::Shift)),
 			   EventConsumeState::Handled + MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
 
 	CControl::CheckDefaultValueEventFunc = oldCheckDefaultValueFunc;
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-TEST_CASE (CControlTest, mapVstKeyModifier)
-{
-	EXPECT (Control::mapVstKeyModifier (MODIFIER_SHIFT) == kShift);
-	EXPECT (Control::mapVstKeyModifier (MODIFIER_ALTERNATE) == kAlt);
-	EXPECT (Control::mapVstKeyModifier (MODIFIER_COMMAND) == kApple);
-	EXPECT (Control::mapVstKeyModifier (MODIFIER_CONTROL) == kControl);
-}
-#endif
 
 } // VSTGUI

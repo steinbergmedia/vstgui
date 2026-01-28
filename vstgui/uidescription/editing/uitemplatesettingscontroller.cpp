@@ -69,10 +69,11 @@ void UITemplateSettingsController::onDialogButton2Clicked (UIDialogController&) 
 void UITemplateSettingsController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes& attributes,
-												 const IUIDescription&)
+SharedPointer<CView> UITemplateSettingsController::verifyView (const SharedPointer<CView>& view,
+															   const UIAttributes& attributes,
+															   const IUIDescription&)
 {
-	CTextEdit* control = dynamic_cast<CTextEdit*>(view);
+	auto control = view.cast<CTextEdit> ();
 	if (control)
 	{
 		switch (control->getTag ())
@@ -121,13 +122,13 @@ CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateSettingsController::valueChanged (CControl* control)
+void UITemplateSettingsController::valueChanged (CControl& control)
 {
-	switch (control->getTag ())
+	switch (control.getTag ())
 	{
 		case kNameTag:
 		{
-			CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
+			CTextEdit* edit = dynamic_cast<CTextEdit*> (&control);
 			if (edit)
 			{
 				if (!edit->getText ().empty ())
@@ -139,28 +140,28 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 		}
 		case kMinWidthTag:
 		{
-			minSize.x = control->getValue ();
+			minSize.x = control.getValue ();
 			break;
 		}
 		case kMinHeightTag:
 		{
-			minSize.y = control->getValue ();
+			minSize.y = control.getValue ();
 			break;
 		}
 		case kMaxWidthTag:
 		{
-			maxSize.x = control->getValue ();
+			maxSize.x = control.getValue ();
 			break;
 		}
 		case kMaxHeightTag:
 		{
-			maxSize.y = control->getValue ();
+			maxSize.y = control.getValue ();
 			break;
 		}
 		case kMinUseCurrentTag:
 		case kMaxUseCurrentTag:
 		{
-			if (control->getValue() == control->getMax())
+			if (control.getValue () == control.getMax ())
 			{
 				auto attr = description->getViewAttributes (templateName.data ());
 				if (attr)
@@ -168,7 +169,7 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 					CPoint currentSize;
 					if (attr->getPointAttribute ("size", currentSize))
 					{
-						if (control->getTag () == kMinUseCurrentTag)
+						if (control.getTag () == kMinUseCurrentTag)
 						{
 							minSize = currentSize;
 							if (controls[kMinWidthTag])

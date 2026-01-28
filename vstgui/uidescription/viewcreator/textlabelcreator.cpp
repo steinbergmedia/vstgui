@@ -39,17 +39,17 @@ UTF8StringPtr TextLabelCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* TextLabelCreator::create (const UIAttributes& attributes,
-                                 const IUIDescription* description) const
+SharedPointer<CView> TextLabelCreator::create (const UIAttributes& attributes,
+											   const IUIDescription& description) const
 {
-	return new CTextLabel (CRect (0, 0, 100, 20));
+	return makeOwned<CTextLabel> (CRect (0, 0, 100, 20));
 }
 
 //------------------------------------------------------------------------
-bool TextLabelCreator::apply (CView* view, const UIAttributes& attributes,
-                              const IUIDescription* description) const
+bool TextLabelCreator::apply (CView& view, const UIAttributes& attributes,
+							  const IUIDescription& description) const
 {
-	auto* label = dynamic_cast<CTextLabel*> (view);
+	auto* label = dynamic_cast<CTextLabel*> (&view);
 	if (!label)
 		return false;
 
@@ -103,10 +103,10 @@ auto TextLabelCreator::getAttributeType (const string& attributeName) const -> A
 }
 
 //------------------------------------------------------------------------
-bool TextLabelCreator::getAttributeValue (CView* view, const string& attributeName,
-                                          string& stringValue, const IUIDescription* desc) const
+bool TextLabelCreator::getAttributeValue (CView& view, const string& attributeName,
+										  string& stringValue, const IUIDescription& desc) const
 {
-	auto* label = dynamic_cast<CTextLabel*> (view);
+	auto* label = dynamic_cast<CTextLabel*> (&view);
 	if (!label)
 		return false;
 	if (attributeName == kAttrTitle)

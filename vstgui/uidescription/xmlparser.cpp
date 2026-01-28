@@ -107,9 +107,9 @@ IHandler* Parser::getHandler () const
 }
 
 //-----------------------------------------------------------------------------
-bool Parser::parse (IContentProvider* provider, IHandler* handler)
+bool Parser::parse (IContentProvider& provider, IHandler* handler)
 {
-	if (provider == nullptr || handler == nullptr)
+	if (handler == nullptr)
 		return false;
 
 	pImpl->handler = handler;
@@ -121,7 +121,7 @@ bool Parser::parse (IContentProvider* provider, IHandler* handler)
 
 	static const uint32_t kBufferSize = 0x8000;
 
-	provider->rewind ();
+	provider.rewind ();
 
 	while (true) 
 	{
@@ -132,7 +132,7 @@ bool Parser::parse (IContentProvider* provider, IHandler* handler)
 			return false;
 		}
 
-		uint32_t bytesRead = provider->readRawData ((int8_t*)buffer, kBufferSize);
+		uint32_t bytesRead = provider.readRawData ((int8_t*)buffer, kBufferSize);
 		if (bytesRead == kStreamIOError)
 			bytesRead = 0;
 		XML_Status status = XML_ParseBuffer (pImpl->parser, static_cast<int> (bytesRead), bytesRead == 0);

@@ -48,11 +48,11 @@ UTF8StringPtr SegmentButtonCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* SegmentButtonCreator::create (const UIAttributes& attributes,
-                                     const IUIDescription* description) const
+SharedPointer<CView> SegmentButtonCreator::create (const UIAttributes& attributes,
+												   const IUIDescription& description) const
 {
-	CSegmentButton* button = new CSegmentButton (CRect (0, 0, 200, 20));
-	updateSegmentCount (button, 4);
+	auto button = makeOwned<CSegmentButton> (CRect (0, 0, 200, 20));
+	updateSegmentCount (button.get (), 4);
 	return button;
 }
 
@@ -88,17 +88,17 @@ void SegmentButtonCreator::updateSegments (CSegmentButton* button,
 }
 
 //------------------------------------------------------------------------
-bool SegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+bool SegmentButtonCreator::apply (CView& view, const UIAttributes& attributes,
+								  const IUIDescription& description) const
 {
-	auto* button = dynamic_cast<CSegmentButton*> (view);
+	auto* button = dynamic_cast<CSegmentButton*> (&view);
 	if (!button)
 		return false;
 
 	const auto* attr = attributes.getAttributeValue (kAttrFont);
 	if (attr)
 	{
-		auto font = description->getFont (attr->c_str ());
+		auto font = description.getFont (attr->c_str ());
 		if (font)
 		{
 			button->setFont (font);
@@ -147,11 +147,11 @@ bool SegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
 	}
 	const auto* gradientName = attributes.getAttributeValue (kAttrGradient);
 	if (gradientName)
-		button->setGradient (description->getGradient (gradientName->c_str ()));
+		button->setGradient (description.getGradient (gradientName->c_str ()));
 	const auto* gradientHighlightedName = attributes.getAttributeValue (kAttrGradientHighlighted);
 	if (gradientHighlightedName)
 		button->setGradientHighlighted (
-		    description->getGradient (gradientHighlightedName->c_str ()));
+			description.getGradient (gradientHighlightedName->c_str ()));
 
 	UIAttributes::StringArray segmentNames;
 	if (attributes.getStringArrayAttribute (kAttrSegmentNames, segmentNames))
@@ -267,15 +267,15 @@ bool SegmentButtonCreator::getPossibleListValues (const string& attributeName,
 }
 
 //------------------------------------------------------------------------
-bool SegmentButtonCreator::getAttributeValue (CView* view, const string& attributeName,
-                                              string& stringValue, const IUIDescription* desc) const
+bool SegmentButtonCreator::getAttributeValue (CView& view, const string& attributeName,
+											  string& stringValue, const IUIDescription& desc) const
 {
-	auto* button = dynamic_cast<CSegmentButton*> (view);
+	auto* button = dynamic_cast<CSegmentButton*> (&view);
 	if (!button)
 		return false;
 	if (attributeName == kAttrFont)
 	{
-		UTF8StringPtr fontName = desc->lookupFontName (button->getFont ());
+		UTF8StringPtr fontName = desc.lookupFontName (button->getFont ());
 		if (fontName)
 		{
 			stringValue = fontName;
@@ -363,7 +363,7 @@ bool SegmentButtonCreator::getAttributeValue (CView* view, const string& attribu
 	{
 		if (auto gradient = button->getGradient ())
 		{
-			UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
+			UTF8StringPtr gradientName = desc.lookupGradientName (gradient);
 			stringValue = gradientName ? gradientName : "";
 		}
 		return true;
@@ -372,7 +372,7 @@ bool SegmentButtonCreator::getAttributeValue (CView* view, const string& attribu
 	{
 		if (auto gradient = button->getGradientHighlighted ())
 		{
-			UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
+			UTF8StringPtr gradientName = desc.lookupGradientName (gradient);
 			stringValue = gradientName ? gradientName : "";
 		}
 		return true;

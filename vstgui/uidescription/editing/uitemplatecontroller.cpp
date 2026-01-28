@@ -37,13 +37,13 @@ public:
 	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override
 	{
 		if (event.type == EventType::KeyDown &&
-		    dynamic_cast<CTextEdit*> (browser->getFrame ()->getFocusView ()) == nullptr)
+			browser->getFrame ()->getFocusView ().cast<CTextEdit> () == nullptr)
 		{
 			if (event.virt == VirtualKey::Left)
 			{
 				if (auto parent = browser->getParentView ()->asViewContainer ())
 				{
-					if (parent->advanceNextFocusView (browser, true))
+					if (parent->advanceNextFocusView (shared (browser), true))
 					{
 						browser->unselectAll ();
 						event.consumed = true;
@@ -55,18 +55,18 @@ public:
 			{
 				if (auto parent = browser->getParentView ()->asViewContainer ())
 				{
-					if (parent->advanceNextFocusView (browser, false))
+					if (parent->advanceNextFocusView (shared (browser), false))
 					{
-						if (auto* focusView = browser->getFrame ()->getFocusView ())
+						if (auto focusView = browser->getFrame ()->getFocusView ())
 						{
-							auto* focusBrowser = dynamic_cast<CDataBrowser*>(focusView);
+							auto focusBrowser = focusView.cast<CDataBrowser> ();
 							parent = focusView->getParentView ()->asViewContainer ();
 							while (!focusBrowser && parent != browser->getFrame ())
 							{
 								if (parent->getParentView () == nullptr)
 									break;
 								parent = parent->getParentView ()->asViewContainer ();
-								focusBrowser = dynamic_cast<CDataBrowser*> (parent);
+								focusBrowser = parent.cast<CDataBrowser> ();
 							}
 							if (focusBrowser)
 							{
@@ -96,14 +96,16 @@ public:
 			if (auto path = context->createGraphicsPath ())
 			{
 				path->addRect (size);
-				context->fillLinearGradient (path, *headerGradient, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
+				context->fillLinearGradient (path, *headerGradient.get (),
+											 CPoint (size.left, size.top),
+											 CPoint (size.left, size.bottom));
 			}
 		}
 		if (!getHeaderTitle ().empty ())
 		{
 			if (headerFont == nullptr)
 			{
-				headerFont = makeOwned<CFontDesc> (*drawFont);
+				headerFont = makeOwned<CFontDesc> (*drawFont.get ());
 				headerFont->setStyle (kBoldFace);
 				headerFont->setSize (headerFont->getSize ()-1);
 			}
@@ -165,21 +167,22 @@ protected:
 class UIViewListDataSource : public UINavigationDataSource, public IUIUndoManagerListener
 {
 public:
-	UIViewListDataSource (CViewContainer* view, const IViewFactory& viewFactory,
+	UIViewListDataSource (const SharedPointer<CViewContainer>& view,
+						  const IViewFactory& viewFactory,
 						  const SharedPointer<UISelection>& selection,
 						  const SharedPointer<UIUndoManager>& undoManager,
 						  GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIViewListDataSource () override;
 
-	CViewContainer* getView () const { return view; }
-	CView* getSubview (int32_t index);
-	bool setSelectedView (CView* view, bool makeRowVisible = false);
-	UIViewListDataSource* getNext () const { return next; }
+	SharedPointer<CViewContainer> getView () const { return view; }
+	SharedPointer<CView> getSubview (int32_t index);
+	bool setSelectedView (const SharedPointer<CView>& view, bool makeRowVisible = false);
+	SharedPointer<UIViewListDataSource> getNext () const { return next; }
 
-	bool update (CViewContainer* vc);
+	bool update (const SharedPointer<CViewContainer>& vc);
 	void remove ();
 protected:
-	UTF8String getViewDisplayString (CView* v) const
+	UTF8String getViewDisplayString (const SharedPointer<CView>& v) const
 	{
 		uint32_t outSize = 0;
 		if (v->getAttributeSize (UIViewCreator::ViewCreator::labelAttrID, outSize))
@@ -193,7 +196,7 @@ protected:
 		}
 		if (const auto* vfEditingSupport =
 				dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory))
-			return vfEditingSupport->getViewDisplayName (*v);
+			return vfEditingSupport->getViewDisplayName (*v.get ());
 		return {};
 	}
 	const UTF8String& getHeaderTitle () const override
@@ -207,8 +210,8 @@ protected:
 		}
 		return headerTitle;
 	}
-	
-	CCoord calculateSubViewWidth (CViewContainer* view) const;
+
+	CCoord calculateSubViewWidth (const SharedPointer<CViewContainer>& view) const;
 	void dbSelectionChanged (CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
 	                                 int32_t column, CDataBrowser* browser) override;
@@ -228,14 +231,14 @@ protected:
 	// IUIUndoManagerListener
 	void onUndoManagerChange () override;
 
-	CViewContainer* view;
+	SharedPointer<CViewContainer> view;
 	const IViewFactory& viewFactory;
-	UIViewListDataSource* next;
+	SharedPointer<UIViewListDataSource> next;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
-	CView* selectedView;
+	SharedPointer<CView> selectedView;
 	StringVector names;
-	std::vector<CView*> subviews;
+	std::vector<SharedPointer<CView>> subviews;
 	bool inUpdate;
 	DragStartMouseObserver dragStartMouseObserver;
 	int32_t dragRow {-1};
@@ -269,7 +272,8 @@ UITemplateController::~UITemplateController ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateController::setupDataBrowser (CDataBrowser* orignalBrowser, CDataBrowser* dataBrowser)
+void UITemplateController::setupDataBrowser (const SharedPointer<CDataBrowser>& orignalBrowser,
+											 const SharedPointer<CDataBrowser>& dataBrowser)
 {
 	if (orignalBrowser)
 	{
@@ -278,8 +282,8 @@ void UITemplateController::setupDataBrowser (CDataBrowser* orignalBrowser, CData
 		dataBrowser->setAutosizeFlags (orignalBrowser->getAutosizeFlags ());
 		dataBrowser->setStyle (orignalBrowser->getStyle ());
 		dataBrowser->setScrollbarWidth (orignalBrowser->getScrollbarWidth ());
-		CScrollbar* sb1 = orignalBrowser->getHorizontalScrollbar ();
-		CScrollbar* sb2 = dataBrowser->getHorizontalScrollbar ();
+		auto sb1 = orignalBrowser->getHorizontalScrollbar ();
+		auto sb2 = dataBrowser->getHorizontalScrollbar ();
 		if (sb1 && sb2)
 		{
 			sb2->setScrollerColor (sb1->getScrollerColor ());
@@ -346,7 +350,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 		}
 		else if (templateView)
 		{
-			selection->setExclusive (shared (templateView));
+			selection->setExclusive (templateView);
 		}
 		else
 			selection->clear ();
@@ -385,7 +389,7 @@ void UITemplateController::onUIDescTemplateChanged (UIDescription& desc)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateController::setTemplateView (CViewContainer* view)
+void UITemplateController::setTemplateView (const SharedPointer<CViewContainer>& view)
 {
 	if (view != templateView && templateDataBrowser && templateDataBrowser->getParentView ())
 	{
@@ -397,7 +401,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 		}
 		if (templateView && templateDataBrowser)
 		{
-			CViewContainer* parentView = static_cast<CViewContainer*>(templateDataBrowser->getParentView ());
+			auto parentView = templateDataBrowser->getParentView ();
 			if (parentView)
 			{
 				const IViewFactory& viewFactory = editDescription->getViewFactory ();
@@ -406,26 +410,26 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 				UIEditController::setupDataSource (mainViewDataSource);
 				CRect r (templateDataBrowser->getViewSize ());
 				r.offset (r.getWidth (), 0);
-				CDataBrowser* browser = new CDataBrowser (r, mainViewDataSource);
+				auto browser = makeOwned<CDataBrowser> (r, mainViewDataSource.get ());
 				setupDataBrowser (templateDataBrowser, browser);
-				parentView->addView (browser);
+				parentView->addSubview (browser);
 			}
 		}
 	}
 }
 
 //------------------------------------------------------------------------
-void UITemplateController::navigateTo (CView* view)
+void UITemplateController::navigateTo (const SharedPointer<CView>& view)
 {
-	std::list<CView*> parents;
-	CView* v = view;
+	std::list<SharedPointer<CView>> parents;
+	SharedPointer<CView> v = view;
 	while (auto parent = v->getParentView ())
 	{
 		if (parent == parent->getFrame ())
 			return; // view is not a child of the templateView
 		if (parent == templateView)
 			break;
-		if (IViewFactory::getViewName (*parent) == nullptr)
+		if (IViewFactory::getViewName (*parent.get ()) == nullptr)
 		{
 			v = parent;
 			continue;
@@ -433,7 +437,7 @@ void UITemplateController::navigateTo (CView* view)
 		parents.emplace_front (parent);
 		v = parent;
 	}
-	UIViewListDataSource* dataSource = mainViewDataSource;
+	auto dataSource = mainViewDataSource;
 	for (auto parent : parents)
 	{
 		dataSource->setSelectedView (parent, true);
@@ -448,7 +452,7 @@ void UITemplateController::navigateTo (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UITemplateController::viewWillDelete (CView* view)
 {
-	if (view == templateDataBrowser)
+	if (view == templateDataBrowser.get ())
 	{
 		templateDataBrowser->unregisterViewListener (this);
 		templateDataBrowser = nullptr;
@@ -456,8 +460,8 @@ void UITemplateController::viewWillDelete (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateController::createView (const UIAttributes& attributes,
-										 const IUIDescription& description)
+SharedPointer<CView> UITemplateController::createView (const UIAttributes& attributes,
+													   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -473,11 +477,15 @@ CView* UITemplateController::createView (const UIAttributes& attributes,
 			
 			auto attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
-			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, actionPerformer, templateName);
+			auto dataSource = makeOwned<UITemplatesDataSource> (this, editDescription,
+																actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
-			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kAutoHideScrollbars|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar|CDataBrowser::kDrawHeader);
-			dataSource->forget ();
+			templateDataBrowser = makeOwned<CDataBrowser> (
+				CRect (0, 0, 0, 0), dataSource.get (),
+				CDataBrowser::kDrawRowLines | CScrollView::kAutoHideScrollbars |
+					CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar |
+					CDataBrowser::kDrawHeader);
 			templateDataBrowser->registerViewListener (this);
 			return templateDataBrowser;
 		}
@@ -486,8 +494,9 @@ CView* UITemplateController::createView (const UIAttributes& attributes,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateController::verifyView (CView* view, const UIAttributes& attributes,
-										 const IUIDescription& description)
+SharedPointer<CView> UITemplateController::verifyView (const SharedPointer<CView>& view,
+													   const UIAttributes& attributes,
+													   const IUIDescription& description)
 {
 	return DelegationController::verifyView (view, attributes, description);
 }
@@ -515,7 +524,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 	auto templateName = dataSource->getStringList()->at (static_cast<uint32_t> (cell.row));
 	vstgui_assert (dataSource);
 	auto item = makeOwned<CCommandMenuItem> ("Duplicate Template '" + templateName + "'");
-	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
+	item->setActions ([this, cell, dataSource] (auto&&) {
 		std::list<const std::string*> tmp;
 		editDescription->collectTemplateViewNames (tmp);
 		std::string newName (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
@@ -529,7 +538,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 	});
 	contextMenu.addEntry (item);
 	item = makeOwned<CCommandMenuItem> ("Delete Template '" + templateName + "'");
-	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
+	item->setActions ([this, cell, dataSource] (auto&&) {
 		if (auto ap = actionPerformer.lock ())
 		{
 			ap->performDeleteTemplate (
@@ -543,7 +552,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::UIViewListDataSource (
-	CViewContainer* view, const IViewFactory& viewFactory,
+	const SharedPointer<CViewContainer>& view, const IViewFactory& viewFactory,
 	const SharedPointer<UISelection>& selection, const SharedPointer<UIUndoManager>& undoManager,
 	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
@@ -566,7 +575,7 @@ UIViewListDataSource::~UIViewListDataSource ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIViewListDataSource::getSubview (int32_t index)
+SharedPointer<CView> UIViewListDataSource::getSubview (int32_t index)
 {
 	if (index >= 0 && index < (int32_t)subviews.size ())
 		return subviews[static_cast<uint32_t> (index)];
@@ -574,12 +583,12 @@ CView* UIViewListDataSource::getSubview (int32_t index)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIViewListDataSource::update (CViewContainer* vc)
+bool UIViewListDataSource::update (const SharedPointer<CViewContainer>& vc)
 {
 	inUpdate = true;
 	names.clear ();
 	subviews.clear ();
-	vc->forEachChild ([&] (CView* subview) {
+	vc->forEachChild ([&] (auto&& subview) {
 		auto viewName = getViewDisplayString (subview);
 		if (!viewName.empty ())
 		{
@@ -612,18 +621,19 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 }
 
 //----------------------------------------------------------------------------------------------------
-CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* inView) const
+CCoord
+	UIViewListDataSource::calculateSubViewWidth (const SharedPointer<CViewContainer>& inView) const
 {
 	CCoord result = 0;
-	
-	inView->forEachChild ([&result] (CView* subView) {
-		result += subView->getViewSize ().getWidth ();
-	});
+
+	inView->forEachChild (
+		[&result] (auto subView) { result += subView->getViewSize ().getWidth (); });
 	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIViewListDataSource::setSelectedView (CView* newView, bool makeRowVisible)
+bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
+											bool makeRowVisible)
 {
 	auto index = indexOf (subviews.begin (), subviews.end (), newView);
 	if (!index)
@@ -641,17 +651,18 @@ bool UIViewListDataSource::setSelectedView (CView* newView, bool makeRowVisible)
 	}
 	if (auto container = selectedView ? selectedView->asViewContainer () : nullptr)
 	{
-		UIViewListDataSource* dataSource = new UIViewListDataSource (container, viewFactory, selection, undoManager, delegate);
+		auto dataSource = makeOwned<UIViewListDataSource> (container, viewFactory, selection,
+														   undoManager, delegate);
 		UIEditController::setupDataSource (dataSource);
 		CRect r (dataBrowser->getViewSize ());
 		r.offset (r.getWidth (), 0);
-		CDataBrowser* newDataBrowser = new CDataBrowser (r, dataSource);
+		auto newDataBrowser = makeOwned<CDataBrowser> (r, dataSource.get ());
 		UITemplateController::setupDataBrowser (dataBrowser, newDataBrowser);
-		CViewContainer* parentView = static_cast<CViewContainer*>(dataBrowser->getParentView ());
-		parentView->addView (newDataBrowser);
+		auto parentView = dataBrowser->getParentView ();
+		parentView->addSubview (newDataBrowser);
 		next = dataSource;
 		dataSource->forget ();
-		CScrollView* scrollView = dynamic_cast<CScrollView*>(parentView->getParentView ());
+		auto scrollView = parentView->getParentView ().cast<CScrollView> ();
 		if (scrollView)
 		{
 			CRect containerSize (scrollView->getContainerSize ());
@@ -665,11 +676,11 @@ bool UIViewListDataSource::setSelectedView (CView* newView, bool makeRowVisible)
 //----------------------------------------------------------------------------------------------------
 void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
 {
-	CView* subview = getSubview (browser->getSelectedRow ());
+	auto subview = getSubview (browser->getSelectedRow ());
 	if (subview == selectedView || inUpdate)
 		return;
 	setSelectedView (subview);
-	GenericStringListDataBrowserSource::dbSelectionChanged (dataBrowser);
+	GenericStringListDataBrowserSource::dbSelectionChanged (dataBrowser.get ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -682,9 +693,9 @@ void UIViewListDataSource::remove ()
 	}
 	if (dataBrowser)
 	{
-		CViewContainer* parentView = static_cast<CViewContainer*>(dataBrowser->getParentView ());
-		CScrollView* scrollView = dynamic_cast<CScrollView*>(parentView->getParentView ());
-		parentView->removeView (dataBrowser);
+		auto parentView = dataBrowser->getParentView ();
+		auto scrollView = parentView->getParentView ().cast<CScrollView> ();
+		parentView->removeSubview (dataBrowser);
 		if (scrollView)
 		{
 			CRect containerSize (scrollView->getContainerSize ());
@@ -701,7 +712,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, cons
 	{
 		if (buttons.isDoubleClick ())
 		{
-			auto subview = shared (getSubview (row));
+			auto subview = getSubview (row);
 			if (subview)
 			{
 				if (buttons.getModifierState () & kControl)
@@ -736,7 +747,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
 		auto offscreenSize = cellBounds;
 		offscreenSize.originize ();
 		offscreen->beginDraw ();
-		dbDrawCell (offscreen, offscreenSize, row, column, 0, browser);
+		dbDrawCell (offscreen.get (), offscreenSize, row, column, 0, browser);
 		offscreen->endDraw ();
 		
 		auto startPos = dragStartMouseObserver.getInitPosition ();
@@ -809,7 +820,7 @@ bool UIViewListDataSource::dbOnDropInCell (int32_t row, int32_t column, const CP
 	{
 		int32_t dir = dragDestinationRow - dragRow;
 		undoManager->pushAndPerform (
-			makeOwned<HierarchyMoveViewOperation> (shared (subviews[dragRow]), selection, dir));
+			makeOwned<HierarchyMoveViewOperation> (subviews[dragRow], selection, dir));
 		result = true;
 	}
 	dragRow = dragDestinationRow = -1;
@@ -848,7 +859,7 @@ void UIViewListDataSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser
 		if (event.virt == VirtualKey::Return)
 		{
 			int32_t row = browser->getSelectedRow ();
-			auto subview = shared (getSubview (row));
+			auto subview = getSubview (row);
 			if (subview)
 			{
 				selection->setExclusive (subview);

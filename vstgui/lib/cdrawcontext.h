@@ -154,10 +154,6 @@ public:
 				  const int32_t& style = -1);
 	/** get current font */
 	SharedPointer<CFontDesc> getFont () const;
-
-	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
-		"Use `setFont (shared (yourFont);` instead")
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -173,12 +169,12 @@ public:
 	void drawString (UTF8StringPtr string, const CPoint& _point, bool antialias = true);
 
 	/** get the width of a platform string */
-	CCoord getStringWidth (IPlatformString* pStr);
+	CCoord getStringWidth (const PlatformStringPtr& pStr);
 	/** draw a platform string */
-	void drawString (IPlatformString* string, const CRect& _rect,
+	void drawString (const PlatformStringPtr& string, const CRect& _rect,
 					 const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);
 	/** draw a platform string */
-	void drawString (IPlatformString* string, const CPoint& _point, bool antialias = true);
+	void drawString (const PlatformStringPtr& string, const CPoint& _point, bool antialias = true);
 	//@}
 	
 	//-----------------------------------------------------------------------------

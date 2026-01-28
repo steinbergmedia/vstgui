@@ -52,25 +52,5 @@ CButtonState buttonStateFromMouseEvent (const MouseEvent& event)
 	return state;
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-VstKeyCode toVstKeyCode (const KeyboardEvent& event)
-{
-	VstKeyCode keyCode {};
-	keyCode.character = event.character;
-	keyCode.virt = toVstVirtualKey (event.virt);
-	if (event.modifiers.has (ModifierKey::Shift))
-		keyCode.modifier |= MODIFIER_SHIFT;
-	if (event.modifiers.has (ModifierKey::Alt))
-		keyCode.modifier |= MODIFIER_ALTERNATE;
-	if (event.modifiers.has (ModifierKey::Control))
-		keyCode.modifier |= MODIFIER_CONTROL;
-	if (event.modifiers.has (ModifierKey::Super))
-		keyCode.modifier |= MODIFIER_COMMAND;
-	return keyCode;
-}
-#endif
-
-
 //------------------------------------------------------------------------
 } // VSTGUI

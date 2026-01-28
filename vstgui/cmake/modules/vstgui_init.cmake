@@ -3,23 +3,15 @@ cmake_minimum_required(VERSION 3.25.0)
 enable_language(CXX)
 
 if(NOT DEFINED VSTGUI_CXX_VERSION)
-    set(VSTGUI_CXX_VERSION "17" CACHE STRING "The C++ language version to compile VSTGUI")
+    set(VSTGUI_CXX_VERSION "20" CACHE STRING "The C++ language version to compile VSTGUI")
 endif()
 
 if(NOT DEFINED VSTGUI_ENABLE_DEPRECATED_METHODS)
     option(VSTGUI_ENABLE_DEPRECATED_METHODS "Enable VSTGUI deprecated methods" ON)
 endif()
 
-if(NOT DEFINED VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR)
-    option(VSTGUI_EXPLICIT_SHARED_POINTER_CONSTRUCTOR "VSTGUI explicit shared pointer constructor" OFF)
-endif()
-
 if(NOT DEFINED VSTGUI_ENABLE_XMLPARSER)
     option(VSTGUI_ENABLE_XMLPARSER "Enable building deprecated Expat based XML Parser" ON)
-endif()
-
-if(NOT DEFINED VSTGUI_ENABLE_OPENGL_SUPPORT)
-    option(VSTGUI_ENABLE_OPENGL_SUPPORT "Enable OpenGL support" ON)
 endif()
 
 ##########################################################################################

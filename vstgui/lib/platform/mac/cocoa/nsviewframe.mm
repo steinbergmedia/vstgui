@@ -235,11 +235,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 							draggingSessionEndedAtPoint);
 		}
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		builder.addMethod (@selector (draggedImage:endedAt:operation:),
-						   draggedImageEndedAtOperation);
-#endif
-
 		// optional touchbar support
 		if (auto protocol = objc_getProtocol ("NSTouchBarProvider"))
 		{
@@ -959,27 +954,6 @@ struct VSTGUI_NSView : RuntimeObjCClass<VSTGUI_NSView>
 		return nil;
 	}
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	//------------------------------------------------------------------------------------
-	static void draggedImageEndedAtOperation (id self, SEL _cmd, NSImage* image, NSPoint aPoint,
-											  NSDragOperation operation)
-	{
-		NSViewFrame* frame = getNSViewFrame (self);
-		if (frame)
-		{
-			if (operation == NSDragOperationNone)
-			{
-				frame->setLastDragOperationResult (kDragRefused);
-			}
-			else if (operation == NSDragOperationMove)
-			{
-				frame->setLastDragOperationResult (kDragMoved);
-			}
-			else
-				frame->setLastDragOperationResult (kDragCopied);
-		}
-	}
-#endif
 	static std::u32string convert (NSString* str)
 	{
 		NSUInteger maxLength {};
@@ -1265,8 +1239,7 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 //-----------------------------------------------------------------------------
 NSViewFrame::~NSViewFrame () noexcept
 {
-	if (tooltipWindow)
-		tooltipWindow->forget ();
+	tooltipWindow.reset ();
 	if (caLayer)
 		[caLayer release];
 	[nsView unregisterDraggedTypes]; // this is neccessary otherwise AppKit will crash if the plug-in is unloaded from the process
@@ -1692,7 +1665,7 @@ bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 bool NSViewFrame::showTooltip (const CRect& rect, const char* utf8Text)
 {
 	if (tooltipWindow == nullptr)
-		tooltipWindow = new CocoaTooltipWindow;
+		tooltipWindow = makeOwned<CocoaTooltipWindow> ();
 	tooltipWindow->set (this, rect, utf8Text);
 	return true;
 }
@@ -1752,19 +1725,11 @@ SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 		MouseEventButtonState buttonState;
 		if (auto event = [NSApp currentEvent])
 			buttonState = buttonStateFromNSEvent (event);
-		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
-		                                     *genericOptionMenuTheme.get ());
+		return makeOwned<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)), buttonState,
+											 *genericOptionMenuTheme.get ());
 	}
 	return makeOwned<NSViewOptionMenu> ();
 }
-
-#if VSTGUI_OPENGL_SUPPORT
-//-----------------------------------------------------------------------------
-SharedPointer<IPlatformOpenGLView> NSViewFrame::createPlatformOpenGLView ()
-{
-	return makeOwned<CocoaOpenGLView> (nsView);
-}
-#endif
 
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
@@ -1783,102 +1748,6 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 	layer->init (drawDelegate);
 	return std::move (layer);
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------------------
-DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
-{
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-	lastDragOperationResult = kDragError;
-	if (nsView)
-	{
-		NSPoint bitmapOffset = { static_cast<CGFloat>(offset.x), static_cast<CGFloat>(offset.y) };
-
-		NSEvent* event = [NSApp currentEvent];
-		if (event == nullptr || !([event type] == MacEventType::LeftMouseDown ||
-		                          [event type] == MacEventType::LeftMouseDragged))
-			return kDragRefused;
-		NSPoint nsLocation = [event locationInWindow];
-		NSImage* nsImage = bitmapToNSImage (shared (dragBitmap));
-		if (nsImage)
-		{
-			nsLocation = [nsView convertPoint:nsLocation fromView:nil];
-			bitmapOffset.x += nsLocation.x;
-			bitmapOffset.y += nsLocation.y + [nsImage size].height;
-		}
-		else
-		{
-			if (bitmapOffset.x == 0)
-				bitmapOffset.x = 1;
-			if (bitmapOffset.y == 0)
-				bitmapOffset.y = 1;
-			nsImage = [[[NSImage alloc] initWithSize:NSMakeSize (fabs (bitmapOffset.x)*2, fabs (bitmapOffset.y)*2)] autorelease];
-			bitmapOffset.x += nsLocation.x;
-			bitmapOffset.y += nsLocation.y;
-		}
-		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-		IDataPackage::Type type = source->getDataType (0);
-		switch (type)
-		{
-			case IDataPackage::kFilePath:
-			{
-				NSMutableArray* files = [[[NSMutableArray alloc] init] autorelease];
-				// we allow more than one file
-				for (uint32_t i = 0; i < source->getCount (); i++)
-				{
-					const void* buffer = nullptr;
-					uint32_t bufferSize = source->getData (i, buffer, type);
-					if (type == IDataPackage::kFilePath && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
-					{
-						[files addObject:[NSString stringWithCString:(const char*)buffer encoding:NSUTF8StringEncoding]];
-					}
-				}
-				[nsPasteboard declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
-				[nsPasteboard setPropertyList:files forType:NSFilenamesPboardType];
-				break;
-			}
-			case IDataPackage::kText:
-			{
-				const void* buffer = nullptr;
-				uint32_t bufferSize = source->getData (0, buffer, type);
-				if (bufferSize > 0)
-				{
-					[nsPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
-					[nsPasteboard setString:[[[NSString alloc] initWithBytes:buffer length:bufferSize encoding:NSUTF8StringEncoding] autorelease] forType:NSStringPboardType];
-				}
-				break;
-			}
-			case IDataPackage::kBinary:
-			{
-				const void* buffer = nullptr;
-				uint32_t bufferSize = source->getData (0, buffer, type);
-				if (bufferSize > 0)
-				{
-					[nsPasteboard declareTypes:[NSArray arrayWithObject:[NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding]] owner:nil];
-					[nsPasteboard setData:[NSData dataWithBytes:buffer length:bufferSize] forType:[NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding]];
-				}
-				break;
-			}
-			case IDataPackage::kError:
-			{
-				return kDragError;
-			}
-		}
-		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
-
-
-		[nsPasteboard clearContents];
-		return lastDragOperationResult;
-	}
-	return kDragError;
-
-#pragma clang diagnostic pop
-
-}
-#endif
 
 //-----------------------------------------------------------------------------
 bool NSViewFrame::doDrag (const DragDescription& dragDescription,

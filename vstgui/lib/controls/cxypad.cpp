@@ -55,7 +55,6 @@ void CXYPad::draw (CDrawContext* context)
 		context->setDrawMode (kAntiAliasing);
 		context->drawEllipse (r, kDrawFilled);
 	}
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -94,12 +93,8 @@ void CXYPad::onMouseCancelEvent (MouseCancelEvent &event)
 {
 	if (isEditing ())
 	{
-		value = mouseStartValue;
-		if (isDirty ())
-		{
+		if (setValue (mouseStartValue))
 			valueChanged ();
-			invalid ();
-		}
 		endEdit ();
 		event.consumed = true;
 	}
@@ -138,12 +133,8 @@ void CXYPad::onMouseMove (MouseDownUpMoveEvent& event)
 	y = (float)(where.y / height);
 
 	boundValues (x, y);
-	setValue (calculateValue (x, y));
-	if (isDirty ())
-	{
+	if (setValue (calculateValue (x, y)))
 		valueChanged ();
-		invalid ();
-	}
 	lastMouseChangePoint = where;
 	event.consumed = true;
 }
@@ -170,12 +161,8 @@ void CXYPad::onMouseWheelEvent (MouseWheelEvent& event)
 	y += distanceY;
 	boundValues (x, y);
 	onMouseWheelEditing (this);
-	setValue (calculateValue (x, y));
-	if (isDirty ())
-	{
-		invalid ();
+	if (setValue (calculateValue (x, y)))
 		valueChanged ();
-	}
 	event.consumed = true;
 }
 

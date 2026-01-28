@@ -52,8 +52,8 @@ UIViewCreatorController::UIViewCreatorController (const SharedPointer<IControlle
 UIViewCreatorController::~UIViewCreatorController () {}
 
 //----------------------------------------------------------------------------------------------------
-CView* UIViewCreatorController::createView (const UIAttributes& attributes,
-											const IUIDescription& _description)
+SharedPointer<CView> UIViewCreatorController::createView (const UIAttributes& attributes,
+														  const IUIDescription& _description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -64,7 +64,10 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes,
 			dataSource =
 				makeOwned<UIViewCreatorDataSource> (description->getViewFactory (), description);
 			UIEditController::setupDataSource (dataSource);
-			dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+												   CDataBrowser::kDrawRowLines |
+													   CScrollView::kHorizontalScrollbar |
+													   CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -72,10 +75,11 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes,
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& attributes,
-											const IUIDescription& desc)
+SharedPointer<CView> UIViewCreatorController::verifyView (const SharedPointer<CView>& view,
+														  const UIAttributes& attributes,
+														  const IUIDescription& desc)
 {
-	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
+	auto searchField = view.cast<CSearchTextEdit> ();
 	if (dataSource && searchField && searchField->getTag () == kSearchFieldTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
@@ -87,14 +91,12 @@ CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& att
 IControlListener* UIViewCreatorController::getControlListener (UTF8StringPtr name)
 {
 	if (std::strcmp (name, "viewcreator.search") == 0)
-		return dataSource;
+		return dataSource.get ();
 	return this;
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewCreatorController::valueChanged (CControl* control)
-{
-}
+void UIViewCreatorController::valueChanged (CControl& control) {}
 
 //----------------------------------------------------------------------------------------------------
 void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where)
@@ -105,9 +107,7 @@ void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, 
 	const auto& viewName = dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row));
 	UTF8String menuEntryName = "Insert '" + viewName + "'";
 	auto item = makeOwned<CCommandMenuItem> (menuEntryName);
-	item->setActions ([&, cell] (CCommandMenuItem* item) {
-		dataSource->addViewToCurrentEditView (cell.row);
-	});
+	item->setActions ([&, cell] (auto&& item) { dataSource->addViewToCurrentEditView (cell.row); });
 	contextMenu.addEntry (item);
 }
 
@@ -137,7 +137,8 @@ void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 {
-	auto controller = getViewController (*dataBrowser, true).cast<UIViewCreatorController> ();
+	auto controller =
+		getViewController (*dataBrowser.get (), true).cast<UIViewCreatorController> ();
 	if (controller)
 	{
 		if (auto editController = controller->getBaseController ().cast<UIEditController> ())
@@ -158,10 +159,10 @@ SharedPointer<UISelection> createSelectionFromViewName (
 	viewAttr.setAttribute (UIViewCreator::kAttrClass, viewName);
 	if (optionalAttributes)
 	{
-		for (auto& a : *optionalAttributes)
+		for (auto& a : *optionalAttributes.get ())
 			viewAttr.setAttribute (a.first, a.second);
 	}
-	auto view = shared (factory.createView (viewAttr, description));
+	auto view = factory.createView (viewAttr, description);
 	if (view)
 	{
 		if (view->getViewSize ().isEmpty ())
@@ -185,7 +186,7 @@ SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row
 	                        [&] (const auto& entry) { return entry.second == viewDisplayName; });
 	if (it == viewAndDisplayNameList.end ())
 		return nullptr;
-	return createSelectionFromViewName (*it->first, factory, *description, nullptr);
+	return createSelectionFromViewName (*it->first, factory, *description.get (), nullptr);
 }
 
 //----------------------------------------------------------------------------------------------------

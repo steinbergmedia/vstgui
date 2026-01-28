@@ -77,6 +77,22 @@ void CSegmentButton::removeAllSegments ()
 	invalid ();
 }
 
+//------------------------------------------------------------------------
+float CSegmentButton::getMin () const
+{
+	if (selectionMode == SelectionMode::kMultiple)
+		return 0.f;
+	return CControl::getMin ();
+}
+
+//------------------------------------------------------------------------
+float CSegmentButton::getMax () const
+{
+	if (selectionMode == SelectionMode::kMultiple)
+		return std::floor (std::numeric_limits<float>::max ());
+	return CControl::getMax ();
+}
+
 //-----------------------------------------------------------------------------
 void CSegmentButton::valueChanged ()
 {
@@ -100,7 +116,7 @@ void CSegmentButton::valueChanged ()
 		}
 		case SelectionMode::kMultiple:
 		{
-			auto bitset = static_cast<uint32_t> (value);
+			auto bitset = static_cast<uint32_t> (getValue ());
 			size_t index = 0;
 			for (auto& segment : segments)
 			{
@@ -271,7 +287,7 @@ void CSegmentButton::setFrameWidth (CCoord newWidth)
 }
 
 //-----------------------------------------------------------------------------
-bool CSegmentButton::attached (CView* parent)
+bool CSegmentButton::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (CControl::attached (parent))
 	{
@@ -293,9 +309,9 @@ void CSegmentButton::setViewSize (const CRect& rect, bool invalid)
 void CSegmentButton::selectSegment (uint32_t index, bool state)
 {
 	beginEdit ();
-	auto bitset = static_cast<uint32_t> (value);
+	auto bitset = static_cast<uint32_t> (getValue ());
 	setBit (bitset, (1 << index), state);
-	value = static_cast<float> (bitset);
+	setValue (static_cast<float> (bitset));
 	valueChanged ();
 	endEdit ();
 }
@@ -455,13 +471,13 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 	{
 		if (isHorizontal)
 		{
-			pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (),
-			                              getViewSize ().getBottomLeft ());
+			pContext->fillLinearGradient (path, *gradient.get (), getViewSize ().getTopLeft (),
+										  getViewSize ().getBottomLeft ());
 		}
 		else
 		{
-			pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (),
-			                              getViewSize ().getTopRight ());
+			pContext->fillLinearGradient (path, *gradient.get (), getViewSize ().getTopLeft (),
+										  getViewSize ().getTopRight ());
 		}
 	}
 	auto lineIndexStart = 1u;
@@ -483,15 +499,15 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 			{
 				if (isHorizontal)
 				{
-					pContext->fillLinearGradient (path, *gradientHighlighted,
-					                              segment.rect.getTopLeft (),
-					                              segment.rect.getBottomLeft ());
+					pContext->fillLinearGradient (path, *gradientHighlighted.get (),
+												  segment.rect.getTopLeft (),
+												  segment.rect.getBottomLeft ());
 				}
 				else
 				{
-					pContext->fillLinearGradient (path, *gradientHighlighted,
-					                              segment.rect.getTopLeft (),
-					                              segment.rect.getTopRight ());
+					pContext->fillLinearGradient (path, *gradientHighlighted.get (),
+												  segment.rect.getTopLeft (),
+												  segment.rect.getTopRight ());
 				}
 			}
 			if (segment.selected && segment.backgroundHighlighted)
@@ -516,7 +532,6 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 	}
 	if (drawLines)
 		pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
-	setDirty (false);
 }
 
 //-----------------------------------------------------------------------------
@@ -593,7 +608,7 @@ void CSegmentButton::verifySelections ()
 {
 	if (selectionMode == SelectionMode::kMultiple)
 	{
-		auto bitset = static_cast<uint32_t> (value);
+		auto bitset = static_cast<uint32_t> (getValue ());
 		for (auto index = 0u; index < segments.size (); ++index)
 		{
 			segments[index].selected = (bitset & (1 << index)) != 0;
@@ -617,7 +632,7 @@ bool CSegmentButton::drawFocusOnTop ()
 }
 
 //-----------------------------------------------------------------------------
-bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
+bool CSegmentButton::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
@@ -625,8 +640,7 @@ bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
 	CRect r (getViewSize ());
 	r.inset (lineWidth / 2., lineWidth / 2.);
 	outPath.addRoundRect (r, getRoundRadius ());
-	CCoord focusWidth = getFrame ()->getFocusWidth ();
-	r.extend (focusWidth, focusWidth);
+	r.extend (focusLineWidth, focusLineWidth);
 	outPath.addRoundRect (r, getRoundRadius ());
 	return true;
 }

@@ -65,7 +65,7 @@ TEST_CASE (CBitmap, PixelAccess)
 			++y;
 			x = 0;
 		}
-	} while (++(*accessor));
+	} while (++(*accessor.get ()));
 }
 
 //------------------------------------------------------------------------
@@ -78,7 +78,7 @@ TEST_CASE (CBitmap, PixelAccess2)
 		do
 		{
 			accessor->setColor (color);
-		} while (++(*accessor));
+		} while (++(*accessor.get ()));
 	}
 	if (auto accessor = CBitmapPixelAccess::create (bitmap))
 	{
@@ -87,7 +87,7 @@ TEST_CASE (CBitmap, PixelAccess2)
 			CColor c;
 			accessor->getColor (c);
 			EXPECT_EQ (c, color);
-		} while (++(*accessor));
+		} while (++(*accessor.get ()));
 	}
 }
 

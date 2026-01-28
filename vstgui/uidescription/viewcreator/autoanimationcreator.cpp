@@ -27,10 +27,10 @@ IdStringPtr AutoAnimationCreator::getBaseViewName () const { return kCControl; }
 UTF8StringPtr AutoAnimationCreator::getDisplayName () const { return "Auto Animation"; }
 
 //------------------------------------------------------------------------
-CView* AutoAnimationCreator::create (const UIAttributes& attributes,
-									 const IUIDescription* description) const
+SharedPointer<CView> AutoAnimationCreator::create (const UIAttributes& attributes,
+												   const IUIDescription& description) const
 {
-	return new CAutoAnimation (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	return makeOwned<CAutoAnimation> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -52,28 +52,23 @@ auto AutoAnimationCreator::getAttributeType (const string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool AutoAnimationCreator::apply (CView* view, const UIAttributes& attributes,
-								  const IUIDescription* description) const
+bool AutoAnimationCreator::apply (CView& view, const UIAttributes& attributes,
+								  const IUIDescription& description) const
 {
-	auto autoAnimation = dynamic_cast<CAutoAnimation*> (view);
+	auto autoAnimation = dynamic_cast<CAutoAnimation*> (&view);
 	if (autoAnimation == nullptr)
 		return false;
 	int32_t value;
 	if (attributes.getIntegerAttribute (kAttrAnimationTime, value))
 		autoAnimation->setAnimationTime (static_cast<uint32_t> (value));
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CPoint point;
-	if (attributes.getPointAttribute (kAttrBitmapOffset, point))
-		autoAnimation->setBitmapOffset (point);
-#endif
 	return true;
 }
 
 //------------------------------------------------------------------------
-bool AutoAnimationCreator::getAttributeValue (CView* view, const string& attributeName,
-											  string& stringValue, const IUIDescription* desc) const
+bool AutoAnimationCreator::getAttributeValue (CView& view, const string& attributeName,
+											  string& stringValue, const IUIDescription& desc) const
 {
-	auto autoAnimation = dynamic_cast<CAutoAnimation*> (view);
+	auto autoAnimation = dynamic_cast<CAutoAnimation*> (&view);
 	if (autoAnimation == nullptr)
 		return false;
 	if (attributeName == kAttrAnimationTime)
@@ -82,13 +77,6 @@ bool AutoAnimationCreator::getAttributeValue (CView* view, const string& attribu
 			static_cast<int32_t> (autoAnimation->getAnimationTime ()));
 		return true;
 	}
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (attributeName == kAttrBitmapOffset)
-	{
-		stringValue = UIAttributes::pointToString (autoAnimation->getBitmapOffset ());
-		return true;
-	}
-#endif
 	return false;
 }
 

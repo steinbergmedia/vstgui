@@ -4,6 +4,7 @@
 
 #include "platform/iplatformfileselector.h"
 #include "platform/platformfactory.h"
+#include "platform/iplatformframe.h"
 #include "cfileselector.h"
 #include "cframe.h"
 #include "cstring.h"
@@ -138,20 +139,18 @@ const CFileExtension& CNewFileSelector::getAllFilesExtension ()
 }
 
 //-----------------------------------------------------------------------------
-IdStringPtr CNewFileSelector::kSelectEndMessage = "CNewFileSelector Select End Message";
-
-//-----------------------------------------------------------------------------
 // CNewFileSelector Implementation
 //-----------------------------------------------------------------------------
 struct CNewFileSelector::Impl : PlatformFileSelectorConfig
 {
 	PlatformFileSelectorPtr platformFileSelector;
-	CFrame* frame {nullptr};
+	SharedPointer<CFrame> frame;
 	std::vector<UTF8String> result;
 };
 
 //-----------------------------------------------------------------------------
-CNewFileSelector::CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector, CFrame* parent)
+CNewFileSelector::CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector,
+									const SharedPointer<CFrame>& parent)
 {
 	impl = std::make_unique<Impl> ();
 	impl->platformFileSelector = std::move (platformFileSelector);
@@ -162,39 +161,15 @@ CNewFileSelector::CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelect
 CNewFileSelector::~CNewFileSelector () noexcept = default;
 
 //-----------------------------------------------------------------------------
-bool CNewFileSelector::run (CBaseObject* delegate)
-{
-	if (delegate == nullptr)
-	{
-		#if DEBUG
-		DebugPrint ("You need to specify a delegate in CNewFileSelector::run (CBaseObject* delegate, void* parentWindow)\n");
-		#endif
-		return false;
-	}
-	if (impl->frame)
-		impl->frame->onStartLocalEventLoop ();
-
-	impl->doneCallback = [this, del = shared (delegate)] (std::vector<UTF8String>&& files) {
-		impl->result = std::move (files);
-		del->notify (this, CNewFileSelector::kSelectEndMessage);
-	};
-
-	setBit (impl->flags, PlatformFileSelectorFlags::RunModal, false);
-	return impl->platformFileSelector->run (*impl);
-}
-
-//-----------------------------------------------------------------------------
 bool CNewFileSelector::run (CallbackFunc&& callback)
 {
 	if (impl->frame)
 		impl->frame->onStartLocalEventLoop ();
 
-    remember ();
-	impl->doneCallback = [this,
+	impl->doneCallback = [self = shared (this),
 						  cb = std::move (callback)] (std::vector<UTF8String>&& files) {
-		impl->result = std::move (files);
-		cb (this);
-        forget ();
+		self->impl->result = std::move (files);
+		cb (*self.get ());
 	};
 
 	setBit (impl->flags, PlatformFileSelectorFlags::RunModal, false);
@@ -290,7 +265,8 @@ UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
 }
 
 //------------------------------------------------------------------------
-CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
+SharedPointer<CNewFileSelector> CNewFileSelector::create (const SharedPointer<CFrame>& parent,
+														  Style style)
 {
 	PlatformFileSelectorStyle platformStyle;
 	switch (style)
@@ -308,10 +284,13 @@ CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 			vstgui_assert (false);
 			return nullptr;
 	}
-	if (auto platformSelector = getPlatformFactory ().createFileSelector (
-			platformStyle, parent ? parent->getPlatformFrame () : nullptr))
+	PlatformFramePtr platformFrame;
+	if (parent)
+		platformFrame = parent->getPlatformFrame ();
+	if (auto platformSelector =
+			getPlatformFactory ().createFileSelector (platformStyle, platformFrame))
 	{
-		return new CNewFileSelector (std::move (platformSelector), parent);
+		return makeOwned<CNewFileSelector> (std::move (platformSelector), parent);
 	}
 	return nullptr;
 }

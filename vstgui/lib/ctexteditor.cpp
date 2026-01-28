@@ -10,6 +10,7 @@
 #include "cscrollview.h"
 #include "ctexteditor.h"
 #include "cgraphicspath.h"
+#include "cclipboard.h"
 #include "events.h"
 #include "iviewlistener.h"
 #include "cvstguitimer.h"
@@ -218,8 +219,8 @@ struct TextEditorView : public CView,
 	void beforeDelete () override;
 
 	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) override;
-	bool attached (CView* parent) override;
-	bool removed (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	void parentSizeChanged () override;
 
 	void looseFocus () override;
@@ -285,7 +286,7 @@ struct TextEditorView : public CView,
 protected:
 	// IFocusDrawing
 	bool drawFocusOnTop () override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 	// ITextEditor
 	bool setPlainText (std::string_view utf8Text, bool clearSelection) const override;
@@ -403,7 +404,7 @@ public:
 		const IFontPainter* fontPainer {nullptr};
 		FindPanelController* findPanelController {nullptr};
 
-		CScrollView* scrollView {nullptr};
+		SharedPointer<CScrollView> scrollView;
 		SharedPointer<LineNumberView> lineNumberView;
 
 		SharedPointer<CVSTGUITimer> blinkTimer;
@@ -567,8 +568,10 @@ struct FindPanelController : IControlListener,
 							 ViewEventListenerAdapter
 {
 	using RemoveFindPanelFunc = std::function<void ()>;
-	static CViewContainer* makeFindPanelView (CRect rect, TextEditorView::ModelData& md,
-											  const ITextEditor& editor, RemoveFindPanelFunc&& f);
+	static SharedPointer<CViewContainer> makeFindPanelView (CRect rect,
+															TextEditorView::ModelData& md,
+															const ITextEditor& editor,
+															RemoveFindPanelFunc&& f);
 
 	void setFindString (StringView text);
 	void setFindOptions (ITextEditor::FindOptions opt);
@@ -586,16 +589,16 @@ private:
 
 	FindPanelController (const ITextEditor& editor);
 	~FindPanelController () noexcept;
-	void valueChanged (CControl* control) override;
+	void valueChanged (CControl& control) override;
 	void viewLostFocus (CView* view) override;
 	void viewWillDelete (CView* view) override;
 	void viewOnEvent (CView* view, Event& event) override;
 
 	const ITextEditor& editor;
-	CTextEdit* editfield {nullptr};
-	CControl* closeBox {nullptr};
-	CControl* caseSensitiveButton {nullptr};
-	CControl* wholeWordButton {nullptr};
+	SharedPointer<CTextEdit> editfield;
+	SharedPointer<CControl> closeBox;
+	SharedPointer<CControl> caseSensitiveButton;
+	SharedPointer<CControl> wholeWordButton;
 	ITextEditor::FindOptions findOptions {};
 	CommandKeyArray commandKeys;
 	RemoveFindPanelFunc removeFindPanelFunc;
@@ -649,11 +652,11 @@ void TextEditorView::beforeDelete ()
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::attached (CView* parent)
+bool TextEditorView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (CView::attached (parent))
 	{
-		if (auto sv = dynamic_cast<CScrollView*> (parent->getParentView ()))
+		if (auto sv = parent->getParentView ().cast<CScrollView> ())
 		{
 			md.scrollView = sv;
 			layoutRows ();
@@ -666,7 +669,6 @@ bool TextEditorView::attached (CView* parent)
 				md.lineNumberView->setStyle (md.style, md.lineHeight);
 				updateLineNumbersView ();
 				md.scrollView->setEdgeView (CScrollView::Edge::Left, md.lineNumberView);
-				md.lineNumberView->remember ();
 			}
 		}
 		return true;
@@ -675,7 +677,7 @@ bool TextEditorView::attached (CView* parent)
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::removed (CView* parent)
+bool TextEditorView::removed (const SharedPointer<CViewContainer>& parent)
 {
 	if (md.scrollView)
 	{
@@ -692,21 +694,22 @@ bool TextEditorView::removed (CView* parent)
 //------------------------------------------------------------------------
 void TextEditorView::takeFocus ()
 {
-	if (md.lastMouse != MouseOutsidePos)
-		getFrame ()->setCursor (kCursorIBeam);
+	auto frame = getFrame ();
+	if (md.lastMouse != MouseOutsidePos && frame)
+		frame->setCursor (kCursorIBeam);
 	restartBlinkTimer ();
-	if (!isReadOnlyMode ())
+	if (!isReadOnlyMode () && frame)
 	{
 #if MAC_COCOA
-		auto pf = getFrame ()->getPlatformFrame ();
-		if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
+		auto pf = frame->getPlatformFrame ();
+		if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf.get ()))
 		{
 			cocoaTextInputClient = std::make_unique<CocoaTextInputClient> (*this);
 			cocoaFrame->setTextInputClient (cocoaTextInputClient.get ());
 		}
 #elif WINDOWS
-		auto pf = getFrame ()->getPlatformFrame ();
-		if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf))
+		auto pf = frame->getPlatformFrame ();
+		if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf.get ()))
 		{
 			imeTextInputClient = std::make_unique<IMETextInputClient> (*this);
 			winFrame->setTextInputClient (imeTextInputClient.get ());
@@ -722,21 +725,24 @@ void TextEditorView::looseFocus ()
 	md.blinkTimer = nullptr;
 	md.cursorIsVisible = true;
 	toggleCursorVisibility ();
+	if (auto frame = getFrame ())
+	{
 #if MAC_COCOA
-	auto pf = getFrame ()->getPlatformFrame ();
-	if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf))
-	{
-		cocoaFrame->setTextInputClient (nullptr);
-		cocoaTextInputClient.reset ();
-	}
+		auto pf = frame->getPlatformFrame ();
+		if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf.get ()))
+		{
+			cocoaFrame->setTextInputClient (nullptr);
+			cocoaTextInputClient.reset ();
+		}
 #elif WINDOWS
-	auto pf = getFrame ()->getPlatformFrame ();
-	if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf))
-	{
-		winFrame->setTextInputClient (nullptr);
-		imeTextInputClient.reset ();
-	}
+		auto pf = getFrame ()->getPlatformFrame ();
+		if (auto winFrame = dynamic_cast << IWin32PlatformFrame* > (pf.get ()))
+		{
+			winFrame->setTextInputClient (nullptr);
+			imeTextInputClient.reset ();
+		}
 #endif
+	}
 	CView::looseFocus ();
 }
 
@@ -825,12 +831,11 @@ void TextEditorView::parentSizeChanged ()
 bool TextEditorView::drawFocusOnTop () { return true; }
 
 //------------------------------------------------------------------------
-bool TextEditorView::getFocusPath (CGraphicsPath& outPath)
+bool TextEditorView::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	auto r = getVisibleViewSize ();
 	outPath.addRect (r);
-	CCoord focusWidth = getFrame ()->getFocusWidth ();
-	r.inset (focusWidth, focusWidth);
+	r.inset (focusLineWidth, focusLineWidth);
 	outPath.addRect (r);
 	return true;
 }
@@ -900,7 +905,6 @@ void TextEditorView::onStyleChanged () const
 		md.lineNumberView->setStyle (md.style, md.lineHeight);
 		updateLineNumbersView ();
 		md.scrollView->setEdgeView (CScrollView::Edge::Left, md.lineNumberView);
-		md.lineNumberView->remember ();
 	}
 	md.horizontalLineMargin = md.style->leftMargin * 2.;
 	md.model.lines.clear ();
@@ -963,7 +967,7 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 		{
 			if (isReadOnlyMode ())
 				return false;
-			if (auto clipboard = getFrame ()->getClipboard ())
+			if (auto clipboard = CClipboard::get ())
 			{
 				auto count = clipboard->getCount ();
 				for (auto i = 0u; i < count; ++i)
@@ -1005,8 +1009,9 @@ bool TextEditorView::canHandleCommand (Command cmd) const
 //------------------------------------------------------------------------
 bool TextEditorView::handleCommand (Command cmd) const
 {
+	auto frame = getFrame ();
 	auto doFinally = finally ([&] () {
-		if (getFrame ()->getFocusView () == this)
+		if (frame && frame->getFocusView ().get () == this)
 		{
 			restartBlinkTimer ();
 		}
@@ -1044,10 +1049,10 @@ bool TextEditorView::handleCommand (Command cmd) const
 			return showFindPanel ();
 		case Command::TakeFocus:
 		{
-			if (auto frame = getFrame ())
+			if (frame)
 			{
-				if (frame->getFocusView () != this)
-					frame->setFocusView (&mutableThis ());
+				if (frame->getFocusView ().get () != this)
+					frame->setFocusView (shared (&mutableThis ()));
 			}
 			return true;
 		}
@@ -1337,17 +1342,17 @@ void TextEditorView::toggleCursorVisibility () const
 	using namespace Animation;
 	mutableThis ().addAnimation (
 		"CursorAlphaBlend",
-		new FuncAnimation ([] (CView* view, IdStringPtr name) {},
-						   [this] (CView* view, IdStringPtr name, float pos) {
-							   md.cursorAlpha = md.cursorIsVisible ? 1.f - pos : pos;
-							   invalidCursorRect ();
-						   },
-						   [this] (CView* view, IdStringPtr name, bool wasCanceled) {
-							   if (!wasCanceled)
-								   md.cursorIsVisible = !md.cursorIsVisible;
-							   md.cursorAlpha = md.cursorIsVisible ? 1.f : 0.f;
-							   invalidCursorRect ();
-						   }),
+		makeOwned<FuncAnimation> ([] (CView& view, IdStringPtr name) {},
+								  [this] (CView& view, IdStringPtr name, float pos) {
+									  md.cursorAlpha = md.cursorIsVisible ? 1.f - pos : pos;
+									  invalidCursorRect ();
+								  },
+								  [this] (CView& view, IdStringPtr name, bool wasCanceled) {
+									  if (!wasCanceled)
+										  md.cursorIsVisible = !md.cursorIsVisible;
+									  md.cursorAlpha = md.cursorIsVisible ? 1.f : 0.f;
+									  invalidCursorRect ();
+								  }),
 		CubicBezierTimingFunction::make (md.cursorIsVisible ? CubicBezierTimingFunction::EasyOut
 															: CubicBezierTimingFunction::EasyIn,
 										 md.style->cursorBlinkTime / 2));
@@ -1376,10 +1381,14 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 	if (event.character == 0 && event.virt == VirtualKey::None)
 		return;
 
+	auto frame = getFrame ();
+	if (!frame)
+		return;
+
 	auto doFinally = finally ([&] () {
 		if (event.consumed)
 		{
-			if (getFrame ()->getFocusView () == this)
+			if (frame->getFocusView ().get () == this)
 			{
 				restartBlinkTimer ();
 			}
@@ -1400,7 +1409,7 @@ void TextEditorView::onKeyboardEvent (KeyboardEvent& event)
 	auto key = event.character;
 	if (key)
 	{
-		if (auto txt = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
+		if (auto txt = frame->getPlatformFrame ()->convertCurrentKeyEventToText ())
 		{
 			auto tmp = convert (txt->getString ());
 			key = tmp[0];
@@ -1494,7 +1503,8 @@ void TextEditorView::onMouseDownEvent (MouseDownEvent& event)
 	if (cocoaTextInputClient && cocoaTextInputClient->hasMarkedText ())
 		cocoaTextInputClient->cancel ();
 
-	getFrame ()->setFocusView (this);
+	if (auto frame = getFrame ())
+		frame->setFocusView (shared (this));
 
 	md.mouseIsDown = true;
 	md.editStateOnMouseDown = md.editState;
@@ -1569,14 +1579,20 @@ void TextEditorView::onMouseCancelEvent (MouseCancelEvent& event)
 //------------------------------------------------------------------------
 void TextEditorView::onMouseEnterEvent (MouseEnterEvent& event)
 {
-	if (getFrame ()->getFocusView () == this)
-		getFrame ()->setCursor (CCursorType::kCursorIBeam);
+	if (auto frame = getFrame ())
+	{
+		if (frame->getFocusView ().get () == this)
+			frame->setCursor (CCursorType::kCursorIBeam);
+	}
 }
 
 //------------------------------------------------------------------------
 void TextEditorView::onMouseExitEvent (MouseExitEvent& event)
 {
-	getFrame ()->setCursor (CCursorType::kCursorDefault);
+	if (auto frame = getFrame ())
+	{
+		frame->setCursor (CCursorType::kCursorDefault);
+	}
 	md.lastMouse = MouseOutsidePos;
 }
 
@@ -2412,7 +2428,7 @@ bool TextEditorView::doCopy () const
 	auto txt = convert (md.model.text.data () + start, end - start);
 	auto dataPackage =
 		CDropSource::create (txt.data (), static_cast<uint32_t> (txt.size ()), IDataPackage::kText);
-	getFrame ()->setClipboard (dataPackage);
+	CClipboard::set (dataPackage);
 	return true;
 }
 
@@ -2421,7 +2437,7 @@ bool TextEditorView::doPaste () const
 {
 	if (isReadOnlyMode ())
 		return false;
-	if (auto clipboard = getFrame ()->getClipboard ())
+	if (auto clipboard = CClipboard::get ())
 	{
 		auto count = clipboard->getCount ();
 		for (auto i = 0u; i < count; ++i)
@@ -2638,9 +2654,9 @@ FindPanelController::~FindPanelController () noexcept
 }
 
 //------------------------------------------------------------------------
-void FindPanelController::valueChanged (CControl* control)
+void FindPanelController::valueChanged (CControl& control)
 {
-	switch (control->getTag ())
+	switch (control.getTag ())
 	{
 		case FindPanelController::Textfield:
 		{
@@ -2654,19 +2670,19 @@ void FindPanelController::valueChanged (CControl* control)
 		}
 		case FindPanelController::FindPrevious:
 		{
-			if (control->getValue () != control->getMax ())
+			if (control.getValue () != control.getMax ())
 				editor.handleCommand (ITextEditor::Command::FindPrevious);
 			break;
 		}
 		case FindPanelController::FindNext:
 		{
-			if (control->getValue () != control->getMax ())
+			if (control.getValue () != control.getMax ())
 				editor.handleCommand (ITextEditor::Command::FindNext);
 			break;
 		}
 		case FindPanelController::CaseSensitive:
 		{
-			if (control->getValue () == control->getMax ())
+			if (control.getValue () == control.getMax ())
 				findOptions.add (ITextEditor::FindOption::CaseSensitive);
 			else
 				findOptions.remove (ITextEditor::FindOption::CaseSensitive);
@@ -2675,7 +2691,7 @@ void FindPanelController::valueChanged (CControl* control)
 		}
 		case FindPanelController::WholeWords:
 		{
-			if (control->getValue () == control->getMax ())
+			if (control.getValue () == control.getMax ())
 				findOptions.add (ITextEditor::FindOption::WholeWords);
 			else
 				findOptions.remove (ITextEditor::FindOption::WholeWords);
@@ -2688,7 +2704,7 @@ void FindPanelController::valueChanged (CControl* control)
 //------------------------------------------------------------------------
 void FindPanelController::viewLostFocus (CView* view)
 {
-	if (view == editfield)
+	if (view == editfield.get ())
 	{
 		editor.setFindString (editfield->getText ().getString ());
 		if (editfield->bWasReturnPressed)
@@ -2727,16 +2743,16 @@ void FindPanelController::viewOnEvent (CView* view, Event& event)
 void FindPanelController::viewWillDelete (CView* view)
 {
 	view->unregisterViewListener (this);
-	if (view == closeBox)
+	if (view == closeBox.get ())
 		closeBox = nullptr;
-	else if (view == editfield)
+	else if (view == editfield.get ())
 		editfield = nullptr;
-	else if (view == caseSensitiveButton)
+	else if (view == caseSensitiveButton.get ())
 	{
 		caseSensitiveButton->unregisterViewEventListener (this);
 		caseSensitiveButton = nullptr;
 	}
-	else if (view == wholeWordButton)
+	else if (view == wholeWordButton.get ())
 	{
 		wholeWordButton->unregisterViewEventListener (this);
 		wholeWordButton = nullptr;
@@ -2756,9 +2772,10 @@ void FindPanelController::setFindString (StringView text)
 void FindPanelController::setFindOptions (ITextEditor::FindOptions opt) { findOptions = opt; }
 
 //------------------------------------------------------------------------
-CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorView::ModelData& md,
-														const ITextEditor& editor,
-														RemoveFindPanelFunc&& f)
+SharedPointer<CViewContainer> FindPanelController::makeFindPanelView (CRect vcr,
+																	  TextEditorView::ModelData& md,
+																	  const ITextEditor& editor,
+																	  RemoveFindPanelFunc&& f)
 {
 	auto controller = new FindPanelController (editor);
 	controller->removeFindPanelFunc = std::move (f);
@@ -2768,14 +2785,14 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	auto margin = (vcr.getHeight () - md.lineHeight) / 2.;
 	auto buttonWidth = vcr.getHeight ();
 
-	CViewContainer* findPanel = new CViewContainer (vcr);
+	auto findPanel = makeOwned<CViewContainer> (vcr);
 	findPanel->setTransparency (true);
 
 	vcr.inset (margin, margin);
 	auto tefr = vcr;
 	tefr.left += buttonWidth + margin;
 	tefr.right -= 6. * (buttonWidth + margin) + margin;
-	CTextEdit* editfield = new CTextEdit (tefr, controller, FindPanelController::Textfield);
+	auto editfield = makeOwned<CTextEdit> (tefr, controller, FindPanelController::Textfield);
 	editfield->setPlaceholderString ("Find");
 	editfield->setTextInset ({margin, 0});
 	editfield->setImmediateTextChange (true);
@@ -2787,7 +2804,7 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	editfield->setFont (md.style->font);
 	editfield->setFontColor (md.style->textColor);
 
-	auto styleButton = [&] (CTextButton* button) {
+	auto styleButton = [&] (auto button) {
 		button->setFont (md.style->font);
 		button->setAutosizeFlags (kAutosizeTop | kAutosizeRight);
 		button->setFrameWidth (1.);
@@ -2808,7 +2825,7 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 
 	auto cbfr = vcr;
 	cbfr.right = tefr.left - margin;
-	auto closeBox = new CTextButton (cbfr, controller, FindPanelController::CloseButton);
+	auto closeBox = makeOwned<CTextButton> (cbfr, controller, FindPanelController::CloseButton);
 	closeBox->setTitle ("X");
 	styleButton (closeBox);
 	closeBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
@@ -2817,14 +2834,15 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	icfr.left = tefr.right + margin;
 	icfr.right = icfr.left + buttonWidth * 2;
 	auto caseSensitiveButton =
-		new CTextButton (icfr, controller, FindPanelController::CaseSensitive);
+		makeOwned<CTextButton> (icfr, controller, FindPanelController::CaseSensitive);
 	caseSensitiveButton->setTitle ("Aa");
 	caseSensitiveButton->setStyle (CTextButton::Style::kOnOffStyle);
 	caseSensitiveButton->setValue (md.findOptions & ITextEditor::FindOption::CaseSensitive ? 1.f
 																						   : 0.f);
 	styleButton (caseSensitiveButton);
 	icfr.offset (margin + buttonWidth * 2, 0);
-	auto wholeWordButton = new CTextButton (icfr, controller, FindPanelController::WholeWords);
+	auto wholeWordButton =
+		makeOwned<CTextButton> (icfr, controller, FindPanelController::WholeWords);
 	wholeWordButton->setTitle ("|w|");
 	wholeWordButton->setStyle (CTextButton::Style::kOnOffStyle);
 	wholeWordButton->setValue (md.findOptions & ITextEditor::FindOption::WholeWords ? 1.f : 0.f);
@@ -2833,11 +2851,11 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	auto tbfr = icfr;
 	tbfr.left = tbfr.right + margin;
 	tbfr.right = tbfr.left + buttonWidth;
-	auto prevButton = new CTextButton (tbfr, controller, FindPanelController::FindPrevious);
+	auto prevButton = makeOwned<CTextButton> (tbfr, controller, FindPanelController::FindPrevious);
 	prevButton->setTitle ("<");
 	styleButton (prevButton);
 	tbfr.offset (margin + buttonWidth, 0);
-	auto nextButton = new CTextButton (tbfr, controller, FindPanelController::FindNext);
+	auto nextButton = makeOwned<CTextButton> (tbfr, controller, FindPanelController::FindNext);
 	nextButton->setTitle (">");
 	styleButton (nextButton);
 
@@ -2855,13 +2873,13 @@ CViewContainer* FindPanelController::makeFindPanelView (CRect vcr, TextEditorVie
 	controller->caseSensitiveButton = caseSensitiveButton;
 	controller->wholeWordButton = wholeWordButton;
 
-	findPanel->addView (closeBox);
-	findPanel->addView (editfield);
-	findPanel->addView (caseSensitiveButton);
-	findPanel->addView (wholeWordButton);
-	findPanel->addView (prevButton);
-	findPanel->addView (nextButton);
-	findPanel->setInitialFocusView (shared (editfield));
+	findPanel->addSubview (closeBox);
+	findPanel->addSubview (editfield);
+	findPanel->addSubview (caseSensitiveButton);
+	findPanel->addSubview (wholeWordButton);
+	findPanel->addSubview (prevButton);
+	findPanel->addSubview (nextButton);
+	findPanel->setInitialFocusView (editfield);
 
 	controller->setFindString (md.findString);
 	md.findPanelController = controller;
@@ -2901,9 +2919,9 @@ bool TextEditorView::showFindPanel () const
 			if (auto frame = panel->getFrame ())
 				frame->setFocusView (nullptr);
 			panel->addAnimation (
-				"ResizeAnimation", new ViewSizeAnimation (size, false),
+				"ResizeAnimation", makeOwned<ViewSizeAnimation> (size, false),
 				CubicBezierTimingFunction::make (CubicBezierTimingFunction::EasyInOut, 120),
-				[&] (auto, auto, auto) {
+				[&] (auto&, auto, auto&) {
 					md.scrollView->setEdgeView (CScrollView::Edge::Top, nullptr);
 					handleCommand (Command::TakeFocus);
 				});
@@ -2914,9 +2932,9 @@ bool TextEditorView::showFindPanel () const
 	if (auto frame = getFrame ())
 		frame->setFocusView (nullptr);
 	findPanel->addAnimation (
-		"ResizeAnimation", new ViewSizeAnimation (findPanel->getViewSize (), false),
+		"ResizeAnimation", makeOwned<ViewSizeAnimation> (findPanel->getViewSize (), false),
 		CubicBezierTimingFunction::make (CubicBezierTimingFunction::EasyInOut, 120),
-		[panel = shared (findPanel)] (auto, auto, auto) {
+		[panel = findPanel] (auto&, auto, auto&) {
 			if (panel->isAttached ())
 				panel->advanceNextFocusView (nullptr);
 		});
@@ -2952,7 +2970,7 @@ void TextEditorView::setFindString (String&& text) const
 	md.findString = std::move (text);
 	if (auto frame = getFrame ())
 	{
-		if (frame->getFocusView () != this)
+		if (frame->getFocusView ().get () != this)
 		{
 			md.editState.select_end = md.editState.select_start;
 			onSelectionChanged (makeRange (md.editState));
@@ -3465,12 +3483,12 @@ void LineNumberView::setSelectedLines (Range range)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-CView* createNewTextEditor (const CRect& r, ITextEditorController* controller)
+SharedPointer<CView> createNewTextEditor (const CRect& r, ITextEditorController* controller)
 {
 	vstgui_assert (controller != nullptr, "you need to call this with a controller");
 	if (!controller)
 		return nullptr;
-	return new TextEditor::TextEditorView (controller);
+	return makeOwned<TextEditor::TextEditorView> (controller);
 }
 
 //------------------------------------------------------------------------

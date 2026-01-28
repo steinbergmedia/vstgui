@@ -27,9 +27,10 @@ public:
 								  WeakPointer<IActionPerformer> actionPerformer);
 	~UITemplateSettingsController () override = default;
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override;
-	void valueChanged (CControl* control) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	void valueChanged (CControl& control) override;
 	void onDialogButton1Clicked (UIDialogController&) override;
 	void onDialogButton2Clicked (UIDialogController&) override;
 	void onDialogShow (UIDialogController&) override;
@@ -56,7 +57,7 @@ protected:
 		kMaxUseCurrentTag,
 		kNumTags
 	};
-	CControl* controls[kNumTags];
+	std::array<SharedPointer<CControl>, kNumTags> controls;
 	WeakPointer<IActionPerformer> actionPerformer;
 };
 

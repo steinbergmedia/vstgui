@@ -57,7 +57,7 @@ TEST_CASE (TimingFunctionTest, InterpolationTimingFunction)
 
 TEST_CASE (TimingFunctionTest, RepeatTimingFunction)
 {
-	auto lf = new LinearTimingFunction (100);
+	auto lf = makeOwned<LinearTimingFunction> (100);
 	RepeatTimingFunction f (lf, 2, false);
 	ITimingFunction& tf = dynamic_cast<ITimingFunction&> (f);
 	EXPECT (tf.getPosition (0) == 0.f);
@@ -72,7 +72,7 @@ TEST_CASE (TimingFunctionTest, RepeatTimingFunction)
 
 TEST_CASE (TimingFunctionTest, RepeatTimingFunctionReverse)
 {
-	auto lf = new LinearTimingFunction (100);
+	auto lf = makeOwned<LinearTimingFunction> (100);
 	RepeatTimingFunction f (lf, 2, true);
 	ITimingFunction& tf = dynamic_cast<ITimingFunction&> (f);
 	EXPECT (tf.getPosition (0) == 0.f);

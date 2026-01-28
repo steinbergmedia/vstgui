@@ -18,11 +18,12 @@ public:
 
 	virtual void layoutViews () = 0;
 
-	bool attached (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	bool addView (CView* pView, CView* pBefore = nullptr) override;
-	bool removeView (CView* pView, bool withForget = true) override;
-	bool changeViewZOrder (CView* view, uint32_t newIndex) override;
+	bool insertSubview (const SharedPointer<CView>& view,
+						const Optional<size_t>& position = {}) override;
+	bool removeSubview (const SharedPointer<CView>& view) override;
+	bool changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex) override;
 
 	CLASS_METHODS_VIRTUAL(CAutoLayoutContainerView, CViewContainer)
 };
@@ -101,7 +102,7 @@ public:
 protected:
 	void getMaxChildViewSize (CPoint& maxSize);
 	void layoutViewsEqualSize ();
-	void resizeSubView (CView* view, const CRect& newSize);
+	void resizeSubView (const SharedPointer<CView>& view, const CRect& newSize);
 
 	enum {
 		kAnimateViewResizing = 1 << 0,

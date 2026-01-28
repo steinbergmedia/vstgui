@@ -78,9 +78,9 @@ public:
 	void resetScrollOffset ();
 
 	/** get the vertical scrollbar */
-	CScrollbar* getVerticalScrollbar () const;
+	SharedPointer<CScrollbar> getVerticalScrollbar () const;
 	/** get the horizontal scrollbar */
-	CScrollbar* getHorizontalScrollbar () const;
+	SharedPointer<CScrollbar> getHorizontalScrollbar () const;
 
 	/** set scrollview to show rect */
 	virtual void makeRectVisible (const CRect& rect);
@@ -108,21 +108,22 @@ public:
 	 *
 	 *	@ingroup new_in_4_15
 	 */
-	void setEdgeView (Edge edge, CView* view);
-	CView* getEdgeView (Edge edge) const;
+	void setEdgeView (Edge edge, const SharedPointer<CView>& view);
+	SharedPointer<CView> getEdgeView (Edge edge) const;
 	//@}
 
 	// overwrite
-	bool attached (CView* parent) override;
-	bool addView (CView* pView, CView* pBefore = nullptr) override;
-	bool removeView (CView* pView, bool withForget = true) override;
-	bool removeAll (bool withForget = true) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool insertSubview (const SharedPointer<CView>& view,
+						const Optional<size_t>& position) override;
+	bool removeSubview (const SharedPointer<CView>& view) override;
+	bool removeAll () override;
 	uint32_t getNbViews () const override;
 	SharedPointer<CView> getView (uint32_t index) const override;
-	bool changeViewZOrder (CView* view, uint32_t newIndex) override;
+	bool changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex) override;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
-	void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl& pControl) override;
 	void setTransparency (bool val) override;
 	void setBackgroundColor (const CColor& color) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;

@@ -12,21 +12,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-IdStringPtr CVSTGUITimer::kMsgTimer = "timer fired";
-
-//-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime, bool doStart)
-: fireTime (fireTime)
-, platformTimer (nullptr)
-{
-	callbackFunc = [timerObject](CVSTGUITimer* timer) {
-		timerObject->notify (timer, kMsgTimer);
-	};
-	if (doStart)
-		start ();
-}
-
-//-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
 , callbackFunc (callback)
@@ -105,9 +90,12 @@ bool CVSTGUITimer::setFireTime (uint32_t newFireTime)
 //-----------------------------------------------------------------------------
 void CVSTGUITimer::fire ()
 {
-	CBaseObjectGuard guard (this);
 	if (callbackFunc)
+	{
+		auto guard = shared (this);
 		callbackFunc (this);
+	}
 }
 
+//------------------------------------------------------------------------
 } // VSTGUI

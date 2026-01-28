@@ -71,8 +71,8 @@ struct CViewContainerDropTarget : public IDropTarget, public NonAtomicReferenceC
 
 	DragOperation onDragMove (DragEventData data) final
 	{
-		CView* view = container->getViewAt (
-		    data.pos, GetViewOptions ().mouseEnabled ().includeViewContainer ());
+		auto view = container->getViewAt (
+			data.pos, GetViewOptions ().mouseEnabled ().includeViewContainer ());
 		data.pos = getLocalPos (data.pos);
 		if (view == currentDragView)
 		{
@@ -154,7 +154,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 	pImpl->backgroundColor = v.pImpl->backgroundColor;
 	setBackgroundOffset (v.getBackgroundOffset ());
 	for (auto& view : v.pImpl->children)
-		addView (static_cast<CView*> (view->newCopy ()));
+		addSubview (owned (static_cast<CView*> (view->newCopy ())));
 }
 
 //-----------------------------------------------------------------------------
@@ -174,7 +174,7 @@ void CViewContainer::beforeDelete ()
 	}
 
 	// remove all views
-	CViewContainer::removeAll (true);
+	CViewContainer::removeAll ();
 	CView::beforeDelete ();
 }
 
@@ -198,7 +198,7 @@ void CViewContainer::parentSizeChanged ()
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::setMouseDownView (CView* view)
+void CViewContainer::setMouseDownView (const SharedPointer<CView>& view)
 {
 	auto mouseDownView = getMouseDownView ();
 	if (mouseDownView && mouseDownView != view)
@@ -222,12 +222,12 @@ void CViewContainer::setMouseDownView (CView* view)
 }
 
 //-----------------------------------------------------------------------------
-CView* CViewContainer::getMouseDownView () const
+SharedPointer<CView> CViewContainer::getMouseDownView () const
 {
-	CView* view = nullptr;
+	SharedPointer<CView> view;
 	if (getAttribute (kCViewContainerMouseDownViewAttribute, view))
 		return view;
-	return nullptr;
+	return {};
 }
 
 //-----------------------------------------------------------------------------
@@ -267,7 +267,7 @@ void CViewContainer::setTransform (const CGraphicsTransform& t)
 	{
 		pImpl->transform = t;
 		pImpl->viewContainerListeners.forEach ([this] (IViewContainerListener* listener) {
-			listener->viewContainerTransformChanged (this);
+			listener->viewContainerTransformChanged (*this);
 		});
 	}
 }
@@ -365,10 +365,10 @@ CRect CViewContainer::getVisibleSize (const CRect& rect) const
 	CRect result (rect);
 	result.offset (viewSize.left, viewSize.top);
 	result.bound (viewSize);
-	if (getFrame () == this)
+	if (getFrame ().get () == this)
 	{}
 	else if (auto parent = getParentView ())
-		result = static_cast<CViewContainer*> (parent)->getVisibleSize (result);
+		result = parent->getVisibleSize (result);
 	result.offset (-viewSize.left, -viewSize.top);
 	return result;
 }
@@ -422,7 +422,7 @@ void CViewContainer::setBackgroundColor (const CColor& color)
 	if (color != pImpl->backgroundColor)
 	{
 		pImpl->backgroundColor = color;
-		setDirty (true);
+		invalid ();
 	}
 }
 
@@ -456,7 +456,7 @@ void CViewContainer::setBackgroundColorDrawStyle (CDrawStyle style)
 	if (pImpl->backgroundColorDrawStyle != style)
 	{
 		pImpl->backgroundColorDrawStyle = style;
-		setDirty (true);
+		invalid ();
 	}
 }
 
@@ -471,13 +471,19 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView)
 	{
-		auto* view = dynamic_cast<CView*> (sender);
-		if (view && isChild (view, false) && getFrame ()->focusDrawingEnabled ())
+		auto view = shared (dynamic_cast<CView*> (sender));
+		if (view && isChild (view, false))
 		{
-			CCoord width = getFrame ()->getFocusWidth ();
-			CRect viewSize (view->getViewSize ());
-			viewSize.extend (width, width);
-			invalidRect (viewSize);
+			if (auto frame = getFrame ())
+			{
+				if (frame->focusDrawingEnabled ())
+				{
+					CCoord width = frame->getFocusWidth ();
+					CRect viewSize (view->getViewSize ());
+					viewSize.extend (width, width);
+					invalidRect (viewSize);
+				}
+			}
 		}
 	}
 	else if (message == kMsgOldFocusView)
@@ -492,68 +498,97 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 	return kMessageUnknown;
 }
 
-//-----------------------------------------------------------------------------
-/**
- * @param pView the view object to add to this container
- * @param pBefore the view object
- * @return true on success. false if view was already attached
- */
-bool CViewContainer::addView (CView *pView, CView* pBefore)
+//------------------------------------------------------------------------
+bool CViewContainer::doInsertSubview (const SharedPointer<CView>& view,
+									  ViewList::const_iterator pos)
 {
-	if (!pView)
+	if (!view)
 		return false;
 
-	vstgui_assert (!pView->isSubview (), "view is already added to a container view");
+	vstgui_assert (!view->isSubview (), "view is already added to a container view");
 
-	if (pBefore)
-	{
-		auto it = std::find (pImpl->children.begin (), pImpl->children.end (), pBefore);
-		vstgui_assert (it != pImpl->children.end ());
-		pImpl->children.insert (it, shared (pView));
-	}
-	else
-	{
-		pImpl->children.emplace_back (shared (pView));
-	}
+	pImpl->children.insert (pos, view);
 
-	pView->setSubviewState (true);
+	view->setSubviewState (true);
 
 	pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
-		listener->viewContainerViewAdded (this, pView);
+		listener->viewContainerViewAdded (*this, *view.get ());
 	});
 
 	if (isAttached ())
 	{
-		pView->attached (this);
-		pView->invalid ();
+		view->attached (shared (this));
+		view->invalid ();
 	}
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-/**
- * @param pView the view object to add to this container
- * @param mouseableArea the view area in where the view will get mouse events
- * @param mouseEnabled bool to set if view will get mouse events
- * @return true on success. false if view was already attached
- */
-bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mouseEnabled)
+//------------------------------------------------------------------------
+void CViewContainer::doRemoveSubview (ViewList::const_iterator pos)
 {
-	if (addView (pView, nullptr))
+	vstgui_assert (pos != pImpl->children.end (), "The iterator must point to a valid object");
+
+	if (*pos == getInitialFocusView ())
+		setInitialFocusView (nullptr);
+	(*pos)->invalid ();
+	if ((*pos) == getMouseDownView ())
+		clearMouseDownView ();
+	if (isAttached ())
+		(*pos)->removed (shared (this));
+	(*pos)->setSubviewState (false);
+	pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+		listener->viewContainerViewRemoved (*this, *(*pos).get ());
+	});
+	pImpl->children.erase (pos);
+}
+
+//------------------------------------------------------------------------
+bool CViewContainer::addSubview (const SharedPointer<CView>& view) { return insertSubview (view); }
+
+//------------------------------------------------------------------------
+bool CViewContainer::insertSubview (const SharedPointer<CView>& view,
+									const Optional<size_t>& position)
+{
+	ViewList::const_iterator it;
+	if (position)
 	{
-		pView->setMouseEnabled (mouseEnabled);
-		pView->setMouseableArea (mouseableArea);
+		it = pImpl->children.begin ();
+		std::advance (it, *position);
+	}
+	else
+	{
+		it = pImpl->children.end ();
+	}
+	return doInsertSubview (view, it);
+}
+
+//------------------------------------------------------------------------
+bool CViewContainer::removeSubview (const SharedPointer<CView>& view)
+{
+	if (auto pos = findSubview (view))
+	{
+		auto it = pImpl->children.begin ();
+		std::advance (it, *pos);
+		doRemoveSubview (it);
 		return true;
 	}
 	return false;
 }
 
+//------------------------------------------------------------------------
+Optional<size_t> CViewContainer::findSubview (const SharedPointer<CView>& view)
+{
+	auto it = std::find (pImpl->children.begin (), pImpl->children.end (), view);
+	if (it != pImpl->children.end ())
+		return {static_cast<size_t> (std::distance (pImpl->children.begin (), it))};
+	return {};
+}
+
 //-----------------------------------------------------------------------------
 /**
- * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
  * @return true on success
  */
-bool CViewContainer::removeAll (bool withForget)
+bool CViewContainer::removeAll ()
 {
 	clearMouseDownView ();
 	setInitialFocusView (nullptr);
@@ -563,14 +598,12 @@ bool CViewContainer::removeAll (bool withForget)
 	{
 		auto view = *it;
 		if (isAttached ())
-			view->removed (this);
+			view->removed (shared (this));
 		pImpl->children.erase (it);
 		view->setSubviewState (false);
 		pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
-			listener->viewContainerViewRemoved (this, view);
+			listener->viewContainerViewRemoved (*this, *view.get ());
 		});
-		if (withForget)
-			view->forget ();
 		it = pImpl->children.begin ();
 	}
 	return true;
@@ -578,46 +611,16 @@ bool CViewContainer::removeAll (bool withForget)
 
 //-----------------------------------------------------------------------------
 /**
- * @param pView the view which should be removed from the container
- * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
- * @return true on success
- */
-bool CViewContainer::removeView (CView *pView, bool withForget)
-{
-	auto it = std::find (pImpl->children.begin (), pImpl->children.end (), pView);
-	if (it != pImpl->children.end ())
-	{
-		if (pView == getInitialFocusView ())
-			setInitialFocusView (nullptr);
-		pView->invalid ();
-		if (pView == getMouseDownView ())
-			clearMouseDownView ();
-		if (isAttached ())
-			pView->removed (this);
-		pView->setSubviewState (false);
-		pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
-			listener->viewContainerViewRemoved (this, pView);
-		});
-		if (withForget)
-			pView->forget ();
-		pImpl->children.erase (it);
-		return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-/**
  * @param pView the view which should be checked if it is a child of this container
  * @return true on success
  */
-bool CViewContainer::isChild (CView* pView) const
+bool CViewContainer::isChild (const SharedPointer<CView>& pView) const
 {
 	return isChild (pView, false);
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::isChild (CView *pView, bool deep) const
+bool CViewContainer::isChild (const SharedPointer<CView>& pView, bool deep) const
 {
 	bool found = false;
 
@@ -626,13 +629,13 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 		auto it = pImpl->children.begin ();
 		while (!found && it != pImpl->children.end ())
 		{
-			CView* v = (*it);
+			auto v = (*it);
 			if (pView == v)
 			{
 				found = true;
 				break;
 			}
-			if (CViewContainer* container = v->asViewContainer ())
+			if (auto container = v->asViewContainer ())
 				found = container->isChild (pView, true);
 			++it;
 		}
@@ -679,7 +682,7 @@ SharedPointer<CView> CViewContainer::getView (uint32_t index) const
  * @param newIndex index of new z position
  * @return true if z order of view changed
  */
-bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
+bool CViewContainer::changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex)
 {
 	if (newIndex < getNbViews ())
 	{
@@ -696,40 +699,16 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 			auto dest = pImpl->children.begin ();
 			std::advance (dest, newIndex);
 
-			pImpl->children.insert (dest, shared (view));
+			pImpl->children.insert (dest, view);
 			pImpl->children.erase (src);
 
 			pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
-				listener->viewContainerViewZOrderChanged (this, view);
+				listener->viewContainerViewZOrderChanged (*this, *view.get ());
 			});
 			return true;
 		}
 	}
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool CViewContainer::invalidateDirtyViews ()
-{
-	if (!isVisible ())
-		return true;
-	if (CView::isDirty ())
-	{
-		if (auto parent = getParentView ())
-			parent->invalidRect (getViewSize ());
-		return true;
-	}
-	for (const auto& pV : pImpl->children)
-	{
-		if (pV->isDirty () && pV->isVisible ())
-		{
-			if (CViewContainer* container = pV->asViewContainer ())
-				container->invalidateDirtyViews ();
-			else
-				pV->invalid ();
-		}
-	}
-	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -829,13 +808,13 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	// draw the background
 	drawBackgroundRect (pContext, clientRect);
 
-	CView* _focusView = nullptr;
+	SharedPointer<CView> _focusView;
 	IFocusDrawing* _focusDrawing = nullptr;
 	auto frame = getFrame ();
 	if (frame && frame->focusDrawingEnabled () && isChild (frame->getFocusView (), false) && frame->getFocusView ()->isVisible () && frame->getFocusView ()->wantsFocus ())
 	{
 		_focusView = frame->getFocusView ();
-		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView);
+		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView.get ());
 	}
 
 	{
@@ -854,7 +833,8 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 					auto focusPath = pContext->createGraphicsPath ();
 					if (focusPath)
 					{
-						if (_focusDrawing->getFocusPath (*focusPath))
+						if (_focusDrawing->getFocusPath (*focusPath.get (),
+														 frame->getFocusWidth ()))
 						{
 							auto lastDrawnFocus = focusPath->getBoundingBox ();
 							if (!lastDrawnFocus.isEmpty ())
@@ -906,7 +886,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		if (focusPath)
 		{
 			if (_focusDrawing)
-				_focusDrawing->getFocusPath (*focusPath);
+				_focusDrawing->getFocusPath (*focusPath.get (), frame->getFocusWidth ());
 			else
 			{
 				CCoord focusWidth = frame->getFocusWidth ();
@@ -929,8 +909,6 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			}
 		}
 	}
-
-	setDirty (false);
 }
 
 //-----------------------------------------------------------------------------
@@ -940,7 +918,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
  * @param rect update rect
  * @return true if view needs update
  */
-bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
+bool CViewContainer::checkUpdateRect (const SharedPointer<CView>& view, const CRect& rect)
 {
 	return view->checkUpdate (rect) && view->isVisible ();
 }
@@ -973,15 +951,6 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const Event& event)
 	}
 	return false;
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-bool CViewContainer::onWheel (const CPoint& where, const CMouseWheelAxis& axis,
-                              const float& distance, const CButtonState& buttons)
-{
-	return false;
-}
-#endif
 
 //------------------------------------------------------------------------
 void CViewContainer::dispatchEventToSubViews (Event& event)
@@ -1047,7 +1016,7 @@ void CViewContainer::onMouseDownEvent (MouseDownEvent& event)
 				{
 					if (auto listener = control->getListener ())
 					{
-						if (listener->controlModifierClicked (control, buttonState) != 0)
+						if (listener->controlModifierClicked (*control.get (), buttonState) != 0)
 						{
 							event.consumed = true;
 							return;
@@ -1057,29 +1026,16 @@ void CViewContainer::onMouseDownEvent (MouseDownEvent& event)
 			}
 			auto frame = getFrame ();
 			auto previousFocusView = frame ? frame->getFocusView () : nullptr;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-			mouseResult = pV->callMouseListener (MouseListenerCall::MouseDown, event.mousePosition, buttonState);
-			if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
-			{
-				event.consumed = true;
-				if (mouseResult == kMouseMoveEventHandledButDontNeedMoreEvents)
-					event.ignoreFollowUpMoveAndUpEvents (true);
-				return;
-			}
-#endif
 			pV->dispatchEvent (event);
 			if (event.consumed)
 			{
-				if (pV->getNbReference () >1)
+				if (pV->wantsFocus () && frame && frame->getFocusView () == previousFocusView &&
+					dynamic_cast<CControl*> (pV.get ()))
 				{
-					if (pV->wantsFocus () && frame && frame->getFocusView () == previousFocusView &&
-					    dynamic_cast<CControl*> (pV.get ()))
-					{
-						getFrame ()->setFocusView (pV);
-					}
-					if (!event.ignoreFollowUpMoveAndUpEvents ())
-						setMouseDownView (pV);
+					frame->setFocusView (pV);
 				}
+				if (!event.ignoreFollowUpMoveAndUpEvents ())
+					setMouseDownView (pV);
 				return;
 			}
 			if (!pV->getTransparency ())
@@ -1100,22 +1056,11 @@ void CViewContainer::onMouseMoveEvent (MouseMoveEvent& event)
 			event.ignoreFollowUpMoveAndUpEvents (true);
 		return;
 	}
-	if (auto view = shared (getMouseDownView ()))
+	if (auto view = getMouseDownView ())
 	{
 		auto f = finally ([&, pos = event.mousePosition] () { event.mousePosition = pos; });
 		event.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
 		getTransform ().inverse ().transform (event.mousePosition);
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		mouseResult = view->callMouseListener (MouseListenerCall::MouseMoved, event.mousePosition,
-		                                       buttonState);
-		if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
-		{
-			event.consumed = true;
-			if (mouseResult == kMouseMoveEventHandledButDontNeedMoreEvents)
-				event.ignoreFollowUpMoveAndUpEvents (true);
-			return;
-		}
-#endif
 		view->dispatchEvent (event);
 	}
 }
@@ -1130,20 +1075,11 @@ void CViewContainer::onMouseUpEvent (MouseUpEvent& event)
 		event.consumed = true;
 		return;
 	}
-	if (auto view = shared (getMouseDownView ()))
+	if (auto view = getMouseDownView ())
 	{
 		auto f = finally ([&, pos = event.mousePosition] () { event.mousePosition = pos; });
 		event.mousePosition.offset (-getViewSize ().left, -getViewSize ().top);
 		getTransform ().inverse ().transform (event.mousePosition);
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		mouseResult =
-		    view->callMouseListener (MouseListenerCall::MouseUp, event.mousePosition, buttonState);
-		if (!(mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented))
-		{
-			event.consumed = true;
-			return;
-		}
-#endif
 		view->dispatchEvent (event);
 		clearMouseDownView ();
 	}
@@ -1154,10 +1090,6 @@ void CViewContainer::onMouseCancelEvent (MouseCancelEvent& event)
 {
 	if (auto mouseDownView = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (mouseDownView);
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		mouseDownView->callMouseListener (MouseListenerCall::MouseCancel, {}, 0);
-#endif
 		mouseDownView->dispatchEvent (event);
 		clearMouseDownView ();
 	}
@@ -1166,7 +1098,7 @@ void CViewContainer::onMouseCancelEvent (MouseCancelEvent& event)
 //-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 {
-	if (getFrame () == this)
+	if (getFrame ().get () == this)
 	{
 		SharedPointer<IDropTarget> dropTarget;
 		if (!getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
@@ -1295,7 +1227,7 @@ SharedPointer<CView> CViewContainer::getInitialFocusView () const
  * @param reverse search order
  * @return true on success
  */
-bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
+bool CViewContainer::advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse)
 {
 	if (auto frame = getFrame ())
 	{
@@ -1310,7 +1242,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 
 		bool foundOld = false;
 
-		auto func = [&] (CView* pV) {
+		auto func = [&] (auto pV) {
 			if (oldFocus && !foundOld)
 			{
 				if (oldFocus == pV)
@@ -1326,7 +1258,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 					frame->setFocusView (pV);
 					return true;
 				}
-				else if (CViewContainer* container = pV->asViewContainer ())
+				else if (auto container = pV->asViewContainer ())
 				{
 					if (container->advanceNextFocusView (nullptr, reverse))
 						return true;
@@ -1350,28 +1282,6 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 				if (func (view))
 					return true;
 			}
-		}
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool CViewContainer::isDirty () const
-{
-	if (CView::isDirty ())
-		return true;
-
-	CRect viewSize (getViewSize ());
-	viewSize.offset (-getViewSize ().left, -getViewSize ().top);
-
-	for (const auto& pV : pImpl->children)
-	{
-		if (pV->isDirty () && pV->isVisible ())
-		{
-			CRect r = pV->getViewSize ();
-			r.bound (viewSize);
-			if (r.getWidth () > 0 && r.getHeight () > 0)
-				return true;
 		}
 	}
 	return false;
@@ -1404,7 +1314,7 @@ SharedPointer<CView> CViewContainer::getViewAt (const CPoint& p,
 			}
 			if (options.getDeep ())
 			{
-				if (auto container = shared (pV->asViewContainer ()))
+				if (auto container = pV->asViewContainer ())
 				{
 					auto view = container->getViewAt (where, options);
 					if (options.getIncludeViewContainer ())
@@ -1454,7 +1364,7 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
 			}
 			if (options.getDeep ())
 			{
-				if (CViewContainer* container = pV->asViewContainer ())
+				if (auto container = pV->asViewContainer ())
 					result |= container->getViewsAt (where, views, options);
 			}
 			if (options.getIncludeViewContainer () == false)
@@ -1497,7 +1407,7 @@ SharedPointer<CViewContainer> CViewContainer::getContainerAt (const CPoint& p,
 			}
 			if (options.getDeep ())
 			{
-				if (CViewContainer* container = pV->asViewContainer ())
+				if (auto container = pV->asViewContainer ())
 					return container->getContainerAt (where, options);
 			}
 			break;
@@ -1526,19 +1436,19 @@ CPoint& CViewContainer::localToFrame (CPoint& point) const
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::removed (CView* parent)
+bool CViewContainer::removed (const SharedPointer<CViewContainer>& parent)
 {
 	if (!isAttached ())
 		return false;
 
 	for (const auto& pV : pImpl->children)
-		pV->removed (this);
+		pV->removed (shared (this));
 
 	return CView::removed (parent);
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::attached (CView* parent)
+bool CViewContainer::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (isAttached ())
 		return false;
@@ -1549,7 +1459,7 @@ bool CViewContainer::attached (CView* parent)
 	if (result)
 	{
 		for (const auto& pV : pImpl->children)
-			pV->attached (this);
+			pV->attached (shared (this));
 	}
 	if (auto layout = calculateViewLayout (getViewSize ()))
 		applyViewLayout (*layout);
@@ -1574,7 +1484,7 @@ void CViewContainer::dumpHierarchy ()
 			DebugPrint ("\t");
 		pV->dumpInfo ();
 		DebugPrint ("\n");
-		if (CViewContainer* container = pV->asViewContainer ())
+		if (auto container = pV->asViewContainer ())
 			container->dumpHierarchy ();
 	}
 	_debugDumpLevel--;

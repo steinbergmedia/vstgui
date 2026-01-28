@@ -40,14 +40,15 @@ public:
 protected:
 	~CoreTextFont () noexcept override;
 
-	void drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
-					 const CPoint& p, const CColor& color, bool antialias = true) const override;
-	CCoord getStringWidth (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
-						   bool antialias = true) const override;
+	void drawString (const PlatformGraphicsDeviceContextPtr& context,
+					 const PlatformStringPtr& string, const CPoint& p, const CColor& color,
+					 bool antialias = true) const override;
+	CCoord getStringWidth (const PlatformGraphicsDeviceContextPtr& context,
+						   const PlatformStringPtr& string, bool antialias = true) const override;
 	CFDictionaryRef getStringAttributes (const CGColorRef color = nullptr) const;
 
-	CTLineRef createCTLine (const PlatformGraphicsDeviceContextPtr& context, MacString* macString,
-							const CColor& color) const;
+	CTLineRef createCTLine (const PlatformGraphicsDeviceContextPtr& context,
+							const SharedPointer<MacString>& macString, const CColor& color) const;
 
 	CTFontRef fontRef;
 	int32_t style;

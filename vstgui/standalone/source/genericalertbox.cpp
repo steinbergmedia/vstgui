@@ -106,7 +106,7 @@ public:
 	{
 		window = w;
 		window->registerWindowListener (this);
-		CTextButton* focusButton = nullptr;
+		SharedPointer<CTextButton> focusButton;
 		switch (usedButtons)
 		{
 			case 1: focusButton = buttons[0]; break;
@@ -169,7 +169,7 @@ public:
 
 	void onSetContentView (IWindow& inWindow, const SharedPointer<CFrame>& contentView) override
 	{
-		std::vector<CMultiLineTextLabel*> views;
+		std::vector<SharedPointer<CMultiLineTextLabel>> views;
 		if (contentView->getChildViewsOfType<CMultiLineTextLabel> (views, true) == 0)
 			return;
 		CCoord diffY = 0.;
@@ -225,10 +225,11 @@ private:
 		{
 		}
 
-		CView* verifyView (CView* view, const UIAttributes& attributes,
-						   const IUIDescription& description) override
+		SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+										 const UIAttributes& attributes,
+										 const IUIDescription& description) override
 		{
-			if (auto button = dynamic_cast<CTextButton*> (view))
+			if (auto button = view.cast<CTextButton> ())
 			{
 				UTF8StringView tagName = description.lookupControlTagName (button->getTag ());
 				if (!setupButton (button, tagName))
@@ -241,7 +242,7 @@ private:
 			return controller->verifyView (view, attributes, description);
 		}
 
-		bool setupButton (CTextButton* button, UTF8StringView name)
+		bool setupButton (const SharedPointer<CTextButton>& button, UTF8StringView name)
 		{
 			if (name == Button3TagName)
 			{
@@ -289,7 +290,7 @@ private:
 	UTF8String thirdButtonTitle;
 	AlertResult alertResult {AlertResult::Error};
 	uint32_t usedButtons {0};
-	std::array<CTextButton*, 3> buttons {{nullptr}};
+	std::array<SharedPointer<CTextButton>, 3> buttons {{nullptr}};
 	SharedPointer<CGradient> focusedButtonGradient;
 	SharedPointer<CGradient> normalButtonGradient;
 };

@@ -7,6 +7,7 @@
 #include "vstguifwd.h"
 #include "cview.h"
 #include "cdrawdefs.h"
+#include "optional.h"
 #if VSTGUI_TOUCH_EVENT_HANDLING
 #include "itouchevent.h"
 #endif
@@ -62,18 +63,19 @@ public:
 	/// @name Sub View Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	/** add a child view */
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);
-	/** add a child view before another view */
-	virtual bool addView (CView* pView, CView* pBefore = nullptr);
-	/** remove a child view */
-	virtual bool removeView (CView* pView, bool withForget = true);
+
+	bool addSubview (const SharedPointer<CView>& view);
+	virtual bool insertSubview (const SharedPointer<CView>& view,
+								const Optional<size_t>& position = {});
+	virtual bool removeSubview (const SharedPointer<CView>& view);
+	virtual Optional<size_t> findSubview (const SharedPointer<CView>& view);
 	/** remove all child views */
-	virtual bool removeAll (bool withForget = true);
+	virtual bool removeAll ();
+
 	/** check if pView is a child view of this container */
-	bool isChild (CView* pView) const;
+	bool isChild (const SharedPointer<CView>& pView) const;
 	/** check if pView is a child view of this container */
-	virtual bool isChild (CView* pView, bool deep) const;
+	virtual bool isChild (const SharedPointer<CView>& pView, bool deep) const;
 	/** check if container has child views */
 	virtual bool hasChildren () const;
 	/** get the number of child views */
@@ -89,7 +91,7 @@ public:
 	/** get all views at point where, top->down */
 	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const;
 	/** change view z order position */
-	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);
+	virtual bool changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex);
 
 	virtual bool hitTestSubViews (const CPoint& where, const Event& event);
 
@@ -157,8 +159,7 @@ public:
 	/** get custom initial focus view */
 	SharedPointer<CView> getInitialFocusView () const;
 
-	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
-	virtual bool invalidateDirtyViews ();
+	virtual bool advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse = false);
 	virtual CRect getVisibleSize (const CRect& rect) const;
 
 	void setTransform (const CGraphicsTransform& t);
@@ -178,10 +179,6 @@ public:
 	void onZoomGestureEvent (ZoomGestureEvent& event) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance,
-	              const CButtonState& buttons) final;
-#endif
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	virtual void onTouchEvent (ITouchEvent& event) override;
 	virtual bool wantsMultiTouchEvents () const override { return true; }
@@ -193,8 +190,6 @@ public:
 	void looseFocus () override;
 	void takeFocus () override;
 
-	bool isDirty () const override;
-
 	void invalid () override;
 	void invalidRect (const CRect& rect) override;
 	
@@ -202,9 +197,9 @@ public:
 	void parentSizeChanged () override;
 	bool sizeToFit () override;
 
-	bool removed (CView* parent) override;
-	bool attached (CView* parent) override;
-		
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
+
 	CPoint& frameToLocal (CPoint& point) const override;
 	CPoint& localToFrame (CPoint& point) const override;
 
@@ -221,6 +216,15 @@ public:
 													   ChildViewConstIterator>::type;
 
 		explicit Iterator (const CViewContainer* container) : children (container->getChildren ())
+		{
+			if constexpr (reverse)
+				iterator = children.rbegin ();
+			else
+				iterator = children.begin ();
+		}
+
+		explicit Iterator (const SharedPointer<CViewContainer>& container)
+		: children (container->getChildren ())
 		{
 			if constexpr (reverse)
 				iterator = children.rbegin ();
@@ -277,8 +281,11 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
-	CViewContainer* asViewContainer () final { return this; }
-	const CViewContainer* asViewContainer () const final { return this; }
+	SharedPointer<CViewContainer> asViewContainer () final { return shared (this); }
+	const SharedPointer<CViewContainer> asViewContainer () const final
+	{
+		return shared (const_cast<CViewContainer*> (this));
+	}
 
 protected:
 	enum
@@ -289,13 +296,14 @@ protected:
 
 	~CViewContainer () noexcept override;
 	void beforeDelete () override;
-	
-	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 
-	void setMouseDownView (CView* view);
-	CView* getMouseDownView () const;
-	
+	virtual bool checkUpdateRect (const SharedPointer<CView>& view, const CRect& rect);
+
+	void setMouseDownView (const SharedPointer<CView>& view);
+	SharedPointer<CView> getMouseDownView () const;
+
 	const ViewList& getChildren () const;
+
 private:
 	static constexpr CViewAttributeID kInitialFocusViewAttribute = 'cifv';
 
@@ -304,6 +312,9 @@ private:
 	void clearMouseDownView ();
 	CRect getLastDrawnFocus () const;
 	void setLastDrawnFocus (CRect r);
+
+	bool doInsertSubview (const SharedPointer<CView>& view, ViewList::const_iterator pos);
+	void doRemoveSubview (ViewList::const_iterator pos);
 
 	struct Impl;
 	std::unique_ptr<Impl> pImpl;

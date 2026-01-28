@@ -53,7 +53,6 @@ public:
 	//@}
 
 	// overrides
-	void setDirty (bool state) override;
 	void draw (CDrawContext* pContext) override;
 	void setViewSize (const CRect& newSize, bool invalid = true) override;
 	bool sizeToFit () override;

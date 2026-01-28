@@ -61,7 +61,6 @@ public:
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void setViewSize (const CRect& newSize, bool invalid) override;
 	
 	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) override;

@@ -96,27 +96,29 @@ protected:
 	}
 
 	DataType getData () const { return data; }
-	CDataBrowser* getDataBrowser () const { return browser; }
+	const SharedPointer<CDataBrowser>& getDataBrowser () const { return browser; }
 	CColor getTextColor () const { return textColor; }
 	CColor getSelectedRowBackground () const { return selectedRowBackground; }
 
 private:
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (auto customName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
 			if (*customName == "DataBrowser")
 			{
 				int32_t style = CDataBrowser::kVerticalScrollbar | CDataBrowser::kDontDrawFrame;
-				browser = new CDataBrowser (CRect {}, this, style);
+				browser = makeOwned<CDataBrowser> (CRect {}, this, style);
 				return browser;
 			}
 		}
 		return controller->createView (attributes, description);
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (view == browser)
 		{
@@ -180,7 +182,7 @@ private:
 		}
 	}
 
-	CDataBrowser* browser {nullptr};
+	SharedPointer<CDataBrowser> browser;
 	DataType& data;
 	OnUpdateFunc onUpdate;
 
@@ -316,7 +318,7 @@ private:
 				CPoint pos;
 				b->localToFrame (pos);
 				menuRect.offset (pos);
-				auto menu = new COptionMenu;
+				auto menu = makeOwned<COptionMenu> ();
 				menu->setViewSize (menuRect);
 				menu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kCheckStyle |
 								COptionMenu::kNoDrawStyle);
@@ -336,7 +338,7 @@ private:
 					menu->setValue (0.f);
 				}
 				auto frame = b->getFrame ();
-				frame->addView (menu);
+				frame->addSubview (menu);
 				menu->popup ([this, row, frame, b] (auto menu) {
 					if (menu)
 					{
@@ -354,7 +356,7 @@ private:
 						}
 						b->invalidateRow (row);
 						dataChanged ();
-						frame->removeView (menu);
+						frame->removeSubview (menu);
 					}
 				});
 			}
@@ -393,10 +395,11 @@ struct GridLayoutWindowController : public WindowControllerAdapter,
 		CRect r;
 		r.setSize (window.getSize ());
 		frame = makeOwned<CFrame> (r, nullptr);
-		container = new CViewContainer ({0, 0, frame->getWidth (), frame->getHeight ()});
+		container =
+			makeOwned<CViewContainer> (CRect {0, 0, frame->getWidth (), frame->getHeight ()});
 		container->setAutosizeFlags (kAutosizeAll);
 		container->setViewLayouter (layouter);
-		frame->addView (container);
+		frame->addSubview (container);
 		window.setContentView (frame);
 	}
 
@@ -409,7 +412,7 @@ struct GridLayoutWindowController : public WindowControllerAdapter,
 			container->removeAll ();
 			for (auto i = 0u; i < numChildsToCreate; ++i)
 			{
-				container->addView (new ViewWithAFrame (i));
+				container->addSubview (makeOwned<ViewWithAFrame> (i));
 			}
 			if (auto layout = container->calculateViewLayout (container->getViewSize ()))
 			{
@@ -574,7 +577,7 @@ struct GridLayoutWindowController : public WindowControllerAdapter,
 	}
 
 	SharedPointer<CFrame> frame;
-	CViewContainer* container {nullptr};
+	SharedPointer<CViewContainer> container;
 	SharedPointer<GridLayouter> layouter {owned (new GridLayouter ())};
 };
 
@@ -587,8 +590,9 @@ struct GridLayoutPropertiesWindowController : DelegationController,
 	{
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (!container)
 		{
@@ -629,7 +633,7 @@ struct GridLayoutPropertiesWindowController : DelegationController,
 		return view;
 	}
 
-	CViewContainer* container {nullptr};
+	SharedPointer<CViewContainer> container;
 };
 
 //------------------------------------------------------------------------

@@ -30,11 +30,11 @@ public:
 	CListControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
 	~CListControl () override;
 
-	void setDrawer (IListControlDrawer* d);
-	void setConfigurator (IListControlConfigurator* c);
+	void setDrawer (const SharedPointer<IListControlDrawer>& d);
+	void setConfigurator (const SharedPointer<IListControlConfigurator>& c);
 
-	IListControlDrawer* getDrawer () const;
-	IListControlConfigurator* getConfigurator () const;
+	SharedPointer<IListControlDrawer> getDrawer () const;
+	SharedPointer<IListControlConfigurator> getConfigurator () const;
 
 	void recalculateLayout ();
 
@@ -50,7 +50,7 @@ public:
 	void setMin (float val) override;
 	void setMax (float val) override;
 
-	bool attached (CView* parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void draw (CDrawContext* context) override;
 	void drawRect (CDrawContext* context, const CRect& updateRect) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
@@ -60,7 +60,7 @@ public:
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	bool drawFocusOnTop () override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 	CLASS_METHODS_NOCOPY (CListControl, CControl)
 private:

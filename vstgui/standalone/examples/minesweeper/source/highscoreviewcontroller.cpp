@@ -203,8 +203,8 @@ void HighScoreViewController::dbDrawCell (CDrawContext* context, const CRect& si
 }
 
 //------------------------------------------------------------------------
-CView* HighScoreViewController::createView (const UIAttributes& attributes,
-											const IUIDescription& description)
+SharedPointer<CView> HighScoreViewController::createView (const UIAttributes& attributes,
+														  const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr && *attr == "DataBrowser")
@@ -212,8 +212,8 @@ CView* HighScoreViewController::createView (const UIAttributes& attributes,
 		if (auto f = description.getFont ("highscore"))
 			font = f;
 		description.getColor ("highscore.font", fontColor);
-		return new CDataBrowser ({}, this, CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines,
-		                         0.);
+		return makeOwned<CDataBrowser> (
+			CRect {}, this, CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines, 0.);
 	}
 	return nullptr;
 }

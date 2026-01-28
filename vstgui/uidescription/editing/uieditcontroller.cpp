@@ -190,7 +190,8 @@ SharedPointer<UIDescription> UIEditController::getEditorDescription ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::setupDataSource (GenericStringListDataBrowserSource* source)
+void UIEditController::setupDataSource (
+	const SharedPointer<GenericStringListDataBrowserSource>& source)
 {
 	source->setupUI (gUIEditorControllerResources.dataSourceSelectionColor,
 					 gUIEditorControllerResources.dataSourceFontColor,
@@ -223,14 +224,13 @@ void UIEditController::doChangeTheme (bool dark)
 		auto templateName = std::move (editTemplateName);
 		templateController->selectTemplate (nullptr);
 		auto viewSize = baseView->getViewSize ();
-		auto parent = baseView->getParentView ()->asViewContainer ();
+		auto parent = baseView->getParentView ();
 		vstgui_assert (parent);
-		remember ();
-		parent->removeView (baseView);
+		parent->removeSubview (baseView);
 		editView = nullptr;
 		auto view = createEditView ();
 		view->setViewSize (viewSize);
-		parent->addView (view);
+		parent->addSubview (view);
 		templateController->selectTemplate (templateName.data ());
 	}
 }
@@ -329,7 +329,7 @@ public:
 	~UIZoomSettingController () noexcept override
 	{
 		if (zoomValueControl)
-			viewWillDelete (zoomValueControl);
+			viewWillDelete (zoomValueControl.get ());
 	}
 
 	void restoreSetting (const UIAttributes& attributes)
@@ -340,7 +340,7 @@ public:
 			if (zoomValueControl)
 			{
 				zoomValueControl->setValue (static_cast<float> (value) * 100.f);
-				valueChanged (zoomValueControl);
+				valueChanged (*zoomValueControl.get ());
 			}
 		}
 	}
@@ -380,12 +380,13 @@ public:
 		updateZoom (100.f);
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription& description) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override
 	{
 		if (!zoomValueControl)
 		{
-			zoomValueControl = dynamic_cast<CTextEdit*> (view);
+			zoomValueControl = view.cast<CTextEdit> ();
 			if (zoomValueControl)
 			{
 				zoomValueControl->setMin (50.f);
@@ -424,23 +425,21 @@ public:
 		return view;
 	}
 
-	void valueChanged (CControl* pControl) override
+	void valueChanged (CControl& pControl) override
 	{
-		if (pControl == zoomValueControl)
-			editController->onZoomChanged (pControl->getValue () / 100.f);
+		if (&pControl == zoomValueControl.get ())
+			editController->onZoomChanged (pControl.getValue () / 100.f);
 	}
 
 	void appendContextMenuItems (COptionMenu& contextMenu, CView& view,
 								 const CPoint& where) override
 	{
-		if (&view == zoomValueControl)
+		if (&view == zoomValueControl.get ())
 		{
 			for (auto i = 50; i <= 250; i += 25)
 			{
 				auto item = makeOwned<CCommandMenuItem> ("Zoom " + toString (i) + "%");
-				item->setActions ([this, i] (CCommandMenuItem*) {
-					updateZoom (static_cast<float> (i));
-				});
+				item->setActions ([this, i] (auto&&) { updateZoom (static_cast<float> (i)); });
 				if (zoomValueControl->getValue () == static_cast<float> (i))
 					item->setChecked (true);
 				contextMenu.addEntry (item);
@@ -450,7 +449,7 @@ public:
 
 	void viewOnEvent (CView* view, Event& event) override
 	{
-		vstgui_assert (view == zoomValueControl);
+		vstgui_assert (view == zoomValueControl.get ());
 		if (event.type != EventType::MouseDown)
 			return;
 		auto& downEvent = castMouseDownEvent (event);
@@ -462,17 +461,17 @@ public:
 				popupTimer = nullptr;
 				auto menu = makeOwned<COptionMenu> ();
 				menu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
-				appendContextMenuItems (*menu, *zoomValueControl, CPoint ());
-				menu->popup (zoomValueControl->getFrame (),
-				             zoomValueControl->translateToGlobal (
-				                 zoomValueControl->getViewSize ().getTopLeft (), true));
+				appendContextMenuItems (*menu.get (), *zoomValueControl.get (), CPoint ());
+				menu->popup (*zoomValueControl->getFrame ().get (),
+							 zoomValueControl->translateToGlobal (
+								 zoomValueControl->getViewSize ().getTopLeft (), true));
 			}, 250);
 		}
 	}
 
 	void viewWillDelete (CView* view) override
 	{
-		vstgui_assert (view == zoomValueControl);
+		vstgui_assert (view == zoomValueControl.get ());
 		view->unregisterViewListener (this);
 		view->unregisterViewEventListener (this);
 		zoomValueControl = nullptr;
@@ -484,12 +483,12 @@ private:
 		if (zoomValueControl)
 		{
 			zoomValueControl->setValue (newZoom);
-			valueChanged (zoomValueControl);
+			valueChanged (*zoomValueControl.get ());
 		}
 	}
 	
 	UIEditController* editController{nullptr};
-	CTextEdit* zoomValueControl{nullptr};
+	SharedPointer<CTextEdit> zoomValueControl;
 	SharedPointer<CVSTGUITimer> popupTimer;
 };
 
@@ -548,12 +547,12 @@ SharedPointer<UIEditMenuController> UIEditController::getMenuController () const
 SharedPointer<UIUndoManager> UIEditController::getUndoManager () const { return undoManager; }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditController::createEditView ()
+SharedPointer<CView> UIEditController::createEditView ()
 {
 	if (editorDesc->parse ())
 	{
 		auto controller = shared (this);
-		CView* view = editorDesc->createView ("view", controller);
+		auto view = editorDesc->createView ("view", controller);
 		if (view)
 		{
 			view->setAttribute (kCViewControllerAttribute, controller);
@@ -571,8 +570,8 @@ CView* UIEditController::createEditView ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditController::createView (const UIAttributes& attributes,
-									 const IUIDescription& description)
+SharedPointer<CView> UIEditController::createView (const UIAttributes& attributes,
+												   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -580,7 +579,7 @@ CView* UIEditController::createView (const UIAttributes& attributes,
 		if (*name == "UIEditView")
 		{
 			vstgui_assert (editView == nullptr);
-			editView = new UIEditView (CRect (0, 0, 0, 0), editDescription);
+			editView = makeOwned<UIEditView> (CRect (0, 0, 0, 0), editDescription);
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
 			editView->setGridProcessor (gridController);
@@ -589,15 +588,15 @@ CView* UIEditController::createView (const UIAttributes& attributes,
 		}
 		else if (*name == "ShadingViewHorizontal")
 		{
-			return new UIEditControllerShadingView (true);
+			return makeOwned<UIEditControllerShadingView> (true);
 		}
 		else if (*name == "ShadingViewVertical")
 		{
-			return new UIEditControllerShadingView (false);
+			return makeOwned<UIEditControllerShadingView> (false);
 		}
 		else if (*name == "ShadingViewVerticalTopLine")
 		{
-			return new UIEditControllerShadingView (false, true, false);
+			return makeOwned<UIEditControllerShadingView> (false, true, false);
 		}
 	}
 	return nullptr;
@@ -609,7 +608,7 @@ void UIEditController::onZoomChanged (double zoom)
 	if (editView)
 		editView->setScale (zoom);
 	if (zoomSettingController)
-		zoomSettingController->storeSetting (*getSettings ());
+		zoomSettingController->storeSetting (*getSettings ().get ());
 }
 
 enum {
@@ -632,7 +631,7 @@ static SharedPointer<CBitmap> createColorBitmap (CPoint size, CColor color)
 			for (auto x = 0u; x < static_cast<uint32_t> (size.x); ++x)
 			{
 				pixelAccessor->setColor (color);
-				++(*pixelAccessor);
+				++(*pixelAccessor.get ());
 			}
 		}
 	}
@@ -655,15 +654,16 @@ static const BackgroundColors& editViewBackgroundColors ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes,
-									 const IUIDescription& description)
+SharedPointer<CView> UIEditController::verifyView (const SharedPointer<CView>& view,
+												   const UIAttributes& attributes,
+												   const IUIDescription& description)
 {
 	if (view == editView)
 	{
 		editView->setBackgroundColor (editViewBackgroundColors ()[0]);
 		return view;
 	}
-	auto* splitView = dynamic_cast<CSplitView*>(view);
+	auto splitView = view.cast<CSplitView> ();
 	if (splitView)
 	{
 		splitViews.emplace_back (splitView);
@@ -681,7 +681,8 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			// Add Background Menu
 			CRect backSelectRect (0., 0., 20. * editViewBackgroundColors ().size (), splitView->getSeparatorWidth ());
 			backSelectRect.inset (2, 2);
-			auto backSelectControl = new CSegmentButton (backSelectRect, this, kBackgroundSelectTag);
+			auto backSelectControl =
+				makeOwned<CSegmentButton> (backSelectRect, this, kBackgroundSelectTag);
 			backSelectControl->setGradient (gradient);
 			backSelectControl->setGradientHighlighted (gradientHighlighted);
 			backSelectControl->setFrameColor (frameColor);
@@ -706,7 +707,9 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			// Add Title
 			CColor labelColor = kBlackCColor;
 			description.getColor ("control.font", labelColor);
-			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
+			auto label = makeOwned<CTextLabel> (
+				CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()),
+				"Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
 			label->setFont (font);
@@ -720,17 +723,16 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			scaleMenuRect.inset (2, 2);
 
 			zoomSettingController = makeOwned<UIZoomSettingController> (this);
-			auto* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
+			auto textEdit = makeOwned<CTextEdit> (scaleMenuRect, zoomSettingController.get (), 0);
 			textEdit->setAttribute (kCViewControllerAttribute, zoomSettingController);
-			CView* zoomView =
-				zoomSettingController->verifyView (textEdit, UIAttributes (), *editorDesc);
+			auto zoomView =
+				zoomSettingController->verifyView (textEdit, UIAttributes (), *editorDesc.get ());
 			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
 			splitView->addViewToSeparator (0, zoomView);
-			zoomSettingController->restoreSetting (*getSettings ());
-			
+			zoomSettingController->restoreSetting (*getSettings ().get ());
 		}
 	}
-	auto* control = dynamic_cast<CControl*>(view);
+	auto control = view.cast<CControl> ();
 	if (control)
 	{
 		switch (control->getTag ())
@@ -756,7 +758,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			}
 			case kTabSwitchTag:
 			{
-				auto* button = dynamic_cast<CSegmentButton*>(control);
+				auto button = control.cast<CSegmentButton> ();
 				if (button)
 				{
 					size_t numSegments = button->getSegments ().size ();
@@ -842,28 +844,28 @@ SharedPointer<IController> UIEditController::createSubController (UTF8StringPtr 
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::valueChanged (CControl* control)
+void UIEditController::valueChanged (CControl& control)
 {
 	if (editView)
 	{
-		switch (control->getTag ())
+		switch (control.getTag ())
 		{
 			case kEditingTag:
 			{
 				selection->clear ();
 				if (auto container = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
-					resetScrollViewOffsets (*container);
-				editView->enableEditing (control->getValue () == control->getMax () ? true : false);
+					resetScrollViewOffsets (*container.get ());
+				editView->enableEditing (control.getValue () == control.getMax () ? true : false);
 				break;
 			}
 			case kAutosizeTag:
 			{
-				editView->enableAutosizing (control->getValue () == 1.f);
+				editView->enableAutosizing (control.getValue () == 1.f);
 				break;
 			}
 			case kBackgroundSelectTag:
 			{
-				if (auto seg = dynamic_cast<CSegmentButton*> (control))
+				if (auto seg = dynamic_cast<CSegmentButton*> (&control))
 				{
 					auto selectedSegment = seg->getSelectedSegment ();
 					CColor color = editViewBackgroundColors ()[selectedSegment];
@@ -882,15 +884,15 @@ void UIEditController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::validateCommandMenuItem (CCommandMenuItem* item)
+bool UIEditController::validateCommandMenuItem (CCommandMenuItem& item)
 {
-	return validateMenuItem (*item) == kMessageNotified;
+	return validateMenuItem (item) == kMessageNotified;
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::onCommandMenuItemSelected (CCommandMenuItem* item)
+bool UIEditController::onCommandMenuItemSelected (CCommandMenuItem& item)
 {
-	return onMenuItemSelection (*item) == kMessageNotified;
+	return onMenuItemSelection (item) == kMessageNotified;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -998,10 +1000,10 @@ void UIEditController::beforeSave ()
 		
 		getSettings ()->setIntegerAttribute ("Version", 1);
 		// find the view of this controller
-		auto container = editView->getParentView ()->asViewContainer ();
+		auto container = editView->getParentView ();
 		while (container && container != container->getFrame ())
 		{
-			if (getViewController (*container, false) == this)
+			if (getViewController (*container.get (), false).get () == this)
 			{
 				getSettings ()->setRectAttribute ("EditorSize", container->getViewSize ());
 				break;
@@ -1010,7 +1012,7 @@ void UIEditController::beforeSave ()
 		}
 		undoManager->markSavePosition ();
 		if (zoomSettingController)
-			zoomSettingController->storeSetting (*getSettings ());
+			zoomSettingController->storeSetting (*getSettings ().get ());
 		setDirty (false);
 	}
 }
@@ -1034,10 +1036,10 @@ void UIEditController::addSelectionToCurrentView (const SharedPointer<UISelectio
 	if (selection->total () == 0)
 		return;
 	CPoint offset;
-	auto container = shared (selection->first ()->asViewContainer ());
+	auto container = selection->first ()->asViewContainer ();
 	if (container == nullptr)
 	{
-		container = shared (selection->first ()->getParentView ()->asViewContainer ());
+		container = selection->first ()->getParentView ()->asViewContainer ();
 		offset = selection->first ()->getViewSize ().getTopLeft ();
 		offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 	}
@@ -1197,7 +1199,7 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem& item)
 		if (cmdName == "Select View in Hierarchy Browser")
 		{
 			if (auto view = selection->first ())
-				doSelectViewInHierarchyBrowser (*view);
+				doSelectViewInHierarchyBrowser (*view.get ());
 			return kMessageNotified;
 		}
 	}
@@ -1305,8 +1307,8 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem& item)
 		if (enableItem)
 		{
 			bool lower = cmdName == "Lower" ? true : false;
-			CView* view = selection->first ();
-			if (auto parent = view->getParentView ()->asViewContainer ())
+			auto view = selection->first ();
+			if (auto parent = view->getParentView ())
 			{
 				if (lower)
 				{
@@ -1406,11 +1408,11 @@ bool UIEditController::doZOrderAction (bool lower)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::doSelectAllChildren ()
 {
-	UISelection::DeferChange dc (*selection);
-	CViewContainer* container = selection->first ()->asViewContainer ();
+	UISelection::DeferChange dc (*selection.get ());
+	auto container = selection->first ()->asViewContainer ();
 	selection->clear ();
 	container->forEachChild ([&] (auto view) {
-		if (IViewFactory::getViewName (*view))
+		if (IViewFactory::getViewName (*view.get ()))
 			selection->add (view);
 	});
 }
@@ -1418,13 +1420,13 @@ void UIEditController::doSelectAllChildren ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::doSelectParents ()
 {
-	UISelection::DeferChange dc (*selection);
+	UISelection::DeferChange dc (*selection.get ());
 	std::vector<SharedPointer<CView>> parents;
-	for (auto& view : *selection)
+	for (auto& view : *selection.get ())
 	{
 		if (auto parent = view->getParentView ())
 		{
-			while (IViewFactory::getViewName (*parent) == nullptr)
+			while (IViewFactory::getViewName (*parent.get ()) == nullptr)
 			{
 				parent = parent->getParentView ();
 			}
@@ -1440,7 +1442,7 @@ void UIEditController::doSelectParents ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::doSelectViewInHierarchyBrowser (CView& view)
 {
-	templateController->navigateTo (&view);
+	templateController->navigateTo (shared (&view));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1453,7 +1455,7 @@ void UIEditController::onUndoManagerChanged ()
 	}
 	else
 		setDirty (true);
-	CView* view = selection->first ();
+	auto view = selection->first ();
 	if (view)
 	{
 		if (auto templateView = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
@@ -1465,7 +1467,7 @@ void UIEditController::onUndoManagerChanged ()
 		}
 		for (auto& it : templates)
 		{
-			CViewContainer* container = it.view->asViewContainer ();
+			auto container = it.view->asViewContainer ();
 			if (container && (view == container || container->isChild (view, true)))
 			{
 				templateController->selectTemplate (it.name.c_str ());
@@ -1479,27 +1481,27 @@ void UIEditController::onUndoManagerChanged ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::resetScrollViewOffsets (CViewContainer& view)
 {
-	view.forEachChild ([&] (CView* view) {
-		auto* scrollView = dynamic_cast<CScrollView*>(view);
+	view.forEachChild ([&] (auto&& view) {
+		auto scrollView = view.template cast<CScrollView> ();
 		if (scrollView)
 		{
 			scrollView->resetScrollOffset ();
 		}
 		if (auto container = view->asViewContainer ())
-			resetScrollViewOffsets (*container);
+			resetScrollViewOffsets (*container.get ());
 	});
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::onKeyboardEvent (KeyboardEvent& event, CFrame* frame)
+void UIEditController::onKeyboardEvent (KeyboardEvent& event, CFrame& frame)
 {
 	if (event.type == EventType::KeyUp)
 		return;
-	if (frame->getModalView () == nullptr)
+	if (frame.getModalView () == nullptr)
 	{
-		if (frame->getFocusView ())
+		if (frame.getFocusView ())
 		{
-			auto* edit = dynamic_cast<CTextEdit*>(frame->getFocusView ());
+			auto edit = frame.getFocusView ().cast<CTextEdit> ();
 			if (edit && edit->getPlatformTextEdit ())
 				return;
 		}
@@ -1536,7 +1538,7 @@ int32_t UIEditController::getSplitViewIndex (const CSplitView& splitView)
 	int32_t index = 0;
 	for (auto& sv : splitViews)
 	{
-		if (sv == &splitView)
+		if (sv.get () == &splitView)
 			return index;
 		index++;
 	}
@@ -1544,15 +1546,16 @@ int32_t UIEditController::getSplitViewIndex (const CSplitView& splitView)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView)
+bool UIEditController::getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize,
+												   CSplitView& splitView)
 {
 	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
-ISplitViewSeparatorDrawer* UIEditController::getSplitViewSeparatorDrawer (CSplitView* splitView)
+ISplitViewSeparatorDrawer* UIEditController::getSplitViewSeparatorDrawer (CSplitView& splitView)
 {
-	int32_t si = getSplitViewIndex (*splitView);
+	int32_t si = getSplitViewIndex (splitView);
 	if (si >= 0)
 	{
 		return this;
@@ -1561,9 +1564,9 @@ ISplitViewSeparatorDrawer* UIEditController::getSplitViewSeparatorDrawer (CSplit
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView)
+bool UIEditController::storeViewSize (int32_t index, const CCoord& size, CSplitView& splitView)
 {
-	int32_t si = getSplitViewIndex (*splitView);
+	int32_t si = getSplitViewIndex (splitView);
 	if (si >= 0)
 	{
 		std::stringstream str;
@@ -1572,10 +1575,10 @@ bool UIEditController::storeViewSize (int32_t index, const CCoord& size, CSplitV
 		str << "_";
 		str << index;
 		double value;
-		if (splitView->getStyle () == CSplitView::kHorizontal)
-			value = size / splitView->getWidth ();
+		if (splitView.getStyle () == CSplitView::kHorizontal)
+			value = size / splitView.getWidth ();
 		else
-			value = size / splitView->getHeight ();
+			value = size / splitView.getHeight ();
 		getSettings ()->setDoubleAttribute (str.str (), value);
 		return true;
 	}
@@ -1583,13 +1586,13 @@ bool UIEditController::storeViewSize (int32_t index, const CCoord& size, CSplitV
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView)
+bool UIEditController::restoreViewSize (int32_t index, CCoord& size, CSplitView& splitView)
 {
 	int32_t version = 0;
 	getSettings ()->getIntegerAttribute ("Version", version);
 	if (version == 0)
 		return false;
-	int32_t si = getSplitViewIndex (*splitView);
+	int32_t si = getSplitViewIndex (splitView);
 	if (si >= 0)
 	{
 		std::stringstream str;
@@ -1600,10 +1603,10 @@ bool UIEditController::restoreViewSize (int32_t index, CCoord& size, CSplitView*
 		double value;
 		if (getSettings ()->getDoubleAttribute (str.str ().c_str (), value))
 		{
-			if (splitView->getStyle () == CSplitView::kHorizontal)
-				value = floor (splitView->getWidth () * value + 0.5);
+			if (splitView.getStyle () == CSplitView::kHorizontal)
+				value = floor (splitView.getWidth () * value + 0.5);
 			else
-				value = floor (splitView->getHeight () * value + 0.5);
+				value = floor (splitView.getHeight () * value + 0.5);
 			size = value;
 			return true;
 		}
@@ -1612,15 +1615,16 @@ bool UIEditController::restoreViewSize (int32_t index, CCoord& size, CSplitView*
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView)
+void UIEditController::drawSplitViewSeparator (CDrawContext& context, const CRect& size,
+											   int32_t flags, int32_t index, CSplitView& splitView)
 {
-	if (splitView->getStyle () == CSplitView::kHorizontal)
+	if (splitView.getStyle () == CSplitView::kHorizontal)
 	{
-		UIEditControllerShadingView::drawGradient (context, size, true);
+		UIEditControllerShadingView::drawGradient (&context, size, true);
 	}
 	else
 	{
-		UIEditControllerShadingView::drawGradient (context, size, false);
+		UIEditControllerShadingView::drawGradient (&context, size, false);
 	}
 }
 
@@ -1633,7 +1637,10 @@ void UIEditController::setDirty (bool state)
 		if (notSavedControl && notSavedControl->isAttached ())
 		{
 			notSavedControl->invalid ();
-			notSavedControl->addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (dirty ? 1.f : 0.f), new Animation::LinearTimingFunction (80));
+			notSavedControl->addAnimation (
+				"AlphaValueAnimation",
+				makeOwned<Animation::AlphaValueAnimation> (dirty ? 1.f : 0.f),
+				makeOwned<Animation::LinearTimingFunction> (80));
 		}
 	}
 }
@@ -1889,7 +1896,7 @@ void UIEditController::performLiveColorChange (UTF8StringPtr _colorName, const C
 //----------------------------------------------------------------------------------------------------
 void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
 {
-	UIDescriptionListenerOff lo (*this, *editDescription);
+	UIDescriptionListenerOff lo (*this, *editDescription.get ());
 	CColor color;
 	editDescription->getColor (colorName, color);
 	performColorChange (colorName, color, false);
@@ -1930,7 +1937,7 @@ void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName)
 {
 	updateTemplate (name);
-	UIDescriptionListenerOff lo (*this, *editDescription);
+	UIDescriptionListenerOff lo (*this, *editDescription.get ());
 	undoManager->pushAndPerform (
 		makeOwned<DuplicateTemplateAction> (editDescription, weakFromThis (), name, dupName));
 }
@@ -1959,9 +1966,9 @@ void UIEditController::updateTemplate (const std::vector<Template>::const_iterat
 {
 	if (it != templates.end ())
 	{
-		CView* view = (*it).view;
+		auto view = (*it).view;
 		if (auto container = view->asViewContainer ())
-			resetScrollViewOffsets (*container);
+			resetScrollViewOffsets (*container.get ());
 		editDescription->updateViewDescription ((*it).name.c_str (), view);
 	}
 }
@@ -1982,7 +1989,8 @@ void UIEditController::onTemplatesChanged ()
 	{
 		if (std::find (templates.begin (), templates.end (), *it) == templates.end ())
 		{
-			auto view = owned (editDescription->createView (it->c_str (), editDescription->getController ()));
+			auto view =
+				editDescription->createView (it->c_str (), editDescription->getController ());
 			templates.emplace_back (*it, view);
 		}
 	}

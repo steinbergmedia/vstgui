@@ -77,27 +77,23 @@ public:
 	~CFontChooser () noexcept override;
 
 	void setFont (const SharedPointer<CFontDesc>& font);
-	VSTGUI_DEPRECATED_MSG (
-		void setFont (CFontDesc* inFont) { setFont (shared (inFont)); },
-		"Use `setFont (shared (yourFont);` instead")
 
 protected:
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
-	void valueChanged (CControl* pControl) override;
-	bool attached (CView* parent) override;
+	void valueChanged (CControl& pControl) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	IFontChooserDelegate* delegate;
-	CDataBrowser* fontBrowser;
-	CTextEdit* sizeEdit;
-	CCheckBox* boldBox;
-	CCheckBox* italicBox;
-	CCheckBox* underlineBox;
-	CCheckBox* strikeoutBox;
-	CView* fontPreviewView;
-	GenericStringListDataBrowserSource::StringVector fontNames;
-
+	SharedPointer<CDataBrowser> fontBrowser;
+	SharedPointer<CTextEdit> sizeEdit;
+	SharedPointer<CCheckBox> boldBox;
+	SharedPointer<CCheckBox> italicBox;
+	SharedPointer<CCheckBox> underlineBox;
+	SharedPointer<CCheckBox> strikeoutBox;
+	SharedPointer<CView> fontPreviewView;
 	SharedPointer<CFontDesc> selFont;
+	GenericStringListDataBrowserSource::StringVector fontNames;
 };
 
 } // VSTGUI

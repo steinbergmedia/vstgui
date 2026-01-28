@@ -40,8 +40,9 @@ class UISelectionView : public UIOverlayView, public UISelectionListenerAdapter
 //----------------------------------------------------------------------------------------------------
 {
 public:
-	UISelectionView (CViewContainer* editView, const SharedPointer<UISelection>& selection,
-					 const CColor& selectionColor, CCoord handleSize);
+	UISelectionView (const SharedPointer<CViewContainer>& editView,
+					 const SharedPointer<UISelection>& selection, const CColor& selectionColor,
+					 CCoord handleSize);
 	~UISelectionView () override;
 
 private:
@@ -61,7 +62,7 @@ private:
 };
 
 //----------------------------------------------------------------------------------------------------
-UISelectionView::UISelectionView (CViewContainer* editView,
+UISelectionView::UISelectionView (const SharedPointer<CViewContainer>& editView,
 								  const SharedPointer<UISelection>& selection,
 								  const CColor& selectionColor, CCoord handleSize)
 : UIOverlayView (editView)
@@ -100,12 +101,12 @@ void UISelectionView::draw (CDrawContext* pContext)
 	lightColor.alpha = 140;
 	pContext->setFillColor (lightColor);
 
-	CView* mainView = getTargetView ()->getView (0);
+	auto mainView = getTargetView ()->getView (0);
 	CPoint p;
 	frameToLocal (p);
-	for (auto view : *selection)
+	for (auto view : *selection.get ())
 	{
-		CRect vs = selection->getGlobalViewCoordinates (*view);
+		CRect vs = selection->getGlobalViewCoordinates (*view.get ());
 		vs.offsetInverse (p);
 		vs.extend (lineWidth, lineWidth);
 		pContext->setFrameColor (lightColor);
@@ -143,9 +144,9 @@ void UISelectionView::onSelectionChanged ()
 {
 	CPoint p;
 	frameToLocal (p);
-	for (auto view : *selection)
+	for (auto view : *selection.get ())
 	{
-		CRect vs = selection->getGlobalViewCoordinates (*view);
+		CRect vs = selection->getGlobalViewCoordinates (*view.get ());
 		vs.offsetInverse (p);
 		vs.extend (handleInset + 2, handleInset + 2);
 		invalidRect (vs);
@@ -158,7 +159,8 @@ void UISelectionView::onSelectionChanged ()
 class UIHighlightView : public UIOverlayView
 {
 public:
-	UIHighlightView (CViewContainer* editView, const CColor& viewHighlightColor);
+	UIHighlightView (const SharedPointer<CViewContainer>& editView,
+					 const CColor& viewHighlightColor);
 
 	void setHighlightView (const SharedPointer<CView>& view);
 
@@ -171,10 +173,9 @@ private:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIHighlightView::UIHighlightView (CViewContainer* editView, const CColor& viewHighlightColor)
-: UIOverlayView (editView)
-, highlightView (nullptr)
-, strokeColor (viewHighlightColor)
+UIHighlightView::UIHighlightView (const SharedPointer<CViewContainer>& editView,
+								  const CColor& viewHighlightColor)
+: UIOverlayView (editView), highlightView (nullptr), strokeColor (viewHighlightColor)
 {
 	double h,s,l;
 	strokeColor.toHSL (h, s, l);
@@ -198,7 +199,7 @@ void UIHighlightView::draw (CDrawContext* pContext)
 {
 	if (highlightView == nullptr)
 		return;
-	CRect r = UISelection::getGlobalViewCoordinates (*highlightView);
+	CRect r = UISelection::getGlobalViewCoordinates (*highlightView.get ());
 	CPoint p;
 	frameToLocal (p);
 	r.offsetInverse (p);
@@ -212,13 +213,13 @@ void UIHighlightView::draw (CDrawContext* pContext)
 
 //------------------------------------------------------------------------
 template<typename T>
-void collectExternalViewsOnInlineEditing (CViewContainer* container, T& array)
+void collectExternalViewsOnInlineEditing (CViewContainer& container, T& array)
 {
-	container->forEachChild ([&] (auto view) {
+	container.forEachChild ([&] (auto&& view) {
 		if (dynamic_cast<ExternalView::IViewEmbedder*> (view.get ()))
 			array.emplace_back (view);
 		else if (auto c = view->asViewContainer ())
-			collectExternalViewsOnInlineEditing (c, array);
+			collectExternalViewsOnInlineEditing (*c.get (), array);
 	});
 }
 
@@ -233,7 +234,7 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 	{
 		for (auto view : views)
 		{
-			if (auto viewEmbedder = dynamic_cast<ExternalView::IViewEmbedder*> (view))
+			if (auto viewEmbedder = dynamic_cast<ExternalView::IViewEmbedder*> (view.get ()))
 			{
 				if (auto ev = viewEmbedder->getExternalView ())
 					ev->setMouseEnabled (view->getMouseEnabled ());
@@ -242,9 +243,9 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 		}
 	}
 
-	bool isViewSubViewOfRoot (CView* view)
+	bool isViewSubViewOfRoot (const SharedPointer<CView>& view)
 	{
-		CView* parent = view->getParentView ();
+		auto parent = view->getParentView ();
 		if (parent == nullptr || parent == root->getFrame ())
 			return false;
 		if (parent->asViewContainer () == root)
@@ -252,24 +253,26 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 		return isViewSubViewOfRoot (parent);
 	}
 
-	void onViewAdded (CFrame* frame, CView* view) override
+	void onViewAdded (CFrame& frame, CView& view) override
 	{
-		if (auto viewEmbedder = dynamic_cast<ExternalView::IViewEmbedder*> (view))
+		if (auto viewEmbedder = dynamic_cast<ExternalView::IViewEmbedder*> (&view))
 		{
-			if (!isViewSubViewOfRoot (view))
+			auto pView = shared (&view);
+			if (!isViewSubViewOfRoot (pView))
 				return;
 			if (auto ev = viewEmbedder->getExternalView ())
 				ev->setMouseEnabled (false);
-			view->registerViewListener (this);
-			views.emplace_back (view);
+			pView->registerViewListener (this);
+			views.emplace_back (pView);
 		}
 	}
-	void onViewRemoved (CFrame* frame, CView* view) override {}
+	void onViewRemoved (CFrame& frame, CView& view) override {}
 
 	void viewWillDelete (CView* view) override
 	{
 		view->unregisterViewListener (this);
-		auto it = std::find (views.begin (), views.end (), view);
+		auto it = std::find_if (views.begin (), views.end (),
+								[&] (auto&& v) { return v.get () == view; });
 		if (it != views.end ())
 			views.erase (it);
 	}
@@ -282,8 +285,8 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 		}
 	}
 
-	CViewContainer* root;
-	std::vector<CView*> views;
+	SharedPointer<CViewContainer> root;
+	std::vector<SharedPointer<CView>> views;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -314,7 +317,7 @@ UIEditView::~UIEditView ()
 //------------------------------------------------------------------------
 void UIEditView::updateSize ()
 {
-	if (CView* view = getEditView ())
+	if (auto view = getEditView ())
 	{
 		CRect r (getViewSize ());
 		CPoint size (view->getWidth (), view->getHeight ());
@@ -348,7 +351,7 @@ void UIEditView::enableEditing (bool state)
 	{
 		editing = state;
 		invalid ();
-		CFrame* parent = getFrame ();
+		auto parent = getFrame ();
 		if (parent == nullptr)
 			return;
 
@@ -357,24 +360,26 @@ void UIEditView::enableEditing (bool state)
 			CRect r = parent->getViewSize ();
 			r.originize ();
 			vstgui_assert (overlayView == nullptr);
-			overlayView = new CLayeredViewContainer (r);
+			overlayView = makeOwned<CLayeredViewContainer> (r);
 			overlayView->setAutosizeFlags (kAutosizeAll);
 			overlayView->setMouseEnabled (false);
 			overlayView->setTransparency (true);
 			overlayView->setZIndex (1000);
-			parent->addView (overlayView);
+			parent->addSubview (overlayView);
 
-			highlightView = new UIEditViewInternal::UIHighlightView (this, viewHighlightColor);
-			overlayView->addView (highlightView);
-			auto selectionView = new UIEditViewInternal::UISelectionView (this, getSelection (), viewSelectionColor, kResizeHandleSize);
-			overlayView->addView (selectionView);
+			highlightView =
+				makeOwned<UIEditViewInternal::UIHighlightView> (shared (this), viewHighlightColor);
+			overlayView->addSubview (highlightView);
+			auto selectionView = makeOwned<UIEditViewInternal::UISelectionView> (
+				shared (this), getSelection (), viewSelectionColor, kResizeHandleSize);
+			overlayView->addSubview (selectionView);
 		}
 		else
 		{
-			parent->removeView (overlayView);
-			overlayView = nullptr;
-			highlightView = nullptr;
-			lines = nullptr;
+			parent->removeSubview (overlayView);
+			overlayView.reset ();
+			highlightView.reset ();
+			lines.reset ();
 		}
 		disableExternalViewsOnInlineEditing (editing);
 	}
@@ -383,17 +388,17 @@ void UIEditView::enableEditing (bool state)
 //------------------------------------------------------------------------
 void UIEditView::disableExternalViewsOnInlineEditing (bool state)
 {
-	CFrame* parent = getFrame ();
+	auto parent = getFrame ();
 	if (editingViewAddedObserver)
 		parent->setViewAddedRemovedObserver (nullptr);
 	editingViewAddedObserver.reset ();
 	if (state)
 	{
 		editingViewAddedObserver = std::make_unique<ViewAddedObserver> (this);
-		std::vector<CView*> views;
-		UIEditViewInternal::collectExternalViewsOnInlineEditing (this, views);
-		for (auto* v : views)
-			editingViewAddedObserver->onViewAdded (parent, v);
+		std::vector<SharedPointer<CView>> views;
+		UIEditViewInternal::collectExternalViewsOnInlineEditing (*this, views);
+		for (auto& v : views)
+			editingViewAddedObserver->onViewAdded (*parent.get (), *v.get ());
 		parent->setViewAddedRemovedObserver (editingViewAddedObserver.get ());
 	}
 }
@@ -451,7 +456,7 @@ void UIEditView::setEditView (const SharedPointer<CView>& view)
 		CRect vs (getViewSize ());
 		if (view)
 		{
-			addView (view);
+			addSubview (view);
 			updateSize ();
 		}
 		else
@@ -475,25 +480,10 @@ SharedPointer<CView> UIEditView::getEditView () const
 //----------------------------------------------------------------------------------------------------
 CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == CVSTGUITimer::kMsgTimer)
-	{
-		if (sender == editTimer)
-		{
-			if (lines == nullptr)
-			{
-				lines = new UICrossLines (this, UICrossLines::kSelectionStyle, crosslineBackgroundColor, crosslineForegroundColor);
-				overlayView->addView (lines);
-				lines->update (*selection.get ());
-				getFrame ()->setCursor (kCursorMoveObject);
-			}
-			editTimer = nullptr;
-		}
-		return kMessageNotified;
-	}
-	else if (message == kMsgViewSizeChanged)
+	if (message == kMsgViewSizeChanged)
 	{
 		CView* view = dynamic_cast<CView*> (sender);
-		if (view && view == getEditView ())
+		if (view && view == getEditView ().get ())
 		{
 			updateSize ();
 		}
@@ -541,7 +531,7 @@ SharedPointer<CView> UIEditView::getViewAt (const CPoint& p, const GetViewOption
 	auto view = CViewContainer::getViewAt (p, options);
 	if (editing)
 	{
-		while (view && IViewFactory::getViewName (*view) == nullptr)
+		while (view && IViewFactory::getViewName (*view.get ()) == nullptr)
 		{
 			view = view->getParentView ();
 		}
@@ -556,7 +546,7 @@ SharedPointer<CViewContainer> UIEditView::getContainerAt (const CPoint& p,
 	auto view = CViewContainer::getContainerAt (p, options);
 	if (editing)
 	{
-		while (view && IViewFactory::getViewName (*view) == nullptr)
+		while (view && IViewFactory::getViewName (*view.get ()) == nullptr)
 		{
 			view = view->getParentView ()->asViewContainer ();
 		}
@@ -565,7 +555,7 @@ SharedPointer<CViewContainer> UIEditView::getContainerAt (const CPoint& p,
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditView::advanceNextFocusView (CView* oldFocus, bool reverse)
+bool UIEditView::advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse)
 {
 	if (editing)
 		return false;
@@ -610,25 +600,25 @@ static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
 } // UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
-UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CView** resultView)
+UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where,
+														SharedPointer<CView>& resultView)
 {
 	CPoint where (_where);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
 	CPoint p;
 	frameToLocal (p);
 
-	CView* mainView = getEditView ();
+	auto mainView = getEditView ();
 	for (auto it = getSelection ()->rbegin (), end = getSelection ()->rend (); it != end; ++it)
 	{
 		auto view = (*it);
-		CRect r = getSelection ()->getGlobalViewCoordinates (*view);
+		CRect r = getSelection ()->getGlobalViewCoordinates (*view.get ());
 		bool isMainView = (mainView == view) ? true : false;
 		r.offset (p);
 		r.extend (kResizeHandleSize, kResizeHandleSize);
 		if (r.pointInside (where))
 		{
-			if (resultView)
-				*resultView = view;
+			resultView = view;
 			r.inset (kResizeHandleSize, kResizeHandleSize);
 			if (UIEditViewInternal::pointInResizeHandleRect (where, r.getBottomRight ()))
 				return MouseSizeMode::BottomRight;
@@ -651,12 +641,10 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 				if (r.pointInside (where))
 					return MouseSizeMode::None;
 			}
-			if (resultView)
-				*resultView = nullptr;
+			resultView.reset ();
 		}
 	}
-	if (resultView)
-		*resultView = nullptr;
+	resultView.reset ();
 	return MouseSizeMode::None;
 }
 
@@ -674,7 +662,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 	if (!buttons.isLeftButton ())
 		return kMouseEventHandled;
 
-	getFrame ()->setFocusView (this);
+	getFrame ()->setFocusView (shared (this));
 
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
@@ -691,8 +679,8 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 		return kMouseEventHandled;
 	}
 
-	CView* selectionHitView = nullptr;
-	MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
+	SharedPointer<CView> selectionHitView;
+	MouseSizeMode sizeMode = selectionHitTest (where, selectionHitView);
 	auto mouseHitView =
 		getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 	if (selectionHitView == nullptr && mouseHitView == nullptr)
@@ -728,7 +716,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 	{
 		if (buttons.isDoubleClick ())
 		{
-			onDoubleClickEditing (*selectionHitView);
+			onDoubleClickEditing (*selectionHitView.get ());
 			return kMouseEventHandled;
 		}
 		if (buttons.isAltSet () && !getSelection ()->contains (getEditView ()))
@@ -747,8 +735,20 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			mouseStartPoint = where2;
 			if (gridProcessor)
 				gridProcessor->process (mouseStartPoint);
-			editTimer = owned (new CVSTGUITimer (this, 500));
-			editTimer->start ();
+			editTimer = makeOwned<CVSTGUITimer> (
+				[this] (auto&&) {
+					if (lines == nullptr)
+					{
+						lines = makeOwned<UICrossLines> (
+							shared (this), UICrossLines::kSelectionStyle, crosslineBackgroundColor,
+							crosslineForegroundColor);
+						overlayView->addSubview (lines);
+						lines->update (*selection.get ());
+						getFrame ()->setCursor (kCursorMoveObject);
+					}
+					editTimer.reset ();
+				},
+				500);
 			return kMouseEventHandled;
 		}
 		else
@@ -769,8 +769,10 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 					case MouseSizeMode::Bottom: crossLineMode = UICrossLines::kSelectionStyle; break;
 					default : crossLineMode = UICrossLines::kDragStyle; break;
 				}
-				lines = new UICrossLines (this, crossLineMode, crosslineBackgroundColor, crosslineForegroundColor);
-				overlayView->addView (lines);
+				lines =
+					makeOwned<UICrossLines> (shared (this), crossLineMode, crosslineBackgroundColor,
+											 crosslineForegroundColor);
+				overlayView->addSubview (lines);
 				if (crossLineMode == UICrossLines::kSelectionStyle)
 					lines->update (*selection.get ());
 				else
@@ -799,10 +801,10 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		area.setTopLeft (mouseStartPoint);
 		area.setBottomRight (where2);
 		area.normalize ();
-		auto result = findChildsInArea (getEditView ()->asViewContainer (), area);
+		auto result = findChildsInArea (*getEditView ()->asViewContainer ().get (), area);
 		for (auto& view : result)
 		{
-			if (IViewFactory::getViewName (*view) && !getSelection ()->contains (view))
+			if (IViewFactory::getViewName (*view.get ()) && !getSelection ()->contains (view))
 				getSelection ()->add (view);
 		}
 	}
@@ -810,7 +812,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 	{
 		auto view = getViewAt (
 			where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
-		if (view == this)
+		if (view.get () == this)
 			view = nullptr;
 		if (view)
 		{
@@ -819,8 +821,8 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 	}
 	if (lines)
 	{
-		overlayView->removeView (lines);
-		lines = nullptr;
+		overlayView->removeSubview (lines);
+		lines.reset ();
 	}
 	mouseEditMode = MouseEditMode::NoEditing;
 	if (moveSizeOperation)
@@ -863,9 +865,9 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 			if (dragStartMouseObserver.shouldStartDrag (where))
 			{
 				mouseEditMode = MouseEditMode::LassoSelection;
-				lines = new UICrossLines (this, UICrossLines::kLassoStyle, lassoFrameColor,
-										  lassoFillColor);
-				overlayView->addView (lines);
+				lines = makeOwned<UICrossLines> (shared (this), UICrossLines::kLassoStyle,
+												 lassoFrameColor, lassoFillColor);
+				overlayView->addSubview (lines);
 				getFrame ()->setCursor (kCursorDefault);
 				CViewContainer::onMouseMoved (where, buttons);
 			}
@@ -892,7 +894,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 				}
 			}
 		}
-		CScrollView* scrollView = dynamic_cast<CScrollView*>(getParentView ()->getParentView ());
+		auto scrollView = getParentView ()->getParentView ().cast<CScrollView> ();
 		if (scrollView)
 		{
 			scrollView->makeRectVisible (CRect (where, CPoint (1, 1)));
@@ -901,9 +903,9 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 	}
 	else if (buttons.getButtonState () == 0 && !buttons.isShiftSet ())
 	{
-		CView* view = nullptr;
+		SharedPointer<CView> view;
 		CCursorType ctype = kCursorDefault;
-		auto mode = selectionHitTest (where, &view);
+		auto mode = selectionHitTest (where, view);
 		if (view)
 		{
 			switch (mode)
@@ -940,8 +942,8 @@ void UIEditView::onKeyboardEvent (KeyboardEvent& event)
 	{
 		if (lines)
 		{
-			overlayView->removeView (lines);
-			lines = nullptr;
+			overlayView->removeSubview (lines);
+			lines.reset ();
 		}
 		if (moveSizeOperation)
 		{
@@ -982,7 +984,7 @@ void UIEditView::doKeySize (const CPoint& delta)
 		if (!moveSizeOperation)
 			moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, true, autosizing);
 		getSelection ()->viewsWillChange ();
-		for (auto view : *selection)
+		for (auto view : *selection.get ())
 		{
 			CRect viewSize = view->getViewSize ();
 			CPoint bottomRight = viewSize.getBottomRight ();
@@ -998,10 +1000,10 @@ void UIEditView::doKeySize (const CPoint& delta)
 }
 
 //----------------------------------------------------------------------------------------------------
-std::vector<SharedPointer<CView>> UIEditView::findChildsInArea (CViewContainer* view, CRect r) const
+std::vector<SharedPointer<CView>> UIEditView::findChildsInArea (CViewContainer& view, CRect r) const
 {
 	std::vector<SharedPointer<CView>> views;
-	view->forEachChild ([&] (auto child) {
+	view.forEachChild ([&] (auto child) {
 		if (r.rectOverlap (child->getViewSize ()))
 		{
 			if (auto container = child->asViewContainer ())
@@ -1012,7 +1014,7 @@ std::vector<SharedPointer<CView>> UIEditView::findChildsInArea (CViewContainer* 
 				if (!r2.isEmpty ())
 				{
 					r2.offsetInverse (viewSize.getTopLeft ());
-					auto res2 = findChildsInArea (container, r2);
+					auto res2 = findChildsInArea (*container.get (), r2);
 					std::move (res2.begin (), res2.end (), std::back_inserter (views));
 				}
 			}
@@ -1043,8 +1045,10 @@ void UIEditView::doDragEditingMove (CPoint& where)
 			editTimer = nullptr;
 			if (!lines)
 			{
-				lines = new UICrossLines (this, UICrossLines::kSelectionStyle, crosslineBackgroundColor, crosslineForegroundColor);
-				overlayView->addView (lines);
+				lines =
+					makeOwned<UICrossLines> (shared (this), UICrossLines::kSelectionStyle,
+											 crosslineBackgroundColor, crosslineForegroundColor);
+				overlayView->addSubview (lines);
 				lines->update (*selection.get ());
 			}
 			getFrame ()->setCursor (kCursorMoveObject);
@@ -1116,7 +1120,7 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 	std::vector<bool> oldAutosizeState;
 	if (!autosizing)
 	{
-		for (auto& view : *selection)
+		for (auto& view : *selection.get ())
 		{
 			if (auto container = view->asViewContainer ())
 			{
@@ -1129,7 +1133,7 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 	if (!autosizing)
 	{
 		size_t index = 0;
-		for (auto& view : *selection)
+		for (auto& view : *selection.get ())
 		{
 			if (auto container = view->asViewContainer ())
 			{
@@ -1230,8 +1234,8 @@ bool UIEditView::onDrop (DragEventData data)
 {
 	if (lines)
 	{
-		overlayView->removeView (lines);
-		lines = nullptr;
+		overlayView->removeSubview (lines);
+		lines.reset ();
 	}
 	if (dragSelection)
 	{
@@ -1248,7 +1252,7 @@ bool UIEditView::onDrop (DragEventData data)
 			getTransform ().transform (where2);
 		}
 		auto viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
-		if (viewContainer && viewContainer != this)
+		if (viewContainer && viewContainer.get () != this)
 		{
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
 			getTransform ().inverse ().transform (where2);
@@ -1272,14 +1276,15 @@ DragOperation UIEditView::onDragEnter (DragEventData data)
 {
 	if (data.drag)
 	{
-		dragSelection = getSelectionOutOfDrag (*data.drag);
+		dragSelection = getSelectionOutOfDrag (*data.drag.get ());
 		if (dragSelection)
 		{
 			if (!lines)
 			{
-				lines = new UICrossLines (this, UICrossLines::kDragStyle, crosslineBackgroundColor,
-										  crosslineForegroundColor);
-				overlayView->addView (lines);
+				lines =
+					makeOwned<UICrossLines> (shared (this), UICrossLines::kDragStyle,
+											 crosslineBackgroundColor, crosslineForegroundColor);
+				overlayView->addSubview (lines);
 			}
 			return onDragMove (data);
 		}
@@ -1297,8 +1302,8 @@ void UIEditView::onDragLeave (DragEventData data)
 	}
 	if (lines)
 	{
-		overlayView->removeView (lines);
-		lines = nullptr;
+		overlayView->removeSubview (lines);
+		lines.reset ();
 	}
 }
 
@@ -1329,7 +1334,7 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 					where2.offset (getViewSize ().left, getViewSize ().top);
 					where2.offset (-visibleRect.left, -visibleRect.top);
 					auto container = getContainerAt (where2, GetViewOptions ().deep ());
-					if (container == this)
+					if (container.get () == this)
 					{
 						container = nullptr;
 						highlightView->setHighlightView (nullptr);
@@ -1350,7 +1355,7 @@ void UIEditView::onDoubleClickEditing (CView& view)
 	struct AttributeInlineEditorController : ViewListenerAdapter
 	{
 		using Callback = std::function<void ()>;
-		AttributeInlineEditorController (CTextEdit* edit, Callback&& callback)
+		AttributeInlineEditorController (const SharedPointer<CTextEdit>& edit, Callback&& callback)
 		: edit (edit), callback (std::move (callback))
 		{
 			edit->registerViewListener (this);
@@ -1366,13 +1371,14 @@ void UIEditView::onDoubleClickEditing (CView& view)
 		}
 
 	private:
-		CTextEdit* edit;
+		SharedPointer<CTextEdit> edit;
 		Callback callback;
 	};
 
 	const auto& factory = description->getViewFactory ();
 	std::string attrValue;
-	if (!factory.getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue, *description))
+	if (!factory.getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue,
+									*description.get ()))
 		return;
 
 	auto frame = getFrame ();
@@ -1381,9 +1387,9 @@ void UIEditView::onDoubleClickEditing (CView& view)
 	auto r = selection->getGlobalViewCoordinates (view);
 	r.offsetInverse (getViewSize ().getTopLeft ());
 	translateToLocal (r, true);
-	auto textEdit = new CTextEdit (r, nullptr, 0);
+	auto textEdit = makeOwned<CTextEdit> (r, nullptr, 0);
 	textEdit->setText (attrValue.data ());
-	addView (textEdit);
+	addSubview (textEdit);
 	new AttributeInlineEditorController (textEdit, [this, textEdit, attrValue] () {
 		const auto& text = textEdit->getText ();
 		if (text != attrValue)
@@ -1392,7 +1398,7 @@ void UIEditView::onDoubleClickEditing (CView& view)
 				description, selection, UIViewCreator::kAttrTitle, text.getString ());
 			getUndoManager ()->pushAndPerform (action);
 		}
-		textEdit->getParentView ()->asViewContainer ()->removeView (textEdit);
+		textEdit->getParentView ()->removeSubview (textEdit);
 		inlineAttrTextEditOpen = false;
 	});
 	frame->setFocusView (textEdit);
@@ -1414,7 +1420,7 @@ void UIEditView::takeFocus ()
 }
 
 //-----------------------------------------------------------------------------
-bool UIEditView::attached (CView* parent)
+bool UIEditView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (CViewContainer::attached (parent))
 	{
@@ -1430,7 +1436,7 @@ bool UIEditView::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-bool UIEditView::removed (CView* parent)
+bool UIEditView::removed (const SharedPointer<CViewContainer>& parent)
 {
 	auto frame = getFrame ();
 	if (editingViewAddedObserver)
@@ -1444,8 +1450,8 @@ bool UIEditView::removed (CView* parent)
 	}
 	if (overlayView)
 	{
-		frame->removeView (overlayView);
-		overlayView = nullptr;
+		frame->removeSubview (overlayView);
+		overlayView.reset ();
 	}
 	frame->setCursor (kCursorDefault);
 	return CViewContainer::removed (parent);

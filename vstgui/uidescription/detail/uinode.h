@@ -49,7 +49,7 @@ public:
 	void setData (DataStorage&& newData);
 
 	const SharedPointer<UIAttributes>& getAttributes () const { return attributes; }
-	UIDescList& getChildren () const { return *children; }
+	UIDescList& getChildren () const { return *children.get (); }
 	bool hasChildren () const;
 	void childAttributeChanged (const SharedPointer<UINode>& child, const char* attributeName,
 								const char* oldAttributeValue);
@@ -147,7 +147,7 @@ protected:
 	SharedPointer<CBitmap> createBitmap (const std::string& str,
 										 const BitmapVariant& variant) const;
 	PlatformBitmapPtr createBitmapFromDataNode () const;
-	static bool imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2);
+	static bool imagesEqual (const PlatformBitmapPtr& b1, const PlatformBitmapPtr& b2);
 	SharedPointer<UINode> dataNode () const;
 	SharedPointer<CBitmap> bitmap;
 	bool filterProcessed;

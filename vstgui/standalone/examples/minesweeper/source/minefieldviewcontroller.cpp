@@ -56,8 +56,8 @@ void MinefieldViewController::setMouseMode (bool state)
 }
 
 //------------------------------------------------------------------------
-CView* MinefieldViewController::createView (const UIAttributes& attributes,
-											const IUIDescription& description)
+SharedPointer<CView> MinefieldViewController::createView (const UIAttributes& attributes,
+														  const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr && *attr == "MinefieldView")
@@ -74,7 +74,7 @@ CView* MinefieldViewController::createView (const UIAttributes& attributes,
 		if (dataBrowser)
 			dataBrowser->unregisterViewListener (this);
 		dataBrowser = nullptr;
-		dataBrowser = new CDataBrowser ({}, this, 0, 0.);
+		dataBrowser = makeOwned<CDataBrowser> (CRect {}, this, 0, 0.);
 		dataBrowser->registerViewListener (this);
 		return dataBrowser;
 	}
@@ -82,8 +82,9 @@ CView* MinefieldViewController::createView (const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-CView* MinefieldViewController::verifyView (CView* view, const UIAttributes& attributes,
-											const IUIDescription& description)
+SharedPointer<CView> MinefieldViewController::verifyView (const SharedPointer<CView>& view,
+														  const UIAttributes& attributes,
+														  const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr)
@@ -365,11 +366,11 @@ void MinefieldViewController::onGameLost ()
 		animView->setAlphaValue (0.f);
 		lostView->setAlphaValue (1.f);
 	}
-	animView->addAnimation ("Lost", new Animation::AlphaValueAnimation (1.f),
-	                        new Animation::RepeatTimingFunction (
-	                            new Animation::CubicBezierTimingFunction (
-	                                Animation::CubicBezierTimingFunction::easyInOut (250)),
-	                            -1));
+	animView->addAnimation ("Lost", makeOwned<Animation::AlphaValueAnimation> (1.f),
+							makeOwned<Animation::RepeatTimingFunction> (
+								makeOwned<Animation::CubicBezierTimingFunction> (
+									Animation::CubicBezierTimingFunction::easyInOut (250)),
+								-1));
 	gameTimer = nullptr;
 	dataBrowser->invalid ();
 }
@@ -384,11 +385,11 @@ void MinefieldViewController::onGameWon ()
 		animView->setAlphaValue (0.f);
 		wonView->setAlphaValue (1.f);
 	}
-	animView->addAnimation ("Won", new Animation::AlphaValueAnimation (1.f),
-	                        new Animation::RepeatTimingFunction (
-	                            new Animation::CubicBezierTimingFunction (
-	                                Animation::CubicBezierTimingFunction::easyInOut (400)),
-	                            -1));
+	animView->addAnimation ("Won", makeOwned<Animation::AlphaValueAnimation> (1.f),
+							makeOwned<Animation::RepeatTimingFunction> (
+								makeOwned<Animation::CubicBezierTimingFunction> (
+									Animation::CubicBezierTimingFunction::easyInOut (400)),
+								-1));
 	gameTimer = nullptr;
 	dataBrowser->invalid ();
 	if (wonCallback)

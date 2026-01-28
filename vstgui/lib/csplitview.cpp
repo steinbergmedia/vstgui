@@ -30,7 +30,8 @@ public:
 	void onMouseExitEvent (MouseExitEvent& event) override;
 	bool hitTestSubViews (const CPoint& where, const Event& event) override;
 
-	bool removed (CView* parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
+
 protected:
 	CPoint lastMousePos;
 	CRect startSize;
@@ -62,7 +63,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 		auto it = children.begin ();
 		if (it != children.end ())
 		{
-			CView* view = *it;
+			auto view = *it;
 			auto r = view->getViewSize ();
 			r.right += diff.x;
 			r.bottom += diff.y;
@@ -74,7 +75,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 		}
 		for (; it != children.end (); ++it)
 		{
-			CView* view = *it;
+			auto view = *it;
 			auto r = view->getViewSize ();
 			if (splitView.getStyle () == CSplitView::kHorizontal)
 			{
@@ -100,8 +101,8 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 		int32_t viewIndex = 0;
 		for (auto it = children.begin (); it != children.end (); ++it)
 		{
-			CView* view = *it;
-			auto* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
+			auto view = *it;
+			auto separatorView = view.cast<CSplitViewSeparatorView> ();
 			if (!separatorView)
 				viewIndex++;
 			auto r = view->getViewSize ();
@@ -148,7 +149,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 		auto it = children.rbegin ();
 		if (it != children.rend ())
 		{
-			CView* view = *it;
+			auto view = *it;
 			auto r = view->getViewSize ();
 			r.right += diff.x;
 			r.bottom += diff.y;
@@ -160,7 +161,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 		}
 		for (; it != children.rend (); ++it)
 		{
-			CView* view = *it;
+			auto view = *it;
 			auto r = view->getViewSize ();
 			if (splitView.getStyle () == CSplitView::kHorizontal)
 			{
@@ -279,7 +280,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 			if (controller)
 			{
 				if (controller->getSplitViewSizeConstraint (sepIndex, view1MinWidth, view1MaxWidth,
-															const_cast<CSplitView*> (&splitView)) &&
+															const_cast<CSplitView&> (splitView)) &&
 					view1MinWidth >= 0.)
 				{
 					if (isHorizontal)
@@ -289,7 +290,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 				}
 				if (controller->getSplitViewSizeConstraint (sepIndex + 1, view2MinWidth,
 															view2MaxWidth,
-															const_cast<CSplitView*> (&splitView)) &&
+															const_cast<CSplitView&> (splitView)) &&
 					view2MinWidth >= 0.)
 				{
 					if (isHorizontal)
@@ -537,11 +538,11 @@ void CSplitView::setViewSize (const CRect& rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::addView (CView* pView, CView* pBefore)
+bool CSplitView::insertSubview (const SharedPointer<CView>& view, const Optional<size_t>& position)
 {
-	vstgui_assert (pBefore == nullptr);
-	
-	CRect viewSize (pView->getViewSize ());
+	vstgui_assert (!position);
+
+	CRect viewSize (view->getViewSize ());
 	viewSize.originize ();
 	if (style == kHorizontal)
 		viewSize.setHeight (getHeight ());
@@ -550,7 +551,7 @@ bool CSplitView::addView (CView* pView, CView* pBefore)
 	ReverseViewIterator it (this);
 	if (*it)
 	{
-		CView* lastView = *it;
+		auto lastView = *it;
 		CRect r (lastView->getViewSize ());
 		if (style == kHorizontal)
 		{
@@ -564,49 +565,47 @@ bool CSplitView::addView (CView* pView, CView* pBefore)
 			r.bottom += getSeparatorWidth ();
 			viewSize.offset (0, r.bottom);
 		}
-		auto* separator = new CSplitViewSeparatorView (r, getStyle (), (getNbViews () - 1) / 2);
-		CViewContainer::addView (separator, nullptr);
+		auto separator =
+			makeOwned<CSplitViewSeparatorView> (r, getStyle (), (getNbViews () - 1) / 2);
+		CViewContainer::insertSubview (separator);
 	}
-	pView->setViewSize (viewSize);
-	pView->setMouseableArea (viewSize);
-	return CViewContainer::addView (pView, nullptr);
+	view->setViewSize (viewSize);
+	view->setMouseableArea (viewSize);
+	return CViewContainer::insertSubview (view);
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::removeView (CView* pView, bool withForget)
+bool CSplitView::removeSubview (const SharedPointer<CView>& view)
 {
 	ReverseViewIterator it (this);
 	while (*it)
 	{
-		if (*it == pView)
+		if (*it == view)
 		{
 			++it;
 			if (*it)
 			{
 				if (auto sepView = (*it).cast<CSplitViewSeparatorView> ())
 				{
-					CViewContainer::removeView (sepView, true);
+					CViewContainer::removeSubview (sepView);
 				}
 			}
 			else
 			{
 				if (auto sepView = getView (1).cast<CSplitViewSeparatorView> ())
 				{
-					CViewContainer::removeView (sepView, true);
+					CViewContainer::removeSubview (sepView);
 				}
 			}
 			break;
 		}
 		++it;
 	}
-	return CViewContainer::removeView (pView, withForget);
+	return CViewContainer::removeSubview (view);
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::removeAll (bool withForget)
-{
-	return CViewContainer::removeAll (withForget);
-}
+bool CSplitView::removeAll () { return CViewContainer::removeAll (); }
 
 //-----------------------------------------------------------------------------
 bool CSplitView::sizeToFit ()
@@ -617,8 +616,7 @@ bool CSplitView::sizeToFit ()
 //-----------------------------------------------------------------------------
 void CSplitView::storeViewSizes ()
 {
-	ISplitViewController* controller = getSplitViewController (*this);
-	if (controller)
+	if (auto controller = getSplitViewController (*this))
 	{
 		int32_t index = 0;
 		ViewIterator it (this);
@@ -628,7 +626,8 @@ void CSplitView::storeViewSizes ()
 			if (sepView == nullptr)
 			{
 				CRect r ((*it)->getViewSize ());
-				controller->storeViewSize (index, style == kHorizontal ? r.getWidth () : r.getHeight (), this);
+				controller->storeViewSize (
+					index, style == kHorizontal ? r.getWidth () : r.getHeight (), *this);
 				index++;
 			}
 			++it;
@@ -637,18 +636,17 @@ void CSplitView::storeViewSizes ()
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::removed (CView* parent)
+bool CSplitView::removed (const SharedPointer<CViewContainer>& parent)
 {
 	storeViewSizes ();
 	return CViewContainer::removed (parent);
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::attached (CView* parent)
+bool CSplitView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	bool result = CViewContainer::attached (parent);
-	ISplitViewController* controller = getSplitViewController (*this);
-	if (controller)
+	if (auto controller = getSplitViewController (*this))
 	{
 		CRect r;
 		CPoint offset;
@@ -665,11 +663,11 @@ bool CSplitView::attached (CView* parent)
 			}
 			else
 			{
-				CView* view = *it;
+				auto view = *it;
 				r = view->getViewSize ();
 				r.offset (offset.x, offset.y);
 				CCoord size;
-				if (controller->restoreViewSize (index, size, this))
+				if (controller->restoreViewSize (index, size, *this))
 				{
 					if (style == kHorizontal)
 					{
@@ -693,17 +691,17 @@ bool CSplitView::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, CRect newSize)
+bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView& separatorView, CRect newSize)
 {
 	if (inApplyViewLayout ())
 		return false;
 
 	ViewIterator it (this);
-	CView* view1 = nullptr;
-	CView* view2 = nullptr;
+	SharedPointer<CView> view1;
+	SharedPointer<CView> view2;
 	while (*it)
 	{
-		if (*it == separatorView)
+		if ((*it).get () == &separatorView)
 		{
 			++it;
 			view2 = *it;
@@ -722,7 +720,7 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 		SplitViewLayouter::LayoutData layoutData;
 		layoutData.push_back (
 			{view1->getRuntimeID (), view1->getViewSize (), view1->getMouseableArea (), {}});
-		layoutData.push_back ({separatorView->getRuntimeID (), newSize, newSize, {}});
+		layoutData.push_back ({separatorView.getRuntimeID (), newSize, newSize, {}});
 		layoutData.push_back (
 			{view2->getRuntimeID (), view2->getViewSize (), view2->getMouseableArea (), {}});
 		if (auto layouter = getViewLayouter ().cast<SplitViewLayouter> ())
@@ -740,14 +738,13 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 ISplitViewSeparatorDrawer* CSplitView::getDrawer ()
 {
 	ISplitViewSeparatorDrawer* drawer = nullptr;
-	ISplitViewController* controller = getSplitViewController (*this);
-	if (controller)
-		drawer = controller->getSplitViewSeparatorDrawer (this);
+	if (auto controller = getSplitViewController (*this))
+		drawer = controller->getSplitViewSeparatorDrawer (*this);
 	return drawer ? drawer : separatorDrawer;
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::addViewToSeparator (int32_t sepIndex, CView* view)
+bool CSplitView::addViewToSeparator (int32_t sepIndex, const SharedPointer<CView>& view)
 {
 	ViewIterator it (this);
 	while (*it)
@@ -756,7 +753,7 @@ bool CSplitView::addViewToSeparator (int32_t sepIndex, CView* view)
 		{
 			if (sepIndex == 0)
 			{
-				sepView->addView (view);
+				sepView->addSubview (view);
 				return true;
 			}
 			sepIndex--;
@@ -781,11 +778,11 @@ CSplitViewSeparatorView::CSplitViewSeparatorView (const CRect& size, CSplitView:
 //-----------------------------------------------------------------------------
 void CSplitViewSeparatorView::drawRect (CDrawContext *pContext, const CRect& r)
 {
-	auto* splitView = static_cast<CSplitView*> (getParentView ());
+	auto splitView = getParentView ().cast<CSplitView> ();
 	ISplitViewSeparatorDrawer* drawer = splitView ? splitView->getDrawer () : nullptr;
 	if (drawer)
 	{
-		drawer->drawSplitViewSeparator (pContext, getViewSize (), flags, index, splitView);
+		drawer->drawSplitViewSeparator (*pContext, getViewSize (), flags, index, *splitView.get ());
 	}
 	CViewContainer::drawRect (pContext, r);
 }
@@ -847,9 +844,8 @@ void CSplitViewSeparatorView::mouseMoved (MouseEvent& event)
 				newSize.offset (event.mousePosition.x - lastMousePos.x, 0);
 			else
 				newSize.offset (0, event.mousePosition.y - lastMousePos.y);
-			auto* splitView = static_cast<CSplitView*> (getParentView ());
-			if (splitView)
-				splitView->requestNewSeparatorSize (this, newSize);
+			if (auto splitView = getParentView ().cast<CSplitView> ())
+				splitView->requestNewSeparatorSize (*this, newSize);
 		}
 		event.consumed = true;
 	}
@@ -885,10 +881,13 @@ void CSplitViewSeparatorView::onMouseEnterEvent (MouseEnterEvent& event)
 	}
 	setBit (flags, ISplitViewSeparatorDrawer::kMouseOver, true);
 	invalid ();
-	if (style == CSplitView::kHorizontal)
-		getFrame ()->setCursor (kCursorHSize);
-	else
-		getFrame ()->setCursor (kCursorVSize);
+	if (auto frame = getFrame ())
+	{
+		if (style == CSplitView::kHorizontal)
+			frame->setCursor (kCursorHSize);
+		else
+			frame->setCursor (kCursorVSize);
+	}
 	event.consumed = true;
 }
 
@@ -897,15 +896,19 @@ void CSplitViewSeparatorView::onMouseExitEvent (MouseExitEvent& event)
 {
 	setBit (flags, ISplitViewSeparatorDrawer::kMouseOver, false);
 	invalid ();
-	getFrame ()->setCursor (kCursorDefault);
+	if (auto frame = getFrame ())
+		frame->setCursor (kCursorDefault);
 	event.consumed = true;
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitViewSeparatorView::removed (CView* parent)
+bool CSplitViewSeparatorView::removed (const SharedPointer<CViewContainer>& parent)
 {
-	if (hasBit (flags, ISplitViewSeparatorDrawer::kMouseOver) && getFrame ())
-		getFrame ()->setCursor (kCursorDefault);
+	if (hasBit (flags, ISplitViewSeparatorDrawer::kMouseOver))
+	{
+		if (auto frame = getFrame ())
+			frame->setCursor (kCursorDefault);
+	}
 	return CViewContainer::removed (parent);
 }
 

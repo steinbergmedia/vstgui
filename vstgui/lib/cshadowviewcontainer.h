@@ -42,8 +42,8 @@ public:
 	//@}
 
 	// override
-	bool removed (CView* parent) override;
-	bool attached (CView* parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -53,9 +53,9 @@ public:
 
 	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:
-	void viewContainerViewAdded (CViewContainer* container, CView* view) override;
-	void viewContainerViewRemoved (CViewContainer* container, CView* view) override;
-	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) override;
+	void viewContainerViewAdded (CViewContainer& container, CView& view) override;
+	void viewContainerViewRemoved (CViewContainer& container, CView& view) override;
+	void viewContainerViewZOrderChanged (CViewContainer& container, CView& view) override;
 
 	void beforeDelete () override;
 

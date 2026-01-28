@@ -28,9 +28,10 @@ class DataSource;
 
 //------------------------------------------------------------------------
 template<typename Proc>
-CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
-							   SharedPointer<COptionMenu> optionMenu, GenericOptionMenuTheme& theme,
-							   CRect viewRect, DataSource* parentDataSource);
+SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer& container,
+											 SharedPointer<COptionMenu> optionMenu,
+											 GenericOptionMenuTheme& theme, CRect viewRect,
+											 DataSource* parentDataSource);
 
 //------------------------------------------------------------------------
 class DataSource : public DataBrowserDelegateAdapter,
@@ -38,7 +39,7 @@ class DataSource : public DataBrowserDelegateAdapter,
                    public NonAtomicReferenceCounted
 {
 public:
-	DataSource (CViewContainer* mainContainer, SharedPointer<COptionMenu> menu,
+	DataSource (CViewContainer& mainContainer, SharedPointer<COptionMenu> menu,
 				const ClickCallback& clickCallback, GenericOptionMenuTheme theme,
 				DataSource* parentDataSource)
 	: mainContainer (mainContainer)
@@ -104,42 +105,44 @@ private:
 
 	void dbAttached (CDataBrowser* browser) override
 	{
-		db = browser;
-		db->getFrame ()->registerMouseObserver (this);
+		db = shared (browser);
+		if (auto frame = db->getFrame ())
+			frame->registerMouseObserver (this);
 	}
 
 	void dbRemoved (CDataBrowser* browser) override
 	{
-		vstgui_assert (db == browser, "unexpected");
+		vstgui_assert (db.get () == browser, "unexpected");
 		closeSubMenu (false);
-		db->getFrame ()->unregisterMouseObserver (this);
+		if (auto frame = db->getFrame ())
+			frame->unregisterMouseObserver (this);
 		db = nullptr;
 		clickCallback (menu, ViewRemoved);
 	}
 
-	void onMouseEntered (CView* view, CFrame* frame) override
+	void onMouseEntered (CView& view, CFrame& frame) override
 	{
-		if (view == subMenuView)
+		if (&view == subMenuView.get ())
 		{
 			if (selectedRow >= 0)
 				db->setSelectedRow (selectedRow);
 		}
 	}
-	
-	void onMouseExited (CView* view, CFrame* frame) override
+
+	void onMouseExited (CView& view, CFrame& frame) override
 	{
-		if (view != db)
+		if (&view != db.get ())
 			return;
 		selectedRow = db->getSelectedRow ();
 		db->setSelectedRow (CDataBrowser::kNoSelection);
-		db->getFrame ()->doAfterEventProcessing ([this] () {
+		frame.doAfterEventProcessing ([this] () {
 			if (db->getSelectedRow () == CDataBrowser::kNoSelection && subMenuView)
 			{
 				closeSubMenu ();
 			}
 		});
 	}
-	void onMouseEvent (MouseEvent& event, CFrame* frame) override {}
+	void onMouseEvent (MouseEvent& event, CFrame& frame) override {}
 
 	int32_t dbGetNumRows (CDataBrowser* browser) override { return menu->getNbEntries (); }
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 1; }
@@ -281,20 +284,23 @@ private:
 		{
 			if (!allowAnimation)
 			{
-				subMenuView->getParentView ()->asViewContainer ()->removeView (subMenuView);
+				if (auto parent = subMenuView->getParentView ())
+				{
+					parent->removeSubview (subMenuView);
+				}
 			}
 			else
 			{
-				auto view = shared (subMenuView);
-				subMenuView = nullptr;
+				auto view = subMenuView;
+				subMenuView.reset ();
 				view->addAnimation (
-				    "AlphaAnimation", new AlphaValueAnimation (0.f, true),
-				    new CubicBezierTimingFunction (
-				        CubicBezierTimingFunction::easyOut (theme.menuAnimationTime)),
-				    [view] (CView*, const IdStringPtr, IAnimationTarget*) {
-					    if (view->isAttached ())
-						    view->getParentView ()->asViewContainer ()->removeView (view);
-				    });
+					"AlphaAnimation", makeOwned<AlphaValueAnimation> (0.f, true),
+					makeOwned<CubicBezierTimingFunction> (
+						CubicBezierTimingFunction::easyOut (theme.menuAnimationTime)),
+					[view] (CView&, const IdStringPtr, IAnimationTarget&) {
+						if (view->isAttached ())
+							view->getParentView ()->removeSubview (view);
+					});
 				if (db)
 				{
 					if (auto frame = db->getFrame ())
@@ -435,10 +441,10 @@ private:
 	}
 	CCoord getSubmenuIndicatorWidth () { return dbGetHeaderHeight (nullptr); }
 
-	CViewContainer* mainContainer;
+	CViewContainer& mainContainer;
 	SharedPointer<COptionMenu> menu;
-	CDataBrowser* db {nullptr};
-	CView* subMenuView {nullptr};
+	SharedPointer<CDataBrowser> db;
+	SharedPointer<CView> subMenuView;
 	DataSource* parentDataSource {nullptr};
 	ClickCallback clickCallback;
 	CCoord checkmarkSize {0.};
@@ -462,14 +468,15 @@ inline CColor makeDarkerColor (CColor baseColor)
 
 //------------------------------------------------------------------------
 template<typename Proc>
-CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
-							   SharedPointer<COptionMenu> optionMenu, GenericOptionMenuTheme& theme,
-							   CRect viewRect, DataSource* parentDataSource)
+SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer& container,
+											 SharedPointer<COptionMenu> optionMenu,
+											 GenericOptionMenuTheme& theme, CRect viewRect,
+											 DataSource* parentDataSource)
 {
-	auto frame = container->getFrame ();
+	auto frame = container.getFrame ();
 	auto dataSource =
 	    makeOwned<DataSource> (container, optionMenu, clickCallback, theme, parentDataSource);
-	auto maxWidth = dataSource->calculateMaxWidth (frame);
+	auto maxWidth = dataSource->calculateMaxWidth (frame.get ());
 	if (parentDataSource)
 	{
 		viewRect.offset (viewRect.getWidth (), 0);
@@ -494,45 +501,44 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	{
 		viewRect.setWidth (maxWidth);
 	}
-	if (container)
-	{
-		auto frSize = container->getViewSize ();
-		frSize.inset (theme.inset);
 
-		if (frSize.bottom < viewRect.bottom)
-		{
-			viewRect.offset (0, frSize.bottom - viewRect.bottom);
-		}
-		if (frSize.top > viewRect.top)
-		{
-			viewRect.offset (0, frSize.top - viewRect.top);
-		}
-		if (frSize.right < viewRect.right)
-		{
-			viewRect.offset (frSize.right - viewRect.right, 0);
-		}
-		if (frSize.left > viewRect.left)
-		{
-			viewRect.offset (frSize.left - viewRect.left, 0);
-		}
-		viewRect.bound (frSize);
-		if (maxWidth > viewRect.getWidth ())
-			dataSource->setMaxWidth (viewRect.getWidth ());
+	auto frSize = container.getViewSize ();
+	frSize.inset (theme.inset);
+
+	if (frSize.bottom < viewRect.bottom)
+	{
+		viewRect.offset (0, frSize.bottom - viewRect.bottom);
 	}
+	if (frSize.top > viewRect.top)
+	{
+		viewRect.offset (0, frSize.top - viewRect.top);
+	}
+	if (frSize.right < viewRect.right)
+	{
+		viewRect.offset (frSize.right - viewRect.right, 0);
+	}
+	if (frSize.left > viewRect.left)
+	{
+		viewRect.offset (frSize.left - viewRect.left, 0);
+	}
+	viewRect.bound (frSize);
+	if (maxWidth > viewRect.getWidth ())
+		dataSource->setMaxWidth (viewRect.getWidth ());
+
 	viewRect.makeIntegral ();
 	viewRect.inset (-1, -1);
 	viewRect.offset (1, 1);
-	auto decorView = new CViewContainer (viewRect);
+	auto decorView = makeOwned<CViewContainer> (viewRect);
 	decorView->setBackgroundColor (
 	    GenericOptionMenuDetail::makeDarkerColor (theme.backgroundColor));
 	decorView->setBackgroundColorDrawStyle (kDrawStroked);
 	viewRect.originize ();
 	viewRect.inset (1., 1.);
 	auto browser =
-	    new CDataBrowser (viewRect, dataSource,
-	                      CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar |
-	                          CDataBrowser::kOverlayScrollbars,
-	                      2);
+		makeOwned<CDataBrowser> (viewRect, dataSource.get (),
+								 CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar |
+									 CDataBrowser::kOverlayScrollbars,
+								 2.);
 	if (auto sv = browser->getVerticalScrollbar ())
 	{
 		sv->setBackgroundColor (kTransparentCColor);
@@ -540,18 +546,18 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 		sv->setScrollerColor (theme.textColor);
 	}
 	browser->setBackgroundColor (theme.backgroundColor);
-	decorView->addView (browser);
+	decorView->addSubview (browser);
 
-	container->addView (decorView);
+	container.addSubview (decorView);
 
 	if (frame)
 		frame->setFocusView (browser);
 
 	using namespace Animation;
 	decorView->setAlphaValue (0.f);
-	decorView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f, true),
-	                         new CubicBezierTimingFunction (
-	                             CubicBezierTimingFunction::easyIn (theme.menuAnimationTime / 2)));
+	decorView->addAnimation ("AlphaAnimation", makeOwned<AlphaValueAnimation> (1.f, true),
+							 makeOwned<CubicBezierTimingFunction> (
+								 CubicBezierTimingFunction::easyIn (theme.menuAnimationTime / 2)));
 	if (!parentDataSource && optionMenu->isCheckStyle ())
 	{
 		browser->makeRowVisible (static_cast<int32_t> (optionMenu->getValue ()));
@@ -579,8 +585,9 @@ struct GenericOptionMenu::Impl
 };
 
 //------------------------------------------------------------------------
-GenericOptionMenu::GenericOptionMenu (CFrame* frame, MouseEventButtonState initialButtons,
-                                      GenericOptionMenuTheme theme)
+GenericOptionMenu::GenericOptionMenu (const SharedPointer<CFrame>& frame,
+									  MouseEventButtonState initialButtons,
+									  GenericOptionMenuTheme theme)
 {
 	auto frameSize = frame->getViewSize ();
 	frame->getTransform ().inverse ().transform (frameSize);
@@ -589,7 +596,7 @@ GenericOptionMenu::GenericOptionMenu (CFrame* frame, MouseEventButtonState initi
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->frame = frame;
 	impl->theme = theme;
-	impl->container = new Impl::ContainerT (frameSize);
+	impl->container = makeOwned<Impl::ContainerT> (frameSize);
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
 	impl->container->registerViewEventListener (this);
@@ -622,15 +629,15 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 
 		auto self = shared (this);
 		impl->container->addAnimation (
-			"OptionMenuDone", new AlphaValueAnimation (0.f, true),
-			new CubicBezierTimingFunction (
+			"OptionMenuDone", makeOwned<AlphaValueAnimation> (0.f, true),
+			makeOwned<CubicBezierTimingFunction> (
 				CubicBezierTimingFunction::easyOut (impl->theme.menuAnimationTime)),
-			[self, result] (CView*, const IdStringPtr, IAnimationTarget*) {
+			[self, result] (CView&, const IdStringPtr, IAnimationTarget&) {
 				if (!self->impl->container)
 					return;
 				auto callback = std::move (self->impl->callback);
 				self->impl->callback = nullptr;
-				self->impl->container->unregisterViewEventListener (self);
+				self->impl->container->unregisterViewEventListener (self.get ());
 				if (self->impl->modalViewSession)
 				{
 					self->impl->frame->endModalViewSession (*self->impl->modalViewSession);
@@ -715,15 +722,15 @@ void GenericOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
 
 	auto self = shared (this);
 	auto clickCallback = [self] (auto menu, int32_t index) {
-		self->impl->container->unregisterViewEventListener (self);
+		self->impl->container->unregisterViewEventListener (self.get ());
 		self->removeModalView ({menu, index});
 	};
 
 	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize (), true);
 	auto where = viewRect.getCenter ();
 
-	GenericOptionMenuDetail::setupGenericOptionMenu (clickCallback, impl->container, optionMenu,
-	                                                 impl->theme, viewRect, nullptr);
+	GenericOptionMenuDetail::setupGenericOptionMenu (clickCallback, *(impl->container.get ()),
+													 optionMenu, impl->theme, viewRect, nullptr);
 
 	if (auto view = impl->frame->getViewAt (where, GetViewOptions ().deep ().includeInvisible ()))
 	{

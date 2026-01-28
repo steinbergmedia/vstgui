@@ -125,7 +125,7 @@ bool SharedUIResources::load () const
 		if (!description->parse ())
 		{
 #if VSTGUI_LIVE_EDITING
-			if (!initUIDescAsNew (*description, nullptr))
+			if (!initUIDescAsNew (*description.get (), nullptr))
 				return false;
 #else
 			return false;
@@ -139,7 +139,7 @@ bool SharedUIResources::load () const
 		uiDesc = std::move (description);
 #if VSTGUI_LIVE_EDITING
 		auto res = Detail::checkAndUpdateUIDescFilePath (
-		    *uiDesc, nullptr, "The resource ui desc file location cannot be found.");
+			*uiDesc.get (), nullptr, "The resource ui desc file location cannot be found.");
 		if (res == UIDescCheckFilePathResult::Cancel)
 		{
 			IApplication::instance ().quit ();
@@ -237,8 +237,9 @@ static void updateUIDescFilePath (const char* path, UIDescription& uiDesc)
 }
 
 //------------------------------------------------------------------------
-UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* _frame,
-                                                        UTF8StringPtr notFoundText)
+UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc,
+														SharedPointer<CFrame> frame,
+														UTF8StringPtr notFoundText)
 {
 	auto originalPath = std::string (uiDesc.getFilePath ());
 	CFileStream stream;
@@ -264,7 +265,6 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 			}
 		}
 	}
-	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 
@@ -278,7 +278,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 	{
 		return UIDescCheckFilePathResult::Cancel;
 	}
-	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
+	auto fs = CNewFileSelector::create (frame, CNewFileSelector::kSelectFile);
 	if (savedPath)
 		fs->setInitialDirectory (*savedPath);
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
@@ -298,12 +298,11 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 }
 
 //------------------------------------------------------------------------
-bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
+bool initUIDescAsNew (UIDescription& uiDesc, SharedPointer<CFrame> frame)
 {
-	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
-	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
+	auto fs = CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile);
 	vstgui_assert (fs, "create new FileSelector failed");
 	VSTGUI::Standalone::Preferences prefs;
 	if (auto initPath = prefs.get (UIDescPathKey))

@@ -45,7 +45,8 @@ public:
 	bool getCell (const CPoint& where, CDataBrowser::Cell& cell);
 
 	bool drawFocusOnTop () override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
+
 protected:
 
 	IDataBrowserDelegate* db;
@@ -95,9 +96,9 @@ CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t
 , dbHeaderContainer (nullptr)
 {
 	setTransparency (true);
-	dbView = new CDataBrowserView (CRect (0, 0, 0, 0), db, this);
+	dbView = makeOwned<CDataBrowserView> (CRect (0, 0, 0, 0), db, this);
 	dbView->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (dbView);
+	addSubview (dbView);
 	auto obj = dynamic_cast<IReference*>(db);
 	if (obj)
 		obj->remember ();
@@ -143,7 +144,7 @@ bool CDataBrowser::wantsFocus () const
 }
 
 //-----------------------------------------------------------------------------------------------
-bool CDataBrowser::attached (CView *parent)
+bool CDataBrowser::attached (const SharedPointer<CViewContainer>& parent)
 {
 	bool result = CScrollView::attached (parent);
 	if (result)
@@ -155,7 +156,7 @@ bool CDataBrowser::attached (CView *parent)
 }
 
 //-----------------------------------------------------------------------------------------------
-bool CDataBrowser::removed (CView* parent)
+bool CDataBrowser::removed (const SharedPointer<CViewContainer>& parent)
 {
 	if (isAttached ())
 		db->dbRemoved (this);
@@ -175,22 +176,22 @@ CMouseEventResult CDataBrowser::onMouseDown (CPoint& where, const CButtonState& 
 	CMouseEventResult result = CViewContainer::onMouseDown (where, buttons);
 	if (auto frame = getFrame ())
 	{
-		CView* focusView = frame->getFocusView ();
-		if (focusView != dbView && !isChild (focusView, true))
+		auto focusView = frame->getFocusView ();
+		if (focusView.get () != dbView.get () && !isChild (focusView, true))
 			frame->setFocusView (dbView);
 	}
 	return result;
 }
 
 //-----------------------------------------------------------------------------
-void CDataBrowser::valueChanged (CControl *pControl)
+void CDataBrowser::valueChanged (CControl& control)
 {
 	CPoint origOffset = getScrollOffset ();
-	CScrollView::valueChanged (pControl);
+	CScrollView::valueChanged (control);
 	CPoint offset = getScrollOffset ();
 	if (origOffset != offset)
 	{
-		switch (pControl->getTag ())
+		switch (control.getTag ())
 		{
 			case kHSBTag:
 			{
@@ -209,14 +210,18 @@ void CDataBrowser::valueChanged (CControl *pControl)
 		}
 		if (isAttached () && (getMouseDownView () == dbView || getMouseDownView () == nullptr))
 		{
-			CPoint where;
-			getFrame ()->getCurrentMouseLocation (where);
-			if (getFrame ()->getViewAt (where, GetViewOptions ().deep ()) == dbView)
+			if (auto frame = getFrame ())
 			{
-				CDataBrowser::Cell cell;
-				dbView->frameToLocal (where);
-				dbView->getCell (where, cell);
-				db->dbOnMouseMoved (where, getFrame ()->getCurrentMouseButtons (), cell.row, cell.column, this);
+				CPoint where;
+				frame->getCurrentMouseLocation (where);
+				if (frame->getViewAt (where, GetViewOptions ().deep ()) == dbView)
+				{
+					CDataBrowser::Cell cell;
+					dbView->frameToLocal (where);
+					dbView->getCell (where, cell);
+					db->dbOnMouseMoved (where, frame->getCurrentMouseButtons (), cell.row,
+										cell.column, this);
+				}
 			}
 		}
 	}
@@ -249,11 +254,11 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		CRect headerSize (0, 0, newContainerSize.getWidth (), headerHeight + lineWidth);
 		if (dbHeader == nullptr)
 		{
-			dbHeaderContainer = new CViewContainer (headerSize);
+			dbHeaderContainer = makeOwned<CViewContainer> (headerSize);
 			dbHeaderContainer->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->setTransparency (true);
-			dbHeader = new CDataBrowserHeader (headerSize, db, this);
-			dbHeaderContainer->addView (dbHeader);
+			dbHeader = makeOwned<CDataBrowserHeader> (headerSize, db, this);
+			dbHeaderContainer->addSubview (dbHeader);
 			setEdgeView (Edge::Top, dbHeaderContainer);
 		}
 		else
@@ -264,9 +269,9 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		}
 	}
 	setContainerSize (newContainerSize, true);
-	if (dbView->getParentView ())
+	if (auto parent = dbView->getParentView ())
 	{
-		CRect ps = dbView->getParentView ()->getViewSize ();
+		CRect ps = parent->getViewSize ();
 		if (newContainerSize.getWidth () < ps.getWidth ())
 			newContainerSize.setWidth (ps.getWidth ());
 		if (newContainerSize.getHeight () < ps.getHeight ())
@@ -278,7 +283,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	dbView->setViewSize (newContainerSize);
 	dbView->setMouseableArea (newContainerSize);
 
-	CControl* scrollbar = getVerticalScrollbar ();
+	auto scrollbar = getVerticalScrollbar ();
 	if (scrollbar && newContainerSize.getHeight () > 0.)
 	{
 		float wheelInc = (float)(rowHeight / newContainerSize.getHeight ());
@@ -532,10 +537,11 @@ void CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
 	CRect r = getCellBounds (cell);
 	makeRectVisible (r);
 	CRect cellRect = getCellBounds (cell);
-	auto* te = new CTextEdit (cellRect, nullptr, -1, initialText);
-	db->dbCellSetupTextEdit (cell.row, cell.column, te, this);
-	addView (te);
-	getFrame ()->setFocusView (te);
+	auto te = makeOwned<CTextEdit> (cellRect, nullptr, -1, initialText);
+	db->dbCellSetupTextEdit (cell.row, cell.column, te.get (), this);
+	addSubview (te);
+	if (auto frame = getFrame ())
+		frame->setFocusView (te);
 	// save row and column
 	te->setAttribute ('row ', cell.row);
 	te->setAttribute ('col ', cell.column);
@@ -546,7 +552,7 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgLooseFocus)
 	{
-		if (auto* te = dynamic_cast<CTextEdit*>(sender))
+		if (auto te = shared (dynamic_cast<CTextEdit*> (sender)))
 		{
 			// get row and column
 			int32_t row = kNoSelection;
@@ -555,8 +561,9 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, IdStringPtr message)
 			te->getAttribute ('col ', col);
 			UTF8StringPtr newText = te->getText ();
 			db->dbCellTextChanged (row, col, newText, this);
-			removeView (te);
-			getFrame ()->setFocusView (dbView);
+			removeSubview (te);
+			if (auto frame = getFrame ())
+				frame->setFocusView (dbView);
 			return kMessageNotified;
 		}
 	}
@@ -611,7 +618,6 @@ void CDataBrowserHeader::drawRect (CDrawContext* context, const CRect& updateRec
 		}
 		r.offset (r.getWidth (), 0);
 	}
-	setDirty (false);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -654,7 +660,8 @@ CMouseEventResult CDataBrowserHeader::onMouseDown (CPoint &where, const CButtonS
 	{
 		startWidth = db->dbGetCurrentColumnWidth (mouseColumn, browser);
 		startMousePoint = where;
-		getFrame ()->setCursor (kCursorHSize);
+		if (auto frame = getFrame ())
+			frame->setCursor (kCursorHSize);
 		return onMouseMoved (where, buttons);
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -687,15 +694,15 @@ CMouseEventResult CDataBrowserHeader::onMouseMoved (CPoint &where, const CButton
 		}
 		return kMouseEventHandled;
 	}
-	else
+	else if (auto frame = getFrame ())
 	{
 		int32_t col = getColumnAtPoint (where);
 		CCoord minWidth;
 		CCoord maxWidth;
 		if (col >= 0 && db->dbGetColumnDescription (col, minWidth, maxWidth, browser) && minWidth != maxWidth)
-			getFrame ()->setCursor (kCursorHSize);
+			frame->setCursor (kCursorHSize);
 		else
-			getFrame ()->setCursor (kCursorDefault);
+			frame->setCursor (kCursorDefault);
 	}
 	return kMouseEventNotHandled;
 }
@@ -703,14 +710,16 @@ CMouseEventResult CDataBrowserHeader::onMouseMoved (CPoint &where, const CButton
 //-----------------------------------------------------------------------------------------------
 CMouseEventResult CDataBrowserHeader::onMouseExited (CPoint &where, const CButtonState& buttons)
 {
-	getFrame ()->setCursor (kCursorDefault);
+	if (auto frame = getFrame ())
+		frame->setCursor (kCursorDefault);
 	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------------------------
 CMouseEventResult CDataBrowserHeader::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
-	getFrame ()->setCursor (kCursorDefault);
+	if (auto frame = getFrame ())
+		frame->setCursor (kCursorDefault);
 	return kMouseEventHandled;
 }
 
@@ -842,7 +851,6 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		context->setLineStyle (kLineSolid);
 		context->drawLines (lines);
 	}
-	setDirty (false);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -886,7 +894,8 @@ bool CDataBrowserView::getCell (const CPoint& where, CDataBrowser::Cell& cell)
 //-----------------------------------------------------------------------------------------------
 CMouseEventResult CDataBrowserView::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
-	getFrame ()->setFocusView (this);
+	if (auto frame = getFrame ())
+		frame->setFocusView (shared (this));
 	CDataBrowser::Cell cell;
 	if (getCell (where, cell))
 	{
@@ -974,7 +983,7 @@ bool CDataBrowserView::onDrop (DragEventData data)
 		cellPoint.x -= r.left;
 		cellPoint.y -= r.top;
 	}
-	return db->dbOnDropInCell (cell.row, cell.column, cellPoint, data.drag, browser);
+	return db->dbOnDropInCell (cell.row, cell.column, cellPoint, data.drag.get (), browser);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -984,14 +993,15 @@ static const CViewAttributeID kDataBrowserViewDragColumn = 'vddc';
 //-----------------------------------------------------------------------------------------------
 DragOperation CDataBrowserView::onDragEnter (DragEventData data)
 {
-	db->dbOnDragEnterBrowser (data.drag, browser);
+	db->dbOnDragEnterBrowser (data.drag.get (), browser);
 	CDataBrowser::Cell cell;
 	getCell (data.pos, cell);
 	CRect r = browser->getCellBounds (cell);
 	CPoint cellPoint (data.pos);
 	cellPoint.x -= r.left;
 	cellPoint.y -= r.top;
-	auto result = db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
+	auto result =
+		db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag.get (), browser);
 	setAttribute (kDataBrowserViewDragRow, cell.row);
 	setAttribute (kDataBrowserViewDragColumn, cell.column);
 	return result;
@@ -1004,10 +1014,10 @@ void CDataBrowserView::onDragLeave (DragEventData data)
 	int32_t oldColNum = -1;
 	getAttribute (kDataBrowserViewDragRow, oldRowNum);
 	getAttribute (kDataBrowserViewDragColumn, oldColNum);
-	db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
+	db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag.get (), browser);
 	removeAttribute (kDataBrowserViewDragRow);
 	removeAttribute (kDataBrowserViewDragColumn);
-	db->dbOnDragExitBrowser (data.drag, browser);
+	db->dbOnDragExitBrowser (data.drag.get (), browser);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -1027,14 +1037,16 @@ DragOperation CDataBrowserView::onDragMove (DragEventData data)
 	if (oldRowNum != cell.row || oldColNum != cell.column)
 	{
 		if (oldRowNum != -1 && oldColNum != -1)
-			db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
-		result = db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
+			db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag.get (), browser);
+		result =
+			db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag.get (), browser);
 		setAttribute (kDataBrowserViewDragRow, cell.row);
 		setAttribute (kDataBrowserViewDragColumn, cell.column);
 	}
 	else
 	{
-		result = db->dbOnDragMoveInCell (cell.row, cell.column, cellPoint, data.drag, browser);
+		result =
+			db->dbOnDragMoveInCell (cell.row, cell.column, cellPoint, data.drag.get (), browser);
 	}
 	return result;
 }
@@ -1082,12 +1094,11 @@ bool CDataBrowserView::drawFocusOnTop ()
 }
 
 //-----------------------------------------------------------------------------------------------
-bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
+bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	CRect r = getVisibleViewSize ();
 	outPath.addRect (r);
-	CCoord focusWidth = getFrame ()->getFocusWidth ();
-	r.inset (focusWidth, focusWidth);
+	r.inset (focusLineWidth, focusLineWidth);
 	outPath.addRect (r);
 	return true;
 }

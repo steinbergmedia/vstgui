@@ -27,7 +27,7 @@ class CocoaFileSelector
 , public std::enable_shared_from_this<CocoaFileSelector>
 {
 public:
-	CocoaFileSelector (PlatformFileSelectorStyle style, NSViewFrame* frame);
+	CocoaFileSelector (PlatformFileSelectorStyle style, SharedPointer<NSViewFrame> frame);
 	~CocoaFileSelector () override = default;
 
 	bool run (const PlatformFileSelectorConfig& config) override;
@@ -41,14 +41,14 @@ protected:
 	void setupInitalDir (const PlatformFileSelectorConfig& config);
 
 	PlatformFileSelectorStyle style;
-	NSViewFrame* frame {nullptr};
+	SharedPointer<NSViewFrame> frame;
 	NSSavePanel* savePanel {nullptr};
 	PlatformFileSelectorConfig::CallbackFunc callback;
 };
 
 //-----------------------------------------------------------------------------
 PlatformFileSelectorPtr createCocoaFileSelector (PlatformFileSelectorStyle style,
-												 NSViewFrame* frame)
+												 SharedPointer<NSViewFrame> frame)
 {
 	return std::make_shared<CocoaFileSelector> (style, frame);
 }
@@ -59,7 +59,8 @@ void CocoaFileSelector::initClass ()
 }
 
 //-----------------------------------------------------------------------------
-CocoaFileSelector::CocoaFileSelector (PlatformFileSelectorStyle style, NSViewFrame* frame)
+CocoaFileSelector::CocoaFileSelector (PlatformFileSelectorStyle style,
+									  SharedPointer<NSViewFrame> frame)
 : style (style), frame (frame)
 {
 	initClass ();

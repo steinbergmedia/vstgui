@@ -13,7 +13,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 PlatformFileSelectorPtr createCocoaFileSelector (PlatformFileSelectorStyle style,
-												 NSViewFrame* frame);
+												 SharedPointer<NSViewFrame> frame);
 
 } // VSTGUI
 

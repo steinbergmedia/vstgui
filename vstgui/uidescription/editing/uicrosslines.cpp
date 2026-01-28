@@ -13,11 +13,9 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UICrossLines::UICrossLines (CViewContainer* view, int32_t style, const CColor& background, const CColor& foreground)
-: UIOverlayView (view)
-, style (style)
-, background (background)
-, foreground (foreground)
+UICrossLines::UICrossLines (const SharedPointer<CViewContainer>& view, int32_t style,
+							const CColor& background, const CColor& foreground)
+: UIOverlayView (view), style (style), background (background), foreground (foreground)
 {
 }
 

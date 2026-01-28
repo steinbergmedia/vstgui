@@ -102,17 +102,10 @@ public:
 			 Styles style = {{kLeft, kHorizontal}});
 	CSlider (const CSlider& slider);
 
-//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 	/// @name CSlider Methods
-//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 	//@{
-	VSTGUI_DEPRECATED (
-	    /** \deprecated use setBackgroundOffset */
-	    virtual void setOffset (const CPoint& val);)
-	VSTGUI_DEPRECATED (
-	    /** \deprecated use getBackgroundOffset*/
-	    virtual CPoint getOffset () const;)
-
 	/** set background draw offset */
 	void setBackgroundOffset (const CPoint& offset);
 	/** get background draw offset */

@@ -40,18 +40,19 @@ UTF8StringPtr ScrollViewCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* ScrollViewCreator::create (const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+SharedPointer<CView> ScrollViewCreator::create (const UIAttributes& attributes,
+												const IUIDescription& description) const
 {
-	return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200),
-	                        CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+	return makeOwned<CScrollView> (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200),
+								   CScrollView::kHorizontalScrollbar |
+									   CScrollView::kVerticalScrollbar);
 }
 
 //------------------------------------------------------------------------
-bool ScrollViewCreator::apply (CView* view, const UIAttributes& attributes,
-                               const IUIDescription* description) const
+bool ScrollViewCreator::apply (CView& view, const UIAttributes& attributes,
+							   const IUIDescription& description) const
 {
-	auto* scrollView = dynamic_cast<CScrollView*> (view);
+	auto* scrollView = dynamic_cast<CScrollView*> (&view);
 	if (scrollView == nullptr)
 		return false;
 
@@ -83,8 +84,8 @@ bool ScrollViewCreator::apply (CView* view, const UIAttributes& attributes,
 	                CScrollView::kAutoHideScrollbars, style);
 	scrollView->setStyle (style);
 	CColor color;
-	CScrollbar* vscrollbar = scrollView->getVerticalScrollbar ();
-	CScrollbar* hscrollbar = scrollView->getHorizontalScrollbar ();
+	auto vscrollbar = scrollView->getVerticalScrollbar ();
+	auto hscrollbar = scrollView->getHorizontalScrollbar ();
 	if (stringToColor (attributes.getAttributeValue (kAttrScrollbarBackgroundColor), color,
 	                   description))
 	{
@@ -173,10 +174,10 @@ auto ScrollViewCreator::getAttributeType (const string& attributeName) const -> 
 }
 
 //------------------------------------------------------------------------
-bool ScrollViewCreator::getAttributeValue (CView* view, const string& attributeName,
-                                           string& stringValue, const IUIDescription* desc) const
+bool ScrollViewCreator::getAttributeValue (CView& view, const string& attributeName,
+										   string& stringValue, const IUIDescription& desc) const
 {
-	auto* sc = dynamic_cast<CScrollView*> (view);
+	auto* sc = dynamic_cast<CScrollView*> (&view);
 	if (sc == nullptr)
 		return false;
 	if (attributeName == kAttrContainerSize)
@@ -189,7 +190,7 @@ bool ScrollViewCreator::getAttributeValue (CView* view, const string& attributeN
 		stringValue = UIAttributes::doubleToString (sc->getScrollbarWidth ());
 		return true;
 	}
-	CScrollbar* scrollbar = sc->getVerticalScrollbar ();
+	auto scrollbar = sc->getVerticalScrollbar ();
 	if (!scrollbar)
 		scrollbar = sc->getHorizontalScrollbar ();
 	if (scrollbar)

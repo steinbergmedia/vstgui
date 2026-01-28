@@ -42,7 +42,7 @@ public:
 		description->unregisterListener (this);
 	}
 
-	void setSearchFieldControl (CSearchTextEdit* searchControl)
+	void setSearchFieldControl (const SharedPointer<CSearchTextEdit>& searchControl)
 	{
 		searchField = searchControl;
 		searchField->setListener (this);
@@ -59,7 +59,8 @@ public:
 				int32_t row = selectName (newName.data ());
 				if (row != -1)
 				{
-					dbOnMouseDown (CPoint (0, 0), CButtonState (kLButton|kDoubleClick), row, 0, dataBrowser);
+					dbOnMouseDown (CPoint (0, 0), CButtonState (kLButton | kDoubleClick), row, 0,
+								   dataBrowser.get ());
 					return true;
 				}
 			}
@@ -75,7 +76,7 @@ public:
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
 				removeItem (names.at (static_cast<uint32_t> (selectedRow)).data ());
-				dbSelectionChanged (dataBrowser);
+				dbSelectionChanged (dataBrowser.get ());
 				dataBrowser->setSelectedRow (selectedRow);
 				return true;
 			}
@@ -229,9 +230,9 @@ protected:
 		GenericStringListDataBrowserSource::dbRemoved (browser);
 	}
 
-	void valueChanged (CControl* control) override
+	void valueChanged (CControl& control) override
 	{
-		CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
+		CTextEdit* edit = dynamic_cast<CTextEdit*> (&control);
 		if (edit)
 			setFilter (edit->getText ());
 	}
@@ -284,7 +285,7 @@ protected:
 
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override
 	{
-		textEditControl = control;
+		textEditControl = shared (control);
 		textEditControl->setBackColor (kWhiteCColor);
 		textEditControl->setFontColor (fontColor);
 		textEditControl->setFont (drawFont);

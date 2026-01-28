@@ -26,8 +26,9 @@ public:
 		kDragStyle,
 		kLassoStyle,
 	};
-	
-	UICrossLines (CViewContainer* view, int32_t style, const CColor& background = kWhiteCColor, const CColor& foreground = kBlackCColor);
+
+	UICrossLines (const SharedPointer<CViewContainer>& view, int32_t style,
+				  const CColor& background = kWhiteCColor, const CColor& foreground = kBlackCColor);
 	~UICrossLines () override;
 
 	int32_t getStyle () const { return style; }
@@ -40,7 +41,7 @@ public:
 protected:
 	void drawLines (CDrawContext& context, const CRect& size, const CRect& selectionSize) const;
 
-	CViewContainer* editView;
+	SharedPointer<CViewContainer> editView;
 	CRect currentRect;
 	int32_t style;
 	

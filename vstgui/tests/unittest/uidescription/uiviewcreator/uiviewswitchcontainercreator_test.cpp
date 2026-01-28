@@ -16,16 +16,15 @@ using namespace UIViewCreator;
 TEST_CASE (UIViewSwitchContainerCreatorTest, TemplateNames)
 {
 	DummyUIDescription uidesc;
-	testAttribute<UIViewSwitchContainer> (kUIViewSwitchContainer, kAttrTemplateNames, "temp1,temp2",
-										  uidesc, [] (UIViewSwitchContainer* v) {
-											  auto controller =
-												  dynamic_cast<UIDescriptionViewSwitchController*> (
-													  v->getController ());
-											  EXPECT (controller);
-											  std::string str;
-		                                      controller->getTemplateNames (str);
-		                                      return str == "temp1,temp2";
-										  });
+	testAttribute<UIViewSwitchContainer> (
+		kUIViewSwitchContainer, kAttrTemplateNames, "temp1,temp2", uidesc,
+		[] (UIViewSwitchContainer* v) {
+			auto controller = v->getController ().cast<UIDescriptionViewSwitchController> ();
+			EXPECT (controller);
+			std::string str;
+			controller->getTemplateNames (str);
+			return str == "temp1,temp2";
+		});
 }
 
 TEST_CASE (UIViewSwitchContainerCreatorTest, TemplateSwitchControl)
@@ -35,8 +34,7 @@ TEST_CASE (UIViewSwitchContainerCreatorTest, TemplateSwitchControl)
 	testAttribute<UIViewSwitchContainer> (
 		kUIViewSwitchContainer, kAttrTemplateSwitchControl, kTagName, uidesc,
 		[&] (UIViewSwitchContainer* v) {
-			auto controller =
-				dynamic_cast<UIDescriptionViewSwitchController*> (v->getController ());
+			auto controller = v->getController ().cast<UIDescriptionViewSwitchController> ();
 			EXPECT (controller);
 		    return controller->getSwitchControlTag () == uidesc.tag;
 		},

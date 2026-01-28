@@ -63,7 +63,6 @@ void CTextLabel::setText (const UTF8String& txt)
 	text = txt;
 	if (textTruncateMode != kTruncateNone)
 		calculateTruncatedText ();
-	setDirty (true);
 }
 
 //------------------------------------------------------------------------
@@ -111,7 +110,6 @@ void CTextLabel::draw (CDrawContext *pContext)
 {
 	drawBack (pContext);
 	drawPlatformText (pContext, truncatedText.empty () ? text : truncatedText);
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -174,16 +172,17 @@ CMultiLineTextLabel::CMultiLineTextLabel (const CRect& size)
 }
 
 //------------------------------------------------------------------------
-void CMultiLineTextLabel::setValue (float val)
+bool CMultiLineTextLabel::setValue (float val)
 {
-	CTextLabel::setValue (val);
+	auto result = CTextLabel::setValue (val);
 
 	if (valueToStringFunction)
 	{
 		std::string string;
-		if (valueToStringFunction (value, string, this))
+		if (valueToStringFunction (getValue (), string, this))
 			setText (UTF8String (string));
 	}
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -277,8 +276,6 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 		else if (line.r.bottom > newClip.bottom)
 			break;
 	}
-
-	setDirty (false);
 }
 
 //------------------------------------------------------------------------

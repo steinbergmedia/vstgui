@@ -30,15 +30,15 @@ struct View3 : public CView
 struct TestUIDescription : public UIDescriptionAdapter,
 						   public NonAtomicReferenceCounted
 {
-	CView* createView (UTF8StringPtr name,
-					   const SharedPointer<IController>& controller) const override
+	SharedPointer<CView> createView (UTF8StringPtr name,
+									 const SharedPointer<IController>& controller) const override
 	{
 		if (UTF8StringView (name) == "v1")
-			return new View1 ();
+			return makeOwned<View1> ();
 		else if (UTF8StringView (name) == "v2")
-			return new View2 ();
+			return makeOwned<View2> ();
 		else if (UTF8StringView (name) == "v3")
-			return new View3 ();
+			return makeOwned<View3> ();
 		return nullptr;
 	}
 };
@@ -50,11 +50,11 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaIndex)
 	TestUIDescription uiDesc;
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-	auto viewSwitch = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
+	auto viewSwitch = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	viewSwitch->setAnimationTime (0);
-	auto controller = new UIDescriptionViewSwitchController (viewSwitch, &uiDesc, nullptr);
+	auto controller = makeOwned<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1,v2");
-	EXPECT (container->addView (viewSwitch));
+	EXPECT (container->addSubview (viewSwitch));
 	container->attached (rootView);
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);
@@ -69,15 +69,15 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaControl)
 	TestUIDescription uiDesc;
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-	auto viewSwitch = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
+	auto viewSwitch = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	viewSwitch->setAnimationTime (0);
-	auto control = new COnOffButton (CRect (0, 0, 0, 0));
+	auto control = makeOwned<COnOffButton> (CRect (0, 0, 0, 0));
 	control->setTag (1);
-	auto controller = new UIDescriptionViewSwitchController (viewSwitch, &uiDesc, nullptr);
+	auto controller = makeOwned<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1,v2");
 	controller->setSwitchControlTag (1);
-	EXPECT (container->addView (control));
-	EXPECT (container->addView (viewSwitch));
+	EXPECT (container->addSubview (control));
+	EXPECT (container->addSubview (viewSwitch));
 	container->attached (rootView);
 	EXPECT (viewSwitch->getView (0).cast<View1> ());
 	control->setValue (1.f);
@@ -91,10 +91,10 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, AutosizeAll)
 	TestUIDescription uiDesc;
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-	auto viewSwitch = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
-	auto controller = new UIDescriptionViewSwitchController (viewSwitch, &uiDesc, nullptr);
+	auto viewSwitch = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
+	auto controller = makeOwned<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v3");
-	EXPECT (container->addView (viewSwitch));
+	EXPECT (container->addSubview (viewSwitch));
 	container->attached (rootView);
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);
@@ -109,11 +109,11 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, NoAnimation)
 	TestUIDescription uiDesc;
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-	auto viewSwitch = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
+	auto viewSwitch = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	viewSwitch->setAnimationTime (0);
-	auto controller = new UIDescriptionViewSwitchController (viewSwitch, &uiDesc, nullptr);
+	auto controller = makeOwned<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1");
-	EXPECT (container->addView (viewSwitch));
+	EXPECT (container->addSubview (viewSwitch));
 	container->attached (rootView);
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);

@@ -492,12 +492,12 @@ void writeNode (const SharedPointer<UINode>& node, JSONWriter& writer)
 	if (name)
 		writer.Key (*name);
 	writer.StartObject ();
-	writeAttributes (*node->getAttributes (), writer, name != nullptr);
+	writeAttributes (*node->getAttributes ().get (), writer, name != nullptr);
 	for (const auto& child : node->getChildren ())
 	{
 		writer.Key (child->getName ());
 		writer.StartObject ();
-		writeAttributes (*child->getAttributes (), writer);
+		writeAttributes (*child->getAttributes ().get (), writer);
 		if (child->getData ().empty () == false)
 		{
 			writer.Key (keyDataStr);
@@ -520,7 +520,7 @@ void writeGradientNode (const SharedPointer<UINode>& node, JSONWriter& writer)
 	for (const auto& child : node->getChildren ())
 	{
 		writer.StartObject ();
-		writeAttributes (*child->getAttributes (), writer);
+		writeAttributes (*child->getAttributes ().get (), writer);
 		vstgui_assert (child->getChildren ().empty ());
 		writer.EndObject ();
 	}
@@ -570,7 +570,7 @@ void writeResourceNode (const char* name, const SharedPointer<UINode>& resNode, 
 	writer.Key (name);
 	writer.StartObject ();
 	if (resNode->getAttributes () && resNode->getAttributes ()->empty () == false)
-		writeAttributes (*resNode->getAttributes (), writer);
+		writeAttributes (*resNode->getAttributes ().get (), writer);
 	for (auto& child : resNode->getChildren ())
 	{
 		if (child->noExport () == false)
@@ -589,7 +589,7 @@ void writeTemplateNode (const std::string* name, const SharedPointer<UINode>& no
 	writer.StartObject ();
 	writer.String (attributesStr);
 	writer.StartObject ();
-	writeAttributes (*node->getAttributes (), writer, name != nullptr);
+	writeAttributes (*node->getAttributes ().get (), writer, name != nullptr);
 	writer.EndObject ();
 	if (node->getChildren ().empty () == false)
 	{
@@ -641,7 +641,7 @@ bool writeRootNode (const UINode& rootNode, JSONWriter& writer)
 	writer.StartObject ();
 	writer.Key (rootNode.getName ());
 	writer.StartObject ();
-	writeAttributes (*rootNode.getAttributes (), writer);
+	writeAttributes (*rootNode.getAttributes ().get (), writer);
 	bool result = true;
 	std::vector<SharedPointer<UINode>> templateNodes;
 	std::vector<SharedPointer<UINode>> viewNodes;

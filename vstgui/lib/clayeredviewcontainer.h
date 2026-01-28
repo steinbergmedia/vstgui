@@ -32,9 +32,9 @@ public:
 
 	void setZIndex (uint32_t zIndex);
 	uint32_t getZIndex () const { return zIndex; }
-	
-	bool removed (CView* parent) override;
-	bool attached (CView* parent) override;
+
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void invalid () override;
 	void invalidRect (const CRect& rect) override;
 	void parentSizeChanged () override;
@@ -45,14 +45,14 @@ protected:
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
 	void drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
 							 const std::vector<CRect>& rects) override;
-	void viewContainerTransformChanged (CViewContainer* container) override;
+	void viewContainerTransformChanged (CViewContainer& container) override;
 	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
 	void updateLayerSize ();
 	CGraphicsTransform getDrawTransform () const;
 	void registerListeners (bool state);
 
 	SharedPointer<IPlatformViewLayer> layer;
-	CLayeredViewContainer* parentLayerView {nullptr};
+	SharedPointer<CLayeredViewContainer> parentLayerView;
 	uint32_t zIndex {0};
 };
 

@@ -161,8 +161,6 @@ UTF8StringPtr kPerthousandSymbol= "\xE2\x80\xB0";
 //-----------------------------------------------------------------------------
 IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
 
-bool CView::kDirtyCallAlwaysOnMainThread = false;
-
 //-----------------------------------------------------------------------------
 static constexpr CViewAttributeID kCViewHitTestPathAttrID = 'cvht';
 static constexpr CViewAttributeID kCViewCustomDropTargetAttrID = 'cvdt';
@@ -187,17 +185,11 @@ struct CView::Impl
 	ViewAttributes attributes;
 	std::unique_ptr<ViewListenerDispatcher> viewListeners;
 	std::unique_ptr<ViewEventListenerDispatcher> viewEventListeners;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#include "private/disabledeprecatedmessage.h"
-	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
-	std::unique_ptr<ViewMouseListenerDispatcher> viewMouseListener;
-#include "private/enabledeprecatedmessage.h"
-#endif
 	CRect size;
 	int32_t viewFlags {0};
 	int32_t autosizeFlags {kAutosizeNone};
-	CFrame* parentFrame {nullptr};
-	CView* parentView {nullptr};
+	SharedPointer<CFrame> parentFrame;
+	SharedPointer<CViewContainer> parentView;
 	uint64_t runtimeID {++gRuntimeID};
 };
 
@@ -259,12 +251,6 @@ void CView::beforeDelete ()
 		});
 		vstgui_assert (pImpl->viewListeners->empty (), "View listeners not empty");
 	}
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (pImpl->viewMouseListener)
-	{
-		vstgui_assert (pImpl->viewMouseListener->empty (), "View mouse listeners not empty");
-	}
-#endif
 
 	vstgui_assert (isAttached () == false, "View is still attached");
 
@@ -301,15 +287,6 @@ void CView::setMouseableArea (const CRect& rect)
 		setAttribute (kCViewMouseableAreaAttrID, rect);
 	}
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-CRect& CView::getMouseableArea (CRect& rect) const
-{
-	rect = getMouseableArea ();
-	return rect;
-}
-#endif
 
 //-----------------------------------------------------------------------------
 CRect CView::getMouseableArea () const
@@ -365,20 +342,11 @@ void CView::setMouseEnabled (bool state)
 
 		if (hasViewFlag (kHasDisabledBackground))
 		{
-			setDirty (true);
+			invalid ();
 		}
 		if (pImpl->viewListeners)
 			pImpl->viewListeners->forEach (
-			    [&] (IViewListener* listener) { listener->viewOnMouseEnabled (this, state); });
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		if (pImpl->viewMouseListener)
-		{
-#include "private/disabledeprecatedmessage.h"
-			pImpl->viewMouseListener->forEach (
-			    [&] (IViewMouseListener* listener) { listener->viewOnMouseEnabled (this, state); });
-#include "private/enabledeprecatedmessage.h"
-		}
-#endif
+				[&] (IViewListener* listener) { listener->viewOnMouseEnabled (this, state); });
 	}
 }
 
@@ -388,7 +356,7 @@ void CView::setTransparency (bool state)
 	if (getTransparency() != state)
 	{
 		setViewFlag (kTransparencyEnabled, state);
-		setDirty (true);
+		invalid ();
 	}
 }
 
@@ -409,26 +377,6 @@ void CView::setWantsIdle (bool state)
 }
 
 //-----------------------------------------------------------------------------
-void CView::setDirty (bool state)
-{
-	if (kDirtyCallAlwaysOnMainThread && isAttached ())
-	{
-		if (state)
-		{
-			if (asViewContainer () && getParentView ())
-				getParentView ()->invalidRect (getViewSize ());
-			else
-				invalidRect (getViewSize ());
-		}
-		setViewFlag (kDirty, false);
-	}
-	else
-	{
-		setViewFlag (kDirty, state);
-	}
-}
-
-//-----------------------------------------------------------------------------
 void CView::setSubviewState (bool state)
 {
 	vstgui_assert (isSubview () != state, "");
@@ -440,7 +388,7 @@ void CView::setSubviewState (bool state)
  * @param parent parent view
  * @return true if view successfully attached to parent
  */
-bool CView::attached (CView* parent)
+bool CView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	if (isAttached ())
 		return false;
@@ -448,8 +396,8 @@ bool CView::attached (CView* parent)
 	pImpl->parentView = parent;
 	pImpl->parentFrame = parent->getFrame ();
 	setViewFlag (kIsAttached, true);
-	if (pImpl->parentFrame)
-		pImpl->parentFrame->onViewAdded (this);
+	if (auto frame = pImpl->parentFrame)
+		frame->onViewAdded (*this);
 	if (wantsIdle ())
 		CViewInternal::IdleViewUpdater::add (this);
 	if (pImpl->viewListeners)
@@ -465,7 +413,7 @@ bool CView::attached (CView* parent)
  * @param parent parent view
  * @return true if view successfully removed from parent
  */
-bool CView::removed (CView* parent)
+bool CView::removed (const SharedPointer<CViewContainer>& parent)
 {
 	if (!isAttached ())
 		return false;
@@ -476,10 +424,10 @@ bool CView::removed (CView* parent)
 		pImpl->viewListeners->forEach (
 		    [&] (IViewListener* listener) { listener->viewRemoved (this); });
 	}
-	if (pImpl->parentFrame)
-		pImpl->parentFrame->onViewRemoved (this);
-	pImpl->parentView = nullptr;
-	pImpl->parentFrame = nullptr;
+	if (auto frame = pImpl->parentFrame)
+		frame->onViewRemoved (*this);
+	pImpl->parentView.reset ();
+	pImpl->parentFrame.reset ();
 	setViewFlag (kIsAttached, false);
 	return true;
 }
@@ -602,57 +550,10 @@ void CView::onMouseExitEvent (MouseExitEvent& event)
 }
 
 //------------------------------------------------------------------------
-void CView::onMouseWheelEvent (MouseWheelEvent& event)
-{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#include "private/disabledeprecatedmessage.h"
-	auto buttons = buttonStateFromEventModifiers (event.modifiers);
-	if (event.flags & MouseWheelEvent::DirectionInvertedFromDevice)
-		buttons |= kMouseWheelInverted;
-	if (event.deltaX != 0.)
-	{
-		if (onWheel (event.mousePosition, kMouseWheelAxisX, static_cast<float> (event.deltaX), buttons))
-			event.consumed = true;
-	}
-	if (event.deltaY != 0.)
-	{
-		if (onWheel (event.mousePosition, kMouseWheelAxisY, static_cast<float> (event.deltaY), buttons))
-			event.consumed = true;
-	}
-#include "private/enabledeprecatedmessage.h"
-#endif
-}
+void CView::onMouseWheelEvent (MouseWheelEvent& event) {}
 
 //------------------------------------------------------------------------
-void CView::onKeyboardEvent (KeyboardEvent& event)
-{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#include "private/disabledeprecatedmessage.h"
-	auto keyCode = toVstKeyCode (event);
-
-	switch (event.type)
-	{
-		case EventType::KeyDown:
-		{
-			if (onKeyDown (keyCode) == 1)
-				event.consumed = true;
-			break;
-		}
-		case EventType::KeyUp:
-		{
-			if (onKeyUp (keyCode) == 1)
-				event.consumed = true;
-			break;
-		}
-		default:
-		{
-			vstgui_assert (false);
-			break;
-		}
-	}
-#include "private/enabledeprecatedmessage.h"
-#endif
-}
+void CView::onKeyboardEvent (KeyboardEvent& event) {}
 
 //------------------------------------------------------------------------
 void CView::onZoomGestureEvent (ZoomGestureEvent& event)
@@ -777,31 +678,6 @@ CMouseEventResult CView::onMouseCancel ()
 //------------------------------------------------------------------------
 bool CView::hitTest (const CPoint& where, const Event& event)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#include "private/disabledeprecatedmessage.h"
-	auto mouseEvent = asMouseEvent (event);
-	return hitTest (where, mouseEvent ? buttonStateFromMouseEvent (*mouseEvent) : -1);
-#include "private/enabledeprecatedmessage.h"
-#else
-	if (auto path = getHitTestPath ())
-	{
-		CPoint p (where);
-		p.offset (-getViewSize ().left, -getViewSize ().top);
-		return path->hitTest (p);
-	}
-	return getMouseableArea ().pointInside (where);
-#endif
-}
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-/**
- * @param where location
- * @param buttons button and modifier state
- * @return true if point hits this view
- */
-bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
-{
 	if (auto path = getHitTestPath ())
 	{
 		CPoint p (where);
@@ -810,7 +686,6 @@ bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
 	}
 	return getMouseableArea ().pointInside (where);
 }
-#endif
 
 //-----------------------------------------------------------------------------
 /**
@@ -819,8 +694,8 @@ bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
  */
 CPoint& CView::frameToLocal (CPoint& point) const
 {
-	if (pImpl->parentView)
-		return pImpl->parentView->frameToLocal (point);
+	if (auto parent = pImpl->parentView)
+		return parent->frameToLocal (point);
 	return point;
 }
 
@@ -831,8 +706,8 @@ CPoint& CView::frameToLocal (CPoint& point) const
  */
 CPoint& CView::localToFrame (CPoint& point) const
 {
-	if (pImpl->parentView)
-		return pImpl->parentView->localToFrame (point);
+	if (auto parent = pImpl->parentView)
+		return parent->localToFrame (point);
 	return point;
 }
 
@@ -844,13 +719,13 @@ CGraphicsTransform CView::getGlobalTransform (bool ignoreFrame) const
 	CGraphicsTransform transform;
 	ParentViews parents;
 	auto frame = ignoreFrame ? getFrame () : nullptr;
-	
-	CViewContainer* parent = getParentView () ? getParentView ()->asViewContainer () : nullptr;
+
+	auto parent = getParentView () ? getParentView ()->asViewContainer () : nullptr;
 	while (parent)
 	{
-		if (ignoreFrame && parent == frame)
+		if (ignoreFrame && parent.get () == frame.get ())
 			break;
-		parents.push_front (parent);
+		parents.push_front (parent.get ());
 		parent = parent->getParentView () ? parent->getParentView ()->asViewContainer () : nullptr;
 	}
 	for (const auto& parent2 : parents)
@@ -873,8 +748,9 @@ void CView::invalidRect (const CRect& rect)
 {
 	if (isAttached () && hasViewFlag (kVisible))
 	{
-		vstgui_assert (pImpl->parentView);
-		pImpl->parentView->invalidRect (rect);
+		auto parent = pImpl->parentView;
+		vstgui_assert (parent);
+		parent->invalidRect (rect);
 	}
 }
 
@@ -888,63 +764,7 @@ void CView::draw (CDrawContext* pContext)
 	{
 		getDrawBackground ()->draw (pContext, getViewSize ());
 	}
-	setDirty (false);
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-/**
- * @param where location
- * @param axis mouse wheel axis
- * @param distance wheel distance
- * @param buttons button and modifier state
- * @return true if handled
- */
-bool CView::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons)
-{
-	return false;
-}
-
-//------------------------------------------------------------------------------
-/**
- * @param keyCode key code of pressed key
- * @return -1 if not handled and 1 if handled
- */
-int32_t CView::onKeyDown (VstKeyCode& keyCode)
-{
-	return -1;
-}
-
-//------------------------------------------------------------------------------
-/**
- * @param keyCode key code of pressed key
- * @return -1 if not handled and 1 if handled
- */
-int32_t CView::onKeyUp (VstKeyCode& keyCode)
-{
-	return -1;
-}
-
-//------------------------------------------------------------------------------
-/**
- * a drag can only be started from within onMouseDown
- * @param source source drop
- * @param offset bitmap offset
- * @param dragBitmap bitmap to drag
- * @return see DragResult
- */
-DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
-{
-	if (auto frame = getFrame ())
-	{
-		if (auto platformFrame = frame->getPlatformFrame ())
-		{
-			return platformFrame->doDrag (source, offset, dragBitmap);
-		}
-	}
-	return kDragError;
-}
-#endif
 
 //------------------------------------------------------------------------------
 /**
@@ -1001,14 +821,12 @@ void CView::setViewSize (const CRect& newSize, bool doInvalid)
 {
 	if (getViewSize () != newSize)
 	{
-		if (doInvalid && kDirtyCallAlwaysOnMainThread)
+		if (doInvalid)
 			invalid ();
 		CRect oldSize = getViewSize ();
 		pImpl->size = newSize;
-		if (doInvalid)
-			setDirty ();
-		if (getParentView ())
-			getParentView ()->notify (this, kMsgViewSizeChanged);
+		if (auto parent = getParentView ())
+			parent->notify (this, kMsgViewSizeChanged);
 		if (pImpl->viewListeners)
 		{
 			pImpl->viewListeners->forEach (
@@ -1029,8 +847,8 @@ const CRect& CView::getViewSize () const
  */
 CRect CView::getVisibleViewSize () const
 {
-	if (pImpl->parentView)
-		return static_cast<CViewContainer*>(pImpl->parentView)->getVisibleSize (getViewSize ());
+	if (auto parent = pImpl->parentView)
+		return parent.cast<CViewContainer> ()->getVisibleSize (getViewSize ());
 	return CRect (0, 0, 0, 0);
 }
 
@@ -1086,8 +904,8 @@ void CView::setAlphaValue (float alpha)
 	if (oldAlpha != alpha)
 	{
 		// we invalidate the parent to make sure that when alpha == 0 that a redraw occurs
-		if (pImpl->parentView)
-			pImpl->parentView->invalidRect (getViewSize ());
+		if (auto parent = pImpl->parentView)
+			parent->invalidRect (getViewSize ());
 	}
 }
 
@@ -1113,33 +931,26 @@ int32_t CView::getAutosizeFlags () const
 }
 
 //-----------------------------------------------------------------------------
-void CView::setParentFrame (CFrame* frame)
-{
-	pImpl->parentFrame = frame;
-}
+void CView::setParentFrame (const SharedPointer<CFrame>& frame) { pImpl->parentFrame = frame; }
 
 //-----------------------------------------------------------------------------
-void CView::setParentView (CView* parent)
+void CView::setParentView (const SharedPointer<CViewContainer>& parent)
 {
 	pImpl->parentView = parent;
 }
 
 //-----------------------------------------------------------------------------
-CView* CView::getParentView () const
-{
-	return pImpl->parentView;
-}
+SharedPointer<CViewContainer> CView::getParentView () const { return pImpl->parentView; }
 
 //-----------------------------------------------------------------------------
-CFrame* CView::getFrame () const
-{
-	return pImpl->parentFrame;
-}
+SharedPointer<CFrame> CView::getFrame () const { return pImpl->parentFrame; }
 
 //-----------------------------------------------------------------------------
 VSTGUIEditorInterface* CView::getEditor () const
 {
-	return pImpl->parentFrame ? pImpl->parentFrame->getEditor () : nullptr;
+	if (auto frame = getFrame ())
+		return frame->getEditor ();
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -1159,7 +970,7 @@ void CView::setBackground (const SharedPointer<CBitmap>& background)
 		setViewFlag (kHasBackground, false);
 	}
 	if (getMouseEnabled () == true)
-		setDirty (true);
+		invalid ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1205,7 +1016,7 @@ void CView::setDisabledBackground (const SharedPointer<CBitmap>& background)
 		setViewFlag (kHasDisabledBackground, false);
 	}
 	if (getMouseEnabled () == false)
-		setDirty (true);
+		invalid ();
 }
 
 //------------------------------------------------------------------------
@@ -1314,29 +1125,16 @@ bool CView::getAttributeObj (const CViewAttributeID aId, SharedPointer<IReferenc
 	return false;
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
-void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject)
-{
-	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
-	if (auto frame = getFrame ())
-	{
-#include "private/disabledeprecatedmessage.h"
-		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
-#include "private/enabledeprecatedmessage.h"
-	}
-}
-#endif
-
-//-----------------------------------------------------------------------------
-void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
-						  Animation::ITimingFunction* timingFunction,
+void CView::addAnimation (IdStringPtr name,
+						  const SharedPointer<Animation::IAnimationTarget>& target,
+						  const SharedPointer<Animation::ITimingFunction>& timingFunction,
 						  const Animation::DoneFunction& doneFunc, bool callDoneOnCancel)
 {
 	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
 	if (auto frame = getFrame ())
 	{
-		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc,
+		frame->getAnimator ()->addAnimation (shared (this), name, target, timingFunction, doneFunc,
 											 callDoneOnCancel);
 	}
 }
@@ -1344,18 +1142,18 @@ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
 //-----------------------------------------------------------------------------
 void CView::removeAnimation (IdStringPtr name)
 {
-	if (getFrame ())
+	if (auto frame = getFrame ())
 	{
-		getFrame ()->getAnimator ()->removeAnimation (this, name);
+		frame->getAnimator ()->removeAnimation (shared (this), name);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void CView::removeAllAnimations ()
 {
-	if (getFrame ())
+	if (auto frame = getFrame ())
 	{
-		getFrame ()->getAnimator ()->removeAnimations (this);
+		frame->getAnimator ()->removeAnimations (shared (this));
 	}
 }
 
@@ -1412,72 +1210,6 @@ void CView::unregisterViewEventListener (IViewEventListener* listener)
 		return;
 	pImpl->viewEventListeners->remove (listener);
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#include "private/disabledeprecatedmessage.h"
-//------------------------------------------------------------------------
-void CView::registerViewMouseListener (IViewMouseListener* listener)
-{
-	if (!pImpl->viewMouseListener)
-		pImpl->viewMouseListener = std::unique_ptr<Impl::ViewMouseListenerDispatcher> (
-		    new Impl::ViewMouseListenerDispatcher);
-	pImpl->viewMouseListener->add (listener);
-}
-
-//------------------------------------------------------------------------
-void CView::unregisterViewMouseListener (IViewMouseListener* listener)
-{
-	if (!pImpl->viewMouseListener)
-		return;
-	pImpl->viewMouseListener->remove (listener);
-}
-#include "private/enabledeprecatedmessage.h"
-
-//-----------------------------------------------------------------------------
-CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons)
-{
-	CMouseEventResult result = kMouseEventNotHandled;
-	if (!pImpl->viewMouseListener)
-		return result;
-#include "private/disabledeprecatedmessage.h"
-	pImpl->viewMouseListener->forEachReverse (
-	    [&] (IViewMouseListener* l) {
-		    switch (type)
-		    {
-			    case MouseListenerCall::MouseDown: return l->viewOnMouseDown (this, pos, buttons);
-			    case MouseListenerCall::MouseUp: return l->viewOnMouseUp (this, pos, buttons);
-			    case MouseListenerCall::MouseMoved: return l->viewOnMouseMoved (this, pos, buttons);
-			    case MouseListenerCall::MouseCancel: return l->viewOnMouseCancel (this);
-		    }
-			return kMouseEventNotHandled;
-	    },
-	    [&] (CMouseEventResult res) {
-		    if (res != kMouseEventNotHandled && res != kMouseEventNotImplemented)
-		    {
-			    result = res;
-			    return true;
-		    }
-		    return false;
-	    });
-#include "private/enabledeprecatedmessage.h"
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-void CView::callMouseListenerEnteredExited (bool mouseEntered)
-{
-	if (!pImpl->viewMouseListener)
-		return;
-#include "private/disabledeprecatedmessage.h"
-	pImpl->viewMouseListener->forEachReverse ([&] (IViewMouseListener* l) {
-		if (mouseEntered)
-			l->viewOnMouseEntered (this);
-		else
-			l->viewOnMouseExited (this);
-	});
-#include "private/enabledeprecatedmessage.h"
-}
-#endif
 
 //-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CView::getDropTarget ()

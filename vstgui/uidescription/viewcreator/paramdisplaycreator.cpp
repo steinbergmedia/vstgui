@@ -39,24 +39,24 @@ UTF8StringPtr ParamDisplayCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-CView* ParamDisplayCreator::create (const UIAttributes& attributes,
-                                    const IUIDescription* description) const
+SharedPointer<CView> ParamDisplayCreator::create (const UIAttributes& attributes,
+												  const IUIDescription& description) const
 {
-	return new CParamDisplay (CRect (0, 0, 100, 20));
+	return makeOwned<CParamDisplay> (CRect (0, 0, 100, 20));
 }
 
 //------------------------------------------------------------------------
-bool ParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
-                                 const IUIDescription* description) const
+bool ParamDisplayCreator::apply (CView& view, const UIAttributes& attributes,
+								 const IUIDescription& description) const
 {
-	auto* display = dynamic_cast<CParamDisplay*> (view);
+	auto* display = dynamic_cast<CParamDisplay*> (&view);
 	if (!display)
 		return false;
 
 	const auto* fontAttr = attributes.getAttributeValue (kAttrFont);
 	if (fontAttr)
 	{
-		auto font = description->getFont (fontAttr->c_str ());
+		auto font = description.getFont (fontAttr->c_str ());
 		if (font)
 		{
 			display->setFont (font);
@@ -203,15 +203,15 @@ auto ParamDisplayCreator::getAttributeType (const string& attributeName) const -
 }
 
 //------------------------------------------------------------------------
-bool ParamDisplayCreator::getAttributeValue (CView* view, const string& attributeName,
-                                             string& stringValue, const IUIDescription* desc) const
+bool ParamDisplayCreator::getAttributeValue (CView& view, const string& attributeName,
+											 string& stringValue, const IUIDescription& desc) const
 {
-	auto* pd = dynamic_cast<CParamDisplay*> (view);
+	auto* pd = dynamic_cast<CParamDisplay*> (&view);
 	if (pd == nullptr)
 		return false;
 	if (attributeName == kAttrFont)
 	{
-		UTF8StringPtr fontName = desc->lookupFontName (pd->getFont ());
+		UTF8StringPtr fontName = desc.lookupFontName (pd->getFont ());
 		if (fontName)
 		{
 			stringValue = fontName;

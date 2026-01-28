@@ -568,42 +568,6 @@ SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
 	return nullptr;
 }
 
-#if VSTGUI_OPENGL_SUPPORT
-//-----------------------------------------------------------------------------
-SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
-{
-	return owned<IPlatformOpenGLView> (new Win32OpenGLView (this));
-}
-#endif
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-class Win32LegacyDragSupport final : virtual public DragCallbackAdapter, virtual public NonAtomicReferenceCounted
-{
-public:
-	void dragEnded (const IDraggingSession&, CPoint, DragOperation r) final { result = r; }
-	DragOperation result {DragOperation::None};
-};
-
-//------------------------------------------------------------------------------------
-DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
-{
-	auto dragSupport = makeOwned<Win32LegacyDragSupport> ();
-
-	Win32DraggingSession session (this);
-	if (session.doDrag (DragDescription (shared (source), offset, shared (dragBitmap)),
-						dragSupport))
-	{
-		switch (dragSupport->result)
-		{
-			case DragOperation::Copy: return kDragCopied;
-			case DragOperation::Move: return kDragMoved;
-			case DragOperation::None: return kDragRefused;
-		}
-	}
-	return kDragRefused;
-}
-#endif
-
 //-----------------------------------------------------------------------------
 bool Win32Frame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
 {
