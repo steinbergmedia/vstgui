@@ -33,7 +33,8 @@ protected:
 
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 2; }
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) override;
@@ -159,7 +160,8 @@ CCoord UITagsDataSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* b
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITagsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void UITagsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
+								   int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	if (column == 1)
 	{

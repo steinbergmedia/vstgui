@@ -24,10 +24,10 @@ public:
 		setBackground (bitmap);
 	}
 
-	void draw (CDrawContext *pContext) override
+	void draw (CDrawContext& context) override
 	{
 		if (getDrawBackground ())
-			getDrawBackground ()->draw (pContext, getViewSize (), offset);
+			getDrawBackground ()->draw (context, getViewSize (), offset);
 	}
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override
@@ -100,7 +100,7 @@ CSplashScreen::CSplashScreen (const CSplashScreen& v)
 CSplashScreen::~CSplashScreen () noexcept {}
 
 //------------------------------------------------------------------------
-void CSplashScreen::draw (CDrawContext* pContext) {}
+void CSplashScreen::draw (CDrawContext& context) {}
 
 //------------------------------------------------------------------------
 bool CSplashScreen::hitTest (const CPoint& where, const Event& event)
@@ -250,7 +250,7 @@ void CAnimationSplashScreen::unSplash ()
 }
 
 //------------------------------------------------------------------------
-void CAnimationSplashScreen::draw (CDrawContext* pContext) { CView::draw (pContext); }
+void CAnimationSplashScreen::draw (CDrawContext& context) { CView::draw (context); }
 
 //------------------------------------------------------------------------
 bool CAnimationSplashScreen::sizeToFit ()

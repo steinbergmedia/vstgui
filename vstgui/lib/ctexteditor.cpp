@@ -218,7 +218,7 @@ struct TextEditorView : public CView,
 	TextEditorView (ITextEditorController* controller);
 	void beforeDelete () override;
 
-	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) override;
+	void drawRect (CDrawContext& context, const CRect& dirtyRect) override;
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	void parentSizeChanged () override;
@@ -545,7 +545,7 @@ struct LineNumberView : CView,
 	LineNumberView (CView* textEditorView);
 	~LineNumberView () noexcept override;
 
-	void drawRect (CDrawContext* context, const CRect& dirtyRect) override;
+	void drawRect (CDrawContext& context, const CRect& dirtyRect) override;
 
 	void setStyle (const std::shared_ptr<ITextEditor::Style>& newStyle, CCoord newLineHeight);
 	void setNumLines (size_t numberOfLines);
@@ -1106,11 +1106,11 @@ inline Range toLineSelection (const Range& line, size_t selStart, size_t selEnd)
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
+void TextEditorView::drawRect (CDrawContext& context, const CRect& dirtyRect)
 {
-	context->setFillColor (md.style->backColor);
-	context->setDrawMode (kAntiAliasing);
-	context->drawRect (dirtyRect, kDrawFilled);
+	context.setFillColor (md.style->backColor);
+	context.setDrawMode (kAntiAliasing);
+	context.drawRect (dirtyRect, kDrawFilled);
 	bool drawCursorLineHighlight = (md.editState.select_start == md.editState.select_end) &&
 								   (md.style->flags & Style::Flags::HighlightCursorLine);
 
@@ -1131,11 +1131,11 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 		{
 			auto lineRect = calculateLineRect (index);
 			lineRect.right = getViewSize ().right;
-			context->setFillColor (md.style->highlightCursorLineColor);
-			context->drawRect (lineRect, kDrawFilled);
+			context.setFillColor (md.style->highlightCursorLineColor);
+			context.drawRect (lineRect, kDrawFilled);
 		}
-		context->setFontColor (md.style->textColor);
-		context->setFont (md.style->font);
+		context.setFontColor (md.style->textColor);
+		context.setFont (md.style->font);
 		auto selRange =
 			toLineSelection (line.range, md.editState.select_start, md.editState.select_end);
 		if (selRange)
@@ -1148,7 +1148,7 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 				auto nonSelectedText = convert (t);
 				selOffset += replaceTabs (nonSelectedText, md.style->tabWidth, 0u);
 				// selOffset -= selOffset / md.style->tabWidth;
-				selX += context->getStringWidth (nonSelectedText.data ());
+				selX += context.getStringWidth (nonSelectedText.data ());
 			}
 			CRect r (selX, y - md.fontAscent, selX, y + md.fontDescent);
 			if (selRange.start + selRange.length >= line.range.length &&
@@ -1159,20 +1159,20 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 				auto t = md.model.text.substr (line.range.start + selRange.start, selRange.length);
 				auto selectedText = convert (t);
 				replaceTabs (selectedText, md.style->tabWidth, selOffset);
-				r.setWidth (context->getStringWidth (selectedText.data ()));
+				r.setWidth (context.getStringWidth (selectedText.data ()));
 			}
 			r.inset (0, -md.style->lineSpacing / 2.);
 			if ((cocoaTextInputClient && cocoaTextInputClient->hasMarkedText ()) ||
 				(imeTextInputClient && imeTextInputClient->hasMarkedText ()))
 			{
-				context->setLineWidth (1.);
-				context->setFrameColor (md.style->selectionBackColor);
-				context->drawRect (r, kDrawStroked);
+				context.setLineWidth (1.);
+				context.setFrameColor (md.style->selectionBackColor);
+				context.drawRect (r, kDrawStroked);
 			}
 			else
 			{
-				context->setFillColor (md.style->selectionBackColor);
-				context->drawRect (r, kDrawFilled);
+				context.setFillColor (md.style->selectionBackColor);
+				context.drawRect (r, kDrawFilled);
 			}
 		}
 		if (styleProvider)
@@ -1189,9 +1189,9 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 					tmpStr = convert (md.model.text.substr (start, style.start - start));
 					replaceTabs (tmpStr, md.style->tabWidth,
 								 static_cast<size_t> (start - line.range.start));
-					context->setFontColor (md.style->textColor);
-					context->drawString (tmpStr.data (), {lineX, y});
-					lineX += context->getStringWidth (tmpStr.data ());
+					context.setFontColor (md.style->textColor);
+					context.drawString (tmpStr.data (), {lineX, y});
+					lineX += context.getStringWidth (tmpStr.data ());
 				}
 				start = style.start < line.range.start ? line.range.start : style.start;
 				end = start + style.length;
@@ -1202,15 +1202,15 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 				tmpStr = convert (md.model.text.substr (start, end - start));
 				replaceTabs (tmpStr, md.style->tabWidth,
 							 static_cast<size_t> (start - line.range.start));
-				context->setFontColor (style.color);
-				context->drawString (tmpStr.data (), {lineX, y});
-				lineX += context->getStringWidth (tmpStr.data ());
+				context.setFontColor (style.color);
+				context.drawString (tmpStr.data (), {lineX, y});
+				lineX += context.getStringWidth (tmpStr.data ());
 				start += style.length;
 			}
 		}
 		else
 		{
-			context->drawString (line.text.getPlatformString (), {x, y});
+			context.drawString (line.text.getPlatformString (), {x, y});
 		}
 	}
 
@@ -1222,12 +1222,12 @@ void TextEditorView::drawRect (CDrawContext* context, const CRect& dirtyRect)
 		md.editState.select_start == md.editState.select_end)
 	{
 		auto cr = md.cursorRect;
-		auto alpha = context->getGlobalAlpha ();
-		context->setGlobalAlpha (alpha * md.cursorAlpha);
+		auto alpha = context.getGlobalAlpha ();
+		context.setGlobalAlpha (alpha * md.cursorAlpha);
 		cr.offset (getViewSize ().getTopLeft ());
-		context->setFillColor (md.style->cursorColor);
-		context->drawRect (cr, kDrawFilled);
-		context->setGlobalAlpha (alpha);
+		context.setFillColor (md.style->cursorColor);
+		context.drawRect (cr, kDrawFilled);
+		context.setGlobalAlpha (alpha);
 		md.lastDrawnCursorRect = cr;
 	}
 	else
@@ -3413,13 +3413,13 @@ void LineNumberView::viewWillDelete (CView& view)
 }
 
 //------------------------------------------------------------------------
-void LineNumberView::drawRect (CDrawContext* context, const CRect& _dirtyRect)
+void LineNumberView::drawRect (CDrawContext& context, const CRect& _dirtyRect)
 {
 	CRect dirtyRect = _dirtyRect;
 
-	context->setFillColor (style->backColor);
-	context->setDrawMode (kAntiAliasing);
-	context->drawRect (dirtyRect, kDrawFilled);
+	context.setFillColor (style->backColor);
+	context.setDrawMode (kAntiAliasing);
+	context.drawRect (dirtyRect, kDrawFilled);
 
 	CCoord x = getViewSize ().right;
 	CCoord y = getViewSize ().top - style->lineSpacing + textEditorView->getViewSize ().top;
@@ -3430,23 +3430,23 @@ void LineNumberView::drawRect (CDrawContext* context, const CRect& _dirtyRect)
 		y += lineHeight;
 		if (y < dirtyRect.top)
 			continue;
-		context->setFontColor (style->textColor);
-		context->setFont (style->font);
+		context.setFontColor (style->textColor);
+		context.setFont (style->font);
 		bool lineIsSelected = index >= selectedLines.start && index < selectedLines.end ();
-		context->setFontColor (lineIsSelected ? style->lineNumberTextSelectedColor
-											  : style->lineNumberTextColor);
-		context->setFont (style->lineNumbersFont);
+		context.setFontColor (lineIsSelected ? style->lineNumberTextSelectedColor
+											 : style->lineNumberTextColor);
+		context.setFont (style->lineNumbersFont);
 		auto lineNoStr = toString (index + 1);
 		auto lineNoWidth = style->lineNumbersFont->getFontPainter ()->getStringWidth (
-			context->getPlatformDeviceContext (), lineNoStr.getPlatformString ());
-		context->drawString (lineNoStr.getPlatformString (),
-							 {x - (lineNoWidth + style->lineNumberRightMargin), y});
+			context.getPlatformDeviceContext (), lineNoStr.getPlatformString ());
+		context.drawString (lineNoStr.getPlatformString (),
+							{x - (lineNoWidth + style->lineNumberRightMargin), y});
 	}
 
 	auto cr = getViewSize ();
 	cr.left = (cr.right - 1.);
-	context->setFillColor (style->lineNumberLine);
-	context->drawRect (cr, kDrawFilled);
+	context.setFillColor (style->lineNumberLine);
+	context.drawRect (cr, kDrawFilled);
 }
 
 //------------------------------------------------------------------------

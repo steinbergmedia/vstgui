@@ -56,8 +56,8 @@ class STBTextEditView
 public:
 	STBTextEditView (IPlatformTextEditCallback* callback);
 
-	void draw (CDrawContext* pContext) override;
-	void drawBack (CDrawContext* pContext, const SharedPointer<CBitmap>& newBack = {}) override;
+	void draw (CDrawContext& context) override;
+	void drawBack (CDrawContext& pContext, const SharedPointer<CBitmap>& newBack = {}) override;
 	void setText (const UTF8String& txt) override;
 
 	void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) override;
@@ -683,7 +683,7 @@ void STBTextEditView::calcCursorSizes ()
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::draw (CDrawContext* context)
+void STBTextEditView::draw (CDrawContext& context)
 {
 	fillCharWidthCache ();
 	calcCursorSizes ();
@@ -698,8 +698,8 @@ void STBTextEditView::draw (CDrawContext* context)
 	StbTexteditRow row{};
 	layout (&row, this, 0);
 
-	context->setFillColor (getFontColor ());
-	context->setDrawMode (kAntiAliasing);
+	context.setFillColor (getFontColor ());
+	context.setDrawMode (kAntiAliasing);
 	CRect r = getViewSize ();
 	r.setHeight (cursorHeight);
 	r.offset (row.x0, cursorOffset);
@@ -707,11 +707,11 @@ void STBTextEditView::draw (CDrawContext* context)
 	for (auto i = 0; i < editState.cursor; ++i)
 		r.offset (charWidthCache[i], 0);
 	r.offset (-0.5, 0);
-	context->drawRect (r, kDrawFilled);
+	context.drawRect (r, kDrawFilled);
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::drawBack (CDrawContext* context, const SharedPointer<CBitmap>& newBack)
+void STBTextEditView::drawBack (CDrawContext& context, const SharedPointer<CBitmap>& newBack)
 {
 	CTextLabel::drawBack (context, newBack);
 
@@ -735,8 +735,8 @@ void STBTextEditView::drawBack (CDrawContext* context, const SharedPointer<CBitm
 			selection.offset (charWidthCache[index], 0);
 		for (; index < selEnd; ++index)
 			selection.right += charWidthCache[index];
-		context->setFillColor (selectionColor);
-		context->drawRect (selection, kDrawFilled);
+		context.setFillColor (selectionColor);
+		context.drawRect (selection, kDrawFilled);
 	}
 }
 

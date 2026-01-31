@@ -74,7 +74,7 @@ public:
 	bool setValue (float val) override;
 	void setTextRotation (double angle) override { } // not supported
 
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 

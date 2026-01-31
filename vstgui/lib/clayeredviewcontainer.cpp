@@ -189,13 +189,13 @@ void CLayeredViewContainer::setAlphaValue (float alpha)
 }
 
 //-----------------------------------------------------------------------------
-void CLayeredViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
+void CLayeredViewContainer::drawRect (CDrawContext& context, const CRect& updateRect)
 {
 	auto drawsIntoBitmap = false;
-	if (auto offscreenContext = dynamic_cast<COffscreenContext*> (pContext))
+	if (auto offscreenContext = dynamic_cast<COffscreenContext*> (&context))
 		drawsIntoBitmap = offscreenContext->getBitmap () != nullptr;
 	if (!layer || drawsIntoBitmap)
-		CViewContainer::drawRect (pContext, updateRect);
+		CViewContainer::drawRect (context, updateRect);
 }
 
 //-----------------------------------------------------------------------------
@@ -220,7 +220,7 @@ void CLayeredViewContainer::drawViewLayerRects (const PlatformGraphicsDeviceCont
 		dirtyRect.offset (p.x, p.y);
 		drawContext.saveGlobalState ();
 		drawContext.setClipRect (dirtyRect);
-		CViewContainer::drawRect (&drawContext, dirtyRect);
+		CViewContainer::drawRect (drawContext, dirtyRect);
 		drawContext.restoreGlobalState ();
 	}
 }

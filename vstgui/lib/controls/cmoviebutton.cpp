@@ -34,19 +34,19 @@ CMovieButton::CMovieButton (const CMovieButton& v) : CControl (v), buttonState (
 }
 
 //------------------------------------------------------------------------
-void CMovieButton::draw (CDrawContext *pContext)
+void CMovieButton::draw (CDrawContext& context)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
 		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
-			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+			mfb->drawFrame (context, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
 			CPoint where {};
-			bitmap->draw (pContext, getViewSize (), where);
+			bitmap->draw (context, getViewSize (), where);
 		}
 	}
 	buttonState = getValue ();

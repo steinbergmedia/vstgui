@@ -63,9 +63,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** called if the view should draw itself */
-	virtual void draw (CDrawContext *pContext);
+	virtual void draw (CDrawContext& context);
 	/** called if the view should draw itself */
-	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }
+	virtual void drawRect (CDrawContext& context, const CRect& updateRect) { draw (context); }
 	virtual bool checkUpdate (const CRect& updateRect) const { return updateRect.rectOverlap (getViewSize ()); }
 
 	/** mark rect as invalid */

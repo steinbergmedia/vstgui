@@ -896,11 +896,11 @@ void CScrollView::valueChanged (CControl& control)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect)
+void CScrollView::drawBackgroundRect (CDrawContext& context, const CRect& _updateRect)
 {
 	CRect r (getViewSize ());
 	r.originize ();
-	CViewContainer::drawBackgroundRect (pContext, r);
+	CViewContainer::drawBackgroundRect (context, r);
 }
 
 //-----------------------------------------------------------------------------

@@ -101,8 +101,8 @@ protected:
 	void onDragLeave (DragEventData data) override;
 	DragOperation onDragMove (DragEventData data) override;
 
-	void draw (CDrawContext *pContext) override;
-	void drawRect (CDrawContext *pContext, const CRect& updateRect) override;
+	void draw (CDrawContext& context) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	SharedPointer<CView> getViewAt (
 		const CPoint& p, const GetViewOptions& options = GetViewOptions ()) const override;
 	SharedPointer<CViewContainer> getContainerAt (

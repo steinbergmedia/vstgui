@@ -131,22 +131,22 @@ void ImageFramesView::setTextColor (CColor color)
 }
 
 //------------------------------------------------------------------------
-void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
+void ImageFramesView::drawRect (CDrawContext& context, const CRect& _updateRect)
 {
 	if (!imageList || imageList->empty ())
 		return;
 	auto topLeft = getViewSize ().getTopLeft ();
-	CDrawContext::Transform tm (*context, CGraphicsTransform ().translate (topLeft));
+	CDrawContext::Transform tm (context, CGraphicsTransform ().translate (topLeft));
 
 	CRect updateRect (_updateRect);
 	updateRect.offsetInverse (topLeft);
 
-	context->setFillColor (getFrame ()->getFocusView ().get () == this ? activeSelectionColor
-																	   : inactiveSelectionColor);
+	context.setFillColor (getFrame ()->getFocusView ().get () == this ? activeSelectionColor
+																	  : inactiveSelectionColor);
 
-	context->setFontColor (textColor);
-	context->setFont (font);
-	context->setDrawMode (kAntiAliasing);
+	context.setFontColor (textColor);
+	context.setFont (font);
+	context.setDrawMode (kAntiAliasing);
 
 	CRect r;
 	auto imageSize = imageList->front ().bitmap->getSize ();
@@ -160,7 +160,7 @@ void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
 			CRect sr (r);
 			sr.bottom += titleHeight;
 			if (updateRect.rectOverlap (sr))
-				context->drawRect (sr, kDrawFilled);
+				context.drawRect (sr, kDrawFilled);
 		}
 		CRect ir (r);
 		ir.setWidth (imageSize.x);
@@ -175,24 +175,24 @@ void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
 			if (updateRect.rectOverlap (tr))
 			{
 				auto name = getDisplayFilename (image.path);
-				context->setFontColor (image.selected ? selectedTextColor : textColor);
-				context->drawString (name.data (), tr);
+				context.setFontColor (image.selected ? selectedTextColor : textColor);
+				context.drawString (name.data (), tr);
 			}
 		}
 		if (index == dropIndicatorPos)
 		{
-			context->setFrameColor (kRedCColor);
-			context->setLineWidth (2.);
-			context->drawLine (r.getTopLeft (), r.getTopRight ());
+			context.setFrameColor (kRedCColor);
+			context.setLineWidth (2.);
+			context.drawLine (r.getTopLeft (), r.getTopRight ());
 		}
 		r.offset (0, rowHeight);
 		++index;
 	}
 	if (dropIndicatorPos == static_cast<int32_t> (imageList->size ()))
 	{
-		context->setFrameColor (kRedCColor);
-		context->setLineWidth (2.);
-		context->drawLine (r.getTopLeft (), r.getTopRight ());
+		context.setFrameColor (kRedCColor);
+		context.setLineWidth (2.);
+		context.drawLine (r.getTopLeft (), r.getTopRight ());
 	}
 }
 
@@ -528,7 +528,7 @@ CMouseEventResult ImageFramesView::onMouseMoved (CPoint& where, const CButtonSta
 								continue;
 							if (auto image = imageList->at (index).bitmap)
 							{
-								image->draw (&context, r);
+								image->draw (context, r);
 							}
 							r.offset (0, r.getHeight ());
 						}

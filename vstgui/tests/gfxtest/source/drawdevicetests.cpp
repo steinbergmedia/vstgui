@@ -34,13 +34,13 @@ public:
 
 	CustomDrawView (DrawFunction func) : CView (CRect (0, 0, 0, 0)), func (func) {}
 
-	void draw (CDrawContext* context) override
+	void draw (CDrawContext& context) override
 	{
 		if (func)
 		{
 			CDrawContext::Transform t (
-			    *context, CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
-			func (this, *context, getViewSize ().getSize ());
+				context, CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
+			func (this, context, getViewSize ().getSize ());
 		}
 	}
 
@@ -217,7 +217,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
 								bitmap.cast<IReference> ());
 	boxBlurFilter->run (true);
-	bitmap->draw (&context, {0, 0, 20, 20});
+	bitmap->draw (context, {0, 0, 20, 20});
 
 	offscreen = COffscreenContext::create ({20., 20.});
 	offscreen->beginDraw ();
@@ -229,7 +229,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
 								bitmap.cast<IReference> ());
 	boxBlurFilter->run (true);
-	bitmap->draw (&context, {20, 0, 40, 20});
+	bitmap->draw (context, {20, 0, 40, 20});
 
 	offscreen = COffscreenContext::create ({20., 20.});
 	offscreen->beginDraw ();
@@ -241,7 +241,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
 								bitmap.cast<IReference> ());
 	boxBlurFilter->run (true);
-	bitmap->draw (&context, {40, 0, 60, 20});
+	bitmap->draw (context, {40, 0, 60, 20});
 
 	offscreen = COffscreenContext::create ({20., 20.});
 	offscreen->beginDraw ();
@@ -253,7 +253,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
 								bitmap.cast<IReference> ());
 	boxBlurFilter->run (true);
-	bitmap->draw (&context, {60, 0, 80, 20});
+	bitmap->draw (context, {60, 0, 80, 20});
 }
 
 //------------------------------------------------------------------------
@@ -299,12 +299,12 @@ public:
 		invalidRect (r);
 	}
 
-	void drawRect (CDrawContext* context, const CRect& r) override
+	void drawRect (CDrawContext& context, const CRect& r) override
 	{
 		if (r == getViewSize ())
 		{
-			context->setFillColor (kWhiteCColor);
-			context->drawRect (r, kDrawFilled);
+			context.setFillColor (kWhiteCColor);
+			context.drawRect (r, kDrawFilled);
 		}
 		else
 		{
@@ -314,8 +314,8 @@ public:
 			color.toHSV (h, s, v);
 			h += 40;
 			color.fromHSV (h, s, v);
-			context->setFillColor (color);
-			context->drawRect (r, kDrawFilled);
+			context.setFillColor (color);
+			context.drawRect (r, kDrawFilled);
 		}
 	}
 	bool toggle {false};

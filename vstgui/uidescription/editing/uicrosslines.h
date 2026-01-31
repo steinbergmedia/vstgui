@@ -37,7 +37,8 @@ public:
 	void update (const CPoint& point);
 	void update (const CRect& rect);
 	void invalid () override;
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
+
 protected:
 	void drawLines (CDrawContext& context, const CRect& size, const CRect& selectionSize) const;
 

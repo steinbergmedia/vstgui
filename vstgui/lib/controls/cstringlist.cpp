@@ -166,43 +166,43 @@ CHoriTxtAlign StringListControlDrawer::getTextAlign () const
 }
 
 //------------------------------------------------------------------------
-void StringListControlDrawer::drawBackground (CDrawContext* context, CRect size)
+void StringListControlDrawer::drawBackground (CDrawContext& context, CRect size)
 {
-	context->setFillColor (impl->backColor);
-	context->drawRect (size, kDrawFilled);
+	context.setFillColor (impl->backColor);
+	context.drawRect (size, kDrawFilled);
 }
 
 //------------------------------------------------------------------------
-void StringListControlDrawer::drawRow (CDrawContext* context, CRect size, Row row)
+void StringListControlDrawer::drawRow (CDrawContext& context, CRect size, Row row)
 {
-	context->setDrawMode (kAntiAliasing);
+	context.setDrawMode (kAntiAliasing);
 	if (row.isHovered ())
 	{
-		context->setFillColor (impl->hoverColor);
-		context->drawRect (size, kDrawFilled);
+		context.setFillColor (impl->hoverColor);
+		context.drawRect (size, kDrawFilled);
 	}
 	if (row.isSelected ())
 	{
-		context->setFillColor (impl->backColorSelected);
-		context->drawRect (size, kDrawFilled);
+		context.setFillColor (impl->backColorSelected);
+		context.drawRect (size, kDrawFilled);
 	}
 
-	auto lw = impl->lineWidth < 0. ? context->getHairlineSize () : impl->lineWidth;
+	auto lw = impl->lineWidth < 0. ? context.getHairlineSize () : impl->lineWidth;
 	size.bottom -= lw * 0.5;
 
 	if (!(row.isLastRow ()) && lw != 0.)
 	{
-		context->setDrawMode (kAntiAliasing | kNonIntegralMode);
-		context->setFrameColor (impl->lineColor);
-		context->setLineWidth (lw);
-		context->drawLine (size.getBottomLeft (), size.getBottomRight ());
+		context.setDrawMode (kAntiAliasing | kNonIntegralMode);
+		context.setFrameColor (impl->lineColor);
+		context.setLineWidth (lw);
+		context.drawLine (size.getBottomLeft (), size.getBottomRight ());
 	}
 	if (auto string = getString (row))
 	{
 		size.inset (impl->textInset, 0);
-		context->setFontColor (row.isSelected () ? impl->fontColorSelected : impl->fontColor);
-		context->setFont (impl->font);
-		context->drawString (string, size, impl->textAlign);
+		context.setFontColor (row.isSelected () ? impl->fontColorSelected : impl->fontColor);
+		context.setFont (impl->font);
+		context.drawString (string, size, impl->textAlign);
 	}
 }
 

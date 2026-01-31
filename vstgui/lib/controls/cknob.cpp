@@ -456,26 +456,26 @@ bool CKnob::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 }
 
 //------------------------------------------------------------------------
-void CKnob::draw (CDrawContext *pContext)
+void CKnob::draw (CDrawContext& context)
 {
 	if (getDrawBackground ())
 	{
-		getDrawBackground ()->draw (pContext, getViewSize (), offset);
+		getDrawBackground ()->draw (context, getViewSize (), offset);
 	}
 	if (pHandle)
-		drawHandle (pContext);
+		drawHandle (context);
 	else
 	{
 		if (drawStyle & kCoronaOutline)
-			drawCoronaOutline (pContext);
+			drawCoronaOutline (context);
 		if (drawStyle & kCoronaDrawing)
-			drawCorona (pContext);
+			drawCorona (context);
 		if (!(drawStyle & kSkipHandleDrawing))
 		{
 			if (drawStyle & kHandleCircleDrawing)
-				drawHandleAsCircle (pContext);
+				drawHandleAsCircle (context);
 			else
-				drawHandleAsLine (pContext);
+				drawHandleAsLine (context);
 		}
 	}
 }
@@ -496,9 +496,9 @@ void CKnob::addArc (const SharedPointer<CGraphicsPath>& path, const CRect& r, do
 }
 
 //------------------------------------------------------------------------
-void CKnob::drawCoronaOutline (CDrawContext* pContext) const
+void CKnob::drawCoronaOutline (CDrawContext& context) const
 {
-	auto path = pContext->createGraphicsPath ();
+	auto path = context.createGraphicsPath ();
 	if (path == nullptr)
 		return;
 	CRect corona (getViewSize ());
@@ -512,20 +512,20 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 		range += a * 2.f;
 	}
 	addArc (path, corona, start, range);
-	pContext->setFrameColor (colorShadowHandle);
+	context.setFrameColor (colorShadowHandle);
 	CLineStyle lineStyle (kLineSolid);
 	if (!(drawStyle & kCoronaLineCapButt))
 		lineStyle.setLineCap (CLineStyle::kLineCapRound);
-	pContext->setLineStyle (lineStyle);
-	pContext->setLineWidth (handleLineWidth+coronaOutlineWidthAdd);
-	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
-	pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+	context.setLineStyle (lineStyle);
+	context.setLineWidth (handleLineWidth + coronaOutlineWidthAdd);
+	context.setDrawMode (kAntiAliasing | kNonIntegralMode);
+	context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
 //------------------------------------------------------------------------
-void CKnob::drawCorona (CDrawContext* pContext) const
+void CKnob::drawCorona (CDrawContext& context) const
 {
-	auto path = pContext->createGraphicsPath ();
+	auto path = context.createGraphicsPath ();
 	if (path == nullptr)
 		return;
 	float coronaValue = getValueNormalized ();
@@ -542,25 +542,25 @@ void CKnob::drawCorona (CDrawContext* pContext) const
 		else
 			addArc (path, corona, startAngle, rangeAngle * coronaValue);
 	}
-	pContext->setFrameColor (coronaColor);
+	context.setFrameColor (coronaColor);
 	if (!(drawStyle & kCoronaLineCapButt))
 	{
 		CLineStyle lineStyle (kLineSolid);
 		lineStyle.setLineCap (CLineStyle::kLineCapRound);
-		pContext->setLineStyle (lineStyle);
+		context.setLineStyle (lineStyle);
 	}
 	else if (drawStyle & kCoronaLineDashDot)
-		pContext->setLineStyle (coronaLineStyle);
+		context.setLineStyle (coronaLineStyle);
 	else
-		pContext->setLineStyle (kLineSolid);
+		context.setLineStyle (kLineSolid);
 
-	pContext->setLineWidth (handleLineWidth);
-	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
-	pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+	context.setLineWidth (handleLineWidth);
+	context.setDrawMode (kAntiAliasing | kNonIntegralMode);
+	context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
 //------------------------------------------------------------------------
-void CKnob::drawHandleAsCircle (CDrawContext* pContext) const
+void CKnob::drawHandleAsCircle (CDrawContext& context) const
 {
 	CPoint where;
 	valueToPoint (where);
@@ -568,17 +568,17 @@ void CKnob::drawHandleAsCircle (CDrawContext* pContext) const
 	where.offset (getViewSize ().left, getViewSize ().top);
 	CRect r (where.x - 0.5, where.y - 0.5, where.x + 0.5, where.y + 0.5);
 	r.extend (handleLineWidth, handleLineWidth);
-	pContext->setDrawMode (kAntiAliasing);
-	pContext->setFrameColor (colorShadowHandle);
-	pContext->setFillColor (colorHandle);
-	pContext->setLineWidth (0.5);
-	pContext->setLineStyle (kLineSolid);
-	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
-	pContext->drawEllipse (r, kDrawFilledAndStroked);
+	context.setDrawMode (kAntiAliasing);
+	context.setFrameColor (colorShadowHandle);
+	context.setFillColor (colorHandle);
+	context.setLineWidth (0.5);
+	context.setLineStyle (kLineSolid);
+	context.setDrawMode (kAntiAliasing | kNonIntegralMode);
+	context.drawEllipse (r, kDrawFilledAndStroked);
 }
 
 //------------------------------------------------------------------------
-void CKnob::drawHandleAsLine (CDrawContext* pContext) const
+void CKnob::drawHandleAsLine (CDrawContext& context) const
 {
 	CPoint where;
 	valueToPoint (where);
@@ -586,20 +586,20 @@ void CKnob::drawHandleAsLine (CDrawContext* pContext) const
 	CPoint origin (getViewSize ().getWidth () / 2, getViewSize ().getHeight () / 2);
 	where.offset (getViewSize ().left - 1, getViewSize ().top);
 	origin.offset (getViewSize ().left - 1, getViewSize ().top);
-	pContext->setFrameColor (colorShadowHandle);
-	pContext->setLineWidth (handleLineWidth);
-	pContext->setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
-	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
-	pContext->drawLine (where, origin);
+	context.setFrameColor (colorShadowHandle);
+	context.setLineWidth (handleLineWidth);
+	context.setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
+	context.setDrawMode (kAntiAliasing | kNonIntegralMode);
+	context.drawLine (where, origin);
 
 	where.offset (1, -1);
 	origin.offset (1, -1);
-	pContext->setFrameColor (colorHandle);
-	pContext->drawLine (where, origin);
+	context.setFrameColor (colorHandle);
+	context.drawLine (where, origin);
 }
 
 //------------------------------------------------------------------------
-void CKnob::drawHandle (CDrawContext *pContext)
+void CKnob::drawHandle (CDrawContext& context)
 {
 	CPoint where;
 	valueToPoint (where);
@@ -613,7 +613,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 
 	CRect handleSize (0, 0, width, height);
 	handleSize.offset (where.x, where.y);
-	pHandle->draw (pContext, handleSize);
+	pHandle->draw (context, handleSize);
 }
 
 //------------------------------------------------------------------------
@@ -770,7 +770,7 @@ void CAnimKnob::setBackground (const SharedPointer<CBitmap>& background)
 }
 
 //------------------------------------------------------------------------
-void CAnimKnob::draw (CDrawContext *pContext)
+void CAnimKnob::draw (CDrawContext& context)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
@@ -779,11 +779,11 @@ void CAnimKnob::draw (CDrawContext *pContext)
 			auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
 			if (bInverseBitmap)
 				frameIndex = getInverseIndex (*mfb.get (), frameIndex);
-			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+			mfb->drawFrame (context, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
-			CView::draw (pContext);
+			CView::draw (context);
 		}
 	}
 }

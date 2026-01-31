@@ -34,10 +34,10 @@ COffscreenContext::COffscreenContext (const PlatformGraphicsDeviceContextPtr dev
 }
 
 //-----------------------------------------------------------------------------
-void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset)
+void COffscreenContext::copyFrom (CDrawContext& context, CRect destRect, CPoint srcOffset)
 {
 	if (bitmap)
-		bitmap->draw (pContext, destRect, srcOffset);
+		bitmap->draw (context, destRect, srcOffset);
 }
 
 //-----------------------------------------------------------------------------

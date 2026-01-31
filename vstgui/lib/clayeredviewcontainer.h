@@ -42,7 +42,7 @@ public:
 	void setAlphaValue (float alpha) override;
 //-----------------------------------------------------------------------------
 protected:
-	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	void drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
 							 const std::vector<CRect>& rects) override;
 	void viewContainerTransformChanged (CViewContainer& container) override;

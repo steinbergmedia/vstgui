@@ -35,10 +35,10 @@ public:
 		invalid ();
 	}
 
-	void draw (CDrawContext *context) override
+	void draw (CDrawContext& context) override
 	{
-		context->setFontColor (fontColor);
-		context->setFont (font);
+		context.setFontColor (fontColor);
+		context.setFont (font);
 		std::string text;
 		char string[2];
 		CRect glyphRect (getViewSize ().left, getViewSize ().top, getViewSize ().left, getViewSize ().top);
@@ -50,9 +50,9 @@ public:
 			{
 				snprintf (string, 2, "%c", i++);
 				text += string;
-				glyphRect.setWidth (context->getStringWidth (text.c_str ()));
+				glyphRect.setWidth (context.getStringWidth (text.c_str ()));
 			}
-			context->drawString (text.c_str (), glyphRect, kLeftText);
+			context.drawString (text.c_str (), glyphRect, kLeftText);
 			glyphRect.left = glyphRect.right = getViewSize ().left;
 			glyphRect.offset (0, height);
 			text = "";

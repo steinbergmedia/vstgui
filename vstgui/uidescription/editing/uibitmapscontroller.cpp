@@ -41,14 +41,14 @@ public:
 	{
 		setBackground (bitmap);
 	}
-	
-	void draw (CDrawContext* context) override
+
+	void draw (CDrawContext& context) override
 	{
 		if (auto bitmap = getBackground ())
 		{
 			CGraphicsTransform matrix;
 			matrix.scale (zoom, zoom);
-			CDrawContext::Transform transform (*context, matrix);
+			CDrawContext::Transform transform (context, matrix);
 			CRect r (getViewSize ());
 			matrix.inverse ().transform (r);
 			bitmap->CBitmap::draw (context, r);
@@ -63,24 +63,32 @@ public:
 				matrix.inverse ().transform (p);
 				r2.offset (p.x, p.y);
 
-				context->setDrawMode (kAntiAliasing);
-				context->setFrameColor (kBlueCColor);
-				context->setLineWidth (1);
-				context->setLineStyle (kLineSolid);
-				
-				context->drawLine (CPoint (r2.left, r2.top + offsets.top), CPoint (r2.right, r2.top + offsets.top));
-				context->drawLine (CPoint (r2.left, r2.bottom - offsets.bottom), CPoint (r2.right, r2.bottom - offsets.bottom));
-				context->drawLine (CPoint (r2.left + offsets.left, r2.top), CPoint (r2.left + offsets.left, r2.bottom));
-				context->drawLine (CPoint (r2.right - offsets.right, r2.top), CPoint (r2.right - offsets.right, r2.bottom));
+				context.setDrawMode (kAntiAliasing);
+				context.setFrameColor (kBlueCColor);
+				context.setLineWidth (1);
+				context.setLineStyle (kLineSolid);
 
-				context->setFrameColor (kRedCColor);
-				context->setLineWidth (1);
-				context->setLineStyle (lineOnOffDash2Style);
+				context.drawLine (CPoint (r2.left, r2.top + offsets.top),
+								  CPoint (r2.right, r2.top + offsets.top));
+				context.drawLine (CPoint (r2.left, r2.bottom - offsets.bottom),
+								  CPoint (r2.right, r2.bottom - offsets.bottom));
+				context.drawLine (CPoint (r2.left + offsets.left, r2.top),
+								  CPoint (r2.left + offsets.left, r2.bottom));
+				context.drawLine (CPoint (r2.right - offsets.right, r2.top),
+								  CPoint (r2.right - offsets.right, r2.bottom));
 
-				context->drawLine (CPoint (r2.left, r2.top + offsets.top), CPoint (r2.right, r2.top + offsets.top));
-				context->drawLine (CPoint (r2.left, r2.bottom - offsets.bottom), CPoint (r2.right, r2.bottom - offsets.bottom));
-				context->drawLine (CPoint (r2.left + offsets.left, r2.top), CPoint (r2.left + offsets.left, r2.bottom));
-				context->drawLine (CPoint (r2.right - offsets.right, r2.top), CPoint (r2.right - offsets.right, r2.bottom));
+				context.setFrameColor (kRedCColor);
+				context.setLineWidth (1);
+				context.setLineStyle (lineOnOffDash2Style);
+
+				context.drawLine (CPoint (r2.left, r2.top + offsets.top),
+								  CPoint (r2.right, r2.top + offsets.top));
+				context.drawLine (CPoint (r2.left, r2.bottom - offsets.bottom),
+								  CPoint (r2.right, r2.bottom - offsets.bottom));
+				context.drawLine (CPoint (r2.left + offsets.left, r2.top),
+								  CPoint (r2.left + offsets.left, r2.bottom));
+				context.drawLine (CPoint (r2.right - offsets.right, r2.top),
+								  CPoint (r2.right - offsets.right, r2.bottom));
 			}
 			else if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 			{
@@ -110,21 +118,21 @@ public:
 					colRect.offset (frameRect.getWidth (), 0);
 				}
 
-				context->setDrawMode (kAntiAliasing);
-				context->setFrameColor (kBlueCColor);
-				context->setLineWidth (1);
-				context->setLineStyle (kLineSolid);
+				context.setDrawMode (kAntiAliasing);
+				context.setFrameColor (kBlueCColor);
+				context.setLineWidth (1);
+				context.setLineStyle (kLineSolid);
 				if (!rowLines.empty ())
-					context->drawLines (rowLines);
+					context.drawLines (rowLines);
 				if (!colLines.empty ())
-					context->drawLines (colLines);
-				context->setFrameColor (kRedCColor);
-				context->setLineWidth (1);
-				context->setLineStyle (lineOnOffDash2Style);
+					context.drawLines (colLines);
+				context.setFrameColor (kRedCColor);
+				context.setLineWidth (1);
+				context.setLineStyle (lineOnOffDash2Style);
 				if (!rowLines.empty ())
-					context->drawLines (rowLines);
+					context.drawLines (rowLines);
 				if (!colLines.empty ())
-					context->drawLines (colLines);
+					context.drawLines (colLines);
 			}
 		}
 	}
@@ -203,7 +211,8 @@ protected:
 
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
 	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
@@ -233,7 +242,8 @@ UIBitmapsDataSource::UIBitmapsDataSource (
 void UIBitmapsDataSource::onUIDescBitmapChanged (UIDescription& desc) { onUIDescriptionUpdate (); }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void UIBitmapsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
+									  int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	auto drawWidth = size.getHeight ();
 	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
@@ -250,7 +260,7 @@ void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, 
 		auto scaleY = r.getHeight () / bitmapSize.y;
 		CGraphicsTransform matrix;
 		matrix.scale (scaleX, scaleY);
-		CDrawContext::Transform t (*context, matrix);
+		CDrawContext::Transform t (context, matrix);
 		matrix.inverse ().transform (r);
 		bitmap->CBitmap::draw (context, r);
 	}

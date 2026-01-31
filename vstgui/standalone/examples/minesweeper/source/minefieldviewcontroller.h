@@ -69,8 +69,8 @@ private:
 							const SharedPointer<CFontDesc>& f) const;
 	void drawCellNeighbours (const CRect& r, CDrawContext& context,
 							 const SharedPointer<CFontDesc>& f, uint32_t neighbours);
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
-	                 int32_t flags, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
 	                                 int32_t column, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,

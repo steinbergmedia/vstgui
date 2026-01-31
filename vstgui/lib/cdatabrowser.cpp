@@ -24,8 +24,8 @@ class CDataBrowserView : public CView, public IFocusDrawing, public IDropTarget
 public:
 	CDataBrowserView (const CRect& size, IDataBrowserDelegate* db, CDataBrowser* browser);
 
-	void draw (CDrawContext* context) override;
-	void drawRect (CDrawContext* context, const CRect& updateRect) override;
+	void draw (CDrawContext& context) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
@@ -60,8 +60,8 @@ class CDataBrowserHeader : public CView
 public:
 	CDataBrowserHeader (const CRect& size, IDataBrowserDelegate* db, CDataBrowser* browser);
 
-	void draw (CDrawContext* context) override;
-	void drawRect (CDrawContext* context, const CRect& updateRect) override;
+	void draw (CDrawContext& context) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
@@ -583,13 +583,10 @@ CDataBrowserHeader::CDataBrowserHeader (const CRect& size, IDataBrowserDelegate*
 }
 
 //-----------------------------------------------------------------------------------------------
-void CDataBrowserHeader::draw (CDrawContext* context)
-{
-	drawRect (context, getViewSize ());
-}
+void CDataBrowserHeader::draw (CDrawContext& context) { drawRect (context, getViewSize ()); }
 
 //-----------------------------------------------------------------------------------------------
-void CDataBrowserHeader::drawRect (CDrawContext* context, const CRect& updateRect)
+void CDataBrowserHeader::drawRect (CDrawContext& context, const CRect& updateRect)
 {
 	CColor lineColor;
 	CCoord lineWidth = 0;
@@ -766,13 +763,10 @@ void CDataBrowserView::invalidateRow (int32_t row)
 }
 
 //-----------------------------------------------------------------------------------------------
-void CDataBrowserView::draw (CDrawContext* context)
-{
-	drawRect (context, getViewSize ());
-}
+void CDataBrowserView::draw (CDrawContext& context) { drawRect (context, getViewSize ()); }
 
 //-----------------------------------------------------------------------------------------------
-void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
+void CDataBrowserView::drawRect (CDrawContext& context, const CRect& updateRect)
 {
 	const bool drawRowLines = (browser->getStyle () & CDataBrowser::kDrawRowLines) ? true : false;
 	CCoord lineWidth = 0;
@@ -809,7 +803,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 				testRect.bound (updateRect);
 				if (testRect.isEmpty () == false)
 				{
-					context->setClipRect (testRect);
+					context.setClipRect (testRect);
 					CRect cellSize (r);
 					cellSize.bottom++;
 					cellSize.right++;
@@ -844,12 +838,12 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 	}
 	if (!lines.empty ())
 	{
-		context->setClipRect (updateRect);
-		context->setDrawMode (kAntiAliasing);
-		context->setLineWidth (lineWidth);
-		context->setFrameColor (lineColor);
-		context->setLineStyle (kLineSolid);
-		context->drawLines (lines);
+		context.setClipRect (updateRect);
+		context.setDrawMode (kAntiAliasing);
+		context.setLineWidth (lineWidth);
+		context.setFrameColor (lineColor);
+		context.setLineStyle (kLineSolid);
+		context.drawLines (lines);
 	}
 }
 

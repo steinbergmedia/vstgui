@@ -21,11 +21,11 @@ public:
 
 	void setClearMarkInset (CPoint inset);
 	CPoint getClearMarkInset () const;
-	
-	void draw (CDrawContext *pContext) override;
+
+	void draw (CDrawContext& context) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 protected:
-	void drawClearMark (CDrawContext* context) const;
+	void drawClearMark (CDrawContext& context) const;
 	CRect getClearMarkRect () const;
 	CRect getTextRect () const;
 	

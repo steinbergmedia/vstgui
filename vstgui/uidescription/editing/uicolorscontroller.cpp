@@ -39,7 +39,8 @@ protected:
 	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	UTF8StringPtr getDefaultsName () override { return "UIColorsDataSource"; }
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
 	void dbSelectionChanged (CDataBrowser* browser) override;
 
@@ -195,7 +196,8 @@ CCoord UIColorsDataSource::getColorIconWith ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void UIColorsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
+									 int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
 	CRect r (size);
@@ -204,15 +206,15 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 	CColor cellColor;
 	if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor))
 	{
-		context->setFillColor (cellColor);
-		context->setFrameColor (dragRow == row ? kRedCColor : kBlackCColor);
-		context->setLineWidth (context->getHairlineSize ());
-		context->setLineStyle (kLineSolid);
-		context->setDrawMode (kAliasing);
+		context.setFillColor (cellColor);
+		context.setFrameColor (dragRow == row ? kRedCColor : kBlackCColor);
+		context.setLineWidth (context.getHairlineSize ());
+		context.setLineStyle (kLineSolid);
+		context.setDrawMode (kAliasing);
 		r = size;
 		r.left = r.right - getColorIconWith ();
 		r.inset (2, 2);
-		context->drawRect (r, kDrawFilledAndStroked);
+		context.drawRect (r, kDrawFilledAndStroked);
 	}
 }
 

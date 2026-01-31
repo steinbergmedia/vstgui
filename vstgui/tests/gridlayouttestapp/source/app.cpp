@@ -32,15 +32,15 @@ struct ViewWithAFrame : CView
 {
 	ViewWithAFrame (uint32_t index = 0u) : CView ({0., 0., 40., 40.}), index (index) {}
 
-	void drawRect (CDrawContext* pContext, const CRect& updateRect) override
+	void drawRect (CDrawContext& context, const CRect& updateRect) override
 	{
-		pContext->setFrameColor (frameColor);
-		pContext->setFillColor (fillColor);
-		pContext->drawRect (getViewSize (), kDrawFilledAndStroked);
-		pContext->setFont (kSystemFont);
-		pContext->setFontColor (kWhiteCColor);
+		context.setFrameColor (frameColor);
+		context.setFillColor (fillColor);
+		context.drawRect (getViewSize (), kDrawFilledAndStroked);
+		context.setFont (kSystemFont);
+		context.setFontColor (kWhiteCColor);
 		UTF8String str = toString (index);
-		pContext->drawString (str, getViewSize (), CHoriTxtAlign::kCenterText);
+		context.drawString (str, getViewSize (), CHoriTxtAlign::kCenterText);
 	}
 
 	uint32_t index {0};
@@ -161,7 +161,7 @@ private:
 		return kMouseEventHandled;
 	}
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
 					 int32_t flags, CDataBrowser*) override
 	{
 		if (row < 0 || row >= static_cast<int32_t> (getData ().size ()))
@@ -169,16 +169,16 @@ private:
 
 		if (flags & kRowSelected)
 		{
-			context->setFillColor (getSelectedRowBackground ());
-			context->drawRect (size, kDrawFilled);
+			context.setFillColor (getSelectedRowBackground ());
+			context.drawRect (size, kDrawFilled);
 		}
 
 		UTF8String str = getCellText ({row, column});
 		if (!str.empty ())
 		{
-			context->setFont (kSystemFont);
-			context->setFontColor (getTextColor ());
-			context->drawString (str, size, kCenterText);
+			context.setFont (kSystemFont);
+			context.setFontColor (getTextColor ());
+			context.drawString (str, size, kCenterText);
 		}
 	}
 

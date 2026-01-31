@@ -175,30 +175,30 @@ void CTextEdit::setPlaceholderString (const UTF8String& str)
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::draw (CDrawContext *pContext)
+void CTextEdit::draw (CDrawContext& context)
 {
 	if (platformControl)
 	{
-		drawBack (pContext);
+		drawBack (context);
 		if (!platformControl->drawsPlaceholder () && !placeholderString.empty () &&
 		    platformControl->getText ().empty ())
 		{
-			pContext->saveGlobalState ();
-			pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
-			drawPlatformText (pContext, placeholderString);
-			pContext->restoreGlobalState ();
+			context.saveGlobalState ();
+			context.setGlobalAlpha (context.getGlobalAlpha () * 0.5f);
+			drawPlatformText (context, placeholderString);
+			context.restoreGlobalState ();
 		}
 		return;
 	}
-	drawBack (pContext);
+	drawBack (context);
 	if (text.empty ())
 	{
 		if (!placeholderString.empty ())
 		{
-			pContext->saveGlobalState ();
-			pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
-			drawPlatformText (pContext, placeholderString);
-			pContext->restoreGlobalState ();
+			context.saveGlobalState ();
+			context.setGlobalAlpha (context.getGlobalAlpha () * 0.5f);
+			drawPlatformText (context, placeholderString);
+			context.restoreGlobalState ();
 		}
 	}
 	else if (getSecureStyle ())
@@ -207,10 +207,10 @@ void CTextEdit::draw (CDrawContext *pContext)
 		UTF8String str;
 		for (auto i = 0u; i < text.length (); ++i)
 			str += bulletCharacter;
-		drawPlatformText (pContext, str);
+		drawPlatformText (context, str);
 	}
 	else
-		CTextLabel::draw (pContext);
+		CTextLabel::draw (context);
 }
 
 //------------------------------------------------------------------------

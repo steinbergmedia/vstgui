@@ -146,8 +146,8 @@ public:
 	/** get the offset of the background bitmap */
 	virtual CPoint getBackgroundOffset () const;
 	/** draw the background */
-	virtual void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);
-	
+	virtual void drawBackgroundRect (CDrawContext& pContext, const CRect& _updateRect);
+
 	virtual void setBackgroundColorDrawStyle (CDrawStyle style);
 	CDrawStyle getBackgroundColorDrawStyle () const;
 	//@}
@@ -169,8 +169,8 @@ public:
 	void unregisterViewContainerListener (IViewContainerListener* listener);
 	
 	// CView
-	void draw (CDrawContext* pContext) override;
-	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	void draw (CDrawContext& context) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	void onMouseDownEvent (MouseDownEvent& event) override;
 	void onMouseMoveEvent (MouseMoveEvent& event) override;
 	void onMouseUpEvent (MouseUpEvent& event) override;

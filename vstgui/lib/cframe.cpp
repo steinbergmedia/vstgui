@@ -315,25 +315,20 @@ void CFrame::enableTooltips (bool state, uint32_t delayTimeInMs)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::draw (CDrawContext* pContext)
-{
-	return CFrame::drawRect (pContext, getViewSize ());
-}
+void CFrame::draw (CDrawContext& context) { return CFrame::drawRect (context, getViewSize ()); }
 
 //-----------------------------------------------------------------------------
-void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
+void CFrame::drawRect (CDrawContext& context, const CRect& updateRect)
 {
-	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0 || pContext == nullptr)
+	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0)
 		return;
 
-	auto lifeGuard = shared (pContext);
-
 	if (pImpl)
-		pContext->setBitmapInterpolationQuality (pImpl->bitmapQuality);
+		context.setBitmapInterpolationQuality (pImpl->bitmapQuality);
 
-	drawClipped (pContext, updateRect, [&] () {
+	drawClipped (context, updateRect, [&] () {
 		// draw the background and the children
-		CViewContainer::drawRect (pContext, updateRect);
+		CViewContainer::drawRect (context, updateRect);
 	});
 }
 
@@ -1590,7 +1585,7 @@ void CFrame::platformDrawRects (const PlatformGraphicsDeviceContextPtr& context,
 {
 	CDrawContext drawContext (context, getViewSize (), scaleFactor);
 	for (auto rect : rects)
-		drawRect (&drawContext, rect);
+		drawRect (drawContext, rect);
 }
 
 //-----------------------------------------------------------------------------

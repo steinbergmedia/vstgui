@@ -320,7 +320,7 @@ public:
 	void setMax (float val) override {}
 	float getMax () const override;
 
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 

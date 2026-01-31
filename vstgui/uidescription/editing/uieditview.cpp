@@ -46,8 +46,8 @@ public:
 	~UISelectionView () override;
 
 private:
-	void draw (CDrawContext* pContext) override;
-	void drawResizeHandle (const CPoint& p, CDrawContext* pContext);
+	void draw (CDrawContext& context) override;
+	void drawResizeHandle (const CPoint& p, CDrawContext& pContext);
 
 	void selectionWillChange (const UISelection&) override { onSelectionChanged (); }
 	void selectionDidChange (const UISelection&) override { onSelectionChanged (); }
@@ -80,26 +80,26 @@ UISelectionView::~UISelectionView ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelectionView::drawResizeHandle (const CPoint& p, CDrawContext* pContext)
+void UISelectionView::drawResizeHandle (const CPoint& p, CDrawContext& pContext)
 {
 	CRect r (p.x, p.y, p.x, p.y);
 	r.inset (-handleInset, -handleInset);
-	pContext->drawRect (r, kDrawFilledAndStroked);
+	pContext.drawRect (r, kDrawFilledAndStroked);
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelectionView::draw (CDrawContext* pContext)
+void UISelectionView::draw (CDrawContext& context)
 {
-	auto lineWidth = pContext->getHairlineSize ();
+	auto lineWidth = context.getHairlineSize ();
 	CRect r (getVisibleViewSize ());
-	ConcatClip cc (*pContext, r);
-	pContext->setDrawMode (kAliasing);
-	pContext->setLineStyle (kLineSolid);
-	pContext->setLineWidth (lineWidth);
+	ConcatClip cc (context, r);
+	context.setDrawMode (kAliasing);
+	context.setLineStyle (kLineSolid);
+	context.setLineWidth (lineWidth);
 
 	CColor lightColor (kWhiteCColor);
 	lightColor.alpha = 140;
-	pContext->setFillColor (lightColor);
+	context.setFillColor (lightColor);
 
 	auto mainView = getTargetView ()->getView (0);
 	CPoint p;
@@ -109,31 +109,31 @@ void UISelectionView::draw (CDrawContext* pContext)
 		CRect vs = selection->getGlobalViewCoordinates (*view.get ());
 		vs.offsetInverse (p);
 		vs.extend (lineWidth, lineWidth);
-		pContext->setFrameColor (lightColor);
-		pContext->drawRect (vs);
+		context.setFrameColor (lightColor);
+		context.drawRect (vs);
 		vs.inset (lineWidth, lineWidth);
-		pContext->setFrameColor (selectionColor);
-		pContext->drawRect (vs);
+		context.setFrameColor (selectionColor);
+		context.drawRect (vs);
 		if (vs.getWidth () > handleInset * 2. && vs.getHeight () > handleInset * 2.)
 		{
-			drawResizeHandle (vs.getBottomRight (), pContext);
+			drawResizeHandle (vs.getBottomRight (), context);
 			if (view != mainView)
 			{
-				drawResizeHandle (vs.getTopLeft (), pContext);
-				drawResizeHandle (vs.getBottomLeft (), pContext);
-				drawResizeHandle (vs.getTopRight (), pContext);
+				drawResizeHandle (vs.getTopLeft (), context);
+				drawResizeHandle (vs.getBottomLeft (), context);
+				drawResizeHandle (vs.getTopRight (), context);
 			}
 			if (vs.getHeight () > handleInset * 4)
 			{
-				drawResizeHandle (vs.getRightCenter (), pContext);
+				drawResizeHandle (vs.getRightCenter (), context);
 				if (view != mainView)
-					drawResizeHandle (vs.getLeftCenter (), pContext);
+					drawResizeHandle (vs.getLeftCenter (), context);
 			}
 			if (vs.getWidth () > handleInset * 4)
 			{
-				drawResizeHandle (vs.getBottomCenter (), pContext);
+				drawResizeHandle (vs.getBottomCenter (), context);
 				if (view != mainView)
-					drawResizeHandle (vs.getTopCenter (), pContext);
+					drawResizeHandle (vs.getTopCenter (), context);
 			}
 		}
 	}
@@ -165,7 +165,7 @@ public:
 	void setHighlightView (const SharedPointer<CView>& view);
 
 private:
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
 
 	SharedPointer<CView> highlightView;
 	CColor strokeColor;
@@ -195,7 +195,7 @@ void UIHighlightView::setHighlightView (const SharedPointer<CView>& view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIHighlightView::draw (CDrawContext* pContext)
+void UIHighlightView::draw (CDrawContext& context)
 {
 	if (highlightView == nullptr)
 		return;
@@ -204,11 +204,11 @@ void UIHighlightView::draw (CDrawContext* pContext)
 	frameToLocal (p);
 	r.offsetInverse (p);
 	r.inset (2, 2);
-	pContext->setFillColor (fillColor);
-	pContext->setFrameColor (strokeColor);
-	pContext->setLineStyle (kLineSolid);
-	pContext->setLineWidth (3);
-	pContext->drawRect (r, kDrawFilledAndStroked);
+	context.setFillColor (fillColor);
+	context.setFrameColor (strokeColor);
+	context.setLineStyle (kLineSolid);
+	context.setLineWidth (3);
+	context.drawRect (r, kDrawFilledAndStroked);
 }
 
 //------------------------------------------------------------------------
@@ -492,37 +492,34 @@ CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::draw (CDrawContext *pContext)
-{
-	drawRect (pContext, getViewSize ());
-}
+void UIEditView::draw (CDrawContext& context) { drawRect (context, getViewSize ()); }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
+void UIEditView::drawRect (CDrawContext& context, const CRect& updateRect)
 {
 	// disable focus drawing
 	bool focusDrawing = getFrame ()->focusDrawingEnabled ();
 	if (!editing && focusDrawing)
 		getFrame ()->setFocusDrawingEnabled (false);
 
-	CViewContainer::drawRect (pContext, updateRect);
+	CViewContainer::drawRect (context, updateRect);
 
 	if (!editing && focusDrawing)
 		getFrame ()->setFocusDrawingEnabled (focusDrawing);
 
-	pContext->setClipRect (updateRect);
+	context.setClipRect (updateRect);
 
-	CDrawContext::Transform transform (*pContext, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));
+	CDrawContext::Transform transform (
+		context, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));
 
 	const CCoord dashLength[] = {5, 5};
 	const CLineStyle lineDash (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, dashLength);
-	pContext->setLineStyle (lineDash);
-	pContext->setLineWidth (1);
-	pContext->setDrawMode (kAliasing);
-	pContext->setFrameColor (kBlueCColor);
-	pContext->drawRect (
-	    CRect (0, 0, getWidth () - UIEditViewMargin, getHeight () - UIEditViewMargin),
-	    kDrawStroked);
+	context.setLineStyle (lineDash);
+	context.setLineWidth (1);
+	context.setDrawMode (kAliasing);
+	context.setFrameColor (kBlueCColor);
+	context.drawRect (CRect (0, 0, getWidth () - UIEditViewMargin, getHeight () - UIEditViewMargin),
+					  kDrawStroked);
 }
 
 //----------------------------------------------------------------------------------------------------

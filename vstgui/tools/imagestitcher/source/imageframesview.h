@@ -46,7 +46,7 @@ private:
 	void reorderImages (size_t position, bool doCopy, std::vector<size_t>& indices);
 	void addImages (size_t position, const std::vector<Path>& imagePaths);
 	void parentSizeChanged () override;
-	void drawRect (CDrawContext* context, const CRect& _updateRect) override;
+	void drawRect (CDrawContext& context, const CRect& _updateRect) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	SharedPointer<IDropTarget> getDropTarget () override { return shared (this); }

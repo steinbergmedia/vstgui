@@ -25,7 +25,7 @@ public:
 				  const SharedPointer<CBitmap>& background);
 	CMovieButton (const CMovieButton& movieButton);
 
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;

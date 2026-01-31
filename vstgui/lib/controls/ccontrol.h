@@ -92,7 +92,7 @@ public:
 	// overrides
 	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	void draw (CDrawContext* pContext) override = 0;
+	void draw (CDrawContext& context) override = 0;
 
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;

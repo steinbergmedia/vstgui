@@ -29,18 +29,18 @@ CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32
 CMovieBitmap::CMovieBitmap (const CMovieBitmap& v) : CControl (v) {}
 
 //------------------------------------------------------------------------
-void CMovieBitmap::draw (CDrawContext *pContext)
+void CMovieBitmap::draw (CDrawContext& context)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
 		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
-			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+			mfb->drawFrame (context, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
-			bitmap->draw (pContext, getViewSize ());
+			bitmap->draw (context, getViewSize ());
 		}
 	}
 }

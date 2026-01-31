@@ -83,7 +83,7 @@ CSpecialDigit::CSpecialDigit (const CSpecialDigit& v)
 }
 
 //------------------------------------------------------------------------
-void CSpecialDigit::draw (CDrawContext *pContext)
+void CSpecialDigit::draw (CDrawContext& context)
 {
 	CPoint where;
 	CRect rectDest;
@@ -120,7 +120,7 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 		where.y = (CCoord)j * height;
 		if (getDrawBackground ())
 		{
-			getDrawBackground ()->draw (pContext, rectDest, where);
+			getDrawBackground ()->draw (context, rectDest, where);
 		}
 	}
 }

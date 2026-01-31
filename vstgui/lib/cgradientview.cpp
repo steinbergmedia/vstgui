@@ -123,20 +123,20 @@ void CGradientView::setViewSize (const CRect& rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
-void CGradientView::draw (CDrawContext* context)
+void CGradientView::draw (CDrawContext& context)
 {
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
-		lineWidth = context->getHairlineSize ();
+		lineWidth = context.getHairlineSize ();
 	if (path == nullptr)
 	{
 		CRect r = getViewSize ();
 		r.inset (lineWidth / 2., lineWidth / 2.);
-		path = context->createRoundRectGraphicsPath (r, roundRectRadius);
+		path = context.createRoundRectGraphicsPath (r, roundRectRadius);
 	}
 	if (path && gradient)
 	{
-		context->setDrawMode (drawAntialiased ? kAntiAliasing : kAliasing);
+		context.setDrawMode (drawAntialiased ? kAntiAliasing : kAliasing);
 
 		if (gradientStyle == kLinearGradient)
 		{
@@ -146,8 +146,8 @@ void CGradientView::draw (CDrawContext* context)
 			CPoint colorEndPoint (0, getViewSize ().getHeight ());
 			colorEndPoint.x = getViewSize ().left + getViewSize ().getWidth () / 2 + cos (radians (gradientAngle+90)) * getViewSize ().getWidth () / 2;
 			colorEndPoint.y = getViewSize ().top + getViewSize ().getHeight () / 2 + sin (radians (gradientAngle+90)) * getViewSize ().getHeight () / 2;
-			context->fillLinearGradient (path, *gradient.get (), colorStartPoint, colorEndPoint,
-										 false);
+			context.fillLinearGradient (path, *gradient.get (), colorStartPoint, colorEndPoint,
+										false);
 		}
 		else
 		{
@@ -155,18 +155,18 @@ void CGradientView::draw (CDrawContext* context)
 			center.x *= getViewSize ().getWidth ();
 			center.y *= getViewSize ().getHeight ();
 			center.offset (getViewSize ().left, getViewSize ().top);
-			context->fillRadialGradient (
+			context.fillRadialGradient (
 				path, *gradient.get (), center,
 				radialRadius * std::max (getViewSize ().getWidth (), getViewSize ().getHeight ()));
 		}
 		
 		if (frameColor.alpha != 0 && lineWidth > 0.)
 		{
-			context->setDrawMode (drawAntialiased ? kAntiAliasing : kAliasing);
-			context->setFrameColor (frameColor);
-			context->setLineWidth (lineWidth);
-			context->setLineStyle (kLineSolid);
-			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			context.setDrawMode (drawAntialiased ? kAntiAliasing : kAliasing);
+			context.setFrameColor (frameColor);
+			context.setLineWidth (lineWidth);
+			context.setLineStyle (kLineSolid);
+			context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 	}
 }

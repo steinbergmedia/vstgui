@@ -141,10 +141,10 @@ static bool isUniformScaled (const CGraphicsTransform& matrix)
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
+void CShadowViewContainer::drawRect (CDrawContext& context, const CRect& updateRect)
 {
-	double scaleFactor = pContext->getScaleFactor ();
-	CGraphicsTransform matrix = pContext->getCurrentTransform ();
+	double scaleFactor = context.getScaleFactor ();
+	CGraphicsTransform matrix = context.getCurrentTransform ();
 	if (isUniformScaled (matrix))
 	{
 		double matrixScale = std::floor (matrix.m11 + 0.5);
@@ -165,7 +165,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 				CGraphicsTransform ().translate (-getViewSize ().left - shadowOffset.x,
 												 -getViewSize ().top - shadowOffset.y));
 			dontDrawBackground = true;
-			CViewContainer::draw (offscreenContext.get ());
+			CViewContainer::draw (*offscreenContext.get ());
 			dontDrawBackground = false;
 			offscreenContext->endDraw ();
 			auto bitmap = offscreenContext->getBitmap ();
@@ -201,25 +201,25 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 					}
 				}
 
-				CViewContainer::drawRect (pContext, updateRect);
+				CViewContainer::drawRect (context, updateRect);
 			}
 		}
 	}
 	else
 	{
-		CViewContainer::drawRect (pContext, updateRect);
+		CViewContainer::drawRect (context, updateRect);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect)
+void CShadowViewContainer::drawBackgroundRect (CDrawContext& context, const CRect& _updateRect)
 {
 	if (!dontDrawBackground)
 	{
-		float tmp = pContext->getGlobalAlpha ();
-		pContext->setGlobalAlpha (tmp * shadowIntensity);
-		CViewContainer::drawBackgroundRect (pContext, _updateRect);
-		pContext->setGlobalAlpha (tmp);
+		float tmp = context.getGlobalAlpha ();
+		context.setGlobalAlpha (tmp * shadowIntensity);
+		CViewContainer::drawBackgroundRect (context, _updateRect);
+		context.setGlobalAlpha (tmp);
 	}
 }
 

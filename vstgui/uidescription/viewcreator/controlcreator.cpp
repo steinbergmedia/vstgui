@@ -18,7 +18,7 @@ namespace UIViewCreator {
 struct CControlCreatorDummyControl : CControl
 {
 	CControlCreatorDummyControl () : CControl (CRect (0, 0, 40, 40), nullptr, -1) {}
-	void draw (CDrawContext* pContext) override { CView::draw (pContext); }
+	void draw (CDrawContext& context) override { CView::draw (context); }
 
 	CLASS_METHODS (CControlCreatorDummyControl, CControl)
 };

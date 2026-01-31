@@ -52,8 +52,8 @@ public:
 	CCoord getTextInset () const;
 	CHoriTxtAlign getTextAlign () const;
 
-	void drawBackground (CDrawContext* context, CRect size) override;
-	void drawRow (CDrawContext* context, CRect size, Row row) override;
+	void drawBackground (CDrawContext& context, CRect size) override;
+	void drawRow (CDrawContext& context, CRect size, Row row) override;
 
 private:
 	PlatformStringPtr getString (int32_t row) const;

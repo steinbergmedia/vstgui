@@ -165,7 +165,7 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::draw (CDrawContext *pContext)
+void CParamDisplay::draw (CDrawContext& context)
 {
 	if (hasBit (style, kNoDrawStyle))
 		return;
@@ -184,81 +184,81 @@ void CParamDisplay::draw (CDrawContext *pContext)
 		string = tmp;
 	}
 
-	drawBack (pContext);
-	drawPlatformText (pContext, UTF8String (string));
+	drawBack (context);
+	drawPlatformText (context, UTF8String (string));
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawBack (CDrawContext* pContext, const SharedPointer<CBitmap>& newBack)
+void CParamDisplay::drawBack (CDrawContext& context, const SharedPointer<CBitmap>& newBack)
 {
-	pContext->setDrawMode (kAliasing);
+	context.setDrawMode (kAliasing);
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
-		lineWidth = pContext->getHairlineSize ();
+		lineWidth = context.getHairlineSize ();
 	if (newBack)
 	{
-		newBack->draw (pContext, getViewSize (), backOffset);
+		newBack->draw (context, getViewSize (), backOffset);
 	}
 	else if (getDrawBackground ())
 	{
-		getDrawBackground ()->draw (pContext, getViewSize (), backOffset);
+		getDrawBackground ()->draw (context, getViewSize (), backOffset);
 	}
 	else
 	{
 		if (!getTransparency ())
 		{
 			bool strokePath = !(hasBit (style, (k3DIn|k3DOut|kNoFrame)));
-			pContext->setFillColor (backColor);
+			context.setFillColor (backColor);
 			if (hasBit (style, kRoundRectStyle))
 			{
 				CRect pathRect = getViewSize ();
 				pathRect.inset (lineWidth/2., lineWidth/2.);
-				auto path = pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius);
+				auto path = context.createRoundRectGraphicsPath (pathRect, roundRectRadius);
 				if (path)
 				{
-					pContext->setDrawMode (kAntiAliasing);
-					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+					context.setDrawMode (kAntiAliasing);
+					context.drawGraphicsPath (path, CDrawContext::kPathFilled);
 					if (strokePath)
 					{
-						pContext->setLineStyle (kLineSolid);
-						pContext->setLineWidth (lineWidth);
-						pContext->setFrameColor (frameColor);
-						pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+						context.setLineStyle (kLineSolid);
+						context.setLineWidth (lineWidth);
+						context.setFrameColor (frameColor);
+						context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 					}
 				}
 			}
 			else
 			{
-				pContext->setDrawMode (kAntiAliasing);
-				auto path = pContext->createGraphicsPath ();
+				context.setDrawMode (kAntiAliasing);
+				auto path = context.createGraphicsPath ();
 				if (path)
 				{
 					CRect frameRect = getViewSize ();
 					if (strokePath)
 						frameRect.inset (lineWidth/2., lineWidth/2.);
 					path->addRect (frameRect);
-					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+					context.drawGraphicsPath (path, CDrawContext::kPathFilled);
 					if (strokePath)
 					{
-						pContext->setLineStyle (kLineSolid);
-						pContext->setLineWidth (lineWidth);
-						pContext->setFrameColor (frameColor);
-						pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+						context.setLineStyle (kLineSolid);
+						context.setLineWidth (lineWidth);
+						context.setFrameColor (frameColor);
+						context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 					}
 				}
 				else
 				{
-					pContext->drawRect (getViewSize (), kDrawFilled);
-			
+					context.drawRect (getViewSize (), kDrawFilled);
+
 					if (strokePath)
 					{
 						CRect frameRect = getViewSize ();
 						frameRect.inset (lineWidth/2., lineWidth/2.);
 
-						pContext->setLineStyle (kLineSolid);
-						pContext->setLineWidth (lineWidth);
-						pContext->setFrameColor (frameColor);
-						pContext->drawRect (frameRect);
+						context.setLineStyle (kLineSolid);
+						context.setLineWidth (lineWidth);
+						context.setFrameColor (frameColor);
+						context.drawRect (frameRect);
 					}
 				}
 			}
@@ -269,89 +269,89 @@ void CParamDisplay::drawBack (CDrawContext* pContext, const SharedPointer<CBitma
 	{
 		CRect r (getViewSize ());
 		r.inset (lineWidth/2., lineWidth/2.);
-		pContext->setDrawMode (kAliasing);
-		pContext->setLineWidth (lineWidth);
-		pContext->setLineStyle (kLineSolid);
+		context.setDrawMode (kAliasing);
+		context.setLineWidth (lineWidth);
+		context.setLineStyle (kLineSolid);
 		if (hasBit (style, k3DIn))
-			pContext->setFrameColor (backColor);
+			context.setFrameColor (backColor);
 		else
-			pContext->setFrameColor (frameColor);
+			context.setFrameColor (frameColor);
 
 		CPoint p;
-		auto path = pContext->createGraphicsPath ();
+		auto path = context.createGraphicsPath ();
 		if (path)
 		{
 			path->beginSubpath (p (r.left, r.bottom));
 			path->addLine (p (r.left, r.top));
 			path->addLine (p (r.right, r.top));
-			pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 		else
 		{
-			pContext->drawLine (CPoint (r.left, r.bottom), CPoint (r.left, r.top));
-			pContext->drawLine (CPoint (r.left, r.top), CPoint (r.right, r.top));
+			context.drawLine (CPoint (r.left, r.bottom), CPoint (r.left, r.top));
+			context.drawLine (CPoint (r.left, r.top), CPoint (r.right, r.top));
 		}
 
 		if (hasBit (style, k3DIn))
-			pContext->setFrameColor (frameColor);
+			context.setFrameColor (frameColor);
 		else
-			pContext->setFrameColor (backColor);
+			context.setFrameColor (backColor);
 
-		path = pContext->createGraphicsPath ();
+		path = context.createGraphicsPath ();
 		if (path)
 		{
 			path->beginSubpath (p (r.right, r.top));
 			path->addLine (p (r.right, r.bottom));
 			path->addLine (p (r.left, r.bottom));
-			pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 		else
 		{
-			pContext->drawLine (CPoint (r.right, r.top), CPoint (r.right, r.bottom));
-			pContext->drawLine (CPoint (r.right, r.bottom), CPoint (r.left, r.bottom));
+			context.drawLine (CPoint (r.right, r.top), CPoint (r.right, r.bottom));
+			context.drawLine (CPoint (r.right, r.bottom), CPoint (r.left, r.bottom));
 		}
 	}
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawPlatformText (CDrawContext* pContext, const UTF8String& string)
+void CParamDisplay::drawPlatformText (CDrawContext& context, const UTF8String& string)
 {
-	drawPlatformText (pContext, string, getViewSize ());
+	drawPlatformText (context, string, getViewSize ());
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawPlatformText (CDrawContext* pContext, const UTF8String& string,
+void CParamDisplay::drawPlatformText (CDrawContext& context, const UTF8String& string,
 									  const CRect& size)
 {
 	if (!hasBit (style, kNoTextStyle))
 	{
-		pContext->saveGlobalState ();
+		context.saveGlobalState ();
 		CRect textRect (size);
 		textRect.inset (textInset.x, textInset.y);
 
-		drawClipped (pContext, textRect, [&] () {
+		drawClipped (context, textRect, [&] () {
 			CPoint center (textRect.getCenter ());
 			CGraphicsTransform transform;
 			transform.rotate (textRotation, center);
-			CDrawContext::Transform ctxTransform (*pContext, transform);
+			CDrawContext::Transform ctxTransform (context, transform);
 
-			pContext->setDrawMode (kAntiAliasing);
-			pContext->setFont (fontID);
+			context.setDrawMode (kAntiAliasing);
+			context.setFont (fontID);
 
 			// draw darker text (as shadow)
 			if (hasBit (style, kShadowText))
 			{
 				CRect newSize (textRect);
 				newSize.offset (shadowTextOffset);
-				pContext->setFontColor (shadowColor);
-				pContext->drawString (string.getPlatformString (), newSize, horiTxtAlign,
-									  hasBit (style, kAntialias));
+				context.setFontColor (shadowColor);
+				context.drawString (string.getPlatformString (), newSize, horiTxtAlign,
+									hasBit (style, kAntialias));
 			}
-			pContext->setFontColor (fontColor);
-			pContext->drawString (string.getPlatformString (), textRect, horiTxtAlign,
-								  hasBit (style, kAntialias));
+			context.setFontColor (fontColor);
+			context.drawString (string.getPlatformString (), textRect, horiTxtAlign,
+								hasBit (style, kAntialias));
 		});
-		pContext->restoreGlobalState ();
+		context.restoreGlobalState ();
 	}
 }
 

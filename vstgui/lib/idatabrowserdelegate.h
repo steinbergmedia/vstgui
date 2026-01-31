@@ -50,11 +50,11 @@ public:
 	/** @name Drawing */
 	///	@{
 	/** draw the db header */
-	virtual void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column,
-	                           int32_t flags, CDataBrowser* browser) = 0;
+	virtual void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column,
+							   int32_t flags, CDataBrowser* browser) = 0;
 	/** draw a db cell */
-	virtual void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
-	                         int32_t flags, CDataBrowser* browser) = 0;
+	virtual void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+							 int32_t flags, CDataBrowser* browser) = 0;
 	///	@}
 
 	/** @name Mouse Handling */
@@ -120,8 +120,8 @@ public:
 	int32_t dbGetNumColumns (CDataBrowser* browser) override = 0;
 	CCoord dbGetRowHeight (CDataBrowser* browser) override = 0;
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override = 0;
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
-	                 int32_t flags, CDataBrowser* browser) override = 0;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override = 0;
 
 	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth,
 	                             CDataBrowser* browser) override
@@ -137,8 +137,10 @@ public:
 	{
 		return false;
 	}
-	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags,
-	                   CDataBrowser* browser) override {}
+	void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column, int32_t flags,
+					   CDataBrowser* browser) override
+	{
+	}
 	void dbAttached (CDataBrowser* browser) override {}
 	void dbRemoved (CDataBrowser* browser) override {}
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,

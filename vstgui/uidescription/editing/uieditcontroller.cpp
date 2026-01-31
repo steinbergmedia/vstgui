@@ -262,22 +262,23 @@ public:
 	, drawBottomLine (drawBottomLine)
 	{}
 
-	void draw (CDrawContext* context) override
+	void draw (CDrawContext& context) override
 	{
 		drawGradient (context, getViewSize (), horizontal, drawTopLine, drawBottomLine);
 	}
 
-	static void drawGradient (CDrawContext* context, const CRect& _size, bool horizontal, bool drawTopLine = true, bool drawBottomLine = true)
+	static void drawGradient (CDrawContext& context, const CRect& _size, bool horizontal,
+							  bool drawTopLine = true, bool drawBottomLine = true)
 	{
-		if (auto path = context->createGraphicsPath ())
+		if (auto path = context.createGraphicsPath ())
 		{
 			auto lineWidth = 1.;
 
 			CRect size (_size);
-			context->setDrawMode (kAliasing);
-			context->setLineStyle (kLineSolid);
-			context->setLineWidth (lineWidth);
-			context->setFrameColor (gUIEditorControllerResources.shadingLineColor);
+			context.setDrawMode (kAliasing);
+			context.setLineStyle (kLineSolid);
+			context.setLineWidth (lineWidth);
+			context.setFrameColor (gUIEditorControllerResources.shadingLineColor);
 
 			auto shading = UIEditController::getEditorDescription ()->getGradient ("shading.light");
 			if (shading)
@@ -285,23 +286,25 @@ public:
 				path->addRect (size);
 				if (horizontal)
 				{
-					context->fillLinearGradient (path, *shading.get (),
-												 CPoint (size.left, size.top),
-												 CPoint (size.right, size.top));
+					context.fillLinearGradient (path, *shading.get (), CPoint (size.left, size.top),
+												CPoint (size.right, size.top));
 					if (drawBottomLine)
-						context->drawLine (CPoint (size.left, size.top), CPoint (size.left, size.bottom));
+						context.drawLine (CPoint (size.left, size.top),
+										  CPoint (size.left, size.bottom));
 					if (drawTopLine)
-						context->drawLine (CPoint (size.right-lineWidth, size.bottom), CPoint (size.right-lineWidth, size.top));
+						context.drawLine (CPoint (size.right - lineWidth, size.bottom),
+										  CPoint (size.right - lineWidth, size.top));
 				}
 				else
 				{
-					context->fillLinearGradient (path, *shading.get (),
-												 CPoint (size.left, size.top),
-												 CPoint (size.left, size.bottom));
+					context.fillLinearGradient (path, *shading.get (), CPoint (size.left, size.top),
+												CPoint (size.left, size.bottom));
 					if (drawTopLine)
-						context->drawLine (CPoint (size.left, size.top), CPoint (size.right, size.top));
+						context.drawLine (CPoint (size.left, size.top),
+										  CPoint (size.right, size.top));
 					if (drawBottomLine)
-						context->drawLine (CPoint (size.right, size.bottom-lineWidth), CPoint (size.left, size.bottom-lineWidth));
+						context.drawLine (CPoint (size.right, size.bottom - lineWidth),
+										  CPoint (size.left, size.bottom - lineWidth));
 				}
 			}
 		}
@@ -1620,11 +1623,11 @@ void UIEditController::drawSplitViewSeparator (CDrawContext& context, const CRec
 {
 	if (splitView.getStyle () == CSplitView::kHorizontal)
 	{
-		UIEditControllerShadingView::drawGradient (&context, size, true);
+		UIEditControllerShadingView::drawGradient (context, size, true);
 	}
 	else
 	{
-		UIEditControllerShadingView::drawGradient (&context, size, false);
+		UIEditControllerShadingView::drawGradient (context, size, false);
 	}
 }
 

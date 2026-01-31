@@ -121,7 +121,7 @@ public:
 	uint32_t getNbViews () const override;
 	SharedPointer<CView> getView (uint32_t index) const override;
 	bool changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex) override;
-	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) override;
+	void drawBackgroundRect (CDrawContext& pContext, const CRect& _updateRect) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void valueChanged (CControl& pControl) override;
 	void setTransparency (bool val) override;

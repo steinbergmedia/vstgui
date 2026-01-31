@@ -87,7 +87,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text,
 }
 
 //------------------------------------------------------------------------
-void drawIconAndText (CDrawContext* context, const SharedPointer<CBitmap>& iconToDraw,
+void drawIconAndText (CDrawContext& context, const SharedPointer<CBitmap>& iconToDraw,
 					  IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin,
 					  CRect drawRect, const UTF8String& title, const SharedPointer<CFontDesc>& font,
 					  CColor textColor, TextTruncateMode textTruncateMode)
@@ -156,7 +156,7 @@ void drawIconAndText (CDrawContext* context, const SharedPointer<CBitmap>& iconT
 				break;
 			}
 		}
-		context->drawBitmap (iconToDraw, iconRect);
+		context.drawBitmap (iconToDraw, iconRect);
 	}
 	else
 	{
@@ -167,17 +167,17 @@ void drawIconAndText (CDrawContext* context, const SharedPointer<CBitmap>& iconT
 	}
 	if (!title.empty ())
 	{
-		context->setFont (font);
-		context->setFontColor (textColor);
+		context.setFont (font);
+		context.setFontColor (textColor);
 		if (textTruncateMode != kTextTruncateNone)
 		{
 			UTF8String truncatedText =
 			    createTruncatedText (textTruncateMode, title, font, drawRect.getWidth (),
 			                         CPoint (0, 0), kReturnEmptyIfTruncationIsPlaceholderOnly);
-			context->drawString (truncatedText.getPlatformString (), drawRect, textAlignment);
+			context.drawString (truncatedText.getPlatformString (), drawRect, textAlignment);
 		}
 		else
-			context->drawString (title.getPlatformString (), drawRect, textAlignment);
+			context.drawString (title.getPlatformString (), drawRect, textAlignment);
 	}
 }
 }

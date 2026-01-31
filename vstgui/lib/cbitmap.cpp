@@ -77,10 +77,10 @@ CBitmap::CBitmap (const PlatformBitmapPtr& platformBitmap)
 }
 
 //-----------------------------------------------------------------------------
-void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offset, float alpha)
+void CBitmap::draw (CDrawContext& context, const CRect& rect, const CPoint& offset, float alpha)
 {
 	drawClipped (context, rect,
-				 [&] () { context->drawBitmap (shared (this), rect, offset, alpha); });
+				 [&] () { context.drawBitmap (shared (this), rect, offset, alpha); });
 }
 
 //-----------------------------------------------------------------------------
@@ -224,7 +224,7 @@ CRect CMultiFrameBitmap::calcFrameRect (uint32_t frameIndex) const
 }
 
 //-----------------------------------------------------------------------------
-void CMultiFrameBitmap::drawFrame (CDrawContext* context, uint16_t frameIndex, CPoint pos)
+void CMultiFrameBitmap::drawFrame (CDrawContext& context, uint16_t frameIndex, CPoint pos)
 {
 	auto fr = calcFrameRect (frameIndex);
 	auto r = CRect (pos, getFrameSize ());
@@ -288,9 +288,10 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (const PlatformBitmapPtr& platformBit
 }
 
 //-----------------------------------------------------------------------------
-void CNinePartTiledBitmap::draw (CDrawContext* inContext, const CRect& inDestRect, const CPoint& offset, float inAlpha)
+void CNinePartTiledBitmap::draw (CDrawContext& inContext, const CRect& inDestRect,
+								 const CPoint& offset, float inAlpha)
 {
-	inContext->drawBitmapNinePartTiled (shared (this), inDestRect, offsets, inAlpha);
+	inContext.drawBitmapNinePartTiled (shared (this), inDestRect, offsets, inAlpha);
 }
 
 //------------------------------------------------------------------------

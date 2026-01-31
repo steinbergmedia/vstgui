@@ -22,6 +22,8 @@ Detailed changes:
 - The following important ```CView``` methods have changed:
 	* ```bool CView::removed (const SharedPointer<CViewContainer>& parent)```
 	* ```bool CView::attached (const SharedPointer<CViewContainer>& parent)```
+	* ```void draw (CDrawContext& context)```
+	* ```void drawRect (CDrawContext& context, const CRect& updateRect)```
 	* ```SharedPointer<CViewContainer> CView::asViewContainer ()```
 	* ```SharedPointer<CViewContainer> CView::getParentView () const```
 	* ```SharedPointer<CFrame> getFrame () const```
@@ -320,7 +322,7 @@ The old mouse methods (onMouseDown, onMouseUp, onMouseMoved, etc) are still supp
 	- CView::setViewSize (CRect& rect, bool invalid = true)
 	- CView::hitTest (const CPoint& where, CButtonState& buttons = -1)
 	- CView::invalidRect (CRect& rect)
-	- CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect)
+	- CViewContainer::drawBackgroundRect (CDrawContext& pContext, CRect& _updateRect)
 	- CViewContainer::addView (CView* pView, CRect& mouseableArea, bool mouseEnabled = true)
 
 ### Version 3.6

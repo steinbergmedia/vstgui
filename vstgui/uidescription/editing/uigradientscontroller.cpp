@@ -52,7 +52,7 @@ public:
 	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::registerListener;
 	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::unregisterListener;
 private:
-	void draw (CDrawContext* context) override;
+	void draw (CDrawContext& context) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
@@ -299,22 +299,23 @@ void UIColorStopEditView::setGradient (const SharedPointer<CGradient>& inGradien
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorStopEditView::draw (CDrawContext* context)
+void UIColorStopEditView::draw (CDrawContext& context)
 {
-	CDrawContext::Transform t (*context, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));
+	CDrawContext::Transform t (
+		context, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));
 
-	context->setDrawMode (kAliasing);
+	context.setDrawMode (kAliasing);
 
-	auto gradientPath = context->createGraphicsPath ();
+	auto gradientPath = context.createGraphicsPath ();
 	if (!gradientPath)
 		return;
 	gradientPath->addRect (CRect (stopWidth / 2., 0., getWidth () - stopWidth / 2., getHeight ()));
-	context->fillLinearGradient (gradientPath, *gradient.get (), CPoint (stopWidth / 2., 0),
-								 CPoint (getWidth () - stopWidth / 2, 0));
+	context.fillLinearGradient (gradientPath, *gradient.get (), CPoint (stopWidth / 2., 0),
+								CPoint (getWidth () - stopWidth / 2, 0));
 
 	CCoord width = getWidth () - stopWidth;
 	CCoord height = (getHeight () / 2.);
-	auto path = context->createGraphicsPath ();
+	auto path = context.createGraphicsPath ();
 	if (!path)
 		return;
 	path->beginSubpath (CPoint (stopWidth / 2., 0));
@@ -322,14 +323,14 @@ void UIColorStopEditView::draw (CDrawContext* context)
 	path->addLine (CPoint (stopWidth, height));
 	path->closeSubpath ();
 
-	context->setFrameColor (kBlackCColor);
-	context->setLineWidth (1.1);
-	context->setLineStyle (kLineSolid);
-	context->setDrawMode (kAntiAliasing);
+	context.setFrameColor (kBlackCColor);
+	context.setLineWidth (1.1);
+	context.setLineStyle (kLineSolid);
+	context.setDrawMode (kAntiAliasing);
 
 	CColor selectedColor;
 
-	context->setGlobalAlpha (0.5f);
+	context.setGlobalAlpha (0.5f);
 	for (auto& colorStop : colorStopMap)
 	{
 		if (colorStop.first == getSelectedColorStart ())
@@ -341,25 +342,25 @@ void UIColorStopEditView::draw (CDrawContext* context)
 			CGraphicsTransform offset;
 			offset.translate (colorStop.first * width, getHeight () / 4.);
 			if (colorStop.second.getLuma () < 127)
-				context->setFrameColor (kWhiteCColor);
+				context.setFrameColor (kWhiteCColor);
 			else
-				context->setFrameColor (kBlackCColor);
-			context->drawGraphicsPath (path, CDrawContext::kPathStroked, &offset);
+				context.setFrameColor (kBlackCColor);
+			context.drawGraphicsPath (path, CDrawContext::kPathStroked, &offset);
 		}
 	}
-	
-	context->setGlobalAlpha (1.f);
+
+	context.setGlobalAlpha (1.f);
 	if (getSelectedColorStart () >= 0.)
 	{
 		CGraphicsTransform offset;
 		offset.translate (getSelectedColorStart () * width, getHeight() / 4.);
 		if (selectedColor.getLuma () < 127)
-			context->setFrameColor (kWhiteCColor);
+			context.setFrameColor (kWhiteCColor);
 		else
-			context->setFrameColor (kBlackCColor);
-		context->setFillColor (selectedColor);
-		context->drawGraphicsPath (path, CDrawContext::kPathFilled, &offset);
-		context->drawGraphicsPath (path, CDrawContext::kPathStroked, &offset);
+			context.setFrameColor (kBlackCColor);
+		context.setFillColor (selectedColor);
+		context.drawGraphicsPath (path, CDrawContext::kPathFilled, &offset);
+		context.drawGraphicsPath (path, CDrawContext::kPathStroked, &offset);
 	}
 }
 
@@ -652,7 +653,8 @@ protected:
 	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	UTF8StringPtr getDefaultsName () override { return "UIGradientsDataSource"; }
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 
@@ -753,7 +755,8 @@ CMouseEventResult UIGradientsDataSource::dbOnMouseDown (const CPoint& where, con
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void UIGradientsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
+										int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
 	CRect r (size);
@@ -761,20 +764,20 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
 	if (auto gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).data ()))
 	{
-		if (auto path = context->createGraphicsPath ())
+		if (auto path = context.createGraphicsPath ())
 		{
-			context->setFrameColor (kBlackCColor);
-			context->setLineWidth (context->getHairlineSize ());
-			context->setLineStyle (kLineSolid);
-			context->setDrawMode (kAliasing);
+			context.setFrameColor (kBlackCColor);
+			context.setLineWidth (context.getHairlineSize ());
+			context.setLineStyle (kLineSolid);
+			context.setDrawMode (kAliasing);
 			r = size;
 			r.left = r.right - (getGradientIconWidth ());
 			r.offset (-0.5, -0.5);
 			r.inset (3, 2);
 			path->addRect (r);
 			path->closeSubpath ();
-			context->fillLinearGradient (path, *gradient.get (), r.getTopLeft (), r.getTopRight ());
-			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			context.fillLinearGradient (path, *gradient.get (), r.getTopLeft (), r.getTopRight ());
+			context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 	}
 }

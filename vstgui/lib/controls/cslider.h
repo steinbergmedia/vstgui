@@ -142,7 +142,7 @@ public:
 	//@}
 
 	// overrides
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 	bool sizeToFit () override;
 
 	CLASS_METHODS (CSlider, CControl)

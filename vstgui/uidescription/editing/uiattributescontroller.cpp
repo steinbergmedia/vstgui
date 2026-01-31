@@ -757,11 +757,11 @@ protected:
 	{
 	public:
 		ColorView () : CView (CRect (0, 0, 0, 0)) ,color (kTransparentCColor) {}
-		void draw (CDrawContext* context) override
+		void draw (CDrawContext& context) override
 		{
-			context->setFillColor (color);
-			context->setDrawMode (kAliasing);
-			context->drawRect (getViewSize (), kDrawFilled);
+			context.setFillColor (color);
+			context.setDrawMode (kAliasing);
+			context.drawRect (getViewSize (), kDrawFilled);
 		}
 		CColor color;
 	};
@@ -837,16 +837,16 @@ protected:
 	{
 	public:
 		GradientView () : CView (CRect (0, 0, 0, 0)) {}
-		void draw (CDrawContext* context) override
+		void draw (CDrawContext& context) override
 		{
 			if (gradient == nullptr)
 				return;
 			CRect r = getViewSize ();
-			if (auto path = context->createGraphicsPath ())
+			if (auto path = context.createGraphicsPath ())
 			{
 				path->addRect (r);
-				context->fillLinearGradient (path, *gradient.get (), r.getTopLeft (),
-											 r.getTopRight ());
+				context.fillLinearGradient (path, *gradient.get (), r.getTopLeft (),
+											r.getTopRight ());
 			}
 		}
 		SharedPointer<CGradient> gradient;

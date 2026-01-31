@@ -740,32 +740,32 @@ void CViewContainer::invalidRect (const CRect& rect)
 /**
  * @param pContext the context which to use to draw this container and its subviews
  */
-void CViewContainer::draw (CDrawContext* pContext)
+void CViewContainer::draw (CDrawContext& context)
 {
-	CViewContainer::drawRect (pContext, getViewSize ());
+	CViewContainer::drawRect (context, getViewSize ());
 }
 
 //-----------------------------------------------------------------------------
 /**
- * @param pContext the context which to use to draw the background
+ * @param context the context which to use to draw the background
  * @param _updateRect the area which to draw
  */
-void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect)
+void CViewContainer::drawBackgroundRect (CDrawContext& context, const CRect& _updateRect)
 {
 	if (getDrawBackground ())
 	{
-		drawClipped (pContext, _updateRect, [&] () {
+		drawClipped (context, _updateRect, [&] () {
 			CRect tr (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
-			getDrawBackground ()->draw (pContext, tr, getBackgroundOffset ());
+			getDrawBackground ()->draw (context, tr, getBackgroundOffset ());
 		});
 	}
 	else if ((pImpl->backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
 	{
-		pContext->setDrawMode (kAliasing);
-		pContext->setLineWidth (1);
-		pContext->setFillColor (pImpl->backgroundColor);
-		pContext->setFrameColor (pImpl->backgroundColor);
-		pContext->setLineStyle (kLineSolid);
+		context.setDrawMode (kAliasing);
+		context.setLineWidth (1);
+		context.setFillColor (pImpl->backgroundColor);
+		context.setFrameColor (pImpl->backgroundColor);
+		context.setLineStyle (kLineSolid);
 		CRect r;
 		if (pImpl->backgroundColorDrawStyle == kDrawFilled || (pImpl->backgroundColorDrawStyle == kDrawFilledAndStroked && pImpl->backgroundColor.alpha == 255))
 		{
@@ -777,7 +777,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 			r = getViewSize ();
 			r.offset (-r.left, -r.top);
 		}
-		pContext->drawRect (r, pImpl->backgroundColorDrawStyle);
+		context.drawRect (r, pImpl->backgroundColorDrawStyle);
 	}
 }
 
@@ -786,10 +786,11 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
  * @param pContext the context which to use to draw
  * @param updateRect the area which to draw
  */
-void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
+void CViewContainer::drawRect (CDrawContext& context, const CRect& updateRect)
 {
 	CPoint offset (getViewSize ().left, getViewSize ().top);
-	CDrawContext::Transform offsetTransform (*pContext, CGraphicsTransform ().translate (offset.x, offset.y));
+	CDrawContext::Transform offsetTransform (context,
+											 CGraphicsTransform ().translate (offset.x, offset.y));
 
 	CRect _updateRect (updateRect);
 	_updateRect.bound (getViewSize ());
@@ -798,15 +799,15 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	clientRect.offset (-getViewSize ().left, -getViewSize ().top);
 
 	CRect oldClip;
-	pContext->getClipRect (oldClip);
+	context.getClipRect (oldClip);
 	CRect oldClip2 (oldClip);
 
 	CRect newClip (clientRect);
 	newClip.bound (oldClip);
-	pContext->setClipRect (newClip);
+	context.setClipRect (newClip);
 
 	// draw the background
-	drawBackgroundRect (pContext, clientRect);
+	drawBackgroundRect (context, clientRect);
 
 	SharedPointer<CView> _focusView;
 	IFocusDrawing* _focusDrawing = nullptr;
@@ -818,7 +819,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	}
 
 	{
-		CDrawContext::Transform tr (*pContext, getTransform ());
+		CDrawContext::Transform tr (context, getTransform ());
 		getTransform ().inverse ().transform (newClip);
 		getTransform ().inverse ().transform (clientRect);
 		getTransform ().transform (oldClip2);
@@ -830,7 +831,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			{
 				if (frame && _focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
 				{
-					auto focusPath = pContext->createGraphicsPath ();
+					auto focusPath = context.createGraphicsPath ();
 					if (focusPath)
 					{
 						if (_focusDrawing->getFocusPath (*focusPath.get (),
@@ -839,10 +840,11 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 							auto lastDrawnFocus = focusPath->getBoundingBox ();
 							if (!lastDrawnFocus.isEmpty ())
 							{
-								pContext->setClipRect (oldClip2);
-								pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
-								pContext->setFillColor (frame->getFocusColor ());
-								pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
+								context.setClipRect (oldClip2);
+								context.setDrawMode (kAntiAliasing | kNonIntegralMode);
+								context.setFillColor (frame->getFocusColor ());
+								context.drawGraphicsPath (focusPath,
+														  CDrawContext::kPathFilledEvenOdd);
 								lastDrawnFocus.extend (1, 1);
 								setLastDrawnFocus (lastDrawnFocus);
 							}
@@ -858,19 +860,19 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 					viewSize.bound (newClip);
 					if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
 						continue;
-					pContext->setClipRect (viewSize);
-					float globalContextAlpha = pContext->getGlobalAlpha ();
-					pContext->setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
-					pV->drawRect (pContext, viewSize);
-					pContext->setGlobalAlpha (globalContextAlpha);
+					context.setClipRect (viewSize);
+					float globalContextAlpha = context.getGlobalAlpha ();
+					context.setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
+					pV->drawRect (context, viewSize);
+					context.setGlobalAlpha (globalContextAlpha);
 #if DEBUG
 					static bool drawViewWireFrames = false;
 					if (drawViewWireFrames)
 					{
-						pContext->setFrameColor (kRedCColor);
-						pContext->setLineWidth (pContext->getHairlineSize ());
-						pContext->setLineStyle (kLineSolid);
-						pContext->drawRect (pV->getViewSize ());
+						context.setFrameColor (kRedCColor);
+						context.setLineWidth (context.getHairlineSize ());
+						context.setLineStyle (kLineSolid);
+						context.drawRect (pV->getViewSize ());
 					}
 #endif
 				}
@@ -878,11 +880,11 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		}
 	}
 
-	pContext->setClipRect (oldClip2);
+	context.setClipRect (oldClip2);
 
 	if (frame && _focusView)
 	{
-		auto focusPath = pContext->createGraphicsPath ();
+		auto focusPath = context.createGraphicsPath ();
 		if (focusPath)
 		{
 			if (_focusDrawing)
@@ -901,9 +903,9 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			auto lastDrawnFocus = focusPath->getBoundingBox ();
 			if (!lastDrawnFocus.isEmpty ())
 			{
-				pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
-				pContext->setFillColor (frame->getFocusColor ());
-				pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
+				context.setDrawMode (kAntiAliasing | kNonIntegralMode);
+				context.setFillColor (frame->getFocusColor ());
+				context.drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 				lastDrawnFocus.extend (1, 1);
 				setLastDrawnFocus (lastDrawnFocus);
 			}

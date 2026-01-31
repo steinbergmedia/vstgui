@@ -44,10 +44,10 @@ public:
 				  CCoord textInset = 2.);
 
 protected:
-	void drawRowBackground (CDrawContext* context, const CRect& size, int32_t row, int32_t flags,
-	                        CDataBrowser* browser) const;
-	void drawRowString (CDrawContext* context, const CRect& size, int32_t row, int32_t flags,
-	                    CDataBrowser* browser) const;
+	void drawRowBackground (CDrawContext& context, const CRect& size, int32_t row, int32_t flags,
+							CDataBrowser* browser) const;
+	void drawRowString (CDrawContext& context, const CRect& size, int32_t row, int32_t flags,
+						CDataBrowser* browser) const;
 
 	int32_t dbGetNumRows (CDataBrowser* browser) override;
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 1; }
@@ -64,10 +64,10 @@ protected:
 	CCoord dbGetRowHeight (CDataBrowser* browser) override;
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) override;
 
-	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags,
-	                   CDataBrowser* browser) override;
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
-	                 int32_t flags, CDataBrowser* browser) override;
+	void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column, int32_t flags,
+					   CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override;
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
 	                                 int32_t column, CDataBrowser* browser) override;

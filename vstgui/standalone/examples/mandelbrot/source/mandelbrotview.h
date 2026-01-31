@@ -31,7 +31,7 @@ struct View : public VSTGUI::CView, public VSTGUI::IFocusDrawing
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
-	void draw (CDrawContext* context) override;
+	void draw (CDrawContext& context) override;
 
 	bool drawFocusOnTop () override { return false; }
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override { return false; }

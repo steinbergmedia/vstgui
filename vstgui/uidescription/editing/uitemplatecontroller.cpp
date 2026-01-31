@@ -83,9 +83,10 @@ public:
 		GenericStringListDataBrowserSource::dbOnKeyboardEvent (event, browser);
 	}
 	virtual const UTF8String& getHeaderTitle () const { return headerTitle; }
-	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) override
+	void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column, int32_t flags,
+					   CDataBrowser* browser) override
 	{
-		context->setDrawMode (kAliasing);
+		context.setDrawMode (kAliasing);
 		if (!headerGradient)
 		{
 			headerGradient = UIEditController::getEditorDescription ()->getGradient ("shading.light");
@@ -93,12 +94,12 @@ public:
 		}
 		if (headerGradient)
 		{
-			if (auto path = context->createGraphicsPath ())
+			if (auto path = context.createGraphicsPath ())
 			{
 				path->addRect (size);
-				context->fillLinearGradient (path, *headerGradient.get (),
-											 CPoint (size.left, size.top),
-											 CPoint (size.left, size.bottom));
+				context.fillLinearGradient (path, *headerGradient.get (),
+											CPoint (size.left, size.top),
+											CPoint (size.left, size.bottom));
 			}
 		}
 		if (!getHeaderTitle ().empty ())
@@ -109,20 +110,22 @@ public:
 				headerFont->setStyle (kBoldFace);
 				headerFont->setSize (headerFont->getSize ()-1);
 			}
-			context->setFont (headerFont);
-			context->setFontColor (fontColor);
-			context->drawString (getHeaderTitle ().getPlatformString (), size, kCenterText);
+			context.setFont (headerFont);
+			context.setFontColor (fontColor);
+			context.drawString (getHeaderTitle ().getPlatformString (), size, kCenterText);
 		}
-		auto hairlineSize = context->getHairlineSize ();
-		context->setLineWidth (hairlineSize);
-		context->setFrameColor (headerLineColor);
-		context->drawLine (CPoint (size.right-hairlineSize, size.top), CPoint (size.right-hairlineSize, size.bottom));
-		context->drawLine (CPoint (size.left, size.bottom), CPoint (size.right-hairlineSize, size.bottom));
+		auto hairlineSize = context.getHairlineSize ();
+		context.setLineWidth (hairlineSize);
+		context.setFrameColor (headerLineColor);
+		context.drawLine (CPoint (size.right - hairlineSize, size.top),
+						  CPoint (size.right - hairlineSize, size.bottom));
+		context.drawLine (CPoint (size.left, size.bottom),
+						  CPoint (size.right - hairlineSize, size.bottom));
 	}
 
-	static void drawTriangle (CDrawContext* context, const CRect& size)
+	static void drawTriangle (CDrawContext& context, const CRect& size)
 	{
-		if (auto path = context->createGraphicsPath ())
+		if (auto path = context.createGraphicsPath ())
 		{
 			CRect r (size);
 			r.left = r.right - r.getHeight ();
@@ -131,8 +134,8 @@ public:
 			path->addLine (r.getBottomLeft ());
 			path->addLine (r.right, r.top + r.getHeight () / 2.);
 			path->closeSubpath ();
-			context->setFillColor (CColor (0, 0, 0, 30));
-			context->drawGraphicsPath (path);
+			context.setFillColor (CColor (0, 0, 0, 30));
+			context.drawGraphicsPath (path);
 		}
 	}
 
@@ -156,7 +159,9 @@ public:
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) override;
 	void dbAttached (CDataBrowser* browser) override;
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override;
+
 protected:
 	SharedPointer<UIDescription> description;
 	WeakPointer<IActionPerformer> actionPerformer;
@@ -218,7 +223,8 @@ protected:
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
 	                                  int32_t column, CDataBrowser* browser) override;
 	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override;
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override;
 	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where,
 	                                 IDataPackage* drag, CDataBrowser* browser) override;
 	DragOperation dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where,
@@ -747,7 +753,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
 		auto offscreenSize = cellBounds;
 		offscreenSize.originize ();
 		offscreen->beginDraw ();
-		dbDrawCell (offscreen.get (), offscreenSize, row, column, 0, browser);
+		dbDrawCell (*offscreen.get (), offscreenSize, row, column, 0, browser);
 		offscreen->endDraw ();
 		
 		auto startPos = dragStartMouseObserver.getInitPosition ();
@@ -872,7 +878,8 @@ void UIViewListDataSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void UIViewListDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
+									   int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	drawRowBackground (context, size, row, flags, browser);
 	auto subview = getSubview (row);
@@ -883,15 +890,15 @@ void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size,
 	{
 		CColor color = kRedCColor;
 		UIEditController::getEditorDescription ()->getColor ("db.drag.indicator", color);
-		context->setFrameColor (color);
-		context->setLineWidth (1.);
+		context.setFrameColor (color);
+		context.setLineWidth (1.);
 		auto r = size;
 		r.top += 1.;
 		r.bottom -= 2.;
 		if (dragDestinationRow < dragRow)
-			context->drawLine (r.getTopLeft (), r.getTopRight ());
+			context.drawLine (r.getTopLeft (), r.getTopRight ());
 		else
-			context->drawLine (r.getBottomLeft (), r.getBottomRight ());
+			context.drawLine (r.getBottomLeft (), r.getBottomRight ());
 	}
 }
 
@@ -954,7 +961,8 @@ void UITemplatesDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CT
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplatesDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void UITemplatesDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
+										int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	drawRowBackground (context, size, row, flags, browser);
 	drawTriangle (context, size);

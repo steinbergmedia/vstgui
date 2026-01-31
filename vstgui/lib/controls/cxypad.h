@@ -22,8 +22,8 @@ public:
 	void setHandleBitmap (const SharedPointer<CBitmap>& bitmap);
 	SharedPointer<CBitmap> getHandleBitmap () const;
 
-	void draw (CDrawContext* context) override;
-	void drawBack (CDrawContext* pContext, const SharedPointer<CBitmap>& newBack = {}) override;
+	void draw (CDrawContext& context) override;
+	void drawBack (CDrawContext& pContext, const SharedPointer<CBitmap>& newBack = {}) override;
 
 	void onMouseDownEvent (MouseDownEvent& event) override;
 	void onMouseUpEvent (MouseUpEvent& event) override;

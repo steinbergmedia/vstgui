@@ -25,7 +25,7 @@ public:
 				  const SharedPointer<CBitmap>& background);
 	CMovieBitmap (const CMovieBitmap& movieBitmap);
 
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 	bool sizeToFit () override;
 
 	CLASS_METHODS(CMovieBitmap, CControl)

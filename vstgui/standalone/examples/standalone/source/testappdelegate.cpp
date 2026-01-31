@@ -492,7 +492,7 @@ struct DBController : DelegationController,
 	}
 	CCoord dbGetRowHeight (CDataBrowser* browser) override { return 15.; }
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override { return 30.; }
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
 					 int32_t flags, CDataBrowser* browser) override
 	{
 		if (row < 0 || row >= data.size ())
@@ -501,25 +501,25 @@ struct DBController : DelegationController,
 			return;
 		if (flags & kRowSelected)
 		{
-			context->setFillColor (selectColor);
-			context->drawRect (size, kDrawFilled);
+			context.setFillColor (selectColor);
+			context.drawRect (size, kDrawFilled);
 		}
 		auto str = toString (data[row][column]);
-		context->setFont (font);
-		context->setFontColor (kBlackCColor);
-		context->drawString (str, size);
+		context.setFont (font);
+		context.setFontColor (kBlackCColor);
+		context.drawString (str, size);
 	}
-	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags,
+	void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column, int32_t flags,
 					   CDataBrowser* browser) override
 	{
-		context->setFillColor (kWhiteCColor);
-		context->drawRect (size, kDrawFilled);
+		context.setFillColor (kWhiteCColor);
+		context.drawRect (size, kDrawFilled);
 
 		UTF8String str;
 		str += 0x41 + column;
-		context->setFont (font);
-		context->setFontColor (kBlackCColor);
-		context->drawString (str, size);
+		context.setFont (font);
+		context.setFontColor (kBlackCColor);
+		context.drawString (str, size);
 	}
 
 	using RowData = std::array<size_t, NumColumns>;

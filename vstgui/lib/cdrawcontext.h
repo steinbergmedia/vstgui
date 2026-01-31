@@ -25,7 +25,7 @@ struct CNinePartTiledDescription;
 // CDrawContext Declaration
 //! @brief A drawing context encapsulates the drawing context of the underlying OS
 //-----------------------------------------------------------------------------
-class CDrawContext : public AtomicReferenceCounted
+class CDrawContext
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -259,7 +259,7 @@ public:
 
 	CDrawContext (const PlatformGraphicsDeviceContextPtr device, const CRect& surfaceRect,
 				  double scaleFactor);
-	~CDrawContext () noexcept override;
+	virtual ~CDrawContext () noexcept;
 
 	const PlatformGraphicsDeviceContextPtr& getPlatformDeviceContext () const;
 
@@ -306,9 +306,9 @@ private:
 
 //-----------------------------------------------------------------------------
 template<typename Proc>
-void drawClipped (CDrawContext* context, const CRect& clip, Proc proc)
+void drawClipped (CDrawContext& context, const CRect& clip, Proc proc)
 {
-	ConcatClip cc (*context, clip);
+	ConcatClip cc (context, clip);
 	if (!cc.isEmpty ())
 		proc ();
 }

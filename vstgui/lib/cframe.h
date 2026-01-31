@@ -207,8 +207,8 @@ public:
 
 	// CView
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	void draw (CDrawContext* pContext) override;
-	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	void draw (CDrawContext& context) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void dispatchEvent (Event& event) override;
 

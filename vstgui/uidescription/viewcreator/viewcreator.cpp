@@ -27,18 +27,18 @@ class LiveEditingCView : public CView
 {
 public:
 	LiveEditingCView (const CRect& r) : CView (r) {}
-	void draw (CDrawContext* context) override
+	void draw (CDrawContext& context) override
 	{
 		if (getDrawBackground ())
 		{
 			CView::draw (context);
 			return;
 		}
-		context->setLineWidth (1.);
-		context->setLineStyle (kLineSolid);
-		context->setDrawMode (kAliasing);
-		context->setFrameColor ({200, 200, 200, 100});
-		context->setFillColor ({200, 200, 200, 100});
+		context.setLineWidth (1.);
+		context.setLineStyle (kLineSolid);
+		context.setDrawMode (kAliasing);
+		context.setFrameColor ({200, 200, 200, 100});
+		context.setFillColor ({200, 200, 200, 100});
 		constexpr auto width = 5.;
 		CRect viewSize = getViewSize ();
 		auto r = viewSize;
@@ -50,7 +50,7 @@ public:
 			while (r.left < viewSize.right)
 			{
 				if (column % 2)
-					context->drawRect (r, kDrawFilled);
+					context.drawRect (r, kDrawFilled);
 				r.offset (width, 0);
 				++column;
 			}
@@ -59,7 +59,7 @@ public:
 			r.offset (0, width);
 			++row;
 		}
-		context->drawRect (viewSize, kDrawStroked);
+		context.drawRect (viewSize, kDrawStroked);
 	}
 };
 using SimpleCView = LiveEditingCView;

@@ -148,15 +148,12 @@ Optional<int32_t> CListControl::getRowAtPoint (CPoint where) const
 }
 
 //------------------------------------------------------------------------
-void CListControl::draw (CDrawContext* context)
-{
-	drawRect (context, getViewSize ());
-}
+void CListControl::draw (CDrawContext& context) { drawRect (context, getViewSize ()); }
 
 //------------------------------------------------------------------------
-void CListControl::drawRect (CDrawContext* context, const CRect& updateRect)
+void CListControl::drawRect (CDrawContext& context, const CRect& updateRect)
 {
-	ConcatClip cc (*context, updateRect);
+	ConcatClip cc (context, updateRect);
 	if (cc.isEmpty ())
 		return;
 

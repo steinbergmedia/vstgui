@@ -36,7 +36,7 @@ class MyControl : public CControl
 public:
 	MyControl (const CRect& size );
 
-	void draw (CDrawContext *pContext) override;
+	void draw (CDrawContext& context) override;
 
 	CLASS_METHODS (MyControl, CControl)
 };
@@ -53,7 +53,7 @@ namespace VSTGUI {
 
 MyControl::MyControl (const CRect& size) : CControl (size) {}
 
-void MyControl::draw (CDrawContext* pContext)
+void MyControl::draw (CDrawContext& context)
 {
 	// --- setup the background rectangle
 	pContext->setLineWidth (1);

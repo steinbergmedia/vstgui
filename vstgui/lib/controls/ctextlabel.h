@@ -54,7 +54,7 @@ public:
 	void unregisterTextLabelListener (ITextLabelListener* listener);
 	//@}
 
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
 	bool sizeToFit () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void drawStyleChanged () override;
@@ -111,7 +111,7 @@ public:
 	/** return the maximum line width of all lines */
 	CCoord getMaxLineWidth ();
 
-	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	bool sizeToFit () override;
 	void setText (const UTF8String& txt) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -120,8 +120,10 @@ public:
 
 private:
 	void drawStyleChanged () override;
-	void calculateWrapLine  (CDrawContext *context, std::pair<UTF8String, double> &element, const IFontPainter *const &fontPainter, double lineHeight, double lineWidth, double maxWidth, const CPoint &textInset, CCoord &y);
-	
+	void calculateWrapLine (CDrawContext* context, std::pair<UTF8String, double>& element,
+							const IFontPainter* const& fontPainter, double lineHeight,
+							double lineWidth, double maxWidth, const CPoint& textInset, CCoord& y);
+
 	void recalculateLines (CDrawContext* context);
 	void recalculateHeight ();
 	

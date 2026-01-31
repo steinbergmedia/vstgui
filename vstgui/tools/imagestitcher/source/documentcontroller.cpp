@@ -698,7 +698,7 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 	auto col = 0;
 	for (const auto& image : imageList)
 	{
-		image.bitmap->draw (offscreen.get (), r);
+		image.bitmap->draw (*offscreen.get (), r);
 		if (++col >= numCols)
 		{
 			col = 0;

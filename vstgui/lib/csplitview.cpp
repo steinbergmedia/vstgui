@@ -18,7 +18,7 @@ class CSplitViewSeparatorView : public CViewContainer
 public:
 	CSplitViewSeparatorView (const CRect& size, CSplitView::Style style, int32_t index);
 
-	void drawRect (CDrawContext *pContext, const CRect& r) override;
+	void drawRect (CDrawContext& context, const CRect& r) override;
 
 	void onMouseDownEvent (MouseDownEvent& event) override;
 	void onMouseUpEvent (MouseUpEvent& event) override;
@@ -776,15 +776,15 @@ CSplitViewSeparatorView::CSplitViewSeparatorView (const CRect& size, CSplitView:
 }
 
 //-----------------------------------------------------------------------------
-void CSplitViewSeparatorView::drawRect (CDrawContext *pContext, const CRect& r)
+void CSplitViewSeparatorView::drawRect (CDrawContext& context, const CRect& r)
 {
 	auto splitView = getParentView ().cast<CSplitView> ();
 	ISplitViewSeparatorDrawer* drawer = splitView ? splitView->getDrawer () : nullptr;
 	if (drawer)
 	{
-		drawer->drawSplitViewSeparator (*pContext, getViewSize (), flags, index, *splitView.get ());
+		drawer->drawSplitViewSeparator (context, getViewSize (), flags, index, *splitView.get ());
 	}
-	CViewContainer::drawRect (pContext, r);
+	CViewContainer::drawRect (context, r);
 }
 
 //------------------------------------------------------------------------

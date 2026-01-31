@@ -123,24 +123,24 @@ CCoord GenericStringListDataBrowserSource::dbGetRowHeight (CDataBrowser* browser
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, const CRect& size,
-                                                       int32_t column, int32_t flags,
-                                                       CDataBrowser* browser)
+void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext& context, const CRect& size,
+													   int32_t column, int32_t flags,
+													   CDataBrowser* browser)
 {
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext* context,
-                                                            const CRect& size, int32_t row,
-                                                            int32_t flags,
-                                                            CDataBrowser* browser) const
+void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext& context,
+															const CRect& size, int32_t row,
+															int32_t flags,
+															CDataBrowser* browser) const
 {
 	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 
-	context->setDrawMode (kAliasing);
-	context->setLineWidth (1.);
-	context->setFillColor ((row % 2) ? rowBackColor : rowAlternateBackColor);
-	context->drawRect (size, kDrawFilled);
+	context.setDrawMode (kAliasing);
+	context.setLineWidth (1.);
+	context.setFillColor ((row % 2) ? rowBackColor : rowAlternateBackColor);
+	context.drawRect (size, kDrawFilled);
 	if (flags & kRowSelected)
 	{
 		CColor color (selectionColor);
@@ -157,33 +157,33 @@ void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext* contex
 			else
 				color.alpha /= 2;
 		}
-		context->setFillColor (color);
-		context->drawRect (size, kDrawFilled);
+		context.setFillColor (color);
+		context.drawRect (size, kDrawFilled);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::drawRowString (CDrawContext* context, const CRect& size,
-                                                        int32_t row, int32_t flags,
-                                                        CDataBrowser* browser) const
+void GenericStringListDataBrowserSource::drawRowString (CDrawContext& context, const CRect& size,
+														int32_t row, int32_t flags,
+														CDataBrowser* browser) const
 {
 	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 
-	context->saveGlobalState ();
+	context.saveGlobalState ();
 	CRect stringSize (size);
 	stringSize.inset (textInset.x, textInset.y);
-	context->setFont (drawFont);
-	context->setFontColor (fontColor);
-	ConcatClip cc (*context, stringSize);
-	context->drawString ((*stringList)[static_cast<size_t> (row)].getPlatformString (), stringSize,
-	                     textAlignment);
-	context->restoreGlobalState ();
+	context.setFont (drawFont);
+	context.setFontColor (fontColor);
+	ConcatClip cc (context, stringSize);
+	context.drawString ((*stringList)[static_cast<size_t> (row)].getPlatformString (), stringSize,
+						textAlignment);
+	context.restoreGlobalState ();
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size,
-                                                     int32_t row, int32_t column, int32_t flags,
-                                                     CDataBrowser* browser)
+void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext& context, const CRect& size,
+													 int32_t row, int32_t column, int32_t flags,
+													 CDataBrowser* browser)
 {
 	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 	vstgui_assert (column == 0);

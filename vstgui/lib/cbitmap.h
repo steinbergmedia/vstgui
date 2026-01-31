@@ -37,7 +37,8 @@ public:
 	/// @name CBitmap Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
+	virtual void draw (CDrawContext& context, const CRect& rect,
+					   const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
 
 	/** get the width of the image */
 	CCoord getWidth () const;
@@ -122,7 +123,7 @@ public:
 	/** calculate the rect for one frame */
 	CRect calcFrameRect (uint32_t frameIndex) const;
 	/** draw one frame at the position in the context */
-	void drawFrame (CDrawContext* context, uint16_t frameIndex, CPoint pos);
+	void drawFrame (CDrawContext& context, uint16_t frameIndex, CPoint pos);
 	/** return the frame to display for a normalized value
 	 *
 	 *	defaults to:
@@ -320,9 +321,10 @@ public:
 	const CNinePartTiledDescription& getPartOffsets () const { return offsets; }
 	//@}
 
-	void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) override;
+	void draw (CDrawContext& context, const CRect& rect, const CPoint& offset = CPoint (0, 0),
+			   float alpha = 1.f) override;
 
-//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
 protected:
 	CNinePartTiledDescription offsets;
 };

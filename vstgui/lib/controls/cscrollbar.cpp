@@ -351,62 +351,62 @@ void CScrollbar::onMouseWheelEvent (MouseWheelEvent& event)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollbar::drawBackground (CDrawContext* pContext)
+void CScrollbar::drawBackground (CDrawContext& context)
 {
 	CRect r (getViewSize ());
 	if (drawer)
-		drawer->drawScrollbarBackground (pContext, r, direction, this);
+		drawer->drawScrollbarBackground (context, r, direction, this);
 	else
 	{
-		pContext->setDrawMode (kAliasing);
-		pContext->setLineWidth (1);
-		pContext->setFillColor (backgroundColor);
-		pContext->setFrameColor (frameColor);
-		pContext->setLineStyle (kLineSolid);
-		pContext->drawRect (r, kDrawFilledAndStroked);
+		context.setDrawMode (kAliasing);
+		context.setLineWidth (1);
+		context.setFillColor (backgroundColor);
+		context.setFrameColor (frameColor);
+		context.setLineStyle (kLineSolid);
+		context.drawRect (r, kDrawFilledAndStroked);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
+void CScrollbar::drawScroller (CDrawContext& context, const CRect& size)
 {
 	CRect r (size);
 	if (drawer)
-		drawer->drawScrollbarScroller (pContext, r, direction, this);
+		drawer->drawScrollbarScroller (context, r, direction, this);
 	else
 	{
-		pContext->setLineWidth (1);
-		pContext->setFillColor (scrollerColor);
-		pContext->setFrameColor (frameColor);
+		context.setLineWidth (1);
+		context.setFillColor (scrollerColor);
+		context.setFrameColor (frameColor);
 
 		CCoord wideness = (direction == kVertical ? getWidth() : getHeight()) / 2 - 2;
 		SharedPointer<CGraphicsPath> path =
-			(wideness > 2) ? pContext->createGraphicsPath () : nullptr;
+			(wideness > 2) ? context.createGraphicsPath () : nullptr;
 		if (path)
 		{
 			if (wideness > 4)
 				wideness = 4;
-			pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
+			context.setDrawMode (kAntiAliasing | kNonIntegralMode);
 			path->addRoundRect (r, wideness);
-			pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
-			pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			context.drawGraphicsPath (path, CDrawContext::kPathFilled);
+			context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 		else
 		{
-			pContext->setDrawMode (kAliasing|kNonIntegralMode);
-			pContext->drawRect (r, kDrawFilledAndStroked);
+			context.setDrawMode (kAliasing | kNonIntegralMode);
+			context.drawRect (r, kDrawFilledAndStroked);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CScrollbar::draw (CDrawContext* pContext)
+void CScrollbar::draw (CDrawContext& context)
 {
-	drawBackground (pContext);
+	drawBackground (context);
 	if (scrollerLength > 0)
 	{
 		CRect sr = getScrollerRect ();
-		drawScroller (pContext, sr);
+		drawScroller (context, sr);
 	}
 }
 

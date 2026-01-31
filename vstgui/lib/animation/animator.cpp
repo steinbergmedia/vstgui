@@ -10,23 +10,28 @@ VSTGUI version 4 adds simple to use view animation support.
 The source can be found under /lib/animation/
 
 @section the_animator The Animator
-Every @link VSTGUI::CFrame::getAnimator CFrame @endlink object can have one @link VSTGUI::Animation::Animator Animator @endlink object which runs animations at 60 Hz.
+Every @link VSTGUI::CFrame::getAnimator CFrame @endlink object can have one @link
+VSTGUI::Animation::Animator Animator @endlink object which runs animations at 60 Hz.
 
 The animator is responsible for running animations.
 You can add and remove animations.
 Animations are identified by a view and a name.
 
-To add an animation you just call @link VSTGUI::CView::addAnimation CView::addAnimation (name, target, timing)@endlink.
-The animation will start immediately and will automatically be removed if it has finished.
-If you want to stop it before it has finished you can use @link VSTGUI::CView::removeAnimation CView::removeAnimation (name)@endlink.
-You can also stop all animations for a view with @link VSTGUI::CView::removeAllAnimations CView::removeAllAnimations ()@endlink.
+To add an animation you just call @link VSTGUI::CView::addAnimation CView::addAnimation (name,
+target, timing)@endlink. The animation will start immediately and will automatically be removed if
+it has finished. If you want to stop it before it has finished you can use @link
+VSTGUI::CView::removeAnimation CView::removeAnimation (name)@endlink. You can also stop all
+animations for a view with @link VSTGUI::CView::removeAllAnimations CView::removeAllAnimations
+()@endlink.
 
-The animator is the owner of the target and timing function objects and will destroy these objects when the animation has finished.
-This means that the animator will call delete on these objects or if they are inherited from CBaseObject it will call forget() on them.
+The animator is the owner of the target and timing function objects and will destroy these objects
+when the animation has finished. This means that the animator will call delete on these objects or
+if they are inherited from CBaseObject it will call forget() on them.
 
 @section the_animation The Animation
 
-An animation is made up by an @link VSTGUI::Animation::IAnimationTarget IAnimationTarget @endlink and an @link VSTGUI::Animation::ITimingFunction ITimingFunction @endlink object.
+An animation is made up by an @link VSTGUI::Animation::IAnimationTarget IAnimationTarget @endlink
+and an @link VSTGUI::Animation::ITimingFunction ITimingFunction @endlink object.
 
 @subsection animation_target The Animation Target
 The animation target is responsible for changing the view from one state to another state.
@@ -34,10 +39,12 @@ The animation target is responsible for changing the view from one state to anot
 The animation target interface consists of 3 methods:
 - @link VSTGUI::Animation::IAnimationTarget::animationStart animationStart (view, name) @endlink
 - @link VSTGUI::Animation::IAnimationTarget::animationTick animationTick (view, name, pos) @endlink
-- @link VSTGUI::Animation::IAnimationTarget::animationFinished animationFinished (view, name, wasCanceled) @endlink
+- @link VSTGUI::Animation::IAnimationTarget::animationFinished animationFinished (view, name,
+wasCanceled) @endlink
 
-All these methods have the view and the animation name as arguments to identify the animation within the target.
-The animationTick method in addition has the normalized animation position as argument and the animationFinished method has a bool argument indicating if the animation was canceled.
+All these methods have the view and the animation name as arguments to identify the animation within
+the target. The animationTick method in addition has the normalized animation position as argument
+and the animationFinished method has a bool argument indicating if the animation was canceled.
 
 see @link AnimationTargets included animation target classes @endlink
 
@@ -47,7 +54,8 @@ the animation timing function maps elapsed time to a normalized position.
 see @link AnimationTimingFunctions included animation timing function classes @endlink
 
 @section simple_example Simple Usage Example
-In this example the custom view animates it's alpha value when the mouse moves inside or outside the view.
+In this example the custom view animates it's alpha value when the mouse moves inside or outside the
+view.
 
 @code
 
@@ -60,19 +68,19 @@ public:
 
 	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons)
 	{
-		// this adds an animation which takes 200 ms to make a linear alpha fade from the current value to 1
-		addAnimation ("AlphaValueAnimation", new AlphaValueAnimation (1.f), new LinearTimingFunction (200));
-		return kMouseEventHandled;
-	}
-	
-	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons)
-	{
-		// this adds an animation which takes 200 ms to make a linear alpha fade from the current value to 0.5
-		addAnimation ("AlphaValueAnimation", new AlphaValueAnimation (0.5f), new LinearTimingFunction (200));
-		return kMouseEventHandled;
+		// this adds an animation which takes 200 ms to make a linear alpha fade from the current
+value to 1 addAnimation ("AlphaValueAnimation", new AlphaValueAnimation (1.f), new
+LinearTimingFunction (200)); return kMouseEventHandled;
 	}
 
-	void draw (CDrawContext* context)
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons)
+	{
+		// this adds an animation which takes 200 ms to make a linear alpha fade from the current
+value to 0.5 addAnimation ("AlphaValueAnimation", new AlphaValueAnimation (0.5f), new
+LinearTimingFunction (200)); return kMouseEventHandled;
+	}
+
+	void draw (CDrawContext& context)
 	{
 		// ... any drawing code here
 	}

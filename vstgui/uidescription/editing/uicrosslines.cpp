@@ -109,14 +109,14 @@ void UICrossLines::drawLines (CDrawContext& context, const CRect& size,
 }
 
 //----------------------------------------------------------------------------------------------------
-void UICrossLines::draw (CDrawContext* pContext)
+void UICrossLines::draw (CDrawContext& context)
 {
 	CRect size = getViewSize ();
 
-	pContext->setDrawMode (kAliasing);
-	pContext->setLineStyle (kLineSolid);
-	pContext->setFrameColor (background);
-	pContext->setLineWidth (1);
+	context.setDrawMode (kAliasing);
+	context.setLineStyle (kLineSolid);
+	context.setFrameColor (background);
+	context.setLineWidth (1);
 
 	if (style == kLassoStyle)
 	{
@@ -124,20 +124,20 @@ void UICrossLines::draw (CDrawContext* pContext)
 		r.makeIntegral ();
 		if (r.isEmpty ())
 			return;
-		pContext->setFillColor (foreground);
-		pContext->drawRect (r, kDrawFilledAndStroked);
+		context.setFillColor (foreground);
+		context.drawRect (r, kDrawFilledAndStroked);
 		return;
 	}
 
 	CRect selectionSize (currentRect);
-	drawLines (*pContext, size, selectionSize);
+	drawLines (context, size, selectionSize);
 
 	static const CCoord dashLength [] = {3,3};
 	static const CLineStyle lineStyle (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, dashLength);
 
-	pContext->setLineStyle (lineStyle);
-	pContext->setFrameColor (foreground);
-	drawLines (*pContext, size, selectionSize);
+	context.setLineStyle (lineStyle);
+	context.setFrameColor (foreground);
+	drawLines (context, size, selectionSize);
 }
 
 } // VSTGUI

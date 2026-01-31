@@ -25,7 +25,7 @@ public:
 				   const SharedPointer<CView>& splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
 
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 	bool hitTest (const CPoint& where, const Event& event) override;
 
 	//-----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ public:
 	//@}
 
 	void unSplash () override;
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	bool sizeToFit () override;
 

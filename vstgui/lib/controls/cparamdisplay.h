@@ -114,17 +114,17 @@ public:
 
 	//@}
 
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool removed (const SharedPointer<CViewContainer>& parent) override;
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
 	~CParamDisplay () noexcept override;
-	virtual void drawBack (CDrawContext* pContext, const SharedPointer<CBitmap>& newBack = {});
+	virtual void drawBack (CDrawContext& pContext, const SharedPointer<CBitmap>& newBack = {});
 
-	virtual void drawPlatformText (CDrawContext* pContext, const UTF8String& string);
-	virtual void drawPlatformText (CDrawContext* pContext, const UTF8String& string,
+	virtual void drawPlatformText (CDrawContext& pContext, const UTF8String& string);
+	virtual void drawPlatformText (CDrawContext& pContext, const UTF8String& string,
 								   const CRect& size);
 
 	virtual void drawStyleChanged ();

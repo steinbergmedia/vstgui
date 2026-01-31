@@ -16,7 +16,7 @@ class Control : public CControl
 {
 public:
 	Control () : CControl (CRect (0, 0, 10, 10)) {}
-	void draw (CDrawContext* pContext) override {}
+	void draw (CDrawContext& context) override {}
 
 	CLASS_METHODS (Control, CControl)
 };

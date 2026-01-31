@@ -126,11 +126,11 @@ bool HighScoreViewController::dbGetLineWidthAndColor (CCoord& width, CColor& col
 }
 
 //------------------------------------------------------------------------
-void HighScoreViewController::dbDrawHeader (CDrawContext* context, const CRect& size,
-                                            int32_t column, int32_t flags, CDataBrowser* browser)
+void HighScoreViewController::dbDrawHeader (CDrawContext& context, const CRect& size,
+											int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	context->setFont (font);
-	context->setFontColor (fontColor);
+	context.setFont (font);
+	context.setFontColor (fontColor);
 	UTF8String text;
 	switch (column)
 	{
@@ -141,13 +141,13 @@ void HighScoreViewController::dbDrawHeader (CDrawContext* context, const CRect& 
 	}
 	if (!text.empty ())
 	{
-		context->drawString (text, size);
+		context.drawString (text, size);
 	}
 }
 
 //------------------------------------------------------------------------
-void HighScoreViewController::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row,
-                                          int32_t column, int32_t flags, CDataBrowser* browser)
+void HighScoreViewController::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
+										  int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	if (!list)
 		return;
@@ -157,8 +157,8 @@ void HighScoreViewController::dbDrawCell (CDrawContext* context, const CRect& si
 	if (entry == list->get ().end ())
 		return;
 	bool valid = entry->valid ();
-	context->setFont (font);
-	context->setFontColor (fontColor);
+	context.setFont (font);
+	context.setFontColor (fontColor);
 	UTF8String text = "-";
 	CHoriTxtAlign align = kCenterText;
 	CRect r = size;
@@ -199,7 +199,7 @@ void HighScoreViewController::dbDrawCell (CDrawContext* context, const CRect& si
 			break;
 		}
 	}
-	context->drawString (text, r, align);
+	context.drawString (text, r, align);
 }
 
 //------------------------------------------------------------------------

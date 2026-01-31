@@ -69,48 +69,48 @@ CMouseEventResult CSearchTextEdit::onMouseDown (CPoint& where, const CButtonStat
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSearchTextEdit::drawClearMark (CDrawContext* context) const
+void CSearchTextEdit::drawClearMark (CDrawContext& context) const
 {
 	if (!((platformControl && !platformControl->getText ().empty ()) || !getText ().empty ()))
 		return;
 
-	auto path = context->createGraphicsPath ();
+	auto path = context.createGraphicsPath ();
 	if (path == nullptr)
 		return;
 
 	CRect r = getClearMarkRect ();
 	CColor color (fontColor);
 	color.alpha /= 2;
-	context->setFillColor (color);
-	context->setDrawMode (kAntiAliasing);
-	context->drawEllipse (r, kDrawFilled);
+	context.setFillColor (color);
+	context.setDrawMode (kAntiAliasing);
+	context.drawEllipse (r, kDrawFilled);
 	double h,s,v;
 	color.toHSV (h, s, v);
 	v = 1. - v;
 	color.fromHSV (h, s, v);
-	context->setFrameColor (color);
-	context->setLineWidth (2.);
+	context.setFrameColor (color);
+	context.setLineWidth (2.);
 	r.inset (r.getWidth () / (M_PI * 2.) + 1, r.getHeight () / (M_PI * 2.) + 1);
 	path->beginSubpath (r.getTopLeft ());
 	path->addLine (r.getBottomRight ());
 	path->beginSubpath (r.getBottomLeft ());
 	path->addLine (r.getTopRight ());
-	context->setDrawMode (kAntiAliasing);
-	context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+	context.setDrawMode (kAntiAliasing);
+	context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSearchTextEdit::draw (CDrawContext *pContext)
+void CSearchTextEdit::draw (CDrawContext& context)
 {
-	drawBack (pContext);
-	drawClearMark (pContext);
+	drawBack (context);
+	drawClearMark (context);
 
 	if (platformControl)
 	{
 		return;
 	}
 
-	pContext->setDrawMode (kAntiAliasing);
+	context.setDrawMode (kAntiAliasing);
 
 	CColor origFontColor (fontColor);
 	if (getText ().empty ())
@@ -118,10 +118,10 @@ void CSearchTextEdit::draw (CDrawContext *pContext)
 		CColor color (fontColor);
 		color.alpha /= 2;
 		setFontColor (color);
-		drawPlatformText (pContext, getPlaceholderString (), getTextRect ());
+		drawPlatformText (context, getPlaceholderString (), getTextRect ());
 	}
 	else
-		drawPlatformText (pContext, getText (), getTextRect ());
+		drawPlatformText (context, getText (), getTextRect ());
 
 	setFontColor (origFontColor);
 }

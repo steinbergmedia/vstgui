@@ -106,10 +106,10 @@ const UTF8String& CTextLabel::getText () const
 }
 
 //------------------------------------------------------------------------
-void CTextLabel::draw (CDrawContext *pContext)
+void CTextLabel::draw (CDrawContext& context)
 {
-	drawBack (pContext);
-	drawPlatformText (pContext, truncatedText.empty () ? text : truncatedText);
+	drawBack (context);
+	drawPlatformText (context, truncatedText.empty () ? text : truncatedText);
 }
 
 //------------------------------------------------------------------------
@@ -239,40 +239,43 @@ CCoord CMultiLineTextLabel::getMaxLineWidth ()
 }
 
 //------------------------------------------------------------------------
-void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateRect)
+void CMultiLineTextLabel::drawRect (CDrawContext& context, const CRect& updateRect)
 {
 	if (getText ().empty () == false && lines.empty ())
-		recalculateLines (pContext);
-	drawBack (pContext);
-	
+		recalculateLines (&context);
+	drawBack (context);
+
 	CRect newClip (updateRect);
 	newClip.inset (getTextInset ());
-	ConcatClip clip (*pContext, newClip);
+	ConcatClip clip (context, newClip);
 	newClip = clip.get ();
 
-	pContext->setDrawMode (kAntiAliasing);
-	pContext->setFont (getFont ());
-	
+	context.setDrawMode (kAntiAliasing);
+	context.setFont (getFont ());
+
 	newClip.offsetInverse (getViewSize().getTopLeft ());
 
-	CDrawContext::Transform t (*pContext, CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
+	CDrawContext::Transform t (context,
+							   CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
 
 	if (style & kShadowText)
 	{
-		CDrawContext::Transform t2 (*pContext, CGraphicsTransform ().translate (shadowTextOffset));
-		pContext->setFontColor (getShadowColor ());
+		CDrawContext::Transform t2 (context, CGraphicsTransform ().translate (shadowTextOffset));
+		context.setFontColor (getShadowColor ());
 		for (const auto& line : lines)
 		{
 			if (line.r.rectOverlap (newClip))
-				pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), getAntialias ());
+				context.drawString (line.str.getPlatformString (), line.r, getHoriAlign (),
+									getAntialias ());
 		}
 	}
 
-	pContext->setFontColor (getFontColor ());
+	context.setFontColor (getFontColor ());
 	for (const auto& line : lines)
 	{
 		if (line.r.rectOverlap (newClip))
-			pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), getAntialias ());
+			context.drawString (line.str.getPlatformString (), line.r, getHoriAlign (),
+								getAntialias ());
 		else if (line.r.bottom > newClip.bottom)
 			break;
 	}

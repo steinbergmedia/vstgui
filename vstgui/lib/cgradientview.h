@@ -53,7 +53,8 @@ public:
 
 	// override
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	void draw (CDrawContext* context) override;
+	void draw (CDrawContext& context) override;
+
 protected:
 	virtual void attributeChanged ();
 

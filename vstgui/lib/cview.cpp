@@ -758,11 +758,11 @@ void CView::invalidRect (const CRect& rect)
 /**
  * @param pContext draw context in which to draw
  */
-void CView::draw (CDrawContext* pContext)
+void CView::draw (CDrawContext& context)
 {
 	if (getDrawBackground ())
 	{
-		getDrawBackground ()->draw (pContext, getViewSize ());
+		getDrawBackground ()->draw (context, getViewSize ());
 	}
 }
 

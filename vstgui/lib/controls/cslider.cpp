@@ -693,40 +693,38 @@ CPoint CSlider::getBackgroundOffset () const
 }
 
 //------------------------------------------------------------------------
-void CSlider::draw (CDrawContext* pContext)
+void CSlider::draw (CDrawContext& context)
 {
-	CDrawContext* drawContext = pContext;
-
 	// draw background
 	if (getDrawBackground ())
 	{
 		CRect rect (0, 0, getControlSizePrivate ().x, getControlSizePrivate ().y);
 		rect.offset (getViewSize ().left, getViewSize ().top);
-		getDrawBackground ()->draw (drawContext, rect, getBackgroundOffset ());
+		getDrawBackground ()->draw (context, rect, getBackgroundOffset ());
 	}
 
 	if (impl->drawStyle != 0)
 	{
 		auto lineWidth = getFrameWidth ();
 		if (lineWidth < 0.)
-			lineWidth = pContext->getHairlineSize ();
+			lineWidth = context.getHairlineSize ();
 		CRect r (getViewSize ());
-		pContext->setDrawMode (kAntiAliasing);
-		pContext->setLineStyle (kLineSolid);
-		pContext->setLineWidth (lineWidth);
+		context.setDrawMode (kAntiAliasing);
+		context.setLineStyle (kLineSolid);
+		context.setLineWidth (lineWidth);
 		if (impl->drawStyle & kDrawFrame || impl->drawStyle & kDrawBack)
 		{
-			pContext->setFrameColor (impl->frameColor);
-			pContext->setFillColor (impl->backColor);
-			if (auto path = pContext->createGraphicsPath ())
+			context.setFrameColor (impl->frameColor);
+			context.setFillColor (impl->backColor);
+			if (auto path = context.createGraphicsPath ())
 			{
 				if (impl->drawStyle & kDrawFrame)
 					r.inset (lineWidth / 2., lineWidth / 2.);
 				path->addRect (r);
 				if (impl->drawStyle & kDrawBack)
-					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+					context.drawGraphicsPath (path, CDrawContext::kPathFilled);
 				if (impl->drawStyle & kDrawFrame)
-					pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+					context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 			}
 			else
 			{
@@ -735,12 +733,12 @@ void CSlider::draw (CDrawContext* pContext)
 					d = kDrawFilledAndStroked;
 				else if (impl->drawStyle & kDrawFrame)
 					d = kDrawStroked;
-				pContext->drawRect (r, d);
+				context.drawRect (r, d);
 			}
 		}
 		if (impl->drawStyle & kDrawValue)
 		{
-			pContext->setDrawMode (kAliasing);
+			context.setDrawMode (kAliasing);
 			if (impl->drawStyle & kDrawFrame)
 				r.inset (lineWidth / 2., lineWidth / 2.);
 			float drawValue = getValueNormalized ();
@@ -783,14 +781,14 @@ void CSlider::draw (CDrawContext* pContext)
 			r.normalize ();
 			if (r.getWidth () >= 0.5 && r.getHeight () >= 0.5)
 			{
-				pContext->setFillColor (impl->valueColor);
-				if (auto path = pContext->createGraphicsPath ())
+				context.setFillColor (impl->valueColor);
+				if (auto path = context.createGraphicsPath ())
 				{
 					path->addRect (r);
-					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+					context.drawGraphicsPath (path, CDrawContext::kPathFilled);
 				}
 				else
-					pContext->drawRect (r, kDrawFilled);
+					context.drawRect (r, kDrawFilled);
 			}
 		}
 	}
@@ -801,7 +799,7 @@ void CSlider::draw (CDrawContext* pContext)
 		CRect rectNew = calculateHandleRect (getValueNormalized ());
 
 		// draw slider at new position
-		impl->pHandle->draw (drawContext, rectNew);
+		impl->pHandle->draw (context, rectNew);
 	}
 }
 

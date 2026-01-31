@@ -24,7 +24,7 @@ protected:
 	CSwitchBase (const CSwitchBase& other);
 	~CSwitchBase () noexcept override = default;
 
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
@@ -114,7 +114,7 @@ public:
 				   const SharedPointer<CBitmap>& background, const int32_t style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);
 
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;

@@ -36,7 +36,7 @@ public:
 	//@}
 
 	// overrides
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
@@ -105,7 +105,7 @@ public:
     //@}
 
 	// overrides
-	void draw (CDrawContext* context) override;
+	void draw (CDrawContext& context) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
@@ -147,7 +147,7 @@ public:
 				 const SharedPointer<CBitmap>& background);
 	CKickButton (const CKickButton& kickButton);
 
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
@@ -231,7 +231,7 @@ public:
 	//@}
 
 	// overrides
-	void draw (CDrawContext* context) override;
+	void draw (CDrawContext& context) override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool drawFocusOnTop () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -248,7 +248,7 @@ protected:
 	~CTextButton () noexcept override = default;
 
 	void invalidPath ();
-	SharedPointer<CGraphicsPath> getPath (CDrawContext* context, CCoord lineWidth);
+	SharedPointer<CGraphicsPath> getPath (CDrawContext& context, CCoord lineWidth);
 
 	SharedPointer<CFontDesc> font;
 	SharedPointer<CGraphicsPath> _path;

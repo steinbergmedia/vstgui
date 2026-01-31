@@ -25,12 +25,12 @@ UIColorSlider::~UIColorSlider ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorSlider::draw (CDrawContext* context)
+void UIColorSlider::draw (CDrawContext& context)
 {
 	if (getHandle () == nullptr)
-		updateHandle (context->getScaleFactor ());
+		updateHandle (context.getScaleFactor ());
 	if (getBackground () == nullptr)
-		updateBackground (context->getScaleFactor ());
+		updateBackground (context.getScaleFactor ());
 	CSlider::draw (context);
 }
 

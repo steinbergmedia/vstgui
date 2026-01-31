@@ -27,7 +27,7 @@ void CXYPad::setHandleBitmap (const SharedPointer<CBitmap>& bitmap)
 SharedPointer<CBitmap> CXYPad::getHandleBitmap () const { return handle; }
 
 //------------------------------------------------------------------------
-void CXYPad::draw (CDrawContext* context)
+void CXYPad::draw (CDrawContext& context)
 {
 	drawBack (context);
 
@@ -51,14 +51,14 @@ void CXYPad::draw (CDrawContext* context)
 		r.extend (getRoundRectRadius () / 2., getRoundRectRadius () / 2.);
 		r.offset (getViewSize ().left + getRoundRectRadius () / 2.,
 				  getViewSize ().top + getRoundRectRadius () / 2.);
-		context->setFillColor (getFontColor ());
-		context->setDrawMode (kAntiAliasing);
-		context->drawEllipse (r, kDrawFilled);
+		context.setFillColor (getFontColor ());
+		context.setDrawMode (kAntiAliasing);
+		context.drawEllipse (r, kDrawFilled);
 	}
 }
 
 //------------------------------------------------------------------------
-void CXYPad::drawBack (CDrawContext* context, const SharedPointer<CBitmap>&)
+void CXYPad::drawBack (CDrawContext& context, const SharedPointer<CBitmap>&)
 {
 	CParamDisplay::drawBack (context);
 }

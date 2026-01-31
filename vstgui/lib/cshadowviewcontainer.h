@@ -44,8 +44,8 @@ public:
 	// override
 	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
-	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
+	void drawBackgroundRect (CDrawContext& pContext, const CRect& _updateRect) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 

@@ -91,7 +91,7 @@ void CVuMeter::onIdle ()
 }
 
 //------------------------------------------------------------------------
-void CVuMeter::draw (CDrawContext *_pContext)
+void CVuMeter::draw (CDrawContext& context)
 {
 	auto bmp = getOnBitmap ();
 	if (!bmp)
@@ -101,7 +101,6 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	CRect _rectOff (rectOff);
 	CPoint pointOn;
 	CPoint pointOff;
-	CDrawContext *pContext = _pContext;
 
 	bounceValue ();
 	
@@ -133,10 +132,10 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (auto offBmp = getOffBitmap ())
 	{
-		offBmp->draw (pContext, _rectOff, pointOff);
+		offBmp->draw (context, _rectOff, pointOff);
 	}
 
-	bmp->draw (pContext, _rectOn, pointOn);
+	bmp->draw (context, _rectOn, pointOn);
 }
 
 } // VSTGUI

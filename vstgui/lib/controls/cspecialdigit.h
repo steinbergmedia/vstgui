@@ -20,8 +20,8 @@ public:
 				   int32_t iNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height,
 				   const SharedPointer<CBitmap>& background);
 	CSpecialDigit (const CSpecialDigit& digit);
-	
-	void  draw (CDrawContext*) override;
+
+	void draw (CDrawContext&) override;
 
 	CLASS_METHODS(CSpecialDigit, CControl)
 protected:

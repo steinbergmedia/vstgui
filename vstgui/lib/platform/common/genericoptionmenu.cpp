@@ -151,7 +151,7 @@ private:
 		return browser->getWidth ();
 	}
 
-	void dbDrawHeader (CDrawContext*, const CRect&, int32_t, int32_t, CDataBrowser*) override {}
+	void dbDrawHeader (CDrawContext&, const CRect&, int32_t, int32_t, CDataBrowser*) override {}
 
 	void alterSelection (int32_t index, int32_t direction)
 	{
@@ -325,23 +325,23 @@ private:
 		}
 	}
 
-	void drawCheckMark (CDrawContext* context, CRect size, bool selected)
+	void drawCheckMark (CDrawContext& context, CRect size, bool selected)
 	{
-		if (auto checkMarkPath = context->createGraphicsPath ())
+		if (auto checkMarkPath = context.createGraphicsPath ())
 		{
 			CRect r (0., 0., size.getHeight () * 0.4, size.getHeight () * 0.4);
 			r.centerInside (size);
 			checkMarkPath->beginSubpath ({r.left, r.top + r.getHeight () / 2.});
 			checkMarkPath->addLine ({r.left + r.getWidth () / 3., r.bottom});
 			checkMarkPath->addLine ({r.right, r.top});
-			context->setFrameColor (selected ? theme.selectedTextColor : theme.textColor);
-			context->drawGraphicsPath (checkMarkPath, CDrawContext::kPathStroked);
+			context.setFrameColor (selected ? theme.selectedTextColor : theme.textColor);
+			context.drawGraphicsPath (checkMarkPath, CDrawContext::kPathStroked);
 		}
 	}
 
-	void drawSubmenuIndicator (CDrawContext* context, CRect size, bool selected)
+	void drawSubmenuIndicator (CDrawContext& context, CRect size, bool selected)
 	{
-		if (auto path = context->createGraphicsPath ())
+		if (auto path = context.createGraphicsPath ())
 		{
 			CRect r = size;
 			r.setWidth (r.getWidth () / 2.);
@@ -351,53 +351,53 @@ private:
 			path->addLine (r.getBottomLeft ());
 			path->addLine ({r.right, r.top + r.getHeight () / 2.});
 			path->closeSubpath ();
-			context->setFillColor (selected ? theme.selectedTextColor : theme.textColor);
-			context->drawGraphicsPath (path, CDrawContext::kPathFilled);
+			context.setFillColor (selected ? theme.selectedTextColor : theme.textColor);
+			context.drawGraphicsPath (path, CDrawContext::kPathFilled);
 		}
 	}
 
-	void drawItemIcon (CDrawContext* context, CRect size, const SharedPointer<CBitmap>& bitmap)
+	void drawItemIcon (CDrawContext& context, CRect size, const SharedPointer<CBitmap>& bitmap)
 	{
-		ConcatClip cc (*context, size);
+		ConcatClip cc (context, size);
 		CRect iconRect;
 		iconRect.setSize (bitmap->getSize ());
 		iconRect.centerInside (size);
 		bitmap->draw (context, iconRect);
 	}
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
-	                 int32_t flags, CDataBrowser* browser) override
+	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
+					 int32_t flags, CDataBrowser* browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
-			context->setDrawMode (kAntiAliasing);
+			context.setDrawMode (kAntiAliasing);
 			if (item->isSeparator ())
 			{
-				context->setFillColor (theme.separatorColor);
+				context.setFillColor (theme.separatorColor);
 				auto r = size;
 				r.inset (0, r.getHeight () / 2);
 				r.setHeight (1.);
-				context->drawRect (r, kDrawFilled);
+				context.drawRect (r, kDrawFilled);
 				return;
 			}
-			context->saveGlobalState ();
+			context.saveGlobalState ();
 			if (flags & kRowSelected)
 			{
-				context->setFillColor (theme.selectedBackgroundColor);
-				context->drawRect (size, kDrawFilled);
-				context->setFontColor (theme.selectedTextColor);
+				context.setFillColor (theme.selectedBackgroundColor);
+				context.drawRect (size, kDrawFilled);
+				context.setFontColor (theme.selectedTextColor);
 			}
 			else
 			{
 				CColor c = item->isTitle () ?
 				               theme.titleTextColor :
 				               item->isEnabled () ? theme.textColor : theme.disabledTextColor;
-				context->setFontColor (c);
+				context.setFontColor (c);
 			}
 			if (item->isTitle ())
-				context->setFont (theme.font, 0, kBoldFace);
+				context.setFont (theme.font, 0, kBoldFace);
 			else
-				context->setFont (theme.font);
+				context.setFont (theme.font);
 			if (item->isChecked ())
 			{
 				auto r = size;
@@ -416,8 +416,8 @@ private:
 				r.setWidth (maxTitleWidth);
 			}
 			{
-				ConcatClip cc (*context, r);
-				context->drawString (item->getTitle ().getPlatformString (), r, textAlign);
+				ConcatClip cc (context, r);
+				context.drawString (item->getTitle ().getPlatformString (), r, textAlign);
 			}
 			r.right = size.right - getCheckmarkWidth () / 2.;
 			r.left = r.right - getSubmenuIndicatorWidth ();
@@ -429,7 +429,7 @@ private:
 			{
 				drawItemIcon (context, r, icon);
 			}
-			context->restoreGlobalState ();
+			context.restoreGlobalState ();
 		}
 	}
 

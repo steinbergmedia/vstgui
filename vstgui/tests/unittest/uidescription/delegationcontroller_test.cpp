@@ -79,7 +79,7 @@ struct DummyControl : CControl
 {
 	DummyControl () : CControl (CRect {}) {}
 	CLASS_METHODS_NOCOPY (DummyControl, CControl);
-	void draw (CDrawContext* pContext) override {};
+	void draw (CDrawContext& context) override {};
 };
 
 DummyControl gDummyControlInstance;

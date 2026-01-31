@@ -130,8 +130,8 @@ public:
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
-	void draw (CDrawContext* pContext) override;
-	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) override;
+	void draw (CDrawContext& context) override;
+	void drawRect (CDrawContext& context, const CRect& dirtyRect) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	void valueChanged () override;

@@ -67,7 +67,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text,
  *  @param textColor     	font color
  *	@param truncateMode		truncation mode
  */
-void drawIconAndText (CDrawContext* context, const SharedPointer<CBitmap>& iconToDraw,
+void drawIconAndText (CDrawContext& context, const SharedPointer<CBitmap>& iconToDraw,
 					  IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin,
 					  CRect drawRect, const UTF8String& title, const SharedPointer<CFontDesc>& font,
 					  CColor textColor, TextTruncateMode truncateMode = kTextTruncateNone);

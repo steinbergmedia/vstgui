@@ -44,7 +44,7 @@ float CSwitchBase::indexToNormalized (int32_t index) const
 }
 
 //------------------------------------------------------------------------
-void CSwitchBase::draw (CDrawContext* pContext)
+void CSwitchBase::draw (CDrawContext& context)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
@@ -54,11 +54,11 @@ void CSwitchBase::draw (CDrawContext* pContext)
 			auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), norm);
 			if (inverseBitmap)
 				frameIndex = getInverseIndex (*mfb.get (), frameIndex);
-			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+			mfb->drawFrame (context, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
 		{
-			bitmap->draw (pContext, getViewSize ());
+			bitmap->draw (context, getViewSize ());
 		}
 	}
 }
@@ -339,17 +339,17 @@ CRockerSwitch::CRockerSwitch (const CRockerSwitch& v)
 CRockerSwitch::~CRockerSwitch () noexcept {}
 
 //------------------------------------------------------------------------
-void CRockerSwitch::draw (CDrawContext *pContext)
+void CRockerSwitch::draw (CDrawContext& context)
 {
 	if (auto bitmap = getDrawBackground ())
 	{
 		if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 		{
 			uint16_t frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
-			mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+			mfb->drawFrame (context, frameIndex, getViewSize ().getTopLeft ());
 		}
 		else
-			bitmap->draw (pContext, getViewSize ());
+			bitmap->draw (context, getViewSize ());
 	}
 }
 

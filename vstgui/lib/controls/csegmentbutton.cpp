@@ -432,13 +432,10 @@ void CSegmentButton::onKeyboardEvent (KeyboardEvent& event)
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::draw (CDrawContext* pContext)
-{
-	CView::draw (pContext);
-}
+void CSegmentButton::draw (CDrawContext& context) { CView::draw (context); }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
+void CSegmentButton::drawRect (CDrawContext& context, const CRect& dirtyRect)
 {
 	if (getOldValue () != getValue ())
 		verifySelections ();
@@ -448,36 +445,36 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
 	{
-		lineWidth = pContext->getHairlineSize ();
+		lineWidth = context.getHairlineSize ();
 	}
 	SharedPointer<CGraphicsPath> path;
 	if (gradient || gradientHighlighted || drawLines)
 	{
 		CRect r (getViewSize ());
 		r.inset (lineWidth / 2., lineWidth / 2.);
-		path = pContext->createGraphicsPath ();
+		path = context.createGraphicsPath ();
 		if (!path)
 			return;
 		path->addRoundRect (r, getRoundRadius ());
 	}
-	pContext->setDrawMode (kAntiAliasing);
+	context.setDrawMode (kAntiAliasing);
 	if (drawLines)
 	{
-		pContext->setLineStyle (kLineSolid);
-		pContext->setLineWidth (lineWidth);
-		pContext->setFrameColor (getFrameColor ());
+		context.setLineStyle (kLineSolid);
+		context.setLineWidth (lineWidth);
+		context.setFrameColor (getFrameColor ());
 	}
 	if (gradient)
 	{
 		if (isHorizontal)
 		{
-			pContext->fillLinearGradient (path, *gradient.get (), getViewSize ().getTopLeft (),
-										  getViewSize ().getBottomLeft ());
+			context.fillLinearGradient (path, *gradient.get (), getViewSize ().getTopLeft (),
+										getViewSize ().getBottomLeft ());
 		}
 		else
 		{
-			pContext->fillLinearGradient (path, *gradient.get (), getViewSize ().getTopLeft (),
-										  getViewSize ().getTopRight ());
+			context.fillLinearGradient (path, *gradient.get (), getViewSize ().getTopLeft (),
+										getViewSize ().getTopRight ());
 		}
 	}
 	auto lineIndexStart = 1u;
@@ -494,34 +491,34 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		if (!dirtyRect.rectOverlap (segment.rect))
 			continue;
 
-		drawClipped (pContext, segment.rect, [&] () {
+		drawClipped (context, segment.rect, [&] () {
 			if (segment.selected && gradientHighlighted)
 			{
 				if (isHorizontal)
 				{
-					pContext->fillLinearGradient (path, *gradientHighlighted.get (),
-												  segment.rect.getTopLeft (),
-												  segment.rect.getBottomLeft ());
+					context.fillLinearGradient (path, *gradientHighlighted.get (),
+												segment.rect.getTopLeft (),
+												segment.rect.getBottomLeft ());
 				}
 				else
 				{
-					pContext->fillLinearGradient (path, *gradientHighlighted.get (),
-												  segment.rect.getTopLeft (),
-												  segment.rect.getTopRight ());
+					context.fillLinearGradient (path, *gradientHighlighted.get (),
+												segment.rect.getTopLeft (),
+												segment.rect.getTopRight ());
 				}
 			}
 			if (segment.selected && segment.backgroundHighlighted)
 			{
-				segment.backgroundHighlighted->draw (pContext, segment.rect);
+				segment.backgroundHighlighted->draw (context, segment.rect);
 			}
 			else if (segment.background)
 			{
-				segment.background->draw (pContext, segment.rect);
+				segment.background->draw (context, segment.rect);
 			}
 			CDrawMethods::drawIconAndText (
-			    pContext, segment.selected ? segment.iconHighlighted : segment.icon,
-			    segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font,
-			    segment.selected ? textColorHighlighted : textColor, textTruncateMode);
+				context, segment.selected ? segment.iconHighlighted : segment.icon,
+				segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font,
+				segment.selected ? textColorHighlighted : textColor, textTruncateMode);
 		});
 		if (drawLines && index >= lineIndexStart && index < lineIndexEnd)
 		{
@@ -531,7 +528,7 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		}
 	}
 	if (drawLines)
-		pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		context.drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
 //-----------------------------------------------------------------------------

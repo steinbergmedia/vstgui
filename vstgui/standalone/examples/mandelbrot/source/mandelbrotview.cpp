@@ -82,7 +82,7 @@ void View::onKeyboardEvent (KeyboardEvent& event)
 }
 
 //------------------------------------------------------------------------
-void View::draw (CDrawContext* context)
+void View::draw (CDrawContext& context)
 {
 	if (auto bitmap = getBackground ())
 	{
@@ -90,21 +90,21 @@ void View::draw (CDrawContext* context)
 		CGraphicsTransform transform;
 		transform.scale (getWidth () / bitmapSize.x, getHeight () / bitmapSize.y);
 		transform.translate (getViewSize ().left, getViewSize ().top);
-		CDrawContext::Transform t (*context, transform);
+		CDrawContext::Transform t (context, transform);
 		bitmap->draw (context, CRect (0, 0, bitmapSize.x, bitmapSize.y));
 	}
 	if (box.isEmpty ())
 		return;
-	auto hairlineSize = context->getHairlineSize ();
-	ConcatClip cc (*context, box);
-	context->setLineWidth (hairlineSize);
-	context->setDrawMode (kAliasing | kNonIntegralMode);
-	context->setFrameColor (kBlackCColor);
-	context->drawRect (box);
+	auto hairlineSize = context.getHairlineSize ();
+	ConcatClip cc (context, box);
+	context.setLineWidth (hairlineSize);
+	context.setDrawMode (kAliasing | kNonIntegralMode);
+	context.setFrameColor (kBlackCColor);
+	context.drawRect (box);
 	CRect b2 (box);
 	b2.inset (hairlineSize, hairlineSize);
-	context->setFrameColor (kWhiteCColor);
-	context->drawRect (b2);
+	context.setFrameColor (kWhiteCColor);
+	context.drawRect (b2);
 }
 
 //------------------------------------------------------------------------

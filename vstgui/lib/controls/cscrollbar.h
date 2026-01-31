@@ -55,7 +55,7 @@ public:
 	//@}
 	
 	// overwrite
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
@@ -71,9 +71,9 @@ public:
 protected:
 	~CScrollbar () noexcept override = default;
 
-	void drawBackground (CDrawContext* pContext);
-	void drawScroller (CDrawContext* pContext, const CRect& size);
-	
+	void drawBackground (CDrawContext& pContext);
+	void drawScroller (CDrawContext& pContext, const CRect& size);
+
 	void calculateScrollerLength ();
 	void doStepping ();
 	
@@ -105,8 +105,12 @@ class IScrollbarDrawer
 //-----------------------------------------------------------------------------
 {
 public:
-	virtual void drawScrollbarBackground (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
-	virtual void drawScrollbarScroller (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
+	virtual void drawScrollbarBackground (CDrawContext& pContext, const CRect& size,
+										  CScrollbar::ScrollbarDirection direction,
+										  CScrollbar* bar) = 0;
+	virtual void drawScrollbarScroller (CDrawContext& pContext, const CRect& size,
+										CScrollbar::ScrollbarDirection direction,
+										CScrollbar* bar) = 0;
 };
 
 } // VSTGUI

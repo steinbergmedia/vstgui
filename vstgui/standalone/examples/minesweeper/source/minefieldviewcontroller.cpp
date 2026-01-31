@@ -233,49 +233,49 @@ void MinefieldViewController::drawCellNeighbours (const CRect& r, CDrawContext& 
 }
 
 //------------------------------------------------------------------------
-void MinefieldViewController::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row,
-                                          int32_t column, int32_t flags, CDataBrowser* browser)
+void MinefieldViewController::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
+										  int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	if (row < 0 || column < 0 || !model)
 		return;
-	context->setDrawMode (kAntiAliasing);
-	context->setLineWidth (1.);
+	context.setDrawMode (kAntiAliasing);
+	context.setLineWidth (1.);
 	CRect r (size);
 	r.inset (1.5, 1.5);
 	if (!model->isDone () && !model->isTrapped () && !model->isOpen (row, column))
 	{
 		if (model->isFlag (row, column))
 		{
-			drawFlaggedCell (r, *context, emojiFont);
+			drawFlaggedCell (r, context, emojiFont);
 		}
 		else if (model->isQuestion (row, column))
 		{
-			drawQuestionMarkCell (r, *context, emojiFont);
+			drawQuestionMarkCell (r, context, emojiFont);
 		}
 		else
 		{
-			drawClosedCell (r, *context);
+			drawClosedCell (r, context);
 		}
 		return;
 	}
-	drawOpenCell (r, *context);
+	drawOpenCell (r, context);
 	if (model->isMine (row, column))
 	{
 		if (model->isTrapMine (row, column))
-			drawExplosionCell (r, *context, emojiFont);
+			drawExplosionCell (r, context, emojiFont);
 		else
-			drawMinedCell (r, *context, emojiFont);
+			drawMinedCell (r, context, emojiFont);
 	}
 	else
 	{
 		auto value = model->getNumberOfMinesNearby (row, column);
-		drawCellNeighbours (r, *context, font, value);
+		drawCellNeighbours (r, context, font, value);
 	}
 	if (model->isFlag (row, column))
 	{
 		r.setWidth (r.getWidth () / 2.);
 		r.setHeight (r.getHeight () / 2.);
-		drawFlag (r, *context, smallEmojiFont);
+		drawFlag (r, context, smallEmojiFont);
 	}
 }
 

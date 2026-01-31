@@ -33,7 +33,7 @@ public:
 		setWheelInc (10.f/255.f);
 	}
 
-	void draw (CDrawContext* context) override
+	void draw (CDrawContext& context) override
 	{
 		CColor handleFillColor (kWhiteCColor);
 		CColor handleFrameColor (kBlackCColor);
@@ -50,13 +50,13 @@ public:
 		CRect backgroundRect;
 		backgroundRect.setSize (controlSize);
 		backgroundRect.offset (getViewSize ().left, getViewSize ().top);
-		context->setDrawMode (kAntiAliasing);
-		context->setFillColor (backgroundFillColor);
-		context->setFrameColor (backgroundFrameColor);
-		context->setLineWidth (backgroundFrameWidth);
-		context->setLineStyle (kLineSolid);
-		context->drawRect (backgroundRect, kDrawFilledAndStroked);
-		
+		context.setDrawMode (kAntiAliasing);
+		context.setFillColor (backgroundFillColor);
+		context.setFrameColor (backgroundFrameColor);
+		context.setLineWidth (backgroundFrameWidth);
+		context.setLineStyle (kLineSolid);
+		context.drawRect (backgroundRect, kDrawFilledAndStroked);
+
 		if (getStyle () & kHorizontal)
 		{
 			backgroundRect.left += getOffsetHandle ().x + sliderSize.x / 2;
@@ -71,16 +71,16 @@ public:
 			backgroundRect.top += getOffsetHandle ().y + sliderSize.y / 2;
 			backgroundRect.bottom -= getOffsetHandle ().y + sliderSize.y / 2;
 		}
-		context->setFillColor (bandColor);
-		context->drawRect (backgroundRect, kDrawFilled);
+		context.setFillColor (bandColor);
+		context.drawRect (backgroundRect, kDrawFilled);
 
 		// calc new coords of slider
 		CRect rectNew = calculateHandleRect (getValueNormalized ());
 
-		context->setFillColor (handleFillColor);
-		context->setFrameColor (handleFrameColor);
-		context->setLineWidth (handleFrameWidth);
-		context->drawRect (rectNew, kDrawFilledAndStroked);
+		context.setFillColor (handleFillColor);
+		context.setFrameColor (handleFrameColor);
+		context.setLineWidth (handleFrameWidth);
+		context.drawRect (rectNew, kDrawFilledAndStroked);
 	}
 
 };
@@ -97,15 +97,15 @@ public:
 	, checkerBoardBack (checkerBoardBack)
 	{
 	}
-	
-	void draw (CDrawContext* context) override
+
+	void draw (CDrawContext& context) override
 	{
-		context->setDrawMode (kAliasing);
+		context.setDrawMode (kAliasing);
 		if (checkerBoardBack && color.alpha != 255)
 		{
-			context->setFillColor (checkerBoardColor1);
-			context->drawRect (getViewSize (), kDrawFilled);
-			context->setFillColor (checkerBoardColor2);
+			context.setFillColor (checkerBoardColor1);
+			context.drawRect (getViewSize (), kDrawFilled);
+			context.setFillColor (checkerBoardColor2);
 			CRect r (getViewSize ().left, getViewSize ().top, getViewSize ().left + 5, getViewSize ().top + 5);
 			for (int32_t x = 0; x < getViewSize ().getWidth (); x+=5)
 			{
@@ -115,15 +115,15 @@ public:
 				r.bottom = r.top + 5;
 				for (int32_t y = 0; y < getViewSize ().getHeight (); y+=10)
 				{
-					context->drawRect (r, kDrawFilled);
+					context.drawRect (r, kDrawFilled);
 					r.offset (0, 10);
 				}
 			}
 		}
-		context->setLineWidth (1);
-		context->setFillColor (color);
-		context->setFrameColor (kBlackCColor);
-		context->drawRect (getViewSize (), kDrawFilledAndStroked);
+		context.setLineWidth (1);
+		context.setFillColor (color);
+		context.setFrameColor (kBlackCColor);
+		context.drawRect (getViewSize (), kDrawFilledAndStroked);
 	}
 
 	const CColor& getColor () const { return color; }

@@ -23,7 +23,7 @@ public:
 					const SharedPointer<CBitmap>& background);
 	CAutoAnimation (const CAutoAnimation& autoAnimation);
 
-	void draw (CDrawContext*) override;
+	void draw (CDrawContext&) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	bool removed (const SharedPointer<CViewContainer>& parent) override;

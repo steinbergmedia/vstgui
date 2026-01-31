@@ -39,7 +39,7 @@ CAutoAnimation::CAutoAnimation (const CAutoAnimation& v) : CControl (v) {}
 bool CAutoAnimation::isWindowOpened () const { return bWindowOpened; }
 
 //------------------------------------------------------------------------
-void CAutoAnimation::draw (CDrawContext *pContext)
+void CAutoAnimation::draw (CDrawContext& context)
 {
 	if (isWindowOpened ())
 	{
@@ -48,11 +48,11 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 			if (auto mfb = bitmap.cast<CMultiFrameBitmap> ())
 			{
 				auto frameIndex = getMultiFrameBitmapIndex (*mfb.get (), getValueNormalized ());
-				mfb->drawFrame (pContext, frameIndex, getViewSize ().getTopLeft ());
+				mfb->drawFrame (context, frameIndex, getViewSize ().getTopLeft ());
 			}
 			else
 			{
-				CView::draw (pContext);
+				CView::draw (context);
 			}
 		}
 	}

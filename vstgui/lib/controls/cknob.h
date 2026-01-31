@@ -128,7 +128,7 @@ public:
 	//@}
 
 	// overrides
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool drawFocusOnTop () override;
 
@@ -136,11 +136,11 @@ public:
 protected:
 	~CKnob () noexcept override;
 
-	virtual void drawHandle (CDrawContext* pContext);
-	virtual void drawCoronaOutline (CDrawContext* pContext) const;
-	virtual void drawCorona (CDrawContext* pContext) const;
-	virtual void drawHandleAsCircle (CDrawContext* pContext) const;
-	virtual void drawHandleAsLine (CDrawContext* pContext) const;
+	virtual void drawHandle (CDrawContext& context);
+	virtual void drawCoronaOutline (CDrawContext& context) const;
+	virtual void drawCorona (CDrawContext& context) const;
+	virtual void drawHandleAsCircle (CDrawContext& context) const;
+	virtual void drawHandleAsLine (CDrawContext& context) const;
 
 	static void addArc (const SharedPointer<CGraphicsPath>& path, const CRect& r, double startAngle,
 						double sweepAngle);
@@ -179,7 +179,7 @@ public:
 	//@}
 
 	// overrides
-	void draw (CDrawContext* pContext) override;
+	void draw (CDrawContext& context) override;
 	bool sizeToFit () override;
 	void setBackground (const SharedPointer<CBitmap>& background) override;
 

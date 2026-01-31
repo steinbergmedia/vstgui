@@ -51,8 +51,8 @@ public:
 	void setMax (float val) override;
 
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	void draw (CDrawContext* context) override;
-	void drawRect (CDrawContext* context, const CRect& updateRect) override;
+	void draw (CDrawContext& context) override;
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
@@ -142,8 +142,8 @@ public:
 		Flags flags;
 	};
 
-	virtual void drawBackground (CDrawContext* context, CRect size) = 0;
-	virtual void drawRow (CDrawContext* context, CRect size, Row row) = 0;
+	virtual void drawBackground (CDrawContext& context, CRect size) = 0;
+	virtual void drawRow (CDrawContext& context, CRect size, Row row) = 0;
 };
 
 //------------------------------------------------------------------------

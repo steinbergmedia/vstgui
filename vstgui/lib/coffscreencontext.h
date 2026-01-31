@@ -53,7 +53,8 @@ if (cachedBitmap)
 
  */
 //-----------------------------------------------------------------------------
-class COffscreenContext : public CDrawContext
+class COffscreenContext : public CDrawContext,
+						  public AtomicReferenceCounted
 {
 public:
 	static SharedPointer<COffscreenContext> create (const CPoint& size, double scaleFactor = 1.);
@@ -63,7 +64,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** copy from offscreen to pContext */
-	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));
+	void copyFrom (CDrawContext& context, CRect destRect, CPoint srcOffset = CPoint (0, 0));
 
 	CCoord getWidth () const;
 	CCoord getHeight () const;

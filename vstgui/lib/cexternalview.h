@@ -75,7 +75,7 @@ public:
 
 	CLASS_METHODS_NOCOPY (CExternalControl, CControl)
 private:
-	void draw (CDrawContext* pContext) override {}
+	void draw (CDrawContext& context) override {}
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 	struct Impl;

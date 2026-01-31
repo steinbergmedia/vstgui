@@ -806,12 +806,12 @@ bool COptionMenu::isCheckEntry (int32_t index) const
 }
 
 //------------------------------------------------------------------------
-void COptionMenu::draw (CDrawContext *pContext)
+void COptionMenu::draw (CDrawContext& context)
 {
 	auto item = getEntry (currentIndex);
-	drawBack (pContext, inPopup ? bgWhenClick : nullptr);
+	drawBack (context, inPopup ? bgWhenClick : nullptr);
 	if (item)
-		drawPlatformText (pContext, item->getTitle ());
+		drawPlatformText (context, item->getTitle ());
 }
 
 //------------------------------------------------------------------------

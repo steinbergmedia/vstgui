@@ -123,7 +123,7 @@ public:
 		return kMouseEventHandled;
 	}
 
-	void drawRect (CDrawContext* c, const CRect& r) override
+	void drawRect (CDrawContext& c, const CRect& r) override
 	{
 		++callCount;
 		redrawRect = r;
