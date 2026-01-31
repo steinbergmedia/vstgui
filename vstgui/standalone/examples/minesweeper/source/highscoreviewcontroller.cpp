@@ -31,14 +31,14 @@ HighScoreViewController::HighScoreViewController (const SharedPointer<IControlle
 void HighScoreViewController::setHighScoreList (const std::shared_ptr<HighScoreList>& l)
 {
 	list = l;
-	if (dataBrowser)
+	if (auto dataBrowser = dbPtr.lock ())
 		dataBrowser->recalculateLayout ();
 }
 
 //------------------------------------------------------------------------
 bool HighScoreViewController::isVisible () const
 {
-	if (dataBrowser)
+	if (auto dataBrowser = dbPtr.lock ())
 	{
 		if (auto parent = dataBrowser->getParentView ())
 			return parent->isVisible ();
@@ -49,32 +49,34 @@ bool HighScoreViewController::isVisible () const
 //------------------------------------------------------------------------
 void HighScoreViewController::show ()
 {
-	if (!dataBrowser)
-		return;
-	if (auto parent = dataBrowser->getParentView ())
+	if (auto dataBrowser = dbPtr.lock ())
 	{
-		parent->setMouseEnabled (true);
-		parent->setAlphaValue (1.f);
+		if (auto parent = dataBrowser->getParentView ())
+		{
+			parent->setMouseEnabled (true);
+			parent->setAlphaValue (1.f);
+		}
 	}
 }
 
 //------------------------------------------------------------------------
 void HighScoreViewController::hide ()
 {
-	if (!dataBrowser)
-		return;
-	if (auto parent = dataBrowser->getParentView ())
+	if (auto dataBrowser = dbPtr.lock ())
 	{
-		parent->setAlphaValue (0.f);
-		parent->setMouseEnabled (false);
+		if (auto parent = dataBrowser->getParentView ())
+		{
+			parent->setAlphaValue (0.f);
+			parent->setMouseEnabled (false);
+		}
 	}
 }
 
 //------------------------------------------------------------------------
-void HighScoreViewController::dbAttached (CDataBrowser* browser)
+void HighScoreViewController::dbAttached (CDataBrowser& browser)
 {
-	dataBrowser = browser;
-	if (auto parent = browser->getParentView ())
+	dbPtr = browser.weakFromThis ();
+	if (auto parent = browser.getParentView ())
 	{
 		assert (parent->asViewContainer ());
 		keepChildViewsCentered (parent->asViewContainer ());
@@ -82,43 +84,37 @@ void HighScoreViewController::dbAttached (CDataBrowser* browser)
 }
 
 //------------------------------------------------------------------------
-void HighScoreViewController::dbRemoved (CDataBrowser* browser)
-{
-	dataBrowser = nullptr;
-}
+void HighScoreViewController::dbRemoved (CDataBrowser& browser) { dbPtr.reset (); }
 
 //------------------------------------------------------------------------
-int32_t HighScoreViewController::dbGetNumRows (CDataBrowser* browser)
+int32_t HighScoreViewController::dbGetNumRows (CDataBrowser& browser)
 {
 	return HighScoreListModel::Size;
 }
 
 //------------------------------------------------------------------------
-int32_t HighScoreViewController::dbGetNumColumns (CDataBrowser* browser)
-{
-	return NumCols;
-};
+int32_t HighScoreViewController::dbGetNumColumns (CDataBrowser& browser) { return NumCols; };
 
 //------------------------------------------------------------------------
-CCoord HighScoreViewController::dbGetRowHeight (CDataBrowser* browser)
+CCoord HighScoreViewController::dbGetRowHeight (CDataBrowser& browser)
 {
-	auto height = browser->getHeight () / (HighScoreListModel::Size + 1) - 1;
+	auto height = browser.getHeight () / (HighScoreListModel::Size + 1) - 1;
 	if (font->getSize () != height * 0.6)
 		font->setSize (height * 0.6);
 	return height;
 }
 
 //------------------------------------------------------------------------
-CCoord HighScoreViewController::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
+CCoord HighScoreViewController::dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser)
 {
 	if (index >= 0 && index < NumCols)
-		return browser->getWidth () * columnWidths[index];
+		return browser.getWidth () * columnWidths[index];
 	return 10;
 }
 
 //------------------------------------------------------------------------
 bool HighScoreViewController::dbGetLineWidthAndColor (CCoord& width, CColor& color,
-                                                      CDataBrowser* browser)
+													  CDataBrowser& browser)
 {
 	width = 1.;
 	color = kBlackCColor;
@@ -127,7 +123,7 @@ bool HighScoreViewController::dbGetLineWidthAndColor (CCoord& width, CColor& col
 
 //------------------------------------------------------------------------
 void HighScoreViewController::dbDrawHeader (CDrawContext& context, const CRect& size,
-											int32_t column, int32_t flags, CDataBrowser* browser)
+											int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	context.setFont (font);
 	context.setFontColor (fontColor);
@@ -147,7 +143,7 @@ void HighScoreViewController::dbDrawHeader (CDrawContext& context, const CRect& 
 
 //------------------------------------------------------------------------
 void HighScoreViewController::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
-										  int32_t column, int32_t flags, CDataBrowser* browser)
+										  int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	if (!list)
 		return;

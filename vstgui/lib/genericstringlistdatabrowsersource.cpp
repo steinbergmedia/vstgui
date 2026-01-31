@@ -14,7 +14,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (
-    const StringVector* stringList, GenericStringListDataBrowserSourceSelectionChanged* delegate)
+	const StringVector* stringList, GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : stringList (stringList)
 , rowHeight (-1)
 , fontColor (kWhiteCColor)
@@ -25,7 +25,6 @@ GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (
 , textInset (2., 0.)
 , textAlignment (kLeftText)
 , drawFont (kSystemFont)
-, dataBrowser (nullptr)
 , delegate (delegate)
 {
 }
@@ -34,23 +33,20 @@ GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (
 GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource () noexcept = default;
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::dbAttached (CDataBrowser* browser)
+void GenericStringListDataBrowserSource::dbAttached (CDataBrowser& browser)
 {
-	dataBrowser = shared (browser);
+	dbPtr = browser.weakFromThis ();
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::dbRemoved (CDataBrowser* browser)
-{
-	dataBrowser = nullptr;
-}
+void GenericStringListDataBrowserSource::dbRemoved (CDataBrowser& browser) { dbPtr.reset (); }
 
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::setStringList (const StringVector* inStringList)
 {
 	stringList = inStringList;
-	if (dataBrowser)
-		dataBrowser->recalculateLayout (true);
+	if (auto db = dbPtr.lock ())
+		db->recalculateLayout (true);
 }
 
 //-----------------------------------------------------------------------------
@@ -68,37 +64,37 @@ void GenericStringListDataBrowserSource::setupUI (
 	rowlineColor = _rowlineColor;
 	rowBackColor = _rowBackColor;
 	rowAlternateBackColor = _rowAlternateBackColor;
-	if (dataBrowser)
-		dataBrowser->recalculateLayout (true);
+	if (auto db = dbPtr.lock ())
+		db->recalculateLayout (true);
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::dbSelectionChanged (CDataBrowser* browser)
+void GenericStringListDataBrowserSource::dbSelectionChanged (CDataBrowser& browser)
 {
 	if (delegate)
-		delegate->dbSelectionChanged (browser->getSelectedRow (), this);
+		delegate->dbSelectionChanged (browser.getSelectedRow (), this);
 }
 
 //-----------------------------------------------------------------------------
-int32_t GenericStringListDataBrowserSource::dbGetNumRows (CDataBrowser* browser)
+int32_t GenericStringListDataBrowserSource::dbGetNumRows (CDataBrowser& browser)
 {
 	return stringList ? (int32_t)stringList->size () : 0;
 }
 
 //-----------------------------------------------------------------------------
 CCoord GenericStringListDataBrowserSource::dbGetCurrentColumnWidth (int32_t index,
-                                                                    CDataBrowser* browser)
+																	CDataBrowser& browser)
 {
-	return browser->getWidth () -
-	       ((browser->getStyle () & CScrollView::kOverlayScrollbars ||
-	         (browser->getActiveScrollbars () & CScrollView::kVerticalScrollbar) == 0) ?
-	            0 :
-	            browser->getScrollbarWidth ());
+	return browser.getWidth () -
+		   ((browser.getStyle () & CScrollView::kOverlayScrollbars ||
+			 (browser.getActiveScrollbars () & CScrollView::kVerticalScrollbar) == 0)
+				? 0
+				: browser.getScrollbarWidth ());
 }
 
 //-----------------------------------------------------------------------------
 bool GenericStringListDataBrowserSource::dbGetLineWidthAndColor (CCoord& width, CColor& color,
-                                                                 CDataBrowser* browser)
+																 CDataBrowser& browser)
 {
 	width = 1.;
 	color = rowlineColor;
@@ -106,7 +102,7 @@ bool GenericStringListDataBrowserSource::dbGetLineWidthAndColor (CCoord& width, 
 }
 
 //-----------------------------------------------------------------------------
-CCoord GenericStringListDataBrowserSource::dbGetRowHeight (CDataBrowser* browser)
+CCoord GenericStringListDataBrowserSource::dbGetRowHeight (CDataBrowser& browser)
 {
 	if (rowHeight < 0)
 	{
@@ -125,7 +121,7 @@ CCoord GenericStringListDataBrowserSource::dbGetRowHeight (CDataBrowser* browser
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext& context, const CRect& size,
 													   int32_t column, int32_t flags,
-													   CDataBrowser* browser)
+													   CDataBrowser& browser)
 {
 }
 
@@ -133,7 +129,7 @@ void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext& context, co
 void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext& context,
 															const CRect& size, int32_t row,
 															int32_t flags,
-															CDataBrowser* browser) const
+															CDataBrowser& browser) const
 {
 	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 
@@ -144,8 +140,8 @@ void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext& contex
 	if (flags & kRowSelected)
 	{
 		CColor color (selectionColor);
-		auto focusView = browser->getFrame ()->getFocusView ();
-		if (!(focusView && browser->isChild (focusView, true)))
+		auto focusView = browser.getFrame ()->getFocusView ();
+		if (!(focusView && browser.isChild (focusView, true)))
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);
@@ -165,7 +161,7 @@ void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext& contex
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::drawRowString (CDrawContext& context, const CRect& size,
 														int32_t row, int32_t flags,
-														CDataBrowser* browser) const
+														CDataBrowser& browser) const
 {
 	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 
@@ -183,7 +179,7 @@ void GenericStringListDataBrowserSource::drawRowString (CDrawContext& context, c
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext& context, const CRect& size,
 													 int32_t row, int32_t column, int32_t flags,
-													 CDataBrowser* browser)
+													 CDataBrowser& browser)
 {
 	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 	vstgui_assert (column == 0);
@@ -193,7 +189,8 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext& context, cons
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser)
+void GenericStringListDataBrowserSource::dbOnKeyboardEvent (KeyboardEvent& event,
+															CDataBrowser& browser)
 {
 	if (event.type != EventType::KeyDown)
 		return;
@@ -203,7 +200,7 @@ void GenericStringListDataBrowserSource::dbOnKeyboardEvent (KeyboardEvent& event
 		event.virt = VirtualKey::None;
 		event.character = 0x20;
 	}
-	if (dataBrowser && event.virt == VirtualKey::None && event.modifiers.empty ())
+	if (event.virt == VirtualKey::None && event.modifiers.empty ())
 	{
 		if (timer == nullptr)
 		{
@@ -229,7 +226,7 @@ void GenericStringListDataBrowserSource::dbOnKeyboardEvent (KeyboardEvent& event
 			std::transform (str.begin (), str.end (), str.begin (), ::toupper);
 			if (str == keyDownFindString)
 			{
-				dataBrowser->setSelectedRow (row, true);
+				browser.setSelectedRow (row, true);
 				event.consumed = true;
 				return;
 			}
@@ -241,9 +238,9 @@ void GenericStringListDataBrowserSource::dbOnKeyboardEvent (KeyboardEvent& event
 
 //-----------------------------------------------------------------------------
 CMouseEventResult GenericStringListDataBrowserSource::dbOnMouseDown (const CPoint& where,
-                                                                     const CButtonState& buttons,
-                                                                     int32_t row, int32_t column,
-                                                                     CDataBrowser* browser)
+																	 const CButtonState& buttons,
+																	 int32_t row, int32_t column,
+																	 CDataBrowser& browser)
 {
 	if (delegate && buttons.isDoubleClick ())
 		delegate->dbRowDoubleClick (row, this);

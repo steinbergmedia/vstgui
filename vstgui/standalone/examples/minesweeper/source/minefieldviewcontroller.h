@@ -49,11 +49,11 @@ private:
 									 const UIAttributes& attributes,
 									 const IUIDescription& description) override;
 	void onCellChanged (uint32_t row, uint32_t col) override;
-	int32_t dbGetNumRows (CDataBrowser* browser) override;
-	int32_t dbGetNumColumns (CDataBrowser* browser) override;
-	CCoord dbGetRowHeight (CDataBrowser* browser) override;
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
-	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) override;
+	int32_t dbGetNumRows (CDataBrowser& browser) override;
+	int32_t dbGetNumColumns (CDataBrowser& browser) override;
+	CCoord dbGetRowHeight (CDataBrowser& browser) override;
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser) override;
+	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser& browser) override;
 	void drawClosedCell (const CRect& r, CDrawContext& context) const;
 	void drawOpenCell (const CRect& r, CDrawContext& context) const;
 	void drawQuestionMark (const CRect& r, CDrawContext& context,
@@ -70,13 +70,13 @@ private:
 	void drawCellNeighbours (const CRect& r, CDrawContext& context,
 							 const SharedPointer<CFontDesc>& f, uint32_t neighbours);
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                 int32_t column, CDataBrowser* browser) override;
+									 int32_t column, CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                  int32_t column, CDataBrowser* browser) override;
+									  int32_t column, CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                               int32_t column, CDataBrowser* browser) override;
+								   int32_t column, CDataBrowser& browser) override;
 	void checkGameOver ();
 	void onGameLost ();
 	void onGameWon ();

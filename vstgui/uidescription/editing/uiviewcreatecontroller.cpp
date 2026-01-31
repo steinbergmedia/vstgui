@@ -24,8 +24,10 @@ public:
 	UIViewCreatorDataSource (const IViewFactory& factory,
 							 const SharedPointer<UIDescription>& description);
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+									 int32_t column, CDataBrowser& browser) override;
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
+									  int32_t column, CDataBrowser& browser) override;
 
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override { return false; }
@@ -137,14 +139,17 @@ void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 {
-	auto controller =
-		getViewController (*dataBrowser.get (), true).cast<UIViewCreatorController> ();
-	if (controller)
+	if (auto dataBrowser = dbPtr.lock ())
 	{
-		if (auto editController = controller->getBaseController ().cast<UIEditController> ())
+		auto controller =
+			getViewController (*dataBrowser.get (), true).cast<UIViewCreatorController> ();
+		if (controller)
 		{
-			SharedPointer<UISelection> selection = createSelection (row);
-			editController->addSelectionToCurrentView (selection);
+			if (auto editController = controller->getBaseController ().cast<UIEditController> ())
+			{
+				SharedPointer<UISelection> selection = createSelection (row);
+				editController->addSelectionToCurrentView (selection);
+			}
 		}
 	}
 }
@@ -190,7 +195,9 @@ SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UIViewCreatorDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIViewCreatorDataSource::dbOnMouseDown (const CPoint& where,
+														  const CButtonState& buttons, int32_t row,
+														  int32_t column, CDataBrowser& browser)
 {
 	if (buttons.isLeftButton ())
 	{
@@ -203,13 +210,15 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseDown (const CPoint& where, c
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where,
+														   const CButtonState& buttons, int32_t row,
+														   int32_t column, CDataBrowser& browser)
 {
 	if (buttons.isLeftButton () && row != -1 && column != -1)
 	{
 		if (dragStartMouseObserver.shouldStartDrag (where))
 		{
-			auto selRow = dataBrowser->getSelection ().front ();
+			auto selRow = browser.getSelection ().front ();
 			SharedPointer<UISelection> selection = createSelection (selRow);
 			CMemoryStream stream (1024, 1024, false);
 			if (selection->store (stream, description))
@@ -218,9 +227,9 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 				auto dropSource = CDropSource::create (stream.getBuffer (),
 				                                       static_cast<uint32_t> (stream.tell ()),
 				                                       CDropSource::kText);
-				auto bitmap = createBitmapFromSelection (
-					*selection.get (), dataBrowser->getFrame ()->getScaleFactor ());
-				browser->doDrag (DragDescription (dropSource, CPoint (), bitmap));
+				auto bitmap = createBitmapFromSelection (*selection.get (),
+														 browser.getFrame ()->getScaleFactor ());
+				browser.doDrag (DragDescription (dropSource, CPoint (), bitmap));
 			}
 		}
 		return kMouseEventHandled;

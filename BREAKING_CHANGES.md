@@ -165,6 +165,7 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* ```IViewFactoryEditingSupport::getPossibleAttributeListValues```
 	* ```IViewFactoryEditingSupport::getAttributeValueRange```
 	* ```IViewFactoryEditingSupport::getViewDisplayName```
+	* all ```IDataBrowserDelegate``` methods
 	
 
 - The ```IController``` interface now inherits virtually from ```IReference```

@@ -134,20 +134,20 @@ private:
 		return controller->verifyView (view, attributes, description);
 	}
 
-	int32_t dbGetNumRows (CDataBrowser*) override
+	int32_t dbGetNumRows (CDataBrowser&) override
 	{
 		return static_cast<int32_t> (getData ().size ());
 	}
-	CCoord dbGetRowHeight (CDataBrowser*) override { return 14; }
+	CCoord dbGetRowHeight (CDataBrowser&) override { return 14; }
 
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* b) override
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser& b) override
 	{
-		auto hasScrollbar = b->getActiveScrollbars () & CDataBrowser::kVerticalScrollbar;
-		auto scrollbarWidth = hasScrollbar ? b->getScrollbarWidth () : 0.;
-		return (b->getWidth () - scrollbarWidth) / dbGetNumColumns (b);
+		auto hasScrollbar = b.getActiveScrollbars () & CDataBrowser::kVerticalScrollbar;
+		auto scrollbarWidth = hasScrollbar ? b.getScrollbarWidth () : 0.;
+		return (b.getWidth () - scrollbarWidth) / dbGetNumColumns (b);
 	}
 
-	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser*) override
+	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser&) override
 	{
 		width = 1;
 		color = kBlackCColor;
@@ -155,14 +155,14 @@ private:
 	}
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
-									 int32_t column, CDataBrowser* b) override
+									 int32_t column, CDataBrowser& b) override
 	{
-		b->selectRow (row);
+		b.selectRow (row);
 		return kMouseEventHandled;
 	}
 
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser*) override
+					 int32_t flags, CDataBrowser&) override
 	{
 		if (row < 0 || row >= static_cast<int32_t> (getData ().size ()))
 			return;
@@ -200,7 +200,7 @@ struct GridAreaController : public BaseController<std::vector<GridLayoutProperti
 	}
 
 private:
-	int32_t dbGetNumColumns (CDataBrowser*) override { return 4; }
+	int32_t dbGetNumColumns (CDataBrowser&) override { return 4; }
 
 	UTF8String getCellText (CDataBrowser::Cell cell) const override
 	{
@@ -222,16 +222,16 @@ private:
 	}
 
 	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
-								   int32_t column, CDataBrowser* b) override
+								   int32_t column, CDataBrowser& b) override
 	{
 		if (buttons & kLButton)
 		{
-			b->beginTextEdit ({row, column}, getCellText ({row, column}));
+			b.beginTextEdit ({row, column}, getCellText ({row, column}));
 		}
 		return kMouseEventHandled;
 	}
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText,
-							CDataBrowser* b) override
+							CDataBrowser& b) override
 	{
 		auto result = UTF8StringView (newText).toInteger ();
 		auto& area = getData ()[row];
@@ -250,7 +250,7 @@ private:
 				area.colSpan = result;
 				break;
 		}
-		b->invalidateRow (row);
+		b.invalidateRow (row);
 		dataChanged ();
 	}
 };
@@ -267,7 +267,7 @@ struct AutoSizeController : public BaseController<std::vector<GridLayoutProperti
 	~AutoSizeController () noexcept override {}
 
 private:
-	int32_t dbGetNumColumns (CDataBrowser*) override { return 2; }
+	int32_t dbGetNumColumns (CDataBrowser&) override { return 2; }
 	UTF8String getCellText (CDataBrowser::Cell cell) const override
 	{
 		UTF8String str;
@@ -303,20 +303,20 @@ private:
 	}
 
 	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
-								   int32_t column, CDataBrowser* b) override
+								   int32_t column, CDataBrowser& b) override
 	{
 		if (buttons & kLButton)
 		{
 			if (column == 0)
 			{
 				if (!std::holds_alternative<GridLayoutProperties::Auto> (getData ()[row]))
-					b->beginTextEdit ({row, column}, getCellText ({row, column}));
+					b.beginTextEdit ({row, column}, getCellText ({row, column}));
 			}
 			else if (column == 1)
 			{
-				auto menuRect = b->getCellBounds ({row, column});
+				auto menuRect = b.getCellBounds ({row, column});
 				CPoint pos;
-				b->localToFrame (pos);
+				b.localToFrame (pos);
 				menuRect.offset (pos);
 				auto menu = makeOwned<COptionMenu> ();
 				menu->setViewSize (menuRect);
@@ -337,9 +337,10 @@ private:
 				{
 					menu->setValue (0.f);
 				}
-				auto frame = b->getFrame ();
+				auto frame = b.getFrame ();
 				frame->addSubview (menu);
-				menu->popup ([this, row, frame, b] (auto menu) {
+				menu->popup ([this, row, frame,
+							  bPtr = WeakPointer<CDataBrowser> (b.weakFromThis ())] (auto menu) {
 					if (menu)
 					{
 						switch (menu->getLastResult ())
@@ -354,7 +355,8 @@ private:
 								getData ()[row] = GridLayoutProperties::Auto {};
 								break;
 						}
-						b->invalidateRow (row);
+						if (auto b = bPtr.lock ())
+							b->invalidateRow (row);
 						dataChanged ();
 						frame->removeSubview (menu);
 					}
@@ -364,7 +366,7 @@ private:
 		return kMouseEventHandled;
 	}
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText,
-							CDataBrowser* b) override
+							CDataBrowser& b) override
 	{
 		auto result = UTF8StringView (newText).toDouble ();
 		if (std::holds_alternative<CCoord> (getData ()[row]))
@@ -375,7 +377,7 @@ private:
 		{
 			getData ()[row] = GridLayoutProperties::Percentage {result};
 		}
-		b->invalidateRow (row);
+		b.invalidateRow (row);
 		dataChanged ();
 	}
 };

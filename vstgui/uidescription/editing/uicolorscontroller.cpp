@@ -40,20 +40,27 @@ protected:
 	UTF8StringPtr getDefaultsName () override { return "UIColorsDataSource"; }
 
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
-	void dbSelectionChanged (CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& control,
+							  CDataBrowser& browser) override;
+	void dbSelectionChanged (CDataBrowser& browser) override;
 
-	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
-	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
-	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
-	DragOperation dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
-	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
-	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	void dbOnDragEnterBrowser (IDataPackage& drag, CDataBrowser& browser) override;
+	void dbOnDragExitBrowser (IDataPackage& drag, CDataBrowser& browser) override;
+	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where,
+									 IDataPackage& drag, CDataBrowser& browser) override;
+	DragOperation dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where,
+									  IDataPackage& drag, CDataBrowser& browser) override;
+	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage& drag,
+						   CDataBrowser& browser) override;
+	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage& drag,
+						 CDataBrowser& browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+									 int32_t column, CDataBrowser& browser) override;
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
+									  int32_t column, CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
-								   int32_t column, CDataBrowser* browser) override;
+								   int32_t column, CDataBrowser& browser) override;
 
 	CCoord getColorIconWith ();
 
@@ -92,15 +99,18 @@ void UIColorsDataSource::uiColorChanged (UIColor& c)
 {
 	if (editing)
 	{
-		int32_t selectedRow = dataBrowser->getSelectedRow ();
-		if (selectedRow != CDataBrowser::kNoSelection)
+		if (auto dataBrowser = dbPtr.lock ())
 		{
-			if (auto ap = actionPerformer.lock ())
+			int32_t selectedRow = dataBrowser->getSelectedRow ();
+			if (selectedRow != CDataBrowser::kNoSelection)
 			{
-				ap->performLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data (),
-											color->base ());
+				if (auto ap = actionPerformer.lock ())
+				{
+					ap->performLiveColorChange (
+						names.at (static_cast<uint32_t> (selectedRow)).data (), color->base ());
+				}
+				dataBrowser->setSelectedRow (selectedRow);
 			}
-			dataBrowser->setSelectedRow (selectedRow);
 		}
 	}
 }
@@ -108,28 +118,34 @@ void UIColorsDataSource::uiColorChanged (UIColor& c)
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::uiColorBeginEditing (UIColor& c)
 {
-	int32_t selectedRow = dataBrowser->getSelectedRow ();
-	if (selectedRow != CDataBrowser::kNoSelection)
+	if (auto dataBrowser = dbPtr.lock ())
 	{
-		if (auto ap = actionPerformer.lock ())
+		int32_t selectedRow = dataBrowser->getSelectedRow ();
+		if (selectedRow != CDataBrowser::kNoSelection)
 		{
-			ap->beginLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->beginLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
+			}
+			editing = true;
 		}
-		editing = true;
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::uiColorEndEditing (UIColor& c)
 {
-	int32_t selectedRow = dataBrowser->getSelectedRow ();
-	if (selectedRow != CDataBrowser::kNoSelection)
+	if (auto dataBrowser = dbPtr.lock ())
 	{
-		if (auto ap = actionPerformer.lock ())
+		int32_t selectedRow = dataBrowser->getSelectedRow ();
+		if (selectedRow != CDataBrowser::kNoSelection)
 		{
-			ap->endLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
+			if (auto ap = actionPerformer.lock ())
+			{
+				ap->endLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
+			}
+			editing = false;
 		}
-		editing = false;
 	}
 }
 
@@ -165,25 +181,28 @@ bool UIColorsDataSource::removeItem (UTF8StringPtr name)
 void UIColorsDataSource::update ()
 {
 	UIBaseDataSource::update ();
-	if (dataBrowser)
+	if (auto dataBrowser = dbPtr.lock ())
 	{
-		dbSelectionChanged (dataBrowser.get ());
+		dbSelectionChanged (*dataBrowser.get ());
 		dataBrowser->invalid ();
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
+void UIColorsDataSource::dbSelectionChanged (CDataBrowser& browser)
 {
-	int32_t selectedRow = dataBrowser->getSelectedRow ();
-	if (selectedRow != CDataBrowser::kNoSelection)
+	if (auto dataBrowser = dbPtr.lock ())
 	{
-		CColor c;
-		if (description->getColor (names.at (static_cast<uint32_t> (selectedRow)).data (), c))
+		int32_t selectedRow = dataBrowser->getSelectedRow ();
+		if (selectedRow != CDataBrowser::kNoSelection)
 		{
-			if (c != color->base ())
+			CColor c;
+			if (description->getColor (names.at (static_cast<uint32_t> (selectedRow)).data (), c))
 			{
-				*color.get () = c;
+				if (c != color->base ())
+				{
+					*color.get () = c;
+				}
 			}
 		}
 	}
@@ -192,12 +211,13 @@ void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
 //----------------------------------------------------------------------------------------------------
 CCoord UIColorsDataSource::getColorIconWith ()
 {
-	return dataBrowser ? dbGetRowHeight (dataBrowser.get ()) : 0.;
+	auto dataBrowser = dbPtr.lock ();
+	return dataBrowser ? dbGetRowHeight (*dataBrowser.get ()) : 0.;
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
-									 int32_t column, int32_t flags, CDataBrowser* browser)
+									 int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
 	CRect r (size);
@@ -219,20 +239,21 @@ void UIColorsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, i
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser)
+void UIColorsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& control,
+											  CDataBrowser& browser)
 {
 	UIBaseDataSource::dbCellSetupTextEdit(row, column, control, browser);
-	CRect r (control->getViewSize ());
+	CRect r (control.getViewSize ());
 	r.right -= getColorIconWith ();
-	control->setViewSize (r);
+	control.setViewSize (r);
 }
 
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIColorsDataSource::dbOnMouseDown (const CPoint& where,
-                                                     const CButtonState& buttons, int32_t row,
-                                                     int32_t column, CDataBrowser* browser)
+													 const CButtonState& buttons, int32_t row,
+													 int32_t column, CDataBrowser& browser)
 {
-	auto r = browser->getCellBounds ({row, column});
+	auto r = browser.getCellBounds ({row, column});
 	r.left = r.right - getColorIconWith ();
 	r.inset (2, 2);
 	if (r.pointInside (where))
@@ -246,13 +267,13 @@ CMouseEventResult UIColorsDataSource::dbOnMouseDown (const CPoint& where,
 
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
-                                                      const CButtonState& buttons, int32_t row,
-                                                      int32_t column, CDataBrowser* browser)
+													  const CButtonState& buttons, int32_t row,
+													  int32_t column, CDataBrowser& browser)
 {
 	if (row < 0 || column < 0)
 		return UIBaseDataSource::dbOnMouseMoved (where, buttons, row, column, browser);
 
-	auto r = browser->getCellBounds ({row, column});
+	auto r = browser.getCellBounds ({row, column});
 	r.left = r.right - getColorIconWith ();
 	r.inset (2, 2);
 	if (allowDrag)
@@ -279,27 +300,29 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 					}
 
 					auto df = makeOwned<DragCallbackFunctions> ();
-					df->endedFunc = [browser, Self = shared (this)] (const auto&, auto, auto) {
-						browser->getFrame ()->setCursor (kCursorDefault);
+					df->endedFunc = [frame = browser.getFrame (),
+									 Self = shared (this)] (const auto&, auto, auto) {
+						frame->setCursor (kCursorDefault);
 						Self->allowDrag = false;
 					};
-					browser->doDrag (DragDescription (dropSource, -r.getSize () / 2., dragBitmap), df);
+					browser.doDrag (DragDescription (dropSource, -r.getSize () / 2., dragBitmap),
+									df);
 				}
 			}
 			return kMouseEventHandled;
 		}
 	}
 	if (r.pointInside (where))
-		browser->getFrame ()->setCursor (kCursorMovableObject);
+		browser.getFrame ()->setCursor (kCursorMovableObject);
 	else
-		browser->getFrame ()->setCursor (kCursorDefault);
+		browser.getFrame ()->setCursor (kCursorDefault);
 	return UIBaseDataSource::dbOnMouseMoved (where, buttons, row, column, browser);
 }
 
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIColorsDataSource::dbOnMouseUp (const CPoint& where, const CButtonState& buttons,
 												   int32_t row, int32_t column,
-												   CDataBrowser* browser)
+												   CDataBrowser& browser)
 {
 	allowDrag = false;
 	return UIBaseDataSource::dbOnMouseUp (where, buttons, row, column, browser);
@@ -317,7 +340,7 @@ bool UIColorsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser)
+void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage& drag, CDataBrowser& browser)
 {
 	for (const auto& item : drag)
 	{
@@ -335,14 +358,16 @@ void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser*
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser)
+void UIColorsDataSource::dbOnDragExitBrowser (IDataPackage& drag, CDataBrowser& browser)
 {
 	dragColor = {};
 	dragRow = -1;
 }
 
 //----------------------------------------------------------------------------------------------------
-DragOperation UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+DragOperation UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column,
+													 const CPoint& where, IDataPackage& drag,
+													 CDataBrowser& browser)
 {
 	if (dragColor && row >= 0)
 	{
@@ -351,7 +376,7 @@ DragOperation UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column
 		    cellColor != *dragColor)
 		{
 			dragRow = row;
-			browser->invalidateRow (dragRow);
+			browser.invalidateRow (dragRow);
 			return DragOperation::Copy;
 		}
 		else
@@ -361,24 +386,28 @@ DragOperation UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column
 }
 
 //----------------------------------------------------------------------------------------------------
-DragOperation UIColorsDataSource::dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+DragOperation UIColorsDataSource::dbOnDragMoveInCell (int32_t row, int32_t column,
+													  const CPoint& where, IDataPackage& drag,
+													  CDataBrowser& browser)
 {
 	return (dragColor && (dragRow >= 0 || row == -1)) ? DragOperation::Copy : DragOperation::None;
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser)
+void UIColorsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage& drag,
+										   CDataBrowser& browser)
 {
 	if (dragColor)
 	{
 		if (dragRow >= 0)
-			browser->invalidateRow (dragRow);
+			browser.invalidateRow (dragRow);
 		dragRow = -1;
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where,
+										 IDataPackage& drag, CDataBrowser& browser)
 {
 	if (dragColor)
 	{

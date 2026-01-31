@@ -654,9 +654,11 @@ protected:
 	UTF8StringPtr getDefaultsName () override { return "UIGradientsDataSource"; }
 
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& control,
+							  CDataBrowser& browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+									 int32_t column, CDataBrowser& browser) override;
 
 	CCoord getGradientIconWidth ();
 };
@@ -678,6 +680,7 @@ void UIGradientsDataSource::onUIDescGradientChanged (UIDescription& desc)
 //----------------------------------------------------------------------------------------------------
 SharedPointer<CGradient> UIGradientsDataSource::getSelectedGradient ()
 {
+	auto dataBrowser = dbPtr.lock ();
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return description->getGradient (names.at (static_cast<uint32_t> (selectedRow)).data ());
@@ -687,6 +690,7 @@ SharedPointer<CGradient> UIGradientsDataSource::getSelectedGradient ()
 //------------------------------------------------------------------------
 std::string UIGradientsDataSource::getSelectedGradientName ()
 {
+	auto dataBrowser = dbPtr.lock ();
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return names[static_cast<uint32_t> (selectedRow)].getString ();
@@ -725,9 +729,9 @@ bool UIGradientsDataSource::removeItem (UTF8StringPtr name)
 void UIGradientsDataSource::update ()
 {
 	UIBaseDataSource::update ();
-	if (dataBrowser)
+	if (auto dataBrowser = dbPtr.lock ())
 	{
-		dbSelectionChanged (dataBrowser.get ());
+		dbSelectionChanged (*dataBrowser.get ());
 		dataBrowser->invalid ();
 	}
 }
@@ -735,15 +739,18 @@ void UIGradientsDataSource::update ()
 //----------------------------------------------------------------------------------------------------
 CCoord UIGradientsDataSource::getGradientIconWidth ()
 {
-	return dataBrowser ? dbGetRowHeight (dataBrowser.get ()) * 2. : 0.;
+	auto dataBrowser = dbPtr.lock ();
+	return dataBrowser ? dbGetRowHeight (*dataBrowser.get ()) * 2. : 0.;
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UIGradientsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIGradientsDataSource::dbOnMouseDown (const CPoint& where,
+														const CButtonState& buttons, int32_t row,
+														int32_t column, CDataBrowser& browser)
 {
 	if (buttons.isDoubleClick () && row >= 0 && row < static_cast<int32_t> (names.size ()))
 	{
-		auto r = browser->getCellBounds ({row, column});
+		auto r = browser.getCellBounds ({row, column});
 		r.left = r.right - getGradientIconWidth ();
 		if (r.pointInside (where))
 		{
@@ -756,7 +763,7 @@ CMouseEventResult UIGradientsDataSource::dbOnMouseDown (const CPoint& where, con
 
 //----------------------------------------------------------------------------------------------------
 void UIGradientsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
-										int32_t column, int32_t flags, CDataBrowser* browser)
+										int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
 	CRect r (size);
@@ -783,12 +790,13 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext& context, const CRect& size
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGradientsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser)
+void UIGradientsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& control,
+												 CDataBrowser& browser)
 {
 	UIBaseDataSource::dbCellSetupTextEdit(row, column, control, browser);
-	CRect r (control->getViewSize ());
+	CRect r (control.getViewSize ());
 	r.right -= getGradientIconWidth ();
-	control->setViewSize (r);
+	control.setViewSize (r);
 }
 
 

@@ -84,12 +84,16 @@ struct WeakPointer final : IWeakPointer
 	template<typename T>
 	inline WeakPointer (const SharedPointer<T>& object) noexcept;
 	inline WeakPointer (const WeakPointer<I>& object) noexcept;
+	template<typename T>
+	inline WeakPointer (const WeakPointer<T>& object) noexcept;
 	inline WeakPointer (WeakPointer<I>&& other) noexcept;
 	inline ~WeakPointer () noexcept;
 
 	template<typename T>
 	inline WeakPointer<I>& operator= (const SharedPointer<T>& other) noexcept;
 	inline WeakPointer<I>& operator= (const WeakPointer<I>& other) noexcept;
+	template<typename T>
+	inline WeakPointer<I>& operator= (const WeakPointer<T>& other) noexcept;
 	inline WeakPointer<I>& operator= (WeakPointer<I>&& other) noexcept;
 
 	inline SharedPointer<I> lock () const noexcept;
@@ -203,6 +207,18 @@ inline WeakPointer<I>::WeakPointer (const WeakPointer<I>& other) noexcept
 
 //------------------------------------------------------------------------
 template<class I>
+template<typename T>
+inline WeakPointer<I>::WeakPointer (const WeakPointer<T>& other) noexcept
+{
+	if (auto spo = other.lock ())
+	{
+		object = spo.get ();
+		static_cast<IWeakPointerSupport*> (object)->registerWeakPointer (this);
+	}
+}
+
+//------------------------------------------------------------------------
+template<class I>
 inline WeakPointer<I>::WeakPointer (WeakPointer<I>&& other) noexcept
 {
 	*this = std::move (other);
@@ -234,6 +250,21 @@ inline WeakPointer<I>& WeakPointer<I>::operator= (const SharedPointer<T>& other)
 //------------------------------------------------------------------------
 template<class I>
 inline WeakPointer<I>& WeakPointer<I>::operator= (const WeakPointer<I>& other) noexcept
+{
+	reset ();
+	std::lock_guard<std::recursive_mutex> lockGuard (m);
+	if (auto spo = other.lock ())
+	{
+		object = spo.get ();
+		object->registerWeakPointer (this);
+	}
+	return *this;
+}
+
+//------------------------------------------------------------------------
+template<class I>
+template<typename T>
+inline WeakPointer<I>& WeakPointer<I>::operator= (const WeakPointer<T>& other) noexcept
 {
 	reset ();
 	std::lock_guard<std::recursive_mutex> lockGuard (m);

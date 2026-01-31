@@ -482,18 +482,18 @@ struct DBController : DelegationController,
 		return controller->verifyView (view, attributes, description);
 	}
 
-	int32_t dbGetNumRows (CDataBrowser* browser) override
+	int32_t dbGetNumRows (CDataBrowser& browser) override
 	{
 		return static_cast<int32_t> (data.size ());
 	}
-	int32_t dbGetNumColumns (CDataBrowser* browser) override
+	int32_t dbGetNumColumns (CDataBrowser& browser) override
 	{
 		return static_cast<int32_t> (NumColumns);
 	}
-	CCoord dbGetRowHeight (CDataBrowser* browser) override { return 15.; }
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override { return 30.; }
+	CCoord dbGetRowHeight (CDataBrowser& browser) override { return 15.; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser) override { return 30.; }
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override
+					 int32_t flags, CDataBrowser& browser) override
 	{
 		if (row < 0 || row >= data.size ())
 			return;
@@ -510,7 +510,7 @@ struct DBController : DelegationController,
 		context.drawString (str, size);
 	}
 	void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column, int32_t flags,
-					   CDataBrowser* browser) override
+					   CDataBrowser& browser) override
 	{
 		context.setFillColor (kWhiteCColor);
 		context.drawRect (size, kDrawFilled);

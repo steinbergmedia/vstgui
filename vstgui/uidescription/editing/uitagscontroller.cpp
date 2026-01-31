@@ -31,13 +31,16 @@ protected:
 	void update () override;
 	void onUIDescTagChanged (UIDescription& desc) override;
 
-	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 2; }
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
+	int32_t dbGetNumColumns (CDataBrowser& browser) override { return 2; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser) override;
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+									 int32_t column, CDataBrowser& browser) override;
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText,
+							CDataBrowser& browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& textEditControl,
+							  CDataBrowser& browser) override;
 
 	StringVector tags;
 };
@@ -111,18 +114,21 @@ void UITagsDataSource::update ()
 void UITagsDataSource::onUIDescTagChanged (UIDescription& desc) { onUIDescriptionUpdate (); }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UITagsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UITagsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons,
+												   int32_t row, int32_t column,
+												   CDataBrowser& browser)
 {
 	if (buttons.isLeftButton () && buttons.isDoubleClick ())
 	{
 		UTF8StringPtr value = column == 0 ? names.at (static_cast<uint32_t> (row)).data () : tags.at (static_cast<uint32_t> (row)).data ();
-		browser->beginTextEdit (CDataBrowser::Cell (row, column), value);
+		browser.beginTextEdit (CDataBrowser::Cell (row, column), value);
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
+void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText,
+										  CDataBrowser& browser)
 {
 	if (column == 0)
 	{
@@ -141,18 +147,23 @@ void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8Strin
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITagsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser)
+void UITagsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& textEditControl,
+											CDataBrowser& browser)
 {
 	UIBaseDataSource::dbCellSetupTextEdit (row, column, textEditControl, browser);
 	if (column == 1)
-		textEditControl->setHoriAlign (kRightText);
+		textEditControl.setHoriAlign (kRightText);
 }
 
 //----------------------------------------------------------------------------------------------------
-CCoord UITagsDataSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
+CCoord UITagsDataSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser)
 {
-	CCoord width = browser->getWidth () - ((browser->getActiveScrollbars () & CScrollView::kVerticalScrollbar) == 0 ? 0 : browser->getScrollbarWidth () + ((browser->getStyle () & CScrollView::kDontDrawFrame) ? 0 : 2));
-	if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
+	CCoord width = browser.getWidth () -
+				   ((browser.getActiveScrollbars () & CScrollView::kVerticalScrollbar) == 0
+						? 0
+						: browser.getScrollbarWidth () +
+							  ((browser.getStyle () & CScrollView::kDontDrawFrame) ? 0 : 2));
+	if (browser.getStyle () & CDataBrowser::kDrawColumnLines)
 		width -= 1;
 	if (index == 0)
 		return width * 0.5;
@@ -161,7 +172,7 @@ CCoord UITagsDataSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* b
 
 //----------------------------------------------------------------------------------------------------
 void UITagsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
-								   int32_t column, int32_t flags, CDataBrowser* browser)
+								   int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	if (column == 1)
 	{

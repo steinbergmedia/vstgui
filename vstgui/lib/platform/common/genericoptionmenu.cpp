@@ -51,10 +51,9 @@ public:
 		vstgui_assert (menu->getNbEntries () > 0);
 	}
 
-	CCoord dbGetRowHeight (CDataBrowser* browser) override
-	{
-		return std::ceil (theme.font->getSize () + 8);
-	}
+	CCoord getRowHeight () const { return std::ceil (theme.font->getSize () + 8); }
+
+	CCoord dbGetRowHeight (CDataBrowser& browser) override { return getRowHeight (); }
 
 	CCoord calculateMaxWidth (CFrame* frame)
 	{
@@ -81,7 +80,7 @@ public:
 		return maxWidth;
 	}
 
-	CCoord calculateMaxHeight () { return menu->getNbEntries () * dbGetHeaderHeight (nullptr); }
+	CCoord calculateMaxHeight () { return menu->getNbEntries () * getRowHeight (); }
 
 	bool setMaxWidth (CCoord width)
 	{
@@ -103,20 +102,20 @@ public:
 private:
 	static constexpr int32_t ViewRemoved = -2;
 
-	void dbAttached (CDataBrowser* browser) override
+	void dbAttached (CDataBrowser& browser) override
 	{
-		db = shared (browser);
-		if (auto frame = db->getFrame ())
+		db = browser.weakFromThis ();
+		if (auto frame = browser.getFrame ())
 			frame->registerMouseObserver (this);
 	}
 
-	void dbRemoved (CDataBrowser* browser) override
+	void dbRemoved (CDataBrowser& browser) override
 	{
-		vstgui_assert (db.get () == browser, "unexpected");
+		vstgui_assert (db.lock ().get () == &browser, "unexpected");
 		closeSubMenu (false);
-		if (auto frame = db->getFrame ())
+		if (auto frame = browser.getFrame ())
 			frame->unregisterMouseObserver (this);
-		db = nullptr;
+		db.reset ();
 		clickCallback (menu, ViewRemoved);
 	}
 
@@ -125,33 +124,40 @@ private:
 		if (&view == subMenuView.get ())
 		{
 			if (selectedRow >= 0)
-				db->setSelectedRow (selectedRow);
+			{
+				if (auto dataBrowser = db.lock ())
+					dataBrowser->setSelectedRow (selectedRow);
+			}
 		}
 	}
 
 	void onMouseExited (CView& view, CFrame& frame) override
 	{
-		if (&view != db.get ())
+		auto dataBrowser = db.lock ();
+		if (&view != dataBrowser.get ())
 			return;
-		selectedRow = db->getSelectedRow ();
-		db->setSelectedRow (CDataBrowser::kNoSelection);
+		selectedRow = dataBrowser->getSelectedRow ();
+		dataBrowser->setSelectedRow (CDataBrowser::kNoSelection);
 		frame.doAfterEventProcessing ([this] () {
-			if (db->getSelectedRow () == CDataBrowser::kNoSelection && subMenuView)
+			if (auto dataBrowser = db.lock ())
 			{
-				closeSubMenu ();
+				if (dataBrowser->getSelectedRow () == CDataBrowser::kNoSelection && subMenuView)
+				{
+					closeSubMenu ();
+				}
 			}
 		});
 	}
 	void onMouseEvent (MouseEvent& event, CFrame& frame) override {}
 
-	int32_t dbGetNumRows (CDataBrowser* browser) override { return menu->getNbEntries (); }
-	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 1; }
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override
+	int32_t dbGetNumRows (CDataBrowser& browser) override { return menu->getNbEntries (); }
+	int32_t dbGetNumColumns (CDataBrowser& browser) override { return 1; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser) override
 	{
-		return browser->getWidth ();
+		return browser.getWidth ();
 	}
 
-	void dbDrawHeader (CDrawContext&, const CRect&, int32_t, int32_t, CDataBrowser*) override {}
+	void dbDrawHeader (CDrawContext&, const CRect&, int32_t, int32_t, CDataBrowser&) override {}
 
 	void alterSelection (int32_t index, int32_t direction)
 	{
@@ -168,14 +174,15 @@ private:
 			if (item->isEnabled () && !item->isSeparator () && !item->isTitle ())
 			{
 				closeSubMenu ();
-				db->setSelectedRow (index, true);
+				if (auto dataBrowser = db.lock ())
+					dataBrowser->setSelectedRow (index, true);
 			}
 			else
 				alterSelection (index, direction);
 		}
 	}
 
-	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser& browser) override
 	{
 		if (event.type != EventType::KeyDown || event.character != 0 || !event.modifiers.empty ())
 			return;
@@ -184,13 +191,13 @@ private:
 			default: return;
 			case VirtualKey::Down:
 			{
-				alterSelection (browser->getSelectedRow (), 1);
+				alterSelection (browser.getSelectedRow (), 1);
 				event.consumed = true;
 				return;
 			}
 			case VirtualKey::Up:
 			{
-				alterSelection (browser->getSelectedRow (), -1);
+				alterSelection (browser.getSelectedRow (), -1);
 				event.consumed = true;
 				return;
 			}
@@ -204,7 +211,7 @@ private:
 			case VirtualKey::Enter:
 			{
 				if (clickCallback)
-					clickCallback (menu, browser->getSelectedRow ());
+					clickCallback (menu, browser.getSelectedRow ());
 				event.consumed = true;
 				return;
 			}
@@ -219,14 +226,17 @@ private:
 			}
 			case VirtualKey::Right:
 			{
-				auto row = db->getSelectedRow ();
-				if (auto item = menu->getEntry (row))
+				if (auto dataBrowser = db.lock ())
 				{
-					if (item->getSubmenu ())
+					auto row = dataBrowser->getSelectedRow ();
+					if (auto item = menu->getEntry (row))
 					{
-						auto r = db->getCellBounds ({row, 0});
-						openSubMenu (item, r);
-						event.consumed = true;
+						if (item->getSubmenu ())
+						{
+							auto r = dataBrowser->getCellBounds ({row, 0});
+							openSubMenu (item, r);
+							event.consumed = true;
+						}
 					}
 				}
 				return;
@@ -235,19 +245,19 @@ private:
 	}
 
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                  int32_t column, CDataBrowser* browser) override
+									  int32_t column, CDataBrowser& browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
-			if (browser->getSelectedRow () != row)
+			if (browser.getSelectedRow () != row)
 			{
 				closeSubMenu ();
 				if (item->isSeparator () || !item->isEnabled () || item->isTitle ())
-					browser->setSelectedRow (CDataBrowser::kNoSelection);
+					browser.setSelectedRow (CDataBrowser::kNoSelection);
 				else
 				{
-					browser->setSelectedRow (row, true);
-					auto r = browser->getCellBounds ({row, column});
+					browser.setSelectedRow (row, true);
+					auto r = browser.getCellBounds ({row, column});
 					openSubMenu (item, r);
 				}
 			}
@@ -256,18 +266,18 @@ private:
 	}
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                 int32_t column, CDataBrowser* browser) override
+									 int32_t column, CDataBrowser& browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
 			if (item->isTitle () || !item->isEnabled () || item->isSeparator ())
-				browser->setSelectedRow (CDataBrowser::kNoSelection);
+				browser.setSelectedRow (CDataBrowser::kNoSelection);
 		}
 		return kMouseEventHandled;
 	}
 
 	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                               int32_t column, CDataBrowser* browser) override
+								   int32_t column, CDataBrowser& browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
@@ -301,10 +311,10 @@ private:
 						if (view->isAttached ())
 							view->getParentView ()->removeSubview (view);
 					});
-				if (db)
+				if (auto dataBrowser = db.lock ())
 				{
-					if (auto frame = db->getFrame ())
-						frame->setFocusView (db);
+					if (auto frame = dataBrowser->getFrame ())
+						frame->setFocusView (dataBrowser);
 				}
 			}
 		}
@@ -315,13 +325,16 @@ private:
 		closeSubMenu ();
 		if (auto subMenu = item->getSubmenu ())
 		{
-			auto callback = [this] (auto m, int32_t index) {
-				if (index != ViewRemoved)
-					clickCallback (m, index);
-			};
-			db->translateToGlobal (cellRect, true);
-			subMenuView =
-			    setupGenericOptionMenu (callback, mainContainer, subMenu, theme, cellRect, this);
+			if (auto dataBrowser = db.lock ())
+			{
+				auto callback = [this] (auto m, int32_t index) {
+					if (index != ViewRemoved)
+						clickCallback (m, index);
+				};
+				dataBrowser->translateToGlobal (cellRect, true);
+				subMenuView = setupGenericOptionMenu (callback, mainContainer, subMenu, theme,
+													  cellRect, this);
+			}
 		}
 	}
 
@@ -366,7 +379,7 @@ private:
 	}
 
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override
+					 int32_t flags, CDataBrowser& browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
@@ -439,11 +452,11 @@ private:
 			checkmarkSize = theme.font->getSize () * 1.6;
 		return checkmarkSize;
 	}
-	CCoord getSubmenuIndicatorWidth () { return dbGetHeaderHeight (nullptr); }
+	CCoord getSubmenuIndicatorWidth () { return getRowHeight (); }
 
 	CViewContainer& mainContainer;
 	SharedPointer<COptionMenu> menu;
-	SharedPointer<CDataBrowser> db;
+	WeakPointer<CDataBrowser> db;
 	SharedPointer<CView> subMenuView;
 	DataSource* parentDataSource {nullptr};
 	ClickCallback clickCallback;
@@ -484,7 +497,7 @@ SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer&
 	}
 	else if (optionMenu->isPopupStyle ())
 	{
-		auto offset = optionMenu->getValue () * dataSource->dbGetRowHeight (nullptr);
+		auto offset = optionMenu->getValue () * dataSource->getRowHeight ();
 		viewRect.offset (0, -offset);
 	}
 	else

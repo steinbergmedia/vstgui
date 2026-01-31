@@ -115,32 +115,23 @@ void MinefieldViewController::onCellChanged (uint32_t row, uint32_t col)
 }
 
 //------------------------------------------------------------------------
-int32_t MinefieldViewController::dbGetNumRows (CDataBrowser* browser)
-{
-	return numRows;
-}
+int32_t MinefieldViewController::dbGetNumRows (CDataBrowser& browser) { return numRows; }
 
 //------------------------------------------------------------------------
-int32_t MinefieldViewController::dbGetNumColumns (CDataBrowser* browser)
-{
-	return numCols;
-}
+int32_t MinefieldViewController::dbGetNumColumns (CDataBrowser& browser) { return numCols; }
 
 //------------------------------------------------------------------------
-CCoord MinefieldViewController::dbGetRowHeight (CDataBrowser* browser)
-{
-	return cellSize.y;
-}
+CCoord MinefieldViewController::dbGetRowHeight (CDataBrowser& browser) { return cellSize.y; }
 
 //------------------------------------------------------------------------
-CCoord MinefieldViewController::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
+CCoord MinefieldViewController::dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser)
 {
 	return cellSize.x;
 }
 
 //------------------------------------------------------------------------
 bool MinefieldViewController::dbGetLineWidthAndColor (CCoord& width, CColor& color,
-                                                      CDataBrowser* browser)
+													  CDataBrowser& browser)
 {
 	width = 1;
 	color = kBlackCColor;
@@ -234,7 +225,7 @@ void MinefieldViewController::drawCellNeighbours (const CRect& r, CDrawContext& 
 
 //------------------------------------------------------------------------
 void MinefieldViewController::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
-										  int32_t column, int32_t flags, CDataBrowser* browser)
+										  int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	if (row < 0 || column < 0 || !model)
 		return;
@@ -281,8 +272,8 @@ void MinefieldViewController::dbDrawCell (CDrawContext& context, const CRect& si
 
 //------------------------------------------------------------------------
 CMouseEventResult MinefieldViewController::dbOnMouseDown (const CPoint& where,
-                                                          const CButtonState& buttons, int32_t row,
-                                                          int32_t column, CDataBrowser* browser)
+														  const CButtonState& buttons, int32_t row,
+														  int32_t column, CDataBrowser& browser)
 {
 	ignoreMouseUp = false;
 	if (!mouseMode && buttons.isLeftButton ())
@@ -304,16 +295,16 @@ CMouseEventResult MinefieldViewController::dbOnMouseDown (const CPoint& where,
 
 //------------------------------------------------------------------------
 CMouseEventResult MinefieldViewController::dbOnMouseMoved (const CPoint& where,
-                                                           const CButtonState& buttons, int32_t row,
-                                                           int32_t column, CDataBrowser* browser)
+														   const CButtonState& buttons, int32_t row,
+														   int32_t column, CDataBrowser& browser)
 {
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
 CMouseEventResult MinefieldViewController::dbOnMouseUp (const CPoint& where,
-                                                        const CButtonState& buttons, int32_t row,
-                                                        int32_t column, CDataBrowser* browser)
+														const CButtonState& buttons, int32_t row,
+														int32_t column, CDataBrowser& browser)
 {
 	mouseDownTimer = nullptr;
 	if (ignoreMouseUp || !model || row < 0 || column < 0 || model->isTrapped () || model->isDone ())

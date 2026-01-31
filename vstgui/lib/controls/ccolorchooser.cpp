@@ -136,7 +136,9 @@ public:
 	// we accept strings which look like : '#ff3355' (rgb) and '#ff3355bb' (rgba)
 	static bool dragContainerHasColor (const SharedPointer<IDataPackage>& drag, CColor* color)
 	{
-		for (auto item : drag.get ())
+		if (!drag)
+			return false;
+		for (auto item : *drag.get ())
 		{
 			if (item.type != IDataPackage::kText)
 				continue;

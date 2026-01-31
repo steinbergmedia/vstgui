@@ -48,7 +48,7 @@ struct DataPackageIterator
 		const void* data {nullptr};
 	};
 
-	DataPackageIterator (IDataPackage* pkg, uint32_t index = 0u) : pkg (pkg), index (index) {}
+	DataPackageIterator (const IDataPackage& pkg, uint32_t index = 0u) : pkg (pkg), index (index) {}
 
 	DataPackageIterator& operator++ ()
 	{
@@ -71,7 +71,7 @@ struct DataPackageIterator
 
 	bool operator!= (const DataPackageIterator& other) const
 	{
-		return other.pkg != pkg || other.index != index;
+		return &other.pkg != &pkg || other.index != index;
 	}
 
 	uint32_t getIndex () const { return index; }
@@ -79,21 +79,21 @@ struct DataPackageIterator
 private:
 	void gatherItem () const
 	{
-		if (item.data == nullptr && pkg && index < pkg->getCount ())
-			item.dataSize = pkg->getData (index, item.data, item.type);
+		if (item.data == nullptr && index < pkg.getCount ())
+			item.dataSize = pkg.getData (index, item.data, item.type);
 	}
-	IDataPackage* pkg {nullptr};
+	const IDataPackage& pkg;
 	uint32_t index {0u};
 	mutable Item item;
 };
 
 //-----------------------------------------------------------------------------
-inline DataPackageIterator begin (IDataPackage* pkg) { return DataPackageIterator (pkg); }
+inline DataPackageIterator begin (const IDataPackage& pkg) { return DataPackageIterator (pkg); }
 
 //-----------------------------------------------------------------------------
-inline DataPackageIterator end (IDataPackage* pkg)
+inline DataPackageIterator end (const IDataPackage& pkg)
 {
-	return DataPackageIterator (pkg, pkg->getCount ());
+	return DataPackageIterator (pkg, pkg.getCount ());
 }
 
 } // VSTGUI

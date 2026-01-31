@@ -45,58 +45,58 @@ public:
 
 protected:
 	void drawRowBackground (CDrawContext& context, const CRect& size, int32_t row, int32_t flags,
-							CDataBrowser* browser) const;
+							CDataBrowser& browser) const;
 	void drawRowString (CDrawContext& context, const CRect& size, int32_t row, int32_t flags,
-						CDataBrowser* browser) const;
+						CDataBrowser& browser) const;
 
-	int32_t dbGetNumRows (CDataBrowser* browser) override;
-	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 1; }
+	int32_t dbGetNumRows (CDataBrowser& browser) override;
+	int32_t dbGetNumColumns (CDataBrowser& browser) override { return 1; }
 	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth,
-	                             CDataBrowser* browser) override
+								 CDataBrowser& browser) override
 	{
 		return false;
 	}
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser) override;
 	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width,
-	                              CDataBrowser* browser) override
+								  CDataBrowser& browser) override
 	{
 	}
-	CCoord dbGetRowHeight (CDataBrowser* browser) override;
-	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) override;
+	CCoord dbGetRowHeight (CDataBrowser& browser) override;
+	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser& browser) override;
 
 	void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column, int32_t flags,
-					   CDataBrowser* browser) override;
+					   CDataBrowser& browser) override;
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                 int32_t column, CDataBrowser* browser) override;
+									 int32_t column, CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                  int32_t column, CDataBrowser* browser) override
+									  int32_t column, CDataBrowser& browser) override
 	{
 		return kMouseEventNotHandled;
 	}
 	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                               int32_t column, CDataBrowser* browser) override
+								   int32_t column, CDataBrowser& browser) override
 	{
 		return kMouseEventNotHandled;
 	}
 
-	void dbSelectionChanged (CDataBrowser* browser) override;
+	void dbSelectionChanged (CDataBrowser& browser) override;
 
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText,
-	                        CDataBrowser* browser) override
+							CDataBrowser& browser) override
 	{
 	}
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl,
-	                          CDataBrowser* browser) override
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& textEditControl,
+							  CDataBrowser& browser) override
 	{
 	}
 
-	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override;
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser& browser) override;
 
-	void dbAttached (CDataBrowser* browser) override;
-	void dbRemoved (CDataBrowser* browser) override;
+	void dbAttached (CDataBrowser& browser) override;
+	void dbRemoved (CDataBrowser& browser) override;
 
 	const StringVector* stringList;
 	int32_t rowHeight;
@@ -108,7 +108,7 @@ protected:
 	CPoint textInset;
 	CHoriTxtAlign textAlignment;
 	SharedPointer<CFontDesc> drawFont;
-	SharedPointer<CDataBrowser> dataBrowser;
+	WeakPointer<CDataBrowser> dbPtr;
 	GenericStringListDataBrowserSourceSelectionChanged* delegate;
 
 	SharedPointer<CVSTGUITimer> timer;

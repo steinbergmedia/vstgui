@@ -50,6 +50,7 @@ public:
 	
 	virtual bool add ()
 	{
+		auto dataBrowser = dbPtr.lock ();
 		if (dataBrowser && !actionPerformer.expired ())
 		{
 			std::string newName (filterString.empty () ? "New" : filterString.data ());
@@ -60,7 +61,7 @@ public:
 				if (row != -1)
 				{
 					dbOnMouseDown (CPoint (0, 0), CButtonState (kLButton | kDoubleClick), row, 0,
-								   dataBrowser.get ());
+								   *dataBrowser.get ());
 					return true;
 				}
 			}
@@ -70,13 +71,14 @@ public:
 
 	virtual bool remove ()
 	{
+		auto dataBrowser = dbPtr.lock ();
 		if (dataBrowser && !actionPerformer.expired ())
 		{
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
 				removeItem (names.at (static_cast<uint32_t> (selectedRow)).data ());
-				dbSelectionChanged (dataBrowser.get ());
+				dbSelectionChanged (*dataBrowser.get ());
 				dataBrowser->setSelectedRow (selectedRow);
 				return true;
 			}
@@ -86,6 +88,7 @@ public:
 
 	virtual void setFilter (const UTF8String& filter)
 	{
+		auto dataBrowser = dbPtr.lock ();
 		if (filterString != filter)
 		{
 			filterString = filter;
@@ -101,17 +104,20 @@ public:
 
 	virtual int32_t selectName (UTF8StringPtr name)
 	{
-		int32_t index = 0;
-		for (auto& it : names)
+		if (auto dataBrowser = dbPtr.lock ())
 		{
-			if (it == name)
+			int32_t index = 0;
+			for (auto& it : names)
 			{
-				dataBrowser->setSelectedRow (index, true);
-				if (delegate)
-					delegate->dbSelectionChanged (index, this);
-				return index;
+				if (it == name)
+				{
+					dataBrowser->setSelectedRow (index, true);
+					if (delegate)
+						delegate->dbSelectionChanged (index, this);
+					return index;
+				}
+				++index;
 			}
-			++index;
 		}
 		return -1;
 	}
@@ -124,8 +130,8 @@ protected:
 
 	virtual void update ()
 	{
-		if (textEditControl)
-			textEditControl->looseFocus ();
+		if (auto te = textEditControl.lock ())
+			te->looseFocus ();
 		names.clear ();
 		std::list<const std::string*> tmpNames;
 		getNames (tmpNames);
@@ -147,13 +153,13 @@ protected:
 			names.emplace_back (UTF8String (*name));
 		}
 		bool vsbIsVisible = false;
-		if (dataBrowser)
+		if (auto dataBrowser = dbPtr.lock ())
 		{
 			if (auto vsb = dataBrowser->getVerticalScrollbar ())
 				vsbIsVisible = vsb->isVisible ();
 		}
 		setStringList (&names);
-		if (dataBrowser)
+		if (auto dataBrowser = dbPtr.lock ())
 		{
 			if (auto vsb = dataBrowser->getVerticalScrollbar ())
 			{
@@ -167,6 +173,7 @@ protected:
 
 	void onUIDescriptionUpdate ()
 	{
+		auto dataBrowser = dbPtr.lock ();
 		int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow () : CDataBrowser::kNoSelection;
 		std::string selectedName;
 		if (selectedRow != CDataBrowser::kNoSelection)
@@ -185,7 +192,7 @@ protected:
 			if (attributes)
 			{
 				attributes->setAttribute ("FilterString", filterString.getString ());
-				if (dataBrowser)
+				if (auto dataBrowser = dbPtr.lock ())
 				{
 					int32_t selectedRow = dataBrowser->getSelectedRow ();
 					attributes->setIntegerAttribute ("SelectedRow", selectedRow);
@@ -205,7 +212,7 @@ protected:
 				const std::string* str = attributes->getAttributeValue ("FilterString");
 				if (str)
 					setFilter (str->data ());
-				if (dataBrowser)
+				if (auto dataBrowser = dbPtr.lock ())
 				{
 					int32_t selectedRow;
 					if (attributes->getIntegerAttribute("SelectedRow", selectedRow))
@@ -215,7 +222,7 @@ protected:
 		}
 	}
 
-	void dbAttached (CDataBrowser* browser) override
+	void dbAttached (CDataBrowser& browser) override
 	{
 		GenericStringListDataBrowserSource::dbAttached (browser);
 		update ();
@@ -224,7 +231,7 @@ protected:
 			searchField->setText (filterString);
 	}
 
-	void dbRemoved (CDataBrowser* browser) override
+	void dbRemoved (CDataBrowser& browser) override
 	{
 		saveDefaults ();
 		GenericStringListDataBrowserSource::dbRemoved (browser);
@@ -255,18 +262,21 @@ protected:
 		return true;
 	}
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+									 int32_t column, CDataBrowser& browser) override
 	{
 		if (buttons.isLeftButton () && buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (CDataBrowser::Cell (row, column), names.at (static_cast<uint32_t> (row)).data ());
+			browser.beginTextEdit (CDataBrowser::Cell (row, column),
+								   names.at (static_cast<uint32_t> (row)).data ());
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	void dbCellTextChanged (int32_t _row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override
+	void dbCellTextChanged (int32_t _row, int32_t column, UTF8StringPtr newText,
+							CDataBrowser& browser) override
 	{
-		textEditControl = nullptr;
+		textEditControl.reset ();
 		if (_row < 0 || _row >= static_cast<int32_t> (names.size ()))
 			return;
 		auto row = static_cast<size_t> (_row);
@@ -283,19 +293,20 @@ protected:
 		}
 	}
 
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& control,
+							  CDataBrowser& browser) override
 	{
-		textEditControl = shared (control);
-		textEditControl->setBackColor (kWhiteCColor);
-		textEditControl->setFontColor (fontColor);
-		textEditControl->setFont (drawFont);
-		textEditControl->setHoriAlign (textAlignment);
-		textEditControl->setTextInset (textInset);
+		textEditControl = control.weakFromThis ();
+		control.setBackColor (kWhiteCColor);
+		control.setFontColor (fontColor);
+		control.setFont (drawFont);
+		control.setHoriAlign (textAlignment);
+		control.setTextInset (textInset);
 	}
 
 	SharedPointer<UIDescription> description;
 	SharedPointer<CSearchTextEdit> searchField;
-	SharedPointer<CTextEdit> textEditControl;
+	WeakPointer<CTextEdit> textEditControl;
 	WeakPointer<IActionPerformer> actionPerformer;
 
 	StringVector names;

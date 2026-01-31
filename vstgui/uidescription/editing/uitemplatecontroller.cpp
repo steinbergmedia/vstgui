@@ -34,18 +34,18 @@ public:
 	UINavigationDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate)
 	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; }
 
-	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser& browser) override
 	{
 		if (event.type == EventType::KeyDown &&
-			browser->getFrame ()->getFocusView ().cast<CTextEdit> () == nullptr)
+			browser.getFrame ()->getFocusView ().cast<CTextEdit> () == nullptr)
 		{
 			if (event.virt == VirtualKey::Left)
 			{
-				if (auto parent = browser->getParentView ()->asViewContainer ())
+				if (auto parent = browser.getParentView ()->asViewContainer ())
 				{
-					if (parent->advanceNextFocusView (shared (browser), true))
+					if (parent->advanceNextFocusView (shared (&browser), true))
 					{
-						browser->unselectAll ();
+						browser.unselectAll ();
 						event.consumed = true;
 						return;
 					}
@@ -53,15 +53,15 @@ public:
 			}
 			else if (event.virt == VirtualKey::Right)
 			{
-				if (auto parent = browser->getParentView ()->asViewContainer ())
+				if (auto parent = browser.getParentView ()->asViewContainer ())
 				{
-					if (parent->advanceNextFocusView (shared (browser), false))
+					if (parent->advanceNextFocusView (shared (&browser), false))
 					{
-						if (auto focusView = browser->getFrame ()->getFocusView ())
+						if (auto focusView = browser.getFrame ()->getFocusView ())
 						{
 							auto focusBrowser = focusView.cast<CDataBrowser> ();
 							parent = focusView->getParentView ()->asViewContainer ();
-							while (!focusBrowser && parent != browser->getFrame ())
+							while (!focusBrowser && parent != browser.getFrame ())
 							{
 								if (parent->getParentView () == nullptr)
 									break;
@@ -84,7 +84,7 @@ public:
 	}
 	virtual const UTF8String& getHeaderTitle () const { return headerTitle; }
 	void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column, int32_t flags,
-					   CDataBrowser* browser) override
+					   CDataBrowser& browser) override
 	{
 		context.setDrawMode (kAliasing);
 		if (!headerGradient)
@@ -155,12 +155,15 @@ public:
 						   WeakPointer<IActionPerformer> actionPerformer,
 						   const std::string* templateName);
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) override;
-	void dbAttached (CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+									 int32_t column, CDataBrowser& browser) override;
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText,
+							CDataBrowser& browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& textEditControl,
+							  CDataBrowser& browser) override;
+	void dbAttached (CDataBrowser& browser) override;
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
 
 protected:
 	SharedPointer<UIDescription> description;
@@ -217,22 +220,22 @@ protected:
 	}
 
 	CCoord calculateSubViewWidth (const SharedPointer<CViewContainer>& view) const;
-	void dbSelectionChanged (CDataBrowser* browser) override;
+	void dbSelectionChanged (CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                 int32_t column, CDataBrowser* browser) override;
+									 int32_t column, CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                  int32_t column, CDataBrowser* browser) override;
-	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser) override;
+									  int32_t column, CDataBrowser& browser) override;
+	void dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser& browser) override;
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
 	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where,
-	                                 IDataPackage* drag, CDataBrowser* browser) override;
+									 IDataPackage& drag, CDataBrowser& browser) override;
 	DragOperation dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where,
-	                                  IDataPackage* drag, CDataBrowser* browser) override;
-	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag,
-	                       CDataBrowser* browser) override;
-	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag,
-	                     CDataBrowser* browser) override;
+									  IDataPackage& drag, CDataBrowser& browser) override;
+	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage& drag,
+						   CDataBrowser& browser) override;
+	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage& drag,
+						 CDataBrowser& browser) override;
 
 	// IUIUndoManagerListener
 	void onUndoManagerChange () override;
@@ -645,6 +648,10 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 	if (!index)
 		return false;
 
+	auto dataBrowser = dbPtr.lock ();
+	if (!dataBrowser)
+		return false;
+
 	selectedView = newView;
 	dataBrowser->selectRow (*index);
 	if (makeRowVisible)
@@ -663,8 +670,8 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 		CRect r (dataBrowser->getViewSize ());
 		r.offset (r.getWidth (), 0);
 		auto newDataBrowser = makeOwned<CDataBrowser> (r, dataSource.get ());
-		UITemplateController::setupDataBrowser (dataBrowser, newDataBrowser);
-		auto parentView = dataBrowser->getParentView ();
+		UITemplateController::setupDataBrowser (newDataBrowser, newDataBrowser);
+		auto parentView = newDataBrowser->getParentView ();
 		parentView->addSubview (newDataBrowser);
 		next = dataSource;
 		dataSource->forget ();
@@ -680,13 +687,13 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
+void UIViewListDataSource::dbSelectionChanged (CDataBrowser& browser)
 {
-	auto subview = getSubview (browser->getSelectedRow ());
+	auto subview = getSubview (browser.getSelectedRow ());
 	if (subview == selectedView || inUpdate)
 		return;
 	setSelectedView (subview);
-	GenericStringListDataBrowserSource::dbSelectionChanged (dataBrowser.get ());
+	GenericStringListDataBrowserSource::dbSelectionChanged (browser);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -697,7 +704,7 @@ void UIViewListDataSource::remove ()
 		next->remove ();
 		next = nullptr;
 	}
-	if (dataBrowser)
+	if (auto dataBrowser = dbPtr.lock ())
 	{
 		auto parentView = dataBrowser->getParentView ();
 		auto scrollView = parentView->getParentView ().cast<CScrollView> ();
@@ -712,7 +719,9 @@ void UIViewListDataSource::remove ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where,
+													   const CButtonState& buttons, int32_t row,
+													   int32_t column, CDataBrowser& browser)
 {
 	if (buttons.isLeftButton ())
 	{
@@ -739,17 +748,17 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, cons
 
 //------------------------------------------------------------------------
 CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
-                                                        const CButtonState& buttons, int32_t row,
-                                                        int32_t column, CDataBrowser* browser)
+														const CButtonState& buttons, int32_t row,
+														int32_t column, CDataBrowser& browser)
 {
 	if (row >= 0 && buttons.isLeftButton () && dragStartMouseObserver.shouldStartDrag (where))
 	{
-		row = browser->getSelectedRow ();
+		row = browser.getSelectedRow ();
 		dragRow = row;
 
-		auto cellBounds = browser->getCellBounds ({row, column});
+		auto cellBounds = browser.getCellBounds ({row, column});
 		auto offscreen = COffscreenContext::create (cellBounds.getSize (),
-		                                            browser->getFrame ()->getScaleFactor ());
+													browser.getFrame ()->getScaleFactor ());
 		auto offscreenSize = cellBounds;
 		offscreenSize.originize ();
 		offscreen->beginDraw ();
@@ -767,7 +776,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
 			Self->dragDestinationRow = -1;
 		};
 
-		browser->doDrag (dd, callbackFunc);
+		browser.doDrag (dd, callbackFunc);
 		return kMouseMoveEventHandledButDontNeedMoreEvents;
 	}
 	return kMouseEventHandled;
@@ -775,13 +784,13 @@ CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
 
 //----------------------------------------------------------------------------------------------------
 DragOperation UIViewListDataSource::dbOnDragEnterCell (int32_t row, int32_t column,
-                                                       const CPoint& where, IDataPackage* drag,
-                                                       CDataBrowser* browser)
+													   const CPoint& where, IDataPackage& drag,
+													   CDataBrowser& browser)
 {
 	if (dragRow >= 0)
 	{
 		if (dragDestinationRow >= 0)
-			browser->invalidateRow (dragDestinationRow);
+			browser.invalidateRow (dragDestinationRow);
 		if (dragRow == row)
 		{
 			dragDestinationRow = -1;
@@ -789,7 +798,7 @@ DragOperation UIViewListDataSource::dbOnDragEnterCell (int32_t row, int32_t colu
 		else
 		{
 			dragDestinationRow = row;
-			browser->invalidateRow (dragDestinationRow);
+			browser.invalidateRow (dragDestinationRow);
 		}
 		return DragOperation::Move;
 	}
@@ -798,8 +807,8 @@ DragOperation UIViewListDataSource::dbOnDragEnterCell (int32_t row, int32_t colu
 
 //----------------------------------------------------------------------------------------------------
 DragOperation UIViewListDataSource::dbOnDragMoveInCell (int32_t row, int32_t column,
-                                                        const CPoint& where, IDataPackage* drag,
-                                                        CDataBrowser* browser)
+														const CPoint& where, IDataPackage& drag,
+														CDataBrowser& browser)
 {
 	if (dragRow >= 0)
 		return DragOperation::Move;
@@ -807,19 +816,19 @@ DragOperation UIViewListDataSource::dbOnDragMoveInCell (int32_t row, int32_t col
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewListDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag,
-                                             CDataBrowser* browser)
+void UIViewListDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage& drag,
+											 CDataBrowser& browser)
 {
 	if (dragDestinationRow >= 0)
 	{
-		browser->invalidateRow (dragDestinationRow);
+		browser.invalidateRow (dragDestinationRow);
 		dragDestinationRow = -1;
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIViewListDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where,
-                                           IDataPackage* drag, CDataBrowser* browser)
+										   IDataPackage& drag, CDataBrowser& browser)
 {
 	bool result = false;
 	if (row != dragRow && dragDestinationRow != -1 && row != -1)
@@ -830,7 +839,7 @@ bool UIViewListDataSource::dbOnDropInCell (int32_t row, int32_t column, const CP
 		result = true;
 	}
 	dragRow = dragDestinationRow = -1;
-	browser->invalidateRow (row);
+	browser.invalidateRow (row);
 	return result;
 }
 
@@ -840,7 +849,7 @@ void UIViewListDataSource::onUndoManagerChange ()
 	update (view);
 	if (selectedView)
 	{
-		if (dataBrowser)
+		if (auto dataBrowser = dbPtr.lock ())
 		{
 			if (auto index = indexOf (subviews.begin (), subviews.end (), selectedView))
 			{
@@ -858,13 +867,13 @@ void UIViewListDataSource::onUndoManagerChange ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewListDataSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser* browser)
+void UIViewListDataSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser& browser)
 {
 	if (event.type == EventType::KeyDown)
 	{
 		if (event.virt == VirtualKey::Return)
 		{
-			int32_t row = browser->getSelectedRow ();
+			int32_t row = browser.getSelectedRow ();
 			auto subview = getSubview (row);
 			if (subview)
 			{
@@ -879,7 +888,7 @@ void UIViewListDataSource::dbOnKeyboardEvent (KeyboardEvent& event, CDataBrowser
 
 //----------------------------------------------------------------------------------------------------
 void UIViewListDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
-									   int32_t column, int32_t flags, CDataBrowser* browser)
+									   int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	drawRowBackground (context, size, row, flags, browser);
 	auto subview = getSubview (row);
@@ -917,13 +926,16 @@ UITemplatesDataSource::UITemplatesDataSource (
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where,
+														const CButtonState& buttons, int32_t row,
+														int32_t column, CDataBrowser& browser)
 {
 	if (buttons.isLeftButton ())
 	{
 		if (buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (static_cast<uint32_t> (row)).data ());
+			browser.beginTextEdit (CDataBrowser::Cell (row, column),
+								   getStringList ()->at (static_cast<uint32_t> (row)).data ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 		delegate->dbSelectionChanged (row, this);
@@ -933,7 +945,8 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
+void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText,
+											   CDataBrowser& browser)
 {
 	auto oldName = getStringList ()->at (static_cast<uint32_t> (row));
 	if (oldName != newText)
@@ -951,18 +964,19 @@ void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplatesDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser)
+void UITemplatesDataSource::dbCellSetupTextEdit (int32_t row, int32_t column,
+												 CTextEdit& textEditControl, CDataBrowser& browser)
 {
-	textEditControl->setBackColor (kWhiteCColor);
-	textEditControl->setFontColor (fontColor);
-	textEditControl->setFont (drawFont);
-	textEditControl->setHoriAlign (kLeftText);
-	textEditControl->setTextInset (textInset);
+	textEditControl.setBackColor (kWhiteCColor);
+	textEditControl.setFontColor (fontColor);
+	textEditControl.setFont (drawFont);
+	textEditControl.setHoriAlign (kLeftText);
+	textEditControl.setTextInset (textInset);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
-										int32_t column, int32_t flags, CDataBrowser* browser)
+										int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	drawRowBackground (context, size, row, flags, browser);
 	drawTriangle (context, size);
@@ -971,14 +985,14 @@ void UITemplatesDataSource::dbDrawCell (CDrawContext& context, const CRect& size
 
 
 //----------------------------------------------------------------------------------------------------
-void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
+void UITemplatesDataSource::dbAttached (CDataBrowser& browser)
 {
 	UINavigationDataSource::dbAttached (browser);
 	if (getStringList ())
 	{
 		if (firstSelectedTemplateName.empty ())
 		{
-			browser->setSelectedRow (0, true);
+			browser.setSelectedRow (0, true);
 		}
 		else
 		{
@@ -987,7 +1001,7 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 			{
 				if (name == firstSelectedTemplateName)
 				{
-					browser->setSelectedRow (static_cast<int32_t> (index), true);
+					browser.setSelectedRow (static_cast<int32_t> (index), true);
 					break;
 				}
 				index++;

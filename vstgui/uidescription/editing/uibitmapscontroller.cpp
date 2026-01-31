@@ -212,18 +212,24 @@ protected:
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
-	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
-	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
-	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& control,
+							  CDataBrowser& browser) override;
+	void dbOnDragEnterBrowser (IDataPackage& drag, CDataBrowser& browser) override;
+	void dbOnDragExitBrowser (IDataPackage& drag, CDataBrowser& browser) override;
+	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where,
+									 IDataPackage& drag, CDataBrowser& browser) override;
 	DragOperation dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where,
-	                                  IDataPackage* drag, CDataBrowser* browser) override;
-	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
-	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
+									  IDataPackage& drag, CDataBrowser& browser) override;
+	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage& drag,
+						   CDataBrowser& browser) override;
+	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage& drag,
+						 CDataBrowser& browser) override;
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+									 int32_t column, CDataBrowser& browser) override;
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
+									  int32_t column, CDataBrowser& browser) override;
 
 	SharedPointer<CColorChooser> colorChooser;
 	DragStartMouseObserver dragStartMouseObserver;
@@ -243,7 +249,7 @@ void UIBitmapsDataSource::onUIDescBitmapChanged (UIDescription& desc) { onUIDesc
 
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int32_t row,
-									  int32_t column, int32_t flags, CDataBrowser* browser)
+									  int32_t column, int32_t flags, CDataBrowser& browser)
 {
 	auto drawWidth = size.getHeight ();
 	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
@@ -267,21 +273,24 @@ void UIBitmapsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, 
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser)
+void UIBitmapsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& control,
+											   CDataBrowser& browser)
 {
 	UIBaseDataSource::dbCellSetupTextEdit (row, column, control, browser);
-	CRect r (control->getViewSize ());
+	CRect r (control.getViewSize ());
 	auto drawWidth = r.getHeight ();
 	r.right -= drawWidth;
-	control->setViewSize (r);
+	control.setViewSize (r);
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where,
+													  const CButtonState& buttons, int32_t row,
+													  int32_t column, CDataBrowser& browser)
 {
 	if (buttons.isDoubleClick () && row >= 0 && row < static_cast<int32_t> (names.size ()))
 	{
-		auto r = browser->getCellBounds ({row, column});
+		auto r = browser.getCellBounds ({row, column});
 		auto drawWidth = r.getHeight ();
 		r.left = r.right - drawWidth;
 		if (r.pointInside (where))
@@ -296,7 +305,9 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where,
+													   const CButtonState& buttons, int32_t row,
+													   int32_t column, CDataBrowser& browser)
 {
 	if (buttons.isLeftButton () && dragStartMouseObserver.shouldStartDrag (where))
 	{
@@ -316,7 +327,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, cons
 					auto dropSource = CDropSource::create (stream.getBuffer (),
 					                                       static_cast<uint32_t> (stream.tell ()),
 					                                       CDropSource::kText);
-					browser->doDrag (DragDescription (dropSource, {}, bitmap));
+					browser.doDrag (DragDescription (dropSource, {}, bitmap));
 					return kMouseMoveEventHandledButDontNeedMoreEvents;
 				}
 			}
@@ -326,7 +337,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, cons
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser)
+void UIBitmapsDataSource::dbOnDragEnterBrowser (IDataPackage& drag, CDataBrowser& browser)
 {
 	for (const auto& item : drag)
 	{
@@ -346,35 +357,41 @@ void UIBitmapsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser
 		}
 	}
 	if (dragContainsBitmaps)
-		browser->getFrame ()->setCursor (kCursorCopy);
+		browser.getFrame ()->setCursor (kCursorCopy);
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser)
+void UIBitmapsDataSource::dbOnDragExitBrowser (IDataPackage& drag, CDataBrowser& browser)
 {
 	if (dragContainsBitmaps)
-		browser->getFrame ()->setCursor (kCursorNotAllowed);
+		browser.getFrame ()->setCursor (kCursorNotAllowed);
 }
 
 //----------------------------------------------------------------------------------------------------
-DragOperation UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+DragOperation UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column,
+													  const CPoint& where, IDataPackage& drag,
+													  CDataBrowser& browser)
 {
 	return dragContainsBitmaps ? DragOperation::Copy : DragOperation::None;
 }
 
 //----------------------------------------------------------------------------------------------------
-DragOperation UIBitmapsDataSource::dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+DragOperation UIBitmapsDataSource::dbOnDragMoveInCell (int32_t row, int32_t column,
+													   const CPoint& where, IDataPackage& drag,
+													   CDataBrowser& browser)
 {
 	return dragContainsBitmaps ? DragOperation::Copy : DragOperation::None;
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser)
+void UIBitmapsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage& drag,
+											CDataBrowser& browser)
 {
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where,
+										  IDataPackage& drag, CDataBrowser& browser)
 {
 	if (!dragContainsBitmaps)
 		return false;
@@ -463,6 +480,7 @@ bool UIBitmapsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPt
 //----------------------------------------------------------------------------------------------------
 SharedPointer<CBitmap> UIBitmapsDataSource::getSelectedBitmap ()
 {
+	auto dataBrowser = dbPtr.lock ();
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 	{
@@ -474,6 +492,7 @@ SharedPointer<CBitmap> UIBitmapsDataSource::getSelectedBitmap ()
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 {
+	auto dataBrowser = dbPtr.lock ();
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return names.at (static_cast<uint32_t> (selectedRow)).data ();
@@ -521,6 +540,9 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::add ()
 {
+	auto dataBrowser = dbPtr.lock ();
+	if (!dataBrowser)
+		return false;
 	bool result = false;
 	auto fs = CNewFileSelector::create (dataBrowser->getFrame ());
 	if (fs)
@@ -546,7 +568,7 @@ bool UIBitmapsDataSource::add ()
 							if (row != -1)
 								dbOnMouseDown (CPoint (0, 0),
 											   CButtonState (kLButton | kDoubleClick), row, 0,
-											   dataBrowser.get ());
+											   *dataBrowser.get ());
 							result = true;
 						}
 					}

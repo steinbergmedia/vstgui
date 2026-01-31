@@ -31,25 +31,25 @@ public:
 	bool isVisible () const;
 
 private:
-	int32_t dbGetNumRows (CDataBrowser* browser) override;
-	int32_t dbGetNumColumns (CDataBrowser* browser) override;
-	CCoord dbGetRowHeight (CDataBrowser* browser) override;
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
+	int32_t dbGetNumRows (CDataBrowser& browser) override;
+	int32_t dbGetNumColumns (CDataBrowser& browser) override;
+	CCoord dbGetRowHeight (CDataBrowser& browser) override;
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser& browser) override;
 	void dbDrawHeader (CDrawContext& context, const CRect& size, int32_t column, int32_t flags,
-					   CDataBrowser* browser) override;
+					   CDataBrowser& browser) override;
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
-					 int32_t flags, CDataBrowser* browser) override;
+					 int32_t flags, CDataBrowser& browser) override;
 	SharedPointer<CView> createView (const UIAttributes& attributes,
 									 const IUIDescription& description) override;
-	void dbAttached (CDataBrowser* browser) override;
-	void dbRemoved (CDataBrowser* browser) override;
-	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) override;
+	void dbAttached (CDataBrowser& browser) override;
+	void dbRemoved (CDataBrowser& browser) override;
+	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser& browser) override;
 
 	static constexpr const size_t NumCols = 4;
 
 	SharedPointer<CFontDesc> font;
 	CColor fontColor {kBlackCColor};
-	CDataBrowser* dataBrowser {nullptr};
+	WeakPointer<CDataBrowser> dbPtr;
 	std::shared_ptr<HighScoreList> list;
 	std::array<CCoord, NumCols> columnWidths;
 };

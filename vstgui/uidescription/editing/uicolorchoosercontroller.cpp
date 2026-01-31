@@ -21,7 +21,7 @@ public:
 	UIColorChooserDropTarget (const SharedPointer<UIColor>& color) : color (color) {}
 	DragOperation onDragEnter (DragEventData eventData) override
 	{
-		for (const auto& item : eventData.drag.get ())
+		for (const auto& item : *eventData.drag.get ())
 		{
 			if (item.type != IDataPackage::kText)
 				continue;
