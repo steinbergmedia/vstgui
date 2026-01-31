@@ -46,7 +46,7 @@ protected:
 	void drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
 							 const std::vector<CRect>& rects) override;
 	void viewContainerTransformChanged (CViewContainer& container) override;
-	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
+	void onScaleFactorChanged (CFrame& frame, double newScaleFactor) override;
 	void updateLayerSize ();
 	CGraphicsTransform getDrawTransform () const;
 	void registerListeners (bool state);

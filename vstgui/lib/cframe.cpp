@@ -1674,7 +1674,7 @@ void CFrame::platformScaleFactorChanged (double newScaleFactor)
 void CFrame::dispatchNewScaleFactor (double newScaleFactor)
 {
 	pImpl->scaleFactorChangedListenerList.forEach ([&] (IScaleFactorChangedListener* listener) {
-		listener->onScaleFactorChanged (this, newScaleFactor);
+		listener->onScaleFactorChanged (*this, newScaleFactor);
 	});
 }
 

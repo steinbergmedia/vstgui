@@ -81,7 +81,7 @@ private:
 	void onGameLost ();
 	void onGameWon ();
 	void onTimer ();
-	void viewSizeChanged (CView* view, const CRect& oldSize) override;
+	void viewSizeChanged (CView& view, const CRect& oldSize) override;
 	void updateCellSize (CPoint newSize);
 
 private:

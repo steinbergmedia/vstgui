@@ -245,7 +245,7 @@ public:
 		}
 	}
 
-	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }
+	void viewWillDelete (CView& view) override { removeControl (dynamic_cast<CControl*> (&view)); }
 
 	const ControlList& getControls () const { return controls; }
 
@@ -838,8 +838,8 @@ struct WindowController::EditImpl : WindowController::Impl
 			                CompressedUIDescription::kForceWriteCompressedDesc;
 
 			// filter out attributes we will always override with the values from the parameters
-			auto filter = [] (CView* view, const std::string& name) -> bool {
-				if (auto control = dynamic_cast<CControl*> (view))
+			auto filter = [] (CView& view, const std::string& name) -> bool {
+				if (auto control = dynamic_cast<CControl*> (&view))
 				{
 					if (control->getTag () >= 0)
 					{

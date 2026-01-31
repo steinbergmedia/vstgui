@@ -407,11 +407,11 @@ void MinefieldViewController::onTimer ()
 }
 
 //------------------------------------------------------------------------
-void MinefieldViewController::viewSizeChanged (CView* view, const CRect& oldSize)
+void MinefieldViewController::viewSizeChanged (CView& view, const CRect& oldSize)
 {
 	if (!dataBrowser)
 		return;
-	auto newSize = view->getViewSize ().getSize ();
+	auto newSize = view.getViewSize ().getSize ();
 	updateCellSize (newSize);
 }
 

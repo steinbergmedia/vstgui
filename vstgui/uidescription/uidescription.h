@@ -40,7 +40,7 @@ public:
 
 	virtual bool parse ();
 
-	using AttributeSaveFilterFunc = bool (*) (CView* view, const std::string& name);
+	using AttributeSaveFilterFunc = bool (*) (CView& view, const std::string& name);
 	enum SaveFlags {
 		kWriteWindowsResourceFile	= 1 << WriteWindowsResourceFileBit,
 		kWriteImagesIntoUIDescFile	= 1 << WriteImagesIntoUIDescFileBit,

@@ -74,7 +74,7 @@ protected:
 
 	void onUndoManagerChange () override;
 
-	void viewWillDelete (CView* view) override;
+	void viewWillDelete (CView& view) override;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;

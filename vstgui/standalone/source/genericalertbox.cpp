@@ -198,14 +198,14 @@ public:
 		contentView->setSize (windowSize.x, windowSize.y);
 	}
 
-	void viewLostFocus (CView* view) override
+	void viewLostFocus (CView& view) override
 	{
-		if (auto button = dynamic_cast<CTextButton*> (view))
+		if (auto button = dynamic_cast<CTextButton*> (&view))
 			button->setGradient (normalButtonGradient);
 	}
-	void viewTookFocus (CView* view) override
+	void viewTookFocus (CView& view) override
 	{
-		if (auto button = dynamic_cast<CTextButton*> (view))
+		if (auto button = dynamic_cast<CTextButton*> (&view))
 			button->setGradient (focusedButtonGradient);
 	}
 

@@ -268,17 +268,17 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 	}
 	void onViewRemoved (CFrame& frame, CView& view) override {}
 
-	void viewWillDelete (CView* view) override
+	void viewWillDelete (CView& view) override
 	{
-		view->unregisterViewListener (this);
+		view.unregisterViewListener (this);
 		auto it = std::find_if (views.begin (), views.end (),
-								[&] (auto&& v) { return v.get () == view; });
+								[&] (auto&& v) { return v.get () == &view; });
 		if (it != views.end ())
 			views.erase (it);
 	}
-	void viewOnMouseEnabled (CView* view, bool state) override
+	void viewOnMouseEnabled (CView& view, bool state) override
 	{
-		if (auto viewEmbedder = dynamic_cast<ExternalView::IViewEmbedder*> (view))
+		if (auto viewEmbedder = dynamic_cast<ExternalView::IViewEmbedder*> (&view))
 		{
 			if (auto ev = viewEmbedder->getExternalView ())
 				ev->setMouseEnabled (false);
@@ -1360,12 +1360,12 @@ void UIEditView::onDoubleClickEditing (CView& view)
 		{
 			edit->registerViewListener (this);
 		}
-		void viewWillDelete (CView*) override
+		void viewWillDelete (CView&) override
 		{
 			edit->unregisterViewListener (this);
 			delete this;
 		}
-		void viewLostFocus (CView*) override
+		void viewLostFocus (CView&) override
 		{
 			callback ();
 		}

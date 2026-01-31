@@ -143,6 +143,15 @@ and their possible getter methods return also a ```SharedPointer<CBitmap>``` now
 	* ```IAnimationTarget::animationStart```
 	* ```IAnimationTarget::animationTick```
 	* ```IAnimationTarget::animationFinished```
+	* ```IViewListener::viewSizeChanged```
+	* ```IViewListener::viewAttached```
+	* ```IViewListener::viewRemoved```
+	* ```IViewListener::viewLostFocus```
+	* ```IViewListener::viewTookFocus```
+	* ```IViewListener::viewWillDelete```
+	* ```IViewListener::viewOnMouseEnabled```
+	* ```IViewEventListener::viewOnEvent```
+	* ```IScaleFactorChangedListener::onScaleFactorChanged```
 	* ```IContextMenuController2::appendContextMenuItems```
 	* ```IViewFactory::applyAttributeValues```
 	* ```IViewFactory::applyCustomViewAttributeValues```

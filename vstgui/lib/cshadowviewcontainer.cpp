@@ -67,7 +67,7 @@ bool CShadowViewContainer::attached (const SharedPointer<CViewContainer>& parent
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
+void CShadowViewContainer::onScaleFactorChanged (CFrame& frame, double newScaleFactor)
 {
 	invalidateShadow ();
 }

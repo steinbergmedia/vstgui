@@ -141,8 +141,8 @@ protected:
 	void syncHScrollbar (bool keepVisibleArea);
 	void syncVScrollbar (bool keepVisibleArea);
 
-	void viewSizeChanged (CView* view, const CRect& oldSize) override;
-	void viewWillDelete (CView* view) override;
+	void viewSizeChanged (CView& view, const CRect& oldSize) override;
+	void viewWillDelete (CView& view) override;
 
 	CScrollContainer* getScrollContainer () const;
 

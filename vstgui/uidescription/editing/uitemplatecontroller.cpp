@@ -450,9 +450,9 @@ void UITemplateController::navigateTo (const SharedPointer<CView>& view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateController::viewWillDelete (CView* view)
+void UITemplateController::viewWillDelete (CView& view)
 {
-	if (view == templateDataBrowser.get ())
+	if (&view == templateDataBrowser.get ())
 	{
 		templateDataBrowser->unregisterViewListener (this);
 		templateDataBrowser = nullptr;

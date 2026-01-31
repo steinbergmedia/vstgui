@@ -74,7 +74,7 @@ protected:
 
 	void appendContextMenuItems (COptionMenu& contextMenu, CView& view,
 								 const CPoint& where) override;
-	void viewWillDelete (CView* view) override;
+	void viewWillDelete (CView& view) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UISelection> selection;

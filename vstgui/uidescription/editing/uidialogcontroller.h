@@ -49,8 +49,8 @@ protected:
 									 const UIAttributes& attributes,
 									 const IUIDescription& description) override;
 
-	void viewSizeChanged (CView* view, const CRect& oldSize) override;
-	void viewRemoved (CView* view) override;
+	void viewSizeChanged (CView& view, const CRect& oldSize) override;
+	void viewRemoved (CView& view) override;
 	
 	void close ();
 	void layoutButtons ();

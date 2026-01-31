@@ -214,21 +214,21 @@ bool CListControl::attached (const SharedPointer<CViewContainer>& parent)
 				control->unregisterViewListener (this);
 				scrollView->unregisterViewListener (this);
 			}
-			void viewSizeChanged (CView* view, const CRect& oldSize) override
+			void viewSizeChanged (CView& view, const CRect& oldSize) override
 			{
-				if (view != scrollView)
+				if (&view != scrollView)
 					return;
 				control->impl->minHeight =
 					scrollView->calculateOptimalContainerSize ().getHeight ();
 				control->recalculateLayout ();
 			}
-			void viewWillDelete (CView* view) override
+			void viewWillDelete (CView& view) override
 			{
-				if (view == control || view == scrollView)
+				if (&view == control || &view == scrollView)
 					delete this;
 			}
-			void viewAttached (CView* view) override {}
-			void viewRemoved (CView* view) override {}
+			void viewAttached (CView& view) override {}
+			void viewRemoved (CView& view) override {}
 
 			CListControl* control {nullptr};
 			CScrollView* scrollView {nullptr};

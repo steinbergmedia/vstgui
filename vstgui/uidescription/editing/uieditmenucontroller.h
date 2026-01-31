@@ -178,7 +178,7 @@ protected:
 	void createEditMenu (SharedPointer<COptionMenu> menu);
 	void createFileMenu (SharedPointer<COptionMenu> menu);
 
-	void viewRemoved (CView* view) override;
+	void viewRemoved (CView& view) override;
 	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
 									 const UIAttributes& attributes,
 									 const IUIDescription& description) override;

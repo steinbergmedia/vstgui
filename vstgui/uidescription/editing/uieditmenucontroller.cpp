@@ -658,16 +658,16 @@ static void copyMenuItems (COptionMenu& src, COptionMenu& dst)
 }
 
 //------------------------------------------------------------------------
-void UIEditMenuController::viewRemoved (CView* view)
+void UIEditMenuController::viewRemoved (CView& view)
 {
-	if (view == editMenu.get ())
+	if (&view == editMenu.get ())
 	{
-		view->unregisterViewListener (this);
+		view.unregisterViewListener (this);
 		editMenu = nullptr;
 	}
-	else if (view == fileMenu.get ())
+	else if (&view == fileMenu.get ())
 	{
-		view->unregisterViewListener (this);
+		view.unregisterViewListener (this);
 		fileMenu = nullptr;
 	}
 }

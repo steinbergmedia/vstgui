@@ -651,11 +651,11 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 }
 
 //------------------------------------------------------------------------
-void GenericOptionMenu::viewOnEvent (CView* view, Event& event)
+void GenericOptionMenu::viewOnEvent (CView& view, Event& event)
 {
 	if (event.type == EventType::MouseDown)
 	{
-		if (auto container = view->asViewContainer ())
+		if (auto container = view.asViewContainer ())
 		{
 			auto& downEvent = castMouseDownEvent (event);
 			CViewContainer::ViewList views;
@@ -675,13 +675,13 @@ void GenericOptionMenu::viewOnEvent (CView* view, Event& event)
 		auto& upEvent = castMouseUpEvent (event);
 		if (impl->initialButtonState == upEvent.buttonState && !impl->mouseUpTimer)
 		{
-			if (auto container = view->asViewContainer ())
+			if (auto container = view.asViewContainer ())
 			{
 				CViewContainer::ViewList views;
 				if (container->getViewsAt (upEvent.mousePosition, views, GetViewOptions ().deep ().includeInvisible ()))
 				{
 					auto pos = upEvent.mousePosition;
-					view->translateToGlobal (pos);
+					view.translateToGlobal (pos);
 					MouseDownEvent downEvent;
 					downEvent.buttonState = upEvent.buttonState;
 					downEvent.clickCount = 1;

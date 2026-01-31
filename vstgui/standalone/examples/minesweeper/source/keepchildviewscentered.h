@@ -24,11 +24,11 @@ inline void keepChildViewsCentered (const SharedPointer<CViewContainer>& view)
 			parent->registerViewListener (this);
 		}
 
-		void viewSizeChanged (CView* view, const CRect& oldSize) override
+		void viewSizeChanged (CView& view, const CRect& oldSize) override
 		{
-			if (!view->isAttached ())
+			if (!view.isAttached ())
 				return;
-			auto viewSize = view->getViewSize ();
+			auto viewSize = view.getViewSize ();
 			auto diffX = viewSize.getWidth () - oldSize.getWidth ();
 			auto diffY = viewSize.getHeight () - oldSize.getHeight ();
 			if (diffX == 0. && diffY == 0.)
@@ -44,9 +44,9 @@ inline void keepChildViewsCentered (const SharedPointer<CViewContainer>& view)
 		}
 
 	private:
-		void viewWillDelete (CView* view) override
+		void viewWillDelete (CView& view) override
 		{
-			view->unregisterViewListener (this);
+			view.unregisterViewListener (this);
 			delete this;
 		}
 

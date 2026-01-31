@@ -34,11 +34,11 @@ struct CControl::Impl : ViewEventListenerAdapter
 	int32_t editing {0};
 	int32_t tag {-1};
 
-	void viewOnEvent (CView* view, Event& event) override
+	void viewOnEvent (CView& view, Event& event) override
 	{
 		if (event.type != EventType::MouseDown)
 			return;
-		auto control = static_cast<CControl*> (view);
+		auto control = static_cast<CControl*> (&view);
 		auto& mouseDownEvent = castMouseDownEvent (event);
 		if (CControl::CheckDefaultValueEventFunc (control, mouseDownEvent))
 		{

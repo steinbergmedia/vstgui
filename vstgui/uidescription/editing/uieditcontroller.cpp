@@ -329,7 +329,7 @@ public:
 	~UIZoomSettingController () noexcept override
 	{
 		if (zoomValueControl)
-			viewWillDelete (zoomValueControl.get ());
+			viewWillDelete (*zoomValueControl.get ());
 	}
 
 	void restoreSetting (const UIAttributes& attributes)
@@ -447,9 +447,9 @@ public:
 		}
 	}
 
-	void viewOnEvent (CView* view, Event& event) override
+	void viewOnEvent (CView& view, Event& event) override
 	{
-		vstgui_assert (view == zoomValueControl.get ());
+		vstgui_assert (&view == zoomValueControl.get ());
 		if (event.type != EventType::MouseDown)
 			return;
 		auto& downEvent = castMouseDownEvent (event);
@@ -469,11 +469,11 @@ public:
 		}
 	}
 
-	void viewWillDelete (CView* view) override
+	void viewWillDelete (CView& view) override
 	{
-		vstgui_assert (view == zoomValueControl.get ());
-		view->unregisterViewListener (this);
-		view->unregisterViewEventListener (this);
+		vstgui_assert (&view == zoomValueControl.get ());
+		view.unregisterViewListener (this);
+		view.unregisterViewEventListener (this);
 		zoomValueControl = nullptr;
 	}
 

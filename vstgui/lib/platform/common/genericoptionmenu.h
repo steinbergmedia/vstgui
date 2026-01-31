@@ -56,7 +56,7 @@ public:
 
 private:
 	void removeModalView (PlatformOptionMenuResult result);
-	void viewOnEvent (CView* view, Event& event) override;
+	void viewOnEvent (CView& view, Event& event) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

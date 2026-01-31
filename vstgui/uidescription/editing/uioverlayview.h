@@ -22,7 +22,7 @@ public:
 	~UIOverlayView () override;
 
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	void viewSizeChanged (CView* view, const CRect& oldSize) override;
+	void viewSizeChanged (CView& view, const CRect& oldSize) override;
 
 protected:
 	SharedPointer<CViewContainer> getTargetView () const { return targetView; }

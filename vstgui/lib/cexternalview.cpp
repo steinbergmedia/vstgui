@@ -178,7 +178,7 @@ void CExternalView::parentSizeChanged ()
 }
 
 //------------------------------------------------------------------------
-void CExternalView::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
+void CExternalView::onScaleFactorChanged (CFrame& frame, double newScaleFactor)
 {
 	impl->scaleFactorChanged (newScaleFactor);
 }
@@ -293,7 +293,7 @@ void CExternalControl::parentSizeChanged ()
 }
 
 //------------------------------------------------------------------------
-void CExternalControl::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
+void CExternalControl::onScaleFactorChanged (CFrame& frame, double newScaleFactor)
 {
 	impl->scaleFactorChanged (newScaleFactor);
 }

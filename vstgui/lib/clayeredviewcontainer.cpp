@@ -254,7 +254,7 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 }
 
 //-----------------------------------------------------------------------------
-void CLayeredViewContainer::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
+void CLayeredViewContainer::onScaleFactorChanged (CFrame& frame, double newScaleFactor)
 {
 	if (layer)
 		layer->onScaleFactorChanged (newScaleFactor);

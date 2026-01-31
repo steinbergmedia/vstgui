@@ -247,7 +247,7 @@ void CView::beforeDelete ()
 	if (pImpl->viewListeners)
 	{
 		pImpl->viewListeners->forEach ([&] (IViewListener* listener) {
-			listener->viewWillDelete (this);
+			listener->viewWillDelete (*this);
 		});
 		vstgui_assert (pImpl->viewListeners->empty (), "View listeners not empty");
 	}
@@ -346,7 +346,7 @@ void CView::setMouseEnabled (bool state)
 		}
 		if (pImpl->viewListeners)
 			pImpl->viewListeners->forEach (
-				[&] (IViewListener* listener) { listener->viewOnMouseEnabled (this, state); });
+				[&] (IViewListener* listener) { listener->viewOnMouseEnabled (*this, state); });
 	}
 }
 
@@ -403,7 +403,7 @@ bool CView::attached (const SharedPointer<CViewContainer>& parent)
 	if (pImpl->viewListeners)
 	{
 		pImpl->viewListeners->forEach (
-		    [&] (IViewListener* listener) { listener->viewAttached (this); });
+		    [&] (IViewListener* listener) { listener->viewAttached (*this); });
 	}
 	return true;
 }
@@ -422,7 +422,7 @@ bool CView::removed (const SharedPointer<CViewContainer>& parent)
 	if (pImpl->viewListeners)
 	{
 		pImpl->viewListeners->forEach (
-		    [&] (IViewListener* listener) { listener->viewRemoved (this); });
+		    [&] (IViewListener* listener) { listener->viewRemoved (*this); });
 	}
 	if (auto frame = pImpl->parentFrame)
 		frame->onViewRemoved (*this);
@@ -567,7 +567,7 @@ void CView::dispatchEvent (Event& event)
 	{
 		pImpl->viewEventListeners->forEachReverse (
 			[&] (IViewEventListener* listener) {
-				listener->viewOnEvent (this, event);
+				listener->viewOnEvent (*this, event);
 				return event.consumed;
 			},
 			[] (bool consumed) { return consumed; });
@@ -800,7 +800,7 @@ void CView::looseFocus ()
 	if (!pImpl->viewListeners)
 		return;
 	pImpl->viewListeners->forEach (
-	    [&] (IViewListener* listener) { listener->viewLostFocus (this); });
+	    [&] (IViewListener* listener) { listener->viewLostFocus (*this); });
 }
 
 //------------------------------------------------------------------------------
@@ -809,7 +809,7 @@ void CView::takeFocus ()
 	if (!pImpl->viewListeners)
 		return;
 	pImpl->viewListeners->forEach (
-	    [&] (IViewListener* listener) { listener->viewTookFocus (this); });
+	    [&] (IViewListener* listener) { listener->viewTookFocus (*this); });
 }
 
 //------------------------------------------------------------------------------
@@ -830,7 +830,7 @@ void CView::setViewSize (const CRect& newSize, bool doInvalid)
 		if (pImpl->viewListeners)
 		{
 			pImpl->viewListeners->forEach (
-			    [&] (IViewListener* listener) { listener->viewSizeChanged (this, oldSize); });
+			    [&] (IViewListener* listener) { listener->viewSizeChanged (*this, oldSize); });
 		}
 	}
 }

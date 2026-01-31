@@ -1631,7 +1631,7 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node,
 		for (auto& name : attributeNames)
 		{
 			if (impl->attributeSaveFilterFunc &&
-				impl->attributeSaveFilterFunc (view.get (), name) == false)
+				impl->attributeSaveFilterFunc (*view.get (), name) == false)
 				continue;
 			std::string value;
 			if (impl->viewFactory->getAttributeValue (*view.get (), name, value, *this))

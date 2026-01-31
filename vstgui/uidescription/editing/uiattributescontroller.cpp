@@ -404,9 +404,9 @@ public:
 		
 	}
 
-	void viewLostFocus (CView* view) override
+	void viewLostFocus (CView& view) override
 	{
-		if (view == textLabel.get ())
+		if (&view == textLabel.get ())
 		{
 			SharedPointer<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
@@ -1518,14 +1518,13 @@ void UIAttributesController::rebuildAttributesView ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::viewWillDelete (CView* view)
+void UIAttributesController::viewWillDelete (CView& view)
 {
-	if (view == attributeView.get ())
+	view.unregisterViewListener (this);
+	if (&view == attributeView.get ())
 		attributeView = nullptr;
-	else if (view == viewNameLabel.get ())
+	else if (&view == viewNameLabel.get ())
 		viewNameLabel = nullptr;
-
-	view->unregisterViewListener (this);
 }
 
 } // VSTGUI

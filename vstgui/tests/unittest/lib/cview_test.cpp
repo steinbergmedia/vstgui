@@ -32,17 +32,17 @@ public:
 
 struct ViewListener : public IViewListener
 {
-	void viewSizeChanged (CView* view, const CRect& oldSize) override { sizeChangedCalled = true; }
-	void viewAttached (CView* view) override { attachedCalled = true; }
-	void viewRemoved (CView* view) override { removedCalled = true; }
-	void viewLostFocus (CView* view) override { lostFocusCalled = true; }
-	void viewTookFocus (CView* view) override { tookFocusCalled = true; }
-	void viewWillDelete (CView* view) override
+	void viewSizeChanged (CView& view, const CRect& oldSize) override { sizeChangedCalled = true; }
+	void viewAttached (CView& view) override { attachedCalled = true; }
+	void viewRemoved (CView& view) override { removedCalled = true; }
+	void viewLostFocus (CView& view) override { lostFocusCalled = true; }
+	void viewTookFocus (CView& view) override { tookFocusCalled = true; }
+	void viewWillDelete (CView& view) override
 	{
-		view->unregisterViewListener (this);
+		view.unregisterViewListener (this);
 		willDeleteCalled = true;
 	}
-	void viewOnMouseEnabled (CView* view, bool state) override {}
+	void viewOnMouseEnabled (CView& view, bool state) override {}
 
 	bool sizeChangedCalled {false};
 	bool attachedCalled {false};
@@ -363,9 +363,9 @@ private:
 
 struct TestViewEventHandler : IViewEventListener
 {
-	using Func = std::function<void (CView*, Event&)>;
+	using Func = std::function<void (CView&, Event&)>;
 	TestViewEventHandler (Func&& func) : func (std::move (func)) {}
-	void viewOnEvent (CView* view, Event& event) override { func (view, event); }
+	void viewOnEvent (CView& view, Event& event) override { func (view, event); }
 
 	Func func;
 };
@@ -375,7 +375,7 @@ struct TestViewEventHandler : IViewEventListener
 TEST_CASE (CViewTest, ViewEventListenerMouseDownEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseDownEvent event;
 	v->dispatchEvent (event);
@@ -389,7 +389,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseDownEvent)
 TEST_CASE (CViewTest, ViewEventListenerMouseMoveEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseMoveEvent event;
 	v->dispatchEvent (event);
@@ -403,7 +403,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseMoveEvent)
 TEST_CASE (CViewTest, ViewEventListenerMouseUpEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseUpEvent event;
 	v->dispatchEvent (event);
@@ -417,7 +417,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseUpEvent)
 TEST_CASE (CViewTest, ViewEventListenerMouseCancelEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseCancelEvent event;
 	v->dispatchEvent (event);
@@ -431,7 +431,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseCancelEvent)
 TEST_CASE (CViewTest, ViewEventListenerMouseEnterEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseEnterEvent event;
 	v->dispatchEvent (event);
@@ -445,7 +445,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseEnterEvent)
 TEST_CASE (CViewTest, ViewEventListenerMouseExitEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseExitEvent event;
 	v->dispatchEvent (event);
@@ -459,7 +459,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseExitEvent)
 TEST_CASE (CViewTest, ViewEventListenerMouseWheelEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseWheelEvent event;
 	v->dispatchEvent (event);
@@ -473,7 +473,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseWheelEvent)
 TEST_CASE (CViewTest, ViewEventListenerZoomGestureEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	ZoomGestureEvent event;
 	v->dispatchEvent (event);
@@ -487,7 +487,7 @@ TEST_CASE (CViewTest, ViewEventListenerZoomGestureEvent)
 TEST_CASE (CViewTest, ViewEventListenerKeyEvent)
 {
 	auto v = makeOwned<TestView> ();
-	TestViewEventHandler listener ([] (CView*, Event& event) { event.consumed = true; });
+	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	KeyboardEvent event;
 	v->dispatchEvent (event);

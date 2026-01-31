@@ -131,14 +131,14 @@ public:
 		return controller->verifyView (view, attributes, description);
 	}
 
-	void viewOnMouseEnabled (CView* view, bool state) override
+	void viewOnMouseEnabled (CView& view, bool state) override
 	{
-		view->setAlphaValue (state ? 1.f : 0.5f);
+		view.setAlphaValue (state ? 1.f : 0.5f);
 	}
 
-	void viewWillDelete (CView* view) override
+	void viewWillDelete (CView& view) override
 	{
-		if (auto control = dynamic_cast<CControl*> (view))
+		if (auto control = dynamic_cast<CControl*> (&view))
 		{
 			auto it = std::find (controls.begin (), controls.end (), control);
 			if (it != controls.end ())

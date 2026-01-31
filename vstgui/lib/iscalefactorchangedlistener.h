@@ -14,7 +14,7 @@ class IScaleFactorChangedListener
 public:
 	virtual ~IScaleFactorChangedListener () noexcept = default;
 
-	virtual void onScaleFactorChanged (CFrame* frame, double newScaleFactor) = 0;
+	virtual void onScaleFactorChanged (CFrame& frame, double newScaleFactor) = 0;
 };
 
 } // VSTGUI

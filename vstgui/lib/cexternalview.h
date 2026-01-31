@@ -38,7 +38,7 @@ public:
 	void looseFocus () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void parentSizeChanged () override;
-	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
+	void onScaleFactorChanged (CFrame& frame, double newScaleFactor) override;
 	void setMouseEnabled (bool enable = true) override;
 
 	ExternalView::IView* getExternalView () const override;
@@ -68,7 +68,7 @@ public:
 	void looseFocus () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void parentSizeChanged () override;
-	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
+	void onScaleFactorChanged (CFrame& frame, double newScaleFactor) override;
 	void setMouseEnabled (bool enable = true) override;
 
 	ExternalView::IView* getExternalView () const override;

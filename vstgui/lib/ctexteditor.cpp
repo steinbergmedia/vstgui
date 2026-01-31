@@ -234,7 +234,7 @@ struct TextEditorView : public CView,
 	void onMouseEnterEvent (MouseEnterEvent& event) override;
 	void onMouseExitEvent (MouseExitEvent& event) override;
 
-	void viewOnEvent (CView* view, Event& event) override;
+	void viewOnEvent (CView& view, Event& event) override;
 
 	int32_t deleteChars (size_t pos, size_t num) const;
 	int32_t insertChars (size_t pos, const CharT* text, size_t num) const;
@@ -552,8 +552,8 @@ struct LineNumberView : CView,
 	void setSelectedLines (Range range);
 
 private:
-	void viewSizeChanged (CView* view, const CRect& oldSize) override;
-	void viewWillDelete (CView* view) override;
+	void viewSizeChanged (CView& view, const CRect& oldSize) override;
+	void viewWillDelete (CView& view) override;
 
 	std::shared_ptr<ITextEditor::Style> style;
 	CCoord lineHeight {};
@@ -590,9 +590,9 @@ private:
 	FindPanelController (const ITextEditor& editor);
 	~FindPanelController () noexcept;
 	void valueChanged (CControl& control) override;
-	void viewLostFocus (CView* view) override;
-	void viewWillDelete (CView* view) override;
-	void viewOnEvent (CView* view, Event& event) override;
+	void viewLostFocus (CView& view) override;
+	void viewWillDelete (CView& view) override;
+	void viewOnEvent (CView& view, Event& event) override;
 
 	const ITextEditor& editor;
 	SharedPointer<CTextEdit> editfield;
@@ -841,7 +841,7 @@ bool TextEditorView::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth
 }
 
 //------------------------------------------------------------------------
-void TextEditorView::viewOnEvent (CView* view, Event& event)
+void TextEditorView::viewOnEvent (CView& view, Event& event)
 {
 	if (event.type != EventType::MouseWheel)
 		return;
@@ -2702,9 +2702,9 @@ void FindPanelController::valueChanged (CControl& control)
 }
 
 //------------------------------------------------------------------------
-void FindPanelController::viewLostFocus (CView* view)
+void FindPanelController::viewLostFocus (CView& view)
 {
-	if (view == editfield.get ())
+	if (&view == editfield.get ())
 	{
 		editor.setFindString (editfield->getText ().getString ());
 		if (editfield->bWasReturnPressed)
@@ -2716,7 +2716,7 @@ void FindPanelController::viewLostFocus (CView* view)
 }
 
 //------------------------------------------------------------------------
-void FindPanelController::viewOnEvent (CView* view, Event& event)
+void FindPanelController::viewOnEvent (CView& view, Event& event)
 {
 	if (event.type == EventType::KeyDown)
 	{
@@ -2740,24 +2740,24 @@ void FindPanelController::viewOnEvent (CView* view, Event& event)
 }
 
 //------------------------------------------------------------------------
-void FindPanelController::viewWillDelete (CView* view)
+void FindPanelController::viewWillDelete (CView& view)
 {
-	view->unregisterViewListener (this);
-	if (view == closeBox.get ())
+	view.unregisterViewListener (this);
+	if (&view == closeBox.get ())
 		closeBox = nullptr;
-	else if (view == editfield.get ())
+	else if (&view == editfield.get ())
 		editfield = nullptr;
-	else if (view == caseSensitiveButton.get ())
+	else if (&view == caseSensitiveButton.get ())
 	{
 		caseSensitiveButton->unregisterViewEventListener (this);
 		caseSensitiveButton = nullptr;
 	}
-	else if (view == wholeWordButton.get ())
+	else if (&view == wholeWordButton.get ())
 	{
 		wholeWordButton->unregisterViewEventListener (this);
 		wholeWordButton = nullptr;
 	}
-	else if (view->asViewContainer ())
+	else if (view.asViewContainer ())
 		delete this;
 }
 
@@ -3397,17 +3397,17 @@ LineNumberView::~LineNumberView () noexcept
 }
 
 //------------------------------------------------------------------------
-void LineNumberView::viewSizeChanged (CView* view, const CRect& oldSize)
+void LineNumberView::viewSizeChanged (CView& view, const CRect& oldSize)
 {
-	vstgui_assert (view == textEditorView);
+	vstgui_assert (&view == textEditorView);
 
 	invalid ();
 }
 
 //------------------------------------------------------------------------
-void LineNumberView::viewWillDelete (CView* view)
+void LineNumberView::viewWillDelete (CView& view)
 {
-	vstgui_assert (view == textEditorView);
+	vstgui_assert (&view == textEditorView);
 	textEditorView->unregisterViewListener (this);
 	textEditorView = nullptr;
 }

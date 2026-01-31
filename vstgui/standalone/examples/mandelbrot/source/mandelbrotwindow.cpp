@@ -233,32 +233,32 @@ struct ViewController : DelegationController,
 		return controller->createSubController (name, description);
 	}
 
-	void viewSizeChanged (CView* view, const CRect& oldSize) override { updateMandelbrot (); }
-	void viewAttached (CView* view) override
+	void viewSizeChanged (CView& view, const CRect& oldSize) override { updateMandelbrot (); }
+	void viewAttached (CView& view) override
 	{
-		if (auto frame = view->getFrame ())
+		if (auto frame = view.getFrame ())
 		{
 			frame->registerScaleFactorChangedListener (this);
 			scaleFactor = frame->getScaleFactor ();
 			updateMandelbrot ();
 		}
 	}
-	void viewRemoved (CView* view) override
+	void viewRemoved (CView& view) override
 	{
-		if (auto frame = view->getFrame ())
+		if (auto frame = view.getFrame ())
 		{
 			frame->unregisterScaleFactorChangedListener (this);
 		}
 	}
-	void viewWillDelete (CView* view) override
+	void viewWillDelete (CView& view) override
 	{
-		assert (mandelbrotView.get () == view);
+		assert (mandelbrotView.get () == &view);
 		++taskID; // cancel background calculation
 		mandelbrotView->unregisterViewListener (this);
 		mandelbrotView = nullptr;
 	}
 
-	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override
+	void onScaleFactorChanged (CFrame& frame, double newScaleFactor) override
 	{
 		if (scaleFactor != newScaleFactor)
 		{

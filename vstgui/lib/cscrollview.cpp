@@ -935,11 +935,11 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
+void CScrollView::viewSizeChanged (CView& view, const CRect& oldSize)
 {
-	if (view == impl->edgeViewTop.get () || view == impl->edgeViewLeft.get ())
+	if (&view == impl->edgeViewTop.get () || &view == impl->edgeViewLeft.get ())
 		recalculateLayout ();
-	else if (view == impl->scrollContainer.get ())
+	else if (&view == impl->scrollContainer.get ())
 		syncScrollbars (true);
 	else
 	{
@@ -948,12 +948,12 @@ void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::viewWillDelete (CView* view)
+void CScrollView::viewWillDelete (CView& view)
 {
-	view->unregisterViewListener (this);
-	if (view == impl->edgeViewTop.get ())
+	view.unregisterViewListener (this);
+	if (&view == impl->edgeViewTop.get ())
 		impl->edgeViewTop = nullptr;
-	else if (view == impl->edgeViewLeft.get ())
+	else if (&view == impl->edgeViewLeft.get ())
 		impl->edgeViewLeft = nullptr;
 }
 
