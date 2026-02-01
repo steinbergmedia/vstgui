@@ -548,7 +548,7 @@ bool CSplitView::insertSubview (const SharedPointer<CView>& view, const Optional
 		viewSize.setHeight (getHeight ());
 	else
 		viewSize.setWidth (getWidth ());
-	ReverseViewIterator it (this);
+	ReverseViewIterator it (*this);
 	if (*it)
 	{
 		auto lastView = *it;
@@ -577,7 +577,7 @@ bool CSplitView::insertSubview (const SharedPointer<CView>& view, const Optional
 //-----------------------------------------------------------------------------
 bool CSplitView::removeSubview (const SharedPointer<CView>& view)
 {
-	ReverseViewIterator it (this);
+	ReverseViewIterator it (*this);
 	while (*it)
 	{
 		if (*it == view)
@@ -619,7 +619,7 @@ void CSplitView::storeViewSizes ()
 	if (auto controller = getSplitViewController (*this))
 	{
 		int32_t index = 0;
-		ViewIterator it (this);
+		ViewIterator it (*this);
 		while (*it)
 		{
 			auto sepView = (*it).cast<CSplitViewSeparatorView> ();
@@ -651,7 +651,7 @@ bool CSplitView::attached (const SharedPointer<CViewContainer>& parent)
 		CRect r;
 		CPoint offset;
 		int32_t index = 0;
-		ViewIterator it (this);
+		ViewIterator it (*this);
 		while (*it)
 		{
 			if (auto sepView = (*it).cast<CSplitViewSeparatorView> ())
@@ -696,7 +696,7 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView& separatorView
 	if (inApplyViewLayout ())
 		return false;
 
-	ViewIterator it (this);
+	ViewIterator it (*this);
 	SharedPointer<CView> view1;
 	SharedPointer<CView> view2;
 	while (*it)
@@ -746,7 +746,7 @@ ISplitViewSeparatorDrawer* CSplitView::getDrawer ()
 //-----------------------------------------------------------------------------
 bool CSplitView::addViewToSeparator (int32_t sepIndex, const SharedPointer<CView>& view)
 {
-	ViewIterator it (this);
+	ViewIterator it (*this);
 	while (*it)
 	{
 		if (auto sepView = (*it).cast<CSplitViewSeparatorView> ())

@@ -229,7 +229,7 @@ void collectExternalViewsOnInlineEditing (CViewContainer& container, T& array)
 struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 									   ViewListenerAdapter
 {
-	ViewAddedObserver (CViewContainer* root) : root (root) {}
+	ViewAddedObserver (const SharedPointer<CViewContainer>& root) : root (root) {}
 	~ViewAddedObserver () override
 	{
 		for (auto view : views)
@@ -394,7 +394,7 @@ void UIEditView::disableExternalViewsOnInlineEditing (bool state)
 	editingViewAddedObserver.reset ();
 	if (state)
 	{
-		editingViewAddedObserver = std::make_unique<ViewAddedObserver> (this);
+		editingViewAddedObserver = std::make_unique<ViewAddedObserver> (shared (this));
 		std::vector<SharedPointer<CView>> views;
 		UIEditViewInternal::collectExternalViewsOnInlineEditing (*this, views);
 		for (auto& v : views)

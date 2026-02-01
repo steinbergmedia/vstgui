@@ -1119,7 +1119,7 @@ SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 //-----------------------------------------------------------------------------
 void CViewContainer::onTouchEvent (ITouchEvent& event)
 {
-	ReverseViewIterator it (this);
+	ReverseViewIterator it (*this);
 	while (*it)
 	{
 		CView* view = *it;
@@ -1158,7 +1158,7 @@ bool CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 	MouseDownEvent downEvent (where, MouseButton::Left);
 	downEvent.clickCount = event.tapCount;
 
-	ReverseViewIterator it (this);
+	ReverseViewIterator it (*this);
 	while (*it)
 	{
 		CView* view = *it;

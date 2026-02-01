@@ -367,7 +367,7 @@ DeleteOperation::DeleteOperation (const SharedPointer<UISelection>& sel) : selec
 		if (container.cast<UIEditView> () == nullptr)
 		{
 			SharedPointer<CView> nextView;
-			ViewIterator it (container.get ());
+			ViewIterator it (container);
 			while (*it)
 			{
 				if (*it == view)
@@ -472,7 +472,7 @@ TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISe
 		{
 			attr.setAttribute (UIViewCreator::kAttrClass, viewClassName);
 			newView = factory.createView (attr, *desc.get ());
-			ViewIterator it (parent.get ());
+			ViewIterator it (parent);
 			while (*it)
 			{
 				++insertIndex;
@@ -1318,7 +1318,7 @@ void HierarchyMoveViewOperation::perform ()
 	if (!parent)
 		return;
 	uint32_t currentIndex = 0;
-	ViewIterator it (parent.get ());
+	ViewIterator it (parent);
 	while (*it && *it != view)
 	{
 		++it;

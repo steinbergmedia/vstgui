@@ -91,7 +91,7 @@ inline SharedPointer<T> findViewController (const CViewContainer& view)
 {
 	if (auto ctrler = getViewController (view).cast<T> ())
 		return ctrler;
-	ViewIterator iterator (&view);
+	ViewIterator iterator (view);
 	while (*iterator)
 	{
 		if (auto ctrler = getViewController (*(*iterator).get ()).cast<T> ())

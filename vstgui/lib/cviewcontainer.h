@@ -215,7 +215,7 @@ public:
 		using IteratorType = typename std::conditional<reverse, ChildViewConstReverseIterator,
 													   ChildViewConstIterator>::type;
 
-		explicit Iterator (const CViewContainer* container) : children (container->getChildren ())
+		explicit Iterator (const CViewContainer& container) : children (container.getChildren ())
 		{
 			if constexpr (reverse)
 				iterator = children.rbegin ();
