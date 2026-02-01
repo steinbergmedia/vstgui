@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ccontrol.h"
+#include <array>
 
 namespace VSTGUI {
 
@@ -26,11 +27,12 @@ public:
 	CLASS_METHODS(CSpecialDigit, CControl)
 protected:
 	~CSpecialDigit () noexcept override = default;
-	int32_t     iNumbers;
-	int32_t     xpos[7];
-	int32_t     ypos[7];
-	int32_t     width;
-	int32_t     height;
+
+	int32_t iNumbers;
+	std::array<int32_t, 7> xpos;
+	std::array<int32_t, 7> ypos;
+	int32_t width;
+	int32_t height;
 };
 
 } // VSTGUI
