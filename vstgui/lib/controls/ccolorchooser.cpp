@@ -236,28 +236,30 @@ static void setupParamDisplay (const SharedPointer<CParamDisplay>& display,
 /// @endcond
 
 //-----------------------------------------------------------------------------
-bool CColorChooser::convertNormalizedToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData)
+bool CColorChooser::convertNormalizedToString (float value, char string[256],
+											   CParamDisplay& userData)
 {
 	snprintf (string, 255, "%.3f", value);
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-bool CColorChooser::convertColorValueToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData)
+bool CColorChooser::convertColorValueToString (float value, char string[256],
+											   CParamDisplay& userData)
 {
 	snprintf (string, 255, "%d", (int32_t)(value * 255.f));
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-bool CColorChooser::convertAngleToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData)
+bool CColorChooser::convertAngleToString (float value, char string[256], CParamDisplay& userData)
 {
 	snprintf (string, 255, "%d%s", (int32_t)(value * 359.f), kDegreeSymbol);
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-bool CColorChooser::convertNormalized (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData)
+bool CColorChooser::convertNormalized (UTF8StringPtr string, float& output, CTextEdit& userData)
 {
 	output = UTF8StringView (string).toFloat ();
 	if (output < 0.f)
@@ -268,7 +270,7 @@ bool CColorChooser::convertNormalized (UTF8StringPtr string, float& output, CTex
 }
 
 //-----------------------------------------------------------------------------
-bool CColorChooser::convertColorValue (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData)
+bool CColorChooser::convertColorValue (UTF8StringPtr string, float& output, CTextEdit& userData)
 {
 	output = UTF8StringView (string).toFloat ();
 	if (output < 0.f)
@@ -280,7 +282,7 @@ bool CColorChooser::convertColorValue (UTF8StringPtr string, float& output, CTex
 }
 
 //-----------------------------------------------------------------------------
-bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData)
+bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, CTextEdit& userData)
 {
 	output = UTF8StringView (string).toFloat ();
 	if (output < 0.f)

@@ -157,7 +157,7 @@ void CTextLabel::valueChanged ()
 	if (valueToStringFunction)
 	{
 		std::string string;
-		if (valueToStringFunction (getValue (), string, this))
+		if (valueToStringFunction (getValue (), string, *this))
 			setText (UTF8String (std::move (string)));
 	}
 	CParamDisplay::valueChanged ();
@@ -179,7 +179,7 @@ bool CMultiLineTextLabel::setValue (float val)
 	if (valueToStringFunction)
 	{
 		std::string string;
-		if (valueToStringFunction (getValue (), string, this))
+		if (valueToStringFunction (getValue (), string, *this))
 			setText (UTF8String (string));
 	}
 	return result;

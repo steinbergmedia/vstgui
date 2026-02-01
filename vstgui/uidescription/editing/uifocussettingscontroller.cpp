@@ -119,7 +119,8 @@ SharedPointer<CView> UIFocusSettingsController::verifyView (const SharedPointer<
 void UIFocusSettingsController::valueChanged (CControl& control) {}
 
 //----------------------------------------------------------------------------------------------------
-bool UIFocusSettingsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
+bool UIFocusSettingsController::valueToString (float value, char utf8String[256],
+											   CParamDisplay& userData)
 {
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
@@ -129,7 +130,8 @@ bool UIFocusSettingsController::valueToString (float value, char utf8String[256]
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
+bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result,
+											   CTextEdit& userData)
 {
 	if (txt)
 	{

@@ -95,13 +95,13 @@ bool CTextEdit::getSecureStyle () const
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::registerTextEditListener (ITextEditListener* listener)
+void CTextEdit::registerTextEditListener (const SharedPointer<ITextEditListener>& listener)
 {
 	textEditListeners.add (listener);
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::unregisterTextEditListener (ITextEditListener* listener)
+void CTextEdit::unregisterTextEditListener (const SharedPointer<ITextEditListener>& listener)
 {
 	textEditListeners.remove (listener);
 }
@@ -113,7 +113,7 @@ bool CTextEdit::setValue (float val)
 	bool converted = false;
 	std::string string;
 	if (valueToStringFunction)
-		converted = valueToStringFunction (getValue (), string, this);
+		converted = valueToStringFunction (getValue (), string, *this);
 	if (!converted)
 	{
 		char tmp[255];
@@ -140,13 +140,13 @@ void CTextEdit::setText (const UTF8String& txt)
 	if (stringToValueFunction)
 	{
 		float val = getValue ();
-		if (stringToValueFunction (txt, val, this))
+		if (stringToValueFunction (txt, val, *this))
 		{
 			CTextLabel::setValue (val);
 			if (valueToStringFunction)
 			{
 				std::string string;
-				valueToStringFunction (getValue (), string, this);
+				valueToStringFunction (getValue (), string, *this);
 				CTextLabel::setText (UTF8String (std::move (string)));
 				if (platformControl)
 					platformControl->setText (getText ());
@@ -359,7 +359,7 @@ void CTextEdit::createPlatformTextEdit ()
 	{
 		platformControl = frame->getPlatformFrame ()->createPlatformTextEdit (this);
 		textEditListeners.forEach (
-			[this] (ITextEditListener* l) { l->onTextEditPlatformControlTookFocus (this); });
+			[this] (auto& l) { l->onTextEditPlatformControlTookFocus (*this); });
 		if (frame->getFocusView ().get () != this)
 			frame->setFocusView (shared (this));
 	}
@@ -396,8 +396,7 @@ void CTextEdit::looseFocus ()
 	
 	_platformControl = nullptr;
 
-	textEditListeners.forEach (
-	    [this] (ITextEditListener* l) { l->onTextEditPlatformControlLostFocus (this); });
+	textEditListeners.forEach ([this] (auto& l) { l->onTextEditPlatformControlLostFocus (*this); });
 
 	// if you want to destroy the text edit do it with the loose focus message
 	auto receiver = getParentView ();

@@ -40,8 +40,8 @@ protected:
 
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 
-	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
-	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
+	static bool valueToString (float value, char utf8String[256], CParamDisplay& userData);
+	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit& userData);
 
 	SharedPointer<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;

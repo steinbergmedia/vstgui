@@ -563,7 +563,7 @@ SharedPointer<CView> UIGradientEditorController::verifyView (const SharedPointer
 	{
 		if (control->getTag () == kPositionTag)
 		{
-			control->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit*) {
+			control->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit&) {
 				UTF8StringView t (txt);
 				result = t.toFloat ();
 				return true;

@@ -394,20 +394,22 @@ public:
 			{
 				zoomValueControl->setMin (50.f);
 				zoomValueControl->setMax (1000.f);
-				zoomValueControl->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit*) {
-					int32_t intValue = static_cast<int32_t> (strtol (txt, nullptr, 10));
-					if (intValue > 0)
-					{
-						result = static_cast<float> (intValue);
+				zoomValueControl->setStringToValueFunction (
+					[] (UTF8StringPtr txt, float& result, CTextEdit&) {
+						int32_t intValue = static_cast<int32_t> (strtol (txt, nullptr, 10));
+						if (intValue > 0)
+						{
+							result = static_cast<float> (intValue);
+							return true;
+						}
+
+						return false;
+					});
+				zoomValueControl->setValueToStringFunction (
+					[] (float value, char utf8String[256], CParamDisplay&) {
+						snprintf (utf8String, 255, "%u %%", static_cast<uint32_t> (value));
 						return true;
-					}
-					
-					return false;
-				});
-				zoomValueControl->setValueToStringFunction ([] (float value, char utf8String[256], CParamDisplay*) {
-					snprintf (utf8String, 255, "%u %%", static_cast<uint32_t> (value));
-					return true;
-				});
+					});
 				zoomValueControl->setValue (100.f);
 				auto font = description.getFont ("control.font");
 				CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;

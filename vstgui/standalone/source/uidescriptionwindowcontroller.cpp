@@ -196,20 +196,20 @@ public:
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
 			paramDisplay->setValueToStringFunction2 (
-			    [this] (float val, std::string& utf8String, CParamDisplay* display) {
-				    utf8String = this->value->getConverter ().valueAsString (val);
+				[this] (float val, std::string& utf8String, CParamDisplay& display) {
+					utf8String = this->value->getConverter ().valueAsString (val);
 				    return true;
-			    });
+				});
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
 			{
 				textEdit->setStringToValueFunction (
-				    [&] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) {
-					    auto v = value->getConverter ().stringAsValue (txt);
+					[&] (UTF8StringPtr txt, float& result, CTextEdit& textEdit) {
+						auto v = value->getConverter ().stringAsValue (txt);
 					    if (v == IValue::InvalidValue)
 						    v = value->getValue ();
 					    result = static_cast<float> (v);
 					    return true;
-				    });
+					});
 			}
 		}
 		else if (auto listControl = dynamic_cast<CListControl*> (control))

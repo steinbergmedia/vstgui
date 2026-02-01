@@ -138,11 +138,11 @@ void UIColorChooserController::updateColorSliders ()
 void UIColorChooserController::uiColorChanged (UIColor& c) { updateColorSliders (); }
 
 //----------------------------------------------------------------------------------------------------
-bool UIColorChooserController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
+bool UIColorChooserController::valueToString (float value, char utf8String[256],
+											  CParamDisplay& display)
 {
-	auto* display = static_cast<CParamDisplay*>(userData);
 	std::stringstream str;
-	switch (display->getTag ())
+	switch (display.getTag ())
 	{
 		case kSaturationTag:
 		case kLightnessTag:
@@ -168,7 +168,7 @@ bool UIColorChooserController::valueToString (float value, char utf8String[256],
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
+bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit& textEdit)
 {
 	std::locale origLocale;
 	std::locale::global (std::locale::classic ());
@@ -179,8 +179,7 @@ bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, 
 	std::locale::global (origLocale);
 	if (endptr != txt)
 	{
-		auto* display = static_cast<CParamDisplay*>(userData);
-		switch (display->getTag ())
+		switch (textEdit.getTag ())
 		{
 			case kSaturationTag:
 			case kLightnessTag:

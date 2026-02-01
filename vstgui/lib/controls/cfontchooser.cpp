@@ -132,7 +132,10 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 	sizeEdit->setMin (6);
 	sizeEdit->setValue (2000);
 	sizeEdit->sizeToFit ();
-	sizeEdit->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) { result = UTF8StringView (txt).toFloat (); return true; });
+	sizeEdit->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit& textEdit) {
+		result = UTF8StringView (txt).toFloat ();
+		return true;
+	});
 	addSubview (sizeEdit);
 	controlRect.offset (0, 20);
 	boldBox = makeShared<CCheckBox> (controlRect, this, CFontChooserInternal::kFontChooserBoldTag,

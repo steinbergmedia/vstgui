@@ -46,8 +46,9 @@ public:
 	//@{
 	using StringToValueUserData = CTextEdit;
 
-	using StringToValueFunction = std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)>;
-	
+	using StringToValueFunction =
+		std::function<bool (UTF8StringPtr txt, float& result, CTextEdit& textEdit)>;
+
 	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);
 	
@@ -64,8 +65,8 @@ public:
 	virtual void setPlaceholderString (const UTF8String& str);
 	const UTF8String& getPlaceholderString () const { return placeholderString; }
 
-	void registerTextEditListener (ITextEditListener* listener);
-	void unregisterTextEditListener (ITextEditListener* listener);
+	void registerTextEditListener (const SharedPointer<ITextEditListener>& listener);
+	void unregisterTextEditListener (const SharedPointer<ITextEditListener>& listener);
 	//@}
 
 	// overrides
@@ -118,7 +119,7 @@ protected:
 	bool secureStyle {false};
 	mutable SharedPointer<CFontDesc> platformFont;
 	UTF8String placeholderString;
-	DispatchList<ITextEditListener*> textEditListeners;
+	DispatchList<SharedPointer<ITextEditListener>> textEditListeners;
 };
 
 } // VSTGUI

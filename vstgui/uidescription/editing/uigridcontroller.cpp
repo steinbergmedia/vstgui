@@ -279,7 +279,7 @@ void UIGridController::syncMenuValueAndSize ()
 void UIGridController::setupTextEdit (const SharedPointer<CTextEdit>& te) const
 {
 	te->setPrecision (0);
-	te->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) {
+	te->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit& textEdit) {
 		if (auto value = UTF8StringView (txt).toNumber<float> ())
 		{
 			result = *value;

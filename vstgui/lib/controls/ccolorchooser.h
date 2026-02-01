@@ -82,12 +82,12 @@ protected:
 	};
 
 	//-----------------------------------------------------------------------------
-	static bool convertNormalized (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData);
-	static bool convertColorValue (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData);
-	static bool convertAngle (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData);
-	static bool convertNormalizedToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData);
-	static bool convertColorValueToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData);
-	static bool convertAngleToString (float value, char string[256], CParamDisplay::ValueToStringUserData* userData);
+	static bool convertNormalized (UTF8StringPtr string, float& output, CTextEdit& userData);
+	static bool convertColorValue (UTF8StringPtr string, float& output, CTextEdit& userData);
+	static bool convertAngle (UTF8StringPtr string, float& output, CTextEdit& userData);
+	static bool convertNormalizedToString (float value, char string[256], CParamDisplay& userData);
+	static bool convertColorValueToString (float value, char string[256], CParamDisplay& userData);
+	static bool convertAngleToString (float value, char string[256], CParamDisplay& userData);
 	/// @endcond
 
 };

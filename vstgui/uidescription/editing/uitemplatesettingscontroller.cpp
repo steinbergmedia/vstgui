@@ -206,7 +206,8 @@ void UITemplateSettingsController::valueChanged (CControl& control)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UITemplateSettingsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
+bool UITemplateSettingsController::valueToString (float value, char utf8String[256],
+												  CParamDisplay& userData)
 {
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
@@ -216,7 +217,8 @@ bool UITemplateSettingsController::valueToString (float value, char utf8String[2
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UITemplateSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
+bool UITemplateSettingsController::stringToValue (UTF8StringPtr txt, float& result,
+												  CTextEdit& userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;

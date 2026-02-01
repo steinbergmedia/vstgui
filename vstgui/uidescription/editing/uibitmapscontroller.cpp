@@ -615,8 +615,8 @@ protected:
 	void recreateBitmap ();
 	void updateNinePartTiledControls ();
 	void updateMultiFrameControls ();
-	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
-	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
+	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit& userData);
+	static bool valueToString (float value, char utf8String[256], CParamDisplay& userData);
 
 	SharedPointer<CBitmap> bitmap;
 	SharedPointer<UIDescription> editDescription;
@@ -1033,7 +1033,8 @@ SharedPointer<CView> UIBitmapSettingsController::createView (const UIAttributes&
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIBitmapSettingsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
+bool UIBitmapSettingsController::valueToString (float value, char utf8String[256],
+												CParamDisplay& userData)
 {
 	auto intValue = (int32_t)value;
 	std::stringstream str;
@@ -1045,7 +1046,8 @@ bool UIBitmapSettingsController::valueToString (float value, char utf8String[256
 
 
 //----------------------------------------------------------------------------------------------------
-bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
+bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result,
+												CTextEdit& userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;

@@ -118,7 +118,7 @@ void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& func)
 		setValueToStringFunction2 (nullptr);
 		return;
 	}
-	setValueToStringFunction2 ([=] (float value, std::string& str, CParamDisplay* display) {
+	setValueToStringFunction2 ([=] (float value, std::string& str, CParamDisplay& display) {
 		char string[256];
 		string[0] = 0;
 		if (func (value, string, display))
@@ -174,7 +174,7 @@ void CParamDisplay::draw (CDrawContext& context)
 
 	bool converted = false;
 	if (valueToStringFunction)
-		converted = valueToStringFunction (getValue (), string, this);
+		converted = valueToStringFunction (getValue (), string, *this);
 	if (!converted)
 	{
 		char tmp[255];

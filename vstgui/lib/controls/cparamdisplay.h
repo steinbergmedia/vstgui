@@ -81,13 +81,14 @@ public:
 	virtual void setFrameWidth (const CCoord& width);
 	CCoord getFrameWidth () const { return frameWidth; }
 
-	using ValueToStringUserData = CParamDisplay;
-	using ValueToStringFunction = std::function<bool (float value, char utf8String[256], CParamDisplay* display)>;
-	
+	using ValueToStringFunction =
+		std::function<bool (float value, char utf8String[256], CParamDisplay& display)>;
+
 	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
 
-	using ValueToStringFunction2 = std::function<bool (float value, std::string& result, CParamDisplay* display)>;
+	using ValueToStringFunction2 =
+		std::function<bool (float value, std::string& result, CParamDisplay& display)>;
 
 	void setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc);
 	void setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc);
