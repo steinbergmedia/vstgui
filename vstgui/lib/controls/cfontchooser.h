@@ -18,7 +18,7 @@ namespace VSTGUI {
 class IFontChooserDelegate
 {
 public:
-	virtual void fontChanged (CFontChooser* chooser, SharedPointer<CFontDesc> newFont) = 0;
+	virtual void fontChanged (CFontChooser& chooser, SharedPointer<CFontDesc> newFont) = 0;
 };
 
 ///	@ingroup new_in_4_0

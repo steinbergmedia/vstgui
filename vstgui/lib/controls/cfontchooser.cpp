@@ -265,7 +265,7 @@ void CFontChooser::valueChanged (CControl& pControl)
 		}
 	}
 	if (delegate)
-		delegate->fontChanged (this, selFont);
+		delegate->fontChanged (*this, selFont);
 	fontPreviewView.cast<CFontChooserInternal::FontPreviewView> ()->setFont (selFont);
 }
 
@@ -276,7 +276,7 @@ void CFontChooser::dbSelectionChanged (int32_t selectedRow, GenericStringListDat
 		selFont->setName (fontNames[static_cast<size_t> (selectedRow)].data ());
 	fontPreviewView.cast<CFontChooserInternal::FontPreviewView> ()->setFont (selFont);
 	if (delegate)
-		delegate->fontChanged (this, selFont);
+		delegate->fontChanged (*this, selFont);
 }
 
 //-----------------------------------------------------------------------------

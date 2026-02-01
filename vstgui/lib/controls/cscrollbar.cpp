@@ -54,6 +54,9 @@ CScrollbar::CScrollbar (const CScrollbar& v)
 	calculateScrollerLength ();
 }
 
+//------------------------------------------------------------------------
+void CScrollbar::setDrawer (const SharedPointer<IScrollbarDrawer>& d) { drawer = d; }
+
 //-----------------------------------------------------------------------------
 void CScrollbar::setViewSize (const CRect &newSize, bool invalid)
 {
@@ -355,7 +358,7 @@ void CScrollbar::drawBackground (CDrawContext& context)
 {
 	CRect r (getViewSize ());
 	if (drawer)
-		drawer->drawScrollbarBackground (context, r, direction, this);
+		drawer->drawScrollbarBackground (context, r, direction, *this);
 	else
 	{
 		context.setDrawMode (kAliasing);
@@ -372,7 +375,7 @@ void CScrollbar::drawScroller (CDrawContext& context, const CRect& size)
 {
 	CRect r (size);
 	if (drawer)
-		drawer->drawScrollbarScroller (context, r, direction, this);
+		drawer->drawScrollbarScroller (context, r, direction, *this);
 	else
 	{
 		context.setLineWidth (1);

@@ -29,7 +29,7 @@ public:
 	/// @name CScrollbar Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setDrawer (IScrollbarDrawer* d) { drawer = d; }
+	virtual void setDrawer (const SharedPointer<IScrollbarDrawer>& d);
 	virtual void setScrollSize (const CRect& ssize);
 	virtual void setStep (float newStep) { stepValue = newStep; }
 	
@@ -91,8 +91,9 @@ protected:
 	
 	bool overlayStyle;
 	bool mouseIsInside;
-	
-	IScrollbarDrawer* drawer;
+
+	SharedPointer<IScrollbarDrawer> drawer;
+
 private:
 	SharedPointer<CVSTGUITimer> timer;
 	CPoint startPoint;
@@ -101,16 +102,16 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class IScrollbarDrawer
+class IScrollbarDrawer : public virtual IReference
 //-----------------------------------------------------------------------------
 {
 public:
 	virtual void drawScrollbarBackground (CDrawContext& pContext, const CRect& size,
 										  CScrollbar::ScrollbarDirection direction,
-										  CScrollbar* bar) = 0;
+										  CScrollbar& bar) = 0;
 	virtual void drawScrollbarScroller (CDrawContext& pContext, const CRect& size,
 										CScrollbar::ScrollbarDirection direction,
-										CScrollbar* bar) = 0;
+										CScrollbar& bar) = 0;
 };
 
 } // VSTGUI
