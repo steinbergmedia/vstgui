@@ -41,7 +41,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	bool open (void* pSystemWindow, PlatformType systemWindowType = PlatformType::kDefaultNative, IPlatformFrameConfig* = nullptr);
-	/** closes the frame and calls forget */
+	/** closes the frame */
 	void close ();
 
 	/** set zoom factor */

@@ -234,7 +234,6 @@ private:
 				UTF8StringView tagName = description.lookupControlTagName (button->getTag ());
 				if (!setupButton (button, tagName))
 				{
-					view->forget ();
 					return nullptr;
 				}
 				button->registerViewListener (&alertBoxController);

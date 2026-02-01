@@ -705,27 +705,28 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 
 @end
 
+#if DEBUG
+struct LeakDetector
+{
+	~LeakDetector () noexcept
+	{
+		char* env = getenv ("MallocStackLogging");
+		if (env && (!strcmp (env, "1") || !strcmp (env, "lite")))
+		{
+			char command[1024];
+			pid_t pid = getpid ();
+			snprintf (command, std::size (command), "leaks %d", pid);
+			system (command);
+		}
+	}
+};
+static LeakDetector gLeakDetector __attribute__ ((init_priority (101)));
+;
+#endif
+
 //------------------------------------------------------------------------
 int main (int argc, const char* _Nonnull* _Nonnull argv)
 {
-#if DEBUG
-	struct LeakDetector
-	{
-		~LeakDetector () noexcept
-		{
-			char* env = getenv ("MallocStackLogging");
-			if (env && (!strcmp (env, "1") || !strcmp (env, "lite")))
-			{
-				char command[1024];
-				pid_t pid = getpid ();
-				snprintf (command, std::size (command), "leaks %d", pid);
-				system (command);
-			}
-		}
-	};
-	static LeakDetector gLeakDetector;
-#endif
-
 	VSTGUI::init (CFBundleGetMainBundle ());
 	VSTGUIApplicationDelegate* delegate = [VSTGUIApplicationDelegate new];
 	[NSApplication sharedApplication].delegate = delegate;

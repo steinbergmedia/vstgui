@@ -483,8 +483,6 @@ void Window::onMouseEvent (MouseEvent& event, CFrame& inFrame)
 				}
 				if (catMenu->getNbEntries () > 0)
 					contextMenu->addEntry (item);
-				else
-					item->forget ();
 			}
 		}
 	}

@@ -82,10 +82,6 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 			view->setViewSize (frameSize);
 		}
 	}
-	else
-	{
-		forget ();
-	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -105,7 +101,6 @@ void UIDialogController::close ()
 		frame->endModalViewSession (*modalSession);
 		modalSession = {};
 	}
-	forget ();
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -167,11 +167,7 @@ CViewContainer::~CViewContainer () noexcept
 //-----------------------------------------------------------------------------
 void CViewContainer::beforeDelete ()
 {
-	IDropTarget* dropTarget = nullptr;
-	if (getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
-	{
-		removeAttribute (kCViewContainerDropTargetAttribute);
-	}
+	removeAttribute (kCViewContainerDropTargetAttribute);
 
 	// remove all views
 	CViewContainer::removeAll ();

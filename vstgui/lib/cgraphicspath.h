@@ -23,13 +23,15 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/**
-	 * @brief creates a new gradient object, you must release it with forget() when you're done with it
-	 * @param color1Start value between zero and one which defines the normalized start offset for color1
-	 * @param color2Start value between zero and one which defines the normalized start offset for color2
+	 * @brief creates a new gradient object
+	 * @param color1Start value between zero and one which defines the normalized start offset for
+	 * 					  color1
+	 * @param color2Start value between zero and one which defines the normalized start offset for
+	 * 					  color2
 	 * @param color1 the first color of the gradient
 	 * @param color2 the second color of the gradient
 	 * @return a new gradient object
-	*/
+	 */
 	SharedPointer<CGradient> createGradient (double color1Start, double color2Start,
 											 const CColor& color1, const CColor& color2);
 	//@}

@@ -336,7 +336,7 @@ public:
 
 	~TextController () override
 	{
-		if (textLabel)
+		if (auto textLabel = textLabelPtr.lock ())
 		{
 			textLabel->unregisterViewListener (this);
 			textLabel->unregisterTextLabelListener (this);
@@ -347,15 +347,15 @@ public:
 									 const UIAttributes& attributes,
 									 const IUIDescription& description) override
 	{
-		if (textLabel == nullptr)
+		if (textLabelPtr.expired ())
 		{
 			auto edit = view.cast<CTextLabel> ();
 			if (edit)
 			{
-				textLabel = edit;
-				originalTextColor = textLabel->getFontColor ();
-				textLabel->registerTextLabelListener (this);
-				textLabel->registerViewListener (this);
+				textLabelPtr = edit;
+				originalTextColor = edit->getFontColor ();
+				edit->registerTextLabelListener (this);
+				edit->registerViewListener (this);
 			}
 		}
 		return controller->verifyView (view, attributes, description);
@@ -367,6 +367,7 @@ public:
 
 	void valueChanged (CControl& pControl) override
 	{
+		auto textLabel = textLabelPtr.lock ();
 		if (textLabel.get () == &pControl)
 		{
 			textLabel->setFontColor (originalTextColor);
@@ -376,6 +377,7 @@ public:
 	
 	void setValue (const std::string& value) override
 	{
+		auto textLabel = textLabelPtr.lock ();
 		if (textLabel)
 		{
 			if (hasDifferentValues ())
@@ -394,7 +396,7 @@ public:
 
 	virtual void valueDisplayTruncated (UTF8StringPtr txt)
 	{
-		if (textLabel)
+		if (auto textLabel = textLabelPtr.lock ())
 		{
 			if (txt && *txt != 0)
 				textLabel->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (textLabel->getText ().length () + 1), textLabel->getText ().data ());
@@ -406,6 +408,7 @@ public:
 
 	void viewLostFocus (CView& view) override
 	{
+		auto textLabel = textLabelPtr.lock ();
 		if (&view == textLabel.get ())
 		{
 			SharedPointer<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
@@ -417,7 +420,18 @@ public:
 			}
 		}
 	}
-	
+
+	void viewRemoved (CView& view) override
+	{
+		auto textLabel = textLabelPtr.lock ();
+		if (textLabel.get () == &view)
+		{
+			textLabel->unregisterViewListener (this);
+			textLabel->unregisterTextLabelListener (this);
+			textLabel.reset ();
+		}
+	}
+
 	void onTextLabelTruncatedTextChanged (CTextLabel* label) override
 	{
 		UTF8StringPtr txt = label->getTruncatedText ();
@@ -425,7 +439,7 @@ public:
 	}
 	
 protected:
-	SharedPointer<CTextLabel> textLabel;
+	WeakPointer<CTextLabel> textLabelPtr;
 	CColor originalTextColor;
 };
 
@@ -486,7 +500,8 @@ public:
 						style.lineNumbersFont->setSize (style.lineNumbersFont->getSize () - 2);
 					}
 					textEditor->setStyle (style);
-					textEditor->setPlainText (textLabel->getText ().getString ());
+					if (auto textLabel = textLabelPtr.lock ())
+						textEditor->setPlainText (textLabel->getText ().getString ());
 				}
 				return view;
 			}
@@ -510,9 +525,12 @@ public:
 	void onTextEditorDestroyed (const ITextEditor& te) override
 	{
 		textEditor = nullptr;
-		auto text = te.getPlainText ();
-		if (text != textLabel->getText ().getString ())
-			performValueChange (text.data ());
+		if (auto textLabel = textLabelPtr.lock ())
+		{
+			auto text = te.getPlainText ();
+			if (text != textLabel->getText ().getString ())
+				performValueChange (text.data ());
+		}
 		te.resetController ();
 	}
 
@@ -635,11 +653,14 @@ public:
 			CCommandMenuItem::Desc {entryName->data (), shared (this)});
 		validateMenuEntry (*item.get ());
 		menu->addEntry (item);
-		if (textLabel->getText () == *entryName)
+		if (auto textLabel = textLabelPtr.lock ())
 		{
-			int32_t index = menu->getNbEntries () - 1;
-			menu->setValue ((float)index);
-			menu->setCurrent (index);
+			if (textLabel->getText () == *entryName)
+			{
+				int32_t index = menu->getNbEntries () - 1;
+				menu->setValue ((float)index);
+				menu->setCurrent (index);
+			}
 		}
 	}
 
@@ -674,6 +695,7 @@ public:
 
 	void valueDisplayTruncated (UTF8StringPtr txt) override
 	{
+		auto textLabel = textLabelPtr.lock ();
 		if (textLabel && menu)
 		{
 			if (txt && *txt != 0)

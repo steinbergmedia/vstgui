@@ -216,13 +216,13 @@ public:
 	/// @name Graphics Paths
 	//-----------------------------------------------------------------------------
 	//@{
-	/** create a graphics path object, you need to forget it after usage */
+	/** create a graphics path object */
 	SharedPointer<CGraphicsPath> createGraphicsPath ();
 	/** create a graphics path from a text */
 	SharedPointer<CGraphicsPath> createTextPath (const SharedPointer<CFontDesc>& font,
 												 UTF8StringPtr text);
 
-	/** create a rect with round corners as graphics path, you need to forget it after usage */
+	/** create a rect with round corners as graphics path */
 	SharedPointer<CGraphicsPath> createRoundRectGraphicsPath (const CRect& size, CCoord radius);
 
 	enum PathDrawMode

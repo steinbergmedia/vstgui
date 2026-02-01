@@ -296,40 +296,42 @@ loose the
 class MyController : public DelegationController, public CBaseObject
 {
 public:
-	MyController (const SharedPointer<IController>& baseController) : DelegationController
-(baseController), controlView (nullptr) {} ~MyController ()
+	MyController (const SharedPointer<IController>& baseController)
+	: DelegationController (baseController), controlView (nullptr) {}
+
+	~MyController () noexcept override
 	{
 		if (controlView)
 		{
 			controlView->unregisterControlListener (this);
-			controlView->forget ();
+			controlView.reset ();
 		}
 	}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
-override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 IUIDescription* description) override
 	{
-		auto* control = dynamic_cast<CControl*> (view);
+		auto control = view.cast<CControl> ();
 		if (control && control->getTag () == 20)
 		{
 			controlView = control;
 			controlView->registerControlListener (this);
-			controlView->remember ();
 		}
 		return controller->verifyView (view, attributes, description);
 	}
 
-	void valueChanged (CControl& pControl) override
+	void valueChanged (CControl& control) override
 	{
-		if (pControl == controlView)
+		if (&control == controlView.get ())
 		{
 			// value of the control view changed, do whatever you like
 		}
-		DelegationController::valueChanged (pControl);
+		DelegationController::valueChanged (control);
 	}
 
 protected:
-	CControl* controlView;
+	SharedPointer<CControl> controlView;
 };
 @endcode
 

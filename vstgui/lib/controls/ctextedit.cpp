@@ -291,14 +291,13 @@ CRect CTextEdit::platformGetVisibleSize () const
 //------------------------------------------------------------------------
 void CTextEdit::platformLooseFocus (bool returnPressed)
 {
-	remember ();
+	auto lifeGuard = shared (this);
 	bWasReturnPressed = returnPressed;
 	if (auto frame = getFrame ())
 	{
 		if (frame->getFocusView ().get () == this)
 			frame->setFocusView (nullptr);
 	}
-	forget ();
 }
 
 //------------------------------------------------------------------------

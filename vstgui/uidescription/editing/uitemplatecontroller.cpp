@@ -674,7 +674,6 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 		auto parentView = newDataBrowser->getParentView ();
 		parentView->addSubview (newDataBrowser);
 		next = dataSource;
-		dataSource->forget ();
 		auto scrollView = parentView->getParentView ().cast<CScrollView> ();
 		if (scrollView)
 		{
