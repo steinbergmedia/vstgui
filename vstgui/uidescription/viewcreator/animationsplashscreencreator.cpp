@@ -43,7 +43,7 @@ UTF8StringPtr AnimationSplashScreenCreator::getDisplayName () const
 SharedPointer<CView> AnimationSplashScreenCreator::create (const UIAttributes& attributes,
 														   const IUIDescription& description) const
 {
-	return makeOwned<CAnimationSplashScreen> (CRect (0, 0, 0, 0), -1, nullptr, nullptr);
+	return makeShared<CAnimationSplashScreen> (CRect (0, 0, 0, 0), -1, nullptr, nullptr);
 }
 
 //------------------------------------------------------------------------

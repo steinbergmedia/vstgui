@@ -304,8 +304,8 @@ private:
 				auto view = subMenuView;
 				subMenuView.reset ();
 				view->addAnimation (
-					"AlphaAnimation", makeOwned<AlphaValueAnimation> (0.f, true),
-					makeOwned<CubicBezierTimingFunction> (
+					"AlphaAnimation", makeShared<AlphaValueAnimation> (0.f, true),
+					makeShared<CubicBezierTimingFunction> (
 						CubicBezierTimingFunction::easyOut (theme.menuAnimationTime)),
 					[view] (CView&, const IdStringPtr, IAnimationTarget&) {
 						if (view->isAttached ())
@@ -488,7 +488,7 @@ SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer&
 {
 	auto frame = container.getFrame ();
 	auto dataSource =
-	    makeOwned<DataSource> (container, optionMenu, clickCallback, theme, parentDataSource);
+		makeShared<DataSource> (container, optionMenu, clickCallback, theme, parentDataSource);
 	auto maxWidth = dataSource->calculateMaxWidth (frame.get ());
 	if (parentDataSource)
 	{
@@ -541,17 +541,17 @@ SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer&
 	viewRect.makeIntegral ();
 	viewRect.inset (-1, -1);
 	viewRect.offset (1, 1);
-	auto decorView = makeOwned<CViewContainer> (viewRect);
+	auto decorView = makeShared<CViewContainer> (viewRect);
 	decorView->setBackgroundColor (
 	    GenericOptionMenuDetail::makeDarkerColor (theme.backgroundColor));
 	decorView->setBackgroundColorDrawStyle (kDrawStroked);
 	viewRect.originize ();
 	viewRect.inset (1., 1.);
 	auto browser =
-		makeOwned<CDataBrowser> (viewRect, dataSource.get (),
-								 CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar |
-									 CDataBrowser::kOverlayScrollbars,
-								 2.);
+		makeShared<CDataBrowser> (viewRect, dataSource.get (),
+								  CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar |
+									  CDataBrowser::kOverlayScrollbars,
+								  2.);
 	if (auto sv = browser->getVerticalScrollbar ())
 	{
 		sv->setBackgroundColor (kTransparentCColor);
@@ -568,8 +568,8 @@ SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer&
 
 	using namespace Animation;
 	decorView->setAlphaValue (0.f);
-	decorView->addAnimation ("AlphaAnimation", makeOwned<AlphaValueAnimation> (1.f, true),
-							 makeOwned<CubicBezierTimingFunction> (
+	decorView->addAnimation ("AlphaAnimation", makeShared<AlphaValueAnimation> (1.f, true),
+							 makeShared<CubicBezierTimingFunction> (
 								 CubicBezierTimingFunction::easyIn (theme.menuAnimationTime / 2)));
 	if (!parentDataSource && optionMenu->isCheckStyle ())
 	{
@@ -609,7 +609,7 @@ GenericOptionMenu::GenericOptionMenu (const SharedPointer<CFrame>& frame,
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->frame = frame;
 	impl->theme = theme;
-	impl->container = makeOwned<Impl::ContainerT> (frameSize);
+	impl->container = makeShared<Impl::ContainerT> (frameSize);
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
 	impl->container->registerViewEventListener (this);
@@ -642,8 +642,8 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 
 		auto self = shared (this);
 		impl->container->addAnimation (
-			"OptionMenuDone", makeOwned<AlphaValueAnimation> (0.f, true),
-			makeOwned<CubicBezierTimingFunction> (
+			"OptionMenuDone", makeShared<AlphaValueAnimation> (0.f, true),
+			makeShared<CubicBezierTimingFunction> (
 				CubicBezierTimingFunction::easyOut (impl->theme.menuAnimationTime)),
 			[self, result] (CView&, const IdStringPtr, IAnimationTarget&) {
 				if (!self->impl->container)
@@ -758,7 +758,7 @@ void GenericOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
 	}
 	if (!impl->initialButtonState.empty ())
 	{
-		impl->mouseUpTimer = makeOwned<CVSTGUITimer> (
+		impl->mouseUpTimer = makeShared<CVSTGUITimer> (
 			[this] (CVSTGUITimer*) {
 				impl->mouseUpTimer = nullptr;
 				if (!impl->container ||

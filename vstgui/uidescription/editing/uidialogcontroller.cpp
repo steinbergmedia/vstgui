@@ -71,8 +71,8 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 
 		using namespace Animation;
 		view->addAnimation (
-			"AlphaAnimation", makeOwned<AlphaValueAnimation> (1.f),
-			makeOwned<CubicBezierTimingFunction> (CubicBezierTimingFunction::easyInOut (160)));
+			"AlphaAnimation", makeShared<AlphaValueAnimation> (1.f),
+			makeShared<CubicBezierTimingFunction> (CubicBezierTimingFunction::easyInOut (160)));
 
 		if (resizable)
 		{
@@ -156,8 +156,8 @@ void UIDialogController::valueChanged (CControl& control)
 		auto modalView = frame->getModalView ();
 		using namespace Animation;
 		modalView->addAnimation (
-			"AlphaAnimation", makeOwned<AlphaValueAnimation> (0.f),
-			makeOwned<CubicBezierTimingFunction> (CubicBezierTimingFunction::easyInOut (160)),
+			"AlphaAnimation", makeShared<AlphaValueAnimation> (0.f),
+			makeShared<CubicBezierTimingFunction> (CubicBezierTimingFunction::easyInOut (160)),
 			[this] (auto&&, auto&&, auto&&) { close (); });
 	}
 }
@@ -238,7 +238,7 @@ SharedPointer<CView> UIDialogController::verifyView (const SharedPointer<CView>&
 	{
 		if (resizable)
 		{
-			auto container = makeOwned<CViewContainer> (view->getViewSize ());
+			auto container = makeShared<CViewContainer> (view->getViewSize ());
 			container->setAutosizeFlags (view->getAutosizeFlags ());
 			while (shadowViewContainer->hasChildren ())
 			{

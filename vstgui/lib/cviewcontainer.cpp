@@ -1105,14 +1105,14 @@ SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 		SharedPointer<IDropTarget> dropTarget;
 		if (!getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
 		{
-			dropTarget = makeOwned<CViewContainerDropTarget> (this);
+			dropTarget = makeShared<CViewContainerDropTarget> (this);
 			setAttribute (kCViewContainerDropTargetAttribute, dropTarget);
 		}
 		return dropTarget;
 	}
 	if (auto customDropTarget = CView::getDropTarget ())
 		return customDropTarget;
-	return makeOwned<CViewContainerDropTarget> (this);
+	return makeShared<CViewContainerDropTarget> (this);
 }
 
 #if VSTGUI_TOUCH_EVENT_HANDLING

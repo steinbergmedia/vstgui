@@ -37,11 +37,11 @@ Simple Example:
 Using a setup and teardown function and custom variable storage:
 
 	#include "unittests.h"
-	
+
 	TEST_SUITE_SETUP (CViewContainerTest)
 	{
-		SharedPointer<CViewContainer> container = makeOwned<CViewContainer> (CRect (0, 0, 200, 200));
-		TEST_SUITE_SET_STORAGE (SharedPointer<CViewContainer>, container);
+		SharedPointer<CViewContainer> container = makeShared<CViewContainer> (CRect (0, 0, 200,
+200)); TEST_SUITE_SET_STORAGE (SharedPointer<CViewContainer>, container);
 	}
 
 	TEST_SUITE_TEARDOWN (CViewContainerTest)
@@ -51,10 +51,11 @@ Using a setup and teardown function and custom variable storage:
 
 	TEST_CASE (CViewContainerTest, ChangeViewZOrder)
 	{
-		SharedPointer<CViewContainer>& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
+		SharedPointer<CViewContainer>& container = TEST_SUITE_GET_STORAGE
+(SharedPointer<CViewContainer>);
 		...
 	}
-	
+
 */
 
 namespace VSTGUI {

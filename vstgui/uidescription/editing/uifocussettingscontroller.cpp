@@ -88,7 +88,7 @@ SharedPointer<CView> UIFocusSettingsController::verifyView (const SharedPointer<
 					int32_t index = 0;
 					for (auto& name : names)
 					{
-						menu->addEntry (makeOwned<CMenuItem> (name->c_str ()));
+						menu->addEntry (makeShared<CMenuItem> (name->c_str ()));
 						if (originalSettings.colorName == *name)
 						{
 							menu->setValue ((float)index);

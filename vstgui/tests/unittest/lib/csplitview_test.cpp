@@ -98,8 +98,8 @@ TEST_CASE (CSplitViewTest, AddViewsHorizontal)
 	auto sv = owned (new CSplitView (CRect (0, 0, 100, 100)));
 	sv->setStyle (CSplitView::kHorizontal);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 50, 100));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 40, 100));
+	auto view1 = makeShared<CView> (CRect (0, 0, 50, 100));
+	auto view2 = makeShared<CView> (CRect (0, 0, 40, 100));
 	sv->addSubview (view1);
 	EXPECT (sv->getNbViews () == 1);
 	sv->addSubview (view2);
@@ -116,8 +116,8 @@ TEST_CASE (CSplitViewTest, AddViewsVertical)
 	auto sv = owned (new CSplitView (CRect (0, 0, 100, 100)));
 	sv->setStyle (CSplitView::kVertical);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 100, 50));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 100, 40));
+	auto view1 = makeShared<CView> (CRect (0, 0, 100, 50));
+	auto view2 = makeShared<CView> (CRect (0, 0, 100, 40));
 	sv->addSubview (view1);
 	EXPECT (sv->getNbViews () == 1);
 	sv->addSubview (view2);
@@ -135,8 +135,8 @@ TEST_CASE (CSplitViewTest, ResizeAllViewsHorizontal)
 	sv->setStyle (CSplitView::kHorizontal);
 	sv->setResizeMethod (CSplitView::kResizeAllViews);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 50, 100));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 40, 100));
+	auto view1 = makeShared<CView> (CRect (0, 0, 50, 100));
+	auto view2 = makeShared<CView> (CRect (0, 0, 40, 100));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->setViewSize (CRect (0, 0, 120, 100));
@@ -150,8 +150,8 @@ TEST_CASE (CSplitViewTest, ResizeAllViewsVertical)
 	sv->setStyle (CSplitView::kVertical);
 	sv->setResizeMethod (CSplitView::kResizeAllViews);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 100, 50));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 100, 40));
+	auto view1 = makeShared<CView> (CRect (0, 0, 100, 50));
+	auto view2 = makeShared<CView> (CRect (0, 0, 100, 40));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->setViewSize (CRect (0, 0, 100, 120));
@@ -165,8 +165,8 @@ TEST_CASE (CSplitViewTest, ResizeFirstViewHorizontal)
 	sv->setStyle (CSplitView::kHorizontal);
 	sv->setResizeMethod (CSplitView::kResizeFirstView);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 50, 100));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 40, 100));
+	auto view1 = makeShared<CView> (CRect (0, 0, 50, 100));
+	auto view2 = makeShared<CView> (CRect (0, 0, 40, 100));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->setViewSize (CRect (0, 0, 120, 100));
@@ -180,8 +180,8 @@ TEST_CASE (CSplitViewTest, ResizeFirstViewVertical)
 	sv->setStyle (CSplitView::kVertical);
 	sv->setResizeMethod (CSplitView::kResizeFirstView);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 100, 50));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 100, 40));
+	auto view1 = makeShared<CView> (CRect (0, 0, 100, 50));
+	auto view2 = makeShared<CView> (CRect (0, 0, 100, 40));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->setViewSize (CRect (0, 0, 100, 120));
@@ -195,8 +195,8 @@ TEST_CASE (CSplitViewTest, ResizeLastViewHorizontal)
 	sv->setStyle (CSplitView::kHorizontal);
 	sv->setResizeMethod (CSplitView::kResizeLastView);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 50, 100));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 40, 100));
+	auto view1 = makeShared<CView> (CRect (0, 0, 50, 100));
+	auto view2 = makeShared<CView> (CRect (0, 0, 40, 100));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->setViewSize (CRect (0, 0, 120, 100));
@@ -210,8 +210,8 @@ TEST_CASE (CSplitViewTest, resizeLastViewVertical)
 	sv->setStyle (CSplitView::kVertical);
 	sv->setResizeMethod (CSplitView::kResizeLastView);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 100, 50));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 100, 40));
+	auto view1 = makeShared<CView> (CRect (0, 0, 100, 50));
+	auto view2 = makeShared<CView> (CRect (0, 0, 100, 40));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->setViewSize (CRect (0, 0, 100, 120));
@@ -225,9 +225,9 @@ TEST_CASE (CSplitViewTest, ResizeSecondViewHorizontal)
 	sv->setStyle (CSplitView::kHorizontal);
 	sv->setResizeMethod (CSplitView::kResizeSecondView);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 50, 100));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 20, 100));
-	auto view3 = makeOwned<CView> (CRect (0, 0, 10, 100));
+	auto view1 = makeShared<CView> (CRect (0, 0, 50, 100));
+	auto view2 = makeShared<CView> (CRect (0, 0, 20, 100));
+	auto view3 = makeShared<CView> (CRect (0, 0, 10, 100));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->addSubview (view3);
@@ -243,9 +243,9 @@ TEST_CASE (CSplitViewTest, ResizeSecondViewVertical)
 	sv->setStyle (CSplitView::kVertical);
 	sv->setResizeMethod (CSplitView::kResizeSecondView);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 100, 50));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 100, 20));
-	auto view3 = makeOwned<CView> (CRect (0, 0, 100, 10));
+	auto view1 = makeShared<CView> (CRect (0, 0, 100, 50));
+	auto view2 = makeShared<CView> (CRect (0, 0, 100, 20));
+	auto view3 = makeShared<CView> (CRect (0, 0, 100, 10));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->addSubview (view3);
@@ -261,9 +261,9 @@ TEST_CASE (CSplitViewTest, SetSeparatorWidth)
 	sv->setStyle (CSplitView::kHorizontal);
 	sv->setResizeMethod (CSplitView::kResizeFirstView);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 40, 100));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 20, 100));
-	auto view3 = makeOwned<CView> (CRect (0, 0, 20, 100));
+	auto view1 = makeShared<CView> (CRect (0, 0, 40, 100));
+	auto view2 = makeShared<CView> (CRect (0, 0, 20, 100));
+	auto view3 = makeShared<CView> (CRect (0, 0, 20, 100));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->addSubview (view3);
@@ -278,14 +278,14 @@ TEST_CASE (CSplitViewTest, SetSeparatorWidth)
 
 TEST_CASE (CSplitViewTest, ControllerHorizontal)
 {
-	auto controller = makeOwned<SplitViewController> ();
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 100));
+	auto controller = makeShared<SplitViewController> ();
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 100));
 	auto sv = owned (new CSplitView (CRect (0, 0, 100, 100)));
 	sv->setAttribute (kCViewControllerAttribute, controller);
 	sv->setStyle (CSplitView::kHorizontal);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 40, 100));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 50, 100));
+	auto view1 = makeShared<CView> (CRect (0, 0, 40, 100));
+	auto view2 = makeShared<CView> (CRect (0, 0, 50, 100));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->attached (container);
@@ -314,14 +314,14 @@ TEST_CASE (CSplitViewTest, ControllerHorizontal)
 
 TEST_CASE (CSplitViewTest, ControllerVertical)
 {
-	auto controller = makeOwned<SplitViewController> ();
+	auto controller = makeShared<SplitViewController> ();
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto sv = owned (new CSplitView (CRect (0, 0, 100, 100)));
 	sv->setAttribute (kCViewControllerAttribute, controller);
 	sv->setStyle (CSplitView::kVertical);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 100, 40));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 100, 50));
+	auto view1 = makeShared<CView> (CRect (0, 0, 100, 40));
+	auto view2 = makeShared<CView> (CRect (0, 0, 100, 50));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
 	sv->attached (container);
@@ -354,11 +354,11 @@ TEST_CASE (CSplitViewTest, SeparatorSubView)
 	sv->setStyle (CSplitView::kHorizontal);
 	sv->setResizeMethod (CSplitView::kResizeFirstView);
 	sv->setSeparatorWidth (10);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 40, 100));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 20, 100));
+	auto view1 = makeShared<CView> (CRect (0, 0, 40, 100));
+	auto view2 = makeShared<CView> (CRect (0, 0, 20, 100));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
-	auto sepView = makeOwned<SeparatorSubView> ();
+	auto sepView = makeShared<SeparatorSubView> ();
 	sepView->setViewSize (CRect (0, 0, 10, 10));
 	sepView->setMouseableArea (CRect (0, 0, 10, 10));
 	sv->addViewToSeparator (0, sepView);

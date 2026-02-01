@@ -142,7 +142,7 @@ void XdndHandler::enter (xcb_client_message_event_t& event, xcb_window_t targetI
 
 	if (packageType != IDataPackage::Type::kError)
 	{
-		package = makeOwned<XdndDataPackage> ();
+		package = makeShared<XdndDataPackage> ();
 		package->setPackageType (packageType);
 
 		state = State::DragInitiated;

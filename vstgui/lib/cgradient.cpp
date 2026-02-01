@@ -14,7 +14,7 @@ SharedPointer<CGradient> CGradient::create (const GradientColorStopMap& colorSto
 	if (auto pg = getPlatformFactory ().createGradient ())
 	{
 		pg->setColorStops (colorStopMap);
-		return makeOwned<CGradient> (std::move (pg));
+		return makeShared<CGradient> (std::move (pg));
 	}
 	return {};
 }

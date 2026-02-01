@@ -517,7 +517,7 @@ SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTe
 	if (auto win32Factory = getPlatformFactory ().asWin32Factory ())
 	{
 		if (win32Factory->useGenericTextEdit ())
-			return makeOwned<GenericTextEdit> (textEdit);
+			return makeShared<GenericTextEdit> (textEdit);
 	}
 	return owned<IPlatformTextEdit> (new Win32TextEdit (windowHandle, textEdit));
 }
@@ -534,8 +534,8 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 			buttonState.set (MouseButton::Left);
 		else if (buttons.isRightButton ())
 			buttonState.set (MouseButton::Right);
-		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
-		                                     *genericOptionMenuTheme);
+		return makeShared<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
+											  *genericOptionMenuTheme);
 	}
 	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
 }
@@ -556,7 +556,7 @@ SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
 						  ->getDirectCompositionFactory ()
 						  ->createChildVisual (parent, 100, 100);
 		auto newLayer =
-			makeOwned<Win32ViewLayer> (visual, drawDelegate, [this] (Win32ViewLayer* layer) {
+			makeShared<Win32ViewLayer> (visual, drawDelegate, [this] (Win32ViewLayer* layer) {
 				auto it = std::find (viewLayers.begin (), viewLayers.end (), layer);
 				vstgui_assert (it != viewLayers.end ());
 				if (it != viewLayers.end ())

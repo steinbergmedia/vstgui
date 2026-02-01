@@ -37,7 +37,7 @@ void UIXMLParser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName,
 			{
 				parser->stop ();
 			}
-			newNode = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
+			newNode = makeShared<UINode> (name, makeShared<UIAttributes> (elementAttributes));
 		}
 		else
 		{
@@ -45,20 +45,21 @@ void UIXMLParser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName,
 			{
 				// only allowed second level elements
 				if (name == MainNodeNames::kControlTag || name == MainNodeNames::kColor || name == MainNodeNames::kBitmap)
-					newNode =
-						makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes), true);
+					newNode = makeShared<UINode> (
+						name, makeShared<UIAttributes> (elementAttributes), true);
 				else if (name == MainNodeNames::kFont || name == MainNodeNames::kTemplate
 					  || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom
 					  || name == MainNodeNames::kVariable || name == MainNodeNames::kGradient)
-					newNode = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode =
+						makeShared<UINode> (name, makeShared<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kBitmap)
 			{
 				if (name == "bitmap")
-					newNode =
-						makeOwned<UIBitmapNode> (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeShared<UIBitmapNode> (
+						name, makeShared<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
@@ -66,44 +67,44 @@ void UIXMLParser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName,
 			{
 				if (name == "font")
 					newNode =
-						makeOwned<UIFontNode> (name, makeOwned<UIAttributes> (elementAttributes));
+						makeShared<UIFontNode> (name, makeShared<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kColor)
 			{
 				if (name == "color")
-					newNode =
-						makeOwned<UIColorNode> (name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeShared<UIColorNode> (
+						name, makeShared<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kControlTag)
 			{
 				if (name == "control-tag")
-					newNode = makeOwned<UIControlTagNode> (
-						name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeShared<UIControlTagNode> (
+						name, makeShared<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kVariable)
 			{
 				if (name == "var")
-					newNode = makeOwned<UIVariableNode> (
-						name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeShared<UIVariableNode> (
+						name, makeShared<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kGradient)
 			{
 				if (name == "gradient")
-					newNode = makeOwned<UIGradientNode> (
-						name, makeOwned<UIAttributes> (elementAttributes));
+					newNode = makeShared<UIGradientNode> (
+						name, makeShared<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else
-				newNode = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
+				newNode = makeShared<UINode> (name, makeShared<UIAttributes> (elementAttributes));
 		}
 		if (newNode)
 		{
@@ -113,13 +114,13 @@ void UIXMLParser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName,
 	}
 	else if (name == "vstgui-ui-description")
 	{
-		nodes = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
+		nodes = makeShared<UINode> (name, makeShared<UIAttributes> (elementAttributes));
 		nodeStack.emplace_back (nodes);
 	}
 	else if (name == "vstgui-ui-description-view-list")
 	{
 		vstgui_assert (nodes == nullptr);
-		nodes = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
+		nodes = makeShared<UINode> (name, makeShared<UIAttributes> (elementAttributes));
 		nodeStack.emplace_back (nodes);
 		restoreViewsMode = true;
 	}
@@ -178,7 +179,7 @@ void UIXMLParser::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 		std::string commentStr (comment);
 		if (!commentStr.empty ())
 		{
-			auto commentNode = makeOwned<UICommentNode> (comment);
+			auto commentNode = makeShared<UICommentNode> (comment);
 			parent->getChildren ().add (commentNode);
 		}
 	}

@@ -311,7 +311,7 @@ struct WindowController::Impl : public ICommandHandler
 		window = inWindow.get ();
 		if (!initUIDesc (inFileName))
 			return false;
-		frame = makeOwned<CFrame> (CRect (), nullptr);
+		frame = makeShared<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
 		templateName = inTemplateName;
 
@@ -325,14 +325,14 @@ struct WindowController::Impl : public ICommandHandler
 	{
 		window = inWindow.get ();
 		auto contentProvider =
-			makeOwned<MemoryContentProvider> (inXml, static_cast<uint32_t> (inXml.length ()));
-		uiDesc = makeOwned<UIDescription> (contentProvider);
+			makeShared<MemoryContentProvider> (inXml, static_cast<uint32_t> (inXml.length ()));
+		uiDesc = makeShared<UIDescription> (contentProvider);
 		if (!uiDesc->parse ())
 			return false;
 		if (customization)
 			customization->onUIDescriptionParsed (*uiDesc.get ());
 
-		frame = makeOwned<CFrame> (CRect (), nullptr);
+		frame = makeShared<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
 		templateName = inTemplateName;
 
@@ -473,9 +473,9 @@ struct WindowController::Impl : public ICommandHandler
 		if (Detail::getApplicationPlatformAccess ()
 		        ->getConfiguration ()
 		        .useCompressedUIDescriptionFiles)
-			uiDesc = makeOwned<CompressedUIDescription> (fileName);
+			uiDesc = makeShared<CompressedUIDescription> (fileName);
 		else
-			uiDesc = makeOwned<UIDescription> (fileName);
+			uiDesc = makeShared<UIDescription> (fileName);
 		uiDesc->setSharedResources (Detail::getSharedUIDescription ());
 		if (!uiDesc->parse ())
 		{
@@ -692,7 +692,7 @@ struct WindowController::Impl : public ICommandHandler
 		}
 	};
 
-	SharedPointer<IControllerAdapter> iController {makeOwned<IControllerAdapter> (this)};
+	SharedPointer<IControllerAdapter> iController {makeShared<IControllerAdapter> (this)};
 
 	WindowController& controller;
 	IWindow* window {nullptr};
@@ -732,12 +732,12 @@ struct WindowController::EditImpl : WindowController::Impl
 		if (auto absPath = Detail::getEditFileMap ().get (fileName))
 			fileName = *absPath;
 		window = inWindow.get ();
-		frame = makeOwned<CFrame> (CRect (), nullptr);
+		frame = makeShared<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
 
 		if (!initUIDesc (fileName))
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			attr->setAttribute (UIViewCreator::kAttrSize, "300, 300");
 			attr->setAttribute (UIViewCreator::kAttrAutosize, "left right top bottom");
@@ -913,7 +913,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		if (state)
 		{
 			uiDesc->setController (iController);
-			uiEditController = makeOwned<UIEditController> (uiDesc);
+			uiEditController = makeShared<UIEditController> (uiDesc);
 			auto view = uiEditController->createEditView ();
 			auto viewSize = view->getViewSize ().getSize ();
 			frame->getTransform ().transform (viewSize);

@@ -96,7 +96,7 @@ CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t
 , dbHeaderContainer (nullptr)
 {
 	setTransparency (true);
-	dbView = makeOwned<CDataBrowserView> (CRect (0, 0, 0, 0), db, this);
+	dbView = makeShared<CDataBrowserView> (CRect (0, 0, 0, 0), db, this);
 	dbView->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addSubview (dbView);
 	auto obj = dynamic_cast<IReference*>(db);
@@ -254,10 +254,10 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		CRect headerSize (0, 0, newContainerSize.getWidth (), headerHeight + lineWidth);
 		if (dbHeader == nullptr)
 		{
-			dbHeaderContainer = makeOwned<CViewContainer> (headerSize);
+			dbHeaderContainer = makeShared<CViewContainer> (headerSize);
 			dbHeaderContainer->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->setTransparency (true);
-			dbHeader = makeOwned<CDataBrowserHeader> (headerSize, db, this);
+			dbHeader = makeShared<CDataBrowserHeader> (headerSize, db, this);
 			dbHeaderContainer->addSubview (dbHeader);
 			setEdgeView (Edge::Top, dbHeaderContainer);
 		}
@@ -537,7 +537,7 @@ void CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
 	CRect r = getCellBounds (cell);
 	makeRectVisible (r);
 	CRect cellRect = getCellBounds (cell);
-	auto te = makeOwned<CTextEdit> (cellRect, nullptr, -1, initialText);
+	auto te = makeShared<CTextEdit> (cellRect, nullptr, -1, initialText);
 	db->dbCellSetupTextEdit (cell.row, cell.column, *te.get (), *this);
 	addSubview (te);
 	if (auto frame = getFrame ())

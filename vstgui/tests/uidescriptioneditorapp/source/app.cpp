@@ -73,7 +73,7 @@ public:
 
 	bool init ()
 	{
-		uidesc = makeOwned<UIDescription> (descPath.data ());
+		uidesc = makeShared<UIDescription> (descPath.data ());
 		if (!uidesc->parse ())
 		{
 			// TODO: show alert about error
@@ -81,14 +81,14 @@ public:
 			return false;
 		}
 		uidesc->setFilePath (descPath.data ());
-		lightResDesc = makeOwned<UIDescription> (lightResPath.data ());
+		lightResDesc = makeShared<UIDescription> (lightResPath.data ());
 		if (!lightResDesc->parse ())
 		{
 			// TODO: show alert about error
 			IApplication::instance ().quit ();
 			return false;
 		}
-		darkResDesc = makeOwned<UIDescription> (darkResPath.data ());
+		darkResDesc = makeShared<UIDescription> (darkResPath.data ());
 		if (!darkResDesc->parse ())
 		{
 			darkResDesc = nullptr;
@@ -102,7 +102,7 @@ public:
 		{
 			uidesc->setSharedResources (lightResDesc);
 		}
-		editController = makeOwned<UIEditController> (uidesc);
+		editController = makeShared<UIEditController> (uidesc);
 
 		return true;
 	}
@@ -130,7 +130,7 @@ public:
 		win = &window;
 		CRect r;
 		r.setSize (window.getSize ());
-		auto frame = makeOwned<CFrame> (r, nullptr);
+		auto frame = makeShared<CFrame> (r, nullptr);
 		frame->enableTooltips (true);
 		editController->setDarkTheme (useDarkTheme);
 		if (auto view = editController->createEditView ())

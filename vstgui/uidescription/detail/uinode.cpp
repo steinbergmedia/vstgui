@@ -29,11 +29,11 @@ UINode::UINode (const std::string& _name, const SharedPointer<UIAttributes>& _at
 : name (_name), attributes (_attributes), flags (0)
 {
 	if (needsFastChildNameAttributeLookup)
-		children = makeOwned<UIDescListWithFastFindAttributeNameChild> ();
+		children = makeShared<UIDescListWithFastFindAttributeNameChild> ();
 	else
-		children = makeOwned<UIDescList> ();
+		children = makeShared<UIDescList> ();
 	if (attributes == nullptr)
-		attributes = makeOwned<UIAttributes> ();
+		attributes = makeShared<UIAttributes> ();
 }
 
 //-----------------------------------------------------------------------------
@@ -43,15 +43,15 @@ UINode::UINode (const std::string& _name, const SharedPointer<UIDescList>& _chil
 {
 	vstgui_assert (children != nullptr);
 	if (attributes == nullptr)
-		attributes = makeOwned<UIAttributes> ();
+		attributes = makeShared<UIAttributes> ();
 }
 
 //-----------------------------------------------------------------------------
 UINode::UINode (const UINode& n)
 : name (n.name)
 , data (n.data)
-, attributes (makeOwned<UIAttributes> (*n.attributes.get ()))
-, children (makeOwned<UIDescList> (*n.children.get ()))
+, attributes (makeShared<UIAttributes> (*n.attributes.get ()))
+, children (makeShared<UIDescList> (*n.children.get ()))
 , flags (n.flags)
 {
 }
@@ -304,7 +304,7 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 				{
 					auto result = Base64Codec::encode (buffer.data (),
 					                                   static_cast<uint32_t> (buffer.size ()));
-					auto dataNode = makeOwned<UINode> ("data");
+					auto dataNode = makeShared<UINode> ("data");
 					dataNode->getAttributes ()->setAttribute ("encoding", "base64");
 					dataNode->getData ().append (reinterpret_cast<const char*> (result.data.get ()),
 					                             static_cast<std::streamsize> (result.dataSize));
@@ -329,10 +329,10 @@ SharedPointer<CBitmap> UIBitmapNode::createBitmap (const std::string& str,
 {
 
 	if (auto partDesc = std::get_if<CNinePartTiledDescription> (&variant))
-		return makeOwned<CNinePartTiledBitmap> (CResourceDescription (str.data ()), *partDesc);
+		return makeShared<CNinePartTiledBitmap> (CResourceDescription (str.data ()), *partDesc);
 	else if (auto multiFrameDesc = std::get_if<CMultiFrameBitmapDescription> (&variant))
-		return makeOwned<CMultiFrameBitmap> (CResourceDescription (str.data ()), *multiFrameDesc);
-	return makeOwned<CBitmap> (CResourceDescription (str.c_str ()));
+		return makeShared<CMultiFrameBitmap> (CResourceDescription (str.data ()), *multiFrameDesc);
+	return makeShared<CBitmap> (CResourceDescription (str.c_str ()));
 }
 
 //------------------------------------------------------------------------
@@ -549,14 +549,14 @@ SharedPointer<CFontDesc> UIFontNode::getFont ()
 						if (std::find (fontNames.begin (), fontNames.end (),
 						               trimmedString.getString ()) != fontNames.end ())
 						{
-							font = makeOwned<CFontDesc> (trimmedString.data (), size, fontStyle);
+							font = makeShared<CFontDesc> (trimmedString.data (), size, fontStyle);
 							break;
 						}
 					}
 				}
 			}
 			if (font == nullptr)
-				font = makeOwned<CFontDesc> (nameAttr->c_str (), size, fontStyle);
+				font = makeShared<CFontDesc> (nameAttr->c_str (), size, fontStyle);
 		}
 	}
 	return font;
@@ -699,7 +699,7 @@ void UIGradientNode::setGradient (const SharedPointer<CGradient>& g)
 	const GradientColorStopMap colorStops = gradient->getColorStops ();
 	for (const auto& colorStop : colorStops)
 	{
-		auto node = makeOwned<UINode> ("color-stop");
+		auto node = makeShared<UINode> ("color-stop");
 		node->getAttributes ()->setDoubleAttribute ("start", colorStop.first);
 		auto colorString = colorStop.second.toString ();
 		node->getAttributes ()->setAttribute ("rgba", colorString.getString ());

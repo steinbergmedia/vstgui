@@ -16,8 +16,8 @@ static SharedPointer<CListControl>
 						   CListControlRowDesc::Flags rowFlags = CListControlRowDesc::Flags {
 							   CListControlRowDesc::Selectable | CListControlRowDesc::Hoverable})
 {
-	auto listControl = makeOwned<CListControl> (CRect (0, 0, 100, 100));
-	auto config = makeOwned<StaticListControlConfigurator> (rowHeight, rowFlags);
+	auto listControl = makeShared<CListControl> (CRect (0, 0, 100, 100));
+	auto config = makeShared<StaticListControlConfigurator> (rowHeight, rowFlags);
 	listControl->setMin (0.f);
 	listControl->setMax (static_cast<float> (numRows));
 	listControl->setConfigurator (config);
@@ -31,8 +31,8 @@ static SharedPointer<CScrollView> createScrollViewAndEmbedListControl (
 	const SharedPointer<CViewContainer>& parent, const SharedPointer<CListControl>& listControl)
 {
 	auto scrollView =
-	    makeOwned<CScrollView> (CRect (0, 0, 100, listControl->getHeight () / 2),
-	                            listControl->getViewSize (), CScrollView::kVerticalScrollbar);
+		makeShared<CScrollView> (CRect (0, 0, 100, listControl->getHeight () / 2),
+								 listControl->getViewSize (), CScrollView::kVerticalScrollbar);
 	scrollView->addSubview (listControl);
 	parent->addSubview (scrollView);
 	scrollView->attached (parent);
@@ -241,7 +241,7 @@ TEST_CASE (CListControlTest, PageUp)
 {
 	constexpr auto rowHeight = 20;
 	constexpr auto numRows = 30;
-	auto parent = makeOwned<CViewContainer> (CRect (0, 0, 1000, 1000));
+	auto parent = makeShared<CViewContainer> (CRect (0, 0, 1000, 1000));
 	auto listControl = createTestListControl (rowHeight, numRows);
 	auto scrollView = createScrollViewAndEmbedListControl (parent, listControl);
 	listControl->setValue (numRows);
@@ -272,7 +272,7 @@ TEST_CASE (CListControlTest, PageDown)
 {
 	constexpr auto rowHeight = 20;
 	constexpr auto numRows = 30;
-	auto parent = makeOwned<CViewContainer> (CRect (0, 0, 1000, 1000));
+	auto parent = makeShared<CViewContainer> (CRect (0, 0, 1000, 1000));
 	auto listControl = createTestListControl (rowHeight, numRows);
 	auto scrollView = createScrollViewAndEmbedListControl (parent, listControl);
 	listControl->setValue (0.f);

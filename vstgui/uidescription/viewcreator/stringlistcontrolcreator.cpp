@@ -43,10 +43,10 @@ UTF8StringPtr StringListControlCreator::getDisplayName () const
 SharedPointer<CView> StringListControlCreator::create (const UIAttributes& attributes,
 													   const IUIDescription& description) const
 {
-	auto control = makeOwned<CListControl> (CRect (0, 0, 100, 200));
-	auto drawer = makeOwned<StringListControlDrawer> ();
+	auto control = makeShared<CListControl> (CRect (0, 0, 100, 200));
+	auto drawer = makeShared<StringListControlDrawer> ();
 	control->setDrawer (drawer);
-	auto configurator = makeOwned<StaticListControlConfigurator> (12.);
+	auto configurator = makeShared<StaticListControlConfigurator> (12.);
 	control->setConfigurator (configurator);
 	return control;
 }

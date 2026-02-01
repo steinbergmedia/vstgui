@@ -42,7 +42,7 @@ UTF8StringPtr VuMeterCreator::getDisplayName () const
 SharedPointer<CView> VuMeterCreator::create (const UIAttributes& attributes,
 											 const IUIDescription& description) const
 {
-	return makeOwned<CVuMeter> (CRect (0, 0, 0, 0), nullptr, nullptr, 100);
+	return makeShared<CVuMeter> (CRect (0, 0, 0, 0), nullptr, nullptr, 100);
 }
 
 //------------------------------------------------------------------------

@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-static SharedPointer<IViewFactory> getGenericViewFactory () { return makeOwned<UIViewFactory> (); }
+static SharedPointer<IViewFactory> getGenericViewFactory () { return makeShared<UIViewFactory> (); }
 
 IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
 
@@ -163,9 +163,9 @@ void UIDescription::addDefaultNodes ()
 		int32_t i = 0;
 		while (defaultFonts[i].name != nullptr)
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute ("name", defaultFonts[i].name);
-			auto node = makeOwned<Detail::UIFontNode> ("font", attr);
+			auto node = makeShared<Detail::UIFontNode> ("font", attr);
 			node->setFont (defaultFonts[i].font);
 			node->noExport (true);
 			fontsNode->getChildren ().add (node);
@@ -197,11 +197,11 @@ void UIDescription::addDefaultNodes ()
 		int32_t i = 0;
 		while (defaultColors[i].name != nullptr)
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute ("name", defaultColors[i].name);
 			auto colorStr = defaultColors[i].color.toString ();
 			attr->setAttribute ("rgba", colorStr.getString ());
-			auto node = makeOwned<Detail::UIColorNode> ("color", attr);
+			auto node = makeShared<Detail::UIColorNode> ("color", attr);
 			node->noExport (true);
 			colorsNode->getChildren ().add (node);
 			i++;
@@ -274,7 +274,7 @@ bool UIDescription::parse ()
 	}
 	if (!impl->nodes)
 	{
-		impl->nodes = makeOwned<UINode> ("vstgui-ui-description");
+		impl->nodes = makeShared<UINode> ("vstgui-ui-description");
 		addDefaultNodes ();
 	}
 	return false;
@@ -555,7 +555,7 @@ auto UIDescription::findNodeForView (const SharedPointer<CView>& view) const
 bool UIDescription::storeViews (const std::list<SharedPointer<CView>>& views, OutputStream& stream,
 								SharedPointer<UIAttributes> customData) const
 {
-	auto nodeList = makeOwned<Detail::UIDescList> ();
+	auto nodeList = makeShared<Detail::UIDescList> ();
 	for (auto& view : views)
 	{
 		auto node = findNodeForView (view);
@@ -568,11 +568,11 @@ bool UIDescription::storeViews (const std::list<SharedPointer<CView>>& views, Ou
 		#if VSTGUI_LIVE_EDITING
 			if (auto factory = impl->viewFactory.cast<IViewFactoryEditingSupport> ())
 			{
-				auto attr = makeOwned<UIAttributes> ();
+				auto attr = makeShared<UIAttributes> ();
 				if (factory->getAttributesForView (*view.get (), *const_cast<UIDescription*> (this),
 												   *attr.get ()) == false)
 					return false;
-				auto newNode = makeOwned<UINode> ("view", attr);
+				auto newNode = makeShared<UINode> ("view", attr);
 				nodeList->add (newNode);
 			}
 		#endif
@@ -582,7 +582,7 @@ bool UIDescription::storeViews (const std::list<SharedPointer<CView>>& views, Ou
 	{
 		if (customData)
 		{
-			auto customNode = makeOwned<UINode> (Detail::MainNodeNames::kCustom, customData);
+			auto customNode = makeShared<UINode> (Detail::MainNodeNames::kCustom, customData);
 			nodeList->add (customNode);
 		}
 		UINode baseNode ("vstgui-ui-description-view-list", nodeList);
@@ -663,7 +663,7 @@ SharedPointer<CView> UIDescription::createViewFromNode (const SharedPointer<UINo
 		result = impl->viewFactory->createView (*node->getAttributes ().get (), *this);
 		if (result == nullptr)
 		{
-			result = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
+			result = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
 			impl->viewFactory->applyCustomViewAttributeValues (
 				*result.get (), "CViewContainer", *node->getAttributes ().get (), *this);
 		}
@@ -816,7 +816,7 @@ auto UIDescription::getBaseNode (UTF8StringPtr name, bool create) const -> Share
 
 		if (create)
 		{
-			node = makeOwned<UINode> (name);
+			node = makeShared<UINode> (name);
 			impl->nodes->getChildren ().add (node);
 			return node;
 		}
@@ -1257,11 +1257,11 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 	{
 		if (colorsNode)
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute ("name", name);
 			auto colorStr = newColor.toString ();
 			attr->setAttribute ("rgba", colorStr.getString ());
-			auto newNode = makeOwned<Detail::UIColorNode> ("color", attr);
+			auto newNode = makeShared<Detail::UIColorNode> ("color", attr);
 			colorsNode->getChildren ().add (newNode);
 			colorsNode->sortChildren ();
 			impl->forEachListener (
@@ -1288,9 +1288,9 @@ void UIDescription::changeFont (UTF8StringPtr name, const SharedPointer<CFontDes
 	{
 		if (fontsNode)
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute ("name", name);
-			auto newNode = makeOwned<Detail::UIFontNode> ("font", attr);
+			auto newNode = makeShared<Detail::UIFontNode> ("font", attr);
 			newNode->setFont (newFont);
 			fontsNode->getChildren ().add (newNode);
 			fontsNode->sortChildren ();
@@ -1318,9 +1318,9 @@ void UIDescription::changeGradient (UTF8StringPtr name, const SharedPointer<CGra
 	{
 		if (gradientsNode)
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute ("name", name);
-			auto newNode = makeOwned<Detail::UIGradientNode> ("gradient", attr);
+			auto newNode = makeShared<Detail::UIGradientNode> ("gradient", attr);
 			newNode->setGradient (newGradient);
 			gradientsNode->getChildren ().add (newNode);
 			gradientsNode->sortChildren ();
@@ -1349,9 +1349,9 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 	{
 		if (bitmapsNode)
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute ("name", name);
-			auto newNode = makeOwned<Detail::UIBitmapNode> ("bitmap", attr);
+			auto newNode = makeShared<Detail::UIBitmapNode> ("bitmap", attr);
 			if (nineparttiledOffset)
 				newNode->setNinePartTiledOffset (nineparttiledOffset);
 			newNode->setBitmap (newName);
@@ -1383,9 +1383,9 @@ void UIDescription::changeMultiFrameBitmap (UTF8StringPtr name, UTF8StringPtr ne
 	{
 		if (bitmapsNode)
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute ("name", name);
-			auto newNode = makeOwned<Detail::UIBitmapNode> ("bitmap", attr);
+			auto newNode = makeShared<Detail::UIBitmapNode> ("bitmap", attr);
 			if (desc)
 				newNode->setMultiFrameDesc (desc);
 			newNode->setBitmap (newName);
@@ -1411,13 +1411,13 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 			const std::string* filterName = filter->getAttributeValue ("name");
 			if (filterName == nullptr)
 				continue;
-			auto filterNode = makeOwned<UINode> ("filter");
+			auto filterNode = makeShared<UINode> ("filter");
 			filterNode->getAttributes ()->setAttribute ("name", *filterName);
 			for (auto& it2 : *filter.get ())
 			{
 				if (it2.first == "name")
 					continue;
-				auto propertyNode = makeOwned<UINode> ("property");
+				auto propertyNode = makeShared<UINode> ("property");
 				propertyNode->getAttributes ()->setAttribute("name", it2.first);
 				propertyNode->getAttributes ()->setAttribute("value", it2.second);
 				filterNode->getChildren ().add (propertyNode);
@@ -1445,7 +1445,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 				const std::string* filterName = childNode->getAttributes ()->getAttributeValue ("name");
 				if (filterName == nullptr)
 					continue;
-				auto attributes = makeOwned<UIAttributes> ();
+				auto attributes = makeShared<UIAttributes> ();
 				attributes->setAttribute ("name", *filterName);
 				for (auto& it2 : childNode->getChildren ())
 				{
@@ -1650,9 +1650,9 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node,
 			std::string subTemplateName;
 			if (getTemplateNameFromView (subView, subTemplateName))
 			{
-				auto attr = makeOwned<UIAttributes> ();
+				auto attr = makeShared<UIAttributes> ();
 				attr->setAttribute (Detail::MainNodeNames::kTemplate, subTemplateName);
-				auto subNode = makeOwned<UINode> ("view", attr);
+				auto subNode = makeShared<UINode> ("view", attr);
 				node->getChildren ().add (subNode);
 				updateAttributesForView (subNode, subView, false);
 				CRect r = subView->getViewSize ();
@@ -1668,7 +1668,7 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node,
 			{
 				// check if subview is created via UIDescription
 				// if it is, it's just added to this node
-				auto subNode = makeOwned<UINode> ("view");
+				auto subNode = makeShared<UINode> ("view");
 				if (updateAttributesForView (subNode, subView))
 				{
 					node->getChildren ().add (subNode);
@@ -1721,7 +1721,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, const SharedPoint
 		}
 		if (node == nullptr)
 		{
-			node = makeOwned<UINode> (Detail::MainNodeNames::kTemplate);
+			node = makeShared<UINode> (Detail::MainNodeNames::kTemplate);
 		}
 		node->getChildren ().removeAll ();
 		updateAttributesForView (node, view);
@@ -1737,7 +1737,7 @@ bool UIDescription::addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAt
 	auto templateNode = findChildNodeByNameAttribute (impl->nodes, name);
 	if (templateNode == nullptr)
 	{
-		auto newNode = makeOwned<UINode> (Detail::MainNodeNames::kTemplate, attr);
+		auto newNode = makeShared<UINode> (Detail::MainNodeNames::kTemplate, attr);
 		attr->setAttribute ("name", name);
 		impl->nodes->getChildren ().add (newNode);
 		impl->forEachListener (
@@ -1787,7 +1787,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 	auto templateNode = findChildNodeByNameAttribute (impl->nodes, name);
 	if (templateNode)
 	{
-		auto duplicate = makeOwned<UINode> (*templateNode.get ());
+		auto duplicate = makeShared<UINode> (*templateNode.get ());
 		vstgui_assert (duplicate);
 		if (duplicate)
 		{
@@ -1814,7 +1814,7 @@ bool UIDescription::setCustomAttributes (UTF8StringPtr name, const SharedPointer
 	if (!parent)
 		return false;
 	attr->setAttribute ("name", name);
-	customNode = makeOwned<UINode> ("attributes", attr);
+	customNode = makeShared<UINode> ("attributes", attr);
 	parent->getChildren ().add (customNode);
 	return true;
 }
@@ -1835,7 +1835,7 @@ SharedPointer<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr na
 		return attributes;
 	if (create)
 	{
-		auto attrs = makeOwned<UIAttributes> ();
+		auto attrs = makeShared<UIAttributes> ();
 		if (setCustomAttributes (name, attrs))
 			return attrs;
 	}
@@ -1904,9 +1904,9 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 	{
 		if (tagsNode)
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute ("name", tagName);
-			auto node = makeOwned<Detail::UIControlTagNode> ("control-tag", attr);
+			auto node = makeShared<Detail::UIControlTagNode> ("control-tag", attr);
 			node->setTagString (newTagString);
 			tagsNode->getChildren ().add (node);
 			tagsNode->sortChildren ();

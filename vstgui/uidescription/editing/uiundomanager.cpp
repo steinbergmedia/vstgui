@@ -47,7 +47,7 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UIUndoManager::UIUndoManager ()
 {
-	emplace_back (makeOwned<UndoStackTop> ());
+	emplace_back (makeShared<UndoStackTop> ());
 	position = begin ();
 	savePosition = begin ();
 }
@@ -150,7 +150,7 @@ UTF8StringPtr UIUndoManager::getRedoName ()
 void UIUndoManager::clear ()
 {
 	std::list<SharedPointer<IAction>>::clear ();
-	emplace_back (makeOwned<UndoStackTop> ());
+	emplace_back (makeShared<UndoStackTop> ());
 	position = end ();
 	savePosition = begin ();
 	forEachListener ([] (IUIUndoManagerListener* l) { l->onUndoManagerChange (); });
@@ -159,7 +159,7 @@ void UIUndoManager::clear ()
 //----------------------------------------------------------------------------------------------------
 void UIUndoManager::startGroupAction (UTF8StringPtr name)
 {
-	groupQueue.emplace_back (makeOwned<UIGroupAction> (name));
+	groupQueue.emplace_back (makeShared<UIGroupAction> (name));
 }
 
 //----------------------------------------------------------------------------------------------------

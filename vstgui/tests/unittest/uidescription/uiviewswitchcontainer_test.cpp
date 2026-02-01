@@ -34,11 +34,11 @@ struct TestUIDescription : public UIDescriptionAdapter,
 									 const SharedPointer<IController>& controller) const override
 	{
 		if (UTF8StringView (name) == "v1")
-			return makeOwned<View1> ();
+			return makeShared<View1> ();
 		else if (UTF8StringView (name) == "v2")
-			return makeOwned<View2> ();
+			return makeShared<View2> ();
 		else if (UTF8StringView (name) == "v3")
-			return makeOwned<View3> ();
+			return makeShared<View3> ();
 		return nullptr;
 	}
 };
@@ -50,9 +50,9 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaIndex)
 	TestUIDescription uiDesc;
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-	auto viewSwitch = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
+	auto viewSwitch = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	viewSwitch->setAnimationTime (0);
-	auto controller = makeOwned<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
+	auto controller = makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1,v2");
 	EXPECT (container->addSubview (viewSwitch));
 	container->attached (rootView);
@@ -69,11 +69,11 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaControl)
 	TestUIDescription uiDesc;
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-	auto viewSwitch = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
+	auto viewSwitch = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	viewSwitch->setAnimationTime (0);
-	auto control = makeOwned<COnOffButton> (CRect (0, 0, 0, 0));
+	auto control = makeShared<COnOffButton> (CRect (0, 0, 0, 0));
 	control->setTag (1);
-	auto controller = makeOwned<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
+	auto controller = makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1,v2");
 	controller->setSwitchControlTag (1);
 	EXPECT (container->addSubview (control));
@@ -91,8 +91,8 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, AutosizeAll)
 	TestUIDescription uiDesc;
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-	auto viewSwitch = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
-	auto controller = makeOwned<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
+	auto viewSwitch = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
+	auto controller = makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v3");
 	EXPECT (container->addSubview (viewSwitch));
 	container->attached (rootView);
@@ -109,9 +109,9 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, NoAnimation)
 	TestUIDescription uiDesc;
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
-	auto viewSwitch = makeOwned<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
+	auto viewSwitch = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	viewSwitch->setAnimationTime (0);
-	auto controller = makeOwned<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
+	auto controller = makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1");
 	EXPECT (container->addSubview (viewSwitch));
 	container->attached (rootView);

@@ -209,7 +209,7 @@ SharedPointer<CView> UIColorChooserController::createView (const UIAttributes& a
 			int32_t tag = controlTagStr ? description.getTagForName (controlTagStr->c_str ()) : -1;
 			if (tag != -1)
 			{
-				return makeOwned<UIColorSlider> (color, tag);
+				return makeShared<UIColorSlider> (color, tag);
 			}
 		}
 	}
@@ -236,7 +236,7 @@ SharedPointer<CView> UIColorChooserController::verifyView (const SharedPointer<C
 	}
 	else if (auto container = view->asViewContainer ())
 	{
-		container->setDropTarget (makeOwned<UIColorChooserDropTarget> (color));
+		container->setDropTarget (makeShared<UIColorChooserDropTarget> (color));
 	}
 	return view;
 }

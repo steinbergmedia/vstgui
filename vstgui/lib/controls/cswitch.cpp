@@ -476,7 +476,7 @@ void CRockerSwitch::onMouseWheelEvent (MouseWheelEvent& event)
 
 	if (resetValueTimer == nullptr)
 	{
-		resetValueTimer = makeOwned<CVSTGUITimer> (
+		resetValueTimer = makeShared<CVSTGUITimer> (
 			[this] (auto&&) {
 				float newValue = (getMax () - getMin ()) / 2.f + getMin ();
 				if (getValue () != newValue)

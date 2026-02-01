@@ -105,8 +105,8 @@ TEST_CASE (CControlTest, SetValueNormalized)
 
 TEST_CASE (CControlTest, CheckDefaultValue)
 {
-	auto frame = makeOwned<CFrame> (CRect {}, nullptr);
-	auto c = makeOwned<Control> ();
+	auto frame = makeShared<CFrame> (CRect {}, nullptr);
+	auto c = makeShared<Control> ();
 	frame->addSubview (c);
 	frame->attached (frame);
 

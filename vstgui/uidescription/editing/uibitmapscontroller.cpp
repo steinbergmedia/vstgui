@@ -177,7 +177,7 @@ public:
 			if (!buffer.empty ())
 			{
 				auto newPlatformBitmap = getPlatformFactory ().createBitmapFromMemory (buffer.data (), static_cast<uint32_t> (buffer.size ()));
-				CView::setBackground (makeOwned<CBitmap> (newPlatformBitmap));
+				CView::setBackground (makeShared<CBitmap> (newPlatformBitmap));
 			}
 		}
 		else
@@ -313,7 +313,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where,
 	{
 		if (auto bitmap = getSelectedBitmap ())
 		{
-			auto attr = makeOwned<UIAttributes> ();
+			auto attr = makeShared<UIAttributes> ();
 			attr->setAttribute (UIViewCreator::kAttrBitmap, getSelectedBitmapName ());
 			attr->setPointAttribute (UIViewCreator::kAttrSize, bitmap->getSize ());
 			if (auto selection = createSelectionFromViewName (UIViewCreator::kCView,
@@ -1025,7 +1025,7 @@ SharedPointer<CView> UIBitmapSettingsController::createView (const UIAttributes&
 	{
 		if (*name == "BitmapView")
 		{
-			bitmapView = makeOwned<UIBitmapView> ();
+			bitmapView = makeShared<UIBitmapView> ();
 			return bitmapView;
 		}
 	}
@@ -1064,7 +1064,7 @@ UIBitmapsController::UIBitmapsController (const SharedPointer<IController>& base
 , actionPerformer (actionPerformer)
 , undoManager (undoManager)
 {
-	dataSource = makeOwned<UIBitmapsDataSource> (editDescription, actionPerformer, this);
+	dataSource = makeShared<UIBitmapsDataSource> (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
 }
 
@@ -1075,7 +1075,7 @@ UIBitmapsController::~UIBitmapsController () {}
 void UIBitmapsController::showSettingsDialog ()
 {
 	auto* dc = new UIDialogController (shared (this), bitmapPathEdit->getFrame ());
-	auto fsController = makeOwned<UIBitmapSettingsController> (
+	auto fsController = makeShared<UIBitmapSettingsController> (
 		dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription,
 		actionPerformer, undoManager);
 	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController,
@@ -1091,15 +1091,15 @@ SharedPointer<CView> UIBitmapsController::createView (const UIAttributes& attrib
 	{
 		if (*name == "BitmapsBrowser")
 		{
-			auto dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
-														CDataBrowser::kDrawRowLines |
-															CScrollView::kHorizontalScrollbar |
-															CScrollView::kVerticalScrollbar);
+			auto dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+														 CDataBrowser::kDrawRowLines |
+															 CScrollView::kHorizontalScrollbar |
+															 CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 		else if (*name == "BitmapView")
 		{
-			bitmapView = makeOwned<UIBitmapView> ();
+			bitmapView = makeShared<UIBitmapView> ();
 			return bitmapView;
 		}
 	}

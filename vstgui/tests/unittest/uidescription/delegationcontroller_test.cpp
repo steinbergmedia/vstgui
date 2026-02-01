@@ -87,7 +87,7 @@ DummyControl gDummyControlInstance;
 
 TEST_CASE (DelegationControllerTest, ValueChanged)
 {
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.valueChanged (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
@@ -95,7 +95,7 @@ TEST_CASE (DelegationControllerTest, ValueChanged)
 
 TEST_CASE (DelegationControllerTest, ControlModifierClicked)
 {
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.controlModifierClicked (gDummyControlInstance, kLButton);
 	EXPECT (myController->funcCalled);
@@ -103,7 +103,7 @@ TEST_CASE (DelegationControllerTest, ControlModifierClicked)
 
 TEST_CASE (DelegationControllerTest, ControlBeginEdit)
 {
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.controlBeginEdit (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
@@ -111,7 +111,7 @@ TEST_CASE (DelegationControllerTest, ControlBeginEdit)
 
 TEST_CASE (DelegationControllerTest, ControlEndEdit)
 {
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.controlEndEdit (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
@@ -119,7 +119,7 @@ TEST_CASE (DelegationControllerTest, ControlEndEdit)
 
 TEST_CASE (DelegationControllerTest, ControlTagWillChange)
 {
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.controlTagWillChange (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
@@ -127,7 +127,7 @@ TEST_CASE (DelegationControllerTest, ControlTagWillChange)
 
 TEST_CASE (DelegationControllerTest, ControlTagDidChange)
 {
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.controlTagDidChange (gDummyControlInstance);
 	EXPECT (myController->funcCalled);
@@ -135,7 +135,7 @@ TEST_CASE (DelegationControllerTest, ControlTagDidChange)
 
 TEST_CASE (DelegationControllerTest, GetTagForName)
 {
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.getTagForName ("", 0);
 	EXPECT (myController->funcCalled);
@@ -143,7 +143,7 @@ TEST_CASE (DelegationControllerTest, GetTagForName)
 
 TEST_CASE (DelegationControllerTest, GetControlListener)
 {
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.getControlListener ("");
 	EXPECT (myController->funcCalled);
@@ -152,7 +152,7 @@ TEST_CASE (DelegationControllerTest, GetControlListener)
 TEST_CASE (DelegationControllerTest, CreateView)
 {
 	DummyUIDescription uiDesc;
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	UIAttributes a;
 	dc.createView (a, uiDesc);
@@ -162,7 +162,7 @@ TEST_CASE (DelegationControllerTest, CreateView)
 TEST_CASE (DelegationControllerTest, VerifyView)
 {
 	DummyUIDescription uiDesc;
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	UIAttributes a;
 	dc.verifyView (nullptr, a, uiDesc);
@@ -172,7 +172,7 @@ TEST_CASE (DelegationControllerTest, VerifyView)
 TEST_CASE (DelegationControllerTest, CreateSubController)
 {
 	DummyUIDescription uiDesc;
-	auto myController = makeOwned<Controller> ();
+	auto myController = makeShared<Controller> ();
 	DelegationControllerAdapter dc (myController);
 	dc.createSubController ("", uiDesc);
 	EXPECT (myController->funcCalled);

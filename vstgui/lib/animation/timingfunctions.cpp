@@ -158,13 +158,13 @@ SharedPointer<CubicBezierTimingFunction> CubicBezierTimingFunction::make (Style 
 	switch (style)
 	{
 		case Easy:
-			return makeOwned<CubicBezierTimingFunction> (Func::easy (time));
+			return makeShared<CubicBezierTimingFunction> (Func::easy (time));
 		case EasyIn:
-			return makeOwned<CubicBezierTimingFunction> (Func::easyIn (time));
+			return makeShared<CubicBezierTimingFunction> (Func::easyIn (time));
 		case EasyOut:
-			return makeOwned<CubicBezierTimingFunction> (Func::easyOut (time));
+			return makeShared<CubicBezierTimingFunction> (Func::easyOut (time));
 		case EasyInOut:
-			return makeOwned<CubicBezierTimingFunction> (Func::easyInOut (time));
+			return makeShared<CubicBezierTimingFunction> (Func::easyInOut (time));
 	}
 	return {};
 }

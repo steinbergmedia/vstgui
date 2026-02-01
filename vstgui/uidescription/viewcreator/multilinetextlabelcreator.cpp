@@ -50,7 +50,7 @@ UTF8StringPtr MultiLineTextLabelCreator::getDisplayName () const
 SharedPointer<CView> MultiLineTextLabelCreator::create (const UIAttributes& attributes,
 														const IUIDescription& description) const
 {
-	return makeOwned<CMultiLineTextLabel> (CRect (0, 0, 100, 20));
+	return makeShared<CMultiLineTextLabel> (CRect (0, 0, 100, 20));
 }
 
 //------------------------------------------------------------------------

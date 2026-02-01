@@ -28,7 +28,7 @@ COffscreenContext::COffscreenContext (const PlatformGraphicsDeviceContextPtr dev
 									  const CRect& surfaceRect,
 									  const PlatformBitmapPtr& platformBitmap)
 : CDrawContext (device, surfaceRect, platformBitmap ? platformBitmap->getScaleFactor () : 1.)
-, bitmap (makeOwned<CBitmap> (platformBitmap))
+, bitmap (makeShared<CBitmap> (platformBitmap))
 {
 	vstgui_assert (platformBitmap);
 }
@@ -55,7 +55,7 @@ SharedPointer<COffscreenContext> COffscreenContext::create (const CPoint& size, 
 				if (auto context = graphicsDevice->createBitmapContext (bitmap))
 				{
 					CRect surfaceRect (CPoint (), size * scaleFactor);
-					return makeOwned<COffscreenContext> (context, surfaceRect, bitmap);
+					return makeShared<COffscreenContext> (context, surfaceRect, bitmap);
 				}
 			}
 		}

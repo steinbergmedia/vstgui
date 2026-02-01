@@ -50,7 +50,7 @@ public:
 		{
 			if (*name == "ImageView")
 			{
-				auto imageView = makeOwned<ImageFramesView> ();
+				auto imageView = makeShared<ImageFramesView> ();
 				CColor color;
 				if (description.getColor ("Focus", color))
 					imageView->setSelectionColor (color);
@@ -275,7 +275,7 @@ SharedPointer<IController> DocumentWindowController::createController (
 	const IUIDescription& uiDesc)
 {
 	if (name == "ImageViewController")
-		return makeOwned<ImageViewController> (
+		return makeShared<ImageViewController> (
 			[&] (auto&& view) {
 				imageView = view;
 				imageView->setImageList (&imageList);
@@ -283,10 +283,10 @@ SharedPointer<IController> DocumentWindowController::createController (
 			},
 			parent);
 	if (name == "MovieBitmapController")
-		return makeOwned<MovieBitmapController> ([&] (auto&& view) { movieBitmapView = view; },
-												 parent);
+		return makeShared<MovieBitmapController> ([&] (auto&& view) { movieBitmapView = view; },
+												  parent);
 	if (name == "SplitViewController")
-		return makeOwned<SplitViewController> (parent, uiDesc);
+		return makeShared<SplitViewController> (parent, uiDesc);
 	return nullptr;
 }
 
@@ -433,7 +433,7 @@ void DocumentWindowController::onImagePathAdded (const Path& newPath, size_t ind
 		it = imageList.end ();
 	else
 		std::advance (it, index);
-	imageList.insert (it, {makeOwned<CBitmap> (platformBitmap), newPath, false});
+	imageList.insert (it, {makeShared<CBitmap> (platformBitmap), newPath, false});
 	setDirty ();
 }
 
@@ -567,17 +567,17 @@ void DocumentWindowController::doStartAnimation ()
 	auto& converter = animationTimeValue->getConverter ();
 	auto time =
 	    static_cast<uint32_t> (converter.normalizedToPlain (animationTimeValue->getValue ()));
-	timer = makeOwned<CVSTGUITimer> (
-	    [this] (auto) {
-		    auto v = displayFrameValue->getValue ();
-		    v += 1. / imageList.size ();
+	timer = makeShared<CVSTGUITimer> (
+		[this] (auto) {
+			auto v = displayFrameValue->getValue ();
+			v += 1. / imageList.size ();
 		    if (v + std::numeric_limits<double>::epsilon () >= 1.)
 			    v = 0.;
 		    displayFrameValue->beginEdit ();
 		    displayFrameValue->performEdit (v);
 		    displayFrameValue->endEdit ();
-	    },
-	    time);
+		},
+		time);
 }
 
 //------------------------------------------------------------------------
@@ -713,7 +713,7 @@ SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
 	offscreen->endDraw ();
 
 	auto multiFrameBitmap =
-		makeOwned<CMultiFrameBitmap> (offscreen->getBitmap ()->getPlatformBitmap ());
+		makeShared<CMultiFrameBitmap> (offscreen->getBitmap ()->getPlatformBitmap ());
 	auto res = multiFrameBitmap->setMultiFrameDesc (
 		{CPoint (docContext->getWidth (), docContext->getHeight ()),
 		 static_cast<uint16_t> (imageList.size ()), numCols});

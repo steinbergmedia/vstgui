@@ -51,7 +51,7 @@ UTF8StringPtr ControlCreator::getDisplayName () const
 SharedPointer<CView> ControlCreator::create (const UIAttributes& attributes,
 											 const IUIDescription& description) const
 {
-	return makeOwned<CControlCreatorDummyControl> ();
+	return makeShared<CControlCreatorDummyControl> ();
 }
 
 //------------------------------------------------------------------------

@@ -179,7 +179,7 @@ SharedPointer<NSViewDraggingSession> NSViewDraggingSession::create (
 	        [nsView beginDraggingSessionWithItems:dragItems event:event source:draggingSource])
 	{
 		session.animatesToStartingPositionsOnCancelOrFail = YES;
-		return makeOwned<NSViewDraggingSession> (session, desc, callback);
+		return makeShared<NSViewDraggingSession> (session, desc, callback);
 	}
 
 	return nullptr;

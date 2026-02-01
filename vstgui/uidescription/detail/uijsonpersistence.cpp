@@ -156,21 +156,21 @@ struct Handler
 		{
 			auto attrs = newAttributesWithNameAttr (keyStr);
 			attrs->setAttribute (attributeRGBAStr, {str, length});
-			nodeStack.back ()->getChildren ().add (makeOwned<UIColorNode> (colorStr, attrs));
+			nodeStack.back ()->getChildren ().add (makeShared<UIColorNode> (colorStr, attrs));
 		}
 		else if (state == State::InControlTagRootNode)
 		{
 			auto attrs = newAttributesWithNameAttr (keyStr);
 			attrs->setAttribute (attributeTagStr, {str, length});
 			nodeStack.back ()->getChildren ().add (
-				makeOwned<UIControlTagNode> (controlTagStr, attrs));
+				makeShared<UIControlTagNode> (controlTagStr, attrs));
 		}
 		else if (state == State::InVariableRootNode)
 		{
 			auto attrs = newAttributesWithNameAttr (keyStr);
 			attrs->setAttribute (attributeValueStr, {str, length});
 			nodeStack.back ()->getChildren ().add (
-				makeOwned<UIVariableNode> (controlTagStr, attrs));
+				makeShared<UIVariableNode> (controlTagStr, attrs));
 		}
 		else if (state == State::DataNode && keyStr == "data")
 		{
@@ -205,7 +205,7 @@ struct Handler
 			{
 				vstgui_assert (keyStr == "vstgui-ui-description" ||
 				               keyStr == "vstgui-ui-description-view-list");
-				rootNode = makeOwned<UINode> (std::move (keyStr));
+				rootNode = makeShared<UINode> (std::move (keyStr));
 				newNode = rootNode;
 				newState = State::InRootNode;
 				break;
@@ -243,44 +243,44 @@ struct Handler
 					newState = State::InVariableRootNode;
 				else
 					return false;
-				newNode = makeOwned<UINode> (keyStr, nullptr, needsFastChildNameAttributeLookup);
+				newNode = makeShared<UINode> (keyStr, nullptr, needsFastChildNameAttributeLookup);
 				break;
 			}
 			case State::InBitmapRootNode:
 			{
-				newNode = makeOwned<UIBitmapNode> (bitmapStr, newAttributesWithNameAttr (keyStr));
+				newNode = makeShared<UIBitmapNode> (bitmapStr, newAttributesWithNameAttr (keyStr));
 				newState = State::BitmapNode;
 				break;
 			}
 			case State::InFontRootNode:
 			{
-				newNode = makeOwned<UIFontNode> (fontStr, newAttributesWithNameAttr (keyStr));
+				newNode = makeShared<UIFontNode> (fontStr, newAttributesWithNameAttr (keyStr));
 				newState = State::FontNode;
 				break;
 			}
 			case State::InCustomRootNode:
 			{
-				newNode = makeOwned<UINode> (attributesStr, newAttributesWithNameAttr (keyStr));
+				newNode = makeShared<UINode> (attributesStr, newAttributesWithNameAttr (keyStr));
 				newState = State::DataNode;
 				break;
 			}
 			case State::InTemplateRootNode:
 			{
-				newNode = makeOwned<UINode> (templateStr, newAttributesWithNameAttr (keyStr));
+				newNode = makeShared<UINode> (templateStr, newAttributesWithNameAttr (keyStr));
 				newState = State::TemplateNode;
 				break;
 			}
 			case State::BitmapNode:
 			{
 				vstgui_assert (keyStr == keyDataStr);
-				newNode = makeOwned<UINode> (keyStr);
+				newNode = makeShared<UINode> (keyStr);
 				newState = State::DataNode;
 				break;
 			}
 			case State::GradientNode:
 			{
 				vstgui_assert (keyStr.empty ());
-				newNode = makeOwned<UINode> (colorStopStr);
+				newNode = makeShared<UINode> (colorStopStr);
 				newState = State::DataNode;
 				break;
 			}
@@ -294,8 +294,8 @@ struct Handler
 			}
 			case State::ChildrenNode:
 			{
-				auto attr = makeOwned<UIAttributes> (15);
-				newNode = makeOwned<UINode> (viewStr, attr);
+				auto attr = makeShared<UIAttributes> (15);
+				newNode = makeShared<UINode> (viewStr, attr);
 				newState = State::ViewNode;
 				break;
 			}
@@ -339,7 +339,7 @@ struct Handler
 		if (state == State::InGradientRootNode)
 		{
 			auto newNode =
-				makeOwned<UIGradientNode> (gradientStr, newAttributesWithNameAttr (keyStr));
+				makeShared<UIGradientNode> (gradientStr, newAttributesWithNameAttr (keyStr));
 			pushNode (newNode);
 			pushState (State::GradientNode);
 			keyStr.clear ();
@@ -390,7 +390,7 @@ struct Handler
 
 	static SharedPointer<UIAttributes> newAttributesWithNameAttr (const std::string& name)
 	{
-		auto attributes = makeOwned<UIAttributes> ();
+		auto attributes = makeShared<UIAttributes> ();
 		attributes->setAttribute (attributeNameStr, name);
 		return attributes;
 	}

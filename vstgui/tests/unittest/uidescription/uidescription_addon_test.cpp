@@ -90,7 +90,7 @@ TEST_CASE (UIDescriptionAddOnTest, BasicFunctionality)
 	auto myAddOnPtr = myAddOn.get ();
 	auto token = UIDescriptionAddOnRegistry::add (std::move (myAddOn));
 	{
-		auto provider = makeOwned<MemoryContentProvider> (
+		auto provider = makeShared<MemoryContentProvider> (
 			createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
 		UIDescription desc (provider);
 		EXPECT_TRUE (myAddOnPtr->getViewFactoryCalled);

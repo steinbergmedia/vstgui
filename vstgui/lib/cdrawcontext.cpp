@@ -286,7 +286,7 @@ void CDrawContext::setFont (const SharedPointer<CFontDesc>& newFont, const CCoor
 		return;
 	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
 	{
-		impl->currentState.font = makeOwned<CFontDesc> (*newFont.get ());
+		impl->currentState.font = makeShared<CFontDesc> (*newFont.get ());
 		if (size > 0)
 			impl->currentState.font->setSize (size);
 		if (style != -1)
@@ -749,7 +749,7 @@ bool CDrawContext::drawLinearGradientLine (const DrawLinearGradientLineCallback&
 SharedPointer<CGraphicsPath> CDrawContext::createGraphicsPath ()
 {
 	if (impl->device)
-		return makeOwned<CGraphicsPath> (impl->device->getGraphicsPathFactory (), nullptr);
+		return makeShared<CGraphicsPath> (impl->device->getGraphicsPathFactory (), nullptr);
 	return nullptr;
 }
 
@@ -764,7 +764,7 @@ SharedPointer<CGraphicsPath> CDrawContext::createTextPath (const SharedPointer<C
 		if (platformFont && pathFactory)
 		{
 			if (auto textPath = pathFactory->createTextPath (platformFont, text))
-				return makeOwned<CGraphicsPath> (pathFactory, std::move (textPath));
+				return makeShared<CGraphicsPath> (pathFactory, std::move (textPath));
 		}
 	}
 	return nullptr;

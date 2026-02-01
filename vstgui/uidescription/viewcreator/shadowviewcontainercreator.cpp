@@ -42,7 +42,7 @@ UTF8StringPtr ShadowViewContainerCreator::getDisplayName () const
 SharedPointer<CView> ShadowViewContainerCreator::create (const UIAttributes& attributes,
 														 const IUIDescription& description) const
 {
-	return makeOwned<CShadowViewContainer> (CRect (0, 0, 200, 200));
+	return makeShared<CShadowViewContainer> (CRect (0, 0, 200, 200));
 }
 
 //------------------------------------------------------------------------

@@ -137,7 +137,7 @@ SharedPointer<Bitmap> Bitmap::create (UTF8StringPtr absolutePath)
 			cairo_surface_destroy (surface);
 			return nullptr;
 		}
-		return makeOwned<Bitmap> (surface);
+		return makeShared<Bitmap> (surface);
 	}
 	return nullptr;
 }
@@ -149,7 +149,7 @@ SharedPointer<Bitmap> Bitmap::create (const void* ptr, uint32_t memSize)
 													   memSize);
 	if (auto surface = reader.create ())
 	{
-		return makeOwned<Bitmap> (Cairo::SurfaceHandle {surface});
+		return makeShared<Bitmap> (Cairo::SurfaceHandle {surface});
 	}
 	return nullptr;
 }

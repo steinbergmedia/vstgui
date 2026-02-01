@@ -64,12 +64,12 @@ SharedPointer<CView> UIViewCreatorController::createView (const UIAttributes& at
 		{
 			vstgui_assert (dataBrowser == nullptr);
 			dataSource =
-				makeOwned<UIViewCreatorDataSource> (description->getViewFactory (), description);
+				makeShared<UIViewCreatorDataSource> (description->getViewFactory (), description);
 			UIEditController::setupDataSource (dataSource);
-			dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
-												   CDataBrowser::kDrawRowLines |
-													   CScrollView::kHorizontalScrollbar |
-													   CScrollView::kVerticalScrollbar);
+			dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+													CDataBrowser::kDrawRowLines |
+														CScrollView::kHorizontalScrollbar |
+														CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -108,7 +108,7 @@ void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, 
 		return;
 	const auto& viewName = dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row));
 	UTF8String menuEntryName = "Insert '" + viewName + "'";
-	auto item = makeOwned<CCommandMenuItem> (menuEntryName);
+	auto item = makeShared<CCommandMenuItem> (menuEntryName);
 	item->setActions ([&, cell] (auto&& item) { dataSource->addViewToCurrentEditView (cell.row); });
 	contextMenu.addEntry (item);
 }
@@ -176,7 +176,7 @@ SharedPointer<UISelection> createSelectionFromViewName (
 			view->setViewSize (size);
 			view->setMouseableArea (size);
 		}
-		selection = makeOwned<UISelection> ();
+		selection = makeShared<UISelection> ();
 		selection->add (view);
 	}
 	return selection;

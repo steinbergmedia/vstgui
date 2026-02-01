@@ -315,7 +315,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	const CCoord xMargin = settings.margin.x;
 	const CCoord yMargin = settings.margin.y;
 
-	colorView = makeOwned<CColorChooserInternal::ColorView> (
+	colorView = makeShared<CColorChooserInternal::ColorView> (
 		CRect (1, 1, labelWidth + xMargin + controlWidth + xMargin + editWidth, 100), initialColor,
 		this, kColorTag, settings.checkerBoardBack, settings.checkerBoardColor1,
 		settings.checkerBoardColor2);
@@ -326,37 +326,37 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	r.setWidth (controlWidth);
 	r.setHeight (controlHeight);
 
-	redSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kRedTag);
+	redSlider = makeShared<CColorChooserInternal::Slider> (r, this, kRedTag);
 	redSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addSubview (redSlider);
 
 	r.offset (0, yMargin + controlHeight);
-	greenSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kGreenTag);
+	greenSlider = makeShared<CColorChooserInternal::Slider> (r, this, kGreenTag);
 	greenSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addSubview (greenSlider);
 
 	r.offset (0, yMargin + controlHeight);
-	blueSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kBlueTag);
+	blueSlider = makeShared<CColorChooserInternal::Slider> (r, this, kBlueTag);
 	blueSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addSubview (blueSlider);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	hueSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kHueTag);
+	hueSlider = makeShared<CColorChooserInternal::Slider> (r, this, kHueTag);
 	hueSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addSubview (hueSlider);
 
 	r.offset (0, yMargin + controlHeight);
-	saturationSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kSaturationTag);
+	saturationSlider = makeShared<CColorChooserInternal::Slider> (r, this, kSaturationTag);
 	saturationSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addSubview (saturationSlider);
 
 	r.offset (0, yMargin + controlHeight);
-	brightnessSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kBrightnessTag);
+	brightnessSlider = makeShared<CColorChooserInternal::Slider> (r, this, kBrightnessTag);
 	brightnessSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addSubview (brightnessSlider);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	alphaSlider = makeOwned<CColorChooserInternal::Slider> (r, this, kAlphaTag);
+	alphaSlider = makeShared<CColorChooserInternal::Slider> (r, this, kAlphaTag);
 	alphaSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addSubview (alphaSlider);
 
@@ -374,43 +374,43 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	r.offset (0, r.bottom + yMargin);
 	r.setWidth (labelWidth);
 	r.setHeight (controlHeight);
-	auto label = makeOwned<CTextLabel> (r, "Red");
+	auto label = makeShared<CTextLabel> (r, "Red");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	addSubview (label);
 
 	r.offset (0, yMargin + controlHeight);
-	label = makeOwned<CTextLabel> (r, "Green");
+	label = makeShared<CTextLabel> (r, "Green");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	addSubview (label);
 
 	r.offset (0, yMargin + controlHeight);
-	label = makeOwned<CTextLabel> (r, "Blue");
+	label = makeShared<CTextLabel> (r, "Blue");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	addSubview (label);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	label = makeOwned<CTextLabel> (r, "Hue");
+	label = makeShared<CTextLabel> (r, "Hue");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	addSubview (label);
 
 	r.offset (0, yMargin + controlHeight);
-	label = makeOwned<CTextLabel> (r, "Sat");
+	label = makeShared<CTextLabel> (r, "Sat");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	addSubview (label);
 
 	r.offset (0, yMargin + controlHeight);
-	label = makeOwned<CTextLabel> (r, "Value");
+	label = makeShared<CTextLabel> (r, "Value");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	addSubview (label);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	label = makeOwned<CTextLabel> (r, "Alpha");
+	label = makeShared<CTextLabel> (r, "Alpha");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	addSubview (label);
@@ -419,7 +419,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	r.offset (labelWidth + xMargin + controlWidth + xMargin, r.bottom + yMargin);
 	r.setWidth (editWidth);
 	r.setHeight (controlHeight);
-	editFields[0] = makeOwned<CTextEdit> (r, this, kRedTag, nullptr);
+	editFields[0] = makeShared<CTextEdit> (r, this, kRedTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[0], settings);
 	editFields[0]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[0]->setStringToValueFunction (convertColorValue);
@@ -427,7 +427,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addSubview (editFields[0]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[1] = makeOwned<CTextEdit> (r, this, kGreenTag, nullptr);
+	editFields[1] = makeShared<CTextEdit> (r, this, kGreenTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[1], settings);
 	editFields[1]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[1]->setStringToValueFunction (convertColorValue);
@@ -435,7 +435,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addSubview (editFields[1]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[2] = makeOwned<CTextEdit> (r, this, kBlueTag, nullptr);
+	editFields[2] = makeShared<CTextEdit> (r, this, kBlueTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[2], settings);
 	editFields[2]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[2]->setStringToValueFunction (convertColorValue);
@@ -443,7 +443,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addSubview (editFields[2]);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	editFields[3] = makeOwned<CTextEdit> (r, this, kHueTag, nullptr);
+	editFields[3] = makeShared<CTextEdit> (r, this, kHueTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[3], settings);
 	editFields[3]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[3]->setStringToValueFunction (convertColorValue);
@@ -451,7 +451,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addSubview (editFields[3]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[4] = makeOwned<CTextEdit> (r, this, kSaturationTag, nullptr);
+	editFields[4] = makeShared<CTextEdit> (r, this, kSaturationTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[4], settings);
 	editFields[4]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[4]->setStringToValueFunction (convertColorValue);
@@ -459,7 +459,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addSubview (editFields[4]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[5] = makeOwned<CTextEdit> (r, this, kBrightnessTag, nullptr);
+	editFields[5] = makeShared<CTextEdit> (r, this, kBrightnessTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[5], settings);
 	editFields[5]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[5]->setStringToValueFunction (convertColorValue);
@@ -467,7 +467,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addSubview (editFields[5]);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	editFields[6] = makeOwned<CTextEdit> (r, this, kAlphaTag, nullptr);
+	editFields[6] = makeShared<CTextEdit> (r, this, kAlphaTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[6], settings);
 	editFields[6]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[6]->setStringToValueFunction (convertColorValue);

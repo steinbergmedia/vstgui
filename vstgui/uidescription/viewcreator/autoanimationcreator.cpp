@@ -30,7 +30,7 @@ UTF8StringPtr AutoAnimationCreator::getDisplayName () const { return "Auto Anima
 SharedPointer<CView> AutoAnimationCreator::create (const UIAttributes& attributes,
 												   const IUIDescription& description) const
 {
-	return makeOwned<CAutoAnimation> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	return makeShared<CAutoAnimation> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------

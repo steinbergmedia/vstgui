@@ -660,7 +660,7 @@ SharedPointer<CMenuItem> COptionMenu::addEntry (const SharedPointer<CMenuItem>& 
 SharedPointer<CMenuItem> COptionMenu::addEntry (const SharedPointer<COptionMenu>& submenu,
 												const UTF8String& title)
 {
-	auto item = makeOwned<CMenuItem> (title, submenu);
+	auto item = makeShared<CMenuItem> (title, submenu);
 	return addEntry (item);
 }
 
@@ -670,14 +670,14 @@ SharedPointer<CMenuItem> COptionMenu::addEntry (const UTF8String& title, int32_t
 {
 	if (title == "-")
 		return addSeparator (index);
-	auto item = makeOwned<CMenuItem> (title, nullptr, 0, nullptr, itemFlags);
+	auto item = makeShared<CMenuItem> (title, nullptr, 0, nullptr, itemFlags);
 	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<CMenuItem> COptionMenu::addSeparator (int32_t index)
 {
-	auto item = makeOwned<CMenuItem> ("", nullptr, 0, nullptr, CMenuItem::kSeparator);
+	auto item = makeShared<CMenuItem> ("", nullptr, 0, nullptr, CMenuItem::kSeparator);
 	return addEntry (item, index);
 }
 

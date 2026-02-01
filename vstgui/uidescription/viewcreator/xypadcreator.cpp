@@ -42,7 +42,7 @@ UTF8StringPtr XYPadCreator::getDisplayName () const
 SharedPointer<CView> XYPadCreator::create (const UIAttributes& attributes,
 										   const IUIDescription& description) const
 {
-	return makeOwned<CXYPad> (CRect (0, 0, 60, 60));
+	return makeShared<CXYPad> (CRect (0, 0, 60, 60));
 }
 
 //------------------------------------------------------------------------

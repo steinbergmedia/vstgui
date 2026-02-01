@@ -362,22 +362,22 @@ SharedPointer<CBitmapPixelAccess> CBitmapPixelAccess::create (const SharedPointe
 	{
 		case IPlatformBitmapPixelAccess::kARGB:
 		{
-			result = makeOwned<CBitmapPixelAccessOrder<1, 2, 3, 0>> ();
+			result = makeShared<CBitmapPixelAccessOrder<1, 2, 3, 0>> ();
 			break;
 		}
 		case IPlatformBitmapPixelAccess::kRGBA:
 		{
-			result = makeOwned<CBitmapPixelAccessOrder<0, 1, 2, 3>> ();
+			result = makeShared<CBitmapPixelAccessOrder<0, 1, 2, 3>> ();
 			break;
 		}
 		case IPlatformBitmapPixelAccess::kABGR:
 		{
-			result = makeOwned<CBitmapPixelAccessOrder<3, 2, 1, 0>> ();
+			result = makeShared<CBitmapPixelAccessOrder<3, 2, 1, 0>> ();
 			break;
 		}
 		case IPlatformBitmapPixelAccess::kBGRA:
 		{
-			result = makeOwned<CBitmapPixelAccessOrder<2, 1, 0, 3>> ();
+			result = makeShared<CBitmapPixelAccessOrder<2, 1, 0, 3>> ();
 			break;
 		}
 	}

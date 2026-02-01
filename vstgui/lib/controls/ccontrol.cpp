@@ -326,12 +326,12 @@ void CMouseWheelEditingSupport::onMouseWheelEditing (CControl* control)
 {
 	if (!control->isEditing ())
 		control->beginEdit ();
-	endEditTimer = makeOwned<CVSTGUITimer> (
-	    [control] (CVSTGUITimer* timer) {
-		    control->endEdit ();
-		    timer->stop ();
-	    },
-	    500);
+	endEditTimer = makeShared<CVSTGUITimer> (
+		[control] (CVSTGUITimer* timer) {
+			control->endEdit ();
+			timer->stop ();
+		},
+		500);
 }
 
 //------------------------------------------------------------------------

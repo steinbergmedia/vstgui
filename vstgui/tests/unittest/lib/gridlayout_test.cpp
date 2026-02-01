@@ -20,7 +20,7 @@ static bool rectNearlyEqual (const CRect& a, const CRect& b, double epsilon = 1e
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, BasicGrid)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -28,11 +28,11 @@ TEST_CASE (GridLayouter, BasicGrid)
 	props.columnGap = 10;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -53,7 +53,7 @@ TEST_CASE (GridLayouter, BasicGrid)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AutoRowColumnSizes)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -61,11 +61,11 @@ TEST_CASE (GridLayouter, AutoRowColumnSizes)
 	props.autoColumns = {CCoord (60), CCoord (40)};
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -86,7 +86,7 @@ TEST_CASE (GridLayouter, AutoRowColumnSizes)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AutoRowColumnSizes_Percentage)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -96,11 +96,11 @@ TEST_CASE (GridLayouter, AutoRowColumnSizes_Percentage)
 						 GridLayoutProperties::Percentage {40.0}};
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -121,7 +121,7 @@ TEST_CASE (GridLayouter, AutoRowColumnSizes_Percentage)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, JustifyContentCenter)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 2;
@@ -129,9 +129,9 @@ TEST_CASE (GridLayouter, JustifyContentCenter)
 	props.justifyContent = GridLayoutProperties::JustifyContent::Center;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 40));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 40));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 40));
@@ -152,7 +152,7 @@ TEST_CASE (GridLayouter, JustifyContentCenter)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, RowColumnGaps)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -160,11 +160,11 @@ TEST_CASE (GridLayouter, RowColumnGaps)
 	props.columnGap = 20;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -184,7 +184,7 @@ TEST_CASE (GridLayouter, RowColumnGaps)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignContentCenter)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 1;
@@ -192,9 +192,9 @@ TEST_CASE (GridLayouter, AlignContentCenter)
 	props.alignContent = GridLayoutProperties::AlignContent::Center;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -213,7 +213,7 @@ TEST_CASE (GridLayouter, AlignContentCenter)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignContentEnd)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 1;
@@ -221,9 +221,9 @@ TEST_CASE (GridLayouter, AlignContentEnd)
 	props.alignContent = GridLayoutProperties::AlignContent::End;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -242,7 +242,7 @@ TEST_CASE (GridLayouter, AlignContentEnd)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, JustifyContentEnd)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 2;
@@ -250,9 +250,9 @@ TEST_CASE (GridLayouter, JustifyContentEnd)
 	props.justifyContent = GridLayoutProperties::JustifyContent::End;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 40));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 40));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 40));
 	EXPECT (layoutOpt.has_value ());
@@ -271,7 +271,7 @@ TEST_CASE (GridLayouter, JustifyContentEnd)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignItemsCenter)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 1;
@@ -281,8 +281,8 @@ TEST_CASE (GridLayouter, AlignItemsCenter)
 	props.justifyItems = GridLayoutProperties::JustifyItems::Start;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -301,7 +301,7 @@ TEST_CASE (GridLayouter, AlignItemsCenter)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, JustifyItemsCenter)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 1;
@@ -312,8 +312,8 @@ TEST_CASE (GridLayouter, JustifyItemsCenter)
 		GridLayoutProperties::AlignItems::Start; // Ensure height is 40, not stretched
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -332,7 +332,7 @@ TEST_CASE (GridLayouter, JustifyItemsCenter)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignItemsStart)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 1;
@@ -342,8 +342,8 @@ TEST_CASE (GridLayouter, AlignItemsStart)
 	props.justifyItems = GridLayoutProperties::JustifyItems::Start;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -362,7 +362,7 @@ TEST_CASE (GridLayouter, AlignItemsStart)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignItemsEnd)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 1;
@@ -372,8 +372,8 @@ TEST_CASE (GridLayouter, AlignItemsEnd)
 	props.justifyItems = GridLayoutProperties::JustifyItems::Start;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -392,7 +392,7 @@ TEST_CASE (GridLayouter, AlignItemsEnd)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignItemsStretch)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 1;
@@ -401,9 +401,9 @@ TEST_CASE (GridLayouter, AlignItemsStretch)
 	props.justifyItems = GridLayoutProperties::JustifyItems::Start;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -422,7 +422,7 @@ TEST_CASE (GridLayouter, AlignItemsStretch)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignContentSpaceBetween)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 3;
 	props.columns = 1;
@@ -430,10 +430,10 @@ TEST_CASE (GridLayouter, AlignContentSpaceBetween)
 	props.alignContent = GridLayoutProperties::AlignContent::SpaceBetween;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -453,7 +453,7 @@ TEST_CASE (GridLayouter, AlignContentSpaceBetween)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignContentSpaceAround)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 1;
@@ -461,9 +461,9 @@ TEST_CASE (GridLayouter, AlignContentSpaceAround)
 	props.alignContent = GridLayoutProperties::AlignContent::SpaceAround;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -486,7 +486,7 @@ TEST_CASE (GridLayouter, AlignContentSpaceAround)
 TEST_CASE (GridLayouter, GridAreas_SingleViewSpanning)
 {
 	// 2x2 grid, one view spanning all cells
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -495,8 +495,8 @@ TEST_CASE (GridLayouter, GridAreas_SingleViewSpanning)
 	props.gridAreas = {{0, 0, 2, 2}};
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 120, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -513,7 +513,7 @@ TEST_CASE (GridLayouter, GridAreas_SingleViewSpanning)
 TEST_CASE (GridLayouter, GridAreas_MultipleViews)
 {
 	// 3x3 grid, three views with different areas
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 3;
 	props.columns = 3;
@@ -528,10 +528,10 @@ TEST_CASE (GridLayouter, GridAreas_MultipleViews)
 	};
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 110));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 120, 110));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 110));
 	EXPECT (layoutOpt.has_value ());
@@ -557,7 +557,7 @@ TEST_CASE (GridLayouter, GridAreas_MultipleViews)
 TEST_CASE (GridLayouter, GridAreas_ClampedOutOfBounds)
 {
 	// 2x2 grid, view with area outside bounds
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -566,8 +566,8 @@ TEST_CASE (GridLayouter, GridAreas_ClampedOutOfBounds)
 	props.gridAreas = {{1, 1, 2, 2}}; // Should clamp to (1,1,1,1)
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 120, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -584,7 +584,7 @@ TEST_CASE (GridLayouter, GridAreas_ClampedOutOfBounds)
 TEST_CASE (GridLayouter, GridAreas_DefaultBehavior)
 {
 	// 2x2 grid, no gridAreas, each view in one cell
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -592,11 +592,11 @@ TEST_CASE (GridLayouter, GridAreas_DefaultBehavior)
 	props.autoColumns = {CCoord (50), CCoord (70)};
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 120, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -615,7 +615,7 @@ TEST_CASE (GridLayouter, GridAreas_DefaultBehavior)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, JustifyItemsStart)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 1;
@@ -626,8 +626,8 @@ TEST_CASE (GridLayouter, JustifyItemsStart)
 	layouter->setProperties (props);
 
 	// Container wider than cell, so cell is left-aligned
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -646,7 +646,7 @@ TEST_CASE (GridLayouter, JustifyItemsStart)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, JustifyItemsEnd)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 1;
@@ -657,8 +657,8 @@ TEST_CASE (GridLayouter, JustifyItemsEnd)
 	layouter->setProperties (props);
 
 	// Container wider than cell, so cell is right-aligned
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -677,7 +677,7 @@ TEST_CASE (GridLayouter, JustifyItemsEnd)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, JustifyItemsEnd_MultipleViews)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 2;
@@ -689,9 +689,9 @@ TEST_CASE (GridLayouter, JustifyItemsEnd_MultipleViews)
 	layouter->setProperties (props);
 
 	// Container wider than sum of columns, so each cell is 20 wide
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 40));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 40));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 40));
 	EXPECT (layoutOpt.has_value ());
@@ -719,10 +719,10 @@ TEST_CASE (GridLayouter, GridAreas_JustifyContentBehavior)
 		props.autoColumns = {CCoord (50), CCoord (50)}; // 100 total
 		props.gridAreas = {{0, 0, 1, 1}, {0, 1, 1, 1}};
 		props.justifyContent = GridLayoutProperties::JustifyContent::End;
-		auto layouter = makeOwned<GridLayouter> (props);
-		auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 40));
-		container->addSubview (makeOwned<CView> (CRect {}));
-		container->addSubview (makeOwned<CView> (CRect {}));
+		auto layouter = makeShared<GridLayouter> (props);
+		auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 40));
+		container->addSubview (makeShared<CView> (CRect {}));
+		container->addSubview (makeShared<CView> (CRect {}));
 		container->setViewLayouter (layouter);
 		auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 40));
 		EXPECT (layoutOpt.has_value ());
@@ -746,10 +746,10 @@ TEST_CASE (GridLayouter, GridAreas_JustifyContentBehavior)
 		props.autoColumns = {CCoord (30), CCoord (30)}; // 60 total
 		props.gridAreas = {{0, 0, 1, 1}, {0, 1, 1, 1}};
 		props.justifyContent = GridLayoutProperties::JustifyContent::Center;
-		auto layouter = makeOwned<GridLayouter> (props);
-		auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 40));
-		container->addSubview (makeOwned<CView> (CRect {}));
-		container->addSubview (makeOwned<CView> (CRect {}));
+		auto layouter = makeShared<GridLayouter> (props);
+		auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 40));
+		container->addSubview (makeShared<CView> (CRect {}));
+		container->addSubview (makeShared<CView> (CRect {}));
 		container->setViewLayouter (layouter);
 		auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 40));
 		EXPECT (layoutOpt.has_value ());
@@ -781,10 +781,10 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_StartStart)
 	};
 	props.justifyItems = GridLayoutProperties::JustifyItems::Start;
 	props.alignItems = GridLayoutProperties::AlignItems::Start;
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addSubview (makeOwned<CView> (CRect {0., 0., 50., 40.}));
-	container->addSubview (makeOwned<CView> (CRect {0., 0., 70., 60.}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 120, 100));
+	container->addSubview (makeShared<CView> (CRect {0., 0., 50., 40.}));
+	container->addSubview (makeShared<CView> (CRect {0., 0., 70., 60.}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -817,10 +817,10 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_CenterCenter)
 	props.justifyItems = GridLayoutProperties::JustifyItems::Center;
 	props.alignItems = GridLayoutProperties::AlignItems::Center;
 
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addSubview (makeOwned<CView> (CRect {0., 0., 20., 20.}));
-	container->addSubview (makeOwned<CView> (CRect {0., 0., 40., 40.}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 120, 100));
+	container->addSubview (makeShared<CView> (CRect {0., 0., 20., 20.}));
+	container->addSubview (makeShared<CView> (CRect {0., 0., 40., 40.}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 400, 400));
 	EXPECT (layoutOpt.has_value ());
@@ -852,11 +852,11 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_EndEnd)
 	props.alignContent = GridLayoutProperties::AlignContent::Center;
 	props.justifyItems = GridLayoutProperties::JustifyItems::End;
 	props.alignItems = GridLayoutProperties::AlignItems::End;
-	auto layouter = makeOwned<GridLayouter> (props);
+	auto layouter = makeShared<GridLayouter> (props);
 	// Container size changed to match expected rects
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 130, 120));
-	container->addSubview (makeOwned<CView> (CRect {0., 0., 50., 40.}));
-	container->addSubview (makeOwned<CView> (CRect {0., 0., 50., 40.}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 130, 120));
+	container->addSubview (makeShared<CView> (CRect {0., 0., 50., 40.}));
+	container->addSubview (makeShared<CView> (CRect {0., 0., 50., 40.}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 400, 400));
 	EXPECT (layoutOpt.has_value ());
@@ -886,10 +886,10 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_StretchStretch)
 	};
 	props.justifyItems = GridLayoutProperties::JustifyItems::Stretch;
 	props.alignItems = GridLayoutProperties::AlignItems::Stretch;
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 120, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -908,7 +908,7 @@ TEST_CASE (GridLayouter, GridAreas_AlignJustifyItems_StretchStretch)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, JustifyItemsStretch_NoGridArea)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 1;
@@ -918,8 +918,8 @@ TEST_CASE (GridLayouter, JustifyItemsStretch_NoGridArea)
 	props.alignItems = GridLayoutProperties::AlignItems::Start;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -938,7 +938,7 @@ TEST_CASE (GridLayouter, JustifyItemsStretch_NoGridArea)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignItemsStretch_NoGridArea)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 1;
 	props.columns = 1;
@@ -948,8 +948,8 @@ TEST_CASE (GridLayouter, AlignItemsStretch_NoGridArea)
 	props.alignItems = GridLayoutProperties::AlignItems::Stretch;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -968,7 +968,7 @@ TEST_CASE (GridLayouter, AlignItemsStretch_NoGridArea)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, AlignContentStart_Explicit)
 {
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 1;
@@ -976,9 +976,9 @@ TEST_CASE (GridLayouter, AlignContentStart_Explicit)
 	props.alignContent = GridLayoutProperties::AlignContent::Start;
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1003,9 +1003,9 @@ TEST_CASE (GridLayouter, GridAreas_AlignContentStretch)
 	props.autoColumns = {CCoord (40), CCoord (40)};
 	props.alignContent = GridLayoutProperties::AlignContent::Stretch;
 	props.gridAreas = {{0, 0, 2, 2}};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 80, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 80, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 80, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1026,11 +1026,11 @@ TEST_CASE (GridLayouter, GridAreas_AlignContentSpaceBetween)
 	props.autoRows = {CCoord (20), CCoord (20), CCoord (20)};
 	props.alignContent = GridLayoutProperties::AlignContent::SpaceBetween;
 	props.gridAreas = {{0, 0, 1, 1}, {1, 0, 1, 1}, {2, 0, 1, 1}};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1053,10 +1053,10 @@ TEST_CASE (GridLayouter, GridAreas_AlignContentSpaceAround)
 	props.autoRows = {CCoord (30), CCoord (30)};
 	props.alignContent = GridLayoutProperties::AlignContent::SpaceAround;
 	props.gridAreas = {{0, 0, 1, 1}, {1, 0, 1, 1}};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1077,10 +1077,10 @@ TEST_CASE (GridLayouter, GridAreas_JustifyContentStretch)
 	props.autoColumns = {CCoord (30), CCoord (30)};
 	props.justifyContent = GridLayoutProperties::JustifyContent::Stretch;
 	props.gridAreas = {{0, 0, 1, 1}, {0, 1, 1, 1}};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 40));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 40));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 40));
 	EXPECT (layoutOpt.has_value ());
@@ -1102,11 +1102,11 @@ TEST_CASE (GridLayouter, GridAreas_JustifyContentSpaceBetween)
 	props.autoColumns = {CCoord (20), CCoord (20), CCoord (20)};
 	props.justifyContent = GridLayoutProperties::JustifyContent::SpaceBetween;
 	props.gridAreas = {{0, 0, 1, 1}, {0, 1, 1, 1}, {0, 2, 1, 1}};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 40));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 40));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 40));
 	EXPECT (layoutOpt.has_value ());
@@ -1129,10 +1129,10 @@ TEST_CASE (GridLayouter, GridAreas_JustifyContentSpaceAround)
 	props.autoColumns = {CCoord (30), CCoord (30)};
 	props.justifyContent = GridLayoutProperties::JustifyContent::SpaceAround;
 	props.gridAreas = {{0, 0, 1, 1}, {0, 1, 1, 1}};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 40));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 40));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 40));
 	EXPECT (layoutOpt.has_value ());
@@ -1155,9 +1155,9 @@ TEST_CASE (GridLayouter, GridAreas_Spanning_CenterEndStretch)
 	props.gridAreas = {{0, 0, 2, 2}};
 	props.justifyItems = GridLayoutProperties::JustifyItems::Center;
 	props.alignItems = GridLayoutProperties::AlignItems::End;
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 120, 100));
-	container->addSubview (makeOwned<CView> (CRect {0., 0., 20, 20.}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 120, 100));
+	container->addSubview (makeShared<CView> (CRect {0., 0., 20, 20.}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1180,10 +1180,10 @@ TEST_CASE (GridLayouter, GridAreas_PercentageAutoRowsColumns)
 	props.autoColumns = {GridLayoutProperties::Percentage {50.0},
 						 GridLayoutProperties::Percentage {50.0}};
 	props.gridAreas = {{0, 0, 1, 1}, {1, 1, 1, 1}};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 200, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 200, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1206,12 +1206,12 @@ TEST_CASE (GridLayouter, MultiColumnRow_JustifyItemsCenter)
 	props.autoColumns = {GridLayoutProperties::Percentage {50.0},
 						 GridLayoutProperties::Percentage {50.0}};
 	props.justifyItems = GridLayoutProperties::JustifyItems::Center;
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 200, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 200, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1237,12 +1237,12 @@ TEST_CASE (GridLayouter, MultiColumnRow_JustifyItemsCenterAlignItemsCenter)
 						 GridLayoutProperties::Percentage {50.0}};
 	props.justifyItems = GridLayoutProperties::JustifyItems::Center;
 	props.alignItems = GridLayoutProperties::AlignItems::Center;
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 200, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 200, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1264,13 +1264,13 @@ TEST_CASE (GridLayouter, AutoRowSizes)
 	props.columns = 2;
 	props.autoRows = {GridLayoutProperties::Auto {}, CCoord {20}};
 	props.autoColumns = {CCoord (50), CCoord (50)};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
 	// Min size logic skipped: CView does not support setMinSize
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1294,13 +1294,13 @@ TEST_CASE (GridLayouter, AutoColumnSizes)
 	props.columns = 2;
 	props.autoRows = {CCoord (40), CCoord (60)};
 	props.autoColumns = {GridLayoutProperties::Auto {}, GridLayoutProperties::Auto {}};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
 	// Min size logic skipped: CView does not support setMinSize
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1325,9 +1325,9 @@ TEST_CASE (GridLayouter, GridAreas_Spanning_AutoRowsColumns)
 	props.autoRows = {GridLayoutProperties::Auto {}, GridLayoutProperties::Auto {}};
 	props.autoColumns = {GridLayoutProperties::Auto {}, GridLayoutProperties::Auto {}};
 	props.gridAreas = {{0, 0, 2, 2}}; // One view spanning all cells
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	auto v0 = makeOwned<CView> (CRect {0, 0, 80, 60});
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	auto v0 = makeShared<CView> (CRect {0, 0, 80, 60});
 	container->addSubview (v0);
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
@@ -1355,11 +1355,11 @@ TEST_CASE (GridLayouter, GridAreas_Spanning_AutoRowsColumns_MultiView)
 		{1, 0, 1, 1}, // View 1: second row, first column
 		{1, 1, 1, 1}  // View 2: second row, second column
 	};
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	auto v0 = makeOwned<CView> (CRect {});
-	auto v1 = makeOwned<CView> (CRect {});
-	auto v2 = makeOwned<CView> (CRect {});
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	auto v0 = makeShared<CView> (CRect {});
+	auto v1 = makeShared<CView> (CRect {});
+	auto v2 = makeShared<CView> (CRect {});
 	container->addSubview (v0);
 	container->addSubview (v1);
 	container->addSubview (v2);
@@ -1389,8 +1389,8 @@ TEST_CASE (GridLayouter, GridAreas_Spanning_AutoRowsColumns_MultiView)
 //------------------------------------------------------------------------
 TEST_CASE (GridLayouter, LayoutEmptyContainer)
 {
-	auto layouter = makeOwned<GridLayouter> (GridLayoutProperties {});
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
+	auto layouter = makeShared<GridLayouter> (GridLayoutProperties {});
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 120, 120));
 	EXPECT (layoutOpt.has_value ());
@@ -1420,10 +1420,10 @@ TEST_CASE (GridLayouter, GridAreas_SpaceAround_MultiRowCol_AutoTracks_ExtraItem)
 		{0, 0, 2, 2}  // Item 4: spans all
 	};
 	// Container is larger than grid, so space around is visible
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 200));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 200, 200));
 	for (int i = 0; i < 5; ++i)
-		container->addSubview (makeOwned<CView> (CRect {}));
+		container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 200, 200));
 	EXPECT (layoutOpt.has_value ());
@@ -1458,11 +1458,11 @@ TEST_CASE (GridLayouter, GridAreas_IntrinsicSize_Center_NoStretch)
 	props.justifyItems = GridLayoutProperties::JustifyItems::Center;
 	props.alignItems = GridLayoutProperties::AlignItems::Center;
 
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 100));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 200, 100));
 
 	// Child with intrinsic size 80x40
-	auto child = makeOwned<CView> (CRect {0, 0, 80, 40});
+	auto child = makeShared<CView> (CRect {0, 0, 80, 40});
 	container->addSubview (child);
 
 	container->setViewLayouter (layouter);
@@ -1492,11 +1492,11 @@ TEST_CASE (GridLayouter, GridAreas_IntrinsicSize_Stretch)
 	props.justifyItems = GridLayoutProperties::JustifyItems::Stretch;
 	props.alignItems = GridLayoutProperties::AlignItems::Stretch;
 
-	auto layouter = makeOwned<GridLayouter> (props);
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 200, 100));
+	auto layouter = makeShared<GridLayouter> (props);
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 200, 100));
 
 	// Child with intrinsic size 80x40 (ignored when stretching)
-	auto child = makeOwned<CView> (CRect {0, 0, 80, 40});
+	auto child = makeShared<CView> (CRect {0, 0, 80, 40});
 	container->addSubview (child);
 
 	container->setViewLayouter (layouter);
@@ -1518,7 +1518,7 @@ TEST_CASE (GridLayouter, GridAreas_IntrinsicSize_Stretch)
 TEST_CASE (GridLayouter, GridAreas_Mismatch_FewerChildrenThanAreas)
 {
 	// 2x2 grid, 3 defined areas, but only 2 children. Extra area is ignored.
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -1531,9 +1531,9 @@ TEST_CASE (GridLayouter, GridAreas_Mismatch_FewerChildrenThanAreas)
 	};
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1554,7 +1554,7 @@ TEST_CASE (GridLayouter, GridAreas_Mismatch_FewerChildrenThanAreas)
 TEST_CASE (GridLayouter, GridAreas_Mismatch_MoreChildrenThanAreas_AutoPlacement)
 {
 	// 2x2 grid, 1 defined area for the first child, remaining children auto-placed.
-	auto layouter = makeOwned<GridLayouter> ();
+	auto layouter = makeShared<GridLayouter> ();
 	GridLayoutProperties props;
 	props.rows = 2;
 	props.columns = 2;
@@ -1565,11 +1565,11 @@ TEST_CASE (GridLayouter, GridAreas_Mismatch_MoreChildrenThanAreas_AutoPlacement)
 	};
 	layouter->setProperties (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 100, 100));
 	EXPECT (layoutOpt.has_value ());
@@ -1620,20 +1620,20 @@ TEST_CASE (GridLayouter, GridAreas_MultiRowView_SpaceBetween)
 	props.gridAreas.push_back ({1, 1, 2, 1});
 	props.gridAreas.push_back ({2, 2, 2, 1});
 	props.gridAreas.push_back ({0, 1, 1, 2});
-	auto layouter = makeOwned<GridLayouter> (props);
+	auto layouter = makeShared<GridLayouter> (props);
 
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 100, 100));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
-	container->addSubview (makeOwned<CView> (CRect {}));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 100, 100));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
+	container->addSubview (makeShared<CView> (CRect {}));
 	container->setViewLayouter (layouter);
 	auto layoutOpt = container->calculateViewLayout (CRect (0, 0, 110, 110));
 	EXPECT (layoutOpt.has_value ());

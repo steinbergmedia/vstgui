@@ -17,7 +17,7 @@ class TestCommandMenuItemTarget
 
 TEST_CASE (CCommandMenuItemTest, DescConstructor1)
 {
-	auto target = makeOwned<TestCommandMenuItemTarget> ();
+	auto target = makeShared<TestCommandMenuItemTarget> ();
 	CCommandMenuItem item (
 		{"Title", "k", 0, nullptr, CMenuItem::kNoFlags, target, "CommandCategory", "CommandName"});
 	EXPECT_EQ (item.getTitle (), "Title");
@@ -30,7 +30,7 @@ TEST_CASE (CCommandMenuItemTest, DescConstructor1)
 
 TEST_CASE (CCommandMenuItemTest, DescConstructor2)
 {
-	auto target = makeOwned<TestCommandMenuItemTarget> ();
+	auto target = makeShared<TestCommandMenuItemTarget> ();
 	CCommandMenuItem item ({"Title", 100, target, "CommandCat", "CmdName"});
 	EXPECT_EQ (item.getTitle (), "Title");
 	EXPECT_EQ (item.getItemTarget (), target);
@@ -41,7 +41,7 @@ TEST_CASE (CCommandMenuItemTest, DescConstructor2)
 
 TEST_CASE (CCommandMenuItemTest, DescConstructor3)
 {
-	auto target = makeOwned<TestCommandMenuItemTarget> ();
+	auto target = makeShared<TestCommandMenuItemTarget> ();
 	CCommandMenuItem item ({"MenuItem", target, "CmdCat", "CommandNme"});
 	EXPECT_EQ (item.getTitle (), "MenuItem");
 	EXPECT_EQ (item.getItemTarget (), target);

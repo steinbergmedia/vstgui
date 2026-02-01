@@ -42,7 +42,7 @@ UTF8StringPtr KickButtonCreator::getDisplayName () const
 SharedPointer<CView> KickButtonCreator::create (const UIAttributes& attributes,
 												const IUIDescription& description) const
 {
-	return makeOwned<CKickButton> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	return makeShared<CKickButton> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------

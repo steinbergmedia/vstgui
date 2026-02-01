@@ -161,7 +161,7 @@ TEST_CASE (CViewTest, ResizeAttribute)
 TEST_CASE (CViewTest, ObjectAttributes)
 {
 	auto v = owned (new View ());
-	auto obj = makeOwned<CBaseObject> ();
+	auto obj = makeShared<CBaseObject> ();
 	EXPECT (obj->getNbReference () == 1);
 	EXPECT (v->setAttribute ('test', obj) == true);
 	EXPECT (obj->getNbReference () == 2);
@@ -178,7 +178,7 @@ TEST_CASE (CViewTest, ViewListener)
 {
 	ViewListener listener;
 	{
-		auto v = makeOwned<View> ();
+		auto v = makeShared<View> ();
 		v->registerViewListener (&listener);
 		v->setViewSize (CRect (1, 2, 3, 4));
 		auto container1 = owned (new CViewContainer (CRect (0, 0, 100, 100)));
@@ -203,7 +203,7 @@ TEST_CASE (CViewTest, CoordCalculations)
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
 	container->attached (parent);
-	auto v = makeOwned<View> ();
+	auto v = makeShared<View> ();
 	container->addSubview (v);
 	CPoint p (0, 0);
 	v->localToFrame (p);
@@ -219,7 +219,7 @@ TEST_CASE (CViewTest, VisibleViewSize)
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
 	container->attached (parent);
-	auto v = makeOwned<View> ();
+	auto v = makeShared<View> ();
 	v->setViewSize (CRect (20, 20, 150, 150));
 	container->addSubview (v);
 	auto visible = v->getVisibleViewSize ();
@@ -231,11 +231,11 @@ TEST_CASE (CViewTest, VisibleViewSize)
 TEST_CASE (CViewTest, GlobalTransform)
 {
 	auto container1 = owned (new CViewContainer (CRect (0, 0, 10, 10)));
-	auto container2 = makeOwned<CViewContainer> (CRect (0, 0, 10, 10));
+	auto container2 = makeShared<CViewContainer> (CRect (0, 0, 10, 10));
 	container1->setTransform (CGraphicsTransform ().translate (10, 20));
 	container2->setTransform (CGraphicsTransform ().translate (15, 35));
 	container1->addSubview (container2);
-	auto v = makeOwned<View> ();
+	auto v = makeShared<View> ();
 	container2->addSubview (v);
 	container2->attached (container1);
 	auto transform = v->getGlobalTransform ();
@@ -257,7 +257,7 @@ TEST_CASE (CViewTest, GlobalTransform)
 
 TEST_CASE (CViewTest, HitTest)
 {
-	auto v = makeOwned<View> ();
+	auto v = makeShared<View> ();
 	v->setMouseableArea (CRect (20, 20, 40, 40));
 	EXPECT (v->hitTest (CPoint (5, 5)) == false);
 	EXPECT (v->hitTest (CPoint (20, 20)) == true);
@@ -266,7 +266,7 @@ TEST_CASE (CViewTest, HitTest)
 
 TEST_CASE (CViewTest, DefaultHandling)
 {
-	auto v = makeOwned<View> ();
+	auto v = makeShared<View> ();
 	KeyboardEvent keyEvent;
 	v->dispatchEvent (keyEvent);
 	EXPECT (keyEvent.consumed == false);
@@ -301,7 +301,7 @@ TEST_CASE (CViewTest, DefaultHandling)
 
 TEST_CASE (CViewTest, PathHitTest)
 {
-	auto v = makeOwned<View> ();
+	auto v = makeShared<View> ();
 	v->setViewSize ({0., 0., 100., 100.});
 	{
 		auto drawContext = COffscreenContext::create ({100., 100.});
@@ -374,7 +374,7 @@ struct TestViewEventHandler : IViewEventListener
 
 TEST_CASE (CViewTest, ViewEventListenerMouseDownEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseDownEvent event;
@@ -388,7 +388,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseDownEvent)
 
 TEST_CASE (CViewTest, ViewEventListenerMouseMoveEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseMoveEvent event;
@@ -402,7 +402,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseMoveEvent)
 
 TEST_CASE (CViewTest, ViewEventListenerMouseUpEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseUpEvent event;
@@ -416,7 +416,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseUpEvent)
 
 TEST_CASE (CViewTest, ViewEventListenerMouseCancelEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseCancelEvent event;
@@ -430,7 +430,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseCancelEvent)
 
 TEST_CASE (CViewTest, ViewEventListenerMouseEnterEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseEnterEvent event;
@@ -444,7 +444,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseEnterEvent)
 
 TEST_CASE (CViewTest, ViewEventListenerMouseExitEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseExitEvent event;
@@ -458,7 +458,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseExitEvent)
 
 TEST_CASE (CViewTest, ViewEventListenerMouseWheelEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	MouseWheelEvent event;
@@ -472,7 +472,7 @@ TEST_CASE (CViewTest, ViewEventListenerMouseWheelEvent)
 
 TEST_CASE (CViewTest, ViewEventListenerZoomGestureEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	ZoomGestureEvent event;
@@ -486,7 +486,7 @@ TEST_CASE (CViewTest, ViewEventListenerZoomGestureEvent)
 
 TEST_CASE (CViewTest, ViewEventListenerKeyEvent)
 {
-	auto v = makeOwned<TestView> ();
+	auto v = makeShared<TestView> ();
 	TestViewEventHandler listener ([] (CView&, Event& event) { event.consumed = true; });
 	v->registerViewEventListener (&listener);
 	KeyboardEvent event;
@@ -505,7 +505,7 @@ TEST_CASE (CViewTest, IdleAfterAttached)
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
 	container->attached (parent);
-	auto v = makeOwned<View> ();
+	auto v = makeShared<View> ();
 	container->addSubview (v);
 	v->setWantsIdle (true);
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
@@ -522,7 +522,7 @@ TEST_CASE (CViewTest, IdleBeforeAttached)
 {
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
-	auto v = makeOwned<View> ();
+	auto v = makeShared<View> ();
 	container->addSubview (v);
 	v->setWantsIdle (true);
 	container->attached (parent);

@@ -80,7 +80,7 @@ void Win32ViewLayer::invalidRect (const CRect& size)
 		auto ticks = getPlatformFactory ().getTicks () - lastDrawTime;
 		if (ticks > 15)
 			ticks = 0;
-		timer = makeOwned<WinTimer> (this);
+		timer = makeShared<WinTimer> (this);
 		timer->start (static_cast<uint32_t> (ticks));
 	}
 }

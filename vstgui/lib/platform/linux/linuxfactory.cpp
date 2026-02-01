@@ -130,13 +130,13 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 	if (parentType == PlatformType::kDefaultNative || parentType == PlatformType::kX11EmbedWindowID)
 	{
 		auto x11Parent = reinterpret_cast<XID> (parent);
-		return makeOwned<X11::Frame> (frame, size, x11Parent, config);
+		return makeShared<X11::Frame> (frame, size, x11Parent, config);
 	}
 #if VSTGUI_ENABLE_WAYLAND_SUPPORT
 	if (parentType == PlatformType::kWaylandSurfaceID)
 	{
 		//		auto surface = reinterpret_cast<xdg_surface*> (parent);
-		return makeOwned<Wayland::Frame> (frame, size, config);
+		return makeShared<Wayland::Frame> (frame, size, config);
 	}
 #endif
 	return nullptr;
@@ -146,7 +146,7 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 PlatformFontPtr LinuxFactory::createFont (const UTF8String& name, const CCoord& size,
 										  const int32_t& style) const noexcept
 {
-	return makeOwned<Cairo::Font> (name, size, style);
+	return makeShared<Cairo::Font> (name, size, style);
 }
 
 //-----------------------------------------------------------------------------
@@ -158,13 +158,13 @@ bool LinuxFactory::getAllFontFamilies (const FontFamilyCallback& callback) const
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr LinuxFactory::createBitmap (const CPoint& size) const noexcept
 {
-	return makeOwned<Cairo::Bitmap> (size);
+	return makeShared<Cairo::Bitmap> (size);
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr LinuxFactory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	if (auto bitmap = makeOwned<Cairo::Bitmap> ())
+	if (auto bitmap = makeShared<Cairo::Bitmap> ())
 	{
 		if (bitmap->load (desc))
 			return bitmap;
@@ -210,7 +210,7 @@ PlatformResourceInputStreamPtr
 //-----------------------------------------------------------------------------
 PlatformStringPtr LinuxFactory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return makeOwned<LinuxString> (utf8String);
+	return makeShared<LinuxString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------
@@ -248,11 +248,11 @@ PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) co
 
 			IPlatformTimerCallback* callback;
 		};
-		auto timer = makeOwned<Timer> (callback);
+		auto timer = makeShared<Timer> (callback);
 		return timer;
 	}
 #endif
-	return makeOwned<X11::Timer> (callback);
+	return makeShared<X11::Timer> (callback);
 }
 
 //------------------------------------------------------------------------

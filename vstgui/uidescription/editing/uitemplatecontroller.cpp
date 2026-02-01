@@ -106,7 +106,7 @@ public:
 		{
 			if (headerFont == nullptr)
 			{
-				headerFont = makeOwned<CFontDesc> (*drawFont.get ());
+				headerFont = makeShared<CFontDesc> (*drawFont.get ());
 				headerFont->setStyle (kBoldFace);
 				headerFont->setSize (headerFont->getSize ()-1);
 			}
@@ -414,12 +414,12 @@ void UITemplateController::setTemplateView (const SharedPointer<CViewContainer>&
 			if (parentView)
 			{
 				const IViewFactory& viewFactory = editDescription->getViewFactory ();
-				mainViewDataSource = makeOwned<UIViewListDataSource> (templateView, viewFactory,
-																	  selection, undoManager, this);
+				mainViewDataSource = makeShared<UIViewListDataSource> (
+					templateView, viewFactory, selection, undoManager, this);
 				UIEditController::setupDataSource (mainViewDataSource);
 				CRect r (templateDataBrowser->getViewSize ());
 				r.offset (r.getWidth (), 0);
-				auto browser = makeOwned<CDataBrowser> (r, mainViewDataSource.get ());
+				auto browser = makeShared<CDataBrowser> (r, mainViewDataSource.get ());
 				setupDataBrowser (templateDataBrowser, browser);
 				parentView->addSubview (browser);
 			}
@@ -486,11 +486,11 @@ SharedPointer<CView> UITemplateController::createView (const UIAttributes& attri
 			
 			auto attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
-			auto dataSource = makeOwned<UITemplatesDataSource> (this, editDescription,
-																actionPerformer, templateName);
+			auto dataSource = makeShared<UITemplatesDataSource> (this, editDescription,
+																 actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
-			templateDataBrowser = makeOwned<CDataBrowser> (
+			templateDataBrowser = makeShared<CDataBrowser> (
 				CRect (0, 0, 0, 0), dataSource.get (),
 				CDataBrowser::kDrawRowLines | CScrollView::kAutoHideScrollbars |
 					CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar |
@@ -532,7 +532,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 	auto dataSource = dynamic_cast<UITemplatesDataSource*> (templateDataBrowser->getDelegate ());
 	auto templateName = dataSource->getStringList()->at (static_cast<uint32_t> (cell.row));
 	vstgui_assert (dataSource);
-	auto item = makeOwned<CCommandMenuItem> ("Duplicate Template '" + templateName + "'");
+	auto item = makeShared<CCommandMenuItem> ("Duplicate Template '" + templateName + "'");
 	item->setActions ([this, cell, dataSource] (auto&&) {
 		std::list<const std::string*> tmp;
 		editDescription->collectTemplateViewNames (tmp);
@@ -546,7 +546,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 		}
 	});
 	contextMenu.addEntry (item);
-	item = makeOwned<CCommandMenuItem> ("Delete Template '" + templateName + "'");
+	item = makeShared<CCommandMenuItem> ("Delete Template '" + templateName + "'");
 	item->setActions ([this, cell, dataSource] (auto&&) {
 		if (auto ap = actionPerformer.lock ())
 		{
@@ -664,12 +664,12 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 	}
 	if (auto container = selectedView ? selectedView->asViewContainer () : nullptr)
 	{
-		auto dataSource = makeOwned<UIViewListDataSource> (container, viewFactory, selection,
-														   undoManager, delegate);
+		auto dataSource = makeShared<UIViewListDataSource> (container, viewFactory, selection,
+															undoManager, delegate);
 		UIEditController::setupDataSource (dataSource);
 		CRect r (dataBrowser->getViewSize ());
 		r.offset (r.getWidth (), 0);
-		auto newDataBrowser = makeOwned<CDataBrowser> (r, dataSource.get ());
+		auto newDataBrowser = makeShared<CDataBrowser> (r, dataSource.get ());
 		UITemplateController::setupDataBrowser (newDataBrowser, newDataBrowser);
 		auto parentView = newDataBrowser->getParentView ();
 		parentView->addSubview (newDataBrowser);
@@ -769,7 +769,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
 		DragDescription dd (CDropSource::create (&row, sizeof (int32_t), IDataPackage::kBinary),
 							{cellBounds.left - startPos.x, cellBounds.top - startPos.y},
 							offscreen->getBitmap ());
-		auto callbackFunc = makeOwned<DragCallbackFunctions> ();
+		auto callbackFunc = makeShared<DragCallbackFunctions> ();
 		auto Self = shared (this);
 		callbackFunc->endedFunc = [Self] (const auto&, auto, auto) {
 			Self->dragRow = -1;
@@ -835,7 +835,7 @@ bool UIViewListDataSource::dbOnDropInCell (int32_t row, int32_t column, const CP
 	{
 		int32_t dir = dragDestinationRow - dragRow;
 		undoManager->pushAndPerform (
-			makeOwned<HierarchyMoveViewOperation> (subviews[dragRow], selection, dir));
+			makeShared<HierarchyMoveViewOperation> (subviews[dragRow], selection, dir));
 		result = true;
 	}
 	dragRow = dragDestinationRow = -1;

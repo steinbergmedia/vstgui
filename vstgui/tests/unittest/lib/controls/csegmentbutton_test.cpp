@@ -248,14 +248,14 @@ TEST_CASE (CSegmentButtonTest, HorizontalSegmentSizeCalculation)
 {
 	const auto numSegments = 5;
 	CRect r (0, 0, 100, 100);
-	auto b = makeOwned<CSegmentButton> (r);
+	auto b = makeShared<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT (s.rect == CRect (0, 0, 0, 0));
-	auto root = makeOwned<CViewContainer> (r);
-	auto parent = makeOwned<CViewContainer> (r);
+	auto root = makeShared<CViewContainer> (r);
+	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
 	parent->attached (root);
@@ -271,14 +271,14 @@ TEST_CASE (CSegmentButtonTest, VerticalSegmentSizeCalculation)
 {
 	const auto numSegments = 5;
 	CRect r (0, 0, 100, 100);
-	auto b = makeOwned<CSegmentButton> (r);
+	auto b = makeShared<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kVertical);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT (s.rect == CRect (0, 0, 0, 0));
-	auto root = makeOwned<CViewContainer> (r);
-	auto parent = makeOwned<CViewContainer> (r);
+	auto root = makeShared<CViewContainer> (r);
+	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
 	parent->attached (root);
@@ -293,15 +293,15 @@ TEST_CASE (CSegmentButtonTest, VerticalSegmentSizeCalculation)
 TEST_CASE (CSegmentButtonTest, UpdateViewSize)
 {
 	const auto numSegments = 5;
-	auto b = makeOwned<CSegmentButton> (CRect (0, 0, 50, 100));
+	auto b = makeShared<CSegmentButton> (CRect (0, 0, 50, 100));
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT (s.rect == CRect (0, 0, 0, 0));
 	CRect r (0, 0, 100, 100);
-	auto root = makeOwned<CViewContainer> (r);
-	auto parent = makeOwned<CViewContainer> (r);
+	auto root = makeShared<CViewContainer> (r);
+	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
 	parent->attached (root);
@@ -323,14 +323,14 @@ TEST_CASE (CSegmentButtonTest, MouseDownEvent)
 {
 	const auto numSegments = 5;
 	CRect r (0, 0, 100, 100);
-	auto b = makeOwned<CSegmentButton> (r);
+	auto b = makeShared<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT (s.rect == CRect (0, 0, 0, 0));
-	auto root = makeOwned<CViewContainer> (r);
-	auto parent = makeOwned<CViewContainer> (r);
+	auto root = makeShared<CViewContainer> (r);
+	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
 	parent->attached (root);
@@ -358,14 +358,14 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventWithManySegments)
 	// Create segment button with 32 segments and attach it
 	const auto numSegments = 32;
 	CRect r (0, 0, 20 * numSegments, 100);
-	auto b = makeOwned<CSegmentButton> (r);
+	auto b = makeShared<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT_EQ (s.rect, CRect (0, 0, 0, 0));
-	auto root = makeOwned<CViewContainer> (r);
-	auto parent = makeOwned<CViewContainer> (r);
+	auto root = makeShared<CViewContainer> (r);
+	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
 	parent->attached (root);
@@ -386,14 +386,14 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventOnLastSegment)
 	// 31 segments causing rounding errors inside segment button.
 	const auto numSegments = 31;
 	CRect r (0, 0, 20 * numSegments, 100);
-	auto b = makeOwned<CSegmentButton> (r);
+	auto b = makeShared<CSegmentButton> (r);
 	b->setStyle (CSegmentButton::Style::kHorizontal);
 	for (auto i = 0; i < numSegments; ++i)
 		b->addSegment ({});
 	for (const auto& s : b->getSegments ())
 		EXPECT_EQ (s.rect, CRect (0, 0, 0, 0));
-	auto root = makeOwned<CViewContainer> (r);
-	auto parent = makeOwned<CViewContainer> (r);
+	auto root = makeShared<CViewContainer> (r);
+	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
 	parent->attached (root);

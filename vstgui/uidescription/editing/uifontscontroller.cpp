@@ -103,7 +103,7 @@ UIFontsController::UIFontsController (const SharedPointer<IController>& baseCont
 , strikethroughControl (nullptr)
 , underlineControl (nullptr)
 {
-	dataSource = makeOwned<UIFontsDataSource> (editDescription, actionPerformer, this);
+	dataSource = makeShared<UIFontsDataSource> (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
 }
 
@@ -119,10 +119,10 @@ SharedPointer<CView> UIFontsController::createView (const UIAttributes& attribut
 	{
 		if (*name == "FontsBrowser")
 		{
-			auto dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
-														CDataBrowser::kDrawRowLines |
-															CScrollView::kHorizontalScrollbar |
-															CScrollView::kVerticalScrollbar);
+			auto dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+														 CDataBrowser::kDrawRowLines |
+															 CScrollView::kHorizontalScrollbar |
+															 CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -254,8 +254,8 @@ void UIFontsController::valueChanged (CControl& pControl)
 						style |= kUnderlineFace;
 					if (strikethroughControl && strikethroughControl->getValue () > 0)
 						style |= kStrikethroughFace;
-					auto font = makeOwned<CFontDesc> (menuItem->getTitle (),
-													  sizeTextEdit->getValue (), style);
+					auto font = makeShared<CFontDesc> (menuItem->getTitle (),
+													   sizeTextEdit->getValue (), style);
 					ap->performFontChange (selectedFont.data (), font);
 				}
 			}

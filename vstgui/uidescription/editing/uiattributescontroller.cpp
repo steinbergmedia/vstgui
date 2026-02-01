@@ -482,7 +482,7 @@ public:
 					if (auto font = description.getFont ("scripteditor.font"))
 					{
 						style.font = font;
-						style.lineNumbersFont = makeOwned<CFontDesc> (*font.get ());
+						style.lineNumbersFont = makeShared<CFontDesc> (*font.get ());
 						style.lineNumbersFont->setSize (style.lineNumbersFont->getSize () - 2);
 					}
 					textEditor->setStyle (style);
@@ -631,7 +631,7 @@ public:
 
 	virtual void addMenuEntry (const std::string* entryName)
 	{
-		auto item = makeOwned<CCommandMenuItem> (
+		auto item = makeShared<CCommandMenuItem> (
 			CCommandMenuItem::Desc {entryName->data (), shared (this)});
 		validateMenuEntry (*item.get ());
 		menu->addEntry (item);
@@ -654,7 +654,7 @@ public:
 		if (addNoneItem)
 		{
 			optMenu->addEntry (
-				makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"None", 100, shared (this)}));
+				makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {"None", 100, shared (this)}));
 		}
 		StringPtrList names;
 		collectMenuItemNames (names);
@@ -747,7 +747,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "ColorView")
 		{
-			colorView = makeOwned<ColorView> ();
+			colorView = makeShared<ColorView> ();
 			return colorView;
 		}
 		return nullptr;
@@ -827,7 +827,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "GradientView")
 		{
-			gradientView = makeOwned<GradientView> ();
+			gradientView = makeShared<GradientView> ();
 			return gradientView;
 		}
 		return nullptr;
@@ -968,10 +968,10 @@ UIAttributesController::~UIAttributesController ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::beginLiveAttributeChange (const std::string& name, const std::string& currentValue)
 {
-	liveAction = makeOwned<AttributeChangeAction> (editDescription, selection, name, currentValue);
+	liveAction = makeShared<AttributeChangeAction> (editDescription, selection, name, currentValue);
 	undoManager->startGroupAction (liveAction->getName ());
 	undoManager->pushAndPerform (
-		makeOwned<AttributeChangeAction> (editDescription, selection, name, currentValue));
+		makeShared<AttributeChangeAction> (editDescription, selection, name, currentValue));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -989,7 +989,7 @@ void UIAttributesController::endLiveAttributeChange ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::performAttributeChange (const std::string& name, const std::string& value)
 {
-	auto action = makeOwned<AttributeChangeAction> (editDescription, selection, name, value);
+	auto action = makeShared<AttributeChangeAction> (editDescription, selection, name, value);
 	if (liveAction)
 	{
 		liveAction = action;
@@ -1080,63 +1080,63 @@ SharedPointer<IController> UIAttributesController::createSubController (
 	{
 		if (name == "TextController")
 		{
-			return makeOwned<UIAttributeControllers::TextController> (shared (this),
-																	  *currentAttributeName);
+			return makeShared<UIAttributeControllers::TextController> (shared (this),
+																	   *currentAttributeName);
 		}
 		else if (name == "NumberController")
 		{
-			return makeOwned<UIAttributeControllers::NumberController> (shared (this),
-																		*currentAttributeName);
+			return makeShared<UIAttributeControllers::NumberController> (shared (this),
+																		 *currentAttributeName);
 		}
 		else if (name == "BooleanController")
 		{
-			return makeOwned<UIAttributeControllers::BooleanController> (shared (this),
-																		 *currentAttributeName);
+			return makeShared<UIAttributeControllers::BooleanController> (shared (this),
+																		  *currentAttributeName);
 		}
 		else if (name == "ColorController")
 		{
-			return makeOwned<UIAttributeControllers::ColorController> (
+			return makeShared<UIAttributeControllers::ColorController> (
 				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "GradientController")
 		{
-			return makeOwned<UIAttributeControllers::GradientController> (
+			return makeShared<UIAttributeControllers::GradientController> (
 				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "TagController")
 		{
-			return makeOwned<UIAttributeControllers::TagController> (
+			return makeShared<UIAttributeControllers::TagController> (
 				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "BitmapController")
 		{
-			return makeOwned<UIAttributeControllers::BitmapController> (
+			return makeShared<UIAttributeControllers::BitmapController> (
 				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "FontController")
 		{
-			return makeOwned<UIAttributeControllers::FontController> (
+			return makeShared<UIAttributeControllers::FontController> (
 				shared (this), *currentAttributeName, editDescription);
 		}
 		else if (name == "ListController")
 		{
-			return makeOwned<UIAttributeControllers::ListController> (
+			return makeShared<UIAttributeControllers::ListController> (
 				shared (this), *currentAttributeName, editDescription, selection);
 		}
 		else if (name == "TextAlignmentController")
 		{
-			return makeOwned<UIAttributeControllers::TextAlignmentController> (
+			return makeShared<UIAttributeControllers::TextAlignmentController> (
 				shared (this), *currentAttributeName);
 		}
 		else if (name == "AutosizeController")
 		{
-			return makeOwned<UIAttributeControllers::AutosizeController> (shared (this), selection,
-																		  *currentAttributeName);
+			return makeShared<UIAttributeControllers::AutosizeController> (shared (this), selection,
+																		   *currentAttributeName);
 		}
 		else if (name == "ScriptController")
 		{
-			return makeOwned<UIAttributeControllers::ScriptController> (shared (this),
-																		*currentAttributeName);
+			return makeShared<UIAttributeControllers::ScriptController> (shared (this),
+																		 *currentAttributeName);
 		}
 	}
 	return controller->createSubController (name, description);
@@ -1296,13 +1296,13 @@ SharedPointer<CView> UIAttributesController::createViewForAttribute (const std::
 	const CCoord height = 18;
 	const CCoord width = 160;
 	const CCoord margin = 2;
-	auto result = makeOwned<CViewContainer> (CRect (0, 0, width, height + 2));
+	auto result = makeShared<CViewContainer> (CRect (0, 0, width, height + 2));
 	result->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeColumn);
 	result->setTransparency (true);
 
 	CCoord middle = width/2;
 	auto label =
-		makeOwned<CTextLabel> (CRect (5, 1, middle - margin, height + 1), attrName.c_str ());
+		makeShared<CTextLabel> (CRect (5, 1, middle - margin, height + 1), attrName.c_str ());
 	label->setTextTruncateMode (CTextLabel::kTruncateHead);
 	label->setTransparency (true);
 	label->setHoriAlign (kRightText);
@@ -1351,9 +1351,9 @@ SharedPointer<CView> UIAttributesController::createViewForAttribute (const std::
 	}
 	if (valueView == nullptr) // fallcack if attributes.text template not defined
 	{
-		auto controller = makeOwned<UIAttributeControllers::TextController> (shared (this),
-																			 *currentAttributeName);
-		auto textEdit = makeOwned<CTextEdit> (r, this, -1);
+		auto controller = makeShared<UIAttributeControllers::TextController> (
+			shared (this), *currentAttributeName);
+		auto textEdit = makeShared<CTextEdit> (r, this, -1);
 		textEdit->setText (attrValue.c_str ());
 		textEdit->setTransparency (true);
 		textEdit->setFontColor (kBlackCColor);

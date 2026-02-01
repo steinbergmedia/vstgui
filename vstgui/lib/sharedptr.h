@@ -277,11 +277,13 @@ inline SharedPointer<I> shared (I* p) noexcept
 }
 
 //------------------------------------------------------------------------
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 template<class I, typename... Args>
 inline SharedPointer<I> makeOwned (Args&&... args)
 {
 	return SharedPointer<I> (new I (std::forward<Args> (args)...), false);
 }
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //------------------------------------------------------------------------
 template<class I, typename... Args>

@@ -190,7 +190,7 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 	: IPlatformTextEdit (callback)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-	impl->view = makeOwned<STBTextEditView> (callback);
+	impl->view = makeShared<STBTextEditView> (callback);
 	if (auto parent = impl->view->getParentView ())
 		parent->addSubview (impl->view);
 
@@ -198,7 +198,7 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 	auto fontSize = font->getSize () / impl->view->getGlobalTransform ().m11;
 	if (fontSize != font->getSize ())
 	{
-		font = makeOwned<CFontDesc> (*font.get ());
+		font = makeShared<CFontDesc> (*font.get ());
 		font->setSize (fontSize);
 	}
 	impl->view->setFont (font);
@@ -589,8 +589,8 @@ void STBTextEditView::onStateChanged ()
 	setBlinkToggle (true);
 	if (isAttached ())
 	{
-		blinkTimer = makeOwned<CVSTGUITimer> (
-			[&](CVSTGUITimer* timer) {
+		blinkTimer = makeShared<CVSTGUITimer> (
+			[&] (CVSTGUITimer* timer) {
 				setBlinkToggle (!isBlinkToggle ());
 				if (editState.select_start == editState.select_end)
 					invalid ();

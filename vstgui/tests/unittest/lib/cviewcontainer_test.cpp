@@ -113,7 +113,7 @@ public:
 
 TEST_SUITE_SETUP (CViewContainerTest)
 {
-	SharedPointer<CViewContainer> container = makeOwned<CViewContainer> (CRect (0, 0, 200, 200));
+	SharedPointer<CViewContainer> container = makeShared<CViewContainer> (CRect (0, 0, 200, 200));
 	TEST_SUITE_SET_STORAGE (SharedPointer<CViewContainer>, container);
 }
 
@@ -125,9 +125,9 @@ TEST_SUITE_TEARDOWN (CViewContainerTest)
 TEST_CASE (CViewContainerTest, ChangeViewZOrder)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 10, 10));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
-	auto view3 = makeOwned<CView> (CRect (0, 0, 10, 10));
+	auto view1 = makeShared<CView> (CRect (0, 0, 10, 10));
+	auto view2 = makeShared<CView> (CRect (0, 0, 10, 10));
+	auto view3 = makeShared<CView> (CRect (0, 0, 10, 10));
 	container->addSubview (view1);
 	container->addSubview (view2);
 	container->addSubview (view3);
@@ -148,8 +148,8 @@ TEST_CASE (CViewContainerTest, AddView)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
+	auto view = makeShared<CView> (CRect (0, 0, 10, 10));
+	auto view2 = makeShared<CView> (CRect (0, 0, 10, 10));
 
 	EXPECT (container->addSubview (view));
 	EXPECT (container->addSubview (view2));
@@ -162,7 +162,7 @@ TEST_CASE (CViewContainerTest, AddViewTwice)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
+	auto view = makeShared<CView> (CRect (0, 0, 10, 10));
 	EXPECT (container->addSubview (view));
 	EXPECT_EXCEPTION (container->addSubview (view), "view is already added to a container view");
 }
@@ -171,7 +171,7 @@ TEST_CASE (CViewContainerTest, AddViewToTwoContainer)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
+	auto view = makeShared<CView> (CRect (0, 0, 10, 10));
 	EXPECT (container->addSubview (view));
 	auto c2 = owned (new CViewContainer (CRect ()));
 	EXPECT_EXCEPTION (c2->addSubview (view), "view is already added to a container view");
@@ -181,8 +181,8 @@ TEST_CASE (CViewContainerTest, AddViewBeforeOtherView)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
+	auto view = makeShared<CView> (CRect (0, 0, 10, 10));
+	auto view2 = makeShared<CView> (CRect (0, 0, 10, 10));
 
 	EXPECT (container->addSubview (view));
 	EXPECT (container->insertSubview (view2, {0u}));
@@ -195,8 +195,8 @@ TEST_CASE (CViewContainerTest, RemoveView)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
+	auto view = makeShared<CView> (CRect (0, 0, 10, 10));
+	auto view2 = makeShared<CView> (CRect (0, 0, 10, 10));
 
 	container->addSubview (view);
 	container->addSubview (view2);
@@ -210,8 +210,8 @@ TEST_CASE (CViewContainerTest, RemoveAllViews)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
+	auto view = makeShared<CView> (CRect (0, 0, 10, 10));
+	auto view2 = makeShared<CView> (CRect (0, 0, 10, 10));
 
 	container->addSubview (view);
 	container->addSubview (view2);
@@ -226,11 +226,11 @@ TEST_CASE (CViewContainerTest, AdvanceNextFocusView)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto frame = makeOwned<CFrame> (CRect (0, 0, 10, 10), nullptr);
+	auto frame = makeShared<CFrame> (CRect (0, 0, 10, 10), nullptr);
 	frame->onActivate (true);
-	auto view1 = makeOwned<CView> (CRect (0, 0, 10, 10));
-	auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
-	auto view3 = makeOwned<CView> (CRect (0, 0, 10, 10));
+	auto view1 = makeShared<CView> (CRect (0, 0, 10, 10));
+	auto view2 = makeShared<CView> (CRect (0, 0, 10, 10));
+	auto view3 = makeShared<CView> (CRect (0, 0, 10, 10));
 	view1->setWantsFocus (true);
 	view2->setWantsFocus (true);
 	view3->setWantsFocus (true);
@@ -256,7 +256,7 @@ TEST_CASE (CViewContainerTest, AutoSizeAll)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto view = makeOwned<CView> (container->getViewSize ());
+	auto view = makeShared<CView> (container->getViewSize ());
 	view->setAutosizeFlags (kAutosizeAll);
 	container->addSubview (view);
 	container->setAutosizingEnabled (true);
@@ -275,7 +275,7 @@ TEST_CASE (CViewContainerTest, SizeToFit)
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
 	CRect r (10, 10, 20, 20);
-	auto view = makeOwned<CView> (r);
+	auto view = makeShared<CView> (r);
 	container->addSubview (view);
 	container->sizeToFit ();
 	EXPECT (container->getViewSize ().right == 30)
@@ -287,7 +287,7 @@ TEST_CASE (CViewContainerTest, GetViewAt)
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
 	CRect r (10, 10, 20, 20);
-	auto view = makeOwned<CView> (r);
+	auto view = makeShared<CView> (r);
 	container->addSubview (view);
 	EXPECT (view == container->getViewAt (r.getTopLeft ()));
 	EXPECT (nullptr == container->getViewAt (CPoint (0, 0)));
@@ -298,10 +298,10 @@ TEST_CASE (CViewContainerTest, GetViewAtDeep)
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
 	CRect r (10, 10, 20, 20);
-	auto container2 = makeOwned<CViewContainer> (r);
+	auto container2 = makeShared<CViewContainer> (r);
 	container->addSubview (container2);
 	CRect r2 (2, 2, 4, 4);
-	auto view = makeOwned<CView> (r2);
+	auto view = makeShared<CView> (r2);
 	container2->addSubview (view);
 	EXPECT (container->getViewAt (CPoint (12, 12)) == nullptr);
 	EXPECT (container->getViewAt (CPoint (12, 12), GetViewOptions (GetViewOptions::kDeep)) == view);
@@ -319,12 +319,12 @@ TEST_CASE (CViewContainerTest, Listener)
 
 	TestViewContainerListener listener;
 	container->registerViewContainerListener (&listener);
-	auto view = makeOwned<CView> (CRect (0, 0, 0, 0));
+	auto view = makeShared<CView> (CRect (0, 0, 0, 0));
 	container->addSubview (view);
 	EXPECT (listener.viewAddedCalled == true);
 	container->removeSubview (view);
 	EXPECT (listener.viewRemovedCalled == true);
-	auto view2 = makeOwned<CView> (CRect (0, 0, 0, 0));
+	auto view2 = makeShared<CView> (CRect (0, 0, 0, 0));
 	container->addSubview (view);
 	container->addSubview (view2);
 	container->changeViewZOrder (view2, 0);
@@ -360,8 +360,8 @@ TEST_CASE (CViewContainerTest, GetChildViewsOfType)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	container->addSubview (makeOwned<TestView1> ());
-	container->addSubview (makeOwned<TestView2> ());
+	container->addSubview (makeShared<TestView1> ());
+	container->addSubview (makeShared<TestView2> ());
 	std::vector<SharedPointer<TestView1>> r;
 	container->getChildViewsOfType<TestView1> (r);
 	EXPECT (r.size () == 1);
@@ -384,8 +384,8 @@ TEST_CASE (CViewContainerTest, Iterator)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto v1 = makeOwned<TestView1> ();
-	auto v2 = makeOwned<TestView2> ();
+	auto v1 = makeShared<TestView1> ();
+	auto v2 = makeShared<TestView2> ();
 	container->addSubview (v1);
 	container->addSubview (v2);
 	ViewIterator it (container);
@@ -403,8 +403,8 @@ TEST_CASE (CViewContainerTest, ReverseIterator)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto v1 = makeOwned<TestView1> ();
-	auto v2 = makeOwned<TestView2> ();
+	auto v1 = makeShared<TestView1> ();
+	auto v2 = makeShared<TestView2> ();
 	container->addSubview (v1);
 	container->addSubview (v2);
 	ReverseViewIterator it (container);
@@ -435,8 +435,8 @@ TEST_CASE (CViewContainerTest, MouseEvents)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto v1 = makeOwned<MouseEventCheckView> ();
-	auto v2 = makeOwned<MouseEventCheckView> ();
+	auto v1 = makeShared<MouseEventCheckView> ();
+	auto v2 = makeShared<MouseEventCheckView> ();
 	CRect r1 (0, 0, 50, 50);
 	CRect r2 (50, 0, 100, 50);
 	v1->setViewSize (r1);
@@ -469,7 +469,7 @@ TEST_CASE (CViewContainerTest, MouseCancel)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto v1 = makeOwned<MouseEventCheckView> ();
+	auto v1 = makeShared<MouseEventCheckView> ();
 	CRect r1 (0, 0, 50, 50);
 	v1->setViewSize (r1);
 	v1->setMouseableArea (r1);
@@ -486,8 +486,8 @@ TEST_CASE (CViewContainerTest, DragEvents)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto v1 = makeOwned<MouseEventCheckView> ();
-	auto v2 = makeOwned<MouseEventCheckView> ();
+	auto v1 = makeShared<MouseEventCheckView> ();
+	auto v2 = makeShared<MouseEventCheckView> ();
 	CRect r1 (0, 0, 50, 50);
 	CRect r2 (50, 0, 100, 50);
 	v1->setViewSize (r1);
@@ -515,8 +515,8 @@ TEST_CASE (CViewContainerTest, DragMoveBetweenTwoViews)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto v1 = makeOwned<MouseEventCheckView> ();
-	auto v2 = makeOwned<MouseEventCheckView> ();
+	auto v1 = makeShared<MouseEventCheckView> ();
+	auto v2 = makeShared<MouseEventCheckView> ();
 	CRect r1 (0, 0, 50, 50);
 	CRect r2 (50, 0, 100, 50);
 	v1->setViewSize (r1);
@@ -544,8 +544,8 @@ TEST_CASE (CViewContainerTest,
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
 	CRect r1 (0, 0, 50, 50);
-	auto v1 = makeOwned<MouseEventCheckView> ();
-	auto v2 = makeOwned<CView> (r1);
+	auto v1 = makeShared<MouseEventCheckView> ();
+	auto v2 = makeShared<CView> (r1);
 	v2->setTransparency (false);
 	v1->setViewSize (r1);
 	v1->setMouseableArea (r1);
@@ -566,12 +566,12 @@ TEST_CASE (CViewContainerTest, GetViewsAt)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto v1 = makeOwned<TestView1> ();
-	auto v2 = makeOwned<TestView1> ();
-	auto c1 = makeOwned<CViewContainer> (CRect (0, 0, 10, 10));
-	auto v1c1 = makeOwned<TestView1> ();
+	auto v1 = makeShared<TestView1> ();
+	auto v2 = makeShared<TestView1> ();
+	auto c1 = makeShared<CViewContainer> (CRect (0, 0, 10, 10));
+	auto v1c1 = makeShared<TestView1> ();
 	v1c1->setVisible (false);
-	auto v2c1 = makeOwned<TestView1> ();
+	auto v2c1 = makeShared<TestView1> ();
 	c1->addSubview (v1c1);
 	c1->addSubview (v2c1);
 	v2->setMouseEnabled (false);
@@ -602,9 +602,9 @@ TEST_CASE (CViewContainerTest, GetContainerAt)
 {
 	auto& container = TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>);
 
-	auto c1 = makeOwned<CViewContainer> (CRect (0, 0, 10, 10));
-	auto c2 = makeOwned<CViewContainer> (CRect (0, 0, 10, 10));
-	auto c3 = makeOwned<CViewContainer> (CRect (0, 0, 10, 10));
+	auto c1 = makeShared<CViewContainer> (CRect (0, 0, 10, 10));
+	auto c2 = makeShared<CViewContainer> (CRect (0, 0, 10, 10));
+	auto c3 = makeShared<CViewContainer> (CRect (0, 0, 10, 10));
 	c2->setMouseEnabled (false);
 	c3->setVisible (false);
 	c2->addSubview (c3);

@@ -68,7 +68,7 @@ CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int
 							  const CPoint& offset)
 : CControl (size, listener, tag, background), toDisplay (toDisplay), offset (offset)
 {
-	modalView = makeOwned<CDefaultSplashScreenView> (toDisplay, this, background, offset);
+	modalView = makeShared<CDefaultSplashScreenView> (toDisplay, this, background, offset);
 }
 
 //------------------------------------------------------------------------
@@ -293,8 +293,8 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animIndex, uint32_t animT
 			{
 				splashView->setMouseEnabled (false);
 				splashView->addAnimation ("AnimationSplashScreenAnimation",
-										  makeOwned<Animation::AlphaValueAnimation> (0.f),
-										  makeOwned<Animation::PowerTimingFunction> (animTime, 2),
+										  makeShared<Animation::AlphaValueAnimation> (0.f),
+										  makeShared<Animation::PowerTimingFunction> (animTime, 2),
 										  [this] (auto&, auto, auto&) {
 											  if (modalView)
 											  {
@@ -316,8 +316,8 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animIndex, uint32_t animT
 				setMouseEnabled (false);
 				splashView->setAlphaValue (0.f);
 				splashView->addAnimation ("AnimationSplashScreenAnimation",
-										  makeOwned<Animation::AlphaValueAnimation> (1.f),
-										  makeOwned<Animation::PowerTimingFunction> (animTime, 2));
+										  makeShared<Animation::AlphaValueAnimation> (1.f),
+										  makeShared<Animation::PowerTimingFunction> (animTime, 2));
 			}
 			return true;
 		}

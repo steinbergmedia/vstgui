@@ -40,7 +40,7 @@ struct WeakObject2 : public WeakableObject
 //------------------------------------------------------------------------
 SharedPointer<WeakableObject> makeTestObject (int32_t v = 42)
 {
-	return makeOwned<WeakableObject> (v);
+	return makeShared<WeakableObject> (v);
 }
 
 } // anonymous
@@ -178,13 +178,13 @@ TEST_CASE (WeakPointerTest, MoveAssign)
 #if 1
 TEST_CASE (WeakPointerTest, Inheritance)
 {
-	auto obj = makeOwned<WeakObject2> (1);
+	auto obj = makeShared<WeakObject2> (1);
 	auto obj2 = obj.cast<WeakableObject> ();
 	WeakPointer<WeakObject2> weakPtr = obj2;
 	auto objPtr = weakPtr.lock ();
 	EXPECT (objPtr != nullptr);
 	EXPECT (objPtr->getValue () == 100);
-	auto obj3 = makeOwned<WeakableObject2> (1);
+	auto obj3 = makeShared<WeakableObject2> (1);
 }
 #endif
 

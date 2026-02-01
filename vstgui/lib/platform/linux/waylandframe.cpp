@@ -191,7 +191,7 @@ struct Frame::Impl
 		dirtyRects.add (r);
 		if (redrawTimer)
 			return;
-		redrawTimer = makeOwned<RedrawTimerHandler> (16, [this] () {
+		redrawTimer = makeShared<RedrawTimerHandler> (16, [this] () {
 			if (dirtyRects.data ().empty ())
 				return;
 			redraw ();
@@ -319,7 +319,7 @@ void* Frame::getPlatformRepresentation () const
 //------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return makeOwned<GenericTextEdit> (textEdit);
+	return makeShared<GenericTextEdit> (textEdit);
 }
 
 //------------------------------------------------------------------------
@@ -330,7 +330,7 @@ SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 	if (impl->genericOptionMenuTheme)
 		theme = *impl->genericOptionMenuTheme.get ();
 	auto optionMenu =
-		makeOwned<GenericOptionMenu> (cFrame, MouseEventButtonState (MouseButton::Left), theme);
+		makeShared<GenericOptionMenu> (cFrame, MouseEventButtonState (MouseButton::Left), theme);
 	optionMenu->setListener (this);
 	return optionMenu;
 }

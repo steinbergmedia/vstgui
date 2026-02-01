@@ -217,7 +217,7 @@ struct MetalController : DelegationController,
 				auto renderer = std::make_shared<ExampleMetalRenderer> ();
 				if (auto metalView = ExternalView::MetalView::make (renderer))
 				{
-					return makeOwned<CExternalView> (CRect {}, metalView);
+					return makeShared<CExternalView> (CRect {}, metalView);
 				}
 			}
 		}
@@ -230,7 +230,7 @@ WindowPtr makeNewMetalExampleWindow ()
 {
 	auto customization = UIDesc::Customization::make ();
 	customization->addCreateViewControllerFunc ("MetalController", [] (auto, auto parent, auto&) {
-		return makeOwned<MetalController> (parent);
+		return makeShared<MetalController> (parent);
 	});
 
 	UIDesc::Config config;

@@ -17,10 +17,10 @@ TEST_CASE (UIViewCreatorTest, BitmapToString)
 {
 	TestUIDescription uidesc;
 	std::string str;
-	auto bitmap = makeOwned<CBitmap> (CResourceDescription ("test.png"));
+	auto bitmap = makeShared<CBitmap> (CResourceDescription ("test.png"));
 	EXPECT (bitmapToString (bitmap, str, uidesc) == true);
 	EXPECT (str == "test.png");
-	auto bitmap2 = makeOwned<CBitmap> (CResourceDescription (100));
+	auto bitmap2 = makeShared<CBitmap> (CResourceDescription (100));
 	EXPECT (bitmapToString (bitmap2, str, uidesc) == true);
 	EXPECT (str == "100");
 }

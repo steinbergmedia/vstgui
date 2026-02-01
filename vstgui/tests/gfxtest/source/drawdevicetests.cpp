@@ -336,17 +336,17 @@ public:
 		{
 			if (*customViewName == "RectsView")
 			{
-				return makeOwned<CustomDrawView> (
+				return makeShared<CustomDrawView> (
 					[] (auto view, auto& ctx, auto size) { drawRects (ctx, size); });
 			}
 			if (*customViewName == "BitmapsFilterView")
 			{
-				return makeOwned<CustomDrawView> (
+				return makeShared<CustomDrawView> (
 					[] (auto view, auto& ctx, auto size) { drawBitmapFilter (view, ctx, size); });
 			}
 			else if (*customViewName == "InvalidRegionView")
 			{
-				return makeOwned<InvalidateRegionTestView> (CRect (0, 0, 500, 500));
+				return makeShared<InvalidateRegionTestView> (CRect (0, 0, 500, 500));
 			}
 		}
 		return DelegationController::createView (attributes, description);
@@ -382,7 +382,7 @@ void makeDrawDeviceTestsWindow ()
 	auto drawDeviceTestsCustomization = std::make_shared<DrawDeviceTestsCustomization> ();
 	drawDeviceTestsCustomization->addCreateViewControllerFunc (
 		"ViewCreator", [] (const auto& name, auto parent, const auto& uiDesc) {
-			return makeOwned<ViewCreator> (parent);
+			return makeShared<ViewCreator> (parent);
 		});
 
 	UIDesc::Config config;

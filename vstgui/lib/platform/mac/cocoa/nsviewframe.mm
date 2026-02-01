@@ -1665,7 +1665,7 @@ bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 bool NSViewFrame::showTooltip (const CRect& rect, const char* utf8Text)
 {
 	if (tooltipWindow == nullptr)
-		tooltipWindow = makeOwned<CocoaTooltipWindow> ();
+		tooltipWindow = makeShared<CocoaTooltipWindow> ();
 	tooltipWindow->set (this, rect, utf8Text);
 	return true;
 }
@@ -1714,7 +1714,7 @@ bool NSViewFrame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* them
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return makeOwned<CocoaTextEdit> (nsView, textEdit);
+	return makeShared<CocoaTextEdit> (nsView, textEdit);
 }
 
 //-----------------------------------------------------------------------------
@@ -1725,10 +1725,10 @@ SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 		MouseEventButtonState buttonState;
 		if (auto event = [NSApp currentEvent])
 			buttonState = buttonStateFromNSEvent (event);
-		return makeOwned<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)), buttonState,
-											 *genericOptionMenuTheme.get ());
+		return makeShared<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)), buttonState,
+											  *genericOptionMenuTheme.get ());
 	}
-	return makeOwned<NSViewOptionMenu> ();
+	return makeShared<NSViewOptionMenu> ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1744,7 +1744,7 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 
 	auto caParentLayer =
 		parentViewLayer ? parentViewLayer->getCALayer () : (caLayer ? caLayer : nsView.layer);
-	auto layer = makeOwned<CAViewLayer> (caParentLayer);
+	auto layer = makeShared<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
 	return std::move (layer);
 }
@@ -1889,7 +1889,7 @@ void CocoaTooltipWindow::hide ()
 {
 	if (timer == nullptr && [window isVisible])
 	{
-		timer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 17);
+		timer = makeShared<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 17);
 		onTimer ();
 	}
 }

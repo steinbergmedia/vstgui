@@ -306,7 +306,7 @@ void CFrame::enableTooltips (bool state, uint32_t delayTimeInMs)
 	if (state)
 	{
 		if (pImpl->tooltips == nullptr)
-			pImpl->tooltips = makeOwned<CTooltipSupport> (this, delayTimeInMs);
+			pImpl->tooltips = makeShared<CTooltipSupport> (this, delayTimeInMs);
 	}
 	else if (pImpl->tooltips)
 	{
@@ -768,7 +768,7 @@ void CFrame::idle ()
 SharedPointer<Animation::Animator> CFrame::getAnimator ()
 {
 	if (pImpl->animator == nullptr)
-		pImpl->animator = makeOwned<Animation::Animator> ();
+		pImpl->animator = makeShared<Animation::Animator> ();
 	return pImpl->animator;
 }
 

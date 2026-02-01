@@ -429,7 +429,7 @@ void Window::onMouseEvent (MouseEvent& event, CFrame& inFrame)
 	if (event.type != EventType::MouseDown || !event.buttonState.isRight ())
 		return;
 
-	auto contextMenu = makeOwned<COptionMenu> ();
+	auto contextMenu = makeShared<COptionMenu> ();
 
 	CPoint where (event.mousePosition);
 	inFrame.getTransform ().transform (where);
@@ -462,11 +462,11 @@ void Window::onMouseEvent (MouseEvent& event, CFrame& inFrame)
 		    staticPtrCast<Platform::IWindow> (getPlatformWindow ()).get ());
 		if (!commandList.empty ())
 		{
-			auto menuHandler = makeOwned<WindowContextMenuCommandHandler> (this);
+			auto menuHandler = makeShared<WindowContextMenuCommandHandler> (this);
 			for (const auto& cat : commandList)
 			{
-				auto item = makeOwned<CMenuItem> (cat.first);
-				auto catMenu = makeOwned<COptionMenu> ();
+				auto item = makeShared<CMenuItem> (cat.first);
+				auto catMenu = makeShared<COptionMenu> ();
 				item->setSubmenu (catMenu);
 				for (const auto& entry : cat.second)
 				{

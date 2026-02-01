@@ -91,11 +91,11 @@ TEST_CASE (ControlValueAnimationTest, Animation)
 //-----------------------------------------------------------------------------
 TEST_CASE (ExchangeViewAnimationTest, AlphaValueFade)
 {
-	auto parentContainer = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
-	auto container = makeOwned<CViewContainer> (CRect (0, 0, 0, 0));
+	auto parentContainer = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
+	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
 	container->attached (parentContainer);
-	auto oldView = makeOwned<TestView> ();
-	auto newView = makeOwned<TestView> ();
+	auto oldView = makeShared<TestView> ();
+	auto newView = makeShared<TestView> ();
 	container->addSubview (oldView);
 	ExchangeViewAnimation a (oldView, newView, ExchangeViewAnimation::kAlphaValueFade);
 	a.animationStart (*container.get (), "");
@@ -114,11 +114,11 @@ TEST_CASE (ExchangeViewAnimationTest, AlphaValueFade)
 TEST_CASE (ExchangeViewAnimationTest, PushInFromLeft)
 {
 	CRect r (0, 0, 100, 100);
-	auto parentContainer = makeOwned<CViewContainer> (r);
-	auto container = makeOwned<CViewContainer> (r);
+	auto parentContainer = makeShared<CViewContainer> (r);
+	auto container = makeShared<CViewContainer> (r);
 	container->attached (parentContainer);
-	auto oldView = makeOwned<CView> (r);
-	auto newView = makeOwned<CView> (r);
+	auto oldView = makeShared<CView> (r);
+	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
 	ExchangeViewAnimation a (oldView, newView, ExchangeViewAnimation::kPushInFromLeft);
 	a.animationStart (*container.get (), "");
@@ -136,11 +136,11 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromLeft)
 TEST_CASE (ExchangeViewAnimationTest, PushInFromRight)
 {
 	CRect r (0, 0, 100, 100);
-	auto parentContainer = makeOwned<CViewContainer> (r);
-	auto container = makeOwned<CViewContainer> (r);
+	auto parentContainer = makeShared<CViewContainer> (r);
+	auto container = makeShared<CViewContainer> (r);
 	container->attached (parentContainer);
-	auto oldView = makeOwned<CView> (r);
-	auto newView = makeOwned<CView> (r);
+	auto oldView = makeShared<CView> (r);
+	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
 	ExchangeViewAnimation a (oldView, newView, ExchangeViewAnimation::kPushInFromRight);
 	a.animationStart (*container.get (), "");
@@ -158,11 +158,11 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromRight)
 TEST_CASE (ExchangeViewAnimationTest, PushInFromTop)
 {
 	CRect r (0, 0, 100, 100);
-	auto parentContainer = makeOwned<CViewContainer> (r);
-	auto container = makeOwned<CViewContainer> (r);
+	auto parentContainer = makeShared<CViewContainer> (r);
+	auto container = makeShared<CViewContainer> (r);
 	container->attached (parentContainer);
-	auto oldView = makeOwned<CView> (r);
-	auto newView = makeOwned<CView> (r);
+	auto oldView = makeShared<CView> (r);
+	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
 	ExchangeViewAnimation a (oldView, newView, ExchangeViewAnimation::kPushInFromTop);
 	a.animationStart (*container.get (), "");
@@ -180,11 +180,11 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromTop)
 TEST_CASE (ExchangeViewAnimationTest, PushInFromBottom)
 {
 	CRect r (0, 0, 100, 100);
-	auto parentContainer = makeOwned<CViewContainer> (r);
-	auto container = makeOwned<CViewContainer> (r);
+	auto parentContainer = makeShared<CViewContainer> (r);
+	auto container = makeShared<CViewContainer> (r);
 	container->attached (parentContainer);
-	auto oldView = makeOwned<CView> (r);
-	auto newView = makeOwned<CView> (r);
+	auto oldView = makeShared<CView> (r);
+	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
 	ExchangeViewAnimation a (oldView, newView, ExchangeViewAnimation::kPushInFromBottom);
 	a.animationStart (*container.get (), "");
@@ -202,11 +202,11 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromBottom)
 TEST_CASE (ExchangeViewAnimationTest, PushInOutFromLeft)
 {
 	CRect r (0, 0, 100, 100);
-	auto parentContainer = makeOwned<CViewContainer> (r);
-	auto container = makeOwned<CViewContainer> (r);
+	auto parentContainer = makeShared<CViewContainer> (r);
+	auto container = makeShared<CViewContainer> (r);
 	container->attached (parentContainer);
-	auto oldView = makeOwned<CView> (r);
-	auto newView = makeOwned<CView> (r);
+	auto oldView = makeShared<CView> (r);
+	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
 	ExchangeViewAnimation a (oldView, newView, ExchangeViewAnimation::kPushInOutFromLeft);
 	a.animationStart (*container.get (), "");
@@ -225,11 +225,11 @@ TEST_CASE (ExchangeViewAnimationTest, PushInOutFromLeft)
 TEST_CASE (ExchangeViewAnimationTest, PushInOutFromRight)
 {
 	CRect r (0, 0, 100, 100);
-	auto parentContainer = makeOwned<CViewContainer> (r);
-	auto container = makeOwned<CViewContainer> (r);
+	auto parentContainer = makeShared<CViewContainer> (r);
+	auto container = makeShared<CViewContainer> (r);
 	container->attached (parentContainer);
-	auto oldView = makeOwned<CView> (r);
-	auto newView = makeOwned<CView> (r);
+	auto oldView = makeShared<CView> (r);
+	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
 	ExchangeViewAnimation a (oldView, newView, ExchangeViewAnimation::kPushInOutFromRight);
 	a.animationStart (*container.get (), "");

@@ -229,7 +229,7 @@ UTF8StringPtr SliderCreator::getDisplayName () const
 SharedPointer<CView> SliderCreator::create (const UIAttributes& attributes,
 											const IUIDescription& description) const
 {
-	return makeOwned<CSlider> (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr);
+	return makeShared<CSlider> (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr);
 }
 
 //------------------------------------------------------------------------

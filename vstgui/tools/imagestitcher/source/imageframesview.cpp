@@ -23,7 +23,7 @@ using namespace VSTGUI::Standalone;
 //------------------------------------------------------------------------
 ImageFramesView::ImageFramesView () : CView (CRect (0, 0, 10, 10))
 {
-	font = makeOwned<CFontDesc> (*kSystemFont.get ());
+	font = makeShared<CFontDesc> (*kSystemFont.get ());
 	font->setSize (8);
 	setSelectionColor (MakeCColor (164, 205, 255, 255));
 }
@@ -511,7 +511,7 @@ CMouseEventResult ImageFramesView::onMouseMoved (CPoint& where, const CButtonSta
 			}
 			if (indices.size () > 1)
 			{
-				auto dropSource = makeOwned<CDropSource> ();
+				auto dropSource = makeShared<CDropSource> ();
 				dropSource->add (indices.data (),
 				                 static_cast<uint32_t> (indices.size () * sizeof (size_t)),
 				                 IDataPackage::kBinary);

@@ -42,7 +42,7 @@ UTF8StringPtr RockerSwitchCreator::getDisplayName () const
 SharedPointer<CView> RockerSwitchCreator::create (const UIAttributes& attributes,
 												  const IUIDescription& description) const
 {
-	return makeOwned<CRockerSwitch> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	return makeShared<CRockerSwitch> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------

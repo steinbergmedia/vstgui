@@ -19,8 +19,8 @@ namespace VSTGUI {
 PlatformBitmapPtr CGBitmap::create (CPoint* size)
 {
 	if (size)
-		return makeOwned<CGBitmap> (*size);
-	return makeOwned<CGBitmap> ();
+		return makeShared<CGBitmap> (*size);
+	return makeShared<CGBitmap> ();
 }
 
 //-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ PlatformBitmapPtr CGBitmap::createFromPath (UTF8StringPtr absolutePath)
 		CGImageSourceRef source = CGImageSourceCreateWithURL (url, nullptr);
 		if (source)
 		{
-			auto cgBitmap = makeOwned<CGBitmap> ();
+			auto cgBitmap = makeShared<CGBitmap> ();
 			bool result = cgBitmap->loadFromImageSource (source);
 			if (result)
 				bitmap = std::move (cgBitmap);
@@ -54,7 +54,7 @@ PlatformBitmapPtr CGBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 		CGImageSourceRef source = CGImageSourceCreateWithData (data, nullptr);
 		if (source)
 		{
-			auto cgBitmap = makeOwned<CGBitmap> ();
+			auto cgBitmap = makeShared<CGBitmap> ();
 			bool result = cgBitmap->loadFromImageSource (source);
 			if (result)
 				bitmap = std::move (cgBitmap);
@@ -439,7 +439,7 @@ SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremul
 	}
 	if (bits)
 	{
-		return makeOwned<CGBitmapPixelAccess> (shared (this), alphaPremultiplied);
+		return makeShared<CGBitmapPixelAccess> (shared (this), alphaPremultiplied);
 	}
 	return nullptr;
 }

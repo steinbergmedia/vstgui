@@ -436,7 +436,7 @@ UIGradientEditorController::UIGradientEditorController (
 	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer)
 : editDescription (description)
 , gradient (gradient)
-, editColor (makeOwned<UIColor> ())
+, editColor (makeShared<UIColor> ())
 , actionPerformer (actionPerformer)
 , gradientName (gradientName)
 {
@@ -508,7 +508,7 @@ SharedPointer<IController> UIGradientEditorController::createSubController (
 {
 	if (UTF8StringView (name) == "ColorChooserController")
 	{
-		return makeOwned<UIColorChooserController> (shared (this), editColor);
+		return makeShared<UIColorChooserController> (shared (this), editColor);
 	}
 	return nullptr;
 }
@@ -540,12 +540,12 @@ SharedPointer<COptionMenu> createColorMenu (IUIDescription& desc,
 	desc.collectColorNames (names);
 	if (names.empty ())
 		return {};
-	auto menu = makeOwned<COptionMenu> ();
+	auto menu = makeShared<COptionMenu> ();
 	std::for_each (names.begin (), names.end (), [&] (const auto& el) {
 		CColor color;
 		if (desc.getColor (el->data (), color))
 		{
-			auto item = makeOwned<CCommandMenuItem> (UTF8String (*el));
+			auto item = makeShared<CCommandMenuItem> (UTF8String (*el));
 			item->setActions ([callback, color] (auto item) { callback (color); });
 			item->setIcon (createColorIcon (color));
 			menu->addEntry (item);
@@ -577,7 +577,7 @@ SharedPointer<CView> UIGradientEditorController::verifyView (const SharedPointer
 		if (menu->getTag () == kFunctionMenuTag)
 		{
 			auto item =
-				makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Select Next Color Stop"});
+				makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {"Select Next Color Stop"});
 			item->setActions ([this] (auto) {
 				if (colorStopEditView)
 				{
@@ -585,8 +585,8 @@ SharedPointer<CView> UIGradientEditorController::verifyView (const SharedPointer
 				}
 			});
 			menu->addEntry (item);
-			item =
-				makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Select Previous Color Stop"});
+			item = makeShared<CCommandMenuItem> (
+				CCommandMenuItem::Desc {"Select Previous Color Stop"});
 			item->setActions ([this] (auto) {
 				if (colorStopEditView)
 				{
@@ -623,7 +623,7 @@ SharedPointer<CView> UIGradientEditorController::createView (const UIAttributes&
 	{
 		if (*name == "ColorStopEditView")
 		{
-			colorStopEditView = makeOwned<UIColorStopEditView> (editColor);
+			colorStopEditView = makeShared<UIColorStopEditView> (editColor);
 			colorStopEditView->setGradient (gradient);
 			colorStopEditView->registerListener (this);
 			return colorStopEditView;
@@ -821,7 +821,7 @@ UIGradientsController::UIGradientsController (const SharedPointer<IController>& 
 , editDescription (description)
 , actionPerformer (actionPerformer)
 {
-	dataSource = makeOwned<UIGradientsDataSource> (editDescription, actionPerformer, this);
+	dataSource = makeShared<UIGradientsDataSource> (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
 }
 
@@ -837,10 +837,10 @@ SharedPointer<CView> UIGradientsController::createView (const UIAttributes& attr
 	{
 		if (*name == "GradientsBrowser")
 		{
-			auto dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
-														CDataBrowser::kDrawRowLines |
-															CScrollView::kHorizontalScrollbar |
-															CScrollView::kVerticalScrollbar);
+			auto dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+														 CDataBrowser::kDrawRowLines |
+															 CScrollView::kHorizontalScrollbar |
+															 CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -923,9 +923,9 @@ void UIGradientsController::dbRowDoubleClick (int32_t row, GenericStringListData
 void UIGradientsController::showEditDialog ()
 {
 	UIDialogController* dc = new UIDialogController (shared (this), editButton->getFrame ());
-	auto fsController = makeOwned<UIGradientEditorController> (
-	    dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription,
-	    actionPerformer);
+	auto fsController = makeShared<UIGradientEditorController> (
+		dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription,
+		actionPerformer);
 	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController,
 	         UIEditController::getEditorDescription ());
 }

@@ -265,14 +265,14 @@ PlatformFramePtr Win32Factory::createFrame (IPlatformFrameCallback* frame, const
 											void* parent, PlatformType parentType,
 											IPlatformFrameConfig* config) const noexcept
 {
-	return makeOwned<Win32Frame> (frame, size, static_cast<HWND> (parent), parentType);
+	return makeShared<Win32Frame> (frame, size, static_cast<HWND> (parent), parentType);
 }
 
 //-----------------------------------------------------------------------------
 PlatformFontPtr Win32Factory::createFont (const UTF8String& name, const CCoord& size,
 										  const int32_t& style) const noexcept
 {
-	return makeOwned<D2DFont> (name, size, style);
+	return makeShared<D2DFont> (name, size, style);
 }
 
 //-----------------------------------------------------------------------------
@@ -284,13 +284,13 @@ bool Win32Factory::getAllFontFamilies (const FontFamilyCallback& callback) const
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr Win32Factory::createBitmap (const CPoint& size) const noexcept
 {
-	return makeOwned<D2DBitmap> (size);
+	return makeShared<D2DBitmap> (size);
 }
 
 //------------------------------------------------------------------------
 static PlatformBitmapPtr createFromIStream (IStream* stream)
 {
-	auto bitmap = makeOwned<D2DBitmap> ();
+	auto bitmap = makeShared<D2DBitmap> ();
 	if (bitmap->loadFromStream (stream))
 		return bitmap;
 	return nullptr;
@@ -299,7 +299,7 @@ static PlatformBitmapPtr createFromIStream (IStream* stream)
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr Win32Factory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	auto bitmap = makeOwned<D2DBitmap> ();
+	auto bitmap = makeShared<D2DBitmap> ();
 	if (bitmap->load (desc))
 		return bitmap;
 	return nullptr;
@@ -364,19 +364,19 @@ PlatformResourceInputStreamPtr
 //-----------------------------------------------------------------------------
 PlatformStringPtr Win32Factory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return makeOwned<WinString> (utf8String);
+	return makeShared<WinString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------
 PlatformTimerPtr Win32Factory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
-	return makeOwned<WinTimer> (callback);
+	return makeShared<WinTimer> (callback);
 }
 
 //------------------------------------------------------------------------
 bool Win32Factory::setClipboard (const DataPackagePtr& data) const noexcept
 {
-	auto dataObject = makeOwned<Win32DataObject> (data);
+	auto dataObject = makeShared<Win32DataObject> (data);
 	auto hr = OleSetClipboard (dataObject);
 	return hr == S_OK;
 }
@@ -387,7 +387,7 @@ auto Win32Factory::getClipboard () const noexcept -> DataPackagePtr
 	IDataObject* dataObject = nullptr;
 	if (OleGetClipboard (&dataObject) != S_OK)
 		return nullptr;
-	return makeOwned<Win32DataPackage> (dataObject);
+	return makeShared<Win32DataPackage> (dataObject);
 }
 
 //-----------------------------------------------------------------------------

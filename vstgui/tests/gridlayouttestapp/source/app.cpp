@@ -109,7 +109,7 @@ private:
 			if (*customName == "DataBrowser")
 			{
 				int32_t style = CDataBrowser::kVerticalScrollbar | CDataBrowser::kDontDrawFrame;
-				browser = makeOwned<CDataBrowser> (CRect {}, this, style);
+				browser = makeShared<CDataBrowser> (CRect {}, this, style);
 				return browser;
 			}
 		}
@@ -318,7 +318,7 @@ private:
 				CPoint pos;
 				b.localToFrame (pos);
 				menuRect.offset (pos);
-				auto menu = makeOwned<COptionMenu> ();
+				auto menu = makeShared<COptionMenu> ();
 				menu->setViewSize (menuRect);
 				menu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kCheckStyle |
 								COptionMenu::kNoDrawStyle);
@@ -396,9 +396,9 @@ struct GridLayoutWindowController : public WindowControllerAdapter,
 	{
 		CRect r;
 		r.setSize (window.getSize ());
-		frame = makeOwned<CFrame> (r, nullptr);
+		frame = makeShared<CFrame> (r, nullptr);
 		container =
-			makeOwned<CViewContainer> (CRect {0, 0, frame->getWidth (), frame->getHeight ()});
+			makeShared<CViewContainer> (CRect {0, 0, frame->getWidth (), frame->getHeight ()});
 		container->setAutosizeFlags (kAutosizeAll);
 		container->setViewLayouter (layouter);
 		frame->addSubview (container);
@@ -414,7 +414,7 @@ struct GridLayoutWindowController : public WindowControllerAdapter,
 			container->removeAll ();
 			for (auto i = 0u; i < numChildsToCreate; ++i)
 			{
-				container->addSubview (makeOwned<ViewWithAFrame> (i));
+				container->addSubview (makeShared<ViewWithAFrame> (i));
 			}
 			if (auto layout = container->calculateViewLayout (container->getViewSize ()))
 			{
@@ -629,7 +629,7 @@ struct GridLayoutPropertiesWindowController : DelegationController,
 					{7, 1, 1, 1},  {8, 0, 1, 3},  {9, 0, 1, 2},	 {10, 0, 1, 2}, {11, 0, 1, 2},
 					{12, 0, 1, 2}, {13, 0, 1, 2}, {14, 0, 1, 1}, {14, 1, 1, 1},
 				};
-				container->setViewLayouter (makeOwned<GridLayouter> (grid));
+				container->setViewLayouter (makeShared<GridLayouter> (grid));
 			}
 		}
 		return view;
@@ -744,15 +744,15 @@ public:
 			"AutoRowsController",
 			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
 					const IUIDescription& uiDesc) {
-				autoRowsController = makeOwned<AutoSizeController> (parent, autoRows,
-																	[this] () { modelUpdated (); });
+				autoRowsController = makeShared<AutoSizeController> (
+					parent, autoRows, [this] () { modelUpdated (); });
 				return autoRowsController;
 			});
 		customization->addCreateViewControllerFunc (
 			"AutoColumnsController",
 			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
 					const IUIDescription& uiDesc) {
-				autoColumnsController = makeOwned<AutoSizeController> (
+				autoColumnsController = makeShared<AutoSizeController> (
 					parent, autoColumns, [this] () { modelUpdated (); });
 				return autoColumnsController;
 			});
@@ -760,15 +760,15 @@ public:
 			"GridAreaController",
 			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
 					const IUIDescription& uiDesc) {
-				gridAreaController = makeOwned<GridAreaController> (parent, gridAreas,
-																	[this] () { modelUpdated (); });
+				gridAreaController = makeShared<GridAreaController> (
+					parent, gridAreas, [this] () { modelUpdated (); });
 				return gridAreaController;
 			});
 		customization->addCreateViewControllerFunc (
 			"GridLayoutPropertiesWindowController",
 			[this] (const UTF8StringView& name, const SharedPointer<IController>& parent,
 					const IUIDescription& uiDesc) {
-				return makeOwned<GridLayoutPropertiesWindowController> (parent);
+				return makeShared<GridLayoutPropertiesWindowController> (parent);
 			});
 
 		UIDesc::Config config;

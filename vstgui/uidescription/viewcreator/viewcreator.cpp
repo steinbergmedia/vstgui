@@ -95,7 +95,7 @@ UTF8StringPtr ViewCreator::getDisplayName () const
 SharedPointer<CView> ViewCreator::create (const UIAttributes& attributes,
 										  const IUIDescription& description) const
 {
-	return makeOwned<SimpleCView> (CRect (0, 0, 50, 50));
+	return makeShared<SimpleCView> (CRect (0, 0, 50, 50));
 }
 
 //------------------------------------------------------------------------

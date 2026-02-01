@@ -70,14 +70,14 @@ bool CClipboard::set (const SharedPointer<IDataPackage>& data)
 //-----------------------------------------------------------------------------
 bool CClipboard::setString (UTF8StringPtr str)
 {
-	return set (makeOwned<CClipboardDetail::StringDataPackage<false>> (
+	return set (makeShared<CClipboardDetail::StringDataPackage<false>> (
 		std::string_view (str, strlen (str))));
 }
 
 //-----------------------------------------------------------------------------
 bool CClipboard::setFilePath (UTF8StringPtr str)
 {
-	return set (makeOwned<CClipboardDetail::StringDataPackage<true>> (
+	return set (makeShared<CClipboardDetail::StringDataPackage<true>> (
 		std::string_view (str, strlen (str))));
 }
 

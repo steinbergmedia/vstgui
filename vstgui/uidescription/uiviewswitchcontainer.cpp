@@ -58,7 +58,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 					{
 						case kFadeInOut:
 						{
-							animation = makeOwned<ExchangeViewAnimation> (
+							animation = makeShared<ExchangeViewAnimation> (
 								oldView, view, ExchangeViewAnimation::kAlphaValueFade);
 							break;
 						}
@@ -69,7 +69,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 							{
 								style = ExchangeViewAnimation::kPushInFromRight;
 							}
-							animation = makeOwned<ExchangeViewAnimation> (oldView, view, style);
+							animation = makeShared<ExchangeViewAnimation> (oldView, view, style);
 							break;
 						}
 						case kPushInOut:
@@ -79,7 +79,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 							{
 								style = ExchangeViewAnimation::kPushInOutFromRight;
 							}
-							animation = makeOwned<ExchangeViewAnimation> (oldView, view, style);
+							animation = makeShared<ExchangeViewAnimation> (oldView, view, style);
 							break;
 						}
 					}
@@ -90,31 +90,31 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 						{
 							case kEasyIn:
 							{
-								tf = makeOwned<CubicBezierTimingFunction> (
+								tf = makeShared<CubicBezierTimingFunction> (
 									CubicBezierTimingFunction::easyIn (animationTime));
 								break;
 							}
 							case kEasyOut:
 							{
-								tf = makeOwned<CubicBezierTimingFunction> (
+								tf = makeShared<CubicBezierTimingFunction> (
 									CubicBezierTimingFunction::easyOut (animationTime));
 								break;
 							}
 							case kEasyInOut:
 							{
-								tf = makeOwned<CubicBezierTimingFunction> (
+								tf = makeShared<CubicBezierTimingFunction> (
 									CubicBezierTimingFunction::easyInOut (animationTime));
 								break;
 							}
 							case kEasy:
 							{
-								tf = makeOwned<CubicBezierTimingFunction> (
+								tf = makeShared<CubicBezierTimingFunction> (
 									CubicBezierTimingFunction::easy (animationTime));
 								break;
 							}
 							default:
 							{
-								tf = makeOwned<LinearTimingFunction> (animationTime);
+								tf = makeShared<LinearTimingFunction> (animationTime);
 								break;
 							}
 						}

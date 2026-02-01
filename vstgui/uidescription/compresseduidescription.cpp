@@ -66,7 +66,7 @@ bool CompressedUIDescription::parseWithStream (InputStream& stream)
 	stream >> identifier;
 	if (identifier == kUIDescIdentifier)
 	{
-		auto zin = makeOwned<ZLibInputContentProvider> (stream);
+		auto zin = makeShared<ZLibInputContentProvider> (stream);
 		if (zin->open ())
 		{
 			setContentProvider (zin);

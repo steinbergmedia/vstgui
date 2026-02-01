@@ -42,7 +42,7 @@ UTF8StringPtr LayeredViewContainerCreator::getDisplayName () const
 SharedPointer<CView> LayeredViewContainerCreator::create (const UIAttributes& attributes,
 														  const IUIDescription& description) const
 {
-	return makeOwned<CLayeredViewContainer> (CRect (0, 0, 100, 100));
+	return makeShared<CLayeredViewContainer> (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------

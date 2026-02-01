@@ -314,8 +314,8 @@ void CRowColumnView::resizeSubView (const SharedPointer<CView>& view, const CRec
 		{
 			view->setAttribute (ViewAnimatesResizingAttr, true);
 			view->addAnimation (
-				"CRowColumnResizing", makeOwned<Animation::ViewSizeAnimation> (newSize, false),
-				makeOwned<Animation::LinearTimingFunction> (viewResizeAnimationTime),
+				"CRowColumnResizing", makeShared<Animation::ViewSizeAnimation> (newSize, false),
+				makeShared<Animation::LinearTimingFunction> (viewResizeAnimationTime),
 				[] (CView& v, auto, auto&) { v.removeAttribute (ViewAnimatesResizingAttr); }, true);
 		}
 		else

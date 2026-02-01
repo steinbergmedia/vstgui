@@ -42,7 +42,7 @@ UTF8StringPtr ParamDisplayCreator::getDisplayName () const
 SharedPointer<CView> ParamDisplayCreator::create (const UIAttributes& attributes,
 												  const IUIDescription& description) const
 {
-	return makeOwned<CParamDisplay> (CRect (0, 0, 100, 20));
+	return makeShared<CParamDisplay> (CRect (0, 0, 100, 20));
 }
 
 //------------------------------------------------------------------------

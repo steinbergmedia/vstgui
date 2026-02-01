@@ -180,8 +180,8 @@ CMouseEventResult CScrollbar::onMouseEntered (CPoint& where, const CButtonState&
 {
 	if (overlayStyle && scrollerLength != 0)
 	{
-		addAnimation ("AlphaValueAnimation", makeOwned<Animation::AlphaValueAnimation> (1.f),
-					  makeOwned<Animation::LinearTimingFunction> (100));
+		addAnimation ("AlphaValueAnimation", makeShared<Animation::AlphaValueAnimation> (1.f),
+					  makeShared<Animation::LinearTimingFunction> (100));
 	}
 	mouseIsInside = true;
 	return kMouseEventNotHandled;
@@ -195,13 +195,13 @@ CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& 
 		SharedPointer<Animation::ITimingFunction> timingFunction;
 		if (getAlphaValue () == 1.f)
 		{
-			auto interpolTimingFunction = makeOwned<Animation::InterpolationTimingFunction> (400);
+			auto interpolTimingFunction = makeShared<Animation::InterpolationTimingFunction> (400);
 			interpolTimingFunction->addPoint (300.f/400.f, 1.f);
 			timingFunction = interpolTimingFunction;
 		}
 		else
-			timingFunction = makeOwned<Animation::LinearTimingFunction> (100);
-		addAnimation ("AlphaValueAnimation", makeOwned<Animation::AlphaValueAnimation> (0.001f),
+			timingFunction = makeShared<Animation::LinearTimingFunction> (100);
+		addAnimation ("AlphaValueAnimation", makeShared<Animation::AlphaValueAnimation> (0.001f),
 					  timingFunction);
 	}
 	mouseIsInside = false;
@@ -225,7 +225,7 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 	else if (scrollerArea.pointInside (where))
 	{
 		doStepping ();
-		timer = makeOwned<CVSTGUITimer> (
+		timer = makeShared<CVSTGUITimer> (
 			[this] (auto&&) {
 				doStepping ();
 				timer->setFireTime (80);
@@ -297,10 +297,10 @@ void CScrollbar::onVisualChange ()
 	{
 		if (scrollerLength != 0)
 		{
-			auto timingFunction = makeOwned<Animation::InterpolationTimingFunction> (1100);
+			auto timingFunction = makeShared<Animation::InterpolationTimingFunction> (1100);
 			timingFunction->addPoint (1000.f/1100.f, 0);
-			addAnimation ("AlphaValueAnimation", makeOwned<Animation::AlphaValueAnimation> (0.001f),
-						  timingFunction);
+			addAnimation ("AlphaValueAnimation",
+						  makeShared<Animation::AlphaValueAnimation> (0.001f), timingFunction);
 			setAlphaValue (1.f);
 		}
 		else

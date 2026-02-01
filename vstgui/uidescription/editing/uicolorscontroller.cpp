@@ -299,7 +299,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 						dragBitmap = offscreen->getBitmap ();
 					}
 
-					auto df = makeOwned<DragCallbackFunctions> ();
+					auto df = makeShared<DragCallbackFunctions> ();
 					df->endedFunc = [frame = browser.getFrame (),
 									 Self = shared (this)] (const auto&, auto, auto) {
 						frame->setCursor (kCursorDefault);
@@ -456,9 +456,9 @@ UIColorsController::UIColorsController (const SharedPointer<IController>& baseCo
 , editDescription (description)
 , actionPerformer (actionPerformer)
 , dataSource (nullptr)
-, color (makeOwned<UIColor> ())
+, color (makeShared<UIColor> ())
 {
-	dataSource = makeOwned<UIColorsDataSource> (editDescription, actionPerformer, color);
+	dataSource = makeShared<UIColorsDataSource> (editDescription, actionPerformer, color);
 	UIEditController::setupDataSource (dataSource);
 }
 
@@ -474,10 +474,10 @@ SharedPointer<CView> UIColorsController::createView (const UIAttributes& attribu
 	{
 		if (*name == "ColorsBrowser")
 		{
-			auto dataBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
-														CDataBrowser::kDrawRowLines |
-															CScrollView::kHorizontalScrollbar |
-															CScrollView::kVerticalScrollbar);
+			auto dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+														 CDataBrowser::kDrawRowLines |
+															 CScrollView::kHorizontalScrollbar |
+															 CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -533,7 +533,7 @@ SharedPointer<IController>
 	UIColorsController::createSubController (IdStringPtr name, const IUIDescription& description)
 {
 	if (std::strcmp (name, "ColorChooserController") == 0)
-		return makeOwned<UIColorChooserController> (shared (this), color);
+		return makeShared<UIColorChooserController> (shared (this), color);
 	return controller->createSubController (name, description);
 }
 
@@ -541,10 +541,10 @@ SharedPointer<IController>
 void UIColorsController::appendContextMenuItems (COptionMenu& contextMenu, CView& view,
 												 const CPoint& where)
 {
-	auto item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Add Color"});
+	auto item = makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {"Add Color"});
 	item->setActions ([this] (auto) { dataSource->add (); });
 	contextMenu.addEntry (item);
-	item = makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {"Remove Color"});
+	item = makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {"Remove Color"});
 	item->setActions ([this] (auto) { dataSource->remove (); });
 	contextMenu.addEntry (item);
 	contextMenu.addSeparator ();

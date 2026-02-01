@@ -53,7 +53,7 @@ UTF8StringPtr TextButtonCreator::getDisplayName () const
 SharedPointer<CView> TextButtonCreator::create (const UIAttributes& attributes,
 												const IUIDescription& description) const
 {
-	auto button = makeOwned<CTextButton> (CRect (0, 0, 100, 20), nullptr, -1, "");
+	auto button = makeShared<CTextButton> (CRect (0, 0, 100, 20), nullptr, -1, "");
 	if (!description.lookupGradientName (button->getGradient ()))
 		addGradientToUIDescription (description, button->getGradient (),
 		                            "Default TextButton Gradient");

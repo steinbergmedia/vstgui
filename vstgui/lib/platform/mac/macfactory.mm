@@ -98,9 +98,9 @@ PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const C
 										  IPlatformFrameConfig* config) const noexcept
 {
 #if TARGET_OS_IPHONE
-	return makeOwned<UIViewFrame> (frame, size, (__bridge UIView*)parent);
+	return makeShared<UIViewFrame> (frame, size, (__bridge UIView*)parent);
 #else
-	return makeOwned<NSViewFrame> (frame, size, reinterpret_cast<NSView*> (parent), config);
+	return makeShared<NSViewFrame> (frame, size, reinterpret_cast<NSView*> (parent), config);
 #endif
 }
 
@@ -108,7 +108,7 @@ PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const C
 PlatformFontPtr MacFactory::createFont (const UTF8String& name, const CCoord& size,
 										const int32_t& style) const noexcept
 {
-	auto font = makeOwned<CoreTextFont> (name, size, style);
+	auto font = makeShared<CoreTextFont> (name, size, style);
 	if (font->getFontRef ())
 		return std::move (font);
 	return nullptr;
@@ -129,7 +129,7 @@ PlatformBitmapPtr MacFactory::createBitmap (const CPoint& size) const noexcept
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr MacFactory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	if (auto bitmap = makeOwned<CGBitmap> ())
+	if (auto bitmap = makeShared<CGBitmap> ())
 	{
 		if (bitmap->load (desc))
 			return bitmap;
@@ -189,13 +189,13 @@ PlatformResourceInputStreamPtr
 //-----------------------------------------------------------------------------
 PlatformStringPtr MacFactory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return makeOwned<MacString> (utf8String);
+	return makeShared<MacString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------
 PlatformTimerPtr MacFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
-	return makeOwned<MacTimer> (callback);
+	return makeShared<MacTimer> (callback);
 }
 
 //------------------------------------------------------------------------

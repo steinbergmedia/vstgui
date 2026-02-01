@@ -227,7 +227,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObjec
 {
 	if (dataObject && pFrame)
 	{
-		dragData = makeOwned<Win32DataPackage> (dataObject);
+		dragData = makeShared<Win32DataPackage> (dataObject);
 
 		DragEventData data {dragData};
 		pFrame->getCurrentMousePosition (data.pos);

@@ -360,7 +360,7 @@ void UIEditView::enableEditing (bool state)
 			CRect r = parent->getViewSize ();
 			r.originize ();
 			vstgui_assert (overlayView == nullptr);
-			overlayView = makeOwned<CLayeredViewContainer> (r);
+			overlayView = makeShared<CLayeredViewContainer> (r);
 			overlayView->setAutosizeFlags (kAutosizeAll);
 			overlayView->setMouseEnabled (false);
 			overlayView->setTransparency (true);
@@ -368,9 +368,9 @@ void UIEditView::enableEditing (bool state)
 			parent->addSubview (overlayView);
 
 			highlightView =
-				makeOwned<UIEditViewInternal::UIHighlightView> (shared (this), viewHighlightColor);
+				makeShared<UIEditViewInternal::UIHighlightView> (shared (this), viewHighlightColor);
 			overlayView->addSubview (highlightView);
-			auto selectionView = makeOwned<UIEditViewInternal::UISelectionView> (
+			auto selectionView = makeShared<UIEditViewInternal::UISelectionView> (
 				shared (this), getSelection (), viewSelectionColor, kResizeHandleSize);
 			overlayView->addSubview (selectionView);
 		}
@@ -419,7 +419,7 @@ void UIEditView::setUndoManager (const SharedPointer<UIUndoManager>& manager)
 SharedPointer<UIUndoManager> UIEditView::getUndoManager ()
 {
 	if (undoManger == nullptr)
-		undoManger = makeOwned<UIUndoManager> ();
+		undoManger = makeShared<UIUndoManager> ();
 	return undoManger;
 }
 
@@ -434,7 +434,7 @@ SharedPointer<UISelection> UIEditView::getSelection ()
 {
 	if (selection == nullptr)
 	{
-		selection = makeOwned<UISelection> ();
+		selection = makeShared<UISelection> ();
 	}
 	return selection;
 }
@@ -732,11 +732,11 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			mouseStartPoint = where2;
 			if (gridProcessor)
 				gridProcessor->process (mouseStartPoint);
-			editTimer = makeOwned<CVSTGUITimer> (
+			editTimer = makeShared<CVSTGUITimer> (
 				[this] (auto&&) {
 					if (lines == nullptr)
 					{
-						lines = makeOwned<UICrossLines> (
+						lines = makeShared<UICrossLines> (
 							shared (this), UICrossLines::kSelectionStyle, crosslineBackgroundColor,
 							crosslineForegroundColor);
 						overlayView->addSubview (lines);
@@ -767,8 +767,8 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 					default : crossLineMode = UICrossLines::kDragStyle; break;
 				}
 				lines =
-					makeOwned<UICrossLines> (shared (this), crossLineMode, crosslineBackgroundColor,
-											 crosslineForegroundColor);
+					makeShared<UICrossLines> (shared (this), crossLineMode,
+											  crosslineBackgroundColor, crosslineForegroundColor);
 				overlayView->addSubview (lines);
 				if (crossLineMode == UICrossLines::kSelectionStyle)
 					lines->update (*selection.get ());
@@ -862,8 +862,8 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 			if (dragStartMouseObserver.shouldStartDrag (where))
 			{
 				mouseEditMode = MouseEditMode::LassoSelection;
-				lines = makeOwned<UICrossLines> (shared (this), UICrossLines::kLassoStyle,
-												 lassoFrameColor, lassoFillColor);
+				lines = makeShared<UICrossLines> (shared (this), UICrossLines::kLassoStyle,
+												  lassoFrameColor, lassoFillColor);
 				overlayView->addSubview (lines);
 				getFrame ()->setCursor (kCursorDefault);
 				CViewContainer::onMouseMoved (where, buttons);
@@ -963,7 +963,7 @@ void UIEditView::doKeyMove (const CPoint& delta)
 		if (getSelection ()->contains (getEditView ()))
 			return;
 		if (!moveSizeOperation)
-			moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, false, autosizing);
+			moveSizeOperation = makeShared<ViewSizeChangeOperation> (selection, false, autosizing);
 		getSelection ()->moveBy (delta);
 		if (moveSizeOperation)
 		{
@@ -979,7 +979,7 @@ void UIEditView::doKeySize (const CPoint& delta)
 	if (delta.x != 0. || delta.y != 0.)
 	{
 		if (!moveSizeOperation)
-			moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, true, autosizing);
+			moveSizeOperation = makeShared<ViewSizeChangeOperation> (selection, true, autosizing);
 		getSelection ()->viewsWillChange ();
 		for (auto view : *selection.get ())
 		{
@@ -1034,7 +1034,7 @@ void UIEditView::doDragEditingMove (CPoint& where)
 	if (diff.x != 0. || diff.y != 0.)
 	{
 		if (!moveSizeOperation)
-			moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, false, autosizing);
+			moveSizeOperation = makeShared<ViewSizeChangeOperation> (selection, false, autosizing);
 		getSelection ()->moveBy (diff);
 		mouseStartPoint = where;
 		if (editTimer)
@@ -1043,8 +1043,8 @@ void UIEditView::doDragEditingMove (CPoint& where)
 			if (!lines)
 			{
 				lines =
-					makeOwned<UICrossLines> (shared (this), UICrossLines::kSelectionStyle,
-											 crosslineBackgroundColor, crosslineForegroundColor);
+					makeShared<UICrossLines> (shared (this), UICrossLines::kSelectionStyle,
+											  crosslineBackgroundColor, crosslineForegroundColor);
 				overlayView->addSubview (lines);
 				lines->update (*selection.get ());
 			}
@@ -1059,7 +1059,7 @@ void UIEditView::doDragEditingMove (CPoint& where)
 void UIEditView::doSizeEditingMove (CPoint& where)
 {
 	if (!moveSizeOperation)
-		moveSizeOperation = makeOwned<ViewSizeChangeOperation> (selection, true, autosizing);
+		moveSizeOperation = makeShared<ViewSizeChangeOperation> (selection, true, autosizing);
 	if (gridProcessor)
 		gridProcessor->process (where);
 	if (mouseStartPoint == where)
@@ -1185,7 +1185,7 @@ void UIEditView::startDrag (CPoint& where)
 		return;
 	stream.end ();
 
-	auto callback = makeOwned<DragCallbackFunctions> ();
+	auto callback = makeShared<DragCallbackFunctions> ();
 	callback->endedFunc = [this] (const auto&, CPoint pos, auto) {
 		frameToLocal (pos);
 		onMouseMoved (pos, 0);
@@ -1207,7 +1207,7 @@ SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (const IDataPackage
 		if (auto* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : nullptr)
 			description->setController (shared (controller));
 		CMemoryStream stream (static_cast<const int8_t*> (dragData), size, false);
-		auto newSelection = makeOwned<UISelection> ();
+		auto newSelection = makeShared<UISelection> ();
 		if (newSelection->restore (stream, description))
 		{
 			description->setController (oldController);
@@ -1259,8 +1259,8 @@ bool UIEditView::onDrop (DragEventData data)
 			where2.offset (-containerOffset.x, -containerOffset.y);
 
 			where2.makeIntegral ();
-			auto action = makeOwned<ViewCopyOperation> (dragSelection, getSelection (),
-														viewContainer, where2, description);
+			auto action = makeShared<ViewCopyOperation> (dragSelection, getSelection (),
+														 viewContainer, where2, description);
 			getUndoManager()->pushAndPerform (action);
 		}
 		dragSelection = nullptr;
@@ -1279,8 +1279,8 @@ DragOperation UIEditView::onDragEnter (DragEventData data)
 			if (!lines)
 			{
 				lines =
-					makeOwned<UICrossLines> (shared (this), UICrossLines::kDragStyle,
-											 crosslineBackgroundColor, crosslineForegroundColor);
+					makeShared<UICrossLines> (shared (this), UICrossLines::kDragStyle,
+											  crosslineBackgroundColor, crosslineForegroundColor);
 				overlayView->addSubview (lines);
 			}
 			return onDragMove (data);
@@ -1384,14 +1384,14 @@ void UIEditView::onDoubleClickEditing (CView& view)
 	auto r = selection->getGlobalViewCoordinates (view);
 	r.offsetInverse (getViewSize ().getTopLeft ());
 	translateToLocal (r, true);
-	auto textEdit = makeOwned<CTextEdit> (r, nullptr, 0);
+	auto textEdit = makeShared<CTextEdit> (r, nullptr, 0);
 	textEdit->setText (attrValue.data ());
 	addSubview (textEdit);
 	new AttributeInlineEditorController (textEdit, [this, textEdit, attrValue] () {
 		const auto& text = textEdit->getText ();
 		if (text != attrValue)
 		{
-			auto action = makeOwned<AttributeChangeAction> (
+			auto action = makeShared<AttributeChangeAction> (
 				description, selection, UIViewCreator::kAttrTitle, text.getString ());
 			getUndoManager ()->pushAndPerform (action);
 		}

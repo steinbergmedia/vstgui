@@ -40,44 +40,44 @@ void CFontDesc::init ()
 {
 #if MAC
 #if TARGET_OS_IPHONE
-	globalFonts.systemFont = makeOwned<CFontDesc> ("Helvetica", 12);
-	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("ArialMT", 18);
-	globalFonts.normalFontBig = makeOwned<CFontDesc> ("ArialMT", 14);
-	globalFonts.normalFont = makeOwned<CFontDesc> ("ArialMT", 12);
-	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("ArialMT", 11);
-	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("ArialMT", 10);
-	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("ArialMT", 9);
-	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 12);
+	globalFonts.systemFont = makeShared<CFontDesc> ("Helvetica", 12);
+	globalFonts.normalFontVeryBig = makeShared<CFontDesc> ("ArialMT", 18);
+	globalFonts.normalFontBig = makeShared<CFontDesc> ("ArialMT", 14);
+	globalFonts.normalFont = makeShared<CFontDesc> ("ArialMT", 12);
+	globalFonts.normalFontSmall = makeShared<CFontDesc> ("ArialMT", 11);
+	globalFonts.normalFontSmaller = makeShared<CFontDesc> ("ArialMT", 10);
+	globalFonts.normalFontVerySmall = makeShared<CFontDesc> ("ArialMT", 9);
+	globalFonts.symbolFont = makeShared<CFontDesc> ("Symbol", 12);
 #else
-	globalFonts.systemFont = makeOwned<CFontDesc> ("Lucida Grande", 12);
-	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("Arial", 18);
-	globalFonts.normalFontBig = makeOwned<CFontDesc> ("Arial", 14);
-	globalFonts.normalFont = makeOwned<CFontDesc> ("Arial", 12);
-	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("Arial", 11);
-	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("Arial", 10);
-	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("Arial", 9);
-	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 12);
+	globalFonts.systemFont = makeShared<CFontDesc> ("Lucida Grande", 12);
+	globalFonts.normalFontVeryBig = makeShared<CFontDesc> ("Arial", 18);
+	globalFonts.normalFontBig = makeShared<CFontDesc> ("Arial", 14);
+	globalFonts.normalFont = makeShared<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontSmall = makeShared<CFontDesc> ("Arial", 11);
+	globalFonts.normalFontSmaller = makeShared<CFontDesc> ("Arial", 10);
+	globalFonts.normalFontVerySmall = makeShared<CFontDesc> ("Arial", 9);
+	globalFonts.symbolFont = makeShared<CFontDesc> ("Symbol", 12);
 #endif
 
 #elif WINDOWS
-	globalFonts.systemFont = makeOwned<CFontDesc> ("Arial", 12);
-	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("Arial", 18);
-	globalFonts.normalFontBig = makeOwned<CFontDesc> ("Arial", 14);
-	globalFonts.normalFont = makeOwned<CFontDesc> ("Arial", 12);
-	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("Arial", 11);
-	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("Arial", 10);
-	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("Arial", 9);
-	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 13);
+	globalFonts.systemFont = makeShared<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontVeryBig = makeShared<CFontDesc> ("Arial", 18);
+	globalFonts.normalFontBig = makeShared<CFontDesc> ("Arial", 14);
+	globalFonts.normalFont = makeShared<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontSmall = makeShared<CFontDesc> ("Arial", 11);
+	globalFonts.normalFontSmaller = makeShared<CFontDesc> ("Arial", 10);
+	globalFonts.normalFontVerySmall = makeShared<CFontDesc> ("Arial", 9);
+	globalFonts.symbolFont = makeShared<CFontDesc> ("Symbol", 13);
 
 #else
-	globalFonts.systemFont = makeOwned<CFontDesc> ("Arial", 12);
-	globalFonts.normalFontVeryBig = makeOwned<CFontDesc> ("Arial", 18);
-	globalFonts.normalFontBig = makeOwned<CFontDesc> ("Arial", 14);
-	globalFonts.normalFont = makeOwned<CFontDesc> ("Arial", 12);
-	globalFonts.normalFontSmall = makeOwned<CFontDesc> ("Arial", 11);
-	globalFonts.normalFontSmaller = makeOwned<CFontDesc> ("Arial", 10);
-	globalFonts.normalFontVerySmall = makeOwned<CFontDesc> ("Arial", 9);
-	globalFonts.symbolFont = makeOwned<CFontDesc> ("Symbol", 13);
+	globalFonts.systemFont = makeShared<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontVeryBig = makeShared<CFontDesc> ("Arial", 18);
+	globalFonts.normalFontBig = makeShared<CFontDesc> ("Arial", 14);
+	globalFonts.normalFont = makeShared<CFontDesc> ("Arial", 12);
+	globalFonts.normalFontSmall = makeShared<CFontDesc> ("Arial", 11);
+	globalFonts.normalFontSmaller = makeShared<CFontDesc> ("Arial", 10);
+	globalFonts.normalFontVerySmall = makeShared<CFontDesc> ("Arial", 9);
+	globalFonts.symbolFont = makeShared<CFontDesc> ("Symbol", 13);
 
 #endif
 	kSystemFont = globalFonts.systemFont;

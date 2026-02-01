@@ -191,7 +191,7 @@ public:
 			if (configurator)
 			{
 				listControl->setConfigurator (
-					makeOwned<WeekdaysListConfigurator> (*configurator.get ()));
+					makeShared<WeekdaysListConfigurator> (*configurator.get ()));
 			}
 		}
 		return controller->verifyView (view, attributes, description);
@@ -233,8 +233,8 @@ public:
 		style.backColor = MakeCColor (255, 255, 255, 220);
 		style.cursorColor = style.textColor = kBlackCColor;
 		style.frameColor = kBlackCColor; // MakeCColor (50, 50, 50, 200);
-		style.font = makeOwned<CFontDesc> (*kNormalFont.get ());
-		style.lineNumbersFont = makeOwned<CFontDesc> (*kNormalFontSmall.get ());
+		style.font = makeShared<CFontDesc> (*kNormalFont.get ());
+		style.lineNumbersFont = makeShared<CFontDesc> (*kNormalFontSmall.get ());
 		style.lineSpacing = 0.;
 	}
 	~AppTextEditorController () noexcept
@@ -409,31 +409,31 @@ public:
 					DebugPrint ("%d.%d.%d\n", date.day, date.month, date.year);
 #endif
 				});
-				return makeOwned<CExternalView> (CRect (), datePicker);
+				return makeShared<CExternalView> (CRect (), datePicker);
 			}
 			if (*customViewName == "Native Checkbox")
 			{
 				auto checkbox = std::make_shared<ExternalView::Button> (
 					ExternalView::Button::Type::Checkbox, "Checkbox");
-				return makeOwned<CExternalControl> (CRect (), checkbox);
+				return makeShared<CExternalControl> (CRect (), checkbox);
 			}
 			if (*customViewName == "Native Push Button")
 			{
 				auto checkbox = std::make_shared<ExternalView::Button> (
 					ExternalView::Button::Type::Push, "Push");
-				return makeOwned<CExternalControl> (CRect (), checkbox);
+				return makeShared<CExternalControl> (CRect (), checkbox);
 			}
 			if (*customViewName == "Native OnOff Button")
 			{
 				auto checkbox = std::make_shared<ExternalView::Button> (
 					ExternalView::Button::Type::OnOff, "OnOff");
-				return makeOwned<CExternalControl> (CRect (), checkbox);
+				return makeShared<CExternalControl> (CRect (), checkbox);
 			}
 			if (*customViewName == "Native Radio Button")
 			{
 				auto checkbox = std::make_shared<ExternalView::Button> (
 					ExternalView::Button::Type::Radio, "Radio");
-				return makeOwned<CExternalControl> (CRect (), checkbox);
+				return makeShared<CExternalControl> (CRect (), checkbox);
 			}
 		}
 		return controller->createView (attributes, description);
@@ -463,7 +463,7 @@ struct DBController : DelegationController,
 		{
 			if (*customViewName == "DataBrowser")
 			{
-				return makeOwned<CDataBrowser> (CRect {}, this);
+				return makeShared<CDataBrowser> (CRect {}, this);
 			}
 		}
 		return nullptr;
@@ -575,10 +575,10 @@ void Delegate::finishLaunching ()
 
 	textEditorController = std::make_unique<AppTextEditorController> ();
 #if MAC
-	auto font = makeOwned<CFontDesc> ("Menlo", 12);
+	auto font = makeShared<CFontDesc> ("Menlo", 12);
 	textEditorController->setFonts (font, font);
 #elif WINDOWS
-	auto font = makeOwned<CFontDesc> ("Consolas", 12);
+	auto font = makeShared<CFontDesc> ("Consolas", 12);
 	textEditorController->setFonts (font, font);
 #endif
 
@@ -645,27 +645,27 @@ bool Delegate::handleCommand (const Command& command)
 				"DisabledControlsController",
 				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
 					const IUIDescription&) {
-					return makeOwned<DisabledControlsController> (parent);
+					return makeShared<DisabledControlsController> (parent);
 				});
 			customization->addCreateViewControllerFunc (
 				"WeekdaysController",
 				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
-					const IUIDescription&) { return makeOwned<WeekdaysController> (parent); });
+					const IUIDescription&) { return makeShared<WeekdaysController> (parent); });
 			customization->addCreateViewControllerFunc (
 				"DatePickerController",
 				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
-					const IUIDescription&) { return makeOwned<DatePickerController> (parent); });
+					const IUIDescription&) { return makeShared<DatePickerController> (parent); });
 			customization->addCreateViewControllerFunc (
 				"TextEditorController",
 				[this] (const UTF8StringView&, const SharedPointer<IController>& parent,
 						const IUIDescription&) {
-					return makeOwned<TextEditorViewController> (parent,
-																*textEditorController.get ());
+					return makeShared<TextEditorViewController> (parent,
+																 *textEditorController.get ());
 				});
 			customization->addCreateViewControllerFunc (
 				"DBController",
 				[this] (const UTF8StringView&, const SharedPointer<IController>& parent,
-						const IUIDescription&) { return makeOwned<DBController> (parent); });
+						const IUIDescription&) { return makeShared<DBController> (parent); });
 			config.customization = customization;
 		}
 		if (auto window = UIDesc::makeWindow (config))

@@ -163,19 +163,19 @@ struct ProgressController : DelegationController,
 		if (newValue >= 0.5)
 		{
 			control->setValue (0.f);
-			auto tf = makeOwned<Animation::LinearTimingFunction> (800);
-			control->addAnimation ("Animation", makeOwned<Animation::ControlValueAnimation> (1.f),
-								   makeOwned<Animation::RepeatTimingFunction> (tf, -1, false));
+			auto tf = makeShared<Animation::LinearTimingFunction> (800);
+			control->addAnimation ("Animation", makeShared<Animation::ControlValueAnimation> (1.f),
+								   makeShared<Animation::RepeatTimingFunction> (tf, -1, false));
 			control->setAlphaValue (0.f);
-			control->addAnimation ("Alpha", makeOwned<Animation::AlphaValueAnimation> (1.f),
-								   makeOwned<Animation::CubicBezierTimingFunction> (
+			control->addAnimation ("Alpha", makeShared<Animation::AlphaValueAnimation> (1.f),
+								   makeShared<Animation::CubicBezierTimingFunction> (
 									   Animation::CubicBezierTimingFunction::easyIn (200)));
 		}
 		else
 		{
 			control->addAnimation (
-				"Alpha", makeOwned<Animation::AlphaValueAnimation> (0.f),
-				makeOwned<Animation::CubicBezierTimingFunction> (
+				"Alpha", makeShared<Animation::AlphaValueAnimation> (0.f),
+				makeShared<Animation::CubicBezierTimingFunction> (
 					Animation::CubicBezierTimingFunction::easyOut (100)),
 				[] (CView& view, const IdStringPtr, Animation::IAnimationTarget&) {
 					view.removeAnimation ("Animation");
@@ -209,7 +209,7 @@ struct ViewController : DelegationController,
 		{
 			if (*name == "MandelbrotView")
 			{
-				mandelbrotView = makeOwned<View> ([&] (auto box) {
+				mandelbrotView = makeShared<View> ([&] (auto box) {
 					auto min =
 					    pixelToPoint (model->getMax (), model->getMin (),
 					                  mandelbrotView->getViewSize ().getSize (), box.getTopLeft ());
@@ -229,7 +229,7 @@ struct ViewController : DelegationController,
 													const IUIDescription& description) override
 	{
 		if (UTF8StringView (name) == "ProgressController")
-			return makeOwned<ProgressController> (progressValue, shared (this));
+			return makeShared<ProgressController> (progressValue, shared (this));
 		return controller->createSubController (name, description);
 	}
 
@@ -278,7 +278,7 @@ struct ViewController : DelegationController,
 		if (size.x == 0 || size.y == 0)
 			return;
 		Value::performSingleEdit (*progressValue, 1.);
-		auto bitmap = makeOwned<CBitmap> (size.x, size.y);
+		auto bitmap = makeShared<CBitmap> (size.x, size.y);
 		bitmap->getPlatformBitmap ()->setScaleFactor (scaleFactor);
 		auto id = ++taskID;
 		auto This = shared (this);
@@ -389,7 +389,7 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 
 	customization->addCreateViewControllerFunc (
 		"mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto& uiDesc) {
-			return makeOwned<ViewController> (parent, model, modelBinding->getProgressValue ());
+			return makeShared<ViewController> (parent, model, modelBinding->getProgressValue ());
 		});
 
 	UIDesc::Config config;

@@ -290,7 +290,7 @@ SharedPointer<CNewFileSelector> CNewFileSelector::create (const SharedPointer<CF
 	if (auto platformSelector =
 			getPlatformFactory ().createFileSelector (platformStyle, platformFrame))
 	{
-		return makeOwned<CNewFileSelector> (std::move (platformSelector), parent);
+		return makeShared<CNewFileSelector> (std::move (platformSelector), parent);
 	}
 	return nullptr;
 }

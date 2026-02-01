@@ -19,6 +19,8 @@ Detailed changes:
 - CView has lost its dirty flag handling functionality. Consequently, all CView methods must now be 
   invoked from the UI thread.
 
+- the makeOwned template is deprecated, use makeShared instead
+
 - The following important ```CView``` methods have changed:
 	* ```bool CView::removed (const SharedPointer<CViewContainer>& parent)```
 	* ```bool CView::attached (const SharedPointer<CViewContainer>& parent)```

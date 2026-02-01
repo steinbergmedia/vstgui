@@ -122,7 +122,8 @@ protected:
 	
 	IdleViewUpdater ()
 	{
-		timer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 1000/CView::idleRate);
+		timer = makeShared<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); },
+										  1000 / CView::idleRate);
 	}
 	
 	void onTimer ()

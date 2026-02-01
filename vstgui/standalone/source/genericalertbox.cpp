@@ -125,7 +125,7 @@ public:
 	{
 		if (name == "ButtonController")
 		{
-			return makeOwned<ButtonController> (*this, parent);
+			return makeShared<ButtonController> (*this, parent);
 		}
 		return nullptr;
 	}

@@ -665,7 +665,7 @@ bool TextEditorView::attached (const SharedPointer<CViewContainer>& parent)
 				sb->registerViewEventListener (this);
 			if (md.style->flags & Style::Flags::ShowLineNumbers)
 			{
-				md.lineNumberView = makeOwned<LineNumberView> (this);
+				md.lineNumberView = makeShared<LineNumberView> (this);
 				md.lineNumberView->setStyle (md.style, md.lineHeight);
 				updateLineNumbersView ();
 				md.scrollView->setEdgeView (CScrollView::Edge::Left, md.lineNumberView);
@@ -901,7 +901,7 @@ void TextEditorView::onStyleChanged () const
 	}
 	else if (md.style->flags & Style::Flags::ShowLineNumbers && md.scrollView)
 	{
-		md.lineNumberView = makeOwned<LineNumberView> (&mutableThis ());
+		md.lineNumberView = makeShared<LineNumberView> (&mutableThis ());
 		md.lineNumberView->setStyle (md.style, md.lineHeight);
 		updateLineNumbersView ();
 		md.scrollView->setEdgeView (CScrollView::Edge::Left, md.lineNumberView);
@@ -1342,17 +1342,17 @@ void TextEditorView::toggleCursorVisibility () const
 	using namespace Animation;
 	mutableThis ().addAnimation (
 		"CursorAlphaBlend",
-		makeOwned<FuncAnimation> ([] (CView& view, IdStringPtr name) {},
-								  [this] (CView& view, IdStringPtr name, float pos) {
-									  md.cursorAlpha = md.cursorIsVisible ? 1.f - pos : pos;
-									  invalidCursorRect ();
-								  },
-								  [this] (CView& view, IdStringPtr name, bool wasCanceled) {
-									  if (!wasCanceled)
-										  md.cursorIsVisible = !md.cursorIsVisible;
-									  md.cursorAlpha = md.cursorIsVisible ? 1.f : 0.f;
-									  invalidCursorRect ();
-								  }),
+		makeShared<FuncAnimation> ([] (CView& view, IdStringPtr name) {},
+								   [this] (CView& view, IdStringPtr name, float pos) {
+									   md.cursorAlpha = md.cursorIsVisible ? 1.f - pos : pos;
+									   invalidCursorRect ();
+								   },
+								   [this] (CView& view, IdStringPtr name, bool wasCanceled) {
+									   if (!wasCanceled)
+										   md.cursorIsVisible = !md.cursorIsVisible;
+									   md.cursorAlpha = md.cursorIsVisible ? 1.f : 0.f;
+									   invalidCursorRect ();
+								   }),
 		CubicBezierTimingFunction::make (md.cursorIsVisible ? CubicBezierTimingFunction::EasyOut
 															: CubicBezierTimingFunction::EasyIn,
 										 md.style->cursorBlinkTime / 2));
@@ -1367,8 +1367,8 @@ void TextEditorView::restartBlinkTimer () const
 		md.cursorIsVisible = true;
 		md.cursorAlpha = 1.f;
 		invalidCursorRect ();
-		md.blinkTimer = makeOwned<CVSTGUITimer> ([this] (auto timer) { toggleCursorVisibility (); },
-												 md.style->cursorBlinkTime);
+		md.blinkTimer = makeShared<CVSTGUITimer> (
+			[this] (auto timer) { toggleCursorVisibility (); }, md.style->cursorBlinkTime);
 	}
 }
 
@@ -2785,14 +2785,14 @@ SharedPointer<CViewContainer> FindPanelController::makeFindPanelView (CRect vcr,
 	auto margin = (vcr.getHeight () - md.lineHeight) / 2.;
 	auto buttonWidth = vcr.getHeight ();
 
-	auto findPanel = makeOwned<CViewContainer> (vcr);
+	auto findPanel = makeShared<CViewContainer> (vcr);
 	findPanel->setTransparency (true);
 
 	vcr.inset (margin, margin);
 	auto tefr = vcr;
 	tefr.left += buttonWidth + margin;
 	tefr.right -= 6. * (buttonWidth + margin) + margin;
-	auto editfield = makeOwned<CTextEdit> (tefr, controller, FindPanelController::Textfield);
+	auto editfield = makeShared<CTextEdit> (tefr, controller, FindPanelController::Textfield);
 	editfield->setPlaceholderString ("Find");
 	editfield->setTextInset ({margin, 0});
 	editfield->setImmediateTextChange (true);
@@ -2825,7 +2825,7 @@ SharedPointer<CViewContainer> FindPanelController::makeFindPanelView (CRect vcr,
 
 	auto cbfr = vcr;
 	cbfr.right = tefr.left - margin;
-	auto closeBox = makeOwned<CTextButton> (cbfr, controller, FindPanelController::CloseButton);
+	auto closeBox = makeShared<CTextButton> (cbfr, controller, FindPanelController::CloseButton);
 	closeBox->setTitle ("X");
 	styleButton (closeBox);
 	closeBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
@@ -2834,7 +2834,7 @@ SharedPointer<CViewContainer> FindPanelController::makeFindPanelView (CRect vcr,
 	icfr.left = tefr.right + margin;
 	icfr.right = icfr.left + buttonWidth * 2;
 	auto caseSensitiveButton =
-		makeOwned<CTextButton> (icfr, controller, FindPanelController::CaseSensitive);
+		makeShared<CTextButton> (icfr, controller, FindPanelController::CaseSensitive);
 	caseSensitiveButton->setTitle ("Aa");
 	caseSensitiveButton->setStyle (CTextButton::Style::kOnOffStyle);
 	caseSensitiveButton->setValue (md.findOptions & ITextEditor::FindOption::CaseSensitive ? 1.f
@@ -2842,7 +2842,7 @@ SharedPointer<CViewContainer> FindPanelController::makeFindPanelView (CRect vcr,
 	styleButton (caseSensitiveButton);
 	icfr.offset (margin + buttonWidth * 2, 0);
 	auto wholeWordButton =
-		makeOwned<CTextButton> (icfr, controller, FindPanelController::WholeWords);
+		makeShared<CTextButton> (icfr, controller, FindPanelController::WholeWords);
 	wholeWordButton->setTitle ("|w|");
 	wholeWordButton->setStyle (CTextButton::Style::kOnOffStyle);
 	wholeWordButton->setValue (md.findOptions & ITextEditor::FindOption::WholeWords ? 1.f : 0.f);
@@ -2851,11 +2851,11 @@ SharedPointer<CViewContainer> FindPanelController::makeFindPanelView (CRect vcr,
 	auto tbfr = icfr;
 	tbfr.left = tbfr.right + margin;
 	tbfr.right = tbfr.left + buttonWidth;
-	auto prevButton = makeOwned<CTextButton> (tbfr, controller, FindPanelController::FindPrevious);
+	auto prevButton = makeShared<CTextButton> (tbfr, controller, FindPanelController::FindPrevious);
 	prevButton->setTitle ("<");
 	styleButton (prevButton);
 	tbfr.offset (margin + buttonWidth, 0);
-	auto nextButton = makeOwned<CTextButton> (tbfr, controller, FindPanelController::FindNext);
+	auto nextButton = makeShared<CTextButton> (tbfr, controller, FindPanelController::FindNext);
 	nextButton->setTitle (">");
 	styleButton (nextButton);
 
@@ -2919,7 +2919,7 @@ bool TextEditorView::showFindPanel () const
 			if (auto frame = panel->getFrame ())
 				frame->setFocusView (nullptr);
 			panel->addAnimation (
-				"ResizeAnimation", makeOwned<ViewSizeAnimation> (size, false),
+				"ResizeAnimation", makeShared<ViewSizeAnimation> (size, false),
 				CubicBezierTimingFunction::make (CubicBezierTimingFunction::EasyInOut, 120),
 				[&] (auto&, auto, auto&) {
 					md.scrollView->setEdgeView (CScrollView::Edge::Top, nullptr);
@@ -2932,7 +2932,7 @@ bool TextEditorView::showFindPanel () const
 	if (auto frame = getFrame ())
 		frame->setFocusView (nullptr);
 	findPanel->addAnimation (
-		"ResizeAnimation", makeOwned<ViewSizeAnimation> (findPanel->getViewSize (), false),
+		"ResizeAnimation", makeShared<ViewSizeAnimation> (findPanel->getViewSize (), false),
 		CubicBezierTimingFunction::make (CubicBezierTimingFunction::EasyInOut, 120),
 		[panel = findPanel] (auto&, auto, auto&) {
 			if (panel->isAttached ())
@@ -3488,7 +3488,7 @@ SharedPointer<CView> createNewTextEditor (const CRect& r, ITextEditorController*
 	vstgui_assert (controller != nullptr, "you need to call this with a controller");
 	if (!controller)
 		return nullptr;
-	return makeOwned<TextEditor::TextEditorView> (controller);
+	return makeShared<TextEditor::TextEditorView> (controller);
 }
 
 //------------------------------------------------------------------------

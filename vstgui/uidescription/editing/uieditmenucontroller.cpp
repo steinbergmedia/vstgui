@@ -57,16 +57,16 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, SharedPointer
 			menu->addSeparator ();
 		else if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenu)
 		{
-			auto subMenu = makeOwned<COptionMenu> ();
+			auto subMenu = makeShared<COptionMenu> ();
 			if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuCheckStyle)
 				subMenu->setStyle (COptionMenu::kMultipleCheckStyle|COptionMenu::kCheckStyle);
-			menu->addEntry (makeOwned<CMenuItem> (entries[index].name, subMenu));
+			menu->addEntry (makeShared<CMenuItem> (entries[index].name, subMenu));
 			index++;
 			addEntriesToMenu (entries, subMenu, menuItemTarget, index);
 		}
 		else
 		{
-			auto item = menu->addEntry (makeOwned<CCommandMenuItem> (
+			auto item = menu->addEntry (makeShared<CCommandMenuItem> (
 				CCommandMenuItem::Desc {entries[index].name, shared (menuItemTarget),
 										entries[index].category, entries[index].name}));
 			if (entries[index].key)
@@ -215,14 +215,14 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
 					&description->getViewFactory ()))
 			{
-				auto submenu = makeOwned<COptionMenu> ();
+				auto submenu = makeShared<COptionMenu> ();
 				auto viewAndDisplayNames =
 					factory->collectRegisteredViewAndDisplayNames ("CViewContainer");
 				viewAndDisplayNames.sort (
 					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 				for (auto& entry : viewAndDisplayNames)
 				{
-					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+					submenu->addEntry (makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {
 						entry.second.data (), shared (this), "AddTemplate", entry.first->data ()}));
 				}
 				item.setSubmenu (submenu);
@@ -238,11 +238,11 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			if (templateNames.empty () == false)
 			{
 				templateNames.sort (UIEditController::std__stringCompare);
-				auto submenu = makeOwned<COptionMenu> ();
+				auto submenu = makeShared<COptionMenu> ();
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+					submenu->addEntry (makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {
 						name->data (), shared (this), "RemoveTemplate", name->data ()}));
 				}
 			}
@@ -257,11 +257,11 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			if (templateNames.empty () == false)
 			{
 				templateNames.sort (UIEditController::std__stringCompare);
-				auto submenu = makeOwned<COptionMenu> ();
+				auto submenu = makeShared<COptionMenu> ();
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+					submenu->addEntry (makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {
 						name->data (), shared (this), "DuplicateTemplate", name->data ()}));
 				}
 			}
@@ -285,7 +285,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
 					&description->getViewFactory ()))
 			{
-				auto submenu = makeOwned<COptionMenu> ();
+				auto submenu = makeShared<COptionMenu> ();
 				item.setSubmenu (submenu);
 				auto viewAndDisplayNames =
 					factory->collectRegisteredViewAndDisplayNames ("CViewContainer");
@@ -293,7 +293,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 				for (auto& entry : viewAndDisplayNames)
 				{
-					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+					submenu->addEntry (makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {
 						entry.second.data (), shared (this), "Embed", entry.first->data ()}));
 				}
 			}
@@ -338,14 +338,14 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
 					&description->getViewFactory ()))
 			{
-				auto submenu = makeOwned<COptionMenu> ();
+				auto submenu = makeShared<COptionMenu> ();
 				item.setSubmenu (submenu);
 				auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
 				viewAndDisplayNames.sort (
 					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 				for (auto& entry : viewAndDisplayNames)
 				{
-					submenu->addEntry (makeOwned<CCommandMenuItem> (
+					submenu->addEntry (makeShared<CCommandMenuItem> (
 						CCommandMenuItem::Desc {entry.second.data (), shared (this),
 												"Transform View Type", entry.first->data ()}));
 				}
@@ -364,11 +364,11 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			if (templateNames.empty () == false)
 			{
 				templateNames.sort (UIEditController::std__stringCompare);
-				auto submenu = makeOwned<COptionMenu> ();
+				auto submenu = makeShared<COptionMenu> ();
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
+					submenu->addEntry (makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {
 						name->data (), shared (this), "InsertTemplate", name->data ()}));
 				}
 			}
@@ -382,14 +382,14 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			if (const auto* factory = dynamic_cast<const IViewFactoryEditingSupport*> (
 					&description->getViewFactory ()))
 			{
-				auto submenu = makeOwned<COptionMenu> ();
+				auto submenu = makeShared<COptionMenu> ();
 				item.setSubmenu (submenu);
 				auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
 				viewAndDisplayNames.sort (
 					[] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 				for (auto& entry : viewAndDisplayNames)
 				{
-					submenu->addEntry (makeOwned<CCommandMenuItem> (
+					submenu->addEntry (makeShared<CCommandMenuItem> (
 						CCommandMenuItem::Desc {entry.second.data (), shared (this),
 												"Select Children Of Type", entry.first->data ()}));
 				}
@@ -470,20 +470,20 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		}
 		else if (cmdName == "Delete")
 		{
-			auto action = makeOwned<DeleteOperation> (selection);
+			auto action = makeShared<DeleteOperation> (selection);
 			undoManager->pushAndPerform (action);
 			return true;
 		}
 		else if (cmdName == "Unembed Views")
 		{
 			auto action =
-				makeOwned<UnembedViewOperation> (selection, description->getViewFactory ());
+				makeShared<UnembedViewOperation> (selection, description->getViewFactory ());
 			undoManager->pushAndPerform (action);
 			return true;
 		}
 		else if (cmdName == "Size To Fit")
 		{
-			auto action = makeOwned<SizeToFitOperation> (selection);
+			auto action = makeShared<SizeToFitOperation> (selection);
 			undoManager->pushAndPerform (action);
 			return true;
 		}
@@ -532,7 +532,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		if (auto newContainer =
 				viewFactory.createView (viewAttr, *description.get ())->asViewContainer ())
 		{
-			auto action = makeOwned<EmbedViewOperation> (selection, newContainer);
+			auto action = makeShared<EmbedViewOperation> (selection, newContainer);
 			undoManager->pushAndPerform (action);
 		}
 		return true;
@@ -542,7 +542,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		undoManager->startGroupAction ("Transform View Type");
 		for (auto& entry : *selection.get ())
 		{
-			auto action = makeOwned<TransformViewTypeOperation> (
+			auto action = makeShared<TransformViewTypeOperation> (
 				selection, entry, cmdName, description, description->getViewFactory ());
 			undoManager->pushAndPerform (action);
 		}
@@ -570,7 +570,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 			if (view)
 			{
 				undoManager->pushAndPerform (
-					makeOwned<InsertViewOperation> (parent, view, selection));
+					makeShared<InsertViewOperation> (parent, view, selection));
 			}
 		}
 		return true;
@@ -634,7 +634,7 @@ void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 			item->getItemTarget ()->onCommandMenuItemSelected (*item.get ());
 			if (label)
 			{
-				highlightTimer = makeOwned<CVSTGUITimer> (
+				highlightTimer = makeShared<CVSTGUITimer> (
 					[this] (auto&&) {
 						editLabel->setTransparency (true);
 						fileLabel->setTransparency (true);

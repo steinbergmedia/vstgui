@@ -479,7 +479,7 @@ CSplitView::CSplitView (const CRect& size, Style style, CCoord separatorWidth,
 , separatorWidth (separatorWidth)
 , separatorDrawer (separatorDrawer)
 {
-	setViewLayouter (makeOwned<SplitViewLayouter> ());
+	setViewLayouter (makeShared<SplitViewLayouter> ());
 }
 
 //-----------------------------------------------------------------------------
@@ -566,7 +566,7 @@ bool CSplitView::insertSubview (const SharedPointer<CView>& view, const Optional
 			viewSize.offset (0, r.bottom);
 		}
 		auto separator =
-			makeOwned<CSplitViewSeparatorView> (r, getStyle (), (getNbViews () - 1) / 2);
+			makeShared<CSplitViewSeparatorView> (r, getStyle (), (getNbViews () - 1) / 2);
 		CViewContainer::insertSubview (separator);
 	}
 	view->setViewSize (viewSize);

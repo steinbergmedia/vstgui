@@ -32,7 +32,7 @@ Adding CTooltipSupport is done via VSTGUI::CFrame::enableTooltips (true) */
 CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delayTime)
 : timer (nullptr), frame (frame), currentView (nullptr), delay (delayTime), state (kHidden)
 {
-	timer = makeOwned<CVSTGUITimer> (
+	timer = makeShared<CVSTGUITimer> (
 		[this] (auto&&) {
 			if (state == kHiding)
 			{

@@ -209,9 +209,9 @@ SharedPointer<CView> UITagsController::createView (const UIAttributes& attribute
 	{
 		if (*name == "TagsBrowser")
 		{
-			dataSource = makeOwned<UITagsDataSource> (editDescription, actionPerformer);
+			dataSource = makeShared<UITagsDataSource> (editDescription, actionPerformer);
 			UIEditController::setupDataSource (dataSource);
-			return makeOwned<CDataBrowser> (
+			return makeShared<CDataBrowser> (
 				CRect (0, 0, 0, 0), dataSource.get (),
 				CDataBrowser::kDrawColumnLines | CDataBrowser::kDrawRowLines |
 					CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);

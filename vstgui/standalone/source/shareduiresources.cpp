@@ -119,9 +119,9 @@ bool SharedUIResources::load () const
 		if (Detail::getApplicationPlatformAccess ()
 		        ->getConfiguration ()
 		        .useCompressedUIDescriptionFiles)
-			description = makeOwned<CompressedUIDescription> (filename);
+			description = makeShared<CompressedUIDescription> (filename);
 		else
-			description = makeOwned<UIDescription> (filename);
+			description = makeShared<UIDescription> (filename);
 		if (!description->parse ())
 		{
 #if VSTGUI_LIVE_EDITING
@@ -266,7 +266,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc,
 		}
 	}
 	if (!frame)
-		frame = makeOwned<CFrame> (CRect (), nullptr);
+		frame = makeShared<CFrame> (CRect (), nullptr);
 
 	AlertBoxConfig alertConfig;
 	alertConfig.headline = notFoundText;
@@ -301,7 +301,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc,
 bool initUIDescAsNew (UIDescription& uiDesc, SharedPointer<CFrame> frame)
 {
 	if (!frame)
-		frame = makeOwned<CFrame> (CRect (), nullptr);
+		frame = makeShared<CFrame> (CRect (), nullptr);
 	auto fs = CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile);
 	vstgui_assert (fs, "create new FileSelector failed");
 	VSTGUI::Standalone::Preferences prefs;

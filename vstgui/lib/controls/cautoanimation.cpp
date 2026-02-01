@@ -107,7 +107,7 @@ void CAutoAnimation::startTimer ()
 {
 	if (animationFrameTime > 0)
 	{
-		timer = makeOwned<CVSTGUITimer> (
+		timer = makeShared<CVSTGUITimer> (
 			[this] (auto*) {
 				nextPixmap ();
 				invalid ();

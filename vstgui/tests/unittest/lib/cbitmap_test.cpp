@@ -36,7 +36,7 @@ TEST_CASE (CBitmap, ScaleFactor)
 //------------------------------------------------------------------------
 TEST_CASE (CBitmap, PixelAccess)
 {
-	auto bitmap = makeOwned<CBitmap> (10, 10);
+	auto bitmap = makeShared<CBitmap> (10, 10);
 	EXPECT_EQ (bitmap->getWidth (), 10);
 	EXPECT_EQ (bitmap->getHeight (), 10);
 
@@ -71,7 +71,7 @@ TEST_CASE (CBitmap, PixelAccess)
 //------------------------------------------------------------------------
 TEST_CASE (CBitmap, PixelAccess2)
 {
-	auto bitmap = makeOwned<CBitmap> (10, 10);
+	auto bitmap = makeShared<CBitmap> (10, 10);
 	CColor color (255, 1, 2, 150);
 	if (auto accessor = CBitmapPixelAccess::create (bitmap))
 	{

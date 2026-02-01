@@ -204,7 +204,7 @@ void GenericStringListDataBrowserSource::dbOnKeyboardEvent (KeyboardEvent& event
 	{
 		if (timer == nullptr)
 		{
-			timer = makeOwned<CVSTGUITimer> (
+			timer = makeShared<CVSTGUITimer> (
 				[this] (auto&&) {
 					keyDownFindString = "";
 					timer.reset ();

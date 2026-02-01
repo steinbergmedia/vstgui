@@ -96,11 +96,11 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 		fontNames.emplace_back (*it);
 		++it;
 	}
-	auto dbSource = makeOwned<GenericStringListDataBrowserSource> (&fontNames, this);
+	auto dbSource = makeShared<GenericStringListDataBrowserSource> (&fontNames, this);
 	dbSource->setupUI (uiDef.selectionColor, uiDef.fontColor, uiDef.rowlineColor, uiDef.rowBackColor, uiDef.rowAlternateBackColor, uiDef.font, uiDef.rowHeight);
 	int32_t dbStyle = CDataBrowser::kDrawRowLines | CScrollView::kVerticalScrollbar | CScrollView::kDontDrawFrame | CScrollView::kOverlayScrollbars;
-	fontBrowser = makeOwned<CDataBrowser> (CRect (0, 0, 200, 500), dbSource.get (), dbStyle,
-										   uiDef.scrollbarWidth);
+	fontBrowser = makeShared<CDataBrowser> (CRect (0, 0, 200, 500), dbSource.get (), dbStyle,
+											uiDef.scrollbarWidth);
 	fontBrowser->setAutosizeFlags (kAutosizeLeft | kAutosizeTop | kAutosizeBottom);
 	fontBrowser->setTransparency (true);
 	if (auto scrollbar = fontBrowser->getVerticalScrollbar ())
@@ -111,7 +111,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 	}
 	addSubview (fontBrowser);
 	CRect controlRect (210, 0, 300, 20);
-	auto label = makeOwned<CTextLabel> (controlRect, "Size:");
+	auto label = makeShared<CTextLabel> (controlRect, "Size:");
 	label->setFont (uiDef.font);
 	label->setFontColor (uiDef.fontColor);
 	label->sizeToFit ();
@@ -122,7 +122,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 	CRect teRect = label->getViewSize ();
 	teRect.left = teRect.right + 5.;
 	teRect.right = controlRect.right;
-	sizeEdit = makeOwned<CTextEdit> (teRect, this, CFontChooserInternal::kFontChooserSizeTag);
+	sizeEdit = makeShared<CTextEdit> (teRect, this, CFontChooserInternal::kFontChooserSizeTag);
 	sizeEdit->setFont (uiDef.font);
 	sizeEdit->setFontColor (uiDef.fontColor);
 	sizeEdit->setHoriAlign (kLeftText);
@@ -135,23 +135,23 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 	sizeEdit->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) { result = UTF8StringView (txt).toFloat (); return true; });
 	addSubview (sizeEdit);
 	controlRect.offset (0, 20);
-	boldBox =
-		makeOwned<CCheckBox> (controlRect, this, CFontChooserInternal::kFontChooserBoldTag, "Bold");
+	boldBox = makeShared<CCheckBox> (controlRect, this, CFontChooserInternal::kFontChooserBoldTag,
+									 "Bold");
 	boldBox->setFont (uiDef.font);
 	boldBox->setFontColor (uiDef.fontColor);
 	boldBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
 	boldBox->sizeToFit ();
 	addSubview (boldBox);
 	controlRect.offset (0, 20);
-	italicBox = makeOwned<CCheckBox> (controlRect, this,
-									  CFontChooserInternal::kFontChooserItalicTag, "Italic");
+	italicBox = makeShared<CCheckBox> (controlRect, this,
+									   CFontChooserInternal::kFontChooserItalicTag, "Italic");
 	italicBox->setFont (uiDef.font);
 	italicBox->setFontColor (uiDef.fontColor);
 	italicBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
 	italicBox->sizeToFit ();
 	addSubview (italicBox);
 	controlRect.offset (0, 20);
-	underlineBox = makeOwned<CCheckBox> (
+	underlineBox = makeShared<CCheckBox> (
 		controlRect, this, CFontChooserInternal::kFontChooserUnderlineTag, "Underline");
 	underlineBox->setFont (uiDef.font);
 	underlineBox->setFontColor (uiDef.fontColor);
@@ -159,7 +159,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 	underlineBox->sizeToFit ();
 	addSubview (underlineBox);
 	controlRect.offset (0, 20);
-	strikeoutBox = makeOwned<CCheckBox> (
+	strikeoutBox = makeShared<CCheckBox> (
 		controlRect, this, CFontChooserInternal::kFontChooserStrikeoutTag, "Strikeout");
 	strikeoutBox->setFont (uiDef.font);
 	strikeoutBox->setFontColor (uiDef.fontColor);
@@ -168,10 +168,10 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 	addSubview (strikeoutBox);
 
 	auto container =
-		makeOwned<CViewContainer> (CRect (controlRect.left, controlRect.bottom + 10, 300, 500));
+		makeShared<CViewContainer> (CRect (controlRect.left, controlRect.bottom + 10, 300, 500));
 	container->setBackgroundColor (uiDef.previewBackgroundColor);
 	container->setAutosizeFlags (kAutosizeTop | kAutosizeBottom | kAutosizeLeft | kAutosizeRight);
-	fontPreviewView = makeOwned<CFontChooserInternal::FontPreviewView> (
+	fontPreviewView = makeShared<CFontChooserInternal::FontPreviewView> (
 		CRect (10, 10, container->getWidth () - 10, container->getHeight () - 10),
 		uiDef.previewTextColor);
 	fontPreviewView->setAutosizeFlags (kAutosizeAll);

@@ -271,7 +271,7 @@ SharedPointer<CFontDesc> CTextEdit::platformGetFont () const
 	fontSize *= getGlobalTransform ().m11;
 	if (fontSize == font->getSize ())
 		return font;
-	platformFont = makeOwned<CFontDesc> (*font.get ());
+	platformFont = makeShared<CFontDesc> (*font.get ());
 	platformFont->setSize (fontSize);
 	return platformFont;
 }

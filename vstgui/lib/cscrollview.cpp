@@ -208,7 +208,7 @@ SharedPointer<IDropTarget> CScrollContainer::getDropTarget ()
 	auto dropTarget = CViewContainer::getDropTarget ();
 	if (autoDragScroll)
 	{
-		return makeOwned<DropTarget> (this, std::move (dropTarget));
+		return makeShared<DropTarget> (this, std::move (dropTarget));
 	}
 	return dropTarget;
 }
@@ -349,16 +349,16 @@ CScrollView::CScrollView (const CRect& size, const CRect& containerSize, int32_t
 	props.gridAreas.push_back ({2, 3, 1, 1}); // vertical scrollbar
 	props.gridAreas.push_back ({3, 1, 1, 2}); // horizontal scrollbar
 
-	impl->layouter = makeOwned<Impl::Layouter> (props);
+	impl->layouter = makeShared<Impl::Layouter> (props);
 	setViewLayouter (impl->layouter);
 
 	impl->vScrollbar =
-		makeOwned<CScrollbar> (CRect {}, this, kVSBTag, CScrollbar::kVertical, CRect {});
+		makeShared<CScrollbar> (CRect {}, this, kVSBTag, CScrollbar::kVertical, CRect {});
 	impl->hScrollbar =
-		makeOwned<CScrollbar> (CRect {}, this, kHSBTag, CScrollbar::kHorizontal, CRect {});
-	impl->edgeViewTop = makeOwned<CView> (CRect {});
-	impl->edgeViewLeft = makeOwned<CView> (CRect {});
-	impl->scrollContainer = makeOwned<CScrollContainer> (CRect {}, impl->containerSize);
+		makeShared<CScrollbar> (CRect {}, this, kHSBTag, CScrollbar::kHorizontal, CRect {});
+	impl->edgeViewTop = makeShared<CView> (CRect {});
+	impl->edgeViewLeft = makeShared<CView> (CRect {});
+	impl->scrollContainer = makeShared<CScrollContainer> (CRect {}, impl->containerSize);
 
 	CViewContainer::insertSubview (impl->scrollContainer);
 	CViewContainer::insertSubview (impl->edgeViewTop);
@@ -751,7 +751,7 @@ void CScrollView::setEdgeView (Edge edge, const SharedPointer<CView>& _view)
 {
 	auto view = _view;
 	if (view == nullptr)
-		view = makeOwned<CView> (CRect {});
+		view = makeShared<CView> (CRect {});
 
 	switch (edge)
 	{

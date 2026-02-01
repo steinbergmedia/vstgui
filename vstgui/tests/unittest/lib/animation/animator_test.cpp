@@ -39,8 +39,8 @@ TEST_CASE (AnimatorTest, AddAnimation)
 {
 	auto a = owned (new Animator ());
 	auto view = owned (new CView (CRect (0, 0, 0, 0)));
-	a->addAnimation (view, "Test", makeOwned<AlphaValueAnimation> (0.f),
-					 makeOwned<LinearTimingFunction> (100),
+	a->addAnimation (view, "Test", makeShared<AlphaValueAnimation> (0.f),
+					 makeShared<LinearTimingFunction> (100),
 					 [] (CView&, const IdStringPtr, IAnimationTarget&) {
 						 CFRunLoopStop (CFRunLoopGetCurrent ());
 					 });
@@ -52,8 +52,8 @@ TEST_CASE (AnimatorTest, CancelAnimation)
 {
 	auto a = owned (new Animator ());
 	auto view = owned (new CView (CRect (0, 0, 0, 0)));
-	a->addAnimation (view, "Test", makeOwned<AlphaValueAnimation> (0.f),
-					 makeOwned<LinearTimingFunction> (2000));
+	a->addAnimation (view, "Test", makeShared<AlphaValueAnimation> (0.f),
+					 makeShared<LinearTimingFunction> (2000));
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
 	a->removeAnimation (view, "Test");
 	EXPECT (view->getAlphaValue () != 0.f);
@@ -67,14 +67,14 @@ TEST_CASE (AnimatorTest, CancelAnimationWithCallback)
 	auto doneFunc = [&] (auto&&, auto&&, auto&&) {
 		cancelDoneFunctionCalled = true;
 	};
-	a->addAnimation (view, "Test", makeOwned<AlphaValueAnimation> (0.f),
-					 makeOwned<LinearTimingFunction> (2000), doneFunc, false);
+	a->addAnimation (view, "Test", makeShared<AlphaValueAnimation> (0.f),
+					 makeShared<LinearTimingFunction> (2000), doneFunc, false);
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
 	a->removeAnimation (view, "Test");
 	EXPECT_FALSE (cancelDoneFunctionCalled);
 	EXPECT (view->getAlphaValue () != 0.f);
-	a->addAnimation (view, "Test", makeOwned<AlphaValueAnimation> (0.f),
-					 makeOwned<LinearTimingFunction> (2000), doneFunc, true);
+	a->addAnimation (view, "Test", makeShared<AlphaValueAnimation> (0.f),
+					 makeShared<LinearTimingFunction> (2000), doneFunc, true);
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
 	a->removeAnimation (view, "Test");
 	EXPECT_TRUE (cancelDoneFunctionCalled);
@@ -84,8 +84,8 @@ TEST_CASE (AnimatorTest, RemoveAnimationInCallback)
 {
 	auto a = owned (new Animator ());
 	auto view = owned (new CView (CRect (0, 0, 0, 0)));
-	a->addAnimation (view, "Test", makeOwned<RemoveAnimationInCallback> (a.get ()),
-					 makeOwned<LinearTimingFunction> (100),
+	a->addAnimation (view, "Test", makeShared<RemoveAnimationInCallback> (a.get ()),
+					 makeShared<LinearTimingFunction> (100),
 					 [] (CView&, const IdStringPtr, IAnimationTarget&) {
 						 CFRunLoopStop (CFRunLoopGetCurrent ());
 					 });

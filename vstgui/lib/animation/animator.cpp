@@ -163,7 +163,7 @@ protected:
 		DebugPrint ("Animation timer started\n");
 #endif
 		timer =
-			makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 1000 / 60); // 60 Hz
+			makeShared<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 1000 / 60); // 60 Hz
 	}
 	
 	~Timer () noexcept override
@@ -271,8 +271,8 @@ void Animator::addAnimation (const SharedPointer<CView>& view, IdStringPtr name,
 	if (pImpl->animations.empty ())
 		Detail::Timer::addAnimator (this);
 	removeAnimation (view, name);
-	pImpl->animations.add (makeOwned<Detail::Animation> (view, name, target, timingFunction,
-														 std::move (notification), notifyOnCancel));
+	pImpl->animations.add (makeShared<Detail::Animation> (
+		view, name, target, timingFunction, std::move (notification), notifyOnCancel));
 #if DEBUG_LOG
 	DebugPrint ("new animation added: %p - %s\n", view, name);
 #endif

@@ -42,7 +42,7 @@ UTF8StringPtr OptionMenuCreator::getDisplayName () const
 SharedPointer<CView> OptionMenuCreator::create (const UIAttributes& attributes,
 												const IUIDescription& description) const
 {
-	return makeOwned<COptionMenu> (CRect (0, 0, 100, 20), nullptr, -1);
+	return makeShared<COptionMenu> (CRect (0, 0, 100, 20), nullptr, -1);
 }
 
 //------------------------------------------------------------------------

@@ -52,7 +52,7 @@ struct BaseViewCreator : public ViewCreatorAdapter
 	SharedPointer<CView> create (const UIAttributes& attributes,
 								 const IUIDescription& description) const override
 	{
-		return makeOwned<BaseView> ();
+		return makeShared<BaseView> ();
 	}
 	bool apply (CView& view, const UIAttributes& attributes,
 				const IUIDescription& description) const override
@@ -132,7 +132,7 @@ struct ViewCreator : public ViewCreatorAdapter
 	SharedPointer<CView> create (const UIAttributes& attributes,
 								 const IUIDescription& description) const override
 	{
-		return makeOwned<View> ();
+		return makeShared<View> ();
 	}
 	bool apply (CView& view, const UIAttributes& attributes,
 				const IUIDescription& description) const override
@@ -199,7 +199,7 @@ static SharedPointer<CView> createView (const SharedPointer<IViewFactory>& facto
 
 TEST_SUITE_SETUP (UIViewFactoryTest)
 {
-	auto factory = makeOwned<UIViewFactory> ();
+	auto factory = makeShared<UIViewFactory> ();
 	factory->registerViewCreator (baseViewCreator);
 	factory->registerViewCreator (viewCreator);
 	TEST_SUITE_SET_STORAGE (SharedPointer<UIViewFactory>, factory);

@@ -43,9 +43,9 @@ UTF8StringPtr ScrollViewCreator::getDisplayName () const
 SharedPointer<CView> ScrollViewCreator::create (const UIAttributes& attributes,
 												const IUIDescription& description) const
 {
-	return makeOwned<CScrollView> (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200),
-								   CScrollView::kHorizontalScrollbar |
-									   CScrollView::kVerticalScrollbar);
+	return makeShared<CScrollView> (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200),
+									CScrollView::kHorizontalScrollbar |
+										CScrollView::kVerticalScrollbar);
 }
 
 //------------------------------------------------------------------------

@@ -275,13 +275,13 @@ uint32_t Pasteboard::getData (uint32_t index, const void*& buffer, Pasteboard::T
 //-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> createClipboardDataPackage ()
 {
-	return makeOwned<Pasteboard> ([NSPasteboard generalPasteboard]);
+	return makeShared<Pasteboard> ([NSPasteboard generalPasteboard]);
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard)
 {
-	return makeOwned<Pasteboard> (pasteboard);
+	return makeShared<Pasteboard> (pasteboard);
 }
 
 //-----------------------------------------------------------------------------

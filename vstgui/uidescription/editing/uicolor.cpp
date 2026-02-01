@@ -139,10 +139,10 @@ SharedPointer<CBitmap> createColorIcon (CColor color, CPoint colorIconSize)
 SharedPointer<COptionMenu> createCSSColorMenu (const std::function<void (CColor)>& callback,
 											   CPoint colorIconSize)
 {
-	auto cssColorMenu = makeOwned<COptionMenu> ();
+	auto cssColorMenu = makeShared<COptionMenu> ();
 	auto cssColors = getCSSNamedColors ();
 	std::for_each (cssColors.begin (), cssColors.end (), [&] (const auto& el) {
-		auto item = makeOwned<CCommandMenuItem> (
+		auto item = makeShared<CCommandMenuItem> (
 			CCommandMenuItem::Desc {std::string (el.name.data (), el.name.size ())});
 		item->setActions ([callback, el] (auto item) { callback (el.color); });
 		item->setIcon (createColorIcon (el.color, colorIconSize));

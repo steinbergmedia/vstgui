@@ -260,8 +260,8 @@ bool UISelection::store (OutputStream& stream, const SharedPointer<IUIDescriptio
 				views.emplace_back (view);
 			}
 		}
-		
-		auto attr = makeOwned<UIAttributes> ();
+
+		auto attr = makeShared<UIAttributes> ();
 		attr->setPointAttribute ("selection-drag-offset", dragOffset);
 		return desc->storeViews (views, stream, attr);
 	}
