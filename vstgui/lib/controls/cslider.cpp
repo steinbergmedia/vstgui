@@ -363,7 +363,7 @@ CMouseEventResult CSliderBase::onMouseDown (CPoint& where, const CButtonState& b
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
 
-	invalidMouseWheelEditTimer (this);
+	invalidMouseWheelEditTimer (*this);
 
 	CRect handleRect;
 	impl->meDelta = calculateDelta (
@@ -485,7 +485,7 @@ void CSliderBase::onMouseWheelEvent (MouseWheelEvent& event)
 	if (distance == 0.)
 		return;
 
-	onMouseWheelEditing (this);
+	onMouseWheelEditing (*this);
 
 	if (isStyleHorizontal ())
 		distance *= -1.;

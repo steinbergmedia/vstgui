@@ -322,25 +322,24 @@ bool CControl::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-void CMouseWheelEditingSupport::onMouseWheelEditing (CControl* control)
+void CMouseWheelEditingSupport::onMouseWheelEditing (CControl& control)
 {
-	if (!control->isEditing ())
-		control->beginEdit ();
+	if (!control.isEditing ())
+		control.beginEdit ();
 	endEditTimer = makeShared<CVSTGUITimer> (
-		[control] (CVSTGUITimer* timer) {
-			control->endEdit ();
+		[&] (CVSTGUITimer* timer) {
+			control.endEdit ();
 			timer->stop ();
 		},
 		500);
 }
 
 //------------------------------------------------------------------------
-void CMouseWheelEditingSupport::invalidMouseWheelEditTimer (CControl* control)
+void CMouseWheelEditingSupport::invalidMouseWheelEditTimer (CControl& control)
 {
-	if (endEditTimer)
-		endEditTimer = nullptr;
-	if (control->isEditing ())
-		control->endEdit ();
+	endEditTimer.reset ();
+	if (control.isEditing ())
+		control.endEdit ();
 }
 
 } // VSTGUI

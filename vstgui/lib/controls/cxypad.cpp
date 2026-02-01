@@ -68,7 +68,7 @@ void CXYPad::onMouseDownEvent (MouseDownEvent& event)
 {
 	if (event.buttonState.isLeft ())
 	{
-		invalidMouseWheelEditTimer (this);
+		invalidMouseWheelEditTimer (*this);
 		mouseStartValue = getValue ();
 		mouseChangeStartPoint = event.mousePosition;
 		mouseChangeStartPoint.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
@@ -160,7 +160,7 @@ void CXYPad::onMouseWheelEvent (MouseWheelEvent& event)
 	x += distanceX;
 	y += distanceY;
 	boundValues (x, y);
-	onMouseWheelEditing (this);
+	onMouseWheelEditing (*this);
 	if (setValue (calculateValue (x, y)))
 		valueChanged ();
 	event.consumed = true;

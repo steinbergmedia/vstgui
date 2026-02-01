@@ -237,7 +237,7 @@ Animation::Animation (const SharedPointer<CView>& view, const std::string& name,
 //-----------------------------------------------------------------------------
 Animation::~Animation () noexcept
 {
-	if (notification)
+	if (notification && view && animationTarget)
 		notification (*view.get (), name.c_str (), *animationTarget.get ());
 }
 
@@ -268,6 +268,8 @@ void Animator::addAnimation (const SharedPointer<CView>& view, IdStringPtr name,
 							 const SharedPointer<ITimingFunction>& timingFunction,
 							 DoneFunction notification, bool notifyOnCancel)
 {
+	if (!(view && target && timingFunction))
+		return;
 	if (pImpl->animations.empty ())
 		Detail::Timer::addAnimator (this);
 	removeAnimation (view, name);

@@ -104,7 +104,7 @@ CMouseEventResult CKnobBase::onMouseDown (CPoint& where, const CButtonState& but
 	if (!buttons.isLeftButton ())
 		return kMouseEventNotHandled;
 
-	invalidMouseWheelEditTimer (this);
+	invalidMouseWheelEditTimer (*this);
 	beginEdit ();
 
 	auto& mouseState = getMouseEditingState ();
@@ -225,7 +225,7 @@ CMouseEventResult CKnobBase::onMouseMoved (CPoint& where, const CButtonState& bu
 //------------------------------------------------------------------------
 void CKnobBase::onMouseWheelEvent (MouseWheelEvent& event)
 {
-	onMouseWheelEditing (this);
+	onMouseWheelEditing (*this);
 
 	float v = getValueNormalized ();
 	if (buttonStateFromEventModifiers (event.modifiers) & kZoomModifier)

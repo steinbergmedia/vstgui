@@ -121,8 +121,9 @@ private:
 class CMouseWheelEditingSupport
 {
 protected:
-	void invalidMouseWheelEditTimer (CControl* control);
-	void onMouseWheelEditing (CControl* control);
+	void invalidMouseWheelEditTimer (CControl& control);
+	void onMouseWheelEditing (CControl& control);
+
 private:
 	SharedPointer<CBaseObject> endEditTimer {nullptr};
 };
