@@ -21,29 +21,38 @@ using namespace TJS;
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& context)
+ViewScriptObject::ViewScriptObject (const WeakPointer<CView>& view,
+									IViewScriptObjectContext& context)
 : view (view), context (context)
 {
+	auto viewPtr = view.lock ();
+	vstgui_assert (viewPtr != nullptr);
 	scriptVar->setLifeTimeObserver (this);
-	auto viewType = IViewFactory::getViewName (*view);
+	auto viewType = IViewFactory::getViewName (*viewPtr.get ());
 	scriptVar->addChild ("type"sv, new CScriptVar (std::string (viewType ? viewType : "unknown")));
 	addFunc ("setAttribute"sv,
 			 [uiDesc = context.getUIDescription (), view] (CScriptVar& var) {
+				 auto viewPtr = view.lock ();
+				 if (viewPtr == nullptr)
+					 throw CScriptException ("View already destroyed");
 				 auto key = var.getParameter ("key"sv);
 				 auto value = var.getParameter ("value"sv);
 				 UIAttributes attr;
 				 attr.setAttribute (key->getString ().data (), value->getString ().data ());
-				 auto result =
-					 uiDesc->getViewFactory ().applyAttributeValues (*view, attr, *uiDesc);
+				 auto result = uiDesc->getViewFactory ().applyAttributeValues (
+					 *viewPtr.get (), attr, *uiDesc.get ());
 				 var.getReturnVar ()->setInt (result);
 			 },
 			 {"key", "value"});
 	addFunc ("getAttribute"sv,
 			 [uiDesc = context.getUIDescription (), view] (CScriptVar& var) {
+				 auto viewPtr = view.lock ();
+				 if (viewPtr == nullptr)
+					 throw CScriptException ("View already destroyed");
 				 auto key = var.getParameter ("key"sv);
 				 std::string result;
-				 if (uiDesc->getViewFactory ().getAttributeValue (*view, key->getString ().data (),
-																  result, *uiDesc))
+				 if (uiDesc->getViewFactory ().getAttributeValue (
+						 *viewPtr.get (), key->getString ().data (), result, *uiDesc.get ()))
 				 {
 					 var.getReturnVar ()->setString (result);
 				 }
@@ -55,42 +64,62 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 			 {"key"});
 	addFunc ("isTypeOf"sv,
 			 [uiDesc = context.getUIDescription (), view] (CScriptVar& var) {
+				 auto viewPtr = view.lock ();
+				 if (viewPtr == nullptr)
+					 throw CScriptException ("View already destroyed");
 				 auto typeName = var.getParameter ("typeName"sv);
-				 auto result =
-					 uiDesc->getViewFactory ().viewIsTypeOf (*view, typeName->getString ().data ());
+				 auto result = uiDesc->getViewFactory ().viewIsTypeOf (
+					 *viewPtr.get (), typeName->getString ().data ());
 				 var.getReturnVar ()->setInt (result);
 			 },
 			 {"typeName"});
-	addFunc ("invalid"sv, [view] (CScriptVar& var) { view->invalid (); });
+	addFunc ("invalid"sv, [view] (CScriptVar& var) {
+		auto viewPtr = view.lock ();
+		if (viewPtr == nullptr)
+			throw CScriptException ("View already destroyed");
+		viewPtr->invalid ();
+	});
 	addFunc ("invalidRect"sv,
 			 [view] (CScriptVar& var) {
+				 auto viewPtr = view.lock ();
+				 if (viewPtr == nullptr)
+					 throw CScriptException ("View already destroyed");
 				 auto rectVar = var.getParameter ("rect"sv);
 				 if (!rectVar)
 					 throw CScriptException ("Missing 'rect' argument in view.invalidRect(rect) ");
 				 auto rect = fromScriptRect (*rectVar);
-				 view->invalidRect (rect);
+				 viewPtr->invalidRect (rect);
 			 },
 			 {"rect"});
 	addFunc ("getBounds"sv, [view] (CScriptVar& var) {
-		auto bounds = view->getViewSize ();
+		auto viewPtr = view.lock ();
+		if (viewPtr == nullptr)
+			throw CScriptException ("View already destroyed");
+		auto bounds = viewPtr->getViewSize ();
 		bounds.originize ();
 		var.setReturnVar (makeScriptRect (bounds));
 	});
 	addFunc ("getParent"sv, [view, &context] (CScriptVar& var) {
-		auto parentView = view->getParentView ();
+		auto viewPtr = view.lock ();
+		if (viewPtr == nullptr)
+			throw CScriptException ("View already destroyed");
+		auto parentView = viewPtr->getParentView ();
 		if (!parentView)
 		{
 			var.getReturnVar ()->setUndefined ();
 			return;
 		}
-		auto obj = context.addView (parentView);
+		auto obj = context.addView (*parentView.get ());
 		vstgui_assert (obj);
 		var.setReturnVar (obj->getVar ());
 		obj->getVar ()->release ();
 	});
 	addFunc ("getControllerProperty"sv,
 			 [view] (CScriptVar& var) {
-				 auto viewController = getViewController (*view, true);
+				 auto viewPtr = view.lock ();
+				 if (viewPtr == nullptr)
+					 throw CScriptException ("View already destroyed");
+				 auto viewController = getViewController (*viewPtr.get (), true);
 				 auto controller = viewController.cast<IScriptControllerExtension> ();
 				 auto name = var.getParameter ("name"sv);
 				 if (!controller || !name)
@@ -99,7 +128,7 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 					 return;
 				 }
 				 IScriptControllerExtension::PropertyValue value;
-				 if (!controller->getProperty (*view, name->getString (), value))
+				 if (!controller->getProperty (*viewPtr.get (), name->getString (), value))
 				 {
 					 var.getReturnVar ()->setUndefined ();
 					 return;
@@ -121,7 +150,10 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 			 {"name"});
 	addFunc ("setControllerProperty"sv,
 			 [view] (CScriptVar& var) {
-				 auto viewController = getViewController (*view, true);
+				 auto viewPtr = view.lock ();
+				 if (viewPtr == nullptr)
+					 throw CScriptException ("View already destroyed");
+				 auto viewController = getViewController (*viewPtr.get (), true);
 				 auto controller = viewController.cast<IScriptControllerExtension> ();
 				 auto name = var.getParameter ("name"sv);
 				 auto value = var.getParameter ("value"sv);
@@ -137,54 +169,89 @@ ViewScriptObject::ViewScriptObject (CView* view, IViewScriptObjectContext& conte
 					 propValue = value->getDouble ();
 				 else if (value->isString ())
 					 propValue = value->getString ().data ();
-				 auto result = controller->setProperty (*view, name->getString (), propValue);
+				 auto result =
+					 controller->setProperty (*viewPtr.get (), name->getString (), propValue);
 				 var.getReturnVar ()->setInt (result);
 			 },
 			 {"name", "value"});
-	if (auto control = dynamic_cast<CControl*> (view))
+	if (auto controlPtr = viewPtr.cast<CControl> ())
 	{
+		WeakPointer<CControl> control = controlPtr->weakFromThis ();
 		addFunc ("setValue"sv,
 				 [control] (CScriptVar& var) {
+					 auto controlPtr = control.lock ();
+					 if (controlPtr == nullptr)
+						 throw CScriptException ("View already destroyed");
+
 					 auto value = var.getParameter ("value"sv);
 					 if (value->isNumeric ())
 					 {
-						 auto oldValue = control->getValue ();
-						 control->setValue (static_cast<float> (value->getDouble ()));
-						 if (oldValue != control->getValue ())
-							 control->valueChanged ();
+						 auto oldValue = controlPtr->getValue ();
+						 controlPtr->setValue (static_cast<float> (value->getDouble ()));
+						 if (oldValue != controlPtr->getValue ())
+							 controlPtr->valueChanged ();
 					 }
 				 },
 				 {"value"});
 		addFunc ("getValue"sv, [control] (CScriptVar& var) {
-			var.getReturnVar ()->setDouble (control->getValue ());
+			auto controlPtr = control.lock ();
+			if (controlPtr == nullptr)
+				throw CScriptException ("View already destroyed");
+			var.getReturnVar ()->setDouble (controlPtr->getValue ());
 		});
 		addFunc ("setValueNormalized"sv,
 				 [control] (CScriptVar& var) {
+					 auto controlPtr = control.lock ();
+					 if (controlPtr == nullptr)
+						 throw CScriptException ("View already destroyed");
 					 auto value = var.getParameter ("value"sv);
 					 if (value->isNumeric ())
 					 {
-						 auto oldValue = control->getValue ();
-						 control->setValueNormalized (static_cast<float> (value->getDouble ()));
-						 if (oldValue != control->getValue ())
-							 control->valueChanged ();
+						 auto oldValue = controlPtr->getValue ();
+						 controlPtr->setValueNormalized (static_cast<float> (value->getDouble ()));
+						 if (oldValue != controlPtr->getValue ())
+							 controlPtr->valueChanged ();
 					 }
 				 },
 				 {"value"});
 		addFunc ("getValueNormalized"sv, [control] (CScriptVar& var) {
-			var.getReturnVar ()->setDouble (control->getValueNormalized ());
+			auto controlPtr = control.lock ();
+			if (controlPtr == nullptr)
+				throw CScriptException ("View already destroyed");
+			var.getReturnVar ()->setDouble (controlPtr->getValueNormalized ());
 		});
-		addFunc ("beginEdit"sv, [control] (CScriptVar& var) { control->beginEdit (); });
-		addFunc ("endEdit"sv, [control] (CScriptVar& var) { control->endEdit (); });
+		addFunc ("beginEdit"sv, [control] (CScriptVar& var) {
+			auto controlPtr = control.lock ();
+			if (controlPtr == nullptr)
+				throw CScriptException ("View already destroyed");
+			controlPtr->beginEdit ();
+		});
+		addFunc ("endEdit"sv, [control] (CScriptVar& var) {
+			auto controlPtr = control.lock ();
+			if (controlPtr == nullptr)
+				throw CScriptException ("View already destroyed");
+			controlPtr->endEdit ();
+		});
 		addFunc ("getMinValue"sv, [control] (CScriptVar& var) {
-			var.getReturnVar ()->setDouble (control->getMin ());
+			auto controlPtr = control.lock ();
+			if (controlPtr == nullptr)
+				throw CScriptException ("View already destroyed");
+			var.getReturnVar ()->setDouble (controlPtr->getMin ());
 		});
 		addFunc ("getMaxValue"sv, [control] (CScriptVar& var) {
-			var.getReturnVar ()->setDouble (control->getMax ());
+			auto controlPtr = control.lock ();
+			if (controlPtr == nullptr)
+				throw CScriptException ("View already destroyed");
+			var.getReturnVar ()->setDouble (controlPtr->getMax ());
 		});
-		addFunc ("getTag"sv,
-				 [control] (CScriptVar& var) { var.getReturnVar ()->setInt (control->getTag ()); });
+		addFunc ("getTag"sv, [control] (CScriptVar& var) {
+			auto controlPtr = control.lock ();
+			if (controlPtr == nullptr)
+				throw CScriptException ("View already destroyed");
+			var.getReturnVar ()->setInt (controlPtr->getTag ());
+		});
 	}
-	if (auto drawable = dynamic_cast<JavaScriptDrawable*> (view))
+	if (auto drawable = dynamic_cast<JavaScriptDrawable*> (viewPtr.get ()))
 		drawable->setup (this);
 }
 
@@ -200,7 +267,8 @@ void ViewScriptObject::onDestroy (CScriptVar* v)
 {
 	v->setLifeTimeObserver (nullptr);
 	scriptVar = nullptr;
-	context.removeView (view);
+	if (auto viewPtr = view.lock ())
+		context.removeView (*viewPtr.get ());
 }
 
 //------------------------------------------------------------------------

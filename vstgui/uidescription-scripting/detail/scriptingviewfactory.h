@@ -23,8 +23,8 @@ struct JavaScriptViewFactory : ViewFactoryDelegate,
 						   const SharedPointer<IViewFactory>& origFactory);
 	~JavaScriptViewFactory () noexcept;
 
-	CView* createView (const UIAttributes& attributes,
-					   const IUIDescription& description) const override;
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) const override;
 	bool getAttributeNamesForView (CView& view, StringList& attributeNames) const override;
 	IViewCreator::AttrType getAttributeType (CView& view,
 											 const std::string& attributeName) const override;
@@ -35,10 +35,10 @@ struct JavaScriptViewFactory : ViewFactoryDelegate,
 	void setScriptingDisabled (bool state);
 
 private:
-	void viewWillDelete (CView* view) override;
+	void viewWillDelete (CView& view) override;
 
 	using Super = ViewFactoryDelegate;
-	using ViewControllerLink = std::pair<CView*, IScriptControllerExtension*>;
+	using ViewControllerLink = std::pair<WeakPointer<CView>, IScriptControllerExtension*>;
 	using ViewControllerLinkVector = std::vector<ViewControllerLink>;
 
 	ScriptingInternal::IScriptContextInternal* scriptContext;

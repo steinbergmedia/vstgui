@@ -20,14 +20,15 @@ JavaScriptViewFactory::~JavaScriptViewFactory () noexcept
 {
 	std::for_each (viewControllerLinks.begin (), viewControllerLinks.end (),
 				   [this] (const auto& el) {
-					   el.first->unregisterViewListener (this);
+					   if (auto view = el.first.lock ())
+						   view->unregisterViewListener (this);
 					   el.second->scriptContextDestroyed (*scriptContext);
 				   });
 }
 
 //------------------------------------------------------------------------
-CView* JavaScriptViewFactory::createView (const UIAttributes& attributes,
-										  const IUIDescription& description) const
+SharedPointer<CView> JavaScriptViewFactory::createView (const UIAttributes& attributes,
+														const IUIDescription& description) const
 {
 	if (auto view = Super::createView (attributes, description))
 	{
@@ -37,16 +38,18 @@ CView* JavaScriptViewFactory::createView (const UIAttributes& attributes,
 			if (auto scriptViewController =
 					description.getController ().cast<IScriptControllerExtension> ())
 			{
-				verifiedScript = scriptViewController->verifyScript (*view, *value, *scriptContext);
+				verifiedScript =
+					scriptViewController->verifyScript (*view.get (), *value, *scriptContext);
 				view->registerViewListener (const_cast<JavaScriptViewFactory*> (this));
-				viewControllerLinks.emplace_back (view, scriptViewController);
+				viewControllerLinks.emplace_back (view->weakFromThis (),
+												  scriptViewController.get ());
 			}
 			const auto& script = verifiedScript ? *verifiedScript : *value;
 			auto scriptSize = static_cast<uint32_t> (script.size () + 1);
 			view->setAttribute (scriptAttrID, scriptSize, script.data ());
 			if (!disabled)
 			{
-				scriptContext->onViewCreated (view, script);
+				scriptContext->onViewCreated (*view.get (), script);
 			}
 		}
 		return view;
@@ -106,7 +109,7 @@ bool JavaScriptViewFactory::applyAttributeValues (CView& view, const UIAttribute
 			view.setAttribute (scriptAttrID, static_cast<uint32_t> (value->size () + 1),
 							   value->data ());
 		if (!disabled)
-			scriptContext->onViewCreated (&view, *value);
+			scriptContext->onViewCreated (view, *value);
 		return true;
 	}
 	return Super::applyAttributeValues (view, attributes, desc);
@@ -116,16 +119,16 @@ bool JavaScriptViewFactory::applyAttributeValues (CView& view, const UIAttribute
 void JavaScriptViewFactory::setScriptingDisabled (bool state) { disabled = state; }
 
 //------------------------------------------------------------------------
-void JavaScriptViewFactory::viewWillDelete (CView* view)
+void JavaScriptViewFactory::viewWillDelete (CView& view)
 {
 	auto it = std::find_if (viewControllerLinks.begin (), viewControllerLinks.end (),
-							[view] (const auto& el) { return el.first == view; });
+							[&] (const auto& el) { return el.first.lock ().get () == &view; });
 	if (it != viewControllerLinks.end ())
 	{
 		it->second->scriptContextDestroyed (*scriptContext);
 		viewControllerLinks.erase (it);
 	}
-	view->unregisterViewListener (this);
+	view.unregisterViewListener (this);
 }
 
 //------------------------------------------------------------------------

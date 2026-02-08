@@ -14,6 +14,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+using ViewRuntimeID = uint64_t;
 using CViewAttributeID = size_t;
 using ModalViewSessionID = uint32_t;
 

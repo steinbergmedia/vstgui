@@ -16,7 +16,7 @@ static const std::string kAttrScript = "script";
 //------------------------------------------------------------------------
 struct IScriptContextInternal : public IScriptContext
 {
-	virtual void onViewCreated (CView* view, const std::string& script) = 0;
+	virtual void onViewCreated (CView& view, const std::string& script) = 0;
 };
 
 //------------------------------------------------------------------------

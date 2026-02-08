@@ -154,7 +154,7 @@ static CColor getColor (CScriptVar& var, WeakPointer<IUIDescription> uiDesc,
 	auto& colorVar = getArgument (var, varName, signature);
 	auto colorStr = colorVar.getString ();
 	CColor color {};
-	if (!UIViewCreator::stringToColor (colorStr, color, uiDescObj))
+	if (!UIViewCreator::stringToColor (colorStr, color, *uiDescObj.get ()))
 	{
 		string str ("'");
 		str += colorStr;
@@ -531,7 +531,8 @@ struct DrawContextObject::Impl
 		auto endPoint = getPoint (var, "endPoint"sv, signature);
 		auto tm = getOptionalTransformMatrix (var, "transform?"sv, signature);
 		auto evenOdd = getOptionalInt (var, "evenOdd?", signature);
-		context->fillLinearGradient (path, *gradient, startPoint, endPoint, evenOdd > 0, tm.get ());
+		context->fillLinearGradient (path, *gradient.get (), startPoint, endPoint, evenOdd > 0,
+									 tm.get ());
 	}
 
 	void fillRadialGradient (CScriptVar& var) const
@@ -546,7 +547,7 @@ struct DrawContextObject::Impl
 		auto originOffsetPoint = getOptionalPoint (var, "originOffsetPoint?"sv, signature);
 		auto evenOdd = getOptionalInt (var, "evenOdd?", signature);
 		auto tm = getOptionalTransformMatrix (var, "transform?"sv, signature);
-		context->fillRadialGradient (path, *gradient, centerPoint, radius, originOffsetPoint,
+		context->fillRadialGradient (path, *gradient.get (), centerPoint, radius, originOffsetPoint,
 									 evenOdd, tm.get ());
 	}
 
@@ -685,7 +686,7 @@ struct DrawContextObject::Impl
 			throw CScriptException ("Internal Error");
 		auto& colorVar = getArgument (var, "color"sv, signature);
 		CColor color {};
-		UIViewCreator::stringToColor (colorVar.getString (), color, uiDescObj);
+		UIViewCreator::stringToColor (colorVar.getString (), color, *uiDescObj.get ());
 		context->setFontColor (color);
 	}
 	void setFillColor (CScriptVar& var) const

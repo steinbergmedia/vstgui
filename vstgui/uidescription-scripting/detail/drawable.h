@@ -35,9 +35,9 @@ struct JavaScriptDrawableView : CView,
 {
 	using CView::CView;
 
-	void drawRect (CDrawContext* context, const CRect& rect) override;
+	void drawRect (CDrawContext& context, const CRect& rect) override;
 	bool drawFocusOnTop () override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 };
 
 //------------------------------------------------------------------------
@@ -46,10 +46,10 @@ struct JavaScriptDrawableControl : CControl,
 {
 	using CControl::CControl;
 
-	void draw (CDrawContext* pContext) override;
-	void drawRect (CDrawContext* context, const CRect& rect) override;
+	void draw (CDrawContext& context) override;
+	void drawRect (CDrawContext& context, const CRect& rect) override;
 	bool drawFocusOnTop () override;
-	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 	CLASS_METHODS_NOCOPY (JavaScriptDrawableControl, CControl);
 };
@@ -59,8 +59,8 @@ struct JavaScriptDrawableViewCreator : ViewCreatorAdapter
 {
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
-	CView* create (const UIAttributes& attributes,
-				   const IUIDescription* description) const override;
+	SharedPointer<CView> create (const UIAttributes& attributes,
+								 const IUIDescription& description) const override;
 };
 
 //------------------------------------------------------------------------
@@ -68,8 +68,8 @@ struct JavaScriptDrawableControlCreator : ViewCreatorAdapter
 {
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
-	CView* create (const UIAttributes& attributes,
-				   const IUIDescription* description) const override;
+	SharedPointer<CView> create (const UIAttributes& attributes,
+								 const IUIDescription& description) const override;
 };
 
 //------------------------------------------------------------------------

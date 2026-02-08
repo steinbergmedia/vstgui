@@ -105,7 +105,7 @@ bool JavaScriptDrawable::onGetFocusPath (CGraphicsPath& outPath, CCoord focusWid
 		{
 			CGraphicsTransform tm;
 			tm.translate (viewSize.left, viewSize.top);
-			outPath.addPath (*path, &tm);
+			outPath.addPath (*path.get (), &tm);
 			return true;
 		}
 		return false;
@@ -116,9 +116,9 @@ bool JavaScriptDrawable::onGetFocusPath (CGraphicsPath& outPath, CCoord focusWid
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-void JavaScriptDrawableView::drawRect (CDrawContext* context, const CRect& rect)
+void JavaScriptDrawableView::drawRect (CDrawContext& context, const CRect& rect)
 {
-	onDraw (*context, rect, getViewSize ());
+	onDraw (context, rect, getViewSize ());
 }
 
 //------------------------------------------------------------------------
@@ -130,7 +130,7 @@ bool JavaScriptDrawableView::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-bool JavaScriptDrawableView::getFocusPath (CGraphicsPath& outPath)
+bool JavaScriptDrawableView::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	if (wantsFocus ())
 		return onGetFocusPath (outPath, getFrame ()->getFocusWidth (), getViewSize ());
@@ -140,12 +140,12 @@ bool JavaScriptDrawableView::getFocusPath (CGraphicsPath& outPath)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-void JavaScriptDrawableControl::draw (CDrawContext* context) { drawRect (context, getViewSize ()); }
+void JavaScriptDrawableControl::draw (CDrawContext& context) { drawRect (context, getViewSize ()); }
 
 //------------------------------------------------------------------------
-void JavaScriptDrawableControl::drawRect (CDrawContext* context, const CRect& rect)
+void JavaScriptDrawableControl::drawRect (CDrawContext& context, const CRect& rect)
 {
-	onDraw (*context, rect, getViewSize ());
+	onDraw (context, rect, getViewSize ());
 }
 
 //------------------------------------------------------------------------
@@ -157,7 +157,7 @@ bool JavaScriptDrawableControl::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-bool JavaScriptDrawableControl::getFocusPath (CGraphicsPath& outPath)
+bool JavaScriptDrawableControl::getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth)
 {
 	if (wantsFocus ())
 		return onGetFocusPath (outPath, getFrame ()->getFocusWidth (), getViewSize ());
@@ -176,10 +176,10 @@ IdStringPtr JavaScriptDrawableViewCreator::getBaseViewName () const
 }
 
 //------------------------------------------------------------------------
-CView* JavaScriptDrawableViewCreator::create (const UIAttributes& attributes,
-											  const IUIDescription* description) const
+SharedPointer<CView> JavaScriptDrawableViewCreator::create (const UIAttributes& attributes,
+															const IUIDescription& description) const
 {
-	return new JavaScriptDrawableView (CRect ());
+	return makeShared<JavaScriptDrawableView> (CRect ());
 }
 
 //------------------------------------------------------------------------
@@ -197,10 +197,10 @@ IdStringPtr JavaScriptDrawableControlCreator::getBaseViewName () const
 }
 
 //------------------------------------------------------------------------
-CView* JavaScriptDrawableControlCreator::create (const UIAttributes& attributes,
-												 const IUIDescription* description) const
+SharedPointer<CView> JavaScriptDrawableControlCreator::create (
+	const UIAttributes& attributes, const IUIDescription& description) const
 {
-	return new JavaScriptDrawableControl (CRect ());
+	return makeShared<JavaScriptDrawableControl> (CRect ());
 }
 
 //------------------------------------------------------------------------

@@ -48,7 +48,7 @@ public:
 	~ScriptContext () noexcept;
 
 	void init (const std::string& initScript);
-	void onViewCreated (CView* view, const std::string& script) override;
+	void onViewCreated (CView& view, const std::string& script) override;
 
 	void reset ();
 
@@ -170,12 +170,15 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 								  [&] (const auto& el) { return el.second->getVar () == view; });
 				if (it == viewScriptMap.end ())
 					throw CScriptException ("View not found in iterateSubViews");
-				auto container = it->first->asViewContainer ();
+				auto viewPtr = it->second->getView ();
+				if (!viewPtr)
+					throw CScriptException ("View already destroyed");
+				auto container = viewPtr->asViewContainer ();
 				if (!container)
 					return; // no sub views
 				container->forEachChild ([&] (auto child) {
 					using namespace ScriptingInternal;
-					auto childScriptObject = viewScriptMap.find (child);
+					auto childScriptObject = viewScriptMap.find (child->getRuntimeID ());
 					if (childScriptObject != viewScriptMap.end ())
 					{
 						ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv,
@@ -186,7 +189,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 					else
 					{
 						auto scriptObj =
-							addView (child, std::make_unique<ViewScriptObject> (child, *this));
+							addView (*child.get (), std::make_unique<ViewScriptObject> (child->weakFromThis (), *this));
 						ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv,
 												  scriptObj->getVar ());
 						ScriptAddChildScoped scs2 (*jsContext->getRoot (), "context"sv, context);
@@ -208,8 +211,11 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 	{
 		for (auto it = viewScriptMap.begin (); it != viewScriptMap.end ();)
 		{
-			viewRemoved (it->first);
-			uninstallListeners (it->first);
+			if (auto view = it->second->getView ())
+			{
+				viewRemoved (*view.get ());
+				uninstallListeners (*view.get ());
+			}
 			it = eraseViewFromMap (it);
 		}
 		if (!terminate)
@@ -229,23 +235,23 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 	CScriptVar* getRoot () const override { return jsContext->getRoot (); }
 	SharedPointer<IUIDescription> getUIDescription () const override { return uiDesc.lock (); }
 
-	void installListeners (CView* view)
+	void installListeners (CView& view)
 	{
-		view->registerViewListener (this);
-		view->registerViewEventListener (this);
-		if (auto viewContainer = view->asViewContainer ())
+		view.registerViewListener (this);
+		view.registerViewEventListener (this);
+		if (auto viewContainer = view.asViewContainer ())
 			viewContainer->registerViewContainerListener (this);
-		else if (auto control = dynamic_cast<CControl*> (view))
+		else if (auto control = dynamic_cast<CControl*> (&view))
 			control->registerControlListener (this);
 	}
 
-	void uninstallListeners (CView* view)
+	void uninstallListeners (CView& view)
 	{
-		view->unregisterViewListener (this);
-		view->unregisterViewEventListener (this);
-		if (auto viewContainer = view->asViewContainer ())
+		view.unregisterViewListener (this);
+		view.unregisterViewEventListener (this);
+		if (auto viewContainer = view.asViewContainer ())
 			viewContainer->unregisterViewContainerListener (this);
-		if (auto control = dynamic_cast<CControl*> (view))
+		if (auto control = dynamic_cast<CControl*> (&view))
 			control->unregisterControlListener (this);
 	}
 
@@ -287,16 +293,16 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 	}
 
 	template<typename Proc>
-	void callWhenScriptHasFunction (CView* view, std::string_view funcName, Proc proc)
+	void callWhenScriptHasFunction (CView& view, std::string_view funcName, Proc proc)
 	{
-		auto it = viewScriptMap.find (view);
+		auto it = viewScriptMap.find (view.getRuntimeID ());
 		if (it == viewScriptMap.end ())
 			return;
 		if (it->second->getVar ()->findChild (funcName))
 			proc (this, it->second);
 	}
 
-	void viewAttached (CView* view) override
+	void viewAttached (CView& view) override
 	{
 		callWhenScriptHasFunction (view, "onAttached"sv, [] (auto This, auto& obj) {
 			static constexpr auto script = R"(view.onAttached(view);)"sv;
@@ -304,7 +310,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		});
 	}
 
-	void viewRemoved (CView* view) override
+	void viewRemoved (CView& view) override
 	{
 		callWhenScriptHasFunction (view, "onRemoved"sv, [] (auto This, auto& obj) {
 			static constexpr auto script = R"(view.onRemoved(view);)"sv;
@@ -312,10 +318,10 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		});
 	}
 
-	void viewSizeChanged (CView* view, const CRect& oldSize) override
+	void viewSizeChanged (CView& view, const CRect& oldSize) override
 	{
 		callWhenScriptHasFunction (view, "onSizeChanged"sv, [&] (auto This, auto& obj) {
-			auto newSize = view->getViewSize ();
+			auto newSize = view.getViewSize ();
 			ScriptObject newSizeObject = ScriptingInternal::makeScriptRect (newSize);
 			ScriptAddChildScoped scs (*jsContext->getRoot (), "newSize"sv, newSizeObject);
 			static constexpr auto script = R"(view.onSizeChanged(view, newSize);)"sv;
@@ -323,7 +329,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		});
 	}
 
-	void viewLostFocus (CView* view) override
+	void viewLostFocus (CView& view) override
 	{
 		callWhenScriptHasFunction (view, "onLostFocus"sv, [&] (auto This, auto& obj) {
 			static constexpr auto script = R"(view.onLostFocus(view);)"sv;
@@ -331,7 +337,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		});
 	}
 
-	void viewTookFocus (CView* view) override
+	void viewTookFocus (CView& view) override
 	{
 		callWhenScriptHasFunction (view, "onTookFocus"sv, [&] (auto This, auto& obj) {
 			static constexpr auto script = R"(view.onTookFocus(view);)"sv;
@@ -339,7 +345,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		});
 	}
 
-	void viewOnMouseEnabled (CView* view, bool state) override
+	void viewOnMouseEnabled (CView& view, bool state) override
 	{
 		callWhenScriptHasFunction (view, "onMouseEnabled"sv, [&] (auto This, auto& obj) {
 			static constexpr auto scriptEnabled = R"(view.onMouseEnabled(view, true);)"sv;
@@ -348,11 +354,11 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		});
 	}
 
-	void callViewAddedOrRemoved (CViewContainer* container, CView* view, std::string_view function,
+	void callViewAddedOrRemoved (CViewContainer& container, CView& view, std::string_view function,
 								 std::string_view script)
 	{
 		callWhenScriptHasFunction (container, function, [&] (auto This, auto& obj) {
-			auto childScriptObject = viewScriptMap.find (view);
+			auto childScriptObject = viewScriptMap.find (view.getRuntimeID ());
 			if (childScriptObject != viewScriptMap.end ())
 			{
 				ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv,
@@ -361,20 +367,21 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 			}
 			else
 			{
-				auto scriptObj = addView (view, std::make_unique<ViewScriptObject> (view, *this));
+				auto scriptObj = addView (
+					view, std::make_unique<ViewScriptObject> (view.weakFromThis (), *this));
 				ScriptAddChildScoped scs (*jsContext->getRoot (), "child"sv, scriptObj->getVar ());
 				This->evalScript (obj->getVar (), script);
 			}
 		});
 	}
 
-	void viewContainerViewAdded (CViewContainer* container, CView* view) override
+	void viewContainerViewAdded (CViewContainer& container, CView& view) override
 	{
 		callViewAddedOrRemoved (container, view, "onViewAdded"sv,
 								R"(view.onViewAdded(view, child);)"sv);
 	}
 
-	void viewContainerViewRemoved (CViewContainer* container, CView* view) override
+	void viewContainerViewRemoved (CViewContainer& container, CView& view) override
 	{
 		callViewAddedOrRemoved (container, view, "onViewRemoved"sv,
 								R"(view.onViewRemoved(view, child);)"sv);
@@ -397,12 +404,12 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		checkEventConsumed (scriptEvent, event);
 	}
 
-	void viewOnEvent (CView* view, Event& event) override
+	void viewOnEvent (CView& view, Event& event) override
 	{
 		auto applyEventMouseLocalPosition = [&] (auto proc) {
 			auto& mouseEvent = castMousePositionEvent (event);
 			auto oldPos = mouseEvent.mousePosition;
-			mouseEvent.mousePosition -= view->getViewSize ().getTopLeft ();
+			mouseEvent.mousePosition -= view.getViewSize ().getTopLeft ();
 			proc ();
 			mouseEvent.mousePosition = oldPos;
 		};
@@ -489,25 +496,25 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		}
 	}
 
-	void valueChanged (CControl* control) override
+	void valueChanged (CControl& control) override
 	{
 		callWhenScriptHasFunction (control, "onValueChanged"sv, [&] (auto This, auto& obj) {
 			ScriptObject controlValue;
-			controlValue->setDouble (control->getValue ());
+			controlValue->setDouble (control.getValue ());
 			ScriptAddChildScoped scs (*jsContext->getRoot (), "value"sv, controlValue);
 			static constexpr auto script = R"(view.onValueChanged(view, value);)"sv;
 			This->evalScript (obj->getVar (), script);
 		});
 	}
 
-	void controlBeginEdit (CControl* control) override
+	void controlBeginEdit (CControl& control) override
 	{
 		callWhenScriptHasFunction (control, "onBeginEdit"sv, [] (auto This, auto& obj) {
 			static constexpr auto script = R"(view.onBeginEdit(view);)"sv;
 			This->evalScript (obj->getVar (), script);
 		});
 	}
-	void controlEndEdit (CControl* control) override
+	void controlEndEdit (CControl& control) override
 	{
 		callWhenScriptHasFunction (control, "onEndEdit"sv, [] (auto This, auto& obj) {
 			static constexpr auto script = R"(view.onEndEdit(view);)"sv;
@@ -515,13 +522,13 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		});
 	}
 
-	void viewWillDelete (CView* view) override { removeView (view); }
+	void viewWillDelete (CView& view) override { removeView (view); }
 
-	ViewScriptObject* addView (CView* view, std::unique_ptr<ViewScriptObject>&& scriptObject)
+	ViewScriptObject* addView (CView& view, std::unique_ptr<ViewScriptObject>&& scriptObject)
 	{
 		installListeners (view);
-		viewScriptMap[view] = std::move (scriptObject);
-		return viewScriptMap[view].get ();
+		return viewScriptMap.emplace (view.getRuntimeID (), std::move (scriptObject))
+			.first->second.get ();
 	}
 
 	ViewScriptMap::iterator eraseViewFromMap (ViewScriptMap::iterator el)
@@ -529,24 +536,24 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		return viewScriptMap.erase (el);
 	}
 
-	ViewScriptMap::iterator removeView (CView* view) override
+	ViewScriptMap::iterator removeView (CView& view) override
 	{
 		uninstallListeners (view);
-		auto it = viewScriptMap.find (view);
+		auto it = viewScriptMap.find (view.getRuntimeID ());
 		if (it != viewScriptMap.end ())
 			return eraseViewFromMap (it);
 		return viewScriptMap.end ();
 	}
 
-	ViewScriptObject* addView (CView* view) override
+	ViewScriptObject* addView (CView& view) override
 	{
-		auto it = viewScriptMap.find (view);
+		auto it = viewScriptMap.find (view.getRuntimeID ());
 		if (it != viewScriptMap.end ())
 			return it->second.get ();
-		return addView (view, std::make_unique<ViewScriptObject> (view, *this));
+		return addView (view, std::make_unique<ViewScriptObject> (view.weakFromThis (), *this));
 	}
 
-	void addView (CView* view, const std::string* script) noexcept
+	void addView (CView& view, const std::string* script) noexcept
 	{
 		addView (view);
 		if (script)
@@ -554,7 +561,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 			auto scriptContent = getScriptFileContent (*script);
 			if (!scriptContent.empty ())
 				script = &scriptContent;
-			evalScript (viewScriptMap[view]->getVar (), *script);
+			evalScript (viewScriptMap[view.getRuntimeID ()]->getVar (), *script);
 		}
 	}
 
@@ -633,7 +640,7 @@ ScriptContext::~ScriptContext () noexcept {}
 void ScriptContext::init (const std::string& initScript) { impl->initWithScript (&initScript); }
 
 //------------------------------------------------------------------------
-void ScriptContext::onViewCreated (CView* view, const std::string& script)
+void ScriptContext::onViewCreated (CView& view, const std::string& script)
 {
 	impl->addView (view, &script);
 }

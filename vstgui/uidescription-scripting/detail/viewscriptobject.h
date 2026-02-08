@@ -20,19 +20,20 @@ struct IViewScriptObjectContext;
 struct ViewScriptObject : ScriptObject,
 						  TJS::IScriptVarLifeTimeObserver
 {
-	ViewScriptObject (CView* view, IViewScriptObjectContext& context);
+	ViewScriptObject (const WeakPointer<CView>& view, IViewScriptObjectContext& context);
 	~ViewScriptObject () noexcept;
 
 	IViewScriptObjectContext& getContext () const { return context; }
+	SharedPointer<CView> getView () { return view.lock (); }
 
 	void onDestroy (CScriptVar* v) override;
 
 private:
-	CView* view {nullptr};
+	WeakPointer<CView> view;
 	IViewScriptObjectContext& context;
 };
 
-using ViewScriptMap = std::unordered_map<CView*, std::unique_ptr<ViewScriptObject>>;
+using ViewScriptMap = std::unordered_map<ViewRuntimeID, std::unique_ptr<ViewScriptObject>>;
 
 //------------------------------------------------------------------------
 struct IViewScriptObjectContext
@@ -40,8 +41,8 @@ struct IViewScriptObjectContext
 	virtual ~IViewScriptObjectContext () = default;
 
 	virtual SharedPointer<IUIDescription> getUIDescription () const = 0;
-	virtual ViewScriptObject* addView (CView* view) = 0;
-	virtual ViewScriptMap::iterator removeView (CView* view) = 0;
+	virtual ViewScriptObject* addView (CView& view) = 0;
+	virtual ViewScriptMap::iterator removeView (CView& view) = 0;
 	virtual ScriptObject evalScript (std::string_view script) noexcept = 0;
 	virtual TJS::CScriptVar* getRoot () const = 0;
 };
