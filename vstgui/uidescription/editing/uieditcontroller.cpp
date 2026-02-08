@@ -970,6 +970,9 @@ void UIEditController::viewRemoved (CView& view)
 	editView->setSelection (nullptr);
 	editView->setUndoManager (nullptr);
 	editView->setGridProcessor (nullptr);
+	editView->unregisterViewListener (this);
+	editView.reset ();
+	baseView.reset ();
 	getEditorDescription ()->freePlatformResources ();
 }
 

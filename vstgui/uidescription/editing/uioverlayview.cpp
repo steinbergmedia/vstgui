@@ -14,33 +14,68 @@ UIOverlayView::UIOverlayView (const SharedPointer<CViewContainer>& view)
 : CView ({}), targetView (view), targetViewParent (view->getParentView ())
 {
 	setMouseEnabled (false);
-	targetViewParent->registerViewListener (this);
-	targetView->registerViewListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIOverlayView::~UIOverlayView ()
 {
-	targetViewParent->unregisterViewListener (this);
-	targetView->unregisterViewListener (this);
+	if (auto tvp = targetViewParent.lock ())
+		tvp->unregisterViewListener (this);
+	if (auto tv = targetView.lock ())
+		tv->unregisterViewListener (this);
+}
+
+//------------------------------------------------------------------------
+void UIOverlayView::viewWillDelete (CView& view)
+{
+	if (auto tvp = targetViewParent.lock ())
+	{
+		tvp->unregisterViewListener (this);
+		targetViewParent.reset ();
+	}
+	if (auto tv = targetView.lock ())
+	{
+		tv->unregisterViewListener (this);
+		targetView.reset ();
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIOverlayView::attached (const SharedPointer<CViewContainer>& parent)
 {
 	auto result = CView::attached (parent);
-	viewSizeChanged (*targetViewParent.get (), {});
+	if (auto tv = targetView.lock ())
+		tv->registerViewListener (this);
+	if (auto tvp = targetViewParent.lock ())
+	{
+		tvp->registerViewListener (this);
+		viewSizeChanged (*tvp.get (), {});
+	}
 	return result;
+}
+
+//------------------------------------------------------------------------
+bool UIOverlayView::removed (const SharedPointer<CViewContainer>& parent)
+{
+	if (auto tvp = targetViewParent.lock ())
+		tvp->unregisterViewListener (this);
+	if (auto tv = targetView.lock ())
+		tv->unregisterViewListener (this);
+	return CView::removed (parent);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIOverlayView::viewSizeChanged (CView& view, const CRect& oldSize)
 {
-	if (&view == targetView.get ())
+	auto tv = targetView.lock ();
+	if (!tv)
+		return;
+	if (&view == tv.get ())
 		invalid ();
-	CRect r = targetView->getVisibleViewSize ();
+
+	CRect r = tv->getVisibleViewSize ();
 	CPoint p;
-	targetViewParent->localToFrame (p);
+	tv->getParentView ()->localToFrame (p);
 	r.offset (p.x, p.y);
 	if (getViewSize () != r)
 	{

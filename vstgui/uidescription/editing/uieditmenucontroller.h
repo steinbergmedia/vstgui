@@ -145,7 +145,7 @@ static const MenuEntry fileMenu[] = {
 } // UIEditing
 
 //----------------------------------------------------------------------------------------------------
-class UIEditMenuController : public CBaseObject,
+class UIEditMenuController : public NonAtomicReferenceCounted,
 							 public DelegationController,
 							 public CommandMenuItemTargetAdapter,
 							 public ViewListenerAdapter

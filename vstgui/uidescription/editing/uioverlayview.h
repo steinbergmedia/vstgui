@@ -22,14 +22,16 @@ public:
 	~UIOverlayView () override;
 
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (const SharedPointer<CViewContainer>& parent) override;
 	void viewSizeChanged (CView& view, const CRect& oldSize) override;
+	void viewWillDelete (CView& view) override;
 
 protected:
-	SharedPointer<CViewContainer> getTargetView () const { return targetView; }
+	SharedPointer<CViewContainer> getTargetView () const { return targetView.lock (); }
 
 private:
-	SharedPointer<CViewContainer> targetView;
-	SharedPointer<CView> targetViewParent;
+	WeakPointer<CViewContainer> targetView;
+	WeakPointer<CViewContainer> targetViewParent;
 };
 
 } // VSTGUI
