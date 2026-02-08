@@ -31,17 +31,18 @@ class GenericStringListDataBrowserSource;
 class CCommandMenuItem;
 
 //----------------------------------------------------------------------------------------------------
-class UIEditController : public CBaseObject,
-                         public IController,
-                         public IContextMenuController2,
-                         public ISplitViewController,
-                         public ISplitViewSeparatorDrawer,
-                         public IActionPerformer,
-                         public IKeyboardHook,
-                         public CommandMenuItemTargetAdapter,
-                         public UIDescriptionListenerAdapter,
-                         public IUIUndoManagerListener,
-                         public IUITemplateControllerListener
+class UIEditController : public NonAtomicReferenceCounted,
+						 public IController,
+						 public IContextMenuController2,
+						 public ISplitViewController,
+						 public ISplitViewSeparatorDrawer,
+						 public IActionPerformer,
+						 public IKeyboardHook,
+						 public CommandMenuItemTargetAdapter,
+						 public UIDescriptionListenerAdapter,
+						 public IUIUndoManagerListener,
+						 public IUITemplateControllerListener,
+						 public ViewListenerAdapter
 {
 public:
 	UIEditController (const SharedPointer<UIDescription>& description);
@@ -79,8 +80,6 @@ protected:
 									 const IUIDescription& description) override;
 	SharedPointer<IController> createSubController (UTF8StringPtr name,
 													const IUIDescription& description) override;
-
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	// IUITemplateControllerListener
 	void onTemplateSelectionChanged () override;
@@ -148,6 +147,10 @@ protected:
 	// CommandMenuItemTargetAdapter
 	bool validateCommandMenuItem (CCommandMenuItem& item) override;
 	bool onCommandMenuItemSelected (CCommandMenuItem& item) override;
+
+	// ViewListenerAdapter
+	void viewAttached (CView& view) override;
+	void viewRemoved (CView& view) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIDescription> editorDesc;

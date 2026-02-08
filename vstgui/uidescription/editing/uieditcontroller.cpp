@@ -587,10 +587,8 @@ SharedPointer<CView> UIEditController::createView (const UIAttributes& attribute
 		{
 			vstgui_assert (editView == nullptr);
 			editView = makeShared<UIEditView> (CRect (0, 0, 0, 0), editDescription);
-			editView->setSelection (selection);
-			editView->setUndoManager (undoManager);
-			editView->setGridProcessor (gridController);
 			editView->setupColors (description);
+			editView->registerViewListener (this);
 			return editView;
 		}
 		else if (*name == "ShadingViewHorizontal")
@@ -950,26 +948,29 @@ void UIEditController::onTemplateSelectionChanged ()
 	}
 }
 
-//----------------------------------------------------------------------------------------------------
-CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr message)
+//------------------------------------------------------------------------
+void UIEditController::viewAttached (CView& view)
 {
-	if (message == UIEditView::kMsgAttached)
-	{
-		vstgui_assert (editView);
-		if (editView)
-			editView->getFrame ()->registerKeyboardHook (this);
-		return kMessageNotified;
-	}
-	else if (message == UIEditView::kMsgRemoved)
-	{
-		editView->getFrame ()->unregisterKeyboardHook (this);
-		beforeSave ();
-		splitViews.clear ();
-		getEditorDescription ()->freePlatformResources ();
-		return kMessageNotified;
-	}
-	
-	return kMessageUnknown;
+	if (&view != editView.get ())
+		return;
+	editView->getFrame ()->registerKeyboardHook (this);
+	editView->setSelection (selection);
+	editView->setUndoManager (undoManager);
+	editView->setGridProcessor (gridController);
+}
+
+//------------------------------------------------------------------------
+void UIEditController::viewRemoved (CView& view)
+{
+	if (&view != editView.get ())
+		return;
+	editView->getFrame ()->unregisterKeyboardHook (this);
+	beforeSave ();
+	splitViews.clear ();
+	editView->setSelection (nullptr);
+	editView->setUndoManager (nullptr);
+	editView->setGridProcessor (nullptr);
+	getEditorDescription ()->freePlatformResources ();
 }
 
 //----------------------------------------------------------------------------------------------------

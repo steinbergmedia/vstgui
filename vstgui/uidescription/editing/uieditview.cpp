@@ -292,9 +292,6 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-IdStringPtr UIEditView::kMsgAttached = "UIEditView::kMsgAttached";
-IdStringPtr UIEditView::kMsgRemoved = "UIEditView::kMsgRemoved";
-
 static constexpr auto kResizeHandleSize = 6.;
 static constexpr auto UIEditViewMargin = 8.;
 
@@ -1423,10 +1420,6 @@ bool UIEditView::attached (const SharedPointer<CViewContainer>& parent)
 	{
 		editing = !editing;
 		enableEditing (!editing);
-		if (auto controller = getViewController (*this, true).cast<CBaseObject> ())
-		{
-			controller->notify (this, kMsgAttached);
-		}
 		return true;
 	}
 	return false;
@@ -1440,10 +1433,6 @@ bool UIEditView::removed (const SharedPointer<CViewContainer>& parent)
 	{
 		frame->setViewAddedRemovedObserver (nullptr);
 		editingViewAddedObserver.reset ();
-	}
-	if (auto controller = getViewController (*this, true).cast<CBaseObject> ())
-	{
-		controller->notify (this, kMsgRemoved);
 	}
 	if (overlayView)
 	{

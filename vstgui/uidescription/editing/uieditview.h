@@ -51,8 +51,6 @@ public:
 
 	void setupColors (const IUIDescription& description);
 
-	static IdStringPtr kMsgAttached;
-	static IdStringPtr kMsgRemoved;
 protected:
 	enum class MouseEditMode {
 		NoEditing,

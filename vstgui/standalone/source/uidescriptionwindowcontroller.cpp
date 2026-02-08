@@ -905,7 +905,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		if (!state)
 		{
 			save ();
-			uiEditController = nullptr;
+			uiEditController.reset ();
 			uiDesc->setController ({});
 		}
 
