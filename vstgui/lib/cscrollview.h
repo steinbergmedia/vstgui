@@ -144,8 +144,6 @@ protected:
 	void viewSizeChanged (CView& view, const CRect& oldSize) override;
 	void viewWillDelete (CView& view) override;
 
-	CScrollContainer* getScrollContainer () const;
-
 	static constexpr int32_t kHSBTag = 0;
 	static constexpr int32_t kVSBTag = 1;
 
