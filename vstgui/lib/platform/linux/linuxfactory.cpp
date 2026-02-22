@@ -38,7 +38,8 @@ namespace VSTGUI {
 struct LinuxFactory::Impl
 {
 	std::string resPath;
-	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {std::make_unique<CairoGraphicsDeviceFactory> ()};
+	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {
+		std::make_unique<CairoGraphicsDeviceFactory> ()};
 	PlatformTaskExecutorPtr taskExecutor {std::make_unique<LinuxTaskExecutor> ()};
 	SharedPointer<IRunLoop> runLoop {};
 
@@ -87,10 +88,7 @@ void LinuxFactory::setResourcePath (const std::string& path) const noexcept
 }
 
 //-----------------------------------------------------------------------------
-std::string LinuxFactory::getResourcePath () const noexcept
-{
-	return impl->resPath;
-}
+std::string LinuxFactory::getResourcePath () const noexcept { return impl->resPath; }
 
 //-----------------------------------------------------------------------------
 void LinuxFactory::setScheduleMainQueueTaskFunc (
@@ -305,22 +303,13 @@ bool LinuxFactory::replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) 
 }
 
 //-----------------------------------------------------------------------------
-const LinuxFactory* LinuxFactory::asLinuxFactory () const noexcept
-{
-	return this;
-}
+const LinuxFactory* LinuxFactory::asLinuxFactory () const noexcept { return this; }
 
 //-----------------------------------------------------------------------------
-const MacFactory* LinuxFactory::asMacFactory () const noexcept
-{
-	return nullptr;
-}
+const MacFactory* LinuxFactory::asMacFactory () const noexcept { return nullptr; }
 
 //-----------------------------------------------------------------------------
-const Win32Factory* LinuxFactory::asWin32Factory () const noexcept
-{
-	return nullptr;
-}
+const Win32Factory* LinuxFactory::asWin32Factory () const noexcept { return nullptr; }
 
 //-----------------------------------------------------------------------------
 CairoGraphicsDeviceFactory& LinuxFactory::getCairoGraphicsDeviceFactory () const noexcept

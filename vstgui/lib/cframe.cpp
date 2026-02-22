@@ -658,14 +658,17 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 //------------------------------------------------------------------------
 void CFrame::dispatchMouseUpEvent (MouseUpEvent& event)
 {
+	auto originMousePosition = event.mousePosition;
 	auto transformedMousePosition = event.mousePosition;
 	getTransform ().inverse ().transform (transformedMousePosition);
 	
 	auto f = finally ([this] () { setMouseDownView (nullptr); });
 
+	event.mousePosition = transformedMousePosition;
 	callMouseObserverOtherMouseEvent (event);
 	if (event.consumed)
 		return;
+	event.mousePosition = originMousePosition;
 
 	if (auto modalView = getModalView ())
 	{
@@ -1010,7 +1013,6 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 	{
 		if (pImpl->platformFrame->getCurrentMousePosition (where))
 		{
-			getTransform().transform (where);
 			return true;
 		}
 	}

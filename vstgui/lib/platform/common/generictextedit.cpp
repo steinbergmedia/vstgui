@@ -11,19 +11,10 @@
 #include "../../cdropsource.h"
 #include "../../events.h"
 #include "../../cdrawcontext.h"
+#include "../../stringconvert.h"
 
 #include <numeric>
 #include <string>
-#include <codecvt>
-#include <locale>
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#elif defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable:4996)
-#endif
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -36,7 +27,6 @@ using STB_CharT = wchar_t;
 #else
 using STB_CharT = char16_t;
 #endif
-using StringConvert = std::wstring_convert<std::codecvt_utf8_utf16<STB_CharT>, STB_CharT>;
 #else
 using STB_CharT = char;
 #endif
@@ -317,7 +307,7 @@ void STBTextEditView::onKeyboardEvent (KeyboardEvent& event, CFrame& frame)
 		if (auto text = frame.getPlatformFrame ()->convertCurrentKeyEventToText ())
 		{
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-			auto tmp = StringConvert{}.from_bytes (text->getString ());
+			auto tmp = toUTF16 (text->getString ());
 			key = tmp[0];
 #else
 			if (text->length () != 1)
@@ -537,8 +527,8 @@ bool STBTextEditView::doCopy ()
 	if (editState.select_start == editState.select_end)
 		return false;
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	auto txt = StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (uString.data () + editState.select_start),
-										 reinterpret_cast<const STB_CharT*> (uString.data () + editState.select_end));
+	auto txt = toUTF8 ({uString.data () + editState.select_start,
+						static_cast<size_t> (editState.select_end - editState.select_start)});
 	auto dataPackage =
 		CDropSource::create (txt.data (), static_cast<uint32_t> (txt.size ()), IDataPackage::kText);
 #else
@@ -568,7 +558,7 @@ bool STBTextEditView::doPaste ()
 			{
 				auto text = reinterpret_cast<const char*> (buffer);
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-				auto uText = StringConvert {}.from_bytes (text, text + size);
+				auto uText = toUTF16 ({text, size});
 				callSTB ([&] () {
 					stb_textedit_paste (this, &editState, uText.data (),
 										static_cast<int> (uText.size ()));
@@ -608,8 +598,7 @@ void STBTextEditView::setText (const UTF8String& txt)
 	if (editState.select_start != editState.select_end)
 		selectAll ();
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	auto tmpStr = StringConvert{}.from_bytes (CTextLabel::getText ().getString ());
-	uString = {tmpStr.data (), tmpStr.data () + tmpStr.size ()};
+	uString = toUTF16 (CTextLabel::getText ().getString ());
 #endif
 }
 
@@ -624,15 +613,15 @@ CCoord STBTextEditView::getCharWidth (STB_CharT c, STB_CharT pc) const
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	if (pc)
 	{
-		UTF8String str (StringConvert{}.to_bytes (pc));
+		UTF8String str (toUTF8 (std::u16string_view {&pc, 1}));
 		auto pcWidth = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
-		str += StringConvert{}.to_bytes (c);
+		str += toUTF8 (std::u16string_view {&c, 1});
 		auto tcWidth = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
 		return tcWidth - pcWidth;
 	}
-	UTF8String str (StringConvert{}.to_bytes (c));
+	UTF8String str (toUTF8 (std::u16string_view {&c, 1}));
 	auto width = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
-	return width / getGlobalTransform ().m11; 
+	return width / getGlobalTransform ().m11;
 #else
 	if (pc)
 	{
@@ -764,7 +753,7 @@ int STBTextEditView::deleteChars (STBTextEditView* self, size_t pos, size_t num)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	self->uString.erase (pos, num);
-	self->setText (StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (self->uString.data ()), reinterpret_cast<const STB_CharT*> (self->uString.data () + self->uString.size ())));
+	self->setText (toUTF8 (self->uString));
 	self->onTextChange ();
 	return true;
 #else
@@ -784,7 +773,7 @@ int STBTextEditView::insertChars (STBTextEditView* self,
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	self->uString.insert (pos, reinterpret_cast<const char16_t*> (text), num);
-	self->setText (StringConvert{}.to_bytes (reinterpret_cast<const STB_CharT*> (self->uString.data ()), reinterpret_cast<const STB_CharT*> (self->uString.data () + self->uString.size ())));
+	self->setText (toUTF8 (self->uString));
 	self->onTextChange ();
 	return true;
 #else
@@ -861,9 +850,3 @@ float STBTextEditView::getCharWidth (STBTextEditView* self, int n, int i)
 
 //-----------------------------------------------------------------------------
 } // VSTGUI
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#endif

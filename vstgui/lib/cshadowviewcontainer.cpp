@@ -129,7 +129,7 @@ static std::array<int32_t, numBoxes> boxesForGauss (double sigma)
 	int32_t u = l + 2;
 	ideal = ((12. * sigma * sigma) - (numBoxes * l * l) - (4. * numBoxes * l) - (3. * numBoxes)) / ((-4. * l) - 4.);
 	int32_t m = static_cast<int32_t> (std::floor (ideal));
-	for (int32_t i = 0; i < numBoxes; ++i)
+	for (int32_t i = 0; i < static_cast<int32_t> (numBoxes); ++i)
 		boxes[i] = (i < m ? l : u);
 	return boxes;
 }

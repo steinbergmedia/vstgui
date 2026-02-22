@@ -15,6 +15,7 @@
 #include "iviewlistener.h"
 #include "cvstguitimer.h"
 #include "finally.h"
+#include "stringconvert.h"
 #include "platform/iplatformfont.h"
 #include "platform/iplatformframe.h"
 #include "platform/iplatformtextinputclient.h"
@@ -27,8 +28,6 @@
 #include "animation/animations.h"
 
 #include <optional>
-#include <codecvt>
-#include <locale>
 #include <string>
 #include <bitset>
 #include <cwctype>
@@ -48,38 +47,23 @@ using CharT = char32_t;
 
 #include "../thirdparty/stb_textedit.h"
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#elif defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable:4996)
-#endif
-
-using StringConvert = std::wstring_convert<std::codecvt_utf8<CharT>, CharT>;
 //------------------------------------------------------------------------
 inline std::u32string convert (const char* text, size_t numChars)
 {
-	return StringConvert {}.from_bytes (text, text + numChars);
+	return toUTF32 ({text, numChars});
 }
 
 //------------------------------------------------------------------------
-inline std::u32string convert (const std::string& str) { return StringConvert {}.from_bytes (str); }
+inline std::u32string convert (const std::string& str) { return toUTF32 (str); }
 
 //------------------------------------------------------------------------
 inline std::string convert (const char32_t* text, size_t numChars)
 {
-	return StringConvert {}.to_bytes (text, text + numChars);
+	return toUTF8 ({text, numChars});
 }
 
 //------------------------------------------------------------------------
-inline std::string convert (const std::u32string& str) { return StringConvert {}.to_bytes (str); }
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+inline std::string convert (const std::u32string& str) { return toUTF8 (str); }
 
 using String = std::u32string;
 using StringView = std::u32string_view;
@@ -125,12 +109,12 @@ inline size_t replaceTabs (std::string& str, uint32_t tabWidth, size_t lineOffse
 {
 	if (tabWidth < 1)
 		return 0;
-	auto numReplacedChars = 0u;
+	size_t numReplacedChars = 0u;
 	auto whiteSpace = ' ';
 	std::string::size_type pos = std::string::npos;
 	while ((pos = str.find_first_of ('\t')) != std::string::npos)
 	{
-		auto numWhiteSpace = tabWidth - ((pos + lineOffset) % tabWidth);
+		size_t numWhiteSpace = tabWidth - ((pos + lineOffset) % tabWidth);
 		std::string s (numWhiteSpace, whiteSpace);
 		str.replace (pos, 1, s);
 		numReplacedChars += numWhiteSpace - 1;

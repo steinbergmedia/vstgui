@@ -42,6 +42,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}lib/idependency_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/pixelbufferconverter_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/platform_helper.h"
+	"${VSTGUI_TEST_BASE}lib/stringconvert_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/task_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/utf8string_test.cpp"
 	"${VSTGUI_TEST_BASE}lib/utf8stringview_test.cpp"

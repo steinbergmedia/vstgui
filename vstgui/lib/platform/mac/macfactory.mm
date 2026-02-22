@@ -25,6 +25,7 @@
 #include <list>
 #include <mach/mach_time.h>
 #include <memory>
+#include <CoreFoundation/CoreFoundation.h>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -55,10 +56,7 @@ MacFactory::~MacFactory () noexcept = default;
 void MacFactory::finalize () noexcept { impl->taskExecutor->waitAllTasksExecuted (); }
 
 //-----------------------------------------------------------------------------
-CFBundleRef MacFactory::getBundle () const noexcept
-{
-	return impl->bundle;
-}
+CFBundleRef MacFactory::getBundle () const noexcept { return impl->bundle; }
 
 //-----------------------------------------------------------------------------
 void MacFactory::setUseAsynchronousLayerDrawing (bool state) const noexcept
@@ -79,10 +77,7 @@ void MacFactory::enableVisualizeRedrawAreas (bool state) const noexcept
 }
 
 //-----------------------------------------------------------------------------
-bool MacFactory::enableVisualizeRedrawAreas () const noexcept
-{
-	return impl->visualizeRedrawAreas;
-}
+bool MacFactory::enableVisualizeRedrawAreas () const noexcept { return impl->visualizeRedrawAreas; }
 
 //-----------------------------------------------------------------------------
 uint64_t MacFactory::getTicks () const noexcept
@@ -258,22 +253,13 @@ bool MacFactory::replaceTaskExecutor (const ReplaceTaskExecFunc& replaceFunc) co
 }
 
 //-----------------------------------------------------------------------------
-const LinuxFactory* MacFactory::asLinuxFactory () const noexcept
-{
-	return nullptr;
-}
+const LinuxFactory* MacFactory::asLinuxFactory () const noexcept { return nullptr; }
 
 //-----------------------------------------------------------------------------
-const MacFactory* MacFactory::asMacFactory () const noexcept
-{
-	return this;
-}
+const MacFactory* MacFactory::asMacFactory () const noexcept { return this; }
 
 //-----------------------------------------------------------------------------
-const Win32Factory* MacFactory::asWin32Factory () const noexcept
-{
-	return nullptr;
-}
+const Win32Factory* MacFactory::asWin32Factory () const noexcept { return nullptr; }
 
 //-----------------------------------------------------------------------------
 } // VSTGUI

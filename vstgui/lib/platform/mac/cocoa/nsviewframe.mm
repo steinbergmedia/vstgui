@@ -1205,17 +1205,6 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 	{
 		[nsView setWantsLayer:YES];
 		caLayer = [CALayer new];
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_15
-		if (@available (macOS 10.15, *))
-		{
-		}
-		else
-		{
-			// on macOS 10.13 and 10.14, the view is upside-down in Ableton Live 9 and Digital
-			// Performer 9 (both linked with SDK < 10.8) if not flipping the geometry
-			caLayer.geometryFlipped = ![nsView.layer contentsAreFlipped];
-		}
-#endif
 		caLayer.delegate = static_cast<id<CALayerDelegate>> (nsView);
 		caLayer.frame = nsView.layer.bounds;
 		[caLayer setContentsScale:nsView.layer.contentsScale];
@@ -1369,6 +1358,9 @@ void NSViewFrame::draw (CGContextRef cgContext, CRect updateRect, double scaleFa
 //-----------------------------------------------------------------------------
 void NSViewFrame::drawLayer (CALayer* layer, CGContextRef ctx)
 {
+	if (![layer contentsAreFlipped])
+		CGContextConcatCTM (ctx, CGAffineTransformMake (1, 0, 0, -1, 0, layer.bounds.size.height));
+
 	auto clipBoundingBox = CGContextGetClipBoundingBox (ctx);
 	draw (ctx, rectFromNSRect (clipBoundingBox), layer.contentsScale);
 }
@@ -1617,7 +1609,7 @@ bool NSViewFrame::invalidRect (const CRect& rect)
 		return false;
 	NSRect r = nsRectFromCRect (rect);
 	if (caLayer)
-		[caLayer setNeedsDisplayInRect:r];
+		[caLayer setNeedsDisplayInRect:[nsView convertRectToLayer:r]];
 	else
 		[nsView setNeedsDisplayInRect:r];
 	if (useInvalidRects)
