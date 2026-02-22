@@ -205,7 +205,8 @@ void drawRects (CDrawContext& context, CPoint size)
 //------------------------------------------------------------------------
 void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 {
-	auto boxBlurFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur));
+	auto boxBlurFilter =
+		BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur);
 	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, 2);
 
 	auto offscreen = COffscreenContext::create ({20., 20.});
