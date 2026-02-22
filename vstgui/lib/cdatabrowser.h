@@ -100,7 +100,7 @@ public:
 	virtual void beginTextEdit (const Cell& cell, UTF8StringPtr initialText);
 
 	/** get delegate object */
-	SharedPointer<IDataBrowserDelegate> getDelegate () const { return db; }
+	SharedPointer<IDataBrowserDelegate> getDelegate () const;
 	//@}
 
 	void setAutosizeFlags (int32_t flags) override;

@@ -107,6 +107,9 @@ CDataBrowser::CDataBrowser (const CRect& size, const SharedPointer<IDataBrowserD
 CDataBrowser::~CDataBrowser () noexcept {}
 
 //-----------------------------------------------------------------------------------------------
+SharedPointer<IDataBrowserDelegate> CDataBrowser::getDelegate () const { return db; }
+
+//-----------------------------------------------------------------------------------------------
 void CDataBrowser::setAutosizeFlags (int32_t flags)
 {
 	CScrollView::setAutosizeFlags (flags);
