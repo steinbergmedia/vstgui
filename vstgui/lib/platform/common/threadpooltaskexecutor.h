@@ -11,6 +11,7 @@
 #include <functional>
 #include <queue>
 #include <mutex>
+#include <string>
 #include <thread>
 
 //------------------------------------------------------------------------
