@@ -34,8 +34,9 @@ protected:
 	};
 	
 public:
-	CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style = 0,
-				  CCoord scrollbarWidth = 16, const SharedPointer<CBitmap>& background = {});
+	CDataBrowser (const CRect& size, const SharedPointer<IDataBrowserDelegate>& db,
+				  int32_t style = 0, CCoord scrollbarWidth = 16,
+				  const SharedPointer<CBitmap>& background = {});
 
 	enum CDataBrowserStyle 
 	{
@@ -99,7 +100,7 @@ public:
 	virtual void beginTextEdit (const Cell& cell, UTF8StringPtr initialText);
 
 	/** get delegate object */
-	IDataBrowserDelegate* getDelegate () const { return db; }
+	SharedPointer<IDataBrowserDelegate> getDelegate () const { return db; }
 	//@}
 
 	void setAutosizeFlags (int32_t flags) override;
@@ -118,7 +119,7 @@ protected:
 
 	void validateSelection ();
 
-	IDataBrowserDelegate* db;
+	SharedPointer<IDataBrowserDelegate> db;
 	SharedPointer<CDataBrowserView> dbView;
 	SharedPointer<CDataBrowserHeader> dbHeader;
 	SharedPointer<CViewContainer> dbHeaderContainer;

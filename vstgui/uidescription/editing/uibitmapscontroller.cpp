@@ -1093,7 +1093,7 @@ SharedPointer<CView> UIBitmapsController::createView (const UIAttributes& attrib
 	{
 		if (*name == "BitmapsBrowser")
 		{
-			auto dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+			auto dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource,
 														 CDataBrowser::kDrawRowLines |
 															 CScrollView::kHorizontalScrollbar |
 															 CScrollView::kVerticalScrollbar);

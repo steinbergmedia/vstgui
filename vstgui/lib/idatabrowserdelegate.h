@@ -13,7 +13,7 @@ namespace VSTGUI {
 // IDataBrowserDelegate Declaration
 //! @brief DataBrowser Interface
 //-----------------------------------------------------------------------------------------------
-class IDataBrowserDelegate
+class IDataBrowserDelegate : public virtual IReference
 {
 public:
 	enum Flags

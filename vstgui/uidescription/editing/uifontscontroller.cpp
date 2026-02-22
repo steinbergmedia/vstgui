@@ -119,7 +119,7 @@ SharedPointer<CView> UIFontsController::createView (const UIAttributes& attribut
 	{
 		if (*name == "FontsBrowser")
 		{
-			auto dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource.get (),
+			auto dataBrowser = makeShared<CDataBrowser> (CRect (0, 0, 0, 0), dataSource,
 														 CDataBrowser::kDrawRowLines |
 															 CScrollView::kHorizontalScrollbar |
 															 CScrollView::kVerticalScrollbar);

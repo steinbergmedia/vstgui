@@ -372,7 +372,8 @@ void UITemplateController::onUIDescTemplateChanged (UIDescription& desc)
 {
 	if (!templateDataBrowser)
 		return;
-	auto dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDelegate ());
+	auto dataSource =
+		templateDataBrowser->getDelegate ().cast<GenericStringListDataBrowserSource> ();
 	if (dataSource)
 	{
 		int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
@@ -419,7 +420,7 @@ void UITemplateController::setTemplateView (const SharedPointer<CViewContainer>&
 				UIEditController::setupDataSource (mainViewDataSource);
 				CRect r (templateDataBrowser->getViewSize ());
 				r.offset (r.getWidth (), 0);
-				auto browser = makeShared<CDataBrowser> (r, mainViewDataSource.get ());
+				auto browser = makeShared<CDataBrowser> (r, mainViewDataSource);
 				setupDataBrowser (templateDataBrowser, browser);
 				parentView->addSubview (browser);
 			}
@@ -491,7 +492,7 @@ SharedPointer<CView> UITemplateController::createView (const UIAttributes& attri
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
 			templateDataBrowser = makeShared<CDataBrowser> (
-				CRect (0, 0, 0, 0), dataSource.get (),
+				CRect (0, 0, 0, 0), dataSource,
 				CDataBrowser::kDrawRowLines | CScrollView::kAutoHideScrollbars |
 					CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar |
 					CDataBrowser::kDrawHeader);
@@ -529,7 +530,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 	auto cell = templateDataBrowser->getCellAt (w);
 	if (!cell.isValid ())
 		return;
-	auto dataSource = dynamic_cast<UITemplatesDataSource*> (templateDataBrowser->getDelegate ());
+	auto dataSource = templateDataBrowser->getDelegate ().cast<UITemplatesDataSource> ();
 	auto templateName = dataSource->getStringList()->at (static_cast<uint32_t> (cell.row));
 	vstgui_assert (dataSource);
 	auto item = makeShared<CCommandMenuItem> ("Duplicate Template '" + templateName + "'");
@@ -669,7 +670,7 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 		UIEditController::setupDataSource (dataSource);
 		CRect r (dataBrowser->getViewSize ());
 		r.offset (r.getWidth (), 0);
-		auto newDataBrowser = makeShared<CDataBrowser> (r, dataSource.get ());
+		auto newDataBrowser = makeShared<CDataBrowser> (r, dataSource);
 		UITemplateController::setupDataBrowser (newDataBrowser, newDataBrowser);
 		auto parentView = newDataBrowser->getParentView ();
 		parentView->addSubview (newDataBrowser);

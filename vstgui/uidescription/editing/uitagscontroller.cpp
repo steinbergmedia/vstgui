@@ -212,7 +212,7 @@ SharedPointer<CView> UITagsController::createView (const UIAttributes& attribute
 			dataSource = makeShared<UITagsDataSource> (editDescription, actionPerformer);
 			UIEditController::setupDataSource (dataSource);
 			return makeShared<CDataBrowser> (
-				CRect (0, 0, 0, 0), dataSource.get (),
+				CRect (0, 0, 0, 0), dataSource,
 				CDataBrowser::kDrawColumnLines | CDataBrowser::kDrawRowLines |
 					CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 		}

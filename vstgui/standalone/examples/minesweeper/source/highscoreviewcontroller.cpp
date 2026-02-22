@@ -209,7 +209,7 @@ SharedPointer<CView> HighScoreViewController::createView (const UIAttributes& at
 			font = f;
 		description.getColor ("highscore.font", fontColor);
 		return makeShared<CDataBrowser> (
-			CRect {}, this, CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines, 0.);
+			CRect {}, shared (this), CDataBrowser::kDrawHeader | CDataBrowser::kDrawRowLines, 0.);
 	}
 	return nullptr;
 }

@@ -548,7 +548,7 @@ SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer&
 	viewRect.originize ();
 	viewRect.inset (1., 1.);
 	auto browser =
-		makeShared<CDataBrowser> (viewRect, dataSource.get (),
+		makeShared<CDataBrowser> (viewRect, dataSource,
 								  CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar |
 									  CDataBrowser::kOverlayScrollbars,
 								  2.);

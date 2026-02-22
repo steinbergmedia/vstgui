@@ -74,7 +74,7 @@ SharedPointer<CView> MinefieldViewController::createView (const UIAttributes& at
 		if (dataBrowser)
 			dataBrowser->unregisterViewListener (this);
 		dataBrowser = nullptr;
-		dataBrowser = makeShared<CDataBrowser> (CRect {}, this, 0, 0.);
+		dataBrowser = makeShared<CDataBrowser> (CRect {}, shared (this), 0, 0.);
 		dataBrowser->registerViewListener (this);
 		return dataBrowser;
 	}

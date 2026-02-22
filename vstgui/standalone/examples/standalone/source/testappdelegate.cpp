@@ -463,7 +463,7 @@ struct DBController : DelegationController,
 		{
 			if (*customViewName == "DataBrowser")
 			{
-				return makeShared<CDataBrowser> (CRect {}, this);
+				return makeShared<CDataBrowser> (CRect {}, shared (this));
 			}
 		}
 		return nullptr;
