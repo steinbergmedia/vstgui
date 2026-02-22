@@ -198,6 +198,8 @@ set(${target}_common_sources
     platform/common/generictextedit.h
     platform/common/gradientbase.h
     platform/common/threadpooltaskexecutor.h
+    stringconvert.cpp
+    stringconvert.h
     viewlayouter/autosizeviewlayouter.cpp
     viewlayouter/autosizeviewlayouter.h
     viewlayouter/baseviewlayouter.h
