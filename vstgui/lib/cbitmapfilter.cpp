@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -249,7 +249,7 @@ IdStringPtr Factory::getFilterName (uint32_t index) const
 }
 
 //----------------------------------------------------------------------------------------------------
-IFilter* Factory::createFilter (IdStringPtr name) const
+SharedPointer<IFilter> Factory::createFilter (IdStringPtr name) const
 {
 	FilterMap::const_iterator it = filters.find (name);
 	if (it != filters.end ())
@@ -394,12 +394,14 @@ namespace Standard {
 class BoxBlur : public FilterBase
 {
 public:
-	static IFilter* CreateFunction (IdStringPtr _name)
+	static SharedPointer<IFilter> CreateFunction (IdStringPtr _name)
 	{
-		return new BoxBlur ();
+		return makeShared<BoxBlur> ();
 	}
 
 private:
+	friend SharedPointer<BoxBlur> makeShared<BoxBlur> ();
+
 	BoxBlur ()
 	: FilterBase ("A Box Blur Filter")
 	{
@@ -717,12 +719,14 @@ protected:
 class ScaleLinear : public ScaleBase
 {
 public:
-	static IFilter* CreateFunction (IdStringPtr _name)
+	static SharedPointer<IFilter> CreateFunction (IdStringPtr _name)
 	{
-		return new ScaleLinear ();
+		return makeShared<ScaleLinear> ();
 	}
 
 private:
+	friend SharedPointer<ScaleLinear> makeShared<ScaleLinear> ();
+
 	ScaleLinear () : ScaleBase ("A Linear Scale Filter") {}
 
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) override
@@ -773,12 +777,14 @@ private:
 class ScaleBiliniear : public ScaleBase
 {
 public:
-	static IFilter* CreateFunction (IdStringPtr _name)
+	static SharedPointer<IFilter> CreateFunction (IdStringPtr _name)
 	{
-		return new ScaleBiliniear ();
+		return makeShared<ScaleBiliniear> ();
 	}
 
 private:
+	friend SharedPointer<ScaleBiliniear> makeShared<ScaleBiliniear> ();
+
 	ScaleBiliniear () : ScaleBase ("A Biliniear Scale Filter") {}
 
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) override
@@ -911,12 +917,14 @@ protected:
 class SetColor : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
-	static IFilter* CreateFunction (IdStringPtr _name)
+	static SharedPointer<IFilter> CreateFunction (IdStringPtr _name)
 	{
-		return new SetColor ();
+		return makeShared<SetColor> ();
 	}
 
 private:
+	friend SharedPointer<SetColor> makeShared<SetColor> ();
+
 	SetColor ()
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Set Color Filter", processSetColor)
 	{
@@ -954,12 +962,14 @@ private:
 class Grayscale : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
-	static IFilter* CreateFunction (IdStringPtr name)
+	static SharedPointer<IFilter> CreateFunction (IdStringPtr name)
 	{
-		return new Grayscale ();
+		return makeShared<Grayscale> ();
 	}
 
 private:
+	friend SharedPointer<Grayscale> makeShared<Grayscale> ();
+
 	Grayscale ()
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Grayscale Filter", processGrayscale)
 	{
@@ -978,12 +988,14 @@ private:
 class ReplaceColor : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
-	static IFilter* CreateFunction (IdStringPtr name)
+	static SharedPointer<IFilter> CreateFunction (IdStringPtr name)
 	{
-		return new ReplaceColor ();
+		return makeShared<ReplaceColor> ();
 	}
 
 private:
+	friend SharedPointer<ReplaceColor> makeShared<ReplaceColor> ();
+
 	ReplaceColor ()
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Replace Color Filter", processReplace)
 	{

@@ -82,7 +82,7 @@ public:
 	virtual Property::Type getPropertyType (uint32_t index) const = 0;
 	virtual Property::Type getPropertyType (IdStringPtr name) const = 0;
 
-	using CreateFunction = IFilter* (*) (IdStringPtr name);
+	using CreateFunction = SharedPointer<IFilter> (*) (IdStringPtr name);
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ public:
 	uint32_t getNumFilters () const;
 	IdStringPtr getFilterName (uint32_t index) const;
 	
-	IFilter* createFilter (IdStringPtr name) const;
+	SharedPointer<IFilter> createFilter (IdStringPtr name) const;
 	
 	bool registerFilter (IdStringPtr name, IFilter::CreateFunction createFunction);
 	bool unregisterFilter (IdStringPtr name, IFilter::CreateFunction createFunction);

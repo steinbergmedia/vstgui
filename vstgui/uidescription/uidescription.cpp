@@ -955,7 +955,7 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 				const std::string* filterName = nullptr;
 				if (childNode->getName () == "filter" && (filterName = childNode->getAttributes ()->getAttributeValue ("name")))
 				{
-					auto filter = owned (BitmapFilter::Factory::getInstance().createFilter (filterName->c_str ()));
+					auto filter = BitmapFilter::Factory::getInstance ().createFilter (filterName->c_str ());
 					if (filter == nullptr)
 						continue;
 					filters.emplace_back (filter);

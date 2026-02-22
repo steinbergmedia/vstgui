@@ -172,7 +172,7 @@ void CShadowViewContainer::drawRect (CDrawContext& context, const CRect& updateR
 			if (bitmap)
 			{
 				setBackground (bitmap);
-				SharedPointer<BitmapFilter::IFilter> setColorFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kSetColor));
+				auto setColorFilter = BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kSetColor);
 				if (setColorFilter)
 				{
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
@@ -181,7 +181,7 @@ void CShadowViewContainer::drawRect (CDrawContext& context, const CRect& updateR
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kIgnoreAlphaColorValue, (int32_t)1);
 					if (setColorFilter->run (true))
 					{
-						SharedPointer<BitmapFilter::IFilter> boxBlurFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur));
+						auto boxBlurFilter = BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur);
 						if (boxBlurFilter)
 						{
 							auto boxSizes = boxesForGauss<3> (shadowBlurSize);
