@@ -94,7 +94,8 @@ protected:
 	// ISplitViewController
 	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize,
 									 CSplitView& splitView) override;
-	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView& splitView) override;
+	SharedPointer<ISplitViewSeparatorDrawer>
+		getSplitViewSeparatorDrawer (CSplitView& splitView) override;
 	bool storeViewSize (int32_t index, const CCoord& size, CSplitView& splitView) override;
 	bool restoreViewSize (int32_t index, CCoord& size, CSplitView& splitView) override;
 

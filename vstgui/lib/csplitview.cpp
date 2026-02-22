@@ -472,7 +472,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CSplitView::CSplitView (const CRect& size, Style style, CCoord separatorWidth,
-						ISplitViewSeparatorDrawer* separatorDrawer)
+						const SharedPointer<ISplitViewSeparatorDrawer>& separatorDrawer)
 : CViewContainer (size)
 , style (style)
 , resizeMethod (kResizeLastView)
@@ -735,9 +735,9 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView& separatorView
 }
 
 //-----------------------------------------------------------------------------
-ISplitViewSeparatorDrawer* CSplitView::getDrawer ()
+SharedPointer<ISplitViewSeparatorDrawer> CSplitView::getDrawer ()
 {
-	ISplitViewSeparatorDrawer* drawer = nullptr;
+	SharedPointer<ISplitViewSeparatorDrawer> drawer = {};
 	if (auto controller = getSplitViewController (*this))
 		drawer = controller->getSplitViewSeparatorDrawer (*this);
 	return drawer ? drawer : separatorDrawer;
@@ -779,7 +779,7 @@ CSplitViewSeparatorView::CSplitViewSeparatorView (const CRect& size, CSplitView:
 void CSplitViewSeparatorView::drawRect (CDrawContext& context, const CRect& r)
 {
 	auto splitView = getParentView ().cast<CSplitView> ();
-	ISplitViewSeparatorDrawer* drawer = splitView ? splitView->getDrawer () : nullptr;
+	auto drawer = splitView ? splitView->getDrawer () : nullptr;
 	if (drawer)
 	{
 		drawer->drawSplitViewSeparator (context, getViewSize (), flags, index, *splitView.get ());

@@ -1564,12 +1564,13 @@ bool UIEditController::getSplitViewSizeConstraint (int32_t index, CCoord& minSiz
 }
 
 //----------------------------------------------------------------------------------------------------
-ISplitViewSeparatorDrawer* UIEditController::getSplitViewSeparatorDrawer (CSplitView& splitView)
+SharedPointer<ISplitViewSeparatorDrawer>
+	UIEditController::getSplitViewSeparatorDrawer (CSplitView& splitView)
 {
 	int32_t si = getSplitViewIndex (splitView);
 	if (si >= 0)
 	{
-		return this;
+		return shared (this);
 	}
 	return nullptr;
 }

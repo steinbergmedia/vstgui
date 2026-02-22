@@ -39,8 +39,9 @@ public:
 		/** all views will be resized equally */
 		kResizeAllViews
 	};
-	
-	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = nullptr);
+
+	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10.,
+				const SharedPointer<ISplitViewSeparatorDrawer>& drawer = {});
 	~CSplitView () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
@@ -62,7 +63,7 @@ public:
 	/** get the width of the separators */
 	CCoord getSeparatorWidth () const { return separatorWidth; }
 
-	ISplitViewSeparatorDrawer* getDrawer ();
+	SharedPointer<ISplitViewSeparatorDrawer> getDrawer ();
 	void storeViewSizes ();
 
 	bool addViewToSeparator (int32_t sepIndex, const SharedPointer<CView>& view);
@@ -86,7 +87,7 @@ protected:
 	Style style;
 	ResizeMethod resizeMethod;
 	CCoord separatorWidth;
-	ISplitViewSeparatorDrawer* separatorDrawer;
+	SharedPointer<ISplitViewSeparatorDrawer> separatorDrawer;
 };
 
 //-----------------------------------------------------------------------------
@@ -106,7 +107,8 @@ public:
 	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize,
 											 CSplitView& splitView) = 0;
 	/** return the separator drawer. */
-	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView& splitView) = 0;
+	virtual SharedPointer<ISplitViewSeparatorDrawer>
+		getSplitViewSeparatorDrawer (CSplitView& splitView) = 0;
 	/** store the size of the view. */
 	virtual bool storeViewSize (int32_t index, const CCoord& size, CSplitView& splitView) = 0;
 	/** restore the size of the view. */
@@ -117,7 +119,7 @@ public:
 /** TODO: Doc 
 */
 //-----------------------------------------------------------------------------
-class ISplitViewSeparatorDrawer
+class ISplitViewSeparatorDrawer : public virtual IReference
 {
 public:
 	virtual ~ISplitViewSeparatorDrawer () noexcept = default;
