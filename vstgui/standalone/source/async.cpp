@@ -13,10 +13,18 @@ namespace VSTGUI::Standalone::Async {
 //------------------------------------------------------------------------
 struct Queue
 {
-	const Tasks::Queue* queue {nullptr};
+	Tasks::Queue queue;
 
-	Queue (const Tasks::Queue& q) : queue (&q) {}
-	const Tasks::Queue& get () const { return *queue; }
+	Queue (const Tasks::Queue& q) : queue (q) {}
+	virtual ~Queue () noexcept = default;
+	const Tasks::Queue& get () const { return queue; }
+};
+
+//------------------------------------------------------------------------
+struct SerialQueue : Queue
+{
+	using Queue::Queue;
+	~SerialQueue () noexcept { Tasks::releaseSerialQueue (get ()); }
 };
 
 //------------------------------------------------------------------------
@@ -36,7 +44,7 @@ const QueuePtr& backgroundQueue ()
 //------------------------------------------------------------------------
 QueuePtr makeSerialQueue (const char* name)
 {
-	return std::make_shared<Queue> (Tasks::makeSerialQueue (name));
+	return std::make_shared<SerialQueue> (Tasks::makeSerialQueue (name));
 }
 
 //------------------------------------------------------------------------
