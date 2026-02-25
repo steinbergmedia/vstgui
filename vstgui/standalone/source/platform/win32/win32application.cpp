@@ -257,7 +257,7 @@ void Application::quit ()
 			if (auto winWindow = toWin32Window (w))
 				winWindow->onQuit ();
 		}
-		IApplication::instance ().getDelegate ().onQuit ();
+		Detail::getApplicationPlatformAccess ()->onQuit ();
 		PostQuitMessage (0);
 	});
 }

@@ -669,7 +669,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 //------------------------------------------------------------------------
 - (void)applicationWillTerminate:(nonnull NSNotification*)notification
 {
-	IApplication::instance ().getDelegate ().onQuit ();
+	Detail::getApplicationPlatformAccess ()->onQuit ();
 	for (NSWindow* window in [NSApp windows])
 	{
 		[window close];
