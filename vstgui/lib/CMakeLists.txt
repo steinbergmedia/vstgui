@@ -14,9 +14,9 @@ if(${VSTGUI_TEXTRENDERING_LEGACY_INCONSISTENCY})
 endif()
 
 set(${target}_common_sources
-    ../../../BREAKING_CHANGES.md
-    ../../../NEWS.md
-    ../../../README.md
+    ../../BREAKING_CHANGES.md
+    ../../NEWS.md
+    ../../README.md
     animation/animations.cpp
     animation/animations.h
     animation/animator.cpp
