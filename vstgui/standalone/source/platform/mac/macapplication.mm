@@ -669,11 +669,11 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 //------------------------------------------------------------------------
 - (void)applicationWillTerminate:(nonnull NSNotification*)notification
 {
-	Detail::getApplicationPlatformAccess ()->onQuit ();
 	for (NSWindow* window in [NSApp windows])
 	{
 		[window close];
 	}
+	Detail::getApplicationPlatformAccess ()->onQuit ();
 	Detail::cleanupSharedUIResources ();
 	VSTGUI::exit ();
 }
