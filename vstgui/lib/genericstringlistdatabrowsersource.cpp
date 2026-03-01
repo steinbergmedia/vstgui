@@ -72,7 +72,7 @@ void GenericStringListDataBrowserSource::setupUI (
 void GenericStringListDataBrowserSource::dbSelectionChanged (CDataBrowser& browser)
 {
 	if (delegate)
-		delegate->dbSelectionChanged (browser.getSelectedRow (), this);
+		delegate->dbSelectionChanged (browser.getSelectedRow (), *this);
 }
 
 //-----------------------------------------------------------------------------
@@ -243,7 +243,7 @@ CMouseEventResult GenericStringListDataBrowserSource::dbOnMouseDown (const CPoin
 																	 CDataBrowser& browser)
 {
 	if (delegate && buttons.isDoubleClick ())
-		delegate->dbRowDoubleClick (row, this);
+		delegate->dbRowDoubleClick (row, *this);
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 }
 

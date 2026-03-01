@@ -37,8 +37,9 @@ protected:
 									 const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl& pControl) override;
-	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
-	void dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source) override;
+	void dbSelectionChanged (int32_t selectedRow,
+							 GenericStringListDataBrowserSource& source) override;
+	void dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource& source) override;
 
 	void showEditDialog ();
 

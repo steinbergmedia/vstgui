@@ -334,9 +334,10 @@ void UITemplateController::selectTemplate (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
+void UITemplateController::dbSelectionChanged (int32_t selectedRow,
+											   GenericStringListDataBrowserSource& source)
 {
-	if (source->getStringList () == &templateNames)
+	if (source.getStringList () == &templateNames)
 	{
 		UTF8String* newName = nullptr;
 		if (selectedRow == CDataBrowser::kNoSelection)
@@ -938,7 +939,7 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where,
 								   getStringList ()->at (static_cast<uint32_t> (row)).data ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
-		delegate->dbSelectionChanged (row, this);
+		delegate->dbSelectionChanged (row, *this);
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 	return UINavigationDataSource::dbOnMouseDown (where, buttons, row, column, browser);

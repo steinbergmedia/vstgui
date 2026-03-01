@@ -79,7 +79,8 @@ public:
 	void setFont (const SharedPointer<CFontDesc>& font);
 
 protected:
-	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
+	void dbSelectionChanged (int32_t selectedRow,
+							 GenericStringListDataBrowserSource& source) override;
 	void valueChanged (CControl& pControl) override;
 	bool attached (const SharedPointer<CViewContainer>& parent) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;

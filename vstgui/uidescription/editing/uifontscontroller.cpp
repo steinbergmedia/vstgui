@@ -273,7 +273,8 @@ void UIFontsController::valueChanged (CControl& pControl)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
+void UIFontsController::dbSelectionChanged (int32_t selectedRow,
+											GenericStringListDataBrowserSource& source)
 {
 	selectedFont = selectedRow != CDataBrowser::kNoSelection ? dataSource->getStringList ()->at (static_cast<uint32_t> (selectedRow)).data () : "";
 	auto font = editDescription->getFont (selectedFont.data ());

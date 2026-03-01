@@ -113,7 +113,7 @@ public:
 				{
 					dataBrowser->setSelectedRow (index, true);
 					if (delegate)
-						delegate->dbSelectionChanged (index, this);
+						delegate->dbSelectionChanged (index, *this);
 					return index;
 				}
 				++index;

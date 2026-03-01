@@ -273,7 +273,8 @@ void CFontChooser::valueChanged (CControl& pControl)
 }
 
 //-----------------------------------------------------------------------------
-void CFontChooser::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
+void CFontChooser::dbSelectionChanged (int32_t selectedRow,
+									   GenericStringListDataBrowserSource& source)
 {
 	if (selectedRow >= 0 && static_cast<size_t> (selectedRow) <= fontNames.size ())
 		selFont->setName (fontNames[static_cast<size_t> (selectedRow)].data ());

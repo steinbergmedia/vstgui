@@ -295,7 +295,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where,
 		r.left = r.right - drawWidth;
 		if (r.pointInside (where))
 		{
-			delegate->dbRowDoubleClick (row, this);
+			delegate->dbRowDoubleClick (row, *this);
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 	}
@@ -1199,7 +1199,8 @@ void UIBitmapsController::valueChanged (CControl& pControl)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
+void UIBitmapsController::dbSelectionChanged (int32_t selectedRow,
+											  GenericStringListDataBrowserSource& source)
 {
 	if (dataSource)
 	{
@@ -1224,7 +1225,7 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsController::dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source)
+void UIBitmapsController::dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource& source)
 {
 	showSettingsDialog ();
 }

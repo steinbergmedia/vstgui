@@ -17,8 +17,8 @@ class GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	virtual void dbSelectionChanged (int32_t selectedRow,
-	                                 GenericStringListDataBrowserSource* source) = 0;
-	virtual void dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source) {};
+									 GenericStringListDataBrowserSource& source) = 0;
+	virtual void dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource& source) {};
 };
 
 //-----------------------------------------------------------------------------

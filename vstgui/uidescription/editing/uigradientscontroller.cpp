@@ -754,7 +754,7 @@ CMouseEventResult UIGradientsDataSource::dbOnMouseDown (const CPoint& where,
 		r.left = r.right - getGradientIconWidth ();
 		if (r.pointInside (where))
 		{
-			delegate->dbRowDoubleClick (row, this);
+			delegate->dbRowDoubleClick (row, *this);
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 	}
@@ -903,7 +903,8 @@ void UIGradientsController::valueChanged (CControl& pControl)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGradientsController::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
+void UIGradientsController::dbSelectionChanged (int32_t selectedRow,
+												GenericStringListDataBrowserSource& source)
 {
 	if (dataSource)
 	{
@@ -914,7 +915,8 @@ void UIGradientsController::dbSelectionChanged (int32_t selectedRow, GenericStri
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGradientsController::dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source)
+void UIGradientsController::dbRowDoubleClick (int32_t row,
+											  GenericStringListDataBrowserSource& source)
 {
 	showEditDialog ();
 }

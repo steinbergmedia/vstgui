@@ -38,7 +38,8 @@ protected:
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl& pControl) override;
 
-	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
+	void dbSelectionChanged (int32_t selectedRow,
+							 GenericStringListDataBrowserSource& source) override;
 
 	static bool valueToString (float value, char utf8String[256], CParamDisplay& userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit& userData);
