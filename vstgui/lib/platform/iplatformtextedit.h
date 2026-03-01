@@ -11,8 +11,6 @@
 #include "../crect.h"
 #include "../cdrawdefs.h"
 
-struct VstKeyCode;
-
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------

@@ -6,7 +6,6 @@
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
 #include "../../../../lib/vstguiinit.h"
-#include "../../../../lib/vstkeycode.h"
 #include "../../../../lib/platform/linux/x11frame.h"
 #include "../../../../lib/platform/linux/linuxfactory.h"
 #include "../../../../lib/platform/common/fileresourceinputstream.h"
@@ -17,30 +16,6 @@
 #include <gtkmm.h>
 #include <libgen.h>
 #include <unordered_map>
-
-//------------------------------------------------------------------------
-namespace std {
-
-//------------------------------------------------------------------------
-template<>
-struct hash<VstKeyCode>
-{
-	std::size_t operator() (const VstKeyCode& k) const
-	{
-		return ((hash<int32_t> () (k.character) ^ (hash<unsigned char> () (k.modifier) << 1)) >>
-				1) ^
-			   (hash<unsigned char> () (k.virt) << 1);
-	}
-};
-
-//------------------------------------------------------------------------
-} // std
-
-//------------------------------------------------------------------------
-bool operator== (const VstKeyCode& k1, const VstKeyCode& k2)
-{
-	return k1.virt == k2.virt && k1.modifier == k2.modifier && k1.character == k2.character;
-}
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

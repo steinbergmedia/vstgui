@@ -8,8 +8,6 @@
 
 #include "../vstguifwd.h"
 
-struct VstKeyCode;
-
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------

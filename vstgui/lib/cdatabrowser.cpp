@@ -3,7 +3,6 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cdatabrowser.h"
-#include "vstkeycode.h"
 #include "cframe.h"
 #include "controls/ctextedit.h"
 #include "controls/cscrollbar.h"

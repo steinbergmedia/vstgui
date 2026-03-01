@@ -10,7 +10,6 @@
 #include "../../cframe.h"
 #include "../../crect.h"
 #include "../../dragging.h"
-#include "../../vstkeycode.h"
 #include "../../cinvalidrectlist.h"
 #include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"

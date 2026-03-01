@@ -6,7 +6,6 @@
 
 #if MAC_COCOA
 
-#include "../../../vstkeycode.h"
 #include "../../../events.h"
 #include "../../../cview.h"
 #include "../../../cbitmap.h"

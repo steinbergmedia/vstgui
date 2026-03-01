@@ -7,7 +7,6 @@
 #include "vstguifwd.h"
 #include "cpoint.h"
 #include "crect.h"
-#include "vstkeycode.h"
 #include "cbuttonstate.h"
 #include "cgraphicstransform.h"
 #include "weakptr.h"

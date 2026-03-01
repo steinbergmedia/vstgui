@@ -5,7 +5,6 @@
 #include "vst3editor.h"
 #include "../vstgui.h"
 #include "../lib/cvstguitimer.h"
-#include "../lib/vstkeycode.h"
 #include "../lib/animation/timingfunctions.h"
 #include "../lib/animation/animations.h"
 #include "../lib/platform/platformfactory.h"

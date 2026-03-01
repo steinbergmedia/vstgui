@@ -214,7 +214,6 @@ set(${target}_common_sources
     vstguifwd.h
     vstguiinit.cpp
     vstguiinit.h
-    vstkeycode.h
     weakptr.h
 )
 
