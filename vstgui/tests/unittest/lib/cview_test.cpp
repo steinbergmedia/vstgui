@@ -288,7 +288,6 @@ TEST_CASE (CViewTest, DefaultHandling)
 	EXPECT (v->doDrag (DragDescription (nullptr)) == false);
 
 	EXPECT (v->getDropTarget () == nullptr);
-	EXPECT (v->getEditor () == nullptr);
 	EXPECT (v->sizeToFit () == false);
 	EXPECT (v->getBackground () == nullptr);
 	EXPECT (v->getDisabledBackground () == nullptr);

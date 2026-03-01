@@ -947,14 +947,6 @@ SharedPointer<CViewContainer> CView::getParentView () const { return pImpl->pare
 SharedPointer<CFrame> CView::getFrame () const { return pImpl->parentFrame; }
 
 //-----------------------------------------------------------------------------
-VSTGUIEditorInterface* CView::getEditor () const
-{
-	if (auto frame = getFrame ())
-		return frame->getEditor ();
-	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
 /**
  * @param background new background bitmap
  */

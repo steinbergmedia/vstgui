@@ -212,7 +212,7 @@ public:
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void dispatchEvent (Event& event) override;
 
-	VSTGUIEditorInterface* getEditor () const override;
+	VSTGUIEditorInterface* getEditor () const;
 	PlatformFramePtr getPlatformFrame () const;
 
 #if DEBUG

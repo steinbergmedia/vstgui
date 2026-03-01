@@ -382,8 +382,6 @@ public:
 	SharedPointer<CViewContainer> getParentView () const;
 	/** get frame */
 	SharedPointer<CFrame> getFrame () const;
-	/** get editor */
-	virtual VSTGUIEditorInterface* getEditor () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
