@@ -62,6 +62,7 @@ public:
 	CommandList getCommandList (const Platform::IWindow* window) override;
 	const CommandList& getKeyCommandList () override;
 	bool canQuit () override;
+	void onQuit () override;
 	bool dontClosePopupOnDeactivation (Platform::IWindow* window) override;
 	const Configuration& getConfiguration () const override { return config; }
 
@@ -243,6 +244,13 @@ void Application::quit ()
 	if (platform.quit)
 		platform.quit ();
 	setInQuit (false);
+}
+
+//------------------------------------------------------------------------
+void Application::onQuit ()
+{
+	delegate->onQuit ();
+	delegate.reset ();
 }
 
 //------------------------------------------------------------------------

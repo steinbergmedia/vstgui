@@ -67,6 +67,7 @@ public:
 	virtual CommandList getCommandList (const Platform::IWindow* window = nullptr) = 0;
 	virtual const CommandList& getKeyCommandList () = 0;
 	virtual bool canQuit () = 0;
+	virtual void onQuit () = 0;
 	virtual bool dontClosePopupOnDeactivation (Platform::IWindow* window) = 0;
 	virtual const Configuration& getConfiguration () const = 0;
 };
