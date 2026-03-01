@@ -16,7 +16,7 @@ namespace VSTGUI {
 class CTooltipSupport : public CBaseObject
 {
 public:
-	CTooltipSupport (CFrame* frame, uint32_t delay = 1000);
+	CTooltipSupport (const CFrame& frame, uint32_t delay = 1000);
 
 	void onMouseEntered (const SharedPointer<CView>& view);
 	void onMouseExited (const SharedPointer<CView>& view);
@@ -39,7 +39,7 @@ protected:
 	};
 
 	SharedPointer<CVSTGUITimer> timer;
-	CFrame* frame;
+	PlatformFramePtr frame;
 	SharedPointer<CView> currentView;
 
 	uint32_t delay;

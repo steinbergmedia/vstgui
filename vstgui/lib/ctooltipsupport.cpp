@@ -29,8 +29,12 @@ Adding CTooltipSupport is done via VSTGUI::CFrame::enableTooltips (true) */
  * @param frame CFrame object
  * @param delay tooltip delay time in milliseconds
  */
-CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delayTime)
-: timer (nullptr), frame (frame), currentView (nullptr), delay (delayTime), state (kHidden)
+CTooltipSupport::CTooltipSupport (const CFrame& frame, uint32_t delayTime)
+: timer (nullptr)
+, frame (frame.getPlatformFrame ())
+, currentView (nullptr)
+, delay (delayTime)
+, state (kHidden)
 {
 	timer = makeShared<CVSTGUITimer> (
 		[this] (auto&&) {
@@ -64,8 +68,8 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delayTime)
 //------------------------------------------------------------------------
 CTooltipSupport::~CTooltipSupport () noexcept
 {
-	if (auto platformFrame = frame->getPlatformFrame ())
-		platformFrame->hideTooltip ();
+	if (frame)
+		frame->hideTooltip ();
 }
 
 //------------------------------------------------------------------------
@@ -212,10 +216,10 @@ void CTooltipSupport::hideTooltip ()
 {
 	state = kHidden;
 	timer->stop ();
-	if (auto platformFrame = frame->getPlatformFrame ())
-		platformFrame->hideTooltip ();
+	if (frame)
+		frame->hideTooltip ();
 
-	#if DEBUGLOG
+#if DEBUGLOG
 	DebugPrint ("CTooltipSupport::hideTooltip\n");
 	#endif
 }
@@ -238,10 +242,10 @@ bool CTooltipSupport::showTooltip ()
 		{
 			state = kForceVisible;
 
-			if (auto platformFrame = frame->getPlatformFrame ())
-				platformFrame->showTooltip (r, tooltip.get ());
+			if (frame)
+				frame->showTooltip (r, tooltip.get ());
 
-			#if DEBUGLOG
+#if DEBUGLOG
 			DebugPrint ("CTooltipSupport::showTooltip (%s)\n", currentView->getClassName ());
 			#endif
 			return true;

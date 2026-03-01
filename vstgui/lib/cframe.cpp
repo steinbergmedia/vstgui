@@ -306,7 +306,7 @@ void CFrame::enableTooltips (bool state, uint32_t delayTimeInMs)
 	if (state)
 	{
 		if (pImpl->tooltips == nullptr)
-			pImpl->tooltips = makeShared<CTooltipSupport> (this, delayTimeInMs);
+			pImpl->tooltips = makeShared<CTooltipSupport> (*this, delayTimeInMs);
 	}
 	else if (pImpl->tooltips)
 	{
