@@ -287,5 +287,5 @@ private:
 } // VSTGUI
 
 //-----------------------------------------------------------------------------
-#include "sharedptr.h"
 #include "vstguidebug.h"
+#include "sharedptr.h"

@@ -18,6 +18,10 @@
 	#include "platform/win32/win32support.h"
 #endif
 
+#if MAC
+#include <execinfo.h>
+#endif
+
 #include <cstdio>
 
 namespace VSTGUI {
@@ -125,5 +129,35 @@ void doAssert (const char* filename, const char* line, const char* condition,
 	}
 #endif // DEBUG
 }
-	
+
+namespace Debug {
+
+//------------------------------------------------------------------------
+Backtrace backtrace (uint32_t maxFrames)
+{
+	Backtrace result;
+#if MAC
+	++maxFrames;
+	std::vector<void*> callstack;
+	callstack.resize (maxFrames);
+	auto frames = ::backtrace (callstack.data (), static_cast<int> (callstack.size ()));
+	auto strs = backtrace_symbols (callstack.data (), frames);
+	for (auto i = 1; i < frames; ++i)
+	{
+		result.push_back (strs[i]);
+	}
+	free (strs);
+#else
+	static bool once = true;
+	if (once)
+	{
+		once = false;
+		DebugPrint ("backtrace not supported on this platform");
+	}
+#endif
+	return result;
+}
+
+//------------------------------------------------------------------------
+} // Debug
 } // VSTGUI

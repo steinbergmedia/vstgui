@@ -529,20 +529,7 @@ UIEditController::UIEditController (const SharedPointer<UIDescription>& descript
 }
 
 //----------------------------------------------------------------------------------------------------
-UIEditController::~UIEditController ()
-{
-	selection->clear ();
-	if (templateController)
-		templateController->unregisterListener (this);
-	undoManager->unregisterListener (this);
-	editDescription->unregisterListener (this);
-	UIDescriptionAddOnRegistry::forEach (
-		[this] (auto& addOn) { addOn.onEditingEnd (editDescription); });
-	editorDesc = nullptr;
-	templateController = nullptr;
-	undoManager->clear ();
-	UIEditControllerDescription::instance ().tryFree ();
-}
+UIEditController::~UIEditController () { UIEditControllerDescription::instance ().tryFree (); }
 
 //----------------------------------------------------------------------------------------------------
 SharedPointer<UIEditMenuController> UIEditController::getMenuController () const
@@ -973,6 +960,20 @@ void UIEditController::viewRemoved (CView& view)
 	editView->unregisterViewListener (this);
 	editView.reset ();
 	baseView.reset ();
+
+	gridController.reset ();
+	menuController.reset ();
+	selection->clear ();
+	if (templateController)
+		templateController->unregisterListener (this);
+	undoManager->unregisterListener (this);
+	editDescription->unregisterListener (this);
+	UIDescriptionAddOnRegistry::forEach (
+		[this] (auto& addOn) { addOn.onEditingEnd (editDescription); });
+	editorDesc = nullptr;
+	templateController = nullptr;
+	undoManager->clear ();
+
 	getEditorDescription ()->freePlatformResources ();
 }
 

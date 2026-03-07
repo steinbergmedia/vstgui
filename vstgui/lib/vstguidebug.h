@@ -28,6 +28,8 @@ void doAssert (const char* filename, const char* line, const char* condition,
 #include <ctime>
 #include <cassert>
 #include <memory>
+#include <vector>
+#include <string>
 
 namespace VSTGUI {
 
@@ -49,6 +51,14 @@ protected:
 	std::clock_t startTime;
 };
 
+//------------------------------------------------------------------------
+namespace Debug {
+
+using Backtrace = std::vector<std::string>;
+extern Backtrace backtrace (uint32_t maxFrames = 128);
+
+//------------------------------------------------------------------------
+} // Debug
 } // VSTGUI
 
 #else

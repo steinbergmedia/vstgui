@@ -4,7 +4,13 @@
 
 #pragma once
 
-#include "vstguibase.h"
+#define VSTGUI_BACKTRACE_REFCOUNT (DEBUG && 1)
+
+#include "vstguidebug.h"
+
+#if VSTGUI_BACKTRACE_REFCOUNT
+#include <vector>
+#endif
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -36,6 +42,10 @@ public:
 	//@{
 	void forget () override
 	{
+#if DEBUG && VSTGUI_BACKTRACE_REFCOUNT
+		if (collectBacktrace)
+			releaseBacktrace.push_back (Debug::backtrace (8));
+#endif
 		if (--nbReference == 0)
 		{
 			nbReference = std::numeric_limits<int32_t>::min () / 2;
@@ -43,7 +53,14 @@ public:
 			delete this;
 		}
 	}
-	void remember () override { nbReference++; }
+	void remember () override
+	{
+		nbReference++;
+#if DEBUG && VSTGUI_BACKTRACE_REFCOUNT
+		if (collectBacktrace)
+			addRefBacktrace.push_back (Debug::backtrace (8));
+#endif
+	}
 	/** get refcount */
 	virtual int32_t getNbReference () const { return nbReference; }
 	//@}
@@ -51,6 +68,14 @@ private:
 	virtual void beforeDelete () {}
 
 	T nbReference {1};
+
+#if DEBUG && VSTGUI_BACKTRACE_REFCOUNT
+public:
+	bool collectBacktrace {false};
+	std::vector<Debug::Backtrace> addRefBacktrace;
+	std::vector<Debug::Backtrace> releaseBacktrace;
+
+#endif
 };
 
 using AtomicReferenceCounted = ReferenceCounted<std::atomic<int32_t>>;

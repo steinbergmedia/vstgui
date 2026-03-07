@@ -5,7 +5,7 @@
 #pragma once
 
 #include "optional.h"
-#include "vstguidebug.h"
+#include "vstguibase.h"
 #include <cstdint>
 #include <algorithm>
 
