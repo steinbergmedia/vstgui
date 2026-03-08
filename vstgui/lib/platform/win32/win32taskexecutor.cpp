@@ -3,7 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "win32taskexecutor.h"
-#include "../../vstguidebug.h"
+#include "../../vstguibase.h"
 #include <atomic>
 #include <ppltasks.h>
 #include <string>

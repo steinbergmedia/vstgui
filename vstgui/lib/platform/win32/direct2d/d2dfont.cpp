@@ -261,9 +261,9 @@ bool D2DFont::asLogFont (LOGFONTW& logfont) const
 }
 
 //-----------------------------------------------------------------------------
-IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
+IDWriteTextLayout* D2DFont::createTextLayout (const PlatformStringPtr& string) const
 {
-	const auto* winString = dynamic_cast<const WinString*> (string);
+	auto winString = string.cast<WinString> ();
 	IDWriteTextLayout* textLayout = nullptr;
 	if (winString)
 		getDWriteFactory ()->CreateTextLayout (winString->getWideString (),
@@ -273,7 +273,7 @@ IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 }
 
 //-----------------------------------------------------------------------------
-void D2DFont::drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
+void D2DFont::drawString (const PlatformGraphicsDeviceContextPtr& context, const PlatformStringPtr& string,
 						  const CPoint& p, const CColor& color, bool antialias) const
 {
 	if (!textFormat || !context || !string)
@@ -308,7 +308,7 @@ void D2DFont::drawString (const PlatformGraphicsDeviceContextPtr& context, IPlat
 }
 
 //-----------------------------------------------------------------------------
-CCoord D2DFont::getStringWidth (const PlatformGraphicsDeviceContextPtr&, IPlatformString* string,
+CCoord D2DFont::getStringWidth (const PlatformGraphicsDeviceContextPtr&, const PlatformStringPtr& string,
 								bool antialias) const
 {
 	CCoord result = 0;

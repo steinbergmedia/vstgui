@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "vstguidebug.h"
+#include "vstguibase.h"
 #include <vector>
 #include <algorithm>
 

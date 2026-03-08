@@ -202,10 +202,10 @@ HMENU Win32OptionMenu::createMenu (SharedPointer<COptionMenu> _menu, int32_t& of
 					flags |= MF_UNCHECKED;
 
 				AppendMenu (menu, flags, offset + inc, entryText);
-				IPlatformBitmap* platformBitmap = item->getIcon () ? item->getIcon ()->getPlatformBitmap () : nullptr;
+				auto platformBitmap = item->getIcon () ? item->getIcon ()->getPlatformBitmap () : nullptr;
 				if (platformBitmap)
 				{
-					if (auto* win32Bitmap = dynamic_cast<Win32BitmapBase*> (platformBitmap))
+					if (auto win32Bitmap = platformBitmap.cast<Win32BitmapBase> ())
 					{
 						MENUITEMINFO mInfo = {};
 						mInfo.cbSize = sizeof (MENUITEMINFO);

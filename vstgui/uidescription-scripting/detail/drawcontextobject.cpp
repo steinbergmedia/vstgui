@@ -7,6 +7,7 @@
 #include "../../lib/cdrawcontext.h"
 #include "../../lib/cgraphicspath.h"
 #include "../../lib/cgradient.h"
+#include "../../lib/cviewcontainer.h"
 #include "../../uidescription/uidescription.h"
 #include "../../uidescription/uiviewcreator.h"
 

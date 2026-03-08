@@ -14,7 +14,7 @@ namespace {
 //------------------------------------------------------------------------
 const WCHAR* getWideString (const UTF8String& str)
 {
-	if (auto winStr = dynamic_cast<WinString*> (str.getPlatformString ()))
+	if (auto winStr = str.getPlatformString ().cast<WinString> ())
 	{
 		return winStr->getWideString ();
 	}

@@ -720,7 +720,7 @@ void TextEditorView::looseFocus ()
 		}
 #elif WINDOWS
 		auto pf = getFrame ()->getPlatformFrame ();
-		if (auto winFrame = dynamic_cast << IWin32PlatformFrame* > (pf.get ()))
+		if (auto winFrame = dynamic_cast <IWin32PlatformFrame*> (pf.get ()))
 		{
 			winFrame->setTextInputClient (nullptr);
 			imeTextInputClient.reset ();

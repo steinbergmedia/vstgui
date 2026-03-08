@@ -266,9 +266,9 @@ SharedPointer<IPlatformBitmapPixelAccess> D2DBitmap::lockPixels (bool alphaPremu
 {
 	if (getSource () == nullptr)
 		return nullptr;
-	auto pixelAccess = owned (new PixelAccess);
+	auto pixelAccess = makeShared<PixelAccess> ();
 	if (pixelAccess->init (this, alphaPremultiplied))
-		return shared<IPlatformBitmapPixelAccess> (pixelAccess);
+		return pixelAccess;
 	return nullptr;
 }
 

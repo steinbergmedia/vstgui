@@ -5,7 +5,7 @@
 #include "../../../../lib/animation/animations.h"
 #include "../../../../lib/animation/animator.h"
 #include "../../../../lib/animation/timingfunctions.h"
-#include "../../../../lib/cview.h"
+#include "../../../../lib/cviewcontainer.h"
 #include "../../unittests.h"
 
 #if MAC

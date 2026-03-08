@@ -4,9 +4,11 @@
 
 #pragma once
 
-#define VSTGUI_BACKTRACE_REFCOUNT (DEBUG && 1)
+#ifndef VSTGUI_VERSION_MAJOR
+#error "do not directly include this file, use vstguibase.h"
+#endif
 
-#include "vstguidebug.h"
+#define VSTGUI_BACKTRACE_REFCOUNT (DEBUG && 1)
 
 #if VSTGUI_BACKTRACE_REFCOUNT
 #include <vector>

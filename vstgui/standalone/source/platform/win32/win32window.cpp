@@ -88,7 +88,7 @@ public:
 	{
 		return std::move (controllerConfig);
 	}
-	void onSetContentView (CFrame* frame) override;
+	void onSetContentView (const SharedPointer<CFrame>& frame) override;
 
 	void updateCommands () const override;
 	void onQuit () override;
@@ -123,7 +123,7 @@ private:
 	VSTGUI::Standalone::WindowPtr modalWindow;
 	mutable std::shared_ptr<Win32Menu> mainMenu;
 	IWindowDelegate* delegate {nullptr};
-	CFrame* frame {nullptr};
+	SharedPointer<CFrame> frame;
 	mutable Detail::IPlatformApplication::CommandList menuCommandList;
 	CPoint initialSize;
 	double dpiScale {1.};
@@ -235,7 +235,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		}
 	}
 	initialSize = config.size;
-	auto winStr = dynamic_cast<WinString*> (config.title.getPlatformString ());
+	auto winStr = config.title.getPlatformString ().cast<WinString> ();
 	hwnd = CreateWindowEx (exStyle, gWindowClassName, winStr ? winStr->getWideString () : nullptr,
 	                       dwStyle, 0, 0, 500, 500, nullptr, nullptr, getHInstance (), nullptr);
 	if (!hwnd)
@@ -257,12 +257,12 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 }
 
 //------------------------------------------------------------------------
-void Window::onSetContentView (CFrame* inFrame)
+void Window::onSetContentView (const SharedPointer<CFrame>& inFrame)
 {
 	frame = inFrame;
 	if (frame)
 	{
-		auto win32Frame = dynamic_cast<Win32Frame*> (frame->getPlatformFrame ());
+		auto win32Frame = frame->getPlatformFrame ().cast<Win32Frame> ();
 		frameWindowProc = [win32Frame] (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 			return win32Frame->proc (hwnd, message, wParam, lParam);
 		};
@@ -657,7 +657,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (frame)
 			{
-				auto fc = static_cast<IPlatformFrameCallback*> (frame);
+				auto fc = static_cast<IPlatformFrameCallback*> (frame.get ());
 				fc->platformOnWindowActivate (wParam ? true : false);
 			}
 			break;
@@ -942,7 +942,7 @@ void Window::setPosition (const CPoint& newPosition)
 //------------------------------------------------------------------------
 void Window::setTitle (const UTF8String& newTitle)
 {
-	if (auto winStr = dynamic_cast<WinString*> (newTitle.getPlatformString ()))
+	if (auto winStr = newTitle.getPlatformString ().cast<WinString> ())
 		SetWindowText (hwnd, winStr->getWideString ());
 }
 

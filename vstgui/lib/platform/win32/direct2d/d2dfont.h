@@ -22,7 +22,7 @@ class D2DFont final : public IPlatformFont, public IFontPainter
 public:
 	D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style);
 
-	IDWriteTextLayout* createTextLayout (IPlatformString* string) const;
+	IDWriteTextLayout* createTextLayout (const PlatformStringPtr& string) const;
 
 	bool asLogFont (LOGFONTW& logfont) const;
 
@@ -41,9 +41,9 @@ protected:
 
 	const IFontPainter* getPainter () const override { return this; }
 
-	void drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
+	void drawString (const PlatformGraphicsDeviceContextPtr& context, const PlatformStringPtr& string,
 					 const CPoint& p, const CColor& color, bool antialias = true) const override;
-	CCoord getStringWidth (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
+	CCoord getStringWidth (const PlatformGraphicsDeviceContextPtr& context, const PlatformStringPtr& string,
 						   bool antialias = true) const override;
 
 	IDWriteTextFormat* textFormat;

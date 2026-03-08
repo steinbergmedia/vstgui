@@ -699,7 +699,7 @@ void Win32DragBitmapWindow::updateBitmap (const SharedPointer<CBitmap>& bitmap, 
 //-----------------------------------------------------------------------------
 void Win32DragBitmapWindow::createWindow ()
 {
-	auto winString = dynamic_cast<WinString*> (windowClassName.getPlatformString ());
+	auto winString = windowClassName.getPlatformString ().cast<WinString> ();
 
 	DWORD exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW;
 	DWORD dwStyle = WS_POPUP;
@@ -792,7 +792,7 @@ void Win32DragBitmapWindow::paint ()
 		drawContext.setGlobalAlpha (0.9f);
 		CDrawContext::Transform t (drawContext,
 								   CGraphicsTransform ().scale (scaleFactor, scaleFactor));
-		bitmap->draw (&drawContext, rect);
+		bitmap->draw (drawContext, rect);
 
 		drawContext.endDraw ();
 	}
@@ -863,7 +863,7 @@ void Win32DragBitmapWindow::registerWindowClass ()
 	windowClassName = "VSTGUI DragBitmap Window ";
 	windowClassName += tmp;
 
-	auto winString = dynamic_cast<WinString*> (windowClassName.getPlatformString ());
+	auto winString = windowClassName.getPlatformString ().cast<WinString> ();
 
 	WNDCLASSEX wcex {};
 
@@ -882,7 +882,7 @@ void Win32DragBitmapWindow::registerWindowClass ()
 //-----------------------------------------------------------------------------
 void Win32DragBitmapWindow::unregisterWindowClass ()
 {
-	auto winString = dynamic_cast<WinString*> (windowClassName.getPlatformString ());
+	auto winString = windowClassName.getPlatformString ().cast<WinString> ();
 	UnregisterClass (winString->getWideString (), GetInstance ());
 }
 

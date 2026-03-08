@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../../lib/controls/cxypad.h"
+#include "../../../../lib/cviewcontainer.h"
 #include "../../unittests.h"
 #include "../eventhelpers.h"
 

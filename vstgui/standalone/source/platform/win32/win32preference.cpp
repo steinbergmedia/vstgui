@@ -20,7 +20,7 @@ Win32Preference::Win32Preference ()
 	auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
 	vstgui_assert (!appInfo.uri.empty (), "need uri for preferences");
 	UTF8String path ("SOFTWARE\\" + appInfo.uri.getString ());
-	auto winStr = dynamic_cast<WinString*> (path.getPlatformString ());
+	auto winStr = path.getPlatformString ().cast<WinString> ();
 	vstgui_assert (winStr);
 	if (winStr)
 	{
@@ -39,8 +39,8 @@ Win32Preference::~Win32Preference ()
 //------------------------------------------------------------------------
 bool Win32Preference::set (const UTF8String& key, const UTF8String& value)
 {
-	auto keyStr = dynamic_cast<WinString*> (key.getPlatformString ());
-	auto valueStr = dynamic_cast<WinString*> (value.getPlatformString ());
+	auto keyStr = key.getPlatformString ().cast<WinString> ();
+	auto valueStr = value.getPlatformString ().cast<WinString> ();
 	vstgui_assert (keyStr);
 	bool res = false;
 	if (keyStr)
@@ -55,7 +55,7 @@ bool Win32Preference::set (const UTF8String& key, const UTF8String& value)
 //------------------------------------------------------------------------
 Optional<UTF8String> Win32Preference::get (const UTF8String& key)
 {
-	auto keyStr = dynamic_cast<WinString*> (key.getPlatformString ());
+	auto keyStr = key.getPlatformString ().cast<WinString> ();
 	vstgui_assert (keyStr);
 
 	DWORD dwType {};

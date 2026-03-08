@@ -656,7 +656,7 @@ struct Direct3DController : DelegationController,
 {
 	using DelegationController::DelegationController;
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription& description) override
+	SharedPointer<CView> createView (const UIAttributes& attributes, const IUIDescription& description) override
 	{
 		if (auto viewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -666,7 +666,7 @@ struct Direct3DController : DelegationController,
 				if (auto view = ExternalView::Direct3D12View::make (
 						getPlatformFactory ().asWin32Factory ()->getInstance (), renderer))
 				{
-					return new CExternalView ({}, view);
+					return makeShared<CExternalView> (CRect {}, view);
 				}
 			}
 		}

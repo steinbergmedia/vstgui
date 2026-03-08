@@ -377,7 +377,7 @@ PlatformTimerPtr Win32Factory::createTimer (IPlatformTimerCallback* callback) co
 bool Win32Factory::setClipboard (const DataPackagePtr& data) const noexcept
 {
 	auto dataObject = makeShared<Win32DataObject> (data);
-	auto hr = OleSetClipboard (dataObject);
+	auto hr = OleSetClipboard (dataObject.get ());
 	return hr == S_OK;
 }
 
@@ -398,9 +398,9 @@ PlatformGradientPtr Win32Factory::createGradient () const noexcept
 
 //-----------------------------------------------------------------------------
 PlatformFileSelectorPtr Win32Factory::createFileSelector (PlatformFileSelectorStyle style,
-														  IPlatformFrame* frame) const noexcept
+														  PlatformFramePtr frame) const noexcept
 {
-	auto win32Frame = dynamic_cast<Win32Frame*> (frame);
+	auto win32Frame = frame.cast<Win32Frame> ();
 	return createWinFileSelector (style, win32Frame ? win32Frame->getHWND () : nullptr);
 }
 

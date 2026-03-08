@@ -399,9 +399,6 @@ public:
 		return makeShared<BoxBlur> ();
 	}
 
-private:
-	friend SharedPointer<BoxBlur> makeShared<BoxBlur> ();
-
 	BoxBlur ()
 	: FilterBase ("A Box Blur Filter")
 	{
@@ -409,6 +406,7 @@ private:
 		registerProperty (Property::kRadius, BitmapFilter::Property ((int32_t)2));
 		registerProperty (Property::kAlphaChannelOnly, BitmapFilter::Property ((int32_t)0));
 	}
+private:
 
 	bool run (bool replace) override
 	{
@@ -724,10 +722,8 @@ public:
 		return makeShared<ScaleLinear> ();
 	}
 
-private:
-	friend SharedPointer<ScaleLinear> makeShared<ScaleLinear> ();
-
 	ScaleLinear () : ScaleBase ("A Linear Scale Filter") {}
+private:
 
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) override
 	{
@@ -782,10 +778,8 @@ public:
 		return makeShared<ScaleBiliniear> ();
 	}
 
-private:
-	friend SharedPointer<ScaleBiliniear> makeShared<ScaleBiliniear> ();
-
 	ScaleBiliniear () : ScaleBase ("A Biliniear Scale Filter") {}
+private:
 
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) override
 	{
@@ -922,15 +916,13 @@ public:
 		return makeShared<SetColor> ();
 	}
 
-private:
-	friend SharedPointer<SetColor> makeShared<SetColor> ();
-
 	SetColor ()
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Set Color Filter", processSetColor)
 	{
 		registerProperty (Property::kIgnoreAlphaColorValue, BitmapFilter::Property ((int32_t)1));
 		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
 	}
+private:
 
 	static void processSetColor (CColor& color, FilterBase* obj)
 	{
@@ -967,13 +959,11 @@ public:
 		return makeShared<Grayscale> ();
 	}
 
-private:
-	friend SharedPointer<Grayscale> makeShared<Grayscale> ();
-
 	Grayscale ()
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Grayscale Filter", processGrayscale)
 	{
 	}
+private:
 
 	static void processGrayscale (CColor& color, FilterBase* obj)
 	{
@@ -993,15 +983,13 @@ public:
 		return makeShared<ReplaceColor> ();
 	}
 
-private:
-	friend SharedPointer<ReplaceColor> makeShared<ReplaceColor> ();
-
 	ReplaceColor ()
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Replace Color Filter", processReplace)
 	{
 		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
 		registerProperty (Property::kOutputColor, BitmapFilter::Property (kTransparentCColor));
 	}
+private:
 
 	static void processReplace (CColor& color, FilterBase* obj)
 	{

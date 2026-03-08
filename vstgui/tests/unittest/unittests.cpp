@@ -5,7 +5,7 @@
 #include "unittests.h"
 
 #if ENABLE_UNIT_TESTS
-#include "../../lib/vstguidebug.h"
+#include "../../lib/vstguibase.h"
 #include "../../lib/vstguiinit.h"
 
 #include <chrono>

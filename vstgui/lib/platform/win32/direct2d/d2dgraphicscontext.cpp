@@ -245,7 +245,7 @@ PlatformGraphicsDeviceContextPtr
 		if (FAILED (hr))
 			return nullptr;
 
-		D2DBitmapCache::removeBitmap (d2dBitmap);
+		D2DBitmapCache::removeBitmap (d2dBitmap.get ());
 
 		return D2DBitmapDeviceContext::make (*this, deviceContext.get (), d2dBitmap);
 	}

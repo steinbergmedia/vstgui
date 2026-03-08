@@ -3,7 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "stringconvert.h"
-#include "vstguidebug.h"
+#include "vstguibase.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

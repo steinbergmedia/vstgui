@@ -7,6 +7,7 @@
 #include "vstgui/lib/finally.h"
 #include "vstgui/uidescription/compresseduidescription.h"
 #include "vstgui/lib/vstguiinit.h"
+#include "vstgui/lib/cviewcontainer.h"
 #include <string>
 
 //------------------------------------------------------------------------

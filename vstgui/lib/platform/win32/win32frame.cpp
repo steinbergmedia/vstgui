@@ -534,7 +534,7 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 			buttonState.set (MouseButton::Left);
 		else if (buttons.isRightButton ())
 			buttonState.set (MouseButton::Right);
-		return makeShared<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
+		return makeShared<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)), buttonState,
 											  *genericOptionMenuTheme);
 	}
 	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
@@ -556,13 +556,13 @@ SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
 						  ->getDirectCompositionFactory ()
 						  ->createChildVisual (parent, 100, 100);
 		auto newLayer =
-			makeShared<Win32ViewLayer> (visual, drawDelegate, [this] (Win32ViewLayer* layer) {
+			makeShared<Win32ViewLayer> (visual, drawDelegate, [this] (auto layer) {
 				auto it = std::find (viewLayers.begin (), viewLayers.end (), layer);
 				vstgui_assert (it != viewLayers.end ());
 				if (it != viewLayers.end ())
 					viewLayers.erase (it);
 			});
-		viewLayers.push_back (newLayer);
+		viewLayers.push_back (newLayer.get ());
 		return newLayer;
 	}
 	return nullptr;

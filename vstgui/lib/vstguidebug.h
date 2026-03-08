@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "vstguibase.h"
+#ifndef VSTGUI_VERSION_MAJOR
+#error "do not directly include this file, use vstguibase.h"
+#endif
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

@@ -91,7 +91,7 @@ Button::Button (Type type, const UTF8String& inTitle)
 			addStyle = BS_PUSHBUTTON;
 			break;
 	}
-	auto winString = dynamic_cast<WinString*> (inTitle.getPlatformString ());
+	auto winString = inTitle.getPlatformString ().cast<WinString> ();
 	auto hInstance = getPlatformFactory ().asWin32Factory ()->getInstance ();
 	impl = std::make_unique<Impl> (hInstance);
 	impl->type = type;
