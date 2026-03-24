@@ -31,10 +31,10 @@ public:
 	bool registerTimer (uint64_t interval, ITimerHandler* handler) override;
 	bool unregisterTimer (ITimerHandler* handler) override;
 
-private:
 	void forget () override {}
 	void remember () override {}
 
+private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 };

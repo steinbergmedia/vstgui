@@ -209,13 +209,14 @@ double Font::getCapHeight () const { return impl->capHeight; }
 const IFontPainter* Font::getPainter () const { return this; }
 
 //------------------------------------------------------------------------
-void Font::drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatformString* string,
-					   const CPoint& p, const CColor& color, bool antialias) const
+void Font::drawString (const PlatformGraphicsDeviceContextPtr& context,
+					   const PlatformStringPtr& string, const CPoint& p, const CColor& color,
+					   bool antialias) const
 {
 	auto cairoContext = std::dynamic_pointer_cast<CairoGraphicsDeviceContext> (context);
 	if (!cairoContext)
 		return;
-	auto linuxString = dynamic_cast<LinuxString*> (string);
+	auto linuxString = string.cast<LinuxString> ();
 	if (!linuxString)
 		return;
 	PangoContext* pangoContext = FontList::instance ().getFontContext ();
@@ -265,10 +266,10 @@ void Font::drawString (const PlatformGraphicsDeviceContextPtr& context, IPlatfor
 }
 
 //------------------------------------------------------------------------
-CCoord Font::getStringWidth (const PlatformGraphicsDeviceContextPtr&, IPlatformString* string,
-							 bool antialias) const
+CCoord Font::getStringWidth (const PlatformGraphicsDeviceContextPtr&,
+							 const PlatformStringPtr& string, bool antialias) const
 {
-	if (auto linuxString = dynamic_cast<LinuxString*> (string))
+	if (auto linuxString = string.cast<LinuxString> ())
 	{
 		int pangoWidth = 0;
 		PangoContext* context = FontList::instance ().getFontContext ();

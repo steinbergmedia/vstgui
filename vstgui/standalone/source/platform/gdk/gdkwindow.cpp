@@ -101,7 +101,7 @@ public:
 	void* getPlatformHandle () const override;
 
 	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override;
-	void onSetContentView (CFrame* frame) override;
+	void onSetContentView (const SharedPointer<CFrame>& frame) override;
 
 private:
 	void updateGeometryHints ();
@@ -118,7 +118,7 @@ private:
 	WindowType type;
 	IWindowDelegate* delegate {nullptr};
 	Gtk::ApplicationWindow gtkWindow;
-	CFrame* contentView {nullptr};
+	SharedPointer<CFrame> contentView;
 };
 
 //------------------------------------------------------------------------
@@ -388,17 +388,17 @@ PlatformFrameConfigPtr Window::prepareFrameConfig (PlatformFrameConfigPtr&& cont
 	{
 		if (auto config = dynamicPtrCast<X11::FrameConfig> (controllerConfig))
 		{
-			config->runLoop = &RunLoop::instance ();
+			config->runLoop = shared (&RunLoop::instance ());
 			return std::move (config);
 		}
 	}
 	auto config = std::make_shared<X11::FrameConfig> ();
-	config->runLoop = &RunLoop::instance ();
+	config->runLoop = shared (&RunLoop::instance ());
 	return config;
 }
 
 //------------------------------------------------------------------------
-void Window::onSetContentView (CFrame* newFrame)
+void Window::onSetContentView (const SharedPointer<CFrame>& newFrame)
 {
 	contentView = newFrame;
 	if (contentView)
@@ -410,7 +410,7 @@ void Window::onSetContentView (CFrame* newFrame)
 //------------------------------------------------------------------------
 void Window::sendXEmbedMessage (XEmbedMessage msg, uint32_t data)
 {
-	if (auto x11Frame = dynamic_cast<X11::IX11Frame*> (contentView->getPlatformFrame ()))
+	if (auto x11Frame = dynamic_cast<X11::IX11Frame*> (contentView->getPlatformFrame ().get ()))
 	{
 		sendXEmbedProtocolMessage (x11Frame->getX11WindowID (),
 								   reinterpret_cast<::Window> (getPlatformHandle ()), msg, data);

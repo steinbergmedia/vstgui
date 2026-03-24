@@ -103,7 +103,7 @@ class PixelAccess : public IPlatformBitmapPixelAccess
 public:
 	~PixelAccess () override;
 
-	bool init (Bitmap* bitmap, const SurfaceHandle& surface);
+	bool init (const SharedPointer<Bitmap>& bitmap, const SurfaceHandle& surface);
 
 private:
 	uint8_t* address {nullptr};
@@ -222,7 +222,7 @@ SharedPointer<IPlatformBitmapPixelAccess> Bitmap::lockPixels (bool alphaPremulti
 #warning TODO: alphaPremultiplied is currently ignored, always treated as true
 	locked = true;
 	auto pixelAccess = owned (new CairoBitmapPrivate::PixelAccess ());
-	if (pixelAccess->init (this, surface))
+	if (pixelAccess->init (shared (this), surface))
 		return pixelAccess;
 	return nullptr;
 }
@@ -250,7 +250,7 @@ PNGBitmapBuffer Bitmap::createMemoryPNGRepresentation () const
 namespace CairoBitmapPrivate {
 
 //-----------------------------------------------------------------------------
-bool PixelAccess::init (Bitmap* inBitmap, const SurfaceHandle& inSurface)
+bool PixelAccess::init (const SharedPointer<Bitmap>& inBitmap, const SurfaceHandle& inSurface)
 {
 	cairo_surface_flush (inSurface);
 	address = cairo_image_surface_get_data (inSurface);
