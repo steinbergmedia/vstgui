@@ -476,7 +476,7 @@ public:
 		}
 	}
 
-	void viewWillDelete (CView& view) override
+	void viewRemoved (CView& view) override
 	{
 		vstgui_assert (&view == zoomValueControl.get ());
 		view.unregisterViewListener (this);
