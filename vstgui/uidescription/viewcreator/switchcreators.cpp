@@ -2,7 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "multibitmapcontrolcreator.h"
+#include "../iviewcreator.h"
 #include "switchcreators.h"
 
 #include "../../lib/controls/cswitch.h"

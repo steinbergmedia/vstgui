@@ -3,7 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "animknobcreator.h"
-#include "multibitmapcontrolcreator.h"
+#include "../iviewcreator.h"
 
 #include "../../lib/controls/cknob.h"
 #include "../detail/uiviewcreatorattributes.h"

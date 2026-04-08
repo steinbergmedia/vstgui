@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "multibitmapcontrolcreator.h"
+#include "../iviewcreator.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-struct KickButtonCreator : MultiBitmapControlCreator
+struct KickButtonCreator : ViewCreatorAdapter
 {
 	KickButtonCreator ();
 	IdStringPtr getViewName () const override;

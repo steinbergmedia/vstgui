@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "multibitmapcontrolcreator.h"
+#include "../iviewcreator.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-struct RockerSwitchCreator : MultiBitmapControlCreator
+struct RockerSwitchCreator : ViewCreatorAdapter
 {
 	RockerSwitchCreator ();
 	IdStringPtr getViewName () const override;

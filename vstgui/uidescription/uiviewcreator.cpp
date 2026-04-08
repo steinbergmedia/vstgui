@@ -360,7 +360,6 @@ IUIDescription* description) const
 #include "viewcreator/layeredviewcontainercreator.h"
 #include "viewcreator/moviebitmapcreator.h"
 #include "viewcreator/moviebuttoncreator.h"
-#include "viewcreator/multibitmapcontrolcreator.h"
 #include "viewcreator/multilinetextlabelcreator.h"
 #include "viewcreator/onoffbuttoncreator.h"
 #include "viewcreator/optionmenucreator.h"

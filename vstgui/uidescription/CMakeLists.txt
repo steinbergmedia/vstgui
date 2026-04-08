@@ -123,8 +123,6 @@ set(${target}_sources
     viewcreator/moviebitmapcreator.h
     viewcreator/moviebuttoncreator.cpp
     viewcreator/moviebuttoncreator.h
-    viewcreator/multibitmapcontrolcreator.cpp
-    viewcreator/multibitmapcontrolcreator.h
     viewcreator/multilinetextlabelcreator.cpp
     viewcreator/multilinetextlabelcreator.h
     viewcreator/onoffbuttoncreator.cpp
