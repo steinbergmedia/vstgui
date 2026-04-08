@@ -14,7 +14,6 @@
 #include "lib/platform/win32/win32dragging.cpp"
 #include "lib/platform/win32/win32factory.cpp"
 #include "lib/platform/win32/win32frame.cpp"
-#include "lib/platform/win32/win32openglview.cpp"
 #include "lib/platform/win32/win32optionmenu.cpp"
 #include "lib/platform/win32/win32resourcestream.cpp"
 #include "lib/platform/win32/win32support.cpp"

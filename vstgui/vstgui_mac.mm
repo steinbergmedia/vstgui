@@ -18,7 +18,6 @@
 #import "lib/platform/mac/macclipboard.mm"
 #import "lib/platform/mac/cocoa/autoreleasepool.mm"
 #import "lib/platform/mac/cocoa/cocoahelpers.mm"
-#import "lib/platform/mac/cocoa/cocoaopenglview.mm"
 #import "lib/platform/mac/cocoa/cocoatextedit.mm"
 #import "lib/platform/mac/cocoa/nsviewframe.mm"
 #import "lib/platform/mac/cocoa/nsviewoptionmenu.mm"

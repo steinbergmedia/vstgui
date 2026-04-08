@@ -10,7 +10,6 @@
 #import "objcclassbuilder.h"
 #import "cocoatextedit.h"
 #import "nsviewoptionmenu.h"
-#import "cocoaopenglview.h"
 #import "autoreleasepool.h"
 #import "../macclipboard.h"
 #import "../macfactory.h"

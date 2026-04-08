@@ -33,10 +33,6 @@
 
 #include <d2d1_1.h>
 
-#if VSTGUI_OPENGL_SUPPORT
-#include "win32openglview.h"
-#endif
-
 // windows libraries VSTGUI depends on
 #ifdef _MSC_VER
 #pragma comment(lib, "Shlwapi.lib")

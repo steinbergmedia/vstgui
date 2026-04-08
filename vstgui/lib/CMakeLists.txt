@@ -171,7 +171,6 @@ set(${target}_common_sources
     platform/iplatformframecallback.h
     platform/iplatformgradient.h
     platform/iplatformgraphicspath.h
-    platform/iplatformopenglview.h
     platform/iplatformoptionmenu.h
     platform/iplatformresourceinputstream.h
     platform/iplatformstring.h
@@ -229,8 +228,6 @@ set(${target}_mac_sources
     platform/mac/cocoa/autoreleasepool.mm
     platform/mac/cocoa/cocoahelpers.h
     platform/mac/cocoa/cocoahelpers.mm
-    platform/mac/cocoa/cocoaopenglview.h
-    platform/mac/cocoa/cocoaopenglview.mm
     platform/mac/cocoa/cocoatextedit.h
     platform/mac/cocoa/cocoatextedit.mm
     platform/mac/cocoa/nsviewdraggingsession.h

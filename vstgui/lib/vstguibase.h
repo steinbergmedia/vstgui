@@ -36,7 +36,6 @@
 		#ifndef MAC_COCOA
 			#define MAC_COCOA 1
 		#endif
-		#define VSTGUI_OPENGL_SUPPORT 0	// there's an implementation, but not yet tested, so this is zero
 		#define VSTGUI_TOUCH_EVENT_HANDLING 1
 	#else
 		#ifndef MAC_OS_X_VERSION_10_9
@@ -94,12 +93,6 @@
 	#endif
 	#ifndef WINDOWS
 		#define WINDOWS 1
-	#endif
-	#if (defined(_M_ARM64) || defined(_M_ARM))
-		#if defined(VSTGUI_OPENGL_SUPPORT)
-			#undef VSTGUI_OPENGL_SUPPORT
-		#endif
-		#define VSTGUI_OPENGL_SUPPORT 0
 	#endif
 	#ifdef _MSC_VER
 		#pragma warning(3 : 4189) // local variable is initialized but not referenced
@@ -160,10 +153,6 @@
 //----------------------------------------------------
 // Feature setting
 //----------------------------------------------------
-#ifndef VSTGUI_OPENGL_SUPPORT
-	#define VSTGUI_OPENGL_SUPPORT 1
-#endif
-
 #ifndef VSTGUI_TOUCH_EVENT_HANDLING
 	#define VSTGUI_TOUCH_EVENT_HANDLING 0
 #endif

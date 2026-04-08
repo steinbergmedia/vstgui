@@ -10,7 +10,6 @@
 #include "../../crect.h"
 #include "../../dragging.h"
 #include "../../cinvalidrectlist.h"
-#include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"
 #include "../iplatformtextedit.h"
 #include "../iplatformoptionmenu.h"
