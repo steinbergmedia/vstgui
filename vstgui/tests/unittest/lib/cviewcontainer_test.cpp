@@ -239,7 +239,6 @@ TEST_CASE (CViewContainerTest, AdvanceNextFocusView)
 	container->addSubview (view2);
 	container->addSubview (view3);
 	frame->addSubview (container);
-	container->remember ();
 	frame->attached (frame);
 
 	EXPECT (container->advanceNextFocusView (nullptr, true) == true)
