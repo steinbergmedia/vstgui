@@ -950,8 +950,9 @@ struct WindowController::EditImpl : WindowController::Impl
 			return frame->getModalView () == nullptr;
 		if (command == Debug::ResaveSharedResources)
 			return true;
-		else if (uiEditController && uiEditController->getMenuController ()->canHandleCommand (
-		                                 command.group, command.name))
+		else if (uiEditController && uiEditController->getMenuController () &&
+				 uiEditController->getMenuController ()->canHandleCommand (command.group,
+																		   command.name))
 			return true;
 		return Impl::canHandleCommand (command);
 	}
