@@ -1413,24 +1413,6 @@ void CFrame::setFocusWidth (CCoord width)
 }
 
 //-----------------------------------------------------------------------------
-/**
- * @param src rect which to scroll
- * @param distance point of distance
- */
-void CFrame::scrollRect (const CRect& src, const CPoint& distance)
-{
-	CRect rect (src);
-	rect.offset (getViewSize ().left, getViewSize ().top);
-
-	if (pImpl->platformFrame)
-	{
-		if (pImpl->platformFrame->scrollRect (src, distance))
-			return;
-	}
-	invalidRect (src);
-}
-
-//-----------------------------------------------------------------------------
 void CFrame::invalidate (const CRect &rect)
 {
 	for (const auto& pV : getChildren ())

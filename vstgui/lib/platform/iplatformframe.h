@@ -38,8 +38,6 @@ public:
 
 	/** invalidates rect in platform representation*/
 	virtual bool invalidRect (const CRect& rect) = 0;
-	/** blit scroll the src rect by distance, return false if not supported */
-	virtual bool scrollRect (const CRect& src, const CPoint& distance) = 0;
 
 	/** show tooltip */
 	virtual bool showTooltip (const CRect& rect, const char* utf8Text) = 0;

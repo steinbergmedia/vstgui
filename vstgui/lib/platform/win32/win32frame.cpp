@@ -455,12 +455,6 @@ bool Win32Frame::invalidRect (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-bool Win32Frame::scrollRect (const CRect& src, const CPoint& distance)
-{
-	return false;
-}
-
-//-----------------------------------------------------------------------------
 bool Win32Frame::showTooltip (const CRect& rect, const char* utf8Text)
 {
 	initTooltip ();

@@ -1617,42 +1617,6 @@ bool NSViewFrame::invalidRect (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
-{
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_14
-	if (nsView.wantsLayer)
-		return false;
-	NSRect r = nsRectFromCRect (src);
-	NSSize d = NSMakeSize (distance.x, distance.y);
-	[nsView scrollRect:r by:d];
-	NSRect r2;
-	if (d.width > 0)
-	{
-		r2 = NSMakeRect (r.origin.x, r.origin.y, d.width, r.size.height);
-		[nsView setNeedsDisplayInRect:r2];
-	}
-	else if (d.width < 0)
-	{
-		r2 = NSMakeRect (r.origin.x + r.size.width + d.width, r.origin.y, -d.width, r.size.height);
-		[nsView setNeedsDisplayInRect:r2];
-	}
-	if (d.height > 0)
-	{
-		r2 = NSMakeRect (r.origin.x, r.origin.y, r.size.width, d.height);
-		[nsView setNeedsDisplayInRect:r2];
-	}
-	else if (d.height < 0)
-	{
-		r2 = NSMakeRect (r.origin.x, r.origin.y + r.size.height + d.height, r.size.width, -d.height);
-		[nsView setNeedsDisplayInRect:r2];
-	}
-	return true;
-#else
-	return false;
-#endif
-}
-
-//-----------------------------------------------------------------------------
 bool NSViewFrame::showTooltip (const CRect& rect, const char* utf8Text)
 {
 	if (tooltipWindow == nullptr)

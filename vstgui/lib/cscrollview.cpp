@@ -150,31 +150,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	if (!isAttached ())
 		return;
 
-	if (getTransparency ())
-	{
-		invalid ();
-	}
-	else if (auto frame = getFrame ())
-	{
-		CRect scrollRect (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
-		CPoint p;
-		localToFrame (p);
-		scrollRect.offset (p.x, p.y);
-		CRect visibleRect = getVisibleSize (CRect (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ()));
-		visibleRect.offset (p.x, p.y);
-		scrollRect.bound (visibleRect);
-
-		CPoint distance (diff.x, diff.y);
-		if (distance.x > 0)
-			scrollRect.right -= distance.x;
-		else if (distance.x < 0)
-			scrollRect.left -= distance.x;
-		if (distance.y > 0)
-			scrollRect.bottom -= distance.y;
-		else if (distance.y < 0)
-			scrollRect.top -= distance.y;
-		frame->scrollRect (scrollRect, distance);
-	}
+	invalid ();
 }
 
 //-----------------------------------------------------------------------------

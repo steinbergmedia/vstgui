@@ -69,7 +69,6 @@ public:
 	bool getCurrentModifiers (Modifiers& modifiers) const override;
 	bool setMouseCursor (CCursorType type) override;
 	bool invalidRect (const CRect& rect) override;
-	bool scrollRect (const CRect& src, const CPoint& distance) override;
 	bool showTooltip (const CRect& rect, const char* utf8Text) override;
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override { return nsView; }

@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -37,7 +37,6 @@ public:
 	bool getCurrentModifiers (Modifiers& modifiers) const override { return false; }
 	bool setMouseCursor (CCursorType type) override { return false; };
 	bool invalidRect (const CRect& rect) override;
-	bool scrollRect (const CRect& src, const CPoint& distance) override;
 	bool showTooltip (const CRect& rect, const char* utf8Text) override { return false; };
 	bool hideTooltip () override { return false; };
 	void* getPlatformRepresentation () const override { return (__bridge void*)uiView; }

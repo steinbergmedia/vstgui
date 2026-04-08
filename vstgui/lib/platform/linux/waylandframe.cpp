@@ -285,14 +285,6 @@ bool Frame::invalidRect (const CRect& rect)
 }
 
 //------------------------------------------------------------------------
-bool Frame::scrollRect (const CRect& src, const CPoint& distance)
-{
-	(void)src;
-	(void)distance;
-	return false;
-}
-
-//------------------------------------------------------------------------
 bool Frame::showTooltip (const CRect& rect, const char* utf8Text)
 {
 #warning TODO: Implementation

@@ -249,11 +249,6 @@ bool UIViewFrame::invalidRect (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFrame::scrollRect (const CRect& src, const CPoint& distance)
-{
-	return false;
-}
-
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> UIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
