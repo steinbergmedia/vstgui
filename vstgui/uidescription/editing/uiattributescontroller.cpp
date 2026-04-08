@@ -469,7 +469,7 @@ public:
 		TextController::valueChanged (pControl);
 		if (editButton.get () == &pControl && pControl.getValue () == pControl.getMax ())
 		{
-			auto dc = new UIDialogController (shared (this), editButton->getFrame ());
+			auto dc = makeShared<UIDialogController> (shared (this), editButton->getFrame ());
 			dc->run ("scripteditor", "Script Editor", "Close", nullptr, shared (this),
 					 UIEditController::getEditorDescription (), true);
 		}

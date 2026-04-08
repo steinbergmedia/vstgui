@@ -732,8 +732,8 @@ SharedPointer<CView> UIDescription::createView (UTF8StringPtr name,
 	IUIDescriptionAddOn::CreateTemplateViewFunc f =
 		[this] (UTF8StringPtr name,
 				const SharedPointer<IController>& _controller) mutable -> SharedPointer<CView> {
-		auto oldController = impl->controller;
-		auto cleanup = finally ([&] () { impl->controller = oldController; });
+		auto cleanup = finally (
+			[&, oldController = impl->controller] () { impl->controller = oldController; });
 		impl->controller = _controller;
 		for (const auto& itNode : impl->nodes->getChildren ())
 		{
@@ -744,8 +744,15 @@ SharedPointer<CView> UIDescription::createView (UTF8StringPtr name,
 				{
 					auto view = createViewFromNode (itNode);
 					if (view)
+					{
 						view->setAttribute (kTemplateNameAttributeID,
 											static_cast<uint32_t> (strlen (name) + 1), name);
+						if (_controller && view->getAttributeType (kCViewControllerAttribute) ==
+											   CView::AttrType::NotFound)
+						{
+							view->setAttribute (kCViewControllerAttribute, _controller);
+						}
+					}
 					return view;
 				}
 			}

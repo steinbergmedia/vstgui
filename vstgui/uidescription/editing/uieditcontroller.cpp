@@ -1092,7 +1092,7 @@ void UIEditController::showTemplateSettings ()
 	{
 		updateTemplate (editTemplateName.c_str ());
 	}
-	auto dc = new UIDialogController (shared (this), editView->getFrame ());
+	auto dc = makeShared<UIDialogController> (shared (this), editView->getFrame ());
 	auto tsController = makeShared<UITemplateSettingsController> (editTemplateName, editDescription,
 																  weakFromThis ());
 	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
@@ -1101,7 +1101,7 @@ void UIEditController::showTemplateSettings ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::showFocusSettings ()
 {
-	auto dc = new UIDialogController (shared (this), editView->getFrame ());
+	auto dc = makeOwned<UIDialogController> (shared (this), editView->getFrame ());
 	auto fsController = makeShared<UIFocusSettingsController> (editDescription, weakFromThis ());
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }

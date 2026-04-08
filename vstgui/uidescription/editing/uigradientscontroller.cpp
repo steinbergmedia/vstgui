@@ -924,7 +924,7 @@ void UIGradientsController::dbRowDoubleClick (int32_t row,
 //----------------------------------------------------------------------------------------------------
 void UIGradientsController::showEditDialog ()
 {
-	UIDialogController* dc = new UIDialogController (shared (this), editButton->getFrame ());
+	auto dc = makeShared<UIDialogController> (shared (this), editButton->getFrame ());
 	auto fsController = makeShared<UIGradientEditorController> (
 		dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription,
 		actionPerformer);

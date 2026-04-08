@@ -252,7 +252,7 @@ void UIGridController::setupMenu ()
 	gridMenu->addEntry (item);
 	item->setActions ([this] (auto&&) {
 		syncMenuValueAndSize ();
-		auto dc = new UIDialogController (shared (this), gridMenu->getFrame ());
+		auto dc = makeShared<UIDialogController> (shared (this), gridMenu->getFrame ());
 		dc->run ("grid.dialog", "Grid Setup", "Close", nullptr, shared (this),
 				 UIEditController::getEditorDescription ());
 	});

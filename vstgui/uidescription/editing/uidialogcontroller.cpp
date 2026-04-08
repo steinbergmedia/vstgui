@@ -213,7 +213,6 @@ SharedPointer<CView> UIDialogController::verifyView (const SharedPointer<CView>&
 			auto controller = dialogController.cast<IController> ();
 			if (auto subView = dialogDescription->createView (templateName.c_str (), controller))
 			{
-				subView->setAttribute (kCViewControllerAttribute, controller);
 				sizeDiff.x = subView->getWidth () - view->getWidth ();
 				sizeDiff.y = subView->getHeight () - view->getHeight ();
 				CRect size = view->getViewSize ();
@@ -223,8 +222,6 @@ SharedPointer<CView> UIDialogController::verifyView (const SharedPointer<CView>&
 				view->setMouseableArea (size);
 				if (auto container = view->asViewContainer ())
 					container->addSubview (subView);
-				if (controller)
-					dialogController->remember ();
 				customViewEmbedder = view;
 			}
 		}

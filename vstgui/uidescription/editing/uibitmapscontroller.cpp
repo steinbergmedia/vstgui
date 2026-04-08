@@ -1076,7 +1076,7 @@ UIBitmapsController::~UIBitmapsController () {}
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsController::showSettingsDialog ()
 {
-	auto* dc = new UIDialogController (shared (this), bitmapPathEdit->getFrame ());
+	auto dc = makeShared<UIDialogController> (shared (this), bitmapPathEdit->getFrame ());
 	auto fsController = makeShared<UIBitmapSettingsController> (
 		dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription,
 		actionPerformer, undoManager);
