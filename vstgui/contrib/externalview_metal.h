@@ -10,6 +10,26 @@
 #import <QuartzCore/CAMetalLayer.h>
 #import <functional>
 #import <mutex>
+#import <AvailabilityMacros.h>
+
+#if defined(MAC_OS_VERSION_14_0) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_VERSION_14_0
+#define VSTGUI_CA_METAL_DISPLAY_LINK
+#endif
+
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+#import <QuartzCore/CAMetalDisplayLink.h>
+#define VSTGUI_CA_METAL_DISPLAY_LINK
+
+//------------------------------------------------------------------------
+using VSTGUIMetalDisplayLinkDelegateNeedsUpdateCallback =
+	std::function<void (id<CAMetalDrawable>, CFTimeInterval targetTimestamp,
+						CFTimeInterval targetPresentationTimestamp)>;
+
+@interface NSObject ()
+- (void)setUpdateCallback:(const VSTGUIMetalDisplayLinkDelegateNeedsUpdateCallback&)callback;
+@end
+//------------------------------------------------------------------------
+#endif
 
 //------------------------------------------------------------------------
 using VSTGUIMetalLayerDelegateDrawCallback = std::function<void ()>;
@@ -42,7 +62,8 @@ struct IMetalRenderer
 	virtual ~IMetalRenderer () noexcept = default;
 
 	virtual bool init (IMetalView* metalView, CAMetalLayer* metalLayer) = 0;
-	virtual void draw (id<CAMetalDrawable> drawable) = 0;
+	virtual void draw (id<CAMetalDrawable> drawable, CFTimeInterval targetTimestamp,
+					   CFTimeInterval targetPresentationTimestamp) = 0;
 	virtual void onSizeUpdate (int32_t width, int32_t height, double scaleFactor) = 0;
 	virtual void onAttached () = 0;
 	virtual void onRemoved () = 0;
@@ -87,6 +108,49 @@ struct MetalLayerDelegate : RuntimeObjCClass<MetalLayerDelegate>
 
 	static id<CAAction> actionForLayer (CALayer* layer, NSString* key) { return [NSNull null]; }
 };
+
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+//------------------------------------------------------------------------
+struct MetalDisplayLinkDelegate : RuntimeObjCClass<MetalDisplayLinkDelegate>
+{
+	static constexpr auto CallbackVarName = "callback";
+
+	static Class CreateClass ()
+	{
+		return ObjCClassBuilder ()
+			.init ("MetalLayerDelegate", [NSObject class])
+			.addMethod (@selector (metalDisplayLink:needsUpdate:), metalDisplayLinkNeedsUpdate)
+			.addMethod (@selector (setUpdateCallback:), setUpdateCallback)
+			.addProtocol ("CAMetalDisplayLinkDelegate")
+			.addIvar<VSTGUIMetalDisplayLinkDelegateNeedsUpdateCallback> (CallbackVarName)
+			.finalize ();
+	}
+
+	static void setUpdateCallback (id self, SEL cmd,
+								   VSTGUIMetalDisplayLinkDelegateNeedsUpdateCallback callback)
+	{
+		auto instance = makeInstance (self);
+		if (auto var = instance.getVariable<VSTGUIMetalDisplayLinkDelegateNeedsUpdateCallback> (
+				CallbackVarName))
+			var->set (callback);
+	}
+
+	static void metalDisplayLinkNeedsUpdate (id self, SEL cmd, CAMetalDisplayLink* link,
+											 CAMetalDisplayLinkUpdate* update)
+	{
+		auto instance = makeInstance (self);
+		if (auto var = instance.getVariable<VSTGUIMetalDisplayLinkDelegateNeedsUpdateCallback> (
+				CallbackVarName))
+		{
+			if (auto callback = var->get ())
+			{
+				callback (update.drawable, update.targetTimestamp,
+						  update.targetPresentationTimestamp);
+			}
+		}
+	}
+};
+#endif
 
 //------------------------------------------------------------------------
 struct MetalNSView : RuntimeObjCClass<MetalNSView>
@@ -164,7 +228,7 @@ struct MetalView : ExternalNSViewBase<NSView>,
 	{
 		if (!renderer)
 			return {};
-		if (auto metalView = std::shared_ptr<MetalView> (new MetalView (renderer)))
+		if (auto metalView = std::shared_ptr<MetalView> (new MetalView (renderer, false)))
 		{
 			if (renderer->init (metalView.get (), metalView->metalLayer))
 				return metalView;
@@ -172,10 +236,26 @@ struct MetalView : ExternalNSViewBase<NSView>,
 		return {};
 	}
 
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+
+	static std::shared_ptr<MetalView> make (const MetalRendererPtr& renderer, bool useDisplayLink)
+	{
+		if (!renderer)
+			return {};
+		if (auto metalView = std::shared_ptr<MetalView> (new MetalView (renderer, useDisplayLink)))
+		{
+			if (renderer->init (metalView.get (), metalView->metalLayer))
+				return metalView;
+		}
+		return {};
+	}
+
+#endif
+
 	/** immediately render the view [thread safe] */
 	void render () override
 	{
-		doLocked ([&] () { renderer->draw (metalLayer.nextDrawable); });
+		doLocked ([&] () { renderer->draw (metalLayer.nextDrawable, 0, 0); });
 	}
 
 	/** do something locked [thread safe] */
@@ -198,7 +278,12 @@ private:
 	Mutex mutex;
 	MetalRendererPtr renderer;
 
-	MetalView (const MetalRendererPtr& renderer)
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+	CAMetalDisplayLink* _displayLink {nullptr};
+	id _displayLinkDelegate {nullptr};
+#endif
+
+	MetalView (const MetalRendererPtr& renderer, bool useDisplayLink)
 	: Base ([MetalNSView::alloc () init]), renderer (renderer)
 	{
 		metalLayerDelegate = [MetalLayerDelegate::alloc () init];
@@ -209,9 +294,24 @@ private:
 		metalLayer.geometryFlipped = YES;
 		metalLayer.opaque = NO;
 		metalLayer.contentsGravity = kCAGravityBottomLeft;
-		[metalLayerDelegate setDrawCallback:[this] () {
-			render ();
-		}];
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+		if (useDisplayLink)
+		{
+			_displayLink = [[CAMetalDisplayLink alloc] initWithMetalLayer:metalLayer];
+			_displayLinkDelegate = [MetalDisplayLinkDelegate::alloc () init];
+			[_displayLinkDelegate
+				setUpdateCallback:[this] (auto drawable, auto time, auto presentTime) {
+					doLocked ([&] () { this->renderer->draw (drawable, time, presentTime); });
+				}];
+			_displayLink.delegate = _displayLinkDelegate;
+		}
+		else
+#endif
+		{
+			[metalLayerDelegate setDrawCallback:[this] () {
+				render ();
+			}];
+		}
 		[view setScreenChangedCallback:[this] (NSScreen* screen) {
 			this->renderer->onScreenChanged (screen);
 		}];
@@ -222,6 +322,13 @@ private:
 		if (Base::attach (parent, parentViewType))
 		{
 			renderer->onAttached ();
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+			if (_displayLink)
+			{
+				[_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+				_displayLink.paused = NO;
+			}
+#endif
 			return true;
 		}
 		return false;
@@ -229,6 +336,13 @@ private:
 
 	bool remove () override
 	{
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+		if (_displayLink)
+		{
+			_displayLink.paused = YES;
+			[_displayLink removeFromRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+		}
+#endif
 		if (Base::remove ())
 		{
 			renderer->onRemoved ();
@@ -265,6 +379,8 @@ private:
 public:
 	~MetalView () noexcept override
 	{
+		[_displayLink invalidate];
+		[_displayLinkDelegate release];
 		[metalLayerDelegate release];
 		[metalLayer release];
 	}

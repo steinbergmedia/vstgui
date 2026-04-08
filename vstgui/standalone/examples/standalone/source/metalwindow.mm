@@ -30,9 +30,9 @@ struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 	simd::float4 colorRight {1, 0, 0, 1};
 
 	uint64_t frameCounter {0};
+	CFTimeInterval lastTargetTime {};
 
 	ExternalView::IMetalView* _metalView {nullptr};
-	CVDisplayLinkRef _displayLink {nullptr};
 
 #if !__has_feature(objc_arc)
 	~ExampleMetalRenderer () noexcept
@@ -112,46 +112,23 @@ struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 		colorRight.z = (1.f + std::sin (frameCounter * 0.031f)) * 0.5f;
 	}
 
-	static CVReturn displayLinkRender (CVDisplayLinkRef displayLink, const CVTimeStamp* now,
-									   const CVTimeStamp* outputTime, CVOptionFlags flagsIn,
-									   CVOptionFlags* flagsOut, void* displayLinkContext)
-	{
-		auto Self = reinterpret_cast<ExampleMetalRenderer*> (displayLinkContext);
-		Self->updateColors ();
-		Self->_metalView->render ();
-	}
-
 	void onAttached () override {}
 
-	void onRemoved () override
-	{
-		CVDisplayLinkStop (_displayLink);
-		CVDisplayLinkRelease (_displayLink);
-		_displayLink = nullptr;
-	}
+	void onRemoved () override {}
 
-	void onScreenChanged (NSScreen* screen) override
-	{
-		if (_displayLink)
-			onRemoved ();
-		auto result = CVDisplayLinkCreateWithActiveCGDisplays (&_displayLink);
-		if (result != kCVReturnSuccess)
-			return;
-		result = CVDisplayLinkSetOutputCallback (_displayLink, displayLinkRender, this);
-		if (result != kCVReturnSuccess)
-			return;
-		auto displayID = static_cast<CGDirectDisplayID> (
-			[screen.deviceDescription[@"NSScreenNumber"] unsignedIntValue]);
-		result = CVDisplayLinkSetCurrentCGDisplay (_displayLink, displayID);
-		if (result != kCVReturnSuccess)
-			return;
-		CVDisplayLinkStart (_displayLink);
-	}
+	void onScreenChanged (NSScreen* screen) override {}
 
-	void draw (id<CAMetalDrawable> drawable) override
+	void draw (id<CAMetalDrawable> drawable, CFTimeInterval targetTimestamp,
+			   CFTimeInterval targetPresentationTimestamp) override
 	{
 		if (!_pipelineState)
 			return;
+
+		if (lastTargetTime != targetTimestamp)
+		{
+			updateColors ();
+			lastTargetTime = targetTimestamp;
+		}
 
 		float width = _viewportSize.x * 0.5;
 		float height = _viewportSize.y * 0.5;
@@ -215,7 +192,7 @@ struct MetalController : DelegationController,
 			if (*viewName == "MetalView")
 			{
 				auto renderer = std::make_shared<ExampleMetalRenderer> ();
-				if (auto metalView = ExternalView::MetalView::make (renderer))
+				if (auto metalView = ExternalView::MetalView::make (renderer, true))
 				{
 					return makeShared<CExternalView> (CRect {}, metalView);
 				}
