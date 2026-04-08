@@ -577,13 +577,6 @@ bool COptionMenu::popup (CFrame& frame, const CPoint& frameLocation, const Popup
 			frame->removeSubview (menu);
 			frame->setFocusView (prevFocusView);
 		}
-		else
-		{
-			// if the selected menu item is a command menu and the command menu has removed this
-			// option menu from the view hierarchy then we have to make sure the reference count is
-			// corrected
-			menu->remember ();
-		}
 		if (callback)
 			callback (menu);
 	});
