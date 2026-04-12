@@ -14,7 +14,6 @@
 #include "malloc.h"
 #include "events.h"
 #include "animation/animator.h"
-#include "../uidescription/icontroller.h"
 #include "platform/iplatformframe.h"
 #include <cassert>
 #include <unordered_map>
