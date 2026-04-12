@@ -16,6 +16,8 @@
 namespace VSTGUI {
 namespace Standalone {
 
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+
 //------------------------------------------------------------------------
 struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 {
@@ -100,14 +102,14 @@ struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 	{
 		++frameCounter;
 		colorTop.x = (1.f + std::sin (frameCounter * 0.013f)) * 0.5f;
-		colorTop.y = (1.f + std::sin (frameCounter * 0.021f)) * 0.5f;
+		colorTop.y = (1.f + std::cos (frameCounter * 0.021f)) * 0.5f;
 		colorTop.z = (1.f + std::sin (frameCounter * 0.037f)) * 0.5f;
 
 		colorLeft.x = (1.f + std::sin (frameCounter * 0.031f)) * 0.5f;
 		colorLeft.y = (1.f + std::sin (frameCounter * 0.021f)) * 0.5f;
-		colorLeft.z = (1.f + std::sin (frameCounter * 0.011f)) * 0.5f;
+		colorLeft.z = (1.f + std::cos (frameCounter * 0.011f)) * 0.5f;
 
-		colorRight.x = (1.f + std::sin (frameCounter * 0.025f)) * 0.5f;
+		colorRight.x = (1.f + std::cos (frameCounter * 0.025f)) * 0.5f;
 		colorRight.y = (1.f + std::sin (frameCounter * 0.012f)) * 0.5f;
 		colorRight.z = (1.f + std::sin (frameCounter * 0.031f)) * 0.5f;
 	}
@@ -124,7 +126,7 @@ struct ExampleMetalRenderer : ExternalView::IMetalRenderer
 		if (!_pipelineState)
 			return;
 
-		if (lastTargetTime != targetTimestamp)
+		if (lastTargetTime != targetTimestamp || targetTimestamp == 0.)
 		{
 			updateColors ();
 			lastTargetTime = targetTimestamp;
@@ -192,7 +194,7 @@ struct MetalController : DelegationController,
 			if (*viewName == "MetalView")
 			{
 				auto renderer = std::make_shared<ExampleMetalRenderer> ();
-				if (auto metalView = ExternalView::MetalView::make (renderer, true))
+				if (auto metalView = ExternalView::MetalView::make (renderer, true, false))
 				{
 					return makeShared<CExternalView> (CRect {}, metalView);
 				}
@@ -220,6 +222,10 @@ WindowPtr makeNewMetalExampleWindow ()
 
 	return UIDesc::makeWindow (config);
 }
+#else
+//------------------------------------------------------------------------
+WindowPtr makeNewMetalExampleWindow () { return {}; }
+#endif
 
 //------------------------------------------------------------------------
 } // Standalone

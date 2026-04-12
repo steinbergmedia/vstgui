@@ -5,11 +5,13 @@
 #pragma once
 
 #import "externalview_nsview.h"
+#import "../lib/vstguibase.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 #import <functional>
 #import <mutex>
+#import <semaphore>
 #import <AvailabilityMacros.h>
 
 #if defined(MAC_OS_VERSION_14_0) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_VERSION_14_0
@@ -71,6 +73,9 @@ struct IMetalRenderer
 };
 
 using MetalRendererPtr = std::shared_ptr<IMetalRenderer>;
+
+//------------------------------------------------------------------------
+namespace Detail {
 
 //------------------------------------------------------------------------
 struct MetalLayerDelegate : RuntimeObjCClass<MetalLayerDelegate>
@@ -214,6 +219,9 @@ struct MetalNSView : RuntimeObjCClass<MetalNSView>
 };
 
 //------------------------------------------------------------------------
+} // Detail
+
+//------------------------------------------------------------------------
 struct MetalView : ExternalNSViewBase<NSView>,
 				   IMetalView
 {
@@ -237,12 +245,18 @@ struct MetalView : ExternalNSViewBase<NSView>,
 	}
 
 #ifdef VSTGUI_CA_METAL_DISPLAY_LINK
-
-	static std::shared_ptr<MetalView> make (const MetalRendererPtr& renderer, bool useDisplayLink)
+	/** make a metal view conditionally triggered via a display link and conditionally triggered on
+	 * a background thread or the main thread.
+	 *
+	 * this is only available when the minimum deployment target is macOS 14.
+	 */
+	static std::shared_ptr<MetalView> make (const MetalRendererPtr& renderer, bool useDisplayLink,
+											bool onMainThread = true)
 	{
 		if (!renderer)
 			return {};
-		if (auto metalView = std::shared_ptr<MetalView> (new MetalView (renderer, useDisplayLink)))
+		if (auto metalView =
+				std::shared_ptr<MetalView> (new MetalView (renderer, useDisplayLink, onMainThread)))
 		{
 			if (renderer->init (metalView.get (), metalView->metalLayer))
 				return metalView;
@@ -255,6 +269,13 @@ struct MetalView : ExternalNSViewBase<NSView>,
 	/** immediately render the view [thread safe] */
 	void render () override
 	{
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+		vstgui_assert (_displayLink == nullptr,
+					   "When using a display link, your renderer is automatically called when a "
+					   "new frame needs to be rendered.");
+		if (_displayLink)
+			return;
+#endif
 		doLocked ([&] () { renderer->draw (metalLayer.nextDrawable, 0, 0); });
 	}
 
@@ -281,12 +302,66 @@ private:
 #ifdef VSTGUI_CA_METAL_DISPLAY_LINK
 	CAMetalDisplayLink* _displayLink {nullptr};
 	id _displayLinkDelegate {nullptr};
+	NSRunLoop* _displayLinkRunLoop {nullptr};
+	struct BackgroundThread
+	{
+		static NSRunLoop* getRunLoop () { return instance ()._runLoop; }
+
+	private:
+		static BackgroundThread& instance ()
+		{
+			static BackgroundThread thread;
+			return thread;
+		}
+
+		BackgroundThread ()
+		{
+			_thread = [[NSThread alloc] initWithBlock:^{
+				@autoreleasepool
+				{
+					_runLoop = [NSRunLoop currentRunLoop];
+					semaphore.release ();
+					[_runLoop addPort:_keepAlivePort forMode:NSDefaultRunLoopMode];
+					while (doRunning)
+					{
+						[_runLoop runMode:NSDefaultRunLoopMode beforeDate:NSDate.distantFuture];
+					}
+					semaphore.release ();
+				}
+			}];
+			semaphore.acquire ();
+			_thread.name = @"MetalDisplayLink Background";
+			[_thread start];
+			semaphore.acquire ();
+		}
+		~BackgroundThread () noexcept
+		{
+			doRunning = false;
+			if (_runLoop)
+			{
+				[_runLoop removePort:_keepAlivePort forMode:NSDefaultRunLoopMode];
+				[_runLoop performBlock:^{
+					[_thread cancel];
+				}];
+			}
+			semaphore.acquire ();
+#if !__has_feature(objc_arc)
+			[_thread release];
+			[_keepAlivePort release];
+#endif
+		}
+		std::atomic_bool doRunning {true};
+		NSThread* _thread {nullptr};
+		NSRunLoop* _runLoop {nullptr};
+		NSPort* _keepAlivePort {[NSMachPort port]};
+		std::binary_semaphore semaphore {1};
+	};
 #endif
 
-	MetalView (const MetalRendererPtr& renderer, bool useDisplayLink)
-	: Base ([MetalNSView::alloc () init]), renderer (renderer)
+	MetalView (const MetalRendererPtr& renderer, bool useDisplayLink, bool onMainThread = true)
+	: Base ([Detail::MetalNSView::alloc () init]), renderer (renderer)
 	{
-		metalLayerDelegate = [MetalLayerDelegate::alloc () init];
+		metalLayerDelegate = [Detail::MetalLayerDelegate::alloc () init];
 		metalLayer = [CAMetalLayer new];
 		metalLayer.delegate = metalLayerDelegate;
 		view.layer = metalLayer;
@@ -298,12 +373,20 @@ private:
 		if (useDisplayLink)
 		{
 			_displayLink = [[CAMetalDisplayLink alloc] initWithMetalLayer:metalLayer];
-			_displayLinkDelegate = [MetalDisplayLinkDelegate::alloc () init];
+			_displayLinkDelegate = [Detail::MetalDisplayLinkDelegate::alloc () init];
 			[_displayLinkDelegate
 				setUpdateCallback:[this] (auto drawable, auto time, auto presentTime) {
 					doLocked ([&] () { this->renderer->draw (drawable, time, presentTime); });
 				}];
 			_displayLink.delegate = _displayLinkDelegate;
+			if (onMainThread)
+			{
+				_displayLinkRunLoop = [NSRunLoop mainRunLoop];
+			}
+			else
+			{
+				_displayLinkRunLoop = BackgroundThread::getRunLoop ();
+			}
 		}
 		else
 #endif
@@ -325,7 +408,7 @@ private:
 #ifdef VSTGUI_CA_METAL_DISPLAY_LINK
 			if (_displayLink)
 			{
-				[_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+				[_displayLink addToRunLoop:_displayLinkRunLoop forMode:NSRunLoopCommonModes];
 				_displayLink.paused = NO;
 			}
 #endif
@@ -340,7 +423,7 @@ private:
 		if (_displayLink)
 		{
 			_displayLink.paused = YES;
-			[_displayLink removeFromRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+			[_displayLink removeFromRunLoop:_displayLinkRunLoop forMode:NSRunLoopCommonModes];
 		}
 #endif
 		if (Base::remove ())
@@ -375,16 +458,22 @@ private:
 		});
 	}
 
-#if !__has_feature(objc_arc)
 public:
 	~MetalView () noexcept override
 	{
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
 		[_displayLink invalidate];
+#if !__has_feature(objc_arc)
+		[_displayLink release];
 		[_displayLinkDelegate release];
+#endif
+#endif
+
+#if !__has_feature(objc_arc)
 		[metalLayerDelegate release];
 		[metalLayer release];
-	}
 #endif
+	}
 };
 
 //------------------------------------------------------------------------
