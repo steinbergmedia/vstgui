@@ -132,6 +132,8 @@ void doAssert (const char* filename, const char* line, const char* condition,
 
 namespace Debug {
 
+#if DEBUG
+
 //------------------------------------------------------------------------
 Backtrace backtrace (uint32_t maxFrames)
 {
@@ -157,6 +159,8 @@ Backtrace backtrace (uint32_t maxFrames)
 #endif
 	return result;
 }
+
+#endif
 
 //------------------------------------------------------------------------
 } // Debug
