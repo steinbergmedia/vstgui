@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/QuartzCore.h>
 
 #import "../../../../lib/cframe.h"
 #import "../../../../lib/platform/mac/cocoa/cocoahelpers.h"
@@ -51,6 +52,7 @@ class Window;
 //------------------------------------------------------------------------
 @interface VSTGUIWindowDelegate : NSObject <NSWindowDelegate>
 @property VSTGUI::Standalone::Platform::Mac::Window* _Nullable macWindow;
+@property NSRect frameBeforeFullscreen;
 @end
 
 //------------------------------------------------------------------------
@@ -661,6 +663,82 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 - (void)noResponderFor:(nonnull SEL)eventSelector
 {
 	// prevent Beep
+}
+
+//------------------------------------------------------------------------
+- (nullable NSArray<NSWindow*>*)customWindowsToEnterFullScreenForWindow:(NSWindow*)window
+{
+	return @[window];
+}
+
+//------------------------------------------------------------------------
+- (void)window:(NSWindow*)window
+	startCustomAnimationToEnterFullScreenOnScreen:(NSScreen*)screen
+									 withDuration:(NSTimeInterval)duration
+{
+	self.frameBeforeFullscreen = window.frame;
+	auto styleMask = window.styleMask | NSWindowStyleMaskFullScreen;
+
+	NSRect vf = screen.frame;
+	NSRect targetContentRect = vf;
+	targetContentRect = [NSWindow frameRectForContentRect:targetContentRect styleMask:styleMask];
+	targetContentRect.size = [self windowWillResize:window toSize:targetContentRect.size];
+	targetContentRect = [NSWindow contentRectForFrameRect:targetContentRect styleMask:styleMask];
+
+	targetContentRect.origin.x = vf.origin.x + (vf.size.width - targetContentRect.size.width) / 2.0;
+	targetContentRect.origin.y =
+		vf.origin.y + (vf.size.height - targetContentRect.size.height) / 2.0;
+
+	NSRect targetFrame = [NSWindow frameRectForContentRect:targetContentRect styleMask:styleMask];
+
+	[NSAnimationContext
+		runAnimationGroup:^(NSAnimationContext* _Nonnull context) {
+			context.duration = duration > 0.0 ? duration : 0.35;
+			context.timingFunction =
+				[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+
+			[[window animator] setFrame:targetFrame display:YES];
+			[[window animator] setStyleMask:styleMask];
+		}
+		completionHandler:^ {
+		}];
+}
+
+//------------------------------------------------------------------------
+- (nullable NSArray<NSWindow*>*)customWindowsToExitFullScreenForWindow:(NSWindow*)window
+{
+	return @[window];
+}
+
+//------------------------------------------------------------------------
+- (void)window:(NSWindow*)window
+	startCustomAnimationToExitFullScreenWithDuration:(NSTimeInterval)duration
+{
+	auto styleMask = window.styleMask & (~NSWindowStyleMaskFullScreen);
+
+	NSRect vf = self.frameBeforeFullscreen;
+	NSRect targetContentRect = vf;
+	targetContentRect = [NSWindow frameRectForContentRect:targetContentRect styleMask:styleMask];
+	targetContentRect.size = [self windowWillResize:window toSize:targetContentRect.size];
+	targetContentRect = [NSWindow contentRectForFrameRect:targetContentRect styleMask:styleMask];
+
+	NSRect targetFrame = [NSWindow frameRectForContentRect:targetContentRect styleMask:styleMask];
+
+	[NSAnimationContext
+		runAnimationGroup:^(NSAnimationContext* _Nonnull context) {
+			context.duration = duration > 0.0 ? duration : 0.35;
+			context.timingFunction =
+				[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+
+			[[window animator] setFrame:targetFrame display:YES];
+			[[window animator] setStyleMask:styleMask];
+		}
+		completionHandler:^{
+			if (!window.opaque)
+			{
+				[window invalidateShadow];
+			}
+		}];
 }
 
 @end
