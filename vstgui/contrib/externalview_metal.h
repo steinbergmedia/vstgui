@@ -438,7 +438,14 @@ private:
 	{
 		contentScaleFactor = scaleFactor;
 		metalLayer.contentsScale = scaleFactor;
+#ifdef VSTGUI_CA_METAL_DISPLAY_LINK
+		if (!_displayLink)
+		{
+			[metalLayer setNeedsDisplay];
+		}
+#else
 		[metalLayer setNeedsDisplay];
+#endif
 		onSizeUpdate ();
 	}
 
