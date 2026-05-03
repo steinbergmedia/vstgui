@@ -361,7 +361,7 @@ enum class PlatformFileSelectorFlags : uint32_t;
 using PlatformFramePtr = SharedPointer<IPlatformFrame>;
 using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
 using PlatformFontPtr = SharedPointer<IPlatformFont>;
-using PlatformStringPtr = SharedPointer<IPlatformString>;
+using PlatformStringPtr = shared_ptr<IPlatformString>;
 using PlatformTimerPtr = std::shared_ptr<IPlatformTimer>;
 using PlatformResourceInputStreamPtr = std::unique_ptr<IPlatformResourceInputStream>;
 using PlatformFactoryPtr = std::unique_ptr<IPlatformFactory>;

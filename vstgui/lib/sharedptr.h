@@ -17,6 +17,24 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
+//------------------------------------------------------------------------
+template<typename T>
+struct shared_ptr : std::shared_ptr<T>
+{
+	using std::shared_ptr<T>::shared_ptr;
+
+	shared_ptr (const std::shared_ptr<T>& other) : std::shared_ptr<T> (other) {}
+	shared_ptr (std::shared_ptr<T>&& other) : std::shared_ptr<T> (std::move (other)) {}
+
+	template<typename I>
+	shared_ptr<I> cast () const
+	{
+		if constexpr (std::is_base_of_v<T, I>)
+			return shared_ptr<I> (std::static_pointer_cast<I> (*this));
+		return shared_ptr<I> (std::dynamic_pointer_cast<I> (*this));
+	}
+};
+
 //-----------------------------------------------------------------------------
 class IReference
 {

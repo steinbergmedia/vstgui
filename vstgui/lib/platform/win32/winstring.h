@@ -18,8 +18,8 @@ class WinString final : public IPlatformString
 {
 public:
 	WinString (UTF8StringPtr utf8String);
-	~WinString () noexcept;
-	
+	~WinString () noexcept override;
+
 	void setUTF8String (UTF8StringPtr utf8String) override;
 
 	const WCHAR* getWideString () const { return wideString; }

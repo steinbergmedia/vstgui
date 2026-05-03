@@ -208,7 +208,7 @@ PlatformResourceInputStreamPtr
 //-----------------------------------------------------------------------------
 PlatformStringPtr LinuxFactory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return makeShared<LinuxString> (utf8String);
+	return std::make_shared<LinuxString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------

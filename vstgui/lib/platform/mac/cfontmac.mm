@@ -243,7 +243,7 @@ CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color) const
 
 //-----------------------------------------------------------------------------
 CTLineRef CoreTextFont::createCTLine (const PlatformGraphicsDeviceContextPtr& context,
-									  const SharedPointer<MacString>& macString,
+									  const shared_ptr<MacString>& macString,
 									  const CColor& color) const
 {
 	if (macString->getCTLineFontRef () == this && macString->getCTLineColor () == color)

@@ -11,9 +11,11 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class IPlatformString : public AtomicReferenceCounted
+class IPlatformString
 {
 public:
+	virtual ~IPlatformString () noexcept = default;
+
 	virtual void setUTF8String (UTF8StringPtr utf8String) = 0;
 };
 

@@ -48,7 +48,7 @@ protected:
 	CFDictionaryRef getStringAttributes (const CGColorRef color = nullptr) const;
 
 	CTLineRef createCTLine (const PlatformGraphicsDeviceContextPtr& context,
-							const SharedPointer<MacString>& macString, const CColor& color) const;
+							const shared_ptr<MacString>& macString, const CColor& color) const;
 
 	CTFontRef fontRef;
 	int32_t style;

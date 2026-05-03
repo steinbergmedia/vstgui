@@ -184,7 +184,7 @@ PlatformResourceInputStreamPtr
 //-----------------------------------------------------------------------------
 PlatformStringPtr MacFactory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return makeShared<MacString> (utf8String);
+	return std::make_shared<MacString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------

@@ -364,7 +364,7 @@ PlatformResourceInputStreamPtr
 //-----------------------------------------------------------------------------
 PlatformStringPtr Win32Factory::createString (UTF8StringPtr utf8String) const noexcept
 {
-	return makeShared<WinString> (utf8String);
+	return std::make_shared<WinString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------
