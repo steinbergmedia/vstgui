@@ -17,9 +17,11 @@ namespace VSTGUI {
 struct GenericOptionMenuTheme;
 
 //-----------------------------------------------------------------------------
-class IPlatformFrame : public AtomicReferenceCounted
+class IPlatformFrame
 {
 public:
+	virtual ~IPlatformFrame () noexcept = default;
+
 	/** get the top left position in global coordinates */
 	virtual bool getGlobalPosition (CPoint& pos) const = 0;
 	/** set size of platform representation relative to parent */
@@ -93,7 +95,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformFrameTouchBarExtension : public virtual IReference /* Extents IPlatformFrame */
+class IPlatformFrameTouchBarExtension /* Extents IPlatformFrame */
 {
 public:
 	virtual ~IPlatformFrameTouchBarExtension () noexcept = default;

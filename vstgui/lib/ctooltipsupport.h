@@ -39,7 +39,7 @@ protected:
 	};
 
 	SharedPointer<CVSTGUITimer> timer;
-	PlatformFramePtr frame;
+	const PlatformFramePtr& frame;
 	SharedPointer<CView> currentView;
 
 	uint32_t delay;

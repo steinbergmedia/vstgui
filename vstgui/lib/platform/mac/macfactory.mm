@@ -93,9 +93,9 @@ PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const C
 										  IPlatformFrameConfig* config) const noexcept
 {
 #if TARGET_OS_IPHONE
-	return makeShared<UIViewFrame> (frame, size, (__bridge UIView*)parent);
+	return std::make_unique<UIViewFrame> (frame, size, (__bridge UIView*)parent);
 #else
-	return makeShared<NSViewFrame> (frame, size, reinterpret_cast<NSView*> (parent), config);
+	return std::make_unique<NSViewFrame> (frame, size, reinterpret_cast<NSView*> (parent), config);
 #endif
 }
 
@@ -221,11 +221,11 @@ PlatformGradientPtr MacFactory::createGradient () const noexcept
 }
 
 //-----------------------------------------------------------------------------
-PlatformFileSelectorPtr MacFactory::createFileSelector (PlatformFileSelectorStyle style,
-														PlatformFramePtr frame) const noexcept
+PlatformFileSelectorPtr MacFactory::createFileSelector (
+	PlatformFileSelectorStyle style, const PlatformFramePtr& frame) const noexcept
 {
 #if !TARGET_OS_IPHONE
-	auto nsViewFrame = frame.cast<NSViewFrame> ();
+	auto nsViewFrame = static_cast<NSViewFrame*> (frame.get ());
 	return createCocoaFileSelector (style, nsViewFrame);
 #endif
 	return nullptr;

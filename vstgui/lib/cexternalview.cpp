@@ -59,7 +59,7 @@ public:
 	{
 		if (!frame || !view)
 			return;
-		auto platformFrame = frame->getPlatformFrame ();
+		const auto& platformFrame = frame->getPlatformFrame ();
 		if (!platformFrame)
 			return;
 		ExternalView::PlatformViewType viewType = {};

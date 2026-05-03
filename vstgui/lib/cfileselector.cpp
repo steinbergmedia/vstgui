@@ -268,6 +268,9 @@ UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
 SharedPointer<CNewFileSelector> CNewFileSelector::create (const SharedPointer<CFrame>& parent,
 														  Style style)
 {
+	if (!parent)
+		return {};
+
 	PlatformFileSelectorStyle platformStyle;
 	switch (style)
 	{
@@ -284,11 +287,8 @@ SharedPointer<CNewFileSelector> CNewFileSelector::create (const SharedPointer<CF
 			vstgui_assert (false);
 			return nullptr;
 	}
-	PlatformFramePtr platformFrame;
-	if (parent)
-		platformFrame = parent->getPlatformFrame ();
 	if (auto platformSelector =
-			getPlatformFactory ().createFileSelector (platformStyle, platformFrame))
+			getPlatformFactory ().createFileSelector (platformStyle, parent->getPlatformFrame ()))
 	{
 		return makeShared<CNewFileSelector> (std::move (platformSelector), parent);
 	}

@@ -358,7 +358,7 @@ enum class PlatformGraphicsPathFillMode : int32_t;
 enum class PlatformFileSelectorStyle : uint32_t;
 enum class PlatformFileSelectorFlags : uint32_t;
 
-using PlatformFramePtr = SharedPointer<IPlatformFrame>;
+using PlatformFramePtr = std::unique_ptr<IPlatformFrame>;
 using PlatformBitmapPtr = shared_ptr<IPlatformBitmap>;
 using PlatformBitmapPixelAccessPtr = std::unique_ptr<IPlatformBitmapPixelAccess>;
 using PlatformFontPtr = shared_ptr<IPlatformFont>;

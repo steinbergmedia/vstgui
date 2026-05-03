@@ -210,7 +210,7 @@ public:
 	void dispatchEvent (Event& event) override;
 
 	VSTGUIEditorInterface* getEditor () const;
-	PlatformFramePtr getPlatformFrame () const;
+	const PlatformFramePtr& getPlatformFrame () const;
 
 #if DEBUG
 	void dumpHierarchy () override;

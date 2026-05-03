@@ -1533,7 +1533,7 @@ void CFrame::callMouseObserverOtherMouseEvent (MouseEvent& event)
 //------------------------------------------------------------------------
 bool CFrame::performDrag (const DragDescription& desc, const SharedPointer<IDragCallback>& callback)
 {
-	if (auto platformFrame = getPlatformFrame ())
+	if (const auto& platformFrame = getPlatformFrame ())
 	{
 		if (platformFrame->doDrag (desc, callback))
 		{
@@ -1561,7 +1561,7 @@ VSTGUIEditorInterface* CFrame::getEditor () const
 }
 
 //-----------------------------------------------------------------------------
-PlatformFramePtr CFrame::getPlatformFrame () const { return pImpl->platformFrame; }
+const PlatformFramePtr& CFrame::getPlatformFrame () const { return pImpl->platformFrame; }
 
 //-----------------------------------------------------------------------------
 void CFrame::platformDrawRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,

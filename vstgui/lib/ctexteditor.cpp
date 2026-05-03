@@ -685,14 +685,14 @@ void TextEditorView::takeFocus ()
 	if (!isReadOnlyMode () && frame)
 	{
 #if MAC_COCOA
-		auto pf = frame->getPlatformFrame ();
+		const auto& pf = frame->getPlatformFrame ();
 		if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf.get ()))
 		{
 			cocoaTextInputClient = std::make_unique<CocoaTextInputClient> (*this);
 			cocoaFrame->setTextInputClient (cocoaTextInputClient.get ());
 		}
 #elif WINDOWS
-		auto pf = frame->getPlatformFrame ();
+		const auto& pf = frame->getPlatformFrame ();
 		if (auto winFrame = dynamic_cast<IWin32PlatformFrame*> (pf.get ()))
 		{
 			imeTextInputClient = std::make_unique<IMETextInputClient> (*this);
@@ -712,14 +712,14 @@ void TextEditorView::looseFocus ()
 	if (auto frame = getFrame ())
 	{
 #if MAC_COCOA
-		auto pf = frame->getPlatformFrame ();
+		const auto& pf = frame->getPlatformFrame ();
 		if (auto cocoaFrame = dynamic_cast<ICocoaPlatformFrame*> (pf.get ()))
 		{
 			cocoaFrame->setTextInputClient (nullptr);
 			cocoaTextInputClient.reset ();
 		}
 #elif WINDOWS
-		auto pf = getFrame ()->getPlatformFrame ();
+		const auto& pf = getFrame ()->getPlatformFrame ();
 		if (auto winFrame = dynamic_cast <IWin32PlatformFrame*> (pf.get ()))
 		{
 			winFrame->setTextInputClient (nullptr);

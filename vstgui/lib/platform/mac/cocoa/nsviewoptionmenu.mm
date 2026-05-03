@@ -269,7 +269,7 @@ void NSViewOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
 		return;
 	}
 
-	auto nsViewFrame = frame->getPlatformFrame ().cast<NSViewFrame> ();
+	auto nsViewFrame = static_cast<NSViewFrame*> (frame->getPlatformFrame ().get ());
 	nsViewFrame->setMouseCursor (kCursorDefault);
 
 	CRect globalSize = optionMenu->translateToGlobal (optionMenu->getViewSize ());
