@@ -103,7 +103,7 @@ PlatformFramePtr MacFactory::createFrame (IPlatformFrameCallback* frame, const C
 PlatformFontPtr MacFactory::createFont (const UTF8String& name, const CCoord& size,
 										const int32_t& style) const noexcept
 {
-	auto font = makeShared<CoreTextFont> (name, size, style);
+	auto font = std::make_shared<CoreTextFont> (name, size, style);
 	if (font->getFontRef ())
 		return std::move (font);
 	return nullptr;

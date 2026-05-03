@@ -144,7 +144,7 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 PlatformFontPtr LinuxFactory::createFont (const UTF8String& name, const CCoord& size,
 										  const int32_t& style) const noexcept
 {
-	return makeShared<Cairo::Font> (name, size, style);
+	return std::make_shared<Cairo::Font> (name, size, style);
 }
 
 //-----------------------------------------------------------------------------

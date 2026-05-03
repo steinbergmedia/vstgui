@@ -234,7 +234,7 @@ D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& sty
 }
 
 //-----------------------------------------------------------------------------
-D2DFont::~D2DFont ()
+D2DFont::~D2DFont () noexcept
 {
 	if (textFormat)
 		textFormat->Release ();

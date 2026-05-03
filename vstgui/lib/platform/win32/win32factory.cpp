@@ -272,7 +272,7 @@ PlatformFramePtr Win32Factory::createFrame (IPlatformFrameCallback* frame, const
 PlatformFontPtr Win32Factory::createFont (const UTF8String& name, const CCoord& size,
 										  const int32_t& style) const noexcept
 {
-	return makeShared<D2DFont> (name, size, style);
+	return std::make_shared<D2DFont> (name, size, style);
 }
 
 //-----------------------------------------------------------------------------

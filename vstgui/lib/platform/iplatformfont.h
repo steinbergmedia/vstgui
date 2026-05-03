@@ -32,7 +32,7 @@ public:
 ///
 /// Encapsulation of a platform font.
 //-----------------------------------------------------------------------------
-class IPlatformFont : public AtomicReferenceCounted
+class IPlatformFont
 {
 public:
 	/** returns the ascent line offset of the baseline of this font. If not supported returns -1 */

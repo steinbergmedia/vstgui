@@ -24,6 +24,7 @@ class CoreTextFont : public IPlatformFont, public IFontPainter
 {
 public:
 	CoreTextFont (const UTF8String& name, const CCoord& size, const int32_t& style);
+	~CoreTextFont () noexcept override;
 
 	double getAscent () const override;
 	double getDescent () const override;
@@ -38,8 +39,6 @@ public:
 	static bool getAllFontFamilies (const FontFamilyCallback& callback) noexcept;
 //------------------------------------------------------------------------------------
 protected:
-	~CoreTextFont () noexcept override;
-
 	void drawString (const PlatformGraphicsDeviceContextPtr& context,
 					 const PlatformStringPtr& string, const CPoint& p, const CColor& color,
 					 bool antialias = true) const override;

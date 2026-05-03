@@ -19,7 +19,7 @@ class Font
 {
 public:
 	Font (UTF8StringPtr name, const CCoord& size, const int32_t& style);
-	~Font ();
+	~Font () noexcept override;
 
 	bool valid () const;
 

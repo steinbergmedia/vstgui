@@ -188,7 +188,7 @@ Font::Font (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 }
 
 //------------------------------------------------------------------------
-Font::~Font () {}
+Font::~Font () noexcept {}
 
 //------------------------------------------------------------------------
 bool Font::valid () const { return impl->font; }

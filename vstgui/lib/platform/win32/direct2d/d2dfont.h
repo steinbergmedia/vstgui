@@ -21,6 +21,7 @@ class D2DFont final : public IPlatformFont, public IFontPainter
 {
 public:
 	D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style);
+	~D2DFont () noexcept;
 
 	IDWriteTextLayout* createTextLayout (const PlatformStringPtr& string) const;
 
@@ -32,8 +33,6 @@ public:
 	static void terminate ();
 
 protected:
-	~D2DFont ();
-	
 	double getAscent () const override { return ascent; }
 	double getDescent () const override { return descent; }
 	double getLeading () const override { return leading; }
