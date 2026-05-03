@@ -190,7 +190,7 @@ PlatformStringPtr MacFactory::createString (UTF8StringPtr utf8String) const noex
 //-----------------------------------------------------------------------------
 PlatformTimerPtr MacFactory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
-	return makeShared<MacTimer> (callback);
+	return std::make_shared<MacTimer> (callback);
 }
 
 //------------------------------------------------------------------------

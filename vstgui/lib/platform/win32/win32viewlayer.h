@@ -43,7 +43,7 @@ private:
 	CRect viewSize;
 	uint64_t lastDrawTime {0u};
 	CInvalidRectList invalidRectList;
-	SharedPointer<WinTimer> timer;
+	std::shared_ptr<WinTimer> timer;
 };
 
 //------------------------------------------------------------------------

@@ -16,10 +16,7 @@ MacTimer::MacTimer (IPlatformTimerCallback* callback)
 }
 
 //-----------------------------------------------------------------------------
-MacTimer::~MacTimer ()
-{
-	stop ();
-}
+MacTimer::~MacTimer () noexcept { stop (); }
 
 //-----------------------------------------------------------------------------
 bool MacTimer::start (uint32_t fireTime)

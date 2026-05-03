@@ -370,7 +370,7 @@ PlatformStringPtr Win32Factory::createString (UTF8StringPtr utf8String) const no
 //-----------------------------------------------------------------------------
 PlatformTimerPtr Win32Factory::createTimer (IPlatformTimerCallback* callback) const noexcept
 {
-	return makeShared<WinTimer> (callback);
+	return std::make_shared<WinTimer> (callback);
 }
 
 //------------------------------------------------------------------------

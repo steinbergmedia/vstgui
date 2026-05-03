@@ -16,9 +16,11 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformTimer : public AtomicReferenceCounted
+class IPlatformTimer
 {
 public:
+	virtual ~IPlatformTimer () noexcept = default;
+
 	virtual bool start (uint32_t fireTime) = 0;
 	virtual bool stop () = 0;
 };

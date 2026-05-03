@@ -246,11 +246,11 @@ PlatformTimerPtr LinuxFactory::createTimer (IPlatformTimerCallback* callback) co
 
 			IPlatformTimerCallback* callback;
 		};
-		auto timer = makeShared<Timer> (callback);
+		auto timer = std::make_shared<Timer> (callback);
 		return timer;
 	}
 #endif
-	return makeShared<X11::Timer> (callback);
+	return std::make_shared<X11::Timer> (callback);
 }
 
 //------------------------------------------------------------------------
