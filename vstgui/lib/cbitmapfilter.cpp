@@ -455,8 +455,8 @@ private:
 
 	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius, bool alphaChannelOnly)
 	{
-		auto inputPbpa = inputAccessor.getPlatformBitmapPixelAccess ();
-		auto outputPbpa = outputAccessor.getPlatformBitmapPixelAccess ();
+		const auto& inputPbpa = inputAccessor.getPlatformBitmapPixelAccess ();
+		const auto& outputPbpa = outputAccessor.getPlatformBitmapPixelAccess ();
 		auto inputAddressPtr = inputPbpa->getAddress ();
 		auto outputAddressPtr = outputPbpa->getAddress ();
 		auto width = inputPbpa->getBytesPerRow () / 4;

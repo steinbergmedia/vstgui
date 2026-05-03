@@ -124,7 +124,7 @@ PlatformBitmapPtr MacFactory::createBitmap (const CPoint& size) const noexcept
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr MacFactory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	if (auto bitmap = makeShared<CGBitmap> ())
+	if (auto bitmap = std::make_shared<CGBitmap> ())
 	{
 		if (bitmap->load (desc))
 			return bitmap;

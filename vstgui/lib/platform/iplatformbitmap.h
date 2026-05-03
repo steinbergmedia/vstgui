@@ -13,21 +13,25 @@ namespace VSTGUI {
 class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
-class IPlatformBitmap : public AtomicReferenceCounted
+class IPlatformBitmap
 {
 public:
+	virtual ~IPlatformBitmap () noexcept = default;
+
 	virtual const CPoint& getSize () const = 0;
 
-	virtual SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) = 0;
+	virtual PlatformBitmapPixelAccessPtr lockPixels (bool alphaPremultiplied) = 0;
 
 	virtual void setScaleFactor (double factor) = 0;
 	virtual double getScaleFactor () const = 0;
 };
 
 //------------------------------------------------------------------------------------
-class IPlatformBitmapPixelAccess : public AtomicReferenceCounted
+class IPlatformBitmapPixelAccess
 {
 public:
+	virtual ~IPlatformBitmapPixelAccess () noexcept = default;
+
 	enum PixelFormat
 	{
 		kARGB,

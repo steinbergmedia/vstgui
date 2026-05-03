@@ -378,7 +378,7 @@ public:
 	inline uint32_t getBitmapWidth () const { return maxX+1; }
 	inline uint32_t getBitmapHeight () const { return maxY+1; }
 
-	inline SharedPointer<IPlatformBitmapPixelAccess> getPlatformBitmapPixelAccess () const
+	inline const PlatformBitmapPixelAccessPtr& getPlatformBitmapPixelAccess () const
 	{
 		return pixelAccess;
 	}
@@ -391,11 +391,10 @@ public:
 protected:
 	CBitmapPixelAccess ();
 	~CBitmapPixelAccess () noexcept override = default;
-	void init (const SharedPointer<CBitmap>& bitmap,
-			   const SharedPointer<IPlatformBitmapPixelAccess>& pixelAccess);
+	void init (const SharedPointer<CBitmap>& bitmap, PlatformBitmapPixelAccessPtr&& pixelAccess);
 
 	SharedPointer<CBitmap> bitmap;
-	SharedPointer<IPlatformBitmapPixelAccess> pixelAccess;
+	PlatformBitmapPixelAccessPtr pixelAccess;
 	uint8_t* currentPos;
 	uint8_t* address;
 	uint32_t bytesPerRow;

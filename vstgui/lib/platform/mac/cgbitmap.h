@@ -20,7 +20,8 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class CGBitmap : public IPlatformBitmap
+class CGBitmap : public IPlatformBitmap,
+				 private std::enable_shared_from_this<CGBitmap>
 {
 public:
 	static PlatformBitmapPtr create (CPoint* size);
@@ -35,7 +36,7 @@ public:
 	
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const override { return size; }
-	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
+	PlatformBitmapPixelAccessPtr lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override { scaleFactor = factor; }
 	double getScaleFactor () const override { return scaleFactor; }
 

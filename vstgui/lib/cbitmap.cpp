@@ -312,10 +312,10 @@ CBitmapPixelAccess::CBitmapPixelAccess ()
 
 //------------------------------------------------------------------------
 void CBitmapPixelAccess::init (const SharedPointer<CBitmap>& _bitmap,
-							   const SharedPointer<IPlatformBitmapPixelAccess>& _pixelAccess)
+							   PlatformBitmapPixelAccessPtr&& _pixelAccess)
 {
 	bitmap = _bitmap;
-	pixelAccess = _pixelAccess;
+	pixelAccess = std::move (_pixelAccess);
 	address = currentPos = pixelAccess->getAddress ();
 	bytesPerRow = pixelAccess->getBytesPerRow ();
 	auto size = bitmap->getPlatformBitmap ()->getSize ();
@@ -382,7 +382,7 @@ SharedPointer<CBitmapPixelAccess> CBitmapPixelAccess::create (const SharedPointe
 		}
 	}
 	if (result)
-		result->init (bitmap, pixelAccess);
+		result->init (bitmap, std::move (pixelAccess));
 	return result;
 }
 

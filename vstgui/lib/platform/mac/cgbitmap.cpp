@@ -19,8 +19,8 @@ namespace VSTGUI {
 PlatformBitmapPtr CGBitmap::create (CPoint* size)
 {
 	if (size)
-		return makeShared<CGBitmap> (*size);
-	return makeShared<CGBitmap> ();
+		return std::make_shared<CGBitmap> (*size);
+	return std::make_shared<CGBitmap> ();
 }
 
 //-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ PlatformBitmapPtr CGBitmap::createFromPath (UTF8StringPtr absolutePath)
 		CGImageSourceRef source = CGImageSourceCreateWithURL (url, nullptr);
 		if (source)
 		{
-			auto cgBitmap = makeShared<CGBitmap> ();
+			auto cgBitmap = std::make_shared<CGBitmap> ();
 			bool result = cgBitmap->loadFromImageSource (source);
 			if (result)
 				bitmap = std::move (cgBitmap);
@@ -54,7 +54,7 @@ PlatformBitmapPtr CGBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 		CGImageSourceRef source = CGImageSourceCreateWithData (data, nullptr);
 		if (source)
 		{
-			auto cgBitmap = makeShared<CGBitmap> ();
+			auto cgBitmap = std::make_shared<CGBitmap> ();
 			bool result = cgBitmap->loadFromImageSource (source);
 			if (result)
 				bitmap = std::move (cgBitmap);
@@ -364,7 +364,7 @@ void CGBitmap::freeCGImage ()
 class CGBitmapPixelAccess : public IPlatformBitmapPixelAccess
 {
 public:
-	CGBitmapPixelAccess (const SharedPointer<CGBitmap>& bitmap, bool alphaPremultiplied)
+	CGBitmapPixelAccess (const std::shared_ptr<CGBitmap>& bitmap, bool alphaPremultiplied)
 	: bitmap (bitmap), alphaPremultiplied (alphaPremultiplied)
 	{
 		if (!alphaPremultiplied)
@@ -424,12 +424,12 @@ public:
 	}
 	
 protected:
-	SharedPointer<CGBitmap> bitmap;
+	std::shared_ptr<CGBitmap> bitmap;
 	bool alphaPremultiplied;
 };
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremultiplied)
+PlatformBitmapPixelAccessPtr CGBitmap::lockPixels (bool alphaPremultiplied)
 {
 	if (bits == nullptr)
 	{
@@ -439,7 +439,7 @@ SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremul
 	}
 	if (bits)
 	{
-		return makeShared<CGBitmapPixelAccess> (shared (this), alphaPremultiplied);
+		return std::make_unique<CGBitmapPixelAccess> (shared_from_this (), alphaPremultiplied);
 	}
 	return nullptr;
 }
