@@ -50,8 +50,7 @@ public:
 	virtual void* getPlatformRepresentation () const = 0;
 
 	/** create a native text edit control */
-	virtual SharedPointer<IPlatformTextEdit>
-	createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0;
+	virtual PlatformTextEditPtr createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0;
 	/** create a native popup menu */
 	virtual PlatformOptionMenuPtr createPlatformOptionMenu () = 0;
 

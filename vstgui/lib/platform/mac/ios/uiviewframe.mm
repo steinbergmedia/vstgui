@@ -250,9 +250,9 @@ bool UIViewFrame::invalidRect (const CRect& rect)
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformTextEdit> UIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+PlatformTextEditPtr UIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return owned <IPlatformTextEdit> (new UITextEdit (uiView, textEdit));
+	return std::make_shared<UITextEdit> (uiView, textEdit);
 }
 
 //-----------------------------------------------------------------------------

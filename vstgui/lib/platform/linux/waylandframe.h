@@ -37,8 +37,7 @@ private:
 	bool showTooltip (const CRect& rect, const char* utf8Text) override;
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override;
-	SharedPointer<IPlatformTextEdit>
-		createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
+	PlatformTextEditPtr createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
 	PlatformOptionMenuPtr createPlatformOptionMenu () override;
 	PlatformViewLayerPtr createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
 												  IPlatformViewLayer* parentLayer) override;

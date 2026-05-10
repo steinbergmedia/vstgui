@@ -35,9 +35,11 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformTextEdit : public AtomicReferenceCounted
+class IPlatformTextEdit
 {
 public:
+	virtual ~IPlatformTextEdit () noexcept = default;
+
 	virtual UTF8String getText () = 0;
 	virtual bool setText (const UTF8String& text) = 0;
 	virtual bool updateSize () = 0;

@@ -351,6 +351,7 @@ class IPlatformGraphicsDeviceContextBitmapExt;
 class IPlatformTaskExecutor;
 class IPlatformOptionMenu;
 class IPlatformViewLayer;
+class IPlatformTextEdit;
 
 struct PlatformFileExtension;
 struct PlatformFileSelectorConfig;
@@ -377,5 +378,6 @@ using PlatformGraphicsDeviceContextPtr = std::shared_ptr<IPlatformGraphicsDevice
 using PlatformTaskExecutorPtr = std::unique_ptr<IPlatformTaskExecutor>;
 using PlatformOptionMenuPtr = std::shared_ptr<IPlatformOptionMenu>;
 using PlatformViewLayerPtr = std::shared_ptr<IPlatformViewLayer>;
+using PlatformTextEditPtr = std::shared_ptr<IPlatformTextEdit>;
 
 } // VSTGUI

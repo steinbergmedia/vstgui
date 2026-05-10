@@ -502,14 +502,14 @@ bool Win32Frame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+PlatformTextEditPtr Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
 	if (auto win32Factory = getPlatformFactory ().asWin32Factory ())
 	{
 		if (win32Factory->useGenericTextEdit ())
-			return makeShared<GenericTextEdit> (textEdit);
+			return std::make_shared<GenericTextEdit> (textEdit);
 	}
-	return owned<IPlatformTextEdit> (new Win32TextEdit (windowHandle, textEdit));
+	return std::make_shared<Win32TextEdit> (windowHandle, textEdit);
 }
 
 //-----------------------------------------------------------------------------

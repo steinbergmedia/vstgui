@@ -40,7 +40,7 @@ public:
 	bool showTooltip (const CRect& rect, const char* utf8Text) override { return false; };
 	bool hideTooltip () override { return false; };
 	void* getPlatformRepresentation () const override { return (__bridge void*)uiView; }
-	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
+	PlatformTextEditPtr createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
 	PlatformOptionMenuPtr createPlatformOptionMenu () override;
 	PlatformViewLayerPtr createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
 												  IPlatformViewLayer* parentLayer) override;

@@ -1667,9 +1667,9 @@ bool NSViewFrame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* them
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+PlatformTextEditPtr NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return makeShared<CocoaTextEdit> (nsView, textEdit);
+	return std::make_shared<CocoaTextEdit> (nsView, textEdit);
 }
 
 //-----------------------------------------------------------------------------

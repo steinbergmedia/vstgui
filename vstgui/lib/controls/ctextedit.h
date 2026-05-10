@@ -25,9 +25,8 @@ private:
 	{
 		StyleDoubleClick = CParamDisplay::LastStyle,
 	};
-public:
-	using PlatformTextEditPtr = SharedPointer<IPlatformTextEdit>;
 
+public:
 	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
 			   UTF8StringPtr txt = nullptr, const SharedPointer<CBitmap>& background = {},
 			   const int32_t style = 0);

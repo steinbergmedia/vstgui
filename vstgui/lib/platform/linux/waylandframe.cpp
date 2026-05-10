@@ -307,9 +307,9 @@ void* Frame::getPlatformRepresentation () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+PlatformTextEditPtr Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return makeShared<GenericTextEdit> (textEdit);
+	return std::make_shared<GenericTextEdit> (textEdit);
 }
 
 //------------------------------------------------------------------------
