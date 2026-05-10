@@ -21,7 +21,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class CGBitmap : public IPlatformBitmap,
-				 private std::enable_shared_from_this<CGBitmap>
+				 public std::enable_shared_from_this<CGBitmap>
 {
 public:
 	static PlatformBitmapPtr create (CPoint* size);
