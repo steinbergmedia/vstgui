@@ -42,8 +42,8 @@ private:
 	SharedPointer<IPlatformTextEdit>
 	createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
 	PlatformOptionMenuPtr createPlatformOptionMenu () override;
-	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (
-		IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
+	PlatformViewLayerPtr createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
+												  IPlatformViewLayer* parentLayer) override;
 	bool doDrag (const DragDescription& dragDescription,
 				 const SharedPointer<IDragCallback>& callback) override;
 

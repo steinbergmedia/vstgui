@@ -326,8 +326,8 @@ PlatformOptionMenuPtr Frame::createPlatformOptionMenu ()
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
-	IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+PlatformViewLayerPtr Frame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
+													 IPlatformViewLayer* parentLayer)
 {
 	// optional
 	return nullptr;

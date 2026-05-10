@@ -1687,7 +1687,8 @@ PlatformOptionMenuPtr NSViewFrame::createPlatformOptionMenu ()
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+PlatformViewLayerPtr NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
+														   IPlatformViewLayer* parentLayer)
 {
 	auto parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
 	if (parentViewLayer == nullptr || parentViewLayer->getCALayer () == nullptr)
@@ -1699,7 +1700,7 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 
 	auto caParentLayer =
 		parentViewLayer ? parentViewLayer->getCALayer () : (caLayer ? caLayer : nsView.layer);
-	auto layer = makeShared<CAViewLayer> (caParentLayer);
+	auto layer = std::make_shared<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
 	return std::move (layer);
 }

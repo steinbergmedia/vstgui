@@ -28,7 +28,7 @@ public:
 	explicit CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
 	~CLayeredViewContainer () noexcept override = default;
 
-	SharedPointer<IPlatformViewLayer> getPlatformLayer () const { return layer; }
+	PlatformViewLayerPtr getPlatformLayer () const { return layer; }
 
 	void setZIndex (uint32_t zIndex);
 	uint32_t getZIndex () const { return zIndex; }
@@ -51,7 +51,7 @@ protected:
 	CGraphicsTransform getDrawTransform () const;
 	void registerListeners (bool state);
 
-	SharedPointer<IPlatformViewLayer> layer;
+	PlatformViewLayerPtr layer;
 	SharedPointer<CLayeredViewContainer> parentLayerView;
 	uint32_t zIndex {0};
 };

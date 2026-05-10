@@ -259,12 +259,13 @@ SharedPointer<IPlatformTextEdit> UIViewFrame::createPlatformTextEdit (IPlatformT
 PlatformOptionMenuPtr UIViewFrame::createPlatformOptionMenu () { return nullptr; }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformViewLayer> UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+PlatformViewLayerPtr UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
+														   IPlatformViewLayer* parentLayer)
 {
 	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
 	auto layer = owned (new CAViewLayer (parentViewLayer ? parentViewLayer->getCALayer () : [uiView layer]));
 	layer->init (drawDelegate);
-	return shared<IPlatformViewLayer> (layer);
+	return std::make_shared<IPlatformViewLayer> (layer);
 }
 
 //------------------------------------------------------------------------

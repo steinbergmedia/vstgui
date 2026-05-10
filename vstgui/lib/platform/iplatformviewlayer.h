@@ -20,7 +20,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformViewLayer : public AtomicReferenceCounted
+class IPlatformViewLayer
 {
 public:
 	/** size must be zero based */

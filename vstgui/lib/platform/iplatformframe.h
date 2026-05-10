@@ -56,7 +56,7 @@ public:
 	virtual PlatformOptionMenuPtr createPlatformOptionMenu () = 0;
 
 	/** create a native view layer, may return 0 if not supported */
-	virtual SharedPointer<IPlatformViewLayer> createPlatformViewLayer (
+	virtual PlatformViewLayerPtr createPlatformViewLayer (
 		IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) = 0;
 
 	/** start a drag operation

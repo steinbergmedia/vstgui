@@ -46,7 +46,7 @@ public:
 	void* getPlatformRepresentation () const override { return windowHandle; }
 	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
 	PlatformOptionMenuPtr createPlatformOptionMenu () override;
-	SharedPointer<IPlatformViewLayer>
+	PlatformViewLayerPtr
 		createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
 								 IPlatformViewLayer* parentLayer = nullptr) override;
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;

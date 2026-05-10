@@ -531,8 +531,8 @@ PlatformOptionMenuPtr Win32Frame::createPlatformOptionMenu ()
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
-	IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+PlatformViewLayerPtr Win32Frame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
+														  IPlatformViewLayer* parentLayer)
 {
 	if (!directCompositionVisual)
 		return nullptr; // not supported when not using DirectComposition
@@ -546,7 +546,7 @@ SharedPointer<IPlatformViewLayer> Win32Frame::createPlatformViewLayer (
 						  ->getDirectCompositionFactory ()
 						  ->createChildVisual (parent, 100, 100);
 		auto newLayer =
-			makeShared<Win32ViewLayer> (visual, drawDelegate, [this] (auto layer) {
+			std::make_shared<Win32ViewLayer> (visual, drawDelegate, [this] (auto layer) {
 				auto it = std::find (viewLayers.begin (), viewLayers.end (), layer);
 				vstgui_assert (it != viewLayers.end ());
 				if (it != viewLayers.end ())
