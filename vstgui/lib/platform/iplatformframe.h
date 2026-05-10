@@ -53,7 +53,7 @@ public:
 	virtual SharedPointer<IPlatformTextEdit>
 	createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0;
 	/** create a native popup menu */
-	virtual SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () = 0;
+	virtual PlatformOptionMenuPtr createPlatformOptionMenu () = 0;
 
 	/** create a native view layer, may return 0 if not supported */
 	virtual SharedPointer<IPlatformViewLayer> createPlatformViewLayer (

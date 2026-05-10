@@ -41,7 +41,7 @@ public:
 	bool hideTooltip () override { return false; };
 	void* getPlatformRepresentation () const override { return (__bridge void*)uiView; }
 	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
-	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
+	PlatformOptionMenuPtr createPlatformOptionMenu () override;
 	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (
 		IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;

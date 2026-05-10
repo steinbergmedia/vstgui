@@ -513,7 +513,7 @@ SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTe
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
+PlatformOptionMenuPtr Win32Frame::createPlatformOptionMenu ()
 {
 	if (genericOptionMenuTheme)
 	{
@@ -524,10 +524,10 @@ SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 			buttonState.set (MouseButton::Left);
 		else if (buttons.isRightButton ())
 			buttonState.set (MouseButton::Right);
-		return makeShared<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)), buttonState,
-											  *genericOptionMenuTheme);
+		return std::make_shared<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)),
+													buttonState, *genericOptionMenuTheme);
 	}
-	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
+	return std::make_shared<Win32OptionMenu> (windowHandle);
 }
 
 //------------------------------------------------------------------------

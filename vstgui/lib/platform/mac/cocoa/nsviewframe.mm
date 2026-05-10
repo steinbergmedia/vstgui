@@ -1673,17 +1673,17 @@ SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformT
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
+PlatformOptionMenuPtr NSViewFrame::createPlatformOptionMenu ()
 {
 	if (genericOptionMenuTheme)
 	{
 		MouseEventButtonState buttonState;
 		if (auto event = [NSApp currentEvent])
 			buttonState = buttonStateFromNSEvent (event);
-		return makeShared<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)), buttonState,
-											  *genericOptionMenuTheme.get ());
+		return std::make_shared<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)),
+													buttonState, *genericOptionMenuTheme.get ());
 	}
-	return makeShared<NSViewOptionMenu> ();
+	return std::make_shared<NSViewOptionMenu> ();
 }
 
 //-----------------------------------------------------------------------------

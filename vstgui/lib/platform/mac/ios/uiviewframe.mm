@@ -256,10 +256,7 @@ SharedPointer<IPlatformTextEdit> UIViewFrame::createPlatformTextEdit (IPlatformT
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformOptionMenu> UIViewFrame::createPlatformOptionMenu ()
-{
-	return nullptr;
-}
+PlatformOptionMenuPtr UIViewFrame::createPlatformOptionMenu () { return nullptr; }
 
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformViewLayer> UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)

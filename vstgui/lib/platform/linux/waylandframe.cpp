@@ -313,14 +313,14 @@ SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEdi
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
+PlatformOptionMenuPtr Frame::createPlatformOptionMenu ()
 {
 	auto cFrame = dynamic_cast<CFrame*> (frame);
 	GenericOptionMenuTheme theme;
 	if (impl->genericOptionMenuTheme)
 		theme = *impl->genericOptionMenuTheme.get ();
-	auto optionMenu =
-		makeShared<GenericOptionMenu> (cFrame, MouseEventButtonState (MouseButton::Left), theme);
+	auto optionMenu = std::make_shared<GenericOptionMenu> (
+		cFrame, MouseEventButtonState (MouseButton::Left), theme);
 	optionMenu->setListener (this);
 	return optionMenu;
 }

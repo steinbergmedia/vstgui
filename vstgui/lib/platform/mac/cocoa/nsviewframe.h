@@ -73,7 +73,7 @@ public:
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override { return nsView; }
 	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
-	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
+	PlatformOptionMenuPtr createPlatformOptionMenu () override;
 	SharedPointer<IPlatformViewLayer>
 		createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
 								 IPlatformViewLayer* parentLayer = nullptr) override;
