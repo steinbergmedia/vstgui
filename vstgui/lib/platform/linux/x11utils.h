@@ -58,7 +58,7 @@ private:
 struct XEmbedInfo
 {
 	uint32_t version{1};
-	uint32_t flags{0};
+	uint32_t flags{1};
 };
 
 //------------------------------------------------------------------------
