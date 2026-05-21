@@ -89,11 +89,6 @@ private:
 		zenity
 	};
 
-	static auto quote (const UTF8String& str) -> UTF8String 
-	{ 
-		return "'" + str + "'"; 
-	}
-
 	void identifiyExDialogType ()
 	{
 		if (access (zenitypath, X_OK) != -1)
@@ -121,7 +116,7 @@ private:
 		if (!config.title.empty ())
 		{
 			args.push_back ("--title");
-			args.push_back (quote (config.title).getString ());
+			args.push_back (config.title.getString ());
 		}
 		if (!config.initialPath.empty ())
 			args.push_back (config.initialPath.getString ());
