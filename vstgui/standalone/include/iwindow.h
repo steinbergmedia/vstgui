@@ -192,7 +192,7 @@ public:
 	/** Set the window title. */
 	virtual void setTitle (const UTF8String& newTitle) = 0;
 	/** Set content view. */
-	virtual void setContentView (const SharedPointer<CFrame>& frame) = 0;
+	virtual void setContentView (CFrame* frame) = 0;
 	/** Set the path the contents of this window represents. */
 	virtual void setRepresentedPath (const UTF8String& path) = 0;
 	/** Set the auto save frame name of the window. */

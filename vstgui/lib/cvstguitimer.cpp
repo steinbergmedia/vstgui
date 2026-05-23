@@ -12,6 +12,9 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+CVSTGUITimer::CVSTGUITimer () : fireTime (0), platformTimer (nullptr) {}
+
+//-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
 , callbackFunc (callback)
@@ -54,6 +57,20 @@ bool CVSTGUITimer::start ()
 		#endif
 		}
 	}
+	return (platformTimer != nullptr);
+}
+
+//------------------------------------------------------------------------
+bool CVSTGUITimer::start (uint32_t inFireTime, CallbackFunc&& inCallback)
+{
+	if (platformTimer)
+		platformTimer->stop ();
+	fireTime = inFireTime;
+	callbackFunc = std::move (inCallback);
+	if (platformTimer == nullptr)
+		platformTimer = getPlatformFactory ().createTimer (this);
+	if (platformTimer)
+		platformTimer->start (fireTime);
 	return (platformTimer != nullptr);
 }
 

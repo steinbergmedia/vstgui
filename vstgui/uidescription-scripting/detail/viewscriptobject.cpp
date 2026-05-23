@@ -109,7 +109,7 @@ ViewScriptObject::ViewScriptObject (const WeakPointer<CView>& view,
 			var.getReturnVar ()->setUndefined ();
 			return;
 		}
-		auto obj = context.addView (*parentView.get ());
+		auto obj = context.addView (*parentView);
 		vstgui_assert (obj);
 		var.setReturnVar (obj->getVar ());
 		obj->getVar ()->release ();
@@ -176,7 +176,7 @@ ViewScriptObject::ViewScriptObject (const WeakPointer<CView>& view,
 			 {"name", "value"});
 	if (auto controlPtr = viewPtr.cast<CControl> ())
 	{
-		WeakPointer<CControl> control = controlPtr->weakFromThis ();
+		WeakPointer<CControl> control = controlPtr;
 		addFunc ("setValue"sv,
 				 [control] (CScriptVar& var) {
 					 auto controlPtr = control.lock ();

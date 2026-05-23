@@ -53,10 +53,7 @@ public:
 static constexpr int64_t kUIDescIdentifier = 0x7072637365646975LL; // 8 byte identifier
 
 //-----------------------------------------------------------------------------
-CompressedUIDescription::CompressedUIDescription (const CResourceDescription& compressedUIDescFile)
-: UIDescription (compressedUIDescFile)
-{
-}
+CompressedUIDescription::CompressedUIDescription () : UIDescription () {}
 
 //-----------------------------------------------------------------------------
 bool CompressedUIDescription::parseWithStream (InputStream& stream)

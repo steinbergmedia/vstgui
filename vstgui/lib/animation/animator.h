@@ -50,6 +50,7 @@ public:
 	void onTimer ();
 
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (Animator)
 	~Animator () noexcept override;
 
 	struct Impl;

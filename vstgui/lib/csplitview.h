@@ -76,8 +76,8 @@ public:
 	bool removeAll () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	bool sizeToFit () override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (CViewContainer& parent) override;
+	bool attached (CViewContainer& parent) override;
 
 	bool requestNewSeparatorSize (CSplitViewSeparatorView& separatorView, CRect newSize);
 	//-----------------------------------------------------------------------------

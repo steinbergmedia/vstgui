@@ -103,11 +103,12 @@ inline void calculateMandelbrotBitmap (Model::Ptr model, SharedPointer<CBitmap> 
 
 		auto asyncGroup = Async::Group::make (Async::backgroundQueue ());
 
-		auto pixelAccess = pa->getPlatformBitmapPixelAccess ();
-		auto colorToInt32 = getColorToInt32 (pixelAccess->getPixelFormat ());
+		auto colorToInt32 =
+			getColorToInt32 (pa->getPlatformBitmapPixelAccess ()->getPixelFormat ());
 		for (auto y = 0u; y < static_cast<uint32_t> (size.y); y += numLinesPerTask)
 		{
 			auto task = [=, &taskID] () {
+				auto& pixelAccess = pa->getPlatformBitmapPixelAccess ();
 				for (auto i = 0u; i < numLinesPerTask; ++i)
 				{
 					if (y + i >= size.y || taskID != id)
@@ -329,13 +330,13 @@ struct WindowCustomization : public UIDesc::Customization,
 		return obj;
 	}
 
-	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override
+	void onSetContentView (IWindow& window, CFrame* contentView) override
 	{
 		frame = contentView;
 		if (!contentView)
 			return;
-		if (auto touchBarExt =
-				contentView->getPlatformFrame ().cast<IPlatformFrameTouchBarExtension> ())
+		if (auto touchBarExt = dynamic_cast<IPlatformFrameTouchBarExtension*> (
+				contentView->getPlatformFrame ().get ()))
 		{
 			installTouchbarSupport (touchBarExt, maxIterations);
 		}
@@ -357,7 +358,7 @@ struct WindowCustomization : public UIDesc::Customization,
 				fs->run ([frame = this->frame] (CNewFileSelector& fs) {
 					if (fs.getNumSelectedFiles () == 0)
 						return;
-					if (auto controller = findViewController<ViewController> (*frame.get ()))
+					if (auto controller = findViewController<ViewController> (*frame))
 					{
 						auto path = fs.getSelectedFile (0);
 						assert (path != nullptr);
@@ -375,7 +376,7 @@ struct WindowCustomization : public UIDesc::Customization,
 	}
 	
 	ValuePtr maxIterations;
-	SharedPointer<CFrame> frame;
+	CFrame* frame;
 };
 
 //------------------------------------------------------------------------

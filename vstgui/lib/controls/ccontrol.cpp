@@ -93,7 +93,7 @@ CControl::CControl (const CControl& c) : CView (c)
 CControl::~CControl () noexcept {}
 
 //------------------------------------------------------------------------
-bool CControl::attached (const SharedPointer<CViewContainer>& parent)
+bool CControl::attached (CViewContainer& parent)
 {
 	if (CView::attached (parent))
 	{
@@ -104,7 +104,7 @@ bool CControl::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //------------------------------------------------------------------------
-bool CControl::removed (const SharedPointer<CViewContainer>& parent)
+bool CControl::removed (CViewContainer& parent)
 {
 	unregisterViewEventListener (impl.get ());
 	return CView::removed (parent);

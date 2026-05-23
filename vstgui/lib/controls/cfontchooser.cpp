@@ -284,7 +284,7 @@ void CFontChooser::dbSelectionChanged (int32_t selectedRow,
 }
 
 //-----------------------------------------------------------------------------
-bool CFontChooser::attached (const SharedPointer<CViewContainer>& parent)
+bool CFontChooser::attached (CViewContainer& parent)
 {
 	if (CViewContainer::attached (parent))
 	{

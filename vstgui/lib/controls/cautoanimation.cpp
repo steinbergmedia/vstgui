@@ -84,7 +84,7 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const CButtonState
 }
 
 //------------------------------------------------------------------------
-bool CAutoAnimation::attached (const SharedPointer<CViewContainer>& parent)
+bool CAutoAnimation::attached (CViewContainer& parent)
 {
 	if (CControl::attached (parent))
 	{
@@ -96,7 +96,7 @@ bool CAutoAnimation::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //------------------------------------------------------------------------
-bool CAutoAnimation::removed (const SharedPointer<CViewContainer>& parent)
+bool CAutoAnimation::removed (CViewContainer& parent)
 {
 	timer = nullptr;
 	return CControl::removed (parent);

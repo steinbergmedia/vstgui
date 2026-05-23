@@ -110,11 +110,12 @@ public:
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CDataBrowser)
 	~CDataBrowser () noexcept override;
 	void valueChanged (CControl& control) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
+	bool removed (CViewContainer& parent) override;
 	bool wantsFocus () const override;
 
 	void validateSelection ();

@@ -203,8 +203,8 @@ struct TextEditorView : public CView,
 	void beforeDelete () override;
 
 	void drawRect (CDrawContext& context, const CRect& dirtyRect) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
+	bool removed (CViewContainer& parent) override;
 	void parentSizeChanged () override;
 
 	void looseFocus () override;
@@ -388,7 +388,7 @@ public:
 		const IFontPainter* fontPainer {nullptr};
 		FindPanelController* findPanelController {nullptr};
 
-		SharedPointer<CScrollView> scrollView;
+		CScrollView* scrollView {nullptr};
 		SharedPointer<LineNumberView> lineNumberView;
 
 		SharedPointer<CVSTGUITimer> blinkTimer;
@@ -636,11 +636,11 @@ void TextEditorView::beforeDelete ()
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::attached (const SharedPointer<CViewContainer>& parent)
+bool TextEditorView::attached (CViewContainer& parent)
 {
 	if (CView::attached (parent))
 	{
-		if (auto sv = parent->getParentView ().cast<CScrollView> ())
+		if (auto sv = dynamic_cast<CScrollView*> (parent.getParentView ()))
 		{
 			md.scrollView = sv;
 			layoutRows ();
@@ -661,7 +661,7 @@ bool TextEditorView::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //------------------------------------------------------------------------
-bool TextEditorView::removed (const SharedPointer<CViewContainer>& parent)
+bool TextEditorView::removed (CViewContainer& parent)
 {
 	if (md.scrollView)
 	{

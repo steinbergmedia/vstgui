@@ -56,8 +56,8 @@ public:
 	void onMouseExited (CView& view, CFrame& frame) override;
 	void onMouseEvent (MouseEvent& event, CFrame& frame) override;
 
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
+	bool removed (CViewContainer& parent) override;
 	void drawStyleChanged () override;
 
 	void selectAll ();
@@ -468,9 +468,9 @@ void STBTextEditView::onMouseExited (CView& view, CFrame& frame)
 }
 
 //-----------------------------------------------------------------------------
-bool STBTextEditView::attached (const SharedPointer<CViewContainer>& parent)
+bool STBTextEditView::attached (CViewContainer& parent)
 {
-	if (auto frame = parent->getFrame ())
+	if (auto frame = parent.getFrame ())
 	{
 		frame->registerMouseObserver (this);
 		frame->registerKeyboardHook (this);
@@ -481,7 +481,7 @@ bool STBTextEditView::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //-----------------------------------------------------------------------------
-bool STBTextEditView::removed (const SharedPointer<CViewContainer>& parent)
+bool STBTextEditView::removed (CViewContainer& parent)
 {
 	if (auto frame = getFrame ())
 	{

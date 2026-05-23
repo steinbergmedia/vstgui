@@ -113,7 +113,7 @@ public:
 	//@}
 
 	// overwrite
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
 	bool insertSubview (const SharedPointer<CView>& view,
 						const Optional<size_t>& position) override;
 	bool removeSubview (const SharedPointer<CView>& view) override;
@@ -133,6 +133,8 @@ public:
 	CLASS_METHODS_NOCOPY (CScrollView, CViewContainer)
 	//-----------------------------------------------------------------------------
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CScrollView)
+
 	~CScrollView () noexcept override;
 
 	void recalculateLayout ();

@@ -35,7 +35,7 @@ public:
 
 	void setAutoDragScroll (bool state) { autoDragScroll = state; }
 
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	SharedPointer<IDropTarget> getDropTarget () override;
@@ -74,6 +74,7 @@ protected:
 	};
 
 	bool getScrollValue (const CPoint& where, float& x, float& y);
+	CScrollView* getScrollView () const;
 
 	CRect containerSize;
 	CPoint offset;
@@ -178,6 +179,14 @@ bool CScrollContainer::getScrollValue (const CPoint& where, float& x, float& y)
 	return (x != 0.f || y != 0.f);
 }
 
+//------------------------------------------------------------------------
+CScrollView* CScrollContainer::getScrollView () const
+{
+	if (auto pv = getParentView ())
+		return dynamic_cast<CScrollView*> (pv);
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CScrollContainer::getDropTarget ()
 {
@@ -195,7 +204,7 @@ void CScrollContainer::onDragMove (CPoint where)
 	float x, y;
 	if (getScrollValue (where, x, y))
 	{
-		if (auto scrollView = getParentView ().cast<CScrollView> ())
+		if (auto scrollView = getScrollView ())
 		{
 			CRect r (getViewSize ());
 			r.originize ();
@@ -206,7 +215,7 @@ void CScrollContainer::onDragMove (CPoint where)
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollContainer::attached (const SharedPointer<CViewContainer>& parent)
+bool CScrollContainer::attached (CViewContainer& parent)
 {
 	bool result = CViewContainer::attached (parent);
 	if (getNbViews () == 1)
@@ -219,7 +228,7 @@ bool CScrollContainer::attached (const SharedPointer<CViewContainer>& parent)
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				if (auto scrollView = getParentView ().cast<CScrollView> ())
+				if (auto scrollView = getScrollView ())
 					scrollView->setContainerSize (newContainerSize);
 			}
 		}
@@ -233,8 +242,8 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 	if (message == kMsgViewSizeChanged && !inScrolling)
 	{
 		uint32_t numSubViews = getNbViews ();
-		auto view = shared (static_cast<CView*> (sender));
-		if (numSubViews == 1 && view && isChild (view))
+		auto view = static_cast<CView*> (sender);
+		if (numSubViews == 1 && view && isChild (*view))
 		{
 			const CRect& r (view->getViewSize ());
 			CRect newContainerSize (containerSize);
@@ -242,7 +251,7 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				if (auto scrollView = getParentView ().cast<CScrollView> ())
+				if (auto scrollView = getScrollView ())
 					scrollView->setContainerSize (newContainerSize);
 			}
 		}
@@ -777,7 +786,7 @@ SharedPointer<CView> CScrollView::getEdgeView (Edge edge) const
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::attached (const SharedPointer<CViewContainer>& parent)
+bool CScrollView::attached (CViewContainer& parent)
 {
 	setContainerSize (impl->containerSize);
 	return CViewContainer::attached (parent);
@@ -896,8 +905,8 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView && getStyle () & kFollowFocusView)
 	{
-		auto focusView = shared (static_cast<CView*> (sender));
-		if (impl->scrollContainer->isChild (focusView, true))
+		auto focusView = static_cast<CView*> (sender);
+		if (impl->scrollContainer->isChild (*focusView, true))
 		{
 			CRect r = focusView->getViewSize ();
 			CPoint p;

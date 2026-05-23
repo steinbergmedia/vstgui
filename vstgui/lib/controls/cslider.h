@@ -147,6 +147,7 @@ public:
 
 	CLASS_METHODS (CSlider, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CSlider)
 	~CSlider () noexcept override;
 
 	struct Impl;

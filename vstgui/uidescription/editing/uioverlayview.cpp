@@ -11,7 +11,7 @@ namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 UIOverlayView::UIOverlayView (const SharedPointer<CViewContainer>& view)
-: CView ({}), targetView (view), targetViewParent (view->getParentView ())
+: CView ({}), targetView (view), targetViewParent (shared (view->getParentView ()))
 {
 	setMouseEnabled (false);
 }
@@ -41,7 +41,7 @@ void UIOverlayView::viewWillDelete (CView& view)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIOverlayView::attached (const SharedPointer<CViewContainer>& parent)
+bool UIOverlayView::attached (CViewContainer& parent)
 {
 	auto result = CView::attached (parent);
 	if (auto tv = targetView.lock ())
@@ -55,7 +55,7 @@ bool UIOverlayView::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //------------------------------------------------------------------------
-bool UIOverlayView::removed (const SharedPointer<CViewContainer>& parent)
+bool UIOverlayView::removed (CViewContainer& parent)
 {
 	if (auto tvp = targetViewParent.lock ())
 		tvp->unregisterViewListener (this);

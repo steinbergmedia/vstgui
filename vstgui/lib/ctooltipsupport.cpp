@@ -73,15 +73,15 @@ CTooltipSupport::~CTooltipSupport () noexcept
 }
 
 //------------------------------------------------------------------------
-static Buffer<char> getTooltipFromView (const SharedPointer<CView>& view)
+static Buffer<char> getTooltipFromView (CView& view)
 {
 	Buffer<char> tooltip;
 	uint32_t tooltipSize = 0;
-	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
+	if (view.getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
 		tooltip.allocate (tooltipSize + 1);
 		memset (tooltip.get (), 0, tooltipSize + 1);
-		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip.get (), tooltipSize))
+		if (!view.getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip.get (), tooltipSize))
 		{
 			tooltip.deallocate ();
 		}
@@ -90,10 +90,10 @@ static Buffer<char> getTooltipFromView (const SharedPointer<CView>& view)
 }
 
 //------------------------------------------------------------------------
-static bool viewHasTooltip (const SharedPointer<CView>& view)
+static bool viewHasTooltip (CView& view)
 {
 	uint32_t tooltipSize = 0;
-	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
+	if (view.getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
 		if (tooltipSize > 0)
 			return true;
@@ -102,11 +102,11 @@ static bool viewHasTooltip (const SharedPointer<CView>& view)
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::onMouseEntered (const SharedPointer<CView>& view)
+void CTooltipSupport::onMouseEntered (CView& view)
 {
 	if (viewHasTooltip (view))
 	{
-		currentView = view;
+		currentView = shared (&view);
 		if (state == kHiding)
 		{
 			#if DEBUGLOG
@@ -135,9 +135,9 @@ void CTooltipSupport::onMouseEntered (const SharedPointer<CView>& view)
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::onMouseExited (const SharedPointer<CView>& view)
+void CTooltipSupport::onMouseExited (CView& view)
 {
-	if (currentView == view)
+	if (currentView.get () == &view)
 	{
 		if (state == kHidden || state == kShowing)
 		{
@@ -236,8 +236,8 @@ bool CTooltipSupport::showTooltip ()
 		}
 		CRect r = currentView->translateToGlobal (currentView->getVisibleViewSize ());
 
-		auto tooltip = getTooltipFromView (currentView);
-		
+		auto tooltip = getTooltipFromView (*currentView.get ());
+
 		if (!tooltip.empty ())
 		{
 			state = kForceVisible;

@@ -77,7 +77,7 @@ void UISelection::add (const SharedPointer<CView>& view)
 void UISelection::remove (const SharedPointer<CView>& view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
-	if (contains (view))
+	if (contains (*view.get ()))
 	{
 		willChange ();
 		viewList.remove (view);
@@ -105,19 +105,20 @@ void UISelection::clear ()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::contains (const SharedPointer<CView>& view) const
+bool UISelection::contains (CView& view) const
 {
-	return std::find (begin (), end (), view) != end ();
+	return std::find_if (begin (), end (), [&] (auto&& value) { return value.get () == &view; }) !=
+		   end ();
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::containsParent (const SharedPointer<CView>& view) const
+bool UISelection::containsParent (CView& view) const
 {
-	if (auto parent = view->getParentView ())
+	if (auto parent = view.getParentView ())
 	{
-		if (contains (parent))
+		if (contains (*parent))
 			return true;
-		return containsParent (parent);
+		return containsParent (*parent);
 	}
 	return false;
 }
@@ -170,7 +171,7 @@ void UISelection::moveBy (const CPoint& p)
 	const_iterator it = begin ();
 	while (it != end ())
 	{
-		if (!containsParent ((*it)))
+		if (!containsParent (*(*it).get ()))
 		{
 			CRect viewRect = (*it)->getViewSize ();
 			viewRect.offset (p.x, p.y);
@@ -205,7 +206,7 @@ void UISelection::invalidRects () const
 	const_iterator it = begin ();
 	while (it != end ())
 	{
-		if (!containsParent ((*it)))
+		if (!containsParent (*(*it).get ()))
 		{
 			(*it)->invalid ();
 		}
@@ -255,7 +256,7 @@ bool UISelection::store (OutputStream& stream, const SharedPointer<IUIDescriptio
 		std::list<SharedPointer<CView>> views;
 		for (auto view : *this)
 		{
-			if (!containsParent (view))
+			if (!containsParent (*view.get ()))
 			{
 				views.emplace_back (view);
 			}
@@ -310,7 +311,7 @@ SharedPointer<CBitmap> createBitmapFromSelection (const UISelection& selection, 
 		CDrawContext::Transform tr (context, tm);
 		for (auto view : selection)
 		{
-			if (!selection.containsParent (view))
+			if (!selection.containsParent (*view.get ()))
 			{
 				CPoint p;
 				p = view->translateToGlobal (p);

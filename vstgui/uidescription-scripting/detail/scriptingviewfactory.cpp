@@ -41,8 +41,7 @@ SharedPointer<CView> JavaScriptViewFactory::createView (const UIAttributes& attr
 				verifiedScript =
 					scriptViewController->verifyScript (*view.get (), *value, *scriptContext);
 				view->registerViewListener (const_cast<JavaScriptViewFactory*> (this));
-				viewControllerLinks.emplace_back (view->weakFromThis (),
-												  scriptViewController.get ());
+				viewControllerLinks.emplace_back (view, scriptViewController);
 			}
 			const auto& script = verifiedScript ? *verifiedScript : *value;
 			auto scriptSize = static_cast<uint32_t> (script.size () + 1);

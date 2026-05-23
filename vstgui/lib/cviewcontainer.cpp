@@ -361,7 +361,7 @@ CRect CViewContainer::getVisibleSize (const CRect& rect) const
 	CRect result (rect);
 	result.offset (viewSize.left, viewSize.top);
 	result.bound (viewSize);
-	if (getFrame ().get () == this)
+	if (getFrame () == this)
 	{}
 	else if (auto parent = getParentView ())
 		result = parent->getVisibleSize (result);
@@ -467,8 +467,8 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView)
 	{
-		auto view = shared (dynamic_cast<CView*> (sender));
-		if (view && isChild (view, false))
+		auto view = dynamic_cast<CView*> (sender);
+		if (view && isChild (*view, false))
 		{
 			if (auto frame = getFrame ())
 			{
@@ -513,7 +513,7 @@ bool CViewContainer::doInsertSubview (const SharedPointer<CView>& view,
 
 	if (isAttached ())
 	{
-		view->attached (shared (this));
+		view->attached (*this);
 		view->invalid ();
 	}
 	return true;
@@ -530,7 +530,7 @@ void CViewContainer::doRemoveSubview (ViewList::const_iterator pos)
 	if ((*pos) == getMouseDownView ())
 		clearMouseDownView ();
 	if (isAttached ())
-		(*pos)->removed (shared (this));
+		(*pos)->removed (*this);
 	(*pos)->setSubviewState (false);
 	pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
 		listener->viewContainerViewRemoved (*this, *(*pos).get ());
@@ -594,7 +594,7 @@ bool CViewContainer::removeAll ()
 	{
 		auto view = *it;
 		if (isAttached ())
-			view->removed (shared (this));
+			view->removed (*this);
 		pImpl->children.erase (it);
 		view->setSubviewState (false);
 		pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
@@ -610,13 +610,10 @@ bool CViewContainer::removeAll ()
  * @param pView the view which should be checked if it is a child of this container
  * @return true on success
  */
-bool CViewContainer::isChild (const SharedPointer<CView>& pView) const
-{
-	return isChild (pView, false);
-}
+bool CViewContainer::isChild (const CView& pView) const { return isChild (pView, false); }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::isChild (const SharedPointer<CView>& pView, bool deep) const
+bool CViewContainer::isChild (const CView& pView, bool deep) const
 {
 	bool found = false;
 
@@ -626,7 +623,7 @@ bool CViewContainer::isChild (const SharedPointer<CView>& pView, bool deep) cons
 		while (!found && it != pImpl->children.end ())
 		{
 			auto v = (*it);
-			if (pView == v)
+			if (&pView == v.get ())
 			{
 				found = true;
 				break;
@@ -638,7 +635,9 @@ bool CViewContainer::isChild (const SharedPointer<CView>& pView, bool deep) cons
 	}
 	else
 	{
-		found = std::find (pImpl->children.begin (), pImpl->children.end (), pView) != pImpl->children.end ();
+		found = std::find_if (pImpl->children.begin (), pImpl->children.end (), [&] (auto&& child) {
+					return child.get () == &pView;
+				}) != pImpl->children.end ();
 	}
 	return found;
 }
@@ -808,10 +807,14 @@ void CViewContainer::drawRect (CDrawContext& context, const CRect& updateRect)
 	SharedPointer<CView> _focusView;
 	IFocusDrawing* _focusDrawing = nullptr;
 	auto frame = getFrame ();
-	if (frame && frame->focusDrawingEnabled () && isChild (frame->getFocusView (), false) && frame->getFocusView ()->isVisible () && frame->getFocusView ()->wantsFocus ())
+	if (frame && frame->focusDrawingEnabled ())
 	{
-		_focusView = frame->getFocusView ();
-		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView.get ());
+		auto fV = frame->getFocusView ();
+		if (fV && isChild (*fV.get (), false) && fV->isVisible () && fV->wantsFocus ())
+		{
+			_focusView = fV;
+			_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView.get ());
+		}
 	}
 
 	{
@@ -1096,7 +1099,7 @@ void CViewContainer::onMouseCancelEvent (MouseCancelEvent& event)
 //-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 {
-	if (getFrame ().get () == this)
+	if (getFrame () == this)
 	{
 		SharedPointer<IDropTarget> dropTarget;
 		if (!getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
@@ -1319,7 +1322,7 @@ SharedPointer<CView> CViewContainer::getViewAt (const CPoint& p,
 					{
 						if (view)
 							return view;
-						return container.cast<CView> ();
+						return shared (container);
 					}
 					return view;
 				}
@@ -1434,30 +1437,30 @@ CPoint& CViewContainer::localToFrame (CPoint& point) const
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::removed (const SharedPointer<CViewContainer>& parent)
+bool CViewContainer::removed (CViewContainer& parent)
 {
 	if (!isAttached ())
 		return false;
 
 	for (const auto& pV : pImpl->children)
-		pV->removed (shared (this));
+		pV->removed (*this);
 
 	return CView::removed (parent);
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::attached (const SharedPointer<CViewContainer>& parent)
+bool CViewContainer::attached (CViewContainer& parent)
 {
 	if (isAttached ())
 		return false;
 
-	setParentFrame (parent->getFrame ());
+	setParentFrame (parent.getFrame ());
 
 	bool result = CView::attached (parent);
 	if (result)
 	{
 		for (const auto& pV : pImpl->children)
-			pV->attached (shared (this));
+			pV->attached (*this);
 	}
 	if (auto layout = calculateViewLayout (getViewSize ()))
 		applyViewLayout (*layout);

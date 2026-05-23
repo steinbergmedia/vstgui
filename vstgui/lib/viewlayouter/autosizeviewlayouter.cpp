@@ -10,8 +10,8 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 SharedPointer<IViewLayouter> AutoSizeViewLayouter::get () noexcept
 {
-	static AutoSizeViewLayouter instance;
-	return shared (static_cast<IViewLayouter*> (&instance));
+	static auto instance = makeShared<AutoSizeViewLayouter> ();
+	return instance;
 }
 
 //------------------------------------------------------------------------
@@ -96,11 +96,6 @@ std::optional<ViewLayout> AutoSizeViewLayouter::calculateLayout (const CViewCont
 
 	return std::make_optional (ViewLayout {newSize, std::move (layoutData)});
 }
-
-//------------------------------------------------------------------------
-// there's only one stateless static instance of this object so disable reference counting:
-void AutoSizeViewLayouter::forget () {}
-void AutoSizeViewLayouter::remember () {};
 
 //------------------------------------------------------------------------
 } // VSTGUI

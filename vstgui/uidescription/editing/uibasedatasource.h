@@ -296,7 +296,7 @@ protected:
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit& control,
 							  CDataBrowser& browser) override
 	{
-		textEditControl = control.weakFromThis ();
+		textEditControl = shared (&control);
 		control.setBackColor (kWhiteCColor);
 		control.setFontColor (fontColor);
 		control.setFont (drawFont);

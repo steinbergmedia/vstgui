@@ -363,9 +363,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** view is removed from parent view */
-	virtual bool removed (const SharedPointer<CViewContainer>& parent);
+	virtual bool removed (CViewContainer& parent);
 	/** view is attached to a parent view */
-	virtual bool attached (const SharedPointer<CViewContainer>& parent);
+	virtual bool attached (CViewContainer& parent);
 	/** is view attached to a parentView */
 	bool isAttached () const { return hasViewFlag (kIsAttached); }
 	//@}
@@ -378,9 +378,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** get parent view */
-	SharedPointer<CViewContainer> getParentView () const;
+	CViewContainer* getParentView () const;
 	/** get frame */
-	SharedPointer<CFrame> getFrame () const;
+	CFrame* getFrame () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -445,8 +445,8 @@ public:
 	template<typename T> T translateToLocal (const T& t, bool ignoreFrame = false) const { T tmp (t); getGlobalTransform (ignoreFrame).inverse ().transform (tmp); return tmp; }
 	//@}
 
-	virtual SharedPointer<CViewContainer> asViewContainer () { return {}; }
-	virtual const SharedPointer<CViewContainer> asViewContainer () const { return {}; }
+	virtual CViewContainer* asViewContainer () { return {}; }
+	virtual const CViewContainer* asViewContainer () const { return {}; }
 
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
@@ -476,6 +476,7 @@ protected:
 	};
 
 	~CView () noexcept override;
+	VSTGUI_SHAREDPTR_FRIEND (CView)
 
 	SharedPointer<CGraphicsPath> getHitTestPath () const;
 
@@ -483,8 +484,8 @@ protected:
 	void setViewFlag (int32_t bit, bool state);
 	
 	void setAlphaValueNoInvalidate (float value);
-	void setParentFrame (const SharedPointer<CFrame>& frame);
-	void setParentView (const SharedPointer<CViewContainer>& parent);
+	void setParentFrame (CFrame* frame);
+	void setParentView (CViewContainer* parent);
 
 private:
 	struct Impl;

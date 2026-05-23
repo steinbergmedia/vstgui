@@ -18,7 +18,7 @@ public:
 
 	virtual void layoutViews () = 0;
 
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	bool insertSubview (const SharedPointer<CView>& view,
 						const Optional<size_t>& position = {}) override;

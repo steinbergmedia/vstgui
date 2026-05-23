@@ -95,23 +95,23 @@ public:
 		{
 #ifdef HAVE_EDITORUIDESC_H
 			auto provider = makeShared<MemoryContentProvider> (editorUIDesc, strlen (editorUIDesc));
-			SharedPointer<UIDescription> editorDesc = owned (new UIDescription (provider));
-			if (editorDesc->parse ())
+			auto editorDesc = makeShared<UIDescription> ();
+			if (editorDesc->init (provider) && editorDesc->parse ())
 			{
 				uiDesc = editorDesc;
 			}
 			auto lightUIProvider =
 				makeShared<MemoryContentProvider> (editorUILightDesc, strlen (editorUILightDesc));
-			SharedPointer<UIDescription> lightUIDesc = owned (new UIDescription (lightUIProvider));
-			if (lightUIDesc->parse ())
+			auto lightUIDesc = makeShared<UIDescription> ();
+			if (lightUIDesc->init (lightUIProvider) && lightUIDesc->parse ())
 			{
 				lightResourceDesc = std::move (lightUIDesc);
 				uiDesc->setSharedResources (lightResourceDesc);
 			}
 			auto darkUIProvider =
 				makeShared<MemoryContentProvider> (editorUIDarkDesc, strlen (editorUIDarkDesc));
-			SharedPointer<UIDescription> darkUIDesc = owned (new UIDescription (darkUIProvider));
-			if (darkUIDesc->parse ())
+			auto darkUIDesc = makeShared<UIDescription> ();
+			if (darkUIDesc->init (darkUIProvider) && darkUIDesc->parse ())
 			{
 				darkResourceDesc = std::move (darkUIDesc);
 			}
@@ -121,8 +121,8 @@ public:
 			if (removeLastPathComponent (basePath))
 			{
 				auto descPath = basePath + "/uidescriptioneditor.uidesc";
-				auto editorDesc = makeShared<UIDescription> (descPath.data ());
-				if (editorDesc->parse ())
+				auto editorDesc = makeShared<UIDescription> ();
+				if (editorDesc->init (descPath.data ()) && editorDesc->parse ())
 				{
 					uiDesc = std::move (editorDesc);
 				}
@@ -131,8 +131,8 @@ public:
 					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
 				}
 				descPath = basePath + "/uidescriptioneditor_res_light.uidesc";
-				auto resDesc = makeShared<UIDescription> (descPath.data ());
-				if (resDesc->parse ())
+				auto resDesc = makeShared<UIDescription> ();
+				if (resDesc->init (descPath.data ()) && resDesc->parse ())
 				{
 					lightResourceDesc = std::move (resDesc);
 					uiDesc->setSharedResources (lightResourceDesc);
@@ -142,8 +142,8 @@ public:
 					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
 				}
 				descPath = basePath + "/uidescriptioneditor_res_dark.uidesc";
-				resDesc = makeShared<UIDescription> (descPath.data ());
-				if (resDesc->parse ())
+				resDesc = makeShared<UIDescription> ();
+				if (resDesc->init (descPath.data ()) && resDesc->parse ())
 				{
 					darkResourceDesc = std::move (resDesc);
 				}
@@ -156,7 +156,7 @@ public:
 
 	void tryFree ()
 	{
-		if (uiDesc->getNbReference () == 1)
+		if (uiDesc.use_count () == 1)
 		{
 			uiDesc = nullptr;
 			lightResourceDesc = nullptr;
@@ -468,7 +468,7 @@ public:
 					auto menu = makeShared<COptionMenu> ();
 					menu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
 					appendContextMenuItems (*menu.get (), *zoomValueControl.get (), CPoint ());
-					menu->popup (*zoomValueControl->getFrame ().get (),
+					menu->popup (*zoomValueControl->getFrame (),
 								 zoomValueControl->translateToGlobal (
 									 zoomValueControl->getViewSize ().getTopLeft (), true));
 				},
@@ -502,22 +502,32 @@ private:
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIEditController::UIEditController (const SharedPointer<UIDescription>& description)
-: editDescription (description)
-, selection (makeShared<UISelection> ())
-, undoManager (makeShared<UIUndoManager> ())
-, gridController (makeShared<UIGridController> (shared (this), description))
-, editView (nullptr)
-, templateController (nullptr)
-, dirty (false)
+SharedPointer<UIEditController>
+	UIEditController::make (const SharedPointer<UIDescription>& description)
 {
+	auto object = makeShared<UIEditController> ();
+	object->init (description);
+	return object;
+}
+
+//------------------------------------------------------------------------
+bool UIEditController::init (const SharedPointer<UIDescription>& description)
+{
+	editDescription = description;
+	selection = makeShared<UISelection> ();
+	undoManager = makeShared<UIUndoManager> ();
+	gridController = makeShared<UIGridController> (shared (this), description);
+	editView = nullptr;
+	templateController = nullptr;
+	dirty = false;
+
 	UIDescriptionAddOnRegistry::forEach (
-		[this] (auto& addOn) { addOn.onEditingStart (editDescription); });
+		[this] (auto& addOn) { addOn.onEditingStart (*editDescription.get ()); });
 	editorDesc = getEditorDescription ();
 	undoManager->registerListener (this);
 	editDescription->registerListener (this);
 	menuController = makeShared<UIEditMenuController> (shared (this), selection, undoManager,
-													   editDescription, weakFromThis ());
+													   editDescription, shared (this));
 	onTemplatesChanged ();
 	if (auto theme = getSettings ()->getAttributeValue ("UI Theme"))
 	{
@@ -526,6 +536,7 @@ UIEditController::UIEditController (const SharedPointer<UIDescription>& descript
 		else if (*theme == "Light")
 			setDarkTheme (false);
 	}
+	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -790,7 +801,7 @@ SharedPointer<IController> UIEditController::createSubController (UTF8StringPtr 
 	if (subControllerName == "TemplatesController")
 	{
 		templateController = makeShared<UITemplateController> (
-			shared (this), editDescription, selection, undoManager, weakFromThis ());
+			shared (this), editDescription, selection, undoManager, shared (this));
 		templateController->registerListener (this);
 		return templateController;
 	}
@@ -809,24 +820,24 @@ SharedPointer<IController> UIEditController::createSubController (UTF8StringPtr 
 	}
 	else if (subControllerName == "TagEditController")
 	{
-		return makeShared<UITagsController> (shared (this), editDescription, weakFromThis ());
+		return makeShared<UITagsController> (shared (this), editDescription, shared (this));
 	}
 	else if (subControllerName == "ColorEditController")
 	{
-		return makeShared<UIColorsController> (shared (this), editDescription, weakFromThis ());
+		return makeShared<UIColorsController> (shared (this), editDescription, shared (this));
 	}
 	else if (subControllerName == "GradientEditController")
 	{
-		return makeShared<UIGradientsController> (shared (this), editDescription, weakFromThis ());
+		return makeShared<UIGradientsController> (shared (this), editDescription, shared (this));
 	}
 	else if (subControllerName == "BitmapEditController")
 	{
-		return makeShared<UIBitmapsController> (shared (this), editDescription, weakFromThis (),
+		return makeShared<UIBitmapsController> (shared (this), editDescription, shared (this),
 												undoManager);
 	}
 	else if (subControllerName == "FontEditController")
 	{
-		return makeShared<UIFontsController> (shared (this), editDescription, weakFromThis ());
+		return makeShared<UIFontsController> (shared (this), editDescription, shared (this));
 	}
 	else if (subControllerName == "GridController")
 	{
@@ -846,7 +857,7 @@ void UIEditController::valueChanged (CControl& control)
 			{
 				selection->clear ();
 				if (auto container = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
-					resetScrollViewOffsets (*container.get ());
+					resetScrollViewOffsets (*container);
 				editView->enableEditing (control.getValue () == control.getMax () ? true : false);
 				break;
 			}
@@ -927,7 +938,8 @@ void UIEditController::onTemplateSelectionChanged ()
 		}
 		if (editView->getEditView ())
 		{
-			if (!(selection->first () && editView->getEditView ()->asViewContainer ()->isChild (selection->first (), true)))
+			if (!(selection->first () && editView->getEditView ()->asViewContainer ()->isChild (
+											 *selection->first ().get (), true)))
 				selection->setExclusive (editView->getEditView ());
 		}
 		else
@@ -969,7 +981,7 @@ void UIEditController::viewRemoved (CView& view)
 	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
 	UIDescriptionAddOnRegistry::forEach (
-		[this] (auto& addOn) { addOn.onEditingEnd (editDescription); });
+		[this] (auto& addOn) { addOn.onEditingEnd (*editDescription.get ()); });
 	editorDesc = nullptr;
 	templateController = nullptr;
 	undoManager->clear ();
@@ -1015,7 +1027,7 @@ void UIEditController::beforeSave ()
 		auto container = editView->getParentView ();
 		while (container && container != container->getFrame ())
 		{
-			if (getViewController (*container.get (), false).get () == this)
+			if (getViewController (*container, false).get () == this)
 			{
 				getSettings ()->setRectAttribute ("EditorSize", container->getViewSize ());
 				break;
@@ -1055,8 +1067,8 @@ void UIEditController::addSelectionToCurrentView (const SharedPointer<UISelectio
 		offset = selection->first ()->getViewSize ().getTopLeft ();
 		offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 	}
-	auto action = makeShared<ViewCopyOperation> (copySelection, selection, container, offset,
-												 editDescription);
+	auto action = makeShared<ViewCopyOperation> (copySelection, selection, shared (container),
+												 offset, editDescription);
 	undoManager->pushAndPerform (action);
 	if (!editTemplateName.empty ())
 		updateTemplate (editTemplateName.c_str ());
@@ -1093,16 +1105,16 @@ void UIEditController::showTemplateSettings ()
 		updateTemplate (editTemplateName.c_str ());
 	}
 	auto dc = makeShared<UIDialogController> (shared (this), editView->getFrame ());
-	auto tsController = makeShared<UITemplateSettingsController> (editTemplateName, editDescription,
-																  weakFromThis ());
+	auto tsController =
+		makeShared<UITemplateSettingsController> (editTemplateName, editDescription, shared (this));
 	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::showFocusSettings ()
 {
-	auto dc = makeOwned<UIDialogController> (shared (this), editView->getFrame ());
-	auto fsController = makeShared<UIFocusSettingsController> (editDescription, weakFromThis ());
+	auto dc = makeShared<UIDialogController> (shared (this), editView->getFrame ());
+	auto fsController = makeShared<UIFocusSettingsController> (editDescription, shared (this));
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 
@@ -1251,7 +1263,8 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem& item)
 		}
 		else if (cmdName == "Copy" || cmdName == "Cut")
 		{
-			if (editView && selection->first () && selection->contains (editView->getEditView ()) == false)
+			if (editView && selection->first () &&
+				selection->contains (*editView->getEditView ().get ()) == false)
 				item.setEnabled (true);
 			else
 				item.setEnabled (false);
@@ -1307,7 +1320,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem& item)
 		bool enableItem = selection->first () ? true : false;
 		if (enableItem && cmdCategory.contains ("Size") == false)
 		{
-			if (selection->contains (editView->getEditView ()))
+			if (selection->contains (*editView->getEditView ().get ()))
 				enableItem = false;
 		}
 		item.setEnabled (enableItem);
@@ -1324,13 +1337,13 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem& item)
 			{
 				if (lower)
 				{
-					ViewIterator it (parent);
+					ViewIterator it (*parent);
 					if (*it == view)
 						enableItem = false;
 				}
 				else
 				{
-					ReverseViewIterator it (parent);
+					ReverseViewIterator it (*parent);
 					if (*it == view)
 						enableItem = false;
 				}
@@ -1433,12 +1446,12 @@ void UIEditController::doSelectAllChildren ()
 void UIEditController::doSelectParents ()
 {
 	UISelection::DeferChange dc (*selection.get ());
-	std::vector<SharedPointer<CView>> parents;
+	std::vector<CView*> parents;
 	for (auto& view : *selection.get ())
 	{
 		if (auto parent = view->getParentView ())
 		{
-			while (IViewFactory::getViewName (*parent.get ()) == nullptr)
+			while (IViewFactory::getViewName (*parent) == nullptr)
 			{
 				parent = parent->getParentView ();
 			}
@@ -1448,7 +1461,7 @@ void UIEditController::doSelectParents ()
 	}
 	selection->clear ();
 	for (auto& parent : parents)
-		selection->add (parent);
+		selection->add (shared (parent));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1472,7 +1485,7 @@ void UIEditController::onUndoManagerChanged ()
 	{
 		if (auto templateView = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
 		{
-			if (view == templateView || templateView->isChild (view, true))
+			if (view.get () == templateView || templateView->isChild (*view.get (), true))
 			{
 				return;
 			}
@@ -1480,7 +1493,7 @@ void UIEditController::onUndoManagerChanged ()
 		for (auto& it : templates)
 		{
 			auto container = it.view->asViewContainer ();
-			if (container && (view == container || container->isChild (view, true)))
+			if (container && (view.get () == container || container->isChild (*view.get (), true)))
 			{
 				templateController->selectTemplate (it.name.c_str ());
 				return;
@@ -1500,7 +1513,7 @@ void UIEditController::resetScrollViewOffsets (CViewContainer& view)
 			scrollView->resetScrollOffset ();
 		}
 		if (auto container = view->asViewContainer ())
-			resetScrollViewOffsets (*container.get ());
+			resetScrollViewOffsets (*container);
 	});
 }
 
@@ -1921,7 +1934,7 @@ void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
 void UIEditController::performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	undoManager->pushAndPerform (
-		makeShared<TemplateNameChangeAction> (editDescription, weakFromThis (), oldName, newName));
+		makeShared<TemplateNameChangeAction> (editDescription, shared (this), oldName, newName));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1935,7 +1948,7 @@ void UIEditController::performTemplateMinMaxSizeChange (UTF8StringPtr templateNa
 void UIEditController::performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName)
 {
 	undoManager->pushAndPerform (makeShared<CreateNewTemplateAction> (
-		editDescription, weakFromThis (), name, baseViewClassName));
+		editDescription, shared (this), name, baseViewClassName));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1944,7 +1957,7 @@ void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 	auto it = std::find (templates.begin (), templates.end (), name);
 	if (it != templates.end ())
 		undoManager->pushAndPerform (makeShared<DeleteTemplateAction> (
-			editDescription, weakFromThis (), (*it).view, (*it).name.c_str ()));
+			editDescription, shared (this), (*it).view, (*it).name.c_str ()));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1953,7 +1966,7 @@ void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringP
 	updateTemplate (name);
 	UIDescriptionListenerOff lo (*this, *editDescription.get ());
 	undoManager->pushAndPerform (
-		makeShared<DuplicateTemplateAction> (editDescription, weakFromThis (), name, dupName));
+		makeShared<DuplicateTemplateAction> (editDescription, shared (this), name, dupName));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1982,7 +1995,7 @@ void UIEditController::updateTemplate (const std::vector<Template>::const_iterat
 	{
 		auto view = (*it).view;
 		if (auto container = view->asViewContainer ())
-			resetScrollViewOffsets (*container.get ());
+			resetScrollViewOffsets (*container);
 		editDescription->updateViewDescription ((*it).name.c_str (), view);
 	}
 }
@@ -2035,12 +2048,12 @@ void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, CView& 
 	auto vc = inView.asViewContainer ();
 	if (!vc || editView == nullptr)
 		return;
-	auto view = vc->getViewAt (where, GetViewOptions ().deep ().includeViewContainer ());
-	while (view && view != editView)
+	auto view = vc->getViewAt (where, GetViewOptions ().deep ().includeViewContainer ()).get ();
+	while (view && view != editView.get ())
 	{
 		view = view->getParentView ();
 	}
-	if (view != editView)
+	if (view != editView.get ())
 		return;
 	auto editMenu = getMenuController ()->getEditMenu ();
 	for (auto& entry : editMenu->getItemList ())

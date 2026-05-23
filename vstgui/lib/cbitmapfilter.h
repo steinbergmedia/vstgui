@@ -5,9 +5,13 @@
 #pragma once
 
 #include "vstguifwd.h"
+#include "ccolor.h"
+#include "crect.h"
+#include "cgraphicstransform.h"
 #include <vector>
 #include <string>
 #include <map>
+#include <variant>
 
 namespace VSTGUI {
 
@@ -30,11 +34,11 @@ public:
 		kColor,
 		kTransformMatrix
 	};
-	
-	Property (Type type = kUnknown);
+
+	Property ();
 	Property (int32_t intValue);
 	Property (double floatValue);
-	Property (const SharedPointer<IReference>& objectValue);
+	Property (const SharedPointer<CBitmap>& objectValue);
 	Property (const CRect& rectValue);
 	Property (const CPoint& pointValue);
 	Property (const CColor& colorValue);
@@ -43,11 +47,11 @@ public:
 	Property (Property&& p) noexcept;
 	~Property () noexcept;
 
-	Type getType () const { return type; }
+	Type getType () const;
 
 	int32_t getInteger () const;
 	double getFloat () const;
-	SharedPointer<IReference> getObject () const;
+	SharedPointer<CBitmap> getObject () const;
 	const CRect& getRect () const;
 	const CPoint& getPoint () const;
 	const CColor& getColor () const;
@@ -58,9 +62,12 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 private:
-	template<typename T> void assign (T value);
-	Type type;
-	void* value;
+	using Variant = std::variant<nullptr_t, int32_t, double, SharedPointer<CBitmap>, CRect, CPoint,
+								 CColor, CGraphicsTransform>;
+	Variant var;
+
+	template<typename T>
+	void assign (T value);
 };
 
 //----------------------------------------------------------------------------------------------------

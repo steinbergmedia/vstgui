@@ -96,6 +96,7 @@ public:
 	bool sizeToFit () override;
 
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CAnimationSplashScreen)
 	~CAnimationSplashScreen () noexcept override = default;
 
 	uint32_t animationIndex{0};

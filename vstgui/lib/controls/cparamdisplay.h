@@ -117,10 +117,11 @@ public:
 
 	void draw (CDrawContext& context) override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (CViewContainer& parent) override;
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CParamDisplay)
 	~CParamDisplay () noexcept override;
 	virtual void drawBack (CDrawContext& pContext, const SharedPointer<CBitmap>& newBack = {});
 

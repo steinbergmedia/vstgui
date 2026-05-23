@@ -118,7 +118,7 @@ public:
 	{
 		return std::move (controllerConfig);
 	}
-	void onSetContentView (const SharedPointer<CFrame>& newFrame) override;
+	void onSetContentView (CFrame* newFrame) override;
 
 	void windowDidResize (CPoint newSize);
 	void windowWillClose ();
@@ -134,7 +134,7 @@ private:
 	NSView* _Nullable contentView {nullptr};
 	VSTGUIWindowDelegate* _Nullable nsWindowDelegate {nullptr};
 	IWindowDelegate* _Nullable delegate {nullptr};
-	SharedPointer<CFrame> frame;
+	CFrame* frame;
 	NSObject* sizeObserver {nullptr};
 };
 
@@ -263,7 +263,7 @@ bool Window::isPopup () const
 }
 
 //------------------------------------------------------------------------
-void Window::onSetContentView (const SharedPointer<CFrame>& newFrame) { frame = newFrame; }
+void Window::onSetContentView (CFrame* newFrame) { frame = newFrame; }
 
 //------------------------------------------------------------------------
 void Window::windowDidResize (CPoint newSize)

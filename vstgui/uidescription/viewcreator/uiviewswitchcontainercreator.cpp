@@ -58,7 +58,7 @@ SharedPointer<CView> UIViewSwitchContainerCreator::create (const UIAttributes& a
 														   const IUIDescription& description) const
 {
 	auto vsc = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
-	makeShared<UIDescriptionViewSwitchController> (vsc, description, description.getController ());
+	UIDescriptionViewSwitchController::make (vsc, description, description.getController ());
 	return vsc;
 }
 

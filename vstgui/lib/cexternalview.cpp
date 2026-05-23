@@ -28,7 +28,7 @@ private:
 		return res;
 	}
 
-	static CRect calculateSize (SharedPointer<CViewContainer> parent, CRect newSize)
+	static CRect calculateSize (CViewContainer* parent, CRect newSize)
 	{
 		auto frame = parent ? parent->getFrame () : nullptr;
 		while (parent && parent != frame)
@@ -47,15 +47,15 @@ private:
 public:
 	CExternalViewBaseImpl (const ExternalViewPtr& v) : view (v) {}
 
-	void updateSize (const SharedPointer<CViewContainer>& parent, CRect localSize, CRect globalSize)
+	void updateSize (CViewContainer& parent, CRect localSize, CRect globalSize)
 	{
 		if (!view)
 			return;
-		localSize = calculateSize (parent, localSize);
+		localSize = calculateSize (&parent, localSize);
 		view->setViewSize (fromCRect (globalSize), fromCRect (localSize));
 	}
 
-	void attach (const SharedPointer<CFrame>& frame)
+	void attach (CFrame* frame)
 	{
 		if (!frame || !view)
 			return;
@@ -130,14 +130,13 @@ CExternalView::CExternalView (const CRect& r, const ExternalViewPtr& view) : CVi
 CExternalView::~CExternalView () noexcept { impl->getView ()->setTookFocusCallback (nullptr); }
 
 //------------------------------------------------------------------------
-bool CExternalView::attached (const SharedPointer<CViewContainer>& parent)
+bool CExternalView::attached (CViewContainer& parent)
 {
 	if (CView::attached (parent))
 	{
-		if (auto frame = parent->getFrame ())
+		if (auto frame = parent.getFrame ())
 		{
-			impl->updateSize (parent->asViewContainer (), getViewSize (),
-							  translateToGlobal (getViewSize ()));
+			impl->updateSize (parent, getViewSize (), translateToGlobal (getViewSize ()));
 			impl->scaleFactorChanged (frame->getScaleFactor ());
 			impl->attach (frame);
 			frame->registerScaleFactorChangedListener (this);
@@ -148,9 +147,9 @@ bool CExternalView::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //------------------------------------------------------------------------
-bool CExternalView::removed (const SharedPointer<CViewContainer>& parent)
+bool CExternalView::removed (CViewContainer& parent)
 {
-	if (auto frame = parent->getFrame ())
+	if (auto frame = parent.getFrame ())
 	{
 		frame->unregisterScaleFactorChangedListener (this);
 	}
@@ -168,13 +167,13 @@ void CExternalView::looseFocus () { impl->looseFocus (); }
 void CExternalView::setViewSize (const CRect& rect, bool invalid)
 {
 	CView::setViewSize (rect, invalid);
-	impl->updateSize (getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
+	impl->updateSize (*getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
 //------------------------------------------------------------------------
 void CExternalView::parentSizeChanged ()
 {
-	impl->updateSize (getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
+	impl->updateSize (*getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
 //------------------------------------------------------------------------
@@ -245,14 +244,13 @@ bool CExternalControl::setValue (float val)
 }
 
 //------------------------------------------------------------------------
-bool CExternalControl::attached (const SharedPointer<CViewContainer>& parent)
+bool CExternalControl::attached (CViewContainer& parent)
 {
 	if (CControl::attached (parent))
 	{
-		if (auto frame = parent->getFrame ())
+		if (auto frame = parent.getFrame ())
 		{
-			impl->updateSize (parent->asViewContainer (), getViewSize (),
-							  translateToGlobal (getViewSize ()));
+			impl->updateSize (parent, getViewSize (), translateToGlobal (getViewSize ()));
 			impl->scaleFactorChanged (frame->getScaleFactor ());
 			impl->attach (frame);
 			frame->registerScaleFactorChangedListener (this);
@@ -263,9 +261,9 @@ bool CExternalControl::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //------------------------------------------------------------------------
-bool CExternalControl::removed (const SharedPointer<CViewContainer>& parent)
+bool CExternalControl::removed (CViewContainer& parent)
 {
-	if (auto frame = parent->getFrame ())
+	if (auto frame = parent.getFrame ())
 	{
 		frame->unregisterScaleFactorChangedListener (this);
 	}
@@ -283,13 +281,13 @@ void CExternalControl::looseFocus () { impl->looseFocus (); }
 void CExternalControl::setViewSize (const CRect& rect, bool invalid)
 {
 	CControl::setViewSize (rect, invalid);
-	impl->updateSize (getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
+	impl->updateSize (*getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
 //------------------------------------------------------------------------
 void CExternalControl::parentSizeChanged ()
 {
-	impl->updateSize (getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
+	impl->updateSize (*getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
 //------------------------------------------------------------------------

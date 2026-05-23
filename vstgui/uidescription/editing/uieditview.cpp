@@ -219,7 +219,7 @@ void collectExternalViewsOnInlineEditing (CViewContainer& container, T& array)
 		if (dynamic_cast<ExternalView::IViewEmbedder*> (view.get ()))
 			array.emplace_back (view);
 		else if (auto c = view->asViewContainer ())
-			collectExternalViewsOnInlineEditing (*c.get (), array);
+			collectExternalViewsOnInlineEditing (*c, array);
 	});
 }
 
@@ -243,27 +243,26 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 		}
 	}
 
-	bool isViewSubViewOfRoot (const SharedPointer<CView>& view)
+	bool isViewSubViewOfRoot (CView& view)
 	{
-		auto parent = view->getParentView ();
+		auto parent = view.getParentView ();
 		if (parent == nullptr || parent == root->getFrame ())
 			return false;
-		if (parent->asViewContainer () == root)
+		if (parent == root.get ())
 			return true;
-		return isViewSubViewOfRoot (parent);
+		return isViewSubViewOfRoot (*parent);
 	}
 
 	void onViewAdded (CFrame& frame, CView& view) override
 	{
 		if (auto viewEmbedder = dynamic_cast<ExternalView::IViewEmbedder*> (&view))
 		{
-			auto pView = shared (&view);
-			if (!isViewSubViewOfRoot (pView))
+			if (!isViewSubViewOfRoot (view))
 				return;
 			if (auto ev = viewEmbedder->getExternalView ())
 				ev->setMouseEnabled (false);
-			pView->registerViewListener (this);
-			views.emplace_back (pView);
+			view.registerViewListener (this);
+			views.emplace_back (shared (&view));
 		}
 	}
 	void onViewRemoved (CFrame& frame, CView& view) override {}
@@ -395,7 +394,7 @@ void UIEditView::disableExternalViewsOnInlineEditing (bool state)
 		std::vector<SharedPointer<CView>> views;
 		UIEditViewInternal::collectExternalViewsOnInlineEditing (*this, views);
 		for (auto& v : views)
-			editingViewAddedObserver->onViewAdded (*parent.get (), *v.get ());
+			editingViewAddedObserver->onViewAdded (*parent, *v.get ());
 		parent->setViewAddedRemovedObserver (editingViewAddedObserver.get ());
 	}
 }
@@ -527,7 +526,7 @@ SharedPointer<CView> UIEditView::getViewAt (const CPoint& p, const GetViewOption
 	{
 		while (view && IViewFactory::getViewName (*view.get ()) == nullptr)
 		{
-			view = view->getParentView ();
+			view = shared (view->getParentView ());
 		}
 	}
 	return view;
@@ -542,7 +541,7 @@ SharedPointer<CViewContainer> UIEditView::getContainerAt (const CPoint& p,
 	{
 		while (view && IViewFactory::getViewName (*view.get ()) == nullptr)
 		{
-			view = view->getParentView ()->asViewContainer ();
+			view = shared (view->getParentView ());
 		}
 	}
 	return view;
@@ -682,7 +681,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 		getSelection ()->clear ();
 		return kMouseEventHandled;
 	}
-	if (getSelection ()->contains (mouseHitView))
+	if (getSelection ()->contains (*mouseHitView.get ()))
 	{
 		if (buttons.isControlSet ())
 		{
@@ -713,7 +712,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			onDoubleClickEditing (*selectionHitView.get ());
 			return kMouseEventHandled;
 		}
-		if (buttons.isAltSet () && !getSelection ()->contains (getEditView ()))
+		if (buttons.isAltSet () && !getSelection ()->contains (*getEditView ().get ()))
 		{
 			mouseEditMode = MouseEditMode::WaitDrag;
 			dragStartMouseObserver.init (where);
@@ -721,7 +720,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 		}
 		if (sizeMode == MouseSizeMode::None)
 		{
-			if (getSelection ()->contains (getEditView ()))
+			if (getSelection ()->contains (*getEditView ().get ()))
 			{
 				return kMouseEventHandled;
 			}
@@ -795,10 +794,11 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		area.setTopLeft (mouseStartPoint);
 		area.setBottomRight (where2);
 		area.normalize ();
-		auto result = findChildsInArea (*getEditView ()->asViewContainer ().get (), area);
+		auto result = findChildsInArea (*getEditView ()->asViewContainer (), area);
 		for (auto& view : result)
 		{
-			if (IViewFactory::getViewName (*view.get ()) && !getSelection ()->contains (view))
+			if (IViewFactory::getViewName (*view.get ()) &&
+				!getSelection ()->contains (*view.get ()))
 				getSelection ()->add (view);
 		}
 	}
@@ -888,8 +888,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 				}
 			}
 		}
-		auto scrollView = getParentView ()->getParentView ().cast<CScrollView> ();
-		if (scrollView)
+		if (auto scrollView = dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
 		{
 			scrollView->makeRectVisible (CRect (where, CPoint (1, 1)));
 		}
@@ -914,7 +913,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 				case MouseSizeMode::BottomLeft: ctype = kCursorNESWSize; break;
 				case MouseSizeMode::None:
 				{
-					if (getSelection ()->contains (getEditView ()) == false)
+					if (getSelection ()->contains (*getEditView ().get ()) == false)
 						ctype = kCursorMovableObject;
 					break;
 				}
@@ -957,7 +956,7 @@ void UIEditView::doKeyMove (const CPoint& delta)
 {
 	if (delta.x != 0. || delta.y != 0.)
 	{
-		if (getSelection ()->contains (getEditView ()))
+		if (getSelection ()->contains (*getEditView ().get ()))
 			return;
 		if (!moveSizeOperation)
 			moveSizeOperation = makeShared<ViewSizeChangeOperation> (selection, false, autosizing);
@@ -1008,7 +1007,7 @@ std::vector<SharedPointer<CView>> UIEditView::findChildsInArea (CViewContainer& 
 				if (!r2.isEmpty ())
 				{
 					r2.offsetInverse (viewSize.getTopLeft ());
-					auto res2 = findChildsInArea (*container.get (), r2);
+					auto res2 = findChildsInArea (*container, r2);
 					std::move (res2.begin (), res2.end (), std::back_inserter (views));
 				}
 			}
@@ -1174,7 +1173,7 @@ void UIEditView::startDrag (CPoint& where)
 	getSelection ()->setDragOffset (CPoint (offset.x, offset.y));
 
 	std::string templateName;
-	if (description->getTemplateNameFromView (getEditView (), templateName))
+	if (description->getTemplateNameFromView (*getEditView ().get (), templateName))
 		description->updateViewDescription (templateName.c_str (), getEditView ());
 
 	CMemoryStream stream (1024, 1024, false);
@@ -1417,7 +1416,7 @@ void UIEditView::takeFocus ()
 }
 
 //-----------------------------------------------------------------------------
-bool UIEditView::attached (const SharedPointer<CViewContainer>& parent)
+bool UIEditView::attached (CViewContainer& parent)
 {
 	if (CViewContainer::attached (parent))
 	{
@@ -1429,7 +1428,7 @@ bool UIEditView::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //-----------------------------------------------------------------------------
-bool UIEditView::removed (const SharedPointer<CViewContainer>& parent)
+bool UIEditView::removed (CViewContainer& parent)
 {
 	auto frame = getFrame ();
 	if (editingViewAddedObserver)

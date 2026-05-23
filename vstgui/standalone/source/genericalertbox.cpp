@@ -167,7 +167,7 @@ public:
 		}
 	}
 
-	void onSetContentView (IWindow& inWindow, const SharedPointer<CFrame>& contentView) override
+	void onSetContentView (IWindow& inWindow, CFrame* contentView) override
 	{
 		std::vector<SharedPointer<CMultiLineTextLabel>> views;
 		if (contentView->getChildViewsOfType<CMultiLineTextLabel> (views, true) == 0)

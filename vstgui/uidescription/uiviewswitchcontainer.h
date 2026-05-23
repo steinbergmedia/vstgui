@@ -50,8 +50,8 @@ public:
 	void setTimingFunction (TimingFunction t);
 	TimingFunction getTimingFunction () const { return timingFunction; }
 
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
+	bool removed (CViewContainer& parent) override;
 	//-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:
@@ -91,6 +91,10 @@ protected:
 class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController, public IControlListener
 {
 public:
+	static SharedPointer<UIDescriptionViewSwitchController>
+		make (const SharedPointer<UIViewSwitchContainer>& viewSwitch,
+			  const IUIDescription& uiDescription, const SharedPointer<IController>& uiController);
+
 	UIDescriptionViewSwitchController (const SharedPointer<UIViewSwitchContainer>& viewSwitch,
 									   const IUIDescription& uiDescription,
 									   const SharedPointer<IController>& uiController);

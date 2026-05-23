@@ -42,16 +42,15 @@ public:
 private:
 	UIScripting ();
 
-	void afterParsing (const SharedPointer<IUIDescription>& desc) override;
-	void beforeSaving (const SharedPointer<IUIDescription>& desc) override;
-	void onDestroy (const SharedPointer<IUIDescription>& desc) override;
-	CreateTemplateViewFunc onCreateTemplateView (const SharedPointer<IUIDescription>& desc,
+	void afterParsing (const IUIDescription& desc) override;
+	void beforeSaving (const IUIDescription& desc) override;
+	void onDestroy (const IUIDescription& desc) override;
+	CreateTemplateViewFunc onCreateTemplateView (const IUIDescription& desc,
 												 const CreateTemplateViewFunc& f) override;
-	SharedPointer<IViewFactory>
-		getViewFactory (const SharedPointer<IUIDescription>& desc,
-						const SharedPointer<IViewFactory>& originalFactory) override;
-	void onEditingStart (const SharedPointer<IUIDescription>& desc) override;
-	void onEditingEnd (const SharedPointer<IUIDescription>& desc) override;
+	SharedPointer<IViewFactory> getViewFactory (
+		const IUIDescription& desc, const SharedPointer<IViewFactory>& originalFactory) override;
+	void onEditingStart (const IUIDescription& desc) override;
+	void onEditingEnd (const IUIDescription& desc) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

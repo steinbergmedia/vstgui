@@ -264,7 +264,7 @@ void ExchangeViewAnimation::animationStart (CView& view, IdStringPtr name)
 {
 	#if DEBUG
 	auto parent = viewToRemove->getParentView ()->asViewContainer ();
-	vstgui_assert (&view == parent.get ());
+	vstgui_assert (&view == parent);
 #endif
 }
 

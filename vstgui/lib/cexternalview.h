@@ -32,8 +32,8 @@ public:
 	CExternalView (const CRect& r, const ExternalViewPtr& view);
 	~CExternalView () noexcept;
 
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
+	bool removed (CViewContainer& parent) override;
 	void takeFocus () override;
 	void looseFocus () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -62,8 +62,8 @@ public:
 
 	bool setValue (float val) override;
 
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
+	bool removed (CViewContainer& parent) override;
 	void takeFocus () override;
 	void looseFocus () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;

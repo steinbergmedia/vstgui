@@ -73,9 +73,9 @@ public:
 	virtual bool removeAll ();
 
 	/** check if pView is a child view of this container */
-	bool isChild (const SharedPointer<CView>& pView) const;
+	bool isChild (const CView& pView) const;
 	/** check if pView is a child view of this container */
-	virtual bool isChild (const SharedPointer<CView>& pView, bool deep) const;
+	virtual bool isChild (const CView& pView, bool deep) const;
 	/** check if container has child views */
 	virtual bool hasChildren () const;
 	/** get the number of child views */
@@ -197,8 +197,8 @@ public:
 	void parentSizeChanged () override;
 	bool sizeToFit () override;
 
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (CViewContainer& parent) override;
+	bool attached (CViewContainer& parent) override;
 
 	CPoint& frameToLocal (CPoint& point) const override;
 	CPoint& localToFrame (CPoint& point) const override;
@@ -281,11 +281,8 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
-	SharedPointer<CViewContainer> asViewContainer () final { return shared (this); }
-	const SharedPointer<CViewContainer> asViewContainer () const final
-	{
-		return shared (const_cast<CViewContainer*> (this));
-	}
+	CViewContainer* asViewContainer () final { return this; }
+	const CViewContainer* asViewContainer () const final { return this; }
 
 protected:
 	enum
@@ -293,6 +290,8 @@ protected:
 		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1),
 		kInApplyLayout = 1 << (CView::kLastCViewFlag + 2),
 	};
+
+	VSTGUI_SHAREDPTR_FRIEND (CViewContainer)
 
 	~CViewContainer () noexcept override;
 	void beforeDelete () override;

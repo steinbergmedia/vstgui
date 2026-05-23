@@ -50,7 +50,7 @@ public:
 	void setMin (float val) override;
 	void setMax (float val) override;
 
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
 	void draw (CDrawContext& context) override;
 	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;

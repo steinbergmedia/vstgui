@@ -91,6 +91,7 @@ public:
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CTextEdit)
 	~CTextEdit () noexcept override;
 
 	void createPlatformTextEdit ();

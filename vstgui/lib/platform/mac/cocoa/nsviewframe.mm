@@ -1680,8 +1680,8 @@ PlatformOptionMenuPtr NSViewFrame::createPlatformOptionMenu ()
 		MouseEventButtonState buttonState;
 		if (auto event = [NSApp currentEvent])
 			buttonState = buttonStateFromNSEvent (event);
-		return std::make_shared<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)),
-													buttonState, *genericOptionMenuTheme.get ());
+		return std::make_shared<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
+													*genericOptionMenuTheme.get ());
 	}
 	return std::make_shared<NSViewOptionMenu> ();
 }

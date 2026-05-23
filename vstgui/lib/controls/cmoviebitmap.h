@@ -30,6 +30,7 @@ public:
 
 	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CMovieBitmap)
 	~CMovieBitmap () noexcept override = default;
 };
 

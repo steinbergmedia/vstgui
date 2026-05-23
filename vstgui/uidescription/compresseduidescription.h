@@ -20,7 +20,7 @@ protected:
 		LastCompressedSaveFlagBit,
 	};
 public:
-	CompressedUIDescription (const CResourceDescription& compressedUIDescFile);
+	CompressedUIDescription ();
 
 	enum SaveFlags
 	{

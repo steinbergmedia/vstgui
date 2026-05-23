@@ -162,7 +162,7 @@ void UIViewSwitchContainer::setTimingFunction (TimingFunction t)
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewSwitchContainer::attached (const SharedPointer<CViewContainer>& parent)
+bool UIViewSwitchContainer::attached (CViewContainer& parent)
 {
 	bool result = CViewContainer::attached (parent);
 	CViewContainer::removeAll ();
@@ -172,7 +172,7 @@ bool UIViewSwitchContainer::attached (const SharedPointer<CViewContainer>& paren
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewSwitchContainer::removed (const SharedPointer<CViewContainer>& parent)
+bool UIViewSwitchContainer::removed (CViewContainer& parent)
 {
 	if (isAttached ())
 	{
@@ -186,6 +186,17 @@ bool UIViewSwitchContainer::removed (const SharedPointer<CViewContainer>& parent
 	return false;
 }
 
+//------------------------------------------------------------------------
+SharedPointer<UIDescriptionViewSwitchController> UIDescriptionViewSwitchController::make (
+	const SharedPointer<UIViewSwitchContainer>& viewSwitch, const IUIDescription& uiDescription,
+	const SharedPointer<IController>& uiController)
+{
+	auto instance =
+		makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDescription, uiController);
+	instance->init ();
+	return instance;
+}
+
 //-----------------------------------------------------------------------------
 UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (
 	const SharedPointer<UIViewSwitchContainer>& viewSwitch, const IUIDescription& uiDescription,
@@ -197,7 +208,6 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (
 , currentIndex (-1)
 , switchControl (nullptr)
 {
-	init ();
 }
 
 //-----------------------------------------------------------------------------
@@ -212,8 +222,8 @@ SharedPointer<CView> UIDescriptionViewSwitchController::createViewForIndex (int3
 }
 
 //-----------------------------------------------------------------------------
-static SharedPointer<CControl> findControlForTag (const SharedPointer<CViewContainer>& parent,
-												  int32_t tag, bool reverse = true)
+static SharedPointer<CControl> findControlForTag (CViewContainer& parent, int32_t tag,
+												  bool reverse = true)
 {
 	SharedPointer<CControl> result;
 	ViewIterator it (parent);
@@ -229,14 +239,14 @@ static SharedPointer<CControl> findControlForTag (const SharedPointer<CViewConta
 		else if (reverse)
 		{
 			if (auto container = view->asViewContainer ())
-				result = findControlForTag (container, tag);
+				result = findControlForTag (*container, tag);
 		}
 		if (result)
 			break;
 		++it;
 	}
-	if (result == nullptr && !reverse && parent->getParentView ())
-		return findControlForTag (parent->getParentView (), tag, reverse);
+	if (result == nullptr && !reverse && parent.getParentView ())
+		return findControlForTag (*parent.getParentView (), tag, reverse);
 	return result;
 }
 
@@ -246,10 +256,11 @@ void UIDescriptionViewSwitchController::switchContainerAttached ()
 	if (auto vs = viewSwitch.lock (); vs && switchControlTag != -1)
 	{
 		// find the switch Control
-		switchControl = findControlForTag (vs->getParentView (), switchControlTag, false);
-		if (switchControl == nullptr)
+		if (auto pv = vs->getParentView ())
+			switchControl = findControlForTag (*pv, switchControlTag, false);
+		if (switchControl == nullptr && vs->getFrame ())
 		{
-			switchControl = findControlForTag (vs->getFrame (), switchControlTag, true);
+			switchControl = findControlForTag (*vs->getFrame (), switchControlTag, true);
 		}
 		if (switchControl)
 		{

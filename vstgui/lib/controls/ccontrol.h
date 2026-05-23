@@ -90,8 +90,8 @@ public:
 	//@}
 
 	// overrides
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (CViewContainer& parent) override;
+	bool attached (CViewContainer& parent) override;
 	void draw (CDrawContext& context) override = 0;
 
 	bool drawFocusOnTop () override;

@@ -66,7 +66,7 @@ public:
 								if (parent->getParentView () == nullptr)
 									break;
 								parent = parent->getParentView ()->asViewContainer ();
-								focusBrowser = parent.cast<CDataBrowser> ();
+								focusBrowser = shared (dynamic_cast<CDataBrowser*> (parent));
 							}
 							if (focusBrowser)
 							{
@@ -187,24 +187,24 @@ public:
 	bool setSelectedView (const SharedPointer<CView>& view, bool makeRowVisible = false);
 	SharedPointer<UIViewListDataSource> getNext () const { return next; }
 
-	bool update (const SharedPointer<CViewContainer>& vc);
+	bool update (CViewContainer& vc);
 	void remove ();
 protected:
-	UTF8String getViewDisplayString (const SharedPointer<CView>& v) const
+	UTF8String getViewDisplayString (CView& v) const
 	{
 		uint32_t outSize = 0;
-		if (v->getAttributeSize (UIViewCreator::ViewCreator::labelAttrID, outSize))
+		if (v.getAttributeSize (UIViewCreator::ViewCreator::labelAttrID, outSize))
 		{
 			Buffer<char> buffer (outSize);
-			if (v->getAttribute (UIViewCreator::ViewCreator::labelAttrID, outSize, buffer.data (),
-			                     outSize))
+			if (v.getAttribute (UIViewCreator::ViewCreator::labelAttrID, outSize, buffer.data (),
+								outSize))
 			{
 				return buffer.data ();
 			}
 		}
 		if (const auto* vfEditingSupport =
 				dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory))
-			return vfEditingSupport->getViewDisplayName (*v.get ());
+			return vfEditingSupport->getViewDisplayName (v);
 		return {};
 	}
 	const UTF8String& getHeaderTitle () const override
@@ -212,14 +212,14 @@ protected:
 		headerTitle = "";
 		if (view)
 		{
-			headerTitle = getViewDisplayString (view);
+			headerTitle = getViewDisplayString (*view.get ());
 			if (headerTitle.empty () && view->getParentView ())
-				headerTitle = getViewDisplayString (view->getParentView ());
+				headerTitle = getViewDisplayString (*view->getParentView ());
 		}
 		return headerTitle;
 	}
 
-	CCoord calculateSubViewWidth (const SharedPointer<CViewContainer>& view) const;
+	CCoord calculateSubViewWidth (CViewContainer& view) const;
 	void dbSelectionChanged (CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
 									 int32_t column, CDataBrowser& browser) override;
@@ -432,26 +432,26 @@ void UITemplateController::setTemplateView (const SharedPointer<CViewContainer>&
 //------------------------------------------------------------------------
 void UITemplateController::navigateTo (const SharedPointer<CView>& view)
 {
-	std::list<SharedPointer<CView>> parents;
+	std::list<CView*> parents;
 	SharedPointer<CView> v = view;
 	while (auto parent = v->getParentView ())
 	{
 		if (parent == parent->getFrame ())
 			return; // view is not a child of the templateView
-		if (parent == templateView)
+		if (parent == templateView.get ())
 			break;
-		if (IViewFactory::getViewName (*parent.get ()) == nullptr)
+		if (IViewFactory::getViewName (*parent) == nullptr)
 		{
-			v = parent;
+			v = shared (parent);
 			continue;
 		}
 		parents.emplace_front (parent);
-		v = parent;
+		v = shared (parent);
 	}
 	auto dataSource = mainViewDataSource;
 	for (auto parent : parents)
 	{
-		dataSource->setSelectedView (parent, true);
+		dataSource->setSelectedView (shared (parent), true);
 		dataSource = dataSource->getNext ();
 		if (dataSource == nullptr)
 			break;
@@ -575,7 +575,7 @@ UIViewListDataSource::UIViewListDataSource (
 , selectedView (nullptr)
 , inUpdate (false)
 {
-	update (view);
+	update (*view.get ());
 	undoManager->registerListener (this);
 }
 
@@ -594,29 +594,29 @@ SharedPointer<CView> UIViewListDataSource::getSubview (int32_t index)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIViewListDataSource::update (const SharedPointer<CViewContainer>& vc)
+bool UIViewListDataSource::update (CViewContainer& vc)
 {
 	inUpdate = true;
 	names.clear ();
 	subviews.clear ();
-	vc->forEachChild ([&] (auto&& subview) {
-		auto viewName = getViewDisplayString (subview);
+	vc.forEachChild ([&] (auto&& subview) {
+		auto viewName = getViewDisplayString (*subview.get ());
 		if (!viewName.empty ())
 		{
 			names.emplace_back (std::move (viewName));
 			subviews.emplace_back (subview);
 		}
 	});
-	if (names.empty () && vc->getNbViews () > 0)
+	if (names.empty () && vc.getNbViews () > 0)
 	{
 		ViewIterator it (vc);
 		while (*it)
 		{
 			if (auto subview = (*it)->asViewContainer ())
 			{
-				if (update (subview))
+				if (update (*subview))
 				{
-					view = subview;
+					view = shared (subview);
 					inUpdate = false;
 					return true;
 				}
@@ -632,12 +632,11 @@ bool UIViewListDataSource::update (const SharedPointer<CViewContainer>& vc)
 }
 
 //----------------------------------------------------------------------------------------------------
-CCoord
-	UIViewListDataSource::calculateSubViewWidth (const SharedPointer<CViewContainer>& inView) const
+CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer& inView) const
 {
 	CCoord result = 0;
 
-	inView->forEachChild (
+	inView.forEachChild (
 		[&result] (auto subView) { result += subView->getViewSize ().getWidth (); });
 	return result;
 }
@@ -666,8 +665,8 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 	}
 	if (auto container = selectedView ? selectedView->asViewContainer () : nullptr)
 	{
-		auto dataSource = makeShared<UIViewListDataSource> (container, viewFactory, selection,
-															undoManager, delegate);
+		auto dataSource = makeShared<UIViewListDataSource> (shared (container), viewFactory,
+															selection, undoManager, delegate);
 		UIEditController::setupDataSource (dataSource);
 		CRect r (dataBrowser->getViewSize ());
 		r.offset (r.getWidth (), 0);
@@ -676,11 +675,11 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 		auto parentView = newDataBrowser->getParentView ();
 		parentView->addSubview (newDataBrowser);
 		next = dataSource;
-		auto scrollView = parentView->getParentView ().cast<CScrollView> ();
-		if (scrollView)
+
+		if (auto scrollView = dynamic_cast<CScrollView*> (parentView->getParentView ()))
 		{
 			CRect containerSize (scrollView->getContainerSize ());
-			containerSize.right = calculateSubViewWidth (parentView);
+			containerSize.right = calculateSubViewWidth (*parentView);
 			scrollView->setContainerSize (containerSize, true);
 		}
 	}
@@ -708,12 +707,12 @@ void UIViewListDataSource::remove ()
 	if (auto dataBrowser = dbPtr.lock ())
 	{
 		auto parentView = dataBrowser->getParentView ();
-		auto scrollView = parentView->getParentView ().cast<CScrollView> ();
+		auto scrollView = shared (parentView->getParentView ()).cast<CScrollView> ();
 		parentView->removeSubview (dataBrowser);
 		if (scrollView)
 		{
 			CRect containerSize (scrollView->getContainerSize ());
-			containerSize.right = calculateSubViewWidth (parentView);
+			containerSize.right = calculateSubViewWidth (*parentView);
 			scrollView->setContainerSize (containerSize, true);
 		}
 	}
@@ -733,7 +732,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where,
 			{
 				if (buttons.getModifierState () & kControl)
 				{
-					if (selection->contains (subview))
+					if (selection->contains (*subview.get ()))
 						selection->remove (subview);
 					else
 						selection->add (subview);
@@ -847,7 +846,7 @@ bool UIViewListDataSource::dbOnDropInCell (int32_t row, int32_t column, const CP
 //----------------------------------------------------------------------------------------------------
 void UIViewListDataSource::onUndoManagerChange ()
 {
-	update (view);
+	update (*view.get ());
 	if (selectedView)
 	{
 		if (auto dataBrowser = dbPtr.lock ())

@@ -45,7 +45,7 @@ void CShadowViewContainer::beforeDelete ()
 }
 
 //-----------------------------------------------------------------------------
-bool CShadowViewContainer::removed (const SharedPointer<CViewContainer>& parent)
+bool CShadowViewContainer::removed (CViewContainer& parent)
 {
 	if (auto frame = getFrame ())
 		frame->unregisterScaleFactorChangedListener (this);
@@ -54,7 +54,7 @@ bool CShadowViewContainer::removed (const SharedPointer<CViewContainer>& parent)
 }
 
 //-----------------------------------------------------------------------------
-bool CShadowViewContainer::attached (const SharedPointer<CViewContainer>& parent)
+bool CShadowViewContainer::attached (CViewContainer& parent)
 {
 	if (CViewContainer::attached (parent))
 	{
@@ -176,7 +176,7 @@ void CShadowViewContainer::drawRect (CDrawContext& context, const CRect& updateR
 				if (setColorFilter)
 				{
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
-												 bitmap.cast<IReference> ());
+												 bitmap);
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputColor, kBlackCColor);
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kIgnoreAlphaColorValue, (int32_t)1);
 					if (setColorFilter->run (true))
@@ -186,8 +186,7 @@ void CShadowViewContainer::drawRect (CDrawContext& context, const CRect& updateR
 						{
 							auto boxSizes = boxesForGauss<3> (shadowBlurSize);
 							boxBlurFilter->setProperty (
-								BitmapFilter::Standard::Property::kInputBitmap,
-								bitmap.cast<IReference> ());
+								BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[0]);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kAlphaChannelOnly, 1);
 							if (boxBlurFilter->run (true))

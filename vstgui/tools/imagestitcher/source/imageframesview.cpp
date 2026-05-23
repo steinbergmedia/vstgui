@@ -47,7 +47,7 @@ void ImageFramesView::makeRectVisible (CRect r) const
 {
 	if (!isAttached ())
 		return;
-	if (auto scrollView = getParentView ()->getParentView ().cast<CScrollView> ())
+	if (auto scrollView = dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
 	{
 		scrollView->makeRectVisible (r);
 	}
@@ -77,7 +77,7 @@ void ImageFramesView::updateViewSize ()
 		}
 		if (isAttached ())
 		{
-			if (auto scrollView = getParentView ()->getParentView ().cast<CScrollView> ())
+			if (auto scrollView = dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
 			{
 				auto parentSize = scrollView->getViewSize ();
 				if (parentSize.getWidth () > r.getWidth ())

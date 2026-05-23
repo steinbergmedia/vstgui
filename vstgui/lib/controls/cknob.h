@@ -134,6 +134,7 @@ public:
 
 	CLASS_METHODS(CKnob, CKnobBase)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CKnob)
 	~CKnob () noexcept override;
 
 	virtual void drawHandle (CDrawContext& context);
@@ -185,6 +186,7 @@ public:
 
 	CLASS_METHODS(CAnimKnob, CKnobBase)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CAnimKnob)
 	~CAnimKnob () noexcept override = default;
 	bool	bInverseBitmap;
 };

@@ -45,7 +45,8 @@ class UIEditController : public NonAtomicReferenceCounted,
 						 public ViewListenerAdapter
 {
 public:
-	UIEditController (const SharedPointer<UIDescription>& description);
+	static SharedPointer<UIEditController> make (const SharedPointer<UIDescription>& description);
+
 	void setDarkTheme (bool state); // must be called before createEditView
 	bool usesDarkTheme () const;
 	SharedPointer<CView> createEditView ();
@@ -65,7 +66,9 @@ public:
 	static const UTF8StringPtr kEncodeBitmapsSettingsKey;
 	static const UTF8StringPtr kWriteWindowsRCFileSettingsKey;
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (UIEditController)
 	~UIEditController () override;
+	bool init (const SharedPointer<UIDescription>& description);
 
 	static void resetScrollViewOffsets (CViewContainer& view);
 

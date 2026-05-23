@@ -10,12 +10,11 @@
 namespace Mandelbrot {
 
 #if MAC && defined (MAC_OS_X_VERSION_10_12)
-void installTouchbarSupport (const VSTGUI::SharedPointer<VSTGUI::IPlatformFrameTouchBarExtension>&,
+void installTouchbarSupport (VSTGUI::IPlatformFrameTouchBarExtension*,
 							 const VSTGUI::Standalone::ValuePtr&);
 #else
-inline void
-	installTouchbarSupport (const VSTGUI::SharedPointer<VSTGUI::IPlatformFrameTouchBarExtension>&,
-							const VSTGUI::Standalone::ValuePtr&)
+inline void installTouchbarSupport (VSTGUI::IPlatformFrameTouchBarExtension*,
+									const VSTGUI::Standalone::ValuePtr&)
 {
 }
 #endif // MAC

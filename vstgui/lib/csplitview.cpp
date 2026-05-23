@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -30,7 +30,7 @@ public:
 	void onMouseExitEvent (MouseExitEvent& event) override;
 	bool hitTestSubViews (const CPoint& where, const Event& event) override;
 
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (CViewContainer& parent) override;
 
 protected:
 	CPoint lastMousePos;
@@ -636,14 +636,14 @@ void CSplitView::storeViewSizes ()
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::removed (const SharedPointer<CViewContainer>& parent)
+bool CSplitView::removed (CViewContainer& parent)
 {
 	storeViewSizes ();
 	return CViewContainer::removed (parent);
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::attached (const SharedPointer<CViewContainer>& parent)
+bool CSplitView::attached (CViewContainer& parent)
 {
 	bool result = CViewContainer::attached (parent);
 	if (auto controller = getSplitViewController (*this))
@@ -683,7 +683,7 @@ bool CSplitView::attached (const SharedPointer<CViewContainer>& parent)
 				view->setViewSize (r);
 				view->setMouseableArea (r);
 				index++;
-			}			
+			}
 			++it;
 		}
 	}
@@ -778,11 +778,11 @@ CSplitViewSeparatorView::CSplitViewSeparatorView (const CRect& size, CSplitView:
 //-----------------------------------------------------------------------------
 void CSplitViewSeparatorView::drawRect (CDrawContext& context, const CRect& r)
 {
-	auto splitView = getParentView ().cast<CSplitView> ();
+	auto splitView = dynamic_cast<CSplitView*> (getParentView ());
 	auto drawer = splitView ? splitView->getDrawer () : nullptr;
 	if (drawer)
 	{
-		drawer->drawSplitViewSeparator (context, getViewSize (), flags, index, *splitView.get ());
+		drawer->drawSplitViewSeparator (context, getViewSize (), flags, index, *splitView);
 	}
 	CViewContainer::drawRect (context, r);
 }
@@ -844,7 +844,7 @@ void CSplitViewSeparatorView::mouseMoved (MouseEvent& event)
 				newSize.offset (event.mousePosition.x - lastMousePos.x, 0);
 			else
 				newSize.offset (0, event.mousePosition.y - lastMousePos.y);
-			if (auto splitView = getParentView ().cast<CSplitView> ())
+			if (auto splitView = dynamic_cast<CSplitView*> (getParentView ()))
 				splitView->requestNewSeparatorSize (*this, newSize);
 		}
 		event.consumed = true;
@@ -902,7 +902,7 @@ void CSplitViewSeparatorView::onMouseExitEvent (MouseExitEvent& event)
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitViewSeparatorView::removed (const SharedPointer<CViewContainer>& parent)
+bool CSplitViewSeparatorView::removed (CViewContainer& parent)
 {
 	if (hasBit (flags, ISplitViewSeparatorDrawer::kMouseOver))
 	{

@@ -24,7 +24,7 @@ namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 UIDialogController::UIDialogController (const SharedPointer<IController>& baseController,
-										const SharedPointer<CFrame>& frame)
+										CFrame* frame)
 : DelegationController (baseController), frame (frame)
 {
 }
@@ -106,7 +106,7 @@ void UIDialogController::close ()
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::viewSizeChanged (CView& view, const CRect& oldSize)
 {
-	if (&view == frame.get () && !resizable)
+	if (&view == frame && !resizable)
 	{
 		auto dialog = frame->getModalView ();
 		CRect viewSize = dialog->getViewSize ();
@@ -121,7 +121,7 @@ void UIDialogController::viewSizeChanged (CView& view, const CRect& oldSize)
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::viewRemoved (CView& view)
 {
-	if (&view != frame.get ())
+	if (&view != frame)
 	{
 		view.unregisterViewListener (this);
 		close ();

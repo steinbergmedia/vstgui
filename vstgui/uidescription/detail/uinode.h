@@ -141,6 +141,7 @@ public:
 	void freePlatformResources () override;
 
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (UIBitmapNode)
 	~UIBitmapNode () noexcept override;
 	using BitmapVariant =
 		std::variant<uint32_t, CNinePartTiledDescription, CMultiFrameBitmapDescription>;
@@ -167,6 +168,7 @@ public:
 	void freePlatformResources () override;
 
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (UIFontNode)
 	~UIFontNode () noexcept override;
 	SharedPointer<CFontDesc> font;
 };

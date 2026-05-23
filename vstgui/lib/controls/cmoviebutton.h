@@ -36,6 +36,7 @@ public:
 
 	CLASS_METHODS(CMovieButton, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CMovieButton)
 	~CMovieButton () noexcept override = default;
 	float    buttonState;
 

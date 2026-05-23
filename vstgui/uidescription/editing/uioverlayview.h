@@ -21,8 +21,8 @@ public:
 	UIOverlayView (const SharedPointer<CViewContainer>& view);
 	~UIOverlayView () override;
 
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
+	bool removed (CViewContainer& parent) override;
 	void viewSizeChanged (CView& view, const CRect& oldSize) override;
 	void viewWillDelete (CView& view) override;
 

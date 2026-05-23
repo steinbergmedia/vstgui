@@ -61,7 +61,7 @@ public:
 	bool canClose (const IWindow& window) override;
 	void beforeShow (IWindow& window) override;
 	PlatformFrameConfigPtr createPlatformFrameConfig (PlatformType platformType) override;
-	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override;
+	void onSetContentView (IWindow& window, CFrame* contentView) override;
 
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
@@ -317,7 +317,7 @@ struct WindowController::Impl : public ICommandHandler
 
 		showView ();
 
-		window->setContentView (frame);
+		window->setContentView (frame.get ());
 		return true;
 	}
 
@@ -326,7 +326,9 @@ struct WindowController::Impl : public ICommandHandler
 		window = inWindow.get ();
 		auto contentProvider =
 			makeShared<MemoryContentProvider> (inXml, static_cast<uint32_t> (inXml.length ()));
-		uiDesc = makeShared<UIDescription> (contentProvider);
+		uiDesc = makeShared<UIDescription> ();
+		if (!uiDesc->init (contentProvider))
+			return false;
 		if (!uiDesc->parse ())
 			return false;
 		if (customization)
@@ -338,7 +340,7 @@ struct WindowController::Impl : public ICommandHandler
 
 		showView ();
 
-		window->setContentView (frame);
+		window->setContentView (frame.get ());
 		return true;
 	}
 
@@ -396,7 +398,7 @@ struct WindowController::Impl : public ICommandHandler
 		return nullptr;
 	}
 
-	void onSetContentView (const SharedPointer<CFrame>& contentView)
+	void onSetContentView (CFrame* contentView)
 	{
 		if (customization)
 		{
@@ -473,9 +475,11 @@ struct WindowController::Impl : public ICommandHandler
 		if (Detail::getApplicationPlatformAccess ()
 		        ->getConfiguration ()
 		        .useCompressedUIDescriptionFiles)
-			uiDesc = makeShared<CompressedUIDescription> (fileName);
+			uiDesc = makeShared<CompressedUIDescription> ();
 		else
-			uiDesc = makeShared<UIDescription> (fileName);
+			uiDesc = makeShared<UIDescription> ();
+		if (!uiDesc->init (fileName))
+			return false;
 		uiDesc->setSharedResources (Detail::getSharedUIDescription ());
 		if (!uiDesc->parse ())
 		{
@@ -763,7 +767,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		syncTags ();
 		showView ();
 
-		window->setContentView (frame);
+		window->setContentView (frame.get ());
 
 		return true;
 	}
@@ -913,7 +917,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		if (state)
 		{
 			uiDesc->setController (iController);
-			uiEditController = makeShared<UIEditController> (uiDesc);
+			uiEditController = UIEditController::make (uiDesc);
 			auto view = uiEditController->createEditView ();
 			auto viewSize = view->getViewSize ().getSize ();
 			frame->getTransform ().transform (viewSize);
@@ -1041,7 +1045,7 @@ PlatformFrameConfigPtr WindowController::createPlatformFrameConfig (PlatformType
 }
 
 //------------------------------------------------------------------------
-void WindowController::onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView)
+void WindowController::onSetContentView (IWindow& window, CFrame* contentView)
 {
 	if (impl)
 		impl->onSetContentView (contentView);

@@ -94,7 +94,7 @@ public:
 		title = newTitle;
 		platformWindow->setTitle (newTitle);
 	}
-	void setContentView (const SharedPointer<CFrame>& newFrame) override;
+	void setContentView (CFrame* newFrame) override;
 	void setRepresentedPath (const UTF8String& path) override;
 	WindowStyle changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove) override;
 	void show () override;
@@ -106,7 +106,7 @@ public:
 
 	// IPlatformWindowAccess
 	InterfacePtr getPlatformWindow () const override { return platformWindow; }
-	SharedPointer<CFrame> getFrame () const override { return frame; }
+	CFrame* getFrame () const override { return frame.get (); }
 
 	// Platform::IWindowDelegate
 	CPoint constraintSize (const CPoint& newSize) override;
@@ -190,18 +190,18 @@ void Window::show ()
 }
 
 //------------------------------------------------------------------------
-void Window::setContentView (const SharedPointer<CFrame>& newFrame)
+void Window::setContentView (CFrame* newFrame)
 {
 	if (frame)
 	{
 		frame->unregisterMouseObserver (this);
 		frame->close ();
 	}
-	frame = newFrame;
+	frame = shared (newFrame);
 	if (!frame)
 	{
 		if (controller)
-			controller->onSetContentView (*this, frame);
+			controller->onSetContentView (*this, frame.get ());
 		return;
 	}
 	auto frameConfig =
@@ -211,9 +211,9 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType (),
 	             frameConfig.get ());
 	frame->registerMouseObserver (this);
-	platformWindow->onSetContentView (frame);
+	platformWindow->onSetContentView (frame.get ());
 	if (controller)
-		controller->onSetContentView (*this, frame);
+		controller->onSetContentView (*this, frame.get ());
 }
 
 //------------------------------------------------------------------------

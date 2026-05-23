@@ -82,7 +82,7 @@ protected:
 	void dbSelectionChanged (int32_t selectedRow,
 							 GenericStringListDataBrowserSource& source) override;
 	void valueChanged (CControl& pControl) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	IFontChooserDelegate* delegate;

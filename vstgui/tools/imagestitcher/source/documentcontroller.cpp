@@ -295,7 +295,7 @@ SharedPointer<IController> DocumentWindowController::createController (
 void DocumentWindowController::onUIDescriptionParsed (const IUIDescription& uiDesc) {}
 
 //------------------------------------------------------------------------
-void DocumentWindowController::onSetContentView (IWindow& w, const SharedPointer<CFrame>& cv)
+void DocumentWindowController::onSetContentView (IWindow& w, CFrame* cv)
 {
 	contentView = cv;
 	if (imageView)

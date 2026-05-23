@@ -101,7 +101,7 @@ public:
 	void* getPlatformHandle () const override;
 
 	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override;
-	void onSetContentView (const SharedPointer<CFrame>& frame) override;
+	void onSetContentView (CFrame* frame) override;
 
 private:
 	void updateGeometryHints ();
@@ -118,7 +118,7 @@ private:
 	WindowType type;
 	IWindowDelegate* delegate {nullptr};
 	Gtk::ApplicationWindow gtkWindow;
-	SharedPointer<CFrame> contentView;
+	CFrame* contentView;
 };
 
 //------------------------------------------------------------------------
@@ -398,7 +398,7 @@ PlatformFrameConfigPtr Window::prepareFrameConfig (PlatformFrameConfigPtr&& cont
 }
 
 //------------------------------------------------------------------------
-void Window::onSetContentView (const SharedPointer<CFrame>& newFrame)
+void Window::onSetContentView (CFrame* newFrame)
 {
 	contentView = newFrame;
 	if (contentView)

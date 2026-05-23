@@ -144,13 +144,12 @@ const CFileExtension& CNewFileSelector::getAllFilesExtension ()
 struct CNewFileSelector::Impl : PlatformFileSelectorConfig
 {
 	PlatformFileSelectorPtr platformFileSelector;
-	SharedPointer<CFrame> frame;
+	CFrame* frame;
 	std::vector<UTF8String> result;
 };
 
 //-----------------------------------------------------------------------------
-CNewFileSelector::CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector,
-									const SharedPointer<CFrame>& parent)
+CNewFileSelector::CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector, CFrame* parent)
 {
 	impl = std::make_unique<Impl> ();
 	impl->platformFileSelector = std::move (platformFileSelector);
@@ -265,8 +264,7 @@ UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CNewFileSelector> CNewFileSelector::create (const SharedPointer<CFrame>& parent,
-														  Style style)
+SharedPointer<CNewFileSelector> CNewFileSelector::create (CFrame* parent, Style style)
 {
 	if (!parent)
 		return {};

@@ -34,8 +34,7 @@ class UIDialogController : public NonAtomicReferenceCounted,
                            public ViewListenerAdapter
 {
 public:
-	UIDialogController (const SharedPointer<IController>& baseController,
-						const SharedPointer<CFrame>& frame);
+	UIDialogController (const SharedPointer<IController>& baseController, CFrame* frame);
 	~UIDialogController () override = default;
 
 	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1,
@@ -57,7 +56,7 @@ protected:
 
 	void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) override;
 
-	SharedPointer<CFrame> frame;
+	CFrame* frame {nullptr};
 	Optional<ModalViewSessionID> modalSession;
 	SharedPointer<IDialogController> dialogController;
 	SharedPointer<UIDescription> dialogDescription;

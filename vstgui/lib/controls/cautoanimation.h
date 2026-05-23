@@ -25,8 +25,8 @@ public:
 
 	void draw (CDrawContext&) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
+	bool removed (CViewContainer& parent) override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CAutoAnimation Methods
@@ -53,6 +53,7 @@ public:
 
 	CLASS_METHODS(CAutoAnimation, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CAutoAnimation)
 	~CAutoAnimation () noexcept override = default;
 
 	void updateMinMaxFromBackground ();

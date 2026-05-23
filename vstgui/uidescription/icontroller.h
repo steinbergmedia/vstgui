@@ -76,9 +76,9 @@ inline SharedPointer<IController> getViewController (const CView& view, bool dee
 	if (!view.getAttribute (kCViewControllerAttribute, controller) && deep)
 	{
 		auto parentView = view.getParentView ();
-		if (parentView && parentView.get () != &view)
+		if (parentView && parentView != &view)
 		{
-			return getViewController (*parentView.get (), deep);
+			return getViewController (*parentView, deep);
 		}
 	}
 	return controller;
@@ -98,7 +98,7 @@ inline SharedPointer<T> findViewController (const CViewContainer& view)
 			return ctrler;
 		if (auto container = (*iterator)->asViewContainer ())
 		{
-			if (auto ctrler = findViewController<T> (*container.get ()))
+			if (auto ctrler = findViewController<T> (*container))
 				return ctrler;
 		}
 		++iterator;

@@ -88,7 +88,7 @@ public:
 	{
 		return std::move (controllerConfig);
 	}
-	void onSetContentView (const SharedPointer<CFrame>& frame) override;
+	void onSetContentView (CFrame* frame) override;
 
 	void updateCommands () const override;
 	void onQuit () override;
@@ -123,7 +123,7 @@ private:
 	VSTGUI::Standalone::WindowPtr modalWindow;
 	mutable std::shared_ptr<Win32Menu> mainMenu;
 	IWindowDelegate* delegate {nullptr};
-	SharedPointer<CFrame> frame;
+	CFrame* frame;
 	mutable Detail::IPlatformApplication::CommandList menuCommandList;
 	CPoint initialSize;
 	double dpiScale {1.};
@@ -257,7 +257,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 }
 
 //------------------------------------------------------------------------
-void Window::onSetContentView (const SharedPointer<CFrame>& inFrame)
+void Window::onSetContentView (CFrame* inFrame)
 {
 	frame = inFrame;
 	if (frame)

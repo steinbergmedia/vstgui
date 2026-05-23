@@ -65,16 +65,15 @@ UnembedViewOperation::UnembedViewOperation (const SharedPointer<UISelection>& se
 											const IViewFactory& factory)
 : BaseSelectionOperation<SharedPointer<CView>> (selection), factory (factory)
 {
-	containerView = selection->first ()->asViewContainer ();
-	collectSubviews (containerView, true);
-	parent = containerView->getParentView ()->asViewContainer ();
+	containerView = shared (selection->first ()->asViewContainer ());
+	collectSubviews (*containerView.get (), true);
+	parent = shared (containerView->getParentView ()->asViewContainer ());
 }
 
 //----------------------------------------------------------------------------------------------------
-void UnembedViewOperation::collectSubviews (const SharedPointer<CViewContainer>& container,
-											bool deep)
+void UnembedViewOperation::collectSubviews (CViewContainer& container, bool deep)
 {
-	container->forEachChild ([&] (auto& view) {
+	container.forEachChild ([&] (auto& view) {
 		if (factory.getViewName (*view.get ()))
 		{
 			emplace_back (view);
@@ -82,7 +81,7 @@ void UnembedViewOperation::collectSubviews (const SharedPointer<CViewContainer>&
 		else if (deep)
 		{
 			if (auto c = view->asViewContainer ())
-				collectSubviews (c, false);
+				collectSubviews (*c, false);
 		}
 	});
 }
@@ -142,10 +141,10 @@ EmbedViewOperation::EmbedViewOperation (const SharedPointer<UISelection>& select
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect>> (selection)
 , newContainer (newContainer)
 {
-	parent = selection->first ()->getParentView ()->asViewContainer ();
+	parent = shared (selection->first ()->getParentView ()->asViewContainer ());
 	for (auto view : *selection.get ())
 	{
-		if (view->getParentView () == parent)
+		if (view->getParentView () == parent.get ())
 		{
 			emplace_back (view, view->getViewSize ());
 		}
@@ -226,7 +225,7 @@ ViewCopyOperation::ViewCopyOperation (const SharedPointer<UISelection>& copySele
 	CRect selectionBounds = copySelection->getBounds ();
 	for (auto view : *copySelection.get ())
 	{
-		if (!copySelection->containsParent (view))
+		if (!copySelection->containsParent (*view.get ()))
 		{
 			CRect viewSize = UISelection::getGlobalViewCoordinates (*view.get ());
 			CRect newSize (0, 0, view->getWidth (), view->getHeight ());
@@ -326,7 +325,7 @@ void ViewSizeChangeOperation::undo ()
 		bool oldAutosizing = false;
 		if (!autosizing)
 		{
-			container = view->asViewContainer ();
+			container = shared (view->asViewContainer ());
 			if (container)
 			{
 				oldAutosizing = container->getAutosizingEnabled ();
@@ -364,15 +363,15 @@ DeleteOperation::DeleteOperation (const SharedPointer<UISelection>& sel) : selec
 	for (auto view : *selection.get ())
 	{
 		auto container = view->getParentView ();
-		if (container.cast<UIEditView> () == nullptr)
+		if (dynamic_cast<UIEditView*> (container) == nullptr)
 		{
 			SharedPointer<CView> nextView;
-			ViewIterator it (container);
+			ViewIterator it (*container);
 			while (*it)
 			{
 				if (*it == view)
 				{
-					while (*it && selection->contains (*it))
+					while (*it && selection->contains (*(*it).get ()))
 					{
 						++it;
 					}
@@ -381,7 +380,7 @@ DeleteOperation::DeleteOperation (const SharedPointer<UISelection>& sel) : selec
 				}
 				++it;
 			}
-			map.emplace (container, ViewAndNext {view, nextView});
+			map.emplace (shared (container), ViewAndNext {view, nextView});
 		}
 	}
 }
@@ -460,7 +459,7 @@ TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISe
 														const IViewFactory& factory)
 : view (view)
 , insertIndex (-1)
-, parent (view->getParentView ()->asViewContainer ())
+, parent (shared (view->getParentView ()->asViewContainer ()))
 , selection (selection)
 , factory (factory)
 , description (desc)
@@ -510,7 +509,7 @@ void TransformViewTypeOperation::exchangeSubViews (const SharedPointer<CViewCont
 				}
 				else if (auto container = childView->asViewContainer ())
 				{
-					exchangeSubViews (container, dst);
+					exchangeSubViews (shared (container), dst);
 				}
 			});
 			for (auto& viewToMove : temp)
@@ -531,7 +530,7 @@ void TransformViewTypeOperation::perform ()
 		parent->addSubview (newView);
 		if (insertIndex >= 0)
 			parent->changeViewZOrder (newView, static_cast<uint32_t> (insertIndex));
-		exchangeSubViews (view->asViewContainer (), newView->asViewContainer ());
+		exchangeSubViews (shared (view->asViewContainer ()), shared (newView->asViewContainer ()));
 		selection->setExclusive (newView);
 	}
 }
@@ -545,7 +544,7 @@ void TransformViewTypeOperation::undo ()
 		parent->addSubview (view);
 		if (insertIndex >= 0)
 			parent->changeViewZOrder (view, static_cast<uint32_t> (insertIndex));
-		exchangeSubViews (newView->asViewContainer (), view->asViewContainer ());
+		exchangeSubViews (shared (newView->asViewContainer ()), shared (view->asViewContainer ()));
 		selection->setExclusive (view);
 	}
 }
@@ -580,7 +579,7 @@ void AttributeChangeAction::updateSelection ()
 {
 	for (auto& element : *this)
 	{
-		if (selection->contains (element.first) == false)
+		if (selection->contains (*element.first.get ()) == false)
 		{
 			UISelection::DeferChange dc (*selection.get ());
 			selection->clear ();
@@ -1303,7 +1302,7 @@ HierarchyMoveViewOperation::HierarchyMoveViewOperation (const SharedPointer<CVie
 														int32_t dir)
 : view (view), selection (selection), dir (dir)
 {
-	parent = view->getParentView ();
+	parent = shared (view->getParentView ());
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -62,6 +62,7 @@ public:
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CTextLabel)
 	~CTextLabel () noexcept override = default;
 	void freeText ();
 	void calculateTruncatedText ();

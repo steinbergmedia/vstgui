@@ -60,7 +60,7 @@ void CLayeredViewContainer::updateLayerSize ()
 }
 
 //-----------------------------------------------------------------------------
-bool CLayeredViewContainer::removed (const SharedPointer<CViewContainer>& parent)
+bool CLayeredViewContainer::removed (CViewContainer& parent)
 {
 	if (!isAttached ())
 		return false;
@@ -76,19 +76,20 @@ bool CLayeredViewContainer::removed (const SharedPointer<CViewContainer>& parent
 }
 
 //-----------------------------------------------------------------------------
-bool CLayeredViewContainer::attached (const SharedPointer<CViewContainer>& _parent)
+bool CLayeredViewContainer::attached (CViewContainer& _parent)
 {
 	if (isAttached ())
 		return false;
 
-	SharedPointer<CViewContainer> parent = _parent;
+	auto parent = &_parent;
+
 	setParentView (parent);
 	setParentFrame (parent->getFrame ());
 	if (auto frame = getFrame ())
 	{
-		while (parent && parent.cast<CFrame> () == nullptr)
+		while (parent && dynamic_cast<CFrame*> (parent) == nullptr)
 		{
-			parentLayerView = parent.cast<CLayeredViewContainer> ();
+			parentLayerView = dynamic_cast<CLayeredViewContainer*> (parent);
 			if (parentLayerView)
 			{
 				break;
@@ -96,7 +97,7 @@ bool CLayeredViewContainer::attached (const SharedPointer<CViewContainer>& _pare
 			parent = parent->getParentView ();
 		}
 		layer = frame->getPlatformFrame ()->createPlatformViewLayer (
-			this, parentLayerView.get () ? parentLayerView->layer.get () : nullptr);
+			this, parentLayerView ? parentLayerView->layer.get () : nullptr);
 		if (layer)
 		{
 			layer->setZIndex (zIndex);
@@ -112,7 +113,7 @@ bool CLayeredViewContainer::attached (const SharedPointer<CViewContainer>& _pare
 	setParentView (nullptr);
 	setParentFrame (nullptr);
 
-	return CViewContainer::attached (parent);
+	return CViewContainer::attached (_parent);
 }
 
 //-----------------------------------------------------------------------------
@@ -237,7 +238,7 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 	auto parent = getParentView ();
 	while (parent && parent != frame)
 	{
-		parents.push_front (parent.get ());
+		parents.push_front (parent);
 		parent = parent->getParentView ();
 	}
 	for (const auto& p : parents)

@@ -72,7 +72,7 @@ private:
 												 const SharedPointer<IController>& parent,
 												 const IUIDescription& uiDesc) override;
 	void onUIDescriptionParsed (const IUIDescription& uiDesc) override;
-	void onSetContentView (Standalone::IWindow& w, const SharedPointer<CFrame>& cv) override;
+	void onSetContentView (Standalone::IWindow& w, CFrame* cv) override;
 	void onClosed (const Standalone::IWindow& window) override;
 	bool canClose (const Standalone::IWindow& window) override;
 	Standalone::UIDesc::ModelBindingPtr createModelBinding ();
@@ -95,7 +95,7 @@ private:
 	void setDirty ();
 
 	DocumentContextPtr docContext;
-	SharedPointer<CFrame> contentView;
+	CFrame* contentView;
 	SharedPointer<ImageFramesView> imageView;
 	SharedPointer<CMovieBitmap> movieBitmapView;
 	Standalone::WindowPtr window;

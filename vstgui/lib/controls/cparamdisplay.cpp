@@ -64,10 +64,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 CParamDisplay::~CParamDisplay () noexcept {}
 
 //------------------------------------------------------------------------
-bool CParamDisplay::removed (const SharedPointer<CViewContainer>& parent)
-{
-	return CControl::removed (parent);
-}
+bool CParamDisplay::removed (CViewContainer& parent) { return CControl::removed (parent); }
 
 //------------------------------------------------------------------------
 void CParamDisplay::setStyle (int32_t val)

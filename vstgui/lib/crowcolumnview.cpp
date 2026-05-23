@@ -489,7 +489,7 @@ CMessageResult CRowColumnView::notify (CBaseObject* sender, IdStringPtr message)
 CAutoLayoutContainerView::CAutoLayoutContainerView (const CRect& size) : CViewContainer (size) {}
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::attached (const SharedPointer<CViewContainer>& parent)
+bool CAutoLayoutContainerView::attached (CViewContainer& parent)
 {
 	if (!isAttached ())
 	{

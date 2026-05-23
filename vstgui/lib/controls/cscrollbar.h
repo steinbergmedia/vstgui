@@ -69,6 +69,8 @@ public:
 	CLASS_METHODS(CScrollbar, CControl)
 	//-----------------------------------------------------------------------------
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CScrollbar)
+
 	~CScrollbar () noexcept override = default;
 
 	void drawBackground (CDrawContext& pContext);

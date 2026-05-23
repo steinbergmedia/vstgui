@@ -9,10 +9,13 @@
 #endif
 
 #define VSTGUI_BACKTRACE_REFCOUNT (DEBUG && 1)
+#define VSTGUI_USE_STD_SHAREDPTR 1
 
 #if VSTGUI_BACKTRACE_REFCOUNT
 #include <vector>
 #endif
+
+#include <memory>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -22,18 +25,95 @@ template<typename T>
 struct shared_ptr : std::shared_ptr<T>
 {
 	using std::shared_ptr<T>::shared_ptr;
+	using Type = T;
 
 	shared_ptr (const std::shared_ptr<T>& other) : std::shared_ptr<T> (other) {}
 	shared_ptr (std::shared_ptr<T>&& other) : std::shared_ptr<T> (std::move (other)) {}
+	explicit shared_ptr (T* instance) : std::shared_ptr<T> (instance) {}
 
 	template<typename I>
 	shared_ptr<I> cast () const
 	{
-		if constexpr (std::is_base_of_v<T, I>)
+#if 0
+		if constexpr (std::is_base_of_v<T, I> && !std::is_virtual_base_of_v<T,I>)
 			return shared_ptr<I> (std::static_pointer_cast<I> (*this));
+#endif
 		return shared_ptr<I> (std::dynamic_pointer_cast<I> (*this));
 	}
 };
+
+#if VSTGUI_USE_STD_SHAREDPTR
+
+//------------------------------------------------------------------------
+template<typename I>
+using SharedPointer = shared_ptr<I>;
+
+//------------------------------------------------------------------------
+struct IReference : public std::enable_shared_from_this<IReference>
+{
+	virtual ~IReference () noexcept = default;
+};
+
+//------------------------------------------------------------------------
+class ReferenceCounted : virtual public IReference
+{
+public:
+	virtual void beforeDelete () {}
+};
+
+//------------------------------------------------------------------------
+struct NonAtomicReferenceCounted : public ReferenceCounted
+{
+};
+
+//------------------------------------------------------------------------
+struct AtomicReferenceCounted : public ReferenceCounted
+{
+};
+
+//------------------------------------------------------------------------
+template<typename T>
+struct Deleter
+{
+	void operator() (T* p) const noexcept
+	{
+		if (ReferenceCounted* rc = static_cast<ReferenceCounted*> (p))
+			rc->beforeDelete ();
+		delete p;
+	}
+};
+
+#define VSTGUI_SHAREDPTR_FRIEND(Class)                                                             \
+	friend struct VSTGUI::Deleter<Class>;                                                          \
+	template<class Class, typename... Args>                                                        \
+	friend VSTGUI::SharedPointer<Class> VSTGUI::makeShared (Args&&... args);
+
+//------------------------------------------------------------------------
+template<class I>
+inline SharedPointer<I> owned (I* p) noexcept
+{
+	return shared_ptr<I> (p, Deleter<I> {});
+}
+
+//------------------------------------------------------------------------
+template<class I>
+inline SharedPointer<I> shared (I* p) noexcept
+{
+	return std::dynamic_pointer_cast<I> (p->shared_from_this ());
+}
+
+//------------------------------------------------------------------------
+template<class I, typename... Args>
+inline SharedPointer<I> makeShared (Args&&... args)
+{
+	return shared_ptr<I> (new I (std::forward<Args> (args)...), Deleter<I> {});
+}
+
+#else
+
+#define VSTGUI_SHAREDPTR_FRIEND(Class)                                                             \
+	template<class Class, typename... Args>                                                        \
+	friend VSTGUI::SharedPointer<Class> VSTGUI::makeShared (Args&&... args);
 
 //-----------------------------------------------------------------------------
 class IReference
@@ -170,6 +250,12 @@ public:
 		return *this;
 	}
 
+	uint32_t use_count () const noexcept
+	{
+		if (ptr)
+			return ptr->getNbReference ();
+		return 0;
+	}
 	//------------------------------------------------------------------------
 protected:
 	template<typename T>
@@ -336,6 +422,8 @@ inline SharedPointer<I> makeShared (Args&&... args)
 {
 	return SharedPointer<I> (new I (std::forward<Args> (args)...), false);
 }
+
+#endif
 
 //-----------------------------------------------------------------------------
 // CBaseObject Declaration

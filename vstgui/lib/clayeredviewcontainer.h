@@ -33,8 +33,8 @@ public:
 	void setZIndex (uint32_t zIndex);
 	uint32_t getZIndex () const { return zIndex; }
 
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (CViewContainer& parent) override;
+	bool attached (CViewContainer& parent) override;
 	void invalid () override;
 	void invalidRect (const CRect& rect) override;
 	void parentSizeChanged () override;
@@ -52,7 +52,7 @@ protected:
 	void registerListeners (bool state);
 
 	PlatformViewLayerPtr layer;
-	SharedPointer<CLayeredViewContainer> parentLayerView;
+	CLayeredViewContainer* parentLayerView {nullptr};
 	uint32_t zIndex {0};
 };
 

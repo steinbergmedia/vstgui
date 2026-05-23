@@ -35,7 +35,7 @@ GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource () noexc
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbAttached (CDataBrowser& browser)
 {
-	dbPtr = browser.weakFromThis ();
+	dbPtr = shared (&browser);
 }
 
 //-----------------------------------------------------------------------------
@@ -141,7 +141,7 @@ void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext& contex
 	{
 		CColor color (selectionColor);
 		auto focusView = browser.getFrame ()->getFocusView ();
-		if (!(focusView && browser.isChild (focusView, true)))
+		if (!(focusView && browser.isChild (*focusView.get (), true)))
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);

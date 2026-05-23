@@ -74,8 +74,8 @@ public:
 
 	SharedPointer<CView> first () const;
 
-	bool contains (const SharedPointer<CView>& view) const;
-	bool containsParent (const SharedPointer<CView>& view) const;
+	bool contains (CView& view) const;
+	bool containsParent (CView& view) const;
 
 	int32_t total () const;
 	CRect getBounds () const;

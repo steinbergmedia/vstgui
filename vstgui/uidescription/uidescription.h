@@ -32,11 +32,13 @@ protected:
 		LastSaveFlagBit,
 	};
 public:
-	UIDescription (const CResourceDescription& uidescFile,
-				   const SharedPointer<IViewFactory>& viewFactory = {});
-	UIDescription (const SharedPointer<IContentProvider>& contentProvider,
-				   const SharedPointer<IViewFactory>& viewFactory = {});
+	UIDescription ();
 	~UIDescription () noexcept override;
+
+	bool init (const CResourceDescription& uidescFile,
+			   const SharedPointer<IViewFactory>& viewFactory = {});
+	bool init (const SharedPointer<IContentProvider>& contentProvider,
+			   const SharedPointer<IViewFactory>& viewFactory = {});
 
 	virtual bool parse ();
 
@@ -129,8 +131,7 @@ public:
 	bool hasGradientName (UTF8StringPtr name) const;
 
 	void updateViewDescription (UTF8StringPtr name, const SharedPointer<CView>& view);
-	bool getTemplateNameFromView (const SharedPointer<CView>& view,
-								  std::string& templateName) const;
+	bool getTemplateNameFromView (const CView& view, std::string& templateName) const;
 	bool addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr);
 	bool removeTemplate (UTF8StringPtr name);
 	bool changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName);
@@ -175,7 +176,7 @@ private:
 	SharedPointer<UINode> getBaseNode (UTF8StringPtr name, bool create = true) const;
 	SharedPointer<UINode> findChildNodeByNameAttribute (const SharedPointer<UINode>& node,
 														UTF8StringPtr nameAttribute) const;
-	SharedPointer<UINode> findNodeForView (const SharedPointer<CView>& view) const;
+	SharedPointer<UINode> findNodeForView (CView& view) const;
 	bool updateAttributesForView (const SharedPointer<UINode>& node,
 								  const SharedPointer<CView>& view, bool deep = true);
 	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName);

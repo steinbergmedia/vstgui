@@ -19,17 +19,17 @@ namespace VSTGUI {
  *
  *	@ingroup new_in_4_15
  */
-struct AutoSizeViewLayouter final : BaseViewLayouter
+struct AutoSizeViewLayouter final : BaseViewLayouter,
+									AtomicReferenceCounted
 {
 private:
+	VSTGUI_SHAREDPTR_FRIEND (AutoSizeViewLayouter)
+
 	AutoSizeViewLayouter () = default;
 
 	std::optional<ViewLayout> calculateLayout (const CViewContainer& container,
 											   const Children& children,
 											   const CRect& newSize) override;
-
-	void forget () final;
-	void remember () final;
 
 public:
 	/** get the shared instance of the AutoSizeViewLayouter */

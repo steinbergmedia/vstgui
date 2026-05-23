@@ -90,11 +90,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** create a new instance */
-	static SharedPointer<CNewFileSelector> create (const SharedPointer<CFrame>& parent,
-												   Style style = kSelectFile);
+	static SharedPointer<CNewFileSelector> create (CFrame* parent, Style style = kSelectFile);
 
-	CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector,
-					  const SharedPointer<CFrame>& parent);
+	CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector, CFrame* parent);
 
 	using CallbackFunc = std::function<void (CNewFileSelector&)>;
 	bool run (CallbackFunc&& callback);
@@ -139,6 +137,8 @@ public:
 	//-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY (CNewFileSelector, CBaseObject)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CNewFileSelector)
+
 	~CNewFileSelector () noexcept override;
 
 	struct Impl;

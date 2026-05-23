@@ -304,7 +304,7 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 void CTextEdit::platformOnKeyboardEvent (KeyboardEvent& event)
 {
 	if (auto frame = getFrame ())
-		static_cast<IPlatformFrameCallback*> (frame.get ())->platformOnEvent (event);
+		static_cast<IPlatformFrameCallback*> (frame)->platformOnEvent (event);
 	if (event.consumed)
 		return;
 	if (event.virt == VirtualKey::Return)

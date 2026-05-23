@@ -41,6 +41,7 @@ public:
 			   const SharedPointer<CBitmap>& icon = {});
 	CMenuItem (const UTF8String& title, int32_t tag);
 	CMenuItem (const CMenuItem& item);
+	~CMenuItem () noexcept override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CMenuItem Methods
@@ -96,7 +97,6 @@ public:
 	//------------------------------------------------------------------------
 protected:
 	CMenuItem ();
-	~CMenuItem () noexcept override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

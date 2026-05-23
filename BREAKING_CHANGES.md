@@ -22,13 +22,13 @@ Detailed changes:
 - the makeOwned template is deprecated, use makeShared instead
 
 - The following important ```CView``` methods have changed:
-	* ```bool CView::removed (const SharedPointer<CViewContainer>& parent)```
-	* ```bool CView::attached (const SharedPointer<CViewContainer>& parent)```
+	* ```bool CView::removed (CViewContainer& parent)```
+	* ```bool CView::attached (CViewContainer& parent)```
 	* ```void draw (CDrawContext& context)```
 	* ```void drawRect (CDrawContext& context, const CRect& updateRect)```
 	* ```SharedPointer<CViewContainer> CView::asViewContainer ()```
 	* ```SharedPointer<CViewContainer> CView::getParentView () const```
-	* ```SharedPointer<CFrame> getFrame () const```
+	* ```CFrame* getFrame () const```
 
 - The following important ```CViewContainer``` methods have changed:
 	* ```bool CViewContainer::addSubview (const SharedPointer<CView>& view)```

@@ -112,10 +112,7 @@ public:
 	~DisabledControlsController ()
 	{
 		for (auto control : controls)
-		{
-			if (auto c = control.lock ())
-				c->unregisterViewListener (this);
-		}
+			control->unregisterViewListener (this);
 		controls.clear ();
 	}
 
@@ -126,7 +123,7 @@ public:
 		if (auto control = view.cast<CControl> ())
 		{
 			control->registerViewListener (this);
-			controls.push_back (control);
+			controls.push_back (control.get ());
 		}
 		return controller->verifyView (view, attributes, description);
 	}
@@ -140,7 +137,8 @@ public:
 	{
 		if (auto control = dynamic_cast<CControl*> (&view))
 		{
-			auto it = std::find (controls.begin (), controls.end (), control);
+			auto it = std::find_if (controls.begin (), controls.end (),
+									[&] (auto&& c) { return c == control; });
 			if (it != controls.end ())
 			{
 				control->unregisterViewListener (this);
@@ -149,7 +147,7 @@ public:
 		}
 	}
 
-	std::vector<WeakPointer<CControl>> controls;
+	std::vector<CControl*> controls;
 };
 
 //------------------------------------------------------------------------

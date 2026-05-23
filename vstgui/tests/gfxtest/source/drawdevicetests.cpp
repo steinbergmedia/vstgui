@@ -215,8 +215,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
 	offscreen->endDraw ();
 	auto bitmap = offscreen->getBitmap ();
-	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
-								bitmap.cast<IReference> ());
+	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 	boxBlurFilter->run (true);
 	bitmap->draw (context, {0, 0, 20, 20});
 
@@ -227,8 +226,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
 	offscreen->endDraw ();
 	bitmap = offscreen->getBitmap ();
-	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
-								bitmap.cast<IReference> ());
+	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 	boxBlurFilter->run (true);
 	bitmap->draw (context, {20, 0, 40, 20});
 
@@ -239,8 +237,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
 	offscreen->endDraw ();
 	bitmap = offscreen->getBitmap ();
-	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
-								bitmap.cast<IReference> ());
+	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 	boxBlurFilter->run (true);
 	bitmap->draw (context, {40, 0, 60, 20});
 
@@ -251,8 +248,7 @@ void drawBitmapFilter (CustomDrawView* view, CDrawContext& context, CPoint size)
 	offscreen->drawRect ({5, 5, 15, 15}, kDrawFilled);
 	offscreen->endDraw ();
 	bitmap = offscreen->getBitmap ();
-	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
-								bitmap.cast<IReference> ());
+	boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 	boxBlurFilter->run (true);
 	bitmap->draw (context, {60, 0, 80, 20});
 }

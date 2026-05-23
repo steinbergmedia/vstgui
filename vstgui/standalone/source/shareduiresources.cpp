@@ -119,9 +119,11 @@ bool SharedUIResources::load () const
 		if (Detail::getApplicationPlatformAccess ()
 		        ->getConfiguration ()
 		        .useCompressedUIDescriptionFiles)
-			description = makeShared<CompressedUIDescription> (filename);
+			description = makeShared<CompressedUIDescription> ();
 		else
-			description = makeShared<UIDescription> (filename);
+			description = makeShared<UIDescription> ();
+		if (!description->init (filename))
+			return false;
 		if (!description->parse ())
 		{
 #if VSTGUI_LIVE_EDITING
@@ -278,7 +280,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc,
 	{
 		return UIDescCheckFilePathResult::Cancel;
 	}
-	auto fs = CNewFileSelector::create (frame, CNewFileSelector::kSelectFile);
+	auto fs = CNewFileSelector::create (frame.get (), CNewFileSelector::kSelectFile);
 	if (savedPath)
 		fs->setInitialDirectory (*savedPath);
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
@@ -302,7 +304,7 @@ bool initUIDescAsNew (UIDescription& uiDesc, SharedPointer<CFrame> frame)
 {
 	if (!frame)
 		frame = makeShared<CFrame> (CRect (), nullptr);
-	auto fs = CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile);
+	auto fs = CNewFileSelector::create (frame.get (), CNewFileSelector::kSelectSaveFile);
 	vstgui_assert (fs, "create new FileSelector failed");
 	VSTGUI::Standalone::Preferences prefs;
 	if (auto initPath = prefs.get (UIDescPathKey))

@@ -28,7 +28,7 @@ public:
 	/** Create the platform frame configuration object. Can be nullptr. */
 	virtual PlatformFrameConfigPtr createPlatformFrameConfig (PlatformType platformType) = 0;
 	/** Content view of window is changed. */
-	virtual void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) = 0;
+	virtual void onSetContentView (IWindow& window, CFrame* contentView) = 0;
 	/** Get the menu builder for this window. */
 	virtual const IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const = 0;
 };

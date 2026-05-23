@@ -60,6 +60,7 @@ public:
 	
 	CLASS_METHODS(CVuMeter, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CVuMeter)
 	~CVuMeter () noexcept override;
 
 	SharedPointer<CBitmap> offBitmap;

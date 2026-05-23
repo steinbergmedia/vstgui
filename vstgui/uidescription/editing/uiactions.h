@@ -84,7 +84,7 @@ public:
 	void undo () override;
 
 protected:
-	void collectSubviews (const SharedPointer<CViewContainer>& container, bool deep);
+	void collectSubviews (CViewContainer& container, bool deep);
 	const IViewFactory& factory;
 	SharedPointer<CViewContainer> containerView;
 	SharedPointer<CViewContainer> parent;

@@ -41,7 +41,7 @@ struct CFrame::CollectInvalidRects
 private:
 	using InvalidRects = std::vector<CRect>;
 
-	SharedPointer<CFrame> frame;
+	CFrame* frame;
 	CInvalidRectList invalidRects;
 	uint64_t lastTicks;
 #if VSTGUI_LOG_COLLECT_INVALID_RECTS
@@ -71,8 +71,8 @@ struct CFrame::Impl
 	SharedPointer<CView> focusView;
 	SharedPointer<CView> activeFocusView;
 	CollectInvalidRects* collectInvalidRects {nullptr};
-	
-	ViewList mouseViews;
+
+	std::list<CView*> mouseViews;
 	ModalViewSessionStack modalViewSessionStack;
 	DispatchList<CView*> windowActiveStateChangeViews;
 	DispatchList<IScaleFactorChangedListener*> scaleFactorChangedListenerList;
@@ -132,7 +132,7 @@ CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor) : CViewCon
 	pImpl = new Impl;
 	pImpl->editor = inEditor;
 
-	setParentFrame (shared (this));
+	setParentFrame (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -213,7 +213,7 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType, IPlatformFram
 
 	CollectInvalidRects cir (this);
 
-	attached (shared (this));
+	attached (*this);
 
 	setParentView (nullptr);
 
@@ -223,17 +223,17 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType, IPlatformFram
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::attached (const SharedPointer<CViewContainer>& parent)
+bool CFrame::attached (CViewContainer& parent)
 {
 	if (isAttached ())
 		return false;
-	vstgui_assert (parent.get () == this);
+	vstgui_assert (&parent == this);
 	if (CView::attached (parent))
 	{
 		setParentView (nullptr);
 
 		for (const auto& pV : getChildren ())
-			pV->attached (shared (this));
+			pV->attached (*this);
 
 		return true;
 	}
@@ -343,16 +343,16 @@ void CFrame::clearMouseViews (const CPoint& where, Modifiers modifiers, bool cal
 			MouseExitEvent exitEvent;
 			exitEvent.modifiers = modifiers;
 			exitEvent.mousePosition = (*it)->translateToLocal (where, true);
-			dispatchEvent ((*it), exitEvent);
+			dispatchEvent (*(*it), exitEvent);
 #if DEBUG_MOUSE_VIEWS
 			DebugPrint ("mouseExited  : %p[%d,%d]\n", (*it), (int)exitEvent.mousePosition.x,
 						(int)exitEvent.mousePosition.y);
 #endif
 		}
 		if (pImpl->tooltips)
-			pImpl->tooltips->onMouseExited ((*it));
+			pImpl->tooltips->onMouseExited (*(*it));
 
-		callMouseObserverMouseExited (*(*it).get ());
+		callMouseObserverMouseExited (*(*it));
 
 		++it;
 	}
@@ -366,12 +366,12 @@ void CFrame::removeFromMouseViews (const SharedPointer<CView>& view)
 	auto it = pImpl->mouseViews.begin ();
 	while (it != pImpl->mouseViews.end ())
 	{
-		if (found || (*it) == view)
+		if (found || (*it) == view.get ())
 		{
 			if (pImpl->tooltips)
-				pImpl->tooltips->onMouseExited ((*it));
+				pImpl->tooltips->onMouseExited (*(*it));
 
-			callMouseObserverMouseExited (*(*it).get ());
+			callMouseObserverMouseExited (*(*it));
 
 			pImpl->mouseViews.erase (it++);
 			found = true;
@@ -390,15 +390,15 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 								GetViewOptions ().deep ().mouseEnabled ().includeViewContainer ());
 	auto currentMouseView =
 		pImpl->mouseViews.empty () == false ? pImpl->mouseViews.back () : nullptr;
-	if (currentMouseView == mouseView)
+	if (currentMouseView == mouseView.get ())
 		return; // no change
 
 	if (pImpl->tooltips)
 	{
 		if (currentMouseView)
-			pImpl->tooltips->onMouseExited (currentMouseView);
+			pImpl->tooltips->onMouseExited (*currentMouseView);
 		if (mouseView && mouseView.get () != this)
-			pImpl->tooltips->onMouseEntered (mouseView);
+			pImpl->tooltips->onMouseEntered (*mouseView.get ());
 	}
 
 	if (mouseView == nullptr || mouseView.get () == this)
@@ -410,8 +410,8 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 	auto callMouseExitForView = [this, &event] (auto view) {
 		MouseExitEvent exitEvent (event);
 		exitEvent.mousePosition = view->translateToLocal (exitEvent.mousePosition, true);
-		dispatchEvent (view, exitEvent);
-		callMouseObserverMouseExited (*view.get ());
+		dispatchEvent (*view, exitEvent);
+		callMouseObserverMouseExited (*view);
 #if DEBUG_MOUSE_VIEWS
 		DebugPrint ("mouseExited  : %p[%d,%d]\n", view, (int)exitEvent.mousePosition.x,
 					(int)exitEvent.mousePosition.y);
@@ -421,8 +421,8 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 	auto callMouseEnterForView = [this, &event] (auto view) {
 		MouseEnterEvent enterEvent (event);
 		enterEvent.mousePosition = view->translateToLocal (enterEvent.mousePosition, true);
-		dispatchEvent (view, enterEvent);
-		callMouseObserverMouseEntered (*view.get ());
+		dispatchEvent (*view, enterEvent);
+		callMouseObserverMouseEntered (*view);
 #if DEBUG_MOUSE_VIEWS
 		DebugPrint ("mouseEntered : %p[%d,%d]\n", view, (int)enterEvent.mousePosition.x,
 					(int)enterEvent.mousePosition.y);
@@ -435,15 +435,17 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 	if (vc == nullptr && currentMouseView)
 	{
 		callMouseExitForView (currentMouseView);
-		pImpl->mouseViews.remove (currentMouseView);
+		auto cmvIt =
+			std::find (pImpl->mouseViews.begin (), pImpl->mouseViews.end (), currentMouseView);
+		pImpl->mouseViews.erase (cmvIt);
 	}
 	auto it = pImpl->mouseViews.rbegin ();
 	while (it != pImpl->mouseViews.rend ())
 	{
-		vc = (*it).cast<CViewContainer> ();
-		if (vc == mouseView.cast<CViewContainer> ())
+		vc = (*it)->asViewContainer ();
+		if (vc == mouseView->asViewContainer ())
 			return;
-		if (vc->isChild (mouseView, true) == false)
+		if (vc->isChild (*mouseView.get (), true) == false)
 		{
 			callMouseExitForView (vc);
 			pImpl->mouseViews.erase (--it.base ());
@@ -456,13 +458,13 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 	{
 		auto it2 = pImpl->mouseViews.end ();
 		--it2;
-		auto container = mouseView;
-		while ((vc = container->getParentView ()).get () != (*it2).get () && vc)
+		auto container = mouseView.get ();
+		while ((vc = container->getParentView ()) != (*it2) && vc)
 		{
 			pImpl->mouseViews.emplace_back (vc);
 			container = vc;
 		}
-		pImpl->mouseViews.emplace_back (mouseView);
+		pImpl->mouseViews.emplace_back (mouseView.get ());
 		++it2;
 		while (it2 != pImpl->mouseViews.end ())
 		{
@@ -474,11 +476,11 @@ void CFrame::checkMouseViews (const MouseEvent& event)
 	{
 		// must be pMouseViews.size () == 0
 		vstgui_assert (pImpl->mouseViews.empty ());
-		pImpl->mouseViews.emplace_back (mouseView);
-		while ((vc = mouseView->getParentView ()).get () != this && vc)
+		pImpl->mouseViews.emplace_back (mouseView.get ());
+		while ((vc = mouseView->getParentView ()) != this && vc)
 		{
 			pImpl->mouseViews.push_front (vc);
-			mouseView = vc.cast<CView> ();
+			mouseView = shared (vc);
 		}
 		auto it2 = pImpl->mouseViews.begin ();
 		while (it2 != pImpl->mouseViews.end ())
@@ -510,10 +512,7 @@ bool CFrame::hitTestSubViews (const CPoint& where, const Event& event)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::dispatchEvent (const SharedPointer<CView>& view, Event& event)
-{
-	view->dispatchEvent (event);
-}
+void CFrame::dispatchEvent (CView& view, Event& event) { view.dispatchEvent (event); }
 
 //-----------------------------------------------------------------------------
 void CFrame::dispatchEventToChildren (Event& event)
@@ -533,15 +532,15 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 	if (pImpl->focusView)
 	{
 		if (pImpl->focusView->getMouseEnabled ())
-			dispatchEvent (pImpl->focusView, event);
+			dispatchEvent (*pImpl->focusView.get (), event);
 		if (event.consumed)
 			return;
 		auto parent = pImpl->focusView->getParentView ();
-		while (parent && parent.get () != this)
+		while (parent && parent != this)
 		{
 			if (parent->getMouseEnabled ())
 			{
-				dispatchEvent (parent, event);
+				dispatchEvent (*parent, event);
 				if (event.consumed)
 					return;
 			}
@@ -550,7 +549,7 @@ void CFrame::dispatchKeyboardEvent (KeyboardEvent& event)
 	}
 	if (auto modalView = getModalView ())
 	{
-		dispatchEvent (modalView, event);
+		dispatchEvent (*modalView.get (), event);
 		if (event.consumed)
 			return;
 	}
@@ -588,7 +587,7 @@ void CFrame::dispatchMouseDownEvent (MouseDownEvent& event)
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			event.mousePosition = transformedMousePosition;
-			dispatchEvent (modalView, event);
+			dispatchEvent (*modalView.get (), event);
 			if (event.consumed)
 				setMouseDownView (modalView);
 		}
@@ -620,7 +619,7 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			event.mousePosition = transformedMousePosition;
-			dispatchEvent (modalView, event);
+			dispatchEvent (*modalView.get (), event);
 		}
 	}
 	else
@@ -637,7 +636,7 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			{
 				if (auto parent = view->getParentView ())
 				{
-					if (parent.get () != this)
+					if (parent != this)
 					{
 						p.offsetInverse (parent->getViewSize ().getTopLeft ());
 						parent->translateToLocal (p, true);
@@ -647,7 +646,7 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 			else
 				view->translateToLocal (p, true);
 			event.mousePosition = p;
-			dispatchEvent (view, event);
+			dispatchEvent (*view, event);
 			if (event.consumed)
 				break;
 			++it;
@@ -675,7 +674,7 @@ void CFrame::dispatchMouseUpEvent (MouseUpEvent& event)
 		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			event.mousePosition = transformedMousePosition;
-			dispatchEvent (modalView, event);
+			dispatchEvent (*modalView.get (), event);
 		}
 		return;
 	}
@@ -736,7 +735,7 @@ void CFrame::dispatchEvent (Event& event)
 		getTransform ().inverse ().transform (mousePosEvent->mousePosition);
 
 	if (modalView)
-		dispatchEvent (modalView, event);
+		dispatchEvent (*modalView.get (), event);
 	else
 		dispatchEventToChildren (event);
 
@@ -1054,17 +1053,20 @@ void CFrame::onViewRemoved (CView& view)
 
 	if (pImpl->activeFocusView.get () == pView)
 		pImpl->activeFocusView.reset ();
-	if (pImpl->focusView.get () == pView)
+	if (pImpl->focusView)
 	{
-		if (pImpl->active)
-			setFocusView (nullptr);
-		else
-			pImpl->focusView = nullptr;
-	}
-	if (auto container = view.asViewContainer ())
-	{
-		if (container->isChild (pImpl->focusView, true))
-			setFocusView (nullptr);
+		if (pImpl->focusView.get () == pView)
+		{
+			if (pImpl->active)
+				setFocusView (nullptr);
+			else
+				pImpl->focusView = nullptr;
+		}
+		if (auto container = view.asViewContainer ())
+		{
+			if (container->isChild (*pImpl->focusView.get (), true))
+				setFocusView (nullptr);
+		}
 	}
 	if (getViewAddedRemovedObserver ())
 		getViewAddedRemovedObserver ()->onViewRemoved (*this, view);
@@ -1103,7 +1105,7 @@ void CFrame::setFocusView (const SharedPointer<CView>& pView)
 	{
 		if (auto modalContainer = pImpl->modalViewSessionStack.top ().view->asViewContainer ())
 		{
-			if (!modalContainer->isChild (pView, true))
+			if (!modalContainer->isChild (*pView.get (), true))
 			{
 #if DEBUG
 				DebugPrint (
@@ -1133,7 +1135,7 @@ void CFrame::setFocusView (const SharedPointer<CView>& pView)
 		pImpl->focusView->invalid ();
 
 		auto receiver = pImpl->focusView->getParentView ();
-		while (receiver.get () != this && receiver != nullptr)
+		while (receiver != this && receiver != nullptr)
 		{
 			receiver->notify (pImpl->focusView.get (), kMsgNewFocusView);
 			receiver = receiver->getParentView ();
@@ -1148,7 +1150,7 @@ void CFrame::setFocusView (const SharedPointer<CView>& pView)
 			pOldFocusView->invalid ();
 
 			auto receiver = pOldFocusView->getParentView ();
-			while (receiver.get () != this && receiver != nullptr)
+			while (receiver != this && receiver != nullptr)
 			{
 				receiver->notify (pOldFocusView.get (), kMsgOldFocusView);
 				receiver = receiver->getParentView ();
@@ -1178,7 +1180,7 @@ bool CFrame::advanceNextFocusView (const SharedPointer<CView>& _oldFocus, bool r
 	{
 		if (auto container = modalView->asViewContainer ())
 		{
-			if (oldFocus == nullptr || container->isChild (oldFocus, true) == false)
+			if (oldFocus == nullptr || container->isChild (*oldFocus.get (), true) == false)
 				return container->advanceNextFocusView (nullptr, reverse);
 			else
 			{
@@ -1191,7 +1193,7 @@ bool CFrame::advanceNextFocusView (const SharedPointer<CView>& _oldFocus, bool r
 							return true;
 						else
 						{
-							tempOldFocus = parentView;
+							tempOldFocus = shared (parentView);
 							parentView = parentView->getParentView ();
 						}
 					}
@@ -1214,7 +1216,7 @@ bool CFrame::advanceNextFocusView (const SharedPointer<CView>& _oldFocus, bool r
 			return CViewContainer::advanceNextFocusView (nullptr, reverse);
 		oldFocus = pImpl->focusView;
 	}
-	if (isChild (oldFocus))
+	if (oldFocus && isChild (*oldFocus.get ()))
 	{
 		if (CViewContainer::advanceNextFocusView (oldFocus, reverse))
 			return true;
@@ -1233,7 +1235,7 @@ bool CFrame::advanceNextFocusView (const SharedPointer<CView>& _oldFocus, bool r
 				return true;
 			else
 			{
-				tempOldFocus = parentView;
+				tempOldFocus = shared (parentView);
 				parentView = parentView->getParentView ();
 			}
 		}
@@ -1301,7 +1303,7 @@ SharedPointer<CViewContainer> CFrame::getContainerAt (const CPoint& where,
 			{
 				if (options.getDeep ())
 					return container->getContainerAt (where2, options);
-				return container;
+				return shared (container);
 			}
 		}
 		return nullptr;

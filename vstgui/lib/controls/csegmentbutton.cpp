@@ -287,7 +287,7 @@ void CSegmentButton::setFrameWidth (CCoord newWidth)
 }
 
 //-----------------------------------------------------------------------------
-bool CSegmentButton::attached (const SharedPointer<CViewContainer>& parent)
+bool CSegmentButton::attached (CViewContainer& parent)
 {
 	if (CControl::attached (parent))
 	{

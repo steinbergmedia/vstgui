@@ -141,8 +141,7 @@ public:
 				gInstance->animators.remove (animator);
 				if (gInstance->animators.empty ())
 				{
-					gInstance->forget ();
-					gInstance = nullptr;
+					gInstance.reset ();
 				}
 			}
 		}
@@ -152,9 +151,11 @@ protected:
 	static Timer* getInstance ()
 	{
 		if (gInstance == nullptr)
-			gInstance = new Timer;
-		return gInstance;
+			gInstance = makeShared<Timer> ();
+		return gInstance.get ();
 	}
+
+	VSTGUI_SHAREDPTR_FRIEND (Timer)
 
 	Timer ()
 	: inTimer (false)
@@ -196,9 +197,9 @@ protected:
 	Animators animators;
 	Animators toRemove;
 	bool inTimer;
-	static Timer* gInstance;
+	static SharedPointer<Timer> gInstance;
 };
-Timer* Timer::gInstance = nullptr;
+SharedPointer<Timer> Timer::gInstance;
 
 //-----------------------------------------------------------------------------
 class Animation : public NonAtomicReferenceCounted

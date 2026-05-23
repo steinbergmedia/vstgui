@@ -193,9 +193,9 @@ void CListControl::drawRect (CDrawContext& context, const CRect& updateRect)
 }
 
 //------------------------------------------------------------------------
-bool CListControl::attached (const SharedPointer<CViewContainer>& parent)
+bool CListControl::attached (CViewContainer& parent)
 {
-	if (auto scrollView = parent->getParentView ().cast<CScrollView> ())
+	if (auto scrollView = dynamic_cast<CScrollView*> (parent.getParentView ()))
 	{
 		impl->minHeight = scrollView->calculateOptimalContainerSize ().getHeight ();
 		struct SizeListener : ViewListenerAdapter
@@ -230,7 +230,7 @@ bool CListControl::attached (const SharedPointer<CViewContainer>& parent)
 			CListControl* control {nullptr};
 			CScrollView* scrollView {nullptr};
 		};
-		new SizeListener (this, scrollView.get ());
+		new SizeListener (this, scrollView);
 	}
 	recalculateLayout ();
 	return CControl::attached (parent);
@@ -437,7 +437,7 @@ void CListControl::onKeyboardEvent (KeyboardEvent& event)
 				{
 					if (auto parent = getParentView ())
 					{
-						if (auto scrollView = parent->getParentView ().cast<CScrollView> ())
+						if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
 						{
 							scrollView->makeRectVisible (*rr);
 							onKeyboardEvent (event);
@@ -477,7 +477,7 @@ void CListControl::onKeyboardEvent (KeyboardEvent& event)
 				{
 					if (auto parent = getParentView ())
 					{
-						if (auto scrollView = parent->getParentView ().cast<CScrollView> ())
+						if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
 						{
 							scrollView->makeRectVisible (*rr);
 							onKeyboardEvent (event);
@@ -520,7 +520,7 @@ void CListControl::onKeyboardEvent (KeyboardEvent& event)
 				invalidRect (*rowRect);
 				if (auto parent = getParentView ())
 				{
-					if (auto scrollView = parent->getParentView ().cast<CScrollView> ())
+					if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
 						scrollView->makeRectVisible (*rowRect);
 				}
 			}

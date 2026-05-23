@@ -314,8 +314,6 @@ class RepeatTimingFunction;
 using DoneFunction = std::function<void (CView&, const IdStringPtr, IAnimationTarget&)>;
 } // Animation
 
-template <class I> class SharedPointer;
-
 // platform
 class IPlatformTextEdit;
 class IPlatformTextEditCallback;

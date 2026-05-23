@@ -81,40 +81,45 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	}
 };
 
+//------------------------------------------------------------------------
+UIDescription::UIDescription () { impl = std::unique_ptr<Impl> (new Impl); }
+
 //-----------------------------------------------------------------------------
-UIDescription::UIDescription (const CResourceDescription& uidescFile,
-							  const SharedPointer<IViewFactory>& _viewFactory)
+bool UIDescription::init (const CResourceDescription& uidescFile,
+						  const SharedPointer<IViewFactory>& viewFactory)
 {
-	impl = std::unique_ptr<Impl> (new Impl);
+	if (impl->viewFactory)
+		return false;
 	impl->uidescFile = uidescFile;
-	impl->viewFactory = _viewFactory;
+	impl->viewFactory = viewFactory;
 	if (uidescFile.type == CResourceDescription::kStringType && uidescFile.u.name != nullptr)
 		setFilePath (uidescFile.u.name);
 	if (impl->viewFactory == nullptr)
 		impl->viewFactory = getGenericViewFactory ();
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) {
-		impl->viewFactory = addOn.getViewFactory (shared (this), impl->viewFactory);
-	});
+	UIDescriptionAddOnRegistry::forEach (
+		[&] (auto& addOn) { impl->viewFactory = addOn.getViewFactory (*this, impl->viewFactory); });
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-UIDescription::UIDescription (const SharedPointer<IContentProvider>& contentProvider,
-							  const SharedPointer<IViewFactory>& _viewFactory)
+bool UIDescription::init (const SharedPointer<IContentProvider>& contentProvider,
+						  const SharedPointer<IViewFactory>& viewFactory)
 {
-	impl = std::unique_ptr<Impl> (new Impl);
-	impl->viewFactory = _viewFactory;
+	if (impl->viewFactory)
+		return false;
+	impl->viewFactory = viewFactory;
 	impl->contentProvider = contentProvider;
 	if (impl->viewFactory == nullptr)
 		impl->viewFactory = getGenericViewFactory ();
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) {
-		impl->viewFactory = addOn.getViewFactory (shared (this), impl->viewFactory);
-	});
+	UIDescriptionAddOnRegistry::forEach (
+		[&] (auto& addOn) { impl->viewFactory = addOn.getViewFactory (*this, impl->viewFactory); });
+	return true;
 }
 
 //-----------------------------------------------------------------------------
 UIDescription::~UIDescription () noexcept
 {
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.onDestroy (shared (this)); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.onDestroy (*this); });
 }
 
 //------------------------------------------------------------------------
@@ -284,7 +289,7 @@ bool UIDescription::parse ()
 void UIDescription::postParsing ()
 {
 	addDefaultNodes ();
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.afterParsing (shared (this)); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.afterParsing (*this); });
 }
 
 //-----------------------------------------------------------------------------
@@ -453,7 +458,7 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags, Attribute
 	}
 	impl->nodes->getAttributes ()->setAttribute ("version", "1");
 
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.beforeSaving (shared (this)); });
+	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) { addOn.beforeSaving (*this); });
 
 	BufferedOutputStream bufferedStream (stream);
 	if (flags & kWriteAsXML)
@@ -484,12 +489,11 @@ const SharedPointer<UIDescription>& UIDescription::getSharedResources () const
 }
 
 //-----------------------------------------------------------------------------
-auto UIDescription::findNodeForView (const SharedPointer<CView>& view) const
-	-> SharedPointer<UINode>
+auto UIDescription::findNodeForView (CView& view) const -> SharedPointer<UINode>
 {
-	SharedPointer<CView> parentView = view;
+	CView* parentView = &view;
 	std::string templateName;
-	while (parentView && getTemplateNameFromView (parentView, templateName) == false)
+	while (parentView && getTemplateNameFromView (*parentView, templateName) == false)
 		parentView = parentView->getParentView ();
 	if (parentView)
 	{
@@ -508,21 +512,21 @@ auto UIDescription::findNodeForView (const SharedPointer<CView>& view) const
 		}
 		if (node)
 		{
-			while (view != parentView)
+			while (&view != parentView)
 			{
-				if (view == parentView)
+				if (&view == parentView)
 					return node;
 				auto container = parentView->asViewContainer ();
 				vstgui_assert (container != nullptr);
 				auto nodeIterator = node->getChildren ().begin ();
-				SharedPointer<CViewContainer> childContainer;
-				ViewIterator it (container);
+				CViewContainer* childContainer {nullptr};
+				ViewIterator it (*container);
 				while (*it && nodeIterator != node->getChildren ().end ())
 				{
-					if (*it == view)
+					if ((*it).get () == &view)
 					{
 						node = *nodeIterator;
-						parentView = view;
+						parentView = &view;
 						break;
 					}
 					childContainer = (*it)->asViewContainer ();
@@ -544,7 +548,7 @@ auto UIDescription::findNodeForView (const SharedPointer<CView>& view) const
 					break;
 				}
 			}
-			if (view == parentView)
+			if (&view == parentView)
 				return node;
 		}
 	}
@@ -558,7 +562,7 @@ bool UIDescription::storeViews (const std::list<SharedPointer<CView>>& views, Ou
 	auto nodeList = makeShared<Detail::UIDescList> ();
 	for (auto& view : views)
 	{
-		auto node = findNodeForView (view);
+		auto node = findNodeForView (*view.get ());
 		if (node)
 		{
 			nodeList->add (node);
@@ -760,22 +764,20 @@ SharedPointer<CView> UIDescription::createView (UTF8StringPtr name,
 		return nullptr;
 	};
 
-	UIDescriptionAddOnRegistry::forEach ([&] (auto& addOn) {
-		f = std::move (addOn.onCreateTemplateView (shared (const_cast<UIDescription*> (this)), f));
-	});
+	UIDescriptionAddOnRegistry::forEach (
+		[&] (auto& addOn) { f = std::move (addOn.onCreateTemplateView (*this, f)); });
 	return f (name, _controller);
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::getTemplateNameFromView (const SharedPointer<CView>& view,
-											 std::string& templateName) const
+bool UIDescription::getTemplateNameFromView (const CView& view, std::string& templateName) const
 {
 	bool result = false;
 	uint32_t attrSize = 0;
-	if (view->getAttributeSize (kTemplateNameAttributeID, attrSize))
+	if (view.getAttributeSize (kTemplateNameAttributeID, attrSize))
 	{
 		char* str = new char[attrSize];
-		if (view->getAttribute (kTemplateNameAttributeID, attrSize, str, attrSize))
+		if (view.getAttribute (kTemplateNameAttributeID, attrSize, str, attrSize))
 		{
 			templateName = str;
 			result = true;
@@ -1028,8 +1030,7 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 			}
 			for (auto& filter : filters)
 			{
-				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap,
-									 bitmap.cast<IReference> ());
+				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 				if (filter->run ())
 				{
 					auto obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
@@ -1648,14 +1649,14 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node,
 											  IViewFactory::getViewName (*view.get ()));
 		result = true;
 	}
-	if (deep && container && container.cast<UIViewSwitchContainer> () == nullptr)
+	if (deep && container && dynamic_cast<UIViewSwitchContainer*> (container) == nullptr)
 	{
-		ViewIterator it (container);
+		ViewIterator it (*container);
 		while (*it)
 		{
 			auto subView = *it;
 			std::string subTemplateName;
-			if (getTemplateNameFromView (subView, subTemplateName))
+			if (getTemplateNameFromView (*subView.get (), subTemplateName))
 			{
 				auto attr = makeShared<UIAttributes> ();
 				attr->setAttribute (Detail::MainNodeNames::kTemplate, subTemplateName);

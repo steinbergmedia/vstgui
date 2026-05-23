@@ -126,7 +126,7 @@ public:
 	//@}
 	
 	// overrides
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;

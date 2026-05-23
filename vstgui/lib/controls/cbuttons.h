@@ -46,6 +46,7 @@ public:
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (COnOffButton)
 	~COnOffButton () noexcept override = default;
 	int32_t style;
 };
@@ -117,6 +118,8 @@ public:
 
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CCheckBox)
+
 	~CCheckBox () noexcept override = default;
 
 	UTF8String title;
@@ -159,6 +162,7 @@ public:
 
 	CLASS_METHODS(CKickButton, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CKickButton)
 	~CKickButton () noexcept override = default;
 };
 
@@ -235,7 +239,7 @@ public:
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool drawFocusOnTop () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (CViewContainer& parent) override;
 	bool sizeToFit () override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
@@ -245,6 +249,7 @@ public:
 
 	CLASS_METHODS_NOCOPY (CTextButton, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CTextButton)
 	~CTextButton () noexcept override = default;
 
 	void invalidPath ();

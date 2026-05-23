@@ -21,195 +21,86 @@ namespace BitmapFilter {
 //----------------------------------------------------------------------------------------------------
 template<typename T> void Property::assign (T toAssign)
 {
-	value = std::malloc (sizeof (toAssign));
-	if (value)
-		memcpy (value, &toAssign, sizeof (toAssign));
+	var = toAssign;
 }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (Type type)
-: type (type)
-, value (nullptr)
-{
-}
+Property::Property () { var = nullptr; }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (int32_t intValue)
-: type (kInteger)
-{
-	assign (intValue);
-}
+Property::Property (int32_t intValue) { assign (intValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (double floatValue)
-: type (kFloat)
-{
-	assign (floatValue);
-}
+Property::Property (double floatValue) { assign (floatValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (const SharedPointer<IReference>& objectValue) : type (kObject)
-{
-	value = static_cast<void*> (objectValue.get ());
-	objectValue->remember ();
-}
+Property::Property (const SharedPointer<CBitmap>& objectValue) { assign (objectValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (const CRect& rectValue)
-: type (kRect)
-{
-	assign (rectValue);
-}
+Property::Property (const CRect& rectValue) { assign (rectValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (const CPoint& pointValue)
-: type (kPoint)
-{
-	assign (pointValue);
-}
+Property::Property (const CPoint& pointValue) { assign (pointValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (const CColor& colorValue)
-: type (kColor)
-{
-	assign (colorValue);
-}
+Property::Property (const CColor& colorValue) { assign (colorValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (const CGraphicsTransform& transformValue)
-: type (kTransformMatrix)
-{
-	assign (transformValue);
-}
+Property::Property (const CGraphicsTransform& transformValue) { assign (transformValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (const Property& p)
-: type (p.type)
-, value (nullptr)
-{
-	*this = p;
-}
+Property::Property (const Property& p) { *this = p; }
 
 //----------------------------------------------------------------------------------------------------
-Property::~Property () noexcept
-{
-	if (value)
-	{
-		if (type == kObject)
-			getObject ()->forget ();
-		else
-			std::free (value);
-	}
-}
+Property::~Property () noexcept {}
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (Property&& p) noexcept
-: value (nullptr)
-{
-	*this = std::move (p);
-}
+Property::Property (Property&& p) noexcept { *this = std::move (p); }
 
 //----------------------------------------------------------------------------------------------------
 Property& Property::operator=(Property&& p) noexcept
 {
-	if (value)
-	{
-		if (type == kObject)
-			getObject ()->forget ();
-		else
-			std::free (value);
-	}
-	type = p.type;
-	value = p.value;
-	p.value = nullptr;
-	p.type = kUnknown;
+	var = std::move (p.var);
+	p.var = {};
 	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------
 Property& Property::operator=(const Property& p)
 {
-	if (value)
-	{
-		if (type == kObject)
-			getObject ()->forget ();
-		else
-			std::free (value);
-		value = nullptr;
-	}
-	type = p.type;
-	if (p.value)
-	{
-		uint32_t valueSize = 0u;
-		switch (type)
-		{
-			case kInteger: valueSize = sizeof (int32_t); break;
-			case kFloat: valueSize = sizeof (double); break;
-			case kObject: value = p.value; p.getObject ()->remember (); break;
-			case kRect: valueSize = sizeof (CRect); break;
-			case kPoint: valueSize = sizeof (CPoint); break;
-			case kColor: valueSize = sizeof (CColor); break;
-			case kTransformMatrix: valueSize = sizeof (CGraphicsTransform); break;
-			case kUnknown: valueSize = 0u; break;
-		}
-		if (valueSize)
-		{
-			value = std::malloc (valueSize);
-			if (value)
-				memcpy (value, p.value, valueSize);
-		}
-	}
+	var = p.var;
 	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t Property::getInteger () const
+int32_t Property::getInteger () const { return std::get<int32_t> (var); }
+
+//----------------------------------------------------------------------------------------------------
+double Property::getFloat () const { return std::get<double> (var); }
+
+//----------------------------------------------------------------------------------------------------
+SharedPointer<CBitmap> Property::getObject () const
 {
-	vstgui_assert (type == kInteger);
-	return *static_cast<int32_t*> (value);
+	return std::get<SharedPointer<CBitmap>> (var);
 }
 
 //----------------------------------------------------------------------------------------------------
-double Property::getFloat () const
-{
-	vstgui_assert (type == kFloat);
-	return *static_cast<double*> (value);
-}
+const CRect& Property::getRect () const { return std::get<CRect> (var); }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<IReference> Property::getObject () const
-{
-	vstgui_assert (type == kObject);
-	return shared (static_cast<IReference*> (value));
-}
+const CPoint& Property::getPoint () const { return std::get<CPoint> (var); }
 
 //----------------------------------------------------------------------------------------------------
-const CRect& Property::getRect () const
-{
-	vstgui_assert (type == kRect);
-	return *static_cast<CRect*> (value);
-}
-
-//----------------------------------------------------------------------------------------------------
-const CPoint& Property::getPoint () const
-{
-	vstgui_assert (type == kPoint);
-	return *static_cast<CPoint*> (value);
-}
-
-//----------------------------------------------------------------------------------------------------
-const CColor& Property::getColor () const
-{
-	vstgui_assert (type == kColor);
-	return *static_cast<CColor*> (value);
-}
+const CColor& Property::getColor () const { return std::get<CColor> (var); }
 
 //----------------------------------------------------------------------------------------------------
 const CGraphicsTransform& Property::getTransform () const
 {
-	vstgui_assert (type == kTransformMatrix);
-	return *static_cast<CGraphicsTransform*> (value);
+	return std::get<CGraphicsTransform> (var);
 }
+
+//------------------------------------------------------------------------
+Property::Type Property::getType () const { return static_cast<Property::Type> (var.index ()); }
 
 namespace Standard {
 	static void registerStandardFilters (Factory& factory);

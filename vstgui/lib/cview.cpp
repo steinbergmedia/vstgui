@@ -188,8 +188,8 @@ struct CView::Impl
 	CRect size;
 	int32_t viewFlags {0};
 	int32_t autosizeFlags {kAutosizeNone};
-	SharedPointer<CFrame> parentFrame;
-	SharedPointer<CViewContainer> parentView;
+	CFrame* parentFrame {nullptr};
+	CViewContainer* parentView {nullptr};
 	uint64_t runtimeID {++gRuntimeID};
 };
 
@@ -388,13 +388,12 @@ void CView::setSubviewState (bool state)
  * @param parent parent view
  * @return true if view successfully attached to parent
  */
-bool CView::attached (const SharedPointer<CViewContainer>& parent)
+bool CView::attached (CViewContainer& parent)
 {
 	if (isAttached ())
 		return false;
-	vstgui_assert (parent->asViewContainer ());
-	pImpl->parentView = parent;
-	pImpl->parentFrame = parent->getFrame ();
+	pImpl->parentView = &parent;
+	pImpl->parentFrame = parent.getFrame ();
 	setViewFlag (kIsAttached, true);
 	if (auto frame = pImpl->parentFrame)
 		frame->onViewAdded (*this);
@@ -413,7 +412,7 @@ bool CView::attached (const SharedPointer<CViewContainer>& parent)
  * @param parent parent view
  * @return true if view successfully removed from parent
  */
-bool CView::removed (const SharedPointer<CViewContainer>& parent)
+bool CView::removed (CViewContainer& parent)
 {
 	if (!isAttached ())
 		return false;
@@ -426,8 +425,8 @@ bool CView::removed (const SharedPointer<CViewContainer>& parent)
 	}
 	if (auto frame = pImpl->parentFrame)
 		frame->onViewRemoved (*this);
-	pImpl->parentView.reset ();
-	pImpl->parentFrame.reset ();
+	pImpl->parentView = nullptr;
+	pImpl->parentFrame = nullptr;
 	setViewFlag (kIsAttached, false);
 	return true;
 }
@@ -723,9 +722,9 @@ CGraphicsTransform CView::getGlobalTransform (bool ignoreFrame) const
 	auto parent = getParentView () ? getParentView ()->asViewContainer () : nullptr;
 	while (parent)
 	{
-		if (ignoreFrame && parent.get () == frame.get ())
+		if (ignoreFrame && parent == frame)
 			break;
-		parents.push_front (parent.get ());
+		parents.push_front (parent);
 		parent = parent->getParentView () ? parent->getParentView ()->asViewContainer () : nullptr;
 	}
 	for (const auto& parent2 : parents)
@@ -848,7 +847,7 @@ const CRect& CView::getViewSize () const
 CRect CView::getVisibleViewSize () const
 {
 	if (auto parent = pImpl->parentView)
-		return parent.cast<CViewContainer> ()->getVisibleSize (getViewSize ());
+		return parent->getVisibleSize (getViewSize ());
 	return CRect (0, 0, 0, 0);
 }
 
@@ -931,19 +930,16 @@ int32_t CView::getAutosizeFlags () const
 }
 
 //-----------------------------------------------------------------------------
-void CView::setParentFrame (const SharedPointer<CFrame>& frame) { pImpl->parentFrame = frame; }
+void CView::setParentFrame (CFrame* frame) { pImpl->parentFrame = frame; }
 
 //-----------------------------------------------------------------------------
-void CView::setParentView (const SharedPointer<CViewContainer>& parent)
-{
-	pImpl->parentView = parent;
-}
+void CView::setParentView (CViewContainer* parent) { pImpl->parentView = parent; }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CViewContainer> CView::getParentView () const { return pImpl->parentView; }
+CViewContainer* CView::getParentView () const { return pImpl->parentView; }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CFrame> CView::getFrame () const { return pImpl->parentFrame; }
+CFrame* CView::getFrame () const { return pImpl->parentFrame; }
 
 //-----------------------------------------------------------------------------
 /**

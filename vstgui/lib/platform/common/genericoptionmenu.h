@@ -46,7 +46,7 @@ class GenericOptionMenu
 , public ViewEventListenerAdapter
 {
 public:
-	GenericOptionMenu (const SharedPointer<CFrame>& frame, MouseEventButtonState initialButtons,
+	GenericOptionMenu (CFrame* frame, MouseEventButtonState initialButtons,
 					   GenericOptionMenuTheme theme = {});
 	~GenericOptionMenu () noexcept override;
 

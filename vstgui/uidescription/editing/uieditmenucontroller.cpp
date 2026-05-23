@@ -204,8 +204,9 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			auto view = selection->first ();
 			int32_t selectionCount = selection->total ();
 			bool enable =
-				view ? (selectionCount > 1 ? true
-										   : view->getParentView ().cast<UIEditView> () == nullptr)
+				view ? (selectionCount > 1
+							? true
+							: dynamic_cast<UIEditView*> (view->getParentView ()) == nullptr)
 					 : false;
 			item.setEnabled (enable);
 			return true;
@@ -273,7 +274,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			bool enable = selection->total () > 0;
 			for (auto view : *selection.get ())
 			{
-				if (view->getParentView ().cast<UIEditView> () != nullptr)
+				if (dynamic_cast<UIEditView*> (view->getParentView ()) != nullptr)
 				{
 					enable = false;
 					break;
@@ -306,8 +307,10 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			{
 				auto container = selection->first ()->asViewContainer ();
 				if (container && container->hasChildren () &&
-					container->getParentView ().cast<UIEditView> () == nullptr)
+					dynamic_cast<UIEditView*> (container->getParentView ()) == nullptr)
+				{
 					enabled = true;
+				}
 			}
 			item.setEnabled (enabled);
 			return true;
@@ -529,10 +532,10 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		const IViewFactory& viewFactory = description->getViewFactory ();
 		UIAttributes viewAttr;
 		viewAttr.setAttribute (UIViewCreator::kAttrClass, std::string (cmdName));
-		if (auto newContainer =
-				viewFactory.createView (viewAttr, *description.get ())->asViewContainer ())
+		if (auto newContainer = viewFactory.createView (viewAttr, *description.get ()))
 		{
-			auto action = makeShared<EmbedViewOperation> (selection, newContainer);
+			auto action = makeShared<EmbedViewOperation> (
+				selection, shared (newContainer->asViewContainer ()));
 			undoManager->pushAndPerform (action);
 		}
 		return true;
@@ -555,7 +558,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		for (auto& entry : *selection.get ())
 		{
 			if (auto viewContainer = entry->asViewContainer ())
-				getChildrenOfType (*viewContainer.get (), cmdName, newSelection);
+				getChildrenOfType (*viewContainer, cmdName, newSelection);
 		}
 		selection->clear ();
 		for (auto& view : newSelection)
@@ -570,7 +573,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 			if (view)
 			{
 				undoManager->pushAndPerform (
-					makeShared<InsertViewOperation> (parent, view, selection));
+					makeShared<InsertViewOperation> (shared (parent), view, selection));
 			}
 		}
 		return true;
@@ -743,7 +746,7 @@ void UIEditMenuController::valueChanged (CControl& control)
 				CRect r (control.getViewSize ());
 				CPoint p = r.getBottomLeft ();
 				control.localToFrame (p);
-				fileMenu->popup (*control.getFrame ().get (), p);
+				fileMenu->popup (*control.getFrame (), p);
 			}
 			break;
 		}
@@ -754,7 +757,7 @@ void UIEditMenuController::valueChanged (CControl& control)
 				CRect r (control.getViewSize ());
 				CPoint p = r.getTopLeft ();
 				control.localToFrame (p);
-				editMenu->popup (*control.getFrame ().get (), p);
+				editMenu->popup (*control.getFrame (), p);
 			}
 			break;
 		}
@@ -814,7 +817,7 @@ void UIEditMenuController::getChildrenOfType (CViewContainer& container, UTF8Str
 			result.emplace_back (view);
 		if (auto c = view->asViewContainer ())
 		{
-			getChildrenOfType (*c.get (), type, result);
+			getChildrenOfType (*c, type, result);
 		}
 	});
 }

@@ -698,7 +698,7 @@ CTextButton::CTextButton (const CRect& size, IControlListener* listener, int32_t
 }
 
 //------------------------------------------------------------------------
-bool CTextButton::removed (const SharedPointer<CViewContainer>& parent)
+bool CTextButton::removed (CViewContainer& parent)
 {
 	invalidPath ();
 	return CControl::removed (parent);

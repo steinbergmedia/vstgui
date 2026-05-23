@@ -38,7 +38,8 @@ private:
 	void viewWillDelete (CView& view) override;
 
 	using Super = ViewFactoryDelegate;
-	using ViewControllerLink = std::pair<WeakPointer<CView>, IScriptControllerExtension*>;
+	using ViewControllerLink =
+		std::pair<WeakPointer<CView>, SharedPointer<IScriptControllerExtension>>;
 	using ViewControllerLinkVector = std::vector<ViewControllerLink>;
 
 	ScriptingInternal::IScriptContextInternal* scriptContext;

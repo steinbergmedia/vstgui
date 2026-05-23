@@ -75,7 +75,7 @@ void HighScoreViewController::hide ()
 //------------------------------------------------------------------------
 void HighScoreViewController::dbAttached (CDataBrowser& browser)
 {
-	dbPtr = browser.weakFromThis ();
+	dbPtr = shared (&browser);
 	if (auto parent = browser.getParentView ())
 	{
 		assert (parent->asViewContainer ());

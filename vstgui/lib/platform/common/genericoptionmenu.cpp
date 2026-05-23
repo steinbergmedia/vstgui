@@ -104,7 +104,7 @@ private:
 
 	void dbAttached (CDataBrowser& browser) override
 	{
-		db = browser.weakFromThis ();
+		db = shared (&browser);
 		if (auto frame = browser.getFrame ())
 			frame->registerMouseObserver (this);
 	}
@@ -489,7 +489,7 @@ SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer&
 	auto frame = container.getFrame ();
 	auto dataSource =
 		makeShared<DataSource> (container, optionMenu, clickCallback, theme, parentDataSource);
-	auto maxWidth = dataSource->calculateMaxWidth (frame.get ());
+	auto maxWidth = dataSource->calculateMaxWidth (frame);
 	if (parentDataSource)
 	{
 		viewRect.offset (viewRect.getWidth (), 0);
@@ -585,7 +585,7 @@ SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer&
 struct GenericOptionMenu::Impl
 {
 	using ContainerT = CLayeredViewContainer;
-	SharedPointer<CFrame> frame;
+	CFrame* frame;
 	SharedPointer<COptionMenu> menu;
 	SharedPointer<ContainerT> container;
 	SharedPointer<CVSTGUITimer> mouseUpTimer;
@@ -598,8 +598,7 @@ struct GenericOptionMenu::Impl
 };
 
 //------------------------------------------------------------------------
-GenericOptionMenu::GenericOptionMenu (const SharedPointer<CFrame>& frame,
-									  MouseEventButtonState initialButtons,
+GenericOptionMenu::GenericOptionMenu (CFrame* frame, MouseEventButtonState initialButtons,
 									  GenericOptionMenuTheme theme)
 {
 	auto frameSize = frame->getViewSize ();

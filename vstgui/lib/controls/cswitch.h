@@ -60,6 +60,7 @@ public:
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CVerticalSwitch)
 	~CVerticalSwitch () noexcept override = default;
 
 	double calculateCoef () const override;
@@ -83,6 +84,7 @@ public:
 
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CHorizontalSwitch)
 	~CHorizontalSwitch () noexcept override = default;
 
 	double calculateCoef () const override;
@@ -127,6 +129,7 @@ public:
 
 	CLASS_METHODS(CRockerSwitch, CControl)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CRockerSwitch)
 	~CRockerSwitch () noexcept override;
 
 	int32_t	style;

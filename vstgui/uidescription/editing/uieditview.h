@@ -111,8 +111,8 @@ protected:
 
 	void looseFocus () override;
 	void takeFocus () override;
-	bool removed (const SharedPointer<CViewContainer>& parent) override;
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool removed (CViewContainer& parent) override;
+	bool attached (CViewContainer& parent) override;
 
 	bool editing {true};
 	bool autosizing {true};

@@ -19,11 +19,13 @@ class CVSTGUITimer final : public CBaseObject, public IPlatformTimerCallback
 public:
 	using CallbackFunc = std::function<void(CVSTGUITimer*)>;
 
+	CVSTGUITimer ();
 	CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime = 100, bool doStart = true);
 
 	/** starts the timer */
 	bool start ();
+	bool start (uint32_t fireTime, CallbackFunc&& callback);
 	/** stops the timer, returns whether timer was running or not */
 	bool stop ();
 
@@ -35,9 +37,11 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:
-	~CVSTGUITimer () noexcept override;
+	VSTGUI_SHAREDPTR_FRIEND (CVSTGUITimer)
 
+	~CVSTGUITimer () noexcept override;
 	void beforeDelete () override;
+
 	void fire () override;
 	
 	uint32_t fireTime;
@@ -53,11 +57,11 @@ namespace Call
 	/** Trigger a function call at a later timer */
 	inline void later (FunctionCallback callback, uint32_t delayInMilliseconds = 10)
 	{
-		new CVSTGUITimer ([callback] (CVSTGUITimer* timer) {
+		auto timer = makeShared<CVSTGUITimer> ();
+		timer->start (delayInMilliseconds, [callback, timer] (auto) {
 			timer->stop ();
 			callback ();
-			timer->forget ();
-		}, delayInMilliseconds, true);
+		});
 	}
 };
 

@@ -140,7 +140,7 @@ bool CDataBrowser::wantsFocus () const
 }
 
 //-----------------------------------------------------------------------------------------------
-bool CDataBrowser::attached (const SharedPointer<CViewContainer>& parent)
+bool CDataBrowser::attached (CViewContainer& parent)
 {
 	bool result = CScrollView::attached (parent);
 	if (result)
@@ -152,7 +152,7 @@ bool CDataBrowser::attached (const SharedPointer<CViewContainer>& parent)
 }
 
 //-----------------------------------------------------------------------------------------------
-bool CDataBrowser::removed (const SharedPointer<CViewContainer>& parent)
+bool CDataBrowser::removed (CViewContainer& parent)
 {
 	if (isAttached ())
 		db->dbRemoved (*this);
@@ -173,7 +173,7 @@ CMouseEventResult CDataBrowser::onMouseDown (CPoint& where, const CButtonState& 
 	if (auto frame = getFrame ())
 	{
 		auto focusView = frame->getFocusView ();
-		if (focusView.get () != dbView.get () && !isChild (focusView, true))
+		if (focusView.get () != dbView.get () && !isChild (*focusView.get (), true))
 			frame->setFocusView (dbView);
 	}
 	return result;

@@ -92,7 +92,7 @@ bool JavaScriptDrawable::onGetFocusPath (CGraphicsPath& outPath, CCoord focusWid
 	}
 
 	auto scriptRoot = scriptContext.getRoot ();
-	auto path = makeOwned<CGraphicsPath> (outPath);
+	auto path = makeShared<CGraphicsPath> (outPath);
 	ScriptObject focusWidthVar;
 	focusWidthVar->setDouble (focusWidth);
 	ScriptAddChildScoped scs (*scriptRoot, "view"sv, *scriptObject);

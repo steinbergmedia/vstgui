@@ -203,7 +203,7 @@ public:
 	CPoint& localToFrame (CPoint& point) const override { return point; }
 
 	// CView
-	bool attached (const SharedPointer<CViewContainer>& parent) override;
+	bool attached (CViewContainer& parent) override;
 	void draw (CDrawContext& context) override;
 	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -220,6 +220,8 @@ public:
 
 	//-------------------------------------------
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CFrame)
+
 	struct CollectInvalidRects;
 	
 	CFrame (const CFrame&) = delete;
@@ -265,7 +267,7 @@ private:
 	void dispatchMouseDownEvent (MouseDownEvent& event);
 	void dispatchMouseMoveEvent (MouseMoveEvent& event);
 	void dispatchMouseUpEvent (MouseUpEvent& event);
-	void dispatchEvent (const SharedPointer<CView>& view, Event& event);
+	void dispatchEvent (CView& view, Event& event);
 	void dispatchEventToChildren (Event& event);
 
 	struct Impl;

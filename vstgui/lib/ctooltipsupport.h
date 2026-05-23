@@ -18,8 +18,8 @@ class CTooltipSupport : public CBaseObject
 public:
 	CTooltipSupport (const CFrame& frame, uint32_t delay = 1000);
 
-	void onMouseEntered (const SharedPointer<CView>& view);
-	void onMouseExited (const SharedPointer<CView>& view);
+	void onMouseEntered (CView& view);
+	void onMouseExited (CView& view);
 	void onMouseMoved (const CPoint& where);
 	void onMouseDown (const CPoint& where);
 
@@ -27,6 +27,7 @@ public:
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CTooltipSupport, CBaseObject)
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (CTooltipSupport)
 	~CTooltipSupport () noexcept override;
 	bool showTooltip ();
 
