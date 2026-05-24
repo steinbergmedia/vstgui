@@ -24,21 +24,22 @@ namespace BitmapFilter {
 class Property
 {
 public:
-	enum Type {
+	enum class Type : uint32_t
+	{
 		kUnknown = 0,
 		kInteger,
 		kFloat,
-		kObject,
+		kBitmap,
 		kRect,
 		kPoint,
 		kColor,
 		kTransformMatrix
 	};
 
-	Property ();
+	Property (Type type);
 	Property (int32_t intValue);
 	Property (double floatValue);
-	Property (const SharedPointer<CBitmap>& objectValue);
+	Property (const SharedPointer<CBitmap>& bitmapValue);
 	Property (const CRect& rectValue);
 	Property (const CPoint& pointValue);
 	Property (const CColor& colorValue);
@@ -51,7 +52,7 @@ public:
 
 	int32_t getInteger () const;
 	double getFloat () const;
-	SharedPointer<CBitmap> getObject () const;
+	SharedPointer<CBitmap> getBitmap () const;
 	const CRect& getRect () const;
 	const CPoint& getPoint () const;
 	const CColor& getColor () const;

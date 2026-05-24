@@ -19,13 +19,43 @@ namespace VSTGUI {
 namespace BitmapFilter {
 
 //----------------------------------------------------------------------------------------------------
-template<typename T> void Property::assign (T toAssign)
+template<typename T>
+void Property::assign (T toAssign)
 {
 	var = toAssign;
 }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property () { var = nullptr; }
+Property::Property (Type type)
+{
+	switch (type)
+	{
+		case Type::kUnknown:
+			vstgui_assert (false, "unexpected");
+			break;
+		case Type::kInteger:
+			assign (0);
+			break;
+		case Type::kFloat:
+			assign (0.0);
+			break;
+		case Type::kBitmap:
+			assign (SharedPointer<CBitmap> ());
+			break;
+		case Type::kRect:
+			assign (CRect {});
+			break;
+		case Type::kPoint:
+			assign (CPoint {});
+			break;
+		case Type::kColor:
+			assign (CColor {});
+			break;
+		case Type::kTransformMatrix:
+			assign (CGraphicsTransform {});
+			break;
+	}
+}
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (int32_t intValue) { assign (intValue); }
@@ -34,7 +64,7 @@ Property::Property (int32_t intValue) { assign (intValue); }
 Property::Property (double floatValue) { assign (floatValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (const SharedPointer<CBitmap>& objectValue) { assign (objectValue); }
+Property::Property (const SharedPointer<CBitmap>& bitmapValue) { assign (bitmapValue); }
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (const CRect& rectValue) { assign (rectValue); }
@@ -58,7 +88,7 @@ Property::~Property () noexcept {}
 Property::Property (Property&& p) noexcept { *this = std::move (p); }
 
 //----------------------------------------------------------------------------------------------------
-Property& Property::operator=(Property&& p) noexcept
+Property& Property::operator= (Property&& p) noexcept
 {
 	var = std::move (p.var);
 	p.var = {};
@@ -66,7 +96,7 @@ Property& Property::operator=(Property&& p) noexcept
 }
 
 //----------------------------------------------------------------------------------------------------
-Property& Property::operator=(const Property& p)
+Property& Property::operator= (const Property& p)
 {
 	var = p.var;
 	return *this;
@@ -79,7 +109,7 @@ int32_t Property::getInteger () const { return std::get<int32_t> (var); }
 double Property::getFloat () const { return std::get<double> (var); }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> Property::getObject () const
+SharedPointer<CBitmap> Property::getBitmap () const
 {
 	return std::get<SharedPointer<CBitmap>> (var);
 }
@@ -103,7 +133,7 @@ const CGraphicsTransform& Property::getTransform () const
 Property::Type Property::getType () const { return static_cast<Property::Type> (var.index ()); }
 
 namespace Standard {
-	static void registerStandardFilters (Factory& factory);
+static void registerStandardFilters (Factory& factory);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -122,10 +152,7 @@ Factory& Factory::getInstance ()
 }
 
 //----------------------------------------------------------------------------------------------------
-uint32_t Factory::getNumFilters () const
-{
-	return (uint32_t)filters.size ();
-}
+uint32_t Factory::getNumFilters () const { return (uint32_t)filters.size (); }
 
 //----------------------------------------------------------------------------------------------------
 IdStringPtr Factory::getFilterName (uint32_t index) const
@@ -172,16 +199,10 @@ bool Factory::unregisterFilter (IdStringPtr name, IFilter::CreateFunction create
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-FilterBase::FilterBase (UTF8StringPtr description)
-: description (description ? description : "")
-{
-}
+FilterBase::FilterBase (UTF8StringPtr description) : description (description ? description : "") {}
 
 //----------------------------------------------------------------------------------------------------
-UTF8StringPtr FilterBase::getDescription () const
-{
-	return description.c_str ();
-}
+UTF8StringPtr FilterBase::getDescription () const { return description.c_str (); }
 
 //----------------------------------------------------------------------------------------------------
 bool FilterBase::setProperty (IdStringPtr name, const Property& property)
@@ -189,7 +210,7 @@ bool FilterBase::setProperty (IdStringPtr name, const Property& property)
 	auto it = properties.find (name);
 	if (it != properties.end () && it->second.getType () == property.getType ())
 	{
-		properties[name] = property;
+		it->second = property;
 		return true;
 	}
 	return false;
@@ -201,7 +222,7 @@ bool FilterBase::setProperty (IdStringPtr name, Property&& property)
 	auto it = properties.find (name);
 	if (it != properties.end () && it->second.getType () == property.getType ())
 	{
-		properties[name] = std::move (property);
+		it->second = std::move (property);
 		return true;
 	}
 	return false;
@@ -213,7 +234,7 @@ const Property& FilterBase::getProperty (IdStringPtr name) const
 	auto it = properties.find (name);
 	if (it != properties.end ())
 		return it->second;
-	static Property notFound (Property::kUnknown);
+	static Property notFound (Property::Type::kUnknown);
 	return notFound;
 }
 
@@ -226,7 +247,7 @@ uint32_t FilterBase::getNumProperties () const
 //----------------------------------------------------------------------------------------------------
 IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 {
-	for (const auto & it : properties)
+	for (const auto& it : properties)
 	{
 		if (index == 0)
 			return it.first.c_str ();
@@ -238,13 +259,13 @@ IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 //----------------------------------------------------------------------------------------------------
 Property::Type FilterBase::getPropertyType (uint32_t index) const
 {
-	for (const auto & it : properties)
+	for (const auto& it : properties)
 	{
 		if (index == 0)
 			return it.second.getType ();
 		index--;
 	}
-	return Property::kUnknown;
+	return Property::Type::kUnknown;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -255,7 +276,7 @@ Property::Type FilterBase::getPropertyType (IdStringPtr name) const
 	{
 		return (*it).second.getType ();
 	}
-	return Property::kUnknown;
+	return Property::Type::kUnknown;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -270,7 +291,7 @@ SharedPointer<CBitmap> FilterBase::getInputBitmap () const
 	auto it = properties.find (Standard::Property::kInputBitmap);
 	if (it != properties.end ())
 	{
-		auto obj = (*it).second.getObject ();
+		auto obj = (*it).second.getBitmap ();
 		return obj ? obj.cast<CBitmap> () : nullptr;
 	}
 	return nullptr;
@@ -290,26 +311,26 @@ public:
 		return makeShared<BoxBlur> ();
 	}
 
-	BoxBlur ()
-	: FilterBase ("A Box Blur Filter")
+	BoxBlur () : FilterBase ("A Box Blur Filter")
 	{
-		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
+		registerProperty (Property::kInputBitmap,
+						  BitmapFilter::Property (BitmapFilter::Property::Type::kBitmap));
 		registerProperty (Property::kRadius, BitmapFilter::Property ((int32_t)2));
 		registerProperty (Property::kAlphaChannelOnly, BitmapFilter::Property ((int32_t)0));
 	}
-private:
 
+private:
 	bool run (bool replace) override
 	{
 		auto inputBitmap = getInputBitmap ();
 		if (inputBitmap == nullptr)
 			return false;
 		const auto& radiusProp = getProperty (Property::kRadius);
-		if (radiusProp.getType () != BitmapFilter::Property::kInteger)
+		if (radiusProp.getType () != BitmapFilter::Property::Type::kInteger)
 			return false;
 		uint32_t radius =
-		    static_cast<uint32_t> (static_cast<double> (radiusProp.getInteger ()) *
-		                           inputBitmap->getPlatformBitmap ()->getScaleFactor ());
+			static_cast<uint32_t> (static_cast<double> (radiusProp.getInteger ()) *
+								   inputBitmap->getPlatformBitmap ()->getScaleFactor ());
 		if (radius == UINT_MAX)
 			return false;
 		if (radius < 2)
@@ -319,7 +340,7 @@ private:
 			return false; // TODO: We should just copy the input bitmap to the output bitmap
 		}
 		const auto& alphaChannelOnlyProp = getProperty (Property::kAlphaChannelOnly);
-		if (alphaChannelOnlyProp.getType () != BitmapFilter::Property::kInteger)
+		if (alphaChannelOnlyProp.getType () != BitmapFilter::Property::Type::kInteger)
 			return false;
 		bool alphaChannelOnly = alphaChannelOnlyProp.getInteger () > 0 ? true : false;
 		if (replace)
@@ -330,7 +351,8 @@ private:
 			run (*inputAccessor.get (), *inputAccessor.get (), radius, alphaChannelOnly);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (inputBitmap));
 		}
-		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
+		SharedPointer<CBitmap> outputBitmap =
+			owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
 		if (outputBitmap)
 		{
 			auto inputAccessor = CBitmapPixelAccess::create (inputBitmap);
@@ -339,12 +361,14 @@ private:
 				return false;
 
 			run (*inputAccessor.get (), *outputAccessor.get (), radius, alphaChannelOnly);
-			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
+			return registerProperty (Property::kOutputBitmap,
+									 BitmapFilter::Property (outputBitmap));
 		}
 		return false;
 	}
 
-	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius, bool alphaChannelOnly)
+	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor,
+			  uint32_t radius, bool alphaChannelOnly)
 	{
 		const auto& inputPbpa = inputAccessor.getPlatformBitmapPixelAccess ();
 		const auto& outputPbpa = outputAccessor.getPlatformBitmapPixelAccess ();
@@ -359,21 +383,23 @@ private:
 				case IPlatformBitmapPixelAccess::kARGB:
 				case IPlatformBitmapPixelAccess::kABGR:
 				{
-					algo<true, false, false, false> (inputAddressPtr, outputAddressPtr, width, height, static_cast<int32_t> (radius / 2));
+					algo<true, false, false, false> (inputAddressPtr, outputAddressPtr, width,
+													 height, static_cast<int32_t> (radius / 2));
 					break;
 				}
 				case IPlatformBitmapPixelAccess::kRGBA:
 				case IPlatformBitmapPixelAccess::kBGRA:
 				{
-					algo<false, false, false, true> (inputAddressPtr, outputAddressPtr, width, height, static_cast<int32_t> (radius / 2));
+					algo<false, false, false, true> (inputAddressPtr, outputAddressPtr, width,
+													 height, static_cast<int32_t> (radius / 2));
 					break;
 				}
 			}
-		
 		}
 		else
 		{
-			algo<true, true, true, true> (inputAddressPtr, outputAddressPtr, width, height, static_cast<int32_t> (radius / 2));
+			algo<true, true, true, true> (inputAddressPtr, outputAddressPtr, width, height,
+										  static_cast<int32_t> (radius / 2));
 		}
 	}
 
@@ -400,7 +426,7 @@ private:
 		int32_t hm = height - 1;
 		int32_t areaSize = width * height;
 		int32_t div = radius + radius + 1;
-		
+
 		if (plane0)
 			pc0.allocate (areaSize);
 		if (plane1)
@@ -567,19 +593,19 @@ private:
 class ScaleBase : public FilterBase
 {
 protected:
-	ScaleBase (UTF8StringPtr description = "")
-	: FilterBase (description)
+	ScaleBase (UTF8StringPtr description = "") : FilterBase (description)
 	{
-		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
+		registerProperty (Property::kInputBitmap,
+						  BitmapFilter::Property (BitmapFilter::Property::Type::kBitmap));
 		registerProperty (Property::kOutputRect, CRect (0, 0, 10, 10));
 	}
-	
+
 	bool run (bool replace) override
 	{
 		if (replace)
 			return false;
 		const auto& outSizeProp = getProperty (Property::kOutputRect);
-		if (outSizeProp.getType () != BitmapFilter::Property::kRect)
+		if (outSizeProp.getType () != BitmapFilter::Property::Type::kRect)
 			return false;
 		CRect outSize = outSizeProp.getRect ();
 		outSize.makeIntegral ();
@@ -588,7 +614,8 @@ protected:
 		auto inputBitmap = getInputBitmap ();
 		if (inputBitmap == nullptr)
 			return false;
-		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (outSize.getWidth (), outSize.getHeight ()));
+		SharedPointer<CBitmap> outputBitmap =
+			owned (new CBitmap (outSize.getWidth (), outSize.getHeight ()));
 		if (outputBitmap == nullptr)
 			return false;
 
@@ -599,9 +626,8 @@ protected:
 		process (*inputAccessor.get (), *outputAccessor.get ());
 		return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
 	}
-	
+
 	virtual void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) = 0;
-	
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -614,24 +640,25 @@ public:
 	}
 
 	ScaleLinear () : ScaleBase ("A Linear Scale Filter") {}
-private:
 
+private:
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) override
 	{
 		originalBitmap.setPosition (0, 0);
 		copyBitmap.setPosition (0, 0);
-		
+
 		uint32_t origWidth = (uint32_t)originalBitmap.getBitmapWidth ();
 		uint32_t origHeight = (uint32_t)originalBitmap.getBitmapHeight ();
 		uint32_t newWidth = (uint32_t)copyBitmap.getBitmapWidth ();
 		uint32_t newHeight = (uint32_t)copyBitmap.getBitmapHeight ();
-		
+
 		float xRatio = (float)origWidth / (float)newWidth;
 		float yRatio = (float)origHeight / (float)newHeight;
 
 		uint8_t* origAddress = originalBitmap.getPlatformBitmapPixelAccess ()->getAddress ();
 		uint8_t* copyAddress = copyBitmap.getPlatformBitmapPixelAccess ()->getAddress ();
-		uint32_t origBytesPerRow = originalBitmap.getPlatformBitmapPixelAccess ()->getBytesPerRow ();
+		uint32_t origBytesPerRow =
+			originalBitmap.getPlatformBitmapPixelAccess ()->getBytesPerRow ();
 		uint32_t copyBytesPerRow = copyBitmap.getPlatformBitmapPixelAccess ()->getBytesPerRow ();
 
 		int32_t ix;
@@ -652,7 +679,8 @@ private:
 				{
 					ix = (int32_t)origX;
 					vstgui_assert (iy >= 0);
-					origPixel = (int32_t*)(origAddress + static_cast<uint32_t> (iy) * origBytesPerRow + ix * 4);
+					origPixel = (int32_t*)(origAddress +
+										   static_cast<uint32_t> (iy) * origBytesPerRow + ix * 4);
 				}
 				*copyPixel = *origPixel;
 			}
@@ -670,8 +698,8 @@ public:
 	}
 
 	ScaleBiliniear () : ScaleBase ("A Biliniear Scale Filter") {}
-private:
 
+private:
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) override
 	{
 		originalBitmap.setPosition (0, 0);
@@ -682,8 +710,8 @@ private:
 		uint32_t newWidth = (uint32_t)copyBitmap.getBitmapWidth ();
 		uint32_t newHeight = (uint32_t)copyBitmap.getBitmapHeight ();
 
-		float xRatio = ((float)(origWidth-1)) / (float)newWidth;
-		float yRatio = ((float)(origHeight-1)) / (float)newHeight;
+		float xRatio = ((float)(origWidth - 1)) / (float)newWidth;
+		float yRatio = ((float)(origHeight - 1)) / (float)newHeight;
 		float xDiff, yDiff, r, g, b, a;
 		uint32_t x, y;
 		CColor color[4];
@@ -700,20 +728,24 @@ private:
 				xDiff = (xRatio * j) - x;
 				originalBitmap.setPosition (x, y);
 				originalBitmap.getColor (color[0]);
-				originalBitmap.setPosition (x+1, y);
+				originalBitmap.setPosition (x + 1, y);
 				originalBitmap.getColor (color[1]);
-				originalBitmap.setPosition (x, y+1);
+				originalBitmap.setPosition (x, y + 1);
 				originalBitmap.getColor (color[2]);
-				originalBitmap.setPosition (x+1, y+1);
+				originalBitmap.setPosition (x + 1, y + 1);
 				originalBitmap.getColor (color[3]);
-				r = color[0].red * (1.f - xDiff) * (1.f - yDiff) + color[1].red * xDiff * (1.f - yDiff)
-				+ color[2].red * yDiff * (1.f - xDiff) + color[3].red * xDiff * yDiff;
-				g = color[0].green * (1.f - xDiff) * (1.f - yDiff) + color[1].green * xDiff * (1.f - yDiff)
-				+ color[2].green * yDiff * (1.f - xDiff) + color[3].green * xDiff * yDiff;
-				b = color[0].blue * (1.f - xDiff) * (1.f - yDiff) + color[1].blue * xDiff * (1.f - yDiff)
-				+ color[2].blue * yDiff * (1.f - xDiff) + color[3].blue * xDiff * yDiff;
-				a = color[0].alpha * (1.f - xDiff) * (1.f - yDiff) + color[1].alpha * xDiff * (1.f - yDiff)
-				+ color[2].alpha * yDiff * (1.f - xDiff) + color[3].alpha * xDiff * yDiff;
+				r = color[0].red * (1.f - xDiff) * (1.f - yDiff) +
+					color[1].red * xDiff * (1.f - yDiff) + color[2].red * yDiff * (1.f - xDiff) +
+					color[3].red * xDiff * yDiff;
+				g = color[0].green * (1.f - xDiff) * (1.f - yDiff) +
+					color[1].green * xDiff * (1.f - yDiff) +
+					color[2].green * yDiff * (1.f - xDiff) + color[3].green * xDiff * yDiff;
+				b = color[0].blue * (1.f - xDiff) * (1.f - yDiff) +
+					color[1].blue * xDiff * (1.f - yDiff) + color[2].blue * yDiff * (1.f - xDiff) +
+					color[3].blue * xDiff * yDiff;
+				a = color[0].alpha * (1.f - xDiff) * (1.f - yDiff) +
+					color[1].alpha * xDiff * (1.f - yDiff) +
+					color[2].alpha * yDiff * (1.f - xDiff) + color[3].alpha * xDiff * yDiff;
 				result = CColor ((uint8_t)r, (uint8_t)g, (uint8_t)b, (uint8_t)a);
 				copyBitmap.setColor (result);
 			}
@@ -731,10 +763,10 @@ class SimpleFilter : public FilterBase
 {
 protected:
 	SimpleFilter (UTF8StringPtr description, SimpleFilterProcessFunction function)
-	: FilterBase (description)
-	, processFunction (function)
+	: FilterBase (description), processFunction (function)
 	{
-		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
+		registerProperty (Property::kInputBitmap,
+						  BitmapFilter::Property (BitmapFilter::Property::Type::kBitmap));
 	}
 
 	bool run (bool replace) override
@@ -749,7 +781,8 @@ protected:
 		SharedPointer<CBitmapPixelAccess> outputAccessor;
 		if (replace == false)
 		{
-			outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
+			outputBitmap =
+				owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
 			if (outputBitmap == nullptr)
 				return false;
 			outputAccessor = CBitmapPixelAccess::create (outputBitmap);
@@ -777,8 +810,7 @@ protected:
 				inputAccessor.getColor (color);
 				processFunction (color, this);
 				outputAccessor.setColor (color);
-			}
-			while (++inputAccessor);
+			} while (++inputAccessor);
 		}
 		else
 		{
@@ -788,8 +820,7 @@ protected:
 				processFunction (color, this);
 				outputAccessor.setColor (color);
 				++outputAccessor;
-			}
-			while (++inputAccessor);
+			} while (++inputAccessor);
 		}
 	}
 
@@ -807,14 +838,13 @@ public:
 		return makeShared<SetColor> ();
 	}
 
-	SetColor ()
-	: SimpleFilter<SimpleFilterProcessFunction> ("A Set Color Filter", processSetColor)
+	SetColor () : SimpleFilter<SimpleFilterProcessFunction> ("A Set Color Filter", processSetColor)
 	{
 		registerProperty (Property::kIgnoreAlphaColorValue, BitmapFilter::Property ((int32_t)1));
 		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
 	}
-private:
 
+private:
 	static void processSetColor (CColor& color, FilterBase* obj)
 	{
 		SetColor* filter = static_cast<SetColor*> (obj);
@@ -830,8 +860,8 @@ private:
 	{
 		const auto& inputColorProp = getProperty (Property::kInputColor);
 		const auto& ignoreAlphaProp = getProperty (Property::kIgnoreAlphaColorValue);
-		if (inputColorProp.getType () != BitmapFilter::Property::kColor ||
-		    ignoreAlphaProp.getType () != BitmapFilter::Property::kInteger)
+		if (inputColorProp.getType () != BitmapFilter::Property::Type::kColor ||
+			ignoreAlphaProp.getType () != BitmapFilter::Property::Type::kInteger)
 			return false;
 		inputColor = inputColorProp.getColor ();
 		ignoreAlpha = ignoreAlphaProp.getInteger () > 0;
@@ -854,13 +884,12 @@ public:
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Grayscale Filter", processGrayscale)
 	{
 	}
-private:
 
+private:
 	static void processGrayscale (CColor& color, FilterBase* obj)
 	{
 		color.red = color.green = color.blue = color.getLuma ();
 	}
-
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -880,8 +909,8 @@ public:
 		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
 		registerProperty (Property::kOutputColor, BitmapFilter::Property (kTransparentCColor));
 	}
-private:
 
+private:
 	static void processReplace (CColor& color, FilterBase* obj)
 	{
 		ReplaceColor* filter = static_cast<ReplaceColor*> (obj);
@@ -896,8 +925,8 @@ private:
 	{
 		const auto& inputColorProp = getProperty (Property::kInputColor);
 		const auto& outputColorProp = getProperty (Property::kOutputColor);
-		if (inputColorProp.getType () != BitmapFilter::Property::kColor ||
-		    outputColorProp.getType () != BitmapFilter::Property::kColor)
+		if (inputColorProp.getType () != BitmapFilter::Property::Type::kColor ||
+			outputColorProp.getType () != BitmapFilter::Property::Type::kColor)
 			return false;
 		inputColor = inputColorProp.getColor ();
 		outputColor = outputColorProp.getColor ();
@@ -922,4 +951,5 @@ void registerStandardFilters (Factory& factory)
 
 ///@endcond
 
-}} // namespaces
+}
+} // namespaces

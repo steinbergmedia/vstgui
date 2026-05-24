@@ -977,35 +977,35 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 							continue;
 						switch (filter->getProperty (propName->c_str ()).getType ())
 						{
-							case BitmapFilter::Property::kInteger:
+							case BitmapFilter::Property::Type::kInteger:
 							{
 								int32_t intValue;
 								if (propertyNode->getAttributes ()->getIntegerAttribute ("value", intValue))
 									filter->setProperty (propName->c_str (), intValue);
 								break;
 							}
-							case BitmapFilter::Property::kFloat:
+							case BitmapFilter::Property::Type::kFloat:
 							{
 								double floatValue;
 								if (propertyNode->getAttributes ()->getDoubleAttribute ("value", floatValue))
 									filter->setProperty (propName->c_str (), floatValue);
 								break;
 							}
-							case BitmapFilter::Property::kPoint:
+							case BitmapFilter::Property::Type::kPoint:
 							{
 								CPoint pointValue;
 								if (propertyNode->getAttributes ()->getPointAttribute ("value", pointValue))
 									filter->setProperty (propName->c_str (), pointValue);
 								break;
 							}
-							case BitmapFilter::Property::kRect:
+							case BitmapFilter::Property::Type::kRect:
 							{
 								CRect rectValue;
 								if (propertyNode->getAttributes ()->getRectAttribute ("value", rectValue))
 									filter->setProperty (propName->c_str (), rectValue);
 								break;
 							}
-							case BitmapFilter::Property::kColor:
+							case BitmapFilter::Property::Type::kColor:
 							{
 								const std::string* colorString = propertyNode->getAttributes()->getAttributeValue ("value");
 								if (colorString)
@@ -1016,13 +1016,14 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 								}
 								break;
 							}
-							case BitmapFilter::Property::kTransformMatrix:
+							case BitmapFilter::Property::Type::kTransformMatrix:
 							{
 								// TODO
 								break;
 							}
-							case BitmapFilter::Property::kObject: // objects can not be stored/restored
-							case BitmapFilter::Property::kUnknown:
+							case BitmapFilter::Property::Type::kBitmap: // objects can not be
+																		// stored/restored
+							case BitmapFilter::Property::Type::kUnknown:
 								break;
 						}
 					}
@@ -1033,7 +1034,8 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 				if (filter->run ())
 				{
-					auto obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
+					auto obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap)
+								   .getBitmap ();
 					if (auto outputBitmap = obj.cast<CBitmap> ())
 					{
 						bitmap->setPlatformBitmap (outputBitmap->getPlatformBitmap ());
