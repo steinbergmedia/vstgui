@@ -81,9 +81,9 @@ bool CLayeredViewContainer::attached (CViewContainer& _parent)
 	if (isAttached ())
 		return false;
 
-	auto parent = &_parent;
+	setParentView (&_parent);
 
-	setParentView (parent);
+	auto parent = getParentView ();
 	setParentFrame (parent->getFrame ());
 	if (auto frame = getFrame ())
 	{
@@ -106,8 +106,6 @@ bool CLayeredViewContainer::attached (CViewContainer& _parent)
 			frame->registerScaleFactorChangedListener (this);
 		}
 	}
-	parent = getParentView ();
-	
 	registerListeners (true);
 	
 	setParentView (nullptr);
