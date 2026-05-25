@@ -262,12 +262,12 @@ void D2DBitmap::replaceBitmapSource (IWICBitmapSource* newSourceBitmap)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmapPixelAccess> D2DBitmap::lockPixels (bool alphaPremultiplied)
+PlatformBitmapPixelAccessPtr D2DBitmap::lockPixels (bool alphaPremultiplied)
 {
 	if (getSource () == nullptr)
 		return nullptr;
-	auto pixelAccess = makeShared<PixelAccess> ();
-	if (pixelAccess->init (this, alphaPremultiplied))
+	auto pixelAccess = std::make_unique<PixelAccess> ();
+	if (pixelAccess->init (shared_from_this (), alphaPremultiplied))
 		return pixelAccess;
 	return nullptr;
 }
@@ -292,13 +292,13 @@ D2DBitmap::PixelAccess::~PixelAccess ()
 	}
 	if (bitmap)
 	{
-		D2DBitmapCache::removeBitmap (bitmap);
-		bitmap->forget ();
+		D2DBitmapCache::removeBitmap (bitmap.get ());
 	}
 }
 
 //-----------------------------------------------------------------------------
-bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool _alphaPremultiplied)
+bool D2DBitmap::PixelAccess::init (const std::shared_ptr<D2DBitmap>& inBitmap,
+								   bool _alphaPremultiplied)
 {
 	bool result = false;
 	vstgui_assert (inBitmap);
@@ -312,7 +312,6 @@ bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool _alphaPremultiplied
 			bLock->GetDataPointer (&bufferSize, &ptr);
 
 			bitmap = inBitmap;
-			bitmap->remember ();
 			alphaPremultiplied = _alphaPremultiplied;
 			if (!alphaPremultiplied)
 				unpremultiplyAlpha (ptr, bytesPerRow, bitmap->getSize ());

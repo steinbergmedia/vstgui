@@ -680,7 +680,7 @@ WindowPtr makeNewDirect3DExampleWindow ()
 	auto customization = UIDesc::Customization::make ();
 	customization->addCreateViewControllerFunc (
 		"Direct3DController",
-		[] (auto, auto parent, auto&) { return makeOwned<Direct3DController> (parent); });
+		[] (auto, auto parent, auto&) { return makeShared<Direct3DController> (parent); });
 
 	UIDesc::Config config;
 	config.uiDescFileName = "direct3dwindow.uidesc";

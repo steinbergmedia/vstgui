@@ -21,7 +21,8 @@ struct IWICBitmapLock;
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class D2DBitmap final : public Win32BitmapBase
+class D2DBitmap final : public Win32BitmapBase,
+						public std::enable_shared_from_this<D2DBitmap>
 {
 public:
 	D2DBitmap ();
@@ -30,7 +31,7 @@ public:
 
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const override { return size; }
-	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
+	PlatformBitmapPixelAccessPtr lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override { scaleFactor = factor; }
 	double getScaleFactor () const override { return scaleFactor; }
 
@@ -50,7 +51,7 @@ protected:
 		PixelAccess ();
 		~PixelAccess ();
 
-		bool init (D2DBitmap* bitmap, bool alphaPremultiplied);
+		bool init (const std::shared_ptr<D2DBitmap>& bitmap, bool alphaPremultiplied);
 
 		uint8_t* getAddress () const override { return (uint8_t*)ptr; }
 		uint32_t getBytesPerRow () const override { return bytesPerRow; }
@@ -60,7 +61,7 @@ protected:
 		static void premultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size);
 		static void unpremultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size);
 
-		D2DBitmap* bitmap;
+		std::shared_ptr<D2DBitmap> bitmap;
 		IWICBitmapLock* bLock;
 		BYTE* ptr;
 		UINT bytesPerRow;

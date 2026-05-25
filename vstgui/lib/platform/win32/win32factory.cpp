@@ -265,7 +265,7 @@ PlatformFramePtr Win32Factory::createFrame (IPlatformFrameCallback* frame, const
 											void* parent, PlatformType parentType,
 											IPlatformFrameConfig* config) const noexcept
 {
-	return makeShared<Win32Frame> (frame, size, static_cast<HWND> (parent), parentType);
+	return std::make_unique<Win32Frame> (frame, size, static_cast<HWND> (parent), parentType);
 }
 
 //-----------------------------------------------------------------------------
@@ -284,13 +284,13 @@ bool Win32Factory::getAllFontFamilies (const FontFamilyCallback& callback) const
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr Win32Factory::createBitmap (const CPoint& size) const noexcept
 {
-	return makeShared<D2DBitmap> (size);
+	return std::make_shared<D2DBitmap> (size);
 }
 
 //------------------------------------------------------------------------
 static PlatformBitmapPtr createFromIStream (IStream* stream)
 {
-	auto bitmap = makeShared<D2DBitmap> ();
+	auto bitmap = std::make_shared<D2DBitmap> ();
 	if (bitmap->loadFromStream (stream))
 		return bitmap;
 	return nullptr;
@@ -299,7 +299,7 @@ static PlatformBitmapPtr createFromIStream (IStream* stream)
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr Win32Factory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	auto bitmap = makeShared<D2DBitmap> ();
+	auto bitmap = std::make_shared<D2DBitmap> ();
 	if (bitmap->load (desc))
 		return bitmap;
 	return nullptr;
@@ -376,8 +376,8 @@ PlatformTimerPtr Win32Factory::createTimer (IPlatformTimerCallback* callback) co
 //------------------------------------------------------------------------
 bool Win32Factory::setClipboard (const DataPackagePtr& data) const noexcept
 {
-	auto dataObject = makeShared<Win32DataObject> (data);
-	auto hr = OleSetClipboard (dataObject.get ());
+	auto dataObject = new Win32DataObject (data);
+	auto hr = OleSetClipboard (dataObject);
 	return hr == S_OK;
 }
 
@@ -400,7 +400,7 @@ PlatformGradientPtr Win32Factory::createGradient () const noexcept
 PlatformFileSelectorPtr Win32Factory::createFileSelector (
 	PlatformFileSelectorStyle style, const PlatformFramePtr& frame) const noexcept
 {
-	auto win32Frame = frame.cast<Win32Frame> ();
+	auto win32Frame = dynamic_cast<Win32Frame*> (frame.get ());
 	return createWinFileSelector (style, win32Frame ? win32Frame->getHWND () : nullptr);
 }
 

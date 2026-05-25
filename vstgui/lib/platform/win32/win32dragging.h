@@ -37,58 +37,80 @@ private:
 	mutable std::unique_ptr<Win32MouseObserverWhileDragging> mouseObserver;
 };
 
+//------------------------------------------------------------------------
+struct COMBase
+{
+	virtual ~COMBase () = default;
+
+	ULONG addRef () noexcept
+	{
+		++refCount;
+		return refCount;
+	}
+	ULONG release () noexcept
+	{
+		if (--refCount == 0u)
+		{
+			delete this;
+			return 0u;
+		}
+		return refCount.load ();
+	}
+
+	std::atomic<ULONG> refCount {1};
+};
+
 //-----------------------------------------------------------------------------
-class CDropTarget final : public ::IDropTarget
+class CDropTarget final : private COMBase,
+						  public ::IDropTarget
 {
 public:
 	CDropTarget (Win32Frame* pFrame);
-	~CDropTarget () noexcept;
+	~CDropTarget () noexcept override;
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
-	STDMETHOD_ (ULONG, AddRef) () override;
-	STDMETHOD_ (ULONG, Release) () override;
-   
+	STDMETHOD_ (ULONG, AddRef) () override { return addRef (); }
+	STDMETHOD_ (ULONG, Release) () override { return release (); }
+
 	// IDropTarget
 	STDMETHOD (DragEnter) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect) override;
 	STDMETHOD (DragOver) (DWORD keyState, POINTL pt, DWORD* effect) override;
 	STDMETHOD (DragLeave) () override;
 	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect) override;
+
 private:
-	int32_t refCount;
 	Win32Frame* pFrame;
 	SharedPointer<Win32DataPackage> dragData;
 };
 
 //-----------------------------------------------------------------------------
-class Win32DropSource final
-: public AtomicReferenceCounted
-, public ::IDropSource
+class Win32DropSource final : private COMBase,
+							  public ::IDropSource
 {
 public:
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
-	STDMETHOD_ (ULONG, AddRef) () override { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) () override { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
-	
+	STDMETHOD_ (ULONG, AddRef) () override { return addRef (); }
+	STDMETHOD_ (ULONG, Release) () override { return release (); }
+
 	// IDropSource
 	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState) override;
 	STDMETHOD (GiveFeedback) (DWORD effect) override;
 };
 
 //-----------------------------------------------------------------------------
-class Win32DataObject final
-: public AtomicReferenceCounted
-, public ::IDataObject
+class Win32DataObject final : private COMBase,
+							  public ::IDataObject
 {
 public:
 	Win32DataObject (SharedPointer<IDataPackage> dataPackage);
-	~Win32DataObject () noexcept;
+	~Win32DataObject () noexcept override;
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object) override;
-	STDMETHOD_ (ULONG, AddRef) () override { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) () override { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
+	STDMETHOD_ (ULONG, AddRef) () override { return addRef (); }
+	STDMETHOD_ (ULONG, Release) () override { return release (); }
 
 	// IDataObject
 	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium) override;

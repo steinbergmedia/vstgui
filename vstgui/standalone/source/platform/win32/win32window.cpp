@@ -262,7 +262,7 @@ void Window::onSetContentView (CFrame* inFrame)
 	frame = inFrame;
 	if (frame)
 	{
-		auto win32Frame = frame->getPlatformFrame ().cast<Win32Frame> ();
+		auto win32Frame = dynamic_cast<Win32Frame*> (frame->getPlatformFrame ().get ());
 		frameWindowProc = [win32Frame] (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 			return win32Frame->proc (hwnd, message, wParam, lParam);
 		};
@@ -657,7 +657,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (frame)
 			{
-				auto fc = static_cast<IPlatformFrameCallback*> (frame.get ());
+				auto fc = static_cast<IPlatformFrameCallback*> (frame);
 				fc->platformOnWindowActivate (wParam ? true : false);
 			}
 			break;

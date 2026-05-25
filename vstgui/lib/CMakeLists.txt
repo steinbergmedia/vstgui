@@ -290,8 +290,6 @@ set(${target}_win32_sources
     platform/win32/win32factory.h
     platform/win32/win32frame.cpp
     platform/win32/win32frame.h
-    platform/win32/win32openglview.cpp
-    platform/win32/win32openglview.h
     platform/win32/win32optionmenu.cpp
     platform/win32/win32optionmenu.h
     platform/win32/win32resourcestream.cpp

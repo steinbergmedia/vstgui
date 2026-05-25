@@ -184,7 +184,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 }
 
 //-----------------------------------------------------------------------------
-CDropTarget::CDropTarget (Win32Frame* pFrame) : refCount (0), pFrame (pFrame) {}
+CDropTarget::CDropTarget (Win32Frame* pFrame) : pFrame (pFrame) {}
 
 //-----------------------------------------------------------------------------
 CDropTarget::~CDropTarget () noexcept
@@ -197,29 +197,11 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void
 	if (riid == IID_IDropTarget || riid == IID_IUnknown)
 	{
 		*object = this;
-		AddRef ();
-      return NOERROR;
+		addRef ();
+		return NOERROR;
 	}
 	*object = nullptr;
 	return E_NOINTERFACE;
-}
-
-//-----------------------------------------------------------------------------
-COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::AddRef ()
-{
-	return static_cast<ULONG> (++refCount);
-}
-
-//-----------------------------------------------------------------------------
-COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) CDropTarget::Release ()
-{
-	refCount--;
-	if (refCount <= 0)
-	{
-		delete this;
-		return 0;
-	}
-	return static_cast<ULONG> (refCount);
 }
 
 //-----------------------------------------------------------------------------
@@ -545,7 +527,8 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::SetData (FORMATETC *pformatet
 }
 
 //-----------------------------------------------------------------------------
-struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
+struct Win32DataObjectEnumerator : COMBase,
+								   IEnumFORMATETC
 {
 	Win32DataObjectEnumerator (const SharedPointer<IDataPackage>& data) : data (data) {}
 
@@ -566,17 +549,8 @@ struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
 		return E_NOINTERFACE;
 	}
 
-	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE AddRef () override
-	{
-		remember ();
-		return static_cast<ULONG> (getNbReference ());
-	}
-	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE Release () override
-	{
-		ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1;
-		forget ();
-		return refCount;
-	}
+	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE AddRef () override { return addRef (); }
+	COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE Release () override { return release (); }
 
 	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Next (ULONG celt, FORMATETC* rgelt, ULONG* pceltFetched) override
 	{

@@ -44,7 +44,7 @@ struct D2DBitmapDeviceContext : D2DGraphicsDeviceContext
 {
 	static PlatformGraphicsDeviceContextPtr make (const D2DGraphicsDevice& device,
 												  ID2D1DeviceContext* deviceContext,
-												  const SharedPointer<D2DBitmap>& bitmap)
+												  const std::shared_ptr<D2DBitmap>& bitmap)
 	{
 		D2D1_BITMAP_PROPERTIES1 props = D2D1::BitmapProperties1 (
 			D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
@@ -65,7 +65,8 @@ struct D2DBitmapDeviceContext : D2DGraphicsDeviceContext
 														 TransformMatrix {});
 	}
 
-	D2DBitmapDeviceContext (const D2DGraphicsDevice& device, const SharedPointer<D2DBitmap>& bitmap,
+	D2DBitmapDeviceContext (const D2DGraphicsDevice& device,
+							const std::shared_ptr<D2DBitmap>& bitmap,
 							ID2D1DeviceContext* deviceContext, const TransformMatrix& tm)
 	: D2DGraphicsDeviceContext (device, deviceContext, tm), bitmap (bitmap)
 	{
@@ -124,7 +125,7 @@ struct D2DBitmapDeviceContext : D2DGraphicsDeviceContext
 		return false;
 	}
 
-	SharedPointer<D2DBitmap> bitmap;
+	std::shared_ptr<D2DBitmap> bitmap;
 };
 
 //------------------------------------------------------------------------

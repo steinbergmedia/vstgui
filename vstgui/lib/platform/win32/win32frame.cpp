@@ -524,8 +524,8 @@ PlatformOptionMenuPtr Win32Frame::createPlatformOptionMenu ()
 			buttonState.set (MouseButton::Left);
 		else if (buttons.isRightButton ())
 			buttonState.set (MouseButton::Right);
-		return std::make_shared<GenericOptionMenu> (shared (dynamic_cast<CFrame*> (frame)),
-													buttonState, *genericOptionMenuTheme);
+		return std::make_shared<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttonState,
+													*genericOptionMenuTheme);
 	}
 	return std::make_shared<Win32OptionMenu> (windowHandle);
 }
@@ -766,7 +766,6 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 	if (getFrame () == nullptr)
 		return DefWindowProc (hwnd, message, wParam, lParam);
 
-	SharedPointer<Win32Frame> lifeGuard (this);
 	IPlatformFrameCallback* pFrame = getFrame ();
 	bool doubleClick = false;
 
