@@ -326,8 +326,8 @@ struct WindowController::Impl : public ICommandHandler
 		window = inWindow.get ();
 		auto contentProvider =
 			makeShared<MemoryContentProvider> (inXml, static_cast<uint32_t> (inXml.length ()));
-		uiDesc = makeShared<UIDescription> ();
-		if (!uiDesc->init (contentProvider))
+		uiDesc = UIDescription::make (contentProvider);
+		if (!uiDesc)
 			return false;
 		if (!uiDesc->parse ())
 			return false;
@@ -475,10 +475,10 @@ struct WindowController::Impl : public ICommandHandler
 		if (Detail::getApplicationPlatformAccess ()
 		        ->getConfiguration ()
 		        .useCompressedUIDescriptionFiles)
-			uiDesc = makeShared<CompressedUIDescription> ();
+			uiDesc = CompressedUIDescription::make (fileName);
 		else
-			uiDesc = makeShared<UIDescription> ();
-		if (!uiDesc->init (fileName))
+			uiDesc = UIDescription::make (fileName);
+		if (!uiDesc)
 			return false;
 		uiDesc->setSharedResources (Detail::getSharedUIDescription ());
 		if (!uiDesc->parse ())

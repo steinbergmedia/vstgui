@@ -184,11 +184,11 @@ TEST_CASE (CViewTest, ViewListener)
 		auto container1 = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto container2 = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		container2->addSubview (v);
-		container2->attached (container1);
+		container2->attached (*container1.get ());
 		v->takeFocus ();
 		v->looseFocus ();
 		container2->removeSubview (v);
-		container2->removed (container1);
+		container2->removed (*container1.get ());
 	}
 	EXPECT (listener.sizeChangedCalled);
 	EXPECT (listener.attachedCalled);
@@ -202,7 +202,7 @@ TEST_CASE (CViewTest, CoordCalculations)
 {
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
-	container->attached (parent);
+	container->attached (*parent.get ());
 	auto v = makeShared<View> ();
 	container->addSubview (v);
 	CPoint p (0, 0);
@@ -211,21 +211,21 @@ TEST_CASE (CViewTest, CoordCalculations)
 	p (52, 53);
 	v->frameToLocal (p);
 	EXPECT (p.x == 2 && p.y == 3);
-	container->removed (parent);
+	container->removed (*parent.get ());
 }
 
 TEST_CASE (CViewTest, VisibleViewSize)
 {
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
-	container->attached (parent);
+	container->attached (*parent.get ());
 	auto v = makeShared<View> ();
 	v->setViewSize (CRect (20, 20, 150, 150));
 	container->addSubview (v);
 	auto visible = v->getVisibleViewSize ();
 	EXPECT (visible == CRect (20, 20, 50, 50));
 	container->removeSubview (v);
-	container->removed (parent);
+	container->removed (*parent.get ());
 }
 
 TEST_CASE (CViewTest, GlobalTransform)
@@ -237,7 +237,7 @@ TEST_CASE (CViewTest, GlobalTransform)
 	container1->addSubview (container2);
 	auto v = makeShared<View> ();
 	container2->addSubview (v);
-	container2->attached (container1);
+	container2->attached (*container1.get ());
 	auto transform = v->getGlobalTransform ();
 	EXPECT (transform.dx == 25 && transform.dy == 55);
 
@@ -252,7 +252,7 @@ TEST_CASE (CViewTest, GlobalTransform)
 	p2 = v->translateToLocal (CRect (25, 55, 26, 56));
 	EXPECT (p2 == CRect (0, 0, 1, 1));
 
-	container2->removed (container1);
+	container2->removed (*container1.get ());
 }
 
 TEST_CASE (CViewTest, HitTest)
@@ -503,7 +503,7 @@ TEST_CASE (CViewTest, IdleAfterAttached)
 {
 	auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
-	container->attached (parent);
+	container->attached (*parent.get ());
 	auto v = makeShared<View> ();
 	container->addSubview (v);
 	v->setWantsIdle (true);
@@ -514,7 +514,7 @@ TEST_CASE (CViewTest, IdleAfterAttached)
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
 	EXPECT (v->onIdleCalled == false);
 	container->removeSubview (v);
-	container->removed (parent);
+	container->removed (*parent.get ());
 }
 
 TEST_CASE (CViewTest, IdleBeforeAttached)
@@ -524,11 +524,11 @@ TEST_CASE (CViewTest, IdleBeforeAttached)
 	auto v = makeShared<View> ();
 	container->addSubview (v);
 	v->setWantsIdle (true);
-	container->attached (parent);
+	container->attached (*parent.get ());
 	CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, true);
 	EXPECT (v->onIdleCalled == true);
 	container->removeSubview (v);
-	container->removed (parent);
+	container->removed (*parent.get ());
 }
 
 #endif

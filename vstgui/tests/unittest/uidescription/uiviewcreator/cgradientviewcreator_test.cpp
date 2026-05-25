@@ -104,33 +104,33 @@ TEST_CASE (CGradientViewCreatorTest, GradientAngleMinMax)
 TEST_CASE (CGradientViewCreatorTest, LegacyGradient)
 {
 	DummyUIDescription uidesc;
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (kAttrClass, kCGradientView);
 	a.setAttribute (kAttrGradientStartColor, kColorName);
 
-	auto v = factory.createView (a, uidesc);
+	auto v = factory->createView (a, uidesc);
 	auto view = v.cast<CGradientView> ();
 	EXPECT (view);
 	EXPECT (view->getGradient () == nullptr);
 
 	a.setAttribute (kAttrGradientEndColor, kColorName);
 
-	v = factory.createView (a, uidesc);
+	v = factory->createView (a, uidesc);
 	view = v.cast<CGradientView> ();
 	EXPECT (view);
 	EXPECT (view->getGradient () == nullptr);
 
 	a.setDoubleAttribute (kAttrGradientStartColorOffset, 0.);
 
-	v = factory.createView (a, uidesc);
+	v = factory->createView (a, uidesc);
 	view = v.cast<CGradientView> ();
 	EXPECT (view);
 	EXPECT (view->getGradient () == nullptr);
 
 	a.setDoubleAttribute (kAttrGradientEndColorOffset, 1.);
 
-	v = factory.createView (a, uidesc);
+	v = factory->createView (a, uidesc);
 	view = v.cast<CGradientView> ();
 	EXPECT (view);
 	EXPECT (view->getGradient ());

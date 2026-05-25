@@ -93,7 +93,7 @@ TEST_CASE (ExchangeViewAnimationTest, AlphaValueFade)
 {
 	auto parentContainer = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
 	auto container = makeShared<CViewContainer> (CRect (0, 0, 0, 0));
-	container->attached (parentContainer);
+	container->attached (*parentContainer.get ());
 	auto oldView = makeShared<TestView> ();
 	auto newView = makeShared<TestView> ();
 	container->addSubview (oldView);
@@ -108,7 +108,7 @@ TEST_CASE (ExchangeViewAnimationTest, AlphaValueFade)
 	a.animationFinished (*container.get (), "", false);
 	EXPECT (oldView->isAttached () == false);
 	EXPECT (newView->getAlphaValue () == 1.f);
-	container->removed (parentContainer);
+	container->removed (*parentContainer.get ());
 }
 
 TEST_CASE (ExchangeViewAnimationTest, PushInFromLeft)
@@ -116,7 +116,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromLeft)
 	CRect r (0, 0, 100, 100);
 	auto parentContainer = makeShared<CViewContainer> (r);
 	auto container = makeShared<CViewContainer> (r);
-	container->attached (parentContainer);
+	container->attached (*parentContainer.get ());
 	auto oldView = makeShared<CView> (r);
 	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
@@ -130,7 +130,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromLeft)
 	a.animationFinished (*container.get (), "", false);
 	EXPECT (oldView->isAttached () == false);
 	EXPECT (newView->getViewSize () == r);
-	container->removed (parentContainer);
+	container->removed (*parentContainer.get ());
 }
 
 TEST_CASE (ExchangeViewAnimationTest, PushInFromRight)
@@ -138,7 +138,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromRight)
 	CRect r (0, 0, 100, 100);
 	auto parentContainer = makeShared<CViewContainer> (r);
 	auto container = makeShared<CViewContainer> (r);
-	container->attached (parentContainer);
+	container->attached (*parentContainer.get ());
 	auto oldView = makeShared<CView> (r);
 	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
@@ -152,7 +152,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromRight)
 	a.animationFinished (*container.get (), "", false);
 	EXPECT (oldView->isAttached () == false);
 	EXPECT (newView->getViewSize () == r);
-	container->removed (parentContainer);
+	container->removed (*parentContainer.get ());
 }
 
 TEST_CASE (ExchangeViewAnimationTest, PushInFromTop)
@@ -160,7 +160,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromTop)
 	CRect r (0, 0, 100, 100);
 	auto parentContainer = makeShared<CViewContainer> (r);
 	auto container = makeShared<CViewContainer> (r);
-	container->attached (parentContainer);
+	container->attached (*parentContainer.get ());
 	auto oldView = makeShared<CView> (r);
 	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
@@ -174,7 +174,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromTop)
 	a.animationFinished (*container.get (), "", false);
 	EXPECT (oldView->isAttached () == false);
 	EXPECT (newView->getViewSize () == r);
-	container->removed (parentContainer);
+	container->removed (*parentContainer.get ());
 }
 
 TEST_CASE (ExchangeViewAnimationTest, PushInFromBottom)
@@ -182,7 +182,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromBottom)
 	CRect r (0, 0, 100, 100);
 	auto parentContainer = makeShared<CViewContainer> (r);
 	auto container = makeShared<CViewContainer> (r);
-	container->attached (parentContainer);
+	container->attached (*parentContainer.get ());
 	auto oldView = makeShared<CView> (r);
 	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
@@ -196,7 +196,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInFromBottom)
 	a.animationFinished (*container.get (), "", false);
 	EXPECT (oldView->isAttached () == false);
 	EXPECT (newView->getViewSize () == r);
-	container->removed (parentContainer);
+	container->removed (*parentContainer.get ());
 }
 
 TEST_CASE (ExchangeViewAnimationTest, PushInOutFromLeft)
@@ -204,7 +204,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInOutFromLeft)
 	CRect r (0, 0, 100, 100);
 	auto parentContainer = makeShared<CViewContainer> (r);
 	auto container = makeShared<CViewContainer> (r);
-	container->attached (parentContainer);
+	container->attached (*parentContainer.get ());
 	auto oldView = makeShared<CView> (r);
 	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
@@ -219,7 +219,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInOutFromLeft)
 	a.animationFinished (*container.get (), "", false);
 	EXPECT (oldView->isAttached () == false);
 	EXPECT (newView->getViewSize () == r);
-	container->removed (parentContainer);
+	container->removed (*parentContainer.get ());
 }
 
 TEST_CASE (ExchangeViewAnimationTest, PushInOutFromRight)
@@ -227,7 +227,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInOutFromRight)
 	CRect r (0, 0, 100, 100);
 	auto parentContainer = makeShared<CViewContainer> (r);
 	auto container = makeShared<CViewContainer> (r);
-	container->attached (parentContainer);
+	container->attached (*parentContainer.get ());
 	auto oldView = makeShared<CView> (r);
 	auto newView = makeShared<CView> (r);
 	container->addSubview (oldView);
@@ -241,7 +241,7 @@ TEST_CASE (ExchangeViewAnimationTest, PushInOutFromRight)
 	a.animationFinished (*container.get (), "", true);
 	EXPECT (oldView->isAttached () == false);
 	EXPECT (newView->getViewSize () == r);
-	container->removed (parentContainer);
+	container->removed (*parentContainer.get ());
 }
 
 } // VSTGUI

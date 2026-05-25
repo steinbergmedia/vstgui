@@ -95,23 +95,23 @@ public:
 		{
 #ifdef HAVE_EDITORUIDESC_H
 			auto provider = makeShared<MemoryContentProvider> (editorUIDesc, strlen (editorUIDesc));
-			auto editorDesc = makeShared<UIDescription> ();
-			if (editorDesc->init (provider) && editorDesc->parse ())
+			auto editorDesc = UIDescription::make (provider);
+			if (editorDesc && editorDesc->parse ())
 			{
 				uiDesc = editorDesc;
 			}
 			auto lightUIProvider =
 				makeShared<MemoryContentProvider> (editorUILightDesc, strlen (editorUILightDesc));
-			auto lightUIDesc = makeShared<UIDescription> ();
-			if (lightUIDesc->init (lightUIProvider) && lightUIDesc->parse ())
+			auto lightUIDesc = UIDescription::make (lightUIProvider);
+			if (lightUIDesc && lightUIDesc->parse ())
 			{
 				lightResourceDesc = std::move (lightUIDesc);
 				uiDesc->setSharedResources (lightResourceDesc);
 			}
 			auto darkUIProvider =
 				makeShared<MemoryContentProvider> (editorUIDarkDesc, strlen (editorUIDarkDesc));
-			auto darkUIDesc = makeShared<UIDescription> ();
-			if (darkUIDesc->init (darkUIProvider) && darkUIDesc->parse ())
+			auto darkUIDesc = UIDescription::make (darkUIProvider);
+			if (darkUIDesc && darkUIDesc->parse ())
 			{
 				darkResourceDesc = std::move (darkUIDesc);
 			}
@@ -121,8 +121,8 @@ public:
 			if (removeLastPathComponent (basePath))
 			{
 				auto descPath = basePath + "/uidescriptioneditor.uidesc";
-				auto editorDesc = makeShared<UIDescription> ();
-				if (editorDesc->init (descPath.data ()) && editorDesc->parse ())
+				auto editorDesc = UIDescription::make (descPath.data ());
+				if (editorDesc && editorDesc->parse ())
 				{
 					uiDesc = std::move (editorDesc);
 				}
@@ -131,8 +131,8 @@ public:
 					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
 				}
 				descPath = basePath + "/uidescriptioneditor_res_light.uidesc";
-				auto resDesc = makeShared<UIDescription> ();
-				if (resDesc->init (descPath.data ()) && resDesc->parse ())
+				auto resDesc = UIDescription::make (descPath.data ());
+				if (resDesc && resDesc->parse ())
 				{
 					lightResourceDesc = std::move (resDesc);
 					uiDesc->setSharedResources (lightResourceDesc);
@@ -142,8 +142,8 @@ public:
 					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
 				}
 				descPath = basePath + "/uidescriptioneditor_res_dark.uidesc";
-				resDesc = makeShared<UIDescription> ();
-				if (resDesc->init (descPath.data ()) && resDesc->parse ())
+				resDesc = UIDescription::make (descPath.data ());
+				if (resDesc && resDesc->parse ())
 				{
 					darkResourceDesc = std::move (resDesc);
 				}

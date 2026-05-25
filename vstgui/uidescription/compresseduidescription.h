@@ -20,7 +20,7 @@ protected:
 		LastCompressedSaveFlagBit,
 	};
 public:
-	CompressedUIDescription ();
+	static SharedPointer<CompressedUIDescription> make (const CResourceDescription& uidescFile);
 
 	enum SaveFlags
 	{
@@ -38,6 +38,10 @@ public:
 	void setCompressionLevel (uint32_t level) { compressionLevel = level; }
 
 private:
+	VSTGUI_SHAREDPTR_FRIEND (CompressedUIDescription)
+
+	CompressedUIDescription ();
+
 	bool parseWithStream (InputStream& stream);
 
 	bool originalIsCompressed {false};

@@ -289,7 +289,7 @@ TEST_CASE (CSplitViewTest, ControllerHorizontal)
 	auto view2 = makeShared<CView> (CRect (0, 0, 50, 100));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
-	sv->attached (container);
+	sv->attached (*container.get ());
 	EXPECT (view1->getViewSize () == CRect (0, 0, 20, 100));
 	EXPECT (view2->getViewSize () == CRect (30, 0, 100, 100));
 
@@ -308,7 +308,7 @@ TEST_CASE (CSplitViewTest, ControllerHorizontal)
 	EXPECT (view2->getViewSize () == CRect (20, 0, 100, 100));
 	dispatchMouseEvent<MouseUpEvent> (sv, {1., 1.}, MouseButton::Left);
 
-	sv->removed (container);
+	sv->removed (*container.get ());
 	EXPECT (controller->sizes[0] == 10);
 	EXPECT (controller->sizes[1] == 80);
 }
@@ -325,7 +325,7 @@ TEST_CASE (CSplitViewTest, ControllerVertical)
 	auto view2 = makeShared<CView> (CRect (0, 0, 100, 50));
 	sv->addSubview (view1);
 	sv->addSubview (view2);
-	sv->attached (container);
+	sv->attached (*container.get ());
 	EXPECT (view1->getViewSize () == CRect (0, 0, 100, 20));
 	EXPECT (view2->getViewSize () == CRect (0, 30, 100, 100));
 	dispatchMouseEvent<MouseDownEvent> (sv, {1., 25.}, MouseButton::Left);
@@ -343,7 +343,7 @@ TEST_CASE (CSplitViewTest, ControllerVertical)
 	EXPECT (view2->getViewSize () == CRect (0, 20, 100, 100));
 	dispatchMouseEvent<MouseUpEvent> (sv, {1., 1.}, MouseButton::Left);
 
-	sv->removed (container);
+	sv->removed (*container.get ());
 	EXPECT (controller->sizes[0] == 10);
 	EXPECT (controller->sizes[1] == 80);
 }
@@ -363,7 +363,7 @@ TEST_CASE (CSplitViewTest, SeparatorSubView)
 	sepView->setViewSize (CRect (0, 0, 10, 10));
 	sepView->setMouseableArea (CRect (0, 0, 10, 10));
 	sv->addViewToSeparator (0, sepView);
-	sv->attached (container);
+	sv->attached (*container.get ());
 	dispatchMouseEvent<MouseDownEvent> (sv, {41., 25.}, MouseButton::Left);
 	EXPECT (sepView->mouseDownCalled == false);
 	dispatchMouseEvent<MouseDownEvent> (sv, {41., 1.}, MouseButton::Left);
@@ -375,7 +375,7 @@ TEST_CASE (CSplitViewTest, SeparatorSubView)
 	dispatchMouseEvent<MouseDownEvent> (sv, {41., 1.}, MouseButton::Left);
 	dispatchMouseCancelEvent (sv);
 	EXPECT (sepView->mouseCancelCalled);
-	sv->removed (container);
+	sv->removed (*container.get ());
 }
 
 } // VSTGUI

@@ -16,15 +16,15 @@ using namespace UIViewCreator;
 TEST_CASE (CXYPadCreatorTest, Create)
 {
 	DummyUIDescription uidesc;
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (kAttrClass, kCXYPad);
 
-	auto view = factory.createView (a, uidesc);
+	auto view = factory->createView (a, uidesc);
 	auto control = view.cast<CXYPad> ();
 	EXPECT (control);
 	UIAttributes a2;
-	EXPECT (factory.getAttributesForView (*view.get (), uidesc, a2));
+	EXPECT (factory->getAttributesForView (*view.get (), uidesc, a2));
 }
 
 } // VSTGUI

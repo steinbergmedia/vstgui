@@ -14,17 +14,17 @@ struct WeakableObject : public NonAtomicReferenceCounted,
 {
 	int32_t value {0};
 	explicit WeakableObject (int32_t v = 0) : value (v) {}
-	WeakPointer<WeakableObject> weakFromThisPublic () { return this->weakFromThis (); }
+	WeakPointer<WeakableObject> weakFromThisPublic () { return shared (this); }
 
 	virtual int32_t getValue () const { return value; }
 };
 
 struct WeakableObject2 : public NonAtomicReferenceCounted,
-						 public WeakPointerSupport<WeakableObject>
+						 public WeakPointerSupport<WeakableObject2>
 {
 	int32_t value {0};
 	explicit WeakableObject2 (int32_t v = 0) : value (v) {}
-	WeakPointer<WeakableObject> weakFromThisPublic () { return this->weakFromThis (); }
+	WeakPointer<WeakableObject2> weakFromThisPublic () { return shared (this); }
 
 	virtual int32_t getValue () const { return value; }
 };
@@ -121,10 +121,10 @@ TEST_CASE (WeakPointerTest, EqualityOperator)
 	auto obj = makeTestObject (3);
 	WeakPointer<WeakableObject> a {obj};
 	WeakPointer<WeakableObject> b {obj};
-	EXPECT ((a == b) == true);
+	EXPECT ((a.lock () == b.lock ()) == true);
 	auto obj2 = makeTestObject (4);
 	WeakPointer<WeakableObject> c {obj2};
-	EXPECT ((a == c) == false);
+	EXPECT ((a.lock () == c.lock ()) == false);
 }
 
 TEST_CASE (WeakPointerTest, WeakFromThis)

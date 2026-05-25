@@ -55,25 +55,16 @@ TEST_CASE (UIDescriptionAddOnTest, BasicFunctionality)
 {
 	struct BaseAddOn : UIDescriptionAddOnAdapter
 	{
-		void afterParsing (const SharedPointer<IUIDescription>& desc) override
-		{
-			afterParsingCalled = true;
-		}
-		void beforeSaving (const SharedPointer<IUIDescription>& desc) override
-		{
-			beforeSavingCalled = true;
-		}
-		void onDestroy (const SharedPointer<IUIDescription>& desc) override
-		{
-			onDestroyCalled = true;
-		}
-		CreateTemplateViewFunc onCreateTemplateView (const SharedPointer<IUIDescription>& desc,
+		void afterParsing (const IUIDescription& desc) override { afterParsingCalled = true; }
+		void beforeSaving (const IUIDescription& desc) override { beforeSavingCalled = true; }
+		void onDestroy (const IUIDescription& desc) override { onDestroyCalled = true; }
+		CreateTemplateViewFunc onCreateTemplateView (const IUIDescription& desc,
 													 const CreateTemplateViewFunc& f) override
 		{
 			onCreateTemplateViewCalled = true;
 			return f;
 		}
-		SharedPointer<IViewFactory> getViewFactory (const SharedPointer<IUIDescription>& desc,
+		SharedPointer<IViewFactory> getViewFactory (const IUIDescription& desc,
 													const SharedPointer<IViewFactory>& of) override
 		{
 			getViewFactoryCalled = true;
@@ -92,11 +83,11 @@ TEST_CASE (UIDescriptionAddOnTest, BasicFunctionality)
 	{
 		auto provider = makeShared<MemoryContentProvider> (
 			createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-		UIDescription desc (provider);
+		auto desc = UIDescription::make (provider);
 		EXPECT_TRUE (myAddOnPtr->getViewFactoryCalled);
-		EXPECT_TRUE (desc.parse ());
+		EXPECT_TRUE (desc->parse ());
 		EXPECT_TRUE (myAddOnPtr->afterParsingCalled);
-		auto view = desc.createView ("view", nullptr);
+		auto view = desc->createView ("view", nullptr);
 		EXPECT_NE (view, nullptr);
 		EXPECT_TRUE (myAddOnPtr->onCreateTemplateViewCalled);
 	}

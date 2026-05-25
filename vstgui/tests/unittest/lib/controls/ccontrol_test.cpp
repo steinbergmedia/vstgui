@@ -108,7 +108,7 @@ TEST_CASE (CControlTest, CheckDefaultValue)
 	auto frame = makeShared<CFrame> (CRect {}, nullptr);
 	auto c = makeShared<Control> ();
 	frame->addSubview (c);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 
 	c->setValue (c->getDefaultValue () + 0.1f);
 	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (c, {0., 0.}, MouseButton::Left,

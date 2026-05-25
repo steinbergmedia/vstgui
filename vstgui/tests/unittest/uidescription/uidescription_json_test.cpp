@@ -1157,38 +1157,38 @@ TEST_CASE (UIDescriptionJSONTests, ParseEmpty)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
-	EXPECT (desc.getGradient ("t") == nullptr);
-	EXPECT (desc.getBitmap ("b") == nullptr);
-	EXPECT (desc.getFont ("f") == nullptr);
-	EXPECT (desc.getTagForName ("t") == -1);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
+	EXPECT (desc->getGradient ("t") == nullptr);
+	EXPECT (desc->getBitmap ("b") == nullptr);
+	EXPECT (desc->getFont ("f") == nullptr);
+	EXPECT (desc->getTagForName ("t") == -1);
 	CColor c;
-	EXPECT (desc.getColor ("c", c) == false);
-	EXPECT (desc.getControlListener ("t") == nullptr);
-	EXPECT (desc.getController () == nullptr);
+	EXPECT (desc->getColor ("c", c) == false);
+	EXPECT (desc->getControlListener ("t") == nullptr);
+	EXPECT (desc->getController () == nullptr);
 }
 
 TEST_CASE (UIDescriptionJSONTests, Colors)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		colorNodesUIDesc, static_cast<uint32_t> (strlen (colorNodesUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 	CColor c;
-	EXPECT (desc.getColor ("c1", c));
+	EXPECT (desc->getColor ("c1", c));
 	EXPECT (c == CColor (0, 0, 0, 255));
-	EXPECT (desc.getColor ("c2", c));
+	EXPECT (desc->getColor ("c2", c));
 	EXPECT (c == CColor (255, 255, 255, 255));
-	EXPECT (desc.getColor ("c3", c));
+	EXPECT (desc->getColor ("c3", c));
 	EXPECT (c == CColor (255, 0, 0, 100));
-	EXPECT (desc.getColor ("c4", c));
+	EXPECT (desc->getColor ("c4", c));
 	EXPECT (c == CColor (0, 255, 0, 150));
-	EXPECT (desc.getColor ("c5", c));
+	EXPECT (desc->getColor ("c5", c));
 	EXPECT (c == CColor (255, 0, 255, 100));
 
 	StringPtrList names;
-	desc.collectColorNames (names);
+	desc->collectColorNames (names);
 	uint32_t numNames = 0;
 	for (auto& name : names)
 	{
@@ -1197,62 +1197,62 @@ TEST_CASE (UIDescriptionJSONTests, Colors)
 	}
 	EXPECT (numNames == 5);
 
-	desc.changeColor ("c5", CColor (0, 255, 0, 255));
-	EXPECT (desc.getColor ("c5", c));
+	desc->changeColor ("c5", CColor (0, 255, 0, 255));
+	EXPECT (desc->getColor ("c5", c));
 	EXPECT (c == CColor (0, 255, 0, 255));
 
-	desc.changeColor ("added color node", CColor (1, 2, 3, 4));
-	EXPECT (desc.hasColorName ("added color node"));
+	desc->changeColor ("added color node", CColor (1, 2, 3, 4));
+	EXPECT (desc->hasColorName ("added color node"));
 
-	auto name = desc.lookupColorName (CColor (0, 255, 0, 255));
+	auto name = desc->lookupColorName (CColor (0, 255, 0, 255));
 	EXPECT (name == std::string ("c5"));
-	desc.changeColorName ("c5", "new color");
-	EXPECT (desc.hasColorName ("new color"));
-	desc.removeColor ("new color");
-	EXPECT (desc.getColor ("new color", c) == false);
+	desc->changeColorName ("c5", "new color");
+	EXPECT (desc->hasColorName ("new color"));
+	desc->removeColor ("new color");
+	EXPECT (desc->getColor ("new color", c) == false);
 }
 
 TEST_CASE (UIDescriptionJSONTests, Fonts)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		fontNodesUIDesc, static_cast<uint32_t> (strlen (fontNodesUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
-	EXPECT (desc.hasFontName ("f1"));
-	auto font = desc.getFont ("f1");
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
+	EXPECT (desc->hasFontName ("f1"));
+	auto font = desc->getFont ("f1");
 	EXPECT (font->getName () == std::string ("Arial"));
 	EXPECT (font->getSize () == 8);
 	EXPECT (font->getStyle () == kNormalFace);
-	font = desc.getFont ("f2");
+	font = desc->getFont ("f2");
 	EXPECT (font->getName () == std::string ("Arial"));
 	EXPECT (font->getSize () == 8);
 	EXPECT (font->getStyle () == kBoldFace);
-	font = desc.getFont ("f3");
+	font = desc->getFont ("f3");
 	EXPECT (font->getName () == std::string ("Arial"));
 	EXPECT (font->getSize () == 8);
 	EXPECT (font->getStyle () == kItalicFace);
-	font = desc.getFont ("f4");
+	font = desc->getFont ("f4");
 	EXPECT (font->getName () == std::string ("Arial"));
 	EXPECT (font->getSize () == 8);
 	EXPECT (font->getStyle () == kUnderlineFace);
-	font = desc.getFont ("f5");
+	font = desc->getFont ("f5");
 	EXPECT (font->getName () == std::string ("Arial"));
 	EXPECT (font->getSize () == 8);
 	EXPECT (font->getStyle () == kStrikethroughFace);
-	font = desc.getFont ("f6");
+	font = desc->getFont ("f6");
 	EXPECT (font->getName () == std::string ("Arial"));
 	EXPECT (font->getSize () == 8);
 	std::string altFontNames;
-	EXPECT (desc.getAlternativeFontNames ("f5", altFontNames) == false);
-	EXPECT (desc.getAlternativeFontNames ("f6", altFontNames));
+	EXPECT (desc->getAlternativeFontNames ("f5", altFontNames) == false);
+	EXPECT (desc->getAlternativeFontNames ("f6", altFontNames));
 	EXPECT (altFontNames == "Arial, Courier");
-	desc.changeAlternativeFontNames ("f6", "Courier");
-	desc.getAlternativeFontNames ("f6", altFontNames);
+	desc->changeAlternativeFontNames ("f6", "Courier");
+	desc->getAlternativeFontNames ("f6", altFontNames);
 	EXPECT (altFontNames == "Courier");
-	auto name = desc.lookupFontName (font);
+	auto name = desc->lookupFontName (font);
 	EXPECT (name == std::string ("f6"));
 	StringPtrList names;
-	desc.collectFontNames (names);
+	desc->collectFontNames (names);
 	uint32_t numNames = 0;
 	for (auto& n : names)
 	{
@@ -1260,44 +1260,44 @@ TEST_CASE (UIDescriptionJSONTests, Fonts)
 			numNames++;
 	}
 	EXPECT (numNames == 6);
-	desc.changeFontName ("f1", "font");
-	EXPECT (desc.hasFontName ("font"));
+	desc->changeFontName ("f1", "font");
+	EXPECT (desc->hasFontName ("font"));
 	auto newFont = owned (new CFontDesc (*font.get ()));
-	desc.changeFont ("font", newFont);
-	desc.changeFont ("font2", newFont);
-	EXPECT (desc.getFont ("font") == newFont);
-	EXPECT (desc.getFont ("font2") == newFont);
-	desc.removeFont ("font");
-	EXPECT (desc.hasFontName ("font") == false);
+	desc->changeFont ("font", newFont);
+	desc->changeFont ("font2", newFont);
+	EXPECT (desc->getFont ("font") == newFont);
+	EXPECT (desc->getFont ("font2") == newFont);
+	desc->removeFont ("font");
+	EXPECT (desc->hasFontName ("font") == false);
 }
 
 TEST_CASE (UIDescriptionJSONTests, Bitmaps)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		bitmapNodesUIDesc, static_cast<uint32_t> (strlen (bitmapNodesUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
-	EXPECT (desc.hasBitmapName ("b1"));
-	auto bitmap = desc.getBitmap ("b1");
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
+	EXPECT (desc->hasBitmapName ("b1"));
+	auto bitmap = desc->getBitmap ("b1");
 	EXPECT (bitmap);
-	auto name = desc.lookupBitmapName (bitmap);
+	auto name = desc->lookupBitmapName (bitmap);
 	EXPECT (name == std::string ("b1"));
 	StringPtrList names;
-	desc.collectBitmapNames (names);
+	desc->collectBitmapNames (names);
 	EXPECT (names.size () == 2);
-	desc.changeBitmapName ("b1", "new bitmap");
-	EXPECT (desc.hasBitmapName ("new bitmap"));
-	desc.removeBitmap ("new bitmap");
-	EXPECT (desc.hasBitmapName ("new bitmap") == false);
+	desc->changeBitmapName ("b1", "new bitmap");
+	EXPECT (desc->hasBitmapName ("new bitmap"));
+	desc->removeBitmap ("new bitmap");
+	EXPECT (desc->hasBitmapName ("new bitmap") == false);
 	CRect ninePartTiledOffset (10, 10, 10, 10);
-	desc.changeBitmap ("added bitmap node", "path to bitmap", &ninePartTiledOffset);
-	EXPECT (desc.hasBitmapName ("added bitmap node"));
-	bitmap = desc.getBitmap ("added bitmap node");
+	desc->changeBitmap ("added bitmap node", "path to bitmap", &ninePartTiledOffset);
+	EXPECT (desc->hasBitmapName ("added bitmap node"));
+	bitmap = desc->getBitmap ("added bitmap node");
 	EXPECT (bitmap.cast<CNinePartTiledBitmap> ());
 	auto& offsets = bitmap.cast<CNinePartTiledBitmap> ()->getPartOffsets ();
 	EXPECT (offsets.left == 10 && offsets.top == 10 && offsets.right == 10 && offsets.bottom == 10);
-	desc.changeBitmap ("added bitmap node", "added bitmap node", nullptr);
-	bitmap = desc.getBitmap ("added bitmap node");
+	desc->changeBitmap ("added bitmap node", "added bitmap node", nullptr);
+	bitmap = desc->getBitmap ("added bitmap node");
 	EXPECT (bitmap.cast<CNinePartTiledBitmap> () == nullptr);
 }
 
@@ -1305,37 +1305,37 @@ TEST_CASE (UIDescriptionJSONTests, Tags)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		tagNodesUIDesc, static_cast<uint32_t> (strlen (tagNodesUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
-	EXPECT (desc.hasTagName ("t1"));
-	EXPECT (desc.getTagForName ("t1") == 1234);
-	EXPECT (desc.getTagForName ("t3") == 1836676199);
-	auto name = desc.lookupControlTagName (1234);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
+	EXPECT (desc->hasTagName ("t1"));
+	EXPECT (desc->getTagForName ("t1") == 1234);
+	EXPECT (desc->getTagForName ("t3") == 1836676199);
+	auto name = desc->lookupControlTagName (1234);
 	EXPECT (name == std::string ("t1"));
 	StringPtrList names;
-	desc.collectControlTagNames (names);
+	desc->collectControlTagNames (names);
 	EXPECT (names.size () == 3);
-	desc.changeTagName ("t1", "control tag");
-	EXPECT (desc.hasTagName ("control tag"));
-	desc.changeControlTagString ("control tag", "4567 - 5");
-	EXPECT (desc.getTagForName ("control tag") == 4562);
+	desc->changeTagName ("t1", "control tag");
+	EXPECT (desc->hasTagName ("control tag"));
+	desc->changeControlTagString ("control tag", "4567 - 5");
+	EXPECT (desc->getTagForName ("control tag") == 4562);
 	std::string tagString;
-	EXPECT (desc.getControlTagString ("control not existing", tagString) == false);
-	EXPECT (desc.getControlTagString ("control tag", tagString));
+	EXPECT (desc->getControlTagString ("control not existing", tagString) == false);
+	EXPECT (desc->getControlTagString ("control tag", tagString));
 	EXPECT (tagString == "4567 - 5");
-	desc.removeTag ("control tag");
-	EXPECT (desc.hasTagName ("control tag") == false);
-	desc.changeControlTagString ("new control tag", "2*2", true);
-	EXPECT (desc.getTagForName ("new control tag") == 4);
+	desc->removeTag ("control tag");
+	EXPECT (desc->hasTagName ("control tag") == false);
+	desc->changeControlTagString ("new control tag", "2*2", true);
+	EXPECT (desc->getTagForName ("new control tag") == 4);
 }
 
 TEST_CASE (UIDescriptionJSONTests, LookupTagsCalculateTag)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		calculateTagNodesUIDesc, static_cast<uint32_t> (strlen (calculateTagNodesUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
-	auto name = desc.lookupControlTagName (3);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
+	auto name = desc->lookupControlTagName (3);
 	EXPECT (name);
 	EXPECT (std::string (name) == "t1");
 }
@@ -1344,10 +1344,10 @@ TEST_CASE (UIDescriptionJSONTests, Gradient)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		gradientNodesUIDesc, static_cast<uint32_t> (strlen (gradientNodesUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
-	EXPECT (desc.hasGradientName ("g1"));
-	auto gradient = desc.getGradient ("g1");
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
+	EXPECT (desc->hasGradientName ("g1"));
+	auto gradient = desc->getGradient ("g1");
 	const auto& colorStops = gradient->getColorStops ();
 	EXPECT (colorStops.size () == 3);
 	auto it = colorStops.find (0.);
@@ -1359,42 +1359,42 @@ TEST_CASE (UIDescriptionJSONTests, Gradient)
 	it = colorStops.find (1.);
 	EXPECT (it != colorStops.end ());
 	EXPECT (it->second == CColor (255, 255, 255, 255));
-	auto name = desc.lookupGradientName (gradient);
+	auto name = desc->lookupGradientName (gradient);
 	EXPECT (name == std::string ("g1"));
 	StringPtrList names;
-	desc.collectGradientNames (names);
+	desc->collectGradientNames (names);
 	EXPECT (names.size () == 1);
-	desc.changeGradientName ("g1", "gradient");
-	EXPECT (desc.hasGradientName ("gradient"));
-	EXPECT (desc.hasGradientName ("g1") == false);
+	desc->changeGradientName ("g1", "gradient");
+	EXPECT (desc->hasGradientName ("gradient"));
+	EXPECT (desc->hasGradientName ("g1") == false);
 	auto newGradient = CGradient::create (0., 1., kWhiteCColor, kBlackCColor);
-	desc.changeGradient ("gradient", newGradient);
-	EXPECT (desc.getGradient ("gradient") == newGradient);
-	desc.changeGradient ("gradientnew", newGradient);
-	EXPECT (desc.hasGradientName ("gradientnew"));
-	desc.removeGradient ("gradientnew");
-	EXPECT (desc.hasGradientName ("gradientnew") == false);
+	desc->changeGradient ("gradient", newGradient);
+	EXPECT (desc->getGradient ("gradient") == newGradient);
+	desc->changeGradient ("gradientnew", newGradient);
+	EXPECT (desc->hasGradientName ("gradientnew"));
+	desc->removeGradient ("gradientnew");
+	EXPECT (desc->hasGradientName ("gradientnew") == false);
 }
 
 TEST_CASE (UIDescriptionJSONTests, Variables)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		variableNodesUIDesc, static_cast<uint32_t> (strlen (variableNodesUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 	double value;
-	EXPECT (desc.getVariable ("v1", value));
+	EXPECT (desc->getVariable ("v1", value));
 	EXPECT (value == 10.);
 	std::string strValue;
-	EXPECT (desc.getVariable ("v2", strValue));
+	EXPECT (desc->getVariable ("v2", strValue));
 	EXPECT (strValue == "string");
-	EXPECT (desc.getVariable ("v3", strValue));
+	EXPECT (desc->getVariable ("v3", strValue));
 	EXPECT (strValue == "string");
-	EXPECT (desc.getVariable ("v4", value));
+	EXPECT (desc->getVariable ("v4", value));
 	EXPECT (value == 20.5);
-	EXPECT (desc.getVariable ("v5", value));
+	EXPECT (desc->getVariable ("v5", value));
 	EXPECT (value == 20.);
-	EXPECT (desc.getVariable ("v6", strValue));
+	EXPECT (desc->getVariable ("v6", strValue));
 	EXPECT (strValue == "");
 }
 
@@ -1402,23 +1402,23 @@ TEST_CASE (UIDescriptionJSONTests, Calculations)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		tagNodesUIDesc, static_cast<uint32_t> (strlen (tagNodesUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 	double value;
-	EXPECT (desc.calculateStringValue ("1", value));
+	EXPECT (desc->calculateStringValue ("1", value));
 	EXPECT (value == 1.);
-	EXPECT (desc.calculateStringValue ("1+1", value));
+	EXPECT (desc->calculateStringValue ("1+1", value));
 	EXPECT (value == 2.);
-	EXPECT (desc.calculateStringValue ("(1+1)*2", value));
+	EXPECT (desc->calculateStringValue ("(1+1)*2", value));
 	EXPECT (value == 4.);
-	EXPECT (desc.calculateStringValue ("(1+1)*2-(3/3 + (0.5+0.5))", value));
+	EXPECT (desc->calculateStringValue ("(1+1)*2-(3/3 + (0.5+0.5))", value));
 	EXPECT (value == 2.);
-	EXPECT (desc.calculateStringValue ("tag.t1 - 4", value));
+	EXPECT (desc->calculateStringValue ("tag.t1 - 4", value));
 	EXPECT (value == 1230.);
-	EXPECT (desc.calculateStringValue ("(1+5*3", value) == false);
-	EXPECT (desc.calculateStringValue ("tag.unknown - 4", value) == false);
-	EXPECT (desc.calculateStringValue ("var.unknown", value) == false);
-	EXPECT (desc.calculateStringValue ("unknown", value) == false);
+	EXPECT (desc->calculateStringValue ("(1+5*3", value) == false);
+	EXPECT (desc->calculateStringValue ("tag.unknown - 4", value) == false);
+	EXPECT (desc->calculateStringValue ("var.unknown", value) == false);
+	EXPECT (desc->calculateStringValue ("unknown", value) == false);
 }
 
 TEST_CASE (UIDescriptionJSONTests, WriteToStream)
@@ -1426,10 +1426,10 @@ TEST_CASE (UIDescriptionJSONTests, WriteToStream)
 	std::string str (withAllNodesUIDesc);
 	auto provider =
 		makeShared<MemoryContentProvider> (str.data (), static_cast<uint32_t> (str.size ()));
-	SaveUIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 	CMemoryStream outputStream (1024, 1024, false);
-	EXPECT (desc.saveToStream (outputStream, defaultSafeFlags, nullptr));
+	EXPECT (desc->saveToStream (outputStream, defaultSafeFlags, nullptr));
 	outputStream.end ();
 	std::string result (reinterpret_cast<const char*> (outputStream.getBuffer ()));
 	EXPECT (result.size () == str.size ());
@@ -1440,15 +1440,15 @@ TEST_CASE (UIDescriptionJSONTests, GetViewAttributes)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
-	auto attributes = desc.getViewAttributes ("view");
+	auto attributes = desc->getViewAttributes ("view");
 	EXPECT (attributes);
 	auto classAttr = attributes->getAttributeValue (UIViewCreator::kAttrClass);
 	EXPECT (classAttr);
 	EXPECT (*classAttr == "CViewContainer");
-	attributes = desc.getViewAttributes ("view not existing");
+	attributes = desc->getViewAttributes ("view not existing");
 	EXPECT (attributes == nullptr);
 }
 
@@ -1456,11 +1456,11 @@ TEST_CASE (UIDescriptionJSONTests, CollectTemplateViewNames)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	StringPtrList names;
-	desc.collectTemplateViewNames (names);
+	desc->collectTemplateViewNames (names);
 	EXPECT (names.size () == 1);
 	EXPECT (*names.front () == std::string ("view"));
 }
@@ -1469,16 +1469,16 @@ TEST_CASE (UIDescriptionJSONTests, DuplicateTemplate)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	StringPtrList names;
-	desc.collectTemplateViewNames (names);
-	EXPECT (desc.duplicateTemplate ("view not existing", "viewcopy") == false);
-	EXPECT (desc.duplicateTemplate ("view", "viewcopy"));
-	EXPECT (desc.addNewTemplate ("view", nullptr) == false);
+	desc->collectTemplateViewNames (names);
+	EXPECT (desc->duplicateTemplate ("view not existing", "viewcopy") == false);
+	EXPECT (desc->duplicateTemplate ("view", "viewcopy"));
+	EXPECT (desc->addNewTemplate ("view", nullptr) == false);
 	names.clear ();
-	desc.collectTemplateViewNames (names);
+	desc->collectTemplateViewNames (names);
 	EXPECT (names.size () == 2);
 	EXPECT (*names.front () == std::string ("view"));
 	EXPECT (*names.back () == std::string ("viewcopy"));
@@ -1488,13 +1488,13 @@ TEST_CASE (UIDescriptionJSONTests, ChangeTemplateName)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
-	EXPECT (desc.duplicateTemplate ("view", "viewcopy"));
-	EXPECT (desc.changeTemplateName ("viewcopy", "copyOfView"));
+	EXPECT (desc->duplicateTemplate ("view", "viewcopy"));
+	EXPECT (desc->changeTemplateName ("viewcopy", "copyOfView"));
 	StringPtrList names;
-	desc.collectTemplateViewNames (names);
+	desc->collectTemplateViewNames (names);
 	EXPECT (*names.back () == std::string ("copyOfView"));
 }
 
@@ -1502,13 +1502,13 @@ TEST_CASE (UIDescriptionJSONTests, GetTemplateNameFromView)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	auto controller = makeShared<Controller> ();
-	auto view = desc.createView ("view", controller);
+	auto view = desc->createView ("view", controller);
 	std::string name;
-	desc.getTemplateNameFromView (view, name);
+	desc->getTemplateNameFromView (*view.get (), name);
 	EXPECT (name == "view");
 }
 
@@ -1516,25 +1516,25 @@ TEST_CASE (UIDescriptionJSONTests, RemoveTemplate)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
-	EXPECT (desc.removeTemplate ("view which does not exist") == false);
-	EXPECT (desc.removeTemplate ("view"));
+	EXPECT (desc->removeTemplate ("view which does not exist") == false);
+	EXPECT (desc->removeTemplate ("view"));
 }
 
 TEST_CASE (UIDescriptionJSONTests, AddNewTemplate)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	auto a = makeShared<UIAttributes> ();
 	a->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
-	EXPECT (desc.addNewTemplate ("addNewTemplate", a));
+	EXPECT (desc->addNewTemplate ("addNewTemplate", a));
 	StringPtrList names;
-	desc.collectTemplateViewNames (names);
+	desc->collectTemplateViewNames (names);
 	EXPECT (*names.back () == std::string ("addNewTemplate"));
 }
 
@@ -1542,25 +1542,25 @@ TEST_CASE (UIDescriptionJSONTests, StoreRestoreViews)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	auto controller = makeShared<Controller> ();
-	auto view = desc.createView ("view", controller);
+	auto view = desc->createView ("view", controller);
 	EXPECT (view);
 
 	CMemoryStream memoryStream (1024, 1024, false);
 	std::list<SharedPointer<CView>> restoredView;
 
-	UIAttributes customAttributes;
-	customAttributes.setAttribute ("Test", "Value");
+	auto customAttributes = makeShared<UIAttributes> ();
+	customAttributes->setAttribute ("Test", "Value");
 
-	EXPECT (desc.storeViews ({view.cast<CViewContainer> ()->getView (0)}, memoryStream,
-							 shared (&customAttributes)));
+	EXPECT (desc->storeViews ({view.cast<CViewContainer> ()->getView (0)}, memoryStream,
+							  customAttributes));
 	memoryStream.rewind ();
 
 	SharedPointer<UIAttributes> customAttributesRestored;
-	EXPECT (desc.restoreViews (memoryStream, restoredView, &customAttributesRestored));
+	EXPECT (desc->restoreViews (memoryStream, restoredView, &customAttributesRestored));
 	EXPECT (customAttributesRestored);
 	EXPECT (*customAttributesRestored->getAttributeValue ("Test") == "Value");
 }
@@ -1569,42 +1569,42 @@ TEST_CASE (UIDescriptionJSONTests, StoreRestoreViewsAttached)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		restoreViewUIDesc, static_cast<uint32_t> (strlen (restoreViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	auto controller = makeShared<Controller> ();
-	auto view = desc.createView ("view", controller);
+	auto view = desc->createView ("view", controller);
 	EXPECT (view);
 
 	CMemoryStream memoryStream (1024, 1024, false);
 	std::list<SharedPointer<CView>> restoredView;
 
 	auto parentContainer = owned (new CViewContainer (CRect (0, 0, 10, 10)));
-	view->attached (parentContainer);
+	view->attached (*parentContainer.get ());
 	auto viewToRestore = SharedPointer<CView> (view.cast<CViewContainer> ()->getView (1));
 	viewToRestore = viewToRestore.cast<CViewContainer> ()->getView (0);
 
 	memoryStream.rewind ();
-	EXPECT (desc.storeViews ({viewToRestore}, memoryStream));
+	EXPECT (desc->storeViews ({viewToRestore}, memoryStream));
 	memoryStream.rewind ();
 	restoredView.clear ();
-	EXPECT (desc.restoreViews (memoryStream, restoredView));
-	view->removed (parentContainer);
+	EXPECT (desc->restoreViews (memoryStream, restoredView));
+	view->removed (*parentContainer.get ());
 }
 
 TEST_CASE (UIDescriptionJSONTests, UpdateViewDescription)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 	auto controller = makeShared<Controller> ();
-	auto view = desc.createView ("view", controller);
+	auto view = desc->createView ("view", controller);
 	EXPECT (view);
 	EXPECT (view->getTransparency () == false);
 	view->setTransparency (true);
-	desc.updateViewDescription ("view", view);
-	auto attr = desc.getViewAttributes ("view");
+	desc->updateViewDescription ("view", view);
+	auto attr = desc->getViewAttributes ("view");
 	bool value;
 	EXPECT (attr->getBooleanAttribute ("transparent", value));
 	EXPECT (value == true);
@@ -1614,14 +1614,14 @@ TEST_CASE (UIDescriptionJSONTests, CustomAttributes)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		createViewUIDesc, static_cast<uint32_t> (strlen (createViewUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
-	auto attr = desc.getCustomAttributes ("Test", false);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
+	auto attr = desc->getCustomAttributes ("Test", false);
 	EXPECT (attr == nullptr);
-	attr = desc.getCustomAttributes ("Test", true);
+	attr = desc->getCustomAttributes ("Test", true);
 	EXPECT (attr);
-	EXPECT (desc.getCustomAttributes ("Test", false) == attr);
-	EXPECT (desc.setCustomAttributes ("Test", nullptr) == false);
+	EXPECT (desc->getCustomAttributes ("Test", false) == attr);
+	EXPECT (desc->setCustomAttributes ("Test", nullptr) == false);
 }
 
 #ifndef _MSC_VER
@@ -1629,90 +1629,90 @@ TEST_CASE (UIDescriptionJSONTests, Listeners)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		completeExample, static_cast<uint32_t> (strlen (completeExample)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	DescriptionListenerMock mok (UIDescTestCase::TagChanged);
-	desc.registerListener (&mok);
+	desc->registerListener (&mok);
 
-	desc.changeControlTagString ("NewTag", "5", true);
+	desc->changeControlTagString ("NewTag", "5", true);
 	EXPECT (mok.callCount () == 1);
-	desc.changeControlTagString ("NewTag", "5", false);
+	desc->changeControlTagString ("NewTag", "5", false);
 	EXPECT (mok.callCount () == 2);
-	desc.changeTagName ("NewTag", "NewTagNew");
+	desc->changeTagName ("NewTag", "NewTagNew");
 	EXPECT (mok.callCount () == 3);
-	desc.removeTag ("NewTagNew");
+	desc->removeTag ("NewTagNew");
 	EXPECT (mok.callCount () == 4);
 
 	mok.setTestCase (UIDescTestCase::ColorChanged);
 	EXPECT (mok.callCount () == 0);
 
 	CColor newColor;
-	desc.changeColor ("NewColor", newColor);
+	desc->changeColor ("NewColor", newColor);
 	EXPECT (mok.callCount () == 1);
-	desc.changeColor ("NewColor", newColor);
+	desc->changeColor ("NewColor", newColor);
 	EXPECT (mok.callCount () == 2);
-	desc.changeColorName ("NewColor", "NewColorNew");
+	desc->changeColorName ("NewColor", "NewColorNew");
 	EXPECT (mok.callCount () == 3);
-	desc.removeColor ("NewColorNew");
+	desc->removeColor ("NewColorNew");
 	EXPECT (mok.callCount () == 4);
 
 	mok.setTestCase (UIDescTestCase::FontChanged);
 	EXPECT (mok.callCount () == 0);
 
 	auto font = makeShared<CFontDesc> ();
-	desc.changeFont ("NewFont", font);
+	desc->changeFont ("NewFont", font);
 	EXPECT (mok.callCount () == 1);
-	desc.changeFont ("NewFont", font);
+	desc->changeFont ("NewFont", font);
 	EXPECT (mok.callCount () == 2);
-	desc.changeFontName ("NewFont", "NewFontNew");
+	desc->changeFontName ("NewFont", "NewFontNew");
 	EXPECT (mok.callCount () == 3);
-	desc.changeAlternativeFontNames ("NewFontNew", "Hack, Menlo");
+	desc->changeAlternativeFontNames ("NewFontNew", "Hack, Menlo");
 	EXPECT (mok.callCount () == 4);
-	desc.removeFont ("NewFontNew");
+	desc->removeFont ("NewFontNew");
 	EXPECT (mok.callCount () == 5);
 
 	mok.setTestCase (UIDescTestCase::BitmapChanged);
 	EXPECT (mok.callCount () == 0);
 
 	auto bitmap = makeShared<CBitmap> (CPoint (10, 10));
-	desc.changeBitmap ("NewBitmap", "bitmappath");
+	desc->changeBitmap ("NewBitmap", "bitmappath");
 	EXPECT (mok.callCount () == 1);
-	desc.changeBitmap ("NewBitmap", "bitmappath");
+	desc->changeBitmap ("NewBitmap", "bitmappath");
 	EXPECT (mok.callCount () == 2);
-	desc.changeBitmapName ("NewBitmap", "NewBitmapNew");
+	desc->changeBitmapName ("NewBitmap", "NewBitmapNew");
 	EXPECT (mok.callCount () == 3);
-	desc.removeBitmap ("NewBitmapNew");
+	desc->removeBitmap ("NewBitmapNew");
 	EXPECT (mok.callCount () == 4);
 
 	mok.setTestCase (UIDescTestCase::GradientChanged);
 	EXPECT (mok.callCount () == 0);
 
 	auto gradient = CGradient::create (0., 0., newColor, newColor);
-	desc.changeGradient ("NewGradient", gradient);
+	desc->changeGradient ("NewGradient", gradient);
 	EXPECT (mok.callCount () == 1);
-	desc.changeGradient ("NewGradient", gradient);
+	desc->changeGradient ("NewGradient", gradient);
 	EXPECT (mok.callCount () == 2);
-	desc.changeGradientName ("NewGradient", "NewGradientNew");
+	desc->changeGradientName ("NewGradient", "NewGradientNew");
 	EXPECT (mok.callCount () == 3);
-	desc.removeGradient ("NewGradientNew");
+	desc->removeGradient ("NewGradientNew");
 	EXPECT (mok.callCount () == 4);
 
 	mok.setTestCase (UIDescTestCase::TemplateChanged);
 	EXPECT (mok.callCount () == 0);
 
-	desc.addNewTemplate ("NewTemplate", makeShared<UIAttributes> ());
+	desc->addNewTemplate ("NewTemplate", makeShared<UIAttributes> ());
 	EXPECT (mok.callCount () == 1);
-	desc.changeTemplateName ("NewTemplate", "NewTemplateNew");
+	desc->changeTemplateName ("NewTemplate", "NewTemplateNew");
 	EXPECT (mok.callCount () == 2);
-	desc.duplicateTemplate ("NewTemplateNew", "NewTemplateNewDup");
+	desc->duplicateTemplate ("NewTemplateNew", "NewTemplateNewDup");
 	EXPECT (mok.callCount () == 3);
-	desc.removeTemplate ("NewTemplateNew");
+	desc->removeTemplate ("NewTemplateNew");
 	EXPECT (mok.callCount () == 4);
-	desc.removeTemplate ("NewTemplateNewDup");
+	desc->removeTemplate ("NewTemplateNewDup");
 	EXPECT (mok.callCount () == 5);
 
-	desc.unregisterListener (&mok);
+	desc->unregisterListener (&mok);
 }
 #endif // _MSC_VER
 
@@ -1720,16 +1720,16 @@ TEST_CASE (UIDescriptionJSONTests, FocusSettings)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	FocusDrawingSettings fd;
 	fd.enabled = true;
 	fd.width = 1.5;
 	fd.colorName = "FocusColor";
 
-	desc.setFocusDrawingSettings (fd);
-	auto fd2 = desc.getFocusDrawingSettings ();
+	desc->setFocusDrawingSettings (fd);
+	auto fd2 = desc->getFocusDrawingSettings ();
 	EXPECT (!(fd != fd2));
 }
 
@@ -1737,34 +1737,34 @@ TEST_CASE (UIDescriptionJSONTests, SharedResources)
 {
 	auto provider = makeShared<MemoryContentProvider> (
 		emptyUIDesc, static_cast<uint32_t> (strlen (emptyUIDesc)));
-	UIDescription desc (provider);
-	EXPECT (desc.parse () == true);
+	auto desc = UIDescription::make (provider);
+	EXPECT (desc->parse () == true);
 
 	CColor color1;
 	CColor color2;
-	EXPECT (desc.getColor ("c1", color1) == false);
-	EXPECT (desc.getFont ("f1") == nullptr);
-	EXPECT (desc.getGradient ("g1") == nullptr);
-	EXPECT (desc.getBitmap ("b1") == nullptr);
+	EXPECT (desc->getColor ("c1", color1) == false);
+	EXPECT (desc->getFont ("f1") == nullptr);
+	EXPECT (desc->getGradient ("g1") == nullptr);
+	EXPECT (desc->getBitmap ("b1") == nullptr);
 
 	auto resProvider = makeShared<MemoryContentProvider> (
 		sharedResourcesUIDesc, static_cast<uint32_t> (strlen (sharedResourcesUIDesc)));
-	UIDescription resDesc (resProvider);
-	EXPECT (resDesc.parse () == true);
+	auto resDesc = UIDescription::make (resProvider);
+	EXPECT (resDesc->parse () == true);
 
-	desc.setSharedResources (shared (&resDesc));
-	EXPECT (desc.getSharedResources ().get () == &resDesc);
-	EXPECT (desc.getColor ("c1", color1) == true);
-	EXPECT (resDesc.getColor ("c1", color2) == true);
+	desc->setSharedResources (resDesc);
+	EXPECT (desc->getSharedResources () == resDesc);
+	EXPECT (desc->getColor ("c1", color1) == true);
+	EXPECT (resDesc->getColor ("c1", color2) == true);
 	EXPECT (color1 == color2);
-	EXPECT (desc.getFont ("f1") != nullptr);
-	EXPECT (desc.getFont ("f1") == resDesc.getFont ("f1"));
-	EXPECT (desc.getGradient ("g1") != nullptr);
-	EXPECT (desc.getGradient ("g1") == resDesc.getGradient ("g1"));
-	EXPECT (desc.getBitmap ("b1") != nullptr);
-	EXPECT (desc.getBitmap ("b1") == resDesc.getBitmap ("b1"));
+	EXPECT (desc->getFont ("f1") != nullptr);
+	EXPECT (desc->getFont ("f1") == resDesc->getFont ("f1"));
+	EXPECT (desc->getGradient ("g1") != nullptr);
+	EXPECT (desc->getGradient ("g1") == resDesc->getGradient ("g1"));
+	EXPECT (desc->getBitmap ("b1") != nullptr);
+	EXPECT (desc->getBitmap ("b1") == resDesc->getBitmap ("b1"));
 
-	desc.setSharedResources (nullptr);
+	desc->setSharedResources (nullptr);
 }
 
 #if 0

@@ -82,6 +82,27 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 };
 
 //------------------------------------------------------------------------
+SharedPointer<UIDescription> UIDescription::make (const CResourceDescription& uidescFile,
+												  const SharedPointer<IViewFactory>& viewFactory)
+{
+	auto instance = makeShared<UIDescription> ();
+	if (instance->init (uidescFile, viewFactory))
+		return instance;
+	return {};
+}
+
+//------------------------------------------------------------------------
+SharedPointer<UIDescription>
+	UIDescription::make (const SharedPointer<IContentProvider>& contentProvider,
+						 const SharedPointer<IViewFactory>& viewFactory)
+{
+	auto instance = makeShared<UIDescription> ();
+	if (instance->init (contentProvider, viewFactory))
+		return instance;
+	return {};
+}
+
+//------------------------------------------------------------------------
 UIDescription::UIDescription () { impl = std::unique_ptr<Impl> (new Impl); }
 
 //-----------------------------------------------------------------------------

@@ -12,16 +12,6 @@
 namespace VSTGUI {
 namespace UIDescriptionTesting {
 
-struct SaveUIDescription : public UIDescription
-{
-	SaveUIDescription (const SharedPointer<IContentProvider>& xmlContentProvider)
-	: UIDescription (xmlContentProvider)
-	{
-	}
-
-	using UIDescription::saveToStream;
-};
-
 struct Controller : public IController,
 					public NonAtomicReferenceCounted
 {

@@ -80,32 +80,32 @@ int main (int argv, char* argc[])
 	printf ("Copy %s to %s%s\n", inputPath.data (), outputPath.data (),
 			noCompression ? " [uncompressed]" : "[compressed]");
 
-	CompressedUIDescription uiDesc (CResourceDescription (inputPath.data ()));
-	if (!uiDesc.parse ())
+	auto uiDesc = CompressedUIDescription::make (CResourceDescription (inputPath.data ()));
+	if (!uiDesc->parse ())
 	{
 		printAndTerminate ("Parsing failed!");
 	}
 	int32_t flags = UIDescription::kWriteImagesIntoUIDescFile;
 	if (noCompression)
 	{
-		if (inputPath == outputPath && uiDesc.getOriginalIsCompressed () == false)
+		if (inputPath == outputPath && uiDesc->getOriginalIsCompressed () == false)
 			return 0;
 
-		if (!uiDesc.UIDescription::save (outputPath.data (), flags))
+		if (!uiDesc->UIDescription::save (outputPath.data (), flags))
 		{
 			printAndTerminate ("saving failed");
 		}
 	}
 	else
 	{
-		if (inputPath == outputPath && uiDesc.getOriginalIsCompressed () == true)
+		if (inputPath == outputPath && uiDesc->getOriginalIsCompressed () == true)
 			return 0;
 
 		flags |= CompressedUIDescription::kNoPlainUIDescFileBackup |
 				 CompressedUIDescription::kForceWriteCompressedDesc |
 				 CompressedUIDescription::kDoNotVerifyImageData;
-		uiDesc.setCompressionLevel (compressionLevel);
-		if (!uiDesc.save (outputPath.data (), flags))
+		uiDesc->setCompressionLevel (compressionLevel);
+		if (!uiDesc->save (outputPath.data (), flags))
 		{
 			printAndTerminate ("saving failed");
 		}

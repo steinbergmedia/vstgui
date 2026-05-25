@@ -119,11 +119,10 @@ bool SharedUIResources::load () const
 		if (Detail::getApplicationPlatformAccess ()
 		        ->getConfiguration ()
 		        .useCompressedUIDescriptionFiles)
-			description = makeShared<CompressedUIDescription> ();
+			description = CompressedUIDescription::make (filename);
 		else
-			description = makeShared<UIDescription> ();
-		if (!description->init (filename))
-			return false;
+			description = UIDescription::make (filename);
+		vstgui_assert (description, "unexpected");
 		if (!description->parse ())
 		{
 #if VSTGUI_LIVE_EDITING

@@ -95,9 +95,7 @@ public:
 		make (const SharedPointer<UIViewSwitchContainer>& viewSwitch,
 			  const IUIDescription& uiDescription, const SharedPointer<IController>& uiController);
 
-	UIDescriptionViewSwitchController (const SharedPointer<UIViewSwitchContainer>& viewSwitch,
-									   const IUIDescription& uiDescription,
-									   const SharedPointer<IController>& uiController);
+	UIDescriptionViewSwitchController () = delete;
 
 	SharedPointer<CView> createViewForIndex (int32_t index) override;
 	void switchContainerAttached () override;
@@ -109,6 +107,12 @@ public:
 	void setSwitchControlTag (int32_t tag) { switchControlTag = tag; }
 	int32_t getSwitchControlTag () const { return switchControlTag; }
 protected:
+	VSTGUI_SHAREDPTR_FRIEND (UIDescriptionViewSwitchController)
+
+	UIDescriptionViewSwitchController (const SharedPointer<UIViewSwitchContainer>& viewSwitch,
+									   const IUIDescription& uiDescription,
+									   const SharedPointer<IController>& uiController);
+
 	void valueChanged (CControl& pControl) override;
 
 	const IUIDescription& uiDescription;

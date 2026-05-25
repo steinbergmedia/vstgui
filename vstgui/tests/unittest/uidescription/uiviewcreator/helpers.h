@@ -121,12 +121,12 @@ inline void testPossibleValues (const IdStringPtr className, const std::string& 
 								const IUIDescription& desc,
 								UIViewFactory::StringList expectedValues)
 {
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, className);
-	auto view = factory.createView (a, desc);
+	auto view = factory->createView (a, desc);
 	UIViewFactory::StringPtrList values;
-	EXPECT (factory.getPossibleAttributeListValues (*view.get (), attrName, values));
+	EXPECT (factory->getPossibleAttributeListValues (*view.get (), attrName, values));
 	for (auto& v : expectedValues)
 	{
 		EXPECT (std::find_if (values.begin (), values.end (),
@@ -140,12 +140,12 @@ inline void testPossibleValues (const IdStringPtr className, const std::string& 
 inline void testMinMaxValues (const IdStringPtr className, const std::string& attrName,
 							  const IUIDescription& desc, double minValue, double maxValue)
 {
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, className);
-	auto view = factory.createView (a, desc);
+	auto view = factory->createView (a, desc);
 	double min, max;
-	EXPECT (factory.getAttributeValueRange (*view.get (), attrName, min, max));
+	EXPECT (factory->getAttributeValueRange (*view.get (), attrName, min, max));
 	EXPECT (min == minValue);
 	EXPECT (max == maxValue);
 }
@@ -155,19 +155,19 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName,
 					const IdStringPtr attrValue, const IUIDescription& desc, const Proc& proc,
 					bool disableRememberAttributes = false)
 {
-	UIViewFactory factory;
-	factory.disableRememberAttributes = disableRememberAttributes;
+	auto factory = makeShared<UIViewFactory> ();
+	factory->disableRememberAttributes = disableRememberAttributes;
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewName);
 	a.setAttribute (attrName, attrValue);
 
-	auto v = factory.createView (a, desc);
+	auto v = factory->createView (a, desc);
 	auto view = v.cast<ViewClass> ();
 	EXPECT (view);
 	EXPECT (proc (view.get ()));
 
 	UIAttributes a2;
-	factory.getAttributesForView (*view.get (), desc, a2);
+	factory->getAttributesForView (*view.get (), desc, a2);
 	auto str = a2.getAttributeValue (attrName);
 	EXPECT (str);
 	EXPECT (*str == attrValue);
@@ -177,18 +177,18 @@ template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName, int32_t attrValue,
 					const IUIDescription& desc, const Proc& proc)
 {
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewName);
 	a.setIntegerAttribute (attrName, attrValue);
 
-	auto v = factory.createView (a, desc);
+	auto v = factory->createView (a, desc);
 	auto view = v.cast<ViewClass> ();
 	EXPECT (view);
 	EXPECT (proc (view.get ()));
 
 	UIAttributes a2;
-	factory.getAttributesForView (*view.get (), desc, a2);
+	factory->getAttributesForView (*view.get (), desc, a2);
 	int32_t value;
 	a2.getIntegerAttribute (attrName, value);
 	EXPECT (value == attrValue);
@@ -198,18 +198,18 @@ template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName, bool attrValue,
 					const IUIDescription& desc, const Proc& proc)
 {
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewName);
 	a.setBooleanAttribute (attrName, attrValue);
 
-	auto v = factory.createView (a, desc);
+	auto v = factory->createView (a, desc);
 	auto view = v.cast<ViewClass> ();
 	EXPECT (view);
 	EXPECT (proc (view.get ()));
 
 	UIAttributes a2;
-	factory.getAttributesForView (*view.get (), desc, a2);
+	factory->getAttributesForView (*view.get (), desc, a2);
 	bool value;
 	a2.getBooleanAttribute (attrName, value);
 	EXPECT (value == attrValue);
@@ -219,18 +219,18 @@ template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName, double attrValue,
 					const IUIDescription& desc, const Proc& proc)
 {
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewName);
 	a.setDoubleAttribute (attrName, attrValue);
 
-	auto v = factory.createView (a, desc);
+	auto v = factory->createView (a, desc);
 	auto view = v.cast<ViewClass> ();
 	EXPECT (view);
 	EXPECT (proc (view.get ()));
 
 	UIAttributes a2;
-	factory.getAttributesForView (*view.get (), desc, a2);
+	factory->getAttributesForView (*view.get (), desc, a2);
 	double value;
 	a2.getDoubleAttribute (attrName, value);
 	EXPECT (value == attrValue);
@@ -240,18 +240,18 @@ template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName, const CRect& attrValue,
 					const IUIDescription& desc, const Proc& proc)
 {
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewName);
 	a.setRectAttribute (attrName, attrValue);
 
-	auto v = factory.createView (a, desc);
+	auto v = factory->createView (a, desc);
 	auto view = v.cast<ViewClass> ();
 	EXPECT (view);
 	EXPECT (proc (view.get ()));
 
 	UIAttributes a2;
-	factory.getAttributesForView (*view.get (), desc, a2);
+	factory->getAttributesForView (*view.get (), desc, a2);
 	CRect value;
 	a2.getRectAttribute (attrName, value);
 	EXPECT (value == attrValue);
@@ -261,18 +261,18 @@ template<typename ViewClass, typename Proc>
 void testAttribute (const IdStringPtr viewName, const std::string& attrName,
 					const CPoint& attrValue, const IUIDescription& desc, const Proc& proc)
 {
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewName);
 	a.setPointAttribute (attrName, attrValue);
 
-	auto v = factory.createView (a, desc);
+	auto v = factory->createView (a, desc);
 	auto view = v.cast<ViewClass> ();
 	EXPECT (view);
 	EXPECT (proc (view.get ()));
 
 	UIAttributes a2;
-	factory.getAttributesForView (*view.get (), desc, a2);
+	factory->getAttributesForView (*view.get (), desc, a2);
 	CPoint value;
 	a2.getPointAttribute (attrName, value);
 	EXPECT (value == attrValue);

@@ -258,13 +258,13 @@ TEST_CASE (CSegmentButtonTest, HorizontalSegmentSizeCalculation)
 	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
-	parent->attached (root);
+	parent->attached (*root.get ());
 	EXPECT (b->getSegments ()[0].rect == CRect (0, 0, 20, 100));
 	EXPECT (b->getSegments ()[1].rect == CRect (20, 0, 40, 100));
 	EXPECT (b->getSegments ()[2].rect == CRect (40, 0, 60, 100));
 	EXPECT (b->getSegments ()[3].rect == CRect (60, 0, 80, 100));
 	EXPECT (b->getSegments ()[4].rect == CRect (80, 0, 100, 100));
-	parent->removed (root);
+	parent->removed (*root.get ());
 }
 
 TEST_CASE (CSegmentButtonTest, VerticalSegmentSizeCalculation)
@@ -281,13 +281,13 @@ TEST_CASE (CSegmentButtonTest, VerticalSegmentSizeCalculation)
 	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
-	parent->attached (root);
+	parent->attached (*root.get ());
 	EXPECT (b->getSegments ()[0].rect == CRect (0, 0, 100, 20));
 	EXPECT (b->getSegments ()[1].rect == CRect (0, 20, 100, 40));
 	EXPECT (b->getSegments ()[2].rect == CRect (0, 40, 100, 60));
 	EXPECT (b->getSegments ()[3].rect == CRect (0, 60, 100, 80));
 	EXPECT (b->getSegments ()[4].rect == CRect (0, 80, 100, 100));
-	parent->removed (root);
+	parent->removed (*root.get ());
 }
 
 TEST_CASE (CSegmentButtonTest, UpdateViewSize)
@@ -304,7 +304,7 @@ TEST_CASE (CSegmentButtonTest, UpdateViewSize)
 	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
-	parent->attached (root);
+	parent->attached (*root.get ());
 	EXPECT (b->getSegments ()[0].rect == CRect (0, 0, 10, 100));
 	EXPECT (b->getSegments ()[1].rect == CRect (10, 0, 20, 100));
 	EXPECT (b->getSegments ()[2].rect == CRect (20, 0, 30, 100));
@@ -316,7 +316,7 @@ TEST_CASE (CSegmentButtonTest, UpdateViewSize)
 	EXPECT (b->getSegments ()[2].rect == CRect (40, 0, 60, 100));
 	EXPECT (b->getSegments ()[3].rect == CRect (60, 0, 80, 100));
 	EXPECT (b->getSegments ()[4].rect == CRect (80, 0, 100, 100));
-	parent->removed (root);
+	parent->removed (*root.get ());
 }
 
 TEST_CASE (CSegmentButtonTest, MouseDownEvent)
@@ -333,7 +333,7 @@ TEST_CASE (CSegmentButtonTest, MouseDownEvent)
 	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
-	parent->attached (root);
+	parent->attached (*root.get ());
 	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (b, {0., 0.}, MouseButton::Left),
 			   EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
 	EXPECT_EQ (b->getSelectedSegment (), 0);
@@ -350,7 +350,7 @@ TEST_CASE (CSegmentButtonTest, MouseDownEvent)
 			   EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
 	EXPECT_EQ (b->getSelectedSegment (), 4);
 
-	parent->removed (root);
+	parent->removed (*root.get ());
 }
 
 TEST_CASE (CSegmentButtonTest, MouseDownEventWithManySegments)
@@ -368,7 +368,7 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventWithManySegments)
 	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
-	parent->attached (root);
+	parent->attached (*root.get ());
 
 	// Select the e.g. 20th segment
 	constexpr auto kSelectedSegment = 20;
@@ -377,7 +377,7 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventWithManySegments)
 			   EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
 	EXPECT_EQ (b->getSelectedSegment (), kSelectedSegment);
 
-	parent->removed (root);
+	parent->removed (*root.get ());
 }
 
 TEST_CASE (CSegmentButtonTest, MouseDownEventOnLastSegment)
@@ -396,7 +396,7 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventOnLastSegment)
 	auto parent = makeShared<CViewContainer> (r);
 	root->addSubview (parent);
 	parent->addSubview (b);
-	parent->attached (root);
+	parent->attached (*root.get ());
 
 	// Select the last segment
 	constexpr auto kSelectedSegment = numSegments - 1;
@@ -406,7 +406,7 @@ TEST_CASE (CSegmentButtonTest, MouseDownEventOnLastSegment)
 			   EventConsumeState::Handled | MouseDownUpMoveEvent::IgnoreFollowUpEventsMask);
 	EXPECT_EQ (b->getSelectedSegment (), kSelectedSegment);
 
-	parent->removed (root);
+	parent->removed (*root.get ());
 }
 
 TEST_CASE (CSegmentButtonTest, FocusPathSetting)

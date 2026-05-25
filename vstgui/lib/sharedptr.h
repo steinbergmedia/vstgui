@@ -59,6 +59,11 @@ class ReferenceCounted : virtual public IReference
 {
 public:
 	virtual void beforeDelete () {}
+
+	int32_t getNbReference () const
+	{
+		return static_cast<int32_t> (shared_from_this ().use_count ()) - 1;
+	}
 };
 
 //------------------------------------------------------------------------

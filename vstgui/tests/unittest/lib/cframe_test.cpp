@@ -157,7 +157,7 @@ TEST_CASE (CFrameTest, MouseEnterExit)
 	v2->setMouseableArea (r2);
 	frame->addSubview (v1);
 	frame->addSubview (v2);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	dispatchMouseEvent<MouseMoveEvent> (frame, {30., 30.});
 	EXPECT (observer.enteredViews.size () == 0);
 	EXPECT (observer.exitedViews.size () == 0);
@@ -191,7 +191,7 @@ TEST_CASE (CFrameTest, MouseEnterExitInContainer)
 	container->addSubview (container2);
 	container2->addSubview (v1);
 	container2->addSubview (v2);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	dispatchMouseEvent<MouseMoveEvent> (frame, {90., 90.});
 	EXPECT (observer.enteredViews.size () == 0);
 	EXPECT (observer.exitedViews.size () == 0);
@@ -292,7 +292,7 @@ TEST_CASE (CFrameTest, MouseMoveInContainer)
 	auto testView = makeShared<TestView> (CRect {10, 10, 60, 60});
 	container->addSubview (testView);
 
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 
 	EXPECT_EQ (dispatchMouseEvent<MouseMoveEvent> (frame, {30., 30.}, MouseButton::None),
 			   EventConsumeState::NotHandled);
@@ -319,7 +319,7 @@ TEST_CASE (CFrameTest, RemoveViewWhileMouseInside)
 	frame->registerMouseObserver (&observer);
 	auto v1 = makeShared<View> ();
 	frame->addSubview (v1);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	dispatchMouseEvent<MouseMoveEvent> (frame, {5., 5.});
 	EXPECT (contains (observer.enteredViews, v1));
 	observer.reset ();
@@ -372,7 +372,7 @@ TEST_CASE (CFrameTest, KeyDownEvent)
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 	auto view = makeShared<View> ();
 	frame->addSubview (view);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	frame->onActivate (true);
 	KeyboardEvent event;
 	event.type = EventType::KeyDown;
@@ -414,7 +414,7 @@ TEST_CASE (CFrameTest, KeyUpEvent)
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 	auto view = makeShared<View> ();
 	frame->addSubview (view);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	frame->onActivate (true);
 	KeyboardEvent event;
 	event.type = EventType::KeyUp;
@@ -447,7 +447,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 	auto view = makeShared<View> ();
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	frame->addSubview (view);
 	frame->onActivate (true);
 	EXPECT (frame->getFocusView () == nullptr);
@@ -498,7 +498,7 @@ TEST_CASE (CFrameTest, AdvanceNextFocusViewInModalView)
 {
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
 	auto view = makeShared<View> ();
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	auto modalSession = frame->beginModalViewSession (view);
 	EXPECT (frame->getFocusView () == nullptr);
 	frame->onActivate (true);
@@ -545,7 +545,7 @@ TEST_CASE (CFrameTest, GetViewAtModalView)
 	auto container = makeShared<CViewContainer> (CRect {0., 0., 20., 20.});
 	auto view = makeShared<View> ();
 	container->addSubview (view);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	auto modalSession = frame->beginModalViewSession (container);
 	EXPECT (frame->getViewAt (CPoint (1, 1)) == container);
 	EXPECT (frame->getViewAt (CPoint (1, 1), GetViewOptions (GetViewOptions::kDeep)) == view);
@@ -562,7 +562,7 @@ TEST_CASE (CFrameTest, GetContainerAtModalView)
 	container->setMouseableArea (r);
 	auto container2 = makeShared<CViewContainer> (CRect {0., 0., 20., 20.});
 	container->addSubview (container2);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	EXPECT (frame->getContainerAt (CPoint (1, 1)) == frame);
 	auto modalSession = frame->beginModalViewSession (container);
 	EXPECT (frame->getContainerAt (CPoint (1, 1), GetViewOptions (GetViewOptions::kNone)) ==
@@ -581,7 +581,7 @@ TEST_CASE (CFrameTest, MouseDownModalView)
 	auto container = makeShared<CViewContainer> (CRect {0., 0., 20., 20.});
 	auto view1 = makeShared<View> ();
 	container->addSubview (view1);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	auto modalSession = frame->beginModalViewSession (container);
 	EXPECT_EQ (dispatchMouseEvent<MouseDownEvent> (frame, {80., 80.}, MouseButton::Left),
 			   EventConsumeState::NotHandled);
@@ -602,7 +602,7 @@ TEST_CASE (CFrameTest, Activate)
 	view2->setWantsFocus (true);
 	frame->addSubview (view);
 	frame->addSubview (view2);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	EXPECT (frame->getFocusView () == nullptr);
 	frame->onActivate (false);
 	EXPECT (frame->getFocusView () == nullptr);
@@ -621,7 +621,7 @@ TEST_CASE (CFrameTest, KeyboardHook)
 	EXPECT (hook.keyDownCalled == false);
 
 	auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 	frame->registerKeyboardHook (&hook);
 	KeyboardEvent event;
 	event.type = EventType::KeyDown;

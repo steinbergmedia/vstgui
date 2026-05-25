@@ -52,16 +52,16 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaIndex)
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto viewSwitch = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	viewSwitch->setAnimationTime (0);
-	auto controller = makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
+	auto controller = UIDescriptionViewSwitchController::make (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1,v2");
 	EXPECT (container->addSubview (viewSwitch));
-	container->attached (rootView);
+	container->attached (*rootView.get ());
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);
 	EXPECT (viewSwitch->getView (0).cast<View1> ());
 	viewSwitch->setCurrentViewIndex (1);
 	EXPECT (viewSwitch->getView (0).cast<View2> ());
-	container->removed (rootView);
+	container->removed (*rootView.get ());
 }
 
 TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaControl)
@@ -73,17 +73,17 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, SwitchViaControl)
 	viewSwitch->setAnimationTime (0);
 	auto control = makeShared<COnOffButton> (CRect (0, 0, 0, 0));
 	control->setTag (1);
-	auto controller = makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
+	auto controller = UIDescriptionViewSwitchController::make (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1,v2");
 	controller->setSwitchControlTag (1);
 	EXPECT (container->addSubview (control));
 	EXPECT (container->addSubview (viewSwitch));
-	container->attached (rootView);
+	container->attached (*rootView.get ());
 	EXPECT (viewSwitch->getView (0).cast<View1> ());
 	control->setValue (1.f);
 	control->valueChanged ();
 	EXPECT (viewSwitch->getView (0).cast<View2> ());
-	container->removed (rootView);
+	container->removed (*rootView.get ());
 }
 
 TEST_CASE (UIDescriptionViewSwitchControllerTest, AutosizeAll)
@@ -92,16 +92,16 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, AutosizeAll)
 	auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto viewSwitch = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
-	auto controller = makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
+	auto controller = UIDescriptionViewSwitchController::make (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v3");
 	EXPECT (container->addSubview (viewSwitch));
-	container->attached (rootView);
+	container->attached (*rootView.get ());
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);
 	auto view = viewSwitch->getView (0);
 	EXPECT (view.cast<View3> ());
 	EXPECT (view->getViewSize () == container->getViewSize ());
-	container->removed (rootView);
+	container->removed (*rootView.get ());
 }
 
 TEST_CASE (UIDescriptionViewSwitchControllerTest, NoAnimation)
@@ -111,14 +111,14 @@ TEST_CASE (UIDescriptionViewSwitchControllerTest, NoAnimation)
 	auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 	auto viewSwitch = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	viewSwitch->setAnimationTime (0);
-	auto controller = makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDesc, nullptr);
+	auto controller = UIDescriptionViewSwitchController::make (viewSwitch, uiDesc, nullptr);
 	controller->setTemplateNames ("v1");
 	EXPECT (container->addSubview (viewSwitch));
-	container->attached (rootView);
+	container->attached (*rootView.get ());
 	EXPECT (viewSwitch->getView (0) == nullptr);
 	viewSwitch->setCurrentViewIndex (0);
 	EXPECT (viewSwitch->getView (0).cast<View1> ());
-	container->removed (rootView);
+	container->removed (*rootView.get ());
 }
 
 } // VSTGUI

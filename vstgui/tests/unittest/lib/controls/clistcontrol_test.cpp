@@ -35,7 +35,7 @@ static SharedPointer<CScrollView> createScrollViewAndEmbedListControl (
 								 listControl->getViewSize (), CScrollView::kVerticalScrollbar);
 	scrollView->addSubview (listControl);
 	parent->addSubview (scrollView);
-	scrollView->attached (parent);
+	scrollView->attached (*parent.get ());
 	return scrollView;
 }
 
@@ -264,7 +264,7 @@ TEST_CASE (CListControlTest, PageUp)
 	EXPECT (event.consumed == true);
 	EXPECT (listControl->getValue () == 0.f);
 
-	scrollView->removed (parent);
+	scrollView->removed (*parent.get ());
 	parent->removeAll ();
 }
 
@@ -295,7 +295,7 @@ TEST_CASE (CListControlTest, PageDown)
 	EXPECT (event.consumed == true);
 	EXPECT (listControl->getValue () == 30.f);
 
-	scrollView->removed (parent);
+	scrollView->removed (*parent.get ());
 	parent->removeAll ();
 }
 

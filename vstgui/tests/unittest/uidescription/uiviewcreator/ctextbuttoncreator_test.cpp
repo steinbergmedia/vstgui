@@ -167,12 +167,12 @@ TEST_CASE (CTextButtonCreatorTest, LegacyGradient)
 	auto defTB = owned (new CTextButton (CRect (0, 0, 100, 20), nullptr, -1, ""));
 
 	DummyUIDescription uidesc;
-	UIViewFactory factory;
+	auto factory = makeShared<UIViewFactory> ();
 	UIAttributes a;
 	a.setAttribute (kAttrClass, kCTextButton);
 	a.setAttribute (kAttrGradientStartColor, kColorName);
 
-	auto v = factory.createView (a, uidesc);
+	auto v = factory->createView (a, uidesc);
 	auto view = v.cast<CTextButton> ();
 	EXPECT (view);
 	EXPECT (*view->getGradient ().get () == *defTB->getGradient ().get ());
@@ -180,7 +180,7 @@ TEST_CASE (CTextButtonCreatorTest, LegacyGradient)
 
 	a.setAttribute (kAttrGradientStartColorHighlighted, kColorName);
 
-	v = factory.createView (a, uidesc);
+	v = factory->createView (a, uidesc);
 	view = v.cast<CTextButton> ();
 	EXPECT (view);
 	EXPECT (*view->getGradient ().get () == *defTB->getGradient ().get ());
@@ -188,7 +188,7 @@ TEST_CASE (CTextButtonCreatorTest, LegacyGradient)
 
 	a.setAttribute (kAttrGradientEndColor, kColorName);
 
-	v = factory.createView (a, uidesc);
+	v = factory->createView (a, uidesc);
 	view = v.cast<CTextButton> ();
 	EXPECT (view);
 	EXPECT (*view->getGradient ().get () == *defTB->getGradient ().get ());
@@ -196,14 +196,14 @@ TEST_CASE (CTextButtonCreatorTest, LegacyGradient)
 
 	a.setAttribute (kAttrGradientEndColorHighlighted, kColorName);
 
-	v = factory.createView (a, uidesc);
+	v = factory->createView (a, uidesc);
 	view = v.cast<CTextButton> ();
 	EXPECT (view);
 	EXPECT (*view->getGradient ().get () != *defTB->getGradient ().get ());
 	EXPECT (*view->getGradientHighlighted ().get () != *defTB->getGradientHighlighted ().get ());
 
 	UIAttributes a2;
-	factory.getAttributesForView (*view.get (), uidesc, a2);
+	factory->getAttributesForView (*view.get (), uidesc, a2);
 	auto str = a2.getAttributeValue (kAttrGradient);
 	EXPECT (str);
 	str = a2.getAttributeValue (kAttrGradientHighlighted);

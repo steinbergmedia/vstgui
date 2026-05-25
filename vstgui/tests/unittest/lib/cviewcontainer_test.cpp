@@ -154,8 +154,8 @@ TEST_CASE (CViewContainerTest, AddView)
 	EXPECT (container->addSubview (view));
 	EXPECT (container->addSubview (view2));
 
-	EXPECT (container->isChild (view));
-	EXPECT (container->isChild (view2));
+	EXPECT (container->isChild (*view.get ()));
+	EXPECT (container->isChild (*view2.get ()));
 }
 
 TEST_CASE (CViewContainerTest, AddViewTwice)
@@ -202,8 +202,8 @@ TEST_CASE (CViewContainerTest, RemoveView)
 	container->addSubview (view2);
 	container->removeSubview (view);
 
-	EXPECT (container->isChild (view) == false)
-	EXPECT (container->isChild (view2))
+	EXPECT (container->isChild (*view.get ()) == false)
+	EXPECT (container->isChild (*view2.get ()))
 }
 
 TEST_CASE (CViewContainerTest, RemoveAllViews)
@@ -217,8 +217,8 @@ TEST_CASE (CViewContainerTest, RemoveAllViews)
 	container->addSubview (view2);
 	container->removeAll ();
 
-	EXPECT (container->isChild (view) == false)
-	EXPECT (container->isChild (view2) == false)
+	EXPECT (container->isChild (*view.get ()) == false)
+	EXPECT (container->isChild (*view2.get ()) == false)
 	EXPECT (container->hasChildren () == false)
 }
 
@@ -239,7 +239,7 @@ TEST_CASE (CViewContainerTest, AdvanceNextFocusView)
 	container->addSubview (view2);
 	container->addSubview (view3);
 	frame->addSubview (container);
-	frame->attached (frame);
+	frame->attached (*frame.get ());
 
 	EXPECT (container->advanceNextFocusView (nullptr, true) == true)
 	EXPECT (frame->getFocusView () == view3)
@@ -247,7 +247,7 @@ TEST_CASE (CViewContainerTest, AdvanceNextFocusView)
 	frame->setFocusView (nullptr);
 	EXPECT (container->advanceNextFocusView (nullptr) == true)
 	EXPECT (frame->getFocusView () == view1)
-	frame->removed (frame);
+	frame->removed (*frame.get ());
 	frame->close ();
 }
 

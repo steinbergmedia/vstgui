@@ -32,13 +32,11 @@ protected:
 		LastSaveFlagBit,
 	};
 public:
-	UIDescription ();
-	~UIDescription () noexcept override;
-
-	bool init (const CResourceDescription& uidescFile,
-			   const SharedPointer<IViewFactory>& viewFactory = {});
-	bool init (const SharedPointer<IContentProvider>& contentProvider,
-			   const SharedPointer<IViewFactory>& viewFactory = {});
+	static SharedPointer<UIDescription> make (const CResourceDescription& uidescFile,
+											  const SharedPointer<IViewFactory>& viewFactory = {});
+	static SharedPointer<UIDescription>
+		make (const SharedPointer<IContentProvider>& contentProvider,
+			  const SharedPointer<IViewFactory>& viewFactory = {});
 
 	virtual bool parse ();
 
@@ -55,6 +53,8 @@ public:
 
 	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile,
 					   AttributeSaveFilterFunc func = nullptr);
+	bool saveToStream (OutputStream& stream, int32_t flags, AttributeSaveFilterFunc func);
+
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
 	bool storeViews (const std::list<SharedPointer<CView>>& views, OutputStream& stream,
@@ -162,9 +162,17 @@ public:
 
 	SharedPointer<UINode> getRootNode () const; // for testing
 protected:
-	void addDefaultNodes ();
+	VSTGUI_SHAREDPTR_FRIEND (UIDescription)
 
-	bool saveToStream (OutputStream& stream, int32_t flags, AttributeSaveFilterFunc func);
+	UIDescription ();
+	~UIDescription () noexcept override;
+
+	bool init (const CResourceDescription& uidescFile,
+			   const SharedPointer<IViewFactory>& viewFactory = {});
+	bool init (const SharedPointer<IContentProvider>& contentProvider,
+			   const SharedPointer<IViewFactory>& viewFactory = {});
+
+	void addDefaultNodes ();
 
 	bool parsed () const;
 	void setContentProvider (const SharedPointer<IContentProvider>& provider);
