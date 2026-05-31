@@ -27,6 +27,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <cairo/cairo.h>
+#include <sys/mman.h>
 
 #ifdef None
 #undef None
@@ -69,41 +70,36 @@ struct DrawHandler
 		onSizeChanged (window.getSize ());
 	}
 
-	void onSizeChanged (const CPoint& size)
+	void reset ()
 	{
 		drawContext = nullptr;
 		device.reset ();
 		windowSurface.reset ();
 
-		void* buffer = childWindow.getBuffer ();
-		if (buffer == nullptr)
+		windowSurface.assign (createCairoSurface (childWindow));
+		if (windowSurface == nullptr)
 			return;
 
-		auto s = cairo_image_surface_create_for_data (
-			static_cast<unsigned char*> (buffer), CAIRO_FORMAT_ARGB32, childWindow.getSize ().x,
-			childWindow.getSize ().y, childWindow.getBufferStride ());
-		if (cairo_surface_status (s) != CAIRO_STATUS_SUCCESS)
-			return;
-
-		windowSurface.assign (s);
 		device =
 			getPlatformFactory ().asLinuxFactory ()->getCairoGraphicsDeviceFactory ().addDevice (
-				cairo_surface_get_device (s));
+				cairo_surface_get_device (windowSurface));
 		auto cairoDevice = std::static_pointer_cast<CairoGraphicsDevice> (device);
 		drawContext = std::make_shared<CairoGraphicsDeviceContext> (*cairoDevice, windowSurface);
 	}
 
-	bool draw (const CInvalidRectList& dirtyRects, IPlatformFrameCallback* frame)
+	void onSizeChanged (const CPoint& size)
 	{
-		if (drawContext == nullptr)
-			onSizeChanged (childWindow.getSize ());
+		reset ();
+	}
 
+	bool drawRects (const CInvalidRectList& dirtyRects, IPlatformFrameCallback* frame)
+	{
 		if (drawContext == nullptr)
 			return false;
 
 		CRect copyRect;
 		drawContext->beginDraw ();
-		frame->platformDrawRects (drawContext, 1, dirtyRects.data ());
+		frame->platformDrawRects (drawContext, childWindow.getScalerFactor (), dirtyRects.data ());
 		for (auto rect : dirtyRects)
 		{
 			if (copyRect.isEmpty ())
@@ -119,7 +115,49 @@ struct DrawHandler
 		return true;
 	}
 
+	bool draw (const CInvalidRectList& dirtyRects, IPlatformFrameCallback* frame)
+	{
+		if (drawContext == nullptr)
+			reset ();
+
+		if (drawContext == nullptr)
+			return false;
+
+		double scale = 1.;
+		cairo_surface_get_device_scale (windowSurface, &scale, &scale);
+		if (childWindow.getScalerFactor () != scale)
+		{
+			reset ();
+			const CRect rect {0. ,0. ,childWindow.getSize ().x, childWindow.getSize ().y};
+			CInvalidRectList dirtyRect;
+			dirtyRect.add (rect);
+			return drawRects (dirtyRect, frame);
+		}
+
+		return drawRects (dirtyRects, frame);
+	}
+
 private:
+	static auto createCairoSurface (const ChildWindow& childWindow) -> cairo_surface_t*
+	{
+		auto& shmBuffer = childWindow.getShmBuffer ();
+		if (shmBuffer.data == MAP_FAILED)
+			return nullptr;
+
+		auto s = cairo_image_surface_create_for_data (
+			static_cast<unsigned char*> (shmBuffer.data)
+			, CAIRO_FORMAT_ARGB32
+			, shmBuffer.bufferWidth
+			, shmBuffer.bufferHeight
+			, cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, shmBuffer.bufferWidth)
+		);
+		if (cairo_surface_status (s) != CAIRO_STATUS_SUCCESS)
+			return nullptr;
+
+		cairo_surface_set_device_scale(s, childWindow.getScalerFactor (), childWindow.getScalerFactor ());
+		return s;
+	}
+
 	ChildWindow& childWindow;
 	Cairo::SurfaceHandle windowSurface;
 	PlatformGraphicsDevicePtr device;
