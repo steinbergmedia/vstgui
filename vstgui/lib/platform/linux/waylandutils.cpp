@@ -15,7 +15,6 @@
 #include <string>
 #include <linux/input.h>
 #include <xkbcommon/xkbcommon.h>
-#include <sys/mman.h>
 
 namespace VSTGUI {
 namespace Wayland {
@@ -579,31 +578,126 @@ struct KeyboardHandler : public wl_keyboard_listener
 namespace VSTGUI {
 namespace Wayland {
 
+static auto createBuffer (wl_shm* shm, CPoint inSize, int32_t scaleFactor, ChildWindow::ShmBuffer& shmBuffer) -> void
+{
+	if (shm == nullptr)
+		return;
+
+	const auto size = inSize *= scaleFactor;
+	shmBuffer.bufferWidth = size.x;
+	shmBuffer.bufferHeight = size.y;
+
+	int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, size.x);
+	int byteSize = stride * size.y;
+
+	if (byteSize > shmBuffer.allocatedSize)
+	{
+		int newSize = byteSize * 1.5;
+
+		if (shmBuffer.pool)
+			wl_shm_pool_destroy (shmBuffer.pool);
+		shmBuffer.pool = nullptr;
+
+		if (shmBuffer.fd >= 0)
+			::close (shmBuffer.fd);
+		shmBuffer.fd = -1;
+
+		if (shmBuffer.data != MAP_FAILED)
+		{
+			::munmap (shmBuffer.data, shmBuffer.allocatedSize);
+			shmBuffer.data = MAP_FAILED;
+		}
+
+		for (int i = 0; i < 100 && shmBuffer.fd < 0; i++)
+		{
+			UTF8String name = "/vstgui_wl_buffer-" + std::to_string (::rand ());
+			shmBuffer.fd = ::shm_open (name, O_RDWR | O_CREAT | O_EXCL, 0600);
+			if (shmBuffer.fd >= 0)
+			{
+				::shm_unlink (name);
+				break;
+			}
+		}
+
+		int result = 0;
+		do
+		{
+			result = ::ftruncate (shmBuffer.fd, newSize);
+		} while (result < 0 && errno == EINTR);
+
+		if (result < 0)
+		{
+			::close (shmBuffer.fd);
+			return;
+		}
+
+		shmBuffer.data = ::mmap (NULL, newSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmBuffer.fd, 0);
+		if (shmBuffer.data == MAP_FAILED)
+		{
+			::close (shmBuffer.fd);
+			return;
+		}
+
+		shmBuffer.allocatedSize = newSize;
+
+		shmBuffer.pool = wl_shm_create_pool (shm, shmBuffer.fd, shmBuffer.allocatedSize);
+	}
+
+	shmBuffer.buffer = wl_shm_pool_create_buffer (shmBuffer.pool, 0, size.x, size.y, stride, WL_SHM_FORMAT_ARGB8888);
+
+#if ENABLE_DRAW_CHECKERBOXED_BACKGROUND
+	auto int32data = reinterpret_cast<int32_t*> (shmBuffer.data);
+	const int width = size.x;
+	const int height = size.y;
+	/* Draw checkerboxed background */
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			if ((x + y / 8 * 8) % 16 < 8)
+				int32data[y * width + x] = 0xFFFF0000;
+			else
+				int32data[y * width + x] = 0xFFFFFFFF;
+		}
+	}
+#endif
+	// TODO add a buffer listener, check if a buffer has been released before rendering into the
+	// same buffer again use multiple buffers as a swapchain
+}
+
+//------------------------------------------------------------------------
+void initSurfaceBuffer (wl_surface* surface, wl_shm* shm, CPoint inSize, int32_t scaleFactor, ChildWindow::ShmBuffer& shmBuffer)
+{
+	createBuffer (shm, inSize, scaleFactor, shmBuffer);
+	wl_surface_attach (surface, shmBuffer.buffer, 0, 0);
+	wl_surface_set_buffer_scale (surface, scaleFactor);
+	wl_surface_damage (surface, 0, 0, UINT32_MAX, UINT32_MAX);
+	wl_surface_commit (surface);
+}
+
 //------------------------------------------------------------------------
 // ChildWindow
 //------------------------------------------------------------------------
 ChildWindow::ChildWindow (IWaylandFrame* waylandFrame, CPoint size)
 : size (size)
 , waylandFrame (shared (waylandFrame))
-, data (MAP_FAILED)
-, buffer (nullptr)
-, pool (nullptr)
 , surface (nullptr)
 , subSurface (nullptr)
-, allocatedSize (0)
-, byteSize (0)
-, fd (-1)
 {
+	shmBuffer = {0};
+	shmBuffer.data = MAP_FAILED;
 	enter = onEnter;
 	leave = onLeave;
 	preferred_buffer_scale = onPreferredBufferScale;
 	preferred_buffer_transform = onPreferredBufferTransform;
+
+	initialize();
 }
 
 //------------------------------------------------------------------------
 ChildWindow::~ChildWindow () noexcept
 {
-	destroyBuffer ();
+	destroyShmBuffer ();
 	terminate ();
 }
 
@@ -613,9 +707,14 @@ void ChildWindow::updateScaleFactor (ChildWindow* self, int32_t factor)
 	if (!self)
 		return;
 
-	self->getFrame ()->platformScaleFactorChanged (factor);
-	wl_surface_set_buffer_scale (self->surface, factor);
-	wl_surface_commit (self->surface);
+	self->scaleFactor = factor;
+	self->getFrame ()->platformScaleFactorChanged (self->scaleFactor);
+
+	wl_shm* shm = RunLoop::getClientContext ().getSharedMemory ();
+	if (shm == nullptr)
+		return;
+
+	initSurfaceBuffer (self->surface, shm, self->size, self->scaleFactor, self->shmBuffer);
 }
 
 //------------------------------------------------------------------------
@@ -674,8 +773,8 @@ void ChildWindow::commit (const CRect& rect)
 	if (surface == nullptr)
 		return;
 
-	wl_surface_damage_buffer (surface, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-	wl_surface_attach (surface, buffer, 0, 0);
+	wl_surface_damage_buffer (surface, rect.left * scaleFactor, rect.top  * scaleFactor, 
+		rect.getWidth () * scaleFactor, rect.getHeight () * scaleFactor);
 	wl_surface_commit (surface);
 
 	RunLoop::flush ();
@@ -686,39 +785,37 @@ void ChildWindow::setSize (const CRect& rect)
 {
 	if (size != rect.getSize ())
 	{
-		if (buffer != nullptr)
-			wl_buffer_destroy (buffer);
-		buffer = nullptr;
+		if (shmBuffer.buffer != nullptr)
+			wl_buffer_destroy (shmBuffer.buffer);
+		shmBuffer.buffer = nullptr;
 		// TODO: Is setting data here to MAP_FAILED right?
 		// We don't call unmap here!
 		// This results in the Live Editor not redrawing when 'close' it.
 		//data = MAP_FAILED;
 	}
 	size = rect.getSize ();
+	wl_shm* shm = RunLoop::getClientContext ().getSharedMemory ();
+	if (shm == nullptr)
+		return;
+
+	initSurfaceBuffer (surface, shm, size, scaleFactor, shmBuffer);
 }
 
 //------------------------------------------------------------------------
 const CPoint& ChildWindow::getSize () const { return size; }
 
 //------------------------------------------------------------------------
-void* ChildWindow::getBuffer () const
+const ChildWindow::ShmBuffer& ChildWindow::getShmBuffer () const
 {
-	if (buffer == nullptr)
-		const_cast<ChildWindow*> (this)->createBuffer ();
-	return (data != MAP_FAILED) ? data : nullptr;
+	return shmBuffer;
 }
 
-//------------------------------------------------------------------------
-int ChildWindow::getBufferStride () const
-{
-	return cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, size.x);
-}
-
+int ChildWindow::getScalerFactor () const { return scaleFactor; }
 //------------------------------------------------------------------------
 wl_surface* ChildWindow::getSurface () const { return surface; }
 
 //------------------------------------------------------------------------
-void ChildWindow::createBuffer ()
+void ChildWindow::createShmBuffer (ShmBuffer& shmBuffer)
 {
 	if (!initialized)
 		initialize ();
@@ -729,84 +826,30 @@ void ChildWindow::createBuffer ()
 	if (shm == nullptr)
 		return;
 
-	int stride = getBufferStride ();
-	int byteSize = stride * size.y;
+	constexpr int32_t kScalefactor = 1.
+	createBuffer (shm, size, kScalefactor, shmBuffer);
 
-	if (byteSize > allocatedSize)
-	{
-		int newSize = byteSize * 1.5;
-
-		if (pool)
-			wl_shm_pool_destroy (pool);
-		pool = nullptr;
-
-		if (fd >= 0)
-			::close (fd);
-		fd = -1;
-
-		if (data != MAP_FAILED)
-		{
-			::munmap (data, allocatedSize);
-			data = MAP_FAILED;
-		}
-
-		for (int i = 0; i < 100 && fd < 0; i++)
-		{
-			UTF8String name = "/vstgui_wl_buffer-" + std::to_string (::rand ());
-			fd = ::shm_open (name, O_RDWR | O_CREAT | O_EXCL, 0600);
-			if (fd >= 0)
-			{
-				::shm_unlink (name);
-				break;
-			}
-		}
-
-		int result = 0;
-		do
-		{
-			result = ::ftruncate (fd, newSize);
-		} while (result < 0 && errno == EINTR);
-
-		if (result < 0)
-		{
-			::close (fd);
-			return;
-		}
-
-		data = ::mmap (NULL, newSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-		if (data == MAP_FAILED)
-		{
-			::close (fd);
-			return;
-		}
-
-		allocatedSize = newSize;
-
-		pool = wl_shm_create_pool (shm, fd, allocatedSize);
-	}
-
-	buffer = wl_shm_pool_create_buffer (pool, 0, size.x, size.y, stride, WL_SHM_FORMAT_ARGB8888);
-	if (surface && buffer)
-		wl_surface_attach (surface, buffer, 0, 0);
+	if (surface && shmBuffer.buffer)
+		wl_surface_attach (surface, shmBuffer.buffer, 0, 0);
 
 	// TODO add a buffer listener, check if a buffer has been released before rendering into the
 	// same buffer again use multiple buffers as a swapchain
 }
 
 //------------------------------------------------------------------------
-void ChildWindow::destroyBuffer ()
+void ChildWindow::destroyShmBuffer ()
 {
-	if (buffer)
-		wl_buffer_destroy (buffer);
-	buffer = nullptr;
+	if (shmBuffer.buffer)
+		wl_buffer_destroy (shmBuffer.buffer);
+	shmBuffer.buffer = nullptr;
 
-	if (pool)
-		wl_shm_pool_destroy (pool);
-	pool = nullptr;
+	if (shmBuffer.pool)
+		wl_shm_pool_destroy (shmBuffer.pool);
+	shmBuffer.pool = nullptr;
 
-	if (data != MAP_FAILED)
-		::munmap (data, byteSize);
-	data = MAP_FAILED;
+	if (shmBuffer.data != MAP_FAILED)
+		::munmap (shmBuffer.data, shmBuffer.byteSize);
+	shmBuffer.data = MAP_FAILED;
 }
 
 //------------------------------------------------------------------------
