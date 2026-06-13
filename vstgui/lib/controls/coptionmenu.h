@@ -305,6 +305,7 @@ public:
 	bool popup (CFrame& frame, const CPoint& frameLocation, const PopupCallback& callback = {});
 
 	const CMenuItemList& getItemList () const { return menuItems; }
+	CMenuItemList& getItemList () { return menuItems; }
 
 	/** remove separators as first and last item and double separators */
 	void cleanupSeparators (bool deep);
