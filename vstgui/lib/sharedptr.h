@@ -97,14 +97,14 @@ struct Deleter
 template<class I>
 inline SharedPointer<I> owned (I* p) noexcept
 {
-	return shared_ptr<I> (p, Deleter<I> {});
+	return p ? shared_ptr<I> (p, Deleter<I> {}) : nullptr;
 }
 
 //------------------------------------------------------------------------
 template<class I>
 inline SharedPointer<I> shared (I* p) noexcept
 {
-	return std::dynamic_pointer_cast<I> (p->shared_from_this ());
+	return p ? std::dynamic_pointer_cast<I> (p->shared_from_this ()) : nullptr;
 }
 
 //------------------------------------------------------------------------
