@@ -37,8 +37,6 @@ struct WeakPointerSupport
 
 	WeakPointer<T> weakFromThis () const
 	{
-		//		return std::static_pointer_cast<T> (static_cast<const T*> (this)->shared_from_this
-		//());
 		return WeakPointer<T> (std::static_pointer_cast<T> (
 			const_cast<T*> (static_cast<const T*> (this))->shared_from_this ()));
 	}
