@@ -671,8 +671,8 @@ bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 		CRect r (dataBrowser->getViewSize ());
 		r.offset (r.getWidth (), 0);
 		auto newDataBrowser = makeShared<CDataBrowser> (r, dataSource);
-		UITemplateController::setupDataBrowser (newDataBrowser, newDataBrowser);
-		auto parentView = newDataBrowser->getParentView ();
+		UITemplateController::setupDataBrowser (dataBrowser, newDataBrowser);
+		auto parentView = dataBrowser->getParentView ();
 		parentView->addSubview (newDataBrowser);
 		next = dataSource;
 
