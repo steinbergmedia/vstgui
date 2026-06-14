@@ -586,7 +586,7 @@ bool UIBitmapsDataSource::add ()
 //----------------------------------------------------------------------------------------------------
 class UIBitmapSettingsController : public NonAtomicReferenceCounted,
 								   public IDialogController,
-								   public IController,
+								   public ControllerAdapter,
 								   public IUIUndoManagerListener
 {
 public:

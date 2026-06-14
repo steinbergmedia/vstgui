@@ -9,7 +9,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class DelegationController : public IController
+class DelegationController : public ControllerAdapter
 {
 public:
 	explicit DelegationController (const SharedPointer<IController>& controller)

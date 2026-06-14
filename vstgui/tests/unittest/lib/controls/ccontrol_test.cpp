@@ -21,7 +21,7 @@ public:
 	CLASS_METHODS (Control, CControl)
 };
 
-struct Listener : IControlListener
+struct Listener : ControlListenerAdapter
 {
 	bool valueChangedCalled {false};
 	bool beginEditCalled {false};

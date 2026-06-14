@@ -16,30 +16,59 @@ class IUIDescription;
 /// @brief extension to IControlListener used by UIDescription
 /// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class IController : public IControlListener,
-					public virtual IReference
+class IController : public IControlListener
 {
 public:
-	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return registeredTag; }
-	virtual IControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
+	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const = 0;
+	virtual IControlListener* getControlListener (UTF8StringPtr controlTagName) = 0;
 	virtual SharedPointer<CView> createView (const UIAttributes& attributes,
-											 const IUIDescription& description)
+											 const IUIDescription& description) = 0;
+	virtual SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+											 const UIAttributes& attributes,
+											 const IUIDescription& description) = 0;
+	virtual SharedPointer<IController> createSubController (UTF8StringPtr name,
+															const IUIDescription& description) = 0;
+};
+
+//------------------------------------------------------------------------
+class ControllerAdapter : public IController
+{
+public:
+	// IController
+	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
+	{
+		return registeredTag;
+	}
+	virtual IControlListener* getControlListener (UTF8StringPtr controlTagName) override
+	{
+		return this;
+	}
+	virtual SharedPointer<CView> createView (const UIAttributes& attributes,
+											 const IUIDescription& description) override
 	{
 		return nullptr;
 	}
 	virtual SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
 											 const UIAttributes& attributes,
-											 const IUIDescription& description)
+											 const IUIDescription& description) override
 	{
 		return view;
 	}
-	virtual SharedPointer<IController> createSubController (UTF8StringPtr name,
-															const IUIDescription& description)
+	virtual SharedPointer<IController>
+		createSubController (UTF8StringPtr name, const IUIDescription& description) override
 	{
 		return nullptr;
 	}
+	// IControlListener
+	void valueChanged (CControl& pControl) override {}
+	int32_t controlModifierClicked (CControl& pControl, CButtonState button) override { return 0; }
+	void controlBeginEdit (CControl& pControl) override {}
+	void controlEndEdit (CControl& pControl) override {}
+	void controlTagWillChange (CControl& pControl) override {}
+	void controlTagDidChange (CControl& pControl) override {}
 };
 
+//------------------------------------------------------------------------
 class IControllerAddOn : public virtual IReference
 {
 };

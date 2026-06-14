@@ -385,10 +385,10 @@ bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath, CCoord focusLine
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 class UIGradientEditorController : public NonAtomicReferenceCounted,
-                                   public IDialogController,
-                                   public UIColorListenerAdapter,
-                                   public IUIColorStopEditViewListener,
-                                   public IController
+								   public IDialogController,
+								   public UIColorListenerAdapter,
+								   public IUIColorStopEditViewListener,
+								   public ControllerAdapter
 {
 public:
 	UIGradientEditorController (const std::string& gradientName,

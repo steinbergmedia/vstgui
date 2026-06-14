@@ -79,8 +79,8 @@ private:
 
 //------------------------------------------------------------------------
 class ValueWrapper : public ValueListenerAdapter,
-                     public IControlListener,
-                     public ViewListenerAdapter
+					 public ControlListenerAdapter,
+					 public ViewListenerAdapter
 {
 public:
 	using ControlList = std::vector<CControl*>;

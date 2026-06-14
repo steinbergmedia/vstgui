@@ -15,7 +15,8 @@ namespace VSTGUI {
 //!
 /// @ingroup views
 //-----------------------------------------------------------------------------
-class CSplashScreen : public CControl, public IControlListener
+class CSplashScreen : public CControl,
+					  public ControlListenerAdapter
 {
 public:
 	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,

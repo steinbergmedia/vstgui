@@ -12,7 +12,7 @@ namespace VSTGUI {
 
 namespace {
 
-class Controller : public IController,
+class Controller : public ControllerAdapter,
 				   public NonAtomicReferenceCounted
 {
 public:

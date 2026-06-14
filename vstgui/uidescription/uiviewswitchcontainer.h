@@ -88,7 +88,9 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController, public IControlListener
+class UIDescriptionViewSwitchController : public CBaseObject,
+										  public IViewSwitchController,
+										  public ControlListenerAdapter
 {
 public:
 	static SharedPointer<UIDescriptionViewSwitchController>

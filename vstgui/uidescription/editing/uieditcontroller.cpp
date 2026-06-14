@@ -317,12 +317,11 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIZoomSettingController
-: public IController
-, public IContextMenuController2
-, public ViewListenerAdapter
-, public ViewEventListenerAdapter
-, public NonAtomicReferenceCounted
+class UIZoomSettingController : public ControllerAdapter,
+								public IContextMenuController2,
+								public ViewListenerAdapter,
+								public ViewEventListenerAdapter,
+								public NonAtomicReferenceCounted
 {
 public:
 	UIZoomSettingController (UIEditController* editController)

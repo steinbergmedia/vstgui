@@ -86,7 +86,7 @@ struct TimerScriptObject : ScriptObject
 struct ScriptContext::Impl : ViewListenerAdapter,
 							 ViewEventListenerAdapter,
 							 ViewContainerListenerAdapter,
-							 IControlListener,
+							 ControlListenerAdapter,
 							 ScriptingInternal::IViewScriptObjectContext
 {
 	using ViewScriptObject = ScriptingInternal::ViewScriptObject;

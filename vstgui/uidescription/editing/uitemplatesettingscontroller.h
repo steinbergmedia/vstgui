@@ -18,8 +18,8 @@ namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 class UITemplateSettingsController : public NonAtomicReferenceCounted,
-                                     public IDialogController,
-                                     public IController
+									 public IDialogController,
+									 public ControllerAdapter
 {
 public:
 	UITemplateSettingsController (const std::string& templateName,

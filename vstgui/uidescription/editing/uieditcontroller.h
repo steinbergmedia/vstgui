@@ -32,7 +32,7 @@ class CCommandMenuItem;
 
 //----------------------------------------------------------------------------------------------------
 class UIEditController : public NonAtomicReferenceCounted,
-						 public IController,
+						 public ControllerAdapter,
 						 public IContextMenuController2,
 						 public ISplitViewController,
 						 public ISplitViewSeparatorDrawer,

@@ -21,7 +21,9 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIBaseDataSource : public GenericStringListDataBrowserSource, public IControlListener, public UIDescriptionListenerAdapter
+class UIBaseDataSource : public GenericStringListDataBrowserSource,
+						 public ControlListenerAdapter,
+						 public UIDescriptionListenerAdapter
 {
 public:
 	using StringVector = GenericStringListDataBrowserSource::StringVector;

@@ -17,7 +17,9 @@ class CScrollContainer;
 //! @brief a scrollable container view with scrollbars
 /// @ingroup containerviews
 //-----------------------------------------------------------------------------
-class CScrollView : public CViewContainer, public IControlListener, public ViewListenerAdapter
+class CScrollView : public CViewContainer,
+					public ControlListenerAdapter,
+					public ViewListenerAdapter
 {
 protected:
 	enum

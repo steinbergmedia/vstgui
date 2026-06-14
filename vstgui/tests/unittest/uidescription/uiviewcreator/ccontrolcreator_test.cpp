@@ -14,15 +14,6 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-namespace {
-
-struct DummyListener : public IControlListener
-{
-	void valueChanged (CControl& pControl) override {}
-};
-
-} // anonymous
-
 TEST_CASE (CControlCreatorTest, DefaultValue)
 {
 	DummyUIDescription uidesc;
@@ -87,7 +78,7 @@ TEST_CASE (CControlCreatorTest, TagNoListener)
 TEST_CASE (CControlCreatorTest, TagWithListener)
 {
 	DummyUIDescription uidesc;
-	DummyListener listener;
+	ControlListenerAdapter listener;
 	uidesc.tag = 5;
 	uidesc.listener = &listener;
 	testAttribute<CControl> (

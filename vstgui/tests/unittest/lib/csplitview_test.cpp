@@ -12,7 +12,7 @@ namespace VSTGUI {
 
 namespace {
 
-class SplitViewController : public IController,
+class SplitViewController : public ControllerAdapter,
 							public ISplitViewController,
 							public NonAtomicReferenceCounted
 {

@@ -547,7 +547,7 @@ private:
 };
 
 //------------------------------------------------------------------------
-struct FindPanelController : IControlListener,
+struct FindPanelController : ControlListenerAdapter,
 							 ViewListenerAdapter,
 							 ViewEventListenerAdapter
 {

@@ -12,7 +12,7 @@
 namespace VSTGUI {
 namespace UIDescriptionTesting {
 
-struct Controller : public IController,
+struct Controller : public ControllerAdapter,
 					public NonAtomicReferenceCounted
 {
 	void valueChanged (CControl& pControl) override {};
