@@ -8,9 +8,9 @@
 #error "do not directly include this file, use vstguibase.h"
 #endif
 
-#define VSTGUI_BACKTRACE_REFCOUNT (DEBUG && 1)
 #define VSTGUI_USE_STD_SHAREDPTR 1
 
+#define VSTGUI_BACKTRACE_REFCOUNT (DEBUG && 1 && !VSTGUI_USE_STD_SHAREDPTR)
 #if VSTGUI_BACKTRACE_REFCOUNT
 #include <vector>
 #endif
@@ -34,8 +34,8 @@ struct shared_ptr : std::shared_ptr<T>
 	template<typename I>
 	shared_ptr<I> cast () const
 	{
-#if 0
-		if constexpr (std::is_base_of_v<T, I> && !std::is_virtual_base_of_v<T,I>)
+#if 0 // C++26
+		if constexpr (std::is_base_of_v<T, I> && !std::is_virtual_base_of_v<T, I>)
 			return shared_ptr<I> (std::static_pointer_cast<I> (*this));
 #endif
 		return shared_ptr<I> (std::dynamic_pointer_cast<I> (*this));

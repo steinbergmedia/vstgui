@@ -549,7 +549,8 @@ private:
 //------------------------------------------------------------------------
 struct FindPanelController : ControlListenerAdapter,
 							 ViewListenerAdapter,
-							 ViewEventListenerAdapter
+							 ViewEventListenerAdapter,
+							 NonAtomicReferenceCounted
 {
 	using RemoveFindPanelFunc = std::function<void ()>;
 	static SharedPointer<CViewContainer> makeFindPanelView (CRect rect,

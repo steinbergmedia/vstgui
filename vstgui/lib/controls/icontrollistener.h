@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../vstguifwd.h"
-#include "../sharedptr.h"
 #include "../cbuttonstate.h"
 
 namespace VSTGUI {
