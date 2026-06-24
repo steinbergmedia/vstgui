@@ -45,16 +45,6 @@ CKnobBase::CKnobBase (const CRect& size, IControlListener* listener, int32_t tag
 }
 
 //------------------------------------------------------------------------
-CKnobBase::CKnobBase (const CKnobBase& k)
-: CControl (k)
-, startAngle (k.startAngle)
-, rangeAngle (k.rangeAngle)
-, zoomFactor (k.zoomFactor)
-, inset (k.inset)
-{
-}
-
-//------------------------------------------------------------------------
 void CKnobBase::setViewSize (const CRect &rect, bool invalid)
 {
 	CControl::setViewSize (rect, invalid);
@@ -414,21 +404,6 @@ CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag,
 }
 
 //------------------------------------------------------------------------
-CKnob::CKnob (const CKnob& v)
-: CKnobBase (v)
-, offset (v.offset)
-, drawStyle (v.drawStyle)
-, colorHandle (v.colorHandle)
-, colorShadowHandle (v.colorShadowHandle)
-, handleLineWidth (v.handleLineWidth)
-, coronaInset (v.coronaInset)
-, coronaOutlineWidthAdd (v.coronaInset)
-, coronaLineStyle (v.coronaLineStyle)
-, pHandle (v.pHandle)
-{
-}
-
-//------------------------------------------------------------------------
 CKnob::~CKnob () noexcept {}
 
 //------------------------------------------------------------------------
@@ -737,9 +712,6 @@ CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag
 {
 	inset = 0;
 }
-
-//------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CAnimKnob& v) : CKnobBase (v), bInverseBitmap (v.bInverseBitmap) {}
 
 //-----------------------------------------------------------------------------------------------
 bool CAnimKnob::sizeToFit ()

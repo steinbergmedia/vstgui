@@ -145,19 +145,6 @@ CViewContainer::CViewContainer (const CRect &rect)
 }
 
 //-----------------------------------------------------------------------------
-CViewContainer::CViewContainer (const CViewContainer& v)
-: CView (v)
-{
-	pImpl = std::unique_ptr<Impl> (new Impl ());
-	pImpl->transform = v.getTransform ();
-	pImpl->backgroundColorDrawStyle = v.pImpl->backgroundColorDrawStyle;
-	pImpl->backgroundColor = v.pImpl->backgroundColor;
-	setBackgroundOffset (v.getBackgroundOffset ());
-	for (auto& view : v.pImpl->children)
-		addSubview (owned (static_cast<CView*> (view->newCopy ())));
-}
-
-//-----------------------------------------------------------------------------
 CViewContainer::~CViewContainer () noexcept
 {
 	vstgui_assert (pImpl->children.empty ());

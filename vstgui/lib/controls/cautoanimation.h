@@ -21,7 +21,6 @@ class CAutoAnimation : public CControl,
 public:
 	CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
 					const SharedPointer<CBitmap>& background);
-	CAutoAnimation (const CAutoAnimation& autoAnimation);
 
 	void draw (CDrawContext&) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
@@ -51,7 +50,6 @@ public:
 
 	void setBackground (const SharedPointer<CBitmap>& background) override;
 
-	CLASS_METHODS(CAutoAnimation, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CAutoAnimation)
 	~CAutoAnimation () noexcept override = default;

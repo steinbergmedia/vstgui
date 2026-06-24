@@ -25,7 +25,6 @@ class COnOffButton : public CControl
 public:
 	COnOffButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1,
 				  const SharedPointer<CBitmap>& background = {}, int32_t style = 0);
-	COnOffButton (const COnOffButton& onOffButton);
 
 	//-----------------------------------------------------------------------------
 	/// @name COnOffButton Methods
@@ -44,7 +43,6 @@ public:
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	bool sizeToFit () override;
 
-	CLASS_METHODS(COnOffButton, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (COnOffButton)
 	~COnOffButton () noexcept override = default;
@@ -63,7 +61,6 @@ public:
 	CCheckBox (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1,
 			   UTF8StringPtr title = nullptr, const SharedPointer<CBitmap>& background = {},
 			   int32_t style = 0);
-	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles
 	{
@@ -116,7 +113,6 @@ public:
 	void setBackground (const SharedPointer<CBitmap>& background) override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
-	CLASS_METHODS(CCheckBox, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CCheckBox)
 
@@ -148,7 +144,6 @@ class CKickButton : public CControl,
 public:
 	CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
 				 const SharedPointer<CBitmap>& background);
-	CKickButton (const CKickButton& kickButton);
 
 	void draw (CDrawContext&) override;
 
@@ -160,7 +155,6 @@ public:
 
 	bool sizeToFit () override;
 
-	CLASS_METHODS(CKickButton, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CKickButton)
 	~CKickButton () noexcept override = default;
@@ -247,7 +241,6 @@ public:
 	CMouseEventResult onMouseCancel () override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
-	CLASS_METHODS_NOCOPY (CTextButton, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CTextButton)
 	~CTextButton () noexcept override = default;

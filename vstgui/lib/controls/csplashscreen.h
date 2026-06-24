@@ -24,7 +24,6 @@ public:
 				   const CPoint& offset = CPoint (0, 0));
 	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
 				   const SharedPointer<CView>& splashView);
-	CSplashScreen (const CSplashScreen& splashScreen);
 
 	void draw (CDrawContext&) override;
 	bool hitTest (const CPoint& where, const Event& event) override;
@@ -43,7 +42,6 @@ public:
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 
-	CLASS_METHODS(CSplashScreen, CControl)
 protected:
 	~CSplashScreen () noexcept override;
 	using CControl::valueChanged;
@@ -68,7 +66,6 @@ public:
 	CAnimationSplashScreen (const CRect& size, int32_t tag,
 							const SharedPointer<CBitmap>& background,
 							const SharedPointer<CBitmap>& splashBitmap);
-	CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen) = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CAnimationSplashScreen Methods

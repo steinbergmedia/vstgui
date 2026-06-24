@@ -440,8 +440,8 @@ public:
 	CBaseObject () = default;
 	~CBaseObject () noexcept override = default;
 
-	CBaseObject (const CBaseObject&) {}
-	CBaseObject& operator= (const CBaseObject&) { return *this; }
+	CBaseObject (const CBaseObject&) = delete;
+	CBaseObject& operator= (const CBaseObject&) = delete;
 
 	//-----------------------------------------------------------------------------
 	/// @name Message Methods
@@ -453,10 +453,6 @@ public:
 		return kMessageUnknown;
 	}
 	//@}
-
-	/// @cond ignore
-	virtual CBaseObject* newCopy () const { return nullptr; }
-	/// @endcond
 };
 
 //-----------------------------------------------------------------------------

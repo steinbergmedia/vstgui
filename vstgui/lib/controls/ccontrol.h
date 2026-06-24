@@ -30,7 +30,6 @@ class CControl : public CView, public IFocusDrawing
 public:
 	CControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = 0,
 			  const SharedPointer<CBitmap>& background = {});
-	CControl (const CControl& c);
 
 	//-----------------------------------------------------------------------------
 	/// @name Value Methods
@@ -105,7 +104,6 @@ public:
 	/** zoom modifier key, per default is the shift key */
 	inline static int32_t kZoomModifier = kShift;
 
-	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
 	~CControl () noexcept override;
 

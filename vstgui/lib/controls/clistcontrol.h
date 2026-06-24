@@ -62,7 +62,6 @@ public:
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
-	CLASS_METHODS_NOCOPY (CListControl, CControl)
 private:
 	int32_t getNextSelectableRow (int32_t r, int32_t direction) const;
 	int32_t getMinRowIndex () const;

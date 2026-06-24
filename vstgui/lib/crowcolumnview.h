@@ -24,8 +24,6 @@ public:
 						const Optional<size_t>& position = {}) override;
 	bool removeSubview (const SharedPointer<CView>& view) override;
 	bool changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex) override;
-
-	CLASS_METHODS_VIRTUAL(CAutoLayoutContainerView, CViewContainer)
 };
 
 
@@ -98,7 +96,6 @@ public:
 	bool sizeToFit () override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	CLASS_METHODS(CRowColumnView, CAutoLayoutContainerView)
 protected:
 	void getMaxChildViewSize (CPoint& maxSize);
 	void layoutViewsEqualSize ();

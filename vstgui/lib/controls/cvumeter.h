@@ -27,8 +27,7 @@ public:
 	CVuMeter (const CRect& size, const SharedPointer<CBitmap>& onBitmap,
 			  const SharedPointer<CBitmap>& offBitmap, int32_t nbLed,
 			  Style style = Style::kVertical);
-	CVuMeter (const CVuMeter& vuMeter);
-  
+
 	//-----------------------------------------------------------------------------
 	/// @name CVuMeter Methods
 	//-----------------------------------------------------------------------------
@@ -57,8 +56,7 @@ public:
 	void setViewSize (const CRect& newSize, bool invalid = true) override;
 	bool sizeToFit () override;
 	void onIdle () override;
-	
-	CLASS_METHODS(CVuMeter, CControl)
+
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CVuMeter)
 	~CVuMeter () noexcept override;

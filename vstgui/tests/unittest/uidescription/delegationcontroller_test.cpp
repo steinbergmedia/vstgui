@@ -78,7 +78,6 @@ struct DelegationControllerAdapter : DelegationController,
 struct DummyControl : CControl
 {
 	DummyControl () : CControl (CRect {}) {}
-	CLASS_METHODS_NOCOPY (DummyControl, CControl);
 	void draw (CDrawContext& context) override {};
 };
 

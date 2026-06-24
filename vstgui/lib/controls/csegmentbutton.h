@@ -153,7 +153,6 @@ public:
 		return style == Style::kHorizontalInverse || style == Style::kVerticalInverse;
 	}
 
-	CLASS_METHODS (CSegmentButton, CControl)
 private:
 	bool canAddOneMoreSegment () const;
 	void updateSegmentSizes ();

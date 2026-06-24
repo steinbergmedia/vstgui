@@ -50,12 +50,10 @@ public:
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
-	
-	CLASS_METHODS_VIRTUAL(CKnobBase, CControl)
+
 protected:
 	CKnobBase (const CRect& size, IControlListener* listener, int32_t tag,
 			   const SharedPointer<CBitmap>& background);
-	CKnobBase (const CKnobBase& knob);
 	void compute ();
 
 	float startAngle, rangeAngle;
@@ -93,7 +91,6 @@ public:
 	CKnob (const CRect& size, IControlListener* listener, int32_t tag,
 		   const SharedPointer<CBitmap>& background, const SharedPointer<CBitmap>& handle,
 		   const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);
-	CKnob (const CKnob& knob);
 
 	//-----------------------------------------------------------------------------
 	/// @name CKnob Methods
@@ -132,7 +129,6 @@ public:
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool drawFocusOnTop () override;
 
-	CLASS_METHODS(CKnob, CKnobBase)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CKnob)
 	~CKnob () noexcept override;
@@ -169,7 +165,6 @@ class CAnimKnob : public CKnobBase,
 public:
 	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
 			   const SharedPointer<CBitmap>& background);
-	CAnimKnob (const CAnimKnob& knob);
 
 	//-----------------------------------------------------------------------------
 	/// @name CAnimKnob Methods
@@ -184,7 +179,6 @@ public:
 	bool sizeToFit () override;
 	void setBackground (const SharedPointer<CBitmap>& background) override;
 
-	CLASS_METHODS(CAnimKnob, CKnobBase)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CAnimKnob)
 	~CAnimKnob () noexcept override = default;

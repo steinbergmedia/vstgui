@@ -34,8 +34,6 @@ public:
 	/** get fire time in milliseconds*/
 	uint32_t getFireTime () const { return fireTime; }
 
-//-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CVSTGUITimer)
 

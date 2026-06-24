@@ -39,8 +39,7 @@ protected:
 public:
 	CParamDisplay (const CRect& size, const SharedPointer<CBitmap>& background = {},
 				   int32_t style = 0);
-	CParamDisplay (const CParamDisplay& paramDisplay);
-	
+
 	//-----------------------------------------------------------------------------
 	/// @name CParamDisplay Methods
 	//-----------------------------------------------------------------------------
@@ -119,7 +118,6 @@ public:
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool removed (CViewContainer& parent) override;
 
-	CLASS_METHODS(CParamDisplay, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CParamDisplay)
 	~CParamDisplay () noexcept override;

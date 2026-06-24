@@ -367,16 +367,6 @@ COptionMenu::COptionMenu (const CRect& size, IControlListener* listener, int32_t
 COptionMenu::COptionMenu () : CParamDisplay (CRect (0, 0, 0, 0)) { setWantsFocus (true); }
 
 //------------------------------------------------------------------------
-COptionMenu::COptionMenu (const COptionMenu& v)
-: CParamDisplay (v)
-, menuItems (v.menuItems)
-, nbItemsPerColumn (v.nbItemsPerColumn)
-, bgWhenClick (v.bgWhenClick)
-{
-	setWantsFocus (true);
-}
-
-//------------------------------------------------------------------------
 COptionMenu::~COptionMenu () noexcept { removeAllEntry (); }
 
 //------------------------------------------------------------------------

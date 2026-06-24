@@ -41,26 +41,6 @@ CParamDisplay::CParamDisplay (const CRect& size, const SharedPointer<CBitmap>& b
 }
 
 //------------------------------------------------------------------------
-CParamDisplay::CParamDisplay (const CParamDisplay& v)
-: CControl (v)
-, valueToStringFunction (v.valueToStringFunction)
-, horiTxtAlign (v.horiTxtAlign)
-, style (v.style)
-, valuePrecision (v.valuePrecision)
-, fontID (v.fontID)
-, fontColor (v.fontColor)
-, backColor (v.backColor)
-, frameColor (v.frameColor)
-, shadowColor (v.shadowColor)
-, textInset (v.textInset)
-, backOffset (v.backOffset)
-, roundRectRadius (v.roundRectRadius)
-, frameWidth (v.frameWidth)
-, textRotation (v.textRotation)
-{
-}
-
-//------------------------------------------------------------------------
 CParamDisplay::~CParamDisplay () noexcept {}
 
 //------------------------------------------------------------------------

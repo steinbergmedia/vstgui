@@ -216,8 +216,6 @@ public:
 	void dumpHierarchy () override;
 	#endif
 
-	CLASS_METHODS_NOCOPY(CFrame, CViewContainer)
-
 	//-------------------------------------------
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CFrame)

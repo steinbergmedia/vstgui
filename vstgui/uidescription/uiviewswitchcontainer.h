@@ -52,8 +52,7 @@ public:
 
 	bool attached (CViewContainer& parent) override;
 	bool removed (CViewContainer& parent) override;
-	//-----------------------------------------------------------------------------
-	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
+
 protected:
 	SharedPointer<IViewSwitchController> controller;
 	int32_t currentViewIndex {-1};

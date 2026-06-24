@@ -134,8 +134,7 @@ public:
 
 	/** get the all files extension */
 	static const CFileExtension& getAllFilesExtension ();
-	//-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY (CNewFileSelector, CBaseObject)
+
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CNewFileSelector)
 

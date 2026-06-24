@@ -23,12 +23,10 @@ class CMovieBitmap : public CControl,
 public:
 	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
 				  const SharedPointer<CBitmap>& background);
-	CMovieBitmap (const CMovieBitmap& movieBitmap);
 
 	void draw (CDrawContext&) override;
 	bool sizeToFit () override;
 
-	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CMovieBitmap)
 	~CMovieBitmap () noexcept override = default;

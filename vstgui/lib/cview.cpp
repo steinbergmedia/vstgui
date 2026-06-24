@@ -212,33 +212,6 @@ CView::CView (const CRect& size)
 }
 
 //-----------------------------------------------------------------------------
-CView::CView (const CView& v)
-{
-	pImpl = std::unique_ptr<Impl> (new Impl ());
-	pImpl->size = v.pImpl->size;
-	pImpl->viewFlags = v.pImpl->viewFlags;
-	pImpl->autosizeFlags = v.pImpl->autosizeFlags;
-
-	setMouseableArea (v.getMouseableArea ());
-	setHitTestPath (v.getHitTestPath ());
-	setBackground (v.getBackground ());
-	setDisabledBackground (v.getDisabledBackground ());
-
-	for (auto& attribute : v.pImpl->attributes)
-	{
-		if (auto mem = std::get_if<Impl::AttributeEntryPtr> (&attribute.second))
-		{
-			setAttribute (attribute.first, mem->get ()->getSize (), mem->get ()->getData ());
-		}
-		else
-		{
-			setAttributeObj (attribute.first,
-							 std::get<SharedPointer<IReference>> (attribute.second));
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 CView::~CView () noexcept = default;
 
 //-----------------------------------------------------------------------------

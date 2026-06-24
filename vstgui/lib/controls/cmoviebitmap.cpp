@@ -26,9 +26,6 @@ CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32
 }
 
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CMovieBitmap& v) : CControl (v) {}
-
-//------------------------------------------------------------------------
 void CMovieBitmap::draw (CDrawContext& context)
 {
 	if (auto bitmap = getDrawBackground ())

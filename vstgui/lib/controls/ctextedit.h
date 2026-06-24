@@ -30,7 +30,6 @@ public:
 	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
 			   UTF8StringPtr txt = nullptr, const SharedPointer<CBitmap>& background = {},
 			   const int32_t style = 0);
-	CTextEdit (const CTextEdit& textEdit);
 
 	enum Style
 	{
@@ -89,7 +88,6 @@ public:
 
 	PlatformTextEditPtr getPlatformTextEdit () const { return platformControl; }
 
-	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CTextEdit)
 	~CTextEdit () noexcept override;

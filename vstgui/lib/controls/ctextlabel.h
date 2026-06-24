@@ -21,8 +21,7 @@ class CTextLabel : public CParamDisplay
 public:
 	CTextLabel (const CRect& size, UTF8StringPtr txt = nullptr,
 				const SharedPointer<CBitmap>& background = {}, const int32_t style = 0);
-	CTextLabel (const CTextLabel& textLabel);
-	
+
 	//-----------------------------------------------------------------------------
 	/// @name CTextLabel Methods
 	//-----------------------------------------------------------------------------
@@ -60,7 +59,6 @@ public:
 	void drawStyleChanged () override;
 	void valueChanged () override;
 
-	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CTextLabel)
 	~CTextLabel () noexcept override = default;
@@ -82,7 +80,6 @@ class CMultiLineTextLabel : public CTextLabel
 {
 public:
 	CMultiLineTextLabel (const CRect& size);
-	CMultiLineTextLabel (const CMultiLineTextLabel&) = default;
 
 	enum class LineLayout {
 		/** clip lines overflowing the view size width */

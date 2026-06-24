@@ -26,7 +26,6 @@ public:
 	using Styles = EnumBitset<Style>;
 
 	CSliderBase (const CRect& size, IControlListener* listener, int32_t tag);
-	CSliderBase (const CSliderBase& slider);
 
 	void setOffsetHandle (const CPoint& val);
 	CPoint getOffsetHandle () const;
@@ -100,7 +99,6 @@ public:
 			 int32_t rangeHandle, const SharedPointer<CBitmap>& handle,
 			 const SharedPointer<CBitmap>& background, const CPoint& offset = CPoint (0, 0),
 			 Styles style = {{kLeft, kHorizontal}});
-	CSlider (const CSlider& slider);
 
 	//------------------------------------------------------------------------
 	/// @name CSlider Methods
@@ -145,7 +143,6 @@ public:
 	void draw (CDrawContext&) override;
 	bool sizeToFit () override;
 
-	CLASS_METHODS (CSlider, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CSlider)
 	~CSlider () noexcept override;
@@ -170,7 +167,6 @@ public:
 					 const CPoint& offsetHandle, int32_t rangeHandle,
 					 const SharedPointer<CBitmap>& handle, const SharedPointer<CBitmap>& background,
 					 const CPoint& offset = CPoint (0, 0), Styles style = kBottom);
-	CVerticalSlider (const CVerticalSlider& slider) = default;
 };
 
 //------------------------------------------------------------------------
@@ -190,7 +186,6 @@ public:
 					   const SharedPointer<CBitmap>& handle,
 					   const SharedPointer<CBitmap>& background,
 					   const CPoint& offset = CPoint (0, 0), Styles style = kRight);
-	CHorizontalSlider (const CHorizontalSlider& slider) = default;
 };
 
 } // VSTGUI

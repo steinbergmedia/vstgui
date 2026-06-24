@@ -187,9 +187,11 @@
 #endif
 
 //----------------------------------------------------
-#define CLASS_METHODS(name, parent) CBaseObject* newCopy () const override { return new name (*this); }
-#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const override { return nullptr; }
-#define CLASS_METHODS_VIRTUAL(name, parent) CBaseObject* newCopy () const override = 0;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#define CLASS_METHODS(name, parent)			// \deprecated
+#define CLASS_METHODS_NOCOPY(name, parent)	// \deprecated
+#define CLASS_METHODS_VIRTUAL(name, parent) // \deprecated
+#endif
 
 //----------------------------------------------------
 namespace VSTGUI {
@@ -213,7 +215,7 @@ enum ByteOrder
 #if WINDOWS || defined(__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN)
 	kNativeByteOrder = kLittleEndianByteOrder
 #else
-	kNativeByteOrder = kBigEndianByteOrder
+		kNativeByteOrder = kBigEndianByteOrder
 #endif
 };
 

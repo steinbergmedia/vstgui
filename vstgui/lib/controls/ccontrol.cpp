@@ -76,20 +76,6 @@ CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag,
 }
 
 //------------------------------------------------------------------------
-CControl::CControl (const CControl& c) : CView (c)
-{
-	impl = std::unique_ptr<Impl> (new Impl);
-	impl->oldValue = c.impl->oldValue;
-	impl->defaultValue = c.impl->defaultValue;
-	impl->vmin = c.impl->vmin;
-	impl->vmax = c.impl->vmax;
-	impl->wheelInc = c.impl->wheelInc;
-	impl->listener = c.impl->listener;
-	impl->tag = c.impl->tag;
-	impl->value = c.impl->value;
-}
-
-//------------------------------------------------------------------------
 CControl::~CControl () noexcept {}
 
 //------------------------------------------------------------------------

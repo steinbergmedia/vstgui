@@ -21,7 +21,6 @@ public:
 protected:
 	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
 				 const SharedPointer<CBitmap>& background);
-	CSwitchBase (const CSwitchBase& other);
 	~CSwitchBase () noexcept override = default;
 
 	void draw (CDrawContext&) override;
@@ -54,11 +53,9 @@ class CVerticalSwitch : public CSwitchBase
 public:
 	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
 					 const SharedPointer<CBitmap>& background);
-	CVerticalSwitch (const CVerticalSwitch& vswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
-	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CVerticalSwitch)
 	~CVerticalSwitch () noexcept override = default;
@@ -78,11 +75,9 @@ class CHorizontalSwitch : public CSwitchBase
 public:
 	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
 					   const SharedPointer<CBitmap>& background);
-	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
-	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CHorizontalSwitch)
 	~CHorizontalSwitch () noexcept override = default;
@@ -114,7 +109,6 @@ public:
 
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
 				   const SharedPointer<CBitmap>& background, const int32_t style = kHorizontal);
-	CRockerSwitch (const CRockerSwitch& rswitch);
 
 	void draw (CDrawContext&) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
@@ -127,7 +121,6 @@ public:
 
 	bool sizeToFit () override;
 
-	CLASS_METHODS(CRockerSwitch, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CRockerSwitch)
 	~CRockerSwitch () noexcept override;

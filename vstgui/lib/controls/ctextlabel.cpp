@@ -33,14 +33,6 @@ CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt,
 }
 
 //------------------------------------------------------------------------
-CTextLabel::CTextLabel (const CTextLabel& v)
-: CParamDisplay (v)
-, textTruncateMode (v.textTruncateMode)
-{
-	setText (v.getText ());
-}
-
-//------------------------------------------------------------------------
 void CTextLabel::registerTextLabelListener (ITextLabelListener* listener)
 {
 	if (!listeners)

@@ -24,8 +24,7 @@ public:
 	void onMouseDown (const CPoint& where);
 
 	void hideTooltip ();
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(CTooltipSupport, CBaseObject)
+
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CTooltipSupport)
 	~CTooltipSupport () noexcept override;

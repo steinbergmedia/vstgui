@@ -23,17 +23,6 @@ CShadowViewContainer::CShadowViewContainer (const CRect& size)
 	registerViewContainerListener (this);
 }
 
-//-----------------------------------------------------------------------------
-CShadowViewContainer::CShadowViewContainer (const CShadowViewContainer& copy)
-: CViewContainer (copy)
-, dontDrawBackground (false)
-, shadowIntensity (copy.shadowIntensity)
-, shadowBlurSize (copy.shadowBlurSize)
-, scaleFactorUsed (0.)
-{
-	registerViewContainerListener (this);
-}
-
 //------------------------------------------------------------------------
 CShadowViewContainer::~CShadowViewContainer () noexcept = default;
 

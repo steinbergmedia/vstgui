@@ -42,19 +42,6 @@ CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag
 }
 
 //------------------------------------------------------------------------
-CTextEdit::CTextEdit (const CTextEdit& v)
-: CTextLabel (v)
-, bWasReturnPressed (false)
-, stringToValueFunction (v.stringToValueFunction)
-, immediateTextChange (v.immediateTextChange)
-, secureStyle (v.secureStyle)
-, platformFont (v.platformFont)
-, placeholderString (v.placeholderString)
-{
-	setWantsFocus (true);
-}
-
-//------------------------------------------------------------------------
 CTextEdit::~CTextEdit () noexcept { vstgui_assert (platformControl == nullptr); }
 
 //------------------------------------------------------------------------

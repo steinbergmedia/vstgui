@@ -21,9 +21,6 @@ CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t
 }
 
 //------------------------------------------------------------------------
-CSwitchBase::CSwitchBase (const CSwitchBase& other) : CControl (other) { setWantsFocus (true); }
-
-//------------------------------------------------------------------------
 int32_t CSwitchBase::normalizedToIndex (float norm) const
 {
 	if (auto mfb = getDrawBackground ().cast<CMultiFrameBitmap> ())
@@ -170,12 +167,6 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener,
 }
 
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CVerticalSwitch& v)
-: CSwitchBase (v)
-{
-}
-
-//------------------------------------------------------------------------
 double CVerticalSwitch::calculateCoef () const
 {
 	if (auto mfb = getDrawBackground ().cast<CMultiFrameBitmap> ())
@@ -243,12 +234,6 @@ Use a CMultiFrameBitmap for its background bitmap.
 CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
 									  const SharedPointer<CBitmap>& background)
 : CSwitchBase (size, listener, tag, background)
-{
-}
-
-//------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CHorizontalSwitch& v)
-: CSwitchBase (v)
 {
 }
 
@@ -326,13 +311,6 @@ CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int
 	setMin (-1.f);
 	setMax (1.f);
 	setValue ((getMax () - getMin ()) / 2.f + getMin ());
-}
-
-//------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRockerSwitch& v)
-: CControl (v), style (v.style), resetValueTimer (nullptr)
-{
-	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------

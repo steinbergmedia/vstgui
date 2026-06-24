@@ -69,20 +69,6 @@ CSpecialDigit::CSpecialDigit (const CRect& size, IControlListener* listener, int
 }
 
 //------------------------------------------------------------------------
-CSpecialDigit::CSpecialDigit (const CSpecialDigit& v)
-: CControl (v)
-, iNumbers (v.iNumbers)
-, width (v.width)
-, height (v.height)
-{
-	for (int32_t i = 0; i < 7; i++)
-	{
-		xpos[i] = v.xpos[i];
-		ypos[i] = v.ypos[i];
-	}
-}
-
-//------------------------------------------------------------------------
 void CSpecialDigit::draw (CDrawContext& context)
 {
 	CPoint where;

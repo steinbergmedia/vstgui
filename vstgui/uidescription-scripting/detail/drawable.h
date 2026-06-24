@@ -50,8 +50,6 @@ struct JavaScriptDrawableControl : CControl,
 	void drawRect (CDrawContext& context, const CRect& rect) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
-
-	CLASS_METHODS_NOCOPY (JavaScriptDrawableControl, CControl);
 };
 
 //------------------------------------------------------------------------

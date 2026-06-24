@@ -38,19 +38,6 @@ CVuMeter::CVuMeter (const CRect& size, const SharedPointer<CBitmap>& onBitmap,
 }
 
 //------------------------------------------------------------------------
-CVuMeter::CVuMeter (const CVuMeter& v)
-: CControl (v)
-, offBitmap (v.offBitmap)
-, nbLed (v.nbLed)
-, style (v.style)
-, decreaseValue (v.decreaseValue)
-, rectOn (v.rectOn)
-, rectOff (v.rectOff)
-{
-	setWantsIdle (true);
-}
-
-//------------------------------------------------------------------------
 CVuMeter::~CVuMeter () noexcept
 {
 	setOnBitmap (nullptr);

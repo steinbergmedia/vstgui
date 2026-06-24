@@ -22,7 +22,6 @@ class CShadowViewContainer : public CViewContainer,
 {
 public:
 	explicit CShadowViewContainer (const CRect& size);
-	CShadowViewContainer (const CShadowViewContainer& copy);
 	~CShadowViewContainer () noexcept override;
 
 	//-----------------------------------------------------------------------------
@@ -51,7 +50,6 @@ public:
 
 	void onScaleFactorChanged (CFrame& frame, double newScaleFactor) override;
 
-	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:
 	void viewContainerViewAdded (CViewContainer& container, CView& view) override;
 	void viewContainerViewRemoved (CViewContainer& container, CView& view) override;

@@ -222,7 +222,6 @@ public:
 	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag,
 				 const SharedPointer<CBitmap>& background = {},
 				 const SharedPointer<CBitmap>& bgWhenClick = {}, const int32_t style = 0);
-	COptionMenu (const COptionMenu& menu);
 	~COptionMenu () noexcept override;
 
 	enum Style
@@ -328,7 +327,6 @@ public:
 	void takeFocus () override;
 	void looseFocus () override;
 
-	CLASS_METHODS(COptionMenu, CParamDisplay)
 private:
 	bool doPopup ();
 	void beforePopup ();

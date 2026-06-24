@@ -23,7 +23,6 @@ class CMovieButton : public CControl,
 public:
 	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
 				  const SharedPointer<CBitmap>& background);
-	CMovieButton (const CMovieButton& movieButton);
 
 	void draw (CDrawContext&) override;
 
@@ -34,7 +33,6 @@ public:
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	bool sizeToFit () override;
 
-	CLASS_METHODS(CMovieButton, CControl)
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CMovieButton)
 	~CMovieButton () noexcept override = default;

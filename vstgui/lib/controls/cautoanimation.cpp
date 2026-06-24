@@ -33,9 +33,6 @@ CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, i
 }
 
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CAutoAnimation& v) : CControl (v) {}
-
-//------------------------------------------------------------------------
 bool CAutoAnimation::isWindowOpened () const { return bWindowOpened; }
 
 //------------------------------------------------------------------------

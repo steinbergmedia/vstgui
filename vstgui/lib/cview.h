@@ -52,7 +52,7 @@ class CView : public CBaseObject,
 {
 public:
 	explicit CView (const CRect& size);
-	CView (const CView& view);
+	CView (const CView& view) = delete;
 
 	/** get the unique runtime ID */
 	ViewRuntimeID getRuntimeID () const;
@@ -455,8 +455,7 @@ public:
 	#if DEBUG
 	virtual void dumpInfo ();
 	#endif
-	//-------------------------------------------
-	CLASS_METHODS(CView, CBaseObject)
+
 protected:
 	enum
 	{

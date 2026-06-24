@@ -212,8 +212,7 @@ public:
 	{
 		dragOperation = DragOperation::None;
 	}
-	
-	CLASS_METHODS(ColorView, CControl)
+
 protected:
 	DragOperation dragOperation {DragOperation::None};
 	CColor color;

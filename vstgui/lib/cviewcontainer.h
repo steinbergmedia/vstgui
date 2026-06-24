@@ -57,7 +57,6 @@ public:
 	using ViewList = std::list<SharedPointer<CView>>;
 
 	explicit CViewContainer (const CRect& size);
-	CViewContainer (const CViewContainer& viewContainer);
 
 	//-----------------------------------------------------------------------------
 	/// @name Sub View Methods
@@ -274,9 +273,8 @@ public:
 	};
 
 	//-------------------------------------------
-	CLASS_METHODS(CViewContainer, CView)
 
-	#if DEBUG
+#if DEBUG
 	void dumpInfo () override;
 	virtual void dumpHierarchy ();
 	#endif

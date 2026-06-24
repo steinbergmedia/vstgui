@@ -21,10 +21,10 @@ public:
 		kHorizontal,
 		kVertical
 	};
-	
-	CScrollbar (const CRect& size, IControlListener* listener, int32_t tag, ScrollbarDirection style, const CRect& scrollSize);
-	CScrollbar (const CScrollbar& scrollbar);
-	
+
+	CScrollbar (const CRect& size, IControlListener* listener, int32_t tag,
+				ScrollbarDirection style, const CRect& scrollSize);
+
 	//-----------------------------------------------------------------------------
 	/// @name CScrollbar Methods
 	//-----------------------------------------------------------------------------
@@ -65,8 +65,7 @@ public:
 	
 	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
-	
-	CLASS_METHODS(CScrollbar, CControl)
+
 	//-----------------------------------------------------------------------------
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CScrollbar)

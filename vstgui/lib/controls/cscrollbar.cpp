@@ -36,24 +36,6 @@ CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t t
 	backgroundColor (255, 255, 255, 200);
 }
 
-//-----------------------------------------------------------------------------
-CScrollbar::CScrollbar (const CScrollbar& v)
-: CControl (v)
-, direction (v.direction)
-, scrollSize (v.scrollSize)
-, scrollerArea (v.scrollerArea)
-, stepValue (v.stepValue)
-, scrollerLength (v.scrollerLength)
-, frameColor (v.frameColor)
-, scrollerColor (v.scrollerColor)
-, backgroundColor (v.backgroundColor)
-, overlayStyle (v.overlayStyle)
-, mouseIsInside (false)
-, drawer (v.drawer)
-{
-	calculateScrollerLength ();
-}
-
 //------------------------------------------------------------------------
 void CScrollbar::setDrawer (const SharedPointer<IScrollbarDrawer>& d) { drawer = d; }
 

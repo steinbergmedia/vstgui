@@ -73,7 +73,6 @@ public:
 
 	ExternalView::IView* getExternalView () const override;
 
-	CLASS_METHODS_NOCOPY (CExternalControl, CControl)
 private:
 	void draw (CDrawContext& context) override {}
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;

@@ -54,12 +54,6 @@ CSliderBase::CSliderBase (const CRect& size, IControlListener* listener, int32_t
 }
 
 //------------------------------------------------------------------------
-CSliderBase::CSliderBase (const CSliderBase& v) : CControl (v)
-{
-	impl = std::unique_ptr<Impl> (new Impl (*v.impl));
-}
-
-//------------------------------------------------------------------------
 CSliderBase::~CSliderBase () noexcept
 {
 }
@@ -652,12 +646,6 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag,
 	setOffsetHandle (offsetHandle);
 
 	setWantsFocus (true);
-}
-
-//------------------------------------------------------------------------
-CSlider::CSlider (const CSlider& v) : CSliderBase (v)
-{
-	impl = std::unique_ptr<Impl> (new Impl (*v.impl));
 }
 
 //------------------------------------------------------------------------

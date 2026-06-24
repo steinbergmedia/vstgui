@@ -39,14 +39,6 @@ COnOffButton::COnOffButton (const CRect& size, IControlListener* listener, int32
 }
 
 //------------------------------------------------------------------------
-COnOffButton::COnOffButton (const COnOffButton& v)
-: CControl (v)
-, style (v.style)
-{
-	setWantsFocus (true);
-}
-
-//------------------------------------------------------------------------
 void COnOffButton::draw (CDrawContext& context)
 {
 	if (getDrawBackground ())
@@ -156,9 +148,6 @@ CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t
 {
 	setWantsFocus (true);
 }
-
-//------------------------------------------------------------------------
-CKickButton::CKickButton (const CKickButton& v) : CControl (v) { setWantsFocus (true); }
 
 //------------------------------------------------------------------------
 void CKickButton::draw (CDrawContext& context)
@@ -316,20 +305,6 @@ CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag
 	setWantsFocus (true);
 	if (style & kAutoSizeToFit)
 		sizeToFit ();
-}
-
-//------------------------------------------------------------------------
-CCheckBox::CCheckBox (const CCheckBox& checkbox)
-: CControl (checkbox)
-, style (checkbox.style)
-, fontColor (checkbox.fontColor)
-, font (checkbox.font)
-{
-	setTitle (checkbox.title);
-	setBoxFillColor (checkbox.boxFillColor);
-	setBoxFrameColor (checkbox.boxFrameColor);
-	setCheckMarkColor (checkbox.checkMarkColor);
-	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------

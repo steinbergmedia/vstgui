@@ -28,12 +28,6 @@ CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32
 }
 
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CMovieButton& v) : CControl (v), buttonState (v.buttonState)
-{
-	setWantsFocus (true);
-}
-
-//------------------------------------------------------------------------
 void CMovieButton::draw (CDrawContext& context)
 {
 	if (auto bitmap = getDrawBackground ())

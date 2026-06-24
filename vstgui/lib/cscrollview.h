@@ -132,7 +132,6 @@ public:
 	void setAutosizeFlags (int32_t flags) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	CLASS_METHODS_NOCOPY (CScrollView, CViewContainer)
 	//-----------------------------------------------------------------------------
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CScrollView)

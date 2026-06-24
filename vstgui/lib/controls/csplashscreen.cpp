@@ -39,7 +39,7 @@ public:
 		}
 		return kMouseEventNotHandled;
 	}
-	CLASS_METHODS(CDefaultSplashScreenView, CControl)
+
 protected:
 	CPoint offset;
 };
@@ -84,16 +84,6 @@ CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int
 							  const SharedPointer<CView>& splashView)
 : CControl (size, listener, tag), modalView (splashView)
 {
-}
-
-//------------------------------------------------------------------------
-CSplashScreen::CSplashScreen (const CSplashScreen& v)
-: CControl (v)
-, toDisplay (v.toDisplay)
-, keepSize (v.keepSize)
-, offset (v.offset)
-{
-	modalView = owned (v.modalView->newCopy ()).cast<CView> ();
 }
 
 //------------------------------------------------------------------------

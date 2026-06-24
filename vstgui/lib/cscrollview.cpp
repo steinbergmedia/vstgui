@@ -22,8 +22,7 @@ class CScrollContainer : public CViewContainer
 //-----------------------------------------------------------------------------
 {
 public:
-	CScrollContainer (const CRect &size, const CRect &containerSize);
-	CScrollContainer (const CScrollContainer& v);
+	CScrollContainer (const CRect& size, const CRect& containerSize);
 	~CScrollContainer () override = default;
 
 	void setScrollOffset (CPoint offset, bool withRedraw = false);
@@ -41,7 +40,6 @@ public:
 	SharedPointer<IDropTarget> getDropTarget () override;
 	void onDragMove (CPoint where);
 
-	CLASS_METHODS(CScrollContainer, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
 	struct DropTarget : public IDropTarget, public NonAtomicReferenceCounted
@@ -93,16 +91,6 @@ CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSiz
 , inScrolling (false)
 {
 	setTransparency (true);
-}
-
-//-----------------------------------------------------------------------------
-CScrollContainer::CScrollContainer (const CScrollContainer& v)
-: CViewContainer (v)
-, containerSize (v.containerSize)
-, offset (v.offset)
-, autoDragScroll (v.autoDragScroll)
-, inScrolling (false)
-{
 }
 
 //-----------------------------------------------------------------------------
