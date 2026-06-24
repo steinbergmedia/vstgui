@@ -521,7 +521,11 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		});
 	}
 
-	void viewWillDelete (CView& view) override { removeView (view); }
+	void viewWillDelete (CView& view) override
+	{
+		auto lifeGuard = uiDesc.lock ();
+		removeView (view);
+	}
 
 	ViewScriptObject* addView (CView& view, std::unique_ptr<ViewScriptObject>&& scriptObject)
 	{
