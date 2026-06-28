@@ -149,9 +149,9 @@ public:
 
 	IValue::Type stringAsValue (const UTF8String& string) const override
 	{
-		if (auto index = indexOf (strings.begin (), strings.end (), string))
+		if (auto index = indexOf<IStepValue::StepType> (strings.begin (), strings.end (), string))
 		{
-			return convertStepToValue (static_cast<IStepValue::StepType> (*index),
+			return convertStepToValue (*index,
 									   static_cast<IStepValue::StepType> (strings.size () - 1));
 		}
 		return IValue::InvalidValue;

@@ -265,14 +265,14 @@ void UIGridController::syncMenuValueAndSize ()
 	if (!gridMenu)
 		return;
 
-	auto index = indexOf (defGrids.begin (), defGrids.end (), getSize ());
+	auto index = indexOf<float> (defGrids.begin (), defGrids.end (), getSize ());
 	if (!index)
 	{
 		gridMenu->setValue (0.f);
 		setSize (defGrids[0]);
 		return;
 	}
-	gridMenu->setValue (static_cast<float> (*index));
+	gridMenu->setValue (*index);
 }
 
 //----------------------------------------------------------------------------------------------------

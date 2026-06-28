@@ -645,7 +645,7 @@ CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer& inView) cons
 bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
 											bool makeRowVisible)
 {
-	auto index = indexOf (subviews.begin (), subviews.end (), newView);
+	auto index = indexOf<int32_t> (subviews.begin (), subviews.end (), newView);
 	if (!index)
 		return false;
 
@@ -851,7 +851,7 @@ void UIViewListDataSource::onUndoManagerChange ()
 	{
 		if (auto dataBrowser = dbPtr.lock ())
 		{
-			if (auto index = indexOf (subviews.begin (), subviews.end (), selectedView))
+			if (auto index = indexOf<int32_t> (subviews.begin (), subviews.end (), selectedView))
 			{
 				dataBrowser->setSelectedRow (*index, true);
 				return;

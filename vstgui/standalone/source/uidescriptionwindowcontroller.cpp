@@ -650,9 +650,9 @@ struct WindowController::Impl : public ICommandHandler
 		{
 			if (!impl)
 				return registeredTag;
-			if (auto index =
-					indexOfTest (impl->valueWrappers.begin (), impl->valueWrappers.end (),
-								 [&] (const ValueWrapperPtr& v) { return v->getID () == name; }))
+			if (auto index = indexOfTest<int32_t> (
+					impl->valueWrappers.begin (), impl->valueWrappers.end (),
+					[&] (const ValueWrapperPtr& v) { return v->getID () == name; }))
 				return *index;
 			return registeredTag;
 		}

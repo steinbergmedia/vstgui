@@ -11,27 +11,42 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
+namespace Detail {
+
+//------------------------------------------------------------------------
+template<typename ResultType, typename Iter>
+Optional<ResultType> checkedDistance (const Iter& first, const Iter& it)
+{
+	auto dist = std::distance (first, it);
+	auto maxDist = std::numeric_limits<ResultType>::max ();
+	if (dist > static_cast<size_t> (maxDist))
+		return {};
+	return {static_cast<ResultType> (dist)};
+}
+
+//------------------------------------------------------------------------
+} // Detail
 
 //------------------------------------------------------------------------
 /** Returns the index of the value */
-template <typename Iter, typename Type, typename ResultType = int32_t>
+template<typename ResultType, typename Iter, typename Type>
 Optional<ResultType> indexOf (Iter first, Iter last, const Type& value)
 {
 	auto it = std::find (first, last, value);
 	if (it == last)
 		return {};
-	return {static_cast<ResultType> (std::distance (first, it))};
+	return Detail::checkedDistance<ResultType> (first, it);
 }
 
 //------------------------------------------------------------------------
 /** Returns the index of the element for which predicate p returns true */
-template <typename Iter, typename Proc, typename ResultType = int32_t>
+template<typename ResultType, typename Iter, typename Proc>
 Optional<ResultType> indexOfTest (Iter first, Iter last, Proc p)
 {
 	auto it = std::find_if (first, last, p);
 	if (it == last)
 		return {};
-	return {static_cast<ResultType> (std::distance (first, it))};
+	return Detail::checkedDistance<ResultType> (first, it);
 }
 
 //------------------------------------------------------------------------

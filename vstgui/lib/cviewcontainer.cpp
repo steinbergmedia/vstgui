@@ -18,6 +18,7 @@
 #include "dispatchlist.h"
 #include "events.h"
 #include "finally.h"
+#include "algorithm.h"
 
 #include <algorithm>
 #include <cassert>
@@ -561,10 +562,7 @@ bool CViewContainer::removeSubview (const SharedPointer<CView>& view)
 //------------------------------------------------------------------------
 Optional<size_t> CViewContainer::indexOfSubview (const SharedPointer<CView>& view) const
 {
-	auto it = std::find (pImpl->children.begin (), pImpl->children.end (), view);
-	if (it != pImpl->children.end ())
-		return {static_cast<size_t> (std::distance (pImpl->children.begin (), it))};
-	return {};
+	return indexOf<size_t> (pImpl->children.begin (), pImpl->children.end (), view);
 }
 
 //-----------------------------------------------------------------------------

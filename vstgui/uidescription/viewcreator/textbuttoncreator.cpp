@@ -120,9 +120,9 @@ bool TextButtonCreator::apply (CView& view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrIconPosition);
 	if (attr)
 	{
-		if (auto index =
-		        indexOf (getPositionStrings ().begin (), getPositionStrings ().end (), *attr))
-			button->setIconPosition (static_cast<CDrawMethods::IconPosition> (*index));
+		if (auto index = indexOf<CDrawMethods::IconPosition> (getPositionStrings ().begin (),
+															  getPositionStrings ().end (), *attr))
+			button->setIconPosition (*index);
 	}
 	attr = attributes.getAttributeValue (kAttrTextAlignment);
 	if (attr)
