@@ -7,10 +7,14 @@ and begin applying the necessary modifications to their code.
 
 ### Version 4.99
 
-Shared pointers are now mandatory for nearly all methods that previously used naked pointers.
-This includes constructors, callback methods, and various methods for setting and retrieving bitmaps,
-fonts, gradients, and other UI elements. The IController, IContentProvider, and IUIDescriptionAddOn
-interfaces have also been updated to use shared pointers and references.
+VSTGUI now uses a shared-pointer type derived from std::shared_ptr throughout the library. 
+Because VSTGUI objects require a custom Deleter, use the makeShared template (not std::make_shared) 
+to create new instances. 
+This change affects the entire codebase. 
+Shared pointers are now required across APIs that previously used raw pointers. Covering 
+constructors, callbacks, and methods for setting and retrieving bitmaps, fonts, gradients, 
+and other UI elements. The IController, IContentProvider, and IUIDescriptionAddOn interfaces 
+have also been updated to use shared pointers and references instead of raw pointers.
 
 Apart from this, all previously deprecated methods, functions, and classes are removed.
 
@@ -18,173 +22,164 @@ Detailed changes:
 
 - CView has lost its dirty flag handling functionality. Consequently, all CView methods must now be 
   invoked from the UI thread.
-
 - the makeOwned template is deprecated, use makeShared instead
 
-- The following important ```CView``` methods have changed:
-	* ```bool CView::removed (CViewContainer& parent)```
-	* ```bool CView::attached (CViewContainer& parent)```
-	* ```void draw (CDrawContext& context)```
-	* ```void drawRect (CDrawContext& context, const CRect& updateRect)```
-	* ```SharedPointer<CViewContainer> CView::asViewContainer ()```
-	* ```SharedPointer<CViewContainer> CView::getParentView () const```
-	* ```CFrame* getFrame () const```
+- The following important `CView` methods have changed:
+	- `bool CView::removed (CViewContainer& parent)`
+	- `bool CView::attached (CViewContainer& parent)`
+	- `void draw (CDrawContext& context)`
+	- `void drawRect (CDrawContext& context, const CRect& updateRect)`
+	- `CViewContainer* CView::getParentView () const`
 
-- The following important ```CViewContainer``` methods have changed:
-	* ```bool CViewContainer::addSubview (const SharedPointer<CView>& view)```
-	* ```bool CViewContainer::insertSubview (const SharedPointer<CView>& view, const Optional<size_t>& position = {});```
-	* ```bool CViewContainer::removeSubview (const SharedPointer<CView>& view)```
-	* ```bool CViewContainer::isChild (const SharedPointer<CView>& pView, bool deep) const```
-	* ```bool CViewContainer::changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex)```
-	* ```bool CViewContainer::checkUpdateRect (const SharedPointer<CView>& view, const CRect& rect)```
+- The following important `CViewContainer` methods have changed:
+	- `bool CViewContainer::addSubview (const SharedPointer<CView>& view)`
+	- `bool CViewContainer::insertSubview (const SharedPointer<CView>& view, const Optional<size_t>& position = {});`
+	- `bool CViewContainer::removeSubview (const SharedPointer<CView>& view)`
+	- `bool CViewContainer::isChild (CView& pView, bool deep) const`
+	- `bool CViewContainer::changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex)`
+	- `bool CViewContainer::checkUpdateRect (const SharedPointer<CView>& view, const CRect& rect)`
 	
-- All constructors having ```CBitmaps``` as arguments now take them as a ```SharedPointer```.
-- Changed ```IDraggingSession``` and related callback methods to use const references instead of pointers
-- The following methods now take a ```SharedPointer<CBitmap>``` instead of a naked pointer
-and their possible getter methods return also a ```SharedPointer<CBitmap>``` now:
-	* ```CView::setBackground```
-	* ```CView::setDisabledBackground```
-	* ```CVUMeter::setOnBitmap```
-	* ```CVUMeter::setOffBitmap```
-	* ```CTextButton::setIcon```
-	* ```CTextButton::setIconHighlighted```
-	* ```CKnob::setHandleBitmap```
-	* ```CSlider::setHandle```
-	* ```CAnimationSplashScreen::setSplashBitmap```
-	* ```COptionMenu::setIcon```
-	* ```CParamDisplay::drawBack```
-	* ```CTabView::addTab```
-	* ```CDrawMethods::drawIconAndText```
-	* ```CDrawContext::fillRectWithBitmap```
-	* ```CDrawContext::drawBitmapNinePartTiled```
-	* ```CDrawContext::drawBitmap```
-	* ```CBitmapPixelAccess::create```
-	* ```IUIDescription::lookupBitmapName```
-	* ```UIViewCreator::bitmapToString```
-	* ```UIViewCreator::stringToBitmap```
+- All constructors having `CBitmaps` as arguments now take them as a `SharedPointer`.
+- Changed `IDraggingSession` and related callback methods to use const references instead of pointers
+- The following methods now take a `SharedPointer<CBitmap>` instead of a raw pointer
+and their possible getter methods return also a `SharedPointer<CBitmap>` now:
+	- `CView::setBackground`
+	- `CView::setDisabledBackground`
+	- `CVUMeter::setOnBitmap`
+	- `CVUMeter::setOffBitmap`
+	- `CTextButton::setIcon`
+	- `CTextButton::setIconHighlighted`
+	- `CKnob::setHandleBitmap`
+	- `CSlider::setHandle`
+	- `CAnimationSplashScreen::setSplashBitmap`
+	- `COptionMenu::setIcon`
+	- `CParamDisplay::drawBack`
+	- `CTabView::addTab`
+	- `CDrawMethods::drawIconAndText`
+	- `CDrawContext::fillRectWithBitmap`
+	- `CDrawContext::drawBitmapNinePartTiled`
+	- `CDrawContext::drawBitmap`
+	- `CBitmapPixelAccess::create`
+	- `IUIDescription::lookupBitmapName`
+	- `UIViewCreator::bitmapToString`
+	- `UIViewCreator::stringToBitmap`
 
-- The following methods return a SharedPointer<...> now instead of a naked pointer
-	* ```CViewContainer::findFirstView```
-	* ```CViewContainer::Iterator::operator*```
-	* ```CViewContainer::getView```
-	* ```CViewContainer::getViewAt```
-	* ```CViewContainer::getContainerAt```
-	* ```CViewContainer::getInitialFocusView```
-	* ```CDrawContext::createGraphicsPath```
-	* ```CDrawContext::createTextPath```
-	* ```CDrawContext::createRoundRectGraphicsPath```
-	* ```CGradient::create```
-	* ```CGraphicsPath::createGradient```
-	* ```COffscreenContext::getBitmap```
-	* ```CBitmapPixelAccess::create```
-	* ```CTextButton::getGradient```
-	* ```CTextButton::getGradientHighlighted```
-	* ```CSegmentButton::getGradient```
-	* ```CSegmentButton::getGradientHighlighted```
-	* ```CGradientView::getGradient```
-	* ```IUIDescription::getBitmap```
-	* ```IUIDescription::getGradient```
-	* ```IUIDescription::getFont```
-	* ```IUIDescription::getController```
-	* ```IController::createSubController```
-	* ```BitmapFilter::FilterBase::getInputBitmap```
-	* ```Standalone::ISharedUIResources::getBitmap```
-	* ```Standalone::ISharedUIResources::getGradient```
-	* ```Standalone::ISharedUIResources::getFont```
-	* ```Standalone::ICustomization::createController```
+- The following methods return a `SharedPointer<...>` now instead of a raw pointer
+	- `CViewContainer::findFirstView`
+	- `CViewContainer::Iterator::operator*`
+	- `CViewContainer::getView`
+	- `CViewContainer::getViewAt`
+	- `CViewContainer::getContainerAt`
+	- `CViewContainer::getInitialFocusView`
+	- `CDrawContext::createGraphicsPath`
+	- `CDrawContext::createTextPath`
+	- `CDrawContext::createRoundRectGraphicsPath`
+	- `CGradient::create`
+	- `CGraphicsPath::createGradient`
+	- `COffscreenContext::getBitmap`
+	- `CBitmapPixelAccess::create`
+	- `CTextButton::getGradient`
+	- `CTextButton::getGradientHighlighted`
+	- `CSegmentButton::getGradient`
+	- `CSegmentButton::getGradientHighlighted`
+	- `CGradientView::getGradient`
+	- `IUIDescription::getBitmap`
+	- `IUIDescription::getGradient`
+	- `IUIDescription::getFont`
+	- `IUIDescription::getController`
+	- `IController::createSubController`
+	- `BitmapFilter::FilterBase::getInputBitmap`
+	- `Standalone::ISharedUIResources::getBitmap`
+	- `Standalone::ISharedUIResources::getGradient`
+	- `Standalone::ISharedUIResources::getFont`
+	- `Standalone::ICustomization::createController`
 
-- The global fonts (kSystemFont, kNormalFont, etc) are now ```SharedPointer<CFontDesc>``` instead of naked pointers.
-- The following methods now take ```SharedPointer<CFontDesc>``` instead of a naked pointer:
-	* ```CParamDisplay::setFont```
-	* ```CCheckBox::setFont```
-	* ```CTextButton::setFont```
-	* ```CDrawContext::setFont```
-	* ```CFontChooser::CFontChooser```
-	* ```CFontChooser::setFont```
-	* ```CSegmentButton::setFont```
-	* ```StringListControlDrawer::setFont```
-	* ```CTabView::setTabFontStyle```
-	* ```CDrawContext::createTextPath```
-	* ```CDrawMethods::createTruncatedText```
-	* ```CDrawMethods::drawIconAndText```
-	* ```IFontChooserDelegate::fontChanged```
-	* ```GenericStringListDataBrowserSource::setupUI```
-	* ```IUIDescription::lookupFontName```
+- The global fonts (kSystemFont, kNormalFont, etc) are now `SharedPointer<CFontDesc>` instead of raw pointers.
+- The following methods now take `SharedPointer<CFontDesc>` instead of a raw pointer:
+	- `CParamDisplay::setFont`
+	- `CCheckBox::setFont`
+	- `CTextButton::setFont`
+	- `CDrawContext::setFont`
+	- `CFontChooser::CFontChooser`
+	- `CFontChooser::setFont`
+	- `CSegmentButton::setFont`
+	- `StringListControlDrawer::setFont`
+	- `CTabView::setTabFontStyle`
+	- `CDrawContext::createTextPath`
+	- `CDrawMethods::createTruncatedText`
+	- `CDrawMethods::drawIconAndText`
+	- `IFontChooserDelegate::fontChanged`
+	- `GenericStringListDataBrowserSource::setupUI`
+	- `IUIDescription::lookupFontName`
 
-- The following methods now take ```SharedPointer<CGradient>``` instead of a naked pointer:
-	* ```CTextButton::setGradient```
-	* ```CTextButton::setGradientHighlighted```
-	* ```CSegmentButton::setGradient```
-	* ```CSegmentButton::setGradientHighlighted```
-	* ```CGradientView::setGradient```
-	* ```IUIDescription::lookupGradientName```
-	* ```UIViewCreator::addGradientToUIDescription```
+- The following methods now take `SharedPointer<CGradient>` instead of a raw pointer:
+	- `CTextButton::setGradient`
+	- `CTextButton::setGradientHighlighted`
+	- `CSegmentButton::setGradient`
+	- `CSegmentButton::setGradientHighlighted`
+	- `CGradientView::setGradient`
+	- `IUIDescription::lookupGradientName`
+	- `UIViewCreator::addGradientToUIDescription`
 
-- The following methods now take ```SharedPointer<CGraphicsPath>``` instead of a naked pointer:
-	* ```CDrawContext::drawGraphicsPath```
-	* ```CDrawContext::fillLinearGradient```
-	* ```CDrawContext::fillRadialGradient```
+- The following methods now take `SharedPointer<CGraphicsPath>` instead of a raw pointer:
+	- `CDrawContext::drawGraphicsPath`
+	- `CDrawContext::fillLinearGradient`
+	- `CDrawContext::fillRadialGradient`
 
-- The following methods now take a ```SharedPointer<CView>``` instead of a naked pointer:
-	* ```CViewContainer::setInitialFocusView```
+- The following methods now take a `SharedPointer<CView>` instead of a raw pointer:
+	- `CViewContainer::setInitialFocusView`
 
-- The following methods now take a ```SharedPointer<IController>``` instead of a naked pointer:
-	* ```IUIDescription::createView```
-	* ```UIDescription::setController```
-	* ```DelegationController::DelegationController```
+- The following methods now take a `SharedPointer<IController>` instead of a raw pointer:
+	- `IUIDescription::createView`
+	- `UIDescription::setController`
+	- `DelegationController::DelegationController`
 
-- The following methods now take a ```const IUIDescription&``` instead of a naked pointer:
-	* ```IController::createView```
-	* ```IController::verifyView```
-	* ```IController::createSubController```
-	* ```Standalone::ICustomization::createController```
+- The following methods now take a `const IUIDescription&` instead of a raw pointer:
+	- `IController::createView`
+	- `IController::verifyView`
+	- `IController::createSubController`
+	- `Standalone::ICustomization::createController`
 
-- The following functions now take a const reference instead of a const naked pointer
-	* ```getViewController```
-	* ```findViewController```
+- The following functions now take a const reference instead of a const raw pointer
+	- `getViewController`
+	- `findViewController`
 	
-- The following functions now take a reference instead of a naked pointer
-	* ```IAnimationTarget::animationStart```
-	* ```IAnimationTarget::animationTick```
-	* ```IAnimationTarget::animationFinished```
-	* ```IViewListener::viewSizeChanged```
-	* ```IViewListener::viewAttached```
-	* ```IViewListener::viewRemoved```
-	* ```IViewListener::viewLostFocus```
-	* ```IViewListener::viewTookFocus```
-	* ```IViewListener::viewWillDelete```
-	* ```IViewListener::viewOnMouseEnabled```
-	* ```IViewEventListener::viewOnEvent```
-	* ```IScaleFactorChangedListener::onScaleFactorChanged```
-	* ```IContextMenuController2::appendContextMenuItems```
-	* ```IViewFactory::applyAttributeValues```
-	* ```IViewFactory::applyCustomViewAttributeValues```
-	* ```IViewFactory::getAttributeValue```
-	* ```IViewFactory::viewIsTypeOf```
-	* ```IViewFactory::getViewName```
-	* ```IViewFactoryEditingSupport::getAttributeNamesForView```
-	* ```IViewFactoryEditingSupport::getAttributesForView```
-	* ```IViewFactoryEditingSupport::getPossibleAttributeListValues```
-	* ```IViewFactoryEditingSupport::getAttributeValueRange```
-	* ```IViewFactoryEditingSupport::getViewDisplayName```
-	* all ```IDataBrowserDelegate``` methods
+- The following functions now take a reference instead of a raw pointer
+	- `IAnimationTarget::animationStart`
+	- `IAnimationTarget::animationTick`
+	- `IAnimationTarget::animationFinished`
+	- `IViewListener::viewSizeChanged`
+	- `IViewListener::viewAttached`
+	- `IViewListener::viewRemoved`
+	- `IViewListener::viewLostFocus`
+	- `IViewListener::viewTookFocus`
+	- `IViewListener::viewWillDelete`
+	- `IViewListener::viewOnMouseEnabled`
+	- `IViewEventListener::viewOnEvent`
+	- `IScaleFactorChangedListener::onScaleFactorChanged`
+	- `IContextMenuController2::appendContextMenuItems`
+	- `IViewFactory::applyAttributeValues`
+	- `IViewFactory::applyCustomViewAttributeValues`
+	- `IViewFactory::getAttributeValue`
+	- `IViewFactory::viewIsTypeOf`
+	- `IViewFactory::getViewName`
+	- `IViewFactoryEditingSupport::getAttributeNamesForView`
+	- `IViewFactoryEditingSupport::getAttributesForView`
+	- `IViewFactoryEditingSupport::getPossibleAttributeListValues`
+	- `IViewFactoryEditingSupport::getAttributeValueRange`
+	- `IViewFactoryEditingSupport::getViewDisplayName`
+	- all `IDataBrowserDelegate` methods
 	
 
-- The ```IController``` interface now inherits virtually from ```IReference```
-
-- The ```IScriptControllerExtension``` interface was changed to use references instead of pointers to indicate that these objects are always valid when these methods are called.
-
-- The ```IUIDescriptionAddOn``` interface was changed to use shared pointers for ```IUIDescription``` and ```IViewFactory```.
-
-- The ```IUIDescription::getViewFactory``` changed the return value to be a const reference of ```IViewFactory```.
-
-- The ```IContentProvider``` inherits virtually from ```IReference``` now.
-
-- One of the ```UIDescription``` constructor now takes a ```SharedPointer<IContentProvider>``` instead of a naked pointer.
-
-- The ```IDependency``` class was removed
-- The ```CTabView``` class was removed
-- The ```COpenGLView``` class was removed
+- The `IControlListener` interface now inherits virtually from `IReference` and is a pure virtual interface class. Use `ControlListenerAdapter` as a base for implementing an IControlListener.
+- The `IScriptControllerExtension` interface was changed to use references instead of pointers to indicate that these objects are always valid when these methods are called.
+- The `IUIDescriptionAddOn` interface was changed to use references for `IUIDescription` and shared pointers for the `IViewFactory`.
+- The `IUIDescription::getViewFactory` changed the return value to be a const reference of `IViewFactory`.
+- The `IContentProvider` inherits virtually from `IReference` now.
+- The `UIDescription` constructor is now protected and you need to call the static `UIDescription::make` function instead.
+- The `IDependency` class was removed
+- The `CTabView` class was removed
+- The `COpenGLView` class was removed
 
 ### Version 4.14
 
@@ -281,7 +276,7 @@ The old mouse methods (onMouseDown, onMouseUp, onMouseMoved, etc) are still supp
 
 ### Version 4.5
 
-- COffscreenContext::create returns a SharedPointer<COffscreenContext> now, not a naked pointer.
+- COffscreenContext::create returns a SharedPointer<COffscreenContext> now, not a raw pointer.
 
 ### Version 4.3
 
@@ -351,3 +346,4 @@ it compiles without changing the macro. All methods marked this way will be unav
 - When using GDI+ or libpng on Windows there is no need in using any offscreen context for flicker reduction as VSTGUI uses a backbuffer for drawing.
 - Custom controls must implement the CLASS_METHODS macro if it directly inherits from CControl. Otherwise you will get a compile error.
 - Custom controls which don't implement the new mouse methods must override onMouseDown and return kMouseEventNotHandled so that the old mouse method is called.
+
