@@ -548,7 +548,7 @@ bool CViewContainer::insertSubview (const SharedPointer<CView>& view,
 //------------------------------------------------------------------------
 bool CViewContainer::removeSubview (const SharedPointer<CView>& view)
 {
-	if (auto pos = findSubview (view))
+	if (auto pos = CViewContainer::indexOfSubview (view))
 	{
 		auto it = pImpl->children.begin ();
 		std::advance (it, *pos);
@@ -559,7 +559,7 @@ bool CViewContainer::removeSubview (const SharedPointer<CView>& view)
 }
 
 //------------------------------------------------------------------------
-Optional<size_t> CViewContainer::findSubview (const SharedPointer<CView>& view)
+Optional<size_t> CViewContainer::indexOfSubview (const SharedPointer<CView>& view) const
 {
 	auto it = std::find (pImpl->children.begin (), pImpl->children.end (), view);
 	if (it != pImpl->children.end ())

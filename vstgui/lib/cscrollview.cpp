@@ -733,7 +733,8 @@ void CScrollView::setEdgeView (Edge edge, const SharedPointer<CView>& _view)
 			impl->edgeViewTop->unregisterViewListener (this);
 			CViewContainer::removeSubview (impl->edgeViewTop);
 			impl->edgeViewTop = view;
-			CViewContainer::insertSubview (view, CViewContainer::findSubview (impl->edgeViewLeft));
+			CViewContainer::insertSubview (view,
+										   CViewContainer::indexOfSubview (impl->edgeViewLeft));
 			break;
 		}
 		case Edge::Left:
@@ -741,7 +742,7 @@ void CScrollView::setEdgeView (Edge edge, const SharedPointer<CView>& _view)
 			impl->edgeViewLeft->unregisterViewListener (this);
 			CViewContainer::removeSubview (impl->edgeViewLeft);
 			impl->edgeViewLeft = view;
-			CViewContainer::insertSubview (view, CViewContainer::findSubview (impl->vScrollbar));
+			CViewContainer::insertSubview (view, CViewContainer::indexOfSubview (impl->vScrollbar));
 			break;
 		}
 	}
@@ -790,6 +791,12 @@ bool CScrollView::insertSubview (const SharedPointer<CView>& view, const Optiona
 bool CScrollView::removeSubview (const SharedPointer<CView>& view)
 {
 	return impl->scrollContainer->removeSubview (view);
+}
+
+//-----------------------------------------------------------------------------
+Optional<size_t> CScrollView::indexOfSubview (const SharedPointer<CView>& view) const
+{
+	return impl->scrollContainer->indexOfSubview (view);
 }
 
 //-----------------------------------------------------------------------------

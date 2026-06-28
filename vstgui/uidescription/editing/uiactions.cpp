@@ -410,7 +410,7 @@ void DeleteOperation::undo ()
 	{
 		if (element.second.nextView)
 		{
-			auto pos = element.first->findSubview (element.second.nextView);
+			auto pos = element.first->indexOfSubview (element.second.nextView);
 			element.first->insertSubview (element.second.view, pos);
 		}
 		else

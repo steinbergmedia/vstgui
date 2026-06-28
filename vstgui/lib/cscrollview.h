@@ -119,6 +119,7 @@ public:
 	bool insertSubview (const SharedPointer<CView>& view,
 						const Optional<size_t>& position) override;
 	bool removeSubview (const SharedPointer<CView>& view) override;
+	Optional<size_t> indexOfSubview (const SharedPointer<CView>& view) const override;
 	bool removeAll () override;
 	uint32_t getNbViews () const override;
 	SharedPointer<CView> getView (uint32_t index) const override;

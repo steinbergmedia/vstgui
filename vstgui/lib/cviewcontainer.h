@@ -67,7 +67,7 @@ public:
 	virtual bool insertSubview (const SharedPointer<CView>& view,
 								const Optional<size_t>& position = {});
 	virtual bool removeSubview (const SharedPointer<CView>& view);
-	virtual Optional<size_t> findSubview (const SharedPointer<CView>& view);
+	virtual Optional<size_t> indexOfSubview (const SharedPointer<CView>& view) const;
 	/** remove all child views */
 	virtual bool removeAll ();
 
