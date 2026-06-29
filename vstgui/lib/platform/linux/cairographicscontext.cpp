@@ -468,12 +468,11 @@ bool CairoGraphicsDeviceContext::drawArc (CRect rect, double startAngle1, double
 {
 	impl->doInContext ([&] () {
 		CPoint center = rect.getCenter ();
-		cairo_matrix_t save_matrix;
-		cairo_get_matrix( impl->context, & save_matrix );
+		cairo_save (impl->context);
 		cairo_translate (impl->context, center.x, center.y);
 		cairo_scale (impl->context, 0.5 * rect.getWidth(), 0.5 * rect.getHeight());
 		cairo_arc (impl->context, 0, 0, 1, startAngle1, endAngle2);
-		cairo_set_matrix( impl->context, & save_matrix );
+		cairo_restore (impl->context);
 		impl->draw (drawStyle);
 	});
 	return true;
@@ -482,17 +481,16 @@ bool CairoGraphicsDeviceContext::drawArc (CRect rect, double startAngle1, double
 //------------------------------------------------------------------------
 bool CairoGraphicsDeviceContext::drawEllipse (CRect rect, PlatformGraphicsDrawStyle drawStyle) const
 {
-    impl->doInContext ([&] () {
-        CPoint center = rect.getCenter ();
-        cairo_matrix_t save_matrix;
-        cairo_get_matrix( impl->context, & save_matrix );
-        cairo_translate (impl->context, center.x, center.y);
-        cairo_scale( impl->context, 0.5 * rect.getWidth(), 0.5 * rect.getHeight() );
-        cairo_arc (impl->context, 0, 0, 1, 0, 2 * M_PI);
-        cairo_set_matrix( impl->context, & save_matrix );
-        impl->draw (drawStyle);
-    });
-    return true;
+	impl->doInContext ([&] () {
+		CPoint center = rect.getCenter ();
+		cairo_save (impl->context);
+		cairo_translate (impl->context, center.x, center.y);
+		cairo_scale (impl->context, 0.5 * rect.getWidth(), 0.5 * rect.getHeight() );
+		cairo_arc (impl->context, 0, 0, 1, 0, 2 * M_PI);
+		cairo_restore (impl->context);
+		impl->draw (drawStyle);
+	});
+	return true;
 }
 
 //------------------------------------------------------------------------
