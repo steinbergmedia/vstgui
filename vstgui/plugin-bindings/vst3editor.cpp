@@ -64,9 +64,9 @@ public:
 		auto& instance = get ();
 		if (++instance.users == 1)
 		{
-			instance.timer = VSTGUI::makeOwned<VSTGUI::CVSTGUITimer> (
-			    [] (VSTGUI::CVSTGUITimer*) { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); },
-			    1000 / 30);
+			instance.timer = VSTGUI::makeShared<VSTGUI::CVSTGUITimer> (
+				[] (VSTGUI::CVSTGUITimer*) { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); },
+				1000 / 30);
 		}
 	}
 
@@ -96,7 +96,8 @@ protected:
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class ParameterChangeListener : public Steinberg::FObject
+class ParameterChangeListener : public Steinberg::FObject,
+								public ViewListenerAdapter
 {
 public:
 	ParameterChangeListener (Steinberg::Vst::EditController* editController, Steinberg::Vst::Parameter* parameter, CControl* control)
@@ -115,20 +116,20 @@ public:
 
 	~ParameterChangeListener () override
 	{
+		for (const auto& c : controls)
+			c->unregisterViewListener (this);
 		if (parameter)
 		{
 			parameter->removeDependent (this);
 			parameter->release ();
 		}
-		for (const auto& c : controls)
-			c->forget ();
 	}
 
 	void addControl (CControl* control)
 	{
 		if (containsControl (control))
 			return;
-		control->remember ();
+		control->registerViewListener (this);
 		controls.push_back (control);
 		Steinberg::Vst::ParamValue value = 0.;
 		if (parameter)
@@ -142,10 +143,11 @@ public:
 		}
 		auto* display = dynamic_cast<CParamDisplay*> (control);
 		if (display)
-			display->setValueToStringFunction([this](float value, char utf8String[256], CParamDisplay* display) {
+		{
+			display->setValueToStringFunction ([this] (float value, char utf8String[256], auto&) {
 				return convertValueToString (value, utf8String);
 			});
-
+		}
 		if (parameter)
 			parameter->deferUpdate ();
 		else
@@ -158,8 +160,8 @@ public:
 		{
 			if (c == control)
 			{
+				control->unregisterViewListener (this);
 				controls.remove (control);
-				control->forget ();
 				return;
 			}
 		}
@@ -238,6 +240,12 @@ public:
 	Steinberg::Vst::Parameter* getParameter () const { return parameter; }
 
 protected:
+	void viewWillDelete (CView& view) override
+	{
+		if (auto control = dynamic_cast<CControl*> (&view))
+			removeControl (control);
+	}
+
 	bool convertValueToString (float value, char utf8String[256])
 	{
 		if (parameter)
@@ -373,18 +381,65 @@ static bool parseSize (const std::string& str, CPoint& point)
 	return false;
 }
 
-//-----------------------------------------------------------------------------
-static void releaseSubController (IController* subController)
-{
-	if (auto ref = dynamic_cast<IReference*> (subController))
-		ref->forget();
-	else if (auto fobj = dynamic_cast<Steinberg::FObject*> (subController))
-		fobj->release ();
-	else
-		delete subController;
-}
-
 } // namespace VST3EditorInternal
+
+//------------------------------------------------------------------------
+struct VST3Editor::Controller : ControllerAdapter,
+								CommandMenuItemTargetAdapter
+
+{
+	Controller (VST3Editor* editor) : editor (editor) {}
+
+	SharedPointer<CView> createView (const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+	SharedPointer<IController> createSubController (UTF8StringPtr name,
+													const IUIDescription& description) override;
+
+	void valueChanged (CControl& control) override;
+	void controlBeginEdit (CControl& control) override;
+	void controlEndEdit (CControl& control) override;
+	void controlTagWillChange (CControl& control) override;
+	void controlTagDidChange (CControl& control) override;
+
+	// CommandMenuItemTargetAdapter
+	bool validateCommandMenuItem (CCommandMenuItem& item) override;
+	bool onCommandMenuItemSelected (CCommandMenuItem& item) override;
+
+	VST3Editor* editor {nullptr};
+};
+
+//------------------------------------------------------------------------
+struct VST3Editor::Impl
+{
+	struct KeyboardHook;
+	KeyboardHook* keyboardHook {nullptr};
+	SharedPointer<UIDescription> description;
+	IVST3EditorDelegate* delegate {nullptr};
+	IController* originalController {nullptr};
+	struct EnterEditModeController;
+	SharedPointer<EnterEditModeController> openUIEditorController;
+	SharedPointer<Controller> controller;
+	using ParameterChangeListenerMap = std::map<int32_t, ParameterChangeListener*>;
+	ParameterChangeListenerMap paramChangeListeners;
+	std::string viewName;
+	std::string xmlFile;
+	bool tooltipsEnabled {true};
+	bool doCreateView {false};
+	bool editingEnabled {false};
+
+	double contentScaleFactor {1.};
+	double zoomFactor {1.};
+	std::vector<double> allowedZoomFactors;
+
+	CPoint minSize;
+	CPoint maxSize;
+	CRect nonEditRect;
+
+	Optional<CPoint> sizeRequest;
+};
 
 //-----------------------------------------------------------------------------
 /*! @class VST3Editor
@@ -410,11 +465,15 @@ See @ref page_uidescription_editor @n
 //-----------------------------------------------------------------------------
 VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName,
 						UTF8StringPtr _xmlFile)
-: VSTGUIEditor (controller), delegate (dynamic_cast<IVST3EditorDelegate*> (controller))
+: VSTGUIEditor (controller)
 {
-	description = makeOwned<UIDescription> (_xmlFile);
-	viewName = _viewName;
-	xmlFile = _xmlFile;
+	pImpl = std::make_unique<Impl> ();
+	pImpl->controller = makeShared<Controller> (this);
+	pImpl->delegate = dynamic_cast<IVST3EditorDelegate*> (controller);
+
+	pImpl->description = UIDescription::make (_xmlFile);
+	pImpl->viewName = _viewName;
+	pImpl->xmlFile = _xmlFile;
 	init ();
 }
 
@@ -422,17 +481,21 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPt
 VST3Editor::VST3Editor (const SharedPointer<UIDescription>& desc,
 						Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName,
 						UTF8StringPtr _xmlFile)
-: VSTGUIEditor (controller), delegate (dynamic_cast<IVST3EditorDelegate*> (controller))
+: VSTGUIEditor (controller)
 {
-	description = desc;
-	viewName = _viewName;
+	pImpl = std::make_unique<Impl> ();
+	pImpl->controller = makeShared<Controller> (this);
+	pImpl->delegate = dynamic_cast<IVST3EditorDelegate*> (controller);
+
+	pImpl->description = desc;
+	pImpl->viewName = _viewName;
 	if (_xmlFile)
-		xmlFile = _xmlFile;
+		pImpl->xmlFile = _xmlFile;
 	init ();
 }
 
 //-----------------------------------------------------------------------------
-VST3Editor::~VST3Editor () {}
+VST3Editor::~VST3Editor () { pImpl->controller->editor = nullptr; }
 
 //-----------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID iid, void** obj)
@@ -447,14 +510,11 @@ Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID 
 //-----------------------------------------------------------------------------
 void VST3Editor::init ()
 {
-	// we will always call CView::setDirty() on the main thread
-	VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true;
-
 	setIdleRate (300);
-	if (description->parse ())
+	if (pImpl->description->parse ())
 	{
 		// get sizes
-		auto attr = description->getViewAttributes (viewName.c_str ());
+		auto attr = pImpl->description->getViewAttributes (pImpl->viewName.c_str ());
 		if (attr)
 		{
 			const std::string* sizeStr = attr->getAttributeValue ("size");
@@ -467,40 +527,40 @@ void VST3Editor::init ()
 				{
 					rect.right = (Steinberg::int32)p.x;
 					rect.bottom = (Steinberg::int32)p.y;
-					minSize = p;
-					maxSize = p;
+					pImpl->minSize = p;
+					pImpl->maxSize = p;
 				}
 			}
 			if (minSizeStr)
-				VST3EditorInternal::parseSize (*minSizeStr, minSize);
+				VST3EditorInternal::parseSize (*minSizeStr, pImpl->minSize);
 			if (maxSizeStr)
-				VST3EditorInternal::parseSize (*maxSizeStr, maxSize);
+				VST3EditorInternal::parseSize (*maxSizeStr, pImpl->maxSize);
 		}
 		#if DEBUG
 		else
 		{
-			auto debugAttr = VSTGUI::makeOwned<UIAttributes> ();
+			auto debugAttr = VSTGUI::makeShared<UIAttributes> ();
 			debugAttr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			debugAttr->setAttribute ("size", "300, 300");
-			description->addNewTemplate (viewName.c_str (), debugAttr);
+			pImpl->description->addNewTemplate (pImpl->viewName.c_str (), debugAttr);
 			rect.right = 300;
 			rect.bottom = 300;
-			minSize (rect.right, rect.bottom);
-			maxSize (rect.right, rect.bottom);
+			pImpl->minSize (rect.right, rect.bottom);
+			pImpl->maxSize (rect.right, rect.bottom);
 		}
 		#endif
 	}
 	#if DEBUG
 	else
 	{
-		auto attr = VSTGUI::makeOwned<UIAttributes> ();
+		auto attr = VSTGUI::makeShared<UIAttributes> ();
 		attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 		attr->setAttribute ("size", "300, 300");
-		description->addNewTemplate (viewName.c_str (), attr);
+		pImpl->description->addNewTemplate (pImpl->viewName.c_str (), attr);
 		rect.right = 300;
 		rect.bottom = 300;
-		minSize (rect.right, rect.bottom);
-		maxSize (rect.right, rect.bottom);
+		pImpl->minSize (rect.right, rect.bottom);
+		pImpl->maxSize (rect.right, rect.bottom);
 	}
 	#endif
 }
@@ -508,19 +568,19 @@ void VST3Editor::init ()
 //-----------------------------------------------------------------------------
 bool VST3Editor::exchangeView (UTF8StringPtr newViewName)
 {
-	if (viewName == newViewName)
+	if (pImpl->viewName == newViewName)
 		return true;
 
-	const UIAttributes* attr = description->getViewAttributes (newViewName);
+	auto attr = pImpl->description->getViewAttributes (newViewName);
 	if (attr)
 	{
-		viewName = newViewName;
+		pImpl->viewName = newViewName;
 		auto minSizeStr = attr->getAttributeValue ("minSize");
 		auto maxSizeStr = attr->getAttributeValue ("maxSize");
 		if (minSizeStr)
-			VST3EditorInternal::parseSize (*minSizeStr, minSize);
+			VST3EditorInternal::parseSize (*minSizeStr, pImpl->minSize);
 		if (maxSizeStr)
-			VST3EditorInternal::parseSize (*maxSizeStr, maxSize);
+			VST3EditorInternal::parseSize (*maxSizeStr, pImpl->maxSize);
 		requestRecreateView ();
 		return true;
 	}
@@ -530,7 +590,7 @@ bool VST3Editor::exchangeView (UTF8StringPtr newViewName)
 //-----------------------------------------------------------------------------
 void VST3Editor::enableTooltips (bool state)
 {
-	tooltipsEnabled = state;
+	pImpl->tooltipsEnabled = state;
 	if (getFrame ())
 		getFrame ()->enableTooltips (state);
 }
@@ -540,8 +600,8 @@ bool VST3Editor::setEditorSizeConstrains (const CPoint& newMinimumSize, const CP
 {
 	if (newMinimumSize.x <= newMaximumSize.x && newMinimumSize.y <= newMaximumSize.y)
 	{
-		minSize = newMinimumSize;
-		maxSize = newMaximumSize;
+		pImpl->minSize = newMinimumSize;
+		pImpl->maxSize = newMaximumSize;
 		if (frame)
 		{
 			CRect currentSize, newSize;
@@ -550,14 +610,14 @@ bool VST3Editor::setEditorSizeConstrains (const CPoint& newMinimumSize, const CP
 			CCoord width = currentSize.getWidth ();
 			CCoord height = currentSize.getHeight ();
 			double scaleFactor = getAbsScaleFactor ();
-			if (width > maxSize.x * scaleFactor)
-				newSize.setWidth (maxSize.x * scaleFactor);
-			else if (width < minSize.x * scaleFactor)
-				newSize.setWidth (minSize.x * scaleFactor);
-			if (height > maxSize.y * scaleFactor)
-				newSize.setHeight (maxSize.y * scaleFactor);
-			else if (height < minSize.y * scaleFactor)
-				newSize.setHeight (minSize.y * scaleFactor);
+			if (width > pImpl->maxSize.x * scaleFactor)
+				newSize.setWidth (pImpl->maxSize.x * scaleFactor);
+			else if (width < pImpl->minSize.x * scaleFactor)
+				newSize.setWidth (pImpl->minSize.x * scaleFactor);
+			if (height > pImpl->maxSize.y * scaleFactor)
+				newSize.setHeight (pImpl->maxSize.y * scaleFactor);
+			else if (height < pImpl->minSize.y * scaleFactor)
+				newSize.setHeight (pImpl->minSize.y * scaleFactor);
 			if (newSize != currentSize)
 				requestResize (CPoint (newSize.getWidth (), newSize.getHeight ()));
 		}
@@ -574,16 +634,22 @@ double VST3Editor::getAbsScaleFactor () const
 }
 
 //-----------------------------------------------------------------------------
-double VST3Editor::getContentScaleFactor () const { return contentScaleFactor; }
+double VST3Editor::getContentScaleFactor () const { return pImpl->contentScaleFactor; }
 
 //-----------------------------------------------------------------------------
-double VST3Editor::getZoomFactor () const { return zoomFactor; }
+double VST3Editor::getZoomFactor () const { return pImpl->zoomFactor; }
+
+//-----------------------------------------------------------------------------
+void VST3Editor::setAllowedZoomFactors (std::vector<double> zoomFactors)
+{
+	pImpl->allowedZoomFactors = zoomFactors;
+}
 
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 //-----------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::setContentScaleFactor (ScaleFactor factor)
 {
-	contentScaleFactor = factor;
+	pImpl->contentScaleFactor = factor;
 	if (getFrame ())
 	{
 		getFrame ()->setZoom (getAbsScaleFactor ());
@@ -598,25 +664,25 @@ void VST3Editor::setZoomFactor (double factor)
 	if (getZoomFactor () == factor)
 		return;
 
-	zoomFactor = factor;
+	pImpl->zoomFactor = factor;
 
 	if (getFrame () == nullptr)
 		return;
 
 	getFrame ()->setZoom (getAbsScaleFactor ());
 
-	if (delegate)
-		delegate->onZoomChanged (this, zoomFactor);
+	if (pImpl->delegate)
+		pImpl->delegate->onZoomChanged (*this, pImpl->zoomFactor);
 }
 
 //-----------------------------------------------------------------------------
 bool VST3Editor::beforeSizeChange (const CRect& newSize, const CRect& oldSize)
 {
-	if (sizeRequest)
+	if (pImpl->sizeRequest)
 		return true;
-	sizeRequest = {newSize.getSize ()};
-	bool result = requestResize (*sizeRequest);
-	sizeRequest = {};
+	pImpl->sizeRequest = {newSize.getSize ()};
+	bool result = requestResize (*pImpl->sizeRequest);
+	pImpl->sizeRequest = {};
 	return result;
 }
 
@@ -636,8 +702,8 @@ bool VST3Editor::requestResize (const CPoint& newSize)
 //-----------------------------------------------------------------------------
 void VST3Editor::getEditorSizeConstrains (CPoint& minimumSize, CPoint& maximumSize) const
 {
-	minimumSize = minSize;
-	maximumSize = maxSize;
+	minimumSize = pImpl->minSize;
+	maximumSize = pImpl->maxSize;
 }
 
 //-----------------------------------------------------------------------------
@@ -645,8 +711,8 @@ ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag) co
 {
 	if (tag != -1)
 	{
-		auto it = paramChangeListeners.find (tag);
-		if (it != paramChangeListeners.end ())
+		auto it = pImpl->paramChangeListeners.find (tag);
+		if (it != pImpl->paramChangeListeners.end ())
 		{
 			return it->second;
 		}
@@ -655,25 +721,25 @@ ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag) co
 }
 
 //-----------------------------------------------------------------------------
-void VST3Editor::valueChanged (CControl* pControl)
+void VST3Editor::Controller::valueChanged (CControl& control)
 {
 	using namespace Steinberg;
-	if (!pControl->isEditing ())
+	if (!control.isEditing ())
 		return;
 
-	ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
+	auto pcl = editor->getParameterChangeListener (control.getTag ());
 	if (pcl)
 	{
 		auto paramID = pcl->getParameterID ();
-		auto normalizedValue = static_cast<Vst::ParamValue> (pControl->getValueNormalized ());
-		auto* textEdit = dynamic_cast<CTextEdit*> (pControl);
+		auto normalizedValue = static_cast<Vst::ParamValue> (control.getValueNormalized ());
+		auto* textEdit = dynamic_cast<CTextEdit*> (&control);
 		if (textEdit && pcl->getParameter ())
 		{
 			Steinberg::String str (textEdit->getText ());
 			str.toWideString (kCP_Utf8);
-			if (getController ()->getParamValueByString (paramID,
-			                                             const_cast<Vst::TChar*> (str.text16 ()),
-			                                             normalizedValue) != kResultTrue)
+			if (editor->getController ()->getParamValueByString (
+					paramID, const_cast<Vst::TChar*> (str.text16 ()), normalizedValue) !=
+				kResultTrue)
 			{
 				pcl->update (nullptr, kChanged);
 				return;
@@ -681,6 +747,122 @@ void VST3Editor::valueChanged (CControl* pControl)
 		}
 		pcl->performEdit (normalizedValue);
 	}
+}
+
+//-----------------------------------------------------------------------------
+void VST3Editor::Controller::controlBeginEdit (CControl& control)
+{
+	auto pcl = editor->getParameterChangeListener (control.getTag ());
+	if (pcl)
+	{
+		pcl->beginEdit ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void VST3Editor::Controller::controlEndEdit (CControl& control)
+{
+	auto pcl = editor->getParameterChangeListener (control.getTag ());
+	if (pcl)
+	{
+		pcl->endEdit ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void VST3Editor::Controller::controlTagWillChange (CControl& control)
+{
+	if (control.getTag () != -1 && control.getListener () == this)
+	{
+		auto pcl = editor->getParameterChangeListener (control.getTag ());
+		if (pcl)
+		{
+			pcl->removeControl (&control);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void VST3Editor::Controller::controlTagDidChange (CControl& control)
+{
+	if (control.getTag () != -1 && control.getListener () == this)
+	{
+		auto pcl = editor->getParameterChangeListener (control.getTag ());
+		if (pcl)
+		{
+			pcl->addControl (&control);
+		}
+		else
+		{
+			auto editController = editor->getController ();
+			if (editController)
+			{
+				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (
+					static_cast<Steinberg::Vst::ParamID> (control.getTag ()));
+				editor->pImpl->paramChangeListeners.insert (std::make_pair (
+					control.getTag (),
+					new ParameterChangeListener (editController, parameter, &control)));
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+SharedPointer<IController> VST3Editor::Controller::createSubController (UTF8StringPtr name,
+																		const IUIDescription& desc)
+{
+	return editor->pImpl->delegate
+			   ? editor->pImpl->delegate->createSubController (name, desc, *editor)
+			   : nullptr;
+}
+
+//-----------------------------------------------------------------------------
+SharedPointer<CView> VST3Editor::Controller::createView (const UIAttributes& attrs,
+														 const IUIDescription& desc)
+{
+	if (editor->pImpl->delegate)
+	{
+		auto customViewName = attrs.getAttributeValue (IUIDescription::kCustomViewName);
+		if (customViewName)
+		{
+			auto view = editor->pImpl->delegate->createCustomView (customViewName->c_str (), attrs,
+																   desc, *editor);
+			return view;
+		}
+	}
+	return {};
+}
+
+//-----------------------------------------------------------------------------
+SharedPointer<CView> VST3Editor::Controller::verifyView (const SharedPointer<CView>& view,
+														 const UIAttributes& attributes,
+														 const IUIDescription& desc)
+{
+	SharedPointer<CView> result = view;
+	if (editor->pImpl->delegate)
+		result = editor->pImpl->delegate->verifyView (result, attributes, desc, *editor);
+	auto control = result.cast<CControl> ();
+	if (control && control->getTag () != -1 && control->getListener () == this)
+	{
+		auto pcl = editor->getParameterChangeListener (control->getTag ());
+		if (pcl)
+		{
+			pcl->addControl (control.get ());
+		}
+		else
+		{
+			auto editController = editor->getController ();
+			if (editController)
+			{
+				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (
+					static_cast<Steinberg::Vst::ParamID> (control->getTag ()));
+				editor->pImpl->paramChangeListeners.insert (std::make_pair (
+					control->getTag (),
+					new ParameterChangeListener (editController, parameter, control.get ())));
+			}
+		}
+	}
+	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -697,69 +879,13 @@ void VST3Editor::endEdit (int32_t index)
 }
 
 //-----------------------------------------------------------------------------
-void VST3Editor::controlBeginEdit (CControl* pControl)
-{
-	ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
-	if (pcl)
-	{
-		pcl->beginEdit ();
-	}
-}
+void VST3Editor::onViewAdded (CFrame& frame, CView& view) {}
 
 //-----------------------------------------------------------------------------
-void VST3Editor::controlEndEdit (CControl* pControl)
+void VST3Editor::onViewRemoved (CFrame& frame, CView& view)
 {
-	ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
-	if (pcl)
-	{
-		pcl->endEdit ();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void VST3Editor::controlTagWillChange (CControl* pControl)
-{
-	if (pControl->getTag () != -1 && pControl->getListener () == this)
-	{
-		ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
-		if (pcl)
-		{
-			pcl->removeControl (pControl);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void VST3Editor::controlTagDidChange (CControl* pControl)
-{
-	if (pControl->getTag () != -1 && pControl->getListener () == this)
-	{
-		ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
-		if (pcl)
-		{
-			pcl->addControl (pControl);
-		}
-		else
-		{
-			Steinberg::Vst::EditController* editController = getController ();
-			if (editController)
-			{
-				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (static_cast<Steinberg::Vst::ParamID> (pControl->getTag ()));
-				paramChangeListeners.insert (std::make_pair (pControl->getTag (), new ParameterChangeListener (editController, parameter, pControl)));
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void VST3Editor::onViewAdded (CFrame* frame, CView* view)
-{
-}
-
-//-----------------------------------------------------------------------------
-void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
-{
-	auto* control = dynamic_cast<CControl*> (view);
+#if 0
+	auto* control = dynamic_cast<CControl*> (&view);
 	if (control && control->getTag () != -1)
 	{
 		ParameterChangeListener* pcl = getParameterChangeListener (control->getTag ());
@@ -769,12 +895,12 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 		}
 	}
 	// TODO: Currently when in Edit Mode in UIEditor, subcontrollers will be released, even tho the view may be added again later on.
-	IController* controller = getViewController (view);
+	auto controller = getViewController (view);
 	if (controller)
 	{
-		VST3EditorInternal::releaseSubController (controller);
-		view->removeAttribute (kCViewControllerAttribute);
+		view.removeAttribute (kCViewControllerAttribute);
 	}
+#endif
 }
 
 #if VST3_SUPPORTS_CONTEXTMENU
@@ -784,14 +910,7 @@ namespace VST3EditorInternal {
 class ContextMenuTarget : public Steinberg::FObject, public Steinberg::Vst::IContextMenuTarget
 {
 public:
-	ContextMenuTarget (CCommandMenuItem* item) : item (item)
-	{
-		item->remember ();
-	}
-	~ContextMenuTarget () override
-	{
-		item->forget ();
-	}
+	ContextMenuTarget (const SharedPointer<CCommandMenuItem>& item) : item (item) {}
 
 	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag) override
 	{
@@ -802,7 +921,7 @@ public:
 	OBJ_METHODS(ContextMenuTarget, Steinberg::FObject)
 	FUNKNOWN_METHODS(Steinberg::Vst::IContextMenuTarget, Steinberg::FObject)
 protected:
-	CCommandMenuItem* item;
+	SharedPointer<CCommandMenuItem> item;
 };
 
 //-----------------------------------------------------------------------------
@@ -855,7 +974,7 @@ static void addCOptionMenuEntriesToIContextMenu (
 #endif
 
 //-----------------------------------------------------------------------------
-void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
+void VST3Editor::onMouseEvent (MouseEvent& event, CFrame& frame)
 {
 	if (event.type != EventType::MouseDown)
 		return;
@@ -863,26 +982,27 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 	if (event.buttonState.isRight ())
 	{
 		SharedPointer<COptionMenu> controllerMenu =
-			(delegate && editingEnabled == false)
-				? VSTGUI::owned (delegate->createContextMenu (event.mousePosition, this))
+			(pImpl->delegate && pImpl->editingEnabled == false)
+				? pImpl->delegate->createContextMenu (event.mousePosition, *this)
 				: nullptr;
-		if (allowedZoomFactors.empty () == false && editingEnabled == false)
+		if (pImpl->allowedZoomFactors.empty () == false && pImpl->editingEnabled == false)
 		{
 			if (controllerMenu == nullptr)
-				controllerMenu = VSTGUI::makeOwned<COptionMenu> ();
+				controllerMenu = VSTGUI::makeShared<COptionMenu> ();
 			else
 				controllerMenu->addSeparator ();
-			auto zoomMenu = makeOwned<COptionMenu> ();
+			auto zoomMenu = makeShared<COptionMenu> ();
 			zoomMenu->setStyle (COptionMenu::kMultipleCheckStyle);
 			char zoomFactorString[128];
 			int32_t zoomFactorTag = 0;
-			for (auto it = allowedZoomFactors.begin (), end = allowedZoomFactors.end (); it != end;
-				 ++it, ++zoomFactorTag)
+			for (auto it = pImpl->allowedZoomFactors.begin (),
+					  end = pImpl->allowedZoomFactors.end ();
+				 it != end; ++it, ++zoomFactorTag)
 			{
 				snprintf (zoomFactorString, std::size (zoomFactorString), "%d%%",
 						  static_cast<int> ((*it) * 100));
-				auto item = zoomMenu->addEntry (VSTGUI::makeOwned<CCommandMenuItem> (
-					CCommandMenuItem::Desc {zoomFactorString, zoomFactorTag, VSTGUI::shared (this),
+				auto item = zoomMenu->addEntry (VSTGUI::makeShared<CCommandMenuItem> (
+					CCommandMenuItem::Desc {zoomFactorString, zoomFactorTag, pImpl->controller,
 											"Zoom", zoomFactorString}));
 				if (getZoomFactor () == *it)
 					item->setChecked (true);
@@ -891,46 +1011,48 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 			item->setSubmenu (zoomMenu);
 		}
 	#if VSTGUI_LIVE_EDITING
-		if (editingEnabled == false)
+		if (pImpl->editingEnabled == false)
 		{
 			if (controllerMenu == nullptr)
-				controllerMenu = VSTGUI::makeOwned<COptionMenu> ();
+				controllerMenu = VSTGUI::makeShared<COptionMenu> ();
 			else
 				controllerMenu->addSeparator ();
-			auto item = controllerMenu->addEntry (VSTGUI::makeOwned<CCommandMenuItem> (
-				CCommandMenuItem::Desc {"Open UIDescription Editor", VSTGUI::shared (this), "File",
+			auto item = controllerMenu->addEntry (VSTGUI::makeShared<CCommandMenuItem> (
+				CCommandMenuItem::Desc {"Open UIDescription Editor", pImpl->controller, "File",
 										"Open UIDescription Editor"}));
 			item->setKey ("e", kControl);
-			item = controllerMenu->addEntry (VSTGUI::makeOwned<CCommandMenuItem> (
-				CCommandMenuItem::Desc {"Show 'Open UI Editor' Button", VSTGUI::shared (this),
-										"File", "Show Editor Button"}));
+			item = controllerMenu->addEntry (VSTGUI::makeShared<CCommandMenuItem> (
+				CCommandMenuItem::Desc {"Show 'Open UI Editor' Button", pImpl->controller, "File",
+										"Show Editor Button"}));
 			if (enableShowEditButton ())
 				item->setChecked ();
-			item = controllerMenu->addEntry (VSTGUI::makeOwned<CCommandMenuItem> (
-				CCommandMenuItem::Desc {"Save Editor Screenshot", VSTGUI::shared (this), "File",
+			item = controllerMenu->addEntry (VSTGUI::makeShared<CCommandMenuItem> (
+				CCommandMenuItem::Desc {"Save Editor Screenshot", pImpl->controller, "File",
 										"Save Editor Screenshot"}));
 		}
 	#endif
 		CViewContainer::ViewList views;
 		auto nonScaledPos = event.mousePosition;
-		frame->getTransform ().transform (nonScaledPos);
-		if (getFrame ()->getViewsAt (nonScaledPos, views, GetViewOptions ().deep ().includeViewContainer ()))
+		frame.getTransform ().transform (nonScaledPos);
+		if (frame.getViewsAt (nonScaledPos, views,
+							  GetViewOptions ().deep ().includeViewContainer ()))
 		{
 			auto createOrPrepareMenu = [&] () {
 				if (controllerMenu == nullptr)
-					controllerMenu = VSTGUI::makeOwned<COptionMenu> ();
+					controllerMenu = VSTGUI::makeShared<COptionMenu> ();
 				else
 					controllerMenu->addSeparator ();
 			};
 			for (const auto& view : views)
 			{
-				auto viewController = getViewController (view);
+				auto viewController = getViewController (*view);
 				if (!viewController)
 					continue;
 				if (auto ctrler = viewController.cast<IContextMenuController2> ())
 				{
 					createOrPrepareMenu ();
-					ctrler->appendContextMenuItems (*controllerMenu, view, view->translateToLocal (nonScaledPos));
+					ctrler->appendContextMenuItems (*controllerMenu, *view,
+													view->translateToLocal (nonScaledPos));
 				}
 				else if (auto contextMenuController =
 							 viewController.cast<IContextMenuController> ())
@@ -972,7 +1094,7 @@ void VST3Editor::onMouseEvent (MouseEvent& event, CFrame* frame)
 													  mousePosition = event.mousePosition] () {
 					controllerMenu->setStyle (COptionMenu::kPopupStyle |
 					                          COptionMenu::kMultipleCheckStyle);
-					controllerMenu->popup (blockFrame, mousePosition);
+					controllerMenu->popup (*blockFrame, mousePosition);
 				});
 				event.consumed = true;
 			}
@@ -986,7 +1108,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 	std::list<SharedPointer<CView> > views;
 	if (frame && getFrame ()->getViewsAt (CPoint (xPos, yPos), views))
 	{
-		CControl* control = nullptr;
+		SharedPointer<CControl> control;
 		std::list<SharedPointer<CView> >::const_iterator it = views.begin ();
 		while (it != views.end ())
 		{
@@ -1004,16 +1126,17 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 		if (control)
 		{
 			ParameterChangeListener* pcl = getParameterChangeListener (control->getTag ());
-			if (pcl && pcl->containsControl (control) && pcl->getParameter ())
+			if (pcl && pcl->containsControl (control.get ()) && pcl->getParameter ())
 			{
-				if (delegate && delegate->isPrivateParameter (pcl->getParameterID ()))
+				if (pImpl->delegate && pImpl->delegate->isPrivateParameter (pcl->getParameterID ()))
 					return Steinberg::kResultFalse;
 				resultTag = pcl->getParameterID ();
 				return Steinberg::kResultTrue;
 			}
 		}
 		Steinberg::Vst::ParamID pid;
-		if (delegate && delegate->findParameter (CPoint (xPos, yPos), pid, this) && !delegate->isPrivateParameter (pid))
+		if (pImpl->delegate && pImpl->delegate->findParameter (CPoint (xPos, yPos), pid, *this) &&
+			!pImpl->delegate->isPrivateParameter (pid))
 		{
 			resultTag = pid;
 			return Steinberg::kResultTrue;
@@ -1023,66 +1146,18 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IController> VST3Editor::createSubController (UTF8StringPtr name,
-															const IUIDescription* desc)
-{
-	return delegate ? VSTGUI::owned (delegate->createSubController (name, desc, this)) : nullptr;
-}
-
-//-----------------------------------------------------------------------------
-CView* VST3Editor::createView (const UIAttributes& attrs, const IUIDescription* desc)
-{
-	if (delegate)
-	{
-		const std::string* customViewName = attrs.getAttributeValue (IUIDescription::kCustomViewName);
-		if (customViewName)
-		{
-			CView* view = delegate->createCustomView (customViewName->c_str (), attrs, desc, this);
-			return view;
-		}
-	}
-	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* desc)
-{
-	if (delegate)
-		view = delegate->verifyView (view, attributes, desc, this);
-	auto* control = dynamic_cast<CControl*> (view);
-	if (control && control->getTag () != -1 && control->getListener () == this)
-	{
-		ParameterChangeListener* pcl = getParameterChangeListener (control->getTag ());
-		if (pcl)
-		{
-			pcl->addControl (control);
-		}
-		else
-		{
-			Steinberg::Vst::EditController* editController = getController ();
-			if (editController)
-			{
-				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (static_cast<Steinberg::Vst::ParamID> (control->getTag ()));
-				paramChangeListeners.insert (std::make_pair (control->getTag (), new ParameterChangeListener (editController, parameter, control)));
-			}
-		}
-	}
-	return view;
-}
-
-//-----------------------------------------------------------------------------
 void VST3Editor::recreateView ()
 {
-	doCreateView = false;
-	enableEditing (editingEnabled);
+	pImpl->doCreateView = false;
+	enableEditing (pImpl->editingEnabled);
 }
 
 //------------------------------------------------------------------------
 void VST3Editor::requestRecreateView ()
 {
-	if (doCreateView || !frame)
+	if (pImpl->doCreateView || !frame)
 		return;
-	doCreateView = true;
+	pImpl->doCreateView = true;
 	auto task = [Self = Steinberg::IPtr<VST3Editor> (this)] () {
 		if (Self->frame)
 			Self->recreateView ();
@@ -1098,7 +1173,10 @@ void VST3Editor::requestRecreateView ()
 }
 
 //-----------------------------------------------------------------------------
-bool VST3Editor::inEditMode () const { return editingEnabled; }
+bool VST3Editor::inEditMode () const { return pImpl->editingEnabled; }
+
+//-----------------------------------------------------------------------------
+const std::string& VST3Editor::getCurrentTemplateName () const { return pImpl->viewName; }
 
 #if LINUX
 // Map Steinberg Vst Interface to VSTGUI Interface
@@ -1277,10 +1355,10 @@ private:
 
 #if VSTGUI_LIVE_EDITING
 // keyboard hook
-struct VST3Editor::KeyboardHook : public IKeyboardHook
+struct VST3Editor::Impl::KeyboardHook : public IKeyboardHook
 {
 public:
-	using Func = std::function<void (KeyboardEvent& event, CFrame* frame)>;
+	using Func = std::function<void (KeyboardEvent& event, CFrame& frame)>;
 
 	KeyboardHook (Func&& keyDown, Func&& keyUp)
 	: onKeyDownFunc (std::move (keyDown)), onKeyUpFunc (std::move (keyUp))
@@ -1288,7 +1366,7 @@ public:
 	}
 
 private:
-	void onKeyboardEvent (KeyboardEvent& event, CFrame* frame) override
+	void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) override
 	{
 		if (event.type == EventType::KeyDown)
 		{
@@ -1310,33 +1388,32 @@ struct VST3Editor::KeyboardHook {};
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 {
-	frame = new CFrame (CRect (0, 0, 0, 0), this);
+	frame = makeShared<CFrame> (CRect (0, 0, 0, 0), this);
 	getFrame ()->setViewAddedRemovedObserver (this);
 	getFrame ()->setTransparency (true);
 	getFrame ()->registerMouseObserver (this);
 #if VSTGUI_LIVE_EDITING
 	// will delete itself when the frame will be destroyed
-	keyboardHook = new KeyboardHook (
-	    [this] (KeyboardEvent& event, CFrame* frame) {
-		    if (event.modifiers.is (ModifierKey::Control) && frame->getModalView () == nullptr)
-		    {
+	pImpl->keyboardHook = new Impl::KeyboardHook (
+		[this] (KeyboardEvent& event, CFrame& frame) {
+			if (event.modifiers.is (ModifierKey::Control) && frame.getModalView () == nullptr)
+			{
 			    if (event.character == 'e')
 			    {
-					editingEnabled = !editingEnabled;
+					pImpl->editingEnabled = !pImpl->editingEnabled;
 					requestRecreateView ();
 					event.consumed = true;
 			    }
 		    }
-	    },
-	    [] (KeyboardEvent&, CFrame*) { });
-	getFrame ()->registerKeyboardHook (keyboardHook);
+		},
+		[] (KeyboardEvent&, CFrame&) {});
+	getFrame ()->registerKeyboardHook (pImpl->keyboardHook);
 #endif
-	getFrame ()->enableTooltips (tooltipsEnabled);
+	getFrame ()->enableTooltips (pImpl->tooltipsEnabled);
 
 	if (!enableEditing (false))
 	{
-		getFrame ()->forget ();
-		frame = nullptr;
+		frame.reset ();
 		return false;
 	}
 
@@ -1367,8 +1444,8 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 	delete config;
 	config = nullptr;
 
-	if (delegate)
-		delegate->didOpen (this);
+	if (pImpl->delegate)
+		pImpl->delegate->didOpen (*this);
 
 	Steinberg::IdleUpdateHandler::start ();
 
@@ -1380,13 +1457,14 @@ void PLUGIN_API VST3Editor::close ()
 {
 	Steinberg::IdleUpdateHandler::stop ();
 
-	if (delegate)
-		delegate->willClose (this);
+	if (pImpl->delegate)
+		pImpl->delegate->willClose (*this);
 
-	for (ParameterChangeListenerMap::const_iterator it = paramChangeListeners.begin (), end = paramChangeListeners.end (); it != end; ++it)
+	for (auto it = pImpl->paramChangeListeners.begin (), end = pImpl->paramChangeListeners.end ();
+		 it != end; ++it)
 		it->second->release ();
 
-	paramChangeListeners.clear ();
+	pImpl->paramChangeListeners.clear ();
 	if (frame)
 	{
 #if LINUX
@@ -1402,16 +1480,16 @@ void PLUGIN_API VST3Editor::close ()
 
 #endif // LINUX
 #if VSTGUI_LIVE_EDITING
-		if (keyboardHook)
+		if (pImpl->keyboardHook)
 		{
-			getFrame ()->unregisterKeyboardHook (keyboardHook);
-			delete keyboardHook;
+			getFrame ()->unregisterKeyboardHook (pImpl->keyboardHook);
+			delete pImpl->keyboardHook;
 		}
-		keyboardHook = nullptr;
-		openUIEditorController = nullptr;
+		pImpl->keyboardHook = nullptr;
+		pImpl->openUIEditorController = nullptr;
 #endif
 		getFrame ()->unregisterMouseObserver (this);
-		getFrame ()->removeAll (true);
+		getFrame ()->removeAll ();
 		int32_t refCount = getFrame ()->getNbReference ();
 		if (refCount == 1)
 		{
@@ -1420,7 +1498,7 @@ void PLUGIN_API VST3Editor::close ()
 		}
 		else
 		{
-			getFrame ()->forget ();
+			frame.reset ();
 		}
 #if LINUX
 		if (host && display)
@@ -1432,10 +1510,10 @@ void PLUGIN_API VST3Editor::close ()
 //------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 {
-	if (sizeRequest)
+	if (pImpl->sizeRequest)
 	{
-		auto width = static_cast<int32_t> (std::floor (sizeRequest->x));
-		auto height = static_cast<int32_t> (std::floor (sizeRequest->y));
+		auto width = static_cast<int32_t> (std::floor (pImpl->sizeRequest->x));
+		auto height = static_cast<int32_t> (std::floor (pImpl->sizeRequest->y));
 		if (width == newSize->getWidth () && height == newSize->getHeight ())
 		{
 			VSTGUIEditor::onSize (newSize);
@@ -1456,9 +1534,9 @@ Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 			return Steinberg::kResultTrue;
 		}
 	}
-	sizeRequest = {CPoint (newSize->getWidth (), newSize->getHeight ())};
+	pImpl->sizeRequest = {CPoint (newSize->getWidth (), newSize->getHeight ())};
 	auto result = VSTGUIEditor::onSize (newSize);
-	sizeRequest = {};
+	pImpl->sizeRequest = {};
 	return result;
 }
 
@@ -1473,20 +1551,20 @@ Steinberg::tresult PLUGIN_API VST3Editor::canResize ()
 Steinberg::tresult PLUGIN_API VST3Editor::checkSizeConstraint (Steinberg::ViewRect* rect)
 {
 #if VSTGUI_LIVE_EDITING
-	if (editingEnabled)
+	if (pImpl->editingEnabled)
 		return Steinberg::kResultTrue;
 #endif
 	double scaleFactor = getAbsScaleFactor ();
 	CCoord width = rect->right - rect->left;
 	CCoord height = rect->bottom - rect->top;
-	if (width < minSize.x * scaleFactor)
-		width = minSize.x * scaleFactor;
-	else if (width > maxSize.x * scaleFactor)
-		width = maxSize.x * scaleFactor;
-	if (height < minSize.y * scaleFactor)
-		height = minSize.y * scaleFactor;
-	else if (height > maxSize.y * scaleFactor)
-		height = maxSize.y * scaleFactor;
+	if (width < pImpl->minSize.x * scaleFactor)
+		width = pImpl->minSize.x * scaleFactor;
+	else if (width > pImpl->maxSize.x * scaleFactor)
+		width = pImpl->maxSize.x * scaleFactor;
+	if (height < pImpl->minSize.y * scaleFactor)
+		height = pImpl->minSize.y * scaleFactor;
+	else if (height > pImpl->maxSize.y * scaleFactor)
+		height = pImpl->maxSize.y * scaleFactor;
 	if (width != rect->getWidth () || height != rect->getHeight ())
 	{
 		rect->right = static_cast<int32_t> (std::floor (width + rect->left));
@@ -1496,15 +1574,15 @@ Steinberg::tresult PLUGIN_API VST3Editor::checkSizeConstraint (Steinberg::ViewRe
 }
 
 //------------------------------------------------------------------------
-bool VST3Editor::validateCommandMenuItem (CCommandMenuItem* item)
+bool VST3Editor::Controller::validateCommandMenuItem (CCommandMenuItem& item)
 {
 #if VSTGUI_LIVE_EDITING
-	if (item->getCommandCategory () == "File")
+	if (item.getCommandCategory () == "File")
 	{
-		if (item->getCommandName () == "Save")
+		if (item.getCommandName () == "Save")
 		{
 			bool enable = false;
-			UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
+			auto attributes = editor->pImpl->description->getCustomAttributes ("VST3Editor", true);
 			if (attributes)
 			{
 				const std::string* filePath = attributes->getAttributeValue ("Path");
@@ -1513,7 +1591,7 @@ bool VST3Editor::validateCommandMenuItem (CCommandMenuItem* item)
 					enable = true;
 				}
 			}
-			item->setEnabled (enable);
+			item.setEnabled (enable);
 			return true;
 		}
 	}
@@ -1522,16 +1600,16 @@ bool VST3Editor::validateCommandMenuItem (CCommandMenuItem* item)
 }
 
 //------------------------------------------------------------------------
-bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
+bool VST3Editor::Controller::onCommandMenuItemSelected (CCommandMenuItem& item)
 {
-	auto& cmdCategory = item->getCommandCategory ();
+	auto& cmdCategory = item.getCommandCategory ();
 #if VSTGUI_LIVE_EDITING
-	auto& cmdName = item->getCommandName ();
+	auto& cmdName = item.getCommandName ();
 	if (cmdCategory == "Edit")
 	{
 		if (cmdName == "Sync Parameter Tags")
 		{
-			syncParameterTags ();
+			editor->syncParameterTags ();
 			return true;
 		}
 	}
@@ -1539,39 +1617,39 @@ bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
 	{
 		if (cmdName == "Open UIDescription Editor")
 		{
-			editingEnabled = true;
-			requestRecreateView ();
+			editor->pImpl->editingEnabled = true;
+			editor->requestRecreateView ();
 			return true;
 		}
 		else if (cmdName == "Close UIDescription Editor")
 		{
-			editingEnabled = false;
-			requestRecreateView ();
+			editor->pImpl->editingEnabled = false;
+			editor->requestRecreateView ();
 			return true;
 		}
 		else if (cmdName == "Save")
 		{
-			save (false);
-			item->setChecked (false);
+			editor->save (false);
+			item.setChecked (false);
 			return true;
 		}
 		else if (cmdName == "Save As")
 		{
-			save (true);
-			item->setChecked (false);
+			editor->save (true);
+			item.setChecked (false);
 			return true;
 		}
 		else if (cmdName == "Save Editor Screenshot")
 		{
-			saveScreenshot ();
+			editor->saveScreenshot ();
 			return true;
 		}
 		else if (cmdName == "Show Editor Button")
 		{
-			auto state = enableShowEditButton ();
-			enableShowEditButton (!state);
-			if (!editingEnabled)
-				showEditButton (!state);
+			auto state = editor->enableShowEditButton ();
+			editor->enableShowEditButton (!state);
+			if (!editor->pImpl->editingEnabled)
+				editor->showEditButton (!state);
 			return true;
 		}
 	}
@@ -1579,10 +1657,10 @@ bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
 #endif
 	    if (cmdCategory == "Zoom")
 	{
-		size_t index = static_cast<size_t> (item->getTag ());
-		if (index < allowedZoomFactors.size ())
+		size_t index = static_cast<size_t> (item.getTag ());
+		if (index < editor->pImpl->allowedZoomFactors.size ())
 		{
-			setZoomFactor (allowedZoomFactors[index]);
+			editor->setZoomFactor (editor->pImpl->allowedZoomFactors[index]);
 		}
 		return true;
 	}
@@ -1595,10 +1673,10 @@ static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 {
 	int32_t flags = 0;
 #if VSTGUI_LIVE_EDITING
-	auto editController = getViewController (frame->getView (0)).cast<UIEditController> ();
+	auto editController = getViewController (*frame->getView (0)).cast<UIEditController> ();
 	if (editController)
 	{
-		UIAttributes* attributes = editController->getSettings ();
+		auto attributes = editController->getSettings ();
 		bool val;
 		if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
 		{
@@ -1621,14 +1699,15 @@ static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 //------------------------------------------------------------------------
 void VST3Editor::save (bool saveAs)
 {
-	UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
+	auto attributes = pImpl->description->getCustomAttributes ("VST3Editor", true);
 	vstgui_assert(attributes);
 	if (!attributes)
 		return;
 	std::string savePath;
 	if (saveAs)
 	{
-		CNewFileSelector* fileSelector = CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile);
+		auto fileSelector =
+			CNewFileSelector::create (frame.get (), CNewFileSelector::kSelectSaveFile);
 		if (fileSelector == nullptr)
 			return;
 		fileSelector->setTitle ("Save UIDescription File");
@@ -1636,12 +1715,12 @@ void VST3Editor::save (bool saveAs)
 		const std::string* prevFilePath = attributes->getAttributeValue ("Path");
 		if (prevFilePath)
 			fileSelector->setInitialDirectory (prevFilePath->c_str ());
-		else if (!xmlFile.empty ())
+		else if (!pImpl->xmlFile.empty ())
 		{
-			if (xmlFile[0] == '/')
-				fileSelector->setInitialDirectory (xmlFile.c_str ());
+			if (pImpl->xmlFile[0] == '/')
+				fileSelector->setInitialDirectory (pImpl->xmlFile.c_str ());
 			else
-				fileSelector->setDefaultSaveName (xmlFile.c_str ());
+				fileSelector->setDefaultSaveName (pImpl->xmlFile.c_str ());
 		}
 		if (fileSelector->runModal ())
 		{
@@ -1652,7 +1731,6 @@ void VST3Editor::save (bool saveAs)
 				savePath = filePath;
 			}
 		}
-		fileSelector->forget ();
 	}
 	else
 	{
@@ -1664,8 +1742,8 @@ void VST3Editor::save (bool saveAs)
 		return;
 
 	// filter out attributes we will always override with the values from the parameters
-	auto filter = [] (CView* view, const std::string& name) -> bool {
-		if (auto control = dynamic_cast<CControl*> (view))
+	auto filter = [] (CView& view, const std::string& name) -> bool {
+		if (auto control = dynamic_cast<CControl*> (&view))
 		{
 			if (control->getTag () != -1)
 			{
@@ -1684,20 +1762,22 @@ void VST3Editor::save (bool saveAs)
 		return true;
 	};
 
-	if (description->save (savePath.c_str (),
-						   VST3EditorInternal::getUIDescriptionSaveOptions (frame), filter))
-		description->setFilePath (savePath.c_str ());
+	if (pImpl->description->save (savePath.c_str (),
+								  VST3EditorInternal::getUIDescriptionSaveOptions (frame.get ()),
+								  filter))
+		pImpl->description->setFilePath (savePath.c_str ());
 }
 
 //------------------------------------------------------------------------
 void VST3Editor::syncParameterTags ()
 {
 #if VSTGUI_LIVE_EDITING
-	CView* view = getFrame ()->getView (0);
+	auto view = getFrame ()->getView (0);
 	if (view)
 	{
-		IController* controller = getViewController (view);
-		IActionPerformer* actionPerformer = controller ? dynamic_cast<IActionPerformer*>(controller) : nullptr;
+		auto controller = getViewController (*view);
+		IActionPerformer* actionPerformer =
+			controller ? dynamic_cast<IActionPerformer*> (controller.get ()) : nullptr;
 		if (actionPerformer)
 		{
 			Steinberg::Vst::EditController* editController = getController ();
@@ -1742,12 +1822,13 @@ void VST3Editor::syncParameterTags ()
 					paramTitle.removeChars (' ');
 					Steinberg::String paramIDStr;
 					paramIDStr.printInt64 (info.id);
-					if (int32_t tag = description->getTagForName (paramTitle) != -1)
+					if (int32_t tag = pImpl->description->getTagForName (paramTitle) != -1)
 					{
 						if (tag != info.id)
 							actionPerformer->performTagChange (paramTitle, paramIDStr);
 					}
-					else if (UTF8StringPtr tagName = description->lookupControlTagName (static_cast<int32_t> (info.id)))
+					else if (UTF8StringPtr tagName = pImpl->description->lookupControlTagName (
+								 static_cast<int32_t> (info.id)))
 					{
 						actionPerformer->performTagNameChange (tagName, paramTitle);
 					}
@@ -1767,11 +1848,11 @@ void VST3Editor::syncParameterTags ()
 void VST3Editor::saveScreenshot ()
 {
 	if (auto fileSelector =
-			owned (CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectDirectory)))
+			CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectDirectory))
 	{
 		fileSelector->setTitle ("Select Directory where to save the screenshots");
-		fileSelector->run ([this] (CNewFileSelector* fs) {
-			if (fs->getNumSelectedFiles () != 1)
+		fileSelector->run ([this] (CNewFileSelector& fs) {
+			if (fs.getNumSelectedFiles () != 1)
 				return;
 
 			auto makeScreenshot = [] (CFrame* frame) -> SharedPointer<CBitmap> {
@@ -1779,7 +1860,7 @@ void VST3Editor::saveScreenshot ()
 				if (auto offscreen = COffscreenContext::create (size, 1.))
 				{
 					offscreen->beginDraw ();
-					frame->draw (offscreen);
+					frame->draw (*offscreen);
 					offscreen->endDraw ();
 					return offscreen->getBitmap ();
 				}
@@ -1795,7 +1876,7 @@ void VST3Editor::saveScreenshot ()
 			auto bitmap2 = makeScreenshot (getFrame ());
 			getFrame ()->setZoom (origZoom);
 
-			auto folderPath = std::string (fs->getSelectedFile (0));
+			auto folderPath = std::string (fs.getSelectedFile (0));
 			auto uidStr = std::string ("XXXXXXXX");
 			if (bitmap1)
 			{
@@ -1839,7 +1920,7 @@ void VST3Editor::saveScreenshot ()
 bool VST3Editor::enableShowEditButton () const
 {
 	bool addShowEditorButton = true;
-	if (auto attributes = description->getCustomAttributes ("VST3Editor", true))
+	if (auto attributes = pImpl->description->getCustomAttributes ("VST3Editor", true))
 	{
 		attributes->getBooleanAttribute ("Show Editor Button", addShowEditorButton);
 	}
@@ -1849,18 +1930,16 @@ bool VST3Editor::enableShowEditButton () const
 //------------------------------------------------------------------------
 void VST3Editor::enableShowEditButton (bool state)
 {
-	if (auto attributes = description->getCustomAttributes ("VST3Editor", true))
+	if (auto attributes = pImpl->description->getCustomAttributes ("VST3Editor", true))
 		attributes->setBooleanAttribute ("Show Editor Button", state);
 }
 
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
-class EnterEditModeController
-: public ViewListenerAdapter
-, public ViewEventListenerAdapter
-, public IControlListener
+struct VST3Editor::Impl::EnterEditModeController : ViewListenerAdapter,
+												   ViewEventListenerAdapter,
+												   ControlListenerAdapter
 {
-public:
 	using EnterEditModeFunc = std::function<void ()>;
 
 	static constexpr const auto strFull = "Open UI Editor";
@@ -1869,14 +1948,15 @@ public:
 	EnterEditModeController (CFrame* frame, EnterEditModeFunc&& func)
 	: enterEditMode (std::move (func))
 	{
-		button = new CTextButton ({0, 0, 120, 20});
-		button->setTitle (strFull);
-		button->setRoundRadius (2.);
-		button->setFrameWidth (-1);
-		button->registerViewListener (this);
-		button->registerViewEventListener (this);
-		button->registerControlListener (this);
-		frame->addView (button);
+		auto buttonPtr = makeShared<CTextButton> (CRect {0, 0, 120, 20});
+		buttonPtr->setTitle (strFull);
+		buttonPtr->setRoundRadius (2.);
+		buttonPtr->setFrameWidth (-1);
+		buttonPtr->registerViewListener (this);
+		buttonPtr->registerViewEventListener (this);
+		buttonPtr->registerControlListener (this);
+		frame->addSubview (buttonPtr);
+		button = buttonPtr.get ();
 	}
 	~EnterEditModeController () noexcept override
 	{
@@ -1884,7 +1964,7 @@ public:
 		{
 			unregisterButtonListeners ();
 			if (auto parent = button->getParentView ())
-				parent->asViewContainer ()->removeView (button);
+				parent->removeSubview (shared (button));
 		}
 	}
 
@@ -1895,29 +1975,28 @@ public:
 		button->unregisterControlListener (this);
 	}
 
-	void valueChanged (CControl* c) override
+	void valueChanged (CControl& c) override
 	{
-		if (c->getValue () == 1.)
+		if (c.getValue () == 1.)
 		{
 			enterEditMode ();
 		}
 	}
-	void viewAttached (CView* view) override
+	void viewAttached (CView& view) override
 	{
-		view->addAnimation ("SizeAnim", new Animation::AlphaValueAnimation (1.f),
-							new Animation::LinearTimingFunction (1000),
-							[&] (auto, auto, auto) { close (); });
+		view.addAnimation ("SizeAnim", makeShared<Animation::AlphaValueAnimation> (1.f),
+						   makeShared<Animation::LinearTimingFunction> (1000),
+						   [&] (auto&&, auto&&, auto&&) { close (); });
 	}
 
-	void viewWillDelete (CView* view) override
+	void viewWillDelete (CView& view) override
 	{
 		if (button == nullptr)
 			return;
 		unregisterButtonListeners ();
 		button = nullptr;
-		delete this;
 	}
-	void viewOnEvent (CView* view, Event& event) override
+	void viewOnEvent (CView& view, Event& event) override
 	{
 		if (event.type == EventType::MouseEnter)
 		{
@@ -1929,28 +2008,31 @@ public:
 		}
 	}
 
-	Animation::ITimingFunction* createDefAnimTimingFunc () const
+	SharedPointer<Animation::ITimingFunction> createDefAnimTimingFunc () const
 	{
 		using namespace Animation;
 
 		static const constexpr auto AnimationTime = 150;
-		return new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (AnimationTime));
+		return makeShared<CubicBezierTimingFunction> (
+			CubicBezierTimingFunction::easyInOut (AnimationTime));
 	}
 
 	void open ()
 	{
-		button->addAnimation ("SizeAnim", new Animation::ViewSizeAnimation ({0, 0, 120, 20}),
+		button->addAnimation ("SizeAnim",
+							  makeShared<Animation::ViewSizeAnimation> (CRect {0, 0, 120, 20}),
 							  createDefAnimTimingFunc (),
-							  [&] (auto view, auto, auto) { button->setTitle (strFull); });
-		button->addAnimation ("AlphaValue", new Animation::AlphaValueAnimation (1.f),
+							  [&] (auto&&, auto&&, auto&&) { button->setTitle (strFull); });
+		button->addAnimation ("AlphaValue", makeShared<Animation::AlphaValueAnimation> (1.f),
 							  createDefAnimTimingFunc ());
 	}
 	void close ()
 	{
-		button->addAnimation ("SizeAnim", new Animation::ViewSizeAnimation ({0, 0, 10, 20}),
+		button->addAnimation ("SizeAnim",
+							  makeShared<Animation::ViewSizeAnimation> (CRect {0, 0, 10, 20}),
 							  createDefAnimTimingFunc (),
-							  [&] (auto view, auto, auto) { button->setTitle (strMinimized); });
-		button->addAnimation ("AlphaValue", new Animation::AlphaValueAnimation (0.3f),
+							  [&] (auto&&, auto&&, auto&&) { button->setTitle (strMinimized); });
+		button->addAnimation ("AlphaValue", makeShared<Animation::AlphaValueAnimation> (0.3f),
 							  createDefAnimTimingFunc ());
 	}
 
@@ -1964,17 +2046,20 @@ public:
 void VST3Editor::showEditButton (bool state)
 {
 #if VSTGUI_LIVE_EDITING
-	if ((state && openUIEditorController) || (!state && openUIEditorController == nullptr))
+	if ((state && pImpl->openUIEditorController) ||
+		(!state && pImpl->openUIEditorController == nullptr))
 		return;
 	if (state)
 	{
-		openUIEditorController =
-			new EnterEditModeController (getFrame (), [this] () { editingEnabled = true; requestRecreateView (); });
+		pImpl->openUIEditorController =
+			makeShared<Impl::EnterEditModeController> (getFrame (), [this] () {
+				pImpl->editingEnabled = true;
+				requestRecreateView ();
+			});
 	}
 	else
 	{
-		delete openUIEditorController;
-		openUIEditorController = nullptr;
+		pImpl->openUIEditorController.reset ();
 	}
 #endif
 }
@@ -1987,12 +2072,12 @@ bool VST3Editor::enableEditing (bool state)
 		getFrame ()->removeAll ();
 
 	#if VSTGUI_LIVE_EDITING
-		openUIEditorController = nullptr;
+		pImpl->openUIEditorController = nullptr;
 		if (state)
 		{
-			editingEnabled = true;
+			pImpl->editingEnabled = true;
 			// update uiDesc file path to absolute if possible
-			if (UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true))
+			if (auto attributes = pImpl->description->getCustomAttributes ("VST3Editor", true))
 			{
 				const std::string* filePath = attributes->getAttributeValue ("Path");
 				if (filePath)
@@ -2003,22 +2088,21 @@ bool VST3Editor::enableEditing (bool state)
 						attributes->removeAttribute ("Path");
 					}
 					else
-						description->setFilePath (filePath->c_str ());
+						pImpl->description->setFilePath (filePath->c_str ());
 				}
 			}
 
 			getFrame ()->setTransform (CGraphicsTransform ());
-			nonEditRect = getFrame ()->getViewSize ();
-			description->setController (VSTGUI::shared (this));
-			auto* editController = new UIEditController (description);
-			CView* view = editController->createEditView ();
-			if (view)
+			pImpl->nonEditRect = getFrame ()->getViewSize ();
+			pImpl->description->setController (pImpl->controller);
+			auto editController = UIEditController::make (pImpl->description);
+			if (auto view = editController->createEditView ())
 			{
 				CCoord width = view->getWidth ();
 				CCoord height = view->getHeight ();
 
 				getFrame ()->setSize (width, height);
-				getFrame ()->addView (view);
+				getFrame ()->addSubview (view);
 				getFrame ()->setZoom (getContentScaleFactor ());
 
 				getFrame ()->enableTooltips (true);
@@ -2031,43 +2115,42 @@ bool VST3Editor::enableEditing (bool state)
 				if (auto fileMenu = editController->getMenuController ()->getFileMenu ())
 				{
 					auto item =
-						fileMenu->addEntry (makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
-												"Save", VSTGUI::shared (this), "File", "Save"}),
+						fileMenu->addEntry (makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {
+												"Save", pImpl->controller, "File", "Save"}),
 											0);
 					item->setKey ("s", kControl);
-					item = fileMenu->addEntry (
-						makeOwned<CCommandMenuItem> (CCommandMenuItem::Desc {
-							"Save As..", VSTGUI::shared (this), "File", "Save As"}),
-						1);
+					item =
+						fileMenu->addEntry (makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {
+												"Save As..", pImpl->controller, "File", "Save As"}),
+											1);
 					item->setKey ("s", kShift | kControl);
-					item = fileMenu->addEntry (makeOwned<CCommandMenuItem> (
-						CCommandMenuItem::Desc {"Close Editor", VSTGUI::shared (this), "File",
+					item = fileMenu->addEntry (makeShared<CCommandMenuItem> (
+						CCommandMenuItem::Desc {"Close Editor", pImpl->controller, "File",
 												"Close UIDescription Editor"}));
 					item->setKey ("e", kControl);
 				}
 				if (auto editMenu = editController->getMenuController ()->getEditMenu ())
 				{
 					editMenu->addSeparator ();
-					editMenu->addEntry (makeOwned<CCommandMenuItem> (
-						CCommandMenuItem::Desc {"Sync Parameter Tags", VSTGUI::shared (this),
-												"Edit", "Sync Parameter Tags"}));
+					editMenu->addEntry (makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {
+						"Sync Parameter Tags", pImpl->controller, "Edit", "Sync Parameter Tags"}));
 				}
 				return true;
 			}
-			editController->forget ();
 		}
 		else
 	#endif
 		{
-			editingEnabled = false;
-			CView* view = description->createView (viewName.c_str (), VSTGUI::shared (this));
+			pImpl->editingEnabled = false;
+			auto view =
+				pImpl->description->createView (pImpl->viewName.c_str (), pImpl->controller);
 			if (view)
 			{
 				double scaleFactor = getAbsScaleFactor ();
 				CCoord width = view->getWidth () * scaleFactor;
 				CCoord height = view->getHeight () * scaleFactor;
 
-				if (canResize () == Steinberg::kResultTrue && nonEditRect.isEmpty ())
+				if (canResize () == Steinberg::kResultTrue && pImpl->nonEditRect.isEmpty ())
 				{
 					Steinberg::ViewRect tmp;
 					if (getRect ().getWidth () != width)
@@ -2081,20 +2164,21 @@ bool VST3Editor::enableEditing (bool state)
 						if (tmp.getHeight () == 0)
 							tmp.bottom = width;
 						checkSizeConstraint (&tmp);
-						nonEditRect.setWidth (tmp.getWidth ());
-						nonEditRect.setHeight (tmp.getHeight ());
+						pImpl->nonEditRect.setWidth (tmp.getWidth ());
+						pImpl->nonEditRect.setHeight (tmp.getHeight ());
 					}
 				}
 
 				getFrame ()->setSize (width, height);
-				getFrame ()->addView (view);
+				getFrame ()->addSubview (view);
 				getFrame ()->setTransform (CGraphicsTransform ().scale (scaleFactor, scaleFactor));
 				getFrame ()->invalid ();
-				if (nonEditRect.isEmpty () == false)
+				if (pImpl->nonEditRect.isEmpty () == false)
 				{
 					Steinberg::ViewRect tmpRect = rect;
-					tmpRect.right = tmpRect.left + (Steinberg::int32)nonEditRect.getWidth ();
-					tmpRect.bottom = tmpRect.top + (Steinberg::int32)nonEditRect.getHeight ();
+					tmpRect.right = tmpRect.left + (Steinberg::int32)pImpl->nonEditRect.getWidth ();
+					tmpRect.bottom =
+						tmpRect.top + (Steinberg::int32)pImpl->nonEditRect.getHeight ();
 					plugFrame->resizeView (this, &tmpRect);
 				}
 				else
@@ -2107,10 +2191,10 @@ bool VST3Editor::enableEditing (bool state)
 				getFrame ()->setFocusDrawingEnabled (false);
 
 				// focus drawing support
-				UIAttributes* attributes = description->getCustomAttributes ("FocusDrawing", true);
+				auto attributes = pImpl->description->getCustomAttributes ("FocusDrawing", true);
 
 				// map old one
-				UIAttributes* oldAttributes = description->getCustomAttributes ("VST3Editor");
+				auto oldAttributes = pImpl->description->getCustomAttributes ("VST3Editor");
 				if (oldAttributes)
 				{
 					const std::string* attr = oldAttributes->getAttributeValue (kFrameEnableFocusDrawingAttr);
@@ -2144,7 +2228,7 @@ bool VST3Editor::enableEditing (bool state)
 					if (attr)
 					{
 						CColor focusColor;
-						if (description->getColor (attr->c_str (), focusColor))
+						if (pImpl->description->getColor (attr->c_str (), focusColor))
 							getFrame ()->setFocusColor (focusColor);
 					}
 					attr = attributes->getAttributeValue ("width");
@@ -2166,19 +2250,13 @@ bool VST3Editor::enableEditing (bool state)
 }
 
 //------------------------------------------------------------------------
-void VST3Editor::setDelegate (IVST3EditorDelegate* inDelegate)
-{
-	delegate = inDelegate;
-}
+void VST3Editor::setDelegate (IVST3EditorDelegate* inDelegate) { pImpl->delegate = inDelegate; }
 
 //------------------------------------------------------------------------
-IVST3EditorDelegate* VST3Editor::getDelegate () const
-{
-	return delegate;
-}
+IVST3EditorDelegate* VST3Editor::getDelegate () const { return pImpl->delegate; }
 
 //------------------------------------------------------------------------
-SharedPointer<UIDescription> VST3Editor::getUIDescription () const { return description; }
+SharedPointer<UIDescription> VST3Editor::getUIDescription () const { return pImpl->description; }
 
 //------------------------------------------------------------------------
 //--- AspectRatioVST3Editor

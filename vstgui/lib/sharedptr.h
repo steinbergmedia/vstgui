@@ -52,14 +52,13 @@ using SharedPointer = shared_ptr<I>;
 struct IReference : public std::enable_shared_from_this<IReference>
 {
 	virtual ~IReference () noexcept = default;
+	virtual void beforeDelete () {}
 };
 
 //------------------------------------------------------------------------
 class ReferenceCounted : virtual public IReference
 {
 public:
-	virtual void beforeDelete () {}
-
 	int32_t getNbReference () const
 	{
 		return static_cast<int32_t> (shared_from_this ().use_count ()) - 1;
@@ -82,7 +81,7 @@ struct Deleter
 {
 	void operator() (T* p) const noexcept
 	{
-		if (ReferenceCounted* rc = static_cast<ReferenceCounted*> (p))
+		if (auto rc = static_cast<IReference*> (p))
 			rc->beforeDelete ();
 		delete p;
 	}

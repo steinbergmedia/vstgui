@@ -23,11 +23,13 @@ public:
 	GroupController (Steinberg::Vst::Parameter* parameter, Steinberg::Vst::EditController* editController);
 	~GroupController ();
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	
-	void valueChanged (CControl* pControl) override;
-	void controlBeginEdit (CControl* pControl) override;
-	void controlEndEdit (CControl* pControl) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
+
+	void valueChanged (CControl& control) override;
+	void controlBeginEdit (CControl& control) override;
+	void controlEndEdit (CControl& control) override;
 
 	//-----------------------------------------------------------------------------
 protected:

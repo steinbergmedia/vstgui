@@ -32,13 +32,14 @@ PadController::~PadController ()
 }
 
 //------------------------------------------------------------------------
-CView* PadController::verifyView (CView* view, const UIAttributes& attributes,
-                                  const IUIDescription* description)
+SharedPointer<CView> PadController::verifyView (const SharedPointer<CView>& view,
+												const UIAttributes& attributes,
+												const IUIDescription& description)
 {
-	auto* pad = dynamic_cast<CXYPad*> (view);
+	auto pad = view.cast<CXYPad> ();
 	if (pad)
 	{
-		padControl = pad;
+		padControl = pad.get ();
 		padControl->setListener (this);
 		observer.update (xParam, Steinberg::IDependent::kChanged);
 	}
@@ -46,12 +47,12 @@ CView* PadController::verifyView (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-void PadController::valueChanged (CControl* pControl)
+void PadController::valueChanged (CControl& control)
 {
-	if (pControl == padControl && xParam && yParam)
+	if (&control == padControl && xParam && yParam)
 	{
 		float x, y;
-		CXYPad::calculateXY (pControl->getValue (), x, y);
+		CXYPad::calculateXY (padControl->getValue (), x, y);
 
 		auto xId = xParam->getInfo ().id;
 		if (editController->setParamNormalized (xId, x) == Steinberg::kResultTrue)
@@ -63,14 +64,14 @@ void PadController::valueChanged (CControl* pControl)
 	}
 	else
 	{
-		DelegationController::valueChanged (pControl);
+		DelegationController::valueChanged (control);
 	}
 }
 
 //------------------------------------------------------------------------
-void PadController::controlBeginEdit (CControl* pControl)
+void PadController::controlBeginEdit (CControl& control)
 {
-	if (pControl == padControl && xParam && yParam)
+	if (&control == padControl && xParam && yParam)
 	{
 		editController->startGroupEdit ();
 		editController->beginEdit (xParam->getInfo ().id);
@@ -78,14 +79,14 @@ void PadController::controlBeginEdit (CControl* pControl)
 	}
 	else
 	{
-		DelegationController::controlBeginEdit (pControl);
+		DelegationController::controlBeginEdit (control);
 	}
 }
 
 //------------------------------------------------------------------------
-void PadController::controlEndEdit (CControl* pControl)
+void PadController::controlEndEdit (CControl& control)
 {
-	if (pControl == padControl && xParam && yParam)
+	if (&control == padControl && xParam && yParam)
 	{
 		editController->endEdit (xParam->getInfo ().id);
 		editController->endEdit (yParam->getInfo ().id);
@@ -93,7 +94,7 @@ void PadController::controlEndEdit (CControl* pControl)
 	}
 	else
 	{
-		DelegationController::controlEndEdit (pControl);
+		DelegationController::controlEndEdit (control);
 	}
 }
 

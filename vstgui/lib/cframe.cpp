@@ -761,12 +761,6 @@ void CFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::idle ()
-{
-	// TODO: remove method
-}
-
-//-----------------------------------------------------------------------------
 SharedPointer<Animation::Animator> CFrame::getAnimator ()
 {
 	if (pImpl->animator == nullptr)

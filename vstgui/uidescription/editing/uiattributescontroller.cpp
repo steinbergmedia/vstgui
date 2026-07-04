@@ -669,12 +669,12 @@ public:
 		TextController::setValue (value);
 	}
 
-	void onOptionMenuPrePopup (const SharedPointer<COptionMenu>& optMenu) override
+	void onOptionMenuPrePopup (COptionMenu& optMenu) override
 	{
-		optMenu->removeAllEntry ();
+		optMenu.removeAllEntry ();
 		if (addNoneItem)
 		{
-			optMenu->addEntry (
+			optMenu.addEntry (
 				makeShared<CCommandMenuItem> (CCommandMenuItem::Desc {"None", 100, shared (this)}));
 		}
 		StringPtrList names;
@@ -682,7 +682,7 @@ public:
 		if (sortItems)
 			names.sort (UIEditController::std__stringCompare);
 		if (addNoneItem && !names.empty ())
-			optMenu->addSeparator ();
+			optMenu.addSeparator ();
 		for (const auto& name : names)
 			addMenuEntry (name);
 	}

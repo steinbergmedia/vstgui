@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -16,7 +16,7 @@ namespace VSTGUI {
 
 //------------------------------------------------------------------------
 class PadController : public DelegationController,
-					  NonAtomicReferenceCounted
+					  public NonAtomicReferenceCounted
 {
 public:
 	PadController (const SharedPointer<IController>& baseController,
@@ -24,12 +24,13 @@ public:
 				   Steinberg::Vst::Parameter* xParam, Steinberg::Vst::Parameter* yParam);
 	~PadController () override;
 
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-	                   const IUIDescription* description) override;
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description) override;
 
-	void valueChanged (CControl* pControl) override;
-	void controlBeginEdit (CControl* pControl) override;
-	void controlEndEdit (CControl* pControl) override;
+	void valueChanged (CControl& control) override;
+	void controlBeginEdit (CControl& control) override;
+	void controlEndEdit (CControl& control) override;
 
 	//-----------------------------------------------------------------------------
 protected:

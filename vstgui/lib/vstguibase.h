@@ -275,6 +275,9 @@ private:
 #define VSTGUI_NEWER_THAN_4_12 VSTGUI_NEWER_THAN (4, 12)
 #define VSTGUI_NEWER_THAN_4_13 VSTGUI_NEWER_THAN (4, 13)
 
+#define VSTGUI_OLDER_THAN(major, minor)                                                            \
+	(VSTGUI_VERSION < major || (VSTGUI_VERSION_MAJOR == major && VSTGUI_VERSION_MINOR < minor))
+
 } // VSTGUI
 
 //-----------------------------------------------------------------------------

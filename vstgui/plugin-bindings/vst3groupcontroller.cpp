@@ -20,12 +20,14 @@ GroupController::GroupController (Steinberg::Vst::Parameter* parameter, Steinber
 GroupController::~GroupController () { parameter->removeDependent (&observer); }
 
 //------------------------------------------------------------------------
-CView* GroupController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+SharedPointer<CView> GroupController::verifyView (const SharedPointer<CView>& view,
+												  const UIAttributes& attributes,
+												  const IUIDescription& description)
 {
-	auto* control = dynamic_cast<CControl*>(view);
+	auto control = view.cast<CControl> ();
 	if (control)
 	{
-		controls.push_back (control);
+		controls.push_back (control.get ());
 		control->setListener (this);
 		parameter->deferUpdate ();
 	}
@@ -33,23 +35,23 @@ CView* GroupController::verifyView (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-void GroupController::valueChanged (CControl* pControl)
+void GroupController::valueChanged (CControl& control)
 {
-	Steinberg::Vst::ParamValue normValue = parameter->toNormalized (pControl->getTag ());
+	Steinberg::Vst::ParamValue normValue = parameter->toNormalized (control.getTag ());
 	editController->performEdit (parameter->getInfo().id, normValue);
 	parameter->setNormalized (normValue);
 }
 
 //------------------------------------------------------------------------
-void GroupController::controlBeginEdit (CControl* pControl)
+void GroupController::controlBeginEdit (CControl& control)
 {
 	for (const auto& c : controls)
-		c->setMouseEnabled (c == pControl);
+		c->setMouseEnabled (c == &control);
 	editController->beginEdit (parameter->getInfo ().id);
 }
 
 //------------------------------------------------------------------------
-void GroupController::controlEndEdit (CControl* pControl)
+void GroupController::controlEndEdit (CControl& control)
 {
 	editController->endEdit (parameter->getInfo ().id);
 	observer.update (parameter, Steinberg::IDependent::kChanged);

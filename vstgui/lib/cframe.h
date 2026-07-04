@@ -54,8 +54,6 @@ public:
 
 	double getScaleFactor () const;
 
-	void idle ();
-
 	/** get the current time (in ms) */
 	uint64_t getTicks () const;
 
@@ -285,12 +283,13 @@ public:
 	/** frame will change size, if this returns false the upstream implementation does not allow it and thus the size of the frame will not change */
 	virtual bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) { return true; }
 
-	virtual CFrame* getFrame () const { return frame; }
+	virtual CFrame* getFrame () const { return frame.get (); }
+
 protected:
 	VSTGUIEditorInterface () = default;
 	virtual ~VSTGUIEditorInterface () noexcept = default;
 
-	CFrame* frame {nullptr};
+	SharedPointer<CFrame> frame;
 };
 
 //-----------------------------------------------------------------------------

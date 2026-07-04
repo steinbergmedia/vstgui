@@ -452,8 +452,7 @@ void COptionMenu::onKeyboardEvent (KeyboardEvent& event)
 void COptionMenu::beforePopup ()
 {
 	if (listeners)
-		listeners->forEach (
-			[this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (shared (this)); });
+		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (*this); });
 	for (auto& menuItem : menuItems)
 	{
 		if (auto commandItem = menuItem.cast<CCommandMenuItem> ())
@@ -472,8 +471,7 @@ void COptionMenu::afterPopup ()
 			menuItem->getSubmenu ()->afterPopup ();
 	}
 	if (listeners)
-		listeners->forEach (
-			[this] (IOptionMenuListener* l) { l->onOptionMenuPostPopup (shared (this)); });
+		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPostPopup (*this); });
 }
 
 //------------------------------------------------------------------------
@@ -515,7 +513,7 @@ bool COptionMenu::popup (const PopupCallback& callback)
 					{
 						self->listeners->forEach (
 							[self, &result] (IOptionMenuListener* l) {
-								return l->onOptionMenuSetPopupResult (self, result.menu,
+								return l->onOptionMenuSetPopupResult (*self, result.menu.get (),
 																	  result.index);
 							},
 							[&preventSettingValue] (bool result) {

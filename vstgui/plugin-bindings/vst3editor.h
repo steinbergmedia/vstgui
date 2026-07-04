@@ -38,30 +38,36 @@ public:
 	virtual ~IVST3EditorDelegate () = default;
 
 	/** create a custom view */
-	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes,
-									 const IUIDescription* description, VST3Editor* editor) = 0;
+	virtual SharedPointer<CView> createCustomView (UTF8StringPtr name,
+												   const UIAttributes& attributes,
+												   const IUIDescription& description,
+												   VST3Editor& editor) = 0;
 	/** verify a view after it was created */
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes,
-							   const IUIDescription* description, VST3Editor* editor) = 0;
+	virtual SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+											 const UIAttributes& attributes,
+											 const IUIDescription& description,
+											 VST3Editor& editor) = 0;
 	/** find a parameter */
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID,
-								VST3Editor* editor) = 0;
+								VST3Editor& editor) = 0;
 	/** check if parameter ID is private and should not be exposed to the host */
 	virtual bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) = 0;
 	/** called after the editor was opened */
-	virtual void didOpen (VST3Editor* editor) = 0;
+	virtual void didOpen (VST3Editor& editor) = 0;
 	/** called before the editor will close */
-	virtual void willClose (VST3Editor* editor) = 0;
+	virtual void willClose (VST3Editor& editor) = 0;
 	/** create the context menu for the editor, will be added to the host menu */
-	virtual COptionMenu* createContextMenu (const CPoint& pos, VST3Editor* editor) = 0;
+	virtual SharedPointer<COptionMenu> createContextMenu (const CPoint& pos,
+														  VST3Editor& editor) = 0;
 	/** called when a sub controller should be created.
 	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject,
 	   release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets
 	   closed. */
-	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description,
-											  VST3Editor* editor) = 0;
+	virtual SharedPointer<IController> createSubController (UTF8StringPtr name,
+															const IUIDescription& description,
+															VST3Editor& editor) = 0;
 	/** called when the user zoom factor of the editor was changed */
-	virtual void onZoomChanged (VST3Editor* editor, double newZoom) = 0;
+	virtual void onZoomChanged (VST3Editor& editor, double newZoom) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -69,34 +75,37 @@ public:
 class VST3EditorDelegate : public IVST3EditorDelegate
 {
 public:
-	CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes,
-							 const IUIDescription* description, VST3Editor* editor) override
+	SharedPointer<CView> createCustomView (UTF8StringPtr name, const UIAttributes& attributes,
+										   const IUIDescription& description,
+										   VST3Editor& editor) override
 	{
 		return nullptr;
 	}
-	CView* verifyView (CView* view, const UIAttributes& attributes,
-					   const IUIDescription* description, VST3Editor* editor) override
+	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+									 const UIAttributes& attributes,
+									 const IUIDescription& description, VST3Editor& editor) override
 	{
 		return view;
 	}
 	bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID,
-						VST3Editor* editor) override
+						VST3Editor& editor) override
 	{
 		return false;
 	}
 	bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) override { return false; }
-	void didOpen (VST3Editor* editor) override {}
-	void willClose (VST3Editor* editor) override {}
-	COptionMenu* createContextMenu (const CPoint& pos, VST3Editor* editor) override
+	void didOpen (VST3Editor& editor) override {}
+	void willClose (VST3Editor& editor) override {}
+	SharedPointer<COptionMenu> createContextMenu (const CPoint& pos, VST3Editor& editor) override
 	{
 		return nullptr;
 	}
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description,
-									  VST3Editor* editor) override
+	SharedPointer<IController> createSubController (UTF8StringPtr name,
+													const IUIDescription& description,
+													VST3Editor& editor) override
 	{
 		return nullptr;
 	}
-	void onZoomChanged (VST3Editor* editor, double newZoom) override {}
+	void onZoomChanged (VST3Editor& editor, double newZoom) override {}
 };
 
 //-----------------------------------------------------------------------------
@@ -104,13 +113,12 @@ public:
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class VST3Editor : public Steinberg::Vst::VSTGUIEditor,
-                   public Steinberg::Vst::IParameterFinder,
-                   public IController,
-                   public IViewAddedRemovedObserver,
-                   public IMouseObserver,
-                   public CommandMenuItemTargetAdapter
+				   public Steinberg::Vst::IParameterFinder,
+				   public IViewAddedRemovedObserver,
+				   public IMouseObserver
 #ifdef VST3_CONTENT_SCALE_SUPPORT
-				 , public Steinberg::IPlugViewContentScaleSupport
+,
+				   public Steinberg::IPlugViewContentScaleSupport
 #endif
 {
 public:
@@ -129,7 +137,7 @@ public:
 	void setZoomFactor (double factor);
 	double getZoomFactor () const;
 
-	void setAllowedZoomFactors (std::vector<double> zoomFactors) { allowedZoomFactors = zoomFactors; }
+	void setAllowedZoomFactors (std::vector<double> zoomFactors);
 
 	/** set the delegate of the editor. no reference counting is happening here. */
 	void setDelegate (IVST3EditorDelegate* delegate);
@@ -137,7 +145,7 @@ public:
 	SharedPointer<UIDescription> getUIDescription () const;
 
 	bool inEditMode () const;
-	const std::string& getCurrentTemplateName () const { return viewName; }
+	const std::string& getCurrentTemplateName () const;
 
 	//-----------------------------------------------------------------------------
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
@@ -165,11 +173,6 @@ protected:
 	void beginEdit (int32_t index) override;
 	void endEdit (int32_t index) override;
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription* description) override;
-
 	bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) override;
 
 	Steinberg::tresult PLUGIN_API onSize (Steinberg::ViewRect* newSize) override;
@@ -179,53 +182,23 @@ protected:
 	// IParameterFinder
 	Steinberg::tresult PLUGIN_API findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag) override;
 
-	// IControlListener
-	virtual void valueChanged (CControl* pControl) override;
-	virtual void controlBeginEdit (CControl* pControl) override;
-	virtual void controlEndEdit (CControl* pControl) override;
-	virtual void controlTagWillChange (CControl* pControl) override;
-	virtual void controlTagDidChange (CControl* pControl) override;
-
 	// IViewAddedRemovedObserver
-	void onViewAdded (CFrame* frame, CView* view) override;
-	void onViewRemoved (CFrame* frame, CView* view) override;
+	void onViewAdded (CFrame& frame, CView& view) override;
+	void onViewRemoved (CFrame& frame, CView& view) override;
 
 	// IMouseObserver
-	void onMouseEntered (CView* view, CFrame* frame) override {}
-	void onMouseExited (CView* view, CFrame* frame) override {}
-	void onMouseEvent (MouseEvent& event, CFrame* frame) override;
-
-	// CommandMenuItemTargetAdapter
-	bool validateCommandMenuItem (CCommandMenuItem* item) override;
-	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
+	void onMouseEntered (CView& view, CFrame& frame) override {}
+	void onMouseExited (CView& view, CFrame& frame) override {}
+	void onMouseEvent (MouseEvent& event, CFrame& frame) override;
 
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) override;
 #endif
 
-	struct KeyboardHook;
-	KeyboardHook* keyboardHook {nullptr};
-	SharedPointer<UIDescription> description;
-	IVST3EditorDelegate* delegate {nullptr};
-	IController* originalController {nullptr};
-	IControlListener* openUIEditorController {nullptr};
-	using ParameterChangeListenerMap = std::map<int32_t, ParameterChangeListener*>;
-	ParameterChangeListenerMap paramChangeListeners;
-	std::string viewName;
-	std::string xmlFile;
-	bool tooltipsEnabled {true};
-	bool doCreateView {false};
-	bool editingEnabled {false};
-
-	double contentScaleFactor {1.};
-	double zoomFactor {1.};
-	std::vector<double> allowedZoomFactors;
-
-	CPoint minSize;
-	CPoint maxSize;
-	CRect nonEditRect;
-
-	Optional<CPoint> sizeRequest;
+private:
+	struct Controller;
+	struct Impl;
+	std::unique_ptr<Impl> pImpl;
 };
 
 //-----------------------------------------------------------------------------
