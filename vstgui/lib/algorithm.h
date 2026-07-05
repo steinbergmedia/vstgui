@@ -19,7 +19,7 @@ Optional<ResultType> checkedDistance (const Iter& first, const Iter& it)
 {
 	auto dist = std::distance (first, it);
 	auto maxDist = std::numeric_limits<ResultType>::max ();
-	if (dist > static_cast<size_t> (maxDist))
+	if (static_cast<size_t> (dist) > static_cast<size_t> (maxDist))
 		return {};
 	return {static_cast<ResultType> (dist)};
 }
