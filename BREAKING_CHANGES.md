@@ -177,6 +177,7 @@ and their possible getter methods return also a `SharedPointer<CBitmap>` now:
 - The `IUIDescription::getViewFactory` changed the return value to be a const reference of `IViewFactory`.
 - The `IContentProvider` inherits virtually from `IReference` now.
 - The `UIDescription` constructor is now protected and you need to call the static `UIDescription::make` function instead.
+- The `onIdle` method in CFrame was removed.
 - The `IDependency` class was removed
 - The `CTabView` class was removed
 - The `COpenGLView` class was removed
@@ -346,4 +347,3 @@ it compiles without changing the macro. All methods marked this way will be unav
 - When using GDI+ or libpng on Windows there is no need in using any offscreen context for flicker reduction as VSTGUI uses a backbuffer for drawing.
 - Custom controls must implement the CLASS_METHODS macro if it directly inherits from CControl. Otherwise you will get a compile error.
 - Custom controls which don't implement the new mouse methods must override onMouseDown and return kMouseEventNotHandled so that the old mouse method is called.
-
