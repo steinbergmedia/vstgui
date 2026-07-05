@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ivst3editordelegate.h"
 #include "public.sdk/source/vst/vstguieditor.h"
 #include "pluginterfaces/vst/ivstplugview.h"
 #include "../uidescription/uidescription.h"
@@ -21,101 +22,13 @@
 
 namespace VSTGUI {
 class ParameterChangeListener;
-class VST3Editor;
-
-//-----------------------------------------------------------------------------
-//! @brief delegate interface for a VST3Editor.
-//!
-//! You either extend Steinberg::Vst::EditController with this interface and pass the editor
-//! controller to the constructor of the VST3Editor class, or you create a delegate without
-//! extending Steinberg::Vst::EditController and explicitly set the delegate of the VST3Editor.
-//!
-//! @ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-class IVST3EditorDelegate
-{
-public:
-	virtual ~IVST3EditorDelegate () = default;
-
-	/** create a custom view */
-	virtual SharedPointer<CView> createCustomView (UTF8StringPtr name,
-												   const UIAttributes& attributes,
-												   const IUIDescription& description,
-												   VST3Editor& editor) = 0;
-	/** verify a view after it was created */
-	virtual SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-											 const UIAttributes& attributes,
-											 const IUIDescription& description,
-											 VST3Editor& editor) = 0;
-	/** find a parameter */
-	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID,
-								VST3Editor& editor) = 0;
-	/** check if parameter ID is private and should not be exposed to the host */
-	virtual bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) = 0;
-	/** called after the editor was opened */
-	virtual void didOpen (VST3Editor& editor) = 0;
-	/** called before the editor will close */
-	virtual void willClose (VST3Editor& editor) = 0;
-	/** create the context menu for the editor, will be added to the host menu */
-	virtual SharedPointer<COptionMenu> createContextMenu (const CPoint& pos,
-														  VST3Editor& editor) = 0;
-	/** called when a sub controller should be created.
-	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject,
-	   release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets
-	   closed. */
-	virtual SharedPointer<IController> createSubController (UTF8StringPtr name,
-															const IUIDescription& description,
-															VST3Editor& editor) = 0;
-	/** called when the user zoom factor of the editor was changed */
-	virtual void onZoomChanged (VST3Editor& editor, double newZoom) = 0;
-};
-
-//------------------------------------------------------------------------
-/** Default adapter implementation for IVST3EditorDelegate */
-class VST3EditorDelegate : public IVST3EditorDelegate
-{
-public:
-	SharedPointer<CView> createCustomView (UTF8StringPtr name, const UIAttributes& attributes,
-										   const IUIDescription& description,
-										   VST3Editor& editor) override
-	{
-		return nullptr;
-	}
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description, VST3Editor& editor) override
-	{
-		return view;
-	}
-	bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID,
-						VST3Editor& editor) override
-	{
-		return false;
-	}
-	bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) override { return false; }
-	void didOpen (VST3Editor& editor) override {}
-	void willClose (VST3Editor& editor) override {}
-	SharedPointer<COptionMenu> createContextMenu (const CPoint& pos, VST3Editor& editor) override
-	{
-		return nullptr;
-	}
-	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription& description,
-													VST3Editor& editor) override
-	{
-		return nullptr;
-	}
-	void onZoomChanged (VST3Editor& editor, double newZoom) override {}
-};
 
 //-----------------------------------------------------------------------------
 //! @brief VST3 Editor with automatic parameter binding
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class VST3Editor : public Steinberg::Vst::VSTGUIEditor,
-				   public Steinberg::Vst::IParameterFinder,
-				   public IViewAddedRemovedObserver,
-				   public IMouseObserver
+				   public Steinberg::Vst::IParameterFinder
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 ,
 				   public Steinberg::IPlugViewContentScaleSupport
@@ -181,15 +94,6 @@ protected:
 
 	// IParameterFinder
 	Steinberg::tresult PLUGIN_API findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag) override;
-
-	// IViewAddedRemovedObserver
-	void onViewAdded (CFrame& frame, CView& view) override;
-	void onViewRemoved (CFrame& frame, CView& view) override;
-
-	// IMouseObserver
-	void onMouseEntered (CView& view, CFrame& frame) override {}
-	void onMouseExited (CView& view, CFrame& frame) override {}
-	void onMouseEvent (MouseEvent& event, CFrame& frame) override;
 
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) override;
