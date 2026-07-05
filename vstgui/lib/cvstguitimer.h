@@ -56,8 +56,9 @@ namespace Call
 	inline void later (FunctionCallback callback, uint32_t delayInMilliseconds = 10)
 	{
 		auto timer = makeShared<CVSTGUITimer> ();
-		timer->start (delayInMilliseconds, [callback, timer] (auto) {
+		timer->start (delayInMilliseconds, [callback, timer] (auto) mutable {
 			timer->stop ();
+			timer.reset ();
 			callback ();
 		});
 	}
