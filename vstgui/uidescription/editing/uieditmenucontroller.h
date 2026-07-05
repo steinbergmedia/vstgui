@@ -158,8 +158,8 @@ public:
 						  WeakPointer<IActionPerformer> actionPerformer);
 	~UIEditMenuController () noexcept override;
 
-	const SharedPointer<COptionMenu>& getFileMenu () const { return fileMenu; }
-	const SharedPointer<COptionMenu>& getEditMenu () const { return editMenu; }
+	COptionMenu* getFileMenu () const { return fileMenu; }
+	COptionMenu* getEditMenu () const { return editMenu; }
 
 	void processKeyCommand (KeyboardEvent& event);
 	bool handleCommand (const UTF8StringPtr category, const UTF8StringPtr name);
@@ -173,12 +173,12 @@ protected:
 	bool onCommandMenuItemSelected (CCommandMenuItem& item) override;
 
 	bool validateMenuItem (CCommandMenuItem& item);
-	SharedPointer<CCommandMenuItem> findKeyCommandItem (SharedPointer<COptionMenu> menu,
+	SharedPointer<CCommandMenuItem> findKeyCommandItem (COptionMenu& menu,
 														const KeyboardEvent& event);
 	void createEditMenu (SharedPointer<COptionMenu> menu);
 	void createFileMenu (SharedPointer<COptionMenu> menu);
 
-	void viewRemoved (CView& view) override;
+	void viewWillDelete (CView& view) override;
 	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
 									 const UIAttributes& attributes,
 									 const IUIDescription& description) override;
@@ -195,8 +195,8 @@ protected:
 	SharedPointer<CVSTGUITimer> highlightTimer;
 	WeakPointer<IActionPerformer> actionPerformer;
 
-	SharedPointer<COptionMenu> fileMenu;
-	SharedPointer<COptionMenu> editMenu;
+	COptionMenu* fileMenu {nullptr};
+	COptionMenu* editMenu {nullptr};
 	SharedPointer<CTextLabel> fileLabel;
 	SharedPointer<CTextLabel> editLabel;
 	

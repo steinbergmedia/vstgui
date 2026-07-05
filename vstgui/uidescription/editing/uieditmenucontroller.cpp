@@ -406,15 +406,15 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CCommandMenuItem> UIEditMenuController::findKeyCommandItem (
-	SharedPointer<COptionMenu> menu, const KeyboardEvent& event)
+SharedPointer<CCommandMenuItem>
+	UIEditMenuController::findKeyCommandItem (COptionMenu& menu, const KeyboardEvent& event)
 {
-	for (auto& item : menu->getItemList ())
+	for (auto& item : menu.getItemList ())
 	{
 		auto subMenu = item->getSubmenu ();
 		if (subMenu)
 		{
-			auto result = findKeyCommandItem (subMenu, event);
+			auto result = findKeyCommandItem (*subMenu, event);
 			if (result)
 				return result;
 		}
@@ -602,11 +602,11 @@ bool UIEditMenuController::canHandleCommand (const UTF8StringPtr category, const
 void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 {
 	auto baseMenu = editMenu;
-	auto item = baseMenu ? findKeyCommandItem (baseMenu, event) : nullptr;
+	auto item = baseMenu ? findKeyCommandItem (*baseMenu, event) : nullptr;
 	if (item == nullptr && fileMenu)
 	{
 		baseMenu = fileMenu;
-		item = findKeyCommandItem (baseMenu, event);
+		item = findKeyCommandItem (*baseMenu, event);
 	}
 	if (item && item->getItemTarget ())
 	{
@@ -661,14 +661,14 @@ static void copyMenuItems (COptionMenu& src, COptionMenu& dst)
 }
 
 //------------------------------------------------------------------------
-void UIEditMenuController::viewRemoved (CView& view)
+void UIEditMenuController::viewWillDelete (CView& view)
 {
-	if (&view == editMenu.get ())
+	if (&view == editMenu)
 	{
 		view.unregisterViewListener (this);
 		editMenu = nullptr;
 	}
-	else if (&view == fileMenu.get ())
+	else if (&view == fileMenu)
 	{
 		view.unregisterViewListener (this);
 		fileMenu = nullptr;
@@ -688,25 +688,31 @@ SharedPointer<CView> UIEditMenuController::verifyView (const SharedPointer<CView
 			case kMenuEditTag:
 			{
 				if (editMenu)
-					copyMenuItems (*editMenu.get (), *menu.get ());
+				{
+					editMenu->unregisterViewListener (this);
+					copyMenuItems (*editMenu, *menu.get ());
+				}
 				else
 				{
 					createEditMenu (menu);
-					menu->registerViewListener (this);
 				}
-				editMenu = menu;
+				editMenu = menu.get ();
+				editMenu->registerViewListener (this);
 				break;
 			}
 			case kMenuFileTag:
 			{
 				if (fileMenu)
-					copyMenuItems (*fileMenu.get (), *menu.get ());
+				{
+					fileMenu->unregisterViewListener (this);
+					copyMenuItems (*fileMenu, *menu.get ());
+				}
 				else
 				{
 					createFileMenu (menu);
-					menu->registerViewListener (this);
 				}
-				fileMenu = menu;
+				fileMenu = menu.get ();
+				fileMenu->registerViewListener (this);
 				break;
 			}
 		}

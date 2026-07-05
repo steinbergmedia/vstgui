@@ -218,6 +218,7 @@ bool UIEditController::usesDarkTheme () const
 void UIEditController::doChangeTheme (bool dark)
 {
 	setDarkTheme (dark);
+	inChangeTheme = true;
 	if (baseView)
 	{
 		vstgui_assert (templateController);
@@ -233,6 +234,7 @@ void UIEditController::doChangeTheme (bool dark)
 		parent->addSubview (view);
 		templateController->selectTemplate (templateName.data ());
 	}
+	inChangeTheme = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -970,6 +972,9 @@ void UIEditController::viewRemoved (CView& view)
 	editView->setGridProcessor (nullptr);
 	editView->unregisterViewListener (this);
 	editView.reset ();
+	if (inChangeTheme)
+		return;
+
 	baseView.reset ();
 
 	gridController.reset ();

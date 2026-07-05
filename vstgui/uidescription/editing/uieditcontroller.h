@@ -172,9 +172,10 @@ protected:
 	
 	std::string editTemplateName;
 	std::list<SharedPointer<CSplitView> > splitViews;
-	
-	bool dirty;
-	
+
+	bool dirty {false};
+	bool inChangeTheme {false};
+
 	struct Template {
 		std::string name;
 		SharedPointer<CView> view;
