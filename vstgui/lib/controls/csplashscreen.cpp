@@ -282,32 +282,33 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animIndex, uint32_t animT
 			if (removeViewAnimation)
 			{
 				splashView->setMouseEnabled (false);
-				splashView->addAnimation ("AnimationSplashScreenAnimation",
-										  makeShared<Animation::AlphaValueAnimation> (0.f),
-										  makeShared<Animation::PowerTimingFunction> (animTime, 2),
-										  [this] (auto&, auto, auto&) {
-											  if (modalView)
-											  {
-												  modalView->invalid ();
-												  modalView->setMouseEnabled (true);
-											  }
-											  if (modalViewSessionID)
-											  {
-												  if (auto frame = getFrame ())
-													  frame->endModalViewSession (
-														  *modalViewSessionID);
-												  modalViewSessionID = {};
-											  }
-											  setMouseEnabled (true);
-										  });
+				splashView->addAnimation (
+					"AnimationSplashScreenAnimation",
+					makeShared<Animation::AlphaValueAnimation> (0.f),
+					makeShared<Animation::PowerTimingFunction> (animTime, 2.f),
+					[this] (auto&, auto, auto&) {
+						if (modalView)
+						{
+							modalView->invalid ();
+							modalView->setMouseEnabled (true);
+						}
+						if (modalViewSessionID)
+						{
+							if (auto frame = getFrame ())
+								frame->endModalViewSession (*modalViewSessionID);
+							modalViewSessionID = {};
+						}
+						setMouseEnabled (true);
+					});
 			}
 			else
 			{
 				setMouseEnabled (false);
 				splashView->setAlphaValue (0.f);
-				splashView->addAnimation ("AnimationSplashScreenAnimation",
-										  makeShared<Animation::AlphaValueAnimation> (1.f),
-										  makeShared<Animation::PowerTimingFunction> (animTime, 2));
+				splashView->addAnimation (
+					"AnimationSplashScreenAnimation",
+					makeShared<Animation::AlphaValueAnimation> (1.f),
+					makeShared<Animation::PowerTimingFunction> (animTime, 2.f));
 			}
 			return true;
 		}
