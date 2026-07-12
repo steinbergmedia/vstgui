@@ -25,10 +25,10 @@ struct CControl::Impl : ViewEventListenerAdapter
 
 	SubListenerDispatcher subListeners;
 	IControlListener* listener;
-	float value;
-	float oldValue {1};
-	float defaultValue {0.5};
-	float vmin {0};
+	float value {0.f};
+	float oldValue {1.f};
+	float defaultValue {0.5f};
+	float vmin {0.f};
 	float vmax {1.f};
 	float wheelInc {0.1f};
 	int32_t editing {0};
