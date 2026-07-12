@@ -357,6 +357,7 @@ private:
 	void onStyleChanged () const;
 	void setFindString (String&& text) const;
 	bool isReadOnlyMode () const;
+	void onParentSizeChanged (bool makeCursorVisible);
 
 	TextEditorView& mutableThis () const { return *const_cast<TextEditorView*> (this); }
 
@@ -425,6 +426,7 @@ public:
 
 private:
 	mutable ModelData md;
+	bool onParentSizeChangedDispatched {false};
 
 	struct CocoaTextInputClient : ICocoaTextInputClient
 	{
@@ -732,65 +734,75 @@ void TextEditorView::looseFocus ()
 }
 
 //------------------------------------------------------------------------
+void TextEditorView::onParentSizeChanged (bool makeCursorVisible)
+{
+	if (!isAttached () || !md.scrollView)
+		return;
+	auto viewSize = getViewSize ();
+	if (viewSize.top > 0)
+	{
+		viewSize.top = 0;
+	}
+	viewSize.setHeight (md.maxHeight);
+	viewSize.setWidth (md.maxWidth);
+	auto containerSize = md.scrollView->calculateOptimalContainerSize ();
+	auto origContainerSizeWidth = containerSize.getWidth ();
+	auto origContainerSizeHeight = containerSize.getHeight ();
+	if (origContainerSizeWidth <= md.maxWidth)
+	{
+		containerSize.bottom -= md.scrollView->getScrollbarWidth ();
+	}
+	if (origContainerSizeHeight <= md.maxHeight)
+	{
+		containerSize.right -= md.scrollView->getScrollbarWidth ();
+	}
+	// test again something could have changed above
+	if (containerSize.getWidth () <= md.maxWidth &&
+		origContainerSizeHeight == containerSize.getHeight ())
+	{
+		containerSize.bottom -= md.scrollView->getScrollbarWidth ();
+	}
+	if (containerSize.getHeight () <= md.maxHeight &&
+		origContainerSizeWidth == containerSize.getWidth ())
+	{
+		containerSize.right -= md.scrollView->getScrollbarWidth ();
+	}
+	if (containerSize.right > viewSize.right && viewSize.left < 0)
+	{
+		viewSize.offset (containerSize.right - viewSize.right, 0.);
+		if (viewSize.left > 0)
+			viewSize.offset (-viewSize.left, 0.);
+	}
+	if (containerSize.getWidth () > md.maxWidth)
+	{
+		if (viewSize.left < 0)
+			viewSize.left = 0;
+		viewSize.setWidth (containerSize.getWidth ());
+	}
+	if (containerSize.getHeight () > md.maxHeight)
+	{
+		if (viewSize.top < 0)
+			viewSize.top = 0;
+		viewSize.setHeight (containerSize.getHeight ());
+	}
+	setViewSize (viewSize);
+	if (makeCursorVisible)
+		onCursorChanged (-1, md.editState.cursor);
+	md.editState.row_count_per_page =
+		static_cast<int> (std::ceil (getVisibleViewSize ().getHeight () / md.lineHeight));
+}
+
+//------------------------------------------------------------------------
 void TextEditorView::parentSizeChanged ()
 {
 	if (md.scrollView)
 	{
-		auto func = [This = shared (this), makeCursorVisible = md.isInsertingText] () mutable {
-			if (!This->isAttached () || !This->md.scrollView)
-				return;
-			auto viewSize = This->getViewSize ();
-			if (viewSize.top > 0)
-			{
-				viewSize.top = 0;
-			}
-			viewSize.setHeight (This->md.maxHeight);
-			viewSize.setWidth (This->md.maxWidth);
-			auto containerSize = This->md.scrollView->calculateOptimalContainerSize ();
-			auto origContainerSizeWidth = containerSize.getWidth ();
-			auto origContainerSizeHeight = containerSize.getHeight ();
-			if (origContainerSizeWidth <= This->md.maxWidth)
-			{
-				containerSize.bottom -= This->md.scrollView->getScrollbarWidth ();
-			}
-			if (origContainerSizeHeight <= This->md.maxHeight)
-			{
-				containerSize.right -= This->md.scrollView->getScrollbarWidth ();
-			}
-			// test again something could have changed above
-			if (containerSize.getWidth () <= This->md.maxWidth &&
-				origContainerSizeHeight == containerSize.getHeight ())
-			{
-				containerSize.bottom -= This->md.scrollView->getScrollbarWidth ();
-			}
-			if (containerSize.getHeight () <= This->md.maxHeight &&
-				origContainerSizeWidth == containerSize.getWidth ())
-			{
-				containerSize.right -= This->md.scrollView->getScrollbarWidth ();
-			}
-			if (containerSize.right > viewSize.right && viewSize.left < 0)
-			{
-				viewSize.offset (containerSize.right - viewSize.right, 0.);
-				if (viewSize.left > 0)
-					viewSize.offset (-viewSize.left, 0.);
-			}
-			if (containerSize.getWidth () > This->md.maxWidth)
-			{
-				if (viewSize.left < 0)
-					viewSize.left = 0;
-				viewSize.setWidth (containerSize.getWidth ());
-			}
-			if (containerSize.getHeight () > This->md.maxHeight)
-			{
-				if (viewSize.top < 0)
-					viewSize.top = 0;
-				viewSize.setHeight (containerSize.getHeight ());
-			}
-			This->setViewSize (viewSize);
-			if (makeCursorVisible)
-				This->onCursorChanged (-1, This->md.editState.cursor);
-			This->md.editState.row_count_per_page = static_cast<int> (
-				std::ceil (This->getVisibleViewSize ().getHeight () / This->md.lineHeight));
+		if (onParentSizeChangedDispatched)
+			return;
+		onParentSizeChangedDispatched = true;
+		auto func = [This = shared (this), makeCursorVisible = md.isInsertingText] () {
+			This->onParentSizeChanged (makeCursorVisible);
+			This->onParentSizeChangedDispatched = false;
 		};
 		auto frame = getFrame ();
 		if (frame && frame->inEventProcessing ())
@@ -1972,8 +1984,8 @@ float TextEditorView::getCharWidth (size_t row, size_t pos) const
 
 	if (md.style->tabWidth > 0 && str[0] == '\t')
 	{
-		auto posOffset = 0;
-		auto numTabs = 0u;
+		size_t posOffset = 0u;
+		size_t numTabs = 0u;
 		size_t numSpaces = md.style->tabWidth;
 		for (auto index = 0u; index <= pos; ++index)
 		{
