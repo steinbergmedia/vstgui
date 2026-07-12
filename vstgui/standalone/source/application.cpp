@@ -249,8 +249,11 @@ void Application::quit ()
 //------------------------------------------------------------------------
 void Application::onQuit ()
 {
-	delegate->onQuit ();
-	delegate.reset ();
+	if (delegate)
+	{
+		delegate->onQuit ();
+		delegate.reset ();
+	}
 }
 
 //------------------------------------------------------------------------
