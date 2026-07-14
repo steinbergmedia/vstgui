@@ -17,13 +17,13 @@
 Supported OS:
 
 - Microsoft Windows 10/11
-- Apple macOS 10.12-12
-- Apple iOS 9-15
+- Apple macOS 10.12 - 26
+- Apple iOS 9 - 26
 - Linux (Preview)
 
 Supported IDE:
 
-- Visual Studio 2017/2019/2022
+- Visual Studio 2019/2022/2026
 - minimum Xcode 10.1
 - Qt Creator
 - Visual Studio Code
