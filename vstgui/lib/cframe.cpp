@@ -123,7 +123,7 @@ struct CFrame::Impl
 // CFrame Implementation
 //-----------------------------------------------------------------------------
 /*! @class CFrame
-It creates a platform dependend view object. 
+It creates a platform dependent view object. 
 
 On Mac OS X it is a HIView or NSView.\n 
 On Windows it's a WS_CHILD Window.
@@ -693,14 +693,17 @@ void CFrame::dispatchMouseMoveEvent (MouseMoveEvent& event)
 //------------------------------------------------------------------------
 void CFrame::dispatchMouseUpEvent (MouseUpEvent& event)
 {
+	auto originMousePosition = event.mousePosition;
 	auto transformedMousePosition = event.mousePosition;
 	getTransform ().inverse ().transform (transformedMousePosition);
 	
 	auto f = finally ([this] () { setMouseDownView (nullptr); });
 
+	event.mousePosition = transformedMousePosition;
 	callMouseObserverOtherMouseEvent (event);
 	if (event.consumed)
 		return;
+	event.mousePosition = originMousePosition;
 
 	if (auto modalView = shared (getModalView ()))
 	{
@@ -1109,7 +1112,6 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 	{
 		if (pImpl->platformFrame->getCurrentMousePosition (where))
 		{
-			getTransform().transform (where);
 			return true;
 		}
 	}

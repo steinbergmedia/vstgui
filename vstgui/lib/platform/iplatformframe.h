@@ -69,7 +69,7 @@ public:
 #endif
 	/** start a drag operation
 	 *
-	 *	optional callback will be remembered until the drag is droped or canceled
+	 *	optional callback will be remembered until the drag is dropped or canceled
 	 */
 	virtual bool doDrag (const DragDescription& dragDescription,
 						 const SharedPointer<IDragCallback>& callback) = 0;

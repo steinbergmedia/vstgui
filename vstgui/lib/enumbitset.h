@@ -50,7 +50,7 @@ struct EnumBitset
 	using value_type = std::underlying_type_t<Enum>;
 
 	constexpr EnumBitset () {}
-	constexpr EnumBitset (Enum initialValue) { exlusive (initialValue); }
+	constexpr EnumBitset (Enum initialValue) { exclusive (initialValue); }
 	constexpr EnumBitset (const std::initializer_list<Enum>& list)
 	{
 		for (auto& v : list)
@@ -61,7 +61,7 @@ struct EnumBitset
 	constexpr EnumBitset (const EnumBitset&) = default;
 	constexpr EnumBitset& operator= (const EnumBitset&) = default;
 
-	constexpr void exlusive (Enum e) { val = to_value_type (e); }
+	constexpr void exclusive (Enum e) { val = to_value_type (e); }
 	constexpr void add (Enum e) { val |= to_value_type (e); }
 	constexpr void remove (Enum e) { val &= ~to_value_type (e); }
 	constexpr void clear () { val = {}; }
@@ -71,7 +71,7 @@ struct EnumBitset
 
 	constexpr EnumBitset& operator= (Enum e)
 	{
-		exlusive (e);
+		exclusive (e);
 		return *this;
 	}
 	constexpr EnumBitset& operator|= (Enum e)

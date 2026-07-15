@@ -115,7 +115,7 @@ void CFontDesc::cleanup ()
 //-----------------------------------------------------------------------------
 // CFontDesc Implementation
 /*! @class CFontDesc
-The CFontDesc class replaces the old font handling. You have now the possibilty to use whatever font you like
+The CFontDesc class replaces the old font handling. You have now the possibility to use whatever font you like
 as long as it is available on the system. You should cache your own CFontDesc as this speeds up drawing on some systems.
 
 \note New in 4.9: It's now possible to use custom fonts. Fonts must reside inside the Bundle/Package at PackageRoot/Resources/Fonts/.

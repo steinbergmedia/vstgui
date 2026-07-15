@@ -118,7 +118,7 @@ struct RunLoop::Impl : IEventHandler
 	xkb_state* xkbUnprocessedState {nullptr};
 	xkb_keymap* xkbKeymap {nullptr};
 	WindowEventHandlerMap windowEventHandlerMap;
-	std::array<xcb_cursor_t, CCursorType::kCursorIBeam + 1> cursors {{XCB_CURSOR_NONE}};
+	std::array<xcb_cursor_t, CCursorType::kCursorMoveObject + 1> cursors {{XCB_CURSOR_NONE}};
 	KeyboardEvent lastUnprocessedKeyEvent;
 	uint32_t lastUtf32KeyEventChar {0};
 

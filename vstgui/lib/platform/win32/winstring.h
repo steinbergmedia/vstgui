@@ -10,9 +10,10 @@
 
 #include <windows.h>
 
+//------------------------------------------------------------------------
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 class WinString final : public IPlatformString
 {
 public:
@@ -22,12 +23,13 @@ public:
 	void setUTF8String (UTF8StringPtr utf8String) override;
 
 	const WCHAR* getWideString () const { return wideString; }
-//-----------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 protected:
 	WCHAR* wideString;
 	int wideStringBufferSize;
 };
 
+//------------------------------------------------------------------------
 } // VSTGUI
 
 #endif // WINDOWS

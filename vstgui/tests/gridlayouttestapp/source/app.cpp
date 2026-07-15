@@ -137,10 +137,14 @@ private:
 		return static_cast<int32_t> (getData ().size ());
 	}
 	CCoord dbGetRowHeight (CDataBrowser*) override { return 14; }
+
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* b) override
 	{
-		return b->getWidth () / dbGetNumColumns (b);
+		auto hasScrollbar = b->getActiveScrollbars () & CDataBrowser::kVerticalScrollbar;
+		auto scrollbarWidth = hasScrollbar ? b->getScrollbarWidth () : 0.;
+		return (b->getWidth () - scrollbarWidth) / dbGetNumColumns (b);
 	}
+
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser*) override
 	{
 		width = 1;

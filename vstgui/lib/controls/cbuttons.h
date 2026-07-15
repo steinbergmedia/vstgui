@@ -128,7 +128,7 @@ protected:
 
 private:
 	float previousValue {0.f};
-	bool hilight {false};
+	bool highlight {false};
 };
 
 //-----------------------------------------------------------------------------

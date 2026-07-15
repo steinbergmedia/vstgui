@@ -272,9 +272,9 @@ public:
 	/** Windows only */
 	virtual int32_t getNbItemsPerColumn () const { return nbItemsPerColumn; }
 
-	/** get last index of choosen entry */
+	/** get last index of chosen entry */
 	int32_t getLastResult () const { return lastResult; }
-	/** get last menu and index of choosen entry */
+	/** get last menu and index of chosen entry */
 	COptionMenu* getLastItemMenu (int32_t& idxInMenu) const;
 
 	/** set prefix numbering */

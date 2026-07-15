@@ -718,7 +718,8 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 		self->removeModalView ({menu, index});
 	};
 
-	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize (), true);
+	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
+	viewRect.offset (-optionMenu->getFrame ()->getViewSize ().getTopLeft ());
 	auto where = viewRect.getCenter ();
 
 	GenericOptionMenuDetail::setupGenericOptionMenu (clickCallback, impl->container, optionMenu,
