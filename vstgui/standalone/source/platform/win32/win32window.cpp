@@ -210,7 +210,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		if (style.hasBorder ())
 		{
 			if (style.canSize ())
-				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX; // TODO: WS_MINIMIZEBOX
+				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
 			if (style.canClose ())
 				dwStyle |= WS_CAPTION | WS_SYSMENU;
 			exStyle |= WS_EX_COMPOSITED;
