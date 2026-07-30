@@ -167,6 +167,8 @@ void CExternalView::looseFocus () { impl->looseFocus (); }
 void CExternalView::setViewSize (const CRect& rect, bool invalid)
 {
 	CView::setViewSize (rect, invalid);
+	if (!getParentView ())
+		return;
 	impl->updateSize (*getParentView (), getViewSize (), translateToGlobal (getViewSize ()));
 }
 
