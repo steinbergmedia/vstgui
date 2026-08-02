@@ -17,10 +17,10 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto TextButtonCreator::getPositionStrings () -> PositionStringArray&
+constexpr auto TextButtonCreator::getPositionStrings () const -> const PositionStringArray&
 {
-	static PositionStringArray positionsStrings = {
-	    {strLeft, "center above text", "center below text", strRight}};
+	static constexpr PositionStringArray positionsStrings = {
+		{strLeft, "center above text", "center below text", strRight}};
 	static_assert (positionsStrings.size () == CDrawMethods::kIconRight + 1, "Update needed!");
 	return positionsStrings;
 }

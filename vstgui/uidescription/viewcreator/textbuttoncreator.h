@@ -30,7 +30,7 @@ struct TextButtonCreator : ViewCreatorAdapter
 
 private:
 	using PositionStringArray = std::array<string, 4>;
-	static PositionStringArray& getPositionStrings ();
+	constexpr const PositionStringArray& getPositionStrings () const;
 };
 
 //------------------------------------------------------------------------
