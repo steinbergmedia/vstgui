@@ -16,9 +16,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto RowColumnViewCreator::layoutStrings () -> LayoutStrings&
+auto RowColumnViewCreator::layoutStrings () -> const LayoutStrings&
 {
-	static LayoutStrings strings = {
+	static const LayoutStrings strings = {
 		"left-top",	   "center",		"right-bottom", "stretch",		 "top-left",
 		"top-center",  "top-right",		"middle-left",	"middle-center", "middle-right",
 		"bottom-left", "bottom-center", "bottom-right"};

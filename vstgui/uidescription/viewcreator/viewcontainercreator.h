@@ -30,7 +30,7 @@ struct ViewContainerCreator : ViewCreatorAdapter
 
 private:
 	using BackgroundColorDrawStyleStrings = std::array<string, 3>;
-	static BackgroundColorDrawStyleStrings& backgroundColorDrawStyleStrings ();
+	static const BackgroundColorDrawStyleStrings& backgroundColorDrawStyleStrings ();
 };
 
 //------------------------------------------------------------------------

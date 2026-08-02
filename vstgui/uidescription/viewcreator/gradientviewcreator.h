@@ -32,7 +32,7 @@ struct GradientViewCreator : ViewCreatorAdapter
 
 private:
 	using StyleStrings = std::array<string, 2>;
-	static StyleStrings& styleStrings ();
+	static const StyleStrings& styleStrings ();
 };
 //------------------------------------------------------------------------
 } // UIViewCreator

@@ -24,7 +24,7 @@ struct SliderBaseCreator : ViewCreatorAdapter
 
 private:
 	using ModeStrings = std::array<string, 5>;
-	static ModeStrings& modeStrings ();
+	static const ModeStrings& modeStrings ();
 };
 
 //------------------------------------------------------------------------

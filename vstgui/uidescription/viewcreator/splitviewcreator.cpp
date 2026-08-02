@@ -16,9 +16,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto SplitViewCreator::resizeModeStrings () -> ResizeModeStrings&
+auto SplitViewCreator::resizeModeStrings () -> const ResizeModeStrings&
 {
-	static ResizeModeStrings strings = {"first", "second", "last", "all"};
+	static const ResizeModeStrings strings = {"first", "second", "last", "all"};
 	return strings;
 }
 

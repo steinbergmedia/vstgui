@@ -31,7 +31,7 @@ struct RowColumnViewCreator : ViewCreatorAdapter
 
 private:
 	using LayoutStrings = std::array<string, 13>;
-	static LayoutStrings& layoutStrings ();
+	static const LayoutStrings& layoutStrings ();
 };
 
 //------------------------------------------------------------------------

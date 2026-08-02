@@ -17,9 +17,10 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto SliderBaseCreator::modeStrings () -> ModeStrings&
+auto SliderBaseCreator::modeStrings () -> const ModeStrings&
 {
-	static ModeStrings strings = {"touch", "relative touch", "free click", "ramp", "use global"};
+	static const ModeStrings strings = {"touch", "relative touch", "free click", "ramp",
+										"use global"};
 	return strings;
 }
 

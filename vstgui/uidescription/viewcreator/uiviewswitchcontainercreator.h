@@ -32,8 +32,8 @@ struct UIViewSwitchContainerCreator : ViewCreatorAdapter
 private:
 	using TimingFunctionStrings = std::array<string, 5>;
 	using AnimationStyleStrings = std::array<string, 3>;
-	static TimingFunctionStrings& timingFunctionStrings ();
-	static AnimationStyleStrings& animationStyleStrings ();
+	static const TimingFunctionStrings& timingFunctionStrings ();
+	static const AnimationStyleStrings& animationStyleStrings ();
 };
 
 //------------------------------------------------------------------------

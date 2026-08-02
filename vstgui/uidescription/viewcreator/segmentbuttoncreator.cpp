@@ -17,9 +17,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto SegmentButtonCreator::selectionModeStrings ()->SelectionModeStrings&
+auto SegmentButtonCreator::selectionModeStrings () -> const SelectionModeStrings&
 {
-	static SelectionModeStrings strings = {"Single", "Single-Toggle", "Multiple"};
+	static const SelectionModeStrings strings = {"Single", "Single-Toggle", "Multiple"};
 	return strings;
 }
 

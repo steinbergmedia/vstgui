@@ -31,7 +31,7 @@ struct SplitViewCreator : ViewCreatorAdapter
 
 private:
 	using ResizeModeStrings = std::array<string, 4>;
-	static ResizeModeStrings& resizeModeStrings ();
+	static const ResizeModeStrings& resizeModeStrings ();
 };
 //------------------------------------------------------------------------
 } // UIViewCreator

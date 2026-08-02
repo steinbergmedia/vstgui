@@ -16,9 +16,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto MultiLineTextLabelCreator::lineLayoutStrings () -> LineLayoutStrings&
+auto MultiLineTextLabelCreator::lineLayoutStrings () -> const LineLayoutStrings&
 {
-	static LineLayoutStrings strings = {"clip", "truncate", "wrap"};
+	static const LineLayoutStrings strings = {"clip", "truncate", "wrap"};
 	return strings;
 }
 

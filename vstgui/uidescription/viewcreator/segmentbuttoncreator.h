@@ -34,7 +34,7 @@ private:
 	void updateSegments (CSegmentButton* button, const UIAttributes::StringArray& names) const;
 
 	using SelectionModeStrings = std::array<string, 3>;
-	static SelectionModeStrings& selectionModeStrings ();
+	static const SelectionModeStrings& selectionModeStrings ();
 };
 
 //------------------------------------------------------------------------

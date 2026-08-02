@@ -16,9 +16,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto GradientViewCreator::styleStrings () -> StyleStrings&
+auto GradientViewCreator::styleStrings () -> const StyleStrings&
 {
-	static StyleStrings strings = {"linear", "radial"};
+	static const StyleStrings strings = {"linear", "radial"};
 	return strings;
 }
 

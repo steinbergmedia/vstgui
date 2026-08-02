@@ -17,9 +17,11 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto ViewContainerCreator::backgroundColorDrawStyleStrings () -> BackgroundColorDrawStyleStrings&
+auto ViewContainerCreator::backgroundColorDrawStyleStrings ()
+	-> const BackgroundColorDrawStyleStrings&
 {
-	static BackgroundColorDrawStyleStrings strings = {"stroked", "filled", "filled and stroked"};
+	static const BackgroundColorDrawStyleStrings strings = {"stroked", "filled",
+															"filled and stroked"};
 	return strings;
 }
 

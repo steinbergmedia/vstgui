@@ -16,16 +16,17 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto UIViewSwitchContainerCreator::timingFunctionStrings () -> TimingFunctionStrings&
+auto UIViewSwitchContainerCreator::timingFunctionStrings () -> const TimingFunctionStrings&
 {
-	static TimingFunctionStrings strings = {"linear", "easy-in", "easy-out", "easy-in-out", "easy"};
+	static const TimingFunctionStrings strings = {"linear", "easy-in", "easy-out", "easy-in-out",
+												  "easy"};
 	return strings;
 }
 
 //------------------------------------------------------------------------
-auto UIViewSwitchContainerCreator::animationStyleStrings () -> AnimationStyleStrings&
+auto UIViewSwitchContainerCreator::animationStyleStrings () -> const AnimationStyleStrings&
 {
-	static AnimationStyleStrings strings = {"fade", "move", "push"};
+	static const AnimationStyleStrings strings = {"fade", "move", "push"};
 	return strings;
 }
 

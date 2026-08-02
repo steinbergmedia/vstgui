@@ -30,7 +30,7 @@ struct MultiLineTextLabelCreator : ViewCreatorAdapter
 
 private:
 	using LineLayoutStrings = std::array<string, 3>;
-	static LineLayoutStrings& lineLayoutStrings ();
+	static const LineLayoutStrings& lineLayoutStrings ();
 };
 
 //------------------------------------------------------------------------
