@@ -513,8 +513,8 @@ bool COptionMenu::popup (const PopupCallback& callback)
 					{
 						self->listeners->forEach (
 							[self, &result] (IOptionMenuListener* l) {
-								return l->onOptionMenuSetPopupResult (*self, result.menu.get (),
-																	  result.index);
+								return l->onOptionMenuSetPopupResult (
+									*self.get (), result.menu.get (), result.index);
 							},
 							[&preventSettingValue] (bool result) {
 								if (result)

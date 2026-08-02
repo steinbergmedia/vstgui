@@ -414,7 +414,7 @@ SharedPointer<CCommandMenuItem>
 		auto subMenu = item->getSubmenu ();
 		if (subMenu)
 		{
-			auto result = findKeyCommandItem (*subMenu, event);
+			auto result = findKeyCommandItem (*subMenu.get (), event);
 			if (result)
 				return result;
 		}

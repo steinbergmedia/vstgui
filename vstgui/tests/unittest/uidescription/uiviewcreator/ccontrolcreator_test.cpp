@@ -77,8 +77,12 @@ TEST_CASE (CControlCreatorTest, TagNoListener)
 
 TEST_CASE (CControlCreatorTest, TagWithListener)
 {
+	struct Listener : ControlListenerAdapter,
+					  NonAtomicReferenceCounted
+	{
+	};
 	DummyUIDescription uidesc;
-	ControlListenerAdapter listener;
+	Listener listener;
 	uidesc.tag = 5;
 	uidesc.listener = &listener;
 	testAttribute<CControl> (

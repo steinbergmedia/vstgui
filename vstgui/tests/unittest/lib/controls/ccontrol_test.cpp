@@ -19,7 +19,8 @@ public:
 	void draw (CDrawContext& context) override {}
 };
 
-struct Listener : ControlListenerAdapter
+struct Listener : ControlListenerAdapter,
+				  NonAtomicReferenceCounted
 {
 	bool valueChangedCalled {false};
 	bool beginEditCalled {false};
