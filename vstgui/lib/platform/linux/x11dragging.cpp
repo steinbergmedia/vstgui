@@ -168,7 +168,7 @@ void XdndHandler::position (xcb_client_message_event_t& event)
 		{
 			dndPosition = Optional<xcb_client_message_event_t> (event);
 
-			auto xcb = RunLoop::instance ().getXcbConnection ();
+			auto xcb = RunLoop::instance ()->getXcbConnection ();
 
 			xcb_delete_property (
 				xcb, window->getID (), Atoms::xVstguiSelection ());
@@ -238,7 +238,7 @@ void XdndHandler::selectionNotify (xcb_selection_notify_event_t& event)
 		event.selection == Atoms::xDndSelection () &&
 		event.property == Atoms::xVstguiSelection ())
 	{
-		auto xcb = RunLoop::instance ().getXcbConnection ();
+		auto xcb = RunLoop::instance ()->getXcbConnection ();
 
 		auto cookie = xcb_get_property (
 			xcb, true, window->getID (), Atoms::xVstguiSelection (),
@@ -310,7 +310,7 @@ CPoint XdndHandler::getEventPosition () const
 	int x = event.data.data32[2] >> 16;
 	int y = event.data.data32[2] & 0xffff;
 
-	auto xcb = RunLoop::instance ().getXcbConnection ();
+	auto xcb = RunLoop::instance ()->getXcbConnection ();
 	auto setup = xcb_get_setup (xcb);
 	auto iter = xcb_setup_roots_iterator (setup);
 	auto screen = iter.data;
@@ -358,7 +358,7 @@ void XdndHandler::replyStatus ()
 		break;
 	}
 
-	auto xcb = RunLoop::instance ().getXcbConnection ();
+	auto xcb = RunLoop::instance ()->getXcbConnection ();
 
 	xcb_window_t receiver = getXdndProxy (dndSource);
 	if (receiver == 0)
@@ -408,7 +408,7 @@ void XdndHandler::replyFinished ()
 		break;
 	}
 
-	auto xcb = RunLoop::instance ().getXcbConnection ();
+	auto xcb = RunLoop::instance ()->getXcbConnection ();
 
 	xcb_window_t receiver = getXdndProxy (dndSource);
 	if (receiver == 0)
@@ -444,7 +444,7 @@ XdndHandler::TypeList XdndHandler::getTypeList (xcb_client_message_event_t& even
 	}
 	else if (Atoms::xDndTypeList.valid ())
 	{
-		auto xcb = RunLoop::instance ().getXcbConnection ();
+		auto xcb = RunLoop::instance ()->getXcbConnection ();
 
 		auto cookie = xcb_get_property (
 			xcb, false, sourceId, Atoms::xDndTypeList (), XCB_ATOM_ATOM,
@@ -546,7 +546,7 @@ bool isXdndClientMessage (const xcb_client_message_event_t& event)
 
 xcb_window_t getXdndProxy (xcb_window_t windowId)
 {
-	auto xcb = RunLoop::instance ().getXcbConnection ();
+	auto xcb = RunLoop::instance ()->getXcbConnection ();
 	xcb_window_t proxyId = 0;
 	xcb_get_property_cookie_t cookie = xcb_get_property (
 		xcb, false, windowId, Atoms::xDndProxy (),

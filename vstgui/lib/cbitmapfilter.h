@@ -63,8 +63,8 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 private:
-	using Variant = std::variant<nullptr_t, int32_t, double, SharedPointer<CBitmap>, CRect, CPoint,
-								 CColor, CGraphicsTransform>;
+	using Variant = std::variant<std::nullptr_t, int32_t, double, SharedPointer<CBitmap>, CRect,
+								 CPoint, CColor, CGraphicsTransform>;
 	Variant var;
 
 	template<typename T>

@@ -388,12 +388,12 @@ PlatformFrameConfigPtr Window::prepareFrameConfig (PlatformFrameConfigPtr&& cont
 	{
 		if (auto config = dynamicPtrCast<X11::FrameConfig> (controllerConfig))
 		{
-			config->runLoop = shared (&RunLoop::instance ());
+			config->runLoop = RunLoop::instance ();
 			return std::move (config);
 		}
 	}
 	auto config = std::make_shared<X11::FrameConfig> ();
-	config->runLoop = shared (&RunLoop::instance ());
+	config->runLoop = RunLoop::instance ();
 	return config;
 }
 

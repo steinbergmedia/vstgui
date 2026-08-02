@@ -96,9 +96,9 @@ const VirtMap shiftKeyMap = {{XKB_KEY_KP_Page_Up, VirtualKey::PageUp},
 
 //------------------------------------------------------------------------
 } // anonymous
-
-//------------------------------------------------------------------------
-struct RunLoop::Impl : IEventHandler
+bla
+	//------------------------------------------------------------------------
+	struct RunLoop::Impl : IEventHandler
 {
 	SharedPointer<IWaylandHost> waylandHost;
 	std::atomic<uint32_t> useCount {0};
@@ -171,23 +171,23 @@ struct RunLoop::Impl : IEventHandler
 };
 
 //------------------------------------------------------------------------
-RunLoop& RunLoop::instance ()
+SharedPointer<RunLoop> RunLoop::instance ()
 {
-	static RunLoop gInstance;
+	static auto gInstance = std::make_shared<RunLoop> ();
 	return gInstance;
 }
 
 //------------------------------------------------------------------------
 void RunLoop::init (const SharedPointer<IWaylandHost>& waylandHost)
 {
-	instance ().impl->init (waylandHost);
+	instance ()->impl->init (waylandHost);
 }
 
 //------------------------------------------------------------------------
-void RunLoop::exit () { instance ().impl->exit (); }
+void RunLoop::exit () { instance ()->impl->exit (); }
 
 //------------------------------------------------------------------------
-void RunLoop::flush () { instance ().impl->flush (); }
+void RunLoop::flush () { instance ()->impl->flush (); }
 
 //------------------------------------------------------------------------
 const SharedPointer<IRunLoop> RunLoop::get ()
@@ -196,26 +196,28 @@ const SharedPointer<IRunLoop> RunLoop::get ()
 }
 
 //------------------------------------------------------------------------
-wl_display* RunLoop::getDisplay () { return instance ().impl->display; }
+wl_display* RunLoop::getDisplay () { return instance ()->impl->display; }
 
 //------------------------------------------------------------------------
 using namespace WaylandServerDelegate;
 
 const IWaylandClientContext& RunLoop::getClientContext ()
 {
-	return instance ().impl->clientContext;
+	return instance ()->impl->clientContext;
 }
 
 //------------------------------------------------------------------------
 bool RunLoop::hasPointerInput ()
 {
-	return (instance ().impl->clientContext.getSeatCapabilities () & WL_SEAT_CAPABILITY_POINTER) != 0;
+	return (instance ()->impl->clientContext.getSeatCapabilities () & WL_SEAT_CAPABILITY_POINTER) !=
+		   0;
 }
 
 //------------------------------------------------------------------------
 bool RunLoop::hasKeyboardInput ()
 {
-	return (instance ().impl->clientContext.getSeatCapabilities () & WL_SEAT_CAPABILITY_KEYBOARD) != 0;
+	return (instance ()->impl->clientContext.getSeatCapabilities () &
+			WL_SEAT_CAPABILITY_KEYBOARD) != 0;
 }
 
 //------------------------------------------------------------------------

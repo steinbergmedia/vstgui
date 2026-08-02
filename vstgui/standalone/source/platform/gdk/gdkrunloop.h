@@ -14,13 +14,14 @@ namespace Platform {
 namespace GDK {
 
 //------------------------------------------------------------------------
-class RunLoop : public VSTGUI::IRunLoop
+class RunLoop : public VSTGUI::IRunLoop,
+				public ReferenceAdapter
 {
 public:
 	using IEventHandler = VSTGUI::IEventHandler;
 	using ITimerHandler = VSTGUI::ITimerHandler;
 
-	static RunLoop& instance ();
+	static SharedPointer<RunLoop> instance ();
 
 	RunLoop ();
 	~RunLoop () noexcept;
@@ -30,9 +31,6 @@ public:
 
 	bool registerTimer (uint64_t interval, ITimerHandler* handler) override;
 	bool unregisterTimer (ITimerHandler* handler) override;
-
-	void forget () override {}
-	void remember () override {}
 
 private:
 	struct Impl;

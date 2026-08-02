@@ -14,10 +14,10 @@ namespace Platform {
 namespace GDK {
 
 //------------------------------------------------------------------------
-RunLoop& RunLoop::instance ()
+SharedPointer<RunLoop> RunLoop::instance ()
 {
-	static RunLoop instance;
-	return instance;
+	static auto gInstance = std::make_shared<RunLoop> ();
+	return gInstance;
 }
 
 //------------------------------------------------------------------------

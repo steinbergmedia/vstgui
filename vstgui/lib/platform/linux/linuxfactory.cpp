@@ -128,13 +128,13 @@ PlatformFramePtr LinuxFactory::createFrame (IPlatformFrameCallback* frame, const
 	if (parentType == PlatformType::kDefaultNative || parentType == PlatformType::kX11EmbedWindowID)
 	{
 		auto x11Parent = reinterpret_cast<XID> (parent);
-		return makeShared<X11::Frame> (frame, size, x11Parent, config);
+		return std::make_unique<X11::Frame> (frame, size, x11Parent, config);
 	}
 #if VSTGUI_ENABLE_WAYLAND_SUPPORT
 	if (parentType == PlatformType::kWaylandSurfaceID)
 	{
 		//		auto surface = reinterpret_cast<xdg_surface*> (parent);
-		return makeShared<Wayland::Frame> (frame, size, config);
+		return std::make_unique<Wayland::Frame> (frame, size, config);
 	}
 #endif
 	return nullptr;
@@ -156,13 +156,13 @@ bool LinuxFactory::getAllFontFamilies (const FontFamilyCallback& callback) const
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr LinuxFactory::createBitmap (const CPoint& size) const noexcept
 {
-	return makeShared<Cairo::Bitmap> (size);
+	return std::make_shared<Cairo::Bitmap> (size);
 }
 
 //-----------------------------------------------------------------------------
 PlatformBitmapPtr LinuxFactory::createBitmap (const CResourceDescription& desc) const noexcept
 {
-	if (auto bitmap = makeShared<Cairo::Bitmap> ())
+	if (auto bitmap = std::make_shared<Cairo::Bitmap> ())
 	{
 		if (bitmap->load (desc))
 			return bitmap;
@@ -277,8 +277,9 @@ PlatformGradientPtr LinuxFactory::createGradient () const noexcept
 PlatformFileSelectorPtr LinuxFactory::createFileSelector (
 	PlatformFileSelectorStyle style, const PlatformFramePtr& frame) const noexcept
 {
-	auto x11Frame = frame.cast<X11::Frame> ();
-	return X11::createFileSelector (style, x11Frame.get ());
+	if (auto x11Frame = dynamic_cast<X11::Frame*> (frame.get ()))
+		return X11::createFileSelector (style, x11Frame);
+	return {};
 }
 
 //-----------------------------------------------------------------------------

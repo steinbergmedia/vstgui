@@ -33,10 +33,10 @@ static xcb_visualtype_t* getVisualType (const xcb_screen_t* screen)
 
 //------------------------------------------------------------------------
 ChildWindow::ChildWindow (::Window parentId, CPoint size)
-	: size (size), id (xcb_generate_id (RunLoop::instance ().getXcbConnection ()))
+: size (size), id (xcb_generate_id (RunLoop::instance ()->getXcbConnection ()))
 
 {
-	auto connection = RunLoop::instance ().getXcbConnection ();
+	auto connection = RunLoop::instance ()->getXcbConnection ();
 	auto setup = xcb_get_setup (connection);
 	auto iter = xcb_setup_roots_iterator (setup);
 	auto screen = iter.data;
@@ -103,7 +103,7 @@ xcb_visualtype_t* ChildWindow::getVisual () const
 void ChildWindow::setSize (const CRect& rect)
 {
 	size = rect.getSize ();
-	auto connection = RunLoop::instance ().getXcbConnection ();
+	auto connection = RunLoop::instance ()->getXcbConnection ();
 	uint16_t mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH |
 					XCB_CONFIG_WINDOW_HEIGHT;
 	uint32_t values[] = {static_cast<uint32_t> (rect.left), static_cast<uint32_t> (rect.top),
@@ -141,7 +141,7 @@ void Atom::create () const
 {
 	if (value)
 		return;
-	auto connection = RunLoop::instance ().getXcbConnection ();
+	auto connection = RunLoop::instance ()->getXcbConnection ();
 	auto cookie = xcb_intern_atom (connection, 0, name.size (), name.data ());
 	if (auto reply = xcb_intern_atom_reply (connection, cookie, nullptr))
 	{
@@ -179,7 +179,7 @@ Atom xVstguiSelection ("XVSTGUISelection");
 std::string getAtomName (xcb_atom_t atom)
 {
 	std::string name;
-	auto xcb = RunLoop::instance ().getXcbConnection ();
+	auto xcb = RunLoop::instance ()->getXcbConnection ();
 	auto cookie = xcb_get_atom_name (xcb, atom);
 	if (auto reply = xcb_get_atom_name_reply (xcb, cookie, nullptr))
 	{

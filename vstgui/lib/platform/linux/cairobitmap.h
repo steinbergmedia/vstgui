@@ -18,11 +18,12 @@ namespace VSTGUI {
 namespace Cairo {
 
 //-----------------------------------------------------------------------------
-class Bitmap : public IPlatformBitmap
+class Bitmap : public IPlatformBitmap,
+			   public std::enable_shared_from_this<Bitmap>
 {
 public:
-	static SharedPointer<Bitmap> create (UTF8StringPtr absolutePath);
-	static SharedPointer<Bitmap> create (const void* ptr, uint32_t memSize);
+	static PlatformBitmapPtr create (UTF8StringPtr absolutePath);
+	static PlatformBitmapPtr create (const void* ptr, uint32_t memSize);
 
 	Bitmap ();
 	explicit Bitmap (const CPoint& size);
@@ -31,7 +32,7 @@ public:
 
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const override;
-	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
+	PlatformBitmapPixelAccessPtr lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override;
 	double getScaleFactor () const override;
 

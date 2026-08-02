@@ -128,7 +128,7 @@ private:
 } // CairoBitmapPrivate
 
 //-----------------------------------------------------------------------------
-SharedPointer<Bitmap> Bitmap::create (UTF8StringPtr absolutePath)
+PlatformBitmapPtr Bitmap::create (UTF8StringPtr absolutePath)
 {
 	if (auto surface = Cairo::CairoBitmapPrivate::createImageFromPath (absolutePath))
 	{
@@ -137,19 +137,19 @@ SharedPointer<Bitmap> Bitmap::create (UTF8StringPtr absolutePath)
 			cairo_surface_destroy (surface);
 			return nullptr;
 		}
-		return makeShared<Bitmap> (surface);
+		return std::make_shared<Bitmap> (surface);
 	}
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<Bitmap> Bitmap::create (const void* ptr, uint32_t memSize)
+PlatformBitmapPtr Bitmap::create (const void* ptr, uint32_t memSize)
 {
 	Cairo::CairoBitmapPrivate::PNGMemoryReader reader (reinterpret_cast<const uint8_t*> (ptr),
 													   memSize);
 	if (auto surface = reader.create ())
 	{
-		return makeShared<Bitmap> (Cairo::SurfaceHandle {surface});
+		return std::make_shared<Bitmap> (Cairo::SurfaceHandle {surface});
 	}
 	return nullptr;
 }
@@ -215,16 +215,16 @@ const CPoint& Bitmap::getSize () const
 	return size;
 }
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmapPixelAccess> Bitmap::lockPixels (bool alphaPremultiplied)
+PlatformBitmapPixelAccessPtr Bitmap::lockPixels (bool alphaPremultiplied)
 {
 	if (locked)
 		return nullptr;
 #warning TODO: alphaPremultiplied is currently ignored, always treated as true
 	locked = true;
-	auto pixelAccess = owned (new CairoBitmapPrivate::PixelAccess ());
+	auto pixelAccess = std::make_unique<CairoBitmapPrivate::PixelAccess> ();
 	if (pixelAccess->init (shared (this), surface))
-		return pixelAccess;
-	return nullptr;
+		return std::move (pixelAccess);
+	return {};
 }
 
 //-----------------------------------------------------------------------------

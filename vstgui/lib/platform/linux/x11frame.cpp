@@ -148,9 +148,9 @@ struct RedrawTimerHandler
 	RedrawTimerHandler (uint64_t delay, RedrawCallback&& redrawCallback)
 	: redrawCallback (std::move (redrawCallback))
 	{
-		RunLoop::instance ().get ()->registerTimer (delay, this);
+		RunLoop::instance ()->get ()->registerTimer (delay, this);
 	}
-	~RedrawTimerHandler () noexcept { RunLoop::instance ().get ()->unregisterTimer (this); }
+	~RedrawTimerHandler () noexcept { RunLoop::instance ()->get ()->unregisterTimer (this); }
 
 	void onTimer () override
 	{
@@ -166,7 +166,7 @@ struct DrawHandler
 {
 	DrawHandler (const ChildWindow& window)
 	{
-		auto s = cairo_xcb_surface_create (RunLoop::instance ().getXcbConnection (),
+		auto s = cairo_xcb_surface_create (RunLoop::instance ()->getXcbConnection (),
 										   window.getID (), window.getVisual (),
 										   window.getSize ().x, window.getSize ().y);
 		windowSurface.assign (s);
@@ -199,7 +199,7 @@ struct DrawHandler
 		drawContext->endDraw ();
 
 		blitBackbufferToWindow (dirtyRects);
-		xcb_flush (RunLoop::instance ().getXcbConnection ());
+		xcb_flush (RunLoop::instance ()->getXcbConnection ());
 	}
 
 private:
@@ -330,11 +330,11 @@ struct Frame::Impl : IFrameEventHandler
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
 	: window (parent, size), drawHandler (window), frame (frame), dndHandler (&window, frame)
 	{
-		RunLoop::instance ().registerWindowEventHandler (window.getID (), this);
+		RunLoop::instance ()->registerWindowEventHandler (window.getID (), this);
 	}
 
 	//------------------------------------------------------------------------
-	~Impl () noexcept { RunLoop::instance ().unregisterWindowEventHandler (window.getID ()); }
+	~Impl () noexcept { RunLoop::instance ()->unregisterWindowEventHandler (window.getID ()); }
 
 	//------------------------------------------------------------------------
 	void setSize (const CRect& size)
@@ -357,9 +357,9 @@ struct Frame::Impl : IFrameEventHandler
 	//------------------------------------------------------------------------
 	void setCursorInternal (CCursorType cursor)
 	{
-		auto xcb = RunLoop::instance ().getXcbConnection ();
+		auto xcb = RunLoop::instance ()->getXcbConnection ();
 		xcb_params_cw_t params;
-		params.cursor = RunLoop::instance ().getCursorID (cursor);
+		params.cursor = RunLoop::instance ()->getCursorID (cursor);
 		xcb_aux_change_window_attributes (xcb, window.getID (), XCB_CW_CURSOR, &params);
 		xcb_aux_sync (xcb);
 		xcb_flush (xcb);
@@ -391,7 +391,7 @@ struct Frame::Impl : IFrameEventHandler
 		if (++pointerGrabed > 1)
 			return;
 
-		auto xcb = RunLoop::instance ().getXcbConnection ();
+		auto xcb = RunLoop::instance ()->getXcbConnection ();
 		auto cookie =
 			xcb_grab_pointer (xcb, false, window.getID (),
 							  (XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
@@ -415,7 +415,7 @@ struct Frame::Impl : IFrameEventHandler
 		if (--pointerGrabed > 0)
 			return;
 		vstgui_assert (pointerGrabed == 0);
-		auto xcb = RunLoop::instance ().getXcbConnection ();
+		auto xcb = RunLoop::instance ()->getXcbConnection ();
 		xcb_ungrab_pointer (xcb, XCB_TIME_CURRENT_TIME);
 	}
 
@@ -426,7 +426,7 @@ struct Frame::Impl : IFrameEventHandler
 	void onEvent (xcb_key_press_event_t& event) override
 	{
 		auto type = (event.response_type & ~0x80);
-		auto keyEvent = RunLoop::instance ().getCurrentKeyEvent ();
+		auto keyEvent = RunLoop::instance ()->getCurrentKeyEvent ();
 		frame->platformOnEvent (keyEvent);
 	}
 
@@ -477,7 +477,7 @@ struct Frame::Impl : IFrameEventHandler
 				grabPointer ();
 				if (downEvent.consumed)
 				{
-					auto xcb = RunLoop::instance ().getXcbConnection ();
+					auto xcb = RunLoop::instance ()->getXcbConnection ();
 					xcb_set_input_focus (xcb, XCB_INPUT_FOCUS_PARENT, window.getID (),
 										 XCB_CURRENT_TIME);
 				}
@@ -511,7 +511,7 @@ struct Frame::Impl : IFrameEventHandler
 		doubleClickDetector.onEvent (moveEvent, event.time);
 		frame->platformOnEvent (moveEvent);
 		// make sure we get more motion events
-		auto xcb = RunLoop::instance ().getXcbConnection ();
+		auto xcb = RunLoop::instance ()->getXcbConnection ();
 		xcb_get_motion_events (xcb, window.getID (), event.time, event.time + 10000000);
 	}
 
@@ -551,7 +551,7 @@ struct Frame::Impl : IFrameEventHandler
 #if 1 // needed for Reaper
 		if (Atoms::xEmbedInfo.valid () && event.atom == Atoms::xEmbedInfo ())
 		{
-			auto xcb = RunLoop::instance ().getXcbConnection ();
+			auto xcb = RunLoop::instance ()->getXcbConnection ();
 			xcb_map_window (xcb, window.getID ());
 		}
 #endif
@@ -571,7 +571,7 @@ struct Frame::Impl : IFrameEventHandler
 			{
 				case XEMBED::EMBEDDED_NOTIFY:
 				{
-					auto xcb = RunLoop::instance ().getXcbConnection ();
+					auto xcb = RunLoop::instance ()->getXcbConnection ();
 					xcb_map_window (xcb, window.getID ());
 					break;
 				}
@@ -698,9 +698,9 @@ bool Frame::getSize (CRect& size) const
 bool Frame::getCurrentMousePosition (CPoint& mousePosition) const
 {
 	xcb_query_pointer_cookie_t cookie =
-		xcb_query_pointer (RunLoop::instance ().getXcbConnection (), getX11WindowID ());
+		xcb_query_pointer (RunLoop::instance ()->getXcbConnection (), getX11WindowID ());
 	xcb_query_pointer_reply_t* reply =
-		xcb_query_pointer_reply (RunLoop::instance ().getXcbConnection (), cookie, nullptr);
+		xcb_query_pointer_reply (RunLoop::instance ()->getXcbConnection (), cookie, nullptr);
 	if (!reply)
 		return false;
 
@@ -774,8 +774,8 @@ PlatformOptionMenuPtr Frame::createPlatformOptionMenu ()
 	GenericOptionMenuTheme theme;
 	if (impl->genericOptionMenuTheme)
 		theme = *impl->genericOptionMenuTheme.get ();
-	auto optionMenu = std::make_shared<GenericOptionMenu> (
-		shared (cFrame), MouseEventButtonState (MouseButton::Left), theme);
+	auto optionMenu =
+		makeShared<GenericOptionMenu> (cFrame, MouseEventButtonState (MouseButton::Left), theme);
 	optionMenu->setListener (this);
 	return optionMenu;
 }
@@ -804,7 +804,7 @@ PlatformType Frame::getPlatformType () const
 //------------------------------------------------------------------------
 Optional<UTF8String> Frame::convertCurrentKeyEventToText ()
 {
-	return RunLoop::instance ().convertCurrentKeyEventToText ();
+	return RunLoop::instance ()->convertCurrentKeyEventToText ();
 }
 
 //------------------------------------------------------------------------

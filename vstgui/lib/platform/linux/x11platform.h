@@ -48,7 +48,7 @@ struct IFrameEventHandler
 };
 
 //------------------------------------------------------------------------
-struct RunLoop
+struct RunLoop : ReferenceAdapter
 {
 	static void init ();
 	static void exit ();
@@ -64,9 +64,11 @@ struct RunLoop
 	Optional<UTF8String> convertCurrentKeyEventToText () const;
 
 	void setDevice (cairo_device_t* device);
-	static RunLoop& instance ();
+	static SharedPointer<RunLoop> instance ();
 
 private:
+	VSTGUI_SHAREDPTR_FRIEND (RunLoop)
+
 	RunLoop ();
 	~RunLoop () noexcept;
 

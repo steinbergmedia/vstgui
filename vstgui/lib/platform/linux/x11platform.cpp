@@ -376,20 +376,17 @@ struct RunLoop::Impl : IEventHandler
 };
 
 //------------------------------------------------------------------------
-RunLoop& RunLoop::instance ()
+SharedPointer<RunLoop> RunLoop::instance ()
 {
-	static RunLoop gInstance;
+	static auto gInstance = makeShared<RunLoop> ();
 	return gInstance;
 }
 
 //------------------------------------------------------------------------
-void RunLoop::init () { instance ().impl->init (); }
+void RunLoop::init () { instance ()->impl->init (); }
 
 //------------------------------------------------------------------------
-void RunLoop::exit ()
-{
-	instance ().impl->exit ();
-}
+void RunLoop::exit () { instance ()->impl->exit (); }
 
 //------------------------------------------------------------------------
 const SharedPointer<IRunLoop> RunLoop::get ()
