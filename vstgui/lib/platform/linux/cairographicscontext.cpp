@@ -468,9 +468,11 @@ bool CairoGraphicsDeviceContext::drawArc (CRect rect, double startAngle1, double
 {
 	impl->doInContext ([&] () {
 		CPoint center = rect.getCenter ();
+		cairo_save (impl->context);
 		cairo_translate (impl->context, center.x, center.y);
-		cairo_scale (impl->context, 2.0 / rect.getWidth (), 2.0 / rect.getHeight ());
+		cairo_scale (impl->context, 0.5 * rect.getWidth (), 0.5 * rect.getHeight ());
 		cairo_arc (impl->context, 0, 0, 1, startAngle1, endAngle2);
+		cairo_restore (impl->context);
 		impl->draw (drawStyle);
 	});
 	return true;
@@ -481,9 +483,11 @@ bool CairoGraphicsDeviceContext::drawEllipse (CRect rect, PlatformGraphicsDrawSt
 {
 	impl->doInContext ([&] () {
 		CPoint center = rect.getCenter ();
+		cairo_save (impl->context);
 		cairo_translate (impl->context, center.x, center.y);
-		cairo_scale (impl->context, 2.0 / rect.getWidth (), 2.0 / rect.getHeight ());
+		cairo_scale (impl->context, 0.5 * rect.getWidth (), 0.5 * rect.getHeight ());
 		cairo_arc (impl->context, 0, 0, 1, 0, 2 * M_PI);
+		cairo_restore (impl->context);
 		impl->draw (drawStyle);
 	});
 	return true;
