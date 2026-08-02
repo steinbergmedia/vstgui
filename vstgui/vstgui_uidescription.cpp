@@ -50,7 +50,6 @@
 #include "uidescription/viewcreator/layeredviewcontainercreator.cpp"
 #include "uidescription/viewcreator/moviebitmapcreator.cpp"
 #include "uidescription/viewcreator/moviebuttoncreator.cpp"
-#include "uidescription/viewcreator/multibitmapcontrolcreator.cpp"
 #include "uidescription/viewcreator/multilinetextlabelcreator.cpp"
 #include "uidescription/viewcreator/onoffbuttoncreator.cpp"
 #include "uidescription/viewcreator/optionmenucreator.cpp"
