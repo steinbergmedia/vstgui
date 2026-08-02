@@ -457,15 +457,19 @@ public:
 	//@}
 };
 
-//-----------------------------------------------------------------------------
-class CBaseObjectGuard
+//------------------------------------------------------------------------
+template<typename T>
+SharedPointer<T> makeLifeGuard (const SharedPointer<T>& object)
 {
-public:
-	explicit CBaseObjectGuard (CBaseObject* _obj) : obj (_obj) {}
+	return SharedPointer<T> (object);
+}
 
-protected:
-	SharedPointer<CBaseObject> obj;
-};
+//------------------------------------------------------------------------
+template<typename T>
+SharedPointer<T> makeLifeGuard (T* object)
+{
+	return shared (object);
+}
 
 //------------------------------------------------------------------------
 } // VSTGUI

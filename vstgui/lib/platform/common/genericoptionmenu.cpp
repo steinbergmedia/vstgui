@@ -675,8 +675,8 @@ void GenericOptionMenu::viewOnEvent (CView& view, Event& event)
 			{
 				return;
 			}
-			auto self = shared (this);
-			self->removeModalView ({nullptr, -1});
+			auto lifeGuard = makeLifeGuard (this);
+			removeModalView ({nullptr, -1});
 			downEvent.ignoreFollowUpMoveAndUpEvents (true);
 			downEvent.consumed = true;
 			return;
@@ -714,8 +714,8 @@ void GenericOptionMenu::viewOnEvent (CView& view, Event& event)
 				}
 				else
 				{
-					auto self = shared (this);
-					self->removeModalView ({nullptr, -1});
+					auto lifeGuard = makeLifeGuard (this);
+					removeModalView ({nullptr, -1});
 					upEvent.ignoreFollowUpMoveAndUpEvents (true);
 					upEvent.consumed = true;
 					return;

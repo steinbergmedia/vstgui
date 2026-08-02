@@ -179,7 +179,7 @@ protected:
 	void onTimer ()
 	{
 		inTimer = true;
-		auto guard = shared (this);
+		auto guard = makeLifeGuard (this);
 #if DEBUG_LOG
 		DebugPrint ("Current Animators : %d\n", animators.size ());
 #endif
@@ -325,7 +325,7 @@ void Animator::removeAnimations (const SharedPointer<CView>& view)
 //-----------------------------------------------------------------------------
 void Animator::onTimer ()
 {
-	auto selfGuard = shared (this);
+	auto lifeGuard = makeLifeGuard (this);
 	auto currentTicks = getPlatformFactory ().getTicks ();
 	pImpl->animations.forEach ([&] (SharedPointer<Detail::Animation>& animation) {
 		if (animation->startTime == 0)

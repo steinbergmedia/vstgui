@@ -1106,8 +1106,8 @@ void CViewContainer::onTouchEvent (ITouchEvent& event)
 	ReverseViewIterator it (*this);
 	while (*it)
 	{
-		CView* view = *it;
-		CBaseObjectGuard guard (view);
+		auto view = *it;
+		auto lifeGuard = makeLifeGuard (view);
 		if (view->wantsMultiTouchEvents ())
 		{
 			for (const auto& e : event)
@@ -1145,8 +1145,8 @@ bool CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 	ReverseViewIterator it (*this);
 	while (*it)
 	{
-		CView* view = *it;
-		CBaseObjectGuard guard (view);
+		auto view = *it;
+		auto lifeGuard = makeLifeGuard (view);
 		if (view->getMouseEnabled () && view->isVisible () && view->hitTest (where, downEvent))
 		{
 			if (auto container = view->asViewContainer ())

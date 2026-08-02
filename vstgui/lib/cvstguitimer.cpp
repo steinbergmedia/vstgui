@@ -109,7 +109,7 @@ void CVSTGUITimer::fire ()
 {
 	if (callbackFunc)
 	{
-		auto guard = shared (this);
+		auto guard = makeLifeGuard (this);
 		callbackFunc (this);
 	}
 }

@@ -229,7 +229,7 @@ void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 	if (!platformControl || event.type != EventType::KeyDown)
 		return;
 
-	auto lifeGuard = shared (this);
+	auto lifeGuard = makeLifeGuard (this);
 
 	if (event.virt == VirtualKey::Escape)
 	{
@@ -278,7 +278,7 @@ CRect CTextEdit::platformGetVisibleSize () const
 //------------------------------------------------------------------------
 void CTextEdit::platformLooseFocus (bool returnPressed)
 {
-	auto lifeGuard = shared (this);
+	auto lifeGuard = makeLifeGuard (this);
 	bWasReturnPressed = returnPressed;
 	if (auto frame = getFrame ())
 	{
@@ -375,7 +375,7 @@ void CTextEdit::looseFocus ()
 	if (platformControl == nullptr)
 		return;
 
-	auto guard = shared (this);
+	auto guard = makeLifeGuard (this);
 
 	auto _platformControl = std::move (platformControl);
 	updateText (_platformControl);
