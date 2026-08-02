@@ -87,7 +87,8 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 							 ViewEventListenerAdapter,
 							 ViewContainerListenerAdapter,
 							 ControlListenerAdapter,
-							 ScriptingInternal::IViewScriptObjectContext
+							 ScriptingInternal::IViewScriptObjectContext,
+							 ReferenceAdapter
 {
 	using ViewScriptObject = ScriptingInternal::ViewScriptObject;
 	using ScriptAddChildScoped = ScriptingInternal::ScriptAddChildScoped;

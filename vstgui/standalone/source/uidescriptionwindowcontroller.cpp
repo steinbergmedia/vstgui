@@ -80,7 +80,8 @@ private:
 //------------------------------------------------------------------------
 class ValueWrapper : public ValueListenerAdapter,
 					 public ControlListenerAdapter,
-					 public ViewListenerAdapter
+					 public ViewListenerAdapter,
+					 public ReferenceAdapter
 {
 public:
 	using ControlList = std::vector<CControl*>;

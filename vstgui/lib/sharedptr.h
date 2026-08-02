@@ -49,31 +49,27 @@ template<typename I>
 using SharedPointer = shared_ptr<I>;
 
 //------------------------------------------------------------------------
-struct IReference : public std::enable_shared_from_this<IReference>
+struct IReference : std::enable_shared_from_this<IReference>
 {
 	virtual ~IReference () noexcept = default;
-	virtual void beforeDelete () {}
+	virtual int32_t getNbReference () const = 0;
+	virtual void beforeDelete () = 0;
 };
 
 //------------------------------------------------------------------------
-class ReferenceCounted : virtual public IReference
+struct ReferenceAdapter : virtual IReference
 {
-public:
-	int32_t getNbReference () const
+	int32_t getNbReference () const final
 	{
 		return static_cast<int32_t> (shared_from_this ().use_count ()) - 1;
 	}
+	void beforeDelete () override {}
 };
 
 //------------------------------------------------------------------------
-struct NonAtomicReferenceCounted : public ReferenceCounted
-{
-};
-
-//------------------------------------------------------------------------
-struct AtomicReferenceCounted : public ReferenceCounted
-{
-};
+using ReferenceCounted = ReferenceAdapter;
+using NonAtomicReferenceCounted = ReferenceCounted;
+using AtomicReferenceCounted = ReferenceCounted;
 
 //------------------------------------------------------------------------
 template<typename T>
@@ -120,20 +116,27 @@ inline SharedPointer<I> makeShared (Args&&... args)
 	friend VSTGUI::SharedPointer<Class> VSTGUI::makeShared (Args&&... args);
 
 //-----------------------------------------------------------------------------
-class IReference
+struct IReference
 {
-public:
 	/** decrease refcount and delete object if refcount == 0 */
 	virtual void forget () = 0;
 	/** increase refcount */
 	virtual void remember () = 0;
+	virtual int32_t getNbReference () const = 0;
+};
+
+//------------------------------------------------------------------------
+struct ReferenceAdapter : virtual IReference
+{
+	void forget () override {}
+	void remember () override {}
+	int32_t getNbReference () const override { return 0; }
 };
 
 //-----------------------------------------------------------------------------
 template<typename T>
-class ReferenceCounted : virtual public IReference
+struct ReferenceCounted : virtual ReferenceAdapter
 {
-public:
 	ReferenceCounted () = default;
 	virtual ~ReferenceCounted () noexcept = default;
 
@@ -166,7 +169,7 @@ public:
 #endif
 	}
 	/** get refcount */
-	virtual int32_t getNbReference () const { return nbReference; }
+	int32_t getNbReference () const final { return nbReference; }
 	//@}
 private:
 	virtual void beforeDelete () {}
