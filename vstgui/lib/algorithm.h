@@ -18,9 +18,12 @@ template<typename ResultType, typename Iter>
 Optional<ResultType> checkedDistance (const Iter& first, const Iter& it)
 {
 	auto dist = std::distance (first, it);
-	auto maxDist = std::numeric_limits<ResultType>::max ();
-	if (static_cast<size_t> (dist) > static_cast<size_t> (maxDist))
-		return {};
+	if constexpr (std::is_enum_v<ResultType> == false)
+	{
+		auto maxDist = std::numeric_limits<ResultType>::max ();
+		if (static_cast<size_t> (dist) > static_cast<size_t> (maxDist))
+			return {};
+	}
 	return {static_cast<ResultType> (dist)};
 }
 
