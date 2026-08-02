@@ -173,7 +173,7 @@ CMouseEventResult CDataBrowser::onMouseDown (CPoint& where, const CButtonState& 
 	if (auto frame = getFrame ())
 	{
 		auto focusView = frame->getFocusView ();
-		if (focusView.get () != dbView.get () && !isChild (*focusView.get (), true))
+		if (!focusView || (focusView.get () != dbView.get () && !isChild (*focusView.get (), true)))
 			frame->setFocusView (dbView);
 	}
 	return result;
