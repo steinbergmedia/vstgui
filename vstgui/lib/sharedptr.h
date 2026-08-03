@@ -49,7 +49,7 @@ template<typename I>
 using SharedPointer = shared_ptr<I>;
 
 //------------------------------------------------------------------------
-struct IReference : std::enable_shared_from_this<IReference>
+struct IReference : virtual std::enable_shared_from_this<IReference>
 {
 	virtual ~IReference () noexcept = default;
 	virtual int32_t getNbReference () const = 0;
