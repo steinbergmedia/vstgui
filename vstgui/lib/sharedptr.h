@@ -118,6 +118,7 @@ inline SharedPointer<I> makeShared (Args&&... args)
 //-----------------------------------------------------------------------------
 struct IReference
 {
+	virtual ~IReference () noexcept = default;
 	/** decrease refcount and delete object if refcount == 0 */
 	virtual void forget () = 0;
 	/** increase refcount */
