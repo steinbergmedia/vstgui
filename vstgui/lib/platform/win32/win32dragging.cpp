@@ -23,10 +23,10 @@ namespace VSTGUI {
 class Win32DragBitmapWindow
 {
 public:
-	Win32DragBitmapWindow (const SharedPointer<CBitmap>& bitmap, CPoint offset);
+	Win32DragBitmapWindow (const SPtr<CBitmap>& bitmap, CPoint offset);
 	~Win32DragBitmapWindow () noexcept;
 
-	void updateBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset);
+	void updateBitmap (const SPtr<CBitmap>& bitmap, CPoint offset);
 	void mouseChanged ();
 private:
 	static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -46,7 +46,7 @@ private:
 
 	void paint ();
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	CPoint offset;
 	UTF8String windowClassName;
 	HWND hwnd {nullptr};
@@ -99,7 +99,7 @@ Win32DraggingSession::Win32DraggingSession (Win32Frame* frame)
 Win32DraggingSession::~Win32DraggingSession () noexcept = default;
 
 //-----------------------------------------------------------------------------
-bool Win32DraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const
+bool Win32DraggingSession::setBitmap (const SPtr<CBitmap>& bitmap, CPoint offset) const
 {
 	if (!dragBitmapWindow && bitmap)
 	{
@@ -118,7 +118,8 @@ bool Win32DraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoi
 }
 
 //-----------------------------------------------------------------------------
-bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+bool Win32DraggingSession::doDrag (const DragDescription& dragDescription,
+								   const SPtr<IDragCallback>& callback)
 {
 	auto lastCursor = frame->getLastSetCursor ();
 	frame->setMouseCursor (kCursorNotAllowed);
@@ -315,10 +316,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
 //-----------------------------------------------------------------------------
 // DataObject
 //-----------------------------------------------------------------------------
-Win32DataObject::Win32DataObject (SharedPointer<IDataPackage> dataPackage)
-: dataPackage (dataPackage)
-{
-}
+Win32DataObject::Win32DataObject (SPtr<IDataPackage> dataPackage) : dataPackage (dataPackage) {}
 
 //-----------------------------------------------------------------------------
 Win32DataObject::~Win32DataObject () noexcept {}
@@ -530,7 +528,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::SetData (FORMATETC *pformatet
 struct Win32DataObjectEnumerator : COMBase,
 								   IEnumFORMATETC
 {
-	Win32DataObjectEnumerator (const SharedPointer<IDataPackage>& data) : data (data) {}
+	Win32DataObjectEnumerator (const SPtr<IDataPackage>& data) : data (data) {}
 
 	COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE QueryInterface (REFIID riid, void** object) override
 	{
@@ -605,7 +603,7 @@ struct Win32DataObjectEnumerator : COMBase,
 		return E_NOTIMPL;
 	}
 
-	SharedPointer<IDataPackage> data;
+	SPtr<IDataPackage> data;
 	uint32_t index {0};
 };
 
@@ -639,9 +637,8 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP Win32DataObject::EnumDAdvise (IEnumSTATDATA** 
 }
 
 //-----------------------------------------------------------------------------
-Win32DragBitmapWindow::Win32DragBitmapWindow (const SharedPointer<CBitmap>& bitmap, CPoint offset)
-: bitmap (bitmap)
-, offset (offset)
+Win32DragBitmapWindow::Win32DragBitmapWindow (const SPtr<CBitmap>& bitmap, CPoint offset)
+: bitmap (bitmap), offset (offset)
 {
 	registerWindowClass ();
 	auto initialWindowPosition = calculateWindowPosition ();
@@ -660,7 +657,7 @@ Win32DragBitmapWindow::~Win32DragBitmapWindow () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void Win32DragBitmapWindow::updateBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset)
+void Win32DragBitmapWindow::updateBitmap (const SPtr<CBitmap>& bitmap, CPoint offset)
 {
 	this->bitmap = bitmap;
 	this->offset = offset;

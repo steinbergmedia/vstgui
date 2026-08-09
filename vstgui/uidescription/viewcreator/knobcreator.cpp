@@ -135,8 +135,8 @@ UTF8StringPtr KnobCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> KnobCreator::create (const UIAttributes& attributes,
-										  const IUIDescription& description) const
+SPtr<CView> KnobCreator::create (const UIAttributes& attributes,
+								 const IUIDescription& description) const
 {
 	auto knob = makeShared<CKnob> (CRect (0, 0, 70, 70), nullptr, -1, nullptr, nullptr);
 	knob->setDrawStyle (CKnob::kCoronaDrawing | CKnob::kCoronaOutline | CKnob::kCoronaLineDashDot |
@@ -190,7 +190,7 @@ bool KnobCreator::apply (CView& view, const UIAttributes& attributes,
 		knob->setCoronaDashDotLengths (lengths);
 	}
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
 		knob->setHandleBitmap (bitmap);
 

@@ -21,13 +21,12 @@ class IController : public IControlListener
 public:
 	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const = 0;
 	virtual IControlListener* getControlListener (UTF8StringPtr controlTagName) = 0;
-	virtual SharedPointer<CView> createView (const UIAttributes& attributes,
-											 const IUIDescription& description) = 0;
-	virtual SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-											 const UIAttributes& attributes,
-											 const IUIDescription& description) = 0;
-	virtual SharedPointer<IController> createSubController (UTF8StringPtr name,
-															const IUIDescription& description) = 0;
+	virtual SPtr<CView> createView (const UIAttributes& attributes,
+									const IUIDescription& description) = 0;
+	virtual SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+									const IUIDescription& description) = 0;
+	virtual SPtr<IController> createSubController (UTF8StringPtr name,
+												   const IUIDescription& description) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -43,19 +42,18 @@ public:
 	{
 		return this;
 	}
-	virtual SharedPointer<CView> createView (const UIAttributes& attributes,
-											 const IUIDescription& description) override
+	virtual SPtr<CView> createView (const UIAttributes& attributes,
+									const IUIDescription& description) override
 	{
 		return nullptr;
 	}
-	virtual SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-											 const UIAttributes& attributes,
-											 const IUIDescription& description) override
+	virtual SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+									const IUIDescription& description) override
 	{
 		return view;
 	}
-	virtual SharedPointer<IController>
-		createSubController (UTF8StringPtr name, const IUIDescription& description) override
+	virtual SPtr<IController> createSubController (UTF8StringPtr name,
+												   const IUIDescription& description) override
 	{
 		return nullptr;
 	}
@@ -99,9 +97,9 @@ public:
 
 //-----------------------------------------------------------------------------
 /** helper method to get the controller of a view */
-inline SharedPointer<IController> getViewController (const CView& view, bool deep = false)
+inline SPtr<IController> getViewController (const CView& view, bool deep = false)
 {
-	SharedPointer<IController> controller;
+	SPtr<IController> controller;
 	if (!view.getAttribute (kCViewControllerAttribute, controller) && deep)
 	{
 		auto parentView = view.getParentView ();
@@ -116,7 +114,7 @@ inline SharedPointer<IController> getViewController (const CView& view, bool dee
 //-----------------------------------------------------------------------------
 /** helper method to find a specific controller inside a view hierarchy */
 template<typename T>
-inline SharedPointer<T> findViewController (const CViewContainer& view)
+inline SPtr<T> findViewController (const CViewContainer& view)
 {
 	if (auto ctrler = getViewController (view).cast<T> ())
 		return ctrler;

@@ -22,7 +22,7 @@ class HighScoreViewController final : public DelegationController,
                                       public NonAtomicReferenceCounted
 {
 public:
-	HighScoreViewController (const SharedPointer<IController>& parent);
+	HighScoreViewController (const SPtr<IController>& parent);
 
 	void setHighScoreList (const std::shared_ptr<HighScoreList>& list);
 
@@ -39,15 +39,15 @@ private:
 					   CDataBrowser& browser) override;
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
 					 int32_t flags, CDataBrowser& browser) override;
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	void dbAttached (CDataBrowser& browser) override;
 	void dbRemoved (CDataBrowser& browser) override;
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser& browser) override;
 
 	static constexpr const size_t NumCols = 4;
 
-	SharedPointer<CFontDesc> font;
+	SPtr<CFontDesc> font;
 	CColor fontColor {kBlackCColor};
 	WeakPointer<CDataBrowser> dbPtr;
 	std::shared_ptr<HighScoreList> list;

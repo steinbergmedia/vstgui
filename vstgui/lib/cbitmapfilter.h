@@ -39,7 +39,7 @@ public:
 	Property (Type type);
 	Property (int32_t intValue);
 	Property (double floatValue);
-	Property (const SharedPointer<CBitmap>& bitmapValue);
+	Property (const SPtr<CBitmap>& bitmapValue);
 	Property (const CRect& rectValue);
 	Property (const CPoint& pointValue);
 	Property (const CColor& colorValue);
@@ -52,7 +52,7 @@ public:
 
 	int32_t getInteger () const;
 	double getFloat () const;
-	SharedPointer<CBitmap> getBitmap () const;
+	SPtr<CBitmap> getBitmap () const;
 	const CRect& getRect () const;
 	const CPoint& getPoint () const;
 	const CColor& getColor () const;
@@ -63,8 +63,8 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 private:
-	using Variant = std::variant<std::nullptr_t, int32_t, double, SharedPointer<CBitmap>, CRect,
-								 CPoint, CColor, CGraphicsTransform>;
+	using Variant = std::variant<std::nullptr_t, int32_t, double, SPtr<CBitmap>, CRect, CPoint,
+								 CColor, CGraphicsTransform>;
 	Variant var;
 
 	template<typename T>
@@ -90,7 +90,7 @@ public:
 	virtual Property::Type getPropertyType (uint32_t index) const = 0;
 	virtual Property::Type getPropertyType (IdStringPtr name) const = 0;
 
-	using CreateFunction = SharedPointer<IFilter> (*) (IdStringPtr name);
+	using CreateFunction = SPtr<IFilter> (*) (IdStringPtr name);
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -105,9 +105,9 @@ public:
 	
 	uint32_t getNumFilters () const;
 	IdStringPtr getFilterName (uint32_t index) const;
-	
-	SharedPointer<IFilter> createFilter (IdStringPtr name) const;
-	
+
+	SPtr<IFilter> createFilter (IdStringPtr name) const;
+
 	bool registerFilter (IdStringPtr name, IFilter::CreateFunction createFunction);
 	bool unregisterFilter (IdStringPtr name, IFilter::CreateFunction createFunction);
 protected:
@@ -222,7 +222,7 @@ protected:
 	FilterBase (UTF8StringPtr description);
 
 	bool registerProperty (IdStringPtr name, const Property& defaultProperty);
-	SharedPointer<CBitmap> getInputBitmap () const;
+	SPtr<CBitmap> getInputBitmap () const;
 
 	UTF8StringPtr getDescription () const override;
 	bool setProperty (IdStringPtr name, const Property& property) override;

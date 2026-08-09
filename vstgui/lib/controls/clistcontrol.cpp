@@ -17,8 +17,8 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 struct CListControl::Impl
 {
-	SharedPointer<IListControlDrawer> drawer;
-	SharedPointer<IListControlConfigurator> configurator;
+	SPtr<IListControlDrawer> drawer;
+	SPtr<IListControlConfigurator> configurator;
 
 	std::vector<CListControlRowDesc> rowDescriptions;
 	Optional<int32_t> hoveredRow {};
@@ -37,23 +37,20 @@ CListControl::CListControl (const CRect& size, IControlListener* listener, int32
 CListControl::~CListControl () = default;
 
 //------------------------------------------------------------------------
-void CListControl::setDrawer (const SharedPointer<IListControlDrawer>& d) { impl->drawer = d; }
+void CListControl::setDrawer (const SPtr<IListControlDrawer>& d) { impl->drawer = d; }
 
 //------------------------------------------------------------------------
-void CListControl::setConfigurator (const SharedPointer<IListControlConfigurator>& c)
+void CListControl::setConfigurator (const SPtr<IListControlConfigurator>& c)
 {
 	impl->configurator = c;
 	recalculateLayout ();
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IListControlDrawer> CListControl::getDrawer () const { return impl->drawer; }
+SPtr<IListControlDrawer> CListControl::getDrawer () const { return impl->drawer; }
 
 //------------------------------------------------------------------------
-SharedPointer<IListControlConfigurator> CListControl::getConfigurator () const
-{
-	return impl->configurator;
-}
+SPtr<IListControlConfigurator> CListControl::getConfigurator () const { return impl->configurator; }
 
 //------------------------------------------------------------------------
 Optional<int32_t> CListControl::getHoveredRow () const

@@ -271,7 +271,7 @@ PlatformViewLayerPtr UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDel
 
 //------------------------------------------------------------------------
 bool UIViewFrame::doDrag (const DragDescription& dragDescription,
-						  const SharedPointer<IDragCallback>& callback)
+						  const SPtr<IDragCallback>& callback)
 {
 	// not implemented
 	return false;

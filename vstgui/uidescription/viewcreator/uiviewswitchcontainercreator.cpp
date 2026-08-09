@@ -55,8 +55,8 @@ UTF8StringPtr UIViewSwitchContainerCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> UIViewSwitchContainerCreator::create (const UIAttributes& attributes,
-														   const IUIDescription& description) const
+SPtr<CView> UIViewSwitchContainerCreator::create (const UIAttributes& attributes,
+												  const IUIDescription& description) const
 {
 	auto vsc = makeShared<UIViewSwitchContainer> (CRect (0, 0, 100, 100));
 	UIDescriptionViewSwitchController::make (vsc, description, description.getController ());

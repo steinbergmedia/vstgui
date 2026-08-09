@@ -17,7 +17,7 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UITemplateSettingsController::UITemplateSettingsController (
-	const std::string& templateName, const SharedPointer<UIDescription>& description,
+	const std::string& templateName, const SPtr<UIDescription>& description,
 	WeakPointer<IActionPerformer> actionPerformer)
 : description (description)
 , templateName (templateName)
@@ -69,9 +69,9 @@ void UITemplateSettingsController::onDialogButton2Clicked (UIDialogController&) 
 void UITemplateSettingsController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UITemplateSettingsController::verifyView (const SharedPointer<CView>& view,
-															   const UIAttributes& attributes,
-															   const IUIDescription&)
+SPtr<CView> UITemplateSettingsController::verifyView (const SPtr<CView>& view,
+													  const UIAttributes& attributes,
+													  const IUIDescription&)
 {
 	auto control = view.cast<CTextEdit> ();
 	if (control)

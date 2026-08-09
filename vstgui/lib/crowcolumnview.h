@@ -20,10 +20,9 @@ public:
 
 	bool attached (CViewContainer& parent) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	bool insertSubview (const SharedPointer<CView>& view,
-						const Optional<size_t>& position = {}) override;
-	bool removeSubview (const SharedPointer<CView>& view) override;
-	bool changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex) override;
+	bool insertSubview (const SPtr<CView>& view, const Optional<size_t>& position = {}) override;
+	bool removeSubview (const SPtr<CView>& view) override;
+	bool changeViewZOrder (const SPtr<CView>& view, uint32_t newIndex) override;
 };
 
 
@@ -99,7 +98,7 @@ public:
 protected:
 	void getMaxChildViewSize (CPoint& maxSize);
 	void layoutViewsEqualSize ();
-	void resizeSubView (const SharedPointer<CView>& view, const CRect& newSize);
+	void resizeSubView (const SPtr<CView>& view, const CRect& newSize);
 
 	enum {
 		kAnimateViewResizing = 1 << 0,

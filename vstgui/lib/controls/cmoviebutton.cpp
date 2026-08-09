@@ -21,7 +21,7 @@ namespace VSTGUI {
  */
 //------------------------------------------------------------------------
 CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
-							const SharedPointer<CBitmap>& background)
+							const SPtr<CBitmap>& background)
 : CControl (size, listener, tag, background), buttonState (getValue ())
 {
 	setWantsFocus (true);

@@ -187,7 +187,7 @@ void CSegmentButton::setTextTruncateMode (CDrawMethods::TextTruncateMode mode)
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::setGradient (const SharedPointer<CGradient>& newGradient)
+void CSegmentButton::setGradient (const SPtr<CGradient>& newGradient)
 {
 	if (gradient != newGradient)
 	{
@@ -197,7 +197,7 @@ void CSegmentButton::setGradient (const SharedPointer<CGradient>& newGradient)
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::setGradientHighlighted (const SharedPointer<CGradient>& newGradient)
+void CSegmentButton::setGradientHighlighted (const SPtr<CGradient>& newGradient)
 {
 	if (gradientHighlighted != newGradient)
 	{
@@ -217,7 +217,7 @@ void CSegmentButton::setRoundRadius (CCoord newRoundRadius)
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::setFont (const SharedPointer<CFontDesc>& newFont)
+void CSegmentButton::setFont (const SPtr<CFontDesc>& newFont)
 {
 	if (font != newFont)
 	{
@@ -447,7 +447,7 @@ void CSegmentButton::drawRect (CDrawContext& context, const CRect& dirtyRect)
 	{
 		lineWidth = context.getHairlineSize ();
 	}
-	SharedPointer<CGraphicsPath> path;
+	SPtr<CGraphicsPath> path;
 	if (gradient || gradientHighlighted || drawLines)
 	{
 		CRect r (getViewSize ());

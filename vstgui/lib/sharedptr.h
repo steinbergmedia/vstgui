@@ -86,25 +86,25 @@ struct Deleter
 #define VSTGUI_SHAREDPTR_FRIEND(Class)                                                             \
 	friend struct VSTGUI::Deleter<Class>;                                                          \
 	template<class Class, typename... Args>                                                        \
-	friend VSTGUI::SharedPointer<Class> VSTGUI::makeShared (Args&&... args);
+	friend VSTGUI::SPtr<Class> VSTGUI::makeShared (Args&&... args);
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I> owned (I* p) noexcept
+inline SPtr<I> owned (I* p) noexcept
 {
 	return p ? SPtr<I> (p, Deleter<I> {}) : nullptr;
 }
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I> shared (I* p) noexcept
+inline SPtr<I> shared (I* p) noexcept
 {
 	return p ? std::dynamic_pointer_cast<I> (p->shared_from_this ()) : nullptr;
 }
 
 //------------------------------------------------------------------------
 template<class I, typename... Args>
-inline SharedPointer<I> makeShared (Args&&... args)
+inline SPtr<I> makeShared (Args&&... args)
 {
 	return SPtr<I> (new I (std::forward<Args> (args)...), Deleter<I> {});
 }
@@ -113,7 +113,7 @@ inline SharedPointer<I> makeShared (Args&&... args)
 
 #define VSTGUI_SHAREDPTR_FRIEND(Class)                                                             \
 	template<class Class, typename... Args>                                                        \
-	friend VSTGUI::SharedPointer<Class> VSTGUI::makeShared (Args&&... args);
+	friend VSTGUI::SPtr<Class> VSTGUI::makeShared (Args&&... args);
 
 //-----------------------------------------------------------------------------
 struct IReference
@@ -191,19 +191,19 @@ using NonAtomicReferenceCounted = ReferenceCounted<int32_t>;
 
 //------------------------------------------------------------------------
 template<class I>
-class SharedPointer
+class SPtr
 {
 public:
 	using Type = I;
 	//------------------------------------------------------------------------
-	inline explicit SharedPointer (I* ptr) noexcept;
-	inline SharedPointer (std::nullptr_t ptr) noexcept;
-	inline SharedPointer (I* ptr, bool remember) noexcept;
-	inline SharedPointer (const SharedPointer&) noexcept;
-	inline SharedPointer () noexcept;
-	inline ~SharedPointer () noexcept;
+	inline explicit SPtr (I* ptr) noexcept;
+	inline SPtr (std::nullptr_t ptr) noexcept;
+	inline SPtr (I* ptr, bool remember) noexcept;
+	inline SPtr (const SPtr&) noexcept;
+	inline SPtr () noexcept;
+	inline ~SPtr () noexcept;
 
-	inline SharedPointer<I>& operator= (const SharedPointer<I>&) noexcept;
+	inline SPtr<I>& operator= (const SPtr<I>&) noexcept;
 
 	inline explicit operator bool () const noexcept { return get () != nullptr; }
 	inline I* operator->() const noexcept { return ptr; } // act as I*
@@ -218,38 +218,38 @@ public:
 	}
 
 	template<class T>
-	SharedPointer<T> cast () const
+	SPtr<T> cast () const
 	{
 		if constexpr (std::is_base_of_v<T, I>)
-			return SharedPointer<T> (static_cast<T*> (ptr));
+			return SPtr<T> (static_cast<T*> (ptr));
 		else
-			return SharedPointer<T> (dynamic_cast<T*> (ptr));
+			return SPtr<T> (dynamic_cast<T*> (ptr));
 	}
 
-	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
-	inline SharedPointer<I>& operator= (SharedPointer<I>&& mp) noexcept;
+	inline SPtr (SPtr<I>&& mp) noexcept;
+	inline SPtr<I>& operator= (SPtr<I>&& mp) noexcept;
 
 	template<typename T>
-	inline SharedPointer (const SharedPointer<T>& op) noexcept
+	inline SPtr (const SPtr<T>& op) noexcept
 	{
 		*this = shared (static_cast<I*> (op.get ()));
 	}
 
 	template<typename T>
-	inline SharedPointer& operator= (const SharedPointer<T>& op) noexcept
+	inline SPtr& operator= (const SPtr<T>& op) noexcept
 	{
 		*this = shared (static_cast<I*> (op.get ()));
 		return *this;
 	}
 
 	template<typename T>
-	inline SharedPointer (SharedPointer<T>&& op) noexcept
+	inline SPtr (SPtr<T>&& op) noexcept
 	{
 		*this = std::move (op);
 	}
 
 	template<typename T>
-	inline SharedPointer& operator= (SharedPointer<T>&& op) noexcept
+	inline SPtr& operator= (SPtr<T>&& op) noexcept
 	{
 		if (ptr)
 			ptr->forget ();
@@ -267,35 +267,35 @@ public:
 	//------------------------------------------------------------------------
 protected:
 	template<typename T>
-	friend class SharedPointer;
+	friend class SPtr;
 
 	I* ptr {nullptr};
 };
 
 //------------------------------------------------------------------------
 template<typename T>
-bool operator== (const SharedPointer<T>& lhs, std::nullptr_t rhs)
+bool operator== (const SPtr<T>& lhs, std::nullptr_t rhs)
 {
 	return lhs.get () == rhs;
 }
 
 //------------------------------------------------------------------------
 template<typename T>
-bool operator== (std::nullptr_t lhs, const SharedPointer<T>& rhs)
+bool operator== (std::nullptr_t lhs, const SPtr<T>& rhs)
 {
 	return lhs == rhs.get ();
 }
 
 //------------------------------------------------------------------------
 template<typename T1, typename T2>
-bool operator== (const SharedPointer<T1>& lhs, const SharedPointer<T2>& rhs)
+bool operator== (const SPtr<T1>& lhs, const SPtr<T2>& rhs)
 {
 	return lhs.get () == rhs.get ();
 }
 
 //------------------------------------------------------------------------
 template<typename T>
-bool operator<(const SharedPointer<T>& lhs, const SharedPointer<T>& rhs)
+bool operator<(const SPtr<T>& lhs, const SPtr<T>& rhs)
 {
 	return lhs.get () < rhs.get ();
 }
@@ -303,21 +303,21 @@ bool operator<(const SharedPointer<T>& lhs, const SharedPointer<T>& rhs)
 #if 1 // C++17
 //------------------------------------------------------------------------
 template<typename T1, typename T2>
-bool operator!= (const SharedPointer<T1>& lhs, const SharedPointer<T2>& rhs)
+bool operator!= (const SPtr<T1>& lhs, const SPtr<T2>& rhs)
 {
 	return lhs.get () != rhs.get ();
 }
 
 //------------------------------------------------------------------------
 template<typename T>
-bool operator!= (const SharedPointer<T>& lhs, std::nullptr_t rhs)
+bool operator!= (const SPtr<T>& lhs, std::nullptr_t rhs)
 {
 	return lhs.get () != rhs;
 }
 
 //------------------------------------------------------------------------
 template<typename T>
-bool operator!= (std::nullptr_t lhs, const SharedPointer<T>& rhs)
+bool operator!= (std::nullptr_t lhs, const SPtr<T>& rhs)
 {
 	return lhs != rhs.get ();
 }
@@ -326,7 +326,7 @@ bool operator!= (std::nullptr_t lhs, const SharedPointer<T>& rhs)
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>::SharedPointer (I* _ptr) noexcept : ptr (_ptr)
+inline SPtr<I>::SPtr (I* _ptr) noexcept : ptr (_ptr)
 {
 	if (ptr)
 		ptr->remember ();
@@ -334,13 +334,13 @@ inline SharedPointer<I>::SharedPointer (I* _ptr) noexcept : ptr (_ptr)
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>::SharedPointer (std::nullptr_t _ptr) noexcept
+inline SPtr<I>::SPtr (std::nullptr_t _ptr) noexcept
 {
 }
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember) noexcept : ptr (_ptr)
+inline SPtr<I>::SPtr (I* _ptr, bool remember) noexcept : ptr (_ptr)
 {
 	if (ptr && remember)
 		ptr->remember ();
@@ -348,7 +348,7 @@ inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember) noexcept : ptr (
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other) noexcept : ptr (other.ptr)
+inline SPtr<I>::SPtr (const SPtr<I>& other) noexcept : ptr (other.ptr)
 {
 	if (ptr)
 		ptr->remember ();
@@ -356,13 +356,13 @@ inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other) noexcept 
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>::SharedPointer () noexcept : ptr (nullptr)
+inline SPtr<I>::SPtr () noexcept : ptr (nullptr)
 {
 }
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>::~SharedPointer () noexcept
+inline SPtr<I>::~SPtr () noexcept
 {
 	if (ptr)
 		ptr->forget ();
@@ -370,14 +370,14 @@ inline SharedPointer<I>::~SharedPointer () noexcept
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>::SharedPointer (SharedPointer<I>&& mp) noexcept : ptr (nullptr)
+inline SPtr<I>::SPtr (SPtr<I>&& mp) noexcept : ptr (nullptr)
 {
 	*this = std::move (mp);
 }
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>& SharedPointer<I>::operator= (SharedPointer<I>&& mp) noexcept
+inline SPtr<I>& SPtr<I>::operator= (SPtr<I>&& mp) noexcept
 {
 	if (ptr)
 		ptr->forget ();
@@ -388,7 +388,7 @@ inline SharedPointer<I>& SharedPointer<I>::operator= (SharedPointer<I>&& mp) noe
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I>& SharedPointer<I>::operator= (const SharedPointer<I>& _ptr) noexcept
+inline SPtr<I>& SPtr<I>::operator= (const SPtr<I>& _ptr) noexcept
 {
 	if (_ptr.get () != ptr)
 	{
@@ -403,32 +403,32 @@ inline SharedPointer<I>& SharedPointer<I>::operator= (const SharedPointer<I>& _p
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I> owned (I* p) noexcept
+inline SPtr<I> owned (I* p) noexcept
 {
-	return SharedPointer<I> (p, false);
+	return SPtr<I> (p, false);
 }
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I> shared (I* p) noexcept
+inline SPtr<I> shared (I* p) noexcept
 {
-	return SharedPointer<I> (p, true);
+	return SPtr<I> (p, true);
 }
 
 //------------------------------------------------------------------------
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 template<class I, typename... Args>
-inline SharedPointer<I> makeOwned (Args&&... args)
+inline SPtr<I> makeOwned (Args&&... args)
 {
-	return SharedPointer<I> (new I (std::forward<Args> (args)...), false);
+	return SPtr<I> (new I (std::forward<Args> (args)...), false);
 }
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //------------------------------------------------------------------------
 template<class I, typename... Args>
-inline SharedPointer<I> makeShared (Args&&... args)
+inline SPtr<I> makeShared (Args&&... args)
 {
-	return SharedPointer<I> (new I (std::forward<Args> (args)...), false);
+	return SPtr<I> (new I (std::forward<Args> (args)...), false);
 }
 
 #endif
@@ -460,14 +460,14 @@ public:
 
 //------------------------------------------------------------------------
 template<typename T>
-SharedPointer<T> makeLifeGuard (const SharedPointer<T>& object)
+SPtr<T> makeLifeGuard (const SPtr<T>& object)
 {
-	return SharedPointer<T> (object);
+	return SPtr<T> (object);
 }
 
 //------------------------------------------------------------------------
 template<typename T>
-SharedPointer<T> makeLifeGuard (T* object)
+SPtr<T> makeLifeGuard (T* object)
 {
 	return shared (object);
 }

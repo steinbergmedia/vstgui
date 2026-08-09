@@ -18,8 +18,8 @@ struct CMenuItem::Impl
 {
 	UTF8String title;
 	UTF8String keyCode;
-	SharedPointer<COptionMenu> submenu;
-	SharedPointer<CBitmap> icon;
+	SPtr<COptionMenu> submenu;
+	SPtr<CBitmap> icon;
 	int32_t flags {0};
 	int32_t keyModifiers {0};
 	VirtualKey virtualKey {VirtualKey::None};
@@ -53,7 +53,7 @@ CMenuItem::~CMenuItem () noexcept = default;
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const UTF8String& inTitle, const UTF8String& inKeycode,
-					  int32_t inKeyModifiers, const SharedPointer<CBitmap>& inIcon, int32_t inFlags)
+					  int32_t inKeyModifiers, const SPtr<CBitmap>& inIcon, int32_t inFlags)
 : CMenuItem ()
 {
 	impl->flags = inFlags;
@@ -70,8 +70,8 @@ CMenuItem::CMenuItem (const UTF8String& inTitle, const UTF8String& inKeycode,
  * @param inIcon icon of item
  */
 //------------------------------------------------------------------------
-CMenuItem::CMenuItem (const UTF8String& inTitle, const SharedPointer<COptionMenu>& inSubmenu,
-					  const SharedPointer<CBitmap>& inIcon)
+CMenuItem::CMenuItem (const UTF8String& inTitle, const SPtr<COptionMenu>& inSubmenu,
+					  const SPtr<CBitmap>& inIcon)
 : CMenuItem ()
 {
 	setTitle (inTitle);
@@ -135,16 +135,13 @@ void CMenuItem::setVirtualKey (VirtualKey inVirtualKey, int32_t inKeyModifiers)
 }
 
 //------------------------------------------------------------------------
-void CMenuItem::setSubmenu (const SharedPointer<COptionMenu>& inSubmenu)
-{
-	impl->submenu = inSubmenu;
-}
+void CMenuItem::setSubmenu (const SPtr<COptionMenu>& inSubmenu) { impl->submenu = inSubmenu; }
 
 //------------------------------------------------------------------------
 void CMenuItem::removeSubmenu () { impl->submenu.reset (); }
 
 //------------------------------------------------------------------------
-void CMenuItem::setIcon (const SharedPointer<CBitmap>& inIcon) { impl->icon = inIcon; }
+void CMenuItem::setIcon (const SPtr<CBitmap>& inIcon) { impl->icon = inIcon; }
 
 //------------------------------------------------------------------------
 void CMenuItem::setTag (int32_t t)
@@ -225,10 +222,10 @@ VirtualKey CMenuItem::getVirtualKey () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COptionMenu> CMenuItem::getSubmenu () const { return impl->submenu; }
+SPtr<COptionMenu> CMenuItem::getSubmenu () const { return impl->submenu; }
 
 //------------------------------------------------------------------------
-SharedPointer<CBitmap> CMenuItem::getIcon () const { return impl->icon; }
+SPtr<CBitmap> CMenuItem::getIcon () const { return impl->icon; }
 
 //------------------------------------------------------------------------
 int32_t CMenuItem::getTag () const
@@ -274,7 +271,7 @@ CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
 }
 
 //------------------------------------------------------------------------
-void CCommandMenuItem::setItemTarget (const SharedPointer<ICommandMenuItemTarget>& target)
+void CCommandMenuItem::setItemTarget (const SPtr<ICommandMenuItemTarget>& target)
 {
 	itemTarget = target;
 }
@@ -351,8 +348,8 @@ There are 2 styles with or without a shadowed text. When a mouse click occurs, a
  */
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu (const CRect& size, IControlListener* listener, int32_t tag,
-						  const SharedPointer<CBitmap>& background,
-						  const SharedPointer<CBitmap>& bgWhenClick, const int32_t style)
+						  const SPtr<CBitmap>& background, const SPtr<CBitmap>& bgWhenClick,
+						  const int32_t style)
 : CParamDisplay (size, background, style), bgWhenClick (bgWhenClick)
 {
 	setListener (listener);
@@ -504,7 +501,7 @@ bool COptionMenu::popup (const PopupCallback& callback)
 		{
 			inPopup = true;
 			auto self = shared (this);
-			platformMenu->popup (self, [self, callback] (const SharedPointer<COptionMenu>& menu,
+			platformMenu->popup (self, [self, callback] (const SPtr<COptionMenu>& menu,
 														 PlatformOptionMenuResult result) {
 				if (result.menu != nullptr)
 				{
@@ -624,7 +621,7 @@ void COptionMenu::setPrefixNumbers (int32_t preCount)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CMenuItem> COptionMenu::addEntry (const SharedPointer<CMenuItem>& item, int32_t index)
+SPtr<CMenuItem> COptionMenu::addEntry (const SPtr<CMenuItem>& item, int32_t index)
 {
 	if (index < 0 || index > getNbEntries ())
 	{
@@ -638,16 +635,14 @@ SharedPointer<CMenuItem> COptionMenu::addEntry (const SharedPointer<CMenuItem>& 
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CMenuItem> COptionMenu::addEntry (const SharedPointer<COptionMenu>& submenu,
-												const UTF8String& title)
+SPtr<CMenuItem> COptionMenu::addEntry (const SPtr<COptionMenu>& submenu, const UTF8String& title)
 {
 	auto item = makeShared<CMenuItem> (title, submenu);
 	return addEntry (item);
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CMenuItem> COptionMenu::addEntry (const UTF8String& title, int32_t index,
-												int32_t itemFlags)
+SPtr<CMenuItem> COptionMenu::addEntry (const UTF8String& title, int32_t index, int32_t itemFlags)
 {
 	if (title == "-")
 		return addSeparator (index);
@@ -656,17 +651,17 @@ SharedPointer<CMenuItem> COptionMenu::addEntry (const UTF8String& title, int32_t
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CMenuItem> COptionMenu::addSeparator (int32_t index)
+SPtr<CMenuItem> COptionMenu::addSeparator (int32_t index)
 {
 	auto item = makeShared<CMenuItem> ("", nullptr, 0, nullptr, CMenuItem::kSeparator);
 	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CMenuItem> COptionMenu::getCurrent () const { return getEntry (currentIndex); }
+SPtr<CMenuItem> COptionMenu::getCurrent () const { return getEntry (currentIndex); }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CMenuItem> COptionMenu::getEntry (int32_t index) const
+SPtr<CMenuItem> COptionMenu::getEntry (int32_t index) const
 {
 	if (index < 0 || menuItems.empty () || index >= getNbEntries ())
 		return nullptr;
@@ -678,7 +673,7 @@ SharedPointer<CMenuItem> COptionMenu::getEntry (int32_t index) const
 int32_t COptionMenu::getNbEntries () const { return static_cast<int32_t> (menuItems.size ()); }
 
 //------------------------------------------------------------------------
-SharedPointer<COptionMenu> COptionMenu::getSubMenu (int32_t idx) const
+SPtr<COptionMenu> COptionMenu::getSubMenu (int32_t idx) const
 {
 	if (auto item = getEntry (idx))
 		return item->getSubmenu ();
@@ -706,7 +701,7 @@ int32_t COptionMenu::getCurrentIndex (bool countSeparator) const
 //------------------------------------------------------------------------
 bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 {
-	SharedPointer<CMenuItem> item {};
+	SPtr<CMenuItem> item {};
 	if (countSeparator)
 	{
 		item = getEntry (index);
@@ -812,7 +807,7 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint& where, const CButtonState& b
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COptionMenu> COptionMenu::getLastItemMenu (int32_t& idxInMenu) const
+SPtr<COptionMenu> COptionMenu::getLastItemMenu (int32_t& idxInMenu) const
 {
 	if (auto m = lastMenu.lock ())
 	{

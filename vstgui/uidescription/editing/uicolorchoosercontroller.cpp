@@ -18,7 +18,7 @@ namespace VSTGUI {
 class UIColorChooserDropTarget : public NonAtomicReferenceCounted, public DropTargetAdapter
 {
 public:
-	UIColorChooserDropTarget (const SharedPointer<UIColor>& color) : color (color) {}
+	UIColorChooserDropTarget (const SPtr<UIColor>& color) : color (color) {}
 	DragOperation onDragEnter (DragEventData eventData) override
 	{
 		for (const auto& item : *eventData.drag.get ())
@@ -61,13 +61,13 @@ public:
 	}
 
 private:
-	SharedPointer<UIColor> color;
+	SPtr<UIColor> color;
 	std::string colorString;
 };
 
 //----------------------------------------------------------------------------------------------------
-UIColorChooserController::UIColorChooserController (
-	const SharedPointer<IController>& baseController, const SharedPointer<UIColor>& color)
+UIColorChooserController::UIColorChooserController (const SPtr<IController>& baseController,
+													const SPtr<UIColor>& color)
 : DelegationController (baseController), color (color)
 {
 	color->registerListener (this);
@@ -196,8 +196,8 @@ bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, 
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIColorChooserController::createView (const UIAttributes& attributes,
-														   const IUIDescription& description)
+SPtr<CView> UIColorChooserController::createView (const UIAttributes& attributes,
+												  const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -217,9 +217,9 @@ SharedPointer<CView> UIColorChooserController::createView (const UIAttributes& a
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIColorChooserController::verifyView (const SharedPointer<CView>& view,
-														   const UIAttributes& attributes,
-														   const IUIDescription& description)
+SPtr<CView> UIColorChooserController::verifyView (const SPtr<CView>& view,
+												  const UIAttributes& attributes,
+												  const IUIDescription& description)
 {
 	auto control = view.cast<CControl> ();
 	if (control && control->getTag () >= 0)

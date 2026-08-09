@@ -63,7 +63,7 @@ void UISelection::setStyle (int32_t _style)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelection::add (const SharedPointer<CView>& view)
+void UISelection::add (const SPtr<CView>& view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
 	willChange ();
@@ -74,7 +74,7 @@ void UISelection::add (const SharedPointer<CView>& view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelection::remove (const SharedPointer<CView>& view)
+void UISelection::remove (const SPtr<CView>& view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
 	if (contains (*view.get ()))
@@ -86,7 +86,7 @@ void UISelection::remove (const SharedPointer<CView>& view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelection::setExclusive (const SharedPointer<CView>& view)
+void UISelection::setExclusive (const SPtr<CView>& view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
 	if (viewList.size () == 1 && viewList.front () == view)
@@ -130,7 +130,7 @@ int32_t UISelection::total () const
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UISelection::first () const
+SPtr<CView> UISelection::first () const
 {
 	if (!viewList.empty ())
 		return *begin ();
@@ -249,11 +249,11 @@ void UISelection::viewsDidChange ()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::store (OutputStream& stream, const SharedPointer<IUIDescription>& uiDescription)
+bool UISelection::store (OutputStream& stream, const SPtr<IUIDescription>& uiDescription)
 {
 	if (auto desc = uiDescription.cast<UIDescription> ())
 	{
-		std::list<SharedPointer<CView>> views;
+		std::list<SPtr<CView>> views;
 		for (auto view : *this)
 		{
 			if (!containsParent (*view.get ()))
@@ -270,12 +270,12 @@ bool UISelection::store (OutputStream& stream, const SharedPointer<IUIDescriptio
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::restore (InputStream& stream, const SharedPointer<IUIDescription>& uiDescription)
+bool UISelection::restore (InputStream& stream, const SPtr<IUIDescription>& uiDescription)
 {
 	clear ();
 	if (auto desc = uiDescription.cast<UIDescription> ())
 	{
-		SharedPointer<UIAttributes> attr;
+		SPtr<UIAttributes> attr;
 		if (desc->restoreViews (stream, viewList, &attr))
 		{
 			if (attr)
@@ -287,8 +287,8 @@ bool UISelection::restore (InputStream& stream, const SharedPointer<IUIDescripti
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> createBitmapFromSelection (const UISelection& selection, double scaleFactor,
-												  const SharedPointer<CViewContainer>& anchorView)
+SPtr<CBitmap> createBitmapFromSelection (const UISelection& selection, double scaleFactor,
+										 const SPtr<CViewContainer>& anchorView)
 {
 	CRect selectionRect = selection.getBounds ();
 	auto bitmap = renderBitmapOffscreen (selectionRect.getSize (), scaleFactor, [&] (auto& context) {

@@ -18,8 +18,8 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-SizeToFitOperation::SizeToFitOperation (const SharedPointer<UISelection>& selection)
-: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect>> (selection)
+SizeToFitOperation::SizeToFitOperation (const SPtr<UISelection>& selection)
+: BaseSelectionOperation<std::pair<SPtr<CView>, CRect>> (selection)
 {
 	for (auto view : *selection.get ())
 		emplace_back (view, view->getViewSize ());
@@ -61,9 +61,9 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UnembedViewOperation::UnembedViewOperation (const SharedPointer<UISelection>& selection,
+UnembedViewOperation::UnembedViewOperation (const SPtr<UISelection>& selection,
 											const IViewFactory& factory)
-: BaseSelectionOperation<SharedPointer<CView>> (selection), factory (factory)
+: BaseSelectionOperation<SPtr<CView>> (selection), factory (factory)
 {
 	containerView = shared (selection->first ()->asViewContainer ());
 	collectSubviews (*containerView.get (), true);
@@ -136,10 +136,9 @@ void UnembedViewOperation::undo ()
 }
 
 //-----------------------------------------------------------------------------
-EmbedViewOperation::EmbedViewOperation (const SharedPointer<UISelection>& selection,
-										const SharedPointer<CViewContainer>& newContainer)
-: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect>> (selection)
-, newContainer (newContainer)
+EmbedViewOperation::EmbedViewOperation (const SPtr<UISelection>& selection,
+										const SPtr<CViewContainer>& newContainer)
+: BaseSelectionOperation<std::pair<SPtr<CView>, CRect>> (selection), newContainer (newContainer)
 {
 	parent = shared (selection->first ()->getParentView ()->asViewContainer ());
 	for (auto view : *selection.get ())
@@ -215,11 +214,10 @@ void EmbedViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ViewCopyOperation::ViewCopyOperation (const SharedPointer<UISelection>& copySelection,
-									  const SharedPointer<UISelection>& workingSelection,
-									  const SharedPointer<CViewContainer>& parent,
-									  const CPoint& offset,
-									  const SharedPointer<IUIDescription>& desc)
+ViewCopyOperation::ViewCopyOperation (const SPtr<UISelection>& copySelection,
+									  const SPtr<UISelection>& workingSelection,
+									  const SPtr<CViewContainer>& parent, const CPoint& offset,
+									  const SPtr<IUIDescription>& desc)
 : parent (parent), copySelection (copySelection), workingSelection (workingSelection)
 {
 	CRect selectionBounds = copySelection->getBounds ();
@@ -281,9 +279,9 @@ void ViewCopyOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ViewSizeChangeOperation::ViewSizeChangeOperation (const SharedPointer<UISelection>& selection,
-												  bool sizing, bool autosizingEnabled)
-: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect>> (selection)
+ViewSizeChangeOperation::ViewSizeChangeOperation (const SPtr<UISelection>& selection, bool sizing,
+												  bool autosizingEnabled)
+: BaseSelectionOperation<std::pair<SPtr<CView>, CRect>> (selection)
 , first (true)
 , sizing (sizing)
 , autosizing (autosizingEnabled)
@@ -321,7 +319,7 @@ void ViewSizeChangeOperation::undo ()
 		CRect size (element.second);
 		view->invalid ();
 		element.second = view->getViewSize ();
-		SharedPointer<CViewContainer> container;
+		SPtr<CViewContainer> container;
 		bool oldAutosizing = false;
 		if (!autosizing)
 		{
@@ -358,14 +356,14 @@ bool ViewSizeChangeOperation::didChange ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-DeleteOperation::DeleteOperation (const SharedPointer<UISelection>& sel) : selection (sel)
+DeleteOperation::DeleteOperation (const SPtr<UISelection>& sel) : selection (sel)
 {
 	for (auto view : *selection.get ())
 	{
 		auto container = view->getParentView ();
 		if (dynamic_cast<UIEditView*> (container) == nullptr)
 		{
-			SharedPointer<CView> nextView;
+			SPtr<CView> nextView;
 			ViewIterator it (*container);
 			while (*it)
 			{
@@ -422,9 +420,9 @@ void DeleteOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-InsertViewOperation::InsertViewOperation (const SharedPointer<CViewContainer>& parent,
-										  const SharedPointer<CView>& view,
-										  const SharedPointer<UISelection>& selection)
+InsertViewOperation::InsertViewOperation (const SPtr<CViewContainer>& parent,
+										  const SPtr<CView>& view,
+										  const SPtr<UISelection>& selection)
 : parent (parent), view (view), selection (selection)
 {
 }
@@ -452,10 +450,10 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-TransformViewTypeOperation::TransformViewTypeOperation (const SharedPointer<UISelection>& selection,
-														const SharedPointer<CView>& view,
+TransformViewTypeOperation::TransformViewTypeOperation (const SPtr<UISelection>& selection,
+														const SPtr<CView>& view,
 														IdStringPtr viewClassName,
-														const SharedPointer<UIDescription>& desc,
+														const SPtr<UIDescription>& desc,
 														const IViewFactory& factory)
 : view (view)
 , insertIndex (-1)
@@ -493,14 +491,14 @@ UTF8StringPtr TransformViewTypeOperation::getName ()
 }
 
 //-----------------------------------------------------------------------------
-void TransformViewTypeOperation::exchangeSubViews (const SharedPointer<CViewContainer>& src,
-												   const SharedPointer<CViewContainer>& dst)
+void TransformViewTypeOperation::exchangeSubViews (const SPtr<CViewContainer>& src,
+												   const SPtr<CViewContainer>& dst)
 {
 	if (dynamic_cast<const IViewFactoryEditingSupport*> (&factory))
 	{
 		if (src && dst)
 		{
-			std::list<SharedPointer<CView>> temp;
+			std::list<SPtr<CView>> temp;
 
 			src->forEachChild ([&] (auto& childView) {
 				if (IViewFactory::getViewName (*childView.get ()))
@@ -552,8 +550,8 @@ void TransformViewTypeOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-AttributeChangeAction::AttributeChangeAction (const SharedPointer<UIDescription>& desc,
-											  const SharedPointer<UISelection>& selection,
+AttributeChangeAction::AttributeChangeAction (const SPtr<UIDescription>& desc,
+											  const SPtr<UISelection>& selection,
 											  const std::string& attrName,
 											  const std::string& attrValue)
 : desc (desc), selection (selection), attrName (attrName), attrValue (attrValue)
@@ -628,7 +626,7 @@ void AttributeChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 MultipleAttributeChangeAction::MultipleAttributeChangeAction (
-	const SharedPointer<UIDescription>& description, const std::list<SharedPointer<CView>>& views,
+	const SPtr<UIDescription>& description, const std::list<SPtr<CView>>& views,
 	IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue)
 : description (description), oldValue (oldValue), newValue (newValue)
 {
@@ -639,13 +637,13 @@ MultipleAttributeChangeAction::MultipleAttributeChangeAction (
 
 //----------------------------------------------------------------------------------------------------
 void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
-	const IViewFactory& viewFactory, const SharedPointer<IUIDescription>& desc,
-	const SharedPointer<CView>& startView, IViewCreator::AttrType type, const std::string& value)
+	const IViewFactory& viewFactory, const SPtr<IUIDescription>& desc, const SPtr<CView>& startView,
+	IViewCreator::AttrType type, const std::string& value)
 {
 	const auto* viewFactoryEditing = dynamic_cast<const IViewFactoryEditingSupport*> (&viewFactory);
 	if (!viewFactoryEditing)
 		return;
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	collectAllSubViews (startView, views);
 	for (auto& view : views)
 	{
@@ -672,8 +670,8 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (
 }
 
 //----------------------------------------------------------------------------------------------------
-void MultipleAttributeChangeAction::collectAllSubViews (const SharedPointer<CView>& view,
-														std::list<SharedPointer<CView>>& views)
+void MultipleAttributeChangeAction::collectAllSubViews (const SPtr<CView>& view,
+														std::list<SPtr<CView>>& views)
 {
 	views.emplace_back (view);
 	if (auto container = view->asViewContainer ())
@@ -711,9 +709,8 @@ void MultipleAttributeChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-TagChangeAction::TagChangeAction (const SharedPointer<UIDescription>& description,
-								  UTF8StringPtr name, UTF8StringPtr newTagString, bool remove,
-								  bool performOrUndo)
+TagChangeAction::TagChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
+								  UTF8StringPtr newTagString, bool remove, bool performOrUndo)
 : description (description)
 , name (name)
 , newTag (newTagString ? newTagString : "")
@@ -759,7 +756,7 @@ void TagChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-TagNameChangeAction::TagNameChangeAction (const SharedPointer<UIDescription>& description,
+TagNameChangeAction::TagNameChangeAction (const SPtr<UIDescription>& description,
 										  UTF8StringPtr oldName, UTF8StringPtr newName,
 										  bool performOrUndo)
 : description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
@@ -789,7 +786,7 @@ void TagNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-ColorNameChangeAction::ColorNameChangeAction (const SharedPointer<UIDescription>& description,
+ColorNameChangeAction::ColorNameChangeAction (const SPtr<UIDescription>& description,
 											  UTF8StringPtr oldName, UTF8StringPtr newName,
 											  bool performOrUndo)
 : description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
@@ -817,9 +814,8 @@ void ColorNameChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-ColorChangeAction::ColorChangeAction (const SharedPointer<UIDescription>& description,
-									  UTF8StringPtr name, const CColor& color, bool remove,
-									  bool performOrUndo)
+ColorChangeAction::ColorChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
+									  const CColor& color, bool remove, bool performOrUndo)
 : description (description)
 , name (name)
 , newColor (color)
@@ -868,9 +864,8 @@ void ColorChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-BitmapChangeAction::BitmapChangeAction (const SharedPointer<UIDescription>& description,
-										UTF8StringPtr name, UTF8StringPtr path, bool remove,
-										bool performOrUndo)
+BitmapChangeAction::BitmapChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
+										UTF8StringPtr path, bool remove, bool performOrUndo)
 : description (description)
 , name (name)
 , path (path ? path : "")
@@ -918,7 +913,7 @@ void BitmapChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-BitmapNameChangeAction::BitmapNameChangeAction (const SharedPointer<UIDescription>& description,
+BitmapNameChangeAction::BitmapNameChangeAction (const SPtr<UIDescription>& description,
 												UTF8StringPtr oldName, UTF8StringPtr newName,
 												bool performOrUndo)
 : description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
@@ -949,7 +944,7 @@ void BitmapNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (
-	const SharedPointer<UIDescription>& description, UTF8StringPtr name, const CRect* rect,
+	const SPtr<UIDescription>& description, UTF8StringPtr name, const CRect* rect,
 	bool performOrUndo)
 : description (description)
 , name (name)
@@ -1010,7 +1005,7 @@ void NinePartTiledBitmapChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 MultiFrameBitmapChangeAction::MultiFrameBitmapChangeAction (
-	const SharedPointer<UIDescription>& description, UTF8StringPtr name,
+	const SPtr<UIDescription>& description, UTF8StringPtr name,
 	const CMultiFrameBitmapDescription* desc, bool performOrUndo)
 : description (description), name (name), performOrUndo (performOrUndo)
 {
@@ -1062,9 +1057,10 @@ void MultiFrameBitmapChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-BitmapFilterChangeAction::BitmapFilterChangeAction (
-	const SharedPointer<UIDescription>& description, UTF8StringPtr bitmapName,
-	const std::list<SharedPointer<UIAttributes>>& attributes, bool performOrUndo)
+BitmapFilterChangeAction::BitmapFilterChangeAction (const SPtr<UIDescription>& description,
+													UTF8StringPtr bitmapName,
+													const std::list<SPtr<UIAttributes>>& attributes,
+													bool performOrUndo)
 : description (description)
 , bitmapName (bitmapName)
 , newAttributes (attributes)
@@ -1100,10 +1096,9 @@ void BitmapFilterChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-GradientChangeAction::GradientChangeAction (const SharedPointer<UIDescription>& description,
-											UTF8StringPtr name,
-											const SharedPointer<CGradient>& gradient, bool remove,
-											bool performOrUndo)
+GradientChangeAction::GradientChangeAction (const SPtr<UIDescription>& description,
+											UTF8StringPtr name, const SPtr<CGradient>& gradient,
+											bool remove, bool performOrUndo)
 : description (description)
 , name (name)
 , gradient (gradient)
@@ -1152,7 +1147,7 @@ void GradientChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-GradientNameChangeAction::GradientNameChangeAction (const SharedPointer<UIDescription>& description,
+GradientNameChangeAction::GradientNameChangeAction (const SPtr<UIDescription>& description,
 													UTF8StringPtr oldName, UTF8StringPtr newName,
 													bool performOrUndo)
 : description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
@@ -1182,9 +1177,8 @@ void GradientNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-FontChangeAction::FontChangeAction (const SharedPointer<UIDescription>& description,
-									UTF8StringPtr name, const SharedPointer<CFontDesc>& font,
-									bool remove, bool performOrUndo)
+FontChangeAction::FontChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
+									const SPtr<CFontDesc>& font, bool remove, bool performOrUndo)
 : description (description)
 , name (name)
 , font (font)
@@ -1236,7 +1230,7 @@ void FontChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-FontNameChangeAction::FontNameChangeAction (const SharedPointer<UIDescription>& description,
+FontNameChangeAction::FontNameChangeAction (const SPtr<UIDescription>& description,
 											UTF8StringPtr oldName, UTF8StringPtr newName,
 											bool performOrUndo)
 : description (description), oldName (oldName), newName (newName), performOrUndo (performOrUndo)
@@ -1266,9 +1260,9 @@ void FontNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-AlternateFontChangeAction::AlternateFontChangeAction (
-	const SharedPointer<UIDescription>& description, UTF8StringPtr fontName,
-	UTF8StringPtr newAlternateFontNames)
+AlternateFontChangeAction::AlternateFontChangeAction (const SPtr<UIDescription>& description,
+													  UTF8StringPtr fontName,
+													  UTF8StringPtr newAlternateFontNames)
 : description (description)
 , fontName (fontName)
 , newAlternateFontNames (newAlternateFontNames ? newAlternateFontNames : "")
@@ -1297,8 +1291,8 @@ void AlternateFontChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-HierarchyMoveViewOperation::HierarchyMoveViewOperation (const SharedPointer<CView>& view,
-														const SharedPointer<UISelection>& selection,
+HierarchyMoveViewOperation::HierarchyMoveViewOperation (const SPtr<CView>& view,
+														const SPtr<UISelection>& selection,
 														int32_t dir)
 : view (view), selection (selection), dir (dir)
 {
@@ -1340,7 +1334,7 @@ void HierarchyMoveViewOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-TemplateNameChangeAction::TemplateNameChangeAction (const SharedPointer<UIDescription>& description,
+TemplateNameChangeAction::TemplateNameChangeAction (const SPtr<UIDescription>& description,
 													WeakPointer<IActionPerformer> actionPerformer,
 													UTF8StringPtr oldName, UTF8StringPtr newName)
 : description (description), actionPerformer (actionPerformer), oldName (oldName), newName (newName)
@@ -1372,7 +1366,7 @@ void TemplateNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-CreateNewTemplateAction::CreateNewTemplateAction (const SharedPointer<UIDescription>& description,
+CreateNewTemplateAction::CreateNewTemplateAction (const SPtr<UIDescription>& description,
 												  WeakPointer<IActionPerformer> actionPerformer,
 												  UTF8StringPtr name,
 												  UTF8StringPtr baseViewClassName)
@@ -1411,7 +1405,7 @@ void CreateNewTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-DuplicateTemplateAction::DuplicateTemplateAction (const SharedPointer<UIDescription>& description,
+DuplicateTemplateAction::DuplicateTemplateAction (const SPtr<UIDescription>& description,
 												  WeakPointer<IActionPerformer> actionPerformer,
 												  UTF8StringPtr name, UTF8StringPtr dupName)
 : description (description), actionPerformer (actionPerformer), name (name), dupName (dupName)
@@ -1443,9 +1437,9 @@ void DuplicateTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-DeleteTemplateAction::DeleteTemplateAction (const SharedPointer<UIDescription>& description,
+DeleteTemplateAction::DeleteTemplateAction (const SPtr<UIDescription>& description,
 											WeakPointer<IActionPerformer> actionPerformer,
-											const SharedPointer<CView>& view, UTF8StringPtr name)
+											const SPtr<CView>& view, UTF8StringPtr name)
 : description (description), actionPerformer (actionPerformer), view (view), name (name)
 {
 	attributes = description->getViewAttributes (name);
@@ -1471,7 +1465,7 @@ void DeleteTemplateAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-ChangeFocusDrawingAction::ChangeFocusDrawingAction (const SharedPointer<UIDescription>& description,
+ChangeFocusDrawingAction::ChangeFocusDrawingAction (const SPtr<UIDescription>& description,
 													const FocusDrawingSettings& newSettings)
 : description (description), newSettings (newSettings)
 {
@@ -1499,9 +1493,9 @@ void ChangeFocusDrawingAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-ChangeTemplateMinMaxAction::ChangeTemplateMinMaxAction (
-	const SharedPointer<UIDescription>& description, UTF8StringPtr templateName, CPoint minSize,
-	CPoint maxSize)
+ChangeTemplateMinMaxAction::ChangeTemplateMinMaxAction (const SPtr<UIDescription>& description,
+														UTF8StringPtr templateName, CPoint minSize,
+														CPoint maxSize)
 : description (description), templateName (templateName), minSize (minSize), maxSize (maxSize)
 {
 	if (auto attr = description->getViewAttributes (templateName))

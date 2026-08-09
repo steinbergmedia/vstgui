@@ -39,8 +39,8 @@ UTF8StringPtr TextLabelCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> TextLabelCreator::create (const UIAttributes& attributes,
-											   const IUIDescription& description) const
+SPtr<CView> TextLabelCreator::create (const UIAttributes& attributes,
+									  const IUIDescription& description) const
 {
 	return makeShared<CTextLabel> (CRect (0, 0, 100, 20));
 }

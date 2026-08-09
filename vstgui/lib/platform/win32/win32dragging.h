@@ -28,9 +28,10 @@ public:
 	Win32DraggingSession (Win32Frame* frame);
 	~Win32DraggingSession () noexcept;
 
-	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const final;
+	bool setBitmap (const SPtr<CBitmap>& bitmap, CPoint offset) const final;
 
-	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback);
+	bool doDrag (const DragDescription& dragDescription, const SPtr<IDragCallback>& callback);
+
 private:
 	Win32Frame* frame;
 	mutable std::unique_ptr<Win32DragBitmapWindow> dragBitmapWindow;
@@ -81,7 +82,7 @@ public:
 
 private:
 	Win32Frame* pFrame;
-	SharedPointer<Win32DataPackage> dragData;
+	SPtr<Win32DataPackage> dragData;
 };
 
 //-----------------------------------------------------------------------------
@@ -104,7 +105,7 @@ class Win32DataObject final : private COMBase,
 							  public ::IDataObject
 {
 public:
-	Win32DataObject (SharedPointer<IDataPackage> dataPackage);
+	Win32DataObject (SPtr<IDataPackage> dataPackage);
 	~Win32DataObject () noexcept override;
 
 	// IUnknown
@@ -123,7 +124,7 @@ public:
 	STDMETHOD (DUnadvise) (DWORD connection) override;
 	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise) override;
 private:
-	SharedPointer<IDataPackage> dataPackage;
+	SPtr<IDataPackage> dataPackage;
 };
 
 } // VSTGUI

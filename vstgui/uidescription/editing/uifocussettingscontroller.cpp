@@ -19,8 +19,8 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIFocusSettingsController::UIFocusSettingsController (
-	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer)
+UIFocusSettingsController::UIFocusSettingsController (const SPtr<UIDescription>& description,
+													  WeakPointer<IActionPerformer> actionPerformer)
 : editDescription (description), actionPerformer (actionPerformer)
 {
 	originalSettings = editDescription->getFocusDrawingSettings ();
@@ -61,9 +61,9 @@ void UIFocusSettingsController::onDialogButton2Clicked (UIDialogController&) {}
 void UIFocusSettingsController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIFocusSettingsController::verifyView (const SharedPointer<CView>& view,
-															const UIAttributes& attributes,
-															const IUIDescription& description)
+SPtr<CView> UIFocusSettingsController::verifyView (const SPtr<CView>& view,
+												   const UIAttributes& attributes,
+												   const IUIDescription& description)
 {
 	auto control = view.cast<CControl> ();
 	if (control)

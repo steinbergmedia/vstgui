@@ -20,23 +20,22 @@ class UITagsDataSource;
 class UITagsController : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
-	UITagsController (const SharedPointer<IController>& baseController,
-					  const SharedPointer<UIDescription>& description,
+	UITagsController (const SPtr<IController>& baseController,
+					  const SPtr<UIDescription>& description,
 					  WeakPointer<IActionPerformer> actionPerformer);
 	~UITagsController () override;
 
 protected:
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl& pControl) override;
 
-	SharedPointer<UIDescription> editDescription;
+	SPtr<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<UITagsDataSource> dataSource;
+	SPtr<UITagsDataSource> dataSource;
 
 	enum {
 		kAddTag = 0,

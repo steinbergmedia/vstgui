@@ -92,8 +92,8 @@ UTF8StringPtr ViewCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> ViewCreator::create (const UIAttributes& attributes,
-										  const IUIDescription& description) const
+SPtr<CView> ViewCreator::create (const UIAttributes& attributes,
+								 const IUIDescription& description) const
 {
 	return makeShared<SimpleCView> (CRect (0, 0, 50, 50));
 }
@@ -117,7 +117,7 @@ bool ViewCreator::apply (CView& view, const UIAttributes& attributes,
 		view.setMouseableArea (viewSize);
 	}
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrBitmap), bitmap, description))
 		view.setBackground (bitmap);
 	if (stringToBitmap (attributes.getAttributeValue (kAttrDisabledBitmap), bitmap, description))

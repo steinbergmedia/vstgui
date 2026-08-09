@@ -21,8 +21,8 @@ public:
 	explicit UIViewSwitchContainer (const CRect& size);
 	~UIViewSwitchContainer () noexcept override;
 
-	SharedPointer<IViewSwitchController> getController () const { return controller; }
-	void setController (const SharedPointer<IViewSwitchController>& controller);
+	SPtr<IViewSwitchController> getController () const { return controller; }
+	void setController (const SPtr<IViewSwitchController>& controller);
 
 	void setCurrentViewIndex (int32_t viewIndex);
 	int32_t getCurrentViewIndex () const { return currentViewIndex; }
@@ -54,7 +54,7 @@ public:
 	bool removed (CViewContainer& parent) override;
 
 protected:
-	SharedPointer<IViewSwitchController> controller;
+	SPtr<IViewSwitchController> controller;
 	int32_t currentViewIndex {-1};
 	uint32_t animationTime {120};
 	AnimationStyle animationStyle {kFadeInOut};
@@ -65,7 +65,7 @@ protected:
 class IViewSwitchController : public virtual IReference
 {
 public:
-	explicit IViewSwitchController (const SharedPointer<UIViewSwitchContainer>& viewSwitch)
+	explicit IViewSwitchController (const SPtr<UIViewSwitchContainer>& viewSwitch)
 	: viewSwitch (viewSwitch)
 	{
 	}
@@ -79,7 +79,7 @@ public:
 
 	WeakPointer<UIViewSwitchContainer> getViewSwitchContainer () const { return viewSwitch; }
 
-	virtual SharedPointer<CView> createViewForIndex (int32_t index) = 0;
+	virtual SPtr<CView> createViewForIndex (int32_t index) = 0;
 	virtual void switchContainerAttached () = 0;
 	virtual void switchContainerRemoved () = 0;
 protected:
@@ -92,13 +92,13 @@ class UIDescriptionViewSwitchController : public CBaseObject,
 										  public ControlListenerAdapter
 {
 public:
-	static SharedPointer<UIDescriptionViewSwitchController>
-		make (const SharedPointer<UIViewSwitchContainer>& viewSwitch,
-			  const IUIDescription& uiDescription, const SharedPointer<IController>& uiController);
+	static SPtr<UIDescriptionViewSwitchController>
+		make (const SPtr<UIViewSwitchContainer>& viewSwitch, const IUIDescription& uiDescription,
+			  const SPtr<IController>& uiController);
 
 	UIDescriptionViewSwitchController () = delete;
 
-	SharedPointer<CView> createViewForIndex (int32_t index) override;
+	SPtr<CView> createViewForIndex (int32_t index) override;
 	void switchContainerAttached () override;
 	void switchContainerRemoved () override;
 
@@ -110,17 +110,17 @@ public:
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (UIDescriptionViewSwitchController)
 
-	UIDescriptionViewSwitchController (const SharedPointer<UIViewSwitchContainer>& viewSwitch,
+	UIDescriptionViewSwitchController (const SPtr<UIViewSwitchContainer>& viewSwitch,
 									   const IUIDescription& uiDescription,
-									   const SharedPointer<IController>& uiController);
+									   const SPtr<IController>& uiController);
 
 	void valueChanged (CControl& pControl) override;
 
 	const IUIDescription& uiDescription;
-	SharedPointer<IController> uiController;
+	SPtr<IController> uiController;
 	int32_t switchControlTag;
 	int32_t currentIndex;
-	SharedPointer<CControl> switchControl;
+	SPtr<CControl> switchControl;
 	std::vector<std::string> templateNames;
 };
 

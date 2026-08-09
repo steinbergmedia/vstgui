@@ -100,7 +100,7 @@ bla
 	//------------------------------------------------------------------------
 	struct RunLoop::Impl : IEventHandler
 {
-	SharedPointer<IWaylandHost> waylandHost;
+	SPtr<IWaylandHost> waylandHost;
 	std::atomic<uint32_t> useCount {0};
 	cairo_device_t* device {nullptr};
 	wl_display* display {nullptr};
@@ -112,7 +112,7 @@ bla
 	{
 	}
 
-	void init (const SharedPointer<IWaylandHost>& inWaylandHost)
+	void init (const SPtr<IWaylandHost>& inWaylandHost)
 	{
 		if (++useCount != 1)
 			return;
@@ -171,14 +171,14 @@ bla
 };
 
 //------------------------------------------------------------------------
-SharedPointer<RunLoop> RunLoop::instance ()
+SPtr<RunLoop> RunLoop::instance ()
 {
 	static auto gInstance = std::make_shared<RunLoop> ();
 	return gInstance;
 }
 
 //------------------------------------------------------------------------
-void RunLoop::init (const SharedPointer<IWaylandHost>& waylandHost)
+void RunLoop::init (const SPtr<IWaylandHost>& waylandHost)
 {
 	instance ()->impl->init (waylandHost);
 }
@@ -190,7 +190,7 @@ void RunLoop::exit () { instance ()->impl->exit (); }
 void RunLoop::flush () { instance ()->impl->flush (); }
 
 //------------------------------------------------------------------------
-const SharedPointer<IRunLoop> RunLoop::get ()
+const SPtr<IRunLoop> RunLoop::get ()
 {
 	return getPlatformFactory ().asLinuxFactory ()->getRunLoop ();
 }

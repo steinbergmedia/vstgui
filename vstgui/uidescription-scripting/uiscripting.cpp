@@ -233,7 +233,7 @@ struct ScriptContext::Impl : ViewListenerAdapter,
 		}
 	}
 	CScriptVar* getRoot () const override { return jsContext->getRoot (); }
-	SharedPointer<IUIDescription> getUIDescription () const override { return uiDesc.lock (); }
+	SPtr<IUIDescription> getUIDescription () const override { return uiDesc.lock (); }
 
 	void installListeners (CView& view)
 	{
@@ -679,7 +679,7 @@ std::string ScriptContext::eval (std::string_view script) const
 //------------------------------------------------------------------------
 struct UIScripting::Impl
 {
-	using JSViewFactoryPtr = SharedPointer<ScriptingInternal::JavaScriptViewFactory>;
+	using JSViewFactoryPtr = SPtr<ScriptingInternal::JavaScriptViewFactory>;
 	using ScriptContextPtr = std::unique_ptr<ScriptingInternal::ScriptContext>;
 
 	std::unordered_map<const IUIDescription*, std::pair<JSViewFactoryPtr, ScriptContextPtr>> map;
@@ -747,8 +747,8 @@ auto UIScripting::onCreateTemplateView (const IUIDescription& desc, const Create
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IViewFactory> UIScripting::getViewFactory (
-	const IUIDescription& desc, const SharedPointer<IViewFactory>& originalFactory)
+SPtr<IViewFactory> UIScripting::getViewFactory (const IUIDescription& desc,
+												const SPtr<IViewFactory>& originalFactory)
 {
 	using namespace ScriptingInternal;
 

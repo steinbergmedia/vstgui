@@ -39,8 +39,8 @@ UTF8StringPtr CheckBoxCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> CheckBoxCreator::create (const UIAttributes& attributes,
-											  const IUIDescription& description) const
+SPtr<CView> CheckBoxCreator::create (const UIAttributes& attributes,
+									 const IUIDescription& description) const
 {
 	return makeShared<CCheckBox> (CRect (0, 0, 100, 20), nullptr, -1, "Title");
 }

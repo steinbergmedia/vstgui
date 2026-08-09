@@ -18,9 +18,9 @@ namespace VSTGUI {
 class CGradient : public AtomicReferenceCounted
 {
 public:
-	static SharedPointer<CGradient> create (const GradientColorStopMap& colorStopMap);
-	static SharedPointer<CGradient> create (double color1Start, double color2Start,
-											const CColor& color1, const CColor& color2);
+	static SPtr<CGradient> create (const GradientColorStopMap& colorStopMap);
+	static SPtr<CGradient> create (double color1Start, double color2Start, const CColor& color1,
+								   const CColor& color2);
 
 	CGradient (PlatformGradientPtr&& platformGradient);
 	~CGradient () noexcept override;

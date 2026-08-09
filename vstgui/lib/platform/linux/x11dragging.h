@@ -61,7 +61,7 @@ private:
 	xcb_window_t dndSource = 0;
 	xcb_atom_t dndType = XCB_ATOM_NONE;
 	Optional<xcb_client_message_event_t> dndPosition;
-	SharedPointer<XdndDataPackage> package;
+	SPtr<XdndDataPackage> package;
 	DragOperation dragOperation = DragOperation::None;
 
 	void clearState ();

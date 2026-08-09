@@ -45,8 +45,8 @@ public:
 
 	virtual IdStringPtr getViewName () const = 0;
 	virtual IdStringPtr getBaseViewName () const = 0;
-	virtual SharedPointer<CView> create (const UIAttributes& attributes,
-										 const IUIDescription& description) const = 0;
+	virtual SPtr<CView> create (const UIAttributes& attributes,
+								const IUIDescription& description) const = 0;
 	virtual bool apply (CView& view, const UIAttributes& attributes,
 						const IUIDescription& description) const = 0;
 	virtual bool getAttributeNames (StringList& attributeNames) const = 0;

@@ -34,7 +34,7 @@ namespace VSTGUI {
 
 		// create your view here.
 		// Note you don't need to apply attributes here as the apply method will be called with this
-   new view SharedPointer<CView> create (const UIAttributes& attributes, const IUIDescription&
+   new view SPtr<CView> create (const UIAttributes& attributes, const IUIDescription&
    description) const { return new MyView (); }
 
 		// apply custom attributes to your view
@@ -159,9 +159,9 @@ bool UIViewFactory::viewIsTypeOf (CView& view, const std::string& typeName) cons
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> UIViewFactory::createViewByName (const std::string* className,
-													  const UIAttributes& attributes,
-													  const IUIDescription& description) const
+SPtr<CView> UIViewFactory::createViewByName (const std::string* className,
+											 const UIAttributes& attributes,
+											 const IUIDescription& description) const
 {
 	auto& registry = getCreatorRegistry ();
 	auto iter = registry.find (className->c_str ());
@@ -195,8 +195,8 @@ SharedPointer<CView> UIViewFactory::createViewByName (const std::string* classNa
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> UIViewFactory::createView (const UIAttributes& attributes,
-												const IUIDescription& description) const
+SPtr<CView> UIViewFactory::createView (const UIAttributes& attributes,
+									   const IUIDescription& description) const
 {
 	const std::string* className = attributes.getAttributeValue (UIViewCreator::kAttrClass);
 	if (className)

@@ -42,7 +42,7 @@ private:
 	PlatformViewLayerPtr createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
 												  IPlatformViewLayer* parentLayer) override;
 	bool doDrag (const DragDescription& dragDescription,
-				 const SharedPointer<IDragCallback>& callback) override;
+				 const SPtr<IDragCallback>& callback) override;
 
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}

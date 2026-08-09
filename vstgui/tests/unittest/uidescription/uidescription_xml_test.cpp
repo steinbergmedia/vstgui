@@ -686,7 +686,7 @@ TEST_CASE (UIDescriptionXMLTests, StoreRestoreViews)
 	EXPECT (view);
 
 	CMemoryStream memoryStream (1024, 1024, false);
-	std::list<SharedPointer<CView>> restoredView;
+	std::list<SPtr<CView>> restoredView;
 
 	auto customAttributes = makeShared<UIAttributes> ();
 	customAttributes->setAttribute ("Test", "Value");
@@ -695,7 +695,7 @@ TEST_CASE (UIDescriptionXMLTests, StoreRestoreViews)
 							  customAttributes));
 	memoryStream.rewind ();
 
-	SharedPointer<UIAttributes> customAttributesRestored;
+	SPtr<UIAttributes> customAttributesRestored;
 	EXPECT (desc->restoreViews (memoryStream, restoredView, &customAttributesRestored));
 	EXPECT (customAttributesRestored);
 	EXPECT (*customAttributesRestored->getAttributeValue ("Test") == "Value");
@@ -713,11 +713,11 @@ TEST_CASE (UIDescriptionXMLTests, StoreRestoreViewsAttached)
 	EXPECT (view);
 
 	CMemoryStream memoryStream (1024, 1024, false);
-	std::list<SharedPointer<CView>> restoredView;
+	std::list<SPtr<CView>> restoredView;
 
 	auto parentContainer = owned (new CViewContainer (CRect (0, 0, 10, 10)));
 	view->attached (*parentContainer.get ());
-	auto viewToRestore = SharedPointer<CView> (view.cast<CViewContainer> ()->getView (1));
+	auto viewToRestore = SPtr<CView> (view.cast<CViewContainer> ()->getView (1));
 	viewToRestore = viewToRestore.cast<CViewContainer> ()->getView (0);
 
 	memoryStream.rewind ();

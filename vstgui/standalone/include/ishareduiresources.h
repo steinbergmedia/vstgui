@@ -23,11 +23,11 @@ public:
 	/** get shared color. */
 	virtual Optional<CColor> getColor (const UTF8String& name) const = 0;
 	/** get shared bitmap. */
-	virtual Optional<SharedPointer<CBitmap>> getBitmap (const UTF8String& name) const = 0;
+	virtual Optional<SPtr<CBitmap>> getBitmap (const UTF8String& name) const = 0;
 	/** get shared gradient. */
-	virtual Optional<SharedPointer<CGradient>> getGradient (const UTF8String& name) const = 0;
+	virtual Optional<SPtr<CGradient>> getGradient (const UTF8String& name) const = 0;
 	/** get shared font. */
-	virtual Optional<SharedPointer<CFontDesc>> getFont (const UTF8String& name) const = 0;
+	virtual Optional<SPtr<CFontDesc>> getFont (const UTF8String& name) const = 0;
 };
 
 //------------------------------------------------------------------------

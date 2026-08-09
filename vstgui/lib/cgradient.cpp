@@ -9,7 +9,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-SharedPointer<CGradient> CGradient::create (const GradientColorStopMap& colorStopMap)
+SPtr<CGradient> CGradient::create (const GradientColorStopMap& colorStopMap)
 {
 	if (auto pg = getPlatformFactory ().createGradient ())
 	{
@@ -20,8 +20,8 @@ SharedPointer<CGradient> CGradient::create (const GradientColorStopMap& colorSto
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CGradient> CGradient::create (double color1Start, double color2Start,
-											const CColor& color1, const CColor& color2)
+SPtr<CGradient> CGradient::create (double color1Start, double color2Start, const CColor& color1,
+								   const CColor& color2)
 {
 	GradientColorStopMap map;
 	map.emplace (color1Start, color1);

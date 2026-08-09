@@ -25,8 +25,8 @@ public:
 	~UIViewFactory () noexcept override = default;
 
 	// IViewFactory
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) const override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) const override;
 	bool applyAttributeValues (CView& view, const UIAttributes& attributes,
 							   const IUIDescription& desc) const override;
 	bool applyCustomViewAttributeValues (CView& customView, IdStringPtr baseViewName,
@@ -68,9 +68,8 @@ protected:
 	void evaluateAttributesAndRemember (CView& view, const UIAttributes& attributes,
 										UIAttributes& evaluatedAttributes,
 										const IUIDescription& description) const;
-	SharedPointer<CView> createViewByName (const std::string* className,
-										   const UIAttributes& attributes,
-										   const IUIDescription& description) const;
+	SPtr<CView> createViewByName (const std::string* className, const UIAttributes& attributes,
+								  const IUIDescription& description) const;
 
 #if VSTGUI_LIVE_EDITING
 	static size_t createHash (const std::string& str);

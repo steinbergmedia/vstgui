@@ -20,7 +20,7 @@ class CAutoAnimation : public CControl,
 {
 public:
 	CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
-					const SharedPointer<CBitmap>& background);
+					const SPtr<CBitmap>& background);
 
 	void draw (CDrawContext&) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
@@ -48,7 +48,7 @@ public:
 
 	//@}
 
-	void setBackground (const SharedPointer<CBitmap>& background) override;
+	void setBackground (const SPtr<CBitmap>& background) override;
 
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CAutoAnimation)
@@ -58,7 +58,7 @@ protected:
 	void startTimer ();
 
 	uint32_t animationFrameTime {0u};
-	SharedPointer<CVSTGUITimer> timer;
+	SPtr<CVSTGUITimer> timer;
 	bool bWindowOpened {false};
 };
 

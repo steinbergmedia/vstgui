@@ -43,32 +43,31 @@ class UITemplateController
   public ListenerProvider<UITemplateController, IUITemplateControllerListener>
 {
 public:
-	UITemplateController (const SharedPointer<IController>& baseController,
-						  const SharedPointer<UIDescription>& description,
-						  const SharedPointer<UISelection>& selection,
-						  const SharedPointer<UIUndoManager>& undoManager,
+	UITemplateController (const SPtr<IController>& baseController,
+						  const SPtr<UIDescription>& description,
+						  const SPtr<UISelection>& selection,
+						  const SPtr<UIUndoManager>& undoManager,
 						  WeakPointer<IActionPerformer> actionPerformer);
 	~UITemplateController () override;
 
 	const UTF8String* getSelectedTemplateName () const { return selectedTemplateName; }
 
 	void selectTemplate (UTF8StringPtr name);
-	void setTemplateView (const SharedPointer<CViewContainer>& view);
-	void navigateTo (const SharedPointer<CView>& view);
+	void setTemplateView (const SPtr<CViewContainer>& view);
+	void navigateTo (const SPtr<CView>& view);
 
-	static void setupDataBrowser (const SharedPointer<CDataBrowser>& orignalBrowser,
-								  const SharedPointer<CDataBrowser>& dataBrowser);
+	static void setupDataBrowser (const SPtr<CDataBrowser>& orignalBrowser,
+								  const SPtr<CDataBrowser>& dataBrowser);
 
 protected:
 	void onUIDescTemplateChanged (UIDescription& desc) override;
 	void valueChanged (CControl& pControl) override {}
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<IController> createSubController (UTF8StringPtr name,
+										   const IUIDescription& description) override;
 
 	void dbSelectionChanged (int32_t selectedRow,
 							 GenericStringListDataBrowserSource& source) override;
@@ -77,13 +76,13 @@ protected:
 								 const CPoint& where) override;
 	void viewWillDelete (CView& view) override;
 
-	SharedPointer<UIDescription> editDescription;
-	SharedPointer<UISelection> selection;
-	SharedPointer<UIUndoManager> undoManager;
+	SPtr<UIDescription> editDescription;
+	SPtr<UISelection> selection;
+	SPtr<UIUndoManager> undoManager;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<CViewContainer> templateView;
-	SharedPointer<CDataBrowser> templateDataBrowser;
-	SharedPointer<UIViewListDataSource> mainViewDataSource;
+	SPtr<CViewContainer> templateView;
+	SPtr<CDataBrowser> templateDataBrowser;
+	SPtr<UIViewListDataSource> mainViewDataSource;
 	GenericStringListDataBrowserSource::StringVector templateNames;
 	const UTF8String* selectedTemplateName;
 };

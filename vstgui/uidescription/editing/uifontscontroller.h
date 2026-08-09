@@ -24,17 +24,16 @@ class UIFontsController : public NonAtomicReferenceCounted,
                           public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIFontsController (const SharedPointer<IController>& baseController,
-					   const SharedPointer<UIDescription>& description,
+	UIFontsController (const SPtr<IController>& baseController,
+					   const SPtr<UIDescription>& description,
 					   WeakPointer<IActionPerformer> actionPerformer);
 	~UIFontsController () override;
 
 protected:
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl& pControl) override;
 
@@ -44,17 +43,17 @@ protected:
 	static bool valueToString (float value, char utf8String[256], CParamDisplay& userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit& userData);
 
-	SharedPointer<UIDescription> editDescription;
+	SPtr<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<UIFontsDataSource> dataSource;
+	SPtr<UIFontsDataSource> dataSource;
 
-	SharedPointer<COptionMenu> fontMenu;
-	SharedPointer<CTextEdit> altTextEdit;
-	SharedPointer<CTextEdit> sizeTextEdit;
-	SharedPointer<CControl> boldControl;
-	SharedPointer<CControl> italicControl;
-	SharedPointer<CControl> strikethroughControl;
-	SharedPointer<CControl> underlineControl;
+	SPtr<COptionMenu> fontMenu;
+	SPtr<CTextEdit> altTextEdit;
+	SPtr<CTextEdit> sizeTextEdit;
+	SPtr<CControl> boldControl;
+	SPtr<CControl> italicControl;
+	SPtr<CControl> strikethroughControl;
+	SPtr<CControl> underlineControl;
 
 	std::string selectedFont;
 

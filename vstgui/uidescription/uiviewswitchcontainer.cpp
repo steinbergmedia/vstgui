@@ -25,7 +25,7 @@ UIViewSwitchContainer::~UIViewSwitchContainer () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void UIViewSwitchContainer::setController (const SharedPointer<IViewSwitchController>& _controller)
+void UIViewSwitchContainer::setController (const SPtr<IViewSwitchController>& _controller)
 {
 	controller = _controller;
 }
@@ -53,7 +53,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 				auto oldView = getView (0);
 				if (oldView)
 				{
-					SharedPointer<IAnimationTarget> animation;
+					SPtr<IAnimationTarget> animation;
 					switch (animationStyle)
 					{
 						case kFadeInOut:
@@ -85,7 +85,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 					}
 					if (animation)
 					{
-						SharedPointer<ITimingFunction> tf;
+						SPtr<ITimingFunction> tf;
 						switch (timingFunction)
 						{
 							case kEasyIn:
@@ -187,9 +187,9 @@ bool UIViewSwitchContainer::removed (CViewContainer& parent)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<UIDescriptionViewSwitchController> UIDescriptionViewSwitchController::make (
-	const SharedPointer<UIViewSwitchContainer>& viewSwitch, const IUIDescription& uiDescription,
-	const SharedPointer<IController>& uiController)
+SPtr<UIDescriptionViewSwitchController> UIDescriptionViewSwitchController::make (
+	const SPtr<UIViewSwitchContainer>& viewSwitch, const IUIDescription& uiDescription,
+	const SPtr<IController>& uiController)
 {
 	auto instance =
 		makeShared<UIDescriptionViewSwitchController> (viewSwitch, uiDescription, uiController);
@@ -199,8 +199,8 @@ SharedPointer<UIDescriptionViewSwitchController> UIDescriptionViewSwitchControll
 
 //-----------------------------------------------------------------------------
 UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (
-	const SharedPointer<UIViewSwitchContainer>& viewSwitch, const IUIDescription& uiDescription,
-	const SharedPointer<IController>& uiController)
+	const SPtr<UIViewSwitchContainer>& viewSwitch, const IUIDescription& uiDescription,
+	const SPtr<IController>& uiController)
 : IViewSwitchController (viewSwitch)
 , uiDescription (uiDescription)
 , uiController (uiController)
@@ -211,7 +211,7 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
+SPtr<CView> UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 {
 	if (index >= 0 && index < (int32_t)templateNames.size ())
 	{
@@ -222,10 +222,9 @@ SharedPointer<CView> UIDescriptionViewSwitchController::createViewForIndex (int3
 }
 
 //-----------------------------------------------------------------------------
-static SharedPointer<CControl> findControlForTag (CViewContainer& parent, int32_t tag,
-												  bool reverse = true)
+static SPtr<CControl> findControlForTag (CViewContainer& parent, int32_t tag, bool reverse = true)
 {
-	SharedPointer<CControl> result;
+	SPtr<CControl> result;
 	ViewIterator it (parent);
 	while (*it)
 	{

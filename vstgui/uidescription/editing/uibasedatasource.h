@@ -28,7 +28,7 @@ class UIBaseDataSource : public GenericStringListDataBrowserSource,
 public:
 	using StringVector = GenericStringListDataBrowserSource::StringVector;
 
-	UIBaseDataSource (const SharedPointer<UIDescription>& description,
+	UIBaseDataSource (const SPtr<UIDescription>& description,
 					  WeakPointer<IActionPerformer> actionPerformer,
 					  GenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr)
 	: GenericStringListDataBrowserSource (0, delegate)
@@ -44,7 +44,7 @@ public:
 		description->unregisterListener (this);
 	}
 
-	void setSearchFieldControl (const SharedPointer<CSearchTextEdit>& searchControl)
+	void setSearchFieldControl (const SPtr<CSearchTextEdit>& searchControl)
 	{
 		searchField = searchControl;
 		searchField->setListener (this);
@@ -306,8 +306,8 @@ protected:
 		control.setTextInset (textInset);
 	}
 
-	SharedPointer<UIDescription> description;
-	SharedPointer<CSearchTextEdit> searchField;
+	SPtr<UIDescription> description;
+	SPtr<CSearchTextEdit> searchField;
 	WeakPointer<CTextEdit> textEditControl;
 	WeakPointer<IActionPerformer> actionPerformer;
 

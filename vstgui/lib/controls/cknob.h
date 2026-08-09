@@ -53,7 +53,7 @@ public:
 
 protected:
 	CKnobBase (const CRect& size, IControlListener* listener, int32_t tag,
-			   const SharedPointer<CBitmap>& background);
+			   const SPtr<CBitmap>& background);
 	void compute ();
 
 	float startAngle, rangeAngle;
@@ -89,7 +89,7 @@ public:
 	};
 
 	CKnob (const CRect& size, IControlListener* listener, int32_t tag,
-		   const SharedPointer<CBitmap>& background, const SharedPointer<CBitmap>& handle,
+		   const SPtr<CBitmap>& background, const SPtr<CBitmap>& handle,
 		   const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);
 
 	//-----------------------------------------------------------------------------
@@ -120,8 +120,8 @@ public:
 	const CLineStyle::CoordVector& getCoronaDashDotLengths () const;
 	virtual void setCoronaDashDotLengths (const CLineStyle::CoordVector& lengths);
 
-	SharedPointer<CBitmap> getHandleBitmap () const { return pHandle; }
-	void setHandleBitmap (const SharedPointer<CBitmap>& bitmap);
+	SPtr<CBitmap> getHandleBitmap () const { return pHandle; }
+	void setHandleBitmap (const SPtr<CBitmap>& bitmap);
 	//@}
 
 	// overrides
@@ -139,7 +139,7 @@ protected:
 	virtual void drawHandleAsCircle (CDrawContext& context) const;
 	virtual void drawHandleAsLine (CDrawContext& context) const;
 
-	static void addArc (const SharedPointer<CGraphicsPath>& path, const CRect& r, double startAngle,
+	static void addArc (const SPtr<CGraphicsPath>& path, const CRect& r, double startAngle,
 						double sweepAngle);
 
 	CPoint offset;
@@ -151,7 +151,7 @@ protected:
 	CCoord coronaOutlineWidthAdd;
 
 	CLineStyle coronaLineStyle;
-	SharedPointer<CBitmap> pHandle;
+	SPtr<CBitmap> pHandle;
 };
 
 //-----------------------------------------------------------------------------
@@ -164,7 +164,7 @@ class CAnimKnob : public CKnobBase,
 {
 public:
 	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
-			   const SharedPointer<CBitmap>& background);
+			   const SPtr<CBitmap>& background);
 
 	//-----------------------------------------------------------------------------
 	/// @name CAnimKnob Methods
@@ -177,7 +177,7 @@ public:
 	// overrides
 	void draw (CDrawContext& context) override;
 	bool sizeToFit () override;
-	void setBackground (const SharedPointer<CBitmap>& background) override;
+	void setBackground (const SPtr<CBitmap>& background) override;
 
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CAnimKnob)

@@ -34,19 +34,18 @@ class UIDialogController : public NonAtomicReferenceCounted,
                            public ViewListenerAdapter
 {
 public:
-	UIDialogController (const SharedPointer<IController>& baseController, CFrame* frame);
+	UIDialogController (const SPtr<IController>& baseController, CFrame* frame);
 	~UIDialogController () override = default;
 
 	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1,
-			  UTF8StringPtr button2, const SharedPointer<IDialogController>& controller,
-			  const SharedPointer<UIDescription>& description, bool resizable = false);
+			  UTF8StringPtr button2, const SPtr<IDialogController>& controller,
+			  const SPtr<UIDescription>& description, bool resizable = false);
 
 protected:
 	void valueChanged (CControl& pControl) override;
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 
 	void viewSizeChanged (CView& view, const CRect& oldSize) override;
 	void viewRemoved (CView& view) override;
@@ -58,11 +57,11 @@ protected:
 
 	CFrame* frame {nullptr};
 	Optional<ModalViewSessionID> modalSession;
-	SharedPointer<IDialogController> dialogController;
-	SharedPointer<UIDescription> dialogDescription;
-	SharedPointer<CControl> button1;
-	SharedPointer<CControl> button2;
-	SharedPointer<CView> customViewEmbedder;
+	SPtr<IDialogController> dialogController;
+	SPtr<UIDescription> dialogDescription;
+	SPtr<CControl> button1;
+	SPtr<CControl> button2;
+	SPtr<CView> customViewEmbedder;
 	CPoint sizeDiff;
 	std::string templateName;
 	std::string dialogTitle;

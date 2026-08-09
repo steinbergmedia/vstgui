@@ -69,11 +69,11 @@ public:
 	/** draw a point */
 	void drawPoint (const CPoint& point, const CColor& color);
 	/** don't call directly, please use CBitmap::draw instead */
-	void drawBitmap (const SharedPointer<CBitmap>& bitmap, const CRect& dest,
+	void drawBitmap (const SPtr<CBitmap>& bitmap, const CRect& dest,
 					 const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
-	void drawBitmapNinePartTiled (const SharedPointer<CBitmap>& bitmap, const CRect& dest,
+	void drawBitmapNinePartTiled (const SPtr<CBitmap>& bitmap, const CRect& dest,
 								  const CNinePartTiledDescription& desc, float alpha = 1.f);
-	void fillRectWithBitmap (const SharedPointer<CBitmap>& bitmap, const CRect& srcRect,
+	void fillRectWithBitmap (const SPtr<CBitmap>& bitmap, const CRect& srcRect,
 							 const CRect& dstRect, float alpha);
 
 	/** clears the rect (makes r = 0, g = 0, b = 0, a = 0) */
@@ -150,10 +150,9 @@ public:
 	/** get current font color */
 	CColor getFontColor () const;
 	/** set current font */
-	void setFont (const SharedPointer<CFontDesc>& font, const CCoord& size = 0,
-				  const int32_t& style = -1);
+	void setFont (const SPtr<CFontDesc>& font, const CCoord& size = 0, const int32_t& style = -1);
 	/** get current font */
-	SharedPointer<CFontDesc> getFont () const;
+	SPtr<CFontDesc> getFont () const;
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -217,13 +216,12 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** create a graphics path object */
-	SharedPointer<CGraphicsPath> createGraphicsPath ();
+	SPtr<CGraphicsPath> createGraphicsPath ();
 	/** create a graphics path from a text */
-	SharedPointer<CGraphicsPath> createTextPath (const SharedPointer<CFontDesc>& font,
-												 UTF8StringPtr text);
+	SPtr<CGraphicsPath> createTextPath (const SPtr<CFontDesc>& font, UTF8StringPtr text);
 
 	/** create a rect with round corners as graphics path */
-	SharedPointer<CGraphicsPath> createRoundRectGraphicsPath (const CRect& size, CCoord radius);
+	SPtr<CGraphicsPath> createRoundRectGraphicsPath (const CRect& size, CCoord radius);
 
 	enum PathDrawMode
 	{
@@ -232,13 +230,12 @@ public:
 		kPathStroked
 	};
 
-	void drawGraphicsPath (const SharedPointer<CGraphicsPath>& path,
-						   PathDrawMode mode = kPathFilled,
+	void drawGraphicsPath (const SPtr<CGraphicsPath>& path, PathDrawMode mode = kPathFilled,
 						   CGraphicsTransform* transformation = nullptr);
-	void fillLinearGradient (const SharedPointer<CGraphicsPath>& path, const CGradient& gradient,
+	void fillLinearGradient (const SPtr<CGraphicsPath>& path, const CGradient& gradient,
 							 const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false,
 							 CGraphicsTransform* transformation = nullptr);
-	void fillRadialGradient (const SharedPointer<CGraphicsPath>& path, const CGradient& gradient,
+	void fillRadialGradient (const SPtr<CGraphicsPath>& path, const CGradient& gradient,
 							 const CPoint& center, CCoord radius,
 							 const CPoint& originOffset = CPoint (0, 0), bool evenOdd = false,
 							 CGraphicsTransform* transformation = nullptr);

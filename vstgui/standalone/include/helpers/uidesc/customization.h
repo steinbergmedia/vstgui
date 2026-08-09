@@ -20,9 +20,8 @@ namespace UIDesc {
 class CustomizationAdapter : public ICustomization
 {
 public:
-	SharedPointer<IController> createController (const UTF8StringView& name,
-												 const SharedPointer<IController>& parent,
-												 const IUIDescription& uiDesc) override
+	SPtr<IController> createController (const UTF8StringView& name, const SPtr<IController>& parent,
+										const IUIDescription& uiDesc) override
 	{
 		return {};
 	}
@@ -70,18 +69,16 @@ class Customization : public CustomizationAdapter
 public:
 	static std::shared_ptr<Customization> make () { return std::make_shared<Customization> (); }
 
-	using CreateViewControllerFunc = std::function<SharedPointer<IController> (
-		const UTF8StringView& name, const SharedPointer<IController>& parent,
-		const IUIDescription& uiDesc)>;
+	using CreateViewControllerFunc = std::function<SPtr<IController> (
+		const UTF8StringView& name, const SPtr<IController>& parent, const IUIDescription& uiDesc)>;
 
 	void addCreateViewControllerFunc (const UTF8String& name, CreateViewControllerFunc func)
 	{
 		createViewControllerMap.emplace (name.getString (), func);
 	}
 
-	SharedPointer<IController> createController (const UTF8StringView& name,
-												 const SharedPointer<IController>& parent,
-												 const IUIDescription& uiDesc) override
+	SPtr<IController> createController (const UTF8StringView& name, const SPtr<IController>& parent,
+										const IUIDescription& uiDesc) override
 	{
 		auto it = createViewControllerMap.find (std::string (name));
 		if (it != createViewControllerMap.end ())

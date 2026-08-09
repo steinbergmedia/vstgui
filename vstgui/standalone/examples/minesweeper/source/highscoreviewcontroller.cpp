@@ -17,7 +17,7 @@ namespace Standalone {
 namespace Minesweeper {
 
 //------------------------------------------------------------------------
-HighScoreViewController::HighScoreViewController (const SharedPointer<IController>& parent)
+HighScoreViewController::HighScoreViewController (const SPtr<IController>& parent)
 : DelegationController (parent)
 {
 	columnWidths[0] = 0.06;
@@ -199,8 +199,8 @@ void HighScoreViewController::dbDrawCell (CDrawContext& context, const CRect& si
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> HighScoreViewController::createView (const UIAttributes& attributes,
-														  const IUIDescription& description)
+SPtr<CView> HighScoreViewController::createView (const UIAttributes& attributes,
+												 const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr && *attr == "DataBrowser")

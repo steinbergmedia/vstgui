@@ -14,7 +14,7 @@ namespace Detail {
 
 class UINode;
 
-using UIDescListContainerType = std::vector<SharedPointer<UINode>>;
+using UIDescListContainerType = std::vector<SPtr<UINode>>;
 //-----------------------------------------------------------------------------
 class UIDescList : public NonAtomicReferenceCounted, private UIDescListContainerType
 {
@@ -33,15 +33,14 @@ public:
 	UIDescList (const UIDescList& uiDesc);
 	~UIDescList () noexcept override;
 
-	virtual void add (const SharedPointer<UINode>& obj);
-	virtual void remove (const SharedPointer<UINode>& obj);
+	virtual void add (const SPtr<UINode>& obj);
+	virtual void remove (const SPtr<UINode>& obj);
 	virtual void removeAll ();
-	virtual SharedPointer<UINode> findChildNode (UTF8StringView nodeName) const;
-	virtual SharedPointer<UINode> findChildNodeWithAttributeValue (
-		const std::string& attributeName, const std::string& attributeValue) const;
+	virtual SPtr<UINode> findChildNode (UTF8StringView nodeName) const;
+	virtual SPtr<UINode> findChildNodeWithAttributeValue (const std::string& attributeName,
+														  const std::string& attributeValue) const;
 
-	virtual void nodeAttributeChanged (const SharedPointer<UINode>& child,
-									   const std::string& attributeName,
+	virtual void nodeAttributeChanged (const SPtr<UINode>& child, const std::string& attributeName,
 									   const std::string& oldAttributeValue)
 	{
 	}
@@ -53,17 +52,17 @@ public:
 class UIDescListWithFastFindAttributeNameChild : public UIDescList
 {
 private:
-	using ChildMap = std::unordered_map<std::string, SharedPointer<UINode>>;
+	using ChildMap = std::unordered_map<std::string, SPtr<UINode>>;
 
 public:
 	UIDescListWithFastFindAttributeNameChild ();
 
-	void add (const SharedPointer<UINode>& obj) override;
-	void remove (const SharedPointer<UINode>& obj) override;
+	void add (const SPtr<UINode>& obj) override;
+	void remove (const SPtr<UINode>& obj) override;
 	void removeAll () override;
-	SharedPointer<UINode> findChildNodeWithAttributeValue (
-		const std::string& attributeName, const std::string& attributeValue) const override;
-	void nodeAttributeChanged (const SharedPointer<UINode>& node, const std::string& attributeName,
+	SPtr<UINode> findChildNodeWithAttributeValue (const std::string& attributeName,
+												  const std::string& attributeValue) const override;
+	void nodeAttributeChanged (const SPtr<UINode>& node, const std::string& attributeName,
 							   const std::string& oldAttributeValue) override;
 
 private:

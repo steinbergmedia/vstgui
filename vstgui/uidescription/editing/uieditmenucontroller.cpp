@@ -21,10 +21,10 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIEditMenuController::UIEditMenuController (const SharedPointer<IController>& baseController,
-											const SharedPointer<UISelection>& selection,
-											const SharedPointer<UIUndoManager>& undoManager,
-											const SharedPointer<UIDescription>& description,
+UIEditMenuController::UIEditMenuController (const SPtr<IController>& baseController,
+											const SPtr<UISelection>& selection,
+											const SPtr<UIUndoManager>& undoManager,
+											const SPtr<UIDescription>& description,
 											WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , selection (selection)
@@ -44,7 +44,7 @@ UIEditMenuController::~UIEditMenuController () noexcept
 }
 
 //----------------------------------------------------------------------------------------------------
-static void addEntriesToMenu (const UIEditing::MenuEntry* entries, SharedPointer<COptionMenu> menu,
+static void addEntriesToMenu (const UIEditing::MenuEntry* entries, SPtr<COptionMenu> menu,
 							  ICommandMenuItemTarget* menuItemTarget, int32_t& index)
 {
 	while (entries[index].category != nullptr)
@@ -90,14 +90,14 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, SharedPointer
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditMenuController::createFileMenu (SharedPointer<COptionMenu> menu)
+void UIEditMenuController::createFileMenu (SPtr<COptionMenu> menu)
 {
 	int32_t index = 0;
 	addEntriesToMenu (UIEditing::fileMenu, menu, this, index);
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditMenuController::createEditMenu (SharedPointer<COptionMenu> menu)
+void UIEditMenuController::createEditMenu (SPtr<COptionMenu> menu)
 {
 	int32_t index = 0;
 	menu->setStyle (menu->getStyle () | COptionMenu::kMultipleCheckStyle);
@@ -406,8 +406,8 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CCommandMenuItem>
-	UIEditMenuController::findKeyCommandItem (COptionMenu& menu, const KeyboardEvent& event)
+SPtr<CCommandMenuItem> UIEditMenuController::findKeyCommandItem (COptionMenu& menu,
+																 const KeyboardEvent& event)
 {
 	for (auto& item : menu.getItemList ())
 	{
@@ -554,7 +554,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	}
 	else if (cmdCategory == "Select Children Of Type")
 	{
-		std::vector<SharedPointer<CView>> newSelection;
+		std::vector<SPtr<CView>> newSelection;
 		for (auto& entry : *selection.get ())
 		{
 			if (auto viewContainer = entry->asViewContainer ())
@@ -613,7 +613,7 @@ void UIEditMenuController::processKeyCommand (KeyboardEvent& event)
 		item->getItemTarget ()->validateCommandMenuItem (*item.get ());
 		if (item->isEnabled ())
 		{
-			SharedPointer<CTextLabel> label;
+			SPtr<CTextLabel> label;
 			if (baseMenu)
 			{
 				switch (baseMenu->getTag ())
@@ -676,9 +676,8 @@ void UIEditMenuController::viewWillDelete (CView& view)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIEditMenuController::verifyView (const SharedPointer<CView>& view,
-													   const UIAttributes& attributes,
-													   const IUIDescription&)
+SPtr<CView> UIEditMenuController::verifyView (const SPtr<CView>& view,
+											  const UIAttributes& attributes, const IUIDescription&)
 {
 	auto menu = view.cast<COptionMenu> ();
 	if (menu)
@@ -773,7 +772,7 @@ void UIEditMenuController::valueChanged (CControl& control)
 //----------------------------------------------------------------------------------------------------
 void UIEditMenuController::controlBeginEdit (CControl& pControl)
 {
-	SharedPointer<CTextLabel> label;
+	SPtr<CTextLabel> label;
 	switch (pControl.getTag ())
 	{
 		case kMenuFileTag:
@@ -796,7 +795,7 @@ void UIEditMenuController::controlBeginEdit (CControl& pControl)
 //----------------------------------------------------------------------------------------------------
 void UIEditMenuController::controlEndEdit (CControl& pControl)
 {
-	SharedPointer<CTextLabel> label;
+	SPtr<CTextLabel> label;
 	switch (pControl.getTag ())
 	{
 		case kMenuFileTag:
@@ -816,7 +815,7 @@ void UIEditMenuController::controlEndEdit (CControl& pControl)
 
 //------------------------------------------------------------------------
 void UIEditMenuController::getChildrenOfType (CViewContainer& container, UTF8StringView type,
-											  std::vector<SharedPointer<CView>>& result) const
+											  std::vector<SPtr<CView>>& result) const
 {
 	container.forEachChild ([&] (auto&& view) {
 		if (type == IViewFactory::getViewName (*view.get ()))

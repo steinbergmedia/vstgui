@@ -54,7 +54,7 @@ private:
 class CViewContainer : public CView
 {
 public:
-	using ViewList = std::list<SharedPointer<CView>>;
+	using ViewList = std::list<SPtr<CView>>;
 
 	explicit CViewContainer (const CRect& size);
 
@@ -63,16 +63,15 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 
-	bool addSubview (const SharedPointer<CView>& view);
-	virtual bool insertSubview (const SharedPointer<CView>& view,
-								const Optional<size_t>& position = {});
-	virtual bool removeSubview (const SharedPointer<CView>& view);
-	virtual Optional<size_t> indexOfSubview (const SharedPointer<CView>& view) const;
+	bool addSubview (const SPtr<CView>& view);
+	virtual bool insertSubview (const SPtr<CView>& view, const Optional<size_t>& position = {});
+	virtual bool removeSubview (const SPtr<CView>& view);
+	virtual Optional<size_t> indexOfSubview (const SPtr<CView>& view) const;
 	/** remove all child views */
 	virtual bool removeAll ();
 
-	bool addView (const SharedPointer<CView>& view) { return addSubview (view); }
-	bool removeView (const SharedPointer<CView>& view) { return removeSubview (view); }
+	bool addView (const SPtr<CView>& view) { return addSubview (view); }
+	bool removeView (const SPtr<CView>& view) { return removeSubview (view); }
 
 	/** check if pView is a child view of this container */
 	bool isChild (const CView& pView) const;
@@ -83,17 +82,17 @@ public:
 	/** get the number of child views */
 	virtual uint32_t getNbViews () const;
 	/** get the child view at index */
-	virtual SharedPointer<CView> getView (uint32_t index) const;
+	virtual SPtr<CView> getView (uint32_t index) const;
 	/** get the view at point where */
-	virtual SharedPointer<CView>
-		getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const;
+	virtual SPtr<CView> getViewAt (const CPoint& where,
+								   const GetViewOptions& options = GetViewOptions ()) const;
 	/** get the container at point where */
-	virtual SharedPointer<CViewContainer> getContainerAt (
+	virtual SPtr<CViewContainer> getContainerAt (
 		const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const;
 	/** get all views at point where, top->down */
 	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const;
 	/** change view z order position */
-	virtual bool changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex);
+	virtual bool changeViewZOrder (const SPtr<CView>& view, uint32_t newIndex);
 
 	virtual bool hitTestSubViews (const CPoint& where, const Event& event);
 
@@ -110,7 +109,7 @@ public:
 	void forEachChild (Proc proc) const;
 
 	template<typename Proc>
-	SharedPointer<CView> findFirstViewIf (Proc filter) const;
+	SPtr<CView> findFirstViewIf (Proc filter) const;
 
 	//@}
 
@@ -124,9 +123,9 @@ public:
 	 *	Use this method to set a custom layouter.
 	 *	To reset the layouter to the default AutoSizeLayouter use setViewLayouter (nullptr).
 	 */
-	void setViewLayouter (const SharedPointer<IViewLayouter>& layouter);
+	void setViewLayouter (const SPtr<IViewLayouter>& layouter);
 	/** get the current view layouter */
-	SharedPointer<IViewLayouter> getViewLayouter () const;
+	SPtr<IViewLayouter> getViewLayouter () const;
 	/** calculate the view layout for the new size */
 	std::optional<ViewLayout> calculateViewLayout (const CRect& newSize) const;
 	/** apply a previously calculated view layout */
@@ -157,11 +156,11 @@ public:
 	/** set custom initial focus view
 	 *  which is first focused when advanceNextFocusView is called without oldFocus view
 	 */
-	void setInitialFocusView (const SharedPointer<CView>& view);
+	void setInitialFocusView (const SPtr<CView>& view);
 	/** get custom initial focus view */
-	SharedPointer<CView> getInitialFocusView () const;
+	SPtr<CView> getInitialFocusView () const;
 
-	virtual bool advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse = false);
+	virtual bool advanceNextFocusView (const SPtr<CView>& oldFocus, bool reverse = false);
 	virtual CRect getVisibleSize (const CRect& rect) const;
 
 	void setTransform (const CGraphicsTransform& t);
@@ -187,7 +186,7 @@ public:
 	virtual bool findSingleTouchEventTarget (ITouchEvent::Touch& event);
 #endif
 
-	SharedPointer<IDropTarget> getDropTarget () override;
+	SPtr<IDropTarget> getDropTarget () override;
 
 	void looseFocus () override;
 	void takeFocus () override;
@@ -225,7 +224,7 @@ public:
 				iterator = children.begin ();
 		}
 
-		explicit Iterator (const SharedPointer<CViewContainer>& container)
+		explicit Iterator (const SPtr<CViewContainer>& container)
 		: children (container->getChildren ())
 		{
 			if constexpr (reverse)
@@ -297,10 +296,10 @@ protected:
 	~CViewContainer () noexcept override;
 	void beforeDelete () override;
 
-	virtual bool checkUpdateRect (const SharedPointer<CView>& view, const CRect& rect);
+	virtual bool checkUpdateRect (const SPtr<CView>& view, const CRect& rect);
 
-	void setMouseDownView (const SharedPointer<CView>& view);
-	SharedPointer<CView> getMouseDownView () const;
+	void setMouseDownView (const SPtr<CView>& view);
+	SPtr<CView> getMouseDownView () const;
 
 	const ViewList& getChildren () const;
 
@@ -313,7 +312,7 @@ private:
 	CRect getLastDrawnFocus () const;
 	void setLastDrawnFocus (CRect r);
 
-	bool doInsertSubview (const SharedPointer<CView>& view, ViewList::const_iterator pos);
+	bool doInsertSubview (const SPtr<CView>& view, ViewList::const_iterator pos);
 	void doRemoveSubview (ViewList::const_iterator pos);
 
 	struct Impl;
@@ -356,7 +355,7 @@ inline void CViewContainer::forEachChild (Proc proc) const
 }
 
 template<typename Proc>
-inline SharedPointer<CView> CViewContainer::findFirstViewIf (Proc filter) const
+inline SPtr<CView> CViewContainer::findFirstViewIf (Proc filter) const
 {
 	for (const auto& child : getChildren ())
 	{

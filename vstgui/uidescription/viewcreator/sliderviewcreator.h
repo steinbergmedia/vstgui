@@ -34,8 +34,8 @@ struct SliderCreator : SliderBaseCreator
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;
-	SharedPointer<CView> create (const UIAttributes& attributes,
-								 const IUIDescription& description) const override;
+	SPtr<CView> create (const UIAttributes& attributes,
+						const IUIDescription& description) const override;
 	bool apply (CView& view, const UIAttributes& attributes,
 				const IUIDescription& description) const override;
 	bool getAttributeNames (StringList& attributeNames) const override;

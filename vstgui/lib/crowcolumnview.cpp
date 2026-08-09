@@ -306,7 +306,7 @@ void CRowColumnView::setHideClippedSubviews (bool state)
 }
 
 //--------------------------------------------------------------------------------
-void CRowColumnView::resizeSubView (const SharedPointer<CView>& view, const CRect& newSize)
+void CRowColumnView::resizeSubView (const SPtr<CView>& view, const CRect& newSize)
 {
 	if (view->getViewSize () != newSize)
 	{
@@ -508,7 +508,7 @@ void CAutoLayoutContainerView::setViewSize (const CRect& rect, bool invalid)
 }
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::insertSubview (const SharedPointer<CView>& view,
+bool CAutoLayoutContainerView::insertSubview (const SPtr<CView>& view,
 											  const Optional<size_t>& position)
 {
 	if (CViewContainer::insertSubview (view, position))
@@ -521,7 +521,7 @@ bool CAutoLayoutContainerView::insertSubview (const SharedPointer<CView>& view,
 }
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::removeSubview (const SharedPointer<CView>& view)
+bool CAutoLayoutContainerView::removeSubview (const SPtr<CView>& view)
 {
 	if (CViewContainer::removeSubview (view))
 	{
@@ -533,8 +533,7 @@ bool CAutoLayoutContainerView::removeSubview (const SharedPointer<CView>& view)
 }
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::changeViewZOrder (const SharedPointer<CView>& view,
-												 uint32_t newIndex)
+bool CAutoLayoutContainerView::changeViewZOrder (const SPtr<CView>& view, uint32_t newIndex)
 {
 	if (CViewContainer::changeViewZOrder (view, newIndex))
 	{

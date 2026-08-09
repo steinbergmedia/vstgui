@@ -64,8 +64,8 @@ TEST_CASE (UIDescriptionAddOnTest, BasicFunctionality)
 			onCreateTemplateViewCalled = true;
 			return f;
 		}
-		SharedPointer<IViewFactory> getViewFactory (const IUIDescription& desc,
-													const SharedPointer<IViewFactory>& of) override
+		SPtr<IViewFactory> getViewFactory (const IUIDescription& desc,
+										   const SPtr<IViewFactory>& of) override
 		{
 			getViewFactoryCalled = true;
 			return of;

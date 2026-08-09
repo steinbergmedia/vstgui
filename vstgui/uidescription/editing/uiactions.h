@@ -52,17 +52,17 @@ template <class T>
 class BaseSelectionOperation : public IAction, protected std::list<T>
 {
 public:
-	BaseSelectionOperation (const SharedPointer<UISelection>& selection) : selection (selection) {}
+	BaseSelectionOperation (const SPtr<UISelection>& selection) : selection (selection) {}
 
 protected:
-	SharedPointer<UISelection> selection;	
+	SPtr<UISelection> selection;
 };
 
 //-----------------------------------------------------------------------------
-class SizeToFitOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
+class SizeToFitOperation : public BaseSelectionOperation<std::pair<SPtr<CView>, CRect>>
 {
 public:
-	SizeToFitOperation (const SharedPointer<UISelection>& selection);
+	SizeToFitOperation (const SPtr<UISelection>& selection);
 	~SizeToFitOperation () override = default;
 
 	UTF8StringPtr getName () override;
@@ -72,10 +72,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class UnembedViewOperation : public BaseSelectionOperation<SharedPointer<CView> >
+class UnembedViewOperation : public BaseSelectionOperation<SPtr<CView>>
 {
 public:
-	UnembedViewOperation (const SharedPointer<UISelection>& selection, const IViewFactory& factory);
+	UnembedViewOperation (const SPtr<UISelection>& selection, const IViewFactory& factory);
 	~UnembedViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
@@ -86,16 +86,16 @@ public:
 protected:
 	void collectSubviews (CViewContainer& container, bool deep);
 	const IViewFactory& factory;
-	SharedPointer<CViewContainer> containerView;
-	SharedPointer<CViewContainer> parent;
+	SPtr<CViewContainer> containerView;
+	SPtr<CViewContainer> parent;
 };
 
 //-----------------------------------------------------------------------------
-class EmbedViewOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
+class EmbedViewOperation : public BaseSelectionOperation<std::pair<SPtr<CView>, CRect>>
 {
 public:
-	EmbedViewOperation (const SharedPointer<UISelection>& selection,
-						const SharedPointer<CViewContainer>& newContainer);
+	EmbedViewOperation (const SPtr<UISelection>& selection,
+						const SPtr<CViewContainer>& newContainer);
 	~EmbedViewOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -103,35 +103,36 @@ public:
 	void undo () override;
 
 protected:
-	SharedPointer<CViewContainer> newContainer;
-	SharedPointer<CViewContainer> parent;
+	SPtr<CViewContainer> newContainer;
+	SPtr<CViewContainer> parent;
 };
 
 //-----------------------------------------------------------------------------
-class ViewCopyOperation : public IAction, protected std::list<SharedPointer<CView> >
+class ViewCopyOperation : public IAction,
+						  protected std::list<SPtr<CView>>
 {
 public:
-	ViewCopyOperation (const SharedPointer<UISelection>& copySelection,
-					   const SharedPointer<UISelection>& workingSelection,
-					   const SharedPointer<CViewContainer>& parent, const CPoint& offset,
-					   const SharedPointer<IUIDescription>& desc);
+	ViewCopyOperation (const SPtr<UISelection>& copySelection,
+					   const SPtr<UISelection>& workingSelection,
+					   const SPtr<CViewContainer>& parent, const CPoint& offset,
+					   const SPtr<IUIDescription>& desc);
 	~ViewCopyOperation () override = default;
 	
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<CViewContainer> parent;
-	SharedPointer<UISelection> copySelection;
-	SharedPointer<UISelection> workingSelection;
-	std::list<SharedPointer<CView> > oldSelectedViews;
+	SPtr<CViewContainer> parent;
+	SPtr<UISelection> copySelection;
+	SPtr<UISelection> workingSelection;
+	std::list<SPtr<CView>> oldSelectedViews;
 };
 
 //-----------------------------------------------------------------------------
-class ViewSizeChangeOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
+class ViewSizeChangeOperation : public BaseSelectionOperation<std::pair<SPtr<CView>, CRect>>
 {
 public:
-	ViewSizeChangeOperation (const SharedPointer<UISelection>& selection, bool sizing,
+	ViewSizeChangeOperation (const SPtr<UISelection>& selection, bool sizing,
 							 bool autosizingEnabled);
 	~ViewSizeChangeOperation () override = default;
 	
@@ -150,7 +151,7 @@ protected:
 class DeleteOperation : public IAction
 {
 public:
-	DeleteOperation (const SharedPointer<UISelection>& selection);
+	DeleteOperation (const SPtr<UISelection>& selection);
 	~DeleteOperation () override = default;
 	
 	UTF8StringPtr getName () override;
@@ -159,39 +160,37 @@ public:
 protected:
 	struct ViewAndNext
 	{
-		SharedPointer<CView> view;
-		SharedPointer<CView> nextView;
+		SPtr<CView> view;
+		SPtr<CView> nextView;
 	};
 
-	SharedPointer<UISelection> selection;
-	std::multimap<SharedPointer<CViewContainer>, ViewAndNext> map;
+	SPtr<UISelection> selection;
+	std::multimap<SPtr<CViewContainer>, ViewAndNext> map;
 };
 
 //-----------------------------------------------------------------------------
 class InsertViewOperation : public IAction
 {
 public:
-	InsertViewOperation (const SharedPointer<CViewContainer>& parent,
-						 const SharedPointer<CView>& view,
-						 const SharedPointer<UISelection>& selection);
+	InsertViewOperation (const SPtr<CViewContainer>& parent, const SPtr<CView>& view,
+						 const SPtr<UISelection>& selection);
 	~InsertViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<CViewContainer> parent;
-	SharedPointer<CView> view;
-	SharedPointer<UISelection> selection;
+	SPtr<CViewContainer> parent;
+	SPtr<CView> view;
+	SPtr<UISelection> selection;
 };
 
 //-----------------------------------------------------------------------------
 class TransformViewTypeOperation : public IAction
 {
 public:
-	TransformViewTypeOperation (const SharedPointer<UISelection>& selection,
-								const SharedPointer<CView>& view, IdStringPtr viewClassName,
-								const SharedPointer<UIDescription>& desc,
+	TransformViewTypeOperation (const SPtr<UISelection>& selection, const SPtr<CView>& view,
+								IdStringPtr viewClassName, const SPtr<UIDescription>& desc,
 								const IViewFactory& factory);
 	~TransformViewTypeOperation () override;
 
@@ -200,25 +199,24 @@ public:
 	void perform () override;
 	void undo () override;
 protected:
-	void exchangeSubViews (const SharedPointer<CViewContainer>& src,
-						   const SharedPointer<CViewContainer>& dst);
+	void exchangeSubViews (const SPtr<CViewContainer>& src, const SPtr<CViewContainer>& dst);
 
-	SharedPointer<CView> view;
-	SharedPointer<CView> newView;
+	SPtr<CView> view;
+	SPtr<CView> newView;
 	int32_t insertIndex;
-	SharedPointer<CViewContainer> parent;
-	SharedPointer<UISelection> selection;
+	SPtr<CViewContainer> parent;
+	SPtr<UISelection> selection;
 	const IViewFactory& factory;
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 };
 
 //-----------------------------------------------------------------------------
-class AttributeChangeAction : public IAction, protected std::map<SharedPointer<CView>, std::string>
+class AttributeChangeAction : public IAction,
+							  protected std::map<SPtr<CView>, std::string>
 {
 public:
-	AttributeChangeAction (const SharedPointer<UIDescription>& desc,
-						   const SharedPointer<UISelection>& selection, const std::string& attrName,
-						   const std::string& attrValue);
+	AttributeChangeAction (const SPtr<UIDescription>& desc, const SPtr<UISelection>& selection,
+						   const std::string& attrName, const std::string& attrValue);
 	~AttributeChangeAction () override = default;
 
 	UTF8StringPtr getName () override;
@@ -227,19 +225,20 @@ public:
 protected:
 	void updateSelection ();
 
-	SharedPointer<UIDescription> desc;
-	SharedPointer<UISelection> selection;
+	SPtr<UIDescription> desc;
+	SPtr<UISelection> selection;
 	std::string attrName;
 	std::string attrValue;
 	std::string name;
 };
 
 //----------------------------------------------------------------------------------------------------
-class MultipleAttributeChangeAction : public IAction, public std::vector<std::pair<SharedPointer<CView>, std::string> >
+class MultipleAttributeChangeAction : public IAction,
+									  public std::vector<std::pair<SPtr<CView>, std::string>>
 {
 public:
-	MultipleAttributeChangeAction (const SharedPointer<UIDescription>& description,
-								   const std::list<SharedPointer<CView>>& views,
+	MultipleAttributeChangeAction (const SPtr<UIDescription>& description,
+								   const std::list<SPtr<CView>>& views,
 								   IViewCreator::AttrType attrType, UTF8StringPtr oldValue,
 								   UTF8StringPtr newValue);
 	UTF8StringPtr getName () override { return "multiple view attribute changes"; }
@@ -247,14 +246,13 @@ public:
 	void undo () override;
 protected:
 	void setAttributeValue (UTF8StringPtr value);
-	static void collectAllSubViews (const SharedPointer<CView>& view,
-									std::list<SharedPointer<CView>>& views);
+	static void collectAllSubViews (const SPtr<CView>& view, std::list<SPtr<CView>>& views);
 	void collectViewsWithAttributeValue (const IViewFactory& viewFactory,
-										 const SharedPointer<IUIDescription>& desc,
-										 const SharedPointer<CView>& startView,
-										 IViewCreator::AttrType type, const std::string& value);
+										 const SPtr<IUIDescription>& desc,
+										 const SPtr<CView>& startView, IViewCreator::AttrType type,
+										 const std::string& value);
 
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string oldValue;
 	std::string newValue;
 };
@@ -263,7 +261,7 @@ protected:
 class TagChangeAction : public IAction
 {
 public:
-	TagChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
+	TagChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
 					 UTF8StringPtr newTagString, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
@@ -272,7 +270,7 @@ public:
 	
 	bool isAddTag () const { return isNewTag; }
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string name;
 	std::string newTag;
 	std::string originalTag;
@@ -285,14 +283,14 @@ protected:
 class TagNameChangeAction : public IAction
 {
 public:
-	TagNameChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr oldName,
+	TagNameChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr oldName,
 						 UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string oldName;
 	std::string newName;
 	bool performOrUndo;
@@ -302,7 +300,7 @@ protected:
 class ColorChangeAction : public IAction
 {
 public:
-	ColorChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
+	ColorChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
 					   const CColor& color, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
@@ -311,7 +309,7 @@ public:
 	
 	bool isAddColor () const { return isNewColor; }
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string name;
 	CColor newColor;
 	CColor oldColor;
@@ -324,14 +322,14 @@ protected:
 class ColorNameChangeAction : public IAction
 {
 public:
-	ColorNameChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr oldName,
+	ColorNameChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr oldName,
 						   UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string oldName;
 	std::string newName;
 	bool performOrUndo;
@@ -341,7 +339,7 @@ protected:
 class BitmapChangeAction : public IAction
 {
 public:
-	BitmapChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
+	BitmapChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
 						UTF8StringPtr path, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
@@ -350,7 +348,7 @@ public:
 	
 	bool isAddBitmap () const { return isNewBitmap; }
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string name;
 	std::string path;
 	std::string originalPath;
@@ -363,14 +361,14 @@ protected:
 class BitmapNameChangeAction : public IAction
 {
 public:
-	BitmapNameChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr oldName,
+	BitmapNameChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr oldName,
 							UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string oldName;
 	std::string newName;
 	bool performOrUndo;
@@ -380,13 +378,13 @@ protected:
 class NinePartTiledBitmapChangeAction : public IAction
 {
 public:
-	NinePartTiledBitmapChangeAction (const SharedPointer<UIDescription>& description,
-									 UTF8StringPtr name, const CRect* rect, bool performOrUndo);
+	NinePartTiledBitmapChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
+									 const CRect* rect, bool performOrUndo);
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string name;
 	std::unique_ptr<CRect> oldRect;
 	std::unique_ptr<CRect> newRect;
@@ -397,9 +395,8 @@ protected:
 class MultiFrameBitmapChangeAction : public IAction
 {
 public:
-	MultiFrameBitmapChangeAction (const SharedPointer<UIDescription>& description,
-								  UTF8StringPtr name, const CMultiFrameBitmapDescription* desc,
-								  bool performOrUndo);
+	MultiFrameBitmapChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
+								  const CMultiFrameBitmapDescription* desc, bool performOrUndo);
 	~MultiFrameBitmapChangeAction () override;
 
 	UTF8StringPtr getName () override;
@@ -407,7 +404,7 @@ public:
 	void undo () override;
 
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string name;
 	std::unique_ptr<CMultiFrameBitmapDescription> oldDesc;
 	std::unique_ptr<CMultiFrameBitmapDescription> newDesc;
@@ -418,20 +415,18 @@ protected:
 class BitmapFilterChangeAction : public IAction
 {
 public:
-	BitmapFilterChangeAction (const SharedPointer<UIDescription>& description,
-							  UTF8StringPtr bitmapName,
-							  const std::list<SharedPointer<UIAttributes>>& attributes,
-							  bool performOrUndo);
+	BitmapFilterChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr bitmapName,
+							  const std::list<SPtr<UIAttributes>>& attributes, bool performOrUndo);
 	~BitmapFilterChangeAction () override = default;
 	
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string bitmapName;
-	std::list<SharedPointer<UIAttributes> > newAttributes;
-	std::list<SharedPointer<UIAttributes> > oldAttributes;
+	std::list<SPtr<UIAttributes>> newAttributes;
+	std::list<SPtr<UIAttributes>> oldAttributes;
 	bool performOrUndo;
 };
 
@@ -439,9 +434,8 @@ protected:
 class GradientChangeAction : public IAction
 {
 public:
-	GradientChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
-						  const SharedPointer<CGradient>& gradient, bool remove,
-						  bool performOrUndo);
+	GradientChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
+						  const SPtr<CGradient>& gradient, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -449,10 +443,10 @@ public:
 	
 	bool isAddGradient () const { return originalGradient == 0; }
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string name;
-	SharedPointer<CGradient> gradient;
-	SharedPointer<CGradient> originalGradient;
+	SPtr<CGradient> gradient;
+	SPtr<CGradient> originalGradient;
 	bool remove;
 	bool performOrUndo;
 };
@@ -461,14 +455,14 @@ protected:
 class GradientNameChangeAction : public IAction
 {
 public:
-	GradientNameChangeAction (const SharedPointer<UIDescription>& description,
-							  UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
+	GradientNameChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr oldName,
+							  UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string oldName;
 	std::string newName;
 	bool performOrUndo;
@@ -478,8 +472,8 @@ protected:
 class FontChangeAction : public IAction
 {
 public:
-	FontChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr name,
-					  const SharedPointer<CFontDesc>& font, bool remove, bool performOrUndo);
+	FontChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr name,
+					  const SPtr<CFontDesc>& font, bool remove, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -487,11 +481,11 @@ public:
 
 	bool isAddFont () const { return originalFont == 0; }
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string name;
 	std::string alternativeNames;
-	SharedPointer<CFontDesc> font;
-	SharedPointer<CFontDesc> originalFont;
+	SPtr<CFontDesc> font;
+	SPtr<CFontDesc> originalFont;
 	bool remove;
 	bool performOrUndo;
 };
@@ -500,14 +494,14 @@ protected:
 class FontNameChangeAction : public IAction
 {
 public:
-	FontNameChangeAction (const SharedPointer<UIDescription>& description, UTF8StringPtr oldName,
+	FontNameChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr oldName,
 						  UTF8StringPtr newName, bool performOrUndo);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string oldName;
 	std::string newName;
 	bool performOrUndo;
@@ -517,13 +511,13 @@ protected:
 class AlternateFontChangeAction : public IAction
 {
 public:
-	AlternateFontChangeAction (const SharedPointer<UIDescription>& description,
-							   UTF8StringPtr fontName, UTF8StringPtr newAlternateFontNames);
+	AlternateFontChangeAction (const SPtr<UIDescription>& description, UTF8StringPtr fontName,
+							   UTF8StringPtr newAlternateFontNames);
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string fontName;
 	std::string newAlternateFontNames;
 	std::string oldAlternateFontNames;
@@ -533,17 +527,17 @@ protected:
 class HierarchyMoveViewOperation : public IAction
 {
 public:
-	HierarchyMoveViewOperation (const SharedPointer<CView>& view,
-								const SharedPointer<UISelection>& selection, int32_t dir);
+	HierarchyMoveViewOperation (const SPtr<CView>& view, const SPtr<UISelection>& selection,
+								int32_t dir);
 	~HierarchyMoveViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<CView> view;
-	SharedPointer<CViewContainer> parent;
-	SharedPointer<UISelection> selection;
+	SPtr<CView> view;
+	SPtr<CViewContainer> parent;
+	SPtr<UISelection> selection;
 	int32_t dir;
 };
 
@@ -551,7 +545,7 @@ protected:
 class TemplateNameChangeAction : public IAction
 {
 public:
-	TemplateNameChangeAction (const SharedPointer<UIDescription>& description,
+	TemplateNameChangeAction (const SPtr<UIDescription>& description,
 							  WeakPointer<IActionPerformer> actionPerformer, UTF8StringPtr oldName,
 							  UTF8StringPtr newName);
 
@@ -559,7 +553,7 @@ public:
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	WeakPointer<IActionPerformer> actionPerformer;
 	std::string oldName;
 	std::string newName;
@@ -569,7 +563,7 @@ protected:
 class CreateNewTemplateAction : public IAction
 {
 public:
-	CreateNewTemplateAction (const SharedPointer<UIDescription>& description,
+	CreateNewTemplateAction (const SPtr<UIDescription>& description,
 							 WeakPointer<IActionPerformer> actionPerformer, UTF8StringPtr name,
 							 UTF8StringPtr baseViewClassName);
 
@@ -577,9 +571,9 @@ public:
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<CView> view;
+	SPtr<CView> view;
 	std::string name;
 	std::string baseViewClassName;
 };
@@ -588,7 +582,7 @@ protected:
 class DuplicateTemplateAction : public IAction
 {
 public:
-	DuplicateTemplateAction (const SharedPointer<UIDescription>& description,
+	DuplicateTemplateAction (const SPtr<UIDescription>& description,
 							 WeakPointer<IActionPerformer> actionPerformer, UTF8StringPtr name,
 							 UTF8StringPtr dupName);
 
@@ -596,9 +590,9 @@ public:
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<CView> view;
+	SPtr<CView> view;
 	std::string name;
 	std::string dupName;
 };
@@ -607,18 +601,18 @@ protected:
 class DeleteTemplateAction : public IAction
 {
 public:
-	DeleteTemplateAction (const SharedPointer<UIDescription>& description,
-						  WeakPointer<IActionPerformer> actionPerformer,
-						  const SharedPointer<CView>& view, UTF8StringPtr name);
+	DeleteTemplateAction (const SPtr<UIDescription>& description,
+						  WeakPointer<IActionPerformer> actionPerformer, const SPtr<CView>& view,
+						  UTF8StringPtr name);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<CView> view;
-	SharedPointer<UIAttributes> attributes;
+	SPtr<CView> view;
+	SPtr<UIAttributes> attributes;
 	std::string name;
 };
 
@@ -626,14 +620,14 @@ protected:
 class ChangeFocusDrawingAction : public IAction
 {
 public:
-	ChangeFocusDrawingAction (const SharedPointer<UIDescription>& description,
+	ChangeFocusDrawingAction (const SPtr<UIDescription>& description,
 							  const FocusDrawingSettings& newSettings);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	FocusDrawingSettings oldSettings;
 	FocusDrawingSettings newSettings;
 };
@@ -642,8 +636,8 @@ protected:
 class ChangeTemplateMinMaxAction : public IAction
 {
 public:
-	ChangeTemplateMinMaxAction (const SharedPointer<UIDescription>& description,
-								UTF8StringPtr templateName, CPoint minSize, CPoint maxSize);
+	ChangeTemplateMinMaxAction (const SPtr<UIDescription>& description, UTF8StringPtr templateName,
+								CPoint minSize, CPoint maxSize);
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -651,7 +645,7 @@ public:
 private:
 	void setMinMaxSize (CPoint minimum, CPoint maximum);
 
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string templateName;
 	CPoint minSize;
 	CPoint maxSize;

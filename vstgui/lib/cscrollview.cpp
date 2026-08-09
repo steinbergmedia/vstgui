@@ -37,14 +37,14 @@ public:
 	bool attached (CViewContainer& parent) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	SharedPointer<IDropTarget> getDropTarget () override;
+	SPtr<IDropTarget> getDropTarget () override;
 	void onDragMove (CPoint where);
 
 //-----------------------------------------------------------------------------
 protected:
 	struct DropTarget : public IDropTarget, public NonAtomicReferenceCounted
 	{
-		DropTarget (CScrollContainer* scrollContainer, SharedPointer<IDropTarget>&& parent)
+		DropTarget (CScrollContainer* scrollContainer, SPtr<IDropTarget>&& parent)
 		: scrollContainer (scrollContainer), parent (std::move (parent))
 		{
 		}
@@ -68,7 +68,7 @@ protected:
 		}
 
 		CScrollContainer* scrollContainer;
-		SharedPointer<IDropTarget> parent;
+		SPtr<IDropTarget> parent;
 	};
 
 	bool getScrollValue (const CPoint& where, float& x, float& y);
@@ -176,7 +176,7 @@ CScrollView* CScrollContainer::getScrollView () const
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IDropTarget> CScrollContainer::getDropTarget ()
+SPtr<IDropTarget> CScrollContainer::getDropTarget ()
 {
 	auto dropTarget = CViewContainer::getDropTarget ();
 	if (autoDragScroll)
@@ -253,18 +253,18 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 //------------------------------------------------------------------------
 struct CScrollView::Impl
 {
-	SharedPointer<CScrollContainer> scrollContainer;
-	SharedPointer<CScrollbar> vScrollbar;
-	SharedPointer<CScrollbar> hScrollbar;
-	SharedPointer<CView> edgeViewTop;
-	SharedPointer<CView> edgeViewLeft;
+	SPtr<CScrollContainer> scrollContainer;
+	SPtr<CScrollbar> vScrollbar;
+	SPtr<CScrollbar> hScrollbar;
+	SPtr<CView> edgeViewTop;
+	SPtr<CView> edgeViewLeft;
 
 	CRect containerSize {};
 	CCoord scrollbarWidth {};
 	int32_t style {};
 	int32_t activeScrollbarStyle {};
 
-	SharedPointer<GridLayouter> layouter;
+	SPtr<GridLayouter> layouter;
 
 	struct Layouter : GridLayouter
 	{
@@ -286,7 +286,7 @@ struct CScrollView::Impl
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CRect& size, const CRect& containerSize, int32_t style,
-						  CCoord scrollbarWidth, const SharedPointer<CBitmap>& pBackground)
+						  CCoord scrollbarWidth, const SPtr<CBitmap>& pBackground)
 : CViewContainer (size)
 {
 	impl = std::make_unique<Impl> ();
@@ -532,10 +532,10 @@ void CScrollView::setScrollbarWidth (CCoord width)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CScrollbar> CScrollView::getVerticalScrollbar () const { return impl->vScrollbar; }
+SPtr<CScrollbar> CScrollView::getVerticalScrollbar () const { return impl->vScrollbar; }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CScrollbar> CScrollView::getHorizontalScrollbar () const { return impl->hScrollbar; }
+SPtr<CScrollbar> CScrollView::getHorizontalScrollbar () const { return impl->hScrollbar; }
 
 //-----------------------------------------------------------------------------
 const CRect& CScrollView::getContainerSize () const { return impl->containerSize; }
@@ -720,7 +720,7 @@ const CPoint& CScrollView::getScrollOffset () const
 }
 
 //------------------------------------------------------------------------
-void CScrollView::setEdgeView (Edge edge, const SharedPointer<CView>& _view)
+void CScrollView::setEdgeView (Edge edge, const SPtr<CView>& _view)
 {
 	auto view = _view;
 	if (view == nullptr)
@@ -753,9 +753,9 @@ void CScrollView::setEdgeView (Edge edge, const SharedPointer<CView>& _view)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> CScrollView::getEdgeView (Edge edge) const
+SPtr<CView> CScrollView::getEdgeView (Edge edge) const
 {
-	SharedPointer<CView> result = {};
+	SPtr<CView> result = {};
 	switch (edge)
 	{
 		case Edge::Top:
@@ -782,19 +782,19 @@ bool CScrollView::attached (CViewContainer& parent)
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::insertSubview (const SharedPointer<CView>& view, const Optional<size_t>& position)
+bool CScrollView::insertSubview (const SPtr<CView>& view, const Optional<size_t>& position)
 {
 	return impl->scrollContainer->insertSubview (view, position);
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::removeSubview (const SharedPointer<CView>& view)
+bool CScrollView::removeSubview (const SPtr<CView>& view)
 {
 	return impl->scrollContainer->removeSubview (view);
 }
 
 //-----------------------------------------------------------------------------
-Optional<size_t> CScrollView::indexOfSubview (const SharedPointer<CView>& view) const
+Optional<size_t> CScrollView::indexOfSubview (const SPtr<CView>& view) const
 {
 	return impl->scrollContainer->indexOfSubview (view);
 }
@@ -806,13 +806,13 @@ bool CScrollView::removeAll () { return impl->scrollContainer->removeAll (); }
 uint32_t CScrollView::getNbViews () const { return impl->scrollContainer->getNbViews (); }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> CScrollView::getView (uint32_t index) const
+SPtr<CView> CScrollView::getView (uint32_t index) const
 {
 	return impl->scrollContainer->getView (index);
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex)
+bool CScrollView::changeViewZOrder (const SPtr<CView>& view, uint32_t newIndex)
 {
 	return impl->scrollContainer->changeViewZOrder (view, newIndex);
 }

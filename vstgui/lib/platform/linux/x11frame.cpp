@@ -154,7 +154,7 @@ struct RedrawTimerHandler
 
 	void onTimer () override
 	{
-		SharedPointer<RedrawTimerHandler> Self (this);
+		SPtr<RedrawTimerHandler> Self (this);
 		Self->redrawCallback ();
 	}
 
@@ -320,7 +320,7 @@ struct Frame::Impl : IFrameEventHandler
 	DoubleClickDetector doubleClickDetector;
 	IPlatformFrameCallback* frame;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
-	SharedPointer<RedrawTimerHandler> redrawTimer;
+	SPtr<RedrawTimerHandler> redrawTimer;
 	RectList dirtyRects;
 	CCursorType currentCursor {kCursorDefault};
 	uint32_t pointerGrabed {0};
@@ -789,8 +789,7 @@ PlatformViewLayerPtr Frame::createPlatformViewLayer (IPlatformViewLayerDelegate*
 }
 
 //------------------------------------------------------------------------
-bool Frame::doDrag (const DragDescription& dragDescription,
-					const SharedPointer<IDragCallback>& callback)
+bool Frame::doDrag (const DragDescription& dragDescription, const SPtr<IDragCallback>& callback)
 {
 	return false;
 }

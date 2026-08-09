@@ -68,7 +68,7 @@ struct IWeakPointerSupport
 };
 
 //------------------------------------------------------------------------
-/** A non-owning, thread-safe weak reference wrapper for objects managed by VSTGUI's SharedPointer.
+/** A non-owning, thread-safe weak reference wrapper for objects managed by VSTGUI's SPtr.
 
 WeakPointer allows you to reference an object without extending its lifetime, preventing reference
 cycles and enabling you to safely check whether the object still exists. It cooperates with
@@ -77,14 +77,14 @@ WeakPointerSupport embedded in the pointee type to be notified when the object i
 Key characteristics:
 - Does not increase the reference count of the target object.
 - Thread-safe access and state transitions via internal mutex protection.
-- Can be constructed from either a SharedPointer<I> or another WeakPointer<I>.
-- Provides lock() to obtain a temporary SharedPointer<I> if the object is still alive.
+- Can be constructed from either a SPtr<I> or another WeakPointer<I>.
+- Provides lock() to obtain a temporary SPtr<I> if the object is still alive.
 - Automatically invalidates itself when the target object is destroyed (expired()).
 
 Usage:
 - Hold WeakPointer<I> where you need a non-owning reference to an object managed by
-  SharedPointer<I>.
-- Call lock() to get a SharedPointer<I> before accessing the object; check for null to handle
+  SPtr<I>.
+- Call lock() to get a SPtr<I> before accessing the object; check for null to handle
   expiration.
 - Use expired() to quickly test whether the underlying object has been destroyed.
 - Call reset() to manually detach from the current target and unregister from its weak list.
@@ -99,7 +99,7 @@ Threading:
   destruction.
 
 Lifecycle:
-- Construction from SharedPointer<I> registers the WeakPointer with the target’s
+- Construction from SPtr<I> registers the WeakPointer with the target’s
   WeakPointerSupport<I>.
 - Copy construction/assignment attempts to lock the source, then registers with the live target
   if available.
@@ -113,10 +113,10 @@ Common patterns:
 - Safely attempt access to UI or engine objects that may be torn down on other threads.
 
 Notes:
-- Always check the result of lock() before dereferencing; it may return an empty SharedPointer
+- Always check the result of lock() before dereferencing; it may return an empty SPtr
   if expired.
 - expired() is a fast check, but lock() is the canonical way to access the object safely.
-- Avoid long-lived locks or heavy work while holding the returned SharedPointer to minimize
+- Avoid long-lived locks or heavy work while holding the returned SPtr to minimize
   contention.
  */
 template<class I>
@@ -124,7 +124,7 @@ struct WeakPointer final : IWeakPointer
 {
 	inline WeakPointer () noexcept {}
 	template<typename T>
-	inline WeakPointer (const SharedPointer<T>& object) noexcept;
+	inline WeakPointer (const SPtr<T>& object) noexcept;
 	inline WeakPointer (const WeakPointer<I>& object) noexcept;
 	template<typename T>
 	inline WeakPointer (const WeakPointer<T>& object) noexcept;
@@ -132,13 +132,13 @@ struct WeakPointer final : IWeakPointer
 	inline ~WeakPointer () noexcept;
 
 	template<typename T>
-	inline WeakPointer<I>& operator= (const SharedPointer<T>& other) noexcept;
+	inline WeakPointer<I>& operator= (const SPtr<T>& other) noexcept;
 	inline WeakPointer<I>& operator= (const WeakPointer<I>& other) noexcept;
 	template<typename T>
 	inline WeakPointer<I>& operator= (const WeakPointer<T>& other) noexcept;
 	inline WeakPointer<I>& operator= (WeakPointer<I>&& other) noexcept;
 
-	inline SharedPointer<I> lock () const noexcept;
+	inline SPtr<I> lock () const noexcept;
 	inline void reset () noexcept;
 	inline void swap (WeakPointer<I>& other) noexcept;
 	inline bool expired () const noexcept;
@@ -230,7 +230,7 @@ private:
 //------------------------------------------------------------------------
 template<class I>
 template<typename T>
-inline WeakPointer<I>::WeakPointer (const SharedPointer<T>& obj) noexcept : object (obj.get ())
+inline WeakPointer<I>::WeakPointer (const SPtr<T>& obj) noexcept : object (obj.get ())
 {
 	if (object)
 		static_cast<IWeakPointerSupport*> (object)->registerWeakPointer (this);
@@ -277,7 +277,7 @@ inline WeakPointer<I>::~WeakPointer () noexcept
 //------------------------------------------------------------------------
 template<class I>
 template<typename T>
-inline WeakPointer<I>& WeakPointer<I>::operator= (const SharedPointer<T>& other) noexcept
+inline WeakPointer<I>& WeakPointer<I>::operator= (const SPtr<T>& other) noexcept
 {
 	reset ();
 	std::lock_guard<std::recursive_mutex> lockGuard (m);
@@ -354,7 +354,7 @@ inline void WeakPointer<I>::swap (WeakPointer<I>& other) noexcept
 
 //------------------------------------------------------------------------
 template<class I>
-inline SharedPointer<I> WeakPointer<I>::lock () const noexcept
+inline SPtr<I> WeakPointer<I>::lock () const noexcept
 {
 	std::lock_guard<std::recursive_mutex> lockGuard (m);
 	if (!expired ())

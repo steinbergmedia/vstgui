@@ -10,8 +10,8 @@ namespace UnitTest {
 
 struct PlatformParentHandle : public CBaseObject
 {
-	static SharedPointer<PlatformParentHandle> create ();
-	
+	static SPtr<PlatformParentHandle> create ();
+
 	virtual PlatformType getType () const = 0;
 	virtual void* getHandle () const = 0;
 	virtual void forceRedraw () = 0;

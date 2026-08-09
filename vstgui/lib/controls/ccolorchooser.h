@@ -29,7 +29,7 @@ public:
 //-----------------------------------------------------------------------------
 struct CColorChooserUISettings
 {
-	SharedPointer<CFontDesc> font {kNormalFont};
+	SPtr<CFontDesc> font {kNormalFont};
 	CColor fontColor {kWhiteCColor};
 	CColor checkerBoardColor1 {kWhiteCColor};
 	CColor checkerBoardColor2 {kBlackCColor};
@@ -59,15 +59,15 @@ protected:
 	IColorChooserDelegate* delegate;
 	CColor color;
 
-	SharedPointer<CSlider> redSlider;
-	SharedPointer<CSlider> greenSlider;
-	SharedPointer<CSlider> blueSlider;
-	SharedPointer<CSlider> hueSlider;
-	SharedPointer<CSlider> saturationSlider;
-	SharedPointer<CSlider> brightnessSlider;
-	SharedPointer<CSlider> alphaSlider;
-	SharedPointer<CTextEdit> editFields[8];
-	SharedPointer<CColorChooserInternal::ColorView> colorView;
+	SPtr<CSlider> redSlider;
+	SPtr<CSlider> greenSlider;
+	SPtr<CSlider> blueSlider;
+	SPtr<CSlider> hueSlider;
+	SPtr<CSlider> saturationSlider;
+	SPtr<CSlider> brightnessSlider;
+	SPtr<CSlider> alphaSlider;
+	SPtr<CTextEdit> editFields[8];
+	SPtr<CColorChooserInternal::ColorView> colorView;
 
 	//-----------------------------------------------------------------------------
 	enum {

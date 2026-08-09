@@ -29,7 +29,7 @@ public:
 	}
 	~FontPreviewView () noexcept override {}
 
-	void setFont (const SharedPointer<CFontDesc>& newFont)
+	void setFont (const SPtr<CFontDesc>& newFont)
 	{
 		font = newFont;
 		invalid ();
@@ -60,7 +60,7 @@ public:
 	}
 	
 protected:
-	SharedPointer<CFontDesc> font;
+	SPtr<CFontDesc> font;
 	CColor fontColor;
 };
 
@@ -79,8 +79,7 @@ enum {
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
-							const SharedPointer<CFontDesc>& initialFont,
+CFontChooser::CFontChooser (IFontChooserDelegate* delegate, const SPtr<CFontDesc>& initialFont,
 							const CFontChooserUIDefinition& uiDef)
 : CViewContainer (CRect (0, 0, 300, 500)), delegate (nullptr), fontBrowser (nullptr)
 {
@@ -192,7 +191,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate,
 CFontChooser::~CFontChooser () noexcept {}
 
 //-----------------------------------------------------------------------------
-void CFontChooser::setFont (const SharedPointer<CFontDesc>& font)
+void CFontChooser::setFont (const SPtr<CFontDesc>& font)
 {
 	if (font)
 	{

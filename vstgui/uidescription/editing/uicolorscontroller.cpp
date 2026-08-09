@@ -25,9 +25,8 @@ namespace VSTGUI {
 class UIColorsDataSource : public UIBaseDataSource, public UIColorListenerAdapter
 {
 public:
-	UIColorsDataSource (const SharedPointer<UIDescription>& description,
-						WeakPointer<IActionPerformer> actionPerformer,
-						const SharedPointer<UIColor>& color);
+	UIColorsDataSource (const SPtr<UIDescription>& description,
+						WeakPointer<IActionPerformer> actionPerformer, const SPtr<UIColor>& color);
 	~UIColorsDataSource () override;
 
 protected:
@@ -68,7 +67,7 @@ protected:
 	void uiColorBeginEditing (UIColor& c) override;
 	void uiColorEndEditing (UIColor& c) override;
 
-	SharedPointer<UIColor> color;
+	SPtr<UIColor> color;
 	bool editing;
 	Optional<CColor> dragColor;
 	int32_t dragRow;
@@ -77,9 +76,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIColorsDataSource::UIColorsDataSource (const SharedPointer<UIDescription>& description,
+UIColorsDataSource::UIColorsDataSource (const SPtr<UIDescription>& description,
 										WeakPointer<IActionPerformer> actionPerformer,
-										const SharedPointer<UIColor>& color)
+										const SPtr<UIColor>& color)
 : UIBaseDataSource (description, actionPerformer), color (color), editing (false), dragRow (-1)
 {
 	color->registerListener (this);
@@ -289,7 +288,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 					auto dropSource = CDropSource::create (
 						colorStr.data (), static_cast<uint32_t> (colorStr.length () + 1),
 						CDropSource::kText);
-					SharedPointer<CBitmap> dragBitmap;
+					SPtr<CBitmap> dragBitmap;
 					if (auto offscreen = COffscreenContext::create (r.getSize ()))
 					{
 						offscreen->beginDraw ();
@@ -449,8 +448,8 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIColorsController::UIColorsController (const SharedPointer<IController>& baseController,
-										const SharedPointer<UIDescription>& description,
+UIColorsController::UIColorsController (const SPtr<IController>& baseController,
+										const SPtr<UIDescription>& description,
 										WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
@@ -466,8 +465,8 @@ UIColorsController::UIColorsController (const SharedPointer<IController>& baseCo
 UIColorsController::~UIColorsController () {}
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIColorsController::createView (const UIAttributes& attributes,
-													 const IUIDescription& description)
+SPtr<CView> UIColorsController::createView (const UIAttributes& attributes,
+											const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -485,9 +484,8 @@ SharedPointer<CView> UIColorsController::createView (const UIAttributes& attribu
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIColorsController::verifyView (const SharedPointer<CView>& view,
-													 const UIAttributes& attributes,
-													 const IUIDescription& description)
+SPtr<CView> UIColorsController::verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+											const IUIDescription& description)
 {
 	auto searchField = view.cast<CSearchTextEdit> ();
 	if (searchField && searchField->getTag () == kSearchTag)
@@ -529,8 +527,8 @@ void UIColorsController::valueChanged (CControl& pControl)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<IController>
-	UIColorsController::createSubController (IdStringPtr name, const IUIDescription& description)
+SPtr<IController> UIColorsController::createSubController (IdStringPtr name,
+														   const IUIDescription& description)
 {
 	if (std::strcmp (name, "ColorChooserController") == 0)
 		return makeShared<UIColorChooserController> (shared (this), color);

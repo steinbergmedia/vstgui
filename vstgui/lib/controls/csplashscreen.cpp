@@ -18,7 +18,7 @@ class CDefaultSplashScreenView : public CControl
 {
 public:
 	CDefaultSplashScreenView (const CRect& size, IControlListener* listener,
-							  const SharedPointer<CBitmap>& bitmap, const CPoint& offset)
+							  const SPtr<CBitmap>& bitmap, const CPoint& offset)
 	: CControl (size, listener), offset (offset)
 	{
 		setBackground (bitmap);
@@ -64,7 +64,7 @@ and another click on the displayed area will leave the modal mode.
  */
 //------------------------------------------------------------------------
 CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
-							  const SharedPointer<CBitmap>& background, const CRect& toDisplay,
+							  const SPtr<CBitmap>& background, const CRect& toDisplay,
 							  const CPoint& offset)
 : CControl (size, listener, tag, background), toDisplay (toDisplay), offset (offset)
 {
@@ -81,7 +81,7 @@ CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int
  */
 //------------------------------------------------------------------------
 CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
-							  const SharedPointer<CView>& splashView)
+							  const SPtr<CView>& splashView)
 : CControl (size, listener, tag), modalView (splashView)
 {
 }
@@ -162,15 +162,15 @@ void CSplashScreen::unSplash ()
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag,
-												const SharedPointer<CBitmap>& background,
-												const SharedPointer<CBitmap>& splashBitmap)
+												const SPtr<CBitmap>& background,
+												const SPtr<CBitmap>& splashBitmap)
 : CSplashScreen (size, nullptr, tag, splashBitmap, CRect (0, 0, 0, 0))
 {
 	CView::setBackground (background);
 }
 
 //------------------------------------------------------------------------
-void CAnimationSplashScreen::setSplashBitmap (const SharedPointer<CBitmap>& bitmap)
+void CAnimationSplashScreen::setSplashBitmap (const SPtr<CBitmap>& bitmap)
 {
 	if (modalView)
 	{
@@ -179,7 +179,7 @@ void CAnimationSplashScreen::setSplashBitmap (const SharedPointer<CBitmap>& bitm
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CBitmap> CAnimationSplashScreen::getSplashBitmap () const
+SPtr<CBitmap> CAnimationSplashScreen::getSplashBitmap () const
 {
 	if (modalView)
 		return modalView->getBackground ();
@@ -270,7 +270,7 @@ bool CAnimationSplashScreen::sizeToFit ()
 
 //------------------------------------------------------------------------
 bool CAnimationSplashScreen::createAnimation (uint32_t animIndex, uint32_t animTime,
-											  const SharedPointer<CView>& splashView,
+											  const SPtr<CView>& splashView,
 											  bool removeViewAnimation)
 {
 	if (!isAttached ())

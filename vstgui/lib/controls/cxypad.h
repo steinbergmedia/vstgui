@@ -19,11 +19,11 @@ public:
 	void setStopTrackingOnMouseExit (bool state) { stopTrackingOnMouseExit = state; }
 	bool getStopTrackingOnMouseExit () const { return stopTrackingOnMouseExit; }
 
-	void setHandleBitmap (const SharedPointer<CBitmap>& bitmap);
-	SharedPointer<CBitmap> getHandleBitmap () const;
+	void setHandleBitmap (const SPtr<CBitmap>& bitmap);
+	SPtr<CBitmap> getHandleBitmap () const;
 
 	void draw (CDrawContext& context) override;
-	void drawBack (CDrawContext& pContext, const SharedPointer<CBitmap>& newBack = {}) override;
+	void drawBack (CDrawContext& pContext, const SPtr<CBitmap>& newBack = {}) override;
 
 	void onMouseDownEvent (MouseDownEvent& event) override;
 	void onMouseUpEvent (MouseUpEvent& event) override;
@@ -62,7 +62,7 @@ protected:
 	CPoint mouseChangeStartPoint;
 	CPoint lastMouseChangePoint;
 	bool stopTrackingOnMouseExit;
-	SharedPointer<CBitmap> handle;
+	SPtr<CBitmap> handle;
 };
 
 } // VSTGUI

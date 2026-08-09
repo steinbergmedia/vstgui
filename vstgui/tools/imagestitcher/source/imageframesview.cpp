@@ -326,7 +326,7 @@ void ImageFramesView::enlargeSelection (size_t index)
 static constexpr size_t DragPackageID = 'isdp';
 
 //------------------------------------------------------------------------
-bool ImageFramesView::getIndicesFromDataPackage (const SharedPointer<IDataPackage>& package,
+bool ImageFramesView::getIndicesFromDataPackage (const SPtr<IDataPackage>& package,
 												 std::vector<size_t>* result)
 {
 	if (package->getDataType (0) == IDataPackage::kBinary)
@@ -353,7 +353,7 @@ bool ImageFramesView::getIndicesFromDataPackage (const SharedPointer<IDataPackag
 }
 
 //------------------------------------------------------------------------
-std::vector<Path> ImageFramesView::getDragPngImagePaths (const SharedPointer<IDataPackage>& drag)
+std::vector<Path> ImageFramesView::getDragPngImagePaths (const SPtr<IDataPackage>& drag)
 {
 	std::vector<Path> result;
 	auto count = drag->getCount ();
@@ -372,7 +372,7 @@ std::vector<Path> ImageFramesView::getDragPngImagePaths (const SharedPointer<IDa
 }
 
 //------------------------------------------------------------------------
-bool ImageFramesView::dragHasPngImages (const SharedPointer<IDataPackage>& drag)
+bool ImageFramesView::dragHasPngImages (const SPtr<IDataPackage>& drag)
 {
 	auto count = drag->getCount ();
 	for (auto i = 0u; i < count; ++i)

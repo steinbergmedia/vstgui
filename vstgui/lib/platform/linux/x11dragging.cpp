@@ -287,7 +287,7 @@ void XdndHandler::clearState ()
 	dndSource = 0;
 	dndType = XCB_ATOM_NONE;
 	dndPosition.reset ();
-	package = SharedPointer<XdndDataPackage> ();
+	package = SPtr<XdndDataPackage> ();
 	dragOperation = DragOperation::None;
 }
 

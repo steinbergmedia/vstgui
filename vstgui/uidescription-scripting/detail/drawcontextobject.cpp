@@ -38,19 +38,19 @@ static T getFromVar (CScriptVar& var, const string& exceptionString)
 }
 
 //------------------------------------------------------------------------
-static SharedPointer<CGraphicsPath> getGraphicsPath (CScriptVar& var, std::string_view varName,
-													 std::string_view signature)
+static SPtr<CGraphicsPath> getGraphicsPath (CScriptVar& var, std::string_view varName,
+											std::string_view signature)
 {
 	auto& pathVar = getArgument (var, varName, signature);
-	return getFromVar<SharedPointer<CGraphicsPath>> (pathVar, "Variable is not a graphics path");
+	return getFromVar<SPtr<CGraphicsPath>> (pathVar, "Variable is not a graphics path");
 }
 
 //------------------------------------------------------------------------
-static SharedPointer<CGradient> getGradient (CScriptVar& var, std::string_view varName,
-											 std::string_view signature)
+static SPtr<CGradient> getGradient (CScriptVar& var, std::string_view varName,
+									std::string_view signature)
 {
 	auto& gradientVar = getArgument (var, varName, signature);
-	return getFromVar<SharedPointer<CGradient>> (gradientVar, "Variable is not a gradient");
+	return getFromVar<SPtr<CGradient>> (gradientVar, "Variable is not a gradient");
 }
 
 //------------------------------------------------------------------------
@@ -293,7 +293,7 @@ TJS::CScriptVar* makeTransformMatrixObject ()
 //------------------------------------------------------------------------
 struct GradientScriptObject : ScriptObject
 {
-	GradientScriptObject (const SharedPointer<CGradient>& g, WeakPointer<IUIDescription> uiDesc)
+	GradientScriptObject (const SPtr<CGradient>& g, WeakPointer<IUIDescription> uiDesc)
 	: ScriptObject (new CScriptVar ("", SCRIPTVAR_OBJECT))
 	{
 		scriptVar->setCustomData (g);
@@ -302,7 +302,7 @@ struct GradientScriptObject : ScriptObject
 				 {"position"sv, "color"sv});
 	}
 
-	static void addColorStop (const SharedPointer<CGradient>& g, WeakPointer<IUIDescription> uiDesc,
+	static void addColorStop (const SPtr<CGradient>& g, WeakPointer<IUIDescription> uiDesc,
 							  CScriptVar& var)
 	{
 		static constexpr auto signature = "gradient.addColorStop(position, color);"sv;
@@ -315,7 +315,7 @@ struct GradientScriptObject : ScriptObject
 //------------------------------------------------------------------------
 struct GraphicsPathScriptObject : ScriptObject
 {
-	GraphicsPathScriptObject (const SharedPointer<CGraphicsPath>& p)
+	GraphicsPathScriptObject (const SPtr<CGraphicsPath>& p)
 	: ScriptObject (new CScriptVar ("", SCRIPTVAR_OBJECT))
 	{
 		scriptVar->setCustomData (p);
@@ -335,7 +335,7 @@ struct GraphicsPathScriptObject : ScriptObject
 		addFunc ("beginSubpath"sv, [p] (auto& var) { beginSubpath (p, var); }, {"start"sv});
 	}
 
-	static void addPath (const SharedPointer<CGraphicsPath>& path, CScriptVar& var)
+	static void addPath (const SPtr<CGraphicsPath>& path, CScriptVar& var)
 	{
 		static constexpr auto signature = "path.addPath(path, transformMatrix?);"sv;
 		auto otherPath = getGraphicsPath (var, "path"sv, signature);
@@ -343,7 +343,7 @@ struct GraphicsPathScriptObject : ScriptObject
 		path->addPath (*otherPath.get (), tm ? tm.get () : nullptr);
 	}
 
-	static void addArc (const SharedPointer<CGraphicsPath>& path, CScriptVar& var)
+	static void addArc (const SPtr<CGraphicsPath>& path, CScriptVar& var)
 	{
 		static constexpr auto signature = "path.addArc(rect, startAngle, endAngle, clockwise);"sv;
 		auto rect = getRect (var, "rect"sv, signature);
@@ -353,28 +353,28 @@ struct GraphicsPathScriptObject : ScriptObject
 		path->addArc (rect, startAngle, endAngle, clockwise != 0 ? true : false);
 	}
 
-	static void addEllipse (const SharedPointer<CGraphicsPath>& path, CScriptVar& var)
+	static void addEllipse (const SPtr<CGraphicsPath>& path, CScriptVar& var)
 	{
 		static constexpr auto signature = "path.addEllipse(rect);"sv;
 		auto rect = getRect (var, "rect"sv, signature);
 		path->addEllipse (rect);
 	}
 
-	static void addRect (const SharedPointer<CGraphicsPath>& path, CScriptVar& var)
+	static void addRect (const SPtr<CGraphicsPath>& path, CScriptVar& var)
 	{
 		static constexpr auto signature = "path.addRect(rect);"sv;
 		auto rect = getRect (var, "rect"sv, signature);
 		path->addRect (rect);
 	}
 
-	static void addLine (const SharedPointer<CGraphicsPath>& path, CScriptVar& var)
+	static void addLine (const SPtr<CGraphicsPath>& path, CScriptVar& var)
 	{
 		static constexpr auto signature = "path.addLine(to);"sv;
 		auto point = getPoint (var, "to"sv, signature);
 		path->addLine (point);
 	}
 
-	static void addBezierCurve (const SharedPointer<CGraphicsPath>& path, CScriptVar& var)
+	static void addBezierCurve (const SPtr<CGraphicsPath>& path, CScriptVar& var)
 	{
 		static constexpr auto signature = "path.addBezierCurve(control1, control2, end);"sv;
 		auto control1 = getPoint (var, "control1"sv, signature);
@@ -383,20 +383,20 @@ struct GraphicsPathScriptObject : ScriptObject
 		path->addBezierCurve (control1, control2, end);
 	}
 
-	static void beginSubpath (const SharedPointer<CGraphicsPath>& path, CScriptVar& var)
+	static void beginSubpath (const SPtr<CGraphicsPath>& path, CScriptVar& var)
 	{
 		static constexpr auto signature = "path.beginSubpath(start);"sv;
 		auto start = getPoint (var, "start"sv, signature);
 		path->beginSubpath (start);
 	}
 
-	static void closeSubpath (const SharedPointer<CGraphicsPath>& path)
+	static void closeSubpath (const SPtr<CGraphicsPath>& path)
 	{
 		static constexpr auto signature = "path.closeSubpath();"sv;
 		path->closeSubpath ();
 	}
 
-	static void addRoundRect (const SharedPointer<CGraphicsPath>& path, CScriptVar& var)
+	static void addRoundRect (const SPtr<CGraphicsPath>& path, CScriptVar& var)
 	{
 		static constexpr auto signature = "path.addRoundRect(rect, radius);"sv;
 		auto rect = getRect (var, "rect"sv, signature);
@@ -406,7 +406,7 @@ struct GraphicsPathScriptObject : ScriptObject
 };
 
 //------------------------------------------------------------------------
-ScriptObject makeGraphicsPathScriptObject (const SharedPointer<CGraphicsPath>& p)
+ScriptObject makeGraphicsPathScriptObject (const SPtr<CGraphicsPath>& p)
 {
 	return GraphicsPathScriptObject (p);
 }
@@ -418,7 +418,7 @@ struct DrawContextObject::Impl
 	WeakPointer<IUIDescription> uiDesc;
 	mutable int32_t globalStatesStored {0};
 
-	void setContext (CDrawContext* inContext, const SharedPointer<IUIDescription>& inUIDesc)
+	void setContext (CDrawContext* inContext, const SPtr<IUIDescription>& inUIDesc)
 	{
 		if (context)
 		{
@@ -868,7 +868,7 @@ DrawContextObject::~DrawContextObject () noexcept
 
 //------------------------------------------------------------------------
 void DrawContextObject::setDrawContext (CDrawContext* inContext,
-										const SharedPointer<IUIDescription>& inUIDesc)
+										const SPtr<IUIDescription>& inUIDesc)
 {
 	impl->setContext (inContext, inUIDesc);
 }

@@ -20,7 +20,7 @@ protected:
 		LastCompressedSaveFlagBit,
 	};
 public:
-	static SharedPointer<CompressedUIDescription> make (const CResourceDescription& uidescFile);
+	static SPtr<CompressedUIDescription> make (const CResourceDescription& uidescFile);
 
 	enum SaveFlags
 	{

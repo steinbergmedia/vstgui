@@ -40,8 +40,8 @@ UTF8StringPtr AnimKnobCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> AnimKnobCreator::create (const UIAttributes& attributes,
-											  const IUIDescription& description) const
+SPtr<CView> AnimKnobCreator::create (const UIAttributes& attributes,
+									 const IUIDescription& description) const
 {
 	return makeShared<CAnimKnob> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }

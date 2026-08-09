@@ -34,7 +34,7 @@ struct CKnobBase::MouseEditingState
 
 //------------------------------------------------------------------------
 CKnobBase::CKnobBase (const CRect& size, IControlListener* listener, int32_t tag,
-					  const SharedPointer<CBitmap>& background)
+					  const SPtr<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 	rangeAngle = 1.f;
@@ -376,8 +376,8 @@ By clicking alt modifier and left mouse button the value changes with a vertical
  */
 //------------------------------------------------------------------------
 CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag,
-			  const SharedPointer<CBitmap>& background, const SharedPointer<CBitmap>& handle,
-			  const CPoint& offset, int32_t drawStyle)
+			  const SPtr<CBitmap>& background, const SPtr<CBitmap>& handle, const CPoint& offset,
+			  int32_t drawStyle)
 : CKnobBase (size, listener, tag, background)
 , offset (offset)
 , drawStyle (drawStyle)
@@ -456,7 +456,7 @@ void CKnob::draw (CDrawContext& context)
 }
 
 //------------------------------------------------------------------------
-void CKnob::addArc (const SharedPointer<CGraphicsPath>& path, const CRect& r, double startAngle,
+void CKnob::addArc (const SPtr<CGraphicsPath>& path, const CRect& r, double startAngle,
 					double sweepAngle)
 {
 	CCoord w = r.getWidth ();
@@ -678,7 +678,7 @@ void CKnob::setDrawStyle (int32_t style)
 }
 
 //------------------------------------------------------------------------
-void CKnob::setHandleBitmap (const SharedPointer<CBitmap>& bitmap)
+void CKnob::setHandleBitmap (const SPtr<CBitmap>& bitmap)
 {
 	pHandle.reset ();
 	if (bitmap)
@@ -707,7 +707,7 @@ CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag,
-					  const SharedPointer<CBitmap>& background)
+					  const SPtr<CBitmap>& background)
 : CKnobBase (size, listener, tag, background), bInverseBitmap (false)
 {
 	inset = 0;
@@ -736,7 +736,7 @@ bool CAnimKnob::sizeToFit ()
 }
 
 //-----------------------------------------------------------------------------------------------
-void CAnimKnob::setBackground (const SharedPointer<CBitmap>& background)
+void CAnimKnob::setBackground (const SPtr<CBitmap>& background)
 {
 	CKnobBase::setBackground (background);
 }

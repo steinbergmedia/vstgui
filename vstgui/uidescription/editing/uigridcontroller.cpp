@@ -18,8 +18,8 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIGridController::UIGridController (const SharedPointer<IController>& baseController,
-									const SharedPointer<UIDescription>& description)
+UIGridController::UIGridController (const SPtr<IController>& baseController,
+									const SPtr<UIDescription>& description)
 : DelegationController (baseController), editDescription (description)
 {
 	auto attributes = editDescription->getCustomAttributes ("UIGridController", true);
@@ -112,9 +112,8 @@ void UIGridController::valueChanged (CControl& control)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIGridController::verifyView (const SharedPointer<CView>& view,
-												   const UIAttributes& attributes,
-												   const IUIDescription& description)
+SPtr<CView> UIGridController::verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+										  const IUIDescription& description)
 {
 	if (auto menu = view.cast<COptionMenu> ())
 	{
@@ -276,7 +275,7 @@ void UIGridController::syncMenuValueAndSize ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIGridController::setupTextEdit (const SharedPointer<CTextEdit>& te) const
+void UIGridController::setupTextEdit (const SPtr<CTextEdit>& te) const
 {
 	te->setPrecision (0);
 	te->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit& textEdit) {

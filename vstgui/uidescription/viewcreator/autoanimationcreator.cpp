@@ -27,8 +27,8 @@ IdStringPtr AutoAnimationCreator::getBaseViewName () const { return kCControl; }
 UTF8StringPtr AutoAnimationCreator::getDisplayName () const { return "Auto Animation"; }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> AutoAnimationCreator::create (const UIAttributes& attributes,
-												   const IUIDescription& description) const
+SPtr<CView> AutoAnimationCreator::create (const UIAttributes& attributes,
+										  const IUIDescription& description) const
 {
 	return makeShared<CAutoAnimation> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }

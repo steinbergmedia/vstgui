@@ -142,8 +142,8 @@ public:
 protected:
 	mutable UTF8String headerTitle;
 	CColor headerLineColor {kBlackCColor};
-	SharedPointer<CFontDesc> headerFont;
-	SharedPointer<CGradient> headerGradient;
+	SPtr<CFontDesc> headerFont;
+	SPtr<CGradient> headerGradient;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -151,7 +151,7 @@ class UITemplatesDataSource : public UINavigationDataSource
 {
 public:
 	UITemplatesDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate,
-						   const SharedPointer<UIDescription>& description,
+						   const SPtr<UIDescription>& description,
 						   WeakPointer<IActionPerformer> actionPerformer,
 						   const std::string* templateName);
 
@@ -166,7 +166,7 @@ public:
 					 int32_t flags, CDataBrowser& browser) override;
 
 protected:
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	WeakPointer<IActionPerformer> actionPerformer;
 	std::string firstSelectedTemplateName;
 };
@@ -175,17 +175,16 @@ protected:
 class UIViewListDataSource : public UINavigationDataSource, public IUIUndoManagerListener
 {
 public:
-	UIViewListDataSource (const SharedPointer<CViewContainer>& view,
-						  const IViewFactory& viewFactory,
-						  const SharedPointer<UISelection>& selection,
-						  const SharedPointer<UIUndoManager>& undoManager,
+	UIViewListDataSource (const SPtr<CViewContainer>& view, const IViewFactory& viewFactory,
+						  const SPtr<UISelection>& selection,
+						  const SPtr<UIUndoManager>& undoManager,
 						  GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIViewListDataSource () override;
 
-	SharedPointer<CViewContainer> getView () const { return view; }
-	SharedPointer<CView> getSubview (int32_t index);
-	bool setSelectedView (const SharedPointer<CView>& view, bool makeRowVisible = false);
-	SharedPointer<UIViewListDataSource> getNext () const { return next; }
+	SPtr<CViewContainer> getView () const { return view; }
+	SPtr<CView> getSubview (int32_t index);
+	bool setSelectedView (const SPtr<CView>& view, bool makeRowVisible = false);
+	SPtr<UIViewListDataSource> getNext () const { return next; }
 
 	bool update (CViewContainer& vc);
 	void remove ();
@@ -240,14 +239,14 @@ protected:
 	// IUIUndoManagerListener
 	void onUndoManagerChange () override;
 
-	SharedPointer<CViewContainer> view;
+	SPtr<CViewContainer> view;
 	const IViewFactory& viewFactory;
-	SharedPointer<UIViewListDataSource> next;
-	SharedPointer<UISelection> selection;
-	SharedPointer<UIUndoManager> undoManager;
-	SharedPointer<CView> selectedView;
+	SPtr<UIViewListDataSource> next;
+	SPtr<UISelection> selection;
+	SPtr<UIUndoManager> undoManager;
+	SPtr<CView> selectedView;
 	StringVector names;
-	std::vector<SharedPointer<CView>> subviews;
+	std::vector<SPtr<CView>> subviews;
 	bool inUpdate;
 	DragStartMouseObserver dragStartMouseObserver;
 	int32_t dragRow {-1};
@@ -255,10 +254,10 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UITemplateController::UITemplateController (const SharedPointer<IController>& baseController,
-											const SharedPointer<UIDescription>& description,
-											const SharedPointer<UISelection>& selection,
-											const SharedPointer<UIUndoManager>& undoManager,
+UITemplateController::UITemplateController (const SPtr<IController>& baseController,
+											const SPtr<UIDescription>& description,
+											const SPtr<UISelection>& selection,
+											const SPtr<UIUndoManager>& undoManager,
 											WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
@@ -281,8 +280,8 @@ UITemplateController::~UITemplateController ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateController::setupDataBrowser (const SharedPointer<CDataBrowser>& orignalBrowser,
-											 const SharedPointer<CDataBrowser>& dataBrowser)
+void UITemplateController::setupDataBrowser (const SPtr<CDataBrowser>& orignalBrowser,
+											 const SPtr<CDataBrowser>& dataBrowser)
 {
 	if (orignalBrowser)
 	{
@@ -400,7 +399,7 @@ void UITemplateController::onUIDescTemplateChanged (UIDescription& desc)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UITemplateController::setTemplateView (const SharedPointer<CViewContainer>& view)
+void UITemplateController::setTemplateView (const SPtr<CViewContainer>& view)
 {
 	if (view != templateView && templateDataBrowser && templateDataBrowser->getParentView ())
 	{
@@ -430,10 +429,10 @@ void UITemplateController::setTemplateView (const SharedPointer<CViewContainer>&
 }
 
 //------------------------------------------------------------------------
-void UITemplateController::navigateTo (const SharedPointer<CView>& view)
+void UITemplateController::navigateTo (const SPtr<CView>& view)
 {
 	std::list<CView*> parents;
-	SharedPointer<CView> v = view;
+	SPtr<CView> v = view;
 	while (auto parent = v->getParentView ())
 	{
 		if (parent == parent->getFrame ())
@@ -471,8 +470,8 @@ void UITemplateController::viewWillDelete (CView& view)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UITemplateController::createView (const UIAttributes& attributes,
-													   const IUIDescription& description)
+SPtr<CView> UITemplateController::createView (const UIAttributes& attributes,
+											  const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -505,16 +504,16 @@ SharedPointer<CView> UITemplateController::createView (const UIAttributes& attri
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UITemplateController::verifyView (const SharedPointer<CView>& view,
-													   const UIAttributes& attributes,
-													   const IUIDescription& description)
+SPtr<CView> UITemplateController::verifyView (const SPtr<CView>& view,
+											  const UIAttributes& attributes,
+											  const IUIDescription& description)
 {
 	return DelegationController::verifyView (view, attributes, description);
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<IController> UITemplateController::createSubController (
-	UTF8StringPtr name, const IUIDescription& description)
+SPtr<IController> UITemplateController::createSubController (UTF8StringPtr name,
+															 const IUIDescription& description)
 {
 	return DelegationController::createSubController (name, description);
 }
@@ -563,8 +562,8 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::UIViewListDataSource (
-	const SharedPointer<CViewContainer>& view, const IViewFactory& viewFactory,
-	const SharedPointer<UISelection>& selection, const SharedPointer<UIUndoManager>& undoManager,
+	const SPtr<CViewContainer>& view, const IViewFactory& viewFactory,
+	const SPtr<UISelection>& selection, const SPtr<UIUndoManager>& undoManager,
 	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
@@ -586,7 +585,7 @@ UIViewListDataSource::~UIViewListDataSource ()
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIViewListDataSource::getSubview (int32_t index)
+SPtr<CView> UIViewListDataSource::getSubview (int32_t index)
 {
 	if (index >= 0 && index < (int32_t)subviews.size ())
 		return subviews[static_cast<uint32_t> (index)];
@@ -642,8 +641,7 @@ CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer& inView) cons
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIViewListDataSource::setSelectedView (const SharedPointer<CView>& newView,
-											bool makeRowVisible)
+bool UIViewListDataSource::setSelectedView (const SPtr<CView>& newView, bool makeRowVisible)
 {
 	auto index = indexOf<int32_t> (subviews.begin (), subviews.end (), newView);
 	if (!index)
@@ -916,7 +914,7 @@ void UIViewListDataSource::dbDrawCell (CDrawContext& context, const CRect& size,
 //----------------------------------------------------------------------------------------------------
 UITemplatesDataSource::UITemplatesDataSource (
 	GenericStringListDataBrowserSourceSelectionChanged* delegate,
-	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
+	const SPtr<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
 	const std::string* templateName)
 : UINavigationDataSource (delegate), description (description), actionPerformer (actionPerformer)
 {

@@ -32,11 +32,10 @@ protected:
 		LastSaveFlagBit,
 	};
 public:
-	static SharedPointer<UIDescription> make (const CResourceDescription& uidescFile,
-											  const SharedPointer<IViewFactory>& viewFactory = {});
-	static SharedPointer<UIDescription>
-		make (const SharedPointer<IContentProvider>& contentProvider,
-			  const SharedPointer<IViewFactory>& viewFactory = {});
+	static SPtr<UIDescription> make (const CResourceDescription& uidescFile,
+									 const SPtr<IViewFactory>& viewFactory = {});
+	static SPtr<UIDescription> make (const SPtr<IContentProvider>& contentProvider,
+									 const SPtr<IViewFactory>& viewFactory = {});
 
 	virtual bool parse ();
 
@@ -57,36 +56,35 @@ public:
 
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
-	bool storeViews (const std::list<SharedPointer<CView>>& views, OutputStream& stream,
-					 SharedPointer<UIAttributes> customData = {}) const;
-	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView>>& views,
-					   SharedPointer<UIAttributes>* customData = nullptr);
+	bool storeViews (const std::list<SPtr<CView>>& views, OutputStream& stream,
+					 SPtr<UIAttributes> customData = {}) const;
+	bool restoreViews (InputStream& stream, std::list<SPtr<CView>>& views,
+					   SPtr<UIAttributes>* customData = nullptr);
 
 	UTF8StringPtr getFilePath () const;
 	void setFilePath (UTF8StringPtr path);
-	
-	void setSharedResources (const SharedPointer<UIDescription>& resources);
-	const SharedPointer<UIDescription>& getSharedResources () const;
 
-	SharedPointer<UIAttributes> getViewAttributes (UTF8StringPtr name) const;
+	void setSharedResources (const SPtr<UIDescription>& resources);
+	const SPtr<UIDescription>& getSharedResources () const;
 
-	void setController (const SharedPointer<IController>& controller) const;
+	SPtr<UIAttributes> getViewAttributes (UTF8StringPtr name) const;
 
-	SharedPointer<CView> createView (UTF8StringPtr name,
-									 const SharedPointer<IController>& controller) const override;
-	SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const override;
-	SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const override;
+	void setController (const SPtr<IController>& controller) const;
+
+	SPtr<CView> createView (UTF8StringPtr name, const SPtr<IController>& controller) const override;
+	SPtr<CBitmap> getBitmap (UTF8StringPtr name) const override;
+	SPtr<CFontDesc> getFont (UTF8StringPtr name) const override;
 	bool getColor (UTF8StringPtr name, CColor& color) const override;
-	SharedPointer<CGradient> getGradient (UTF8StringPtr name) const override;
+	SPtr<CGradient> getGradient (UTF8StringPtr name) const override;
 	int32_t getTagForName (UTF8StringPtr name) const override;
 	IControlListener* getControlListener (UTF8StringPtr name) const override;
-	SharedPointer<IController> getController () const override;
+	SPtr<IController> getController () const override;
 	const IViewFactory& getViewFactory () const override;
 
 	UTF8StringPtr lookupColorName (const CColor& color) const override;
-	UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& font) const override;
-	UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const override;
-	UTF8StringPtr lookupGradientName (const SharedPointer<CGradient>& gradient) const override;
+	UTF8StringPtr lookupFontName (const SPtr<CFontDesc>& font) const override;
+	UTF8StringPtr lookupBitmapName (const SPtr<CBitmap>& bitmap) const override;
+	UTF8StringPtr lookupGradientName (const SPtr<CGradient>& gradient) const override;
 	UTF8StringPtr lookupControlTagName (const int32_t tag) const override;
 
 	bool getVariable (UTF8StringPtr name, double& value) const override;
@@ -106,15 +104,17 @@ public:
 	void changeGradientName (UTF8StringPtr oldName, UTF8StringPtr newName);
 
 	void changeColor (UTF8StringPtr name, const CColor& newColor);
-	void changeFont (UTF8StringPtr name, const SharedPointer<CFontDesc>& newFont);
-	void changeGradient (UTF8StringPtr name, const SharedPointer<CGradient>& newGradient);
+	void changeFont (UTF8StringPtr name, const SPtr<CFontDesc>& newFont);
+	void changeGradient (UTF8StringPtr name, const SPtr<CGradient>& newGradient);
 	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = nullptr);
 	void changeMultiFrameBitmap (UTF8StringPtr name, UTF8StringPtr newName,
 								 const CMultiFrameBitmapDescription* = nullptr);
 
-	void changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters);
-	void collectBitmapFilters (UTF8StringPtr bitmapName, std::list<SharedPointer<UIAttributes> >& filters) const;
-	
+	void changeBitmapFilters (UTF8StringPtr bitmapName,
+							  const std::list<SPtr<UIAttributes>>& filters);
+	void collectBitmapFilters (UTF8StringPtr bitmapName,
+							   std::list<SPtr<UIAttributes>>& filters) const;
+
 	void removeColor (UTF8StringPtr name);
 	void removeTag (UTF8StringPtr name);
 	void removeFont (UTF8StringPtr name);
@@ -130,16 +130,16 @@ public:
 	bool hasBitmapName (UTF8StringPtr name) const;
 	bool hasGradientName (UTF8StringPtr name) const;
 
-	void updateViewDescription (UTF8StringPtr name, const SharedPointer<CView>& view);
+	void updateViewDescription (UTF8StringPtr name, const SPtr<CView>& view);
 	bool getTemplateNameFromView (const CView& view, std::string& templateName) const;
-	bool addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr);
+	bool addNewTemplate (UTF8StringPtr name, const SPtr<UIAttributes>& attr);
 	bool removeTemplate (UTF8StringPtr name);
 	bool changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName);
 	bool duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplicateName);
 
-	bool setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr) override;
-	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const override;
-	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name, bool create);
+	bool setCustomAttributes (UTF8StringPtr name, const SPtr<UIAttributes>& attr) override;
+	SPtr<UIAttributes> getCustomAttributes (UTF8StringPtr name) const override;
+	SPtr<UIAttributes> getCustomAttributes (UTF8StringPtr name, bool create);
 
 	bool getControlTagString (UTF8StringPtr tagName, std::string& tagString) const;
 	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);
@@ -149,8 +149,8 @@ public:
 	void registerListener (UIDescriptionListener* listener);
 	void unregisterListener (UIDescriptionListener* listener);
 
-	void setBitmapCreator (const SharedPointer<IBitmapCreator>& bitmapCreator);
-	void setBitmapCreator2 (const SharedPointer<IBitmapCreator2>& bitmapCreator);
+	void setBitmapCreator (const SPtr<IBitmapCreator>& bitmapCreator);
+	void setBitmapCreator2 (const SPtr<IBitmapCreator2>& bitmapCreator);
 
 	using FocusDrawing = FocusDrawingSettings;
 	FocusDrawing getFocusDrawingSettings () const;
@@ -160,33 +160,32 @@ public:
 
 	static CViewAttributeID kTemplateNameAttributeID;
 
-	SharedPointer<UINode> getRootNode () const; // for testing
+	SPtr<UINode> getRootNode () const; // for testing
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (UIDescription)
 
 	UIDescription ();
 	~UIDescription () noexcept override;
 
-	bool init (const CResourceDescription& uidescFile,
-			   const SharedPointer<IViewFactory>& viewFactory = {});
-	bool init (const SharedPointer<IContentProvider>& contentProvider,
-			   const SharedPointer<IViewFactory>& viewFactory = {});
+	bool init (const CResourceDescription& uidescFile, const SPtr<IViewFactory>& viewFactory = {});
+	bool init (const SPtr<IContentProvider>& contentProvider,
+			   const SPtr<IViewFactory>& viewFactory = {});
 
 	void addDefaultNodes ();
 
 	bool parsed () const;
-	void setContentProvider (const SharedPointer<IContentProvider>& provider);
+	void setContentProvider (const SPtr<IContentProvider>& provider);
 
 	const CResourceDescription& getUIDescFile () const;
 private:
 	void postParsing ();
-	SharedPointer<CView> createViewFromNode (const SharedPointer<UINode>& node) const;
-	SharedPointer<UINode> getBaseNode (UTF8StringPtr name, bool create = true) const;
-	SharedPointer<UINode> findChildNodeByNameAttribute (const SharedPointer<UINode>& node,
-														UTF8StringPtr nameAttribute) const;
-	SharedPointer<UINode> findNodeForView (CView& view) const;
-	bool updateAttributesForView (const SharedPointer<UINode>& node,
-								  const SharedPointer<CView>& view, bool deep = true);
+	SPtr<CView> createViewFromNode (const SPtr<UINode>& node) const;
+	SPtr<UINode> getBaseNode (UTF8StringPtr name, bool create = true) const;
+	SPtr<UINode> findChildNodeByNameAttribute (const SPtr<UINode>& node,
+											   UTF8StringPtr nameAttribute) const;
+	SPtr<UINode> findNodeForView (CView& view) const;
+	bool updateAttributesForView (const SPtr<UINode>& node, const SPtr<CView>& view,
+								  bool deep = true);
 	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName);
 	template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const;
 	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName);
@@ -215,8 +214,8 @@ class IBitmapCreator2 : public virtual IReference
 public:
 	virtual ~IBitmapCreator2 () noexcept = default;
 
-	virtual SharedPointer<CBitmap> createBitmap (const UIAttributes& attributes,
-												 const IUIDescription& desc) = 0;
+	virtual SPtr<CBitmap> createBitmap (const UIAttributes& attributes,
+										const IUIDescription& desc) = 0;
 };
 
 } // VSTGUI

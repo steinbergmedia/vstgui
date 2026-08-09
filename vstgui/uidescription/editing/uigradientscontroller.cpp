@@ -37,10 +37,10 @@ class UIColorStopEditView
   public UIColorListenerAdapter
 {
 public:
-	UIColorStopEditView (const SharedPointer<UIColor>& editColor);
+	UIColorStopEditView (const SPtr<UIColor>& editColor);
 	~UIColorStopEditView () override;
 
-	void setGradient (const SharedPointer<CGradient>& gradient);
+	void setGradient (const SPtr<CGradient>& gradient);
 
 	void selectNextColorStop ();
 	void selectPrevColorStop ();
@@ -66,8 +66,8 @@ private:
 	void addColorStop (double startOffset);
 	void removeColorStop (double startOffset);
 
-	SharedPointer<UIColor> editColor;
-	SharedPointer<CGradient> gradient;
+	SPtr<UIColor> editColor;
+	SPtr<CGradient> gradient;
 	GradientColorStopMap colorStopMap;
 	double editStartOffset;
 	CCoord stopWidth;
@@ -76,7 +76,7 @@ private:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIColorStopEditView::UIColorStopEditView (const SharedPointer<UIColor>& editColor)
+UIColorStopEditView::UIColorStopEditView (const SPtr<UIColor>& editColor)
 : CView (CRect (0, 0, 0, 0))
 , editColor (editColor)
 , editStartOffset (-1.)
@@ -289,7 +289,7 @@ CMouseEventResult UIColorStopEditView::onMouseMoved (CPoint& where, const CButto
 void UIColorStopEditView::uiColorChanged (UIColor& c) { invalid (); }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorStopEditView::setGradient (const SharedPointer<CGradient>& inGradient)
+void UIColorStopEditView::setGradient (const SPtr<CGradient>& inGradient)
 {
 	colorStopMap = inGradient->getColorStops ();
 	auto it = colorStopMap.find (editStartOffset);
@@ -391,20 +391,18 @@ class UIGradientEditorController : public NonAtomicReferenceCounted,
 								   public ControllerAdapter
 {
 public:
-	UIGradientEditorController (const std::string& gradientName,
-								const SharedPointer<CGradient>& gradient,
-								const SharedPointer<UIDescription>& description,
+	UIGradientEditorController (const std::string& gradientName, const SPtr<CGradient>& gradient,
+								const SPtr<UIDescription>& description,
 								WeakPointer<IActionPerformer> actionPerformer);
 	~UIGradientEditorController () override;
 
 	void valueChanged (CControl& pControl) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<IController> createSubController (UTF8StringPtr name,
+										   const IUIDescription& description) override;
 	void onDialogButton1Clicked (UIDialogController&) override;
 	void onDialogButton2Clicked (UIDialogController&) override;
 	void onDialogShow (UIDialogController&) override;
@@ -420,20 +418,20 @@ protected:
 	void onChange () override;
 	void apply ();
 	void updatePositionEdit ();
-	
-	SharedPointer<UIDescription> editDescription;
-	SharedPointer<UIColorStopEditView> colorStopEditView;
-	SharedPointer<CGradient> gradient;
-	SharedPointer<UIColor> editColor;
-	SharedPointer<CTextEdit> positionEdit;
+
+	SPtr<UIDescription> editDescription;
+	SPtr<UIColorStopEditView> colorStopEditView;
+	SPtr<CGradient> gradient;
+	SPtr<UIColor> editColor;
+	SPtr<CTextEdit> positionEdit;
 	WeakPointer<IActionPerformer> actionPerformer;
 	std::string gradientName;
 };
 
 //----------------------------------------------------------------------------------------------------
 UIGradientEditorController::UIGradientEditorController (
-	const std::string& gradientName, const SharedPointer<CGradient>& gradient,
-	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer)
+	const std::string& gradientName, const SPtr<CGradient>& gradient,
+	const SPtr<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer)
 : editDescription (description)
 , gradient (gradient)
 , editColor (makeShared<UIColor> ())
@@ -503,7 +501,7 @@ void UIGradientEditorController::onDialogButton2Clicked (UIDialogController&) {}
 void UIGradientEditorController::onDialogShow (UIDialogController&) {}
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<IController> UIGradientEditorController::createSubController (
+SPtr<IController> UIGradientEditorController::createSubController (
 	UTF8StringPtr name, const IUIDescription& description)
 {
 	if (UTF8StringView (name) == "ColorChooserController")
@@ -533,8 +531,8 @@ void UIGradientEditorController::valueChanged (CControl& pControl)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COptionMenu> createColorMenu (IUIDescription& desc,
-											const std::function<void (CColor)>& callback)
+SPtr<COptionMenu> createColorMenu (IUIDescription& desc,
+								   const std::function<void (CColor)>& callback)
 {
 	std::list<const std::string*> names;
 	desc.collectColorNames (names);
@@ -555,9 +553,9 @@ SharedPointer<COptionMenu> createColorMenu (IUIDescription& desc,
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIGradientEditorController::verifyView (const SharedPointer<CView>& view,
-															 const UIAttributes& attributes,
-															 const IUIDescription& description)
+SPtr<CView> UIGradientEditorController::verifyView (const SPtr<CView>& view,
+													const UIAttributes& attributes,
+													const IUIDescription& description)
 {
 	if (auto control = view.cast<CTextEdit> ())
 	{
@@ -615,8 +613,8 @@ SharedPointer<CView> UIGradientEditorController::verifyView (const SharedPointer
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIGradientEditorController::createView (const UIAttributes& attributes,
-															 const IUIDescription& description)
+SPtr<CView> UIGradientEditorController::createView (const UIAttributes& attributes,
+													const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -636,12 +634,12 @@ SharedPointer<CView> UIGradientEditorController::createView (const UIAttributes&
 class UIGradientsDataSource : public UIBaseDataSource
 {
 public:
-	UIGradientsDataSource (const SharedPointer<UIDescription>& description,
+	UIGradientsDataSource (const SPtr<UIDescription>& description,
 						   WeakPointer<IActionPerformer> actionPerformer,
 						   GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIGradientsDataSource () override = default;
 
-	SharedPointer<CGradient> getSelectedGradient ();
+	SPtr<CGradient> getSelectedGradient ();
 	std::string getSelectedGradientName ();
 	
 protected:
@@ -665,7 +663,7 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIGradientsDataSource::UIGradientsDataSource (
-	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
+	const SPtr<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
 	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
@@ -678,7 +676,7 @@ void UIGradientsDataSource::onUIDescGradientChanged (UIDescription& desc)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CGradient> UIGradientsDataSource::getSelectedGradient ()
+SPtr<CGradient> UIGradientsDataSource::getSelectedGradient ()
 {
 	auto dataBrowser = dbPtr.lock ();
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
@@ -814,8 +812,8 @@ bool UIGradientsDataSource::performNameChange (UTF8StringPtr oldName, UTF8String
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIGradientsController::UIGradientsController (const SharedPointer<IController>& baseController,
-											  const SharedPointer<UIDescription>& description,
+UIGradientsController::UIGradientsController (const SPtr<IController>& baseController,
+											  const SPtr<UIDescription>& description,
 											  WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
@@ -829,8 +827,8 @@ UIGradientsController::UIGradientsController (const SharedPointer<IController>& 
 UIGradientsController::~UIGradientsController () {}
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIGradientsController::createView (const UIAttributes& attributes,
-														const IUIDescription& description)
+SPtr<CView> UIGradientsController::createView (const UIAttributes& attributes,
+											   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -848,9 +846,9 @@ SharedPointer<CView> UIGradientsController::createView (const UIAttributes& attr
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIGradientsController::verifyView (const SharedPointer<CView>& view,
-														const UIAttributes& attributes,
-														const IUIDescription& description)
+SPtr<CView> UIGradientsController::verifyView (const SPtr<CView>& view,
+											   const UIAttributes& attributes,
+											   const IUIDescription& description)
 {
 	auto control = view.cast<CControl> ();
 	if (control)

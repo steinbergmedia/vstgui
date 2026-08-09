@@ -20,7 +20,7 @@ public:
 
 protected:
 	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
-				 const SharedPointer<CBitmap>& background);
+				 const SPtr<CBitmap>& background);
 	~CSwitchBase () noexcept override = default;
 
 	void draw (CDrawContext&) override;
@@ -52,7 +52,7 @@ class CVerticalSwitch : public CSwitchBase
 {
 public:
 	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-					 const SharedPointer<CBitmap>& background);
+					 const SPtr<CBitmap>& background);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
@@ -74,7 +74,7 @@ class CHorizontalSwitch : public CSwitchBase
 {
 public:
 	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-					   const SharedPointer<CBitmap>& background);
+					   const SPtr<CBitmap>& background);
 
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
@@ -108,7 +108,7 @@ public:
 	};
 
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-				   const SharedPointer<CBitmap>& background, const int32_t style = kHorizontal);
+				   const SPtr<CBitmap>& background, const int32_t style = kHorizontal);
 
 	void draw (CDrawContext&) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
@@ -127,7 +127,7 @@ protected:
 
 	int32_t	style;
 
-	SharedPointer<CVSTGUITimer> resetValueTimer;
+	SPtr<CVSTGUITimer> resetValueTimer;
 
 private:
 	float mouseStartValue;

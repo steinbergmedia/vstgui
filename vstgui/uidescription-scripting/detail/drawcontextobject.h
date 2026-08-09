@@ -13,7 +13,7 @@ namespace VSTGUI {
 namespace ScriptingInternal {
 
 TJS::CScriptVar* makeTransformMatrixObject ();
-ScriptObject makeGraphicsPathScriptObject (const SharedPointer<CGraphicsPath>& p);
+ScriptObject makeGraphicsPathScriptObject (const SPtr<CGraphicsPath>& p);
 
 //------------------------------------------------------------------------
 struct DrawContextObject : ScriptObject,
@@ -22,7 +22,7 @@ struct DrawContextObject : ScriptObject,
 	DrawContextObject ();
 	~DrawContextObject () noexcept override;
 
-	void setDrawContext (CDrawContext* context, const SharedPointer<IUIDescription>& uiDesc);
+	void setDrawContext (CDrawContext* context, const SPtr<IUIDescription>& uiDesc);
 
 	void onDestroy (CScriptVar* v) override;
 

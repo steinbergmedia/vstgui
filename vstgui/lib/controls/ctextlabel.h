@@ -20,7 +20,7 @@ class CTextLabel : public CParamDisplay
 {
 public:
 	CTextLabel (const CRect& size, UTF8StringPtr txt = nullptr,
-				const SharedPointer<CBitmap>& background = {}, const int32_t style = 0);
+				const SPtr<CBitmap>& background = {}, const int32_t style = 0);
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextLabel Methods

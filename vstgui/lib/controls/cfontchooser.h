@@ -18,14 +18,14 @@ namespace VSTGUI {
 class IFontChooserDelegate
 {
 public:
-	virtual void fontChanged (CFontChooser& chooser, SharedPointer<CFontDesc> newFont) = 0;
+	virtual void fontChanged (CFontChooser& chooser, SPtr<CFontDesc> newFont) = 0;
 };
 
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 struct CFontChooserUIDefinition
 {
-	SharedPointer<CFontDesc> font;
+	SPtr<CFontDesc> font;
 	int32_t rowHeight;
 	CColor fontColor;
 	CColor selectionColor;
@@ -39,7 +39,7 @@ struct CFontChooserUIDefinition
 	CColor scrollbarBackgroundColor;
 	CCoord scrollbarWidth;
 
-	CFontChooserUIDefinition (SharedPointer<CFontDesc> font = kSystemFont,
+	CFontChooserUIDefinition (SPtr<CFontDesc> font = kSystemFont,
 							  const CColor& fontColor = kWhiteCColor,
 							  const CColor& selectionColor = kBlueCColor,
 							  const CColor& rowlineColor = kGreyCColor,
@@ -72,11 +72,11 @@ struct CFontChooserUIDefinition
 class CFontChooser : public CViewContainer, public IControlListener, public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	CFontChooser (IFontChooserDelegate* delegate, const SharedPointer<CFontDesc>& initialFont = {},
+	CFontChooser (IFontChooserDelegate* delegate, const SPtr<CFontDesc>& initialFont = {},
 				  const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());
 	~CFontChooser () noexcept override;
 
-	void setFont (const SharedPointer<CFontDesc>& font);
+	void setFont (const SPtr<CFontDesc>& font);
 
 protected:
 	void dbSelectionChanged (int32_t selectedRow,
@@ -86,14 +86,14 @@ protected:
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
 	IFontChooserDelegate* delegate;
-	SharedPointer<CDataBrowser> fontBrowser;
-	SharedPointer<CTextEdit> sizeEdit;
-	SharedPointer<CCheckBox> boldBox;
-	SharedPointer<CCheckBox> italicBox;
-	SharedPointer<CCheckBox> underlineBox;
-	SharedPointer<CCheckBox> strikeoutBox;
-	SharedPointer<CView> fontPreviewView;
-	SharedPointer<CFontDesc> selFont;
+	SPtr<CDataBrowser> fontBrowser;
+	SPtr<CTextEdit> sizeEdit;
+	SPtr<CCheckBox> boldBox;
+	SPtr<CCheckBox> italicBox;
+	SPtr<CCheckBox> underlineBox;
+	SPtr<CCheckBox> strikeoutBox;
+	SPtr<CView> fontPreviewView;
+	SPtr<CFontDesc> selFont;
 	GenericStringListDataBrowserSource::StringVector fontNames;
 };
 

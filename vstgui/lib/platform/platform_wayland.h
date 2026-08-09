@@ -38,9 +38,9 @@ public:
 class FrameConfig : public IPlatformFrameConfig
 {
 public:
-	SharedPointer<IRunLoop> runLoop;
-	SharedPointer<IWaylandHost> waylandHost;
-	SharedPointer<IWaylandFrame> waylandFrame;
+	SPtr<IRunLoop> runLoop;
+	SPtr<IWaylandHost> waylandHost;
+	SPtr<IWaylandFrame> waylandFrame;
 };
 
 //------------------------------------------------------------------------

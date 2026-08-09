@@ -33,7 +33,7 @@ private:
 
 public:
 	/** get the shared instance of the AutoSizeViewLayouter */
-	static SharedPointer<IViewLayouter> get () noexcept;
+	static SPtr<IViewLayouter> get () noexcept;
 };
 
 //------------------------------------------------------------------------

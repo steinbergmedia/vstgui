@@ -50,9 +50,9 @@ private:
 	void hideHighscores ();
 
 	UIDesc::ModelBindingCallbacks modelBinding;
-	SharedPointer<MinefieldViewController> minefieldViewController;
-	SharedPointer<EnterHighScoreViewController> enterHighscoreViewController;
-	SharedPointer<HighScoreViewController> highscoreViewController;
+	SPtr<MinefieldViewController> minefieldViewController;
+	SPtr<EnterHighScoreViewController> enterHighscoreViewController;
+	SPtr<HighScoreViewController> highscoreViewController;
 	IWindow* window {nullptr};
 };
 

@@ -186,8 +186,8 @@ struct MetalController : DelegationController,
 {
 	using DelegationController::DelegationController;
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto viewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{

@@ -36,9 +36,9 @@ public:
 	};
 
 	CMenuItem (const UTF8String& title, const UTF8String& keycode = "", int32_t keyModifiers = 0,
-			   const SharedPointer<CBitmap>& icon = {}, int32_t flags = kNoFlags);
-	CMenuItem (const UTF8String& title, const SharedPointer<COptionMenu>& submenu,
-			   const SharedPointer<CBitmap>& icon = {});
+			   const SPtr<CBitmap>& icon = {}, int32_t flags = kNoFlags);
+	CMenuItem (const UTF8String& title, const SPtr<COptionMenu>& submenu,
+			   const SPtr<CBitmap>& icon = {});
 	CMenuItem (const UTF8String& title, int32_t tag);
 	CMenuItem (const CMenuItem& item);
 	~CMenuItem () noexcept override;
@@ -50,7 +50,7 @@ public:
 	/** set title of menu item */
 	void setTitle (const UTF8String& title);
 	/** set submenu of menu item */
-	void setSubmenu (const SharedPointer<COptionMenu>& submenu);
+	void setSubmenu (const SPtr<COptionMenu>& submenu);
 	/** remove the submenu of the item */
 	void removeSubmenu ();
 	/** set keycode and key modifiers of menu item */
@@ -66,7 +66,7 @@ public:
 	/** set menu item separator state */
 	void setIsSeparator (bool state = true);
 	/** set menu item icon */
-	void setIcon (const SharedPointer<CBitmap>& icon);
+	void setIcon (const SPtr<CBitmap>& icon);
 	/** set menu item tag */
 	void setTag (int32_t tag);
 
@@ -88,9 +88,9 @@ public:
 	/** returns the virtual key of the item */
 	VirtualKey getVirtualKey () const;
 	/** returns the submenu of the item */
-	SharedPointer<COptionMenu> getSubmenu () const;
+	SPtr<COptionMenu> getSubmenu () const;
 	/** returns the icon of the item */
-	SharedPointer<CBitmap> getIcon () const;
+	SPtr<CBitmap> getIcon () const;
 	/** returns the tag of the item */
 	int32_t getTag () const;
 	//@}
@@ -116,8 +116,8 @@ public:
 		UTF8String commandCategory;
 		UTF8String commandName;
 		UTF8String keycode;
-		SharedPointer<ICommandMenuItemTarget> target;
-		SharedPointer<CBitmap> icon;
+		SPtr<ICommandMenuItemTarget> target;
+		SPtr<CBitmap> icon;
 		int32_t keyModifiers {0};
 		int32_t flags {kNoFlags};
 		int32_t tag {-1};
@@ -126,8 +126,8 @@ public:
 		~Desc () noexcept = default;
 
 		Desc (const UTF8String& title, const UTF8String& keycode = nullptr,
-			  int32_t keyModifiers = 0, const SharedPointer<CBitmap>& icon = {},
-			  int32_t flags = kNoFlags, const SharedPointer<ICommandMenuItemTarget>& target = {},
+			  int32_t keyModifiers = 0, const SPtr<CBitmap>& icon = {}, int32_t flags = kNoFlags,
+			  const SPtr<ICommandMenuItemTarget>& target = {},
 			  const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr)
 		: title (title)
 		, commandCategory (commandCategory)
@@ -140,8 +140,7 @@ public:
 		{
 		}
 
-		Desc (const UTF8String& title, int32_t tag,
-			  const SharedPointer<ICommandMenuItemTarget>& target = {},
+		Desc (const UTF8String& title, int32_t tag, const SPtr<ICommandMenuItemTarget>& target = {},
 			  const UTF8String& commandCategory = {}, const UTF8String& commandName = {})
 		: title (title)
 		, commandCategory (commandCategory)
@@ -151,7 +150,7 @@ public:
 		{
 		}
 
-		Desc (const UTF8String& title, const SharedPointer<ICommandMenuItemTarget>& target,
+		Desc (const UTF8String& title, const SPtr<ICommandMenuItemTarget>& target,
 			  const UTF8String& commandCategory = {}, const UTF8String& commandName = {})
 		: title (title)
 		, commandCategory (commandCategory)
@@ -178,11 +177,11 @@ public:
 	const UTF8String& getCommandName () const { return commandName; }
 	bool isCommandName (const UTF8String& name) const;
 
-	void setItemTarget (const SharedPointer<ICommandMenuItemTarget>& target);
-	SharedPointer<ICommandMenuItemTarget> getItemTarget () const { return itemTarget; }
+	void setItemTarget (const SPtr<ICommandMenuItemTarget>& target);
+	SPtr<ICommandMenuItemTarget> getItemTarget () const { return itemTarget; }
 
-	using ValidateCallbackFunction = std::function<void (SharedPointer<CCommandMenuItem> item)>;
-	using SelectedCallbackFunction = std::function<void (SharedPointer<CCommandMenuItem> item)>;
+	using ValidateCallbackFunction = std::function<void (SPtr<CCommandMenuItem> item)>;
+	using SelectedCallbackFunction = std::function<void (SPtr<CCommandMenuItem> item)>;
 
 	void setActions (
 		SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate = [] (auto) {});
@@ -196,10 +195,10 @@ protected:
 	SelectedCallbackFunction selectedFunc;
 	UTF8String commandCategory;
 	UTF8String commandName;
-	SharedPointer<ICommandMenuItemTarget> itemTarget;
+	SPtr<ICommandMenuItemTarget> itemTarget;
 };
 
-using CMenuItemList = std::vector<SharedPointer<CMenuItem>>;
+using CMenuItemList = std::vector<SPtr<CMenuItem>>;
 using CMenuItemIterator = CMenuItemList::iterator;
 using CConstMenuItemIterator = CMenuItemList::const_iterator;
 
@@ -220,8 +219,8 @@ private:
 public:
 	COptionMenu ();
 	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag,
-				 const SharedPointer<CBitmap>& background = {},
-				 const SharedPointer<CBitmap>& bgWhenClick = {}, const int32_t style = 0);
+				 const SPtr<CBitmap>& background = {}, const SPtr<CBitmap>& bgWhenClick = {},
+				 const int32_t style = 0);
 	~COptionMenu () noexcept override;
 
 	enum Style
@@ -240,28 +239,27 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** add a new entry */
-	SharedPointer<CMenuItem> addEntry (const SharedPointer<CMenuItem>& item, int32_t index = -1);
+	SPtr<CMenuItem> addEntry (const SPtr<CMenuItem>& item, int32_t index = -1);
 	/** add a new entry */
 	template<typename T>
-	SharedPointer<T> addEntry (const SharedPointer<T>& item, int32_t index = -1)
+	SPtr<T> addEntry (const SPtr<T>& item, int32_t index = -1)
 	{
 		static_assert (std::is_base_of_v<CMenuItem, T>, "Needs CMenuItems");
 		return addEntry (item.template cast<CMenuItem> (), index).template cast<T> ();
 	}
 	/** add a new submenu entry */
-	SharedPointer<CMenuItem> addEntry (const SharedPointer<COptionMenu>& submenu,
-									   const UTF8String& title);
+	SPtr<CMenuItem> addEntry (const SPtr<COptionMenu>& submenu, const UTF8String& title);
 	/** add a new entry */
-	virtual SharedPointer<CMenuItem> addEntry (const UTF8String& title, int32_t index = -1,
-											   int32_t itemFlags = CMenuItem::kNoFlags);
+	virtual SPtr<CMenuItem> addEntry (const UTF8String& title, int32_t index = -1,
+									  int32_t itemFlags = CMenuItem::kNoFlags);
 	/** add a new separator entry */
-	virtual SharedPointer<CMenuItem> addSeparator (int32_t index = -1);
+	virtual SPtr<CMenuItem> addSeparator (int32_t index = -1);
 	/** get current entry */
-	virtual SharedPointer<CMenuItem> getCurrent () const;
+	virtual SPtr<CMenuItem> getCurrent () const;
 	/** TODO: Doc */
 	virtual int32_t getCurrentIndex (bool countSeparator = false) const;
 	/** get entry at index position */
-	virtual SharedPointer<CMenuItem> getEntry (int32_t index) const;
+	virtual SPtr<CMenuItem> getEntry (int32_t index) const;
 	/** get number of entries */
 	virtual int32_t getNbEntries () const;
 	/** set current entry */
@@ -285,7 +283,7 @@ public:
 	/** get last index of chosen entry */
 	int32_t getLastResult () const { return lastResult; }
 	/** get last menu and index of chosen entry */
-	SharedPointer<COptionMenu> getLastItemMenu (int32_t& idxInMenu) const;
+	SPtr<COptionMenu> getLastItemMenu (int32_t& idxInMenu) const;
 
 	/** set prefix numbering */
 	virtual void setPrefixNumbers (int32_t preCount);
@@ -293,10 +291,10 @@ public:
 	int32_t getPrefixNumbers () const { return prefixNumbers; }
 
 	/** get a submenu */
-	SharedPointer<COptionMenu> getSubMenu (int32_t idx) const;
+	SPtr<COptionMenu> getSubMenu (int32_t idx) const;
 
 	/** popup callback function */
-	using PopupCallback = std::function<void (SharedPointer<COptionMenu> menu)>;
+	using PopupCallback = std::function<void (SPtr<COptionMenu> menu)>;
 
 	/** pops up the menu */
 	bool popup (const PopupCallback& callback = {});
@@ -340,7 +338,7 @@ private:
 	int32_t nbItemsPerColumn {-1};
 	int32_t lastResult {-1};
 	int32_t prefixNumbers {0};
-	SharedPointer<CBitmap> bgWhenClick;
+	SPtr<CBitmap> bgWhenClick;
 	WeakPointer<COptionMenu> lastMenu;
 	using MenuListenerList = DispatchList<IOptionMenuListener*>;
 	std::unique_ptr<MenuListenerList> listeners;

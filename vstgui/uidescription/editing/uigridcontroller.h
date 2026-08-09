@@ -20,15 +20,14 @@ namespace VSTGUI {
 class UIGridController : public UIGrid, public DelegationController, public IDialogController
 {
 public:
-	UIGridController (const SharedPointer<IController>& baseController,
-					  const SharedPointer<UIDescription>& description);
+	UIGridController (const SPtr<IController>& baseController,
+					  const SPtr<UIDescription>& description);
 	~UIGridController () override;
 	
 protected:
 	void valueChanged (CControl& pControl) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void setSize (const CPoint& p) override;
 
@@ -40,14 +39,14 @@ protected:
 	void loadDefGrids ();
 	void saveDefGrids ();
 	UTF8String pointToDisplayString (const CPoint& p) const;
-	void setupTextEdit (const SharedPointer<CTextEdit>& te) const;
+	void setupTextEdit (const SPtr<CTextEdit>& te) const;
 	void setupMenu ();
 
-	SharedPointer<UIDescription> editDescription;
-	SharedPointer<COptionMenu> gridMenu;
-	SharedPointer<CListControl> gridList;
-	SharedPointer<CTextEdit> gridXEdit;
-	SharedPointer<CTextEdit> gridYEdit;
+	SPtr<UIDescription> editDescription;
+	SPtr<COptionMenu> gridMenu;
+	SPtr<CListControl> gridList;
+	SPtr<CTextEdit> gridXEdit;
+	SPtr<CTextEdit> gridYEdit;
 
 	std::vector<CPoint> defGrids;
 

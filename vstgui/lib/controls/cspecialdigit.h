@@ -19,7 +19,7 @@ class CSpecialDigit : public CControl
 public:
 	CSpecialDigit (const CRect& size, IControlListener* listener, int32_t tag, int32_t dwPos,
 				   int32_t iNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height,
-				   const SharedPointer<CBitmap>& background);
+				   const SPtr<CBitmap>& background);
 
 	void draw (CDrawContext&) override;
 

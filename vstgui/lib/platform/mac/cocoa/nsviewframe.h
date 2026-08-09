@@ -44,12 +44,15 @@ public:
 	CALayer* getCALayer () const { return caLayer; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	void* makeTouchBar () const;
-	SharedPointer<NSViewDraggingSession> getDraggingSession () const { return draggingSession; }
+	SPtr<NSViewDraggingSession> getDraggingSession () const { return draggingSession; }
 	void clearDraggingSession () { draggingSession = nullptr; }
 	void setNeedsDisplayInRect (NSRect r);
 
-	void setDragDataPackage (SharedPointer<IDataPackage>&& package) { dragDataPackage = std::move (package); }
-	const SharedPointer<IDataPackage>& getDragDataPackage () const { return dragDataPackage; }
+	void setDragDataPackage (SPtr<IDataPackage>&& package)
+	{
+		dragDataPackage = std::move (package);
+	}
+	const SPtr<IDataPackage>& getDragDataPackage () const { return dragDataPackage; }
 
 	void initTrackingArea ();
 	void scaleFactorChanged (double newScaleFactor);
@@ -77,7 +80,8 @@ public:
 	PlatformViewLayerPtr
 		createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
 								 IPlatformViewLayer* parentLayer = nullptr) override;
-	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
+	bool doDrag (const DragDescription& dragDescription,
+				 const SPtr<IDragCallback>& callback) override;
 
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
 	void onFrameClosed () override {}
@@ -85,7 +89,7 @@ public:
 	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override;
 
 	// IPlatformFrameTouchBarExtension
-	void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) override;
+	void setTouchBarCreator (const SPtr<ITouchBarCreator>& creator) override;
 	void recreateTouchBar () override;
 
 //-----------------------------------------------------------------------------
@@ -95,11 +99,11 @@ protected:
 
 	NSView* nsView {nullptr};
 	CALayer* caLayer {nullptr};
-	SharedPointer<CocoaTooltipWindow> tooltipWindow;
+	SPtr<CocoaTooltipWindow> tooltipWindow;
 	ICocoaTextInputClient* textInputClient {nullptr};
-	SharedPointer<IDataPackage> dragDataPackage;
-	SharedPointer<ITouchBarCreator> touchBarCreator;
-	SharedPointer<NSViewDraggingSession> draggingSession;
+	SPtr<IDataPackage> dragDataPackage;
+	SPtr<ITouchBarCreator> touchBarCreator;
+	SPtr<NSViewDraggingSession> draggingSession;
 	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
 
 	bool trackingAreaInitialized;

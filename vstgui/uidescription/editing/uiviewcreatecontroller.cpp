@@ -21,8 +21,7 @@ namespace VSTGUI {
 class UIViewCreatorDataSource : public UIBaseDataSource
 {
 public:
-	UIViewCreatorDataSource (const IViewFactory& factory,
-							 const SharedPointer<UIDescription>& description);
+	UIViewCreatorDataSource (const IViewFactory& factory, const SPtr<UIDescription>& description);
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
 									 int32_t column, CDataBrowser& browser) override;
@@ -37,15 +36,15 @@ public:
 
 	void addViewToCurrentEditView (int32_t row);
 protected:
-	SharedPointer<UISelection> createSelection (int32_t row);
+	SPtr<UISelection> createSelection (int32_t row);
 	IViewFactoryEditingSupport::ViewAndDisplayNameList viewAndDisplayNameList;
 	const IViewFactory& factory;
 	DragStartMouseObserver dragStartMouseObserver;
 };
 
 //----------------------------------------------------------------------------------------------------
-UIViewCreatorController::UIViewCreatorController (const SharedPointer<IController>& baseController,
-												  const SharedPointer<UIDescription>& description)
+UIViewCreatorController::UIViewCreatorController (const SPtr<IController>& baseController,
+												  const SPtr<UIDescription>& description)
 : DelegationController (baseController), description (description)
 {
 }
@@ -54,8 +53,8 @@ UIViewCreatorController::UIViewCreatorController (const SharedPointer<IControlle
 UIViewCreatorController::~UIViewCreatorController () {}
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIViewCreatorController::createView (const UIAttributes& attributes,
-														  const IUIDescription& _description)
+SPtr<CView> UIViewCreatorController::createView (const UIAttributes& attributes,
+												 const IUIDescription& _description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -77,9 +76,9 @@ SharedPointer<CView> UIViewCreatorController::createView (const UIAttributes& at
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIViewCreatorController::verifyView (const SharedPointer<CView>& view,
-														  const UIAttributes& attributes,
-														  const IUIDescription& desc)
+SPtr<CView> UIViewCreatorController::verifyView (const SPtr<CView>& view,
+												 const UIAttributes& attributes,
+												 const IUIDescription& desc)
 {
 	auto searchField = view.cast<CSearchTextEdit> ();
 	if (dataSource && searchField && searchField->getTag () == kSearchFieldTag)
@@ -117,7 +116,7 @@ void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewCreatorDataSource::UIViewCreatorDataSource (const IViewFactory& factory,
-												  const SharedPointer<UIDescription>& description)
+												  const SPtr<UIDescription>& description)
 : UIBaseDataSource (description, {}, nullptr), factory (factory)
 {
 }
@@ -147,7 +146,7 @@ void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 		{
 			if (auto editController = controller->getBaseController ().cast<UIEditController> ())
 			{
-				SharedPointer<UISelection> selection = createSelection (row);
+				SPtr<UISelection> selection = createSelection (row);
 				editController->addSelectionToCurrentView (selection);
 			}
 		}
@@ -155,11 +154,12 @@ void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UISelection> createSelectionFromViewName (
-	const std::string& viewName, const IViewFactory& factory, const UIDescription& description,
-	const SharedPointer<UIAttributes>& optionalAttributes)
+SPtr<UISelection> createSelectionFromViewName (const std::string& viewName,
+											   const IViewFactory& factory,
+											   const UIDescription& description,
+											   const SPtr<UIAttributes>& optionalAttributes)
 {
-	SharedPointer<UISelection> selection;
+	SPtr<UISelection> selection;
 	UIAttributes viewAttr;
 	viewAttr.setAttribute (UIViewCreator::kAttrClass, viewName);
 	if (optionalAttributes)
@@ -183,9 +183,9 @@ SharedPointer<UISelection> createSelectionFromViewName (
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row)
+SPtr<UISelection> UIViewCreatorDataSource::createSelection (int32_t row)
 {
-	SharedPointer<UISelection> selection;
+	SPtr<UISelection> selection;
 	auto viewDisplayName = getStringList ()->at (static_cast<uint32_t> (row)).getString ();
 	auto it = std::find_if (viewAndDisplayNameList.begin (), viewAndDisplayNameList.end (),
 	                        [&] (const auto& entry) { return entry.second == viewDisplayName; });
@@ -219,7 +219,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where,
 		if (dragStartMouseObserver.shouldStartDrag (where))
 		{
 			auto selRow = browser.getSelection ().front ();
-			SharedPointer<UISelection> selection = createSelection (selRow);
+			SPtr<UISelection> selection = createSelection (selRow);
 			CMemoryStream stream (1024, 1024, false);
 			if (selection->store (stream, description))
 			{

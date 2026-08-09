@@ -32,17 +32,17 @@ Detailed changes:
 	- `CViewContainer* CView::getParentView () const`
 
 - The following important `CViewContainer` methods have changed:
-	- `bool CViewContainer::addSubview (const SharedPointer<CView>& view)`
-	- `bool CViewContainer::insertSubview (const SharedPointer<CView>& view, const Optional<size_t>& position = {});`
-	- `bool CViewContainer::removeSubview (const SharedPointer<CView>& view)`
+	- `bool CViewContainer::addSubview (const SPtr<CView>& view)`
+	- `bool CViewContainer::insertSubview (const SPtr<CView>& view, const Optional<size_t>& position = {});`
+	- `bool CViewContainer::removeSubview (const SPtr<CView>& view)`
 	- `bool CViewContainer::isChild (CView& pView, bool deep) const`
-	- `bool CViewContainer::changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex)`
-	- `bool CViewContainer::checkUpdateRect (const SharedPointer<CView>& view, const CRect& rect)`
+	- `bool CViewContainer::changeViewZOrder (const SPtr<CView>& view, uint32_t newIndex)`
+	- `bool CViewContainer::checkUpdateRect (const SPtr<CView>& view, const CRect& rect)`
 	
-- All constructors having `CBitmaps` as arguments now take them as a `SharedPointer`.
+- All constructors having `CBitmaps` as arguments now take them as a `SPtr`.
 - Changed `IDraggingSession` and related callback methods to use const references instead of pointers
-- The following methods now take a `SharedPointer<CBitmap>` instead of a raw pointer
-and their possible getter methods return also a `SharedPointer<CBitmap>` now:
+- The following methods now take a `SPtr<CBitmap>` instead of a raw pointer
+and their possible getter methods return also a `SPtr<CBitmap>` now:
 	- `CView::setBackground`
 	- `CView::setDisabledBackground`
 	- `CVUMeter::setOnBitmap`
@@ -64,7 +64,7 @@ and their possible getter methods return also a `SharedPointer<CBitmap>` now:
 	- `UIViewCreator::bitmapToString`
 	- `UIViewCreator::stringToBitmap`
 
-- The following methods return a `SharedPointer<...>` now instead of a raw pointer
+- The following methods return a `SPtr<...>` now instead of a raw pointer
 	- `CViewContainer::findFirstView`
 	- `CViewContainer::Iterator::operator*`
 	- `CViewContainer::getView`
@@ -94,8 +94,8 @@ and their possible getter methods return also a `SharedPointer<CBitmap>` now:
 	- `Standalone::ISharedUIResources::getFont`
 	- `Standalone::ICustomization::createController`
 
-- The global fonts (kSystemFont, kNormalFont, etc) are now `SharedPointer<CFontDesc>` instead of raw pointers.
-- The following methods now take `SharedPointer<CFontDesc>` instead of a raw pointer:
+- The global fonts (kSystemFont, kNormalFont, etc) are now `SPtr<CFontDesc>` instead of raw pointers.
+- The following methods now take `SPtr<CFontDesc>` instead of a raw pointer:
 	- `CParamDisplay::setFont`
 	- `CCheckBox::setFont`
 	- `CTextButton::setFont`
@@ -112,7 +112,7 @@ and their possible getter methods return also a `SharedPointer<CBitmap>` now:
 	- `GenericStringListDataBrowserSource::setupUI`
 	- `IUIDescription::lookupFontName`
 
-- The following methods now take `SharedPointer<CGradient>` instead of a raw pointer:
+- The following methods now take `SPtr<CGradient>` instead of a raw pointer:
 	- `CTextButton::setGradient`
 	- `CTextButton::setGradientHighlighted`
 	- `CSegmentButton::setGradient`
@@ -121,15 +121,15 @@ and their possible getter methods return also a `SharedPointer<CBitmap>` now:
 	- `IUIDescription::lookupGradientName`
 	- `UIViewCreator::addGradientToUIDescription`
 
-- The following methods now take `SharedPointer<CGraphicsPath>` instead of a raw pointer:
+- The following methods now take `SPtr<CGraphicsPath>` instead of a raw pointer:
 	- `CDrawContext::drawGraphicsPath`
 	- `CDrawContext::fillLinearGradient`
 	- `CDrawContext::fillRadialGradient`
 
-- The following methods now take a `SharedPointer<CView>` instead of a raw pointer:
+- The following methods now take a `SPtr<CView>` instead of a raw pointer:
 	- `CViewContainer::setInitialFocusView`
 
-- The following methods now take a `SharedPointer<IController>` instead of a raw pointer:
+- The following methods now take a `SPtr<IController>` instead of a raw pointer:
 	- `IUIDescription::createView`
 	- `UIDescription::setController`
 	- `DelegationController::DelegationController`
@@ -277,7 +277,7 @@ The old mouse methods (onMouseDown, onMouseUp, onMouseMoved, etc) are still supp
 
 ### Version 4.5
 
-- COffscreenContext::create returns a SharedPointer<COffscreenContext> now, not a raw pointer.
+- COffscreenContext::create returns a SPtr<COffscreenContext> now, not a raw pointer.
 
 ### Version 4.3
 

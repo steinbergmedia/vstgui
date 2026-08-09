@@ -176,8 +176,8 @@ IdStringPtr JavaScriptDrawableViewCreator::getBaseViewName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> JavaScriptDrawableViewCreator::create (const UIAttributes& attributes,
-															const IUIDescription& description) const
+SPtr<CView> JavaScriptDrawableViewCreator::create (const UIAttributes& attributes,
+												   const IUIDescription& description) const
 {
 	return makeShared<JavaScriptDrawableView> (CRect ());
 }
@@ -197,8 +197,8 @@ IdStringPtr JavaScriptDrawableControlCreator::getBaseViewName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> JavaScriptDrawableControlCreator::create (
-	const UIAttributes& attributes, const IUIDescription& description) const
+SPtr<CView> JavaScriptDrawableControlCreator::create (const UIAttributes& attributes,
+													  const IUIDescription& description) const
 {
 	return makeShared<JavaScriptDrawableControl> (CRect ());
 }

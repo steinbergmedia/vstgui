@@ -47,8 +47,8 @@ UTF8StringPtr SplitViewCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> SplitViewCreator::create (const UIAttributes& attributes,
-											   const IUIDescription& description) const
+SPtr<CView> SplitViewCreator::create (const UIAttributes& attributes,
+									  const IUIDescription& description) const
 {
 	return makeShared<CSplitView> (CRect (0, 0, 100, 100));
 }

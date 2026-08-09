@@ -24,17 +24,16 @@ class UIGradientsController : public NonAtomicReferenceCounted,
                               public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIGradientsController (const SharedPointer<IController>& baseController,
-						   const SharedPointer<UIDescription>& description,
+	UIGradientsController (const SPtr<IController>& baseController,
+						   const SPtr<UIDescription>& description,
 						   WeakPointer<IActionPerformer> actionPerformer);
 	~UIGradientsController () override;
 
 protected:
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl& pControl) override;
 	void dbSelectionChanged (int32_t selectedRow,
@@ -43,10 +42,10 @@ protected:
 
 	void showEditDialog ();
 
-	SharedPointer<UIDescription> editDescription;
-	SharedPointer<CControl> editButton;
+	SPtr<UIDescription> editDescription;
+	SPtr<CControl> editButton;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<UIGradientsDataSource> dataSource;
+	SPtr<UIGradientsDataSource> dataSource;
 
 	enum {
 		kAddTag = 0,

@@ -21,13 +21,12 @@ namespace VSTGUI {
  */
 struct DragDescription
 {
-	SharedPointer<IDataPackage> data;
-	SharedPointer<CBitmap> bitmap;
+	SPtr<IDataPackage> data;
+	SPtr<CBitmap> bitmap;
 	CPoint bitmapOffset;
 
-	explicit DragDescription (const SharedPointer<IDataPackage>& data,
-	                          CPoint bitmapOffset = CPoint (),
-	                          const SharedPointer<CBitmap>& bitmap = nullptr)
+	explicit DragDescription (const SPtr<IDataPackage>& data, CPoint bitmapOffset = CPoint (),
+							  const SPtr<CBitmap>& bitmap = nullptr)
 	: data (data), bitmap (bitmap), bitmapOffset (bitmapOffset)
 	{
 	}
@@ -56,7 +55,7 @@ enum class DragOperation
 class IDraggingSession
 {
 public:
-	virtual bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const = 0;
+	virtual bool setBitmap (const SPtr<CBitmap>& bitmap, CPoint offset) const = 0;
 };
 
 //------------------------------------------------------------------------
@@ -67,7 +66,7 @@ public:
 struct DragEventData
 {
 	/** drag data package */
-	const SharedPointer<IDataPackage>& drag;
+	const SPtr<IDataPackage>& drag;
 	/** mouse position */
 	CPoint pos;
 	/** key modifiers */

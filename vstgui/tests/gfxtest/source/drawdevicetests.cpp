@@ -324,10 +324,10 @@ class ViewCreator : public DelegationController,
 					public NonAtomicReferenceCounted
 {
 public:
-	ViewCreator (const SharedPointer<IController>& parent) : DelegationController (parent) {}
+	ViewCreator (const SPtr<IController>& parent) : DelegationController (parent) {}
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{

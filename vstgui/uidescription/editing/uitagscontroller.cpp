@@ -17,7 +17,7 @@ namespace VSTGUI {
 class UITagsDataSource : public UIBaseDataSource
 {
 public:
-	UITagsDataSource (const SharedPointer<UIDescription>& description,
+	UITagsDataSource (const SPtr<UIDescription>& description,
 					  WeakPointer<IActionPerformer> actionPerformer);
 	~UITagsDataSource () override = default;
 
@@ -46,7 +46,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UITagsDataSource::UITagsDataSource (const SharedPointer<UIDescription>& description,
+UITagsDataSource::UITagsDataSource (const SPtr<UIDescription>& description,
 									WeakPointer<IActionPerformer> actionPerformer)
 : UIBaseDataSource (description, actionPerformer)
 {
@@ -188,8 +188,8 @@ void UITagsDataSource::dbDrawCell (CDrawContext& context, const CRect& size, int
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITagsController::UITagsController (const SharedPointer<IController>& baseController,
-									const SharedPointer<UIDescription>& description,
+UITagsController::UITagsController (const SPtr<IController>& baseController,
+									const SPtr<UIDescription>& description,
 									WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
@@ -201,8 +201,8 @@ UITagsController::UITagsController (const SharedPointer<IController>& baseContro
 UITagsController::~UITagsController () {}
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UITagsController::createView (const UIAttributes& attributes,
-												   const IUIDescription& description)
+SPtr<CView> UITagsController::createView (const UIAttributes& attributes,
+										  const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -221,9 +221,8 @@ SharedPointer<CView> UITagsController::createView (const UIAttributes& attribute
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UITagsController::verifyView (const SharedPointer<CView>& view,
-												   const UIAttributes& attributes,
-												   const IUIDescription& description)
+SPtr<CView> UITagsController::verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+										  const IUIDescription& description)
 {
 	auto searchField = view.cast<CSearchTextEdit> ();
 	if (dataSource && searchField && searchField->getTag () == kSearchTag)

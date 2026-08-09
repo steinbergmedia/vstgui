@@ -37,14 +37,14 @@ class ImageViewController : public DelegationController,
 							public NonAtomicReferenceCounted
 {
 public:
-	using Proc = std::function<void (const SharedPointer<ImageFramesView>&)>;
-	ImageViewController (Proc&& proc, const SharedPointer<IController>& parent)
+	using Proc = std::function<void (const SPtr<ImageFramesView>&)>;
+	ImageViewController (Proc&& proc, const SPtr<IController>& parent)
 	: DelegationController (parent), proc (std::move (proc))
 	{
 	}
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -62,8 +62,8 @@ public:
 		return controller->createView (attributes, description);
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view, const UIAttributes& attr,
-									 const IUIDescription& desc) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attr,
+							const IUIDescription& desc) override
 	{
 		if (auto name = attr.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -85,14 +85,14 @@ class MovieBitmapController : public DelegationController,
 							  public NonAtomicReferenceCounted
 {
 public:
-	using Proc = std::function<void (const SharedPointer<CMovieBitmap>&)>;
-	MovieBitmapController (Proc&& proc, const SharedPointer<IController>& parent)
+	using Proc = std::function<void (const SPtr<CMovieBitmap>&)>;
+	MovieBitmapController (Proc&& proc, const SPtr<IController>& parent)
 	: DelegationController (parent), proc (std::move (proc))
 	{
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view, const UIAttributes& attr,
-									 const IUIDescription& desc) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attr,
+							const IUIDescription& desc) override
 	{
 		if (auto mb = view.cast<CMovieBitmap> ())
 		{
@@ -112,7 +112,7 @@ class SplitViewController : public DelegationController,
 							public NonAtomicReferenceCounted
 {
 public:
-	SplitViewController (const SharedPointer<IController>& parent, const IUIDescription& desc)
+	SplitViewController (const SPtr<IController>& parent, const IUIDescription& desc)
 	: DelegationController (parent), desc (desc)
 	{
 	}
@@ -134,8 +134,7 @@ public:
 		}
 		return false;
 	}
-	SharedPointer<ISplitViewSeparatorDrawer>
-		getSplitViewSeparatorDrawer (CSplitView& splitView) override
+	SPtr<ISplitViewSeparatorDrawer> getSplitViewSeparatorDrawer (CSplitView& splitView) override
 	{
 		return nullptr;
 	}
@@ -271,9 +270,9 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 }
 
 //------------------------------------------------------------------------
-SharedPointer<IController> DocumentWindowController::createController (
-	const UTF8StringView& name, const SharedPointer<IController>& parent,
-	const IUIDescription& uiDesc)
+SPtr<IController> DocumentWindowController::createController (const UTF8StringView& name,
+															  const SPtr<IController>& parent,
+															  const IUIDescription& uiDesc)
 {
 	if (name == "ImageViewController")
 		return makeShared<ImageViewController> (
@@ -346,7 +345,7 @@ bool DocumentWindowController::canClose (const IWindow&)
 }
 
 //------------------------------------------------------------------------
-static bool exportImage (const SharedPointer<CBitmap>& image, UTF8StringPtr path)
+static bool exportImage (const SPtr<CBitmap>& image, UTF8StringPtr path)
 {
 	auto platformBitmap = image->getPlatformBitmap ();
 	vstgui_assert (platformBitmap);
@@ -678,7 +677,7 @@ bool DocumentWindowController::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CBitmap> DocumentWindowController::createStitchedBitmap ()
+SPtr<CBitmap> DocumentWindowController::createStitchedBitmap ()
 {
 	if (!contentView || docContext->getImagePaths ().empty ())
 		return nullptr;

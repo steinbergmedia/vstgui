@@ -10,7 +10,7 @@ namespace ScriptingInternal {
 
 //------------------------------------------------------------------------
 JavaScriptViewFactory::JavaScriptViewFactory (IScriptContextInternal* scripting,
-											  const SharedPointer<IViewFactory>& origFactory)
+											  const SPtr<IViewFactory>& origFactory)
 : Super (origFactory), scriptContext (scripting)
 {
 }
@@ -27,8 +27,8 @@ JavaScriptViewFactory::~JavaScriptViewFactory () noexcept
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> JavaScriptViewFactory::createView (const UIAttributes& attributes,
-														const IUIDescription& description) const
+SPtr<CView> JavaScriptViewFactory::createView (const UIAttributes& attributes,
+											   const IUIDescription& description) const
 {
 	if (auto view = Super::createView (attributes, description))
 	{

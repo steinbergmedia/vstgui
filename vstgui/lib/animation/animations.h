@@ -70,7 +70,7 @@ public:
 	};
 
 	/** oldView must be a subview of the animation view */
-	ExchangeViewAnimation (const SharedPointer<CView>& oldView, const SharedPointer<CView>& newView,
+	ExchangeViewAnimation (const SPtr<CView>& oldView, const SPtr<CView>& newView,
 						   AnimationStyle style = kAlphaValueFade);
 	~ExchangeViewAnimation () noexcept override;
 
@@ -91,8 +91,8 @@ protected:
 
 	void updateViewSize (CView& view, const CRect& rect);
 
-	SharedPointer<CView> newView;
-	SharedPointer<CView> viewToRemove;
+	SPtr<CView> newView;
+	SPtr<CView> viewToRemove;
 	AnimationStyle style;
 	float newViewAlphaValueEnd;
 	float oldViewAlphaValueStart;

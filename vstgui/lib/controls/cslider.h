@@ -92,13 +92,11 @@ class CSlider : public CSliderBase
 private:
 public:
 	CSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
-			 int32_t iMaxPos, const SharedPointer<CBitmap>& handle,
-			 const SharedPointer<CBitmap>& background, const CPoint& offset = CPoint (0, 0),
-			 Styles style = {{kLeft, kHorizontal}});
+			 int32_t iMaxPos, const SPtr<CBitmap>& handle, const SPtr<CBitmap>& background,
+			 const CPoint& offset = CPoint (0, 0), Styles style = {{kLeft, kHorizontal}});
 	CSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle,
-			 int32_t rangeHandle, const SharedPointer<CBitmap>& handle,
-			 const SharedPointer<CBitmap>& background, const CPoint& offset = CPoint (0, 0),
-			 Styles style = {{kLeft, kHorizontal}});
+			 int32_t rangeHandle, const SPtr<CBitmap>& handle, const SPtr<CBitmap>& background,
+			 const CPoint& offset = CPoint (0, 0), Styles style = {{kLeft, kHorizontal}});
 
 	//------------------------------------------------------------------------
 	/// @name CSlider Methods
@@ -109,8 +107,8 @@ public:
 	/** get background draw offset */
 	CPoint getBackgroundOffset () const;
 
-	void setHandle (const SharedPointer<CBitmap>& pHandle);
-	SharedPointer<CBitmap> getHandle () const;
+	void setHandle (const SPtr<CBitmap>& pHandle);
+	SPtr<CBitmap> getHandle () const;
 	//@}
 
 //------------------------------------------------------------------------
@@ -160,13 +158,12 @@ class CVerticalSlider : public CSlider
 {
 public:
 	CVerticalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
-					 int32_t iMaxPos, const SharedPointer<CBitmap>& handle,
-					 const SharedPointer<CBitmap>& background, const CPoint& offset = CPoint (0, 0),
-					 Styles style = kBottom);
-	CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-					 const CPoint& offsetHandle, int32_t rangeHandle,
-					 const SharedPointer<CBitmap>& handle, const SharedPointer<CBitmap>& background,
+					 int32_t iMaxPos, const SPtr<CBitmap>& handle, const SPtr<CBitmap>& background,
 					 const CPoint& offset = CPoint (0, 0), Styles style = kBottom);
+	CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
+					 const CPoint& offsetHandle, int32_t rangeHandle, const SPtr<CBitmap>& handle,
+					 const SPtr<CBitmap>& background, const CPoint& offset = CPoint (0, 0),
+					 Styles style = kBottom);
 };
 
 //------------------------------------------------------------------------
@@ -178,14 +175,13 @@ class CHorizontalSlider : public CSlider
 {
 public:
 	CHorizontalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos,
-					   int32_t iMaxPos, const SharedPointer<CBitmap>& handle,
-					   const SharedPointer<CBitmap>& background,
-					   const CPoint& offset = CPoint (0, 0), Styles style = kRight);
+					   int32_t iMaxPos, const SPtr<CBitmap>& handle,
+					   const SPtr<CBitmap>& background, const CPoint& offset = CPoint (0, 0),
+					   Styles style = kRight);
 	CHorizontalSlider (const CRect& rect, IControlListener* listener, int32_t tag,
-					   const CPoint& offsetHandle, int32_t rangeHandle,
-					   const SharedPointer<CBitmap>& handle,
-					   const SharedPointer<CBitmap>& background,
-					   const CPoint& offset = CPoint (0, 0), Styles style = kRight);
+					   const CPoint& offsetHandle, int32_t rangeHandle, const SPtr<CBitmap>& handle,
+					   const SPtr<CBitmap>& background, const CPoint& offset = CPoint (0, 0),
+					   Styles style = kRight);
 };
 
 } // VSTGUI

@@ -52,8 +52,8 @@ void GenericStringListDataBrowserSource::setStringList (const StringVector* inSt
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::setupUI (
 	const CColor& _selectionColor, const CColor& _fontColor, const CColor& _rowlineColor,
-	const CColor& _rowBackColor, const CColor& _rowAlternateBackColor,
-	const SharedPointer<CFontDesc>& _font, int32_t _rowHeight, CCoord _textInset)
+	const CColor& _rowBackColor, const CColor& _rowAlternateBackColor, const SPtr<CFontDesc>& _font,
+	int32_t _rowHeight, CCoord _textInset)
 {
 	if (_font)
 		drawFont = _font;

@@ -30,8 +30,7 @@ struct View3 : public CView
 struct TestUIDescription : public UIDescriptionAdapter,
 						   public NonAtomicReferenceCounted
 {
-	SharedPointer<CView> createView (UTF8StringPtr name,
-									 const SharedPointer<IController>& controller) const override
+	SPtr<CView> createView (UTF8StringPtr name, const SPtr<IController>& controller) const override
 	{
 		if (UTF8StringView (name) == "v1")
 			return makeShared<View1> ();

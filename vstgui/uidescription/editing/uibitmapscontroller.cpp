@@ -37,7 +37,7 @@ public:
 	const CLineStyle lineOnOffDash2Style {CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0,
 										  2, kDefaultOnOffDashLength2};
 
-	UIBitmapView (SharedPointer<CBitmap> bitmap = {}) : CView (CRect (0, 0, 0, 0)), zoom (1.)
+	UIBitmapView (SPtr<CBitmap> bitmap = {}) : CView (CRect (0, 0, 0, 0)), zoom (1.)
 	{
 		setBackground (bitmap);
 	}
@@ -167,7 +167,7 @@ public:
 		}
 	}
 
-	void setBackground (const SharedPointer<CBitmap>& background) override
+	void setBackground (const SPtr<CBitmap>& background) override
 	{
 		auto platformBitmap = background ? background->getPlatformBitmap () : nullptr;
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
@@ -193,11 +193,11 @@ protected:
 class UIBitmapsDataSource : public UIBaseDataSource
 {
 public:
-	UIBitmapsDataSource (const SharedPointer<UIDescription>& description,
+	UIBitmapsDataSource (const SPtr<UIDescription>& description,
 						 WeakPointer<IActionPerformer> actionPerformer,
 						 GenericStringListDataBrowserSourceSelectionChanged* delegate);
 
-	SharedPointer<CBitmap> getSelectedBitmap ();
+	SPtr<CBitmap> getSelectedBitmap ();
 	UTF8StringPtr getSelectedBitmapName ();
 
 	bool add () override;
@@ -231,14 +231,14 @@ protected:
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
 									  int32_t column, CDataBrowser& browser) override;
 
-	SharedPointer<CColorChooser> colorChooser;
+	SPtr<CColorChooser> colorChooser;
 	DragStartMouseObserver dragStartMouseObserver;
 	bool dragContainsBitmaps;
 };
 
 //----------------------------------------------------------------------------------------------------
 UIBitmapsDataSource::UIBitmapsDataSource (
-	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
+	const SPtr<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
 	GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate), dragContainsBitmaps (false)
 {
@@ -478,7 +478,7 @@ bool UIBitmapsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPt
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> UIBitmapsDataSource::getSelectedBitmap ()
+SPtr<CBitmap> UIBitmapsDataSource::getSelectedBitmap ()
 {
 	auto dataBrowser = dbPtr.lock ();
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
@@ -590,17 +590,16 @@ class UIBitmapSettingsController : public NonAtomicReferenceCounted,
 								   public IUIUndoManagerListener
 {
 public:
-	UIBitmapSettingsController (const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName,
-								const SharedPointer<UIDescription>& description,
+	UIBitmapSettingsController (const SPtr<CBitmap>& bitmap, const std::string& bitmapName,
+								const SPtr<UIDescription>& description,
 								WeakPointer<IActionPerformer> actionPerformer,
-								const SharedPointer<UIUndoManager>& undoManager);
+								const SPtr<UIUndoManager>& undoManager);
 	~UIBitmapSettingsController () noexcept override;
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	void valueChanged (CControl& pControl) override;
 	void controlBeginEdit (CControl& pControl) override;
 	void controlEndEdit (CControl& pControl) override;
@@ -618,11 +617,11 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit& userData);
 	static bool valueToString (float value, char utf8String[256], CParamDisplay& userData);
 
-	SharedPointer<CBitmap> bitmap;
-	SharedPointer<UIDescription> editDescription;
-	SharedPointer<UIBitmapView> bitmapView;
+	SPtr<CBitmap> bitmap;
+	SPtr<UIDescription> editDescription;
+	SPtr<UIBitmapView> bitmapView;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<UIUndoManager> undoManager;
+	SPtr<UIUndoManager> undoManager;
 	std::string bitmapName;
 	CRect origOffsets;
 	CMultiFrameBitmapDescription origMultiFrameDesc;
@@ -647,14 +646,14 @@ protected:
 		kMultiFrameDescValidTag,
 		kNumTags
 	};
-	std::array<SharedPointer<CControl>, kNumTags> controls;
+	std::array<SPtr<CControl>, kNumTags> controls;
 };
 
 //----------------------------------------------------------------------------------------------------
 UIBitmapSettingsController::UIBitmapSettingsController (
-	const SharedPointer<CBitmap>& bitmap, const std::string& bitmapName,
-	const SharedPointer<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
-	const SharedPointer<UIUndoManager>& undoManager)
+	const SPtr<CBitmap>& bitmap, const std::string& bitmapName,
+	const SPtr<UIDescription>& description, WeakPointer<IActionPerformer> actionPerformer,
+	const SPtr<UIUndoManager>& undoManager)
 : bitmap (bitmap)
 , editDescription (description)
 , actionPerformer (actionPerformer)
@@ -898,9 +897,9 @@ void UIBitmapSettingsController::onDialogShow (UIDialogController&)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIBitmapSettingsController::verifyView (const SharedPointer<CView>& view,
-															 const UIAttributes& attributes,
-															 const IUIDescription& description)
+SPtr<CView> UIBitmapSettingsController::verifyView (const SPtr<CView>& view,
+													const UIAttributes& attributes,
+													const IUIDescription& description)
 {
 	auto control = view.cast<CControl> ();
 	if (control && control->getTag () >= 0 && control->getTag () < kNumTags)
@@ -1017,8 +1016,8 @@ SharedPointer<CView> UIBitmapSettingsController::verifyView (const SharedPointer
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIBitmapSettingsController::createView (const UIAttributes& attributes,
-															 const IUIDescription& description)
+SPtr<CView> UIBitmapSettingsController::createView (const UIAttributes& attributes,
+													const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -1057,10 +1056,10 @@ bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIBitmapsController::UIBitmapsController (const SharedPointer<IController>& baseController,
-										  const SharedPointer<UIDescription>& description,
+UIBitmapsController::UIBitmapsController (const SPtr<IController>& baseController,
+										  const SPtr<UIDescription>& description,
 										  WeakPointer<IActionPerformer> actionPerformer,
-										  const SharedPointer<UIUndoManager>& undoManager)
+										  const SPtr<UIUndoManager>& undoManager)
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
@@ -1085,8 +1084,8 @@ void UIBitmapsController::showSettingsDialog ()
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIBitmapsController::createView (const UIAttributes& attributes,
-													  const IUIDescription& description)
+SPtr<CView> UIBitmapsController::createView (const UIAttributes& attributes,
+											 const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -1109,9 +1108,9 @@ SharedPointer<CView> UIBitmapsController::createView (const UIAttributes& attrib
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIBitmapsController::verifyView (const SharedPointer<CView>& view,
-													  const UIAttributes& attributes,
-													  const IUIDescription& description)
+SPtr<CView> UIBitmapsController::verifyView (const SPtr<CView>& view,
+											 const UIAttributes& attributes,
+											 const IUIDescription& description)
 {
 	auto searchField = view.cast<CSearchTextEdit> ();
 	if (searchField && searchField->getTag () == kSearchTag)

@@ -43,7 +43,7 @@ struct CViewContainer::Impl
 	CGraphicsTransform transform;
 
 	ViewList children;
-	SharedPointer<IViewLayouter> layouter {AutoSizeViewLayouter::get ()};
+	SPtr<IViewLayouter> layouter {AutoSizeViewLayouter::get ()};
 
 	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
 	CColor backgroundColor {kBlackCColor};
@@ -129,8 +129,8 @@ struct CViewContainerDropTarget : public IDropTarget, public NonAtomicReferenceC
 	}
 
 	CViewContainer* container;
-	SharedPointer<IDropTarget> dropTarget;
-	SharedPointer<CView> currentDragView;
+	SPtr<IDropTarget> dropTarget;
+	SPtr<CView> currentDragView;
 };
 
 //-----------------------------------------------------------------------------
@@ -182,7 +182,7 @@ void CViewContainer::parentSizeChanged ()
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::setMouseDownView (const SharedPointer<CView>& view)
+void CViewContainer::setMouseDownView (const SPtr<CView>& view)
 {
 	auto mouseDownView = getMouseDownView ();
 	if (mouseDownView && mouseDownView != view)
@@ -206,9 +206,9 @@ void CViewContainer::setMouseDownView (const SharedPointer<CView>& view)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> CViewContainer::getMouseDownView () const
+SPtr<CView> CViewContainer::getMouseDownView () const
 {
-	SharedPointer<CView> view;
+	SPtr<CView> view;
 	if (getAttribute (kCViewContainerMouseDownViewAttribute, view))
 		return view;
 	return {};
@@ -269,7 +269,7 @@ void CViewContainer::setAutosizingEnabled (bool state)
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::setViewLayouter (const SharedPointer<IViewLayouter>& layouter)
+void CViewContainer::setViewLayouter (const SPtr<IViewLayouter>& layouter)
 {
 	if (layouter == nullptr)
 		pImpl->layouter = AutoSizeViewLayouter::get ();
@@ -278,7 +278,7 @@ void CViewContainer::setViewLayouter (const SharedPointer<IViewLayouter>& layout
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IViewLayouter> CViewContainer::getViewLayouter () const { return pImpl->layouter; }
+SPtr<IViewLayouter> CViewContainer::getViewLayouter () const { return pImpl->layouter; }
 
 //-----------------------------------------------------------------------------
 std::optional<ViewLayout> CViewContainer::calculateViewLayout (const CRect& newSize) const
@@ -483,8 +483,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 }
 
 //------------------------------------------------------------------------
-bool CViewContainer::doInsertSubview (const SharedPointer<CView>& view,
-									  ViewList::const_iterator pos)
+bool CViewContainer::doInsertSubview (const SPtr<CView>& view, ViewList::const_iterator pos)
 {
 	if (!view)
 		return false;
@@ -527,11 +526,10 @@ void CViewContainer::doRemoveSubview (ViewList::const_iterator pos)
 }
 
 //------------------------------------------------------------------------
-bool CViewContainer::addSubview (const SharedPointer<CView>& view) { return insertSubview (view); }
+bool CViewContainer::addSubview (const SPtr<CView>& view) { return insertSubview (view); }
 
 //------------------------------------------------------------------------
-bool CViewContainer::insertSubview (const SharedPointer<CView>& view,
-									const Optional<size_t>& position)
+bool CViewContainer::insertSubview (const SPtr<CView>& view, const Optional<size_t>& position)
 {
 	ViewList::const_iterator it;
 	if (position)
@@ -547,7 +545,7 @@ bool CViewContainer::insertSubview (const SharedPointer<CView>& view,
 }
 
 //------------------------------------------------------------------------
-bool CViewContainer::removeSubview (const SharedPointer<CView>& view)
+bool CViewContainer::removeSubview (const SPtr<CView>& view)
 {
 	if (auto pos = CViewContainer::indexOfSubview (view))
 	{
@@ -560,7 +558,7 @@ bool CViewContainer::removeSubview (const SharedPointer<CView>& view)
 }
 
 //------------------------------------------------------------------------
-Optional<size_t> CViewContainer::indexOfSubview (const SharedPointer<CView>& view) const
+Optional<size_t> CViewContainer::indexOfSubview (const SPtr<CView>& view) const
 {
 	return indexOf<size_t> (pImpl->children.begin (), pImpl->children.end (), view);
 }
@@ -647,7 +645,7 @@ uint32_t CViewContainer::getNbViews () const
  * @param index the index of the view to return
  * @return view at index. NULL if view at index does not exist.
  */
-SharedPointer<CView> CViewContainer::getView (uint32_t index) const
+SPtr<CView> CViewContainer::getView (uint32_t index) const
 {
 	auto it = pImpl->children.begin ();
 	std::advance (it, index);
@@ -662,7 +660,7 @@ SharedPointer<CView> CViewContainer::getView (uint32_t index) const
  * @param newIndex index of new z position
  * @return true if z order of view changed
  */
-bool CViewContainer::changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex)
+bool CViewContainer::changeViewZOrder (const SPtr<CView>& view, uint32_t newIndex)
 {
 	if (newIndex < getNbViews ())
 	{
@@ -789,7 +787,7 @@ void CViewContainer::drawRect (CDrawContext& context, const CRect& updateRect)
 	// draw the background
 	drawBackgroundRect (context, clientRect);
 
-	SharedPointer<CView> _focusView;
+	SPtr<CView> _focusView;
 	IFocusDrawing* _focusDrawing = nullptr;
 	auto frame = getFrame ();
 	if (frame && frame->focusDrawingEnabled ())
@@ -904,7 +902,7 @@ void CViewContainer::drawRect (CDrawContext& context, const CRect& updateRect)
  * @param rect update rect
  * @return true if view needs update
  */
-bool CViewContainer::checkUpdateRect (const SharedPointer<CView>& view, const CRect& rect)
+bool CViewContainer::checkUpdateRect (const SPtr<CView>& view, const CRect& rect)
 {
 	return view->checkUpdate (rect) && view->isVisible ();
 }
@@ -1082,11 +1080,11 @@ void CViewContainer::onMouseCancelEvent (MouseCancelEvent& event)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
+SPtr<IDropTarget> CViewContainer::getDropTarget ()
 {
 	if (getFrame () == this)
 	{
-		SharedPointer<IDropTarget> dropTarget;
+		SPtr<IDropTarget> dropTarget;
 		if (!getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
 		{
 			dropTarget = makeShared<CViewContainerDropTarget> (this);
@@ -1187,7 +1185,7 @@ void CViewContainer::takeFocus ()
 }
 
 //------------------------------------------------------------------------
-void CViewContainer::setInitialFocusView (const SharedPointer<CView>& view)
+void CViewContainer::setInitialFocusView (const SPtr<CView>& view)
 {
 	if (view)
 	{
@@ -1200,9 +1198,9 @@ void CViewContainer::setInitialFocusView (const SharedPointer<CView>& view)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> CViewContainer::getInitialFocusView () const
+SPtr<CView> CViewContainer::getInitialFocusView () const
 {
-	SharedPointer<CView> initialFocusView;
+	SPtr<CView> initialFocusView;
 	getAttribute (kInitialFocusViewAttribute, initialFocusView);
 	return initialFocusView;
 }
@@ -1213,7 +1211,7 @@ SharedPointer<CView> CViewContainer::getInitialFocusView () const
  * @param reverse search order
  * @return true on success
  */
-bool CViewContainer::advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse)
+bool CViewContainer::advanceNextFocusView (const SPtr<CView>& oldFocus, bool reverse)
 {
 	if (auto frame = getFrame ())
 	{
@@ -1279,8 +1277,7 @@ bool CViewContainer::advanceNextFocusView (const SharedPointer<CView>& oldFocus,
  * @param options search options
  * @return view at position p or null
  */
-SharedPointer<CView> CViewContainer::getViewAt (const CPoint& p,
-												const GetViewOptions& options) const
+SPtr<CView> CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options) const
 {
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
@@ -1372,8 +1369,8 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
  * @param options search search options
  * @return view container at position p or null
  */
-SharedPointer<CViewContainer> CViewContainer::getContainerAt (const CPoint& p,
-															  const GetViewOptions& options) const
+SPtr<CViewContainer> CViewContainer::getContainerAt (const CPoint& p,
+													 const GetViewOptions& options) const
 {
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);

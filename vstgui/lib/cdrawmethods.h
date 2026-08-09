@@ -50,7 +50,7 @@ enum CreateTextTruncateFlags : uint16_t {
  *	@return				truncated text or original text if no truncation needed
  */
 UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text,
-								const SharedPointer<CFontDesc>& font, CCoord maxWidth,
+								const SPtr<CFontDesc>& font, CCoord maxWidth,
 								const CPoint& textInset = CPoint (0, 0), uint32_t flags = 0);
 
 //-----------------------------------------------------------------------------
@@ -67,8 +67,8 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text,
  *  @param textColor     	font color
  *	@param truncateMode		truncation mode
  */
-void drawIconAndText (CDrawContext& context, const SharedPointer<CBitmap>& iconToDraw,
+void drawIconAndText (CDrawContext& context, const SPtr<CBitmap>& iconToDraw,
 					  IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin,
-					  CRect drawRect, const UTF8String& title, const SharedPointer<CFontDesc>& font,
+					  CRect drawRect, const UTF8String& title, const SPtr<CFontDesc>& font,
 					  CColor textColor, TextTruncateMode truncateMode = kTextTruncateNone);
 }} // namespaces

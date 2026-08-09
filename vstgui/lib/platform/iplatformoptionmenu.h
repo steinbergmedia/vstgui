@@ -13,7 +13,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 struct PlatformOptionMenuResult
 {
-	SharedPointer<COptionMenu> menu;
+	SPtr<COptionMenu> menu;
 	int32_t index;
 };
 
@@ -21,9 +21,9 @@ struct PlatformOptionMenuResult
 class IPlatformOptionMenu : public AtomicReferenceCounted
 {
 public:
-	using Callback = std::function<void (const SharedPointer<COptionMenu>& optionMenu,
-										 PlatformOptionMenuResult result)>;
-	virtual void popup (const SharedPointer<COptionMenu>& optionMenu, const Callback& callback) = 0;
+	using Callback =
+		std::function<void (const SPtr<COptionMenu>& optionMenu, PlatformOptionMenuResult result)>;
+	virtual void popup (const SPtr<COptionMenu>& optionMenu, const Callback& callback) = 0;
 };
 
 } // VSTGUI

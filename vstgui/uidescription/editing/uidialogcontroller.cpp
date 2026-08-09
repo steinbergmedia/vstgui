@@ -23,8 +23,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIDialogController::UIDialogController (const SharedPointer<IController>& baseController,
-										CFrame* frame)
+UIDialogController::UIDialogController (const SPtr<IController>& baseController, CFrame* frame)
 : DelegationController (baseController), frame (frame)
 {
 }
@@ -32,8 +31,8 @@ UIDialogController::UIDialogController (const SharedPointer<IController>& baseCo
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle,
 							  UTF8StringPtr _button1, UTF8StringPtr _button2,
-							  const SharedPointer<IDialogController>& _dialogController,
-							  const SharedPointer<UIDescription>& _description, bool _resizable)
+							  const SPtr<IDialogController>& _dialogController,
+							  const SPtr<UIDescription>& _description, bool _resizable)
 {
 	templateName = _templateName;
 	dialogTitle = _dialogTitle;
@@ -164,9 +163,8 @@ IControlListener* UIDialogController::getControlListener (UTF8StringPtr controlT
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIDialogController::verifyView (const SharedPointer<CView>& view,
-													 const UIAttributes& attributes,
-													 const IUIDescription& description)
+SPtr<CView> UIDialogController::verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+											const IUIDescription& description)
 {
 	if (auto control = view.cast<CControl> ())
 	{

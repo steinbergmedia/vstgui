@@ -18,7 +18,7 @@ class UIOverlayView : public CView, public ViewListenerAdapter
 //----------------------------------------------------------------------------------------------------
 {
 public:
-	UIOverlayView (const SharedPointer<CViewContainer>& view);
+	UIOverlayView (const SPtr<CViewContainer>& view);
 	~UIOverlayView () override;
 
 	bool attached (CViewContainer& parent) override;
@@ -27,7 +27,7 @@ public:
 	void viewWillDelete (CView& view) override;
 
 protected:
-	SharedPointer<CViewContainer> getTargetView () const { return targetView.lock (); }
+	SPtr<CViewContainer> getTargetView () const { return targetView.lock (); }
 
 private:
 	WeakPointer<CViewContainer> targetView;

@@ -37,7 +37,7 @@ protected:
 
 public:
 	CScrollView (const CRect& size, const CRect& containerSize, int32_t style,
-				 CCoord scrollbarWidth = 16, const SharedPointer<CBitmap>& background = {});
+				 CCoord scrollbarWidth = 16, const SPtr<CBitmap>& background = {});
 
 	/** Scroll View Style Flags */
 	enum CScrollViewStyle
@@ -80,9 +80,9 @@ public:
 	void resetScrollOffset ();
 
 	/** get the vertical scrollbar */
-	SharedPointer<CScrollbar> getVerticalScrollbar () const;
+	SPtr<CScrollbar> getVerticalScrollbar () const;
 	/** get the horizontal scrollbar */
-	SharedPointer<CScrollbar> getHorizontalScrollbar () const;
+	SPtr<CScrollbar> getHorizontalScrollbar () const;
 
 	/** set scrollview to show rect */
 	virtual void makeRectVisible (const CRect& rect);
@@ -110,20 +110,19 @@ public:
 	 *
 	 *	@ingroup new_in_4_15
 	 */
-	void setEdgeView (Edge edge, const SharedPointer<CView>& view);
-	SharedPointer<CView> getEdgeView (Edge edge) const;
+	void setEdgeView (Edge edge, const SPtr<CView>& view);
+	SPtr<CView> getEdgeView (Edge edge) const;
 	//@}
 
 	// overwrite
 	bool attached (CViewContainer& parent) override;
-	bool insertSubview (const SharedPointer<CView>& view,
-						const Optional<size_t>& position) override;
-	bool removeSubview (const SharedPointer<CView>& view) override;
-	Optional<size_t> indexOfSubview (const SharedPointer<CView>& view) const override;
+	bool insertSubview (const SPtr<CView>& view, const Optional<size_t>& position) override;
+	bool removeSubview (const SPtr<CView>& view) override;
+	Optional<size_t> indexOfSubview (const SPtr<CView>& view) const override;
 	bool removeAll () override;
 	uint32_t getNbViews () const override;
-	SharedPointer<CView> getView (uint32_t index) const override;
-	bool changeViewZOrder (const SharedPointer<CView>& view, uint32_t newIndex) override;
+	SPtr<CView> getView (uint32_t index) const override;
+	bool changeViewZOrder (const SPtr<CView>& view, uint32_t newIndex) override;
 	void drawBackgroundRect (CDrawContext& pContext, const CRect& _updateRect) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void valueChanged (CControl& pControl) override;

@@ -191,29 +191,28 @@ protected:
 		toRemove.clear ();
 	}
 
-	SharedPointer<CVSTGUITimer> timer;
+	SPtr<CVSTGUITimer> timer;
 
 	using Animators = std::list<Animator*>;
 	Animators animators;
 	Animators toRemove;
 	bool inTimer;
-	static SharedPointer<Timer> gInstance;
+	static SPtr<Timer> gInstance;
 };
-SharedPointer<Timer> Timer::gInstance;
+SPtr<Timer> Timer::gInstance;
 
 //-----------------------------------------------------------------------------
 class Animation : public NonAtomicReferenceCounted
 {
 public:
-	Animation (const SharedPointer<CView>& view, const std::string& name,
-			   const SharedPointer<IAnimationTarget>& at, const SharedPointer<ITimingFunction>& t,
-			   DoneFunction&& notification, bool notifyOnCancel);
+	Animation (const SPtr<CView>& view, const std::string& name, const SPtr<IAnimationTarget>& at,
+			   const SPtr<ITimingFunction>& t, DoneFunction&& notification, bool notifyOnCancel);
 	~Animation () noexcept override;
 
 	std::string name;
-	SharedPointer<CView> view;
-	SharedPointer<IAnimationTarget> animationTarget;
-	SharedPointer<ITimingFunction> timingFunction;
+	SPtr<CView> view;
+	SPtr<IAnimationTarget> animationTarget;
+	SPtr<ITimingFunction> timingFunction;
 	DoneFunction notification;
 	uint64_t startTime {0};
 	float lastPos {-1.};
@@ -222,10 +221,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-Animation::Animation (const SharedPointer<CView>& view, const std::string& name,
-					  const SharedPointer<IAnimationTarget>& at,
-					  const SharedPointer<ITimingFunction>& t, DoneFunction&& notification,
-					  bool notifyOnCancel)
+Animation::Animation (const SPtr<CView>& view, const std::string& name,
+					  const SPtr<IAnimationTarget>& at, const SPtr<ITimingFunction>& t,
+					  DoneFunction&& notification, bool notifyOnCancel)
 : name (name)
 , view (view)
 , animationTarget (at)
@@ -247,7 +245,7 @@ Animation::~Animation () noexcept
 //-----------------------------------------------------------------------------
 struct Animator::Impl
 {
-	DispatchList<SharedPointer<Detail::Animation>> animations;
+	DispatchList<SPtr<Detail::Animation>> animations;
 };
 ///@endcond
 
@@ -264,10 +262,10 @@ Animator::~Animator () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void Animator::addAnimation (const SharedPointer<CView>& view, IdStringPtr name,
-							 const SharedPointer<IAnimationTarget>& target,
-							 const SharedPointer<ITimingFunction>& timingFunction,
-							 DoneFunction notification, bool notifyOnCancel)
+void Animator::addAnimation (const SPtr<CView>& view, IdStringPtr name,
+							 const SPtr<IAnimationTarget>& target,
+							 const SPtr<ITimingFunction>& timingFunction, DoneFunction notification,
+							 bool notifyOnCancel)
 {
 	if (!(view && target && timingFunction))
 		return;
@@ -282,9 +280,9 @@ void Animator::addAnimation (const SharedPointer<CView>& view, IdStringPtr name,
 }
 
 //-----------------------------------------------------------------------------
-void Animator::removeAnimation (const SharedPointer<CView>& view, IdStringPtr name)
+void Animator::removeAnimation (const SPtr<CView>& view, IdStringPtr name)
 {
-	pImpl->animations.forEach ([&] (const SharedPointer<Detail::Animation>& animation) {
+	pImpl->animations.forEach ([&] (const SPtr<Detail::Animation>& animation) {
 		if (animation->view == view && animation->name == name)
 		{
 #if DEBUG_LOG
@@ -303,9 +301,9 @@ void Animator::removeAnimation (const SharedPointer<CView>& view, IdStringPtr na
 }
 
 //-----------------------------------------------------------------------------
-void Animator::removeAnimations (const SharedPointer<CView>& view)
+void Animator::removeAnimations (const SPtr<CView>& view)
 {
-	pImpl->animations.forEach ([&] (const SharedPointer<Detail::Animation>& animation) {
+	pImpl->animations.forEach ([&] (const SPtr<Detail::Animation>& animation) {
 		if (animation->view == view)
 		{
 #if DEBUG_LOG
@@ -327,7 +325,7 @@ void Animator::onTimer ()
 {
 	auto lifeGuard = makeLifeGuard (this);
 	auto currentTicks = getPlatformFactory ().getTicks ();
-	pImpl->animations.forEach ([&] (SharedPointer<Detail::Animation>& animation) {
+	pImpl->animations.forEach ([&] (SPtr<Detail::Animation>& animation) {
 		if (animation->startTime == 0)
 		{
 #if DEBUG_LOG

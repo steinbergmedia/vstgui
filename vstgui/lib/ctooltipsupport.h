@@ -38,9 +38,9 @@ protected:
 		kForceVisible
 	};
 
-	SharedPointer<CVSTGUITimer> timer;
+	SPtr<CVSTGUITimer> timer;
 	const PlatformFramePtr& frame;
-	SharedPointer<CView> currentView;
+	SPtr<CView> currentView;
 
 	uint32_t delay;
 	int32_t state;

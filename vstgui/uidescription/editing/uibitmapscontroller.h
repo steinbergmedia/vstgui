@@ -24,18 +24,17 @@ class UIBitmapsController : public NonAtomicReferenceCounted,
                             public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIBitmapsController (const SharedPointer<IController>& baseController,
-						 const SharedPointer<UIDescription>& description,
+	UIBitmapsController (const SPtr<IController>& baseController,
+						 const SPtr<UIDescription>& description,
 						 WeakPointer<IActionPerformer> actionPerformer,
-						 const SharedPointer<UIUndoManager>& undoManager);
+						 const SPtr<UIUndoManager>& undoManager);
 	~UIBitmapsController () override;
 
 protected:
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl& pControl) override;
 
@@ -48,14 +47,14 @@ protected:
 	static bool valueToString (float value, char utf8String[256], void* userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
 
-	SharedPointer<UIDescription> editDescription;
+	SPtr<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<UIUndoManager> undoManager;
-	SharedPointer<UIBitmapsDataSource> dataSource;
-	SharedPointer<CView> bitmapView;
-	SharedPointer<CTextEdit> bitmapPathEdit;
-	SharedPointer<CControl> settingButton;
-	
+	SPtr<UIUndoManager> undoManager;
+	SPtr<UIBitmapsDataSource> dataSource;
+	SPtr<CView> bitmapView;
+	SPtr<CTextEdit> bitmapPathEdit;
+	SPtr<CControl> settingButton;
+
 	enum {
 		kAddTag = 0,
 		kRemoveTag,

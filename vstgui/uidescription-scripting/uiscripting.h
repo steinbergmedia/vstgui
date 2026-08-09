@@ -47,8 +47,8 @@ private:
 	void onDestroy (const IUIDescription& desc) override;
 	CreateTemplateViewFunc onCreateTemplateView (const IUIDescription& desc,
 												 const CreateTemplateViewFunc& f) override;
-	SharedPointer<IViewFactory> getViewFactory (
-		const IUIDescription& desc, const SharedPointer<IViewFactory>& originalFactory) override;
+	SPtr<IViewFactory> getViewFactory (const IUIDescription& desc,
+									   const SPtr<IViewFactory>& originalFactory) override;
 	void onEditingStart (const IUIDescription& desc) override;
 	void onEditingEnd (const IUIDescription& desc) override;
 

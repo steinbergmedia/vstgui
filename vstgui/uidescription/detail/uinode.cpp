@@ -24,8 +24,8 @@ namespace Detail {
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UINode::UINode (const std::string& _name, const SharedPointer<UIAttributes>& _attributes,
-                bool needsFastChildNameAttributeLookup)
+UINode::UINode (const std::string& _name, const SPtr<UIAttributes>& _attributes,
+				bool needsFastChildNameAttributeLookup)
 : name (_name), attributes (_attributes), flags (0)
 {
 	if (needsFastChildNameAttributeLookup)
@@ -37,8 +37,8 @@ UINode::UINode (const std::string& _name, const SharedPointer<UIAttributes>& _at
 }
 
 //-----------------------------------------------------------------------------
-UINode::UINode (const std::string& _name, const SharedPointer<UIDescList>& _children,
-                const SharedPointer<UIAttributes>& _attributes)
+UINode::UINode (const std::string& _name, const SPtr<UIDescList>& _children,
+				const SPtr<UIAttributes>& _attributes)
 : name (_name), attributes (_attributes), children (_children), flags (0)
 {
 	vstgui_assert (children != nullptr);
@@ -68,7 +68,7 @@ bool UINode::hasChildren () const
 }
 
 //-----------------------------------------------------------------------------
-void UINode::childAttributeChanged (const SharedPointer<UINode>& child, const char* attributeName,
+void UINode::childAttributeChanged (const SPtr<UINode>& child, const char* attributeName,
 									const char* oldAttributeValue)
 {
 	children->nodeAttributeChanged (child, attributeName, oldAttributeValue);
@@ -97,8 +97,7 @@ UICommentNode::UICommentNode (const std::string& comment) : UINode ("comment")
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIVariableNode::UIVariableNode (const std::string& name,
-                                const SharedPointer<UIAttributes>& attributes)
+UIVariableNode::UIVariableNode (const std::string& name, const SPtr<UIAttributes>& attributes)
 : UINode (name, attributes), type (kUnknown), number (0)
 {
 	const std::string* typeStr = attributes->getAttributeValue ("type");
@@ -159,8 +158,7 @@ const std::string& UIVariableNode::getString () const
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIControlTagNode::UIControlTagNode (const std::string& name,
-                                    const SharedPointer<UIAttributes>& attributes)
+UIControlTagNode::UIControlTagNode (const std::string& name, const SPtr<UIAttributes>& attributes)
 : UINode (name, attributes), tag (-1)
 {
 }
@@ -216,7 +214,7 @@ void UIControlTagNode::setTagString (const std::string& str)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIBitmapNode::UIBitmapNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
+UIBitmapNode::UIBitmapNode (const std::string& name, const SPtr<UIAttributes>& attributes)
 : UINode (name, attributes), filterProcessed (false), scaledBitmapsAdded (false)
 {
 }
@@ -324,8 +322,8 @@ void UIBitmapNode::removeXMLData ()
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CBitmap> UIBitmapNode::createBitmap (const std::string& str,
-												   const BitmapVariant& variant) const
+SPtr<CBitmap> UIBitmapNode::createBitmap (const std::string& str,
+										  const BitmapVariant& variant) const
 {
 
 	if (auto partDesc = std::get_if<CNinePartTiledDescription> (&variant))
@@ -336,7 +334,7 @@ SharedPointer<CBitmap> UIBitmapNode::createBitmap (const std::string& str,
 }
 
 //------------------------------------------------------------------------
-SharedPointer<UINode> UIBitmapNode::dataNode () const
+SPtr<UINode> UIBitmapNode::dataNode () const
 {
 	auto node = getChildren ().findChildNode ("data");
 	return (node && !node->getData ().empty ()) ? node : nullptr;
@@ -365,7 +363,7 @@ PlatformBitmapPtr UIBitmapNode::createBitmapFromDataNode () const
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CBitmap> UIBitmapNode::getBitmap (const std::string& pathHint)
+SPtr<CBitmap> UIBitmapNode::getBitmap (const std::string& pathHint)
 {
 	if (bitmap == nullptr)
 	{
@@ -495,7 +493,7 @@ void UIBitmapNode::invalidBitmap ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIFontNode::UIFontNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
+UIFontNode::UIFontNode (const std::string& name, const SPtr<UIAttributes>& attributes)
 : UINode (name, attributes)
 {
 }
@@ -507,7 +505,7 @@ UIFontNode::~UIFontNode () noexcept {}
 void UIFontNode::freePlatformResources () { font.reset (); }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CFontDesc> UIFontNode::getFont ()
+SPtr<CFontDesc> UIFontNode::getFont ()
 {
 	if (font == nullptr)
 	{
@@ -563,7 +561,7 @@ SharedPointer<CFontDesc> UIFontNode::getFont ()
 }
 
 //-----------------------------------------------------------------------------
-void UIFontNode::setFont (const SharedPointer<CFontDesc>& newFont)
+void UIFontNode::setFont (const SPtr<CFontDesc>& newFont)
 {
 	font = newFont;
 
@@ -615,7 +613,7 @@ bool UIFontNode::getAlternativeFontNames (std::string& fontNames)
 }
 
 //-----------------------------------------------------------------------------
-UIColorNode::UIColorNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
+UIColorNode::UIColorNode (const std::string& name, const SPtr<UIAttributes>& attributes)
 : UINode (name, attributes)
 {
 	color.alpha = 255;
@@ -652,8 +650,7 @@ void UIColorNode::setColor (const CColor& newColor)
 }
 
 //-----------------------------------------------------------------------------
-UIGradientNode::UIGradientNode (const std::string& name,
-                                const SharedPointer<UIAttributes>& attributes)
+UIGradientNode::UIGradientNode (const std::string& name, const SPtr<UIAttributes>& attributes)
 : UINode (name, attributes)
 {
 }
@@ -662,7 +659,7 @@ UIGradientNode::UIGradientNode (const std::string& name,
 void UIGradientNode::freePlatformResources () { gradient.reset (); }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CGradient> UIGradientNode::getGradient ()
+SPtr<CGradient> UIGradientNode::getGradient ()
 {
 	if (gradient == nullptr)
 	{
@@ -689,7 +686,7 @@ SharedPointer<CGradient> UIGradientNode::getGradient ()
 }
 
 //-----------------------------------------------------------------------------
-void UIGradientNode::setGradient (const SharedPointer<CGradient>& g)
+void UIGradientNode::setGradient (const SPtr<CGradient>& g)
 {
 	gradient = g;
 	getChildren ().removeAll ();

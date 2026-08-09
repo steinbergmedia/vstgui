@@ -22,7 +22,7 @@ class CMovieButton : public CControl,
 {
 public:
 	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag,
-				  const SharedPointer<CBitmap>& background);
+				  const SPtr<CBitmap>& background);
 
 	void draw (CDrawContext&) override;
 

@@ -33,10 +33,10 @@ class UIAttributesController : public NonAtomicReferenceCounted,
 							   public ViewListenerAdapter
 {
 public:
-	UIAttributesController (const SharedPointer<IController>& baseController,
-							const SharedPointer<UISelection>& selection,
-							const SharedPointer<UIUndoManager>& undoManager,
-							const SharedPointer<UIDescription>& description);
+	UIAttributesController (const SPtr<IController>& baseController,
+							const SPtr<UISelection>& selection,
+							const SPtr<UIUndoManager>& undoManager,
+							const SPtr<UIDescription>& description);
 	~UIAttributesController () override;
 	
 	void beginLiveAttributeChange (const std::string& name, const std::string& currentValue);
@@ -45,21 +45,20 @@ public:
 protected:
 	using StringList = std::list<std::string>;
 
-	SharedPointer<CView> createViewForAttribute (const std::string& attrName);
+	SPtr<CView> createViewForAttribute (const std::string& attrName);
 	void rebuildAttributesView ();
 	void validateAttributeViews ();
-	SharedPointer<CView> createValueViewForAttributeType (const IViewFactory& viewFactory,
-														  const SharedPointer<CView>& view,
-														  const std::string& attrName,
-														  IViewCreator::AttrType attrType);
+	SPtr<CView> createValueViewForAttributeType (const IViewFactory& viewFactory,
+												 const SPtr<CView>& view,
+												 const std::string& attrName,
+												 IViewCreator::AttrType attrType);
 	void getConsolidatedAttributeNames (StringList& result, const std::string& filter);
 
 	void valueChanged (CControl& pControl) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<IController> createSubController (IdStringPtr name,
-													const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<IController> createSubController (IdStringPtr name,
+										   const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 
 	void onUIDescTagChanged (UIDescription& desc) override;
@@ -76,12 +75,12 @@ protected:
 
 	void viewWillDelete (CView& view) override;
 
-	SharedPointer<UISelection> selection;
-	SharedPointer<UIUndoManager> undoManager;
-	SharedPointer<UIDescription> editDescription;
-	SharedPointer<IAction> liveAction;
+	SPtr<UISelection> selection;
+	SPtr<UIUndoManager> undoManager;
+	SPtr<UIDescription> editDescription;
+	SPtr<IAction> liveAction;
 
-	using UIAttributeControllerList = std::list<SharedPointer<UIAttributeControllers::Controller>>;
+	using UIAttributeControllerList = std::list<SPtr<UIAttributeControllers::Controller>>;
 	UIAttributeControllerList attributeControllers;
 
 	enum {
@@ -89,9 +88,9 @@ protected:
 		kViewNameTag = 101
 	};
 
-	SharedPointer<CTextEdit> searchField;
-	SharedPointer<CTextLabel> viewNameLabel;
-	SharedPointer<CRowColumnView> attributeView;
+	SPtr<CTextEdit> searchField;
+	SPtr<CTextLabel> viewNameLabel;
+	SPtr<CRowColumnView> attributeView;
 	CColor attributeNameColor {kBlackCColor};
 
 	std::string filterString;

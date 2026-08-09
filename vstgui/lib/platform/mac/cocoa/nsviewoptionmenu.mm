@@ -63,8 +63,8 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 	//------------------------------------------------------------------------------------
 	struct Var
 	{
-		SharedPointer<COptionMenu> _optionMenu {};
-		SharedPointer<COptionMenu> _selectedMenu {};
+		SPtr<COptionMenu> _optionMenu {};
+		SPtr<COptionMenu> _selectedMenu {};
 		int32_t _selectedItem {0};
 	};
 
@@ -255,8 +255,7 @@ struct VSTGUI_NSMenu : RuntimeObjCClass<VSTGUI_NSMenu>
 };
 
 //-----------------------------------------------------------------------------
-void NSViewOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
-							  const Callback& callback)
+void NSViewOptionMenu::popup (const SPtr<COptionMenu>& optionMenu, const Callback& callback)
 {
 	vstgui_assert (optionMenu && callback, "arguments are required");
 

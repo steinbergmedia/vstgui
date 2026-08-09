@@ -64,7 +64,7 @@ struct UIEditControllerGlobalResources
 	CColor dataSourceRowBackColor;
 	CColor dataSourceRowAlternateBackColor;
 	CColor shadingLineColor;
-	SharedPointer<CFontDesc> dataSourceFont;
+	SPtr<CFontDesc> dataSourceFont;
 
 	void init (const IUIDescription& desc)
 	{
@@ -89,7 +89,7 @@ public:
 		return gInstance;
 	}
 
-	SharedPointer<UIDescription> get () const
+	SPtr<UIDescription> get () const
 	{
 		if (uiDesc == nullptr)
 		{
@@ -178,20 +178,19 @@ public:
 		return uiDesc ? (uiDesc->getSharedResources () == darkResourceDesc) : false;
 	}
 private:
-	mutable SharedPointer<UIDescription> uiDesc;
-	mutable SharedPointer<UIDescription> lightResourceDesc;
-	mutable SharedPointer<UIDescription> darkResourceDesc;
+	mutable SPtr<UIDescription> uiDesc;
+	mutable SPtr<UIDescription> lightResourceDesc;
+	mutable SPtr<UIDescription> darkResourceDesc;
 };
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UIDescription> UIEditController::getEditorDescription ()
+SPtr<UIDescription> UIEditController::getEditorDescription ()
 {
 	return UIEditControllerDescription::instance ().get ();
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::setupDataSource (
-	const SharedPointer<GenericStringListDataBrowserSource>& source)
+void UIEditController::setupDataSource (const SPtr<GenericStringListDataBrowserSource>& source)
 {
 	source->setupUI (gUIEditorControllerResources.dataSourceSelectionColor,
 					 gUIEditorControllerResources.dataSourceFontColor,
@@ -384,9 +383,8 @@ public:
 		updateZoom (100.f);
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (!zoomValueControl)
 		{
@@ -496,15 +494,14 @@ private:
 	}
 	
 	UIEditController* editController{nullptr};
-	SharedPointer<CTextEdit> zoomValueControl;
-	SharedPointer<CVSTGUITimer> popupTimer;
+	SPtr<CTextEdit> zoomValueControl;
+	SPtr<CVSTGUITimer> popupTimer;
 };
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UIEditController>
-	UIEditController::make (const SharedPointer<UIDescription>& description)
+SPtr<UIEditController> UIEditController::make (const SPtr<UIDescription>& description)
 {
 	auto object = makeShared<UIEditController> ();
 	object->init (description);
@@ -512,7 +509,7 @@ SharedPointer<UIEditController>
 }
 
 //------------------------------------------------------------------------
-bool UIEditController::init (const SharedPointer<UIDescription>& description)
+bool UIEditController::init (const SPtr<UIDescription>& description)
 {
 	editDescription = description;
 	selection = makeShared<UISelection> ();
@@ -544,16 +541,13 @@ bool UIEditController::init (const SharedPointer<UIDescription>& description)
 UIEditController::~UIEditController () { UIEditControllerDescription::instance ().tryFree (); }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UIEditMenuController> UIEditController::getMenuController () const
-{
-	return menuController;
-}
+SPtr<UIEditMenuController> UIEditController::getMenuController () const { return menuController; }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UIUndoManager> UIEditController::getUndoManager () const { return undoManager; }
+SPtr<UIUndoManager> UIEditController::getUndoManager () const { return undoManager; }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIEditController::createEditView ()
+SPtr<CView> UIEditController::createEditView ()
 {
 	if (editorDesc->parse ())
 	{
@@ -576,8 +570,8 @@ SharedPointer<CView> UIEditController::createEditView ()
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIEditController::createView (const UIAttributes& attributes,
-												   const IUIDescription& description)
+SPtr<CView> UIEditController::createView (const UIAttributes& attributes,
+										  const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -624,7 +618,7 @@ enum {
 };
 
 //----------------------------------------------------------------------------------------------------
-static SharedPointer<CBitmap> createColorBitmap (CPoint size, CColor color)
+static SPtr<CBitmap> createColorBitmap (CPoint size, CColor color)
 {
 	auto bitmap = makeShared<CBitmap> (size);
 	if (auto pixelAccessor = CBitmapPixelAccess::create (bitmap))
@@ -658,9 +652,8 @@ static const BackgroundColors& editViewBackgroundColors ()
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIEditController::verifyView (const SharedPointer<CView>& view,
-												   const UIAttributes& attributes,
-												   const IUIDescription& description)
+SPtr<CView> UIEditController::verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+										  const IUIDescription& description)
 {
 	if (view == editView)
 	{
@@ -795,8 +788,8 @@ SharedPointer<CView> UIEditController::verifyView (const SharedPointer<CView>& v
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<IController> UIEditController::createSubController (UTF8StringPtr name,
-																  const IUIDescription& description)
+SPtr<IController> UIEditController::createSubController (UTF8StringPtr name,
+														 const IUIDescription& description)
 {
 	UTF8StringView subControllerName (name);
 	if (subControllerName == "TemplatesController")
@@ -1059,7 +1052,7 @@ void UIEditController::doCopy (bool cut)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::addSelectionToCurrentView (const SharedPointer<UISelection>& copySelection)
+void UIEditController::addSelectionToCurrentView (const SPtr<UISelection>& copySelection)
 {
 	if (selection->total () == 0)
 		return;
@@ -1123,7 +1116,7 @@ void UIEditController::showFocusSettings ()
 }
 
 //----------------------------------------------------------------------------------------------------
-static void toggleBoolAttribute (const SharedPointer<UIAttributes>& attributes, UTF8StringPtr key)
+static void toggleBoolAttribute (const SPtr<UIAttributes>& attributes, UTF8StringPtr key)
 {
 	if (attributes)
 	{
@@ -1539,7 +1532,7 @@ void UIEditController::onKeyboardEvent (KeyboardEvent& event, CFrame& frame)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UIAttributes> UIEditController::getSettings ()
+SPtr<UIAttributes> UIEditController::getSettings ()
 {
 	return editDescription->getCustomAttributes ("UIEditController", true);
 }
@@ -1582,7 +1575,7 @@ bool UIEditController::getSplitViewSizeConstraint (int32_t index, CCoord& minSiz
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<ISplitViewSeparatorDrawer>
+SPtr<ISplitViewSeparatorDrawer>
 	UIEditController::getSplitViewSeparatorDrawer (CSplitView& splitView)
 {
 	int32_t si = getSplitViewIndex (splitView);
@@ -1676,7 +1669,7 @@ void UIEditController::setDirty (bool state)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performAction (const SharedPointer<IAction>& action)
+void UIEditController::performAction (const SPtr<IAction>& action)
 {
 	undoManager->pushAndPerform (action);
 }
@@ -1701,7 +1694,7 @@ void UIEditController::performChangeFocusDrawingSettings (const FocusDrawingSett
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::getTemplateViews (std::list<SharedPointer<CView>>& views) const
+void UIEditController::getTemplateViews (std::list<SPtr<CView>>& views) const
 {
 	for (const auto& templateDesc : templates)
 		views.emplace_back (templateDesc.view);
@@ -1710,7 +1703,7 @@ void UIEditController::getTemplateViews (std::list<SharedPointer<CView>>& views)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	auto action =
@@ -1727,7 +1720,7 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagStr, bool remove)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	auto action = makeShared<TagChangeAction> (editDescription, tagName, tagStr, remove, true);
@@ -1743,7 +1736,7 @@ void UIEditController::performTagChange (UTF8StringPtr tagName, UTF8StringPtr ta
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	auto action =
@@ -1759,10 +1752,9 @@ void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8String
 
 //------------------------------------------------------------------------
 void UIEditController::performGradientChange (UTF8StringPtr gradientName,
-											  const SharedPointer<CGradient>& newGradient,
-											  bool remove)
+											  const SPtr<CGradient>& newGradient, bool remove)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	auto action =
@@ -1778,10 +1770,10 @@ void UIEditController::performGradientChange (UTF8StringPtr gradientName,
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performFontChange (UTF8StringPtr fontName,
-										  const SharedPointer<CFontDesc>& newFont, bool remove)
+void UIEditController::performFontChange (UTF8StringPtr fontName, const SPtr<CFontDesc>& newFont,
+										  bool remove)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	auto action = makeShared<FontChangeAction> (editDescription, fontName, newFont, remove, true);
@@ -1797,7 +1789,7 @@ void UIEditController::performFontChange (UTF8StringPtr fontName,
 //----------------------------------------------------------------------------------------------------
 template<typename NameChangeAction, IViewCreator::AttrType attrType> void UIEditController::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	undoManager->startGroupAction (groupActionName);
@@ -1844,7 +1836,7 @@ void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8Strin
 void UIEditController::performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
 													  const CMultiFrameBitmapDescription* desc)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change MultiFrame Bitmap");
@@ -1860,7 +1852,7 @@ void UIEditController::performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change NinePartTiled Bitmap");
@@ -1874,9 +1866,10 @@ void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapNam
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription)
+void UIEditController::performBitmapFiltersChange (
+	UTF8StringPtr bitmapName, const std::list<SPtr<UIAttributes>>& filterDescription)
 {
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change Bitmap Filter");
@@ -1916,7 +1909,7 @@ void UIEditController::performLiveColorChange (UTF8StringPtr _colorName, const C
 	colorChangeAction->perform ();
 	colorChangeAction.reset ();
 
-	std::list<SharedPointer<CView>> views;
+	std::list<SPtr<CView>> views;
 	getTemplateViews (views);
 
 	auto attrChangeAction = makeShared<MultipleAttributeChangeAction> (
@@ -1974,7 +1967,7 @@ void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringP
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::onTemplateCreation (UTF8StringPtr name, const SharedPointer<CView>& view)
+void UIEditController::onTemplateCreation (UTF8StringPtr name, const SPtr<CView>& view)
 {
 	auto it = std::find (templates.begin (), templates.end (), name);
 	if (it == templates.end ())

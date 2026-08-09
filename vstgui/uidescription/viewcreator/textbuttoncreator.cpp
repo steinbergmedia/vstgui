@@ -50,8 +50,8 @@ UTF8StringPtr TextButtonCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> TextButtonCreator::create (const UIAttributes& attributes,
-												const IUIDescription& description) const
+SPtr<CView> TextButtonCreator::create (const UIAttributes& attributes,
+									   const IUIDescription& description) const
 {
 	auto button = makeShared<CTextButton> (CRect (0, 0, 100, 20), nullptr, -1, "");
 	if (!description.lookupGradientName (button->getGradient ()))
@@ -111,7 +111,7 @@ bool TextButtonCreator::apply (CView& view, const UIAttributes& attributes,
 		button->setStyle (*attr == strTrue ? CTextButton::kKickStyle : CTextButton::kOnOffStyle);
 	}
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrIcon), bitmap, description))
 		button->setIcon (bitmap);
 	if (stringToBitmap (attributes.getAttributeValue (kAttrIconHighlighted), bitmap, description))

@@ -376,7 +376,7 @@ struct RunLoop::Impl : IEventHandler
 };
 
 //------------------------------------------------------------------------
-SharedPointer<RunLoop> RunLoop::instance ()
+SPtr<RunLoop> RunLoop::instance ()
 {
 	static auto gInstance = makeShared<RunLoop> ();
 	return gInstance;
@@ -389,7 +389,7 @@ void RunLoop::init () { instance ()->impl->init (); }
 void RunLoop::exit () { instance ()->impl->exit (); }
 
 //------------------------------------------------------------------------
-const SharedPointer<IRunLoop> RunLoop::get ()
+const SPtr<IRunLoop> RunLoop::get ()
 {
 	return getPlatformFactory ().asLinuxFactory ()->getRunLoop ();
 }

@@ -32,7 +32,7 @@ When its value changes, the listener is called.
  */
 //------------------------------------------------------------------------
 COnOffButton::COnOffButton (const CRect& size, IControlListener* listener, int32_t tag,
-							const SharedPointer<CBitmap>& background, int32_t style)
+							const SPtr<CBitmap>& background, int32_t style)
 : CControl (size, listener, tag, background), style (style)
 {
 	setWantsFocus (true);
@@ -143,7 +143,7 @@ Use a CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
-						  const SharedPointer<CBitmap>& background)
+						  const SPtr<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 	setWantsFocus (true);
@@ -292,7 +292,7 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag,
-					  UTF8StringPtr title, const SharedPointer<CBitmap>& bitmap, int32_t style)
+					  UTF8StringPtr title, const SPtr<CBitmap>& bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
 , style (style)
 , fontColor (kWhiteCColor)
@@ -316,7 +316,7 @@ void CCheckBox::setTitle (const UTF8String& newTitle)
 }
 
 //------------------------------------------------------------------------
-void CCheckBox::setFont (const SharedPointer<CFontDesc>& newFont)
+void CCheckBox::setFont (const SPtr<CFontDesc>& newFont)
 {
 	font = newFont;
 	if (font && style & kAutoSizeToFit)
@@ -324,7 +324,7 @@ void CCheckBox::setFont (const SharedPointer<CFontDesc>& newFont)
 }
 
 //------------------------------------------------------------------------
-void CCheckBox::setBackground (const SharedPointer<CBitmap>& background)
+void CCheckBox::setBackground (const SPtr<CBitmap>& background)
 {
 	CView::setBackground (background);
 	if (style & kAutoSizeToFit)
@@ -365,7 +365,7 @@ void CCheckBox::setRoundRectRadius (CCoord radius)
 
 /// @cond ignore
 //------------------------------------------------------------------------
-static CCoord getFontCapHeight (const SharedPointer<CFontDesc>& font)
+static CCoord getFontCapHeight (const SPtr<CFontDesc>& font)
 {
 	CCoord c = font->getSize ();
 	auto pf = font->getPlatformFont ();
@@ -687,19 +687,16 @@ void CTextButton::setViewSize (const CRect& rect, bool invalid)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CGradient> CTextButton::getGradient () const { return gradient; }
+SPtr<CGradient> CTextButton::getGradient () const { return gradient; }
 
 //------------------------------------------------------------------------
-SharedPointer<CGradient> CTextButton::getGradientHighlighted () const
-{
-	return gradientHighlighted;
-}
+SPtr<CGradient> CTextButton::getGradientHighlighted () const { return gradientHighlighted; }
 
 //------------------------------------------------------------------------
-SharedPointer<CBitmap> CTextButton::getIcon () const { return icon; }
+SPtr<CBitmap> CTextButton::getIcon () const { return icon; }
 
 //------------------------------------------------------------------------
-SharedPointer<CBitmap> CTextButton::getIconHighlighted () const { return iconHighlighted; }
+SPtr<CBitmap> CTextButton::getIconHighlighted () const { return iconHighlighted; }
 
 //------------------------------------------------------------------------
 void CTextButton::setTitle (const UTF8String& newTitle)
@@ -709,7 +706,7 @@ void CTextButton::setTitle (const UTF8String& newTitle)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setFont (const SharedPointer<CFontDesc>& newFont)
+void CTextButton::setFont (const SPtr<CFontDesc>& newFont)
 {
 	font = newFont;
 	invalid ();
@@ -723,14 +720,14 @@ void CTextButton::setTextColor (const CColor& color)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setGradient (const SharedPointer<CGradient>& newGradient)
+void CTextButton::setGradient (const SPtr<CGradient>& newGradient)
 {
 	gradient = newGradient;
 	invalid ();
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setGradientHighlighted (const SharedPointer<CGradient>& newGradient)
+void CTextButton::setGradientHighlighted (const SPtr<CGradient>& newGradient)
 {
 	gradientHighlighted = newGradient;
 	invalid ();
@@ -779,7 +776,7 @@ void CTextButton::setStyle (Style _style)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setIcon (const SharedPointer<CBitmap>& bitmap)
+void CTextButton::setIcon (const SPtr<CBitmap>& bitmap)
 {
 	if (icon != bitmap)
 	{
@@ -789,7 +786,7 @@ void CTextButton::setIcon (const SharedPointer<CBitmap>& bitmap)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setIconHighlighted (const SharedPointer<CBitmap>& bitmap)
+void CTextButton::setIconHighlighted (const SPtr<CBitmap>& bitmap)
 {
 	if (iconHighlighted != bitmap)
 	{
@@ -876,7 +873,7 @@ void CTextButton::draw (CDrawContext& context)
 	CRect titleRect = getViewSize ();
 	titleRect.inset (lineWidth / 2., lineWidth / 2.);
 
-	SharedPointer<CBitmap> iconToDraw;
+	SPtr<CBitmap> iconToDraw;
 	if (!getMouseEnabled () && getDisabledBackground ())
 		iconToDraw = getDisabledBackground ();
 	else
@@ -905,7 +902,7 @@ bool CTextButton::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CGraphicsPath> CTextButton::getPath (CDrawContext& context, CCoord lineWidth)
+SPtr<CGraphicsPath> CTextButton::getPath (CDrawContext& context, CCoord lineWidth)
 {
 	if (_path == nullptr)
 	{

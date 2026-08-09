@@ -39,8 +39,8 @@ UTF8StringPtr TextEditCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> TextEditCreator::create (const UIAttributes& attributes,
-											  const IUIDescription& description) const
+SPtr<CView> TextEditCreator::create (const UIAttributes& attributes,
+									 const IUIDescription& description) const
 {
 	return makeShared<CTextEdit> (CRect (0, 0, 100, 20), nullptr, -1);
 }

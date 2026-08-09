@@ -50,8 +50,8 @@ UTF8StringPtr RowColumnViewCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> RowColumnViewCreator::create (const UIAttributes& attributes,
-												   const IUIDescription& description) const
+SPtr<CView> RowColumnViewCreator::create (const UIAttributes& attributes,
+										  const IUIDescription& description) const
 {
 	return makeShared<CRowColumnView> (CRect (0, 0, 100, 100));
 }

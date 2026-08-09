@@ -39,7 +39,7 @@ struct CDrawContext::Impl
 	//-----------------------------------------------------------------------------
 	struct State
 	{
-		SharedPointer<CFontDesc> font;
+		SPtr<CFontDesc> font;
 		CColor frameColor {kTransparentCColor};
 		CColor fillColor {kTransparentCColor};
 		CColor fontColor {kTransparentCColor};
@@ -279,7 +279,7 @@ void CDrawContext::setFontColor (const CColor& color) { impl->currentState.fontC
 CColor CDrawContext::getFontColor () const { return impl->currentState.fontColor; }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFont (const SharedPointer<CFontDesc>& newFont, const CCoord& size,
+void CDrawContext::setFont (const SPtr<CFontDesc>& newFont, const CCoord& size,
 							const int32_t& style)
 {
 	if (newFont == nullptr)
@@ -299,7 +299,7 @@ void CDrawContext::setFont (const SharedPointer<CFontDesc>& newFont, const CCoor
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CFontDesc> CDrawContext::getFont () const { return impl->currentState.font; }
+SPtr<CFontDesc> CDrawContext::getFont () const { return impl->currentState.font; }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setGlobalAlpha (float newAlpha)
@@ -407,7 +407,7 @@ void CDrawContext::drawString (UTF8StringPtr string, const CRect& rect, const CH
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::fillRectWithBitmap (const SharedPointer<CBitmap>& bitmap, const CRect& srcRect,
+void CDrawContext::fillRectWithBitmap (const SPtr<CBitmap>& bitmap, const CRect& srcRect,
 									   const CRect& dstRect, float alpha)
 {
 	if (srcRect.isEmpty () || dstRect.isEmpty ())
@@ -467,7 +467,7 @@ void CDrawContext::fillRectWithBitmap (const SharedPointer<CBitmap>& bitmap, con
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawBitmapNinePartTiled (const SharedPointer<CBitmap>& bitmap, const CRect& dest,
+void CDrawContext::drawBitmapNinePartTiled (const SPtr<CBitmap>& bitmap, const CRect& dest,
 											const CNinePartTiledDescription& desc, float alpha)
 {
 	if (impl->device)
@@ -502,8 +502,7 @@ void CDrawContext::drawBitmapNinePartTiled (const SharedPointer<CBitmap>& bitmap
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CGraphicsPath> CDrawContext::createRoundRectGraphicsPath (const CRect& size,
-																		CCoord radius)
+SPtr<CGraphicsPath> CDrawContext::createRoundRectGraphicsPath (const CRect& size, CCoord radius)
 {
 	if (auto path = createGraphicsPath ())
 	{
@@ -625,8 +624,8 @@ void CDrawContext::drawPoint (const CPoint& point, const CColor& color)
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::drawBitmap (const SharedPointer<CBitmap>& bitmap, const CRect& dest,
-							   const CPoint& offset, float alpha)
+void CDrawContext::drawBitmap (const SPtr<CBitmap>& bitmap, const CRect& dest, const CPoint& offset,
+							   float alpha)
 {
 	if (impl->device)
 	{
@@ -665,7 +664,7 @@ static PlatformGraphicsPathDrawMode convert (CDrawContext::PathDrawMode mode)
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::drawGraphicsPath (const SharedPointer<CGraphicsPath>& path, PathDrawMode mode,
+void CDrawContext::drawGraphicsPath (const SPtr<CGraphicsPath>& path, PathDrawMode mode,
 									 CGraphicsTransform* transformation)
 {
 	if (impl->device)
@@ -678,10 +677,9 @@ void CDrawContext::drawGraphicsPath (const SharedPointer<CGraphicsPath>& path, P
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::fillLinearGradient (const SharedPointer<CGraphicsPath>& path,
-									   const CGradient& gradient, const CPoint& startPoint,
-									   const CPoint& endPoint, bool evenOdd,
-									   CGraphicsTransform* transformation)
+void CDrawContext::fillLinearGradient (const SPtr<CGraphicsPath>& path, const CGradient& gradient,
+									   const CPoint& startPoint, const CPoint& endPoint,
+									   bool evenOdd, CGraphicsTransform* transformation)
 {
 	if (impl->device)
 	{
@@ -698,9 +696,9 @@ void CDrawContext::fillLinearGradient (const SharedPointer<CGraphicsPath>& path,
 }
 
 //------------------------------------------------------------------------
-void CDrawContext::fillRadialGradient (const SharedPointer<CGraphicsPath>& path,
-									   const CGradient& gradient, const CPoint& center,
-									   CCoord radius, const CPoint& originOffset, bool evenOdd,
+void CDrawContext::fillRadialGradient (const SPtr<CGraphicsPath>& path, const CGradient& gradient,
+									   const CPoint& center, CCoord radius,
+									   const CPoint& originOffset, bool evenOdd,
 									   CGraphicsTransform* transformation)
 {
 	if (impl->device)
@@ -746,7 +744,7 @@ bool CDrawContext::drawLinearGradientLine (const DrawLinearGradientLineCallback&
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CGraphicsPath> CDrawContext::createGraphicsPath ()
+SPtr<CGraphicsPath> CDrawContext::createGraphicsPath ()
 {
 	if (impl->device)
 		return makeShared<CGraphicsPath> (impl->device->getGraphicsPathFactory (), nullptr);
@@ -754,8 +752,7 @@ SharedPointer<CGraphicsPath> CDrawContext::createGraphicsPath ()
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CGraphicsPath> CDrawContext::createTextPath (const SharedPointer<CFontDesc>& font,
-														   UTF8StringPtr text)
+SPtr<CGraphicsPath> CDrawContext::createTextPath (const SPtr<CFontDesc>& font, UTF8StringPtr text)
 {
 	if (impl->device)
 	{

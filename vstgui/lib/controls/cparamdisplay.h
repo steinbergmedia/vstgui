@@ -37,15 +37,14 @@ protected:
 	};
 
 public:
-	CParamDisplay (const CRect& size, const SharedPointer<CBitmap>& background = {},
-				   int32_t style = 0);
+	CParamDisplay (const CRect& size, const SPtr<CBitmap>& background = {}, int32_t style = 0);
 
 	//-----------------------------------------------------------------------------
 	/// @name CParamDisplay Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setFont (const SharedPointer<CFontDesc>& fontID);
-	SharedPointer<CFontDesc> getFont () const { return fontID; }
+	virtual void setFont (const SPtr<CFontDesc>& fontID);
+	SPtr<CFontDesc> getFont () const { return fontID; }
 
 	virtual void setFontColor (CColor color);
 	CColor getFontColor () const { return fontColor; }
@@ -121,7 +120,7 @@ public:
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CParamDisplay)
 	~CParamDisplay () noexcept override;
-	virtual void drawBack (CDrawContext& pContext, const SharedPointer<CBitmap>& newBack = {});
+	virtual void drawBack (CDrawContext& pContext, const SPtr<CBitmap>& newBack = {});
 
 	virtual void drawPlatformText (CDrawContext& pContext, const UTF8String& string);
 	virtual void drawPlatformText (CDrawContext& pContext, const UTF8String& string,
@@ -139,7 +138,7 @@ protected:
 	int32_t		style;
 	uint8_t		valuePrecision;
 
-	SharedPointer<CFontDesc> fontID;
+	SPtr<CFontDesc> fontID;
 	CColor		fontColor;
 	CColor		backColor;
 	CColor		frameColor;

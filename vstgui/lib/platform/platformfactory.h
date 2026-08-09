@@ -32,7 +32,7 @@ const IPlatformFactory& getPlatformFactory ();
 class IPlatformFactory
 {
 public:
-	using DataPackagePtr = SharedPointer<IDataPackage>;
+	using DataPackagePtr = SPtr<IDataPackage>;
 
 	virtual ~IPlatformFactory () noexcept = default;
 

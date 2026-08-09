@@ -29,7 +29,7 @@ class CControl : public CView, public IFocusDrawing
 {
 public:
 	CControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = 0,
-			  const SharedPointer<CBitmap>& background = {});
+			  const SPtr<CBitmap>& background = {});
 
 	//-----------------------------------------------------------------------------
 	/// @name Value Methods
@@ -123,7 +123,7 @@ protected:
 	void onMouseWheelEditing (CControl& control);
 
 private:
-	SharedPointer<CBaseObject> endEditTimer {nullptr};
+	SPtr<CBaseObject> endEditTimer {nullptr};
 };
 
 } // VSTGUI

@@ -22,8 +22,8 @@ namespace VSTGUI {
  * @param style kHorizontal or kVertical
  */
 //------------------------------------------------------------------------
-CVuMeter::CVuMeter (const CRect& size, const SharedPointer<CBitmap>& onBitmap,
-					const SharedPointer<CBitmap>& offBitmap, int32_t nbLed, Style style)
+CVuMeter::CVuMeter (const CRect& size, const SPtr<CBitmap>& onBitmap,
+					const SPtr<CBitmap>& offBitmap, int32_t nbLed, Style style)
 : CControl (size, nullptr, 0), offBitmap (nullptr), nbLed (nbLed), style (style)
 {
 	setDecreaseStepValue (0.1f);
@@ -68,7 +68,7 @@ bool CVuMeter::sizeToFit ()
 }
 
 //-----------------------------------------------------------------------------
-void CVuMeter::setOffBitmap (const SharedPointer<CBitmap>& bitmap) { offBitmap = bitmap; }
+void CVuMeter::setOffBitmap (const SPtr<CBitmap>& bitmap) { offBitmap = bitmap; }
 
 //------------------------------------------------------------------------
 void CVuMeter::onIdle ()

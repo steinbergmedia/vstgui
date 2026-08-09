@@ -48,8 +48,8 @@ UTF8StringPtr SegmentButtonCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> SegmentButtonCreator::create (const UIAttributes& attributes,
-												   const IUIDescription& description) const
+SPtr<CView> SegmentButtonCreator::create (const UIAttributes& attributes,
+										  const IUIDescription& description) const
 {
 	auto button = makeShared<CSegmentButton> (CRect (0, 0, 200, 20));
 	updateSegmentCount (button.get (), 4);

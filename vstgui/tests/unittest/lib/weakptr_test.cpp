@@ -38,10 +38,7 @@ struct WeakObject2 : public WeakableObject
 };
 
 //------------------------------------------------------------------------
-SharedPointer<WeakableObject> makeTestObject (int32_t v = 42)
-{
-	return makeShared<WeakableObject> (v);
-}
+SPtr<WeakableObject> makeTestObject (int32_t v = 42) { return makeShared<WeakableObject> (v); }
 
 } // anonymous
 

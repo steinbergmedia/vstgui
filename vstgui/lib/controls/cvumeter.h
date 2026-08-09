@@ -24,9 +24,8 @@ public:
 		kVertical,
 	};
 
-	CVuMeter (const CRect& size, const SharedPointer<CBitmap>& onBitmap,
-			  const SharedPointer<CBitmap>& offBitmap, int32_t nbLed,
-			  Style style = Style::kVertical);
+	CVuMeter (const CRect& size, const SPtr<CBitmap>& onBitmap, const SPtr<CBitmap>& offBitmap,
+			  int32_t nbLed, Style style = Style::kVertical);
 
 	//-----------------------------------------------------------------------------
 	/// @name CVuMeter Methods
@@ -35,10 +34,10 @@ public:
 	float getDecreaseStepValue () const { return decreaseValue; }
 	virtual void setDecreaseStepValue (float value) { decreaseValue = value; }
 
-	SharedPointer<CBitmap> getOnBitmap () const { return getBackground (); }
-	SharedPointer<CBitmap> getOffBitmap () const { return offBitmap; }
-	void setOnBitmap (const SharedPointer<CBitmap>& bitmap) { setBackground (bitmap); }
-	void setOffBitmap (const SharedPointer<CBitmap>& bitmap);
+	SPtr<CBitmap> getOnBitmap () const { return getBackground (); }
+	SPtr<CBitmap> getOffBitmap () const { return offBitmap; }
+	void setOnBitmap (const SPtr<CBitmap>& bitmap) { setBackground (bitmap); }
+	void setOffBitmap (const SPtr<CBitmap>& bitmap);
 
 	int32_t getNbLed () const { return nbLed; }
 	void setNbLed (int32_t nb) { nbLed = nb; invalid (); }
@@ -61,7 +60,7 @@ protected:
 	VSTGUI_SHAREDPTR_FRIEND (CVuMeter)
 	~CVuMeter () noexcept override;
 
-	SharedPointer<CBitmap> offBitmap;
+	SPtr<CBitmap> offBitmap;
 
 	int32_t nbLed;
 	Style style;

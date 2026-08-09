@@ -31,7 +31,7 @@ public:
 	};
 	
 	void setGradientStyle (GradientStyle style);
-	void setGradient (const SharedPointer<CGradient>& gradient);
+	void setGradient (const SPtr<CGradient>& gradient);
 	void setFrameColor (const CColor& newColor);
 	void setGradientAngle (double angle);
 	void setRoundRectRadius (CCoord radius);
@@ -41,7 +41,7 @@ public:
 	void setRadialRadius (CCoord radius);
 
 	GradientStyle getGradientStyle () const { return gradientStyle; }
-	SharedPointer<CGradient> getGradient () const { return gradient; }
+	SPtr<CGradient> getGradient () const { return gradient; }
 	const CColor& getFrameColor () const { return frameColor; }
 	double getGradientAngle () const { return gradientAngle; }
 	CCoord getRoundRectRadius () const { return roundRectRadius; }
@@ -67,8 +67,8 @@ protected:
 	CPoint radialCenter {0.5, 0.5};
 	bool drawAntialiased {true};
 
-	SharedPointer<CGraphicsPath> path;
-	SharedPointer<CGradient> gradient;
+	SPtr<CGraphicsPath> path;
+	SPtr<CGradient> gradient;
 };
 	
 } // VSTGUI

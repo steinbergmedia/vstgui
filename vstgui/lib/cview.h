@@ -149,7 +149,7 @@ public:
 	/// @name Hit testing Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void setHitTestPath (const SharedPointer<CGraphicsPath>& path);
+	void setHitTestPath (const SPtr<CGraphicsPath>& path);
 	/** check if where hits this view
 	 *
 	 *	the default behaviour is to return true if where is inside the view size of this view, but if you set a hit test path
@@ -174,11 +174,11 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** start a drag operation */
-	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback = {});
+	bool doDrag (const DragDescription& dragDescription, const SPtr<IDragCallback>& callback = {});
 	/** get the drag target for drag and drop handling */
-	virtual SharedPointer<IDropTarget> getDropTarget ();
+	virtual SPtr<IDropTarget> getDropTarget ();
 	/** set a custom drop target */
-	void setDropTarget (const SharedPointer<IDropTarget>& dt);
+	void setDropTarget (const SPtr<IDropTarget>& dt);
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -284,19 +284,19 @@ public:
 	 *	@param object the object to set
 	 *	@return true if attribute was set
 	 */
-	bool setAttributeObj (const CViewAttributeID aId, const SharedPointer<IReference>& object);
+	bool setAttributeObj (const CViewAttributeID aId, const SPtr<IReference>& object);
 	/** get an attribute
 	 *	@param aId the ID of the Attribute
 	 *	@param outObject a shared pointer where to store the object
 	 *	@return true if attribute exists and outObject contains the object
 	 */
-	bool getAttributeObj (const CViewAttributeID aId, SharedPointer<IReference>& outObject) const;
+	bool getAttributeObj (const CViewAttributeID aId, SPtr<IReference>& outObject) const;
 
 	/** set an attribute */
 	template<typename T>
 	bool setAttribute (const CViewAttributeID aId, const T& data)
 	{
-		if constexpr (std::is_convertible_v<T, SharedPointer<IReference>>)
+		if constexpr (std::is_convertible_v<T, SPtr<IReference>>)
 			return setAttributeObj (aId, data);
 		else
 			return setAttribute (aId, sizeof (T), &data);
@@ -306,9 +306,9 @@ public:
 	template<typename T>
 	bool getAttribute (const CViewAttributeID aId, T& data) const
 	{
-		if constexpr (std::is_convertible_v<T, SharedPointer<IReference>>)
+		if constexpr (std::is_convertible_v<T, SPtr<IReference>>)
 		{
-			SharedPointer<IReference> obj;
+			SPtr<IReference> obj;
 			if (getAttributeObj (aId, obj))
 			{
 				data = obj.cast<typename T::Type> ();
@@ -330,17 +330,17 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** set the background image of this view */
-	virtual void setBackground (const SharedPointer<CBitmap>& background);
+	virtual void setBackground (const SPtr<CBitmap>& background);
 	/** get the background image of this view */
-	SharedPointer<CBitmap> getBackground () const;
+	SPtr<CBitmap> getBackground () const;
 
 	/** set background image used when the mouse is not enabled */
-	virtual void setDisabledBackground (const SharedPointer<CBitmap>& background);
+	virtual void setDisabledBackground (const SPtr<CBitmap>& background);
 	/** get background image used when the mouse is not enabled */
-	SharedPointer<CBitmap> getDisabledBackground () const;
+	SPtr<CBitmap> getDisabledBackground () const;
 
 	/** get the bitmap which is drawn depending on the enabled state. */
-	SharedPointer<CBitmap> getDrawBackground () const;
+	SPtr<CBitmap> getDrawBackground () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -387,8 +387,8 @@ public:
 	/// @name Animation Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addAnimation (IdStringPtr name, const SharedPointer<Animation::IAnimationTarget>& target,
-					   const SharedPointer<Animation::ITimingFunction>& timingFunction,
+	void addAnimation (IdStringPtr name, const SPtr<Animation::IAnimationTarget>& target,
+					   const SPtr<Animation::ITimingFunction>& timingFunction,
 					   const Animation::DoneFunction& doneFunc = nullptr,
 					   bool callDoneOnCancel = false);
 	void removeAnimation (IdStringPtr name);
@@ -477,7 +477,7 @@ protected:
 	~CView () noexcept override;
 	VSTGUI_SHAREDPTR_FRIEND (CView)
 
-	SharedPointer<CGraphicsPath> getHitTestPath () const;
+	SPtr<CGraphicsPath> getHitTestPath () const;
 
 	bool hasViewFlag (int32_t bit) const;
 	void setViewFlag (int32_t bit, bool state);

@@ -35,19 +35,17 @@ public:
 
 	using WonCallbackFunc = std::function<void (int32_t secondsToWin)>;
 
-	MinefieldViewController (IValue& flagsValue, IValue& timeValue,
-							 const SharedPointer<IController>& parent,
+	MinefieldViewController (IValue& flagsValue, IValue& timeValue, const SPtr<IController>& parent,
 							 WonCallbackFunc&& wonCallback);
 
 	void startGame (uint32_t rows, uint32_t cols, uint32_t mines);
 	void setMouseMode (bool state);
 
 private:
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	void onCellChanged (uint32_t row, uint32_t col) override;
 	int32_t dbGetNumRows (CDataBrowser& browser) override;
 	int32_t dbGetNumColumns (CDataBrowser& browser) override;
@@ -56,19 +54,15 @@ private:
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser& browser) override;
 	void drawClosedCell (const CRect& r, CDrawContext& context) const;
 	void drawOpenCell (const CRect& r, CDrawContext& context) const;
-	void drawQuestionMark (const CRect& r, CDrawContext& context,
-						   const SharedPointer<CFontDesc>& f) const;
+	void drawQuestionMark (const CRect& r, CDrawContext& context, const SPtr<CFontDesc>& f) const;
 	void drawQuestionMarkCell (const CRect& r, CDrawContext& context,
-							   const SharedPointer<CFontDesc>& f) const;
-	void drawFlag (const CRect& r, CDrawContext& context, const SharedPointer<CFontDesc>& f) const;
-	void drawFlaggedCell (const CRect& r, CDrawContext& context,
-						  const SharedPointer<CFontDesc>& f) const;
-	void drawMinedCell (const CRect& r, CDrawContext& context,
-						const SharedPointer<CFontDesc>& f) const;
-	void drawExplosionCell (const CRect& r, CDrawContext& context,
-							const SharedPointer<CFontDesc>& f) const;
-	void drawCellNeighbours (const CRect& r, CDrawContext& context,
-							 const SharedPointer<CFontDesc>& f, uint32_t neighbours);
+							   const SPtr<CFontDesc>& f) const;
+	void drawFlag (const CRect& r, CDrawContext& context, const SPtr<CFontDesc>& f) const;
+	void drawFlaggedCell (const CRect& r, CDrawContext& context, const SPtr<CFontDesc>& f) const;
+	void drawMinedCell (const CRect& r, CDrawContext& context, const SPtr<CFontDesc>& f) const;
+	void drawExplosionCell (const CRect& r, CDrawContext& context, const SPtr<CFontDesc>& f) const;
+	void drawCellNeighbours (const CRect& r, CDrawContext& context, const SPtr<CFontDesc>& f,
+							 uint32_t neighbours);
 	void dbDrawCell (CDrawContext& context, const CRect& size, int32_t row, int32_t column,
 					 int32_t flags, CDataBrowser& browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
@@ -85,9 +79,9 @@ private:
 	void updateCellSize (CPoint newSize);
 
 private:
-	SharedPointer<CDataBrowser> dataBrowser;
-	SharedPointer<CView> lostView;
-	SharedPointer<CView> wonView;
+	SPtr<CDataBrowser> dataBrowser;
+	SPtr<CView> lostView;
+	SPtr<CView> wonView;
 	int32_t numRows {1};
 	int32_t numCols {1};
 	std::unique_ptr<Model> model;
@@ -98,9 +92,9 @@ private:
 	CColor flagedFrameColor {kGreyCColor};
 	CColor flagedBackColor {kTransparentCColor};
 	CPoint cellSize {30, 30};
-	SharedPointer<CFontDesc> font {kSystemFont};
-	SharedPointer<CFontDesc> smallEmojiFont {kSymbolFont};
-	SharedPointer<CFontDesc> emojiFont {kSymbolFont};
+	SPtr<CFontDesc> font {kSystemFont};
+	SPtr<CFontDesc> smallEmojiFont {kSymbolFont};
+	SPtr<CFontDesc> emojiFont {kSymbolFont};
 	IValue& flagsValue;
 	IValue& timeValue;
 	WonCallbackFunc wonCallback;
@@ -108,8 +102,8 @@ private:
 	using Clock = std::chrono::steady_clock;
 	using TimePoint = std::chrono::time_point<Clock>;
 	TimePoint startTime;
-	SharedPointer<CVSTGUITimer> gameTimer;
-	SharedPointer<CVSTGUITimer> mouseDownTimer;
+	SPtr<CVSTGUITimer> gameTimer;
+	SPtr<CVSTGUITimer> mouseDownTimer;
 	bool ignoreMouseUp {false};
 	bool mouseMode {true};
 };

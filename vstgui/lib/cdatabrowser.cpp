@@ -21,7 +21,7 @@ class CDataBrowserView : public CView, public IFocusDrawing, public IDropTarget
 //-----------------------------------------------------------------------------------------------
 {
 public:
-	CDataBrowserView (const CRect& size, const SharedPointer<IDataBrowserDelegate>& db,
+	CDataBrowserView (const CRect& size, const SPtr<IDataBrowserDelegate>& db,
 					  CDataBrowser* browser);
 
 	void draw (CDrawContext& context) override;
@@ -31,7 +31,7 @@ public:
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) override;
 
-	SharedPointer<IDropTarget> getDropTarget () override { return shared (this); }
+	SPtr<IDropTarget> getDropTarget () override { return shared (this); }
 	DragOperation onDragEnter (DragEventData data) override;
 	DragOperation onDragMove (DragEventData data) override;
 	void onDragLeave (DragEventData data) override;
@@ -48,7 +48,7 @@ public:
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 protected:
-	SharedPointer<IDataBrowserDelegate> db;
+	SPtr<IDataBrowserDelegate> db;
 	CDataBrowser* browser;
 };
 
@@ -57,7 +57,7 @@ class CDataBrowserHeader : public CView
 //-----------------------------------------------------------------------------------------------
 {
 public:
-	CDataBrowserHeader (const CRect& size, const SharedPointer<IDataBrowserDelegate>& db,
+	CDataBrowserHeader (const CRect& size, const SPtr<IDataBrowserDelegate>& db,
 						CDataBrowser* browser);
 
 	void draw (CDrawContext& context) override;
@@ -70,7 +70,7 @@ public:
 protected:
 	int32_t getColumnAtPoint (CPoint& where);
 
-	SharedPointer<IDataBrowserDelegate> db;
+	SPtr<IDataBrowserDelegate> db;
 	CDataBrowser* browser;
 
 	CPoint startMousePoint;
@@ -87,9 +87,8 @@ protected:
  * @param scrollbarWidth width of scrollbars
  * @param pBackground background bitmap
  */
-CDataBrowser::CDataBrowser (const CRect& size, const SharedPointer<IDataBrowserDelegate>& db,
-							int32_t style, CCoord scrollbarWidth,
-							const SharedPointer<CBitmap>& pBackground)
+CDataBrowser::CDataBrowser (const CRect& size, const SPtr<IDataBrowserDelegate>& db, int32_t style,
+							CCoord scrollbarWidth, const SPtr<CBitmap>& pBackground)
 : CScrollView (size, CRect (0, 0, 0, 0), style, scrollbarWidth, pBackground)
 , db (db)
 , dbView (nullptr)
@@ -106,7 +105,7 @@ CDataBrowser::CDataBrowser (const CRect& size, const SharedPointer<IDataBrowserD
 CDataBrowser::~CDataBrowser () noexcept {}
 
 //-----------------------------------------------------------------------------------------------
-SharedPointer<IDataBrowserDelegate> CDataBrowser::getDelegate () const { return db; }
+SPtr<IDataBrowserDelegate> CDataBrowser::getDelegate () const { return db; }
 
 //-----------------------------------------------------------------------------------------------
 void CDataBrowser::setAutosizeFlags (int32_t flags)
@@ -570,8 +569,7 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, IdStringPtr message)
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
-CDataBrowserHeader::CDataBrowserHeader (const CRect& size,
-										const SharedPointer<IDataBrowserDelegate>& db,
+CDataBrowserHeader::CDataBrowserHeader (const CRect& size, const SPtr<IDataBrowserDelegate>& db,
 										CDataBrowser* browser)
 : CView (size), db (db), browser (browser)
 {
@@ -722,8 +720,7 @@ CMouseEventResult CDataBrowserHeader::onMouseUp (CPoint &where, const CButtonSta
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
-CDataBrowserView::CDataBrowserView (const CRect& size,
-									const SharedPointer<IDataBrowserDelegate>& db,
+CDataBrowserView::CDataBrowserView (const CRect& size, const SPtr<IDataBrowserDelegate>& db,
 									CDataBrowser* browser)
 : CView (size), db (db), browser (browser)
 {

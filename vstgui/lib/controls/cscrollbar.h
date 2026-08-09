@@ -29,7 +29,7 @@ public:
 	/// @name CScrollbar Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setDrawer (const SharedPointer<IScrollbarDrawer>& d);
+	virtual void setDrawer (const SPtr<IScrollbarDrawer>& d);
 	virtual void setScrollSize (const CRect& ssize);
 	virtual void setStep (float newStep) { stepValue = newStep; }
 	
@@ -93,10 +93,10 @@ protected:
 	bool overlayStyle;
 	bool mouseIsInside;
 
-	SharedPointer<IScrollbarDrawer> drawer;
+	SPtr<IScrollbarDrawer> drawer;
 
 private:
-	SharedPointer<CVSTGUITimer> timer;
+	SPtr<CVSTGUITimer> timer;
 	CPoint startPoint;
 	CRect scrollerRect;
 	bool scrolling;

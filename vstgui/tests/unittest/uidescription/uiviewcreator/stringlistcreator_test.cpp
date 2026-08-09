@@ -14,13 +14,13 @@ namespace VSTGUI {
 using namespace UIViewCreator;
 
 //------------------------------------------------------------------------
-static SharedPointer<StringListControlDrawer> getDrawer (CListControl* c)
+static SPtr<StringListControlDrawer> getDrawer (CListControl* c)
 {
 	return c->getDrawer ().cast<StringListControlDrawer> ();
 }
 
 //------------------------------------------------------------------------
-static SharedPointer<StaticListControlConfigurator> getConfigurator (CListControl* c)
+static SPtr<StaticListControlConfigurator> getConfigurator (CListControl* c)
 {
 	return c->getConfigurator ().cast<StaticListControlConfigurator> ();
 }

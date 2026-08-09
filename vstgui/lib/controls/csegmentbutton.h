@@ -46,10 +46,10 @@ public:
 
 	struct Segment {
 		mutable UTF8String name;
-		mutable SharedPointer<CBitmap> icon;
-		mutable SharedPointer<CBitmap> iconHighlighted;
-		mutable SharedPointer<CBitmap> background;
-		mutable SharedPointer<CBitmap> backgroundHighlighted;
+		mutable SPtr<CBitmap> icon;
+		mutable SPtr<CBitmap> iconHighlighted;
+		mutable SPtr<CBitmap> background;
+		mutable SPtr<CBitmap> backgroundHighlighted;
 		mutable CDrawMethods::IconPosition iconPosition;
 
 		CRect rect;
@@ -94,17 +94,17 @@ public:
 	void setTextTruncateMode (CDrawMethods::TextTruncateMode mode);
 	CDrawMethods::TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }
 
-	void setGradient (const SharedPointer<CGradient>& newGradient);
-	SharedPointer<CGradient> getGradient () const { return gradient; }
+	void setGradient (const SPtr<CGradient>& newGradient);
+	SPtr<CGradient> getGradient () const { return gradient; }
 
-	void setGradientHighlighted (const SharedPointer<CGradient>& newGradient);
-	SharedPointer<CGradient> getGradientHighlighted () const { return gradientHighlighted; }
+	void setGradientHighlighted (const SPtr<CGradient>& newGradient);
+	SPtr<CGradient> getGradientHighlighted () const { return gradientHighlighted; }
 
 	void setRoundRadius (CCoord newRoundRadius);
 	CCoord getRoundRadius () const { return roundRadius; }
 
-	void setFont (const SharedPointer<CFontDesc>& font);
-	SharedPointer<CFontDesc> getFont () const { return font; }
+	void setFont (const SPtr<CFontDesc>& font);
+	SPtr<CFontDesc> getFont () const { return font; }
 
 	void setTextAlignment (CHoriTxtAlign alignment);
 	CHoriTxtAlign getTextAlignment () const { return textAlignment; }
@@ -160,9 +160,9 @@ private:
 	uint32_t getSegmentIndex (float value) const;
 
 	Segments segments;
-	SharedPointer<CGradient> gradient;
-	SharedPointer<CGradient> gradientHighlighted;
-	SharedPointer<CFontDesc> font;
+	SPtr<CGradient> gradient;
+	SPtr<CGradient> gradientHighlighted;
+	SPtr<CFontDesc> font;
 	CColor textColor {kBlackCColor};
 	CColor textColorHighlighted {kWhiteCColor};
 	CColor frameColor {kBlackCColor};

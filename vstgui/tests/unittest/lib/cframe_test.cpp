@@ -30,7 +30,7 @@ public:
 	std::vector<CView*> exitedViews;
 };
 
-bool contains (const std::vector<CView*>& c, const SharedPointer<CView>& view)
+bool contains (const std::vector<CView*>& c, const SPtr<CView>& view)
 {
 	auto it = std::find (c.begin (), c.end (), view.get ());
 	return it != c.end ();

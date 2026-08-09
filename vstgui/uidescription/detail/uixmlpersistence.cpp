@@ -15,7 +15,7 @@ namespace VSTGUI {
 namespace Detail {
 
 //-----------------------------------------------------------------------------
-SharedPointer<UINode> UIXMLParser::parse (IContentProvider& provider)
+SPtr<UINode> UIXMLParser::parse (IContentProvider& provider)
 {
 	Xml::Parser parser;
 	if (parser.parse (provider, this))
@@ -30,7 +30,7 @@ void UIXMLParser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName,
 	if (nodes)
 	{
 		auto parent = nodeStack.back ();
-		SharedPointer<UINode> newNode;
+		SPtr<UINode> newNode;
 		if (restoreViewsMode)
 		{
 			if (name != "view" && name != MainNodeNames::kCustom)

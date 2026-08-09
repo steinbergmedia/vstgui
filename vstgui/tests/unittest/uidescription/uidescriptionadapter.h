@@ -15,8 +15,8 @@ class ViewFactoryAdapter : public NonAtomicReferenceCounted,
 						   public IViewFactory
 {
 public:
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) const override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) const override
 	{
 		return nullptr;
 	}
@@ -42,29 +42,22 @@ public:
 class UIDescriptionAdapter : public IUIDescription
 {
 public:
-	SharedPointer<CView> createView (UTF8StringPtr name,
-									 const SharedPointer<IController>& controller) const override
+	SPtr<CView> createView (UTF8StringPtr name, const SPtr<IController>& controller) const override
 	{
 		return nullptr;
 	}
-	SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const override { return nullptr; }
-	SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const override { return nullptr; }
+	SPtr<CBitmap> getBitmap (UTF8StringPtr name) const override { return nullptr; }
+	SPtr<CFontDesc> getFont (UTF8StringPtr name) const override { return nullptr; }
 	bool getColor (UTF8StringPtr name, CColor& color) const override { return false; }
-	SharedPointer<CGradient> getGradient (UTF8StringPtr name) const override { return nullptr; }
+	SPtr<CGradient> getGradient (UTF8StringPtr name) const override { return nullptr; }
 	int32_t getTagForName (UTF8StringPtr name) const override { return -1; }
 	IControlListener* getControlListener (UTF8StringPtr name) const override { return nullptr; }
-	SharedPointer<IController> getController () const override { return nullptr; }
+	SPtr<IController> getController () const override { return nullptr; }
 
 	UTF8StringPtr lookupColorName (const CColor& color) const override { return nullptr; }
-	UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& font) const override
-	{
-		return nullptr;
-	}
-	UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const override
-	{
-		return nullptr;
-	}
-	UTF8StringPtr lookupGradientName (const SharedPointer<CGradient>& gradient) const override
+	UTF8StringPtr lookupFontName (const SPtr<CFontDesc>& font) const override { return nullptr; }
+	UTF8StringPtr lookupBitmapName (const SPtr<CBitmap>& bitmap) const override { return nullptr; }
+	UTF8StringPtr lookupGradientName (const SPtr<CGradient>& gradient) const override
 	{
 		return nullptr;
 	}
@@ -82,14 +75,11 @@ public:
 
 	const IViewFactory& getViewFactory () const override { return viewFactory; }
 
-	bool setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr) override
+	bool setCustomAttributes (UTF8StringPtr name, const SPtr<UIAttributes>& attr) override
 	{
 		return false;
 	}
-	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const override
-	{
-		return {};
-	}
+	SPtr<UIAttributes> getCustomAttributes (UTF8StringPtr name) const override { return {}; }
 
 	ViewFactoryAdapter viewFactory;
 };

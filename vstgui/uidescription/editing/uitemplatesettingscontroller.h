@@ -23,13 +23,12 @@ class UITemplateSettingsController : public NonAtomicReferenceCounted,
 {
 public:
 	UITemplateSettingsController (const std::string& templateName,
-								  const SharedPointer<UIDescription>& description,
+								  const SPtr<UIDescription>& description,
 								  WeakPointer<IActionPerformer> actionPerformer);
 	~UITemplateSettingsController () override = default;
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	void valueChanged (CControl& control) override;
 	void onDialogButton1Clicked (UIDialogController&) override;
 	void onDialogButton2Clicked (UIDialogController&) override;
@@ -39,7 +38,7 @@ protected:
 	static bool valueToString (float value, char utf8String[256], CParamDisplay& userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit& userData);
 
-	SharedPointer<UIDescription> description;
+	SPtr<UIDescription> description;
 	std::string templateName;
 	std::string newTemplateName;
 	CPoint minSize;
@@ -57,7 +56,7 @@ protected:
 		kMaxUseCurrentTag,
 		kNumTags
 	};
-	std::array<SharedPointer<CControl>, kNumTags> controls;
+	std::array<SPtr<CControl>, kNumTags> controls;
 	WeakPointer<IActionPerformer> actionPerformer;
 };
 

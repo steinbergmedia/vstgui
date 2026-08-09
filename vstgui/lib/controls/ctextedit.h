@@ -28,7 +28,7 @@ private:
 
 public:
 	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
-			   UTF8StringPtr txt = nullptr, const SharedPointer<CBitmap>& background = {},
+			   UTF8StringPtr txt = nullptr, const SPtr<CBitmap>& background = {},
 			   const int32_t style = 0);
 
 	enum Style
@@ -63,8 +63,8 @@ public:
 	virtual void setPlaceholderString (const UTF8String& str);
 	const UTF8String& getPlaceholderString () const { return placeholderString; }
 
-	void registerTextEditListener (const SharedPointer<ITextEditListener>& listener);
-	void unregisterTextEditListener (const SharedPointer<ITextEditListener>& listener);
+	void registerTextEditListener (const SPtr<ITextEditListener>& listener);
+	void unregisterTextEditListener (const SPtr<ITextEditListener>& listener);
 	//@}
 
 	// overrides
@@ -97,7 +97,7 @@ protected:
 
 	CColor platformGetBackColor () const override { return getBackColor (); }
 	CColor platformGetFontColor () const override { return getFontColor (); }
-	SharedPointer<CFontDesc> platformGetFont () const override;
+	SPtr<CFontDesc> platformGetFont () const override;
 	CHoriTxtAlign platformGetHoriTxtAlign () const override { return getHoriAlign (); }
 	const UTF8String& platformGetText () const override { return text; }
 	const UTF8String& platformGetPlaceholderText () const override { return placeholderString; }
@@ -115,9 +115,9 @@ protected:
 
 	bool immediateTextChange {false};
 	bool secureStyle {false};
-	mutable SharedPointer<CFontDesc> platformFont;
+	mutable SPtr<CFontDesc> platformFont;
 	UTF8String placeholderString;
-	DispatchList<SharedPointer<ITextEditListener>> textEditListeners;
+	DispatchList<SPtr<ITextEditListener>> textEditListeners;
 };
 
 } // VSTGUI

@@ -20,7 +20,7 @@ namespace VSTGUI {
 class CDropSource : public IDataPackage
 {
 public:
-	static SharedPointer<IDataPackage> create (const void* buffer, uint32_t bufferSize, Type type);
+	static SPtr<IDataPackage> create (const void* buffer, uint32_t bufferSize, Type type);
 
 	CDropSource ();
 	CDropSource (const void* buffer, uint32_t bufferSize, Type type);

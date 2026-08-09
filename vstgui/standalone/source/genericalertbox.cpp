@@ -106,7 +106,7 @@ public:
 	{
 		window = w;
 		window->registerWindowListener (this);
-		SharedPointer<CTextButton> focusButton;
+		SPtr<CTextButton> focusButton;
 		switch (usedButtons)
 		{
 			case 1: focusButton = buttons[0]; break;
@@ -119,9 +119,8 @@ public:
 
 	const ValueList& getValues () const override { return values; }
 
-	SharedPointer<IController> createController (const UTF8StringView& name,
-												 const SharedPointer<IController>& parent,
-												 const IUIDescription& uiDesc) override
+	SPtr<IController> createController (const UTF8StringView& name, const SPtr<IController>& parent,
+										const IUIDescription& uiDesc) override
 	{
 		if (name == "ButtonController")
 		{
@@ -169,7 +168,7 @@ public:
 
 	void onSetContentView (IWindow& inWindow, CFrame* contentView) override
 	{
-		std::vector<SharedPointer<CMultiLineTextLabel>> views;
+		std::vector<SPtr<CMultiLineTextLabel>> views;
 		if (contentView->getChildViewsOfType<CMultiLineTextLabel> (views, true) == 0)
 			return;
 		CCoord diffY = 0.;
@@ -219,15 +218,13 @@ private:
 	struct ButtonController : DelegationController,
 							  NonAtomicReferenceCounted
 	{
-		ButtonController (AlertBoxController& alertBoxController,
-						  const SharedPointer<IController>& parent)
+		ButtonController (AlertBoxController& alertBoxController, const SPtr<IController>& parent)
 		: DelegationController (parent), alertBoxController (alertBoxController)
 		{
 		}
 
-		SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-										 const UIAttributes& attributes,
-										 const IUIDescription& description) override
+		SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+								const IUIDescription& description) override
 		{
 			if (auto button = view.cast<CTextButton> ())
 			{
@@ -241,7 +238,7 @@ private:
 			return controller->verifyView (view, attributes, description);
 		}
 
-		bool setupButton (const SharedPointer<CTextButton>& button, UTF8StringView name)
+		bool setupButton (const SPtr<CTextButton>& button, UTF8StringView name)
 		{
 			if (name == Button3TagName)
 			{
@@ -289,9 +286,9 @@ private:
 	UTF8String thirdButtonTitle;
 	AlertResult alertResult {AlertResult::Error};
 	uint32_t usedButtons {0};
-	std::array<SharedPointer<CTextButton>, 3> buttons {{nullptr}};
-	SharedPointer<CGradient> focusedButtonGradient;
-	SharedPointer<CGradient> normalButtonGradient;
+	std::array<SPtr<CTextButton>, 3> buttons {{nullptr}};
+	SPtr<CGradient> focusedButtonGradient;
+	SPtr<CGradient> normalButtonGradient;
 };
 
 //------------------------------------------------------------------------

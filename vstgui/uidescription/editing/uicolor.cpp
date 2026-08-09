@@ -122,7 +122,7 @@ void UIColor::editChange ()
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CBitmap> createColorIcon (CColor color, CPoint colorIconSize)
+SPtr<CBitmap> createColorIcon (CColor color, CPoint colorIconSize)
 {
 	if (auto context = COffscreenContext::create (colorIconSize))
 	{
@@ -136,8 +136,8 @@ SharedPointer<CBitmap> createColorIcon (CColor color, CPoint colorIconSize)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COptionMenu> createCSSColorMenu (const std::function<void (CColor)>& callback,
-											   CPoint colorIconSize)
+SPtr<COptionMenu> createCSSColorMenu (const std::function<void (CColor)>& callback,
+									  CPoint colorIconSize)
 {
 	auto cssColorMenu = makeShared<COptionMenu> ();
 	auto cssColors = getCSSNamedColors ();

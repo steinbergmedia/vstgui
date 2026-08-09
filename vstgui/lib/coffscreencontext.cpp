@@ -11,7 +11,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-COffscreenContext::COffscreenContext (const SharedPointer<CBitmap>& bitmap)
+COffscreenContext::COffscreenContext (const SPtr<CBitmap>& bitmap)
 : CDrawContext (CRect (0, 0, bitmap ? bitmap->getWidth () : 0, bitmap ? bitmap->getHeight () : 0))
 , bitmap (bitmap)
 {
@@ -41,7 +41,7 @@ void COffscreenContext::copyFrom (CDrawContext& context, CRect destRect, CPoint 
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> COffscreenContext::create (const CPoint& size, double scaleFactor)
+SPtr<COffscreenContext> COffscreenContext::create (const CPoint& size, double scaleFactor)
 {
 	if (size.x >= 1. && size.y >= 1.)
 	{
@@ -76,9 +76,9 @@ CCoord COffscreenContext::getHeight () const
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CBitmap> renderBitmapOffscreen (
-    const CPoint& size, double scaleFactor,
-    const std::function<void (CDrawContext& drawContext)> drawCallback)
+SPtr<CBitmap>
+	renderBitmapOffscreen (const CPoint& size, double scaleFactor,
+						   const std::function<void (CDrawContext& drawContext)> drawCallback)
 {
 	auto context = COffscreenContext::create (size, scaleFactor);
 	if (!context)

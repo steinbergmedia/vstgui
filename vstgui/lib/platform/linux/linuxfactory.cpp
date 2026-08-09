@@ -41,7 +41,7 @@ struct LinuxFactory::Impl
 	std::unique_ptr<CairoGraphicsDeviceFactory> graphicsDeviceFactory {
 		std::make_unique<CairoGraphicsDeviceFactory> ()};
 	PlatformTaskExecutorPtr taskExecutor {std::make_unique<LinuxTaskExecutor> ()};
-	SharedPointer<IRunLoop> runLoop {};
+	SPtr<IRunLoop> runLoop {};
 
 	void setupResPath (void* handle)
 	{
@@ -105,13 +105,13 @@ void LinuxFactory::setScheduleMainQueueTaskFunc (
 }
 
 //-----------------------------------------------------------------------------
-void LinuxFactory::setRunLoop (const SharedPointer<IRunLoop>& runLoop) const noexcept
+void LinuxFactory::setRunLoop (const SPtr<IRunLoop>& runLoop) const noexcept
 {
 	impl->runLoop = runLoop;
 }
 
 //-----------------------------------------------------------------------------
-const SharedPointer<IRunLoop>& LinuxFactory::getRunLoop () const noexcept { return impl->runLoop; }
+const SPtr<IRunLoop>& LinuxFactory::getRunLoop () const noexcept { return impl->runLoop; }
 
 //-----------------------------------------------------------------------------
 uint64_t LinuxFactory::getTicks () const noexcept

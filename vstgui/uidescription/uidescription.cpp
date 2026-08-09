@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-static SharedPointer<IViewFactory> getGenericViewFactory () { return makeShared<UIViewFactory> (); }
+static SPtr<IViewFactory> getGenericViewFactory () { return makeShared<UIViewFactory> (); }
 
 IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
 
@@ -56,21 +56,21 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	CResourceDescription uidescFile;
 	std::string filePath;
 
-	mutable SharedPointer<IController> controller;
-	SharedPointer<IViewFactory> viewFactory;
-	SharedPointer<IContentProvider> contentProvider;
-	SharedPointer<IBitmapCreator> bitmapCreator;
-	SharedPointer<IBitmapCreator2> bitmapCreator2;
+	mutable SPtr<IController> controller;
+	SPtr<IViewFactory> viewFactory;
+	SPtr<IContentProvider> contentProvider;
+	SPtr<IBitmapCreator> bitmapCreator;
+	SPtr<IBitmapCreator2> bitmapCreator2;
 	AttributeSaveFilterFunc attributeSaveFilterFunc {nullptr};
 
-	SharedPointer<UINode> nodes;
-	SharedPointer<UIDescription> sharedResources;
+	SPtr<UINode> nodes;
+	SPtr<UIDescription> sharedResources;
 
-	mutable std::deque<SharedPointer<IController>> subControllerStack;
+	mutable std::deque<SPtr<IController>> subControllerStack;
 
-	Optional<SharedPointer<UINode>> variableBaseNode;
+	Optional<SPtr<UINode>> variableBaseNode;
 
-	SharedPointer<UINode> getVariableBaseNode ()
+	SPtr<UINode> getVariableBaseNode ()
 	{
 		if (!variableBaseNode)
 		{
@@ -82,8 +82,8 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 };
 
 //------------------------------------------------------------------------
-SharedPointer<UIDescription> UIDescription::make (const CResourceDescription& uidescFile,
-												  const SharedPointer<IViewFactory>& viewFactory)
+SPtr<UIDescription> UIDescription::make (const CResourceDescription& uidescFile,
+										 const SPtr<IViewFactory>& viewFactory)
 {
 	auto instance = makeShared<UIDescription> ();
 	if (instance->init (uidescFile, viewFactory))
@@ -92,9 +92,8 @@ SharedPointer<UIDescription> UIDescription::make (const CResourceDescription& ui
 }
 
 //------------------------------------------------------------------------
-SharedPointer<UIDescription>
-	UIDescription::make (const SharedPointer<IContentProvider>& contentProvider,
-						 const SharedPointer<IViewFactory>& viewFactory)
+SPtr<UIDescription> UIDescription::make (const SPtr<IContentProvider>& contentProvider,
+										 const SPtr<IViewFactory>& viewFactory)
 {
 	auto instance = makeShared<UIDescription> ();
 	if (instance->init (contentProvider, viewFactory))
@@ -107,7 +106,7 @@ UIDescription::UIDescription () { impl = std::unique_ptr<Impl> (new Impl); }
 
 //-----------------------------------------------------------------------------
 bool UIDescription::init (const CResourceDescription& uidescFile,
-						  const SharedPointer<IViewFactory>& viewFactory)
+						  const SPtr<IViewFactory>& viewFactory)
 {
 	if (impl->viewFactory)
 		return false;
@@ -123,8 +122,8 @@ bool UIDescription::init (const CResourceDescription& uidescFile,
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::init (const SharedPointer<IContentProvider>& contentProvider,
-						  const SharedPointer<IViewFactory>& viewFactory)
+bool UIDescription::init (const SPtr<IContentProvider>& contentProvider,
+						  const SPtr<IViewFactory>& viewFactory)
 {
 	if (impl->viewFactory)
 		return false;
@@ -172,7 +171,7 @@ void UIDescription::addDefaultNodes ()
 	{
 		struct DefaultFont {
 			UTF8StringPtr name;
-			SharedPointer<CFontDesc> font;
+			SPtr<CFontDesc> font;
 		};
 
 		const DefaultFont defaultFonts [] = {
@@ -242,7 +241,7 @@ bool UIDescription::parsed () const
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setContentProvider (const SharedPointer<IContentProvider>& provider)
+void UIDescription::setContentProvider (const SPtr<IContentProvider>& provider)
 {
 	impl->contentProvider = provider;
 }
@@ -253,7 +252,7 @@ bool UIDescription::parse ()
 	if (parsed ())
 		return true;
 
-	static auto parseUIDesc = [] (auto& contentProvider) -> SharedPointer<UINode> {
+	static auto parseUIDesc = [] (auto& contentProvider) -> SPtr<UINode> {
 		if (auto nodes = Detail::UIJsonDescReader::read (contentProvider))
 			return nodes;
 #if VSTGUI_ENABLE_XML_PARSER
@@ -314,13 +313,13 @@ void UIDescription::postParsing ()
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setController (const SharedPointer<IController>& inController) const
+void UIDescription::setController (const SPtr<IController>& inController) const
 {
 	impl->controller = inController;
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IController> UIDescription::getController () const { return impl->controller; }
+SPtr<IController> UIDescription::getController () const { return impl->controller; }
 
 //-----------------------------------------------------------------------------
 const IViewFactory& UIDescription::getViewFactory () const
@@ -342,19 +341,19 @@ void UIDescription::unregisterListener (UIDescriptionListener* listener)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setBitmapCreator (const SharedPointer<IBitmapCreator>& creator)
+void UIDescription::setBitmapCreator (const SPtr<IBitmapCreator>& creator)
 {
 	impl->bitmapCreator = creator;
 }
 
 //------------------------------------------------------------------------
-void UIDescription::setBitmapCreator2 (const SharedPointer<IBitmapCreator2>& creator)
+void UIDescription::setBitmapCreator2 (const SPtr<IBitmapCreator2>& creator)
 {
 	impl->bitmapCreator2 = creator;
 }
 
 //-----------------------------------------------------------------------------
-static void FreeNodePlatformResources (const SharedPointer<Detail::UINode>& node)
+static void FreeNodePlatformResources (const SPtr<Detail::UINode>& node)
 {
 	for (auto& child : node->getChildren ())
 	{
@@ -371,10 +370,7 @@ void UIDescription::freePlatformResources ()
 }
 
 //------------------------------------------------------------------------
-auto UIDescription::getRootNode () const -> SharedPointer<UINode>
-{
-	return impl->nodes;
-}
+auto UIDescription::getRootNode () const -> SPtr<UINode> { return impl->nodes; }
 
 //-----------------------------------------------------------------------------
 bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
@@ -498,19 +494,19 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags, Attribute
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setSharedResources (const SharedPointer<UIDescription>& resources)
+void UIDescription::setSharedResources (const SPtr<UIDescription>& resources)
 {
 	impl->sharedResources = resources;
 }
 
 //-----------------------------------------------------------------------------
-const SharedPointer<UIDescription>& UIDescription::getSharedResources () const
+const SPtr<UIDescription>& UIDescription::getSharedResources () const
 {
 	return impl->sharedResources;
 }
 
 //-----------------------------------------------------------------------------
-auto UIDescription::findNodeForView (CView& view) const -> SharedPointer<UINode>
+auto UIDescription::findNodeForView (CView& view) const -> SPtr<UINode>
 {
 	CView* parentView = &view;
 	std::string templateName;
@@ -518,7 +514,7 @@ auto UIDescription::findNodeForView (CView& view) const -> SharedPointer<UINode>
 		parentView = parentView->getParentView ();
 	if (parentView)
 	{
-		SharedPointer<UINode> node;
+		SPtr<UINode> node;
 		for (const auto& itNode : impl->nodes->getChildren ())
 		{
 			if (itNode->getName () == Detail::MainNodeNames::kTemplate)
@@ -577,8 +573,8 @@ auto UIDescription::findNodeForView (CView& view) const -> SharedPointer<UINode>
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::storeViews (const std::list<SharedPointer<CView>>& views, OutputStream& stream,
-								SharedPointer<UIAttributes> customData) const
+bool UIDescription::storeViews (const std::list<SPtr<CView>>& views, OutputStream& stream,
+								SPtr<UIAttributes> customData) const
 {
 	auto nodeList = makeShared<Detail::UIDescList> ();
 	for (auto& view : views)
@@ -617,8 +613,8 @@ bool UIDescription::storeViews (const std::list<SharedPointer<CView>>& views, Ou
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<CView>>& views,
-								  SharedPointer<UIAttributes>* customData)
+bool UIDescription::restoreViews (InputStream& stream, std::list<SPtr<CView>>& views,
+								  SPtr<UIAttributes>* customData)
 {
 	InputStreamContentProvider contentProvider (stream);
 	if (auto baseNode = Detail::UIJsonDescReader::read (contentProvider))
@@ -647,7 +643,7 @@ bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<C
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> UIDescription::createViewFromNode (const SharedPointer<UINode>& node) const
+SPtr<CView> UIDescription::createViewFromNode (const SPtr<UINode>& node) const
 {
 	const auto* templateName = node->getAttributes ()->getAttributeValue (Detail::MainNodeNames::kTemplate);
 	if (templateName)
@@ -659,8 +655,8 @@ SharedPointer<CView> UIDescription::createViewFromNode (const SharedPointer<UINo
 		return view;
 	}
 
-	SharedPointer<IController> subController;
-	SharedPointer<CView> result;
+	SPtr<IController> subController;
+	SPtr<CView> result;
 	if (impl->controller)
 	{
 		const auto* subControllerName = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrSubController);
@@ -748,15 +744,14 @@ SharedPointer<CView> UIDescription::createViewFromNode (const SharedPointer<UINo
 CViewAttributeID UIDescription::kTemplateNameAttributeID = 'uitl';
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> UIDescription::createView (UTF8StringPtr name,
-												const SharedPointer<IController>& _controller) const
+SPtr<CView> UIDescription::createView (UTF8StringPtr name,
+									   const SPtr<IController>& _controller) const
 {
 	if (impl->nodes == nullptr)
 		return {};
 
 	IUIDescriptionAddOn::CreateTemplateViewFunc f =
-		[this] (UTF8StringPtr name,
-				const SharedPointer<IController>& _controller) mutable -> SharedPointer<CView> {
+		[this] (UTF8StringPtr name, const SPtr<IController>& _controller) mutable -> SPtr<CView> {
 		auto cleanup = finally (
 			[&, oldController = impl->controller] () { impl->controller = oldController; });
 		impl->controller = _controller;
@@ -809,7 +804,7 @@ bool UIDescription::getTemplateNameFromView (const CView& view, std::string& tem
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<UIAttributes> UIDescription::getViewAttributes (UTF8StringPtr name) const
+SPtr<UIAttributes> UIDescription::getViewAttributes (UTF8StringPtr name) const
 {
 	if (impl->nodes)
 	{
@@ -827,7 +822,7 @@ SharedPointer<UIAttributes> UIDescription::getViewAttributes (UTF8StringPtr name
 }
 
 //-----------------------------------------------------------------------------
-auto UIDescription::getBaseNode (UTF8StringPtr name, bool create) const -> SharedPointer<UINode>
+auto UIDescription::getBaseNode (UTF8StringPtr name, bool create) const -> SPtr<UINode>
 {
 	UTF8StringView nameView (name);
 	nameView.calculateByteCount ();
@@ -855,9 +850,8 @@ auto UIDescription::getBaseNode (UTF8StringPtr name, bool create) const -> Share
 }
 
 //-----------------------------------------------------------------------------
-auto UIDescription::findChildNodeByNameAttribute (const SharedPointer<UINode>& node,
-												  UTF8StringPtr nameAttribute) const
-	-> SharedPointer<UINode>
+auto UIDescription::findChildNodeByNameAttribute (const SPtr<UINode>& node,
+												  UTF8StringPtr nameAttribute) const -> SPtr<UINode>
 {
 	if (node)
 		return node->getChildren ().findChildNodeWithAttributeValue ("name", nameAttribute);
@@ -942,7 +936,7 @@ IControlListener* UIDescription::getControlListener (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
+SPtr<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 {
 	auto bitmapNode =
 		findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kBitmap), name)
@@ -979,7 +973,7 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 		}
 		if (bitmap && bitmapNode->getFilterProcessed () == false)
 		{
-			std::list<SharedPointer<BitmapFilter::IFilter> > filters;
+			std::list<SPtr<BitmapFilter::IFilter>> filters;
 			for (auto& childNode : bitmapNode->getChildren ())
 			{
 				const std::string* filterName = nullptr;
@@ -1102,7 +1096,7 @@ SharedPointer<CBitmap> UIDescription::getBitmap (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CFontDesc> UIDescription::getFont (UTF8StringPtr name) const
+SPtr<CFontDesc> UIDescription::getFont (UTF8StringPtr name) const
 {
 	auto fontNode = findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kFont), name)
 						.cast<Detail::UIFontNode> ();
@@ -1128,7 +1122,7 @@ bool UIDescription::getColor (UTF8StringPtr name, CColor& color) const
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CGradient> UIDescription::getGradient (UTF8StringPtr name) const
+SPtr<CGradient> UIDescription::getGradient (UTF8StringPtr name) const
 {
 	auto gradientNode =
 		findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kGradient), name)
@@ -1168,7 +1162,7 @@ UTF8StringPtr UIDescription::lookupColorName (const CColor& color) const
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr UIDescription::lookupFontName (const SharedPointer<CFontDesc>& font) const
+UTF8StringPtr UIDescription::lookupFontName (const SPtr<CFontDesc>& font) const
 {
 	return font ? lookupName<Detail::UIFontNode> (
 					  font, Detail::MainNodeNames::kFont,
@@ -1179,7 +1173,7 @@ UTF8StringPtr UIDescription::lookupFontName (const SharedPointer<CFontDesc>& fon
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr UIDescription::lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const
+UTF8StringPtr UIDescription::lookupBitmapName (const SPtr<CBitmap>& bitmap) const
 {
 	return bitmap ? lookupName<Detail::UIBitmapNode> (
 						bitmap, Detail::MainNodeNames::kBitmap,
@@ -1190,7 +1184,7 @@ UTF8StringPtr UIDescription::lookupBitmapName (const SharedPointer<CBitmap>& bit
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr UIDescription::lookupGradientName (const SharedPointer<CGradient>& gradient) const
+UTF8StringPtr UIDescription::lookupGradientName (const SPtr<CGradient>& gradient) const
 {
 	return gradient ? lookupName<Detail::UIGradientNode> (
 						  gradient, Detail::MainNodeNames::kGradient,
@@ -1302,7 +1296,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeFont (UTF8StringPtr name, const SharedPointer<CFontDesc>& newFont)
+void UIDescription::changeFont (UTF8StringPtr name, const SPtr<CFontDesc>& newFont)
 {
 	auto fontsNode = getBaseNode (Detail::MainNodeNames::kFont);
 	auto node = findChildNodeByNameAttribute (fontsNode, name).cast<Detail::UIFontNode> ();
@@ -1332,7 +1326,7 @@ void UIDescription::changeFont (UTF8StringPtr name, const SharedPointer<CFontDes
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeGradient (UTF8StringPtr name, const SharedPointer<CGradient>& newGradient)
+void UIDescription::changeGradient (UTF8StringPtr name, const SPtr<CGradient>& newGradient)
 {
 	auto gradientsNode = getBaseNode (Detail::MainNodeNames::kGradient);
 	auto node = findChildNodeByNameAttribute (gradientsNode, name).cast<Detail::UIGradientNode> ();
@@ -1429,7 +1423,8 @@ void UIDescription::changeMultiFrameBitmap (UTF8StringPtr name, UTF8StringPtr ne
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters)
+void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName,
+										 const std::list<SPtr<UIAttributes>>& filters)
 {
 	auto bitmapNode =
 		findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kBitmap), bitmapName)
@@ -1462,7 +1457,8 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<SharedPointer<UIAttributes> >& filters) const
+void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName,
+										  std::list<SPtr<UIAttributes>>& filters) const
 {
 	auto bitmapNode =
 		findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kBitmap), bitmapName)
@@ -1497,7 +1493,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 }
 
 //-----------------------------------------------------------------------------
-static void removeChildNode (const SharedPointer<Detail::UINode>& baseNode, UTF8StringPtr nodeName)
+static void removeChildNode (const SPtr<Detail::UINode>& baseNode, UTF8StringPtr nodeName)
 {
 	auto& children = baseNode->getChildren ();
 	for (const auto& itNode : children)
@@ -1649,8 +1645,8 @@ void UIDescription::collectControlTagNames (std::list<const std::string*>& names
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node,
-											 const SharedPointer<CView>& view, bool deep)
+bool UIDescription::updateAttributesForView (const SPtr<UINode>& node, const SPtr<CView>& view,
+											 bool deep)
 {
 	bool result = false;
 #if VSTGUI_LIVE_EDITING
@@ -1724,7 +1720,7 @@ bool UIDescription::updateAttributesForView (const SharedPointer<UINode>& node,
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::updateViewDescription (UTF8StringPtr name, const SharedPointer<CView>& view)
+void UIDescription::updateViewDescription (UTF8StringPtr name, const SPtr<CView>& view)
 {
 #if VSTGUI_LIVE_EDITING
 	bool doIt = true;
@@ -1737,7 +1733,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, const SharedPoint
 
 	if (impl->viewFactory && impl->nodes)
 	{
-		SharedPointer<UINode> node;
+		SPtr<UINode> node;
 		for (auto& childNode : impl->nodes->getChildren ())
 		{
 			if (childNode->getName () == Detail::MainNodeNames::kTemplate)
@@ -1761,7 +1757,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, const SharedPoint
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr)
+bool UIDescription::addNewTemplate (UTF8StringPtr name, const SPtr<UIAttributes>& attr)
 {
 #if VSTGUI_LIVE_EDITING
 	vstgui_assert (impl->nodes);
@@ -1834,7 +1830,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr)
+bool UIDescription::setCustomAttributes (UTF8StringPtr name, const SPtr<UIAttributes>& attr)
 {
 	auto customNode =
 		findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kCustom), name);
@@ -1851,7 +1847,7 @@ bool UIDescription::setCustomAttributes (UTF8StringPtr name, const SharedPointer
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr name) const
+SPtr<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr name) const
 {
 	auto node =
 		findChildNodeByNameAttribute (getBaseNode (Detail::MainNodeNames::kCustom, false), name);
@@ -1859,7 +1855,7 @@ SharedPointer<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr na
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr name, bool create)
+SPtr<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr name, bool create)
 {
 	auto attributes = getCustomAttributes (name);
 	if (attributes)

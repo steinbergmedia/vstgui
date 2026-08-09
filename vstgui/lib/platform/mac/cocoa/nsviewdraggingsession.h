@@ -24,24 +24,24 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 struct NSViewDraggingSession : public IDraggingSession, public NonAtomicReferenceCounted
 {
-	static SharedPointer<NSViewDraggingSession> create (
-	    NSView* view, const DragDescription& desc, const SharedPointer<IDragCallback>& callback);
+	static SPtr<NSViewDraggingSession> create (NSView* view, const DragDescription& desc,
+											   const SPtr<IDragCallback>& callback);
 
 	NSViewDraggingSession (NSDraggingSession* session, const DragDescription& desc,
-	                       const SharedPointer<IDragCallback>& callback);
+						   const SPtr<IDragCallback>& callback);
 
-	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const override;
+	bool setBitmap (const SPtr<CBitmap>& bitmap, CPoint offset) const override;
 
 	void dragWillBegin (CPoint pos);
 	void dragMoved (CPoint pos);
 	void dragEnded (CPoint pos, DragOperation result);
 
 private:
-	static NSImage* nsImageForDragOperation (const SharedPointer<CBitmap>& bitmap);
+	static NSImage* nsImageForDragOperation (const SPtr<CBitmap>& bitmap);
 
 	NSDraggingSession* session;
 	mutable DragDescription desc;
-	SharedPointer<IDragCallback> callback;
+	SPtr<IDragCallback> callback;
 };
 
 //------------------------------------------------------------------------

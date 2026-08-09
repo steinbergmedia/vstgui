@@ -32,7 +32,7 @@ A bitmap can be used as background.
  */
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt,
-					  const SharedPointer<CBitmap>& background, const int32_t style)
+					  const SPtr<CBitmap>& background, const int32_t style)
 : CTextLabel (size, txt, background, style)
 {
 	setListener (listener);
@@ -82,13 +82,13 @@ bool CTextEdit::getSecureStyle () const
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::registerTextEditListener (const SharedPointer<ITextEditListener>& listener)
+void CTextEdit::registerTextEditListener (const SPtr<ITextEditListener>& listener)
 {
 	textEditListeners.add (listener);
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::unregisterTextEditListener (const SharedPointer<ITextEditListener>& listener)
+void CTextEdit::unregisterTextEditListener (const SPtr<ITextEditListener>& listener)
 {
 	textEditListeners.remove (listener);
 }
@@ -251,7 +251,7 @@ void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CFontDesc> CTextEdit::platformGetFont () const
+SPtr<CFontDesc> CTextEdit::platformGetFont () const
 {
 	auto font = getFont ();
 	CCoord fontSize = font->getSize ();

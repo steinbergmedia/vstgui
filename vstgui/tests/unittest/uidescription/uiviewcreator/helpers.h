@@ -48,42 +48,42 @@ public:
 		return nullptr;
 	}
 
-	SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const override
+	SPtr<CFontDesc> getFont (UTF8StringPtr name) const override
 	{
 		if (UTF8StringView (name) == kFontName)
 			return font;
 		return nullptr;
 	}
 
-	UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& f) const override
+	UTF8StringPtr lookupFontName (const SPtr<CFontDesc>& f) const override
 	{
 		if (f == this->font)
 			return kFontName;
 		return nullptr;
 	}
 
-	SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const override
+	SPtr<CBitmap> getBitmap (UTF8StringPtr name) const override
 	{
 		if (UTF8StringView (name) == kBitmapName)
 			return bitmap;
 		return nullptr;
 	}
 
-	UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& inBitmap) const override
+	UTF8StringPtr lookupBitmapName (const SPtr<CBitmap>& inBitmap) const override
 	{
 		if (inBitmap == bitmap)
 			return kBitmapName;
 		return nullptr;
 	}
 
-	SharedPointer<CGradient> getGradient (UTF8StringPtr name) const override
+	SPtr<CGradient> getGradient (UTF8StringPtr name) const override
 	{
 		if (UTF8StringView (name) == kGradientName)
 			return gradient;
 		return nullptr;
 	}
 
-	UTF8StringPtr lookupGradientName (const SharedPointer<CGradient>& g) const override
+	UTF8StringPtr lookupGradientName (const SPtr<CGradient>& g) const override
 	{
 		if (g == this->gradient)
 			return kGradientName;
@@ -111,9 +111,9 @@ public:
 
 	int32_t tag {-1};
 	CColor color {20, 30, 50, 255};
-	SharedPointer<CFontDesc> font = owned (new CFontDesc ("Arial", 12));
-	SharedPointer<CBitmap> bitmap = owned (new CBitmap (1, 1));
-	SharedPointer<CGradient> gradient = CGradient::create (0, 1, kBlackCColor, kWhiteCColor);
+	SPtr<CFontDesc> font = owned (new CFontDesc ("Arial", 12));
+	SPtr<CBitmap> bitmap = owned (new CBitmap (1, 1));
+	SPtr<CGradient> gradient = CGradient::create (0, 1, kBlackCColor, kWhiteCColor);
 	IControlListener* listener {nullptr};
 };
 

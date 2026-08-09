@@ -19,7 +19,7 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 struct GenericOptionMenuTheme
 {
-	SharedPointer<CFontDesc> font {kSystemFont};
+	SPtr<CFontDesc> font {kSystemFont};
 	CColor backgroundColor {MakeCColor (0x39, 0x3c, 0x3f, 252)};
 	CColor selectedBackgroundColor {MakeCColor (200, 200, 200, 235)};
 	CColor textColor {MakeCColor (255, 255, 255, 255)};
@@ -52,7 +52,7 @@ public:
 
 	void setListener (IGenericOptionMenuListener* listener);
 
-	void popup (const SharedPointer<COptionMenu>& optionMenu, const Callback& callback) override;
+	void popup (const SPtr<COptionMenu>& optionMenu, const Callback& callback) override;
 
 private:
 	void removeModalView (PlatformOptionMenuResult result);

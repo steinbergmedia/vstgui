@@ -35,10 +35,10 @@ class UINode : public NonAtomicReferenceCounted
 public:
 	using DataStorage = std::string;
 
-	UINode (const std::string& name, const SharedPointer<UIAttributes>& attributes = {},
-	        bool needsFastChildNameAttributeLookup = false);
-	UINode (const std::string& name, const SharedPointer<UIDescList>& children,
-	        const SharedPointer<UIAttributes>& attributes = {});
+	UINode (const std::string& name, const SPtr<UIAttributes>& attributes = {},
+			bool needsFastChildNameAttributeLookup = false);
+	UINode (const std::string& name, const SPtr<UIDescList>& children,
+			const SPtr<UIAttributes>& attributes = {});
 	UINode (const UINode& n);
 	~UINode () noexcept override;
 
@@ -48,10 +48,10 @@ public:
 
 	void setData (DataStorage&& newData);
 
-	const SharedPointer<UIAttributes>& getAttributes () const { return attributes; }
+	const SPtr<UIAttributes>& getAttributes () const { return attributes; }
 	UIDescList& getChildren () const { return *children.get (); }
 	bool hasChildren () const;
-	void childAttributeChanged (const SharedPointer<UINode>& child, const char* attributeName,
+	void childAttributeChanged (const SPtr<UINode>& child, const char* attributeName,
 								const char* oldAttributeValue);
 
 	enum
@@ -70,8 +70,8 @@ public:
 protected:
 	std::string name;
 	DataStorage data;
-	SharedPointer<UIAttributes> attributes;
-	SharedPointer<UIDescList> children;
+	SPtr<UIAttributes> attributes;
+	SPtr<UIDescList> children;
 	int32_t flags;
 };
 
@@ -86,7 +86,7 @@ public:
 class UIVariableNode : public UINode
 {
 public:
-	UIVariableNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
+	UIVariableNode (const std::string& name, const SPtr<UIAttributes>& attributes);
 
 	enum Type
 	{
@@ -108,7 +108,7 @@ protected:
 class UIControlTagNode : public UINode
 {
 public:
-	UIControlTagNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
+	UIControlTagNode (const std::string& name, const SPtr<UIAttributes>& attributes);
 	int32_t getTag ();
 	void setTag (int32_t newTag);
 
@@ -123,8 +123,8 @@ protected:
 class UIBitmapNode : public UINode
 {
 public:
-	UIBitmapNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
-	SharedPointer<CBitmap> getBitmap (const std::string& pathHint);
+	UIBitmapNode (const std::string& name, const SPtr<UIAttributes>& attributes);
+	SPtr<CBitmap> getBitmap (const std::string& pathHint);
 	void setBitmap (UTF8StringPtr bitmapName);
 	void setMultiFrameDesc (const CMultiFrameBitmapDescription* desc);
 	void setNinePartTiledOffset (const CRect* offsets);
@@ -145,12 +145,11 @@ protected:
 	~UIBitmapNode () noexcept override;
 	using BitmapVariant =
 		std::variant<uint32_t, CNinePartTiledDescription, CMultiFrameBitmapDescription>;
-	SharedPointer<CBitmap> createBitmap (const std::string& str,
-										 const BitmapVariant& variant) const;
+	SPtr<CBitmap> createBitmap (const std::string& str, const BitmapVariant& variant) const;
 	PlatformBitmapPtr createBitmapFromDataNode () const;
 	static bool imagesEqual (const PlatformBitmapPtr& b1, const PlatformBitmapPtr& b2);
-	SharedPointer<UINode> dataNode () const;
-	SharedPointer<CBitmap> bitmap;
+	SPtr<UINode> dataNode () const;
+	SPtr<CBitmap> bitmap;
 	bool filterProcessed;
 	bool scaledBitmapsAdded;
 };
@@ -159,9 +158,9 @@ protected:
 class UIFontNode : public UINode
 {
 public:
-	UIFontNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
-	SharedPointer<CFontDesc> getFont ();
-	void setFont (const SharedPointer<CFontDesc>& newFont);
+	UIFontNode (const std::string& name, const SPtr<UIAttributes>& attributes);
+	SPtr<CFontDesc> getFont ();
+	void setFont (const SPtr<CFontDesc>& newFont);
 	void setAlternativeFontNames (UTF8StringPtr fontNames);
 	bool getAlternativeFontNames (std::string& fontNames);
 
@@ -170,14 +169,14 @@ public:
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (UIFontNode)
 	~UIFontNode () noexcept override;
-	SharedPointer<CFontDesc> font;
+	SPtr<CFontDesc> font;
 };
 
 //-----------------------------------------------------------------------------
 class UIColorNode : public UINode
 {
 public:
-	UIColorNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
+	UIColorNode (const std::string& name, const SPtr<UIAttributes>& attributes);
 	const CColor& getColor () const { return color; }
 	void setColor (const CColor& newColor);
 
@@ -189,14 +188,14 @@ protected:
 class UIGradientNode : public UINode
 {
 public:
-	UIGradientNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
-	SharedPointer<CGradient> getGradient ();
-	void setGradient (const SharedPointer<CGradient>& g);
+	UIGradientNode (const std::string& name, const SPtr<UIAttributes>& attributes);
+	SPtr<CGradient> getGradient ();
+	void setGradient (const SPtr<CGradient>& g);
 
 	void freePlatformResources () override;
 
 protected:
-	SharedPointer<CGradient> gradient;
+	SPtr<CGradient> gradient;
 };
 
 //------------------------------------------------------------------------

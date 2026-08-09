@@ -24,7 +24,7 @@ class COnOffButton : public CControl
 {
 public:
 	COnOffButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1,
-				  const SharedPointer<CBitmap>& background = {}, int32_t style = 0);
+				  const SPtr<CBitmap>& background = {}, int32_t style = 0);
 
 	//-----------------------------------------------------------------------------
 	/// @name COnOffButton Methods
@@ -59,7 +59,7 @@ class CCheckBox : public CControl
 {
 public:
 	CCheckBox (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1,
-			   UTF8StringPtr title = nullptr, const SharedPointer<CBitmap>& background = {},
+			   UTF8StringPtr title = nullptr, const SPtr<CBitmap>& background = {},
 			   int32_t style = 0);
 
 	enum Styles
@@ -79,8 +79,8 @@ public:
 	virtual void setTitle (const UTF8String& newTitle);
 	const UTF8String& getTitle () const { return title; }
 
-	virtual void setFont (const SharedPointer<CFontDesc>& newFont);
-	SharedPointer<CFontDesc> getFont () const { return font; }
+	virtual void setFont (const SPtr<CFontDesc>& newFont);
+	SPtr<CFontDesc> getFont () const { return font; }
 
 	virtual void setFontColor (const CColor& newColor) { fontColor = newColor; invalid (); }
 	const CColor& getFontColor () const { return fontColor; }
@@ -110,7 +110,7 @@ public:
 	CMouseEventResult onMouseCancel () override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 	bool sizeToFit () override;
-	void setBackground (const SharedPointer<CBitmap>& background) override;
+	void setBackground (const SPtr<CBitmap>& background) override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 
 protected:
@@ -126,7 +126,7 @@ protected:
 	CColor checkMarkColor;
     CCoord frameWidth {1};
     CCoord roundRectRadius {0};
-	SharedPointer<CFontDesc> font;
+	SPtr<CFontDesc> font;
 
 private:
 	float previousValue {0.f};
@@ -143,7 +143,7 @@ class CKickButton : public CControl,
 {
 public:
 	CKickButton (const CRect& size, IControlListener* listener, int32_t tag,
-				 const SharedPointer<CBitmap>& background);
+				 const SPtr<CBitmap>& background);
 
 	void draw (CDrawContext&) override;
 
@@ -185,18 +185,18 @@ public:
 	virtual void setTitle (const UTF8String& newTitle);
 	const UTF8String& getTitle () const { return title; }
 
-	virtual void setFont (const SharedPointer<CFontDesc>& newFont);
-	SharedPointer<CFontDesc> getFont () const { return font; }
+	virtual void setFont (const SPtr<CFontDesc>& newFont);
+	SPtr<CFontDesc> getFont () const { return font; }
 
 	virtual void setTextColor (const CColor& color);
 	const CColor& getTextColor () const { return textColor; }
 	virtual void setTextColorHighlighted (const CColor& color);
 	const CColor& getTextColorHighlighted () const { return textColorHighlighted; }
 
-	virtual void setGradient (const SharedPointer<CGradient>& gradient);
-	SharedPointer<CGradient> getGradient () const;
-	virtual void setGradientHighlighted (const SharedPointer<CGradient>& gradient);
-	SharedPointer<CGradient> getGradientHighlighted () const;
+	virtual void setGradient (const SPtr<CGradient>& gradient);
+	SPtr<CGradient> getGradient () const;
+	virtual void setGradientHighlighted (const SPtr<CGradient>& gradient);
+	SPtr<CGradient> getGradientHighlighted () const;
 
 	virtual void setFrameColor (const CColor& color);
 	const CColor& getFrameColor () const { return frameColor; }
@@ -212,11 +212,11 @@ public:
 	virtual void setStyle (Style style);
 	Style getStyle () const { return style; }
 
-	virtual void setIcon (const SharedPointer<CBitmap>& bitmap);
-	SharedPointer<CBitmap> getIcon () const;
+	virtual void setIcon (const SPtr<CBitmap>& bitmap);
+	SPtr<CBitmap> getIcon () const;
 
-	virtual void setIconHighlighted (const SharedPointer<CBitmap>& bitmap);
-	SharedPointer<CBitmap> getIconHighlighted () const;
+	virtual void setIconHighlighted (const SPtr<CBitmap>& bitmap);
+	SPtr<CBitmap> getIconHighlighted () const;
 
 	virtual void setIconPosition (CDrawMethods::IconPosition pos);
 	CDrawMethods::IconPosition getIconPosition () const { return iconPosition; }
@@ -246,15 +246,15 @@ protected:
 	~CTextButton () noexcept override = default;
 
 	void invalidPath ();
-	SharedPointer<CGraphicsPath> getPath (CDrawContext& context, CCoord lineWidth);
+	SPtr<CGraphicsPath> getPath (CDrawContext& context, CCoord lineWidth);
 
-	SharedPointer<CFontDesc> font;
-	SharedPointer<CGraphicsPath> _path;
-	SharedPointer<CBitmap> icon;
-	SharedPointer<CBitmap> iconHighlighted;
-	SharedPointer<CGradient> gradient;
-	SharedPointer<CGradient> gradientHighlighted;
-	
+	SPtr<CFontDesc> font;
+	SPtr<CGraphicsPath> _path;
+	SPtr<CBitmap> icon;
+	SPtr<CBitmap> iconHighlighted;
+	SPtr<CGradient> gradient;
+	SPtr<CGradient> gradientHighlighted;
+
 	CColor textColor;
 	CColor frameColor;
 

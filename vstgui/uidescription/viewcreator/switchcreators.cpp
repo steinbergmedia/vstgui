@@ -88,8 +88,8 @@ UTF8StringPtr VerticalSwitchCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> VerticalSwitchCreator::create (const UIAttributes& attributes,
-													const IUIDescription& description) const
+SPtr<CView> VerticalSwitchCreator::create (const UIAttributes& attributes,
+										   const IUIDescription& description) const
 {
 	return makeShared<CVerticalSwitch> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
@@ -119,8 +119,8 @@ UTF8StringPtr HorizontalSwitchCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> HorizontalSwitchCreator::create (const UIAttributes& attributes,
-													  const IUIDescription& description) const
+SPtr<CView> HorizontalSwitchCreator::create (const UIAttributes& attributes,
+											 const IUIDescription& description) const
 {
 	return makeShared<CHorizontalSwitch> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }

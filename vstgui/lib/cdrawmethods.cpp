@@ -14,7 +14,7 @@ namespace CDrawMethods {
 
 //------------------------------------------------------------------------
 UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text,
-								const SharedPointer<CFontDesc>& font, CCoord maxWidth,
+								const SPtr<CFontDesc>& font, CCoord maxWidth,
 								const CPoint& textInset, uint32_t flags)
 {
 	if (mode == kTextTruncateNone || text.length () < 2)
@@ -87,9 +87,9 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text,
 }
 
 //------------------------------------------------------------------------
-void drawIconAndText (CDrawContext& context, const SharedPointer<CBitmap>& iconToDraw,
+void drawIconAndText (CDrawContext& context, const SPtr<CBitmap>& iconToDraw,
 					  IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin,
-					  CRect drawRect, const UTF8String& title, const SharedPointer<CFontDesc>& font,
+					  CRect drawRect, const UTF8String& title, const SPtr<CFontDesc>& font,
 					  CColor textColor, TextTruncateMode textTruncateMode)
 {
 	if (iconToDraw)

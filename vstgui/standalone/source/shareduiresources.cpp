@@ -66,11 +66,11 @@ public:
 	void cleanup ();
 
 	Optional<CColor> getColor (const UTF8String& name) const override;
-	Optional<SharedPointer<CBitmap>> getBitmap (const UTF8String& name) const override;
-	Optional<SharedPointer<CGradient>> getGradient (const UTF8String& name) const override;
-	Optional<SharedPointer<CFontDesc>> getFont (const UTF8String& name) const override;
+	Optional<SPtr<CBitmap>> getBitmap (const UTF8String& name) const override;
+	Optional<SPtr<CGradient>> getGradient (const UTF8String& name) const override;
+	Optional<SPtr<CFontDesc>> getFont (const UTF8String& name) const override;
 
-	SharedPointer<UIDescription> get () const
+	SPtr<UIDescription> get () const
 	{
 		load ();
 		return uiDesc;
@@ -80,7 +80,7 @@ private:
 	bool load () const;
 
 	mutable bool loadDone {false};
-	mutable SharedPointer<UIDescription> uiDesc;
+	mutable SPtr<UIDescription> uiDesc;
 };
 
 //------------------------------------------------------------------------
@@ -115,7 +115,7 @@ bool SharedUIResources::load () const
 			filename = *absPath;
 #endif
 
-		SharedPointer<UIDescription> description;
+		SPtr<UIDescription> description;
 		if (Detail::getApplicationPlatformAccess ()
 		        ->getConfiguration ()
 		        .useCompressedUIDescriptionFiles)
@@ -169,7 +169,7 @@ Optional<CColor> SharedUIResources::getColor (const UTF8String& name) const
 }
 
 //------------------------------------------------------------------------
-Optional<SharedPointer<CBitmap>> SharedUIResources::getBitmap (const UTF8String& name) const
+Optional<SPtr<CBitmap>> SharedUIResources::getBitmap (const UTF8String& name) const
 {
 	if (load ())
 	{
@@ -182,7 +182,7 @@ Optional<SharedPointer<CBitmap>> SharedUIResources::getBitmap (const UTF8String&
 }
 
 //------------------------------------------------------------------------
-Optional<SharedPointer<CGradient>> SharedUIResources::getGradient (const UTF8String& name) const
+Optional<SPtr<CGradient>> SharedUIResources::getGradient (const UTF8String& name) const
 {
 	if (load ())
 	{
@@ -195,7 +195,7 @@ Optional<SharedPointer<CGradient>> SharedUIResources::getGradient (const UTF8Str
 }
 
 //------------------------------------------------------------------------
-Optional<SharedPointer<CFontDesc>> SharedUIResources::getFont (const UTF8String& name) const
+Optional<SPtr<CFontDesc>> SharedUIResources::getFont (const UTF8String& name) const
 {
 	if (load ())
 	{
@@ -214,10 +214,7 @@ const ISharedUIResources& getSharedUIResources ()
 }
 
 //------------------------------------------------------------------------
-SharedPointer<UIDescription> getSharedUIDescription ()
-{
-	return SharedUIResources::instance ().get ();
-}
+SPtr<UIDescription> getSharedUIDescription () { return SharedUIResources::instance ().get (); }
 
 //------------------------------------------------------------------------
 void cleanupSharedUIResources ()
@@ -238,8 +235,7 @@ static void updateUIDescFilePath (const char* path, UIDescription& uiDesc)
 }
 
 //------------------------------------------------------------------------
-UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc,
-														SharedPointer<CFrame> frame,
+UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, SPtr<CFrame> frame,
 														UTF8StringPtr notFoundText)
 {
 	auto originalPath = std::string (uiDesc.getFilePath ());
@@ -299,7 +295,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc,
 }
 
 //------------------------------------------------------------------------
-bool initUIDescAsNew (UIDescription& uiDesc, SharedPointer<CFrame> frame)
+bool initUIDescAsNew (UIDescription& uiDesc, SPtr<CFrame> frame)
 {
 	if (!frame)
 		frame = makeShared<CFrame> (CRect (), nullptr);

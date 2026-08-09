@@ -165,10 +165,10 @@ TEST_CASE (CViewTest, ObjectAttributes)
 	EXPECT (obj->getNbReference () == 1);
 	EXPECT (v->setAttribute ('test', obj) == true);
 	EXPECT (obj->getNbReference () == 2);
-	SharedPointer<CBaseObject> outObj;
+	SPtr<CBaseObject> outObj;
 	EXPECT (v->getAttribute ('test', outObj) == true);
 	EXPECT (obj->getNbReference () == 3);
-	SharedPointer<CView> outObj2;
+	SPtr<CView> outObj2;
 	EXPECT (v->getAttribute ('test', outObj2) == false);
 	EXPECT (v->removeAttribute ('test') == true);
 	EXPECT (obj->getNbReference () == 2);

@@ -19,8 +19,8 @@ class IViewFactory : virtual public IReference
 public:
 	virtual ~IViewFactory () noexcept = default;
 
-	virtual SharedPointer<CView> createView (const UIAttributes& attributes,
-											 const IUIDescription& description) const = 0;
+	virtual SPtr<CView> createView (const UIAttributes& attributes,
+									const IUIDescription& description) const = 0;
 	virtual bool applyAttributeValues (CView& view, const UIAttributes& attributes,
 									   const IUIDescription& desc) const = 0;
 	virtual bool applyCustomViewAttributeValues (CView& customView, IdStringPtr baseViewName,
@@ -65,13 +65,13 @@ class ViewFactoryDelegate : public IViewFactory,
 							public NonAtomicReferenceCounted
 {
 public:
-	ViewFactoryDelegate (const SharedPointer<IViewFactory>& orig) : of (orig)
+	ViewFactoryDelegate (const SPtr<IViewFactory>& orig) : of (orig)
 	{
 		ofes = orig.cast<IViewFactoryEditingSupport> ();
 	}
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) const override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) const override
 	{
 		return of->createView (attributes, description);
 	}
@@ -146,8 +146,8 @@ protected:
 	}
 
 private:
-	SharedPointer<IViewFactory> of;
-	SharedPointer<IViewFactoryEditingSupport> ofes;
+	SPtr<IViewFactory> of;
+	SPtr<IViewFactoryEditingSupport> ofes;
 };
 
 //------------------------------------------------------------------------

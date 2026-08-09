@@ -34,7 +34,7 @@ struct StringDataPackage : IDataPackage
 
 //-----------------------------------------------------------------------------
 template<bool AsFile>
-Optional<UTF8String> getString (const SharedPointer<IDataPackage>& cb)
+Optional<UTF8String> getString (const SPtr<IDataPackage>& cb)
 {
 	for (auto i = 0u, count = cb->getCount (); i < count; i++)
 	{
@@ -56,13 +56,10 @@ Optional<UTF8String> getString (const SharedPointer<IDataPackage>& cb)
 } // CClipboardDetail
 
 //-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> CClipboard::get ()
-{
-	return getPlatformFactory ().getClipboard ();
-}
+SPtr<IDataPackage> CClipboard::get () { return getPlatformFactory ().getClipboard (); }
 
 //-----------------------------------------------------------------------------
-bool CClipboard::set (const SharedPointer<IDataPackage>& data)
+bool CClipboard::set (const SPtr<IDataPackage>& data)
 {
 	return getPlatformFactory ().setClipboard (data);
 }

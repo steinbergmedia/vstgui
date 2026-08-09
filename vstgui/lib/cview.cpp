@@ -138,7 +138,7 @@ protected:
 		if (views.empty ())
 			gInstance = nullptr;
 	}
-	SharedPointer<CVSTGUITimer> timer;
+	SPtr<CVSTGUITimer> timer;
 	ViewContainer views;
 	bool inTimer {false};
 	
@@ -175,7 +175,7 @@ static constexpr CViewAttributeID kCViewDisabledBackgroundBitmapAttrID = 'cvdb';
 struct CView::Impl
 {
 	using AttributeEntryPtr = std::unique_ptr<CViewInternal::AttributeEntry>;
-	using Attribute = std::variant<AttributeEntryPtr, SharedPointer<IReference>>;
+	using Attribute = std::variant<AttributeEntryPtr, SPtr<IReference>>;
 	using ViewAttributes = std::unordered_map<CViewAttributeID, Attribute>;
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
 	using ViewEventListenerDispatcher = DispatchList<IViewEventListener*>;
@@ -277,7 +277,7 @@ CRect CView::getMouseableArea () const
 /**
  * @param path the path to use for hit testing. The path will be translated by this views origin, so that the path must not be set again, if the view is moved. Otherwise when the size of the view changes, the path must also be set again.
  */
-void CView::setHitTestPath (const SharedPointer<CGraphicsPath>& path)
+void CView::setHitTestPath (const SPtr<CGraphicsPath>& path)
 {
 	if (path)
 		setAttribute (kCViewHitTestPathAttrID, path);
@@ -286,9 +286,9 @@ void CView::setHitTestPath (const SharedPointer<CGraphicsPath>& path)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CGraphicsPath> CView::getHitTestPath () const
+SPtr<CGraphicsPath> CView::getHitTestPath () const
 {
-	SharedPointer<CGraphicsPath> path;
+	SPtr<CGraphicsPath> path;
 	if (getAttribute (kCViewHitTestPathAttrID, path))
 		return path;
 	return {};
@@ -748,7 +748,7 @@ void CView::draw (CDrawContext& context)
  * @param callback callback
  * @return true if the drag was started, otherwise false
  */
-bool CView::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+bool CView::doDrag (const DragDescription& dragDescription, const SPtr<IDragCallback>& callback)
 {
 	if (auto frame = getFrame ())
 		return frame->performDrag (dragDescription, callback);
@@ -918,7 +918,7 @@ CFrame* CView::getFrame () const { return pImpl->parentFrame; }
 /**
  * @param background new background bitmap
  */
-void CView::setBackground (const SharedPointer<CBitmap>& background)
+void CView::setBackground (const SPtr<CBitmap>& background)
 {
 	if (background)
 	{
@@ -935,25 +935,25 @@ void CView::setBackground (const SharedPointer<CBitmap>& background)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CBitmap> CView::getBackground () const
+SPtr<CBitmap> CView::getBackground () const
 {
-	SharedPointer<CBitmap> result;
+	SPtr<CBitmap> result;
 	if (hasViewFlag (kHasBackground))
 		getAttribute (kCViewBackgroundBitmapAttrID, result);
 	return result;
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CBitmap> CView::getDisabledBackground () const
+SPtr<CBitmap> CView::getDisabledBackground () const
 {
-	SharedPointer<CBitmap> result;
+	SPtr<CBitmap> result;
 	if (hasViewFlag (kHasDisabledBackground))
 		getAttribute (kCViewDisabledBackgroundBitmapAttrID, result);
 	return result;
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CBitmap> CView::getDrawBackground () const
+SPtr<CBitmap> CView::getDrawBackground () const
 {
 	return (hasViewFlag (kHasDisabledBackground) ?
 	            (getMouseEnabled () ? getBackground () : getDisabledBackground ()) :
@@ -964,7 +964,7 @@ SharedPointer<CBitmap> CView::getDrawBackground () const
 /**
  * @param background new disabled background bitmap
  */
-void CView::setDisabledBackground (const SharedPointer<CBitmap>& background)
+void CView::setDisabledBackground (const SPtr<CBitmap>& background)
 {
 	if (background)
 	{
@@ -986,7 +986,7 @@ auto CView::getAttributeType (const CViewAttributeID aId) const -> AttrType
 	auto it = pImpl->attributes.find (aId);
 	if (it != pImpl->attributes.end ())
 	{
-		if (std::holds_alternative<SharedPointer<IReference>> (it->second))
+		if (std::holds_alternative<SPtr<IReference>> (it->second))
 			return AttrType::Object;
 		return AttrType::Memory;
 	}
@@ -1065,19 +1065,19 @@ bool CView::removeAttribute (const CViewAttributeID aId)
 }
 
 //------------------------------------------------------------------------
-bool CView::setAttributeObj (const CViewAttributeID aId, const SharedPointer<IReference>& object)
+bool CView::setAttributeObj (const CViewAttributeID aId, const SPtr<IReference>& object)
 {
 	removeAttribute (aId);
 	return pImpl->attributes.emplace (aId, object).second;
 }
 
 //------------------------------------------------------------------------
-bool CView::getAttributeObj (const CViewAttributeID aId, SharedPointer<IReference>& object) const
+bool CView::getAttributeObj (const CViewAttributeID aId, SPtr<IReference>& object) const
 {
 	auto it = pImpl->attributes.find (aId);
 	if (it != pImpl->attributes.end ())
 	{
-		if (auto obj = std::get_if<SharedPointer<IReference>> (&it->second))
+		if (auto obj = std::get_if<SPtr<IReference>> (&it->second))
 		{
 			object = *obj;
 			return true;
@@ -1087,9 +1087,8 @@ bool CView::getAttributeObj (const CViewAttributeID aId, SharedPointer<IReferenc
 }
 
 //-----------------------------------------------------------------------------
-void CView::addAnimation (IdStringPtr name,
-						  const SharedPointer<Animation::IAnimationTarget>& target,
-						  const SharedPointer<Animation::ITimingFunction>& timingFunction,
+void CView::addAnimation (IdStringPtr name, const SPtr<Animation::IAnimationTarget>& target,
+						  const SPtr<Animation::ITimingFunction>& timingFunction,
 						  const Animation::DoneFunction& doneFunc, bool callDoneOnCancel)
 {
 	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
@@ -1173,16 +1172,16 @@ void CView::unregisterViewEventListener (IViewEventListener* listener)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IDropTarget> CView::getDropTarget ()
+SPtr<IDropTarget> CView::getDropTarget ()
 {
-	SharedPointer<IDropTarget> dropTarget;
+	SPtr<IDropTarget> dropTarget;
 	if (getAttribute (kCViewCustomDropTargetAttrID, dropTarget))
 		return dropTarget;
 	return {};
 }
 
 //-----------------------------------------------------------------------------
-void CView::setDropTarget (const SharedPointer<IDropTarget>& dropTarget)
+void CView::setDropTarget (const SPtr<IDropTarget>& dropTarget)
 {
 	if (dropTarget)
 	{

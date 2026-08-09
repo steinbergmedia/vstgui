@@ -27,7 +27,7 @@ the current value of this control). Use a CMultiFrameBitmap for its background b
  */
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag,
-								const SharedPointer<CBitmap>& background)
+								const SPtr<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 }
@@ -143,7 +143,7 @@ void CAutoAnimation::updateMinMaxFromBackground ()
 }
 
 //------------------------------------------------------------------------
-void CAutoAnimation::setBackground (const SharedPointer<CBitmap>& background)
+void CAutoAnimation::setBackground (const SPtr<CBitmap>& background)
 {
 	CControl::setBackground (background);
 	updateMinMaxFromBackground ();

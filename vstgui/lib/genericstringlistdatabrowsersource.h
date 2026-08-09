@@ -40,8 +40,7 @@ public:
 
 	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor,
 				  const CColor& rowBackColor, const CColor& rowAlteranteBackColor,
-				  const SharedPointer<CFontDesc>& font = {}, int32_t rowHeight = -1,
-				  CCoord textInset = 2.);
+				  const SPtr<CFontDesc>& font = {}, int32_t rowHeight = -1, CCoord textInset = 2.);
 
 protected:
 	void drawRowBackground (CDrawContext& context, const CRect& size, int32_t row, int32_t flags,
@@ -107,11 +106,11 @@ protected:
 	CColor rowAlternateBackColor;
 	CPoint textInset;
 	CHoriTxtAlign textAlignment;
-	SharedPointer<CFontDesc> drawFont;
+	SPtr<CFontDesc> drawFont;
 	WeakPointer<CDataBrowser> dbPtr;
 	GenericStringListDataBrowserSourceSelectionChanged* delegate;
 
-	SharedPointer<CVSTGUITimer> timer;
+	SPtr<CVSTGUITimer> timer;
 	std::string keyDownFindString;
 };
 

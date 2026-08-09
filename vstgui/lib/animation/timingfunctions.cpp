@@ -151,8 +151,7 @@ CubicBezierTimingFunction CubicBezierTimingFunction::easyInOut (uint32_t time)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CubicBezierTimingFunction> CubicBezierTimingFunction::make (Style style,
-																		  uint32_t time)
+SPtr<CubicBezierTimingFunction> CubicBezierTimingFunction::make (Style style, uint32_t time)
 {
 	using Func = CubicBezierTimingFunction;
 	switch (style)
@@ -172,8 +171,8 @@ SharedPointer<CubicBezierTimingFunction> CubicBezierTimingFunction::make (Style 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-RepeatTimingFunction::RepeatTimingFunction (const SharedPointer<TimingFunctionBase>& tf,
-											int32_t repeatCount, bool autoReverse)
+RepeatTimingFunction::RepeatTimingFunction (const SPtr<TimingFunctionBase>& tf, int32_t repeatCount,
+											bool autoReverse)
 : tf (tf), repeatCount (repeatCount), runCounter (0), autoReverse (autoReverse), isReverse (false)
 {
 }

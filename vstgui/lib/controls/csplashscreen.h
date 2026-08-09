@@ -20,10 +20,10 @@ class CSplashScreen : public CControl,
 {
 public:
 	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
-				   const SharedPointer<CBitmap>& background, const CRect& toDisplay,
+				   const SPtr<CBitmap>& background, const CRect& toDisplay,
 				   const CPoint& offset = CPoint (0, 0));
 	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
-				   const SharedPointer<CView>& splashView);
+				   const SPtr<CView>& splashView);
 
 	void draw (CDrawContext&) override;
 	bool hitTest (const CPoint& where, const Event& event) override;
@@ -50,7 +50,7 @@ protected:
 	CRect toDisplay;
 	CRect keepSize;
 	CPoint offset;
-	SharedPointer<CView> modalView;
+	SPtr<CView> modalView;
 	Optional<ModalViewSessionID> modalViewSessionID;
 };
 
@@ -63,16 +63,15 @@ protected:
 class CAnimationSplashScreen : public CSplashScreen
 {
 public:
-	CAnimationSplashScreen (const CRect& size, int32_t tag,
-							const SharedPointer<CBitmap>& background,
-							const SharedPointer<CBitmap>& splashBitmap);
+	CAnimationSplashScreen (const CRect& size, int32_t tag, const SPtr<CBitmap>& background,
+							const SPtr<CBitmap>& splashBitmap);
 
 	//-----------------------------------------------------------------------------
 	/// @name CAnimationSplashScreen Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setSplashBitmap (const SharedPointer<CBitmap>& bitmap);
-	SharedPointer<CBitmap> getSplashBitmap () const;
+	virtual void setSplashBitmap (const SPtr<CBitmap>& bitmap);
+	SPtr<CBitmap> getSplashBitmap () const;
 
 	virtual void setSplashRect (const CRect& splashRect);
 	const CRect& getSplashRect () const;
@@ -85,7 +84,7 @@ public:
 
 	/** create the animation. subclasses can override this to add special animations */
 	virtual bool createAnimation (uint32_t animationIndex, uint32_t animationTime,
-								  const SharedPointer<CView>& splashView, bool removeViewAnimation);
+								  const SPtr<CView>& splashView, bool removeViewAnimation);
 	//@}
 
 	void unSplash () override;

@@ -17,9 +17,9 @@ class IDataPackage;
 
 namespace MacClipboard {
 
-extern SharedPointer<IDataPackage> createClipboardDataPackage ();
-extern SharedPointer<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard);
-extern void setClipboard (const SharedPointer<IDataPackage>& data);
+extern SPtr<IDataPackage> createClipboardDataPackage ();
+extern SPtr<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard);
+extern void setClipboard (const SPtr<IDataPackage>& data);
 extern const char* getPasteboardBinaryType ();
 
 }} // namespaces

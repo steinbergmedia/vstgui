@@ -28,26 +28,26 @@ namespace UIEditViewInternal {
 class UIEditView : public CViewContainer, public IDropTarget
 {
 public:
-	UIEditView (const CRect& size, const SharedPointer<UIDescription>& uidescription);
+	UIEditView (const CRect& size, const SPtr<UIDescription>& uidescription);
 	~UIEditView () override;
 
 	void enableEditing (bool state);
 	void enableAutosizing (bool state);
 	void setScale (double scale);
 
-	void setEditView (const SharedPointer<CView>& view);
-	SharedPointer<CView> getEditView () const;
+	void setEditView (const SPtr<CView>& view);
+	SPtr<CView> getEditView () const;
 
 	void doKeyMove (const CPoint& delta);
 	void doKeySize (const CPoint& delta);
 
-	void setUndoManager (const SharedPointer<UIUndoManager>& manager);
-	SharedPointer<UIUndoManager> getUndoManager ();
+	void setUndoManager (const SPtr<UIUndoManager>& manager);
+	SPtr<UIUndoManager> getUndoManager ();
 
-	void setSelection (const SharedPointer<UISelection>& selection);
-	SharedPointer<UISelection> getSelection ();
+	void setSelection (const SPtr<UISelection>& selection);
+	SPtr<UISelection> getSelection ();
 
-	void setGridProcessor (const SharedPointer<IGridProcessor>& grid);
+	void setGridProcessor (const SPtr<IGridProcessor>& grid);
 
 	void setupColors (const IUIDescription& description);
 
@@ -75,7 +75,7 @@ protected:
 
 	void updateSize ();
 	void invalidSelection ();
-	MouseSizeMode selectionHitTest (const CPoint& where, SharedPointer<CView>& resultView);
+	MouseSizeMode selectionHitTest (const CPoint& where, SPtr<CView>& resultView);
 	bool hitTestSubViews (const CPoint& where, const Event& event) override;
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
@@ -84,16 +84,16 @@ protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void onKeyboardEvent (KeyboardEvent& event) override;
 
-	std::vector<SharedPointer<CView>> findChildsInArea (CViewContainer& view, CRect r) const;
+	std::vector<SPtr<CView>> findChildsInArea (CViewContainer& view, CRect r) const;
 
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);
 	void onDoubleClickEditing (CView& view);
 
 	void startDrag (CPoint& where);
-	SharedPointer<UISelection> getSelectionOutOfDrag (const IDataPackage& drag) const;
+	SPtr<UISelection> getSelectionOutOfDrag (const IDataPackage& drag) const;
 
-	SharedPointer<IDropTarget> getDropTarget () override;
+	SPtr<IDropTarget> getDropTarget () override;
 	bool onDrop (DragEventData data) override;
 	DragOperation onDragEnter (DragEventData data) override;
 	void onDragLeave (DragEventData data) override;
@@ -101,11 +101,11 @@ protected:
 
 	void draw (CDrawContext& context) override;
 	void drawRect (CDrawContext& context, const CRect& updateRect) override;
-	SharedPointer<CView> getViewAt (
-		const CPoint& p, const GetViewOptions& options = GetViewOptions ()) const override;
-	SharedPointer<CViewContainer> getContainerAt (
+	SPtr<CView> getViewAt (const CPoint& p,
+						   const GetViewOptions& options = GetViewOptions ()) const override;
+	SPtr<CViewContainer> getContainerAt (
 		const CPoint& p, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
-	bool advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse) override;
+	bool advanceNextFocusView (const SPtr<CView>& oldFocus, bool reverse) override;
 	void onMouseWheelEvent (MouseWheelEvent& event) override;
 	void onZoomGestureEvent (ZoomGestureEvent& event) override;
 
@@ -120,18 +120,18 @@ protected:
 	MouseEditMode mouseEditMode {MouseEditMode::NoEditing};
 	MouseSizeMode mouseSizeMode {MouseSizeMode::None};
 	CPoint mouseStartPoint;
- 
-	SharedPointer<UIUndoManager> undoManger;
-	SharedPointer<UISelection> selection;
-	SharedPointer<UISelection> dragSelection;
-	SharedPointer<UIDescription> description;
-	SharedPointer<IGridProcessor> gridProcessor;
 
-	SharedPointer<UIEditViewInternal::UIHighlightView> highlightView;
-	SharedPointer<CLayeredViewContainer> overlayView;
-	SharedPointer<UICrossLines> lines;
-	SharedPointer<ViewSizeChangeOperation> moveSizeOperation;
-	SharedPointer<CVSTGUITimer> editTimer;
+	SPtr<UIUndoManager> undoManger;
+	SPtr<UISelection> selection;
+	SPtr<UISelection> dragSelection;
+	SPtr<UIDescription> description;
+	SPtr<IGridProcessor> gridProcessor;
+
+	SPtr<UIEditViewInternal::UIHighlightView> highlightView;
+	SPtr<CLayeredViewContainer> overlayView;
+	SPtr<UICrossLines> lines;
+	SPtr<ViewSizeChangeOperation> moveSizeOperation;
+	SPtr<CVSTGUITimer> editTimer;
 	DragStartMouseObserver dragStartMouseObserver;
 	
 	CColor crosslineForegroundColor;

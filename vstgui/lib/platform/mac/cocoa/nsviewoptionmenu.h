@@ -14,7 +14,7 @@ namespace VSTGUI {
 class NSViewOptionMenu : public IPlatformOptionMenu
 {
 public:
-	void popup (const SharedPointer<COptionMenu>& optionMenu, const Callback& callback) override;
+	void popup (const SPtr<COptionMenu>& optionMenu, const Callback& callback) override;
 };
 
 } // VSTGUI

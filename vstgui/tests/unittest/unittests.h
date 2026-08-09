@@ -40,19 +40,19 @@ Using a setup and teardown function and custom variable storage:
 
 	TEST_SUITE_SETUP (CViewContainerTest)
 	{
-		SharedPointer<CViewContainer> container = makeShared<CViewContainer> (CRect (0, 0, 200,
-200)); TEST_SUITE_SET_STORAGE (SharedPointer<CViewContainer>, container);
+		SPtr<CViewContainer> container = makeShared<CViewContainer> (CRect (0, 0, 200,
+200)); TEST_SUITE_SET_STORAGE (SPtr<CViewContainer>, container);
 	}
 
 	TEST_SUITE_TEARDOWN (CViewContainerTest)
 	{
-		TEST_SUITE_GET_STORAGE (SharedPointer<CViewContainer>) = nullptr;
+		TEST_SUITE_GET_STORAGE (SPtr<CViewContainer>) = nullptr;
 	}
 
 	TEST_CASE (CViewContainerTest, ChangeViewZOrder)
 	{
-		SharedPointer<CViewContainer>& container = TEST_SUITE_GET_STORAGE
-(SharedPointer<CViewContainer>);
+		SPtr<CViewContainer>& container = TEST_SUITE_GET_STORAGE
+(SPtr<CViewContainer>);
 		...
 	}
 

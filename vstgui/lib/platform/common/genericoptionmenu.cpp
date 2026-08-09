@@ -22,16 +22,15 @@
 namespace VSTGUI {
 namespace GenericOptionMenuDetail {
 
-using ClickCallback = std::function<void (SharedPointer<COptionMenu> menu, int32_t itemIndex)>;
+using ClickCallback = std::function<void (SPtr<COptionMenu> menu, int32_t itemIndex)>;
 
 class DataSource;
 
 //------------------------------------------------------------------------
 template<typename Proc>
-SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer& container,
-											 SharedPointer<COptionMenu> optionMenu,
-											 GenericOptionMenuTheme& theme, CRect viewRect,
-											 DataSource* parentDataSource);
+SPtr<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer& container,
+									SPtr<COptionMenu> optionMenu, GenericOptionMenuTheme& theme,
+									CRect viewRect, DataSource* parentDataSource);
 
 //------------------------------------------------------------------------
 class DataSource : public DataBrowserDelegateAdapter,
@@ -39,7 +38,7 @@ class DataSource : public DataBrowserDelegateAdapter,
                    public NonAtomicReferenceCounted
 {
 public:
-	DataSource (CViewContainer& mainContainer, SharedPointer<COptionMenu> menu,
+	DataSource (CViewContainer& mainContainer, SPtr<COptionMenu> menu,
 				const ClickCallback& clickCallback, GenericOptionMenuTheme theme,
 				DataSource* parentDataSource)
 	: mainContainer (mainContainer)
@@ -320,7 +319,7 @@ private:
 		}
 	}
 
-	void openSubMenu (const SharedPointer<CMenuItem>& item, CRect cellRect)
+	void openSubMenu (const SPtr<CMenuItem>& item, CRect cellRect)
 	{
 		closeSubMenu ();
 		if (auto subMenu = item->getSubmenu ())
@@ -369,7 +368,7 @@ private:
 		}
 	}
 
-	void drawItemIcon (CDrawContext& context, CRect size, const SharedPointer<CBitmap>& bitmap)
+	void drawItemIcon (CDrawContext& context, CRect size, const SPtr<CBitmap>& bitmap)
 	{
 		ConcatClip cc (context, size);
 		CRect iconRect;
@@ -455,9 +454,9 @@ private:
 	CCoord getSubmenuIndicatorWidth () { return getRowHeight (); }
 
 	CViewContainer& mainContainer;
-	SharedPointer<COptionMenu> menu;
+	SPtr<COptionMenu> menu;
 	WeakPointer<CDataBrowser> db;
-	SharedPointer<CView> subMenuView;
+	SPtr<CView> subMenuView;
 	DataSource* parentDataSource {nullptr};
 	ClickCallback clickCallback;
 	CCoord checkmarkSize {0.};
@@ -481,10 +480,9 @@ inline CColor makeDarkerColor (CColor baseColor)
 
 //------------------------------------------------------------------------
 template<typename Proc>
-SharedPointer<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer& container,
-											 SharedPointer<COptionMenu> optionMenu,
-											 GenericOptionMenuTheme& theme, CRect viewRect,
-											 DataSource* parentDataSource)
+SPtr<CView> setupGenericOptionMenu (Proc clickCallback, CViewContainer& container,
+									SPtr<COptionMenu> optionMenu, GenericOptionMenuTheme& theme,
+									CRect viewRect, DataSource* parentDataSource)
 {
 	auto frame = container.getFrame ();
 	auto dataSource =
@@ -586,9 +584,9 @@ struct GenericOptionMenu::Impl
 {
 	using ContainerT = CLayeredViewContainer;
 	CFrame* frame;
-	SharedPointer<COptionMenu> menu;
-	SharedPointer<ContainerT> container;
-	SharedPointer<CVSTGUITimer> mouseUpTimer;
+	SPtr<COptionMenu> menu;
+	SPtr<ContainerT> container;
+	SPtr<CVSTGUITimer> mouseUpTimer;
 	Optional<ModalViewSessionID> modalViewSession;
 	IGenericOptionMenuListener* listener {nullptr};
 	GenericOptionMenuTheme theme;
@@ -726,8 +724,7 @@ void GenericOptionMenu::viewOnEvent (CView& view, Event& event)
 }
 
 //------------------------------------------------------------------------
-void GenericOptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu,
-							   const Callback& callback)
+void GenericOptionMenu::popup (const SPtr<COptionMenu>& optionMenu, const Callback& callback)
 {
 	impl->menu = optionMenu;
 	impl->callback = callback;

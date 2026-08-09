@@ -90,7 +90,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** create a new instance */
-	static SharedPointer<CNewFileSelector> create (CFrame* parent, Style style = kSelectFile);
+	static SPtr<CNewFileSelector> create (CFrame* parent, Style style = kSelectFile);
 
 	CNewFileSelector (PlatformFileSelectorPtr&& platformFileSelector, CFrame* parent);
 

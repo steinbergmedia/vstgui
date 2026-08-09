@@ -19,10 +19,10 @@ class Win32OptionMenu final : public IPlatformOptionMenu
 public:
 	Win32OptionMenu (HWND windowHandle);
 
-	void popup (const SharedPointer<COptionMenu>& optionMenu, const Callback& callback) override;
+	void popup (const SPtr<COptionMenu>& optionMenu, const Callback& callback) override;
 
 protected:
-	HMENU createMenu (SharedPointer<COptionMenu> menu, int32_t& offsetIdx);
+	HMENU createMenu (SPtr<COptionMenu> menu, int32_t& offsetIdx);
 
 	HWND windowHandle;
 	

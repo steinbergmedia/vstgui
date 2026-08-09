@@ -35,7 +35,7 @@ namespace UIAttributeControllers {
 class Controller : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
-	Controller (const SharedPointer<IController>& baseController, const std::string& attrName)
+	Controller (const SPtr<IController>& baseController, const std::string& attrName)
 	: DelegationController (baseController), attrName (attrName), differentValues (false)
 	{
 	}
@@ -47,7 +47,7 @@ public:
 	bool hasDifferentValues () const { return differentValues; }
 protected:
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
-	SharedPointer<UIAttributesController> getAttributesController () const
+	SPtr<UIAttributesController> getAttributesController () const
 	{
 		return controller.cast<UIAttributesController> ();
 	}
@@ -67,15 +67,13 @@ protected:
 class TextAlignmentController : public Controller
 {
 public:
-	TextAlignmentController (const SharedPointer<IController>& baseController,
-							 const std::string& attrName)
+	TextAlignmentController (const SPtr<IController>& baseController, const std::string& attrName)
 	: Controller (baseController, attrName)
 	{
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		auto control = view.cast<CControl> ();
 		if (control)
@@ -149,22 +147,21 @@ protected:
 		kRightTag
 	};
 
-	std::array<SharedPointer<CControl>, 3> controls;
+	std::array<SPtr<CControl>, 3> controls;
 };
 
 //----------------------------------------------------------------------------------------------------
 class AutosizeController : public Controller
 {
 public:
-	AutosizeController (const SharedPointer<IController>& baseController,
-						const SharedPointer<UISelection>& selection, const std::string& attrName)
+	AutosizeController (const SPtr<IController>& baseController, const SPtr<UISelection>& selection,
+						const std::string& attrName)
 	: Controller (baseController, attrName), selection (selection)
 	{
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		auto control = view.cast<CControl> ();
 		if (control)
@@ -274,23 +271,21 @@ protected:
 		kColTag
 	};
 
-	std::array<SharedPointer<CControl>, 6> controls;
-	SharedPointer<UISelection> selection;
+	std::array<SPtr<CControl>, 6> controls;
+	SPtr<UISelection> selection;
 };
 
 //----------------------------------------------------------------------------------------------------
 class BooleanController : public Controller
 {
 public:
-	BooleanController (const SharedPointer<IController>& baseController,
-					   const std::string& attrName)
+	BooleanController (const SPtr<IController>& baseController, const std::string& attrName)
 	: Controller (baseController, attrName), control (nullptr)
 	{
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (control == nullptr)
 		{
@@ -322,14 +317,14 @@ public:
 	}
 
 protected:
-	SharedPointer<CControl> control;
+	SPtr<CControl> control;
 };
 
 //----------------------------------------------------------------------------------------------------
 class TextController : public Controller, public ViewListenerAdapter, public ITextLabelListener
 {
 public:
-	TextController (const SharedPointer<IController>& baseController, const std::string& attrName)
+	TextController (const SPtr<IController>& baseController, const std::string& attrName)
 	: Controller (baseController, attrName)
 	{
 	}
@@ -343,9 +338,8 @@ public:
 		}
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (textLabelPtr.expired ())
 		{
@@ -411,7 +405,7 @@ public:
 		auto textLabel = textLabelPtr.lock ();
 		if (&view == textLabel.get ())
 		{
-			SharedPointer<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
+			SPtr<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
 				textEdit->getFrame ()->doAfterEventProcessing ([=] () {
@@ -451,9 +445,8 @@ class ScriptController : public TextController,
 public:
 	using TextController::TextController;
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (editButton == nullptr)
 		{
@@ -475,8 +468,8 @@ public:
 		}
 	}
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -535,7 +528,7 @@ public:
 	}
 
 protected:
-	SharedPointer<CTextButton> editButton;
+	SPtr<CTextButton> editButton;
 	const ITextEditor* textEditor {nullptr};
 };
 
@@ -543,14 +536,13 @@ protected:
 class NumberController : public TextController
 {
 public:
-	NumberController (const SharedPointer<IController>& baseController, const std::string& attrName)
+	NumberController (const SPtr<IController>& baseController, const std::string& attrName)
 	: TextController (baseController, attrName)
 	{
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (slider == nullptr)
 		{
@@ -607,15 +599,15 @@ public:
 	}
 
 protected:
-	SharedPointer<CSlider> slider;
+	SPtr<CSlider> slider;
 };
 
 //----------------------------------------------------------------------------------------------------
 class MenuController : public TextController, public OptionMenuListenerAdapter, public CommandMenuItemTargetAdapter
 {
 public:
-	MenuController (const SharedPointer<IController>& baseController, const std::string& attrName,
-					const SharedPointer<UIDescription>& description, bool addNoneItem = true,
+	MenuController (const SPtr<IController>& baseController, const std::string& attrName,
+					const SPtr<UIDescription>& description, bool addNoneItem = true,
 					bool sortItems = true)
 	: TextController (baseController, attrName)
 	, description (description)
@@ -630,9 +622,8 @@ public:
 			menu->unregisterOptionMenuListener (this);
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& desc) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& desc) override
 	{
 		if (menu == nullptr)
 		{
@@ -707,9 +698,9 @@ public:
 	}
 
 protected:
-	SharedPointer<UIDescription> description;
-	SharedPointer<COptionMenu> menu;
-	
+	SPtr<UIDescription> description;
+	SPtr<COptionMenu> menu;
+
 	bool addNoneItem;
 	bool sortItems;
 };
@@ -718,8 +709,8 @@ protected:
 class ColorController : public MenuController
 {
 public:
-	ColorController (const SharedPointer<IController>& baseController, const std::string& attrName,
-					 const SharedPointer<UIDescription>& description)
+	ColorController (const SPtr<IController>& baseController, const std::string& attrName,
+					 const SPtr<UIDescription>& description)
 	: MenuController (baseController, attrName, description)
 	{
 	}
@@ -763,8 +754,8 @@ public:
 		}
 	}
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "ColorView")
@@ -787,16 +778,15 @@ protected:
 		}
 		CColor color;
 	};
-	SharedPointer<ColorView> colorView;
+	SPtr<ColorView> colorView;
 };
 
 //----------------------------------------------------------------------------------------------------
 class GradientController : public MenuController
 {
 public:
-	GradientController (const SharedPointer<IController>& baseController,
-						const std::string& attrName,
-						const SharedPointer<UIDescription>& description)
+	GradientController (const SPtr<IController>& baseController, const std::string& attrName,
+						const SPtr<UIDescription>& description)
 	: MenuController (baseController, attrName, description)
 	{
 	}
@@ -843,8 +833,8 @@ public:
 		}
 	}
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "GradientView")
@@ -871,17 +861,17 @@ protected:
 											r.getTopRight ());
 			}
 		}
-		SharedPointer<CGradient> gradient;
+		SPtr<CGradient> gradient;
 	};
-	SharedPointer<GradientView> gradientView;
+	SPtr<GradientView> gradientView;
 };
 
 //----------------------------------------------------------------------------------------------------
 class TagController : public MenuController
 {
 public:
-	TagController (const SharedPointer<IController>& baseController, const std::string& attrName,
-				   const SharedPointer<UIDescription>& description)
+	TagController (const SPtr<IController>& baseController, const std::string& attrName,
+				   const SPtr<UIDescription>& description)
 	: MenuController (baseController, attrName, description, true, false)
 	{
 	}
@@ -897,8 +887,8 @@ public:
 class BitmapController : public MenuController
 {
 public:
-	BitmapController (const SharedPointer<IController>& baseController, const std::string& attrName,
-					  const SharedPointer<UIDescription>& description)
+	BitmapController (const SPtr<IController>& baseController, const std::string& attrName,
+					  const SPtr<UIDescription>& description)
 	: MenuController (baseController, attrName, description)
 	{
 	}
@@ -914,8 +904,8 @@ public:
 class FontController : public MenuController
 {
 public:
-	FontController (const SharedPointer<IController>& baseController, const std::string& attrName,
-					const SharedPointer<UIDescription>& description)
+	FontController (const SPtr<IController>& baseController, const std::string& attrName,
+					const SPtr<UIDescription>& description)
 	: MenuController (baseController, attrName, description)
 	{
 	}
@@ -931,9 +921,8 @@ public:
 class ListController : public MenuController
 {
 public:
-	ListController (const SharedPointer<IController>& baseController, const std::string& attrName,
-					const SharedPointer<UIDescription>& description,
-					const SharedPointer<UISelection>& selection)
+	ListController (const SPtr<IController>& baseController, const std::string& attrName,
+					const SPtr<UIDescription>& description, const SPtr<UISelection>& selection)
 	: MenuController (baseController, attrName, description, false, false), selection (selection)
 	{
 	}
@@ -950,16 +939,16 @@ public:
 	}
 	
 protected:
-	SharedPointer<UISelection> selection;
+	SPtr<UISelection> selection;
 };
 
 } // UIAttributeControllers
 
 //----------------------------------------------------------------------------------------------------
-UIAttributesController::UIAttributesController (const SharedPointer<IController>& baseController,
-												const SharedPointer<UISelection>& selection,
-												const SharedPointer<UIUndoManager>& undoManager,
-												const SharedPointer<UIDescription>& description)
+UIAttributesController::UIAttributesController (const SPtr<IController>& baseController,
+												const SPtr<UISelection>& selection,
+												const SPtr<UIUndoManager>& undoManager,
+												const SPtr<UIDescription>& description)
 : DelegationController (baseController)
 , selection (selection)
 , undoManager (undoManager)
@@ -1044,9 +1033,9 @@ void UIAttributesController::valueChanged (CControl& control)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIAttributesController::verifyView (const SharedPointer<CView>& view,
-														 const UIAttributes& attributes,
-														 const IUIDescription& description)
+SPtr<CView> UIAttributesController::verifyView (const SPtr<CView>& view,
+												const UIAttributes& attributes,
+												const IUIDescription& description)
 {
 	if (attributeView == nullptr)
 	{
@@ -1094,8 +1083,8 @@ IControlListener* UIAttributesController::getControlListener (UTF8StringPtr name
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<IController> UIAttributesController::createSubController (
-	IdStringPtr _name, const IUIDescription& description)
+SPtr<IController> UIAttributesController::createSubController (IdStringPtr _name,
+															   const IUIDescription& description)
 {
 	UTF8StringView name (_name);
 	if (currentAttributeName)
@@ -1256,8 +1245,8 @@ void UIAttributesController::validateAttributeViews ()
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIAttributesController::createValueViewForAttributeType (
-	const IViewFactory& viewFactory, const SharedPointer<CView>& view, const std::string& attrName,
+SPtr<CView> UIAttributesController::createValueViewForAttributeType (
+	const IViewFactory& viewFactory, const SPtr<CView>& view, const std::string& attrName,
 	IViewCreator::AttrType attrType)
 {
 	auto editorDescription = UIEditController::getEditorDescription ();
@@ -1295,7 +1284,7 @@ SharedPointer<CView> UIAttributesController::createValueViewForAttributeType (
 				{
 					if (auto container = valueView->asViewContainer ())
 					{
-						std::vector<SharedPointer<CSlider>> sliders;
+						std::vector<SPtr<CSlider>> sliders;
 						if (container->getChildViewsOfType<CSlider> (sliders) == 1)
 						{
 							sliders[0]->setMin (static_cast<float> (minValue));
@@ -1313,7 +1302,7 @@ SharedPointer<CView> UIAttributesController::createValueViewForAttributeType (
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIAttributesController::createViewForAttribute (const std::string& attrName)
+SPtr<CView> UIAttributesController::createViewForAttribute (const std::string& attrName)
 {
 	const CCoord height = 18;
 	const CCoord width = 160;
@@ -1352,7 +1341,7 @@ SharedPointer<CView> UIAttributesController::createViewForAttribute (const std::
 	}
 
 	CRect r (middle+margin, 1, width-5, height+1);
-	SharedPointer<CView> valueView;
+	SPtr<CView> valueView;
 
 	if (attrName == "text-alignment")
 	{

@@ -21,7 +21,7 @@ namespace Detail {
 const ISharedUIResources& getSharedUIResources ();
 
 //------------------------------------------------------------------------
-SharedPointer<UIDescription> getSharedUIDescription ();
+SPtr<UIDescription> getSharedUIDescription ();
 
 //------------------------------------------------------------------------
 void cleanupSharedUIResources ();
@@ -52,11 +52,11 @@ enum class UIDescCheckFilePathResult
 
 //------------------------------------------------------------------------
 UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (
-	UIDescription& uiDesc, SharedPointer<CFrame> frame,
+	UIDescription& uiDesc, SPtr<CFrame> frame,
 	UTF8StringPtr notFoundText = "The uidesc file location cannot be found.");
 
 //------------------------------------------------------------------------
-bool initUIDescAsNew (UIDescription& uiDesc, SharedPointer<CFrame> frame);
+bool initUIDescAsNew (UIDescription& uiDesc, SPtr<CFrame> frame);
 
 #endif // VSTGUI_LIVE_EDITING
 

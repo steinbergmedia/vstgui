@@ -30,7 +30,7 @@ public:
 	using OnEndEditFunc = std::function<void ()>;
 
 	EnterHighScoreViewController (IValue& nameValue, IValue& okValue,
-								  const SharedPointer<IController>& parent, OnEndEditFunc&& func)
+								  const SPtr<IController>& parent, OnEndEditFunc&& func)
 	: DelegationController (parent)
 	, nameValue (nameValue)
 	, okValue (okValue)
@@ -40,9 +40,8 @@ public:
 		okValue.setActive (false);
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr)
@@ -83,7 +82,7 @@ public:
 	}
 
 private:
-	SharedPointer<CView> mainView;
+	SPtr<CView> mainView;
 	IValue& nameValue;
 	IValue& okValue;
 	std::shared_ptr<HighScoreList> highscoreList;

@@ -90,7 +90,7 @@ inline std::function<uint32_t (CColor)> getColorToInt32 (IPlatformBitmapPixelAcc
 
 //------------------------------------------------------------------------
 template<typename ReadyCallback>
-inline void calculateMandelbrotBitmap (Model::Ptr model, SharedPointer<CBitmap> bitmap, CPoint size,
+inline void calculateMandelbrotBitmap (Model::Ptr model, SPtr<CBitmap> bitmap, CPoint size,
 									   uint32_t id, const std::atomic<uint32_t>& taskID,
 									   ReadyCallback readyCallback)
 {
@@ -137,7 +137,7 @@ struct ProgressController : DelegationController,
 							ValueListenerAdapter,
 							NonAtomicReferenceCounted
 {
-	ProgressController (ValuePtr progressValue, const SharedPointer<IController>& parent)
+	ProgressController (ValuePtr progressValue, const SPtr<IController>& parent)
 	: DelegationController (parent), progressValue (progressValue)
 	{
 		progressValue->registerListener (this);
@@ -145,9 +145,8 @@ struct ProgressController : DelegationController,
 
 	~ProgressController () noexcept override { progressValue->unregisterListener (this); }
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		assert (control == nullptr);
 		control = view.cast<CControl> ();
@@ -184,7 +183,7 @@ struct ProgressController : DelegationController,
 		}
 	}
 
-	SharedPointer<CControl> control;
+	SPtr<CControl> control;
 	ValuePtr progressValue;
 };
 
@@ -195,16 +194,15 @@ struct ViewController : DelegationController,
                         IScaleFactorChangedListener,
                         AtomicReferenceCounted
 {
-	ViewController (const SharedPointer<IController>& parent, Model::Ptr model,
-					ValuePtr progressValue)
+	ViewController (const SPtr<IController>& parent, Model::Ptr model, ValuePtr progressValue)
 	: DelegationController (parent), model (model), progressValue (progressValue)
 	{
 		model->registerListener (this);
 	}
 	~ViewController () noexcept override { model->unregisterListener (this); }
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto name = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -226,8 +224,8 @@ struct ViewController : DelegationController,
 		return controller->createView (attributes, description);
 	}
 
-	SharedPointer<IController> createSubController (IdStringPtr name,
-													const IUIDescription& description) override
+	SPtr<IController> createSubController (IdStringPtr name,
+										   const IUIDescription& description) override
 	{
 		if (UTF8StringView (name) == "ProgressController")
 			return makeShared<ProgressController> (progressValue, shared (this));
@@ -284,8 +282,8 @@ struct ViewController : DelegationController,
 		auto id = ++taskID;
 		auto This = shared (this);
 		calculateMandelbrotBitmap (model, bitmap, size, id, taskID,
-								   [This] (uint32_t id, SharedPointer<CBitmap> bitmap) {
-			                           if (id == This->taskID && This->mandelbrotView)
+								   [This] (uint32_t id, SPtr<CBitmap> bitmap) {
+									   if (id == This->taskID && This->mandelbrotView)
 			                           {
 				                           This->mandelbrotView->setBackground (bitmap);
 				                           Value::performSingleEdit (*This->progressValue, 0.);
@@ -311,7 +309,7 @@ struct ViewController : DelegationController,
 
 	Model::Ptr model;
 	ValuePtr progressValue;
-	SharedPointer<CView> mandelbrotView;
+	SPtr<CView> mandelbrotView;
 	double scaleFactor {1.};
 	std::atomic<uint32_t> taskID {0};
 };

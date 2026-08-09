@@ -18,7 +18,7 @@ namespace Standalone {
 namespace Minesweeper {
 
 MinefieldViewController::MinefieldViewController (IValue& flagsValue, IValue& timeValue,
-												  const SharedPointer<IController>& parent,
+												  const SPtr<IController>& parent,
 												  WonCallbackFunc&& wonCallback)
 : DelegationController (parent)
 , flagsValue (flagsValue)
@@ -56,8 +56,8 @@ void MinefieldViewController::setMouseMode (bool state)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> MinefieldViewController::createView (const UIAttributes& attributes,
-														  const IUIDescription& description)
+SPtr<CView> MinefieldViewController::createView (const UIAttributes& attributes,
+												 const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr && *attr == "MinefieldView")
@@ -82,9 +82,9 @@ SharedPointer<CView> MinefieldViewController::createView (const UIAttributes& at
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> MinefieldViewController::verifyView (const SharedPointer<CView>& view,
-														  const UIAttributes& attributes,
-														  const IUIDescription& description)
+SPtr<CView> MinefieldViewController::verifyView (const SPtr<CView>& view,
+												 const UIAttributes& attributes,
+												 const IUIDescription& description)
 {
 	const auto attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (attr)
@@ -156,7 +156,7 @@ void MinefieldViewController::drawOpenCell (const CRect& r, CDrawContext& contex
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawQuestionMark (const CRect& r, CDrawContext& context,
-												const SharedPointer<CFontDesc>& f) const
+												const SPtr<CFontDesc>& f) const
 {
 	context.setFont (f);
 	context.setFontColor (kRedCColor);
@@ -165,7 +165,7 @@ void MinefieldViewController::drawQuestionMark (const CRect& r, CDrawContext& co
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawQuestionMarkCell (const CRect& r, CDrawContext& context,
-													const SharedPointer<CFontDesc>& f) const
+													const SPtr<CFontDesc>& f) const
 {
 	context.setFrameColor (flagedFrameColor);
 	context.setFillColor (flagedBackColor);
@@ -175,7 +175,7 @@ void MinefieldViewController::drawQuestionMarkCell (const CRect& r, CDrawContext
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawFlag (const CRect& r, CDrawContext& context,
-										const SharedPointer<CFontDesc>& f) const
+										const SPtr<CFontDesc>& f) const
 {
 	context.setFont (f);
 	context.setFontColor (kRedCColor);
@@ -184,7 +184,7 @@ void MinefieldViewController::drawFlag (const CRect& r, CDrawContext& context,
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawFlaggedCell (const CRect& r, CDrawContext& context,
-											   const SharedPointer<CFontDesc>& f) const
+											   const SPtr<CFontDesc>& f) const
 {
 	context.setFrameColor (flagedFrameColor);
 	context.setFillColor (flagedBackColor);
@@ -194,7 +194,7 @@ void MinefieldViewController::drawFlaggedCell (const CRect& r, CDrawContext& con
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawMinedCell (const CRect& r, CDrawContext& context,
-											 const SharedPointer<CFontDesc>& f) const
+											 const SPtr<CFontDesc>& f) const
 {
 	context.setFont (f);
 	context.setFontColor (kBlackCColor);
@@ -203,7 +203,7 @@ void MinefieldViewController::drawMinedCell (const CRect& r, CDrawContext& conte
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawExplosionCell (const CRect& r, CDrawContext& context,
-												 const SharedPointer<CFontDesc>& f) const
+												 const SPtr<CFontDesc>& f) const
 {
 	context.setFont (f);
 	context.setFontColor (kRedCColor);
@@ -212,8 +212,7 @@ void MinefieldViewController::drawExplosionCell (const CRect& r, CDrawContext& c
 
 //------------------------------------------------------------------------
 void MinefieldViewController::drawCellNeighbours (const CRect& r, CDrawContext& context,
-												  const SharedPointer<CFontDesc>& f,
-												  uint32_t neighbours)
+												  const SPtr<CFontDesc>& f, uint32_t neighbours)
 {
 	if (neighbours == 0)
 		return;

@@ -10,7 +10,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIOverlayView::UIOverlayView (const SharedPointer<CViewContainer>& view)
+UIOverlayView::UIOverlayView (const SPtr<CViewContainer>& view)
 : CView ({}), targetView (view), targetViewParent (shared (view->getParentView ()))
 {
 	setMouseEnabled (false);

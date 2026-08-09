@@ -99,9 +99,8 @@ void ViewSizeAnimation::animationTick (CView& view, IdStringPtr name, float pos)
 /** @class ExchangeViewAnimation
 	see @ref page_animation Support */
 //-----------------------------------------------------------------------------
-ExchangeViewAnimation::ExchangeViewAnimation (const SharedPointer<CView>& oldView,
-											  const SharedPointer<CView>& newView,
-											  AnimationStyle style)
+ExchangeViewAnimation::ExchangeViewAnimation (const SPtr<CView>& oldView,
+											  const SPtr<CView>& newView, AnimationStyle style)
 : newView (newView), viewToRemove (oldView), style (style)
 {
 	vstgui_assert (newView->isAttached () == false);

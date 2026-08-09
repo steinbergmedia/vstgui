@@ -40,8 +40,8 @@ UTF8StringPtr AnimationSplashScreenCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> AnimationSplashScreenCreator::create (const UIAttributes& attributes,
-														   const IUIDescription& description) const
+SPtr<CView> AnimationSplashScreenCreator::create (const UIAttributes& attributes,
+												  const IUIDescription& description) const
 {
 	return makeShared<CAnimationSplashScreen> (CRect (0, 0, 0, 0), -1, nullptr, nullptr);
 }
@@ -54,7 +54,7 @@ bool AnimationSplashScreenCreator::apply (CView& view, const UIAttributes& attri
 	if (!splashScreen)
 		return false;
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrSplashBitmap), bitmap, description))
 		splashScreen->setSplashBitmap (bitmap);
 

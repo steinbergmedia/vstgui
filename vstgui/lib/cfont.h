@@ -64,13 +64,13 @@ protected:
 //-----------------------------------------------------------------------------
 // Global fonts
 //-----------------------------------------------------------------------------
-extern SharedPointer<CFontDesc> kSystemFont;
-extern SharedPointer<CFontDesc> kNormalFontVeryBig;
-extern SharedPointer<CFontDesc> kNormalFontBig;
-extern SharedPointer<CFontDesc> kNormalFont;
-extern SharedPointer<CFontDesc> kNormalFontSmall;
-extern SharedPointer<CFontDesc> kNormalFontSmaller;
-extern SharedPointer<CFontDesc> kNormalFontVerySmall;
-extern SharedPointer<CFontDesc> kSymbolFont;
+extern SPtr<CFontDesc> kSystemFont;
+extern SPtr<CFontDesc> kNormalFontVeryBig;
+extern SPtr<CFontDesc> kNormalFontBig;
+extern SPtr<CFontDesc> kNormalFont;
+extern SPtr<CFontDesc> kNormalFontSmall;
+extern SPtr<CFontDesc> kNormalFontSmaller;
+extern SPtr<CFontDesc> kNormalFontVerySmall;
+extern SPtr<CFontDesc> kSymbolFont;
 
 } // VSTGUI

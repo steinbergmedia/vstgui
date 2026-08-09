@@ -23,21 +23,21 @@ class IUIDescription : public virtual IReference,
 public:
 	virtual ~IUIDescription () noexcept = default;
 
-	virtual SharedPointer<CView>
-		createView (UTF8StringPtr name, const SharedPointer<IController>& controller) const = 0;
+	virtual SPtr<CView> createView (UTF8StringPtr name,
+									const SPtr<IController>& controller) const = 0;
 
-	virtual SharedPointer<CBitmap> getBitmap (UTF8StringPtr name) const = 0;
-	virtual SharedPointer<CFontDesc> getFont (UTF8StringPtr name) const = 0;
+	virtual SPtr<CBitmap> getBitmap (UTF8StringPtr name) const = 0;
+	virtual SPtr<CFontDesc> getFont (UTF8StringPtr name) const = 0;
 	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;
-	virtual SharedPointer<CGradient> getGradient (UTF8StringPtr name) const = 0;
+	virtual SPtr<CGradient> getGradient (UTF8StringPtr name) const = 0;
 	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
 	virtual IControlListener* getControlListener (UTF8StringPtr name) const = 0;
-	virtual SharedPointer<IController> getController () const = 0;
+	virtual SPtr<IController> getController () const = 0;
 
 	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
-	virtual UTF8StringPtr lookupFontName (const SharedPointer<CFontDesc>& font) const = 0;
-	virtual UTF8StringPtr lookupBitmapName (const SharedPointer<CBitmap>& bitmap) const = 0;
-	virtual UTF8StringPtr lookupGradientName (const SharedPointer<CGradient>& gradient) const = 0;
+	virtual UTF8StringPtr lookupFontName (const SPtr<CFontDesc>& font) const = 0;
+	virtual UTF8StringPtr lookupBitmapName (const SPtr<CBitmap>& bitmap) const = 0;
+	virtual UTF8StringPtr lookupGradientName (const SPtr<CGradient>& gradient) const = 0;
 	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
 
 	virtual bool getVariable (UTF8StringPtr name, double& value) const = 0;
@@ -52,9 +52,8 @@ public:
 
 	virtual const IViewFactory& getViewFactory () const = 0;
 
-	virtual bool setCustomAttributes (UTF8StringPtr name,
-									  const SharedPointer<UIAttributes>& attr) = 0;
-	virtual SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const = 0;
+	virtual bool setCustomAttributes (UTF8StringPtr name, const SPtr<UIAttributes>& attr) = 0;
+	virtual SPtr<UIAttributes> getCustomAttributes (UTF8StringPtr name) const = 0;
 
 	static IdStringPtr kCustomViewName;
 };

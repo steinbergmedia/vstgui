@@ -385,15 +385,15 @@ public:
 	/** create an accessor.
 		can return 0 if platform implementation does not support this.
 		result needs to be forgotten before the CBitmap reflects the change to the pixels */
-	static SharedPointer<CBitmapPixelAccess> create (const SharedPointer<CBitmap>& bitmap,
-													 bool alphaPremultiplied = true);
+	static SPtr<CBitmapPixelAccess> create (const SPtr<CBitmap>& bitmap,
+											bool alphaPremultiplied = true);
 	//-----------------------------------------------------------------------------
 protected:
 	CBitmapPixelAccess ();
 	~CBitmapPixelAccess () noexcept override = default;
-	void init (const SharedPointer<CBitmap>& bitmap, PlatformBitmapPixelAccessPtr&& pixelAccess);
+	void init (const SPtr<CBitmap>& bitmap, PlatformBitmapPixelAccessPtr&& pixelAccess);
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	PlatformBitmapPixelAccessPtr pixelAccess;
 	uint8_t* currentPos;
 	uint8_t* address;

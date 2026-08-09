@@ -40,7 +40,7 @@ Property::Property (Type type)
 			assign (0.0);
 			break;
 		case Type::kBitmap:
-			assign (SharedPointer<CBitmap> ());
+			assign (SPtr<CBitmap> ());
 			break;
 		case Type::kRect:
 			assign (CRect {});
@@ -64,7 +64,7 @@ Property::Property (int32_t intValue) { assign (intValue); }
 Property::Property (double floatValue) { assign (floatValue); }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (const SharedPointer<CBitmap>& bitmapValue) { assign (bitmapValue); }
+Property::Property (const SPtr<CBitmap>& bitmapValue) { assign (bitmapValue); }
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (const CRect& rectValue) { assign (rectValue); }
@@ -109,10 +109,7 @@ int32_t Property::getInteger () const { return std::get<int32_t> (var); }
 double Property::getFloat () const { return std::get<double> (var); }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> Property::getBitmap () const
-{
-	return std::get<SharedPointer<CBitmap>> (var);
-}
+SPtr<CBitmap> Property::getBitmap () const { return std::get<SPtr<CBitmap>> (var); }
 
 //----------------------------------------------------------------------------------------------------
 const CRect& Property::getRect () const { return std::get<CRect> (var); }
@@ -167,7 +164,7 @@ IdStringPtr Factory::getFilterName (uint32_t index) const
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<IFilter> Factory::createFilter (IdStringPtr name) const
+SPtr<IFilter> Factory::createFilter (IdStringPtr name) const
 {
 	FilterMap::const_iterator it = filters.find (name);
 	if (it != filters.end ())
@@ -286,7 +283,7 @@ bool FilterBase::registerProperty (IdStringPtr name, const Property& defaultProp
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap> FilterBase::getInputBitmap () const
+SPtr<CBitmap> FilterBase::getInputBitmap () const
 {
 	auto it = properties.find (Standard::Property::kInputBitmap);
 	if (it != properties.end ())
@@ -306,10 +303,7 @@ namespace Standard {
 class BoxBlur : public FilterBase
 {
 public:
-	static SharedPointer<IFilter> CreateFunction (IdStringPtr _name)
-	{
-		return makeShared<BoxBlur> ();
-	}
+	static SPtr<IFilter> CreateFunction (IdStringPtr _name) { return makeShared<BoxBlur> (); }
 
 	BoxBlur () : FilterBase ("A Box Blur Filter")
 	{
@@ -351,7 +345,7 @@ private:
 			run (*inputAccessor.get (), *inputAccessor.get (), radius, alphaChannelOnly);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (inputBitmap));
 		}
-		SharedPointer<CBitmap> outputBitmap =
+		SPtr<CBitmap> outputBitmap =
 			owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
 		if (outputBitmap)
 		{
@@ -614,7 +608,7 @@ protected:
 		auto inputBitmap = getInputBitmap ();
 		if (inputBitmap == nullptr)
 			return false;
-		SharedPointer<CBitmap> outputBitmap =
+		SPtr<CBitmap> outputBitmap =
 			owned (new CBitmap (outSize.getWidth (), outSize.getHeight ()));
 		if (outputBitmap == nullptr)
 			return false;
@@ -634,10 +628,7 @@ protected:
 class ScaleLinear : public ScaleBase
 {
 public:
-	static SharedPointer<IFilter> CreateFunction (IdStringPtr _name)
-	{
-		return makeShared<ScaleLinear> ();
-	}
+	static SPtr<IFilter> CreateFunction (IdStringPtr _name) { return makeShared<ScaleLinear> (); }
 
 	ScaleLinear () : ScaleBase ("A Linear Scale Filter") {}
 
@@ -692,7 +683,7 @@ private:
 class ScaleBiliniear : public ScaleBase
 {
 public:
-	static SharedPointer<IFilter> CreateFunction (IdStringPtr _name)
+	static SPtr<IFilter> CreateFunction (IdStringPtr _name)
 	{
 		return makeShared<ScaleBiliniear> ();
 	}
@@ -777,8 +768,8 @@ protected:
 		auto inputAccessor = CBitmapPixelAccess::create (inputBitmap);
 		if (inputAccessor == nullptr)
 			return false;
-		SharedPointer<CBitmap> outputBitmap;
-		SharedPointer<CBitmapPixelAccess> outputAccessor;
+		SPtr<CBitmap> outputBitmap;
+		SPtr<CBitmapPixelAccess> outputAccessor;
 		if (replace == false)
 		{
 			outputBitmap =
@@ -833,10 +824,7 @@ protected:
 class SetColor : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
-	static SharedPointer<IFilter> CreateFunction (IdStringPtr _name)
-	{
-		return makeShared<SetColor> ();
-	}
+	static SPtr<IFilter> CreateFunction (IdStringPtr _name) { return makeShared<SetColor> (); }
 
 	SetColor () : SimpleFilter<SimpleFilterProcessFunction> ("A Set Color Filter", processSetColor)
 	{
@@ -875,10 +863,7 @@ private:
 class Grayscale : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
-	static SharedPointer<IFilter> CreateFunction (IdStringPtr name)
-	{
-		return makeShared<Grayscale> ();
-	}
+	static SPtr<IFilter> CreateFunction (IdStringPtr name) { return makeShared<Grayscale> (); }
 
 	Grayscale ()
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Grayscale Filter", processGrayscale)
@@ -898,10 +883,7 @@ private:
 class ReplaceColor : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
-	static SharedPointer<IFilter> CreateFunction (IdStringPtr name)
-	{
-		return makeShared<ReplaceColor> ();
-	}
+	static SPtr<IFilter> CreateFunction (IdStringPtr name) { return makeShared<ReplaceColor> (); }
 
 	ReplaceColor ()
 	: SimpleFilter<SimpleFilterProcessFunction> ("A Replace Color Filter", processReplace)

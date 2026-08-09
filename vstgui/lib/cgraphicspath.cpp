@@ -174,8 +174,8 @@ CGraphicsPath::CGraphicsPath (const CGraphicsPath& p) : elements (p.elements), f
 CGraphicsPath::~CGraphicsPath () noexcept {}
 
 //-----------------------------------------------------------------------------
-SharedPointer<CGradient> CGraphicsPath::createGradient (double color1Start, double color2Start,
-														const CColor& color1, const CColor& color2)
+SPtr<CGradient> CGraphicsPath::createGradient (double color1Start, double color2Start,
+											   const CColor& color1, const CColor& color2)
 {
 	return CGradient::create (color1Start, color2Start, color1, color2);
 }

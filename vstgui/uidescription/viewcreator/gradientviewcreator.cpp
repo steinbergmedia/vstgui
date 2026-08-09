@@ -47,8 +47,8 @@ UTF8StringPtr GradientViewCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> GradientViewCreator::create (const UIAttributes& attributes,
-												  const IUIDescription& description) const
+SPtr<CView> GradientViewCreator::create (const UIAttributes& attributes,
+										 const IUIDescription& description) const
 {
 	auto gradientView = makeShared<CGradientView> (CRect (0, 0, 100, 100));
 	std::list<const string*> gradients;

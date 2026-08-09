@@ -13,7 +13,7 @@ namespace VSTGUI {
 
 //------------------------------------------------------------------------
 CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
-						  const SharedPointer<CBitmap>& background)
+						  const SPtr<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 	setDefaultValue (0.f);
@@ -161,7 +161,7 @@ Use a CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-								  const SharedPointer<CBitmap>& background)
+								  const SPtr<CBitmap>& background)
 : CSwitchBase (size, listener, tag, background)
 {
 }
@@ -232,7 +232,7 @@ Use a CMultiFrameBitmap for its background bitmap.
  */
 //------------------------------------------------------------------------
 CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-									  const SharedPointer<CBitmap>& background)
+									  const SPtr<CBitmap>& background)
 : CSwitchBase (size, listener, tag, background)
 {
 }
@@ -304,7 +304,7 @@ When the mouse button is relaxed, the second subbitmap is framed. */
  */
 //------------------------------------------------------------------------
 CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag,
-							  const SharedPointer<CBitmap>& background, const int32_t style)
+							  const SPtr<CBitmap>& background, const int32_t style)
 : CControl (size, listener, tag, background), style (style), resetValueTimer (nullptr)
 {
 	setWantsFocus (true);

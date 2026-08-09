@@ -11,7 +11,7 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-static SharedPointer<CListControl>
+static SPtr<CListControl>
 	createTestListControl (CCoord rowHeight, int32_t numRows = 10,
 						   CListControlRowDesc::Flags rowFlags = CListControlRowDesc::Flags {
 							   CListControlRowDesc::Selectable | CListControlRowDesc::Hoverable})
@@ -27,8 +27,8 @@ static SharedPointer<CListControl>
 }
 
 //------------------------------------------------------------------------
-static SharedPointer<CScrollView> createScrollViewAndEmbedListControl (
-	const SharedPointer<CViewContainer>& parent, const SharedPointer<CListControl>& listControl)
+static SPtr<CScrollView> createScrollViewAndEmbedListControl (const SPtr<CViewContainer>& parent,
+															  const SPtr<CListControl>& listControl)
 {
 	auto scrollView =
 		makeShared<CScrollView> (CRect (0, 0, 100, listControl->getHeight () / 2),

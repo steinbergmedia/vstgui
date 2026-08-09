@@ -132,7 +132,7 @@ private:
 	WindowStyle windowStyle;
 	WindowType windowType;
 	Platform::WindowPtr platformWindow;
-	SharedPointer<CFrame> frame;
+	SPtr<CFrame> frame;
 	UTF8String autoSaveFrameName;
 	UTF8String title;
 	DispatchList<IWindowListener*> windowListeners;

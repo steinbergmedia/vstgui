@@ -17,7 +17,7 @@ struct StringListControlDrawer::Impl
 {
 	Func func;
 
-	SharedPointer<CFontDesc> font {kNormalFont};
+	SPtr<CFontDesc> font {kNormalFont};
 	CColor fontColor {kBlackCColor};
 	CColor fontColorSelected {kWhiteCColor};
 	CColor backColor {kWhiteCColor};
@@ -52,7 +52,7 @@ void StringListControlDrawer::setStringProvider (const Func& getStringFunc)
 }
 
 //------------------------------------------------------------------------
-void StringListControlDrawer::setFont (const SharedPointer<CFontDesc>& f) { impl->font = f; }
+void StringListControlDrawer::setFont (const SPtr<CFontDesc>& f) { impl->font = f; }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setFontColor (CColor color)
@@ -109,7 +109,7 @@ void StringListControlDrawer::setTextAlign (CHoriTxtAlign align)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CFontDesc> StringListControlDrawer::getFont () const { return impl->font; }
+SPtr<CFontDesc> StringListControlDrawer::getFont () const { return impl->font; }
 
 //------------------------------------------------------------------------
 CColor StringListControlDrawer::getFontColor () const

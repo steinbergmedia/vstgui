@@ -21,27 +21,26 @@ class UIViewCreatorDataSource;
 class UIViewCreatorController : public NonAtomicReferenceCounted, public DelegationController, public IContextMenuController
 {
 public:
-	UIViewCreatorController (const SharedPointer<IController>& baseController,
-							 const SharedPointer<UIDescription>& description);
+	UIViewCreatorController (const SPtr<IController>& baseController,
+							 const SPtr<UIDescription>& description);
 	~UIViewCreatorController () override;
 
-	SharedPointer<IController> getBaseController () const { return controller; }
+	SPtr<IController> getBaseController () const { return controller; }
 
 protected:
 	void valueChanged (CControl& pControl) override;
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
 
 	void setupDataSource (UTF8StringPtr filter = nullptr);
 
-	SharedPointer<UIViewCreatorDataSource> dataSource;
-	SharedPointer<CDataBrowser> dataBrowser;
-	SharedPointer<UIDescription> description;
+	SPtr<UIViewCreatorDataSource> dataSource;
+	SPtr<CDataBrowser> dataBrowser;
+	SPtr<UIDescription> description;
 	std::vector<std::string> filteredViewNames;
 	std::vector<std::string> allViewNames;
 	
@@ -52,9 +51,10 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UISelection> createSelectionFromViewName (
-	const std::string& viewName, const IViewFactory& factory, const UIDescription& description,
-	const SharedPointer<UIAttributes>& optionalAttributes);
+SPtr<UISelection> createSelectionFromViewName (const std::string& viewName,
+											   const IViewFactory& factory,
+											   const UIDescription& description,
+											   const SPtr<UIAttributes>& optionalAttributes);
 
 } // VSTGUI
 

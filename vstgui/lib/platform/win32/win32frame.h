@@ -49,7 +49,8 @@ public:
 	PlatformViewLayerPtr
 		createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
 								 IPlatformViewLayer* parentLayer = nullptr) override;
-	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
+	bool doDrag (const DragDescription& dragDescription,
+				 const SPtr<IDragCallback>& callback) override;
 
 	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
 	void onFrameClosed () override;

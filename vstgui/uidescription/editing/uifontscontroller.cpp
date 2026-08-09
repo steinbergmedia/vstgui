@@ -20,7 +20,7 @@ namespace VSTGUI {
 class UIFontsDataSource : public UIBaseDataSource
 {
 public:
-	UIFontsDataSource (const SharedPointer<UIDescription>& description,
+	UIFontsDataSource (const SPtr<UIDescription>& description,
 					   WeakPointer<IActionPerformer> actionPerformer,
 					   GenericStringListDataBrowserSourceSelectionChanged* delegate);
 
@@ -32,11 +32,11 @@ protected:
 	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	UTF8StringPtr getDefaultsName () override { return "UIFontsDataSource"; }
 
-	SharedPointer<CColorChooser> colorChooser;
+	SPtr<CColorChooser> colorChooser;
 };
 
 //----------------------------------------------------------------------------------------------------
-UIFontsDataSource::UIFontsDataSource (const SharedPointer<UIDescription>& description,
+UIFontsDataSource::UIFontsDataSource (const SPtr<UIDescription>& description,
 									  WeakPointer<IActionPerformer> actionPerformer,
 									  GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
@@ -88,8 +88,8 @@ bool UIFontsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIFontsController::UIFontsController (const SharedPointer<IController>& baseController,
-									  const SharedPointer<UIDescription>& description,
+UIFontsController::UIFontsController (const SPtr<IController>& baseController,
+									  const SPtr<UIDescription>& description,
 									  WeakPointer<IActionPerformer> actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
@@ -111,8 +111,8 @@ UIFontsController::UIFontsController (const SharedPointer<IController>& baseCont
 UIFontsController::~UIFontsController () {}
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIFontsController::createView (const UIAttributes& attributes,
-													const IUIDescription& description)
+SPtr<CView> UIFontsController::createView (const UIAttributes& attributes,
+										   const IUIDescription& description)
 {
 	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
@@ -130,9 +130,8 @@ SharedPointer<CView> UIFontsController::createView (const UIAttributes& attribut
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIFontsController::verifyView (const SharedPointer<CView>& view,
-													const UIAttributes& attributes,
-													const IUIDescription& description)
+SPtr<CView> UIFontsController::verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+										   const IUIDescription& description)
 {
 	auto searchField = view.cast<CSearchTextEdit> ();
 	if (searchField && searchField->getTag () == kSearchTag)

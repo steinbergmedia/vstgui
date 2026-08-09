@@ -53,8 +53,7 @@ public:
 static constexpr int64_t kUIDescIdentifier = 0x7072637365646975LL; // 8 byte identifier
 
 //------------------------------------------------------------------------
-SharedPointer<CompressedUIDescription>
-	CompressedUIDescription::make (const CResourceDescription& uidescFile)
+SPtr<CompressedUIDescription> CompressedUIDescription::make (const CResourceDescription& uidescFile)
 {
 	auto instance = makeShared<CompressedUIDescription> ();
 	if (instance->init (uidescFile))

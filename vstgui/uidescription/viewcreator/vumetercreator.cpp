@@ -39,8 +39,8 @@ UTF8StringPtr VuMeterCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> VuMeterCreator::create (const UIAttributes& attributes,
-											 const IUIDescription& description) const
+SPtr<CView> VuMeterCreator::create (const UIAttributes& attributes,
+									const IUIDescription& description) const
 {
 	return makeShared<CVuMeter> (CRect (0, 0, 0, 0), nullptr, nullptr, 100);
 }
@@ -53,7 +53,7 @@ bool VuMeterCreator::apply (CView& view, const UIAttributes& attributes,
 	if (!vuMeter)
 		return false;
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrOffBitmap), bitmap, description))
 		vuMeter->setOffBitmap (bitmap);
 

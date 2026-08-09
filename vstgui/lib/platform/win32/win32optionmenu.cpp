@@ -20,8 +20,8 @@ Win32OptionMenu::Win32OptionMenu (HWND windowHandle)
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COptionMenu> getItemMenu (int32_t idx, int32_t& idxInMenu, int32_t& offsetIdx,
-										const SharedPointer<COptionMenu>& _menu)
+SPtr<COptionMenu> getItemMenu (int32_t idx, int32_t& idxInMenu, int32_t& offsetIdx,
+							   const SPtr<COptionMenu>& _menu)
 {
 	int32_t oldIDx = offsetIdx;
 	offsetIdx += _menu->getNbEntries ();
@@ -32,7 +32,7 @@ SharedPointer<COptionMenu> getItemMenu (int32_t idx, int32_t& idxInMenu, int32_t
 		return _menu;
 	}
 
-	SharedPointer<COptionMenu> menu {};
+	SPtr<COptionMenu> menu {};
 	auto it = _menu->getItemList ().begin ();
 	while (it != _menu->getItemList ().end ())
 	{
@@ -48,7 +48,7 @@ SharedPointer<COptionMenu> getItemMenu (int32_t idx, int32_t& idxInMenu, int32_t
 }
 
 //-----------------------------------------------------------------------------
-void Win32OptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu, const Callback& callback)
+void Win32OptionMenu::popup (const SPtr<COptionMenu>& optionMenu, const Callback& callback)
 {
 	vstgui_assert (optionMenu && callback, "arguments are required");
 
@@ -113,7 +113,7 @@ void Win32OptionMenu::popup (const SharedPointer<COptionMenu>& optionMenu, const
 }
 
 //-----------------------------------------------------------------------------
-HMENU Win32OptionMenu::createMenu (SharedPointer<COptionMenu> _menu, int32_t& offsetIdx)
+HMENU Win32OptionMenu::createMenu (SPtr<COptionMenu> _menu, int32_t& offsetIdx)
 {
 	HMENU menu = CreatePopupMenu ();
 

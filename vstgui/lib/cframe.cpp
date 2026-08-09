@@ -53,23 +53,23 @@ private:
 struct ModalViewSession
 {
 	ModalViewSessionID identifier {};
-	SharedPointer<CView> view;
+	SPtr<CView> view;
 };
 
 //------------------------------------------------------------------------
 struct CFrame::Impl
 {
-	using ViewList = std::list<SharedPointer<CView>>;
+	using ViewList = std::list<SPtr<CView>>;
 	using FunctionQueue = std::queue<EventProcessingFunction>;
 	using ModalViewSessionStack = std::stack<ModalViewSession>;
 
 	PlatformFramePtr platformFrame;
 	VSTGUIEditorInterface* editor {nullptr};
 	IViewAddedRemovedObserver* viewAddedRemovedObserver {nullptr};
-	SharedPointer<CTooltipSupport> tooltips;
-	SharedPointer<Animation::Animator> animator;
-	SharedPointer<CView> focusView;
-	SharedPointer<CView> activeFocusView;
+	SPtr<CTooltipSupport> tooltips;
+	SPtr<Animation::Animator> animator;
+	SPtr<CView> focusView;
+	SPtr<CView> activeFocusView;
 	CollectInvalidRects* collectInvalidRects {nullptr};
 
 	std::list<CView*> mouseViews;
@@ -360,7 +360,7 @@ void CFrame::clearMouseViews (const CPoint& where, Modifiers modifiers, bool cal
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::removeFromMouseViews (const SharedPointer<CView>& view)
+void CFrame::removeFromMouseViews (const SPtr<CView>& view)
 {
 	bool found = false;
 	auto it = pImpl->mouseViews.begin ();
@@ -749,19 +749,16 @@ void CFrame::dispatchEvent (Event& event)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> CFrame::getClipboard ()
-{
-	return getPlatformFactory ().getClipboard ();
-}
+SPtr<IDataPackage> CFrame::getClipboard () { return getPlatformFactory ().getClipboard (); }
 
 //-----------------------------------------------------------------------------
-void CFrame::setClipboard (const SharedPointer<IDataPackage>& data)
+void CFrame::setClipboard (const SPtr<IDataPackage>& data)
 {
 	getPlatformFactory ().setClipboard (data);
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<Animation::Animator> CFrame::getAnimator ()
+SPtr<Animation::Animator> CFrame::getAnimator ()
 {
 	if (pImpl->animator == nullptr)
 		pImpl->animator = makeShared<Animation::Animator> ();
@@ -912,7 +909,7 @@ bool CFrame::getSize (CRect& outSize) const
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> CFrame::getModalView () const
+SPtr<CView> CFrame::getModalView () const
 {
 	if (!pImpl->modalViewSessionStack.empty ())
 		return pImpl->modalViewSessionStack.top ().view;
@@ -951,7 +948,7 @@ void CFrame::clearModalViewSessions ()
 }
 
 //-----------------------------------------------------------------------------
-Optional<ModalViewSessionID> CFrame::beginModalViewSession (const SharedPointer<CView>& view)
+Optional<ModalViewSessionID> CFrame::beginModalViewSession (const SPtr<CView>& view)
 {
 	if (view->isAttached ())
 	{
@@ -1089,7 +1086,7 @@ void CFrame::onViewAdded (CView& view)
 /**
  * @param pView new focus view
  */
-void CFrame::setFocusView (const SharedPointer<CView>& pView)
+void CFrame::setFocusView (const SPtr<CView>& pView)
 {
 	static bool recursion = false;
 	if (pView == pImpl->focusView || (recursion && pImpl->focusView != nullptr))
@@ -1164,10 +1161,10 @@ void CFrame::setFocusView (const SharedPointer<CView>& pView)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> CFrame::getFocusView () const { return pImpl->focusView; }
+SPtr<CView> CFrame::getFocusView () const { return pImpl->focusView; }
 
 //-----------------------------------------------------------------------------
-bool CFrame::advanceNextFocusView (const SharedPointer<CView>& _oldFocus, bool reverse)
+bool CFrame::advanceNextFocusView (const SPtr<CView>& _oldFocus, bool reverse)
 {
 	auto oldFocus = _oldFocus;
 	if (auto modalView = getModalView ())
@@ -1238,7 +1235,7 @@ bool CFrame::advanceNextFocusView (const SharedPointer<CView>& _oldFocus, bool r
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::removeSubview (const SharedPointer<CView>& view)
+bool CFrame::removeSubview (const SPtr<CView>& view)
 {
 #if DEBUG
 	vstgui_assert (getModalView () != view);
@@ -1261,7 +1258,7 @@ bool CFrame::removeAll ()
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CView> CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) const
+SPtr<CView> CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) const
 {
 	if (auto modalView = getModalView ())
 	{
@@ -1284,8 +1281,8 @@ SharedPointer<CView> CFrame::getViewAt (const CPoint& where, const GetViewOption
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<CViewContainer> CFrame::getContainerAt (const CPoint& where,
-													  const GetViewOptions& options) const
+SPtr<CViewContainer> CFrame::getContainerAt (const CPoint& where,
+											 const GetViewOptions& options) const
 {
 	if (auto modalView = getModalView ())
 	{
@@ -1527,7 +1524,7 @@ void CFrame::callMouseObserverOtherMouseEvent (MouseEvent& event)
 }
 
 //------------------------------------------------------------------------
-bool CFrame::performDrag (const DragDescription& desc, const SharedPointer<IDragCallback>& callback)
+bool CFrame::performDrag (const DragDescription& desc, const SPtr<IDragCallback>& callback)
 {
 	if (const auto& platformFrame = getPlatformFrame ())
 	{

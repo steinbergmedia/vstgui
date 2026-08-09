@@ -28,12 +28,12 @@ static CFileExtension imageStitchExtension ("Image Stitch File", "imagestitch", 
 //------------------------------------------------------------------------
 struct Image
 {
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	Path path;
 	bool selected {false};
 
 #if defined(_MSC_VER) && _MSC_VER < 1910 // Can be removed when dropping VS 2015 Support
-	Image (SharedPointer<CBitmap> bitmap, Path path, bool selected)
+	Image (SPtr<CBitmap> bitmap, Path path, bool selected)
 	: bitmap (bitmap), path (path), selected (selected)
 	{
 	}
@@ -54,7 +54,7 @@ public:
 	~DocumentWindowController () noexcept;
 
 	const DocumentContextPtr& getDoc () const noexcept { return docContext; }
-	SharedPointer<CBitmap> createStitchedBitmap ();
+	SPtr<CBitmap> createStitchedBitmap ();
 
 	void showWindow ();
 	void closeWindow ();
@@ -68,9 +68,8 @@ private:
 	void onImagePathRemoved (const Path& newPath, size_t index) override;
 	void onNumFramesPerRowChanged (uint16_t newNumFramesPerRow) override;
 
-	SharedPointer<IController> createController (const UTF8StringView& name,
-												 const SharedPointer<IController>& parent,
-												 const IUIDescription& uiDesc) override;
+	SPtr<IController> createController (const UTF8StringView& name, const SPtr<IController>& parent,
+										const IUIDescription& uiDesc) override;
 	void onUIDescriptionParsed (const IUIDescription& uiDesc) override;
 	void onSetContentView (Standalone::IWindow& w, CFrame* cv) override;
 	void onClosed (const Standalone::IWindow& window) override;
@@ -96,13 +95,13 @@ private:
 
 	DocumentContextPtr docContext;
 	CFrame* contentView;
-	SharedPointer<ImageFramesView> imageView;
-	SharedPointer<CMovieBitmap> movieBitmapView;
+	SPtr<ImageFramesView> imageView;
+	SPtr<CMovieBitmap> movieBitmapView;
 	Standalone::WindowPtr window;
 	Standalone::ValuePtr displayFrameValue;
 	Standalone::ValuePtr animationTimeValue;
 	Standalone::ValuePtr numFramesPerRowValue;
-	SharedPointer<CVSTGUITimer> timer;
+	SPtr<CVSTGUITimer> timer;
 	ImageList imageList;
 	bool asyncUpdateTriggered {false};
 	bool docIsDirty {false};

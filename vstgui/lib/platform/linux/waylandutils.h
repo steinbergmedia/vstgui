@@ -49,7 +49,7 @@ private:
 
 	static void updateScaleFactor (ChildWindow* self, int32_t factor);
 
-	SharedPointer<IWaylandFrame> waylandFrame;
+	SPtr<IWaylandFrame> waylandFrame;
 	IPlatformFrameCallback* frameCallback;
 	bool initialized;
 	CPoint size;

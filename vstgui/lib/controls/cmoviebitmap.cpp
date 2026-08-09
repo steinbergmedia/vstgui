@@ -20,7 +20,7 @@ namespace VSTGUI {
  */
 //------------------------------------------------------------------------
 CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
-							const SharedPointer<CBitmap>& background)
+							const SPtr<CBitmap>& background)
 : CControl (size, listener, tag, background)
 {
 }

@@ -21,16 +21,14 @@ class UIColorChooserController : public NonAtomicReferenceCounted,
                                  public UIColorListenerAdapter
 {
 public:
-	UIColorChooserController (const SharedPointer<IController>& baseController,
-							  const SharedPointer<UIColor>& color);
+	UIColorChooserController (const SPtr<IController>& baseController, const SPtr<UIColor>& color);
 	~UIColorChooserController () override;
 	
 protected:
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl& pControl) override;
 	void controlBeginEdit (CControl& pControl) override;
@@ -44,8 +42,8 @@ protected:
 	static bool valueToString (float value, char utf8String[256], CParamDisplay& userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit& userData);
 
-	SharedPointer<UIColor> color;
-	using ControlList = std::list<SharedPointer<CControl>>;
+	SPtr<UIColor> color;
+	using ControlList = std::list<SPtr<CControl>>;
 	ControlList controls;
 
 	enum {

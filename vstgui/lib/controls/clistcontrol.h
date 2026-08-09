@@ -30,11 +30,11 @@ public:
 	CListControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
 	~CListControl () override;
 
-	void setDrawer (const SharedPointer<IListControlDrawer>& d);
-	void setConfigurator (const SharedPointer<IListControlConfigurator>& c);
+	void setDrawer (const SPtr<IListControlDrawer>& d);
+	void setConfigurator (const SPtr<IListControlConfigurator>& c);
 
-	SharedPointer<IListControlDrawer> getDrawer () const;
-	SharedPointer<IListControlConfigurator> getConfigurator () const;
+	SPtr<IListControlDrawer> getDrawer () const;
+	SPtr<IListControlConfigurator> getConfigurator () const;
 
 	void recalculateLayout ();
 

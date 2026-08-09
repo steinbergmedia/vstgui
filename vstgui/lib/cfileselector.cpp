@@ -264,7 +264,7 @@ UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CNewFileSelector> CNewFileSelector::create (CFrame* parent, Style style)
+SPtr<CNewFileSelector> CNewFileSelector::create (CFrame* parent, Style style)
 {
 	if (!parent)
 		return {};

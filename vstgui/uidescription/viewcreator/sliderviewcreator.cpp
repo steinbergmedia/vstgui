@@ -227,8 +227,8 @@ UTF8StringPtr SliderCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> SliderCreator::create (const UIAttributes& attributes,
-											const IUIDescription& description) const
+SPtr<CView> SliderCreator::create (const UIAttributes& attributes,
+								   const IUIDescription& description) const
 {
 	return makeShared<CSlider> (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr);
 }
@@ -241,7 +241,7 @@ bool SliderCreator::apply (CView& view, const UIAttributes& attributes,
 	if (!slider)
 		return false;
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
 		slider->setHandle (bitmap);
 

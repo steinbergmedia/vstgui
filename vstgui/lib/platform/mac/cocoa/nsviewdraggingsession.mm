@@ -91,8 +91,9 @@ struct BinaryDataType : RuntimeObjCClass<BinaryDataType>
 };
 
 //------------------------------------------------------------------------
-SharedPointer<NSViewDraggingSession> NSViewDraggingSession::create (
-    NSView* nsView, const DragDescription& desc, const SharedPointer<IDragCallback>& callback)
+SPtr<NSViewDraggingSession> NSViewDraggingSession::create (NSView* nsView,
+														   const DragDescription& desc,
+														   const SPtr<IDragCallback>& callback)
 {
 	NSEvent* event = [NSApp currentEvent];
 	if (event == nullptr || !([event type] == MacEventType::LeftMouseDown ||
@@ -187,14 +188,14 @@ SharedPointer<NSViewDraggingSession> NSViewDraggingSession::create (
 
 //------------------------------------------------------------------------
 NSViewDraggingSession::NSViewDraggingSession (NSDraggingSession* session,
-                                              const DragDescription& desc,
-                                              const SharedPointer<IDragCallback>& callback)
+											  const DragDescription& desc,
+											  const SPtr<IDragCallback>& callback)
 : session (session), desc (desc), callback (callback)
 {
 }
 
 //------------------------------------------------------------------------
-bool NSViewDraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) const
+bool NSViewDraggingSession::setBitmap (const SPtr<CBitmap>& bitmap, CPoint offset) const
 {
 	[session enumerateDraggingItemsWithOptions:0
 	                                   forView:nil
@@ -250,7 +251,7 @@ void NSViewDraggingSession::dragEnded (CPoint pos, DragOperation result)
 }
 
 //-----------------------------------------------------------------------------
-NSImage* NSViewDraggingSession::nsImageForDragOperation (const SharedPointer<CBitmap>& bitmap)
+NSImage* NSViewDraggingSession::nsImageForDragOperation (const SPtr<CBitmap>& bitmap)
 {
 	return [bitmapToNSImage (bitmap) autorelease];
 }

@@ -30,7 +30,7 @@ struct ITextEditorController;
  *
  *	@ingroup new_in_4_15
  */
-SharedPointer<CView> createNewTextEditor (const CRect& r, ITextEditorController* controller);
+SPtr<CView> createNewTextEditor (const CRect& r, ITextEditorController* controller);
 
 //------------------------------------------------------------------------
 /** text editor controller interface
@@ -84,8 +84,8 @@ struct ITextEditor
 		};
 		using FlagsBitset = EnumBitset<Flags>;
 
-		SharedPointer<CFontDesc> font {kNormalFont};
-		SharedPointer<CFontDesc> lineNumbersFont {kNormalFontSmall};
+		SPtr<CFontDesc> font {kNormalFont};
+		SPtr<CFontDesc> lineNumbersFont {kNormalFontSmall};
 		CColor textColor {kBlackCColor};
 		CColor backColor {kWhiteCColor};
 		CColor cursorColor {kBlackCColor};

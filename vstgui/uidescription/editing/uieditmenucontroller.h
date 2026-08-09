@@ -151,10 +151,10 @@ class UIEditMenuController : public NonAtomicReferenceCounted,
 							 public ViewListenerAdapter
 {
 public:
-	UIEditMenuController (const SharedPointer<IController>& baseController,
-						  const SharedPointer<UISelection>& selection,
-						  const SharedPointer<UIUndoManager>& undoManager,
-						  const SharedPointer<UIDescription>& description,
+	UIEditMenuController (const SPtr<IController>& baseController,
+						  const SPtr<UISelection>& selection,
+						  const SPtr<UIUndoManager>& undoManager,
+						  const SPtr<UIDescription>& description,
 						  WeakPointer<IActionPerformer> actionPerformer);
 	~UIEditMenuController () noexcept override;
 
@@ -173,33 +173,31 @@ protected:
 	bool onCommandMenuItemSelected (CCommandMenuItem& item) override;
 
 	bool validateMenuItem (CCommandMenuItem& item);
-	SharedPointer<CCommandMenuItem> findKeyCommandItem (COptionMenu& menu,
-														const KeyboardEvent& event);
-	void createEditMenu (SharedPointer<COptionMenu> menu);
-	void createFileMenu (SharedPointer<COptionMenu> menu);
+	SPtr<CCommandMenuItem> findKeyCommandItem (COptionMenu& menu, const KeyboardEvent& event);
+	void createEditMenu (SPtr<COptionMenu> menu);
+	void createFileMenu (SPtr<COptionMenu> menu);
 
 	void viewWillDelete (CView& view) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override { return this; }
 	void controlBeginEdit (CControl& pControl) override;
 	void controlEndEdit (CControl& pControl) override;
 
 	void getChildrenOfType (CViewContainer& container, UTF8StringView type,
-							std::vector<SharedPointer<CView>>& result) const;
+							std::vector<SPtr<CView>>& result) const;
 
-	SharedPointer<UISelection> selection;
-	SharedPointer<UIUndoManager> undoManager;
-	SharedPointer<UIDescription> description;
-	SharedPointer<CVSTGUITimer> highlightTimer;
+	SPtr<UISelection> selection;
+	SPtr<UIUndoManager> undoManager;
+	SPtr<UIDescription> description;
+	SPtr<CVSTGUITimer> highlightTimer;
 	WeakPointer<IActionPerformer> actionPerformer;
 
 	COptionMenu* fileMenu {nullptr};
 	COptionMenu* editMenu {nullptr};
-	SharedPointer<CTextLabel> fileLabel;
-	SharedPointer<CTextLabel> editLabel;
-	
+	SPtr<CTextLabel> fileLabel;
+	SPtr<CTextLabel> editLabel;
+
 	enum {
 		kMenuFileTag = 100,
 		kMenuEditTag = 101

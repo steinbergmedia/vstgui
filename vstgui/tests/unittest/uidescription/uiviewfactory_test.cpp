@@ -49,8 +49,8 @@ struct BaseViewCreator : public ViewCreatorAdapter
 	IdStringPtr getViewName () const override { return "BaseView"; }
 	UTF8StringPtr getDisplayName () const override { return "Base View"; }
 	IdStringPtr getBaseViewName () const override { return nullptr; }
-	SharedPointer<CView> create (const UIAttributes& attributes,
-								 const IUIDescription& description) const override
+	SPtr<CView> create (const UIAttributes& attributes,
+						const IUIDescription& description) const override
 	{
 		return makeShared<BaseView> ();
 	}
@@ -129,8 +129,8 @@ struct ViewCreator : public ViewCreatorAdapter
 	IdStringPtr getViewName () const override { return "TestView"; }
 	UTF8StringPtr getDisplayName () const override { return "Test View"; }
 	IdStringPtr getBaseViewName () const override { return "BaseView"; }
-	SharedPointer<CView> create (const UIAttributes& attributes,
-								 const IUIDescription& description) const override
+	SPtr<CView> create (const UIAttributes& attributes,
+						const IUIDescription& description) const override
 	{
 		return makeShared<View> ();
 	}
@@ -187,8 +187,7 @@ struct ViewCreator : public ViewCreatorAdapter
 
 ViewCreator viewCreator;
 
-static SharedPointer<CView> createView (const SharedPointer<IViewFactory>& factory,
-										const IUIDescription& uidesc)
+static SPtr<CView> createView (const SPtr<IViewFactory>& factory, const IUIDescription& uidesc)
 {
 	UIAttributes a;
 	a.setAttribute (UIViewCreator::kAttrClass, viewCreator.getViewName ());
@@ -202,12 +201,12 @@ TEST_SUITE_SETUP (UIViewFactoryTest)
 	auto factory = makeShared<UIViewFactory> ();
 	factory->registerViewCreator (baseViewCreator);
 	factory->registerViewCreator (viewCreator);
-	TEST_SUITE_SET_STORAGE (SharedPointer<UIViewFactory>, factory);
+	TEST_SUITE_SET_STORAGE (SPtr<UIViewFactory>, factory);
 }
 
 TEST_SUITE_TEARDOWN (UIViewFactoryTest)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	factory->unregisterViewCreator (baseViewCreator);
 	factory->unregisterViewCreator (viewCreator);
 	factory = nullptr;
@@ -215,7 +214,7 @@ TEST_SUITE_TEARDOWN (UIViewFactoryTest)
 
 TEST_CASE (UIViewFactoryTest, RegisterViewCreator)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 
 	UIViewFactory::StringPtrList registeredViews;
 	factory->collectRegisteredViewNames (registeredViews);
@@ -227,7 +226,7 @@ TEST_CASE (UIViewFactoryTest, RegisterViewCreator)
 
 TEST_CASE (UIViewFactoryTest, CollectFilteredViewNames)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 
 	UIViewFactory::StringPtrList registeredViews;
 	factory->collectRegisteredViewNames (registeredViews, "BaseView");
@@ -236,7 +235,7 @@ TEST_CASE (UIViewFactoryTest, CollectFilteredViewNames)
 
 TEST_CASE (UIViewFactoryTest, CollectRegisteredViewAndDisplayNames)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 
 	auto list = factory->collectRegisteredViewAndDisplayNames ();
 	auto it = std::find_if (list.begin (), list.end (),
@@ -247,7 +246,7 @@ TEST_CASE (UIViewFactoryTest, CollectRegisteredViewAndDisplayNames)
 
 TEST_CASE (UIViewFactoryTest, CreateView)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	auto v = createView (factory, uidesc);
@@ -257,7 +256,7 @@ TEST_CASE (UIViewFactoryTest, CreateView)
 
 TEST_CASE (UIViewFactoryTest, CreateUnknownView)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	UIAttributes a;
@@ -268,7 +267,7 @@ TEST_CASE (UIViewFactoryTest, CreateUnknownView)
 
 TEST_CASE (UIViewFactoryTest, ApplyAttributes)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	auto v = createView (factory, uidesc);
@@ -282,7 +281,7 @@ TEST_CASE (UIViewFactoryTest, ApplyAttributes)
 
 TEST_CASE (UIViewFactoryTest, GetAttributeValue)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	auto v = createView (factory, uidesc);
@@ -293,7 +292,7 @@ TEST_CASE (UIViewFactoryTest, GetAttributeValue)
 
 TEST_CASE (UIViewFactoryTest, GetAttributeNames)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	auto v = createView (factory, uidesc);
@@ -305,7 +304,7 @@ TEST_CASE (UIViewFactoryTest, GetAttributeNames)
 
 TEST_CASE (UIViewFactoryTest, GetAttributesForView)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	auto v = createView (factory, uidesc);
@@ -317,7 +316,7 @@ TEST_CASE (UIViewFactoryTest, GetAttributesForView)
 
 TEST_CASE (UIViewFactoryTest, GetPossibleListValues)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	auto v = createView (factory, uidesc);
@@ -328,7 +327,7 @@ TEST_CASE (UIViewFactoryTest, GetPossibleListValues)
 
 TEST_CASE (UIViewFactoryTest, GetAttributeValueRange)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	auto v = createView (factory, uidesc);
@@ -342,7 +341,7 @@ TEST_CASE (UIViewFactoryTest, GetAttributeValueRange)
 
 TEST_CASE (UIViewFactoryTest, DefaultViewCreation)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	UIAttributes a;
@@ -352,7 +351,7 @@ TEST_CASE (UIViewFactoryTest, DefaultViewCreation)
 
 TEST_CASE (UIViewFactoryTest, ApplyCustomViewAttributes)
 {
-	auto& factory = TEST_SUITE_GET_STORAGE (SharedPointer<UIViewFactory>);
+	auto& factory = TEST_SUITE_GET_STORAGE (SPtr<UIViewFactory>);
 	DummyUIDescription uidesc;
 
 	auto view = owned (new CustomView ());

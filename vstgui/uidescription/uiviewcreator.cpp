@@ -316,7 +316,7 @@ class CViewCreator : public ViewCreatorAdapter
 public:
 	IdStringPtr getViewName () const { return "CView"; }
 	IdStringPtr getBaseViewName () const { return 0; }
-	SharedPointer<CView> create (const UIAttributes& attributes, IUIDescription* description) const
+	SPtr<CView> create (const UIAttributes& attributes, IUIDescription* description) const
 { return new CView (CRect (0, 0, 0, 0)); } bool apply (CView& view, const UIAttributes& attributes,
 IUIDescription* description) const
 	{
@@ -391,8 +391,7 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //-----------------------------------------------------------------------------
-bool bitmapToString (const SharedPointer<CBitmap>& bitmap, std::string& string,
-					 const IUIDescription& desc)
+bool bitmapToString (const SPtr<CBitmap>& bitmap, std::string& string, const IUIDescription& desc)
 {
 	UTF8StringPtr bitmapName = desc.lookupBitmapName (bitmap);
 	if (bitmapName)
@@ -459,8 +458,7 @@ bool stringToColor (const std::string* value, CColor& color, const IUIDescriptio
 }
 
 //-----------------------------------------------------------------------------
-bool stringToBitmap (const std::string* value, SharedPointer<CBitmap>& bitmap,
-					 const IUIDescription& desc)
+bool stringToBitmap (const std::string* value, SPtr<CBitmap>& bitmap, const IUIDescription& desc)
 {
 	if (value)
 	{
@@ -483,8 +481,8 @@ void applyStyleMask (const std::string* value, int32_t mask, int32_t& style)
 }
 
 //------------------------------------------------------------------------
-void addGradientToUIDescription (const IUIDescription& description,
-								 const SharedPointer<CGradient>& gradient, UTF8StringPtr baseName)
+void addGradientToUIDescription (const IUIDescription& description, const SPtr<CGradient>& gradient,
+								 UTF8StringPtr baseName)
 {
 	if (!description.lookupGradientName (gradient))
 	{

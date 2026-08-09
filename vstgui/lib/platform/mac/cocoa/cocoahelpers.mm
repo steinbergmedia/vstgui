@@ -234,7 +234,7 @@ HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p)
 }
 
 //-----------------------------------------------------------------------------
-HIDDEN NSImage* bitmapToNSImage (const SharedPointer<CBitmap>& bitmap)
+HIDDEN NSImage* bitmapToNSImage (const SPtr<CBitmap>& bitmap)
 {
 	if (!bitmap)
 		return nil;

@@ -105,10 +105,7 @@ class DisabledControlsController : public DelegationController,
 								   public NonAtomicReferenceCounted
 {
 public:
-	DisabledControlsController (const SharedPointer<IController>& parent)
-	: DelegationController (parent)
-	{
-	}
+	DisabledControlsController (const SPtr<IController>& parent) : DelegationController (parent) {}
 	~DisabledControlsController ()
 	{
 		for (auto control : controls)
@@ -116,9 +113,8 @@ public:
 		controls.clear ();
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto control = view.cast<CControl> ())
 		{
@@ -176,11 +172,10 @@ class WeekdaysController : public DelegationController,
 #endif
 {
 public:
-	WeekdaysController (const SharedPointer<IController>& parent) : DelegationController (parent) {}
+	WeekdaysController (const SPtr<IController>& parent) : DelegationController (parent) {}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto listControl = view.cast<CListControl> ())
 		{
@@ -240,8 +235,7 @@ public:
 		std::for_each (textEditors.begin (), textEditors.end (),
 					   [] (const auto& el) { el->resetController (); });
 	}
-	void setFonts (const SharedPointer<CFontDesc>& textFont,
-				   const SharedPointer<CFontDesc>& lineNumbersFont)
+	void setFonts (const SPtr<CFontDesc>& textFont, const SPtr<CFontDesc>& lineNumbersFont)
 	{
 		style.font = textFont;
 		style.lineNumbersFont = lineNumbersFont;
@@ -306,7 +300,7 @@ class TextEditorViewController : public DelegationController,
 								 public NonAtomicReferenceCounted
 {
 public:
-	TextEditorViewController (const SharedPointer<IController>& parent,
+	TextEditorViewController (const SPtr<IController>& parent,
 							  AppTextEditorController& textEditorController)
 	: DelegationController (parent), textEditorController (textEditorController)
 	{
@@ -316,8 +310,8 @@ public:
 		IApplication::instance ().registerCommand (DecreaseTextSize, '-');
 	}
 
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -388,13 +382,11 @@ class DatePickerController : public DelegationController,
 							 public NonAtomicReferenceCounted
 {
 public:
-	DatePickerController (const SharedPointer<IController>& parent) : DelegationController (parent)
-	{
-	}
+	DatePickerController (const SPtr<IController>& parent) : DelegationController (parent) {}
 
 #if MAC || WINDOWS
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -446,7 +438,7 @@ struct DBController : DelegationController,
 {
 	static constexpr size_t NumColumns = 20u;
 
-	DBController (const SharedPointer<IController>& base) : DelegationController (base)
+	DBController (const SPtr<IController>& base) : DelegationController (base)
 	{
 		for (auto i = 0u; i < 200u; ++i)
 		{
@@ -454,8 +446,8 @@ struct DBController : DelegationController,
 			data[i][0] = i;
 		}
 	}
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{
@@ -466,9 +458,8 @@ struct DBController : DelegationController,
 		}
 		return nullptr;
 	}
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		if (auto db = view.cast<CDataBrowser> ())
 		{
@@ -524,7 +515,7 @@ struct DBController : DelegationController,
 	using DBData = std::vector<RowData>;
 
 	DBData data;
-	SharedPointer<CFontDesc> font {kSystemFont};
+	SPtr<CFontDesc> font {kSystemFont};
 	CColor selectColor {MakeCColor (255, 255, 255, 40)};
 };
 
@@ -641,28 +632,29 @@ bool Delegate::handleCommand (const Command& command)
 			auto customization = UIDesc::Customization::make ();
 			customization->addCreateViewControllerFunc (
 				"DisabledControlsController",
-				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
-					const IUIDescription&) {
+				[] (const UTF8StringView&, const SPtr<IController>& parent, const IUIDescription&) {
 					return makeShared<DisabledControlsController> (parent);
 				});
 			customization->addCreateViewControllerFunc (
 				"WeekdaysController",
-				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
-					const IUIDescription&) { return makeShared<WeekdaysController> (parent); });
+				[] (const UTF8StringView&, const SPtr<IController>& parent, const IUIDescription&) {
+					return makeShared<WeekdaysController> (parent);
+				});
 			customization->addCreateViewControllerFunc (
 				"DatePickerController",
-				[] (const UTF8StringView&, const SharedPointer<IController>& parent,
-					const IUIDescription&) { return makeShared<DatePickerController> (parent); });
+				[] (const UTF8StringView&, const SPtr<IController>& parent, const IUIDescription&) {
+					return makeShared<DatePickerController> (parent);
+				});
 			customization->addCreateViewControllerFunc (
 				"TextEditorController",
-				[this] (const UTF8StringView&, const SharedPointer<IController>& parent,
+				[this] (const UTF8StringView&, const SPtr<IController>& parent,
 						const IUIDescription&) {
 					return makeShared<TextEditorViewController> (parent,
 																 *textEditorController.get ());
 				});
 			customization->addCreateViewControllerFunc (
 				"DBController",
-				[this] (const UTF8StringView&, const SharedPointer<IController>& parent,
+				[this] (const UTF8StringView&, const SPtr<IController>& parent,
 						const IUIDescription&) { return makeShared<DBController> (parent); });
 			config.customization = customization;
 		}

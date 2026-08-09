@@ -22,7 +22,7 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 class UIGroupAction : public IAction,
-					  public std::list<SharedPointer<IAction>>
+					  public std::list<SPtr<IAction>>
 {
 public:
 	UIGroupAction (UTF8StringPtr name) : name (name) {}
@@ -56,7 +56,7 @@ UIUndoManager::UIUndoManager ()
 UIUndoManager::~UIUndoManager () = default;
 
 //----------------------------------------------------------------------------------------------------
-void UIUndoManager::pushAndPerform (const SharedPointer<IAction>& action)
+void UIUndoManager::pushAndPerform (const SPtr<IAction>& action)
 {
 	if (groupQueue.empty () == false)
 	{
@@ -149,7 +149,7 @@ UTF8StringPtr UIUndoManager::getRedoName ()
 //----------------------------------------------------------------------------------------------------
 void UIUndoManager::clear ()
 {
-	std::list<SharedPointer<IAction>>::clear ();
+	std::list<SPtr<IAction>>::clear ();
 	emplace_back (makeShared<UndoStackTop> ());
 	position = end ();
 	savePosition = begin ();

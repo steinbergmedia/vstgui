@@ -15,7 +15,7 @@ namespace X11 {
 class FrameConfig : public IPlatformFrameConfig
 {
 public:
-	SharedPointer<IRunLoop> runLoop;
+	SPtr<IRunLoop> runLoop;
 };
 
 //------------------------------------------------------------------------

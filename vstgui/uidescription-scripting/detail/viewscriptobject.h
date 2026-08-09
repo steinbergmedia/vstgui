@@ -24,7 +24,7 @@ struct ViewScriptObject : ScriptObject,
 	~ViewScriptObject () noexcept;
 
 	IViewScriptObjectContext& getContext () const { return context; }
-	SharedPointer<CView> getView () { return view.lock (); }
+	SPtr<CView> getView () { return view.lock (); }
 
 	void onDestroy (CScriptVar* v) override;
 
@@ -40,7 +40,7 @@ struct IViewScriptObjectContext
 {
 	virtual ~IViewScriptObjectContext () = default;
 
-	virtual SharedPointer<IUIDescription> getUIDescription () const = 0;
+	virtual SPtr<IUIDescription> getUIDescription () const = 0;
 	virtual ViewScriptObject* addView (CView& view) = 0;
 	virtual ViewScriptMap::iterator removeView (CView& view) = 0;
 	virtual ScriptObject evalScript (std::string_view script) noexcept = 0;

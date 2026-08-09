@@ -39,8 +39,8 @@ UTF8StringPtr OnOffButtonCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> OnOffButtonCreator::create (const UIAttributes& attributes,
-												 const IUIDescription& description) const
+SPtr<CView> OnOffButtonCreator::create (const UIAttributes& attributes,
+										const IUIDescription& description) const
 {
 	return makeShared<COnOffButton> (CRect (0, 0, 20, 20), nullptr, -1, nullptr);
 }

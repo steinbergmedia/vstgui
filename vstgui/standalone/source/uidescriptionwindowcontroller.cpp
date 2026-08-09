@@ -534,7 +534,7 @@ struct WindowController::Impl : public ICommandHandler
 		window->setSize (view->getViewSize ().getSize ());
 	}
 
-	SharedPointer<CView> currentCommandHandlerCandidate ()
+	SPtr<CView> currentCommandHandlerCandidate ()
 	{
 		if (auto focusView = frame->getFocusView ())
 			return focusView;
@@ -662,14 +662,13 @@ struct WindowController::Impl : public ICommandHandler
 		{
 			return this;
 		}
-		SharedPointer<CView> createView (const UIAttributes& attributes,
-										 const IUIDescription& description) override
+		SPtr<CView> createView (const UIAttributes& attributes,
+								const IUIDescription& description) override
 		{
 			return nullptr;
 		}
-		SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-										 const UIAttributes& attributes,
-										 const IUIDescription& description) override
+		SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+								const IUIDescription& description) override
 		{
 			if (!impl)
 				return view;
@@ -686,8 +685,8 @@ struct WindowController::Impl : public ICommandHandler
 			}
 			return view;
 		}
-		SharedPointer<IController> createSubController (UTF8StringPtr name,
-														const IUIDescription& description) override
+		SPtr<IController> createSubController (UTF8StringPtr name,
+											   const IUIDescription& description) override
 		{
 			if (!impl)
 				return {};
@@ -697,12 +696,12 @@ struct WindowController::Impl : public ICommandHandler
 		}
 	};
 
-	SharedPointer<IControllerAdapter> iController {makeShared<IControllerAdapter> (this)};
+	SPtr<IControllerAdapter> iController {makeShared<IControllerAdapter> (this)};
 
 	WindowController& controller;
 	IWindow* window {nullptr};
-	SharedPointer<VSTGUI::UIDescription> uiDesc;
-	SharedPointer<CFrame> frame;
+	SPtr<VSTGUI::UIDescription> uiDesc;
+	SPtr<CFrame> frame;
 	UTF8String templateName;
 	CPoint minSize;
 	CPoint maxSize;
@@ -986,7 +985,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		return Impl::handleCommand (command);
 	}
 
-	SharedPointer<UIEditController> uiEditController;
+	SPtr<UIEditController> uiEditController;
 	bool isEditing {false};
 	std::string filename;
 };

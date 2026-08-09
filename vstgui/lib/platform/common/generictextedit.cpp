@@ -47,7 +47,7 @@ public:
 	STBTextEditView (IPlatformTextEditCallback* callback);
 
 	void draw (CDrawContext& context) override;
-	void drawBack (CDrawContext& pContext, const SharedPointer<CBitmap>& newBack = {}) override;
+	void drawBack (CDrawContext& pContext, const SPtr<CBitmap>& newBack = {}) override;
 	void setText (const UTF8String& txt) override;
 
 	void onKeyboardEvent (KeyboardEvent& event, CFrame& frame) override;
@@ -108,7 +108,7 @@ private:
 	void setNotifyTextChange (bool state) { setBit (flags, BitNotifyTextChange, state); }
 	void setMouseDownHandling (bool state) { setBit (flags, BitMouseDownHandling, state); }
 
-	SharedPointer<CVSTGUITimer> blinkTimer;
+	SPtr<CVSTGUITimer> blinkTimer;
 	IPlatformTextEditCallback* callback;
 	STB_TexteditState editState;
 	std::vector<CCoord> charWidthCache;
@@ -172,7 +172,7 @@ private:
 //-----------------------------------------------------------------------------
 struct GenericTextEdit::Impl
 {
-	SharedPointer<STBTextEditView> view;
+	SPtr<STBTextEditView> view;
 };
 
 //-----------------------------------------------------------------------------
@@ -261,7 +261,7 @@ void STBTextEditView::onKeyboardEvent (KeyboardEvent& event, CFrame& frame)
 
 	if (isRecursiveKeyEventGuard ())
 		return;
-	auto selfGuard = SharedPointer<CBaseObject> (this);
+	auto selfGuard = SPtr<CBaseObject> (this);
 	BitScopeToggleT<uint32_t, uint32_t> br (flags, BitRecursiveKeyGuard);
 	callback->platformOnKeyboardEvent (event);
 	if (event.consumed)
@@ -700,7 +700,7 @@ void STBTextEditView::draw (CDrawContext& context)
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::drawBack (CDrawContext& context, const SharedPointer<CBitmap>& newBack)
+void STBTextEditView::drawBack (CDrawContext& context, const SPtr<CBitmap>& newBack)
 {
 	CTextLabel::drawBack (context, newBack);
 

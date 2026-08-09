@@ -40,9 +40,8 @@ class UISelectionView : public UIOverlayView, public UISelectionListenerAdapter
 //----------------------------------------------------------------------------------------------------
 {
 public:
-	UISelectionView (const SharedPointer<CViewContainer>& editView,
-					 const SharedPointer<UISelection>& selection, const CColor& selectionColor,
-					 CCoord handleSize);
+	UISelectionView (const SPtr<CViewContainer>& editView, const SPtr<UISelection>& selection,
+					 const CColor& selectionColor, CCoord handleSize);
 	~UISelectionView () override;
 
 private:
@@ -56,15 +55,15 @@ private:
 
 	void onSelectionChanged ();
 
-	SharedPointer<UISelection> selection;
+	SPtr<UISelection> selection;
 	CColor selectionColor;
 	CCoord handleInset;
 };
 
 //----------------------------------------------------------------------------------------------------
-UISelectionView::UISelectionView (const SharedPointer<CViewContainer>& editView,
-								  const SharedPointer<UISelection>& selection,
-								  const CColor& selectionColor, CCoord handleSize)
+UISelectionView::UISelectionView (const SPtr<CViewContainer>& editView,
+								  const SPtr<UISelection>& selection, const CColor& selectionColor,
+								  CCoord handleSize)
 : UIOverlayView (editView)
 , selection (selection)
 , selectionColor (selectionColor)
@@ -159,21 +158,20 @@ void UISelectionView::onSelectionChanged ()
 class UIHighlightView : public UIOverlayView
 {
 public:
-	UIHighlightView (const SharedPointer<CViewContainer>& editView,
-					 const CColor& viewHighlightColor);
+	UIHighlightView (const SPtr<CViewContainer>& editView, const CColor& viewHighlightColor);
 
-	void setHighlightView (const SharedPointer<CView>& view);
+	void setHighlightView (const SPtr<CView>& view);
 
 private:
 	void draw (CDrawContext& context) override;
 
-	SharedPointer<CView> highlightView;
+	SPtr<CView> highlightView;
 	CColor strokeColor;
 	CColor fillColor;
 };
 
 //----------------------------------------------------------------------------------------------------
-UIHighlightView::UIHighlightView (const SharedPointer<CViewContainer>& editView,
+UIHighlightView::UIHighlightView (const SPtr<CViewContainer>& editView,
 								  const CColor& viewHighlightColor)
 : UIOverlayView (editView), highlightView (nullptr), strokeColor (viewHighlightColor)
 {
@@ -185,7 +183,7 @@ UIHighlightView::UIHighlightView (const SharedPointer<CViewContainer>& editView,
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIHighlightView::setHighlightView (const SharedPointer<CView>& view)
+void UIHighlightView::setHighlightView (const SPtr<CView>& view)
 {
 	if (highlightView != view)
 	{
@@ -229,7 +227,7 @@ void collectExternalViewsOnInlineEditing (CViewContainer& container, T& array)
 struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 									   ViewListenerAdapter
 {
-	ViewAddedObserver (const SharedPointer<CViewContainer>& root) : root (root) {}
+	ViewAddedObserver (const SPtr<CViewContainer>& root) : root (root) {}
 	~ViewAddedObserver () override
 	{
 		for (auto view : views)
@@ -284,8 +282,8 @@ struct UIEditView::ViewAddedObserver : IViewAddedRemovedObserver,
 		}
 	}
 
-	SharedPointer<CViewContainer> root;
-	std::vector<SharedPointer<CView>> views;
+	SPtr<CViewContainer> root;
+	std::vector<SPtr<CView>> views;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -295,7 +293,7 @@ static constexpr auto kResizeHandleSize = 6.;
 static constexpr auto UIEditViewMargin = 8.;
 
 //----------------------------------------------------------------------------------------------------
-UIEditView::UIEditView (const CRect& size, const SharedPointer<UIDescription>& uidescription)
+UIEditView::UIEditView (const CRect& size, const SPtr<UIDescription>& uidescription)
 : CViewContainer (size), description (uidescription), gridProcessor (nullptr)
 {
 	setScale (1.);
@@ -391,7 +389,7 @@ void UIEditView::disableExternalViewsOnInlineEditing (bool state)
 	if (state)
 	{
 		editingViewAddedObserver = std::make_unique<ViewAddedObserver> (shared (this));
-		std::vector<SharedPointer<CView>> views;
+		std::vector<SPtr<CView>> views;
 		UIEditViewInternal::collectExternalViewsOnInlineEditing (*this, views);
 		for (auto& v : views)
 			editingViewAddedObserver->onViewAdded (*parent, *v.get ());
@@ -406,13 +404,10 @@ void UIEditView::enableAutosizing (bool state)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setUndoManager (const SharedPointer<UIUndoManager>& manager)
-{
-	undoManger = manager;
-}
+void UIEditView::setUndoManager (const SPtr<UIUndoManager>& manager) { undoManger = manager; }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UIUndoManager> UIEditView::getUndoManager ()
+SPtr<UIUndoManager> UIEditView::getUndoManager ()
 {
 	if (undoManger == nullptr)
 		undoManger = makeShared<UIUndoManager> ();
@@ -420,13 +415,10 @@ SharedPointer<UIUndoManager> UIEditView::getUndoManager ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setSelection (const SharedPointer<UISelection>& inSelection)
-{
-	selection = inSelection;
-}
+void UIEditView::setSelection (const SPtr<UISelection>& inSelection) { selection = inSelection; }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UISelection> UIEditView::getSelection ()
+SPtr<UISelection> UIEditView::getSelection ()
 {
 	if (selection == nullptr)
 	{
@@ -436,13 +428,10 @@ SharedPointer<UISelection> UIEditView::getSelection ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setGridProcessor (const SharedPointer<IGridProcessor>& inGrid)
-{
-	gridProcessor = inGrid;
-}
+void UIEditView::setGridProcessor (const SPtr<IGridProcessor>& inGrid) { gridProcessor = inGrid; }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setEditView (const SharedPointer<CView>& view)
+void UIEditView::setEditView (const SPtr<CView>& view)
 {
 	if (view != getEditView ())
 	{
@@ -468,7 +457,7 @@ void UIEditView::setEditView (const SharedPointer<CView>& view)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIEditView::getEditView () const
+SPtr<CView> UIEditView::getEditView () const
 {
 	return getChildren ().empty () ? nullptr : getChildren ().front ();
 }
@@ -519,7 +508,7 @@ void UIEditView::drawRect (CDrawContext& context, const CRect& updateRect)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CView> UIEditView::getViewAt (const CPoint& p, const GetViewOptions& options) const
+SPtr<CView> UIEditView::getViewAt (const CPoint& p, const GetViewOptions& options) const
 {
 	auto view = CViewContainer::getViewAt (p, options);
 	if (editing)
@@ -533,8 +522,8 @@ SharedPointer<CView> UIEditView::getViewAt (const CPoint& p, const GetViewOption
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CViewContainer> UIEditView::getContainerAt (const CPoint& p,
-														  const GetViewOptions& options) const
+SPtr<CViewContainer> UIEditView::getContainerAt (const CPoint& p,
+												 const GetViewOptions& options) const
 {
 	auto view = CViewContainer::getContainerAt (p, options);
 	if (editing)
@@ -548,7 +537,7 @@ SharedPointer<CViewContainer> UIEditView::getContainerAt (const CPoint& p,
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditView::advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse)
+bool UIEditView::advanceNextFocusView (const SPtr<CView>& oldFocus, bool reverse)
 {
 	if (editing)
 		return false;
@@ -594,7 +583,7 @@ static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
 
 //----------------------------------------------------------------------------------------------------
 UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where,
-														SharedPointer<CView>& resultView)
+														SPtr<CView>& resultView)
 {
 	CPoint where (_where);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
@@ -672,7 +661,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 		return kMouseEventHandled;
 	}
 
-	SharedPointer<CView> selectionHitView;
+	SPtr<CView> selectionHitView;
 	MouseSizeMode sizeMode = selectionHitTest (where, selectionHitView);
 	auto mouseHitView =
 		getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
@@ -896,7 +885,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 	}
 	else if (buttons.getButtonState () == 0 && !buttons.isShiftSet ())
 	{
-		SharedPointer<CView> view;
+		SPtr<CView> view;
 		CCursorType ctype = kCursorDefault;
 		auto mode = selectionHitTest (where, view);
 		if (view)
@@ -993,9 +982,9 @@ void UIEditView::doKeySize (const CPoint& delta)
 }
 
 //----------------------------------------------------------------------------------------------------
-std::vector<SharedPointer<CView>> UIEditView::findChildsInArea (CViewContainer& view, CRect r) const
+std::vector<SPtr<CView>> UIEditView::findChildsInArea (CViewContainer& view, CRect r) const
 {
-	std::vector<SharedPointer<CView>> views;
+	std::vector<SPtr<CView>> views;
 	view.forEachChild ([&] (auto child) {
 		if (r.rectOverlap (child->getViewSize ()))
 		{
@@ -1192,7 +1181,7 @@ void UIEditView::startDrag (CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (const IDataPackage& drag) const
+SPtr<UISelection> UIEditView::getSelectionOutOfDrag (const IDataPackage& drag) const
 {
 	IDataPackage::Type type;
 	const void* dragData;
@@ -1218,7 +1207,7 @@ SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (const IDataPackage
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<IDropTarget> UIEditView::getDropTarget ()
+SPtr<IDropTarget> UIEditView::getDropTarget ()
 {
 	if (editing)
 		return shared (this);
@@ -1351,7 +1340,7 @@ void UIEditView::onDoubleClickEditing (CView& view)
 	struct AttributeInlineEditorController : ViewListenerAdapter
 	{
 		using Callback = std::function<void ()>;
-		AttributeInlineEditorController (const SharedPointer<CTextEdit>& edit, Callback&& callback)
+		AttributeInlineEditorController (const SPtr<CTextEdit>& edit, Callback&& callback)
 		: edit (edit), callback (std::move (callback))
 		{
 			edit->registerViewListener (this);
@@ -1367,7 +1356,7 @@ void UIEditView::onDoubleClickEditing (CView& view)
 		}
 
 	private:
-		SharedPointer<CTextEdit> edit;
+		SPtr<CTextEdit> edit;
 		Callback callback;
 	};
 

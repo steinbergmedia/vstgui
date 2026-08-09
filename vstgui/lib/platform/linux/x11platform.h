@@ -52,7 +52,7 @@ struct RunLoop : ReferenceAdapter
 {
 	static void init ();
 	static void exit ();
-	static const SharedPointer<IRunLoop> get ();
+	static const SPtr<IRunLoop> get ();
 
 	xcb_connection_t* getXcbConnection () const;
 
@@ -64,7 +64,7 @@ struct RunLoop : ReferenceAdapter
 	Optional<UTF8String> convertCurrentKeyEventToText () const;
 
 	void setDevice (cairo_device_t* device);
-	static SharedPointer<RunLoop> instance ();
+	static SPtr<RunLoop> instance ();
 
 private:
 	VSTGUI_SHAREDPTR_FRIEND (RunLoop)

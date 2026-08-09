@@ -31,7 +31,7 @@ if (auto offscreen = COffscreenContext::create (frame, 100, 100))
 @section offscreen_usage2 Drawing static content into a bitmap and reuse the bitmap for drawing
 
 @code
-SharedPointer<CBitmap> cachedBitmap;
+SPtr<CBitmap> cachedBitmap;
 if (!cachedBitmap)
 {
 	if (auto offscreen = COffscreenContext::create (frame, 100, 100))
@@ -57,7 +57,7 @@ class COffscreenContext : public CDrawContext,
 						  public AtomicReferenceCounted
 {
 public:
-	static SharedPointer<COffscreenContext> create (const CPoint& size, double scaleFactor = 1.);
+	static SPtr<COffscreenContext> create (const CPoint& size, double scaleFactor = 1.);
 
 	//-----------------------------------------------------------------------------
 	/// @name COffscreenContext Methods
@@ -70,16 +70,16 @@ public:
 	CCoord getHeight () const;
 	//@}
 
-	const SharedPointer<CBitmap>& getBitmap () const { return bitmap; }
+	const SPtr<CBitmap>& getBitmap () const { return bitmap; }
 
 	COffscreenContext (const PlatformGraphicsDeviceContextPtr device, const CRect& surfaceRect,
 					   const PlatformBitmapPtr& platformBitmap);
 
 protected:
-	explicit COffscreenContext (const SharedPointer<CBitmap>& bitmap);
+	explicit COffscreenContext (const SPtr<CBitmap>& bitmap);
 	explicit COffscreenContext (const CRect& surfaceRect);
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 };
 
 //-----------------------------------------------------------------------------
@@ -89,8 +89,8 @@ protected:
  *	@param drawFunction user supplied draw function
  *	@return bitmap pointer on success and nullptr on failure
  */
-SharedPointer<CBitmap> renderBitmapOffscreen (
-    const CPoint& size, double scaleFactor,
-    const std::function<void (CDrawContext& drawContext)> drawFunction);
+SPtr<CBitmap>
+	renderBitmapOffscreen (const CPoint& size, double scaleFactor,
+						   const std::function<void (CDrawContext& drawContext)> drawFunction);
 
 } // VSTGUI

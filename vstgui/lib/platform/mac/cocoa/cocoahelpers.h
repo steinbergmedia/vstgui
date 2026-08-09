@@ -22,7 +22,7 @@ extern HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, VSTGUI::Ke
 extern HIDDEN NSString* GetVirtualKeyCodeString (VSTGUI::VirtualKey virtualKey);
 extern HIDDEN int32_t eventButton (NSEvent* theEvent);
 extern HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p);
-extern HIDDEN NSImage* bitmapToNSImage (const VSTGUI::SharedPointer<VSTGUI::CBitmap>& bitmap);
+extern HIDDEN NSImage* bitmapToNSImage (const VSTGUI::SPtr<VSTGUI::CBitmap>& bitmap);
 
 //------------------------------------------------------------------------------------
 // Helpers

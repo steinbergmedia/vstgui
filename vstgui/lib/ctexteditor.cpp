@@ -390,9 +390,9 @@ public:
 		FindPanelController* findPanelController {nullptr};
 
 		CScrollView* scrollView {nullptr};
-		SharedPointer<LineNumberView> lineNumberView;
+		SPtr<LineNumberView> lineNumberView;
 
-		SharedPointer<CVSTGUITimer> blinkTimer;
+		SPtr<CVSTGUITimer> blinkTimer;
 
 		CRect cursorRect {};
 		CRect lastDrawnCursorRect {};
@@ -555,10 +555,9 @@ struct FindPanelController : ControlListenerAdapter,
 							 NonAtomicReferenceCounted
 {
 	using RemoveFindPanelFunc = std::function<void ()>;
-	static SharedPointer<CViewContainer> makeFindPanelView (CRect rect,
-															TextEditorView::ModelData& md,
-															const ITextEditor& editor,
-															RemoveFindPanelFunc&& f);
+	static SPtr<CViewContainer> makeFindPanelView (CRect rect, TextEditorView::ModelData& md,
+												   const ITextEditor& editor,
+												   RemoveFindPanelFunc&& f);
 
 	void setFindString (StringView text);
 	void setFindOptions (ITextEditor::FindOptions opt);
@@ -582,10 +581,10 @@ private:
 	void viewOnEvent (CView& view, Event& event) override;
 
 	const ITextEditor& editor;
-	SharedPointer<CTextEdit> editfield;
-	SharedPointer<CControl> closeBox;
-	SharedPointer<CControl> caseSensitiveButton;
-	SharedPointer<CControl> wholeWordButton;
+	SPtr<CTextEdit> editfield;
+	SPtr<CControl> closeBox;
+	SPtr<CControl> caseSensitiveButton;
+	SPtr<CControl> wholeWordButton;
 	ITextEditor::FindOptions findOptions {};
 	CommandKeyArray commandKeys;
 	RemoveFindPanelFunc removeFindPanelFunc;
@@ -2769,10 +2768,10 @@ void FindPanelController::setFindString (StringView text)
 void FindPanelController::setFindOptions (ITextEditor::FindOptions opt) { findOptions = opt; }
 
 //------------------------------------------------------------------------
-SharedPointer<CViewContainer> FindPanelController::makeFindPanelView (CRect vcr,
-																	  TextEditorView::ModelData& md,
-																	  const ITextEditor& editor,
-																	  RemoveFindPanelFunc&& f)
+SPtr<CViewContainer> FindPanelController::makeFindPanelView (CRect vcr,
+															 TextEditorView::ModelData& md,
+															 const ITextEditor& editor,
+															 RemoveFindPanelFunc&& f)
 {
 	auto controller = new FindPanelController (editor);
 	controller->removeFindPanelFunc = std::move (f);
@@ -3480,7 +3479,7 @@ void LineNumberView::setSelectedLines (Range range)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-SharedPointer<CView> createNewTextEditor (const CRect& r, ITextEditorController* controller)
+SPtr<CView> createNewTextEditor (const CRect& r, ITextEditorController* controller)
 {
 	vstgui_assert (controller != nullptr, "you need to call this with a controller");
 	if (!controller)

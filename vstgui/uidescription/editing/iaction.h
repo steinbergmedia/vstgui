@@ -29,15 +29,15 @@ class IActionPerformer : public virtual IReference,
 {
 public:
 	virtual ~IActionPerformer () {}
-	virtual void performAction (const SharedPointer<IAction>& action) = 0;
+	virtual void performAction (const SPtr<IAction>& action) = 0;
 
 	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) = 0;
 	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) = 0;
 	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) = 0;
 	virtual void performGradientChange (UTF8StringPtr gradientName,
-										const SharedPointer<CGradient>& newGradient,
+										const SPtr<CGradient>& newGradient,
 										bool remove = false) = 0;
-	virtual void performFontChange (UTF8StringPtr fontName, const SharedPointer<CFontDesc>& newFont,
+	virtual void performFontChange (UTF8StringPtr fontName, const SPtr<CFontDesc>& newFont,
 									bool remove = false) = 0;
 
 	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
@@ -51,7 +51,8 @@ public:
 	virtual void performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
 												const CMultiFrameBitmapDescription* desc) = 0;
 	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) = 0;
-	virtual void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) = 0;
+	virtual void performBitmapFiltersChange (
+		UTF8StringPtr bitmapName, const std::list<SPtr<UIAttributes>>& filterDescription) = 0;
 
 	virtual void beginLiveColorChange (UTF8StringPtr colorName) = 0;
 	virtual void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor) = 0;
@@ -62,7 +63,7 @@ public:
 	virtual void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName) = 0;
 	virtual void performDeleteTemplate (UTF8StringPtr name) = 0;
 	virtual void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) = 0;
-	virtual void onTemplateCreation (UTF8StringPtr name, const SharedPointer<CView>& view) = 0;
+	virtual void onTemplateCreation (UTF8StringPtr name, const SPtr<CView>& view) = 0;
 	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 
 	virtual void performChangeFocusDrawingSettings (const FocusDrawingSettings& newSettings) = 0;

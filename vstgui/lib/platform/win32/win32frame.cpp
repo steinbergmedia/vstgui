@@ -559,7 +559,8 @@ PlatformViewLayerPtr Win32Frame::createPlatformViewLayer (IPlatformViewLayerDele
 }
 
 //-----------------------------------------------------------------------------
-bool Win32Frame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+bool Win32Frame::doDrag (const DragDescription& dragDescription,
+						 const SPtr<IDragCallback>& callback)
 {
 	Win32DraggingSession session (this);
 	return session.doDrag (dragDescription, callback);

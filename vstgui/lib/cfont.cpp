@@ -14,26 +14,26 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 struct GlobalFonts
 {
-	SharedPointer<CFontDesc> systemFont;
-	SharedPointer<CFontDesc> normalFontVeryBig;
-	SharedPointer<CFontDesc> normalFontBig;
-	SharedPointer<CFontDesc> normalFont;
-	SharedPointer<CFontDesc> normalFontSmall;
-	SharedPointer<CFontDesc> normalFontSmaller;
-	SharedPointer<CFontDesc> normalFontVerySmall;
-	SharedPointer<CFontDesc> symbolFont;
+	SPtr<CFontDesc> systemFont;
+	SPtr<CFontDesc> normalFontVeryBig;
+	SPtr<CFontDesc> normalFontBig;
+	SPtr<CFontDesc> normalFont;
+	SPtr<CFontDesc> normalFontSmall;
+	SPtr<CFontDesc> normalFontSmaller;
+	SPtr<CFontDesc> normalFontVerySmall;
+	SPtr<CFontDesc> symbolFont;
 };
 static GlobalFonts globalFonts;
 
 //-----------------------------------------------------------------------------
-SharedPointer<CFontDesc> kSystemFont = {};
-SharedPointer<CFontDesc> kNormalFontVeryBig = {};
-SharedPointer<CFontDesc> kNormalFontBig = {};
-SharedPointer<CFontDesc> kNormalFont = {};
-SharedPointer<CFontDesc> kNormalFontSmall = {};
-SharedPointer<CFontDesc> kNormalFontSmaller = {};
-SharedPointer<CFontDesc> kNormalFontVerySmall = {};
-SharedPointer<CFontDesc> kSymbolFont = {};
+SPtr<CFontDesc> kSystemFont = {};
+SPtr<CFontDesc> kNormalFontVeryBig = {};
+SPtr<CFontDesc> kNormalFontBig = {};
+SPtr<CFontDesc> kNormalFont = {};
+SPtr<CFontDesc> kNormalFontSmall = {};
+SPtr<CFontDesc> kNormalFontSmaller = {};
+SPtr<CFontDesc> kNormalFontVerySmall = {};
+SPtr<CFontDesc> kSymbolFont = {};
 
 //-----------------------------------------------------------------------------
 void CFontDesc::init ()

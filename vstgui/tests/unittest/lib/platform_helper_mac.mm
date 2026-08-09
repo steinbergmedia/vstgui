@@ -48,7 +48,7 @@ struct MacParentHandle : PlatformParentHandle
 
 };
 
-SharedPointer<PlatformParentHandle> PlatformParentHandle::create ()
+SPtr<PlatformParentHandle> PlatformParentHandle::create ()
 {
 	return owned (dynamic_cast<PlatformParentHandle*> (new MacParentHandle ()));
 }

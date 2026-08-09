@@ -41,7 +41,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-static SharedPointer<ISplitViewController> getSplitViewController (const CSplitView& view)
+static SPtr<ISplitViewController> getSplitViewController (const CSplitView& view)
 {
 	if (auto controller = getViewController (view, true))
 	{
@@ -472,7 +472,7 @@ struct CSplitView::SplitViewLayouter final : BaseViewLayouter,
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CSplitView::CSplitView (const CRect& size, Style style, CCoord separatorWidth,
-						const SharedPointer<ISplitViewSeparatorDrawer>& separatorDrawer)
+						const SPtr<ISplitViewSeparatorDrawer>& separatorDrawer)
 : CViewContainer (size)
 , style (style)
 , resizeMethod (kResizeLastView)
@@ -538,7 +538,7 @@ void CSplitView::setViewSize (const CRect& rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::insertSubview (const SharedPointer<CView>& view, const Optional<size_t>& position)
+bool CSplitView::insertSubview (const SPtr<CView>& view, const Optional<size_t>& position)
 {
 	vstgui_assert (!position);
 
@@ -575,7 +575,7 @@ bool CSplitView::insertSubview (const SharedPointer<CView>& view, const Optional
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::removeSubview (const SharedPointer<CView>& view)
+bool CSplitView::removeSubview (const SPtr<CView>& view)
 {
 	ReverseViewIterator it (*this);
 	while (*it)
@@ -697,8 +697,8 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView& separatorView
 		return false;
 
 	ViewIterator it (*this);
-	SharedPointer<CView> view1;
-	SharedPointer<CView> view2;
+	SPtr<CView> view1;
+	SPtr<CView> view2;
 	while (*it)
 	{
 		if ((*it).get () == &separatorView)
@@ -735,16 +735,16 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView& separatorView
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<ISplitViewSeparatorDrawer> CSplitView::getDrawer ()
+SPtr<ISplitViewSeparatorDrawer> CSplitView::getDrawer ()
 {
-	SharedPointer<ISplitViewSeparatorDrawer> drawer = {};
+	SPtr<ISplitViewSeparatorDrawer> drawer = {};
 	if (auto controller = getSplitViewController (*this))
 		drawer = controller->getSplitViewSeparatorDrawer (*this);
 	return drawer ? drawer : separatorDrawer;
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::addViewToSeparator (int32_t sepIndex, const SharedPointer<CView>& view)
+bool CSplitView::addViewToSeparator (int32_t sepIndex, const SPtr<CView>& view)
 {
 	ViewIterator it (*this);
 	while (*it)

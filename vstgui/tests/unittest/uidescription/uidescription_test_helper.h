@@ -21,19 +21,18 @@ struct Controller : public ControllerAdapter,
 		return registeredTag;
 	}
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		return nullptr;
 	}
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		return view;
 	}
-	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription& description) override
+	SPtr<IController> createSubController (UTF8StringPtr name,
+										   const IUIDescription& description) override
 	{
 		return nullptr;
 	}

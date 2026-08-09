@@ -19,18 +19,18 @@ namespace Detail {
 //-----------------------------------------------------------------------------
 struct UIXMLParser : public Xml::IHandler
 {
-	SharedPointer<UINode> parse (IContentProvider& provider);
+	SPtr<UINode> parse (IContentProvider& provider);
 
 	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
 	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
 	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
 	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
 
-	const SharedPointer<UINode>& getNodes () const { return nodes; }
+	const SPtr<UINode>& getNodes () const { return nodes; }
 
 private:
-	SharedPointer<UINode> nodes;
-	std::deque<SharedPointer<UINode>> nodeStack;
+	SPtr<UINode> nodes;
+	std::deque<SPtr<UINode>> nodeStack;
 	bool restoreViewsMode {false};
 };
 

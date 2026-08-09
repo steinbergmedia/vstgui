@@ -23,30 +23,29 @@ class UIColorsController : public NonAtomicReferenceCounted,
 						   public IContextMenuController2
 {
 public:
-	UIColorsController (const SharedPointer<IController>& baseController,
-						const SharedPointer<UIDescription>& description,
+	UIColorsController (const SPtr<IController>& baseController,
+						const SPtr<UIDescription>& description,
 						WeakPointer<IActionPerformer> actionPerformer);
 	~UIColorsController () override;
 
 protected:
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 	void valueChanged (CControl& pControl) override;
-	SharedPointer<IController> createSubController (IdStringPtr name,
-													const IUIDescription& description) override;
+	SPtr<IController> createSubController (IdStringPtr name,
+										   const IUIDescription& description) override;
 
 	void appendContextMenuItems (COptionMenu& contextMenu, CView& view,
 								 const CPoint& where) override;
 
-	SharedPointer<UIDescription> editDescription;
+	SPtr<UIDescription> editDescription;
 	WeakPointer<IActionPerformer> actionPerformer;
-	SharedPointer<UIColorsDataSource> dataSource;
-	SharedPointer<UIColor> color;
-	
+	SPtr<UIColorsDataSource> dataSource;
+	SPtr<UIColor> color;
+
 	enum {
 		kAddTag = 0,
 		kRemoveTag,

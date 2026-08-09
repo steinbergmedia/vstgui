@@ -27,13 +27,13 @@ struct IUIUndoManagerListener
 //----------------------------------------------------------------------------------------------------
 class UIUndoManager : public NonAtomicReferenceCounted,
 					  protected ListenerProvider<UIUndoManager, IUIUndoManagerListener>,
-					  protected std::list<SharedPointer<IAction>>
+					  protected std::list<SPtr<IAction>>
 {
 public:
 	UIUndoManager ();
 	~UIUndoManager () override;
 
-	void pushAndPerform (const SharedPointer<IAction>& action);
+	void pushAndPerform (const SPtr<IAction>& action);
 
 	UTF8StringPtr getUndoName ();
 	UTF8StringPtr getRedoName ();
@@ -57,7 +57,7 @@ public:
 protected:
 	iterator position;
 	iterator savePosition;
-	using GroupActionDeque = std::deque<SharedPointer<UIGroupAction>>;
+	using GroupActionDeque = std::deque<SPtr<UIGroupAction>>;
 	GroupActionDeque groupQueue;
 };
 

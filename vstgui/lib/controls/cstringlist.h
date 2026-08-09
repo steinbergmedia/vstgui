@@ -30,7 +30,7 @@ public:
 	void setStringProvider (Func&& getStringFunc);
 	void setStringProvider (const Func& getStringFunc);
 
-	void setFont (const SharedPointer<CFontDesc>& f);
+	void setFont (const SPtr<CFontDesc>& f);
 	void setFontColor (CColor color);
 	void setSelectedFontColor (CColor color);
 	void setBackColor (CColor color);
@@ -41,7 +41,7 @@ public:
 	void setTextInset (CCoord inset);
 	void setTextAlign (CHoriTxtAlign align);
 
-	SharedPointer<CFontDesc> getFont () const;
+	SPtr<CFontDesc> getFont () const;
 	CColor getFontColor () const;
 	CColor getSelectedFontColor () const;
 	CColor getBackColor () const;

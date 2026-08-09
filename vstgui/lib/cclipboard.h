@@ -14,9 +14,9 @@ namespace VSTGUI {
 struct CClipboard
 {
 	/** get the global clipboard data */
-	static SharedPointer<IDataPackage> get ();
+	static SPtr<IDataPackage> get ();
 	/** set the global clipboard data */
-	static bool set (const SharedPointer<IDataPackage>& data);
+	static bool set (const SPtr<IDataPackage>& data);
 
 	/** get the string from the global clipboard if it exists */
 	static Optional<UTF8String> getString ();

@@ -12,10 +12,7 @@ namespace VSTGUI {
 class DelegationController : public ControllerAdapter
 {
 public:
-	explicit DelegationController (const SharedPointer<IController>& controller)
-	: controller (controller)
-	{
-	}
+	explicit DelegationController (const SPtr<IController>& controller) : controller (controller) {}
 
 	// IControlListener
 	void valueChanged (CControl& pControl) override { controller->valueChanged (pControl); }
@@ -36,25 +33,24 @@ public:
 	// IController
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override { return controller->getTagForName (name, registeredTag); }
 	IControlListener* getControlListener (UTF8StringPtr name) override { return controller->getControlListener (name); }
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		return controller->createView (attributes, description);
 	}
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override
 	{
 		return controller->verifyView (view, attributes, description);
 	}
-	SharedPointer<IController> createSubController (IdStringPtr name,
-													const IUIDescription& description) override
+	SPtr<IController> createSubController (IdStringPtr name,
+										   const IUIDescription& description) override
 	{
 		return controller->createSubController (name, description);
 	}
 
 protected:
-	SharedPointer<IController> controller;
+	SPtr<IController> controller;
 };
 
 } // VSTGUI

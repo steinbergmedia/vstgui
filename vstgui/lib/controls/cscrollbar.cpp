@@ -37,7 +37,7 @@ CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t t
 }
 
 //------------------------------------------------------------------------
-void CScrollbar::setDrawer (const SharedPointer<IScrollbarDrawer>& d) { drawer = d; }
+void CScrollbar::setDrawer (const SPtr<IScrollbarDrawer>& d) { drawer = d; }
 
 //-----------------------------------------------------------------------------
 void CScrollbar::setViewSize (const CRect &newSize, bool invalid)
@@ -177,7 +177,7 @@ CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& 
 {
 	if (overlayStyle && scrollerLength != 0)
 	{
-		SharedPointer<Animation::ITimingFunction> timingFunction;
+		SPtr<Animation::ITimingFunction> timingFunction;
 		if (getAlphaValue () == 1.f)
 		{
 			auto interpolTimingFunction = makeShared<Animation::InterpolationTimingFunction> (400);
@@ -365,8 +365,7 @@ void CScrollbar::drawScroller (CDrawContext& context, const CRect& size)
 		context.setFrameColor (frameColor);
 
 		CCoord wideness = (direction == kVertical ? getWidth() : getHeight()) / 2 - 2;
-		SharedPointer<CGraphicsPath> path =
-			(wideness > 2) ? context.createGraphicsPath () : nullptr;
+		SPtr<CGraphicsPath> path = (wideness > 2) ? context.createGraphicsPath () : nullptr;
 		if (path)
 		{
 			if (wideness > 4)

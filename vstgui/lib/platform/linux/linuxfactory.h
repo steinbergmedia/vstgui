@@ -24,8 +24,8 @@ public:
 	void setScheduleMainQueueTaskFunc (
 		LinuxTaskExecutor::ScheduleMainQueueTaskFunc&& func) const noexcept;
 
-	void setRunLoop (const SharedPointer<IRunLoop>& runLoop) const noexcept;
-	const SharedPointer<IRunLoop>& getRunLoop () const noexcept;
+	void setRunLoop (const SPtr<IRunLoop>& runLoop) const noexcept;
+	const SPtr<IRunLoop>& getRunLoop () const noexcept;
 
 	void finalize () noexcept final;
 

@@ -25,8 +25,8 @@ namespace VSTGUI {
  * @param style the display style (see CParamDisplay for styles)
  */
 //------------------------------------------------------------------------
-CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt,
-						const SharedPointer<CBitmap>& background, const int32_t style)
+CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, const SPtr<CBitmap>& background,
+						const int32_t style)
 : CParamDisplay (size, background, style), textTruncateMode (kTruncateNone)
 {
 	setText (txt);

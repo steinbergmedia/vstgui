@@ -311,7 +311,7 @@ CBitmapPixelAccess::CBitmapPixelAccess ()
 }
 
 //------------------------------------------------------------------------
-void CBitmapPixelAccess::init (const SharedPointer<CBitmap>& _bitmap,
+void CBitmapPixelAccess::init (const SPtr<CBitmap>& _bitmap,
 							   PlatformBitmapPixelAccessPtr&& _pixelAccess)
 {
 	bitmap = _bitmap;
@@ -349,15 +349,15 @@ public:
 /// @endcond
 
 //------------------------------------------------------------------------
-SharedPointer<CBitmapPixelAccess> CBitmapPixelAccess::create (const SharedPointer<CBitmap>& bitmap,
-															  bool alphaPremultiplied)
+SPtr<CBitmapPixelAccess> CBitmapPixelAccess::create (const SPtr<CBitmap>& bitmap,
+													 bool alphaPremultiplied)
 {
 	if (bitmap == nullptr || bitmap->getPlatformBitmap () == nullptr)
 		return nullptr;
 	auto pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
 	if (pixelAccess == nullptr)
 		return nullptr;
-	SharedPointer<CBitmapPixelAccess> result;
+	SPtr<CBitmapPixelAccess> result;
 	switch (pixelAccess->getPixelFormat ())
 	{
 		case IPlatformBitmapPixelAccess::kARGB:

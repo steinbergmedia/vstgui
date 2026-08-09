@@ -17,8 +17,8 @@ struct MovieButtonCreator : ViewCreatorAdapter
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;
-	SharedPointer<CView> create (const UIAttributes& attributes,
-								 const IUIDescription& description) const override;
+	SPtr<CView> create (const UIAttributes& attributes,
+						const IUIDescription& description) const override;
 };
 
 //------------------------------------------------------------------------

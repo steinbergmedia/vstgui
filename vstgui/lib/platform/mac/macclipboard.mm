@@ -273,19 +273,19 @@ uint32_t Pasteboard::getData (uint32_t index, const void*& buffer, Pasteboard::T
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> createClipboardDataPackage ()
+SPtr<IDataPackage> createClipboardDataPackage ()
 {
 	return makeShared<Pasteboard> ([NSPasteboard generalPasteboard]);
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard)
+SPtr<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard)
 {
 	return makeShared<Pasteboard> (pasteboard);
 }
 
 //-----------------------------------------------------------------------------
-void setClipboard (const SharedPointer<IDataPackage>& dataSource)
+void setClipboard (const SPtr<IDataPackage>& dataSource)
 {
 	NSPasteboard* pb = [NSPasteboard generalPasteboard];
 	if (dataSource)

@@ -39,8 +39,8 @@ UTF8StringPtr MovieBitmapCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> MovieBitmapCreator::create (const UIAttributes& attributes,
-												 const IUIDescription& description) const
+SPtr<CView> MovieBitmapCreator::create (const UIAttributes& attributes,
+										const IUIDescription& description) const
 {
 	return makeShared<CMovieBitmap> (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }

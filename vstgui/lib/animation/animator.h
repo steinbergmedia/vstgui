@@ -29,19 +29,19 @@ public:
 		The notification function will be called when the animation has finished or on cancellation
 		of the animation if notifyOnCancel is true (new in 4.11)
 	*/
-	void addAnimation (const SharedPointer<CView>& view, IdStringPtr name,
-					   const SharedPointer<IAnimationTarget>& target,
-					   const SharedPointer<ITimingFunction>& timingFunction,
+	void addAnimation (const SPtr<CView>& view, IdStringPtr name,
+					   const SPtr<IAnimationTarget>& target,
+					   const SPtr<ITimingFunction>& timingFunction,
 					   DoneFunction notification = nullptr, bool notifyOnCancel = false);
 
 	/** removes an animation.
 		If animation has the IReference interface forget() will be called otherwise it is deleted.
 		The same will be done with the timingFunction.
 	*/
-	void removeAnimation (const SharedPointer<CView>& view, IdStringPtr name);
+	void removeAnimation (const SPtr<CView>& view, IdStringPtr name);
 
 	/** removes all animations for view */
-	void removeAnimations (const SharedPointer<CView>& view);
+	void removeAnimations (const SPtr<CView>& view);
 	//@}
 
 	/// @cond ignore

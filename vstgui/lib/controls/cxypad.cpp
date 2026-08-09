@@ -17,14 +17,14 @@ CXYPad::CXYPad (const CRect& size)
 }
 
 //------------------------------------------------------------------------
-void CXYPad::setHandleBitmap (const SharedPointer<CBitmap>& bitmap)
+void CXYPad::setHandleBitmap (const SPtr<CBitmap>& bitmap)
 {
 	handle = bitmap;
 	invalid ();
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CBitmap> CXYPad::getHandleBitmap () const { return handle; }
+SPtr<CBitmap> CXYPad::getHandleBitmap () const { return handle; }
 
 //------------------------------------------------------------------------
 void CXYPad::draw (CDrawContext& context)
@@ -58,7 +58,7 @@ void CXYPad::draw (CDrawContext& context)
 }
 
 //------------------------------------------------------------------------
-void CXYPad::drawBack (CDrawContext& context, const SharedPointer<CBitmap>&)
+void CXYPad::drawBack (CDrawContext& context, const SPtr<CBitmap>&)
 {
 	CParamDisplay::drawBack (context);
 }

@@ -72,7 +72,7 @@ public:
 	CPoint checkSizeConstraint (const CPoint& newSize) const;
 
 	/** get the currently active modal view or nullptr if there is none */
-	SharedPointer<CView> getModalView () const;
+	SPtr<CView> getModalView () const;
 
 	/** begin a new modal view session
 	 *
@@ -83,7 +83,7 @@ public:
 	 *	@param view new modal view (ownership is transfered to frame, the same as addView)
 	 *	@return a unique session identifier
 	 */
-	Optional<ModalViewSessionID> beginModalViewSession (const SharedPointer<CView>& view);
+	Optional<ModalViewSessionID> beginModalViewSession (const SPtr<CView>& view);
 	/** end a modal view session
 	 *
 	 *	@param session a session identifier
@@ -98,9 +98,9 @@ public:
 	/** set mouse cursor */
 	void setCursor (CCursorType type);
 
-	void setFocusView (const SharedPointer<CView>& view);
-	SharedPointer<CView> getFocusView () const;
-	bool advanceNextFocusView (const SharedPointer<CView>& oldFocus, bool reverse = false) override;
+	void setFocusView (const SPtr<CView>& view);
+	SPtr<CView> getFocusView () const;
+	bool advanceNextFocusView (const SPtr<CView>& oldFocus, bool reverse = false) override;
 
 	void onViewAdded (CView& view);
 	void onViewRemoved (CView& vView);
@@ -114,12 +114,12 @@ public:
 	void enableTooltips (bool state, uint32_t delayTimeInMs = 1000);
 
 	/** get animator for this frame */
-	SharedPointer<Animation::Animator> getAnimator ();
+	SPtr<Animation::Animator> getAnimator ();
 
 	/** get the clipboard data. data is owned by the caller */
-	SharedPointer<IDataPackage> getClipboard ();
+	SPtr<IDataPackage> getClipboard ();
 	/** set the clipboard data. */
-	void setClipboard (const SharedPointer<IDataPackage>& data);
+	void setClipboard (const SPtr<IDataPackage>& data);
 
 	IViewAddedRemovedObserver* getViewAddedRemovedObserver () const;
 	void setViewAddedRemovedObserver (IViewAddedRemovedObserver* observer);
@@ -183,16 +183,16 @@ public:
 	bool inEventProcessing () const;
 
 	void onStartLocalEventLoop ();
-	bool performDrag (const DragDescription& desc, const SharedPointer<IDragCallback>& callback);
+	bool performDrag (const DragDescription& desc, const SPtr<IDragCallback>& callback);
 
 	void invalid () override { invalidRect (getViewSize ()); }
 	void invalidRect (const CRect& rect) override;
 
-	bool removeSubview (const SharedPointer<CView>& view) override;
+	bool removeSubview (const SPtr<CView>& view) override;
 	bool removeAll () override;
-	SharedPointer<CView> getViewAt (
-		const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const override;
-	SharedPointer<CViewContainer>
+	SPtr<CView> getViewAt (const CPoint& where,
+						   const GetViewOptions& options = GetViewOptions ()) const override;
+	SPtr<CViewContainer>
 		getContainerAt (const CPoint& where,
 						const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
@@ -227,7 +227,7 @@ protected:
 
 	void checkMouseViews (const MouseEvent& event);
 	void clearMouseViews (const CPoint& where, Modifiers modifiers, bool callMouseExit = true);
-	void removeFromMouseViews (const SharedPointer<CView>& view);
+	void removeFromMouseViews (const SPtr<CView>& view);
 	void setCollectInvalidRects (CollectInvalidRects* collectInvalidRects);
 
 	// keyboard hooks
@@ -289,7 +289,7 @@ protected:
 	VSTGUIEditorInterface () = default;
 	virtual ~VSTGUIEditorInterface () noexcept = default;
 
-	SharedPointer<CFrame> frame;
+	SPtr<CFrame> frame;
 };
 
 //-----------------------------------------------------------------------------
@@ -343,8 +343,8 @@ class IFocusViewObserver
 public:
 	virtual ~IFocusViewObserver () noexcept = default;
 
-	virtual void onFocusViewChanged (CFrame& frame, const SharedPointer<CView>& newFocusView,
-									 const SharedPointer<CView>& oldFocusView) = 0;
+	virtual void onFocusViewChanged (CFrame& frame, const SPtr<CView>& newFocusView,
+									 const SPtr<CView>& oldFocusView) = 0;
 };
 
 } // VSTGUI

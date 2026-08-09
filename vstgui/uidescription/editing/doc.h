@@ -296,7 +296,7 @@ loose the
 class MyController : public DelegationController, public CBaseObject
 {
 public:
-	MyController (const SharedPointer<IController>& baseController)
+	MyController (const SPtr<IController>& baseController)
 	: DelegationController (baseController), controlView (nullptr) {}
 
 	~MyController () noexcept override
@@ -308,7 +308,7 @@ public:
 		}
 	}
 
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
+	SPtr<CView> verifyView (const SPtr<CView>& view,
 									 const UIAttributes& attributes,
 									 IUIDescription* description) override
 	{
@@ -331,7 +331,7 @@ public:
 	}
 
 protected:
-	SharedPointer<CControl> controlView;
+	SPtr<CControl> controlView;
 };
 @endcode
 

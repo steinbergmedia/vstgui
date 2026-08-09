@@ -34,8 +34,7 @@ public:
 		return true;
 	}
 
-	SharedPointer<ISplitViewSeparatorDrawer>
-		getSplitViewSeparatorDrawer (CSplitView& splitView) override
+	SPtr<ISplitViewSeparatorDrawer> getSplitViewSeparatorDrawer (CSplitView& splitView) override
 	{
 		return nullptr;
 	}

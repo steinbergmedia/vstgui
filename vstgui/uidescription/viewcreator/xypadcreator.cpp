@@ -39,8 +39,8 @@ UTF8StringPtr XYPadCreator::getDisplayName () const
 }
 
 //------------------------------------------------------------------------
-SharedPointer<CView> XYPadCreator::create (const UIAttributes& attributes,
-										   const IUIDescription& description) const
+SPtr<CView> XYPadCreator::create (const UIAttributes& attributes,
+								  const IUIDescription& description) const
 {
 	return makeShared<CXYPad> (CRect (0, 0, 60, 60));
 }
@@ -53,7 +53,7 @@ bool XYPadCreator::apply (CView& view, const UIAttributes& attributes,
 	if (!pad)
 		return false;
 
-	SharedPointer<CBitmap> bitmap;
+	SPtr<CBitmap> bitmap;
 	if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
 		pad->setHandleBitmap (bitmap);
 

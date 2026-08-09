@@ -134,7 +134,7 @@ public:
 	}
 
 	// we accept strings which look like : '#ff3355' (rgb) and '#ff3355bb' (rgba)
-	static bool dragContainerHasColor (const SharedPointer<IDataPackage>& drag, CColor* color)
+	static bool dragContainerHasColor (const SPtr<IDataPackage>& drag, CColor* color)
 	{
 		if (!drag)
 			return false;
@@ -182,7 +182,7 @@ public:
 		return false;
 	}
 
-	SharedPointer<IDropTarget> getDropTarget () override { return shared (this); }
+	SPtr<IDropTarget> getDropTarget () override { return shared (this); }
 
 	bool onDrop (DragEventData data) override
 	{
@@ -222,7 +222,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-static void setupParamDisplay (const SharedPointer<CParamDisplay>& display,
+static void setupParamDisplay (const SPtr<CParamDisplay>& display,
 							   const CColorChooserUISettings& settings)
 {
 	display->setFont (settings.font);

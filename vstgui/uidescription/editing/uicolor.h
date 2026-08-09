@@ -16,9 +16,9 @@ namespace VSTGUI {
 class UIColor;
 
 //------------------------------------------------------------------------
-SharedPointer<COptionMenu> createCSSColorMenu (const std::function<void (CColor)>& callback,
-											   CPoint colorIconSize = {15., 15.});
-SharedPointer<CBitmap> createColorIcon (CColor color, CPoint colorIconSize = {15., 15.});
+SPtr<COptionMenu> createCSSColorMenu (const std::function<void (CColor)>& callback,
+									  CPoint colorIconSize = {15., 15.});
+SPtr<CBitmap> createColorIcon (CColor color, CPoint colorIconSize = {15., 15.});
 
 //----------------------------------------------------------------------------------------------------
 class IUIColorListener

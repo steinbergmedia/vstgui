@@ -45,30 +45,30 @@ class UIEditController : public NonAtomicReferenceCounted,
 						 public ViewListenerAdapter
 {
 public:
-	static SharedPointer<UIEditController> make (const SharedPointer<UIDescription>& description);
+	static SPtr<UIEditController> make (const SPtr<UIDescription>& description);
 
 	void setDarkTheme (bool state); // must be called before createEditView
 	bool usesDarkTheme () const;
-	SharedPointer<CView> createEditView ();
-	SharedPointer<UIEditMenuController> getMenuController () const;
-	SharedPointer<UIUndoManager> getUndoManager () const;
+	SPtr<CView> createEditView ();
+	SPtr<UIEditMenuController> getMenuController () const;
+	SPtr<UIUndoManager> getUndoManager () const;
 	const std::string& getEditTemplateName () const { return editTemplateName; }
-	SharedPointer<UIAttributes> getSettings ();
+	SPtr<UIAttributes> getSettings ();
 	int32_t getSaveOptions ();
 	
 	void onZoomChanged (double zoom);
 
-	void addSelectionToCurrentView (const SharedPointer<UISelection>& selection);
+	void addSelectionToCurrentView (const SPtr<UISelection>& selection);
 
-	static SharedPointer<UIDescription> getEditorDescription ();
-	static void setupDataSource (const SharedPointer<GenericStringListDataBrowserSource>& source);
+	static SPtr<UIDescription> getEditorDescription ();
+	static void setupDataSource (const SPtr<GenericStringListDataBrowserSource>& source);
 	static bool std__stringCompare (const std::string* lhs, const std::string* rhs);
 	static const UTF8StringPtr kEncodeBitmapsSettingsKey;
 	static const UTF8StringPtr kWriteWindowsRCFileSettingsKey;
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (UIEditController)
 	~UIEditController () override;
-	bool init (const SharedPointer<UIDescription>& description);
+	bool init (const SPtr<UIDescription>& description);
 
 	static void resetScrollViewOffsets (CViewContainer& view);
 
@@ -76,13 +76,12 @@ protected:
 	void setDirty (bool state);
 
 	void valueChanged (CControl& pControl) override;
-	SharedPointer<CView> createView (const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<CView> verifyView (const SharedPointer<CView>& view,
-									 const UIAttributes& attributes,
-									 const IUIDescription& description) override;
-	SharedPointer<IController> createSubController (UTF8StringPtr name,
-													const IUIDescription& description) override;
+	SPtr<CView> createView (const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<CView> verifyView (const SPtr<CView>& view, const UIAttributes& attributes,
+							const IUIDescription& description) override;
+	SPtr<IController> createSubController (UTF8StringPtr name,
+										   const IUIDescription& description) override;
 
 	// IUITemplateControllerListener
 	void onTemplateSelectionChanged () override;
@@ -97,8 +96,7 @@ protected:
 	// ISplitViewController
 	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize,
 									 CSplitView& splitView) override;
-	SharedPointer<ISplitViewSeparatorDrawer>
-		getSplitViewSeparatorDrawer (CSplitView& splitView) override;
+	SPtr<ISplitViewSeparatorDrawer> getSplitViewSeparatorDrawer (CSplitView& splitView) override;
 	bool storeViewSize (int32_t index, const CCoord& size, CSplitView& splitView) override;
 	bool restoreViewSize (int32_t index, CCoord& size, CSplitView& splitView) override;
 
@@ -107,14 +105,13 @@ protected:
 								 int32_t index, CSplitView& splitView) override;
 
 	// IActionPerformer
-	void performAction (const SharedPointer<IAction>& action) override;
+	void performAction (const SPtr<IAction>& action) override;
 	void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) override;
 	void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) override;
 	void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) override;
-	void performGradientChange (UTF8StringPtr gradientName,
-								const SharedPointer<CGradient>& newGradient,
+	void performGradientChange (UTF8StringPtr gradientName, const SPtr<CGradient>& newGradient,
 								bool remove = false) override;
-	void performFontChange (UTF8StringPtr fontName, const SharedPointer<CFontDesc>& newFont,
+	void performFontChange (UTF8StringPtr fontName, const SPtr<CFontDesc>& newFont,
 							bool remove = false) override;
 	void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 	void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
@@ -124,7 +121,8 @@ protected:
 	void performBitmapMultiFrameChange (UTF8StringPtr bitmapName,
 										const CMultiFrameBitmapDescription* desc) override;
 	void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) override;
-	void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) override;
+	void performBitmapFiltersChange (
+		UTF8StringPtr bitmapName, const std::list<SPtr<UIAttributes>>& filterDescription) override;
 	void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) override;
 
 	void beginLiveColorChange (UTF8StringPtr colorName) override;
@@ -137,7 +135,7 @@ protected:
 	void performDeleteTemplate (UTF8StringPtr name) override;
 	void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) override;
 
-	void onTemplateCreation (UTF8StringPtr name, const SharedPointer<CView>& view) override;
+	void onTemplateCreation (UTF8StringPtr name, const SPtr<CView>& view) override;
 	void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 
 	void performChangeFocusDrawingSettings (const FocusDrawingSettings& newSettings) override;
@@ -156,31 +154,31 @@ protected:
 	void viewAttached (CView& view) override;
 	void viewRemoved (CView& view) override;
 
-	SharedPointer<UIDescription> editDescription;
-	SharedPointer<UIDescription> editorDesc;
-	SharedPointer<UISelection> selection;
-	SharedPointer<UIUndoManager> undoManager;
-	SharedPointer<UIGridController> gridController;
-	SharedPointer<CView> baseView;
-	SharedPointer<UIEditView> editView;
-	SharedPointer<UITemplateController> templateController;
-	SharedPointer<UIEditMenuController> menuController;
-	SharedPointer<UIZoomSettingController> zoomSettingController;
-	SharedPointer<CControl> enableEditingControl;
-	SharedPointer<CControl> notSavedControl;
-	SharedPointer<CControl> tabSwitchControl;
-	
+	SPtr<UIDescription> editDescription;
+	SPtr<UIDescription> editorDesc;
+	SPtr<UISelection> selection;
+	SPtr<UIUndoManager> undoManager;
+	SPtr<UIGridController> gridController;
+	SPtr<CView> baseView;
+	SPtr<UIEditView> editView;
+	SPtr<UITemplateController> templateController;
+	SPtr<UIEditMenuController> menuController;
+	SPtr<UIZoomSettingController> zoomSettingController;
+	SPtr<CControl> enableEditingControl;
+	SPtr<CControl> notSavedControl;
+	SPtr<CControl> tabSwitchControl;
+
 	std::string editTemplateName;
-	std::list<SharedPointer<CSplitView> > splitViews;
+	std::list<SPtr<CSplitView>> splitViews;
 
 	bool dirty {false};
 	bool inChangeTheme {false};
 
 	struct Template {
 		std::string name;
-		SharedPointer<CView> view;
+		SPtr<CView> view;
 
-		Template (const std::string& n, const SharedPointer<CView>& v) : name (n), view (v) {}
+		Template (const std::string& n, const SPtr<CView>& v) : name (n), view (v) {}
 		Template (const Template& c) : name (c.name), view (c.view) {}
 		bool operator==(const Template& t) { return name == t.name && view == t.view; }
 		bool operator==(const std::string& n) { return name == n; }
@@ -191,7 +189,7 @@ protected:
 	void updateTemplate (UTF8StringPtr name);
 	void updateTemplate (const std::vector<Template>::const_iterator& it);
 	void onTemplatesChanged ();
-	void getTemplateViews (std::list<SharedPointer<CView>>& views) const;
+	void getTemplateViews (std::list<SPtr<CView>>& views) const;
 
 	std::vector<Template> templates;
 private:

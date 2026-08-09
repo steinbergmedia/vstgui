@@ -192,7 +192,7 @@ struct Handler
 
 	bool StartObject ()
 	{
-		SharedPointer<UINode> newNode;
+		SPtr<UINode> newNode;
 		State newState {};
 		switch (state)
 		{
@@ -366,7 +366,7 @@ struct Handler
 		return true;
 	}
 
-	void pushNode (const SharedPointer<UINode>& newNode)
+	void pushNode (const SPtr<UINode>& newNode)
 	{
 		if (newNode)
 		{
@@ -388,22 +388,22 @@ struct Handler
 		state = newState;
 	}
 
-	static SharedPointer<UIAttributes> newAttributesWithNameAttr (const std::string& name)
+	static SPtr<UIAttributes> newAttributesWithNameAttr (const std::string& name)
 	{
 		auto attributes = makeShared<UIAttributes> ();
 		attributes->setAttribute (attributeNameStr, name);
 		return attributes;
 	}
 
-	SharedPointer<UINode> rootNode;
-	std::deque<SharedPointer<UINode>> nodeStack;
+	SPtr<UINode> rootNode;
+	std::deque<SPtr<UINode>> nodeStack;
 	std::deque<State> stateStack {State::Uninitialized};
 	State state {};
 	std::string keyStr;
 };
 
 //------------------------------------------------------------------------
-SharedPointer<UINode> read (IContentProvider& stream)
+SPtr<UINode> read (IContentProvider& stream)
 {
 	ContentProviderWrapper<1024> streamWrapper (stream);
 	Handler handler;
@@ -448,7 +448,7 @@ struct OutputStreamWrapper
 using DefaultOutputStreamWrapper = OutputStreamWrapper<uint8_t>;
 
 //------------------------------------------------------------------------
-static const std::string* getNodeAttributeName (const SharedPointer<UINode>& node)
+static const std::string* getNodeAttributeName (const SPtr<UINode>& node)
 {
 	if (auto attributes = node->getAttributes ())
 		return attributes->getAttributeValue (attributeNameStr);
@@ -456,7 +456,7 @@ static const std::string* getNodeAttributeName (const SharedPointer<UINode>& nod
 }
 
 //------------------------------------------------------------------------
-static const std::string* getNodeAttributeViewClass (const SharedPointer<UINode>& node)
+static const std::string* getNodeAttributeViewClass (const SPtr<UINode>& node)
 {
 	if (auto attributes = node->getAttributes ())
 		return attributes->getAttributeValue (attributeClassStr);
@@ -486,7 +486,7 @@ void writeAttributes (const UIAttributes& attributes, JSONWriter& writer,
 
 //------------------------------------------------------------------------
 template<typename JSONWriter>
-void writeNode (const SharedPointer<UINode>& node, JSONWriter& writer)
+void writeNode (const SPtr<UINode>& node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	if (name)
@@ -511,7 +511,7 @@ void writeNode (const SharedPointer<UINode>& node, JSONWriter& writer)
 
 //------------------------------------------------------------------------
 template<typename JSONWriter>
-void writeGradientNode (const SharedPointer<UINode>& node, JSONWriter& writer)
+void writeGradientNode (const SPtr<UINode>& node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	vstgui_assert (name);
@@ -529,8 +529,7 @@ void writeGradientNode (const SharedPointer<UINode>& node, JSONWriter& writer)
 
 //------------------------------------------------------------------------
 template<typename JSONWriter>
-void writeSingleAttributeNode (const char* attrName, const SharedPointer<UINode>& node,
-							   JSONWriter& writer)
+void writeSingleAttributeNode (const char* attrName, const SPtr<UINode>& node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	vstgui_assert (name);
@@ -544,7 +543,7 @@ void writeSingleAttributeNode (const char* attrName, const SharedPointer<UINode>
 
 //------------------------------------------------------------------------
 template<typename JSONWriter>
-void writeColorAttributeNode (const SharedPointer<UINode>& node, JSONWriter& writer)
+void writeColorAttributeNode (const SPtr<UINode>& node, JSONWriter& writer)
 {
 	auto name = getNodeAttributeName (node);
 	vstgui_assert (name);
@@ -564,7 +563,7 @@ void writeColorAttributeNode (const SharedPointer<UINode>& node, JSONWriter& wri
 
 //------------------------------------------------------------------------
 template<typename JSONWriter, typename Proc>
-void writeResourceNode (const char* name, const SharedPointer<UINode>& resNode, Proc proc,
+void writeResourceNode (const char* name, const SPtr<UINode>& resNode, Proc proc,
 						JSONWriter& writer)
 {
 	writer.Key (name);
@@ -581,8 +580,7 @@ void writeResourceNode (const char* name, const SharedPointer<UINode>& resNode, 
 
 //------------------------------------------------------------------------
 template<typename JSONWriter>
-void writeTemplateNode (const std::string* name, const SharedPointer<UINode>& node,
-						JSONWriter& writer)
+void writeTemplateNode (const std::string* name, const SPtr<UINode>& node, JSONWriter& writer)
 {
 	if (name)
 		writer.Key (*name);
@@ -606,7 +604,7 @@ void writeTemplateNode (const std::string* name, const SharedPointer<UINode>& no
 
 //------------------------------------------------------------------------
 template<typename JSONWriter>
-void writeViewNodes (const std::vector<SharedPointer<UINode>>& views, JSONWriter& writer)
+void writeViewNodes (const std::vector<SPtr<UINode>>& views, JSONWriter& writer)
 {
 	if (views.empty ())
 		return;
@@ -621,7 +619,7 @@ void writeViewNodes (const std::vector<SharedPointer<UINode>>& views, JSONWriter
 
 //------------------------------------------------------------------------
 template<typename JSONWriter>
-void writeTemplates (const std::vector<SharedPointer<UINode>>& templates, JSONWriter& writer)
+void writeTemplates (const std::vector<SPtr<UINode>>& templates, JSONWriter& writer)
 {
 	if (templates.empty ())
 		return;
@@ -643,15 +641,15 @@ bool writeRootNode (const UINode& rootNode, JSONWriter& writer)
 	writer.StartObject ();
 	writeAttributes (*rootNode.getAttributes ().get (), writer);
 	bool result = true;
-	std::vector<SharedPointer<UINode>> templateNodes;
-	std::vector<SharedPointer<UINode>> viewNodes;
-	SharedPointer<UINode> bitmapsNode;
-	SharedPointer<UINode> fontsNode;
-	SharedPointer<UINode> colorsNode;
-	SharedPointer<UINode> controlTagsNode;
-	SharedPointer<UINode> variablesNode;
-	SharedPointer<UINode> gradientsNode;
-	SharedPointer<UINode> customNode;
+	std::vector<SPtr<UINode>> templateNodes;
+	std::vector<SPtr<UINode>> viewNodes;
+	SPtr<UINode> bitmapsNode;
+	SPtr<UINode> fontsNode;
+	SPtr<UINode> colorsNode;
+	SPtr<UINode> controlTagsNode;
+	SPtr<UINode> variablesNode;
+	SPtr<UINode> gradientsNode;
+	SPtr<UINode> customNode;
 	for (const auto& child : rootNode.getChildren ())
 	{
 		if (child->getName () == MainNodeNames::kTemplate)

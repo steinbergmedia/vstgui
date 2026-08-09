@@ -8,7 +8,7 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-SharedPointer<IViewLayouter> AutoSizeViewLayouter::get () noexcept
+SPtr<IViewLayouter> AutoSizeViewLayouter::get () noexcept
 {
 	static auto instance = makeShared<AutoSizeViewLayouter> ();
 	return instance;

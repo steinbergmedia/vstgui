@@ -21,7 +21,7 @@ public:
 	using IEventHandler = VSTGUI::IEventHandler;
 	using ITimerHandler = VSTGUI::ITimerHandler;
 
-	static SharedPointer<RunLoop> instance ();
+	static SPtr<RunLoop> instance ();
 
 	RunLoop ();
 	~RunLoop () noexcept;

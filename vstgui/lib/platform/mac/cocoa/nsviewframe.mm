@@ -1175,7 +1175,7 @@ public:
 
 	void onTimer ();
 protected:
-	SharedPointer<CVSTGUITimer> timer;
+	SPtr<CVSTGUITimer> timer;
 	CFrame* frame {nullptr};
 	NSWindow* window {nullptr};
 	NSTextField* textfield {nullptr};
@@ -1707,7 +1707,7 @@ PlatformViewLayerPtr NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDel
 
 //-----------------------------------------------------------------------------
 bool NSViewFrame::doDrag (const DragDescription& dragDescription,
-                          const SharedPointer<IDragCallback>& callback)
+						  const SPtr<IDragCallback>& callback)
 {
 	if (!nsView)
 		return false;
@@ -1717,7 +1717,7 @@ bool NSViewFrame::doDrag (const DragDescription& dragDescription,
 }
 
 //-----------------------------------------------------------------------------
-void NSViewFrame::setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator)
+void NSViewFrame::setTouchBarCreator (const SPtr<ITouchBarCreator>& creator)
 {
 	touchBarCreator = creator;
 	if (!nsView.window || !nsView.window.visible)

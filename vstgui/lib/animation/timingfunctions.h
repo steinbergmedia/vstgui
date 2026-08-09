@@ -112,7 +112,7 @@ public:
 		EasyOut,
 		EasyInOut
 	};
-	static SharedPointer<CubicBezierTimingFunction> make (Style style, uint32_t time);
+	static SPtr<CubicBezierTimingFunction> make (Style style, uint32_t time);
 
 private:
 	static CPoint lerp (CPoint p1, CPoint p2, float pos);
@@ -129,14 +129,14 @@ class RepeatTimingFunction : public ITimingFunction,
 							 public NonAtomicReferenceCounted
 {
 public:
-	RepeatTimingFunction (const SharedPointer<TimingFunctionBase>& tf, int32_t repeatCount,
+	RepeatTimingFunction (const SPtr<TimingFunctionBase>& tf, int32_t repeatCount,
 						  bool autoReverse = true);
 	~RepeatTimingFunction () noexcept override;
 
 	float getPosition (uint32_t milliseconds) override;
 	bool isDone (uint32_t milliseconds) override;
 protected:
-	SharedPointer<TimingFunctionBase> tf;
+	SPtr<TimingFunctionBase> tf;
 	int32_t repeatCount;
 	uint32_t runCounter;
 	bool autoReverse;

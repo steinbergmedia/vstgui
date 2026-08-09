@@ -22,7 +22,7 @@ class CMovieBitmap : public CControl,
 {
 public:
 	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag,
-				  const SharedPointer<CBitmap>& background);
+				  const SPtr<CBitmap>& background);
 
 	void draw (CDrawContext&) override;
 	bool sizeToFit () override;

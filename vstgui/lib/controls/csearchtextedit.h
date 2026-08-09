@@ -16,7 +16,7 @@ class CSearchTextEdit : public CTextEdit
 {
 public:
 	CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
-					 UTF8StringPtr txt = nullptr, const SharedPointer<CBitmap>& background = {},
+					 UTF8StringPtr txt = nullptr, const SPtr<CBitmap>& background = {},
 					 const int32_t style = 0);
 
 	void setClearMarkInset (CPoint inset);

@@ -63,7 +63,7 @@ public:
 	 *	optional callback will be remembered until the drag is dropped or canceled
 	 */
 	virtual bool doDrag (const DragDescription& dragDescription,
-						 const SharedPointer<IDragCallback>& callback) = 0;
+						 const SPtr<IDragCallback>& callback) = 0;
 
 	/** */
 	virtual PlatformType getPlatformType () const = 0;
@@ -100,7 +100,7 @@ public:
 	virtual ~IPlatformFrameTouchBarExtension () noexcept = default;
 
 	/** set the touchbar creator. */
-	virtual void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) = 0;
+	virtual void setTouchBarCreator (const SPtr<ITouchBarCreator>& creator) = 0;
 	/** forces the touchbar to be recreated. */
 	virtual void recreateTouchBar () = 0;
 };

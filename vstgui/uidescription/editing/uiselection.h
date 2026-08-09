@@ -46,8 +46,7 @@ class UISelection : public NonAtomicReferenceCounted,
 //----------------------------------------------------------------------------------------------------
 {
 public:
-
-	using UISelectionViewList = std::list<SharedPointer<CView>>;
+	using UISelectionViewList = std::list<SPtr<CView>>;
 
 	using const_iterator = UISelectionViewList::const_iterator;
 	using const_reverse_iterator = UISelectionViewList::const_reverse_iterator;
@@ -67,12 +66,12 @@ public:
 	
 	void setStyle (int32_t style);
 
-	void add (const SharedPointer<CView>& view);
-	void remove (const SharedPointer<CView>& view);
-	void setExclusive (const SharedPointer<CView>& view);
+	void add (const SPtr<CView>& view);
+	void remove (const SPtr<CView>& view);
+	void setExclusive (const SPtr<CView>& view);
 	void clear ();
 
-	SharedPointer<CView> first () const;
+	SPtr<CView> first () const;
 
 	bool contains (CView& view) const;
 	bool containsParent (CView& view) const;
@@ -94,8 +93,8 @@ public:
 	void viewsWillChange ();
 	void viewsDidChange ();
 
-	bool store (OutputStream& stream, const SharedPointer<IUIDescription>& uiDescription);
-	bool restore (InputStream& stream, const SharedPointer<IUIDescription>& uiDescription);
+	bool store (OutputStream& stream, const SPtr<IUIDescription>& uiDescription);
+	bool restore (InputStream& stream, const SPtr<IUIDescription>& uiDescription);
 
 	struct DeferChange
 	{
@@ -125,9 +124,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<CBitmap>
-	createBitmapFromSelection (const UISelection& selection, double scaleFactor = 1.,
-							   const SharedPointer<CViewContainer>& anchorView = {});
+SPtr<CBitmap> createBitmapFromSelection (const UISelection& selection, double scaleFactor = 1.,
+										 const SPtr<CViewContainer>& anchorView = {});
 
 } // VSTGUI
 

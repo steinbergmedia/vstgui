@@ -16,7 +16,7 @@ namespace Detail {
 namespace UIJsonDescReader {
 
 //------------------------------------------------------------------------
-SharedPointer<UINode> read (IContentProvider& contentProvider);
+SPtr<UINode> read (IContentProvider& contentProvider);
 
 //------------------------------------------------------------------------
 } // UIJsonDescReader
