@@ -17,17 +17,17 @@ struct WeakPointer : std::weak_ptr<I>
 	using std::weak_ptr<I>::weak_ptr;
 
 	template<typename T>
-	WeakPointer (const shared_ptr<T>& sp) : std::weak_ptr<I> (std::static_pointer_cast<I> (sp))
+	WeakPointer (const SPtr<T>& sp) : std::weak_ptr<I> (std::static_pointer_cast<I> (sp))
 	{
 	}
 
-	WeakPointer<I>& operator= (const shared_ptr<I>& sp)
+	WeakPointer<I>& operator= (const SPtr<I>& sp)
 	{
 		std::weak_ptr<I>::operator= (static_cast<const std::shared_ptr<I>&> (sp));
 		return *this;
 	}
 
-	shared_ptr<I> lock () const noexcept { return shared_ptr<I> (std::weak_ptr<I>::lock ()); }
+	SPtr<I> lock () const noexcept { return SPtr<I> (std::weak_ptr<I>::lock ()); }
 };
 
 //------------------------------------------------------------------------

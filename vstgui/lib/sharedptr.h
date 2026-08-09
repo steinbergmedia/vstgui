@@ -22,23 +22,23 @@ namespace VSTGUI {
 
 //------------------------------------------------------------------------
 template<typename T>
-struct shared_ptr : std::shared_ptr<T>
+struct SPtr : std::shared_ptr<T>
 {
 	using std::shared_ptr<T>::shared_ptr;
 	using Type = T;
 
-	shared_ptr (const std::shared_ptr<T>& other) : std::shared_ptr<T> (other) {}
-	shared_ptr (std::shared_ptr<T>&& other) : std::shared_ptr<T> (std::move (other)) {}
-	explicit shared_ptr (T* instance) : std::shared_ptr<T> (instance) {}
+	SPtr (const std::shared_ptr<T>& other) : std::shared_ptr<T> (other) {}
+	SPtr (std::shared_ptr<T>&& other) : std::shared_ptr<T> (std::move (other)) {}
+	explicit SPtr (T* instance) : std::shared_ptr<T> (instance) {}
 
 	template<typename I>
-	shared_ptr<I> cast () const
+	SPtr<I> cast () const
 	{
 #if 0 // C++26
 		if constexpr (std::is_base_of_v<T, I> && !std::is_virtual_base_of_v<T, I>)
-			return shared_ptr<I> (std::static_pointer_cast<I> (*this));
+			return SPtr<I> (std::static_pointer_cast<I> (*this));
 #endif
-		return shared_ptr<I> (std::dynamic_pointer_cast<I> (*this));
+		return SPtr<I> (std::dynamic_pointer_cast<I> (*this));
 	}
 };
 
@@ -46,7 +46,7 @@ struct shared_ptr : std::shared_ptr<T>
 
 //------------------------------------------------------------------------
 template<typename I>
-using SharedPointer = shared_ptr<I>;
+using SharedPointer = SPtr<I>;
 
 //------------------------------------------------------------------------
 struct IReference : virtual std::enable_shared_from_this<IReference>
@@ -92,7 +92,7 @@ struct Deleter
 template<class I>
 inline SharedPointer<I> owned (I* p) noexcept
 {
-	return p ? shared_ptr<I> (p, Deleter<I> {}) : nullptr;
+	return p ? SPtr<I> (p, Deleter<I> {}) : nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -106,7 +106,7 @@ inline SharedPointer<I> shared (I* p) noexcept
 template<class I, typename... Args>
 inline SharedPointer<I> makeShared (Args&&... args)
 {
-	return shared_ptr<I> (new I (std::forward<Args> (args)...), Deleter<I> {});
+	return SPtr<I> (new I (std::forward<Args> (args)...), Deleter<I> {});
 }
 
 #else
