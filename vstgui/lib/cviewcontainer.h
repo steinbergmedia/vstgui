@@ -71,6 +71,9 @@ public:
 	/** remove all child views */
 	virtual bool removeAll ();
 
+	bool addView (const SharedPointer<CView>& view) { return addSubview (view); }
+	bool removeView (const SharedPointer<CView>& view) { return removeSubview (view); }
+
 	/** check if pView is a child view of this container */
 	bool isChild (const CView& pView) const;
 	/** check if pView is a child view of this container */
