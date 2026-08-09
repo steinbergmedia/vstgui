@@ -22,23 +22,23 @@ namespace VSTGUI {
 
 //------------------------------------------------------------------------
 template<typename T>
-struct SPtr : std::shared_ptr<T>
+struct SPtrT : std::shared_ptr<T>
 {
 	using std::shared_ptr<T>::shared_ptr;
 	using Type = T;
 
-	SPtr (const std::shared_ptr<T>& other) : std::shared_ptr<T> (other) {}
-	SPtr (std::shared_ptr<T>&& other) : std::shared_ptr<T> (std::move (other)) {}
-	explicit SPtr (T* instance) : std::shared_ptr<T> (instance) {}
+	SPtrT (const std::shared_ptr<T>& other) : std::shared_ptr<T> (other) {}
+	SPtrT (std::shared_ptr<T>&& other) : std::shared_ptr<T> (std::move (other)) {}
+	explicit SPtrT (T* instance) : std::shared_ptr<T> (instance) {}
 
 	template<typename I>
-	SPtr<I> cast () const
+	SPtrT<I> cast () const
 	{
 #if 0 // C++26
 		if constexpr (std::is_base_of_v<T, I> && !std::is_virtual_base_of_v<T, I>)
-			return SPtr<I> (std::static_pointer_cast<I> (*this));
+			return SPtrT<I> (std::static_pointer_cast<I> (*this));
 #endif
-		return SPtr<I> (std::dynamic_pointer_cast<I> (*this));
+		return SPtrT<I> (std::dynamic_pointer_cast<I> (*this));
 	}
 };
 
@@ -46,7 +46,10 @@ struct SPtr : std::shared_ptr<T>
 
 //------------------------------------------------------------------------
 template<typename I>
-using SharedPointer = SPtr<I>;
+using SharedPointer = SPtrT<I>;
+
+template<typename I>
+using SPtr = SPtrT<I>;
 
 //------------------------------------------------------------------------
 struct IReference : virtual std::enable_shared_from_this<IReference>

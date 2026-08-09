@@ -26,7 +26,7 @@ CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t)
 }
 
 //-----------------------------------------------------------------------------
-static CGMutablePathRef createTextPath (const SPtr<CoreTextFont>& font, UTF8StringPtr text)
+static CGMutablePathRef createTextPath (const SPtrT<CoreTextFont>& font, UTF8StringPtr text)
 {
 	auto textPath = CGPathCreateMutable ();
 

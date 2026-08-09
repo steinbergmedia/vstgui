@@ -360,10 +360,10 @@ enum class PlatformFileSelectorStyle : uint32_t;
 enum class PlatformFileSelectorFlags : uint32_t;
 
 using PlatformFramePtr = std::unique_ptr<IPlatformFrame>;
-using PlatformBitmapPtr = SPtr<IPlatformBitmap>;
+using PlatformBitmapPtr = SPtrT<IPlatformBitmap>;
 using PlatformBitmapPixelAccessPtr = std::unique_ptr<IPlatformBitmapPixelAccess>;
-using PlatformFontPtr = SPtr<IPlatformFont>;
-using PlatformStringPtr = SPtr<IPlatformString>;
+using PlatformFontPtr = SPtrT<IPlatformFont>;
+using PlatformStringPtr = SPtrT<IPlatformString>;
 using PlatformTimerPtr = std::shared_ptr<IPlatformTimer>;
 using PlatformResourceInputStreamPtr = std::unique_ptr<IPlatformResourceInputStream>;
 using PlatformFactoryPtr = std::unique_ptr<IPlatformFactory>;
