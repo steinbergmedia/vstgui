@@ -34,7 +34,7 @@ using namespace VSTGUI;
 {
     [super viewDidLoad];
 
-	uiDesc = owned (new UIDescription (CResourceDescription ("ios_test.uidesc")));
+	uiDesc = UIDescription::make (CResourceDescription ("ios_test.uidesc"));
 	if (!uiDesc->parse ())
 	{
 		@throw [NSException exceptionWithName:@"" reason:@"" userInfo:nil];
@@ -59,7 +59,7 @@ using namespace VSTGUI;
 	
 	view->setMouseableArea (frame->getViewSize ());
 	view->setViewSize (frame->getViewSize ());
-	frame->addView (view);
+	frame->addSubview (view);
 }
 
 @end

@@ -1161,7 +1161,7 @@ bool CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 					return true;
 				else if (downEvent.consumed)
 				{
-					event.target = view;
+					event.target = view.get ();
 					event.targetIsSingleTouch = true;
 					return true;
 				}

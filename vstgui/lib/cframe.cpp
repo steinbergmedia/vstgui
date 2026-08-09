@@ -1674,7 +1674,7 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 					case ITouchEvent::kMoved:
 					{
 						MouseMoveEvent moveEvent (where, MouseButton::Left);
-						dispatchEvent (target, moveEvent);
+						dispatchEvent (*target, moveEvent);
 						if (moveEvent.ignoreFollowUpMoveAndUpEvents ())
 						{
 							event.unsetTouchTarget (e.first, target);
@@ -1692,11 +1692,11 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 					case ITouchEvent::kCanceled:
 					{
 						MouseCancelEvent cancelEvent;
-						dispatchEvent (target, cancelEvent);
+						dispatchEvent (*target, cancelEvent);
 						if (cancelEvent.consumed == false)
 						{
 							MouseUpEvent upEvent (where, MouseButton::Left);
-							dispatchEvent (target, upEvent);
+							dispatchEvent (*target, upEvent);
 						}
 						event.unsetTouchTarget (e.first, target);
 						break;
@@ -1704,7 +1704,7 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 					case ITouchEvent::kEnded:
 					{
 						MouseUpEvent upEvent (where, MouseButton::Left);
-						dispatchEvent (target, upEvent);
+						dispatchEvent (*target, upEvent);
 						event.unsetTouchTarget (e.first, target);
 						break;
 					}
@@ -1732,9 +1732,9 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 	}
 	if (hasBeganTouch)
 	{
-		if (CView* focusView = getFocusView ())
+		if (auto focusView = getFocusView ())
 		{
-			if (dynamic_cast<CTextEdit*> (focusView))
+			if (focusView.cast<CTextEdit> ())
 				setFocusView (nullptr);
 		}
 		for (const auto& e : event)

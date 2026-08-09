@@ -87,8 +87,7 @@ UITextEdit::UITextEdit (UIView* parent, IPlatformTextEditCallback* textEdit)
 	platformControl = [[UITextField alloc] initWithFrame:r];
 	
 	bool fontSet = false;
-	CoreTextFont* ctf = textEdit->platformGetFont ()->getPlatformFont ().cast<CoreTextFont> ();
-	if (ctf)
+	if (auto ctf = textEdit->platformGetFont ()->getPlatformFont ().cast<CoreTextFont> ())
 	{
 		CTFontRef fontRef = ctf->getFontRef ();
 		if (fontRef)

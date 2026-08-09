@@ -263,9 +263,18 @@ PlatformViewLayerPtr UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDel
 														   IPlatformViewLayer* parentLayer)
 {
 	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
-	auto layer = owned (new CAViewLayer (parentViewLayer ? parentViewLayer->getCALayer () : [uiView layer]));
+	auto layer = std::make_shared<CAViewLayer> (parentViewLayer ? parentViewLayer->getCALayer ()
+																: [uiView layer]);
 	layer->init (drawDelegate);
-	return std::make_shared<IPlatformViewLayer> (layer);
+	return layer;
+}
+
+//------------------------------------------------------------------------
+bool UIViewFrame::doDrag (const DragDescription& dragDescription,
+						  const SharedPointer<IDragCallback>& callback)
+{
+	// not implemented
+	return false;
 }
 
 //------------------------------------------------------------------------
