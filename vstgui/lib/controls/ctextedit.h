@@ -6,7 +6,6 @@
 
 #include "ctextlabel.h"
 #include "../dispatchlist.h"
-#include "../platform/iplatformtextedit.h"
 #include <functional>
 
 namespace VSTGUI {
@@ -18,13 +17,15 @@ using CTextEditStringToValueProc = bool (*) (UTF8StringPtr txt, float& result, v
 //! @brief a text edit control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CTextEdit : public CTextLabel, public IPlatformTextEditCallback
+class CTextEdit : public CTextLabel
 {
 private:
 	enum StyleEnum
 	{
 		StyleDoubleClick = CParamDisplay::LastStyle,
 	};
+
+	class PlatformCallbackImpl;
 
 public:
 	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
@@ -95,27 +96,22 @@ protected:
 	void createPlatformTextEdit ();
 	void updateText (const PlatformTextEditPtr& pte);
 
-	CColor platformGetBackColor () const override { return getBackColor (); }
-	CColor platformGetFontColor () const override { return getFontColor (); }
-	SPtr<CFontDesc> platformGetFont () const override;
-	CHoriTxtAlign platformGetHoriTxtAlign () const override { return getHoriAlign (); }
-	const UTF8String& platformGetText () const override { return text; }
-	const UTF8String& platformGetPlaceholderText () const override { return placeholderString; }
-	CRect platformGetSize () const override;
-	CRect platformGetVisibleSize () const override;
-	CPoint platformGetTextInset () const override { return getTextInset (); }
-	void platformLooseFocus (bool returnPressed) override;
-	void platformOnKeyboardEvent (KeyboardEvent& event) override;
-	void platformTextDidChange () override;
-	bool platformIsSecureTextEdit () override;
+	virtual CRect platformGetSize () const;
+	virtual CRect platformGetVisibleSize () const;
+	virtual void platformTextDidChange ();
+	void platformLooseFocus (bool returnPressed);
+	void platformOnKeyboardEvent (KeyboardEvent& event);
+
+	PlatformCallbackImpl* getPlatformTextEditCallback ();
 
 	PlatformTextEditPtr platformControl;
+
+	std::unique_ptr<PlatformCallbackImpl> platformCallback;
 
 	StringToValueFunction stringToValueFunction;
 
 	bool immediateTextChange {false};
 	bool secureStyle {false};
-	mutable SPtr<CFontDesc> platformFont;
 	UTF8String placeholderString;
 	DispatchList<SPtr<ITextEditListener>> textEditListeners;
 };

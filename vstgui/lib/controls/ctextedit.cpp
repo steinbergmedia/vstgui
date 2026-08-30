@@ -8,9 +8,62 @@
 #include "../cdrawcontext.h"
 #include "../events.h"
 #include "../platform/iplatformframe.h"
+#include "../platform/iplatformtextedit.h"
 #include <cassert>
 
 namespace VSTGUI {
+
+//------------------------------------------------------------------------
+// CTextEdit::PlatformCallbackImpl
+//------------------------------------------------------------------------
+class CTextEdit::PlatformCallbackImpl final : public IPlatformTextEditCallback
+{
+public:
+	explicit PlatformCallbackImpl (CTextEdit& textEdit) : textEdit (textEdit) {}
+
+	CColor platformGetBackColor () const override { return textEdit.getBackColor (); }
+	CColor platformGetFontColor () const override { return textEdit.getFontColor (); }
+	SPtr<CFontDesc> platformGetFont () const override
+	{
+		auto font = textEdit.getFont ();
+		CCoord fontSize = font->getSize ();
+		fontSize *= textEdit.getGlobalTransform ().m11;
+		if (fontSize == font->getSize ())
+			return font;
+		auto platformFont = makeShared<CFontDesc> (*font.get ());
+		platformFont->setSize (fontSize);
+		return platformFont;
+	}
+	CHoriTxtAlign platformGetHoriTxtAlign () const override { return textEdit.getHoriAlign (); }
+	const UTF8String& platformGetText () const override { return textEdit.text; }
+	const UTF8String& platformGetPlaceholderText () const override
+	{
+		return textEdit.placeholderString;
+	}
+	CRect platformGetSize () const override { return textEdit.platformGetSize (); }
+	CRect platformGetVisibleSize () const override { return textEdit.platformGetVisibleSize (); }
+	CPoint platformGetTextInset () const override { return textEdit.getTextInset (); }
+	void platformLooseFocus (bool returnPressed) override
+	{
+		textEdit.platformLooseFocus (returnPressed);
+	}
+	void platformOnKeyboardEvent (KeyboardEvent& event) override
+	{
+		textEdit.platformOnKeyboardEvent (event);
+	}
+	void platformTextDidChange () override { textEdit.platformTextDidChange (); }
+	bool platformIsSecureTextEdit () override { return textEdit.getSecureStyle (); }
+
+private:
+	CTextEdit& textEdit;
+};
+
+CTextEdit::PlatformCallbackImpl* CTextEdit::getPlatformTextEditCallback ()
+{
+	if (!platformCallback)
+		platformCallback = std::make_unique<PlatformCallbackImpl> (*this);
+	return platformCallback.get ();
+}
 
 //------------------------------------------------------------------------
 // CTextEdit
@@ -251,19 +304,6 @@ void CTextEdit::onKeyboardEvent (KeyboardEvent& event)
 }
 
 //------------------------------------------------------------------------
-SPtr<CFontDesc> CTextEdit::platformGetFont () const
-{
-	auto font = getFont ();
-	CCoord fontSize = font->getSize ();
-	fontSize *= getGlobalTransform ().m11;
-	if (fontSize == font->getSize ())
-		return font;
-	platformFont = makeShared<CFontDesc> (*font.get ());
-	platformFont->setSize (fontSize);
-	return platformFont;
-}
-
-//------------------------------------------------------------------------
 CRect CTextEdit::platformGetSize () const
 {
 	return translateToGlobal (getViewSize ());
@@ -314,12 +354,6 @@ void CTextEdit::platformTextDidChange ()
 }
 
 //------------------------------------------------------------------------
-bool CTextEdit::platformIsSecureTextEdit ()
-{
-	return getSecureStyle ();
-}
-
-//------------------------------------------------------------------------
 void CTextEdit::parentSizeChanged ()
 {
 	if (platformControl)
@@ -343,7 +377,8 @@ void CTextEdit::createPlatformTextEdit ()
 	bWasReturnPressed = false;
 	if (auto frame = getFrame ())
 	{
-		platformControl = frame->getPlatformFrame ()->createPlatformTextEdit (this);
+		platformControl =
+			frame->getPlatformFrame ()->createPlatformTextEdit (getPlatformTextEditCallback ());
 		textEditListeners.forEach (
 			[this] (auto& l) { l->onTextEditPlatformControlTookFocus (*this); });
 		if (frame->getFocusView ().get () != this)

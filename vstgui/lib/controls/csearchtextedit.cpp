@@ -5,6 +5,7 @@
 #include "csearchtextedit.h"
 
 #include "../cframe.h"
+#include "../platform/iplatformtextedit.h"
 #include "../cgraphicspath.h"
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
