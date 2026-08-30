@@ -6,7 +6,6 @@
 
 #include "vstguifwd.h"
 #include "optional.h"
-#include "platform/iplatformstring.h"
 #include <string>
 #include <functional>
 #include <algorithm>

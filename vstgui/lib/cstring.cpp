@@ -4,6 +4,7 @@
 
 #include "cstring.h"
 #include "platform/platformfactory.h"
+#include "platform/iplatformstring.h"
 #include <cstring>
 #include <sstream>
 #include <algorithm>
