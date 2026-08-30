@@ -374,15 +374,15 @@ private:
 		{
 			switch (inputPbpa->getPixelFormat ())
 			{
-				case IPlatformBitmapPixelAccess::kARGB:
-				case IPlatformBitmapPixelAccess::kABGR:
+				case IPlatformBitmapPixelAccessPixelFormat::kARGB:
+				case IPlatformBitmapPixelAccessPixelFormat::kABGR:
 				{
 					algo<true, false, false, false> (inputAddressPtr, outputAddressPtr, width,
 													 height, static_cast<int32_t> (radius / 2));
 					break;
 				}
-				case IPlatformBitmapPixelAccess::kRGBA:
-				case IPlatformBitmapPixelAccess::kBGRA:
+				case IPlatformBitmapPixelAccessPixelFormat::kRGBA:
+				case IPlatformBitmapPixelAccessPixelFormat::kBGRA:
 				{
 					algo<false, false, false, true> (inputAddressPtr, outputAddressPtr, width,
 													 height, static_cast<int32_t> (radius / 2));

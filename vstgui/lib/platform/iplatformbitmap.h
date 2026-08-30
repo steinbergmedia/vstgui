@@ -10,7 +10,6 @@
 #include <vector>
 
 namespace VSTGUI {
-class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
 class IPlatformBitmap
@@ -32,13 +31,7 @@ class IPlatformBitmapPixelAccess
 public:
 	virtual ~IPlatformBitmapPixelAccess () noexcept = default;
 
-	enum PixelFormat
-	{
-		kARGB,
-		kRGBA,
-		kABGR,
-		kBGRA
-	};
+	using PixelFormat = IPlatformBitmapPixelAccessPixelFormat;
 
 	virtual uint8_t* getAddress () const = 0;
 	virtual uint32_t getBytesPerRow () const = 0;

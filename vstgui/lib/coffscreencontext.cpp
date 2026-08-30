@@ -7,6 +7,7 @@
 #include "cbitmap.h"
 #include "platform/platformfactory.h"
 #include "platform/iplatformgraphicsdevice.h"
+#include "platform/iplatformbitmap.h"
 
 namespace VSTGUI {
 

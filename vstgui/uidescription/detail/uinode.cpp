@@ -6,6 +6,7 @@
 #include "../../lib/cfont.h"
 #include "../../lib/cgradient.h"
 #include "../../lib/platform/platformfactory.h"
+#include "../../lib/platform/iplatformbitmap.h"
 #include "../base64codec.h"
 #include "../cstream.h"
 #include "../uiattributes.h"

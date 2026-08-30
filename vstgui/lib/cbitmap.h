@@ -9,7 +9,6 @@
 #include "crect.h"
 #include "cresourcedescription.h"
 #include "pixelbuffer.h"
-#include "platform/iplatformbitmap.h"
 #include <vector>
 
 namespace VSTGUI {
@@ -334,18 +333,19 @@ protected:
 template<typename T1, typename T2,
 		 typename std::enable_if<
 			 std::is_same<PixelBuffer::Format, T2>::value ||
-			 std::is_same<IPlatformBitmapPixelAccess::PixelFormat, T2>::value>::type* = nullptr>
+			 std::is_same<IPlatformBitmapPixelAccessPixelFormat, T2>::value>::type* = nullptr>
 inline T1 convert (T2 format)
 {
-	using PlPixelFormat = IPlatformBitmapPixelAccess::PixelFormat;
+	using PlPixelFormat = IPlatformBitmapPixelAccessPixelFormat;
 	using Format = PixelBuffer::Format;
-	static_assert (std::is_same<Format, T1>::value || std::is_same<PlPixelFormat, T1>::value,
-				   "Unexpected Format");
+	// clang-format off
+	static_assert (std::is_same<Format, T1>::value || std::is_same<PlPixelFormat, T1>::value, "Unexpected Format");
 	static_assert (!std::is_same<T1, T2>::value, "Unexpected Format");
-	static_assert (static_cast<int32_t> (Format::ARGB) == PlPixelFormat::kARGB, "Format Mismatch");
-	static_assert (static_cast<int32_t> (Format::ABGR) == PlPixelFormat::kABGR, "Format Mismatch");
-	static_assert (static_cast<int32_t> (Format::RGBA) == PlPixelFormat::kRGBA, "Format Mismatch");
-	static_assert (static_cast<int32_t> (Format::BGRA) == PlPixelFormat::kBGRA, "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::ARGB) == static_cast<int32_t> (PlPixelFormat::kARGB), "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::ABGR) == static_cast<int32_t> (PlPixelFormat::kABGR), "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::RGBA) == static_cast<int32_t> (PlPixelFormat::kRGBA), "Format Mismatch");
+	static_assert (static_cast<int32_t> (Format::BGRA) == static_cast<int32_t> (PlPixelFormat::kBGRA), "Format Mismatch");
+	// clang-format on
 	return static_cast<T1> (format);
 }
 

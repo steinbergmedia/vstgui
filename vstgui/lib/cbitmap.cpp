@@ -360,22 +360,22 @@ SPtr<CBitmapPixelAccess> CBitmapPixelAccess::create (const SPtr<CBitmap>& bitmap
 	SPtr<CBitmapPixelAccess> result;
 	switch (pixelAccess->getPixelFormat ())
 	{
-		case IPlatformBitmapPixelAccess::kARGB:
+		case IPlatformBitmapPixelAccessPixelFormat::kARGB:
 		{
 			result = makeShared<CBitmapPixelAccessOrder<1, 2, 3, 0>> ();
 			break;
 		}
-		case IPlatformBitmapPixelAccess::kRGBA:
+		case IPlatformBitmapPixelAccessPixelFormat::kRGBA:
 		{
 			result = makeShared<CBitmapPixelAccessOrder<0, 1, 2, 3>> ();
 			break;
 		}
-		case IPlatformBitmapPixelAccess::kABGR:
+		case IPlatformBitmapPixelAccessPixelFormat::kABGR:
 		{
 			result = makeShared<CBitmapPixelAccessOrder<3, 2, 1, 0>> ();
 			break;
 		}
-		case IPlatformBitmapPixelAccess::kBGRA:
+		case IPlatformBitmapPixelAccessPixelFormat::kBGRA:
 		{
 			result = makeShared<CBitmapPixelAccessOrder<2, 1, 0, 3>> ();
 			break;

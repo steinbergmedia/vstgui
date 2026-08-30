@@ -378,4 +378,12 @@ using PlatformOptionMenuPtr = std::shared_ptr<IPlatformOptionMenu>;
 using PlatformViewLayerPtr = std::shared_ptr<IPlatformViewLayer>;
 using PlatformTextEditPtr = std::shared_ptr<IPlatformTextEdit>;
 
+enum class IPlatformBitmapPixelAccessPixelFormat : uint32_t
+{
+	kARGB,
+	kRGBA,
+	kABGR,
+	kBGRA
+};
+
 } // VSTGUI

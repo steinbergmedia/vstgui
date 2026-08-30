@@ -419,8 +419,8 @@ public:
 		#ifdef __BIG_ENDIAN__
 		return kRGBA;
 		#else
-		return kARGB;
-		#endif
+		return IPlatformBitmapPixelAccessPixelFormat::kARGB;
+#endif
 	}
 	
 protected:
