@@ -11,19 +11,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-enum class PlatformType : int32_t {
-	kHWND,		// Windows HWND
-	kNSView,	// macOS NSView
-	kUIView,	// iOS UIView
-	kHWNDTopLevel,	// Windows HWDN Top Level (non child)
-	kX11EmbedWindowID,	// X11 XID
-	kWaylandSurfaceID,	// Wayland Surface ID
-	kGdkWindow, // GdkWindow
-
-	kDefaultNative = -1
-};
-
-//-----------------------------------------------------------------------------
 // Callback interface from IPlatformFrame implementations
 //-----------------------------------------------------------------------------
 class IPlatformFrameCallback

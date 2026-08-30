@@ -5,7 +5,6 @@
 #pragma once
 
 #include "iwindowlistener.h"
-#include "../../lib/platform/iplatformframecallback.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
