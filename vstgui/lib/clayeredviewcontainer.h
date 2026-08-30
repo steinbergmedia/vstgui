@@ -7,7 +7,6 @@
 #include "cviewcontainer.h"
 #include "iviewlistener.h"
 #include "iscalefactorchangedlistener.h"
-#include "platform/iplatformviewlayer.h"
 
 namespace VSTGUI {
 
@@ -20,13 +19,12 @@ namespace VSTGUI {
 //! if available on that platform and draws into it, otherwise it acts exactly like a CViewContainer
 //-----------------------------------------------------------------------------
 class CLayeredViewContainer : public CViewContainer,
-                              public IPlatformViewLayerDelegate,
-                              public ViewContainerListenerAdapter,
-                              public IScaleFactorChangedListener
+							  public ViewContainerListenerAdapter,
+							  public IScaleFactorChangedListener
 {
 public:
 	explicit CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
-	~CLayeredViewContainer () noexcept override = default;
+	~CLayeredViewContainer () noexcept override;
 
 	PlatformViewLayerPtr getPlatformLayer () const { return layer; }
 
@@ -42,15 +40,17 @@ public:
 	void setAlphaValue (float alpha) override;
 //-----------------------------------------------------------------------------
 protected:
-	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	void drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
-							 const std::vector<CRect>& rects) override;
+							 const std::vector<CRect>& rects);
+	void drawRect (CDrawContext& context, const CRect& updateRect) override;
 	void viewContainerTransformChanged (CViewContainer& container) override;
 	void onScaleFactorChanged (CFrame& frame, double newScaleFactor) override;
 	void updateLayerSize ();
 	CGraphicsTransform getDrawTransform () const;
 	void registerListeners (bool state);
 
+	struct PlatformLayerDelegate;
+	std::unique_ptr<PlatformLayerDelegate> platformLayerDelegate;
 	PlatformViewLayerPtr layer;
 	CLayeredViewContainer* parentLayerView {nullptr};
 	uint32_t zIndex {0};

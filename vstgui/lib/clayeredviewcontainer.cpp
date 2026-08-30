@@ -7,14 +7,31 @@
 #include "cdrawcontext.h"
 #include "coffscreencontext.h"
 #include "platform/iplatformframe.h"
+#include "platform/iplatformviewlayer.h"
 
 namespace VSTGUI {
+
+//------------------------------------------------------------------------
+struct CLayeredViewContainer::PlatformLayerDelegate final : public IPlatformViewLayerDelegate
+{
+	PlatformLayerDelegate (CLayeredViewContainer& vc) : vc (vc) {}
+	void drawViewLayerRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
+							 const std::vector<CRect>& rects) override
+	{
+		vc.drawViewLayerRects (context, scaleFactor, rects);
+	}
+	CLayeredViewContainer& vc;
+};
 
 //-----------------------------------------------------------------------------
 CLayeredViewContainer::CLayeredViewContainer (const CRect& r)
 : CViewContainer (r)
 {
+	platformLayerDelegate = std::make_unique<PlatformLayerDelegate> (*this);
 }
+
+//------------------------------------------------------------------------
+CLayeredViewContainer::~CLayeredViewContainer () noexcept = default;
 
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::setZIndex (uint32_t _zIndex)
@@ -97,7 +114,8 @@ bool CLayeredViewContainer::attached (CViewContainer& _parent)
 			parent = parent->getParentView ();
 		}
 		layer = frame->getPlatformFrame ()->createPlatformViewLayer (
-			this, parentLayerView ? parentLayerView->layer.get () : nullptr);
+			platformLayerDelegate.get (),
+			parentLayerView ? parentLayerView->layer.get () : nullptr);
 		if (layer)
 		{
 			layer->setZIndex (zIndex);
