@@ -4,6 +4,7 @@
 
 #include "cvstguitimer.h"
 #include "platform/platformfactory.h"
+#include "platform/iplatformtimer.h"
 
 #if DEBUG
 #define DEBUGLOG	0
@@ -11,25 +12,34 @@
 
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer () : fireTime (0), platformTimer (nullptr) {}
+//------------------------------------------------------------------------
+struct CVSTGUITimer::PlatformCallbackImpl final : public IPlatformTimerCallback
+{
+	PlatformCallbackImpl (CVSTGUITimer& timer) : timer (timer) {}
+	void fire () override { timer.fire (); }
+
+	CVSTGUITimer& timer;
+};
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, bool doStart)
-: fireTime (fireTime)
-, callbackFunc (callback)
-, platformTimer (nullptr)
+CVSTGUITimer::CVSTGUITimer () { platformCallback = std::make_unique<PlatformCallbackImpl> (*this); }
+
+//-----------------------------------------------------------------------------
+CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t inFireTime, bool doStart)
+: CVSTGUITimer ()
 {
+	fireTime = inFireTime;
+	callbackFunc = callback;
 	if (doStart)
 		start ();
 }
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime, bool doStart)
-: fireTime (fireTime)
-, callbackFunc (std::move (callback))
-, platformTimer (nullptr)
+CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, uint32_t inFireTime, bool doStart)
+: CVSTGUITimer ()
 {
+	fireTime = inFireTime;
+	callbackFunc = std::move (callback);
 	if (doStart)
 		start ();
 }
@@ -48,7 +58,7 @@ bool CVSTGUITimer::start ()
 {
 	if (platformTimer == nullptr)
 	{
-		platformTimer = getPlatformFactory ().createTimer (this);
+		platformTimer = getPlatformFactory ().createTimer (platformCallback.get ());
 		if (platformTimer)
 		{
 			platformTimer->start (fireTime);
@@ -68,7 +78,7 @@ bool CVSTGUITimer::start (uint32_t inFireTime, CallbackFunc&& inCallback)
 	fireTime = inFireTime;
 	callbackFunc = std::move (inCallback);
 	if (platformTimer == nullptr)
-		platformTimer = getPlatformFactory ().createTimer (this);
+		platformTimer = getPlatformFactory ().createTimer (platformCallback.get ());
 	if (platformTimer)
 		platformTimer->start (fireTime);
 	return (platformTimer != nullptr);

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "vstguifwd.h"
-#include "platform/iplatformtimer.h"
 #include <functional>
 
 namespace VSTGUI {
@@ -14,7 +13,7 @@ namespace VSTGUI {
 // CVSTGUITimer Declaration
 //! A timer class, which posts timer messages to CBaseObjects or calls a lambda function (c++11 only).
 //-----------------------------------------------------------------------------
-class CVSTGUITimer final : public CBaseObject, public IPlatformTimerCallback
+class CVSTGUITimer final : public CBaseObject
 {
 public:
 	using CallbackFunc = std::function<void(CVSTGUITimer*)>;
@@ -40,12 +39,14 @@ protected:
 	~CVSTGUITimer () noexcept override;
 	void beforeDelete () override;
 
-	void fire () override;
-	
-	uint32_t fireTime;
-	CallbackFunc callbackFunc;
+	void fire ();
 
+	struct PlatformCallbackImpl;
+
+	uint32_t fireTime {0};
+	CallbackFunc callbackFunc;
 	PlatformTimerPtr platformTimer;
+	std::unique_ptr<PlatformCallbackImpl> platformCallback;
 };
 
 namespace Call
