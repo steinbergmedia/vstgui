@@ -97,7 +97,10 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, const SPtr<CFontDesc
 	}
 	auto dbSource = makeShared<GenericStringListDataBrowserSource> (&fontNames, this);
 	dbSource->setupUI (uiDef.selectionColor, uiDef.fontColor, uiDef.rowlineColor, uiDef.rowBackColor, uiDef.rowAlternateBackColor, uiDef.font, uiDef.rowHeight);
-	int32_t dbStyle = CDataBrowser::kDrawRowLines | CScrollView::kVerticalScrollbar | CScrollView::kDontDrawFrame | CScrollView::kOverlayScrollbars;
+	int32_t dbStyle = static_cast<int32_t> (CDataBrowser::kDrawRowLines) |
+					  static_cast<int32_t> (CScrollView::kVerticalScrollbar) |
+					  static_cast<int32_t> (CScrollView::kDontDrawFrame) |
+					  static_cast<int32_t> (CScrollView::kOverlayScrollbars);
 	fontBrowser =
 		makeShared<CDataBrowser> (CRect (0, 0, 200, 500), dbSource, dbStyle, uiDef.scrollbarWidth);
 	fontBrowser->setAutosizeFlags (kAutosizeLeft | kAutosizeTop | kAutosizeBottom);
