@@ -8,7 +8,7 @@
 #include "../lib/cview.h"
 #include "../lib/cstring.h"
 #include "detail/uiviewcreatorattributes.h"
-#include "../lib/platform/std_unorderedmap.h"
+#include <unordered_map>
 
 namespace VSTGUI {
 

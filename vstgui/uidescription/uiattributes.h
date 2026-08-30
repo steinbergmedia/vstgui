@@ -7,8 +7,8 @@
 #include "../lib/vstguifwd.h"
 #include "../lib/cstring.h"
 
+#include <unordered_map>
 #include <vector>
-#include "../lib/platform/std_unorderedmap.h"
 
 namespace VSTGUI {
 class OutputStream;

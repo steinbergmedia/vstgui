@@ -24,7 +24,6 @@
 #include "../lib/cbitmapfilter.h"
 #include "../lib/dispatchlist.h"
 #include "../lib/finally.h"
-#include "../lib/platform/std_unorderedmap.h"
 #include "../lib/platform/iplatformbitmap.h"
 #include "../lib/platform/iplatformfont.h"
 #include "detail/locale.h"
@@ -35,6 +34,7 @@
 #include "detail/uinode.h"
 #include "detail/uiviewcreatorattributes.h"
 #include "detail/uixmlpersistence.h"
+#include <unordered_map>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
