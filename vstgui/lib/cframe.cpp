@@ -16,6 +16,7 @@
 #include "controls/ctextedit.h"
 #include "platform/platformfactory.h"
 #include "platform/iplatformframe.h"
+#include "platform/iplatformframecallback.h"
 #include <cassert>
 #include <vector>
 #include <queue>
@@ -57,12 +58,13 @@ struct ModalViewSession
 };
 
 //------------------------------------------------------------------------
-struct CFrame::Impl
+struct CFrame::Impl final : IPlatformFrameCallback
 {
 	using ViewList = std::list<SPtr<CView>>;
 	using FunctionQueue = std::queue<EventProcessingFunction>;
 	using ModalViewSessionStack = std::stack<ModalViewSession>;
 
+	CFrame& frame;
 	PlatformFramePtr platformFrame;
 	VSTGUIEditorInterface* editor {nullptr};
 	IViewAddedRemovedObserver* viewAddedRemovedObserver {nullptr};
@@ -114,6 +116,76 @@ struct CFrame::Impl
 		Impl& impl;
 		bool wasInEventHandling;
 	};
+
+	Impl (CFrame& f) : frame (f) {}
+
+	void platformDrawRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
+							const std::vector<CRect>& rects) override
+	{
+		CDrawContext drawContext (context, frame.getViewSize (), scaleFactor);
+		for (auto rect : rects)
+			frame.drawRect (drawContext, rect);
+	}
+	void platformOnEvent (Event& event) override { frame.dispatchEvent (event); }
+	DragOperation platformOnDragEnter (DragEventData data) override
+	{
+		if (!frame.getMouseEnabled ())
+			return DragOperation::None;
+		PostEventHandler peh (*this);
+		CollectInvalidRects cir (&frame);
+		return frame.getDropTarget ()->onDragEnter (data);
+	}
+	DragOperation platformOnDragMove (DragEventData data) override
+	{
+		if (!frame.getMouseEnabled ())
+			return DragOperation::None;
+		Impl::PostEventHandler peh (*this);
+		CollectInvalidRects cir (&frame);
+		return frame.getDropTarget ()->onDragMove (data);
+	}
+	void platformOnDragLeave (DragEventData data) override
+	{
+		if (!frame.getMouseEnabled ())
+			return;
+		Impl::PostEventHandler peh (*this);
+		CollectInvalidRects cir (&frame);
+		frame.getDropTarget ()->onDragLeave (data);
+	}
+	bool platformOnDrop (DragEventData data) override
+	{
+		if (!frame.getMouseEnabled ())
+			return false;
+		Impl::PostEventHandler peh (*this);
+		CollectInvalidRects cir (&frame);
+		return frame.getDropTarget ()->onDrop (data);
+	}
+	void platformOnActivate (bool state) override
+	{
+		if (frame.getFrame ())
+		{
+			CollectInvalidRects cir (&frame);
+			frame.onActivate (state);
+		}
+	}
+	void platformOnWindowActivate (bool state) override
+	{
+		if (windowActive == state)
+			return;
+		windowActive = state;
+		CollectInvalidRects cir (&frame);
+		windowActiveStateChangeViews.forEach (
+			[&] (CView* view) { view->onWindowActivate (state); });
+	}
+	void platformScaleFactorChanged (double newScaleFactor) override
+	{
+		if (platformScaleFactor == newScaleFactor)
+			return;
+		platformScaleFactor = newScaleFactor;
+		frame.dispatchNewScaleFactor (frame.getScaleFactor ());
+	}
+#if VSTGUI_TOUCH_EVENT_HANDLING
+	void platformOnTouchEvent (ITouchEvent& event) override { frame.onTouchEvent (event); }
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -129,7 +201,7 @@ On Windows it's a WS_CHILD Window.
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor) : CViewContainer (inSize)
 {
-	pImpl = new Impl;
+	pImpl = new Impl (*this);
 	pImpl->editor = inEditor;
 
 	setParentFrame (this);
@@ -204,8 +276,8 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType, IPlatformFram
 	if (!systemWin || isAttached ())
 		return false;
 
-	pImpl->platformFrame = getPlatformFactory ().createFrame (this, getViewSize (), systemWin,
-	                                                          systemWindowType, config);
+	pImpl->platformFrame = getPlatformFactory ().createFrame (pImpl, getViewSize (), systemWin,
+															  systemWindowType, config);
 	if (!pImpl->platformFrame)
 	{
 		return false;
@@ -1557,92 +1629,6 @@ VSTGUIEditorInterface* CFrame::getEditor () const
 const PlatformFramePtr& CFrame::getPlatformFrame () const { return pImpl->platformFrame; }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformDrawRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
-								const std::vector<CRect>& rects)
-{
-	CDrawContext drawContext (context, getViewSize (), scaleFactor);
-	for (auto rect : rects)
-		drawRect (drawContext, rect);
-}
-
-//-----------------------------------------------------------------------------
-void CFrame::platformOnEvent (Event& event)
-{
-	dispatchEvent (event);
-}
-
-//-----------------------------------------------------------------------------
-DragOperation CFrame::platformOnDragEnter (DragEventData data)
-{
-	if (!getMouseEnabled ())
-		return DragOperation::None;
-	Impl::PostEventHandler peh (*pImpl);
-	CollectInvalidRects cir (this);
-	return getDropTarget ()->onDragEnter (data);
-}
-
-//-----------------------------------------------------------------------------
-DragOperation CFrame::platformOnDragMove (DragEventData data)
-{
-	if (!getMouseEnabled ())
-		return DragOperation::None;
-	Impl::PostEventHandler peh (*pImpl);
-	CollectInvalidRects cir (this);
-	return getDropTarget ()->onDragMove (data);
-}
-
-//-----------------------------------------------------------------------------
-void CFrame::platformOnDragLeave (DragEventData data)
-{
-	if (!getMouseEnabled ())
-		return;
-	Impl::PostEventHandler peh (*pImpl);
-	CollectInvalidRects cir (this);
-	getDropTarget ()->onDragLeave (data);
-}
-
-//-----------------------------------------------------------------------------
-bool CFrame::platformOnDrop (DragEventData data)
-{
-	if (!getMouseEnabled ())
-		return false;
-	Impl::PostEventHandler peh (*pImpl);
-	CollectInvalidRects cir (this);
-	return getDropTarget ()->onDrop (data);
-}
-
-//-----------------------------------------------------------------------------
-void CFrame::platformOnActivate (bool state)
-{
-	if (getFrame ())
-	{
-		CollectInvalidRects cir (this);
-		onActivate (state);
-	}
-}
-
-//------------------------------------------------------------------------
-void CFrame::platformOnWindowActivate (bool state)
-{
-	if (pImpl->windowActive == state)
-		return;
-	pImpl->windowActive = state;
-	CollectInvalidRects cir (this);
-	pImpl->windowActiveStateChangeViews.forEach ([&] (CView* view) {
-		view->onWindowActivate (state);
-	});
-}
-
-//-----------------------------------------------------------------------------
-void CFrame::platformScaleFactorChanged (double newScaleFactor)
-{
-	if (pImpl->platformScaleFactor == newScaleFactor)
-		return;
-	pImpl->platformScaleFactor = newScaleFactor;
-	dispatchNewScaleFactor (getScaleFactor ());
-}
-
-//-----------------------------------------------------------------------------
 void CFrame::dispatchNewScaleFactor (double newScaleFactor)
 {
 	pImpl->scaleFactorChangedListenerList.forEach ([&] (IScaleFactorChangedListener* listener) {
@@ -1652,7 +1638,7 @@ void CFrame::dispatchNewScaleFactor (double newScaleFactor)
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 //-----------------------------------------------------------------------------
-void CFrame::platformOnTouchEvent (ITouchEvent& event)
+void CFrame::onTouchEvent (ITouchEvent& event)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	std::vector<CView*> targetDispatched;

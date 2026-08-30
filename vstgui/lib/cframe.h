@@ -7,7 +7,6 @@
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
 #include "optional.h"
-#include "platform/iplatformframecallback.h"
 
 namespace VSTGUI {
 
@@ -31,7 +30,7 @@ extern IdStringPtr kMsgOldFocusView;
 //! @brief The CFrame is the parent container of all views
 /// @ingroup containerviews
 //-----------------------------------------------------------------------------
-class CFrame final : public CViewContainer, public IPlatformFrameCallback
+class CFrame final : public CViewContainer
 {
 public:
 	CFrame (const CRect& size, VSTGUIEditorInterface* pEditor);
@@ -240,23 +239,11 @@ protected:
 
 	void dispatchNewScaleFactor (double newScaleFactor);
 
-	// platform frame
-	void platformDrawRects (const PlatformGraphicsDeviceContextPtr& context, double scaleFactor,
-							const std::vector<CRect>& rects) override;
-	void platformOnEvent (Event& event) override;
-	DragOperation platformOnDragEnter (DragEventData data) override;
-	DragOperation platformOnDragMove (DragEventData data) override;
-	void platformOnDragLeave (DragEventData data) override;
-	bool platformOnDrop (DragEventData data) override;
-	void platformOnActivate (bool state) override;
-	void platformOnWindowActivate (bool state) override;
-	void platformScaleFactorChanged (double newScaleFactor) override;
 #if VSTGUI_TOUCH_EVENT_HANDLING
-	void platformOnTouchEvent (ITouchEvent& event) override;
+void onTouchEvent (ITouchEvent& event)
 #endif
 
-private:
-	void initModalViewSession (const ModalViewSession& session);
+	private : void initModalViewSession (const ModalViewSession& session);
 	void clearModalViewSessions ();
 	void dispatchKeyboardEvent (KeyboardEvent& event);
 	void dispatchMouseEvent (MouseEvent& event);
