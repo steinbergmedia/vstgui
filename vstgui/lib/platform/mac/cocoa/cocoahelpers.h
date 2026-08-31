@@ -18,6 +18,7 @@
 #define HIDDEN __attribute__((__visibility__("hidden")))
 
 //------------------------------------------------------------------------------------
+extern HIDDEN void SetModifierFlags (NSUInteger modifiers, VSTGUI::KeyboardEvent& event);
 extern HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, VSTGUI::KeyboardEvent& event);
 extern HIDDEN NSString* GetVirtualKeyCodeString (VSTGUI::VirtualKey virtualKey);
 extern HIDDEN int32_t eventButton (NSEvent* theEvent);
@@ -78,12 +79,20 @@ struct MacEventModifier
 		ShiftKeyMask = NSEventModifierFlagShift,
 		CommandKeyMask = NSEventModifierFlagCommand,
 		AlternateKeyMask = NSEventModifierFlagOption,
-		ControlKeyMask = NSEventModifierFlagControl
+		ControlKeyMask = NSEventModifierFlagControl,
+		CapsLockKeyMask = NSEventModifierFlagCapsLock,
+		NumericPadKeyMask = NSEventModifierFlagNumericPad,
+		HelpKeyMask = NSEventModifierFlagHelp,
+		FunctionKeyMask = NSEventModifierFlagFunction
 #else
 		ShiftKeyMask = NSShiftKeyMask,
 		CommandKeyMask = NSCommandKeyMask,
 		AlternateKeyMask = NSAlternateKeyMask,
-		ControlKeyMask = NSControlKeyMask
+		ControlKeyMask = NSControlKeyMask,
+		CapsLockKeyMask = NSAlphaShiftKeyMask,
+		NumericPadKeyMask = NSNumericPadKeyMask,
+		HelpKeyMask = NSHelpKeyMask,
+		FunctionKeyMask = NSFunctionKeyMask
 #endif
 	};
 };

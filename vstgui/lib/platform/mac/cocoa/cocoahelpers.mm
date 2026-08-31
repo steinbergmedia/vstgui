@@ -17,18 +17,83 @@ using namespace VSTGUI;
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
+HIDDEN void SetModifierFlags (NSUInteger modifiers, KeyboardEvent& event)
+{
+	if (modifiers & MacEventModifier::ShiftKeyMask)
+		event.modifiers.add (ModifierKey::Shift);
+	if (modifiers & MacEventModifier::CommandKeyMask)
+		event.modifiers.add (ModifierKey::Control);
+	if (modifiers & MacEventModifier::AlternateKeyMask)
+		event.modifiers.add (ModifierKey::Alt);
+	if (modifiers & MacEventModifier::ControlKeyMask)
+		event.modifiers.add (ModifierKey::Super);
+
+	if (modifiers & MacEventModifier::CapsLockKeyMask)
+		event.modifiers.add (ModifierKey::CapsLock);
+	if (modifiers & MacEventModifier::NumericPadKeyMask)
+		event.modifiers.add (ModifierKey::NumPad);
+	if (modifiers & MacEventModifier::HelpKeyMask)
+		event.modifiers.add (ModifierKey::Help);
+	if (modifiers & MacEventModifier::FunctionKeyMask)
+		event.modifiers.add (ModifierKey::Fn);
+
+	if (event.modifiers.is(ModifierKey::Shift))
+		event.virt = VirtualKey::ShiftModifier;
+	if (event.modifiers.is(ModifierKey::Control))
+		event.virt = VirtualKey::ControlModifier;
+	if (event.modifiers.is(ModifierKey::Alt))
+		event.virt = VirtualKey::AltModifier;
+	if (event.modifiers.is(ModifierKey::Super))
+		event.virt = VirtualKey::SuperModifier;
+
+	if (event.modifiers.is(ModifierKey::CapsLock))
+		event.virt = VirtualKey::CapsLockModifier;
+	if (event.modifiers.is(ModifierKey::Help))
+		event.virt = VirtualKey::Help;
+	if (event.modifiers.is(ModifierKey::Fn))
+		event.virt = VirtualKey::FunctionModifier;
+}
+
 HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, KeyboardEvent& event)
 {
 	if (theEvent.type == NSEventTypeKeyUp)
 		event.type = EventType::KeyUp;
-	else if (theEvent.type == NSEventTypeKeyDown || theEvent.type == NSEventTypeFlagsChanged)
+	else if (theEvent.type == NSEventTypeKeyDown)
 	{
 		event.type = EventType::KeyDown;
 		if (theEvent.ARepeat)
 			event.isRepeat = true;
 	}
+	else if (theEvent.type == NSEventTypeFlagsChanged)
+	{
+		event.type = EventType::KeyDown;
+	}
 	else
 		return false;
+
+	NSUInteger modifiers = [theEvent modifierFlags];
+	SetModifierFlags (modifiers, event);
+
+	if (theEvent.type == NSEventTypeFlagsChanged)
+	{
+		static Modifiers lastModifiers;
+		static VirtualKey lastVirtKey;
+
+		Modifiers currentModifiers = event.modifiers;
+		VirtualKey currentVirtKey = event.virt;
+
+		// Simulate KeyUp when flags snap back to 0
+		if (currentModifiers.empty() && !lastModifiers.empty()) {
+			event.type = EventType::KeyUp;
+			event.modifiers = lastModifiers;
+			event.virt = lastVirtKey;
+		}
+
+		lastModifiers = currentModifiers;
+		lastVirtKey = currentVirtKey;
+		return true;
+	}
+
     NSString *s = [theEvent charactersIgnoringModifiers];
     if ([s length] == 1)
 	{
@@ -118,16 +183,6 @@ HIDDEN bool CreateKeyboardEventFromNSEvent (NSEvent* theEvent, KeyboardEvent& ev
 		}
     }
 
-	NSUInteger modifiers = [theEvent modifierFlags];
-	if (modifiers & MacEventModifier::ShiftKeyMask)
-		event.modifiers.add (ModifierKey::Shift);
-	if (modifiers & MacEventModifier::CommandKeyMask)
-		event.modifiers.add (ModifierKey::Control);
-	if (modifiers & MacEventModifier::AlternateKeyMask)
-		event.modifiers.add (ModifierKey::Alt);
-	if (modifiers & MacEventModifier::ControlKeyMask)
-		event.modifiers.add (ModifierKey::Super);
-
 	return true;
 }
 
@@ -194,6 +249,9 @@ HIDDEN NSString* GetVirtualKeyCodeString (VirtualKey virtualKey)
 		case VirtualKey::ShiftModifier: break;
 		case VirtualKey::ControlModifier: break;
 		case VirtualKey::AltModifier: break;
+		case VirtualKey::SuperModifier: break;
+		case VirtualKey::CapsLockModifier: break;
+		case VirtualKey::FunctionModifier: break;
 		case VirtualKey::None: break;
 	}
 	if (character != 0)
