@@ -10,8 +10,6 @@
 #include "../lib/animation/animations.h"
 #include "../lib/platform/platformfactory.h"
 #include "../uidescription/detail/uiviewcreatorattributes.h"
-#include "../uidescription/editing/uieditcontroller.h"
-#include "../uidescription/editing/uieditmenucontroller.h"
 #include "../uidescription/uiattributes.h"
 #include "../uidescription/uiviewfactory.h"
 #include "../uidescription/cstream.h"
@@ -22,6 +20,11 @@
 #include <cassert>
 #include <list>
 #include <sstream>
+
+#if VSTGUI_LIVE_EDITING
+#include "../uidescription/editing/uieditcontroller.h"
+#include "../uidescription/editing/uieditmenucontroller.h"
+#endif
 
 #if LINUX
 #include "../lib/platform/linux/x11frame.h"
