@@ -99,8 +99,8 @@ inline SPtr<I> owned (I* p) noexcept
 }
 
 //------------------------------------------------------------------------
-template<class I>
-inline SPtr<I> shared (I* p) noexcept
+template<class I, typename = std::enable_if_t<std::is_base_of_v<IReference, I>>>
+inline SPtr<I> shared (I* p)
 {
 	return p ? std::dynamic_pointer_cast<I> (p->shared_from_this ()) : nullptr;
 }
