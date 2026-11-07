@@ -80,8 +80,8 @@ struct Deleter
 {
 	void operator() (T* p) const noexcept
 	{
-		if (auto rc = static_cast<IReference*> (p))
-			rc->beforeDelete ();
+		if constexpr (std::is_base_of_v<IReference, T>)
+			static_cast<IReference*> (p)->beforeDelete ();
 		delete p;
 	}
 };
