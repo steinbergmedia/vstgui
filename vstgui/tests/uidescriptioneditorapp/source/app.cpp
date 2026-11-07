@@ -73,7 +73,7 @@ public:
 
 	bool init ()
 	{
-		uidesc = makeShared<UIDescription> (descPath.data ());
+		uidesc = UIDescription::make (descPath.data ());
 		if (!uidesc->parse ())
 		{
 			// TODO: show alert about error
@@ -81,14 +81,14 @@ public:
 			return false;
 		}
 		uidesc->setFilePath (descPath.data ());
-		lightResDesc = makeShared<UIDescription> (lightResPath.data ());
+		lightResDesc = UIDescription::make (lightResPath.data ());
 		if (!lightResDesc->parse ())
 		{
 			// TODO: show alert about error
 			IApplication::instance ().quit ();
 			return false;
 		}
-		darkResDesc = makeShared<UIDescription> (darkResPath.data ());
+		darkResDesc = UIDescription::make (darkResPath.data ());
 		if (!darkResDesc->parse ())
 		{
 			darkResDesc = nullptr;
@@ -102,7 +102,7 @@ public:
 		{
 			uidesc->setSharedResources (lightResDesc);
 		}
-		editController = makeShared<UIEditController> (uidesc);
+		editController = UIEditController::make (uidesc);
 
 		return true;
 	}
@@ -135,10 +135,9 @@ public:
 		editController->setDarkTheme (useDarkTheme);
 		if (auto view = editController->createEditView ())
 		{
-			editController->remember (); // view will forget it too
 			frame->setViewSize (view->getViewSize ());
 			frame->addSubview (view);
-			window.setContentView (frame);
+			window.setContentView (frame.get ());
 
 			auto focusDrawingSettings = uidesc->getFocusDrawingSettings ();
 			if (focusDrawingSettings.enabled)
@@ -275,9 +274,9 @@ public:
 		return false;
 	}
 
-	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override
+	void onSetContentView (IWindow& window, CFrame* contentView) override
 	{
-		if (auto platformFrame = contentView->getPlatformFrame ())
+		if (const auto& platformFrame = contentView->getPlatformFrame ())
 		{
 			platformFrame->setupGenericOptionMenu (true);
 		}
