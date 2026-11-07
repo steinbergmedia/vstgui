@@ -259,7 +259,7 @@ void Application::onQuit ()
 //------------------------------------------------------------------------
 bool Application::canQuit ()
 {
-	if (!delegate->canQuit ())
+	if (delegate && !delegate->canQuit ())
 		return false;
 
 	auto currentWindows = windows; // make a copy
