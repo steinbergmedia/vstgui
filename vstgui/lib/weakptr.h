@@ -17,7 +17,7 @@ struct WeakPointer : std::weak_ptr<I>
 	using std::weak_ptr<I>::weak_ptr;
 
 	template<typename T>
-	WeakPointer (const SPtr<T>& sp) : std::weak_ptr<I> (std::static_pointer_cast<I> (sp))
+	WeakPointer (const SPtr<T>& sp) : std::weak_ptr<I> (std::dynamic_pointer_cast<I> (sp))
 	{
 	}
 
@@ -37,7 +37,7 @@ struct WeakPointerSupport
 
 	WeakPointer<T> weakFromThis () const
 	{
-		return WeakPointer<T> (std::static_pointer_cast<T> (
+		return WeakPointer<T> (std::dynamic_pointer_cast<T> (
 			const_cast<T*> (static_cast<const T*> (this))->shared_from_this ()));
 	}
 };

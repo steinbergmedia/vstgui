@@ -109,7 +109,7 @@ private:
 			if (*customName == "DataBrowser")
 			{
 				int32_t style = CDataBrowser::kVerticalScrollbar | CDataBrowser::kDontDrawFrame;
-				browser = makeShared<CDataBrowser> (CRect {}, this, style);
+				browser = makeShared<CDataBrowser> (CRect {}, shared (this), style);
 				return browser;
 			}
 		}
@@ -339,8 +339,7 @@ private:
 				}
 				auto frame = b.getFrame ();
 				frame->addSubview (menu);
-				menu->popup ([this, row, frame,
-							  bPtr = WeakPointer<CDataBrowser> (b.weakFromThis ())] (auto menu) {
+				menu->popup ([this, row, frame, bPtr = b.weakFromThis ()] (auto menu) {
 					if (menu)
 					{
 						switch (menu->getLastResult ())
@@ -356,7 +355,7 @@ private:
 								break;
 						}
 						if (auto b = bPtr.lock ())
-							b->invalidateRow (row);
+							b.cast<CDataBrowser> ()->invalidateRow (row);
 						dataChanged ();
 						frame->removeSubview (menu);
 					}
@@ -402,7 +401,7 @@ struct GridLayoutWindowController : public WindowControllerAdapter,
 		container->setAutosizeFlags (kAutosizeAll);
 		container->setViewLayouter (layouter);
 		frame->addSubview (container);
-		window.setContentView (frame);
+		window.setContentView (frame.get ());
 	}
 
 	void setGridProperties (const GridLayoutProperties& properties, size_t numChildsToCreate)
@@ -598,7 +597,7 @@ struct GridLayoutPropertiesWindowController : DelegationController,
 	{
 		if (!container)
 		{
-			if ((container = view->asViewContainer ()))
+			if ((container = shared (view->asViewContainer ())))
 			{
 				GridLayoutProperties grid;
 				grid.rows = 15;

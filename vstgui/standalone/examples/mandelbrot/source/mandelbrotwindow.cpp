@@ -18,6 +18,7 @@
 #include "vstgui/lib/iscalefactorchangedlistener.h"
 #include "vstgui/lib/iviewlistener.h"
 #include "vstgui/lib/platform/platformfactory.h"
+#include "vstgui/lib/platform/iplatformbitmap.h"
 #include "vstgui/standalone/include/helpers/async.h"
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/value.h"
@@ -52,32 +53,32 @@ inline CColor calculateColor (uint32_t iteration, double maxIterationInv)
 }
 
 //------------------------------------------------------------------------
-inline std::function<uint32_t (CColor)> getColorToInt32 (IPlatformBitmapPixelAccess::PixelFormat f)
+inline std::function<uint32_t (CColor)> getColorToInt32 (IPlatformBitmapPixelAccessPixelFormat f)
 {
 	switch (f)
 	{
-		case IPlatformBitmapPixelAccess::kARGB:
+		case IPlatformBitmapPixelAccessPixelFormat::kARGB:
 		{
 			return [] (CColor color) {
 				return (color.red << 8) | (color.green << 16) | (color.blue << 24) | (color.alpha);
 			};
 			break;
 		}
-		case IPlatformBitmapPixelAccess::kABGR:
+		case IPlatformBitmapPixelAccessPixelFormat::kABGR:
 		{
 			return [] (CColor color) {
 				return (color.blue << 8) | (color.green << 16) | (color.red << 24) | (color.alpha);
 			};
 			break;
 		}
-		case IPlatformBitmapPixelAccess::kRGBA:
+		case IPlatformBitmapPixelAccessPixelFormat::kRGBA:
 		{
 			return [] (CColor color) {
 				return (color.red) | (color.green << 8) | (color.blue << 16) | (color.alpha << 24);
 			};
 			break;
 		}
-		//case IPlatformBitmapPixelAccess::kBGRA:
+		// case IPlatformBitmapPixelAccessPixelFormat::kBGRA:
 		default:
 		{
 			return [] (CColor color) {
