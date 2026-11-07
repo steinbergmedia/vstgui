@@ -36,6 +36,7 @@ public:
 	void controlTagDidChange (CControl& pControl) override {}
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 struct LegacyControlListenerAdapter : public ControlListenerAdapter
 {
@@ -56,5 +57,6 @@ struct LegacyControlListenerAdapter : public ControlListenerAdapter
 	virtual void controlTagWillChange (CControl* pControl) {}
 	virtual void controlTagDidChange (CControl* pControl) {}
 };
+#endif
 
 } // VSTGUI

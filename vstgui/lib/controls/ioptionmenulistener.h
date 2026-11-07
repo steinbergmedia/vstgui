@@ -46,6 +46,7 @@ public:
 	}
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 struct LegacyOptionMenuListenerAdapter : OptionMenuListenerAdapter
 {
@@ -65,6 +66,7 @@ struct LegacyOptionMenuListenerAdapter : OptionMenuListenerAdapter
 		return false;
 	}
 };
+#endif
 
 //------------------------------------------------------------------------
 } // VSTGUI

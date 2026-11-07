@@ -24,6 +24,7 @@ public:
 	void onScaleFactorChanged (CFrame& frame, double newScaleFactor) override {}
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 struct LegacyScaleFactorChangedListenerAdapter : ScaleFactorChangedListenerAdapter
 {
@@ -34,5 +35,6 @@ struct LegacyScaleFactorChangedListenerAdapter : ScaleFactorChangedListenerAdapt
 
 	virtual void onScaleFactorChanged (CFrame* frame, double newScaleFactor) {}
 };
+#endif
 
 } // VSTGUI

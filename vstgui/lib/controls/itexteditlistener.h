@@ -30,6 +30,7 @@ public:
 	void onTextEditPlatformControlLostFocus (CTextEdit& textEdit) override {}
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 struct LegacyTextEditListenerAdapter : TextEditListenerAdapter
 {
@@ -45,6 +46,7 @@ struct LegacyTextEditListenerAdapter : TextEditListenerAdapter
 	virtual void onTextEditPlatformControlTookFocus (CTextEdit* textEdit) {}
 	virtual void onTextEditPlatformControlLostFocus (CTextEdit* textEdit) {}
 };
+#endif
 
 //------------------------------------------------------------------------
 } // VSTGUI

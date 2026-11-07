@@ -114,6 +114,9 @@ public:
 	void viewContainerTransformChanged (CViewContainer& container) override {}
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+// Transition-only bridges.
+// Prefer the non-Legacy adapters instead.
 //------------------------------------------------------------------------
 struct LegacyViewListenerAdapter : ViewListenerAdapter
 {
@@ -170,6 +173,7 @@ struct LegacyViewContainerListenerAdapter : ViewContainerListenerAdapter
 	virtual void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) {}
 	virtual void viewContainerTransformChanged (CViewContainer* container) {}
 };
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //------------------------------------------------------------------------
 } // VSTGUI
