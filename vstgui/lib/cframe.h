@@ -334,4 +334,16 @@ public:
 									 const SPtr<CView>& oldFocusView) = 0;
 };
 
+//------------------------------------------------------------------------
+struct LegacyMouseObserver : IMouseObserver
+{
+	void onMouseEntered (CView& view, CFrame& frame) final { onMouseEntered (&view, &frame); }
+	void onMouseExited (CView& view, CFrame& frame) final { onMouseExited (&view, &frame); }
+	void onMouseEvent (MouseEvent& event, CFrame& frame) final { onMouseEvent (event, &frame); }
+
+	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
+	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
+	virtual void onMouseEvent (MouseEvent& event, CFrame* frame) = 0;
+};
+
 } // VSTGUI

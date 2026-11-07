@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -34,6 +34,27 @@ public:
 	void controlEndEdit (CControl& pControl) override {}
 	void controlTagWillChange (CControl& pControl) override {}
 	void controlTagDidChange (CControl& pControl) override {}
+};
+
+//------------------------------------------------------------------------
+struct LegacyControlListenerAdapter : public ControlListenerAdapter
+{
+	void valueChanged (CControl& pControl) final { valueChanged (&pControl); }
+	int32_t controlModifierClicked (CControl& pControl, CButtonState button) final
+	{
+		return controlModifierClicked (&pControl, button);
+	}
+	void controlBeginEdit (CControl& pControl) final { controlBeginEdit (&pControl); }
+	void controlEndEdit (CControl& pControl) final { controlEndEdit (&pControl); }
+	void controlTagWillChange (CControl& pControl) final { controlTagWillChange (&pControl); }
+	void controlTagDidChange (CControl& pControl) final { controlTagDidChange (&pControl); }
+
+	virtual void valueChanged (CControl* pControl) {}
+	virtual int32_t controlModifierClicked (CControl* pControl, CButtonState button) { return 0; }
+	virtual void controlBeginEdit (CControl* pControl) {}
+	virtual void controlEndEdit (CControl* pControl) {}
+	virtual void controlTagWillChange (CControl* pControl) {}
+	virtual void controlTagDidChange (CControl* pControl) {}
 };
 
 } // VSTGUI

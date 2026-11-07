@@ -47,4 +47,24 @@ public:
 };
 
 //------------------------------------------------------------------------
+struct LegacyOptionMenuListenerAdapter : OptionMenuListenerAdapter
+{
+	void onOptionMenuPrePopup (COptionMenu& menu) final { onOptionMenuPrePopup (&menu); }
+	void onOptionMenuPostPopup (COptionMenu& menu) final { onOptionMenuPostPopup (&menu); }
+	bool onOptionMenuSetPopupResult (COptionMenu& menu, COptionMenu* selectedMenu,
+									 int32_t selectedIndex) final
+	{
+		return onOptionMenuSetPopupResult (&menu, selectedMenu, selectedIndex);
+	}
+
+	virtual void onOptionMenuPrePopup (COptionMenu* menu) {}
+	virtual void onOptionMenuPostPopup (COptionMenu* menu) {}
+	virtual bool onOptionMenuSetPopupResult (COptionMenu* menu, COptionMenu* selectedMenu,
+											 int32_t selectedIndex)
+	{
+		return false;
+	}
+};
+
+//------------------------------------------------------------------------
 } // VSTGUI

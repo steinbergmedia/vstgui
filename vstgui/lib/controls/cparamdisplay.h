@@ -84,13 +84,15 @@ public:
 
 	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
+	void resetValueToStringFunction ();
 
 	using ValueToStringFunction2 =
 		std::function<bool (float value, std::string& result, CParamDisplay& display)>;
 
 	void setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc);
 	void setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc);
-	
+	void resetValueToStringFunction2 ();
+
 	enum Style
 	{
 		kShadowText		= 1 << StyleShadowText,
@@ -116,6 +118,25 @@ public:
 	void draw (CDrawContext& context) override;
 	bool getFocusPath (CGraphicsPath& outPath, CCoord focusLineWidth) override;
 	bool removed (CViewContainer& parent) override;
+
+	// legacy
+	using LegacyValueToStringFunction =
+		std::function<bool (float value, char utf8String[256], CParamDisplay* display)>;
+	using LegacyValueToStringFunction2 =
+		std::function<bool (float value, std::string& result, CParamDisplay* display)>;
+
+	void setValueToStringFunction (const LegacyValueToStringFunction& f)
+	{
+		setValueToStringFunction ([f] (float value, char utf8String[256], CParamDisplay& display) {
+			return f (value, utf8String, &display);
+		});
+	}
+	void setValueToStringFunction2 (const LegacyValueToStringFunction2& f)
+	{
+		setValueToStringFunction2 ([f] (float value, std::string& result, CParamDisplay& display) {
+			return f (value, result, &display);
+		});
+	}
 
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CParamDisplay)

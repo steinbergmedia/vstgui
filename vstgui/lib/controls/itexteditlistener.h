@@ -15,7 +15,8 @@ namespace VSTGUI {
 class ITextEditListener : public virtual IReference
 {
 public:
-	/** called when the native platform text edit control was created and started to listen for keyboard input. */
+	/** called when the native platform text edit control was created and started to listen for
+	 * keyboard input. */
 	virtual void onTextEditPlatformControlTookFocus (CTextEdit& textEdit) = 0;
 	/** called when the natvie platform text edit control is going to be destroyed. */
 	virtual void onTextEditPlatformControlLostFocus (CTextEdit& textEdit) = 0;
@@ -27,6 +28,22 @@ class TextEditListenerAdapter : public ITextEditListener
 public:
 	void onTextEditPlatformControlTookFocus (CTextEdit& textEdit) override {}
 	void onTextEditPlatformControlLostFocus (CTextEdit& textEdit) override {}
+};
+
+//------------------------------------------------------------------------
+struct LegacyTextEditListenerAdapter : TextEditListenerAdapter
+{
+	void onTextEditPlatformControlTookFocus (CTextEdit& textEdit) final
+	{
+		onTextEditPlatformControlTookFocus (&textEdit);
+	}
+	void onTextEditPlatformControlLostFocus (CTextEdit& textEdit) final
+	{
+		onTextEditPlatformControlLostFocus (&textEdit);
+	}
+
+	virtual void onTextEditPlatformControlTookFocus (CTextEdit* textEdit) {}
+	virtual void onTextEditPlatformControlLostFocus (CTextEdit* textEdit) {}
 };
 
 //------------------------------------------------------------------------

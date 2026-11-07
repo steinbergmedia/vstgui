@@ -278,6 +278,8 @@ private:
 #define VSTGUI_OLDER_THAN(major, minor)                                                            \
 	(VSTGUI_VERSION < major || (VSTGUI_VERSION_MAJOR == major && VSTGUI_VERSION_MINOR < minor))
 
+#define VSTGUI_5_OR_NEWER VSTGUI_NEWER_THAN (4, 98)
+
 } // VSTGUI
 
 //-----------------------------------------------------------------------------

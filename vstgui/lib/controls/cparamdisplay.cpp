@@ -87,11 +87,17 @@ void CParamDisplay::setValueToStringFunction2 (ValueToStringFunction2&& valueToS
 }
 
 //------------------------------------------------------------------------
+void CParamDisplay::resetValueToStringFunction2 () { valueToStringFunction = {}; }
+
+//------------------------------------------------------------------------
+void CParamDisplay::resetValueToStringFunction () { resetValueToStringFunction2 (); }
+
+//------------------------------------------------------------------------
 void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& func)
 {
 	if (!func)
 	{
-		setValueToStringFunction2 (nullptr);
+		resetValueToStringFunction ();
 		return;
 	}
 	setValueToStringFunction2 ([=] (float value, std::string& str, CParamDisplay& display) {

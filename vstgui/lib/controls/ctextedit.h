@@ -50,7 +50,8 @@ public:
 
 	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);
-	
+	void resetStringToValueFunction ();
+
 	/** enable/disable immediate text change behaviour */
 	virtual void setImmediateTextChange (bool state);
 	/** get immediate text change behaviour */
@@ -88,6 +89,16 @@ public:
 	bool bWasReturnPressed {false};
 
 	PlatformTextEditPtr getPlatformTextEdit () const { return platformControl; }
+
+	using LegacyStringToValueFunction =
+		std::function<bool (UTF8StringPtr txt, float& result, CTextEdit* textEdit)>;
+
+	void setStringToValueFunction (const LegacyStringToValueFunction& f)
+	{
+		setStringToValueFunction ([f] (UTF8StringPtr txt, float& result, CTextEdit& textEdit) {
+			return f (txt, result, &textEdit);
+		});
+	}
 
 protected:
 	VSTGUI_SHAREDPTR_FRIEND (CTextEdit)

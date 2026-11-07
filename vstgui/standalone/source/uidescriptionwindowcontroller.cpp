@@ -255,9 +255,9 @@ protected:
 	{
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
-			paramDisplay->setValueToStringFunction (nullptr);
+			paramDisplay->resetValueToStringFunction ();
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
-				textEdit->setStringToValueFunction (nullptr);
+				textEdit->resetStringToValueFunction ();
 		}
 		else if (auto listControl = dynamic_cast<CListControl*> (control))
 		{

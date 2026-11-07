@@ -110,6 +110,9 @@ void CTextEdit::setStringToValueFunction (StringToValueFunction&& stringToValueF
 }
 
 //------------------------------------------------------------------------
+void CTextEdit::resetStringToValueFunction () { stringToValueFunction = nullptr; }
+
+//------------------------------------------------------------------------
 void CTextEdit::setImmediateTextChange (bool state)
 {
 	immediateTextChange = state;
