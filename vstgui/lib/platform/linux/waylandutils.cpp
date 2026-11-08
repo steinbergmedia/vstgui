@@ -826,7 +826,7 @@ void ChildWindow::createShmBuffer (ShmBuffer& shmBuffer)
 	if (shm == nullptr)
 		return;
 
-	constexpr int32_t kScalefactor = 1.
+	constexpr int32_t kScalefactor = 1.;
 	createBuffer (shm, size, kScalefactor, shmBuffer);
 
 	if (surface && shmBuffer.buffer)
