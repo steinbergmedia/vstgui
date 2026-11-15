@@ -160,6 +160,11 @@ public:
 		}
 	};
 
+	static SPtr<CCommandMenuItem> make (Desc&& args)
+	{
+		return makeShared<CCommandMenuItem> (std::move (args));
+	}
+
 	CCommandMenuItem (Desc&& args);
 	CCommandMenuItem (const Desc& args);
 	CCommandMenuItem (const CCommandMenuItem& item);
