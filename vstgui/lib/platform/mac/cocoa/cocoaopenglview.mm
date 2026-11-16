@@ -46,8 +46,26 @@ struct VSTGUI_NSOpenGLView : RuntimeObjCClass<VSTGUI_NSOpenGLView>
 			.addMethod (@selector (mouseMoved:), MouseXXX)
 			.addMethod (@selector (rightMouseDown:), MouseXXX)
 			.addMethod (@selector (rightMouseUp:), MouseXXX)
+			.addMethod (@selector (acceptsFirstResponder), acceptsFirstResponder)
+			.addMethod (@selector (becomeFirstResponder), becomeFirstResponder)
+			.addMethod (@selector (resignFirstResponder), resignFirstResponder)
 			.addIvar<CocoaOpenGLView*> (cocoaOpenGLViewVarName)
 			.finalize ();
+	}
+
+	static BOOL acceptsFirstResponder (id self, SEL _cmd)
+	{
+		return YES;
+	}
+
+	static BOOL becomeFirstResponder (id self, SEL _cmd)
+	{
+		return YES;
+	}
+
+	static BOOL resignFirstResponder (id self, SEL _cmd)
+	{
+		return YES;
 	}
 
 	//-----------------------------------------------------------------------------
@@ -305,6 +323,10 @@ void CocoaOpenGLView::viewSizeChanged (const CRect& visibleSize)
 		if ([platformView superview] == nil)
 		{
 			[parent addSubview:platformView];
+		}
+		else
+		{
+			[[platformView window] makeFirstResponder:parent];
 		}
 		unlockContext ();
 	}
